@@ -42,18 +42,18 @@ export const requireJwtProd = (req: Request, res: Response, next: NextFunction) 
   } else {
     const { token } = req.cookies;
 
-    if (!token) return res.status(401).json({ message: 'Authentication Failed: Cookie not found!' });
-
-    jwt.verify(token, TOKEN_SECRET, (err: VerifyErrors | null, decoded: string | JwtPayload | undefined) => {
-      if (err) return res.status(401).json({ message: 'Authentication Failed: Invalid JWT!' });
-
-      if (!decoded || typeof decoded === 'string') {
-        return res.status(401).json({ message: 'Authentication Failed: Invalid JWT payload!' });
-      }
-      res.locals.userId = decoded.userId;
-
-      return next();
-    });
+    if (!token) res.status(401).json({ message: 'Authentication Failed: Cookie not found!' });
+    else {
+      jwt.verify(token, TOKEN_SECRET, (err: VerifyErrors | null, decoded: string | JwtPayload | undefined) => {
+        if (err) res.status(401).json({ message: 'Authentication Failed: Invalid JWT!' });
+        else if (!decoded || typeof decoded === 'string') {
+          res.status(401).json({ message: 'Authentication Failed: Invalid JWT payload!' });
+        } else {
+          res.locals.userId = decoded.userId;
+          next();
+        }
+      });
+    }
   }
 };
 
@@ -74,11 +74,12 @@ export const requireJwtDev = (req: Request, res: Response, next: NextFunction) =
   } else {
     const devUserId = req.headers.authorization;
 
-    if (!devUserId) return res.status(401).json({ message: 'Authentication Failed: Not logged in (dev)!' });
+    if (!devUserId) res.status(401).json({ message: 'Authentication Failed: Not logged in (dev)!' });
+    else {
+      res.locals.userId = devUserId;
 
-    res.locals.userId = devUserId;
-
-    return next();
+      next();
+    }
   }
 };
 

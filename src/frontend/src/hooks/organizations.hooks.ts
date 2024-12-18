@@ -1,8 +1,13 @@
 import { useContext, useState } from 'react';
 import { OrganizationContext } from '../app/AppOrganizationContext';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Organization } from 'shared';
-import { getCurrentOrganization, setOrganizationDescription } from '../apis/organizations.api';
+import { Organization, Project } from 'shared';
+import {
+  getFeaturedProjects,
+  getCurrentOrganization,
+  setOrganizationDescription,
+  setOrganizationFeaturedProjects
+} from '../apis/organizations.api';
 
 interface OrganizationProvider {
   organizationId: string;
@@ -30,6 +35,13 @@ export const useCurrentOrganization = () => {
   });
 };
 
+export const useFeaturedProjects = () => {
+  return useQuery<Project[], Error>(['organizations', 'featured-projects'], async () => {
+    const { data } = await getFeaturedProjects();
+    return data;
+  });
+};
+
 // Hook for child components to get the auth object
 export const useOrganization = () => {
   const context = useContext(OrganizationContext);
@@ -47,7 +59,22 @@ export const useSetOrganizationDescription = () => {
     ['organizations', 'description'],
     async (description: string) => {
       const { data } = await setOrganizationDescription(description);
-      queryClient.invalidateQueries(['organizations']);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['organizations']);
+      }
+    }
+  );
+};
+
+export const useSetFeaturedProjects = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Organization, Error, Project[]>(
+    ['organizations', 'featured-projects'],
+    async (featuredProjects: Project[]) => {
+      const { data } = await setOrganizationFeaturedProjects(featuredProjects.map((project) => project.id));
       return data;
     },
     {

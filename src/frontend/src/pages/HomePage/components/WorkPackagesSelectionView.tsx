@@ -1,12 +1,11 @@
-import { RoleEnum, wbsPipe, WorkPackage } from 'shared';
-import { Box, Grid, useTheme } from '@mui/material';
+import { WorkPackage } from 'shared';
+import { Box, Card, CardContent, useTheme } from '@mui/material';
 import {
   getInProgressWorkPackages,
   getOverdueWorkPackages,
   getUpcomingWorkPackages
 } from '../../../utils/work-package.utils';
 import { useCurrentUser } from '../../../hooks/users.hooks';
-import PageBlock from '../../../layouts/PageBlock';
 import WorkPackageCard from './WorkPackageCard';
 import WorkPackageSelect from './WorkPackageSelect';
 import React, { useState } from 'react';
@@ -15,22 +14,11 @@ import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutli
 
 const NoWorkPackages: React.FC = () => {
   return (
-    <Box
-      sx={{
-        width: '100%',
-        height: '40vh',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center'
-      }}
-    >
-      <EmptyPageBlockDisplay
-        icon={<CheckCircleOutlineOutlinedIcon sx={{ fontSize: 70 }} />}
-        heading={`You're all caught up!`}
-        message={'You have no pending work packages of this type!'}
-      />
-    </Box>
+    <EmptyPageBlockDisplay
+      icon={<CheckCircleOutlineOutlinedIcon sx={{ fontSize: 70 }} />}
+      heading={`You're all set!`}
+      message={'You have no pending work packages of this type!'}
+    />
   );
 };
 
@@ -38,92 +26,103 @@ const WorkPackagesSelectionView: React.FC = () => {
   const user = useCurrentUser();
   const theme = useTheme();
 
-  const relevantWPs = user.teamsAsHead
-    ? user.teamsAsHead.map((team) => team.projects.map((project) => project.workPackages)).flat(2)
-    : [];
+  const teamsAsHead = user.teamsAsHead ?? [];
+  const teamsAsLead = user.teamsAsLead ?? [];
+  const teamsAsLeadership = [...teamsAsHead, ...teamsAsLead];
 
-  relevantWPs.concat(
-    user.teamsAsLead ? user.teamsAsLead.map((team) => team.projects.map((project) => project.workPackages)).flat(2) : []
-  );
+  const relevantWPs = teamsAsLeadership.map((team) => team.projects.map((project) => project.workPackages)).flat(2);
 
   const upcomingWPs: WorkPackage[] = getUpcomingWorkPackages(relevantWPs);
   const inProgressWPs: WorkPackage[] = getInProgressWorkPackages(relevantWPs);
   const overdueWPs: WorkPackage[] = getOverdueWorkPackages(relevantWPs);
 
-  const workPackages: [string, WorkPackage[]][] = [
+  // options for selection
+  const workPackageOptions: [string, WorkPackage[]][] = [
     [`Upcoming Work Packages (${upcomingWPs.length})`, upcomingWPs],
     [`In Progress Work Packages (${inProgressWPs.length})`, inProgressWPs],
     [`Overdue Work Packages (${overdueWPs.length})`, overdueWPs]
   ];
 
   let defaultFirstDisplay = 2;
-  if (workPackages[2][1].length === 0) {
+  if (workPackageOptions[2][1].length === 0) {
     defaultFirstDisplay = 1;
-    if (workPackages[1][1].length === 0) {
+    if (workPackageOptions[1][1].length === 0) {
       defaultFirstDisplay = 0;
     }
   }
 
   const [currentDisplayedWPs, setCurrentDisplayedWPs] = useState<number>(defaultFirstDisplay);
 
-  const handleChange = (event: number) => {
-    setCurrentDisplayedWPs(event);
-  };
+  // destructuring tuple to get wps of selected option
+  const [, currentWps] = workPackageOptions[currentDisplayedWPs];
 
-  const getWorkPackages = (key: number): WorkPackage[] => {
-    return workPackages[key][1];
-  };
-
-  const workPackagesDisplay = (workPackages: WorkPackage[]) => (
+  const WorkPackagesDisplay = (workPackages: WorkPackage[]) => (
     <Box
       sx={{
         display: 'flex',
-        flexDirection: 'column',
-        flexWrap: 'nowrap',
-        overflowY: 'auto',
-        overflowX: 'hidden',
-        justifyContent: 'flex-start',
-        height: '40vh',
-        gap: 2,
-        '&::-webkit-scrollbar': {
-          width: '20px'
-        },
-        '&::-webkit-scrollbar-track': {
-          backgroundColor: 'transparent'
-        },
-        '&::-webkit-scrollbar-thumb': {
-          backgroundColor: theme.palette.primary.main,
-          borderRadius: '20px',
-          border: '6px solid transparent',
-          backgroundClip: 'content-box'
-        },
-        scrollbarWidth: 'auto',
-        scrollbarColor: `${theme.palette.primary.main} transparent`
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        overflow: 'auto',
+        width: '100%',
+        gap: 2
       }}
     >
-      <Grid container rowSpacing={2} columnSpacing={2}>
-        {workPackages.map((wp) => (
-          <Grid item sm={12} md={user.role === RoleEnum.ADMIN || user.role === RoleEnum.APP_ADMIN ? 6 : 12}>
-            <Box sx={{ width: '100%', height: 'auto', overflow: 'hidden' }} key={wbsPipe(wp.wbsNum)}>
-              <WorkPackageCard wp={wp} />
-            </Box>
-          </Grid>
-        ))}
-      </Grid>
+      {workPackages.map((wp) => (
+        <WorkPackageCard wp={wp} />
+      ))}
     </Box>
   );
 
-  const currentWps = getWorkPackages(currentDisplayedWPs);
-
   return (
-    <PageBlock>
-      <WorkPackageSelect
-        options={workPackages.map((wp) => wp[0])}
-        onSelect={handleChange}
-        firstSelected={currentDisplayedWPs}
-      />
-      {currentWps.length === 0 ? <NoWorkPackages /> : workPackagesDisplay(currentWps)}
-    </PageBlock>
+    <Card
+      sx={{
+        height: '100%',
+        background: theme.palette.background.paper
+      }}
+      variant="outlined"
+    >
+      <CardContent
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          flexWrap: 'nowrap'
+        }}
+      >
+        <WorkPackageSelect
+          options={workPackageOptions.map((wp) => wp[0])}
+          onSelect={setCurrentDisplayedWPs}
+          selected={currentDisplayedWPs}
+        />
+        <Box
+          sx={{
+            mt: 2,
+            display: 'flex',
+            flex: 1,
+            flexDirection: 'column',
+            gap: 2,
+            overflowX: 'hidden',
+            overflowY: 'auto',
+            '&::-webkit-scrollbar': {
+              width: '20px'
+            },
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: 'transparent'
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: theme.palette.primary.main,
+              borderRadius: '20px',
+              border: '6px solid transparent',
+              backgroundClip: 'content-box'
+            },
+            scrollbarWidth: 'auto',
+            scrollbarColor: `${theme.palette.primary.main} transparent`
+          }}
+        >
+          {currentWps.length === 0 ? <NoWorkPackages /> : WorkPackagesDisplay(currentWps)}
+        </Box>
+      </CardContent>
+    </Card>
   );
 };
 

@@ -38,6 +38,8 @@ import { getAuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args'
 import authenticatedUserTransformer from '../transformers/auth-user.transformer';
 import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args';
 import taskTransformer from '../transformers/tasks.transformer';
+import { getNotificationQueryArgs } from '../prisma-query-args/notifications.query-args';
+import notificationTransformer from '../transformers/notifications.transformer';
 
 export default class UsersService {
   /**
@@ -199,14 +201,6 @@ export default class UsersService {
       }
     });
 
-    if (!payload['given_name']) {
-      throw new HttpException(400, 'First Name was not Found on Google Account');
-    }
-
-    if (!payload['family_name']) {
-      throw new HttpException(400, 'Last Name was not Found on Google Account');
-    }
-
     if (!payload['email']) {
       throw new HttpException(400, 'Email was not Found on Google Account');
     }
@@ -216,10 +210,13 @@ export default class UsersService {
       const emailId = payload['email']!.includes('@husky.neu.edu') ? payload['email']!.split('@')[0] : null;
       const organization = await prisma.organization.findFirst();
 
+      const firstName = payload['given_name'] ?? payload['email']!.split('@')[0]; // Defaults to id of email
+      const lastName = payload['family_name'] ?? ''; // Defaults to no last name
+
       const createdUser = await prisma.user.create({
         data: {
-          firstName: payload['given_name'],
-          lastName: payload['family_name'],
+          firstName,
+          lastName,
           googleAuthId: userId,
           email: payload['email'],
           emailId,
@@ -570,5 +567,15 @@ export default class UsersService {
 
     const resolvedTasks = await Promise.all(tasksPromises);
     return resolvedTasks.flat();
+  }
+
+  static async getUserUnreadNotifications(userId: string, organization: Organization) {
+    const requestedUser = await prisma.user.findUnique({
+      where: { userId },
+      include: { unreadNotifications: getNotificationQueryArgs(organization.organizationId) }
+    });
+    if (!requestedUser) throw new NotFoundException('User', userId);
+
+    return requestedUser.unreadNotifications.map(notificationTransformer);
   }
 }

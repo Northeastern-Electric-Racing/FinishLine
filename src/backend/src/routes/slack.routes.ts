@@ -1,8 +1,13 @@
-import express from 'express';
-import slackController from '../controllers/slack.controllers';
+import { createEventAdapter } from '@slack/events-api';
+import slackServices from '../services/slack.services';
 
-const slackRouter = express.Router();
+export const slackEvents = createEventAdapter(process.env.SLACK_SIGNING_SECRET || '');
 
-slackRouter.post('/', slackController.handleEvent);
+slackEvents.on('message', async (event) => {
+  console.log('EVENT:', event);
+  slackServices.processMessageSent(event);
+});
 
-export default slackRouter;
+slackEvents.on('error', (error) => {
+  console.log(error.name);
+});
