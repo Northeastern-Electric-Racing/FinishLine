@@ -1,7 +1,7 @@
 import axios from '../utils/axios';
 import { Organization } from 'shared';
 import { apiUrls } from '../utils/urls';
-import { OnboardingTextPayload } from '../hooks/organizations.hooks';
+import { OnboardingTextPayload, UpdateContactsPayload } from '../hooks/organizations.hooks';
 
 /**
  * Create a design review
@@ -10,6 +10,16 @@ import { OnboardingTextPayload } from '../hooks/organizations.hooks';
 export const getCurrentOrganization = async () => {
   return axios.get<Organization>(apiUrls.currentOrganization(), {
     transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
+ * Sets the contacts for an organization
+ * @param contacts all the contact information that is being set
+ */
+export const updateOrganizationContacts = async (payload: UpdateContactsPayload) => {
+  return axios.post<Organization>(apiUrls.organizationsUpdateContacts(), {
+    ...payload
   });
 };
 
