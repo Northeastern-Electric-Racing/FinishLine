@@ -49,7 +49,9 @@ describe('Statistics Tests', () => {
             Graph_Type.CHANGE_REQUESTS_BY_TEAM,
             Measure.SUM,
             Graph_Display_Type.BAR,
-            organization
+            organization,
+            [],
+            []
           )
       ).rejects.toThrow(new AccessDeniedException('You do not have permission to create a graph'));
     });
@@ -65,7 +67,9 @@ describe('Statistics Tests', () => {
             Graph_Type.CHANGE_REQUESTS_BY_DIVISION,
             Measure.SUM,
             Graph_Display_Type.PIE,
-            organization
+            organization,
+            [],
+            []
           )
       ).rejects.toThrow(new HttpException(400, 'End date must be after start date'));
     });
@@ -85,7 +89,9 @@ describe('Statistics Tests', () => {
         Graph_Type.PROJECT_BUDGET_BY_DIVISION,
         Measure.SUM,
         Graph_Display_Type.BAR,
-        organization
+        organization,
+        [],
+        []
       );
 
       expect(result).toContain({
@@ -119,7 +125,9 @@ describe('Statistics Tests', () => {
         Graph_Type.PROJECT_BUDGET_BY_DIVISION,
         Measure.AVG,
         Graph_Display_Type.BAR,
-        organization
+        organization,
+        [],
+        []
       );
 
       expect(result).toContain({
@@ -154,7 +162,9 @@ describe('Statistics Tests', () => {
         Graph_Type.PROJECT_BUDGET_BY_DIVISION,
         Measure.SUM,
         Graph_Display_Type.BAR,
-        organization
+        organization,
+        [],
+        []
       );
 
       expect(result).toContain({
@@ -185,7 +195,9 @@ describe('Statistics Tests', () => {
         Graph_Type.REIMBURSEMENT_TOTAL_BY_TEAM,
         Measure.AVG,
         Graph_Display_Type.PIE,
-        organization
+        organization,
+        [],
+        []
       );
 
       const result = await StatisticsService.getSingleGraph(graph.graphId, user, organization);
@@ -202,7 +214,9 @@ describe('Statistics Tests', () => {
         Graph_Type.CHANGE_REQUESTS_BY_PROJECT,
         Measure.AVG,
         Graph_Display_Type.PIE,
-        organization
+        organization,
+        [],
+        []
       );
 
       await expect(async () => StatisticsService.getSingleGraph(graph.graphId, guest_user, organization)).rejects.toThrow(

@@ -1,35 +1,25 @@
-import { FormControl, FormHelperText, FormLabel, Grid, MenuItem, Select } from '@mui/material';
+import { Autocomplete, FormControl, FormHelperText, FormLabel, Grid, MenuItem, Select, TextField } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { Control, Controller, FieldErrors } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
-import { FlattenedRelations, GraphCollection, GraphFormInput, GraphType, Measure, TrackedFlattenedRelations } from 'shared';
+import { Car, GraphCollection, GraphDisplayType, GraphFormInput, GraphType, Measure, SpecialPermission } from 'shared';
 import { displayEnum } from '../../../utils/pipes';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 import { useState } from 'react';
 import {
   graphCollectionToAutoCompleteValue,
-  tableToAutoCompleteValue,
-  tableToColumnAutoCompleteValue,
-  trackedTableToAutoCompleteValue
+  graphTypeToAutoCompleteValue,
+  specialPermissionToAutoCompleteValue
 } from '../../../utils/statistics.utils';
 
 interface GraphFormViewProps {
   control: Control<GraphFormInput, any>;
   errors: FieldErrors<GraphFormInput>;
-  setYTable: (table: string | null) => void;
-  xTables: Map<string, TrackedFlattenedRelations>;
-  yTables: Map<string, FlattenedRelations>;
   graphCollections: GraphCollection[];
+  cars: Car[];
 }
 
-export const GraphFormView: React.FC<GraphFormViewProps> = ({
-  control,
-  errors,
-  xTables,
-  setYTable,
-  yTables,
-  graphCollections
-}) => {
+export const GraphFormView: React.FC<GraphFormViewProps> = ({ control, errors, graphCollections, cars }) => {
   const [startTimeDatePickerOpen, setStartTimeDatePickerOpen] = useState(false);
   const [endTimeDatePickerOpen, setEndTimeDatePickerOpen] = useState(false);
 
@@ -109,11 +99,11 @@ export const GraphFormView: React.FC<GraphFormViewProps> = ({
           <FormLabel sx={{ alignSelf: 'start' }}>Graph Type</FormLabel>
           <Controller
             control={control}
-            name={'graphType'}
+            name={'graphDisplayType'}
             render={({ field }) => (
               <Select
                 displayEmpty
-                placeholder={'Change Graph Type'}
+                placeholder={'Change Graph Display Type'}
                 sx={{ height: 56, width: '100%', textAlign: 'left' }}
                 fullWidth
                 MenuProps={{
@@ -128,7 +118,7 @@ export const GraphFormView: React.FC<GraphFormViewProps> = ({
                 }}
                 {...field}
               >
-                {Object.values(GraphType).map((graphType) => {
+                {Object.values(GraphDisplayType).map((graphType) => {
                   return (
                     <MenuItem key={graphType} value={graphType}>
                       {displayEnum(graphType)}
@@ -204,47 +194,24 @@ export const GraphFormView: React.FC<GraphFormViewProps> = ({
         </FormControl>
       </Grid>
 
-      <Grid item xs={6}>
+      <Grid item xs={12}>
         <FormControl fullWidth>
           <FormLabel>Select Data</FormLabel>
           <Controller
-            name="yData"
+            name="graphType"
             control={control}
             render={({ field: { value, onChange } }) => {
               return (
-                <>
-                  <NERAutocomplete
-                    sx={{ width: '100%' }}
-                    id="yTableSelector"
-                    onChange={(_, tableValue) => {
-                      onChange({ table: tableValue?.id, column: null });
-                      setYTable(tableValue?.id ?? null);
-                    }}
-                    size="medium"
-                    value={value.table ? { label: value.table, id: value.table } : null}
-                    placeholder="Select a table"
-                    options={Array.from(yTables.values()).map(tableToAutoCompleteValue)}
-                    errorMessage={errors.yData?.table}
-                  />
-                  <NERAutocomplete
-                    sx={{ width: '100%' }}
-                    id="yColumnSelector"
-                    onChange={(_, columnValue) => onChange({ ...value, column: columnValue?.id })}
-                    size="medium"
-                    value={value.column ? { label: value.column, id: value.column } : null}
-                    placeholder="Select a column"
-                    options={
-                      value.table
-                        ? yTables
-                            .get(value.table)
-                            ?.columns.filter((column) => column.dataType === 'integer')
-                            .map(tableToColumnAutoCompleteValue)
-                            .flat() ?? []
-                        : []
-                    }
-                    errorMessage={errors.yData?.column}
-                  />
-                </>
+                <NERAutocomplete
+                  sx={{ width: '100%' }}
+                  id="graphTypeSelector"
+                  onChange={(_, tableValue) => onChange(tableValue?.id)}
+                  size="medium"
+                  value={value ? graphTypeToAutoCompleteValue(value) : null}
+                  placeholder="Select a graph type"
+                  options={Object.values(GraphType).map(graphTypeToAutoCompleteValue)}
+                  errorMessage={errors.graphType}
+                />
               );
             }}
           />
@@ -253,61 +220,56 @@ export const GraphFormView: React.FC<GraphFormViewProps> = ({
 
       <Grid item xs={6}>
         <FormControl fullWidth>
-          <FormLabel>Select Grouping Data</FormLabel>
+          <FormLabel>Select Cars To Segment Data By</FormLabel>
           <Controller
-            name="xData"
+            name="cars"
             control={control}
             render={({ field: { onChange, value } }) => {
               return (
-                <>
-                  <NERAutocomplete
-                    sx={{ width: '100%' }}
-                    id="xTableSelector"
-                    onChange={(_, tableValue) => {
-                      if (tableValue) {
-                        const relation: TrackedFlattenedRelations = JSON.parse(tableValue.id);
-
-                        onChange({
-                          table: relation.table,
-                          column: null,
-                          path: relation.path
-                        });
-                      }
-                    }}
-                    size="medium"
-                    value={
-                      value.path
-                        ? {
-                            label: value.path.map((relation) => relation.table).join('->'),
-                            id: JSON.stringify(value)
-                          }
-                        : null
-                    }
-                    placeholder="Select a table"
-                    options={Array.from(xTables.values()).map(trackedTableToAutoCompleteValue)}
-                    errorMessage={errors.xData?.table}
-                  />
-                  <NERAutocomplete
-                    sx={{ width: '100%' }}
-                    id="xColumnSelector"
-                    onChange={(_, columnValue) =>
-                      onChange({
-                        ...value,
-                        column: columnValue?.id
-                      })
-                    }
-                    size="medium"
-                    placeholder="Select a column"
-                    value={value.column ? { label: value.column, id: value.column } : null}
-                    options={
-                      value.table ? yTables.get(value.table)?.columns.map(tableToColumnAutoCompleteValue).flat() ?? [] : []
-                    }
-                    errorMessage={errors.xData?.column}
-                  />
-                </>
+                <Autocomplete
+                  isOptionEqualToValue={(option, value) => option.id === value.id}
+                  filterSelectedOptions
+                  multiple
+                  id="carSelector"
+                  options={cars}
+                  value={value}
+                  onChange={(_event, newValue) => onChange(newValue)}
+                  getOptionLabel={(option) => option.name}
+                  renderInput={(params) => (
+                    <TextField {...params} variant="standard" placeholder="Select Cars (Leave Blank For All Cars)" />
+                  )}
+                />
               );
             }}
           />
+          <FormHelperText error={!!errors.cars}>{errors.cars?.message}</FormHelperText>
+        </FormControl>
+      </Grid>
+      <Grid item xs={6}>
+        <FormControl fullWidth>
+          <FormLabel>Additional Permissions to Apply to the Graph</FormLabel>
+          <Controller
+            name="specialPermissions"
+            control={control}
+            render={({ field: { onChange, value } }) => {
+              return (
+                <Autocomplete
+                  isOptionEqualToValue={(option, value) => option.id === value.id}
+                  filterSelectedOptions
+                  multiple
+                  id="permissionsSelector"
+                  options={Object.values(SpecialPermission).map(specialPermissionToAutoCompleteValue)}
+                  value={value.map(specialPermissionToAutoCompleteValue)}
+                  onChange={(_event, newValue) => onChange(newValue)}
+                  getOptionLabel={(option) => option.label}
+                  renderInput={(params) => (
+                    <TextField {...params} variant="standard" placeholder="Select Cars (Leave Blank For All Cars)" />
+                  )}
+                />
+              );
+            }}
+          />
+          <FormHelperText error={!!errors.cars}>{errors.cars?.message}</FormHelperText>
         </FormControl>
       </Grid>
     </Grid>

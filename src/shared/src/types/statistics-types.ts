@@ -1,4 +1,5 @@
-import { Permission, User } from './user-types';
+import { Car } from './project-types';
+import { User } from './user-types';
 
 export enum GraphDisplayType {
   BAR = 'BAR',
@@ -16,6 +17,10 @@ export enum GraphType {
   REIMBURSEMENT_TOTAL_BY_DIVISION = 'REIMBURSEMENT_TOTAL_BY_DIVISION',
   REIMBURSEMENT_TOTAL_BY_PROJECT = 'REIMBURSEMENT_TOTAL_BY_PROJECT',
   REIMBURSEMENT_TOTAL_BY_TEAM = 'REIMBURSEMENT_TOTAL_BY_TEAM'
+}
+
+export enum SpecialPermission {
+  FINANCE_ONLY = 'FINANCE_ONLY'
 }
 
 export enum Measure {
@@ -41,6 +46,7 @@ export interface Graph {
   dateDeleted?: Date;
   graphData: GraphData[];
   graphCollectionId?: String;
+  specialPermissions: SpecialPermission[];
 }
 
 export interface GraphCollection {
@@ -51,27 +57,8 @@ export interface GraphCollection {
   userCreated: User;
   userDeleted?: User;
   dateDeleted?: Date;
-  permissions: Permission[];
+  permissions: SpecialPermission[];
 }
-
-export type SimpleForeignRelation = {
-  foreignKey: string;
-  primaryKey: string;
-  table: string;
-};
-
-export type FlattenedRelations = {
-  table: string;
-  primaryKey: string | undefined;
-  columns: TableColumn[];
-  relationships: SimpleForeignRelation[];
-};
-
-export type TableColumn = {
-  dataType: string;
-  columnName: string;
-  isPrimaryKey: boolean;
-};
 
 export interface CreateGraphArgs {
   startDate: Date;
@@ -80,41 +67,18 @@ export interface CreateGraphArgs {
   graphType: GraphType;
   measure: Measure;
   graphCollectionId?: string;
-  graphGen: GraphGen;
+  graphDisplayType: GraphDisplayType;
+  carIds: String[];
 }
 
 export interface GraphFormInput {
   title: string;
-  yData: {
-    column: string;
-    table: string;
-  };
-  xData: {
-    column: string;
-    table: string;
-    path: SimpleForeignRelation[];
-  };
   measure: Measure;
-  graphType: GraphType;
+  graphType: GraphType | null;
   startTime: Date | null;
   endTime: Date | null;
+  graphDisplayType: GraphDisplayType;
   graphCollectionId?: string;
-}
-
-export interface ValidatedGraphFormInput {
-  title: string;
-  yData: {
-    column: string;
-    table: string;
-  };
-  xData: {
-    column: string;
-    table: string;
-    path: SimpleForeignRelation[];
-  };
-  measure: Measure;
-  startTime: Date;
-  endTime: Date;
-  graphType: GraphType;
-  graphCollectionId?: string;
+  cars: Car[];
+  specialPermissions: SpecialPermission[];
 }

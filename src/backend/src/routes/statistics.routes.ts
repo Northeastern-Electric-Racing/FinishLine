@@ -10,6 +10,7 @@ import {
   isGraphDisplayType,
   isGraphType,
   isMeasure,
+  isSpecialPermission,
   nonEmptyString,
   validateInputs
 } from '../utils/validation.utils';
@@ -27,6 +28,8 @@ statisticsRouter.post(
   isMeasure(body('measure')),
   body('carId').optional().isString(),
   body('graphCollectionId').optional().isString(),
+  body('specialPermissions').isArray(),
+  isSpecialPermission(body('specialPermissions.*')),
   validateInputs,
   StatisticsController.createGraph
 );

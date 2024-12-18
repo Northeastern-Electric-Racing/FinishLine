@@ -19,7 +19,9 @@ export const seedGraph = async (
     graphType,
     measure,
     graphDisplayType,
-    organization
+    organization,
+    [],
+    []
   );
 
   return createdGraph;

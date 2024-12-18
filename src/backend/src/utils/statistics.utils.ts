@@ -3,7 +3,7 @@ import { GraphData, wbsPipe, wbsNamePipe } from 'shared';
 import prisma from '../prisma/prisma';
 
 interface CarSegmentedData {
-  carId?: string;
+  carIds: string[];
 }
 
 export interface ProjectDataParams extends CarSegmentedData {}
@@ -14,18 +14,18 @@ export interface ReimbursementRequestDataParams extends CarSegmentedData {}
 
 const getProjectSegmentedWhereInput = (
   organizationId: string,
-  carId?: string
+  carIds: string[]
 ):
-  | { where: { wbsElement: { organizationId: string; dateDeleted: null }; carId: string } }
+  | { where: { wbsElement: { organizationId: string; dateDeleted: null }; carId: { in: string[] } } }
   | { where: { wbsElement: { organizationId: string; dateDeleted: null } } } => {
-  if (carId) {
+  if (carIds.length > 0) {
     return {
       where: {
         wbsElement: {
           organizationId,
           dateDeleted: null
         },
-        carId
+        carId: { in: carIds }
       }
     };
   }
@@ -46,7 +46,7 @@ export const getGraphDataForProjectBudgetByProject = async (
   params: ProjectDataParams
 ): Promise<GraphData[]> => {
   const projects = await prisma.project.findMany({
-    ...getProjectSegmentedWhereInput(organizationId, params.carId),
+    ...getProjectSegmentedWhereInput(organizationId, params.carIds),
     include: {
       wbsElement: true
     }
@@ -74,7 +74,7 @@ export const getGraphDataForProjectBudgetByTeam = async (
     },
     include: {
       projects: {
-        ...getProjectSegmentedWhereInput(organizationId, params.carId)
+        ...getProjectSegmentedWhereInput(organizationId, params.carIds)
       }
     }
   });
@@ -113,7 +113,7 @@ export const getGraphDataForProjectBudgetByDivision = async (
         },
         include: {
           projects: {
-            ...getProjectSegmentedWhereInput(organizationId, params.carId)
+            ...getProjectSegmentedWhereInput(organizationId, params.carIds)
           }
         }
       }
@@ -176,7 +176,7 @@ export const getGraphDataForChangeRequestsByProject = async (
   params: ChangeRequestDataParams
 ): Promise<GraphData[]> => {
   const projects = await prisma.project.findMany({
-    ...getProjectSegmentedWhereInput(organizationId, params.carId),
+    ...getProjectSegmentedWhereInput(organizationId, params.carIds),
     ...changeRequestProjectDataQueryArgs
   });
 
@@ -195,11 +195,11 @@ export const getGraphDataForChangeRequestsByProject = async (
   return data;
 };
 
-const changeRequestTeamQueryArgs = (organizationId: string, carId?: string) => {
+const changeRequestTeamQueryArgs = (organizationId: string, carIds: string[]) => {
   return {
     include: {
       projects: {
-        ...getProjectSegmentedWhereInput(organizationId, carId),
+        ...getProjectSegmentedWhereInput(organizationId, carIds),
         ...changeRequestProjectDataQueryArgs
       }
     }
@@ -213,7 +213,7 @@ export const getGraphDataForChangeRequestsByTeam = async (
 ): Promise<GraphData[]> => {
   const teams = await prisma.team.findMany({
     where: { organizationId, dateArchived: null },
-    ...changeRequestTeamQueryArgs(organizationId, params.carId)
+    ...changeRequestTeamQueryArgs(organizationId, params.carIds)
   });
 
   const data: GraphData[] = teams.map((team) => {
@@ -251,7 +251,7 @@ export const getGraphDataForChangeRequestsByDivision = async (
         where: {
           dateArchived: null
         },
-        ...changeRequestTeamQueryArgs(organizationId, params.carId)
+        ...changeRequestTeamQueryArgs(organizationId, params.carIds)
       }
     }
   });
@@ -310,7 +310,7 @@ export const getGraphDataForReimbursementRequestsByProject = async (
   params: ReimbursementRequestDataParams
 ) => {
   const projects = await prisma.project.findMany({
-    ...getProjectSegmentedWhereInput(organizationId, params.carId),
+    ...getProjectSegmentedWhereInput(organizationId, params.carIds),
     ...reimbursementProductProjectDataQueryArgs
   });
 
@@ -332,11 +332,11 @@ export const getGraphDataForReimbursementRequestsByProject = async (
   return data;
 };
 
-const reimbursementProductTeamDataQueryArgs = (organizationId: string, carId?: string) => {
+const reimbursementProductTeamDataQueryArgs = (organizationId: string, carIds: string[]) => {
   return {
     include: {
       projects: {
-        ...getProjectSegmentedWhereInput(organizationId, carId),
+        ...getProjectSegmentedWhereInput(organizationId, carIds),
         ...reimbursementProductProjectDataQueryArgs
       }
     }
@@ -353,7 +353,7 @@ export const getGraphDataForReimbursementRequestsByTeam = async (
       dateArchived: null,
       organizationId
     },
-    ...reimbursementProductTeamDataQueryArgs(organizationId, params.carId)
+    ...reimbursementProductTeamDataQueryArgs(organizationId, params.carIds)
   });
 
   const data: GraphData[] = teams.map((team) => {
@@ -394,7 +394,7 @@ export const getGraphDataForReimbursementRequestsByDivision = async (
         where: {
           dateArchived: null
         },
-        ...reimbursementProductTeamDataQueryArgs(organizationId, params.carId)
+        ...reimbursementProductTeamDataQueryArgs(organizationId, params.carIds)
       }
     }
   });

@@ -1,4 +1,4 @@
-import { Organization, User, Graph_Type, Measure, Graph_Display_Type } from '@prisma/client';
+import { Organization, User, Graph_Type, Measure, Graph_Display_Type, Special_Permission } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { DeletedException, InvalidOrganizationException, NotFoundException } from '../utils/errors.utils';
 import graphTransformer from '../transformers/statistics-graph.transformer';
@@ -30,7 +30,8 @@ export default class StatisticsService {
    * @param measure The measurement to apply to the data
    * @param graphDisplayType The way to display the graph
    * @param organization The organization to make the graph under
-   * @param carId Optional id of the car to segment the data by
+   * @param carIds Array of carIds to segment the data by, if none are supplied will show data for all cars
+   * @param specialPermissions Array of permissions to apply to this graph
    * @param graphcollectionId optional graph collection to add the graph to
    * @returns The created graph and its data
    */
@@ -43,7 +44,8 @@ export default class StatisticsService {
     measure: Measure,
     graphDisplayType: Graph_Display_Type,
     organization: Organization,
-    carId?: string,
+    carIds: string[],
+    specialPermissions: Special_Permission[],
     graphCollectionId?: string
   ): Promise<Graph> {
     if (!(await userHasPermissionNew(user.userId, organization.organizationId, ['CREATE_GRAPH']))) {
@@ -54,14 +56,22 @@ export default class StatisticsService {
       throw new HttpException(400, 'End date must be after start date');
     }
 
-    if (carId) {
-      const car = await prisma.car.findUnique({
-        where: { carId }
-      });
+    if (carIds.length > 0) {
+      await Promise.all(
+        carIds.map(async (carId) => {
+          const car = await prisma.car.findUnique({
+            where: { carId, wbsElement: { organizationId: organization.organizationId } },
+            include: {
+              wbsElement: true
+            }
+          });
 
-      if (!car) {
-        throw new NotFoundException('Car', carId);
-      }
+          if (!car) {
+            throw new NotFoundException('Car', carId);
+          }
+          if (car.wbsElement.dateDeleted) throw new DeletedException('Car', carId);
+        })
+      );
     }
 
     const graph = await prisma.graph.create({
@@ -74,15 +84,20 @@ export default class StatisticsService {
         displayGraphType: graphDisplayType,
         graphCollectionId: graphCollectionId ?? null,
         userCreatedId: user.userId,
-        carId,
-        organizationId: organization.organizationId
+        cars: {
+          connect: carIds.map((carId) => {
+            return { carId };
+          })
+        },
+        organizationId: organization.organizationId,
+        specialPermissions
       },
       ...getGraphQueryArgs(organization.organizationId)
     });
 
     return graphTransformer({
       ...graph,
-      graphData: await StatisticsService.getGraphData(graphType, measure, organization.organizationId, { carId })
+      graphData: await StatisticsService.getGraphData(graphType, measure, organization.organizationId, { carIds })
     });
   }
 
@@ -98,7 +113,7 @@ export default class StatisticsService {
     graphType: Graph_Type,
     measure: Measure,
     organizationId: string,
-    params: { carId?: string }
+    params: { carIds: string[] }
   ): Promise<GraphData[]> {
     switch (graphType) {
       case Graph_Type.PROJECT_BUDGET_BY_PROJECT:
@@ -156,22 +171,8 @@ export default class StatisticsService {
         requestedGraph.graphType,
         requestedGraph.measure,
         organization.organizationId,
-        { carId: requestedGraph.carId ?? undefined }
+        { carIds: requestedGraph.cars.map((car) => car.carId) }
       )
     });
-  }
-
-  /**
-   * Gets graph config used to generate graphs with
-   *
-   * @returns The flattened relations for the database
-   */
-  static async getGraphConfig(): Promise<FlattenedRelations[]> {
-    const { tables, foreignKeys, junctionTables, tableColumns } = await getSchemaDetails();
-
-    const tree = buildTree(tables, foreignKeys, junctionTables, tableColumns);
-
-    const flat = getFlattenedTree(tree);
-    return flat;
   }
 }

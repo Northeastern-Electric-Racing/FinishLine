@@ -5,7 +5,17 @@ import { Graph } from 'shared';
 export default class StatisticsController {
   static async createGraph(req: Request, res: Response, next: NextFunction) {
     try {
-      const { startDate, endDate, title, graphType, graphDisplayType, measure, carId, graphCollectionId } = req.body;
+      const {
+        startDate,
+        endDate,
+        title,
+        graphType,
+        graphDisplayType,
+        measure,
+        carIds,
+        graphCollectionId,
+        specialPermissions
+      } = req.body;
 
       const graph: Graph = await StatisticsService.createGraph(
         req.currentUser,
@@ -16,7 +26,8 @@ export default class StatisticsController {
         measure,
         graphDisplayType,
         req.organization,
-        carId,
+        carIds,
+        specialPermissions,
         graphCollectionId
       );
 

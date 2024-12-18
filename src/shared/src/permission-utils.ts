@@ -50,34 +50,40 @@ export const isGuest: PermissionCheck = (role?: Role) => {
 
 export type PermissionCheck = (role: Role | undefined) => boolean;
 
+const GUEST_PERMISSIONS = [] as Permission[];
+
+const MEMBER_PERMISSIONS = GUEST_PERMISSIONS.concat([
+  Permission.EDIT_GRAPH,
+  Permission.CREATE_GRAPH,
+  Permission.VIEW_GRAPH,
+  Permission.DELETE_GRAPH,
+  Permission.EDIT_GRAPH_COLLECTION,
+  Permission.CREATE_GRAPH_COLLECTION,
+  Permission.DELETE_GRAPH_COLLECTION
+]);
+
+const LEADERSHIP_PERMISSIONS = MEMBER_PERMISSIONS.concat([]);
+
+const HEAD_PERMISSIONS = LEADERSHIP_PERMISSIONS.concat([]);
+
+const ADMIN_PERMISSIONS = HEAD_PERMISSIONS.concat([]);
+
+const APP_ADMIN_PERMISSIONS = ADMIN_PERMISSIONS.concat([]);
+
 export const getPermissionsForRoleType = (role: Role): Permission[] => {
   switch (role) {
     case RoleEnum.APP_ADMIN:
+      return APP_ADMIN_PERMISSIONS;
     case RoleEnum.ADMIN:
-      return Object.keys(Permission) as Permission[];
+      return ADMIN_PERMISSIONS;
     case RoleEnum.HEAD:
-      return [
-        Permission.EDIT_GRAPH,
-        Permission.CREATE_GRAPH,
-        Permission.VIEW_GRAPH,
-        Permission.DELETE_GRAPH,
-        Permission.EDIT_GRAPH_COLLECTION,
-        Permission.CREATE_GRAPH_COLLECTION,
-        Permission.DELETE_GRAPH_COLLECTION
-      ];
+      return HEAD_PERMISSIONS;
     case RoleEnum.LEADERSHIP:
-      return [
-        Permission.EDIT_GRAPH,
-        Permission.CREATE_GRAPH,
-        Permission.VIEW_GRAPH,
-        Permission.DELETE_GRAPH,
-        Permission.EDIT_GRAPH_COLLECTION,
-        Permission.CREATE_GRAPH_COLLECTION,
-        Permission.DELETE_GRAPH_COLLECTION
-      ];
+      return LEADERSHIP_PERMISSIONS;
     case RoleEnum.MEMBER:
+      return MEMBER_PERMISSIONS;
     case RoleEnum.GUEST:
-      return [];
+      return GUEST_PERMISSIONS;
   }
 
   return [];
