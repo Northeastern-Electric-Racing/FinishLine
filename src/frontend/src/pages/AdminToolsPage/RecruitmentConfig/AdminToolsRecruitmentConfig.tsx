@@ -15,17 +15,11 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
 
   const [addedImage1, setAddedImage1] = useState<File | undefined>(undefined);
   const [addedImage2, setAddedImage2] = useState<File | undefined>(undefined);
+  const [isUploadingApply, setIsUploadingApply] = useState(false);
+  const [isUploadingExplore, setIsUploadingExplore] = useState(false);
 
-  const { data: applyInterestImageUrl, isLoading: applyImageLoading } = useGetImageUrl(
-    organization?.applyInterestImageId ?? null
-  );
-  const { data: exploreGuestImageUrl, isLoading: exploreImageLoading } = useGetImageUrl(
-    organization?.exploreAsGuestImageId ?? null
-  );
-
-  if (!organization || applyImageLoading || exploreImageLoading) {
-    return <LoadingIndicator />;
-  }
+  const { data: applyInterestImageUrl } = useGetImageUrl(organization?.applyInterestImageId ?? null);
+  const { data: exploreGuestImageUrl } = useGetImageUrl(organization?.exploreAsGuestImageId ?? null);
 
   const handleFileUpload = async (files: File[], type: 'exploreAsGuest' | 'applyInterest') => {
     const validFiles: File[] = [];
@@ -43,9 +37,12 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
 
     if (validFiles.length > 0) {
       try {
+        type === 'applyInterest' ? setIsUploadingApply(true) : setIsUploadingExplore(true);
         await organizationImages(validFiles);
       } catch (error) {
         console.error('Error uploading images:', error);
+      } finally {
+        type === 'applyInterest' ? setIsUploadingApply(false) : setIsUploadingExplore(false);
       }
     }
   };
@@ -67,65 +64,81 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
         Recruitment Images
       </Typography>
 
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Box sx={{ display: 'flex', gap: 2 }}>
         <Box>
           <Typography variant="subtitle1" gutterBottom>
             Apply Interest Image
           </Typography>
-          {!addedImage1 && applyInterestImageUrl && (
-            <Box
-              component="img"
-              sx={{ display: 'block', maxWidth: '200px', mb: 1 }}
-              alt="Apply Interest"
-              src={applyInterestImageUrl}
-            />
+          {isUploadingApply ? (
+            <Box sx={{ height: '200px', display: 'flex', alignItems: 'center' }}>
+              <LoadingIndicator />
+            </Box>
+          ) : (
+            <>
+              {!addedImage1 && applyInterestImageUrl && (
+                <Box
+                  component="img"
+                  sx={{ display: 'block', maxWidth: '200px', mb: 1 }}
+                  alt="Apply Interest"
+                  src={applyInterestImageUrl}
+                />
+              )}
+              <NERUploadButton
+                dataTypeId="applyInterest"
+                handleFileChange={(e) => {
+                  if (e.target.files) {
+                    setAddedImage1(e.target.files[0]);
+                  }
+                }}
+                onSubmit={() => {
+                  if (addedImage1) {
+                    handleFileUpload([addedImage1], 'applyInterest');
+                    setAddedImage1(undefined);
+                  }
+                }}
+                addedImage={addedImage1}
+                setAddedImage={setAddedImage1}
+              />
+            </>
           )}
-          <NERUploadButton
-            dataTypeId="applyInterest"
-            handleFileChange={(e) => {
-              if (e.target.files) {
-                setAddedImage1(e.target.files[0]);
-              }
-            }}
-            onSubmit={() => {
-              if (addedImage1) {
-                handleFileUpload([addedImage1], 'applyInterest');
-                setAddedImage1(undefined);
-              }
-            }}
-            addedImage={addedImage1}
-            setAddedImage={setAddedImage1}
-          />
         </Box>
 
         <Box>
           <Typography variant="subtitle1" gutterBottom>
             Explore As Guest Image
           </Typography>
-          {!addedImage2 && exploreGuestImageUrl && (
-            <Box
-              component="img"
-              sx={{ display: 'block', maxWidth: '200px', mb: 1 }}
-              alt="Apply Interest"
-              src={exploreGuestImageUrl}
-            />
+          {isUploadingExplore ? (
+            <Box sx={{ height: '200px', display: 'flex', alignItems: 'center' }}>
+              <LoadingIndicator />
+            </Box>
+          ) : (
+            <>
+              {!addedImage2 && exploreGuestImageUrl && (
+                <Box
+                  component="img"
+                  sx={{ display: 'block', maxWidth: '200px', mb: 1 }}
+                  alt="Apply Interest"
+                  src={exploreGuestImageUrl}
+                />
+              )}
+              <NERUploadButton
+                dataTypeId="exploreAsGuest"
+                handleFileChange={(e) => {
+                  if (e.target.files) {
+                    setAddedImage2(e.target.files[0]);
+                  }
+                }}
+                onSubmit={() => {
+                  if (addedImage2) {
+                    handleFileUpload([addedImage2], 'exploreAsGuest');
+                    setAddedImage2(undefined);
+                  }
+                }}
+                addedImage={addedImage2}
+                setAddedImage={setAddedImage2}
+              />
+            </>
           )}
-          <NERUploadButton
-            dataTypeId="exploreAsGuest"
-            handleFileChange={(e) => {
-              if (e.target.files) {
-                setAddedImage2(e.target.files[0]);
-              }
-            }}
-            onSubmit={() => {
-              if (addedImage2) {
-                handleFileUpload([addedImage2], 'exploreAsGuest');
-                setAddedImage2(undefined);
-              }
-            }}
-            addedImage={addedImage2}
-            setAddedImage={setAddedImage2}
-          />
         </Box>
       </Box>
     </Box>
