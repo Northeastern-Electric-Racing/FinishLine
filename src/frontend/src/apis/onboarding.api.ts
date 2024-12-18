@@ -2,6 +2,7 @@ import { Checklist } from 'shared';
 import { apiUrls } from '../utils/urls';
 import axios from '../utils/axios';
 import { CheckListItem } from '../components/CheckList';
+import { ChecklistPayload } from '../hooks/onboarding.hook';
 
 /**
  * API call to fetch all the checklists
@@ -33,8 +34,8 @@ export const getUsersChecklists = () => {
 /*
 * API call to set checklist item
 */
-export const setChecklistItem = (payload: MilestonePayload, id: string) => {
-  return axios.post(apiUrls.milestoneEdit(id), {
+export const editChecklist = (payload: ChecklistPayload, id: string) => {
+  return axios.post(apiUrls.checklistEdit(id), {
     ...payload
   });
 };

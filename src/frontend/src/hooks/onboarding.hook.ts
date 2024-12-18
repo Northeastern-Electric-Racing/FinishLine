@@ -1,6 +1,17 @@
-import { useQuery } from 'react-query';
-import { Checklist } from 'shared';
-import { getAllChecklists, getGeneralChecklists, getUsersChecklists, downloadGoogleImage } from '../apis/onboarding.api';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { Checklist, Team, TeamType, User } from 'shared';
+import { getAllChecklists, getGeneralChecklists, getUsersChecklists, downloadGoogleImage, editChecklist } from '../apis/onboarding.api';
+
+export interface ChecklistPayload {
+  name: string;
+  teamType?: TeamType;
+  team?: Team;
+  descriptions: string[];
+  isOptional: boolean;
+  subtasks: Checklist[];
+  parentChecklist?: Checklist;
+  usersChecked: User[];
+}
 
 export const useAllChecklists = () => {
   return useQuery<Checklist[], Error>(['checklists'], async () => {
@@ -23,17 +34,17 @@ export const useUsersTeamTypeChecklists = () => {
   });
 };
 
-export const useEditMilestone = (id: string) => {
+export const useEditChecklist = (id: string) => {
   const queryClient = useQueryClient();
-  return useMutation<Milestone, Error, MilestonePayload>(
-    ['milestones', 'edit'],
+  return useMutation<Checklist, Error, ChecklistPayload>(
+    ['checklists', 'edit'],
     async (payload) => {
-      const { data } = await editMilestone(payload, id);
+      const { data } = await editChecklist(payload, id);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['milestones']);
+        queryClient.invalidateQueries(['checklists']);
       }
     }
   );
