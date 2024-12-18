@@ -8,8 +8,10 @@ ALTER TABLE "Project" ADD COLUMN     "organizationId" TEXT;
 CREATE TABLE "Announcement" (
     "announcementId" TEXT NOT NULL,
     "text" TEXT NOT NULL,
-    "dateCrated" TIMESTAMP(3) NOT NULL,
+    "dateCreated" TIMESTAMP(3) NOT NULL,
     "userCreatedId" TEXT NOT NULL,
+    "slackEventId" TEXT NOT NULL,
+    "slackChannelName" TEXT NOT NULL,
 
     CONSTRAINT "Announcement_pkey" PRIMARY KEY ("announcementId")
 );
