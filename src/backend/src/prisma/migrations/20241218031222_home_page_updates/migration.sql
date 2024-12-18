@@ -1,3 +1,9 @@
+-- AlterTable
+ALTER TABLE "Organization" ADD COLUMN     "logoImageId" TEXT;
+
+-- AlterTable
+ALTER TABLE "Project" ADD COLUMN     "organizationId" TEXT;
+
 -- CreateTable
 CREATE TABLE "Announcement" (
     "announcementId" TEXT NOT NULL,
@@ -13,6 +19,7 @@ CREATE TABLE "Notification" (
     "notificationId" TEXT NOT NULL,
     "text" TEXT NOT NULL,
     "iconName" TEXT NOT NULL,
+    "eventLink" TEXT,
 
     CONSTRAINT "Notification_pkey" PRIMARY KEY ("notificationId")
 );
@@ -40,6 +47,9 @@ CREATE UNIQUE INDEX "_userNotifications_AB_unique" ON "_userNotifications"("A", 
 
 -- CreateIndex
 CREATE INDEX "_userNotifications_B_index" ON "_userNotifications"("B");
+
+-- AddForeignKey
+ALTER TABLE "Project" ADD CONSTRAINT "Project_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Announcement" ADD CONSTRAINT "Announcement_userCreatedId_fkey" FOREIGN KEY ("userCreatedId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -202,13 +202,21 @@ export default class NotificationsService {
    * @param iconName icon that appears in the notification
    * @param userIds ids of users to send the notification to
    * @param organizationId
+   * @param eventLink link the notification will go to when clicked
    * @returns the created notification
    */
-  static async sendNotifcationToUsers(text: string, iconName: string, userIds: string[], organizationId: string) {
+  static async sendNotifcationToUsers(
+    text: string,
+    iconName: string,
+    userIds: string[],
+    organizationId: string,
+    eventLink?: string
+  ) {
     const createdNotification = await prisma.notification.create({
       data: {
         text,
-        iconName
+        iconName,
+        eventLink
       },
       ...getNotificationQueryArgs(organizationId)
     });
