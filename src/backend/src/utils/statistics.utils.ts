@@ -1,4 +1,4 @@
-import { Measure } from '@prisma/client';
+import { Measure, Prisma } from '@prisma/client';
 import { GraphData, wbsPipe, wbsNamePipe } from 'shared';
 import prisma from '../prisma/prisma';
 
@@ -14,39 +14,55 @@ export interface ReimbursementRequestDataParams extends CarSegmentedData {}
 
 const getProjectSegmentedWhereInput = (
   organizationId: string,
-  carIds: string[]
-):
-  | { where: { wbsElement: { organizationId: string; dateDeleted: null }; carId: { in: string[] } } }
-  | { where: { wbsElement: { organizationId: string; dateDeleted: null } } } => {
-  if (carIds.length > 0) {
-    return {
-      where: {
-        wbsElement: {
-          organizationId,
-          dateDeleted: null
-        },
-        carId: { in: carIds }
-      }
+  carIds: string[],
+  startDate: Date | null = null,
+  endDate: Date | null = null
+): {
+  where: {
+    wbsElement: { organizationId: string; dateDeleted: null; dateCreated?: { gte?: Date; lte?: Date } };
+    carId?: { in: string[] };
+  };
+} => {
+  const baseWhere: {
+    where: {
+      wbsElement: { organizationId: string; dateDeleted: null; dateCreated?: { gte?: Date; lte?: Date } };
+      carId?: { in: string[] };
     };
-  }
-
-  return {
+  } = Prisma.validator<Prisma.ProjectFindManyArgs>()({
     where: {
       wbsElement: {
         organizationId,
         dateDeleted: null
       }
     }
-  };
+  });
+
+  if (carIds.length > 0) {
+    baseWhere.where.carId = { in: carIds };
+  }
+
+  if (startDate) {
+    baseWhere.where.wbsElement.dateCreated = {
+      gte: startDate
+    };
+  }
+
+  if (endDate) {
+    baseWhere.where.wbsElement.dateCreated = { ...baseWhere.where.wbsElement.dateCreated, lte: endDate };
+  }
+
+  return baseWhere;
 };
 
 export const getGraphDataForProjectBudgetByProject = async (
   _measure: Measure,
   organizationId: string,
+  startDate: Date | null,
+  endDate: Date | null,
   params: ProjectDataParams
 ): Promise<GraphData[]> => {
   const projects = await prisma.project.findMany({
-    ...getProjectSegmentedWhereInput(organizationId, params.carIds),
+    ...getProjectSegmentedWhereInput(organizationId, params.carIds, startDate, endDate),
     include: {
       wbsElement: true
     }
@@ -65,6 +81,8 @@ export const getGraphDataForProjectBudgetByProject = async (
 export const getGraphDataForProjectBudgetByTeam = async (
   measure: Measure,
   organizationId: string,
+  startDate: Date | null,
+  endDate: Date | null,
   params: ProjectDataParams
 ): Promise<GraphData[]> => {
   const teams = await prisma.team.findMany({
@@ -74,7 +92,7 @@ export const getGraphDataForProjectBudgetByTeam = async (
     },
     include: {
       projects: {
-        ...getProjectSegmentedWhereInput(organizationId, params.carIds)
+        ...getProjectSegmentedWhereInput(organizationId, params.carIds, startDate, endDate)
       }
     }
   });
@@ -100,6 +118,8 @@ export const getGraphDataForProjectBudgetByTeam = async (
 export const getGraphDataForProjectBudgetByDivision = async (
   measure: Measure,
   organizationId: string,
+  startDate: Date | null,
+  endDate: Date | null,
   params: ProjectDataParams
 ): Promise<GraphData[]> => {
   const divisions = await prisma.team_Type.findMany({
@@ -113,7 +133,7 @@ export const getGraphDataForProjectBudgetByDivision = async (
         },
         include: {
           projects: {
-            ...getProjectSegmentedWhereInput(organizationId, params.carIds)
+            ...getProjectSegmentedWhereInput(organizationId, params.carIds, startDate, endDate)
           }
         }
       }
@@ -146,38 +166,61 @@ export const getGraphDataForProjectBudgetByDivision = async (
   return data;
 };
 
-const changeRequestProjectDataQueryArgs = {
-  include: {
-    wbsElement: {
-      include: {
-        changeRequests: true
-      }
-    },
-    workPackages: {
-      where: {
-        wbsElement: {
-          dateDeleted: null
+const changeRequestProjectDataQueryArgs = (startDate: Date | null, endDate: Date | null) => {
+  const baseWhere = Prisma.validator<Prisma.ProjectDefaultArgs>()({
+    include: {
+      wbsElement: {
+        include: {
+          changeRequests: { where: { dateSubmitted: {} } }
         }
       },
-      include: {
-        wbsElement: {
-          include: {
-            changeRequests: true
+      workPackages: {
+        where: {
+          wbsElement: {
+            dateDeleted: null
+          }
+        },
+        include: {
+          wbsElement: {
+            include: {
+              changeRequests: {
+                where: {
+                  dateSubmitted: {}
+                }
+              }
+            }
           }
         }
       }
     }
+  });
+
+  if (startDate) {
+    baseWhere.include.wbsElement.include.changeRequests.where.dateSubmitted = { gte: startDate };
+    baseWhere.include.workPackages.include.wbsElement.include.changeRequests.where.dateSubmitted = { gte: startDate };
   }
+
+  if (endDate) {
+    baseWhere.include.wbsElement.include.changeRequests.where.dateSubmitted = {
+      ...baseWhere.include.wbsElement.include.changeRequests.where.dateSubmitted,
+      lte: endDate
+    };
+    baseWhere.include.workPackages.include.wbsElement.include.changeRequests.where.dateSubmitted = { lte: endDate };
+  }
+
+  return baseWhere;
 };
 
 export const getGraphDataForChangeRequestsByProject = async (
   _measure: Measure,
   organizationId: string,
+  startDate: Date | null,
+  endDate: Date | null,
   params: ChangeRequestDataParams
 ): Promise<GraphData[]> => {
   const projects = await prisma.project.findMany({
     ...getProjectSegmentedWhereInput(organizationId, params.carIds),
-    ...changeRequestProjectDataQueryArgs
+    ...changeRequestProjectDataQueryArgs(startDate, endDate)
   });
 
   const data: GraphData[] = projects.map((project) => {
@@ -195,12 +238,17 @@ export const getGraphDataForChangeRequestsByProject = async (
   return data;
 };
 
-const changeRequestTeamQueryArgs = (organizationId: string, carIds: string[]) => {
+const changeRequestTeamQueryArgs = (
+  organizationId: string,
+  carIds: string[],
+  startDate: Date | null,
+  endDate: Date | null
+) => {
   return {
     include: {
       projects: {
         ...getProjectSegmentedWhereInput(organizationId, carIds),
-        ...changeRequestProjectDataQueryArgs
+        ...changeRequestProjectDataQueryArgs(startDate, endDate)
       }
     }
   };
@@ -209,11 +257,13 @@ const changeRequestTeamQueryArgs = (organizationId: string, carIds: string[]) =>
 export const getGraphDataForChangeRequestsByTeam = async (
   measure: Measure,
   organizationId: string,
+  startDate: Date | null,
+  endDate: Date | null,
   params: ChangeRequestDataParams
 ): Promise<GraphData[]> => {
   const teams = await prisma.team.findMany({
     where: { organizationId, dateArchived: null },
-    ...changeRequestTeamQueryArgs(organizationId, params.carIds)
+    ...changeRequestTeamQueryArgs(organizationId, params.carIds, startDate, endDate)
   });
 
   const data: GraphData[] = teams.map((team) => {
@@ -242,6 +292,8 @@ export const getGraphDataForChangeRequestsByTeam = async (
 export const getGraphDataForChangeRequestsByDivision = async (
   measure: Measure,
   organizationId: string,
+  startDate: Date | null,
+  endDate: Date | null,
   params: ChangeRequestDataParams
 ): Promise<GraphData[]> => {
   const divisions = await prisma.team_Type.findMany({
@@ -251,7 +303,7 @@ export const getGraphDataForChangeRequestsByDivision = async (
         where: {
           dateArchived: null
         },
-        ...changeRequestTeamQueryArgs(organizationId, params.carIds)
+        ...changeRequestTeamQueryArgs(organizationId, params.carIds, startDate, endDate)
       }
     }
   });
@@ -286,32 +338,55 @@ export const getGraphDataForChangeRequestsByDivision = async (
   return data;
 };
 
-const reimbursementProductProjectDataQueryArgs = {
-  include: {
-    wbsElement: {
-      include: {
-        reimbursementProductReasons: {
-          include: {
-            reimbursementProduct: {
-              where: {
-                dateDeleted: null
+const reimbursementProductProjectDataQueryArgs = (startDate: Date | null, endDate: Date | null) => {
+  const baseWhere = Prisma.validator<Prisma.ProjectDefaultArgs>()({
+    include: {
+      wbsElement: {
+        include: {
+          reimbursementProductReasons: {
+            include: {
+              reimbursementProduct: {
+                where: {
+                  dateDeleted: null,
+                  reimbursementRequest: {
+                    dateCreated: {}
+                  }
+                }
               }
             }
           }
         }
       }
     }
+  });
+
+  if (startDate) {
+    baseWhere.include.wbsElement.include.reimbursementProductReasons.include.reimbursementProduct.where.reimbursementRequest.dateCreated =
+      { gte: startDate };
   }
+
+  if (endDate) {
+    baseWhere.include.wbsElement.include.reimbursementProductReasons.include.reimbursementProduct.where.reimbursementRequest.dateCreated =
+      {
+        ...baseWhere.include.wbsElement.include.reimbursementProductReasons.include.reimbursementProduct.where
+          .reimbursementRequest.dateCreated,
+        lte: endDate
+      };
+  }
+
+  return baseWhere;
 };
 
 export const getGraphDataForReimbursementRequestsByProject = async (
   measure: Measure,
   organizationId: string,
+  startDate: Date | null,
+  endDate: Date | null,
   params: ReimbursementRequestDataParams
 ) => {
   const projects = await prisma.project.findMany({
     ...getProjectSegmentedWhereInput(organizationId, params.carIds),
-    ...reimbursementProductProjectDataQueryArgs
+    ...reimbursementProductProjectDataQueryArgs(startDate, endDate)
   });
 
   const data: GraphData[] = projects.map((project) => {
@@ -332,20 +407,27 @@ export const getGraphDataForReimbursementRequestsByProject = async (
   return data;
 };
 
-const reimbursementProductTeamDataQueryArgs = (organizationId: string, carIds: string[]) => {
-  return {
+const reimbursementProductTeamDataQueryArgs = (
+  organizationId: string,
+  carIds: string[],
+  startDate: Date | null,
+  endDate: Date | null
+) => {
+  return Prisma.validator<Prisma.TeamDefaultArgs>()({
     include: {
       projects: {
         ...getProjectSegmentedWhereInput(organizationId, carIds),
-        ...reimbursementProductProjectDataQueryArgs
+        ...reimbursementProductProjectDataQueryArgs(startDate, endDate)
       }
     }
-  };
+  });
 };
 
 export const getGraphDataForReimbursementRequestsByTeam = async (
   measure: Measure,
   organizationId: string,
+  startDate: Date | null,
+  endDate: Date | null,
   params: ReimbursementRequestDataParams
 ) => {
   const teams = await prisma.team.findMany({
@@ -353,7 +435,7 @@ export const getGraphDataForReimbursementRequestsByTeam = async (
       dateArchived: null,
       organizationId
     },
-    ...reimbursementProductTeamDataQueryArgs(organizationId, params.carIds)
+    ...reimbursementProductTeamDataQueryArgs(organizationId, params.carIds, startDate, endDate)
   });
 
   const data: GraphData[] = teams.map((team) => {
@@ -382,6 +464,8 @@ export const getGraphDataForReimbursementRequestsByTeam = async (
 export const getGraphDataForReimbursementRequestsByDivision = async (
   measure: Measure,
   organizationId: string,
+  startDate: Date | null,
+  endDate: Date | null,
   params: ReimbursementRequestDataParams
 ) => {
   const divisions = await prisma.team_Type.findMany({
@@ -394,7 +478,7 @@ export const getGraphDataForReimbursementRequestsByDivision = async (
         where: {
           dateArchived: null
         },
-        ...reimbursementProductTeamDataQueryArgs(organizationId, params.carIds)
+        ...reimbursementProductTeamDataQueryArgs(organizationId, params.carIds, startDate, endDate)
       }
     }
   });
