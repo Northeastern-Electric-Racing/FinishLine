@@ -28,7 +28,7 @@ const NotificationAlert: React.FC<NotificationAlertProps> = ({ user }) => {
 
   const onClick = async (notification: Notification) => {
     if (!!notification.eventLink) {
-      await removeNotification(notification);
+      await removeNotificationWrapper(notification);
       history.push(notification.eventLink);
     }
   };
