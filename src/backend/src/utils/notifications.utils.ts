@@ -38,6 +38,14 @@ export const endOfDayTomorrow = () => {
   return endOfDay;
 };
 
+/**
+ * Sends a finishline notification that a design review was scheduled
+ * @param designReview
+ * @param members
+ * @param submitter
+ * @param workPackageName
+ * @param organizationId
+ */
 export const sendHomeDrNotification = async (
   designReview: Design_Review,
   members: User[],
@@ -57,6 +65,13 @@ export const sendHomeDrNotification = async (
   );
 };
 
+/**
+ * Sends a finishline notification that a change request was reviewed
+ * @param changeRequest
+ * @param submitter
+ * @param accepted
+ * @param organizationId
+ */
 export const sendHomeCrReviewedNotification = async (
   changeRequest: Change_Request,
   submitter: User,
@@ -77,6 +92,12 @@ export const sendHomeCrReviewedNotification = async (
   );
 };
 
+/**
+ * Sends a finishline notification to all requested reviewers of a change request
+ * @param changeRequest
+ * @param newReviewers
+ * @param organizationId
+ */
 export const sendHomeCrRequestReviewNotification = async (
   changeRequest: Change_Request,
   newReviewers: User[],
