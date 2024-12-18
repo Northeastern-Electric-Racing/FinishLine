@@ -9,6 +9,14 @@ interface OrganizationProvider {
   selectOrganization: (organizationId: string) => void;
 }
 
+export interface UpdateContactsPayload {
+  contacts: { userId: string; title: string }[];
+}
+
+export interface OnboardingTextPayload {
+  onboardingText: string;
+}
+
 export const useCurrentOrganization = () => {
   return useQuery<Organization, Error>(['organizations'], async () => {
     const { data } = await getCurrentOrganization();
@@ -53,9 +61,21 @@ export const useOrganization = () => {
   return context;
 };
 
-export interface OnboardingTextPayload {
-  onboardingText: string;
-}
+export const useUpdateOrganizationContacts = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Organization, Error, UpdateContactsPayload>(
+    ['organizations'],
+    async (payload: UpdateContactsPayload) => {
+      const { data } = await updateOrganizationContacts(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['organizations']);
+      }
+    }
+  );
+};
 
 export const useSetOnboardingText = () => {
   const queryClient = useQueryClient();

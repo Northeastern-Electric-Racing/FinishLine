@@ -1,7 +1,7 @@
 import axios from '../utils/axios';
 import { Organization } from 'shared';
 import { apiUrls } from '../utils/urls';
-import { OnboardingTextPayload } from '../hooks/organizations.hooks';
+import { OnboardingTextPayload, UpdateContactsPayload } from '../hooks/organizations.hooks';
 
 /**
  * Create a design review
@@ -20,6 +20,16 @@ export const setOrganizationImages = (images: File[]) => {
   formData.append('exploreAsGuestImage', images[1]);
 
   return axios.post<{ message: string }>(apiUrls.organizationsSetImages(), formData, {});
+};
+
+/**
+ * Sets the contacts for an organization
+ * @param contacts all the contact information that is being set
+ */
+export const updateOrganizationContacts = async (payload: UpdateContactsPayload) => {
+  return axios.post<Organization>(apiUrls.organizationsUpdateContacts(), {
+    ...payload
+  });
 };
 
 /**
