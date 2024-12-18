@@ -13,6 +13,7 @@ CREATE TABLE "Notification" (
     "notificationId" TEXT NOT NULL,
     "text" TEXT NOT NULL,
     "iconName" TEXT NOT NULL,
+    "eventLink" TEXT,
 
     CONSTRAINT "Notification_pkey" PRIMARY KEY ("notificationId")
 );

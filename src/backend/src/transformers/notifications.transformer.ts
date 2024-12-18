@@ -6,7 +6,8 @@ const notificationTransformer = (notification: Prisma.NotificationGetPayload<Not
   return {
     notificationId: notification.notificationId,
     text: notification.text,
-    iconName: notification.iconName
+    iconName: notification.iconName,
+    eventLink: notification.eventLink ?? undefined
   };
 };
 

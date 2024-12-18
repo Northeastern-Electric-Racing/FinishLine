@@ -46,7 +46,7 @@ import {
 import { ChangeRequestQueryArgs, getChangeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
 import proposedSolutionTransformer from '../transformers/proposed-solutions.transformer';
 import { getProposedSolutionQueryArgs } from '../prisma-query-args/proposed-solutions.query-args';
-import NotificationsService from './notifications.services';
+import { sendHomeCrRequestReviewNotification, sendHomeCrReviewedNotification } from '../utils/notifications.utils';
 
 export default class ChangeRequestsService {
   /**
@@ -151,15 +151,11 @@ export default class ChangeRequestsService {
     // send a notification to the submitter that their change request has been reviewed
     await sendCRSubmitterReviewedNotification(updated);
 
+    await sendHomeCrReviewedNotification(foundCR, updated.submitter, accepted, organization.organizationId);
+
     // send a reply to a CR's notifications of its updated status
     await sendSlackCRStatusToThread(updated.notificationSlackThreads, foundCR.crId, foundCR.identifier, accepted);
 
-    await NotificationsService.sendNotifcationToUsers(
-      `CR #${updated.identifier} has been ${accepted ? 'approved!' : 'denied.'}`,
-      accepted ? 'check_circle' : 'cancel',
-      [updated.submitter.userId],
-      organization.organizationId
-    );
     return updated.crId;
   }
 
@@ -1086,11 +1082,6 @@ export default class ChangeRequestsService {
     // send slack message to CR reviewers
     await sendSlackRequestedReviewNotification(newReviewers, changeRequestTransformer(foundCR));
 
-    await NotificationsService.sendNotifcationToUsers(
-      `Your review has been requested on CR #${foundCR.identifier}`,
-      'edit_note',
-      newReviewers.map((reviewer) => reviewer.userId),
-      organization.organizationId
-    );
+    await sendHomeCrRequestReviewNotification(foundCR, newReviewers, organization.organizationId);
   }
 }

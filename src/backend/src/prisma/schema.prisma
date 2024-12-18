@@ -941,8 +941,9 @@ model Announcement {
 }
 
 model Notification {
-  notificationId String @id @default(uuid())
+  notificationId String  @id @default(uuid())
   text           String
   iconName       String
-  users          User[] @relation("userNotifications")
+  users          User[]  @relation("userNotifications")
+  eventLink      String?
 }

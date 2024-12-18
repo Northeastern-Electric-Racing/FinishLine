@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { Notification, User } from 'shared';
 import NotificationCard from './NotificationCard';
 import { useRemoveUserNotification, useUserNotifications } from '../hooks/users.hooks';
+import { useHistory } from 'react-router-dom';
+import { routes } from '../utils/routes';
 
 interface NotificationAlertProps {
   user: User;
@@ -12,6 +14,7 @@ const NotificationAlert: React.FC<NotificationAlertProps> = ({ user }) => {
   const { data: notifications, isLoading: notificationsIsLoading } = useUserNotifications(user.userId);
   const { mutateAsync: removeNotification, isLoading: removeIsLoading } = useRemoveUserNotification(user.userId);
   const [currentNotification, setCurrentNotification] = useState<Notification>();
+  const history = useHistory();
 
   useEffect(() => {
     if (notifications && notifications.length > 0) {
@@ -22,6 +25,13 @@ const NotificationAlert: React.FC<NotificationAlertProps> = ({ user }) => {
   const removeNotificationWrapper = async (notification: Notification) => {
     setCurrentNotification(undefined);
     await removeNotification(notification);
+  };
+
+  const onClick = async (notification: Notification) => {
+    if (!!notification.eventLink) {
+      await removeNotification(notification);
+      history.push(notification.eventLink);
+    }
   };
 
   return (
@@ -35,7 +45,11 @@ const NotificationAlert: React.FC<NotificationAlertProps> = ({ user }) => {
       }}
     >
       {!removeIsLoading && !notificationsIsLoading && currentNotification && (
-        <NotificationCard notification={currentNotification} removeNotification={removeNotificationWrapper} />
+        <NotificationCard
+          notification={currentNotification}
+          removeNotification={removeNotificationWrapper}
+          onClick={onClick}
+        />
       )}
     </Box>
   );
