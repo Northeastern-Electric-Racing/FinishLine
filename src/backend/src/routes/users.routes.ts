@@ -55,5 +55,11 @@ userRouter.post(
   UsersController.getManyUserTasks
 );
 userRouter.get('/:userId/notifications', UsersController.getUserUnreadNotifications);
+userRouter.get('/:userId/announcements', UsersController.getUserUnreadAnnouncements);
+userRouter.post(
+  '/:userId/notifications/remove',
+  nonEmptyString(body('notificationId')),
+  UsersController.removeUserNotification
+);
 
 export default userRouter;

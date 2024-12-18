@@ -1,24 +1,38 @@
-import { UserWithScheduleSettings } from 'shared';
 import UsersService from './users.services';
-import { WebClient } from '@slack/web-api';
 import { getChannelName, getUserName, getUsersInChannel } from '../integrations/slack';
-import { UserWithId } from '../utils/teams.utils';
-import { UserWithSecureSettings, UserWithSettings } from '../utils/auth.utils';
 import { User_Settings } from '@prisma/client';
-import NotificationsService from './notifications.services';
-
-const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
+import AnnouncementService from './announcement.service';
+import { Announcement } from 'shared';
 
 export interface SlackMessageEvent {
-  type: string;
+  type: 'message';
   subtype?: string;
   channel: string;
-  user: string;
-  text: string;
-  ts: string;
   event_ts: string;
   channel_type: string;
-  blocks: any;
+}
+
+export interface SlackMessage extends SlackMessageEvent {
+  user: string;
+  type: 'message';
+  client_msg_id: string;
+  text: string;
+  blocks: {
+    type: string;
+    block_id: string;
+    elements: any[];
+  }[];
+}
+
+export interface SlackDeletedMessage extends SlackMessageEvent {
+  subtype: 'message_deleted';
+  previous_message: SlackMessage;
+}
+
+export interface SlackUpdatedMessage extends SlackMessageEvent {
+  subtype: 'message_changed';
+  message: SlackMessage;
+  previous_message: SlackMessage;
 }
 
 export interface SlackRichTextBlock {
@@ -65,11 +79,11 @@ export default class slackServices {
       case 'text':
         return block.text ?? '';
       case 'user':
-        let userName = block.user_id;
+        let userName: string = block.user_id ?? '';
         try {
-          userName = await getUserName(block.user_id ?? '');
+          userName = (await getUserName(block.user_id ?? '')) ?? `Unknown User:${block.user_id}`;
         } catch (error) {
-          userName = `ISSUE PARSING USER:${block.user_id}`;
+          userName = `Unknown_User:${block.user_id}`;
         }
         return '@' + userName;
       case 'usergroup':
@@ -107,9 +121,35 @@ export default class slackServices {
     }
   }
 
-  static async processMessageSent(event: SlackMessageEvent) {
+  static async processMessageSent(event: SlackMessageEvent, organizationId: string): Promise<Announcement | undefined> {
+    const slackChannelName = await getChannelName(event.channel);
+    const dateCreated = new Date(Number(event.event_ts));
+
+    let eventMessage: SlackMessage;
+
+    if (event.subtype) {
+      switch (event.subtype) {
+        case 'message_deleted':
+          eventMessage = (event as SlackDeletedMessage).previous_message;
+          try {
+            return AnnouncementService.DeleteAnnouncement(eventMessage.client_msg_id, organizationId);
+          } catch (ignored) {
+            return;
+          }
+        case 'message_changed':
+          eventMessage = (event as SlackUpdatedMessage).message;
+          break;
+        default:
+          //other events that do not effect announcements
+          return;
+      }
+    } else {
+      eventMessage = event as SlackMessage;
+    }
+
     let messageText = '';
     let userIdsToNotify: string[] = [];
+
     const users = await UsersService.getAllUsers();
     const userSettings = await Promise.all(
       users.map((user) => {
@@ -117,22 +157,56 @@ export default class slackServices {
       })
     );
 
-    const richTextBlocks = event.blocks?.filter((eventBlock: any) => eventBlock.type === 'rich_text');
+    let userName: string = '';
+    try {
+      userName = (await getUserName(eventMessage.user)) ?? '';
+    } catch (ignored) {}
+
+    if (!userName) {
+      const userIdList = userSettings
+        .filter((userSetting) => userSetting.slackId === eventMessage.user)
+        .map((userSettings) => userSettings.userId);
+      if (userIdList.length !== 0) {
+        userName = users.find((user) => user.userId === userIdList[0])?.firstName ?? 'Unknown User:' + eventMessage.user;
+      } else {
+        userName = 'Unknown_User:' + eventMessage.user;
+      }
+    }
+
+    const richTextBlocks = eventMessage.blocks?.filter((eventBlock: any) => eventBlock.type === 'rich_text');
 
     if (richTextBlocks && richTextBlocks.length === 1) {
       for (const element of richTextBlocks[0].elements[0].elements) {
         messageText += await slackServices.blockToString(element);
-        userIdsToNotify = userIdsToNotify.concat(await slackServices.blockToMentionedUsers(element, userSettings, ''));
+        userIdsToNotify = userIdsToNotify.concat(
+          await slackServices.blockToMentionedUsers(element, userSettings, event.channel)
+        );
       }
+    } else {
+      return;
     }
 
-    // if (event.subtype) {
-    //   switch (event.subtype) {
-    //     case '':
-    //   }
-    // }
-
-    // console.log(event.blocks.elements);
-    console.log(event.type === 'message');
+    if (event.subtype === 'message_changed') {
+      try {
+        return AnnouncementService.UpdateAnnouncement(
+          messageText,
+          userIdsToNotify,
+          dateCreated,
+          userName,
+          eventMessage.client_msg_id,
+          slackChannelName,
+          organizationId
+        );
+      } catch (ignored) {}
+    }
+    return AnnouncementService.createAnnouncement(
+      messageText,
+      userIdsToNotify,
+      dateCreated,
+      userName,
+      eventMessage.client_msg_id,
+      slackChannelName,
+      organizationId
+    );
   }
 }

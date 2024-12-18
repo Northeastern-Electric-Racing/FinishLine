@@ -40,6 +40,8 @@ import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args';
 import taskTransformer from '../transformers/tasks.transformer';
 import { getNotificationQueryArgs } from '../prisma-query-args/notifications.query-args';
 import notificationTransformer from '../transformers/notifications.transformer';
+import { getAnnouncementQueryArgs } from '../prisma-query-args/announcements.query.args';
+import announcementTransformer from '../transformers/announcements.transformer';
 
 export default class UsersService {
   /**
@@ -569,6 +571,12 @@ export default class UsersService {
     return resolvedTasks.flat();
   }
 
+  /**
+   * Gets all of a user's unread notifications
+   * @param userId id of user to get unread notifications from
+   * @param organization the user's orgainzation
+   * @returns the unread notifications of the user
+   */
   static async getUserUnreadNotifications(userId: string, organization: Organization) {
     const requestedUser = await prisma.user.findUnique({
       where: { userId },
@@ -577,5 +585,50 @@ export default class UsersService {
     if (!requestedUser) throw new NotFoundException('User', userId);
 
     return requestedUser.unreadNotifications.map(notificationTransformer);
+  }
+
+  /**
+   * Gets all of a user's unread announcements
+   * @param userId id of user to get unread announcements from
+   * @param organization the user's orgainzation
+   * @returns the unread announcements of the user
+   */
+  static async getUserUnreadAnnouncements(userId: string, organization: Organization) {
+    const requestedUser = await prisma.user.findUnique({
+      where: { userId },
+      include: { unreadAnnouncements: getAnnouncementQueryArgs(organization.organizationId) }
+    });
+    if (!requestedUser) throw new NotFoundException('User', userId);
+
+    return requestedUser.unreadAnnouncements.map(announcementTransformer);
+  }
+
+  /**
+   * Removes a notification from the user's unread notifications
+   * @param userId id of the user to remove notification from
+   * @param notificationId id of the notification to remove
+   * @param organization the user's organization
+   * @returns the user's updated unread notifications
+   */
+  static async removeUserNotification(userId: string, notificationId: string, organization: Organization) {
+    const requestedUser = await prisma.user.findUnique({
+      where: { userId }
+    });
+
+    if (!requestedUser) throw new NotFoundException('User', userId);
+
+    const updatedUser = await prisma.user.update({
+      where: { userId },
+      data: {
+        unreadNotifications: {
+          disconnect: {
+            notificationId
+          }
+        }
+      },
+      include: { unreadNotifications: getNotificationQueryArgs(organization.organizationId) }
+    });
+
+    return updatedUser.unreadNotifications.map(notificationTransformer);
   }
 }
