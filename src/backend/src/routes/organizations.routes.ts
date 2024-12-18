@@ -19,8 +19,6 @@ organizationRouter.post(
   OrganizationsController.setImages
 );
 
-organizationRouter.get('/images', OrganizationsController.getOrganizationImages);
-
 organizationRouter.post(
   '/application-link/update',
   nonEmptyString(body('applicationLink')),

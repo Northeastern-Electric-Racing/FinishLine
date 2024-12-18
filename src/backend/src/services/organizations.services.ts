@@ -142,27 +142,6 @@ export default class OrganizationsService {
   }
 
   /**
-   * Gets all organization Images for the given organization Id
-   * @param organizationId organization Id of the milestone
-   * @returns all the milestones from the given organization
-   */
-
-  static async getOrganizationImages(organizationId: string) {
-    const organization = await prisma.organization.findUnique({
-      where: { organizationId }
-    });
-
-    if (!organization) {
-      throw new NotFoundException('Organization', organizationId);
-    }
-
-    return {
-      applyInterestImage: organization.applyInterestImageId,
-      exploreAsGuestImage: organization.exploreAsGuestImageId
-    };
-  }
-
-  /**
    * Updates the application link for the given organization Id
    * @param submitter the user who is setting the links
    * @param organizationId organization Id of the organization
