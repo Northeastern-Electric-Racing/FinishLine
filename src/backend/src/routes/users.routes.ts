@@ -61,5 +61,10 @@ userRouter.post(
   nonEmptyString(body('notificationId')),
   UsersController.removeUserNotification
 );
+userRouter.post(
+  '/:userId/announcements/remove',
+  nonEmptyString(body('announcementId')),
+  UsersController.removeUserAnnouncement
+);
 
 export default userRouter;

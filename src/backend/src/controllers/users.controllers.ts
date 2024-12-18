@@ -228,4 +228,17 @@ export default class UsersController {
       next(error);
     }
   }
+
+  static async removeUserAnnouncement(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.params;
+      const { announcementId } = req.body;
+      const { organization } = req;
+
+      const unreadAnnouncements = await UsersService.removeUserAnnouncement(userId, announcementId, organization);
+      res.status(200).json(unreadAnnouncements);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

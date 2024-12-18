@@ -631,4 +631,33 @@ export default class UsersService {
 
     return updatedUser.unreadNotifications.map(notificationTransformer);
   }
+
+  /**
+   * Removes a announcement from the user's unread announcement
+   * @param userId id of the user to remove announcement from
+   * @param announcementId id of the announcement to remove
+   * @param organization the user's organization
+   * @returns the user's updated unread announcement
+   */
+  static async removeUserAnnouncement(userId: string, announcementId: string, organization: Organization) {
+    const requestedUser = await prisma.user.findUnique({
+      where: { userId }
+    });
+
+    if (!requestedUser) throw new NotFoundException('User', userId);
+
+    const updatedUser = await prisma.user.update({
+      where: { userId },
+      data: {
+        unreadAnnouncements: {
+          disconnect: {
+            announcementId
+          }
+        }
+      },
+      include: { unreadAnnouncements: getAnnouncementQueryArgs(organization.organizationId) }
+    });
+
+    return updatedUser.unreadAnnouncements.map(announcementTransformer);
+  }
 }
