@@ -40,11 +40,11 @@ export const endOfDayTomorrow = () => {
 
 /**
  * Sends a finishline notification that a design review was scheduled
- * @param designReview
- * @param members
- * @param submitter
- * @param workPackageName
- * @param organizationId
+ * @param designReview dr that was created
+ * @param members optional and required members of the dr
+ * @param submitter the user who created the dr
+ * @param workPackageName the name of the work package associated witht the dr
+ * @param organizationId  id of the organization of the dr
  */
 export const sendHomeDrNotification = async (
   designReview: Design_Review,
@@ -67,10 +67,10 @@ export const sendHomeDrNotification = async (
 
 /**
  * Sends a finishline notification that a change request was reviewed
- * @param changeRequest
- * @param submitter
- * @param accepted
- * @param organizationId
+ * @param changeRequest cr that was requested review
+ * @param submitter the user who submitted the cr
+ * @param accepted true if the cr changes were accepted, false if denied
+ * @param organizationId id of the organization of the cr
  */
 export const sendHomeCrReviewedNotification = async (
   changeRequest: Change_Request,
@@ -94,20 +94,20 @@ export const sendHomeCrReviewedNotification = async (
 
 /**
  * Sends a finishline notification to all requested reviewers of a change request
- * @param changeRequest
- * @param newReviewers
- * @param organizationId
+ * @param changeRequest cr that was requested review
+ * @param reviewers user's reviewing the cr
+ * @param organizationId id of the organization of the cr
  */
 export const sendHomeCrRequestReviewNotification = async (
   changeRequest: Change_Request,
-  newReviewers: User[],
+  reviewers: User[],
   organizationId: string
 ) => {
   const changeRequestLink = `/change-requests/${changeRequest.crId}`;
   await NotificationsService.sendNotifcationToUsers(
     `Your review has been requested on CR #${changeRequest.identifier}`,
     'edit_note',
-    newReviewers.map((reviewer) => reviewer.userId),
+    reviewers.map((reviewer) => reviewer.userId),
     organizationId,
     changeRequestLink
   );
