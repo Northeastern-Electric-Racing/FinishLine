@@ -17,8 +17,8 @@ const AdminToolsOnboardingConfig: React.FC = () => {
         }}
       >
         <Grid container display={'flex'}>
-          <Grid item xs={12} md={7}>
-            <ChecklistSection />
+          <Grid item xs={12} md={7} mt={2}>
+            <ChecklistSection isAdmin={true} />
           </Grid>
           <OnboardingInfoSection />
         </Grid>

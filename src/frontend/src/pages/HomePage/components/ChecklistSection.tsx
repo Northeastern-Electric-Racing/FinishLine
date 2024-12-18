@@ -5,7 +5,11 @@ import ErrorPage from '../../ErrorPage';
 import Checklist from './Checklist';
 import { Checklist as ChecklistType } from 'shared';
 
-const ChecklistSection: React.FC = () => {
+interface ChecklistSectionProps {
+  isAdmin?: boolean;
+}
+
+const ChecklistSection: React.FC<ChecklistSectionProps> = ({ isAdmin }) => {
   const {
     data: generalChecklists,
     isError: generalChecklistsIsError,
@@ -64,7 +68,7 @@ const ChecklistSection: React.FC = () => {
       <Grid container>
         {allChecklists.map(({ checklistName, checklists }) => (
           <Grid item xs={12} padding={2}>
-            <Checklist parentChecklists={checklists} checklistName={checklistName} />
+            <Checklist parentChecklists={checklists} checklistName={checklistName} isAdmin={isAdmin} />
           </Grid>
         ))}
       </Grid>
