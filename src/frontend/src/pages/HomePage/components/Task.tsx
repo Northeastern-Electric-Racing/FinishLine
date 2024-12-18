@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { KeyboardArrowRight, KeyboardArrowDown, Delete } from '@mui/icons-material';
 import SubtaskSection from './SubtaskSection';
 import EditIcon from '@mui/icons-material/Edit';
-import { Checklist, isAdmin } from 'shared';
+import { Checklist } from 'shared';
 import { GridDragIcon } from '@mui/x-data-grid';
 
 interface SubtaskProps {
@@ -27,7 +27,7 @@ const Task: React.FC<SubtaskProps> = ({ subtasks, parentTask, isAdmin }) => {
           borderRadius: 0,
           padding: 1.5,
           alignContent: 'center',
-          position: 'relative',
+          position: 'relative'
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center' }}>

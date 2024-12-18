@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Checklist as ChecklistType, isAdmin } from 'shared';
+import { Checklist as ChecklistType } from 'shared';
 import { Typography, Grid, Box, IconButton, useTheme, Button } from '@mui/material';
 import { KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
 import Task from './Task';
 import AddIcon from '@mui/icons-material/Add';
-import { useCurrentUser } from '../../../hooks/users.hooks';
 
 interface ChecklistProps {
   parentChecklists: ChecklistType[];
@@ -14,7 +13,6 @@ interface ChecklistProps {
 
 const Checklist: React.FC<ChecklistProps> = ({ parentChecklists, checklistName, isAdmin }) => {
   const theme = useTheme();
-  const currentUser = useCurrentUser();
   const [showTasks, setShowTasks] = useState(false);
 
   const toggleShowTasks = () => {
