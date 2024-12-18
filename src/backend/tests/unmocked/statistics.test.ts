@@ -41,7 +41,7 @@ describe('Statistics Tests', () => {
       }
     }
   };
-  let graph: Graph
+  let graph: Graph;
 
   let expectedCreatedGraph: any;
 
@@ -171,8 +171,6 @@ describe('Statistics Tests', () => {
   });
 
   describe('Edit Graph', () => {
-    
-
     it('Edit graph correctly updates startDate, endDate, title, and graphType', async () => {
       const updatedStartDate = new Date('12/13/2024');
       const updatedEndDate = new Date(updatedStartDate.getTime() + 10000);
@@ -240,7 +238,7 @@ describe('Statistics Tests', () => {
 
     it('Edit graph fails if graph is deleted', async () => {
       // Todo - Implement deleting graphs before testing for this
-    })
+    });
 
     it('Throws if end date is before start date', async () => {
       await expect(
@@ -256,7 +254,7 @@ describe('Statistics Tests', () => {
             graphGen,
             organization
           )
-      ).rejects.toThrow(new HttpException(400, 'End date must be after start date'))
+      ).rejects.toThrow(new HttpException(400, 'End date must be after start date'));
     });
   });
 });
