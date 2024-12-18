@@ -260,10 +260,10 @@ export const GraphFormView: React.FC<GraphFormViewProps> = ({ control, errors, g
                   id="permissionsSelector"
                   options={Object.values(SpecialPermission).map(specialPermissionToAutoCompleteValue)}
                   value={value.map(specialPermissionToAutoCompleteValue)}
-                  onChange={(_event, newValue) => onChange(newValue)}
+                  onChange={(_event, newValue) => onChange(newValue.map((autoCompleteValue) => autoCompleteValue.id))}
                   getOptionLabel={(option) => option.label}
                   renderInput={(params) => (
-                    <TextField {...params} variant="standard" placeholder="Select Cars (Leave Blank For All Cars)" />
+                    <TextField {...params} variant="standard" placeholder="Select Any Additional Permissions" />
                   )}
                 />
               );

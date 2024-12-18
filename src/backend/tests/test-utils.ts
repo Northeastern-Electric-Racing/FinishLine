@@ -486,7 +486,7 @@ export const createTestTeamType = async (organizationId?: string) => {
       name: 'aTeam',
       description: 'aDescription',
       iconName: 'gear',
-      organizationId: orgId!,
+      organizationId: orgId!
     }
   });
 };
