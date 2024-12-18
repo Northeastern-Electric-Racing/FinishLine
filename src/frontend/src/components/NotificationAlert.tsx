@@ -4,7 +4,6 @@ import { Notification, User } from 'shared';
 import NotificationCard from './NotificationCard';
 import { useRemoveUserNotification, useUserNotifications } from '../hooks/users.hooks';
 import { useHistory } from 'react-router-dom';
-import { routes } from '../utils/routes';
 
 interface NotificationAlertProps {
   user: User;
