@@ -23,6 +23,22 @@ export const useUsersTeamTypeChecklists = () => {
   });
 };
 
+export const useEditMilestone = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Milestone, Error, MilestonePayload>(
+    ['milestones', 'edit'],
+    async (payload) => {
+      const { data } = await editMilestone(payload, id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['milestones']);
+      }
+    }
+  );
+};
+
 export const useGetImageUrl = (imageFileId: string | null) => {
   return useQuery<string, Error>(
     ['image', imageFileId],

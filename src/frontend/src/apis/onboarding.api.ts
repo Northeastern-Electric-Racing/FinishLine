@@ -1,6 +1,7 @@
 import { Checklist } from 'shared';
 import { apiUrls } from '../utils/urls';
 import axios from '../utils/axios';
+import { CheckListItem } from '../components/CheckList';
 
 /**
  * API call to fetch all the checklists
@@ -29,6 +30,14 @@ export const getUsersChecklists = () => {
   });
 };
 
+/*
+* API call to set checklist item
+*/
+export const setChecklistItem = (payload: MilestonePayload, id: string) => {
+  return axios.post(apiUrls.milestoneEdit(id), {
+    ...payload
+  });
+};
 /**
  * API Call to download a google image
  * @param fileId file id to be downloaded
