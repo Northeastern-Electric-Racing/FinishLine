@@ -23,4 +23,19 @@ statisticsRouter.post(
   StatisticsController.createGraph
 );
 
+statisticsRouter.post(
+  '/graph/:graphId/edit',
+  // todo - verify user is a user
+  
+  isDate(body('startDate')),
+  isDate(body('endDate')),
+  nonEmptyString(body('title')),
+  isGraphType(body('graphType')),
+  isMeasure(body('measure')),
+  body('graphCollectionId').optional().isString(),
+  validateGraphGen(),
+  validateInputs,
+  StatisticsController.editGraph
+);
+
 export default statisticsRouter;

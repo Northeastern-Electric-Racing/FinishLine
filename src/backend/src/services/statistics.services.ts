@@ -159,8 +159,12 @@ export default class StatisticsService {
     if (graph.userCreatedId !== userEditing.userId) {
       throw new AccessDeniedException('Only the creator of an graph can update it');
     }
-
-    if (!isUnderWordCount(title, 20)) throw new HttpException(400, 'Title must be less than 20 words');
+    if (startDate.getTime() >= endDate.getTime()) {
+      throw new HttpException(400, 'End date must be after start date');
+    }
+    if (!isUnderWordCount(title, 20)) {
+      throw new HttpException(400, 'Title must be less than 20 words');
+    }
 
     const updatedGraph = await prisma.graph.update({
       where: {
