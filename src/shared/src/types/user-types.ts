@@ -45,6 +45,7 @@ export interface Organization {
   description: string;
   applicationLink: string;
   onboardingText?: string;
+  contacts: Contact[];
 }
 
 /**
@@ -120,4 +121,9 @@ export interface SetUserScheduleSettingsArgs {
 
 export interface SetUserScheduleSettingsPayload extends SetUserScheduleSettingsArgs {
   drScheduleSettingsId: string;
+}
+
+export interface Contact {
+  user: User;
+  title: string;
 }

@@ -1,6 +1,6 @@
 import { useQuery } from 'react-query';
 import { Checklist } from 'shared';
-import { getAllChecklists, getGeneralChecklists, getUsersChecklists } from '../apis/onboarding.api';
+import { getAllChecklists, getGeneralChecklists, getUsersChecklists, downloadGoogleImage } from '../apis/onboarding.api';
 
 export const useAllChecklists = () => {
   return useQuery<Checklist[], Error>(['checklists'], async () => {
@@ -21,4 +21,39 @@ export const useUsersTeamTypeChecklists = () => {
     const { data } = await getUsersChecklists();
     return data;
   });
+};
+
+export const useGetImageUrl = (imageFileId: string | null) => {
+  return useQuery<string, Error>(
+    ['image', imageFileId],
+    async () => {
+      if (!imageFileId) throw new Error('No image ID provided');
+      const imageBlob = await downloadGoogleImage(imageFileId);
+      return URL.createObjectURL(imageBlob);
+    },
+    {
+      enabled: !!imageFileId
+    }
+  );
+};
+
+export const useGetImageUrls = (imageFileIds: (string | null)[]) => {
+  return useQuery<string[], Error>(
+    ['image', imageFileIds],
+    async () => {
+      if (!imageFileIds) throw new Error('No image ID provided');
+      const imageBlobs = await Promise.all(
+        imageFileIds
+          .filter((id): id is string => id !== null)
+          .map(async (imageId) => {
+            const imageBlob = await downloadGoogleImage(imageId);
+            return URL.createObjectURL(imageBlob);
+          })
+      );
+      return imageBlobs;
+    },
+    {
+      enabled: !!imageFileIds
+    }
+  );
 };

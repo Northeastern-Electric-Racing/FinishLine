@@ -1,6 +1,6 @@
 import { LinkCreateArgs } from 'shared';
 import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
-import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
+import { batmanAppAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import { createTestLinkType, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { testLink1 } from '../test-data/organizations.test-data';
@@ -257,22 +257,35 @@ describe('Organization Tests', () => {
           await OrganizationsService.updateOrganizationContacts(
             await createTestUser(wonderwomanGuest, orgId),
             organization,
-            ['Test contact 1', 'Test Contact 2']
+            [
+              { userId: '1', title: 'Title 1' },
+              { userId: '2', title: 'Title 2' }
+            ]
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('update organiztion contacts'));
     });
-
-    it('Succeeds and updates organization contacts', async () => {
+    it('Succeeds and creates new contacts and updates organizations contacts', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const testSuperman = await createTestUser(supermanAdmin, orgId);
 
       const updatedOrganization = await OrganizationsService.updateOrganizationContacts(testBatman, organization, [
-        'Test Contact 1',
-        'Test Contact 2'
+        { userId: testBatman.userId, title: 'Chief Software Engineer' },
+        { userId: testSuperman.userId, title: 'Chief Mechanical Engineer' }
       ]);
 
+      const allContacts = await prisma.contact.findMany({
+        where: {
+          organizationId: orgId
+        }
+      });
+
+      expect(allContacts.length).toBe(2);
+      expect(allContacts[0].userId).toBe(testBatman.userId);
+      expect(allContacts[1].userId).toBe(testSuperman.userId);
+
       expect(updatedOrganization).not.toBeNull();
-      expect(updatedOrganization.contacts[0]).toBe('Test Contact 1');
-      expect(updatedOrganization.contacts[1]).toBe('Test Contact 2');
+      expect(updatedOrganization.contacts[0].title).toBe('Chief Software Engineer');
+      expect(updatedOrganization.contacts[1].title).toBe('Chief Mechanical Engineer');
     });
   });
 });

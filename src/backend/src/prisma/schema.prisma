@@ -184,6 +184,7 @@ model User {
   createdChecklists               Checklist[]               @relation(name: "checklistCreator")
   deletedChecklists               Checklist[]               @relation(name: "checklistDeleter")
   checkedChecklists               Checklist[]               @relation(name: "checkedChecklists")
+  contacts                        Contact[]
 }
 
 model Role {
@@ -881,7 +882,6 @@ model Organization {
   exploreAsGuestImageId String?   @unique
   applicationLink       String
   onboardingText        String?
-  contacts              String[]
 
   // Relation references
   wbsElements              WBS_Element[]
@@ -904,6 +904,7 @@ model Organization {
   FrequentlyAskedQuestions FrequentlyAskedQuestion[]
   Milestone                Milestone[]
   checklists               Checklist[]
+  contacts                 Contact[]
 }
 
 model FrequentlyAskedQuestion {
@@ -956,4 +957,15 @@ model Checklist {
   userDeletedId     String?
   organizationId    String
   organization      Organization @relation(fields: [organizationId], references: [organizationId])
+}
+
+model Contact {
+  contactId      String       @id @default(uuid())
+  title          String
+  user           User         @relation(fields: [userId], references: [userId])
+  userId         String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  organizationId String
+
+  @@unique([organizationId, userId, title])
 }

@@ -175,6 +175,8 @@ const organizations = () => `${API_URL}/organizations`;
 const currentOrganization = () => `${organizations()}/current`;
 const organizationsUsefulLinks = () => `${organizations()}/useful-links`;
 const organizationsSetUsefulLinks = () => `${organizationsUsefulLinks()}/set`;
+const organizationsUpdateContacts = () => `${organizations()}/contacts/set`;
+const organizationSetOnboardingText = () => `${organizations()}/onboardingText/set`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
@@ -196,6 +198,7 @@ const onboarding = () => `${API_URL}/onboarding`;
 const allChecklists = () => `${onboarding()}/checklists`;
 const generalChecklists = () => `${allChecklists()}/general`;
 const usersTeamTypeChecklists = () => `${allChecklists()}/usersChecklists`;
+const imageById = (imageId: string) => `${onboarding()}/image/${imageId}`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -338,6 +341,8 @@ export const apiUrls = {
   currentOrganization,
   organizationsUsefulLinks,
   organizationsSetUsefulLinks,
+  organizationsUpdateContacts,
+  organizationSetOnboardingText,
 
   cars,
   carsCreate,
@@ -355,6 +360,7 @@ export const apiUrls = {
   allChecklists,
   generalChecklists,
   usersTeamTypeChecklists,
+  imageById,
 
   version
 };

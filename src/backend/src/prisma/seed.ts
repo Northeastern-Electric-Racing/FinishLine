@@ -260,9 +260,27 @@ const performSeed: () => Promise<void> = async () => {
    * TEAMS
    */
   /** Creating Team Types */
-  const mechanical = await TeamsService.createTeamType(batman, 'Mechanical', 'YouTubeIcon', '', ner);
-  const software = await TeamsService.createTeamType(thomasEmrax, 'Software', 'InstagramIcon', '', ner);
-  const electrical = await TeamsService.createTeamType(cyborg, 'Electrical', 'SettingsIcon', '', ner);
+  const mechanical = await TeamsService.createTeamType(
+    batman,
+    'Mechanical',
+    'YouTubeIcon',
+    'This is the mechanical team',
+    ner
+  );
+  const software = await TeamsService.createTeamType(
+    thomasEmrax,
+    'Software',
+    'InstagramIcon',
+    'This is the software team',
+    ner
+  );
+  const electrical = await TeamsService.createTeamType(
+    cyborg,
+    'Electrical',
+    'SettingsIcon',
+    'This is the electrical team',
+    ner
+  );
 
   /** Creating Teams */
   const justiceLeague: Team = await prisma.team.create(dbSeedAllTeams.justiceLeague(batman.userId, organizationId));
@@ -1904,6 +1922,12 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'Thank you for applying to Northeastern Electric Racing! After reviewing your application, we are very excited to officially welcome you to our team.'
   );
+
+  await OrganizationsService.updateOrganizationContacts(batman, ner, [
+    { userId: batman.userId, title: 'Chief Software Engineer' },
+    { userId: thomasEmrax.userId, title: 'Chief Mechanical Engineer' },
+    { userId: regina.userId, title: 'Chief Electrical Engineer' }
+  ]);
 
   await RecruitmentServices.createMilestone(batman, 'Club fair!', 'Also meet us at:', new Date('9/3/24'), ner);
   await RecruitmentServices.createMilestone(batman, 'Applications Open', '', new Date('11/13/24'), ner);

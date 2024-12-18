@@ -15,7 +15,14 @@ export default class OrganizationsService {
    */
   static async getCurrentOrganization(organizationId: string) {
     const organization = await prisma.organization.findUnique({
-      where: { organizationId }
+      where: { organizationId },
+      include: {
+        contacts: {
+          include: {
+            user: true
+          }
+        }
+      }
     });
 
     if (!organization) {
@@ -196,21 +203,52 @@ export default class OrganizationsService {
   /**
    * Updates contacts of organization
    * @param user User updating the contacts
-   * @param contacts The new contacts of the organization
    * @param organizationId organizationId of the organization
+   * @param userIds users to be added as contacts
+   * @param titles the titles of each of the user ids
    * @returns updated organization with new contacts
    */
-  static async updateOrganizationContacts(user: User, organization: Organization, contacts: string[]) {
+  static async updateOrganizationContacts(
+    user: User,
+    organization: Organization,
+    contacts: { userId: string; title: string }[]
+  ) {
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('update organiztion contacts');
     }
     const { organizationId } = organization;
-    const updatedOrganization = await prisma.organization.update({
+
+    await prisma.contact.deleteMany({
       where: {
         organizationId
-      },
+      }
+    });
+
+    const allContacts = await Promise.all(
+      contacts.map((contact) =>
+        prisma.contact.create({
+          data: {
+            organizationId,
+            userId: contact.userId,
+            title: contact.title
+          }
+        })
+      )
+    );
+
+    const updatedOrganization = await prisma.organization.update({
+      where: { organizationId },
       data: {
-        contacts
+        contacts: {
+          connect: allContacts.map((contact) => ({ contactId: contact.contactId }))
+        }
+      },
+      include: {
+        contacts: {
+          include: {
+            user: true
+          }
+        }
       }
     });
 

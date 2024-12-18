@@ -37,7 +37,8 @@ organizationRouter.post(
 organizationRouter.post(
   '/contacts/set',
   body('contacts').isArray(),
-  nonEmptyString(body('contacts.*')),
+  nonEmptyString(body('contacts.*.userId')),
+  nonEmptyString(body('contacts.*.title')),
   validateInputs,
   OrganizationsController.updateOrganizationContacts
 );
