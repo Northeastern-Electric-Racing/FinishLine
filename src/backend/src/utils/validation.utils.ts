@@ -1,4 +1,4 @@
-import { Design_Review_Status, Graph_Display_Type, Graph_Type, Measure } from '@prisma/client';
+import { Design_Review_Status, Graph_Display_Type, Graph_Type, Measure, Special_Permission } from '@prisma/client';
 import { Request, Response } from 'express';
 import { body, ValidationChain, validationResult } from 'express-validator';
 import { ClubAccount, MaterialStatus, TaskPriority, TaskStatus, WorkPackageStage, RoleEnum, WbsElementStatus } from 'shared';
@@ -39,6 +39,10 @@ export const isMeasure = (validationObject: ValidationChain): ValidationChain =>
 
 export const isGraphDisplayType = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.isString().isIn(Object.values(Graph_Display_Type));
+};
+
+export const isSpecialPermission = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject.isString().isIn(Object.values(Special_Permission));
 };
 
 export const isWorkPackageStageOrNone = (validationObject: ValidationChain): ValidationChain => {

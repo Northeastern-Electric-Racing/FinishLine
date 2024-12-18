@@ -6,10 +6,11 @@
 import express from 'express';
 import StatisticsController from '../controllers/statistics.controllers';
 import {
-  isDate,
   isGraphDisplayType,
   isGraphType,
   isMeasure,
+  isOptionalDate,
+  isSpecialPermission,
   nonEmptyString,
   validateInputs
 } from '../utils/validation.utils';
@@ -18,19 +19,21 @@ import { body } from 'express-validator';
 const statisticsRouter = express.Router();
 
 statisticsRouter.post(
-  '/create',
-  isDate(body('startDate')),
-  isDate(body('endDate')),
+  '/graph/create',
+  isOptionalDate(body('startDate')),
+  isOptionalDate(body('endDate')),
   nonEmptyString(body('title')),
   isGraphType(body('graphType')),
   isGraphDisplayType(body('graphDisplayType')),
   isMeasure(body('measure')),
   body('carId').optional().isString(),
   body('graphCollectionId').optional().isString(),
+  body('specialPermissions').isArray(),
+  isSpecialPermission(body('specialPermissions.*')),
   validateInputs,
   StatisticsController.createGraph
 );
 
-statisticsRouter.get('/:graphId', StatisticsController.getSingleGraph);
+statisticsRouter.get('/graph/:graphId', StatisticsController.getSingleGraph);
 
 export default statisticsRouter;

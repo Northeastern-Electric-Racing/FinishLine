@@ -908,7 +908,7 @@ model Car {
   projectProposedChanges Project_Proposed_Changes[]
   wbsElementId           String                     @unique
   wbsElement             WBS_Element                @relation(fields: [wbsElementId], references: [wbsElementId])
-  linkedGraphs           Graph[]
+  linkedGraphs           Graph[]                    @relation(name: "graphCars")
 }
 
 model Organization {
@@ -1002,8 +1002,7 @@ model Graph {
   userDeletedId  String?
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [organizationId])
-  carId          String?
-  car            Car?         @relation(fields: [carId], references: [carId])
+  cars           Car[]        @relation(name: "graphCars")
 }
 
 model Graph_Collection {

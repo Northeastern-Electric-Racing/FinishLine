@@ -1,4 +1,5 @@
-import { Permission, User } from './user-types';
+import { Car } from './project-types';
+import { User } from './user-types';
 
 export enum GraphDisplayType {
   BAR = 'BAR',
@@ -18,9 +19,14 @@ export enum GraphType {
   REIMBURSEMENT_TOTAL_BY_TEAM = 'REIMBURSEMENT_TOTAL_BY_TEAM'
 }
 
+export enum SpecialPermission {
+  FINANCE_ONLY = 'FINANCE_ONLY'
+}
+
 export enum Measure {
   SUM = 'SUM',
-  AVG = 'AVG'
+  AVG = 'AVG',
+  COUNT = 'COUNT'
 }
 
 export interface GraphData {
@@ -40,14 +46,39 @@ export interface Graph {
   dateDeleted?: Date;
   graphData: GraphData[];
   graphCollectionId?: String;
+  specialPermissions: SpecialPermission[];
 }
 
 export interface GraphCollection {
+  id: string;
   graphs: Graph[];
   title: string;
   linkId: string;
   userCreated: User;
   userDeleted?: User;
   dateDeleted?: Date;
-  permissions: Permission[];
+  permissions: SpecialPermission[];
+}
+
+export interface CreateGraphArgs {
+  startDate?: Date;
+  endDate?: Date;
+  title: String;
+  graphType: GraphType;
+  measure: Measure;
+  graphCollectionId?: string;
+  graphDisplayType: GraphDisplayType;
+  carIds: String[];
+}
+
+export interface GraphFormInput {
+  title: string;
+  measure: Measure;
+  graphType: GraphType | null;
+  startTime?: Date;
+  endTime?: Date;
+  graphDisplayType: GraphDisplayType;
+  graphCollectionId?: string;
+  cars: Car[];
+  specialPermissions: SpecialPermission[];
 }

@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { Graph, GraphData, GraphDisplayType, GraphType } from 'shared';
+import { Graph, GraphData, GraphDisplayType, GraphType, SpecialPermission } from 'shared';
 import { userTransformer } from './user.transformer';
 import { GraphQueryArgs } from '../prisma-query-args/statistics.query-args';
 
@@ -14,7 +14,8 @@ const graphTransformer = (graph: Prisma.GraphGetPayload<GraphQueryArgs> & { grap
     dateDeleted: graph.dateDeleted ?? undefined,
     graphCollectionId: graph.graphCollectionId ?? undefined,
     startDate: graph.startDate ?? undefined,
-    endDate: graph.endDate ?? undefined
+    endDate: graph.endDate ?? undefined,
+    specialPermissions: graph.specialPermissions as SpecialPermission[]
   };
 };
 

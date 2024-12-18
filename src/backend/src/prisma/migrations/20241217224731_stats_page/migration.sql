@@ -39,7 +39,6 @@ CREATE TABLE "Graph" (
     "userCreatedId" TEXT NOT NULL,
     "userDeletedId" TEXT,
     "organizationId" TEXT NOT NULL,
-    "carId" TEXT,
 
     CONSTRAINT "Graph_pkey" PRIMARY KEY ("id")
 );
@@ -57,6 +56,18 @@ CREATE TABLE "Graph_Collection" (
     CONSTRAINT "Graph_Collection_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "_graphCars" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "_graphCars_AB_unique" ON "_graphCars"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_graphCars_B_index" ON "_graphCars"("B");
+
 -- AddForeignKey
 ALTER TABLE "Team_Type" ADD CONSTRAINT "Team_Type_deletedById_fkey" FOREIGN KEY ("deletedById") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
@@ -73,9 +84,6 @@ ALTER TABLE "Graph" ADD CONSTRAINT "Graph_userDeletedId_fkey" FOREIGN KEY ("user
 ALTER TABLE "Graph" ADD CONSTRAINT "Graph_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Graph" ADD CONSTRAINT "Graph_carId_fkey" FOREIGN KEY ("carId") REFERENCES "Car"("carId") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "Graph_Collection" ADD CONSTRAINT "Graph_Collection_userCreatedId_fkey" FOREIGN KEY ("userCreatedId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -83,3 +91,9 @@ ALTER TABLE "Graph_Collection" ADD CONSTRAINT "Graph_Collection_userDeletedId_fk
 
 -- AddForeignKey
 ALTER TABLE "Graph_Collection" ADD CONSTRAINT "Graph_Collection_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_graphCars" ADD CONSTRAINT "_graphCars_A_fkey" FOREIGN KEY ("A") REFERENCES "Car"("carId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_graphCars" ADD CONSTRAINT "_graphCars_B_fkey" FOREIGN KEY ("B") REFERENCES "Graph"("id") ON DELETE CASCADE ON UPDATE CASCADE;

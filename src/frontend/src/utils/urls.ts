@@ -192,6 +192,11 @@ const faqCreate = () => `${recruitment()}/faq/create`;
 const faqEdit = (id: string) => `${recruitment()}/faq/${id}/edit`;
 const faqDelete = (id: string) => `${recruitment()}/faq/${id}/delete`;
 
+/************** Statistics Endpoints ***************/
+const statistics = () => `${API_URL}/statistics`;
+const graphConfig = () => `${statistics()}/graph/config`;
+const createGraph = () => `${statistics()}/graph/create`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -337,6 +342,7 @@ export const apiUrls = {
 
   cars,
   carsCreate,
+
   recruitment,
   allMilestones,
   milestoneCreate,
@@ -346,6 +352,10 @@ export const apiUrls = {
   faqCreate,
   faqEdit,
   faqDelete,
+
+  statistics,
+  graphConfig,
+  createGraph,
 
   version
 };

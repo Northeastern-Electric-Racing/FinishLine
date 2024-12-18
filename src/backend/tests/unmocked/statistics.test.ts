@@ -43,13 +43,15 @@ describe('Statistics Tests', () => {
         async () =>
           await StatisticsService.createGraph(
             await createTestUser(wonderwomanGuest, orgId),
-            new Date(),
-            new Date(new Date().getTime() + 10000),
             'New Graph',
             Graph_Type.CHANGE_REQUESTS_BY_TEAM,
             Measure.SUM,
             Graph_Display_Type.BAR,
-            organization
+            organization,
+            [],
+            [],
+            new Date(),
+            new Date(new Date().getTime() + 10000)
           )
       ).rejects.toThrow(new AccessDeniedException('You do not have permission to create a graph'));
     });
@@ -59,13 +61,15 @@ describe('Statistics Tests', () => {
         async () =>
           await StatisticsService.createGraph(
             user,
-            new Date('12/12/2024'),
-            new Date(new Date('12/12/2024').getTime() - 10000),
             'New Graph',
             Graph_Type.CHANGE_REQUESTS_BY_DIVISION,
             Measure.SUM,
             Graph_Display_Type.PIE,
-            organization
+            organization,
+            [],
+            [],
+            new Date('12/12/2024'),
+            new Date(new Date('12/12/2024').getTime() - 10000)
           )
       ).rejects.toThrow(new HttpException(400, 'End date must be after start date'));
     });
@@ -79,13 +83,15 @@ describe('Statistics Tests', () => {
 
       const result = await StatisticsService.createGraph(
         user,
-        new Date('12/12/2024'),
-        new Date(new Date('12/12/2024').getTime() + 10000),
         'New Graph',
         Graph_Type.PROJECT_BUDGET_BY_DIVISION,
         Measure.SUM,
         Graph_Display_Type.BAR,
-        organization
+        organization,
+        [],
+        [],
+        new Date('12/12/1970'),
+        new Date(new Date('12/12/2024').getTime() + 10000)
       );
 
       expect(result).toContain({
@@ -93,8 +99,6 @@ describe('Statistics Tests', () => {
         graphType: 'PROJECT_BUDGET_BY_DIVISION',
         graphDisplayType: 'BAR'
       });
-      expect(result.startDate).toStrictEqual(new Date('12/12/2024'));
-      expect(result.endDate).toStrictEqual(new Date(new Date('12/12/2024').getTime() + 10000));
 
       expect(result.graphData).toStrictEqual([
         {
@@ -104,7 +108,7 @@ describe('Statistics Tests', () => {
       ]);
     });
 
-    it('Create graph works for getting average project budget by division', async () => {
+    it('Create graph works for getting average project budget by division and using Pie Chart', async () => {
       const division = await createTestTeamType(orgId);
       const team = await createTestTeam(user.userId, division.teamTypeId, orgId);
       const car = await createTestCar(orgId, user.userId);
@@ -113,23 +117,25 @@ describe('Statistics Tests', () => {
 
       const result = await StatisticsService.createGraph(
         user,
-        new Date('12/12/2024'),
-        new Date(new Date('12/12/2024').getTime() + 10000),
         'New Graph',
         Graph_Type.PROJECT_BUDGET_BY_DIVISION,
         Measure.AVG,
-        Graph_Display_Type.BAR,
-        organization
+        Graph_Display_Type.PIE,
+        organization,
+        [],
+        [],
+        new Date('12/12/1970'),
+        new Date(new Date('12/12/2024').getTime() + 10000)
       );
 
       expect(result).toContain({
         ...expectedCreatedGraphBase,
         graphType: 'PROJECT_BUDGET_BY_DIVISION',
-        graphDisplayType: 'BAR',
+        graphDisplayType: 'PIE',
         measure: Measure.AVG
       });
-      expect(result.startDate).toStrictEqual(new Date('12/12/2024'));
-      expect(result.endDate).toStrictEqual(new Date(new Date('12/12/2024').getTime() + 10000));
+      expect(result.startDate).toStrictEqual(new Date('12/12/1970'));
+      expect(result.endDate?.getTime()).toBeGreaterThan(new Date('12/12/2024').getTime());
 
       expect(result.graphData).toStrictEqual([
         {
@@ -148,13 +154,15 @@ describe('Statistics Tests', () => {
 
       const result = await StatisticsService.createGraph(
         user,
-        new Date('12/12/2024'),
-        new Date(new Date('12/12/2024').getTime() + 10000),
         'New Graph',
         Graph_Type.PROJECT_BUDGET_BY_DIVISION,
         Measure.SUM,
         Graph_Display_Type.BAR,
-        organization
+        organization,
+        [],
+        [],
+        new Date('12/12/1970'),
+        new Date(new Date().getTime() + 100000)
       );
 
       expect(result).toContain({
@@ -163,13 +171,85 @@ describe('Statistics Tests', () => {
         graphDisplayType: 'BAR',
         measure: Measure.SUM
       });
-      expect(result.startDate).toStrictEqual(new Date('12/12/2024'));
-      expect(result.endDate).toStrictEqual(new Date(new Date('12/12/2024').getTime() + 10000));
+      expect(result.startDate).toStrictEqual(new Date('12/12/1970'));
+      expect(result.endDate?.getTime()).toBeGreaterThan(new Date('12/12/2024').getTime());
 
       expect(result.graphData).toStrictEqual([
         {
           label: 'aTeam',
           value: 1000
+        }
+      ]);
+    });
+
+    it('Create graph works for undefined start and end times', async () => {
+      const division = await createTestTeamType(orgId);
+      const team = await createTestTeam(user.userId, division.teamTypeId, orgId);
+      const car = await createTestCar(orgId, user.userId);
+      await createTestProject(user, orgId, team.teamId, car.carId);
+      await createTestProject(user, orgId, team.teamId, car.carId, 2, new Date());
+
+      const result = await StatisticsService.createGraph(
+        user,
+        'New Graph',
+        Graph_Type.PROJECT_BUDGET_BY_DIVISION,
+        Measure.SUM,
+        Graph_Display_Type.BAR,
+        organization,
+        [],
+        []
+      );
+
+      expect(result).toContain({
+        ...expectedCreatedGraphBase,
+        graphType: 'PROJECT_BUDGET_BY_DIVISION',
+        graphDisplayType: 'BAR',
+        measure: Measure.SUM
+      });
+      expect(result.startDate).toStrictEqual(undefined);
+      expect(result.endDate).toStrictEqual(undefined);
+
+      expect(result.graphData).toStrictEqual([
+        {
+          label: 'aTeam',
+          value: 1000
+        }
+      ]);
+    });
+
+    it('Create graph works for filtering out times outside of date range', async () => {
+      const division = await createTestTeamType(orgId);
+      const team = await createTestTeam(user.userId, division.teamTypeId, orgId);
+      const car = await createTestCar(orgId, user.userId);
+      await createTestProject(user, orgId, team.teamId, car.carId);
+      await createTestProject(user, orgId, team.teamId, car.carId, 2, new Date());
+
+      const result = await StatisticsService.createGraph(
+        user,
+        'New Graph',
+        Graph_Type.PROJECT_BUDGET_BY_DIVISION,
+        Measure.SUM,
+        Graph_Display_Type.BAR,
+        organization,
+        [],
+        [],
+        new Date('12/12/1970'),
+        new Date('12/12/1971')
+      );
+
+      expect(result).toContain({
+        ...expectedCreatedGraphBase,
+        graphType: 'PROJECT_BUDGET_BY_DIVISION',
+        graphDisplayType: 'BAR',
+        measure: Measure.SUM
+      });
+      expect(result.startDate).toStrictEqual(new Date('12/12/1970'));
+      expect(result.endDate).toStrictEqual(new Date('12/12/1971'));
+
+      expect(result.graphData).toStrictEqual([
+        {
+          label: 'aTeam',
+          value: 0
         }
       ]);
     });
@@ -179,13 +259,15 @@ describe('Statistics Tests', () => {
     it('Get single graph works for valid id', async () => {
       const graph = await StatisticsService.createGraph(
         user,
-        new Date('12/12/2024'),
-        new Date(new Date('12/12/2024').getTime() + 10000),
         'New Graph',
         Graph_Type.REIMBURSEMENT_TOTAL_BY_TEAM,
         Measure.AVG,
         Graph_Display_Type.PIE,
-        organization
+        organization,
+        [],
+        [],
+        new Date('12/12/2024'),
+        new Date(new Date('12/12/2024').getTime() + 10000)
       );
 
       const result = await StatisticsService.getSingleGraph(graph.graphId, user, organization);
@@ -196,13 +278,15 @@ describe('Statistics Tests', () => {
       const guest_user = await createTestUser(wonderwomanGuest, orgId);
       const graph = await StatisticsService.createGraph(
         user,
-        new Date('12/12/2024'),
-        new Date(new Date('12/12/2024').getTime() + 10000),
         'New Graph',
         Graph_Type.CHANGE_REQUESTS_BY_PROJECT,
         Measure.AVG,
         Graph_Display_Type.PIE,
-        organization
+        organization,
+        [],
+        [],
+        new Date('12/12/2024'),
+        new Date(new Date('12/12/2024').getTime() + 10000)
       );
 
       await expect(async () => StatisticsService.getSingleGraph(graph.graphId, guest_user, organization)).rejects.toThrow(

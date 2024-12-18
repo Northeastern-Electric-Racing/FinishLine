@@ -1,22 +1,12 @@
-import { Organization, User, Graph_Type, Measure, Graph_Display_Type } from '@prisma/client';
+import { Organization, User, Graph_Type, Measure, Graph_Display_Type, Special_Permission } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { DeletedException, InvalidOrganizationException, NotFoundException } from '../utils/errors.utils';
 import graphTransformer from '../transformers/statistics-graph.transformer';
 import { getGraphQueryArgs } from '../prisma-query-args/statistics.query-args';
 import { userHasPermissionNew } from '../utils/users.utils';
 import { AccessDeniedException, HttpException } from '../utils/errors.utils';
-import { Graph, GraphData } from 'shared';
-import {
-  getGraphDataForChangeRequestsByDivision,
-  getGraphDataForChangeRequestsByProject,
-  getGraphDataForChangeRequestsByTeam,
-  getGraphDataForProjectBudgetByDivision,
-  getGraphDataForProjectBudgetByProject,
-  getGraphDataForProjectBudgetByTeam,
-  getGraphDataForReimbursementRequestsByDivision,
-  getGraphDataForReimbursementRequestsByProject,
-  getGraphDataForReimbursementRequestsByTeam
-} from '../utils/statistics.utils';
+import { Graph } from 'shared';
+import { getGraphData } from '../utils/statistics.utils';
 
 export default class StatisticsService {
   /**
@@ -30,96 +20,79 @@ export default class StatisticsService {
    * @param measure The measurement to apply to the data
    * @param graphDisplayType The way to display the graph
    * @param organization The organization to make the graph under
-   * @param carId Optional id of the car to segment the data by
+   * @param carIds Array of carIds to segment the data by, if none are supplied will show data for all cars
+   * @param specialPermissions Array of permissions to apply to this graph
    * @param graphcollectionId optional graph collection to add the graph to
    * @returns The created graph and its data
    */
   static async createGraph(
     user: User,
-    startDate: Date,
-    endDate: Date,
     title: string,
     graphType: Graph_Type,
     measure: Measure,
     graphDisplayType: Graph_Display_Type,
     organization: Organization,
-    carId?: string,
+    carIds: string[],
+    specialPermissions: Special_Permission[],
+    startDate?: Date,
+    endDate?: Date,
     graphCollectionId?: string
   ): Promise<Graph> {
     if (!(await userHasPermissionNew(user.userId, organization.organizationId, ['CREATE_GRAPH']))) {
       throw new AccessDeniedException('You do not have permission to create a graph');
     }
 
-    if (startDate.getTime() >= endDate.getTime()) {
-      throw new HttpException(400, 'End date must be after start date');
+    if (startDate && endDate) {
+      if (startDate.getTime() >= endDate.getTime()) {
+        throw new HttpException(400, 'End date must be after start date');
+      }
     }
 
-    if (carId) {
-      const car = await prisma.car.findUnique({
-        where: { carId }
-      });
+    if (carIds.length > 0) {
+      await Promise.all(
+        carIds.map(async (carId) => {
+          const car = await prisma.car.findUnique({
+            where: { carId, wbsElement: { organizationId: organization.organizationId } },
+            include: {
+              wbsElement: true
+            }
+          });
 
-      if (!car) {
-        throw new NotFoundException('Car', carId);
-      }
+          if (!car) {
+            throw new NotFoundException('Car', carId);
+          }
+          if (car.wbsElement.dateDeleted) throw new DeletedException('Car', carId);
+        })
+      );
     }
 
     const graph = await prisma.graph.create({
       data: {
-        startDate,
-        endDate,
+        startDate: startDate ?? null,
+        endDate: endDate ?? null,
         title,
         graphType,
         measure,
         displayGraphType: graphDisplayType,
         graphCollectionId: graphCollectionId ?? null,
         userCreatedId: user.userId,
-        carId,
-        organizationId: organization.organizationId
+        cars: {
+          connect: carIds.map((carId) => {
+            return { carId };
+          })
+        },
+        organizationId: organization.organizationId,
+        specialPermissions
       },
       ...getGraphQueryArgs(organization.organizationId)
     });
 
     return graphTransformer({
       ...graph,
-      graphData: await StatisticsService.getGraphData(graphType, measure, organization.organizationId, { carId })
+      graphData: await getGraphData(graphType, measure, organization.organizationId, startDate ?? null, endDate ?? null, {
+        carIds
+      })
     });
-  }
-
-  /**
-   *
-   * @param graphType
-   * @param measure
-   * @param organizationId
-   * @param params
-   * @returns
-   */
-  static async getGraphData(
-    graphType: Graph_Type,
-    measure: Measure,
-    organizationId: string,
-    params: { carId?: string }
-  ): Promise<GraphData[]> {
-    switch (graphType) {
-      case Graph_Type.PROJECT_BUDGET_BY_PROJECT:
-        return getGraphDataForProjectBudgetByProject(measure, organizationId, params);
-      case Graph_Type.PROJECT_BUDGET_BY_TEAM:
-        return getGraphDataForProjectBudgetByTeam(measure, organizationId, params);
-      case Graph_Type.PROJECT_BUDGET_BY_DIVISION:
-        return getGraphDataForProjectBudgetByDivision(measure, organizationId, params);
-      case Graph_Type.CHANGE_REQUESTS_BY_PROJECT:
-        return getGraphDataForChangeRequestsByProject(measure, organizationId, params);
-      case Graph_Type.CHANGE_REQUESTS_BY_TEAM:
-        return getGraphDataForChangeRequestsByTeam(measure, organizationId, params);
-      case Graph_Type.CHANGE_REQUESTS_BY_DIVISION:
-        return getGraphDataForChangeRequestsByDivision(measure, organizationId, params);
-      case Graph_Type.REIMBURSEMENT_TOTAL_BY_PROJECT:
-        return getGraphDataForReimbursementRequestsByProject(measure, organizationId, params);
-      case Graph_Type.REIMBURSEMENT_TOTAL_BY_TEAM:
-        return getGraphDataForReimbursementRequestsByTeam(measure, organizationId, params);
-      case Graph_Type.REIMBURSEMENT_TOTAL_BY_DIVISION:
-        return getGraphDataForReimbursementRequestsByDivision(measure, organizationId, params);
-    }
   }
 
   /**
@@ -152,11 +125,13 @@ export default class StatisticsService {
 
     return graphTransformer({
       ...requestedGraph,
-      graphData: await StatisticsService.getGraphData(
+      graphData: await getGraphData(
         requestedGraph.graphType,
         requestedGraph.measure,
         organization.organizationId,
-        { carId: requestedGraph.carId ?? undefined }
+        requestedGraph.startDate,
+        requestedGraph.endDate,
+        { carIds: requestedGraph.cars.map((car) => car.carId) }
       )
     });
   }
