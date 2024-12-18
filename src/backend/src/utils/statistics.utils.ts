@@ -1,4 +1,4 @@
-import { Measure, Prisma } from '@prisma/client';
+import { Graph_Type, Measure, Prisma } from '@prisma/client';
 import { GraphData, wbsPipe, wbsNamePipe } from 'shared';
 import prisma from '../prisma/prisma';
 
@@ -509,4 +509,34 @@ export const getGraphDataForReimbursementRequestsByDivision = async (
   });
 
   return data;
+};
+
+export const getGraphData = (
+  graphType: Graph_Type,
+  measure: Measure,
+  organizationId: string,
+  startDate: Date | null,
+  endDate: Date | null,
+  params: { carIds: string[] }
+): Promise<GraphData[]> => {
+  switch (graphType) {
+    case Graph_Type.PROJECT_BUDGET_BY_PROJECT:
+      return getGraphDataForProjectBudgetByProject(measure, organizationId, startDate, endDate, params);
+    case Graph_Type.PROJECT_BUDGET_BY_TEAM:
+      return getGraphDataForProjectBudgetByTeam(measure, organizationId, startDate, endDate, params);
+    case Graph_Type.PROJECT_BUDGET_BY_DIVISION:
+      return getGraphDataForProjectBudgetByDivision(measure, organizationId, startDate, endDate, params);
+    case Graph_Type.CHANGE_REQUESTS_BY_PROJECT:
+      return getGraphDataForChangeRequestsByProject(measure, organizationId, startDate, endDate, params);
+    case Graph_Type.CHANGE_REQUESTS_BY_TEAM:
+      return getGraphDataForChangeRequestsByTeam(measure, organizationId, startDate, endDate, params);
+    case Graph_Type.CHANGE_REQUESTS_BY_DIVISION:
+      return getGraphDataForChangeRequestsByDivision(measure, organizationId, startDate, endDate, params);
+    case Graph_Type.REIMBURSEMENT_TOTAL_BY_PROJECT:
+      return getGraphDataForReimbursementRequestsByProject(measure, organizationId, startDate, endDate, params);
+    case Graph_Type.REIMBURSEMENT_TOTAL_BY_TEAM:
+      return getGraphDataForReimbursementRequestsByTeam(measure, organizationId, startDate, endDate, params);
+    case Graph_Type.REIMBURSEMENT_TOTAL_BY_DIVISION:
+      return getGraphDataForReimbursementRequestsByDivision(measure, organizationId, startDate, endDate, params);
+  }
 };

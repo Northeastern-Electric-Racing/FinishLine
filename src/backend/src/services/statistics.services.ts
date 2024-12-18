@@ -5,18 +5,8 @@ import graphTransformer from '../transformers/statistics-graph.transformer';
 import { getGraphQueryArgs } from '../prisma-query-args/statistics.query-args';
 import { userHasPermissionNew } from '../utils/users.utils';
 import { AccessDeniedException, HttpException } from '../utils/errors.utils';
-import { Graph, GraphData } from 'shared';
-import {
-  getGraphDataForChangeRequestsByDivision,
-  getGraphDataForChangeRequestsByProject,
-  getGraphDataForChangeRequestsByTeam,
-  getGraphDataForProjectBudgetByDivision,
-  getGraphDataForProjectBudgetByProject,
-  getGraphDataForProjectBudgetByTeam,
-  getGraphDataForReimbursementRequestsByDivision,
-  getGraphDataForReimbursementRequestsByProject,
-  getGraphDataForReimbursementRequestsByTeam
-} from '../utils/statistics.utils';
+import { Graph } from 'shared';
+import { getGraphData } from '../utils/statistics.utils';
 
 export default class StatisticsService {
   /**
@@ -37,8 +27,6 @@ export default class StatisticsService {
    */
   static async createGraph(
     user: User,
-    startDate: Date,
-    endDate: Date,
     title: string,
     graphType: Graph_Type,
     measure: Measure,
@@ -46,14 +34,18 @@ export default class StatisticsService {
     organization: Organization,
     carIds: string[],
     specialPermissions: Special_Permission[],
+    startDate?: Date,
+    endDate?: Date,
     graphCollectionId?: string
   ): Promise<Graph> {
     if (!(await userHasPermissionNew(user.userId, organization.organizationId, ['CREATE_GRAPH']))) {
       throw new AccessDeniedException('You do not have permission to create a graph');
     }
 
-    if (startDate.getTime() >= endDate.getTime()) {
-      throw new HttpException(400, 'End date must be after start date');
+    if (startDate && endDate) {
+      if (startDate.getTime() >= endDate.getTime()) {
+        throw new HttpException(400, 'End date must be after start date');
+      }
     }
 
     if (carIds.length > 0) {
@@ -76,8 +68,8 @@ export default class StatisticsService {
 
     const graph = await prisma.graph.create({
       data: {
-        startDate,
-        endDate,
+        startDate: startDate ?? null,
+        endDate: endDate ?? null,
         title,
         graphType,
         measure,
@@ -97,48 +89,10 @@ export default class StatisticsService {
 
     return graphTransformer({
       ...graph,
-      graphData: await StatisticsService.getGraphData(graphType, measure, organization.organizationId, startDate, endDate, {
+      graphData: await getGraphData(graphType, measure, organization.organizationId, startDate ?? null, endDate ?? null, {
         carIds
       })
     });
-  }
-
-  /**
-   *
-   * @param graphType
-   * @param measure
-   * @param organizationId
-   * @param params
-   * @returns
-   */
-  static async getGraphData(
-    graphType: Graph_Type,
-    measure: Measure,
-    organizationId: string,
-    startDate: Date | null,
-    endDate: Date | null,
-    params: { carIds: string[] }
-  ): Promise<GraphData[]> {
-    switch (graphType) {
-      case Graph_Type.PROJECT_BUDGET_BY_PROJECT:
-        return getGraphDataForProjectBudgetByProject(measure, organizationId, startDate, endDate, params);
-      case Graph_Type.PROJECT_BUDGET_BY_TEAM:
-        return getGraphDataForProjectBudgetByTeam(measure, organizationId, startDate, endDate, params);
-      case Graph_Type.PROJECT_BUDGET_BY_DIVISION:
-        return getGraphDataForProjectBudgetByDivision(measure, organizationId, startDate, endDate, params);
-      case Graph_Type.CHANGE_REQUESTS_BY_PROJECT:
-        return getGraphDataForChangeRequestsByProject(measure, organizationId, startDate, endDate, params);
-      case Graph_Type.CHANGE_REQUESTS_BY_TEAM:
-        return getGraphDataForChangeRequestsByTeam(measure, organizationId, startDate, endDate, params);
-      case Graph_Type.CHANGE_REQUESTS_BY_DIVISION:
-        return getGraphDataForChangeRequestsByDivision(measure, organizationId, startDate, endDate, params);
-      case Graph_Type.REIMBURSEMENT_TOTAL_BY_PROJECT:
-        return getGraphDataForReimbursementRequestsByProject(measure, organizationId, startDate, endDate, params);
-      case Graph_Type.REIMBURSEMENT_TOTAL_BY_TEAM:
-        return getGraphDataForReimbursementRequestsByTeam(measure, organizationId, startDate, endDate, params);
-      case Graph_Type.REIMBURSEMENT_TOTAL_BY_DIVISION:
-        return getGraphDataForReimbursementRequestsByDivision(measure, organizationId, startDate, endDate, params);
-    }
   }
 
   /**
@@ -171,7 +125,7 @@ export default class StatisticsService {
 
     return graphTransformer({
       ...requestedGraph,
-      graphData: await StatisticsService.getGraphData(
+      graphData: await getGraphData(
         requestedGraph.graphType,
         requestedGraph.measure,
         organization.organizationId,

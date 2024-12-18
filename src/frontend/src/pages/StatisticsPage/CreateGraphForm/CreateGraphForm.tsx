@@ -17,8 +17,8 @@ import { useGetAllCars } from '../../../hooks/cars.hooks';
 
 const defaultValues: GraphFormInput = {
   measure: Measure.SUM,
-  startTime: null,
-  endTime: null,
+  startTime: undefined,
+  endTime: undefined,
   title: '',
   graphType: null,
   graphDisplayType: GraphDisplayType.BAR,
@@ -27,8 +27,8 @@ const defaultValues: GraphFormInput = {
 };
 
 const schema = yup.object().shape({
-  endTime: yup.date().required(),
-  startTime: yup.date().required(),
+  endTime: yup.date().optional(),
+  startTime: yup.date().optional(),
   title: yup.string().required(),
   graphType: yup.string().required(),
   graphDisplayType: yup.string().required(),
@@ -54,14 +54,12 @@ const CreateGraphForm: React.FC = () => {
 
   const onSubmit = async (formInput: GraphFormInput) => {
     try {
-      if (!formInput.endTime) throw new Error('Please enter end time');
-      if (!formInput.startTime) throw new Error('Please enter start time');
       if (!formInput.graphType) throw new Error('Please enter graph type');
       await createGraph({
         ...formInput,
-        graphType: formInput.graphType,
         startDate: formInput.startTime,
         endDate: formInput.endTime,
+        graphType: formInput.graphType,
         carIds: formInput.cars.map((car) => car.id)
       });
 

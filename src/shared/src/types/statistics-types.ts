@@ -61,8 +61,8 @@ export interface GraphCollection {
 }
 
 export interface CreateGraphArgs {
-  startDate: Date;
-  endDate: Date;
+  startDate?: Date;
+  endDate?: Date;
   title: String;
   graphType: GraphType;
   measure: Measure;
@@ -75,8 +75,8 @@ export interface GraphFormInput {
   title: string;
   measure: Measure;
   graphType: GraphType | null;
-  startTime: Date | null;
-  endTime: Date | null;
+  startTime?: Date;
+  endTime?: Date;
   graphDisplayType: GraphDisplayType;
   graphCollectionId?: string;
   cars: Car[];

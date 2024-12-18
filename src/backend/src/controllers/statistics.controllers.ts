@@ -19,8 +19,6 @@ export default class StatisticsController {
 
       const graph: Graph = await StatisticsService.createGraph(
         req.currentUser,
-        new Date(startDate),
-        new Date(endDate),
         title,
         graphType,
         measure,
@@ -28,6 +26,8 @@ export default class StatisticsController {
         req.organization,
         carIds,
         specialPermissions,
+        startDate ? new Date(startDate) : undefined,
+        endDate ? new Date(endDate) : undefined,
         graphCollectionId
       );
 
