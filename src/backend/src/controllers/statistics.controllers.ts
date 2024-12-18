@@ -48,4 +48,13 @@ export default class StatisticsController {
       next(error);
     }
   }
+
+  static async getAllGraphCollections(req: Request, res: Response, next: NextFunction) {
+    try {
+      const graphCollections = await StatisticsService.getAllGraphCollections(req.organization);
+      return res.status(200).json(graphCollections);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
 }

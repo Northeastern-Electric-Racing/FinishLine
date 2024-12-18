@@ -1,4 +1,4 @@
-import { Graph_Display_Type, Graph_Type, Organization, User } from '@prisma/client';
+import { Graph_Type, Organization, User, Graph_Display_Type } from '@prisma/client';
 import { supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import {
   createTestCar,
@@ -11,7 +11,8 @@ import {
 } from '../test-utils';
 import StatisticsService from '../../src/services/statistics.services';
 import { AccessDeniedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
-import { Measure } from 'shared';
+import { Measure, SpecialPermission } from 'shared';
+import prisma from '../../src/prisma/prisma';
 
 describe('Statistics Tests', () => {
   let orgId: string;
@@ -299,6 +300,65 @@ describe('Statistics Tests', () => {
       await expect(async () => StatisticsService.getSingleGraph(invalidGraphId, user, organization)).rejects.toThrow(
         new NotFoundException('Graph', invalidGraphId)
       );
+    });
+  });
+
+  describe('Get all graph collections', () => {
+    it('Succeeds and gets all the graphs', async () => {
+      const graph1 = await prisma.graph.create({
+        data: {
+          title: 'graph1',
+          graphType: Graph_Type.CHANGE_REQUESTS_BY_DIVISION,
+          displayGraphType: Graph_Display_Type.BAR,
+          measure: Measure.AVG,
+          userCreatedId: user.userId,
+          organizationId: orgId
+        }
+      });
+
+      const graph2 = await prisma.graph.create({
+        data: {
+          title: 'graph2',
+          graphType: Graph_Type.PROJECT_BUDGET_BY_PROJECT,
+          displayGraphType: Graph_Display_Type.PIE,
+          measure: Measure.SUM,
+          userCreatedId: user.userId,
+          organizationId: orgId
+        }
+      });
+
+      const graphCollection1 = await prisma.graph_Collection.create({
+        data: {
+          title: 'Graph Collection 1',
+          viewPermissions: [SpecialPermission.FINANCE_ONLY],
+          graphs: {
+            connect: [{ id: graph1.id }, { id: graph2.id }]
+          },
+          userCreatedId: user.userId,
+          organizationId: orgId
+        }
+      });
+
+      const graphCollection2 = await prisma.graph_Collection.create({
+        data: {
+          title: 'Graph Collection 2',
+          viewPermissions: [SpecialPermission.FINANCE_ONLY],
+          graphs: {
+            connect: [{ id: graph1.id }, { id: graph2.id }]
+          },
+          userCreatedId: user.userId,
+          organizationId: orgId
+        }
+      });
+
+      const result = await StatisticsService.getAllGraphCollections(organization);
+      expect(result[0].userCreated.userId).toBe(user.userId);
+      expect(result.length).toBe(2);
+      expect(
+        result.map((graphCol) => {
+          return graphCol.id;
+        })
+      ).toEqual([graphCollection1.id, graphCollection2.id]);
     });
   });
 });
