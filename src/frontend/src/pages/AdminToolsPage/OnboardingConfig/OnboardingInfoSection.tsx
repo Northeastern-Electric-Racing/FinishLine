@@ -26,13 +26,13 @@ const OnboardingInfoSection: React.FC = () => {
   if (!organization || organizationIsLoading) return <LoadingIndicator />;
 
   return (
-    <Grid 
-      container 
-      item 
-      xs={12} 
-      sx={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
+    <Grid
+      container
+      item
+      xs={12}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
         gap: 2.5,
         width: '100%'
       }}

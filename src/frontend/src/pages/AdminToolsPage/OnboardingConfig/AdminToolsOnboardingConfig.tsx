@@ -4,7 +4,6 @@ import { useAllChecklists } from '../../../hooks/onboarding.hook';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { groupChecklists } from '../../../utils/onboarding.utils';
-import Checklist from '../../HomePage/components/Checklist';
 import { AdminChecklist } from './AdminChecklist';
 
 const AdminToolsOnboardingConfig: React.FC = () => {
@@ -34,7 +33,7 @@ const AdminToolsOnboardingConfig: React.FC = () => {
         <Grid item xs={12} md={7}>
           <Box>
             {Object.entries(groupedChecklists).map(([checklistName, checklists]) => (
-              <Grid item xs={12}  key={checklistName}>
+              <Grid item xs={12} key={checklistName}>
                 <AdminChecklist parentChecklists={checklists} checklistName={checklistName} />
               </Grid>
             ))}
