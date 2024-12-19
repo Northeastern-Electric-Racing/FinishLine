@@ -312,6 +312,10 @@ export const filterGanttProjects = (
   // filter out deleted projects
   deepCopy = deepCopy.filter((project) => !project.deleted);
 
+  for (const project of deepCopy) {
+    project.workPackages = project.workPackages.filter((wp) => !wp.deleted);
+  }
+
   return deepCopy;
 };
 

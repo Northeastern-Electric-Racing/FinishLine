@@ -1,5 +1,5 @@
 import { Box } from '@mui/material';
-import { Dispatch } from 'react';
+import { Dispatch, useCallback, useEffect } from 'react';
 import { Project, Team, WbsElement, WorkPackage } from 'shared';
 import { filterGanttProjects, GanttFilters } from '../../utils/gantt.utils';
 import GanttChartTeamSection from './GanttChartTeamSection';
