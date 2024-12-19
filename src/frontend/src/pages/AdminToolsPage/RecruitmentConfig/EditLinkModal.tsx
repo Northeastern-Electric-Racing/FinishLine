@@ -54,7 +54,7 @@ const EditLinkModal: React.FC<LinkModalProps> = ({ open, onHide, currentApplicat
     <NERFormModal
       open={open}
       onHide={onHide}
-      formId="application=link-form"
+      formId="application-link-form"
       title="Edit Application Link"
       reset={reset}
       handleUseFormSubmit={handleSubmit}
