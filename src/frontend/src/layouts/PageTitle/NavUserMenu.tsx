@@ -19,6 +19,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import { canAccessAdminTools } from '../../utils/users';
 import { Stack, useTheme } from '@mui/system';
 import { Typography } from '@mui/material';
+import { useHomePageContext } from '../../app/HomePageContext';
 
 interface NavUserMenuProps {
   open?: boolean;
@@ -28,6 +29,7 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const history = useHistory();
   const auth = useAuth();
+  const { onPNMHomePage, onOnboardingHomePage } = useHomePageContext();
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -130,12 +132,14 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
         >
           {auth.user?.email}
         </MenuItem>
-        <MenuItem component={RouterLink} to={routes.SETTINGS} onClick={handleClose} sx={{ py: 0 }}>
-          <ListItemIcon>
-            <SettingsIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Settings</ListItemText>
-        </MenuItem>
+        {!(onPNMHomePage || onOnboardingHomePage) && (
+          <MenuItem component={RouterLink} to={routes.SETTINGS} onClick={handleClose} sx={{ py: 0 }}>
+            <ListItemIcon>
+              <SettingsIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Settings</ListItemText>
+          </MenuItem>
+        )}
         {canAccessAdminTools(auth.user) && <AdminTools />}
         {import.meta.env.MODE === 'development' ? <DevLogout /> : <ProdLogout />}
       </Menu>
