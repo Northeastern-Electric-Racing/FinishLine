@@ -30,8 +30,7 @@ const OnboardingHomePage = () => {
       let totalItems = 0;
       let resolvedItems = 0;
 
-      // Potential Async Operation:
-      const checklist = OnboardingServices.getAllChecklists(organization); // This would need to be handled asynchronously
+      const checklist = OnboardingServices.getAllChecklists(organization);
       if (checklist) {
         setOnboardingChecklist(checklist);
       }
