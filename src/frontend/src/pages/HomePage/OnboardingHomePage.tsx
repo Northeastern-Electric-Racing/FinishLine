@@ -14,11 +14,7 @@ const OnboardingHomePage = () => {
   const { data: organization, isError, error, isLoading } = useCurrentOrganization();
   const { setOnPNMHomePage, setOnGuestHomePage, setOnOnboardingHomePage } = useHomePageContext();
   const [progress, setProgress] = useState(0);
-
-  const calculateProgress = () => {
-    // logic to calcualte progress using checklists
-    return 25; // static value for now
-  };
+  const [onboardingChecklist, setOnboardingChecklist] = useState(null);
 
   useEffect(() => {
     setOnPNMHomePage(false);
@@ -27,9 +23,29 @@ const OnboardingHomePage = () => {
   }, [setOnPNMHomePage, setOnGuestHomePage, setOnOnboardingHomePage]);
 
   useEffect(() => {
+    const calculateProgress = () => {
+      /*
+      if (!onboardingChecklist) return 0;
+
+      let totalItems = 0;
+      let resolvedItems = 0;
+
+      // Potential Async Operation:
+      const checklist = OnboardingServices.getAllChecklists(organization); // This would need to be handled asynchronously
+      if (checklist) {
+        setOnboardingChecklist(checklist);
+      }
+
+      return (totalItems = (resolvedItems / totalItems) * 100);
+      */
+
+      // static value bc above code doesn't work
+      return 25;
+    };
+
     const calculatedProgress = calculateProgress();
     setProgress(calculatedProgress);
-  }, []);
+  });
 
   if (!organization || isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
