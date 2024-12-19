@@ -77,7 +77,7 @@ const ApplicationLinkTable: React.FC = () => {
                 borderBottom: 'none'
               }}
             >
-              <Box display={'flex'}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '500px' }}>
                 <Link
                   href={url}
                   target="_blank"

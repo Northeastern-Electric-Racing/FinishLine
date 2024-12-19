@@ -9,7 +9,7 @@ import NERFormModal from '../../../components/NERFormModal';
 import { Box, TextField } from '@mui/material';
 
 const schema = yup.object().shape({
-  applicationLink: yup.string().required('Application Link is Required')
+  applicationLink: yup.string().required('Application Link is Required').url('Please Enter a Valid URL')
 });
 
 interface UpdateApplicatioinLinkModalProps {
@@ -30,7 +30,12 @@ const UpdateApplicationLinkModal: React.FC<UpdateApplicatioinLinkModalProps> = (
   const toast = useToast();
   const { mutateAsync, isLoading } = useUpdateApplicationLink();
 
-  const { register, handleSubmit, reset } = useForm<ApplicationLinkFormData>({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors }
+  } = useForm<ApplicationLinkFormData>({
     resolver: yupResolver(schema),
     defaultValues: {
       applicationLink: currentApplicationLink
@@ -52,6 +57,12 @@ const UpdateApplicationLinkModal: React.FC<UpdateApplicatioinLinkModalProps> = (
     }
   };
 
+  const onError = (errors: any) => {
+    if (errors.applicationLink) {
+      toast.error(errors.applicationLink.message);
+    }
+  };
+
   if (isLoading) return <LoadingIndicator />;
 
   return (
@@ -62,7 +73,7 @@ const UpdateApplicationLinkModal: React.FC<UpdateApplicatioinLinkModalProps> = (
       title="Update Application Link"
       reset={reset}
       handleUseFormSubmit={handleSubmit}
-      onFormSubmit={onSubmit}
+      onFormSubmit={handleSubmit(onSubmit, onError)}
     >
       <Box sx={{ width: '500px' }}>
         <TextField
@@ -74,6 +85,8 @@ const UpdateApplicationLinkModal: React.FC<UpdateApplicatioinLinkModalProps> = (
           label="Application Link"
           placeholder="Enter application link"
           margin="normal"
+          error={!!errors.applicationLink}
+          helperText={errors.applicationLink?.message}
         />
       </Box>
     </NERFormModal>
