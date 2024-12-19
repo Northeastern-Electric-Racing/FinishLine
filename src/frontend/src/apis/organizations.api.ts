@@ -1,7 +1,7 @@
 import axios from '../utils/axios';
 import { Organization } from 'shared';
 import { apiUrls } from '../utils/urls';
-import { OnboardingTextPayload, UpdateContactsPayload } from '../hooks/organizations.hooks';
+import { ApplicationLinkPayload, OnboardingTextPayload, UpdateContactsPayload } from '../hooks/organizations.hooks';
 
 /**
  * Create a design review
@@ -29,6 +29,16 @@ export const updateOrganizationContacts = async (payload: UpdateContactsPayload)
  */
 export const setOnboardingText = (payload: OnboardingTextPayload) => {
   return axios.post(apiUrls.organizationSetOnboardingText(), {
+    ...payload
+  });
+};
+
+/**
+ * Sets application link field
+ * @param payload all info needed to create a design review
+ */
+export const setApplicationLink = (payload: ApplicationLinkPayload) => {
+  return axios.post(apiUrls.organizationSetApplicationLink(), {
     ...payload
   });
 };
