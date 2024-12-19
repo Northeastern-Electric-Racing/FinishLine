@@ -2,8 +2,11 @@ import { TableCell, TableRow, Box, Typography, Table as MuiTable, TableHead, Tab
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
+import UpdateApplicationLinkModal from './UpdateApplicationLinkModal';
+import { useState } from 'react';
 
 const ApplicationLinkTable: React.FC = () => {
+  const [showModal, setShowModal] = useState(false);
   const {
     data: organization,
     isLoading: organizationIsLoading,
@@ -58,6 +61,7 @@ const ApplicationLinkTable: React.FC = () => {
                     cursor: 'pointer'
                   }
                 }}
+                onClick={() => setShowModal(true)}
               >
                 {organization.applicationLink}
               </Typography>
@@ -65,6 +69,11 @@ const ApplicationLinkTable: React.FC = () => {
           </TableRow>
         </TableBody>
       </MuiTable>
+      <UpdateApplicationLinkModal
+        open={showModal}
+        onHide={() => setShowModal(false)}
+        currentApplicationLink={organization.applicationLink}
+      />
     </Box>
   );
 };
