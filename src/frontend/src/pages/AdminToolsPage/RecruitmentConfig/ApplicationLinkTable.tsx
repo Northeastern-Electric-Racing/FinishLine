@@ -22,7 +22,7 @@ const ApplicationLinkTable: React.FC = () => {
 
   const handleClose = () => {
     setShowModal(false);
-    toast.success('Application link saved successfully!', 5000);
+    toast.success('Application link saved successfully!');
   };
 
   if (!organization || organizationIsLoading) {
