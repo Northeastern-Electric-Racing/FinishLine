@@ -181,7 +181,6 @@ model User {
   createdMilestones               Milestone[]               @relation(name: "milestoneCreator")
   deletedMilestones               Milestone[]               @relation(name: "milestoneDeleter")
   unreadAnnouncements             Announcement[]            @relation(name: "receivedAnnouncements")
-  createdAnnouncements            Announcement[]            @relation(name: "createdAnnouncements")
   unreadNotifications             Notification[]            @relation(name: "userNotifications")
 }
 
@@ -932,13 +931,13 @@ model Milestone {
 }
 
 model Announcement {
-  announcementId   String   @id @default(uuid())
+  announcementId   String    @id @default(uuid())
   text             String
-  usersReceived    User[]   @relation("receivedAnnouncements")
+  usersReceived    User[]    @relation("receivedAnnouncements")
   dateCreated      DateTime
-  userCreatedId    String
-  userCreated      User     @relation("createdAnnouncements", fields: [userCreatedId], references: [userId])
-  slackEventId     String
+  dateDeleted      DateTime?
+  senderName       String
+  slackEventId     String    @unique
   slackChannelName String
 }
 

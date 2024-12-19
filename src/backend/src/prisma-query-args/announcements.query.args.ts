@@ -6,7 +6,6 @@ export type AnnouncementQueryArgs = ReturnType<typeof getAnnouncementQueryArgs>;
 export const getAnnouncementQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.AnnouncementDefaultArgs>()({
     include: {
-      usersReceived: getUserQueryArgs(organizationId),
-      userCreated: getUserQueryArgs(organizationId)
+      usersReceived: getUserQueryArgs(organizationId)
     }
   });

@@ -7,10 +7,12 @@ const announcementTransformer = (announcement: Prisma.AnnouncementGetPayload<Ann
   return {
     announcementId: announcement.announcementId,
     text: announcement.text,
+    usersReceived: announcement.usersReceived.map(userTransformer),
     dateCreated: announcement.dateCreated,
-    userCreated: userTransformer(announcement.userCreated),
+    senderName: announcement.senderName,
     slackEventId: announcement.slackEventId,
-    slackChannelName: announcement.slackChannelName
+    slackChannelName: announcement.slackChannelName,
+    dateDeleted: announcement.dateDeleted ?? undefined
   };
 };
 
