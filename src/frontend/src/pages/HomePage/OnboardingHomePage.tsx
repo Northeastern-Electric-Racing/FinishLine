@@ -1,22 +1,35 @@
 import { Box, Grid, Typography } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { useCurrentOrganization } from '../../hooks/organizations.hooks';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useHomePageContext } from '../../app/HomePageContext';
 import ChecklistSection from './components/ChecklistSection';
 import OnboardingInfoSection from './components/OnboardingInfoSection';
+import { NERButton } from '../../components/NERButton';
+import ProgressBarWithValue from '../../components/ProgressBarWithValue';
 
 const OnboardingHomePage = () => {
   const { data: organization, isError, error, isLoading } = useCurrentOrganization();
   const { setOnPNMHomePage, setOnGuestHomePage, setOnOnboardingHomePage } = useHomePageContext();
+  const [progress, setProgress] = useState(0);
+
+  const calculateProgress = () => {
+    // logic to calcualte progress using checklists
+    return 25; // static value for now
+  };
 
   useEffect(() => {
     setOnPNMHomePage(false);
     setOnGuestHomePage(false);
     setOnOnboardingHomePage(true);
   }, [setOnPNMHomePage, setOnGuestHomePage, setOnOnboardingHomePage]);
+
+  useEffect(() => {
+    const calculatedProgress = calculateProgress();
+    setProgress(calculatedProgress);
+  }, []);
 
   if (!organization || isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
@@ -27,7 +40,16 @@ const OnboardingHomePage = () => {
         <Grid item xs={12} md={7}>
           <Typography sx={{ fontSize: '2.5em' }}>Welcome to the Northeastern Electric Racing Team</Typography>
         </Grid>
-        {/* This will be replaced with the 'Finished' button*/}
+        <NERButton
+          variant="contained"
+          style={{
+            backgroundColor: progress === 100 ? '#ef4345' : '#5b5b5b',
+            color: 'white'
+          }}
+          disabled={progress !== 100}
+        >
+          Finished?
+        </NERButton>
         <Grid item xs={12} md={5} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
           <Typography sx={{ fontSize: '2em' }}>Finished</Typography>
         </Grid>
@@ -41,7 +63,7 @@ const OnboardingHomePage = () => {
         }}
       >
         <Box display={'flex'} justifyContent={'center'}>
-          {/* This will be replaced with the 'Progress Bar' component*/}
+          <ProgressBarWithValue value={progress} />
           <Typography sx={{ fontSize: '2em', mt: 4, ml: 2 }}>Progress Bar</Typography>
         </Box>
         <Grid container display={'flex'}>
