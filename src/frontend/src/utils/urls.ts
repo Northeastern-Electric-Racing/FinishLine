@@ -177,7 +177,7 @@ const organizationsUsefulLinks = () => `${organizations()}/useful-links`;
 const organizationsSetUsefulLinks = () => `${organizationsUsefulLinks()}/set`;
 const organizationsUpdateContacts = () => `${organizations()}/contacts/set`;
 const organizationsSetOnboardingText = () => `${organizations()}/onboardingText/set`;
-const organizationsUpdateApplicationLink = () => `${organizations()}/applicatioin-link/update`;
+const organizationsUpdateApplicationLink = () => `${organizations()}/application-link/update`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
