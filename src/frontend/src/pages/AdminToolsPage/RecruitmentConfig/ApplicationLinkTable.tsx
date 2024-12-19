@@ -6,6 +6,7 @@ import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import AdminToolTable from '../AdminToolTable';
 import React, { useState } from 'react';
 import EditLinkModal from './EditLinkModal';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 const ApplicationLinkTable: React.FC = () => {
   const {
@@ -15,10 +16,13 @@ const ApplicationLinkTable: React.FC = () => {
     error: organizationError
   } = useCurrentOrganization();
 
+  const toast = useToast();
+
   const [showModal, setShowModal] = useState(false);
 
   const handleClose = () => {
     setShowModal(false);
+    toast.success('Application link saved successfully!', 5000);
   };
 
   if (!organization || organizationIsLoading) {

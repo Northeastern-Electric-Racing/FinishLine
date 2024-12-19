@@ -9,7 +9,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 
 const schema = yup.object().shape({
-  applicationLink: yup.string().required('URL is required!').url('Invalid URL')
+  applicationLink: yup.string().required('URL is required!').url('Please enter a valid URL')
 });
 
 interface LinkModalProps {
@@ -40,6 +40,7 @@ const EditLinkModal: React.FC<LinkModalProps> = ({ open, onHide, currentApplicat
   const onSubmit = async (data: LinkFormData) => {
     try {
       await mutateAsync(data);
+      toast.success('Application link updated successfully!', 5000);
       onHide();
     } catch (e) {
       if (e instanceof Error) {
