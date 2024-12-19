@@ -1,9 +1,7 @@
-import { TableCell, TableRow, Box, Typography } from '@mui/material';
+import { TableCell, TableRow, Box, Typography, Table as MuiTable, TableHead, TableBody } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
-import AdminToolTable from '../AdminToolTable';
-import React from 'react';
 
 const ApplicationLinkTable: React.FC = () => {
   const {
@@ -20,23 +18,53 @@ const ApplicationLinkTable: React.FC = () => {
     return <ErrorPage message={organizationError.message} />;
   }
 
-  const applicationLinks = [organization.applicationLink];
-  const applicationLinkTableRows = applicationLinks.map((applicationLink) => {
-    return (
-      <TableRow>
-        <TableCell align="left" sx={{ border: '2px solid black' }}>
-          {applicationLink}
-        </TableCell>
-      </TableRow>
-    );
-  });
-
   return (
     <Box>
       <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
         Links Config
       </Typography>
-      <AdminToolTable columns={[{ name: 'Links' }]} rows={applicationLinkTableRows} />
+      <MuiTable>
+        <TableHead>
+          <TableRow>
+            <TableCell
+              sx={{
+                fontWeight: 'bold',
+                fontSize: '1em',
+                backgroundColor: '#ef4345',
+                color: 'white',
+                borderRadius: '10px 10px 0px 0px'
+              }}
+            >
+              Application Link
+            </TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          <TableRow>
+            <TableCell
+              sx={{
+                minHeight: '50px',
+                display: 'flex',
+                alignItems: 'center',
+                borderBottom: 'none'
+              }}
+            >
+              <Typography
+                sx={{
+                  maxWidth: '100%',
+                  wordBreak: 'break-word',
+                  '&:hover': {
+                    textDecoration: 'underline',
+                    cursor: 'pointer'
+                  }
+                }}
+              >
+                {organization.applicationLink}
+              </Typography>
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </MuiTable>
     </Box>
   );
 };
