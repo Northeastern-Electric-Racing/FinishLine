@@ -52,9 +52,9 @@ export default class StatisticsController {
   static async getAllGraphCollections(req: Request, res: Response, next: NextFunction) {
     try {
       const graphCollections = await StatisticsService.getAllGraphCollections(req.organization);
-      return res.status(200).json(graphCollections);
+      res.status(200).json(graphCollections);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 }

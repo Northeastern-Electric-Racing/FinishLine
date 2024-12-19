@@ -304,6 +304,31 @@ describe('Statistics Tests', () => {
   });
 
   describe('Get all graph collections', () => {
+    // const graphGen: GraphGen = {
+    //   finalColumn: 'budget',
+    //   finalTable: 'Project',
+    //   groupByColumn: 'name',
+    //   queryPath: {
+    //     table: 'Team_Type',
+    //     primaryKey: 'teamTypeId',
+    //     next: {
+    //       table: 'Team',
+    //       primaryKey: 'teamId',
+    //       parentForeignKey: 'teamTypeId',
+    //       next: {
+    //         table: '_assignedBy',
+    //         primaryKey: 'A',
+    //         parentForeignKey: 'B',
+    //         next: {
+    //           table: 'Project',
+    //           primaryKey: 'projectId',
+    //           parentForeignKey: 'projectId'
+    //         }
+    //       }
+    //     }
+    //   }
+    // };
+
     it('Succeeds and gets all the graphs', async () => {
       const graph1 = await prisma.graph.create({
         data: {

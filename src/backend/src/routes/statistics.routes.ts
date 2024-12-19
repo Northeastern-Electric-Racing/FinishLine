@@ -34,6 +34,8 @@ statisticsRouter.post(
   StatisticsController.createGraph
 );
 
+statisticsRouter.get('/statistics/graphCollections', StatisticsController.getAllGraphCollections);
+
 statisticsRouter.get('/graph/:graphId', StatisticsController.getSingleGraph);
 
 export default statisticsRouter;
