@@ -1,5 +1,6 @@
-import { TableCell, TableRow, Box, Typography, Table as MuiTable, TableHead, TableBody } from '@mui/material';
+import { TableCell, TableRow, Box, Typography, Table as MuiTable, TableHead, TableBody, Link, Button } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
+import EditIcon from '@mui/icons-material/Edit';
 import ErrorPage from '../../ErrorPage';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import UpdateApplicationLinkModal from './UpdateApplicationLinkModal';
@@ -20,6 +21,7 @@ const ApplicationLinkTable: React.FC = () => {
   if (organizationIsError) {
     return <ErrorPage message={organizationError.message} />;
   }
+  const url = organization.applicationLink;
 
   return (
     <Box>
@@ -35,10 +37,23 @@ const ApplicationLinkTable: React.FC = () => {
                 fontSize: '1em',
                 backgroundColor: '#ef4345',
                 color: 'white',
-                borderRadius: '10px 10px 0px 0px'
+                borderRadius: '10px 0 0 0',
+                width: '30%'
               }}
             >
-              Application Link
+              Link Name
+            </TableCell>
+            <TableCell
+              sx={{
+                fontWeight: 'bold',
+                fontSize: '1em',
+                backgroundColor: '#ef4345',
+                color: 'white',
+                borderRadius: '0 10px 0 0',
+                width: '70%'
+              }}
+            >
+              URL
             </TableCell>
           </TableRow>
         </TableHead>
@@ -47,33 +62,44 @@ const ApplicationLinkTable: React.FC = () => {
             <TableCell
               sx={{
                 minHeight: '50px',
+                alignItems: 'center',
+                borderBottom: 'none',
+                borderRight: '1px solid'
+              }}
+            >
+              <Box display={'flex'}>
+                <Typography>Application Link</Typography>
+                <Button sx={{ p: 0.5, color: 'white' }} onClick={() => setShowModal(true)}>
+                  <EditIcon />
+                </Button>
+              </Box>
+            </TableCell>
+            <TableCell
+              sx={{
+                minHeight: '50px',
                 display: 'flex',
                 alignItems: 'center',
                 borderBottom: 'none'
               }}
             >
-              <Typography
+              <Link
+                href={url}
+                target="_blank"
                 sx={{
-                  maxWidth: '100%',
-                  wordBreak: 'break-word',
+                  color: 'white',
+                  textDecoration: 'none',
                   '&:hover': {
-                    textDecoration: 'underline',
-                    cursor: 'pointer'
+                    textDecoration: 'underline'
                   }
                 }}
-                onClick={() => setShowModal(true)}
               >
-                {organization.applicationLink}
-              </Typography>
+                {url}
+              </Link>
             </TableCell>
           </TableRow>
         </TableBody>
       </MuiTable>
-      <UpdateApplicationLinkModal
-        open={showModal}
-        onHide={() => setShowModal(false)}
-        currentApplicationLink={organization.applicationLink}
-      />
+      <UpdateApplicationLinkModal open={showModal} onHide={() => setShowModal(false)} currentApplicationLink={url} />
     </Box>
   );
 };
