@@ -67,12 +67,7 @@ const ApplicationLinkTable: React.FC = () => {
                 borderRight: '1px solid'
               }}
             >
-              <Box display={'flex'}>
-                <Typography>Application Link</Typography>
-                <Button sx={{ p: 0.5, color: 'white' }} onClick={() => setShowModal(true)}>
-                  <EditIcon />
-                </Button>
-              </Box>
+              <Typography>Application Link</Typography>
             </TableCell>
             <TableCell
               sx={{
@@ -82,19 +77,24 @@ const ApplicationLinkTable: React.FC = () => {
                 borderBottom: 'none'
               }}
             >
-              <Link
-                href={url}
-                target="_blank"
-                sx={{
-                  color: 'white',
-                  textDecoration: 'none',
-                  '&:hover': {
-                    textDecoration: 'underline'
-                  }
-                }}
-              >
-                {url}
-              </Link>
+              <Box display={'flex'}>
+                <Link
+                  href={url}
+                  target="_blank"
+                  sx={{
+                    color: 'white',
+                    textDecoration: 'none',
+                    '&:hover': {
+                      textDecoration: 'underline'
+                    }
+                  }}
+                >
+                  {url}
+                </Link>
+                <Button sx={{ p: 0.5, color: 'white' }} onClick={() => setShowModal(true)}>
+                  <EditIcon />
+                </Button>
+              </Box>
             </TableCell>
           </TableRow>
         </TableBody>
