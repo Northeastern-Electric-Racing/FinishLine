@@ -1,45 +1,46 @@
 import { Box, Grid, Typography } from '@mui/material';
 import OnboardingInfoSection from './OnboardingInfoSection';
+import { useAllChecklists } from '../../../hooks/onboarding.hook';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
+import { groupChecklists } from '../../../utils/onboarding.utils';
+import Checklist from '../../HomePage/components/Checklist';
+import { AdminChecklist } from './AdminChecklist';
 
 const AdminToolsOnboardingConfig: React.FC = () => {
+  const {
+    data: allChecklists,
+    isLoading: allChecklistsIsLoading,
+    isError: allChecklistsIsError,
+    error: allChecklistsError
+  } = useAllChecklists();
+
+  if (allChecklistsIsError) {
+    return <ErrorPage error={allChecklistsError} />;
+  }
+
+  if (!allChecklists || allChecklistsIsLoading) {
+    return <LoadingIndicator />;
+  }
+
+  const groupedChecklists = groupChecklists(allChecklists);
+
   return (
     <Box padding="5px">
       <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
         Onboarding Config
       </Typography>
-      <Grid
-        container
-        spacing={3}
-        sx={{
-          display: 'flex',
-          flexDirection: 'column'
-        }}
-      >
-        <Grid container display={'flex'}>
-          {/* This will be replaced with the 'Checklist' component*/}
-          <Grid item xs={12} md={7}>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                height: '80vh',
-                width: '100%',
-                mt: 4
-              }}
-            >
-              <Box
-                sx={{
-                  backgroundColor: 'gray',
-                  height: '100%',
-                  width: '95%',
-                  borderRadius: '10px',
-                  overflow: 'auto'
-                }}
-              >
-                <Typography>Checklists</Typography>
-              </Box>
-            </Box>
-          </Grid>
+      <Grid container spacing={2} padding={1} sx={{ width: '100%' }}>
+        <Grid item xs={12} md={7}>
+          <Box>
+            {Object.entries(groupedChecklists).map(([checklistName, checklists]) => (
+              <Grid item xs={12}  key={checklistName}>
+                <AdminChecklist parentChecklists={checklists} checklistName={checklistName} />
+              </Grid>
+            ))}
+          </Box>
+        </Grid>
+        <Grid item xs={12} md={5} sx={{ width: '100%', mt: 0.5 }}>
           <OnboardingInfoSection />
         </Grid>
       </Grid>

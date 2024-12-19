@@ -1,9 +1,9 @@
-import { Grid, Box } from '@mui/material';
-import { useGeneralChecklists, useUsersTeamTypeChecklists } from '../../../hooks/onboarding.hook';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import ErrorPage from '../../ErrorPage';
+import { Box, Grid } from '@mui/material';
+import { groupChecklists } from '../../../utils/onboarding.utils';
 import Checklist from './Checklist';
-import { Checklist as ChecklistType } from 'shared';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import { useGeneralChecklists, useUsersTeamTypeChecklists } from '../../../hooks/onboarding.hook';
+import ErrorPage from '../../ErrorPage';
 
 const ChecklistSection: React.FC = () => {
   const {
@@ -32,38 +32,14 @@ const ChecklistSection: React.FC = () => {
     return <LoadingIndicator />;
   }
 
-  const groupedChecklists = usersTeamTypeChecklists.reduce<Record<string, ChecklistType[]>>(
-    (groupedChecklists, checklist) => {
-      let checklistName: string;
-      if (checklist.teamType) {
-        checklistName = checklist.teamType.name;
-      } else if (checklist.team) {
-        checklistName = checklist.team?.teamName;
-      } else {
-        checklistName = 'General';
-      }
-
-      if (!groupedChecklists[checklistName]) {
-        groupedChecklists[checklistName] = [];
-      }
-      groupedChecklists[checklistName].push(checklist);
-      return groupedChecklists;
-    },
-    {}
-  );
-
-  const groupedChecklistsArray = Object.entries(groupedChecklists).map(([checklistName, checklists]) => ({
-    checklistName,
-    checklists
-  }));
-
-  const allChecklists = [{ checklistName: 'General', checklists: generalChecklists }, ...groupedChecklistsArray];
+  const allChecklists = [...generalChecklists, ...usersTeamTypeChecklists];
+  const groupedChecklists = groupChecklists(allChecklists);
 
   return (
     <Box>
       <Grid container>
-        {allChecklists.map(({ checklistName, checklists }) => (
-          <Grid item xs={12} padding={2}>
+        {Object.entries(groupedChecklists).map(([checklistName, checklists]) => (
+          <Grid item xs={12} padding={2} key={checklistName}>
             <Checklist parentChecklists={checklists} checklistName={checklistName} />
           </Grid>
         ))}
