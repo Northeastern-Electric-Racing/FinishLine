@@ -34,23 +34,26 @@ const ScrollablePageBlock: React.FC<ScrollablePageBlockProps> = ({ children, tit
           sx={{
             mt: 2,
             display: 'flex',
-            flexDirection: horizontal ? 'row' : 'column',
+            flexDirection: 'row',
+            flexWrap: 'wrap',
             gap: 2,
             height: '100%',
             overflowX: horizontal ? 'auto' : 'hidden',
             overflowY: horizontal ? 'hidden' : 'auto',
             '&::-webkit-scrollbar': {
-              height: '20px'
+              width: '20px'
             },
             '&::-webkit-scrollbar-track': {
               backgroundColor: 'transparent'
             },
             '&::-webkit-scrollbar-thumb': {
-              backgroundColor: theme.palette.error.dark,
+              backgroundColor: theme.palette.primary.main,
               borderRadius: '20px',
               border: '6px solid transparent',
               backgroundClip: 'content-box'
-            }
+            },
+            scrollbarWidth: 'auto',
+            scrollbarColor: `${theme.palette.primary.main} transparent`
           }}
         >
           {children}
