@@ -165,17 +165,19 @@ const GanttTaskBarDisplay = ({
           </Typography>
         </div>
         {isProject &&
-          task.allWorkPackages.map((workPackage) => {
-            const child = transformWorkPackageToGanttTask(workPackage, task.teamName, task.allWorkPackages);
-            return (
-              <div
-                style={ganttTaskBarWorkPackageOverlayStyles(child)}
-                onMouseOver={(e) => handleOnMouseOver(e, child)}
-                onMouseLeave={handleOnMouseLeave}
-                onClick={() => history.push(`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`)}
-              />
-            );
-          })}
+          task.allWorkPackages
+            .filter((workPackage) => !workPackage.deleted)
+            .map((workPackage) => {
+              const child = transformWorkPackageToGanttTask(workPackage, task.teamName, task.allWorkPackages);
+              return (
+                <div
+                  style={ganttTaskBarWorkPackageOverlayStyles(child)}
+                  onMouseOver={(e) => handleOnMouseOver(e, child)}
+                  onMouseLeave={handleOnMouseLeave}
+                  onClick={() => history.push(`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`)}
+                />
+              );
+            })}
         {task.designReviews.map((designReview) => {
           return (
             <div
