@@ -1,6 +1,6 @@
 import { Box, LinearProgress, linearProgressClasses, styled, SxProps, Typography } from '@mui/material';
 
-interface ProgressBarWithValueProps {
+interface OnboardingProgressBarProps {
   value: number;
   text?: string;
   typographySx?: SxProps;
@@ -20,7 +20,7 @@ const StyledProgressBar = styled(LinearProgress)(() => ({
   }
 }));
 
-const OnboardingProgressBar: React.FC<ProgressBarWithValueProps> = ({ value, text, typographySx, progressBarSx }) => {
+const OnboardingProgressBar: React.FC<OnboardingProgressBarProps> = ({ value, text, typographySx, progressBarSx }) => {
   return (
     <Box position="relative" display="flex" alignItems="center" width="100%">
       <StyledProgressBar variant="determinate" value={value} style={{ flexGrow: 1 }} sx={progressBarSx} />
