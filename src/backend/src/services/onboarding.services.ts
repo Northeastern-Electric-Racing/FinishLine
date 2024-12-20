@@ -356,6 +356,7 @@ export default class OnboardingServices {
       });
     }
 
+    // Check off the parent checklist if all subtasks are checked
     if (checklist.parentChecklistId) {
       const parentChecklist = await prisma.checklist.findUnique({
         where: { checklistId: checklist.parentChecklistId },
