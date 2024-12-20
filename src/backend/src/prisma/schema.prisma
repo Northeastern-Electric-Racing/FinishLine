@@ -180,8 +180,7 @@ model User {
   deletedFrequentlyAskedQuestions FrequentlyAskedQuestion[] @relation(name: "frequentlyAskedQuestionDeleter")
   createdMilestones               Milestone[]               @relation(name: "milestoneCreator")
   deletedMilestones               Milestone[]               @relation(name: "milestoneDeleter")
-  receivedAnnouncements           Announcement[]            @relation(name: "receivedAnnouncements")
-  createdAnnouncements            Announcement[]            @relation(name: "createdAnnouncements")
+  unreadAnnouncements             Announcement[]            @relation(name: "receivedAnnouncements")
   unreadNotifications             Notification[]            @relation(name: "userNotifications")
 }
 
@@ -878,6 +877,7 @@ model Organization {
   applyInterestImageId  String?   @unique
   exploreAsGuestImageId String?   @unique
   logoImageId           String?
+  slackWorkspaceId      String?
 
   // Relation references
   wbsElements              WBS_Element[]
@@ -932,17 +932,20 @@ model Milestone {
 }
 
 model Announcement {
-  announcementId String   @id @default(uuid())
-  text           String
-  usersReceived  User[]   @relation("receivedAnnouncements")
-  dateCrated     DateTime
-  userCreatedId  String
-  userCreated    User     @relation("createdAnnouncements", fields: [userCreatedId], references: [userId])
+  announcementId   String    @id @default(uuid())
+  text             String
+  usersReceived    User[]    @relation("receivedAnnouncements")
+  dateCreated      DateTime
+  dateDeleted      DateTime?
+  senderName       String
+  slackEventId     String    @unique
+  slackChannelName String
 }
 
 model Notification {
-  notificationId String @id @default(uuid())
+  notificationId String  @id @default(uuid())
   text           String
   iconName       String
-  users          User[] @relation("userNotifications")
+  users          User[]  @relation("userNotifications")
+  eventLink      String?
 }

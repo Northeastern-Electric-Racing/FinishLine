@@ -325,4 +325,36 @@ describe('Organization Tests', () => {
       expect(oldOrganization?.description).toBe(returnedOrganization.description);
     });
   });
+
+  describe('Set Organization slack id', () => {
+    it('Fails if user is not an admin', async () => {
+      await expect(
+        OrganizationsService.setOrganizationSlackWorkspaceId(
+          'test slack id',
+          await createTestUser(wonderwomanGuest, orgId),
+          organization
+        )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('set slack workspace id'));
+    });
+
+    it('Succeeds and updates the slack id', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+
+      const returnedOrganization = await OrganizationsService.setOrganizationSlackWorkspaceId(
+        'sample slack id',
+        testBatman,
+        organization
+      );
+
+      const oldOrganization = await prisma.organization.findUnique({
+        where: {
+          organizationId: orgId
+        }
+      });
+
+      expect(oldOrganization).not.toBeNull();
+      expect(oldOrganization?.slackWorkspaceId).toBe('sample slack id');
+      expect(oldOrganization?.slackWorkspaceId).toBe(returnedOrganization.slackWorkspaceId);
+    });
+  });
 });

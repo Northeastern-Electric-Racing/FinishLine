@@ -33,7 +33,7 @@ import { writeFileSync } from 'fs';
 import WorkPackageTemplatesService from '../services/work-package-template.services';
 import RecruitmentServices from '../services/recruitment.services';
 import OrganizationsService from '../services/organizations.services';
-import NotificationsService from '../services/notifications.services';
+import AnnouncementService from '../services/announcement.service';
 
 const prisma = new PrismaClient();
 
@@ -1895,7 +1895,15 @@ const performSeed: () => Promise<void> = async () => {
 
   await RecruitmentServices.createFaq(batman, 'How many developers are working on FinishLine?', '178 as of 2024', ner);
 
-  await NotificationsService.sendNotifcationToUsers('Admin!', 'star', [thomasEmrax.userId], ner.organizationId);
+  await AnnouncementService.createAnnouncement(
+    'Welcome to Finishline!',
+    [regina.userId],
+    new Date(),
+    'Thomas Emrax',
+    '1',
+    'software',
+    ner.organizationId
+  );
 };
 
 performSeed()

@@ -17,7 +17,7 @@ import workPackageTemplatesRouter from './src/routes/work-package-templates.rout
 import carsRouter from './src/routes/cars.routes';
 import organizationRouter from './src/routes/organizations.routes';
 import recruitmentRouter from './src/routes/recruitment.routes';
-import slackRouter from './src/routes/slack.routes';
+import { slackEvents } from './src/routes/slack.routes';
 
 const app = express();
 
@@ -40,6 +40,10 @@ const options: cors.CorsOptions = {
   optionsSuccessStatus: 204,
   allowedHeaders
 };
+
+// so we can listen to slack messages
+// NOTE: must be done before using json
+app.use('/slack', slackEvents.requestListener());
 
 // so that we can use cookies and json
 app.use(cookieParser());
@@ -69,7 +73,6 @@ app.use('/templates', workPackageTemplatesRouter);
 app.use('/cars', carsRouter);
 app.use('/organizations', organizationRouter);
 app.use('/recruitment', recruitmentRouter);
-app.use('/slack', slackRouter);
 app.use('/', (_req, res) => {
   res.status(200).json('Welcome to FinishLine');
 });
