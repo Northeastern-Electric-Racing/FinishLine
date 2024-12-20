@@ -5,13 +5,8 @@ import { userTransformer } from './user.transformer';
 
 const announcementTransformer = (announcement: Prisma.AnnouncementGetPayload<AnnouncementQueryArgs>): Announcement => {
   return {
-    announcementId: announcement.announcementId,
-    text: announcement.text,
+    ...announcement,
     usersReceived: announcement.usersReceived.map(userTransformer),
-    dateCreated: announcement.dateCreated,
-    senderName: announcement.senderName,
-    slackEventId: announcement.slackEventId,
-    slackChannelName: announcement.slackChannelName,
     dateDeleted: announcement.dateDeleted ?? undefined
   };
 };
