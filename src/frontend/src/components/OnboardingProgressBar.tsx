@@ -27,6 +27,7 @@ const OnboardingProgressBar: React.FC<ProgressBarWithValueProps> = ({ value, tex
       <Typography
         variant="caption"
         sx={{
+          ml: 1,
           position: 'absolute',
           left: '10px',
           fontWeight: 'bold',
@@ -34,7 +35,7 @@ const OnboardingProgressBar: React.FC<ProgressBarWithValueProps> = ({ value, tex
           ...typographySx
         }}
       >
-        {`${Math.round(value)}% ${text}`}
+        {`${Math.round(value)}% ${text ? text : ''}`}
       </Typography>
     </Box>
   );

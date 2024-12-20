@@ -55,7 +55,7 @@ const OnboardingHomePage = () => {
             <OnboardingProgressBar
               value={50}
               text={'Complete'}
-              typographySx={{ fontSize: '1.2em', ml: 1 }}
+              typographySx={{ fontSize: '1.2em' }}
               progressBarSx={{ height: '3vh' }}
             />
           </Box>
