@@ -10,7 +10,7 @@ import { useToast } from '../../../hooks/toasts.hooks';
 interface SubtaskSectionProps {
   subtasks: Checklist[];
   parentTask: Checklist;
-  checkedChecklists: Checklist[];
+  checkedChecklists?: Checklist[];
   isAdmin?: boolean;
 }
 
@@ -25,6 +25,11 @@ const SubtaskSection: React.FC<SubtaskSectionProps> = ({ subtasks, parentTask, c
     } catch (error: any) {
       toast.error(error.message);
     }
+  };
+
+  const isChecklistChecked = (checklistId: string) => {
+    if (!checkedChecklists) return false;
+    return checkedChecklists.some((checklist) => checklist.checklistId === checklistId);
   };
 
   return (
@@ -54,7 +59,7 @@ const SubtaskSection: React.FC<SubtaskSectionProps> = ({ subtasks, parentTask, c
                   ) : (
                     <IconButton onClick={() => handleToggleChecklist(subtask.checklistId)}>
                       <Checkbox
-                        checked={checkedChecklists.some((checklist) => checklist.checklistId === subtask.checklistId)}
+                        checked={isChecklistChecked(subtask.checklistId)}
                         sx={{
                           '& .MuiSvgIcon-root': {
                             fill: 'black',
