@@ -1898,7 +1898,6 @@ const performSeed: () => Promise<void> = async () => {
   await AnnouncementService.createAnnouncement(
     'Welcome to Finishline!',
     [regina.userId],
-    new Date(),
     'Thomas Emrax',
     '1',
     'software',
