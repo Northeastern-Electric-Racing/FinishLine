@@ -33,7 +33,7 @@ export default class AnnouncementService {
     return announcementTransformer(announcement);
   }
 
-  static async UpdateAnnouncement(
+  static async updateAnnouncement(
     text: string,
     usersReceivedIds: string[],
     dateCreated: Date,
@@ -70,7 +70,7 @@ export default class AnnouncementService {
     return announcementTransformer(announcement);
   }
 
-  static async DeleteAnnouncement(slackEventId: string, organizationId: string): Promise<Announcement> {
+  static async deleteAnnouncement(slackEventId: string, organizationId: string): Promise<Announcement> {
     const announcement = await prisma.announcement.update({
       where: { slackEventId },
       data: {
