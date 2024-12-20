@@ -28,15 +28,6 @@ const Checklist: React.FC<{ parentChecklists: ChecklistType[]; checklistName?: s
               <Box sx={{ flexGrow: 1 }}>
                 <OnboardingProgressBar value={50} />
               </Box>
-    <Box sx={{ backgroundColor: theme.palette.background.paper, borderRadius: 5 }}>
-      <Grid container>
-        <Grid item xs={12} padding={2.5}>
-          <Grid display="flex" alignItems="center" justifyContent="space-between">
-            <Typography fontSize="2em" fontWeight="bold">
-              {checklistName} Checklist
-            </Typography>
-            <Grid display="flex" alignItems="center" gap={2}>
-              <progress value={50} max={100} />
               <IconButton onClick={toggleShowTasks}>{showTasks ? <KeyboardArrowDown /> : <KeyboardArrowRight />}</IconButton>
             </Grid>
           </Grid>
