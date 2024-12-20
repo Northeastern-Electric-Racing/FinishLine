@@ -78,19 +78,21 @@ const ApplicationLinkTable: React.FC = () => {
               }}
             >
               <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '500px' }}>
-                <Link
-                  href={url}
-                  target="_blank"
-                  sx={{
-                    color: 'white',
-                    textDecoration: 'none',
-                    '&:hover': {
-                      textDecoration: 'underline'
-                    }
-                  }}
-                >
-                  {url}
-                </Link>
+                <Typography marginTop={'4px'}>
+                  <Link
+                    href={url}
+                    target="_blank"
+                    sx={{
+                      color: 'white',
+                      textDecoration: 'none',
+                      '&:hover': {
+                        textDecoration: 'underline'
+                      }
+                    }}
+                  >
+                    {url}
+                  </Link>
+                </Typography>
                 <Button sx={{ p: 0.5, color: 'white' }} onClick={() => setShowModal(true)}>
                   <EditIcon />
                 </Button>
