@@ -110,5 +110,5 @@ export const routes = {
 
   STATISTICS,
   CREATE_GRAPH,
-  GRAPH_COLLECTION_BY_ID,
+  GRAPH_COLLECTION_BY_ID
 };

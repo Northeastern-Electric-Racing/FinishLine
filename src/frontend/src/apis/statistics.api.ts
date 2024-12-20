@@ -41,5 +41,5 @@ export const getSingleGraph = (id: string) => {
 export const updateGraphCollection = (id: string, payload: GraphCollectionFormInput) => {
   return axios.post<GraphCollection>(apiUrls.updateGraphCollection(id), payload, {
     transformResponse: (data) => graphCollectionTransformer(JSON.parse(data))
-  })
-}
+  });
+};

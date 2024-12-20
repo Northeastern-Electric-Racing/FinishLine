@@ -23,14 +23,7 @@ const schema = yup.object().shape({
   permissions: yup.array().required()
 });
 
-const GraphCollectionForm = ({
-  open,
-  onHide,
-  defaultValues,
-  action,
-  successText,
-  title
-}: GraphCollectionFormProps) => {
+const GraphCollectionForm = ({ open, onHide, defaultValues, action, successText, title }: GraphCollectionFormProps) => {
   const toast = useToast();
   const history = useHistory();
 
