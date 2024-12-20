@@ -26,7 +26,17 @@ const OnboardingInfoSection: React.FC = () => {
   if (!organization || organizationIsLoading) return <LoadingIndicator />;
 
   return (
-    <Grid container item xs={12} md={5} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 4 }}>
+    <Grid
+      container
+      item
+      xs={12}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2.5,
+        width: '100%'
+      }}
+    >
       <OnboardingBlock organization={organization} isAdmin={true} />
       <Grid item>
         <Box
@@ -34,7 +44,8 @@ const OnboardingInfoSection: React.FC = () => {
             backgroundColor: (theme) => theme.palette.background.paper,
             height: '100%',
             borderRadius: '10px',
-            padding: '16px'
+            padding: '16px',
+            width: '100%'
           }}
         >
           <Typography
