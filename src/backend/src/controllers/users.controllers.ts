@@ -194,10 +194,9 @@ export default class UsersController {
 
   static async getUserUnreadNotifications(req: Request, res: Response, next: NextFunction) {
     try {
-      const { userId } = req.params;
-      const { organization } = req;
+      const { organization, currentUser } = req;
 
-      const unreadNotifications = await UsersService.getUserUnreadNotifications(userId, organization);
+      const unreadNotifications = await UsersService.getUserUnreadNotifications(currentUser.userId, organization);
       res.status(200).json(unreadNotifications);
     } catch (error: unknown) {
       next(error);
@@ -206,11 +205,14 @@ export default class UsersController {
 
   static async removeUserNotification(req: Request, res: Response, next: NextFunction) {
     try {
-      const { userId } = req.params;
-      const { notificationId } = req.body;
-      const { organization } = req;
+      const { notificationId } = req.params;
+      const { organization, currentUser } = req;
 
-      const unreadNotifications = await UsersService.removeUserNotification(userId, notificationId, organization);
+      const unreadNotifications = await UsersService.removeUserNotification(
+        currentUser.userId,
+        notificationId,
+        organization
+      );
       res.status(200).json(unreadNotifications);
     } catch (error: unknown) {
       next(error);
@@ -219,10 +221,9 @@ export default class UsersController {
 
   static async getUserUnreadAnnouncements(req: Request, res: Response, next: NextFunction) {
     try {
-      const { userId } = req.params;
-      const { organization } = req;
+      const { organization, currentUser } = req;
 
-      const unreadAnnouncements = await UsersService.getUserUnreadAnnouncements(userId, organization);
+      const unreadAnnouncements = await UsersService.getUserUnreadAnnouncements(currentUser.userId, organization);
       res.status(200).json(unreadAnnouncements);
     } catch (error: unknown) {
       next(error);
