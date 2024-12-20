@@ -13,6 +13,14 @@ import projectTransformer from '../transformers/projects.transformer';
 
 export default class OrganizationsService {
   /**
+   * Retrieve all the organizations
+   * @returns an array of every organization
+   */
+  static async getAllOrganizations(): Promise<Organization[]> {
+    return prisma.organization.findMany();
+  }
+
+  /**
    * Gets the current organization
    * @param organizationId the organizationId to be fetched
    */
@@ -274,5 +282,31 @@ export default class OrganizationsService {
     }
 
     return organization.featuredProjects.map(projectTransformer);
+  }
+
+  /**
+   * Sets the slack workspace id used to initialize slack bots for this organization
+   * @param slackWorkspaceId the id of the organization's slack workspace
+   * @param submitter the user making this submission (must be an admin)
+   * @param organization the organization being changed
+   * @returns the changed organization
+   */
+  static async setOrganizationSlackWorkspaceId(
+    slackWorkspaceId: string,
+    submitter: User,
+    organization: Organization
+  ): Promise<Organization> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('set slack workspace id');
+    }
+    const updatedOrg = prisma.organization.update({
+      where: {
+        organizationId: organization.organizationId
+      },
+      data: {
+        slackWorkspaceId
+      }
+    });
+    return updatedOrg;
   }
 }

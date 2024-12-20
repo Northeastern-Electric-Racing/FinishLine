@@ -220,4 +220,23 @@ export const getUserName = async (userId: string) => {
   }
 };
 
+/**
+ * Get the workspace id of the workspace this slack api is registered with
+ * @returns the id of the workspace
+ */
+export const getWorkspaceId = async () => {
+  const { SLACK_BOT_TOKEN } = process.env;
+  if (!SLACK_BOT_TOKEN) return;
+
+  try {
+    const response = await slack.auth.test();
+    if (response.ok) {
+      return response.team_id;
+    }
+    throw new Error(response.error);
+  } catch (error) {
+    throw new HttpException(500, 'Error getting slack workspace id: ' + (error as any).data.error);
+  }
+};
+
 export default slack;
