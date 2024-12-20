@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Grid, Typography, Button } from '@mui/material';
+import React, { useEffect } from 'react';
+import { Box, Grid, Typography } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { useCurrentOrganization } from '../../hooks/organizations.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -28,7 +28,10 @@ const OnboardingHomePage = () => {
           <Typography sx={{ fontSize: '2.5em' }}>Welcome to the {organization.name} Team</Typography>
         </Grid>
         <Grid item xs={12} md={5} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <NERButton variant="contained">Finished?</NERButton>
+          <NERButton variant="contained" disabled>
+            Finished?
+          </NERButton>{' '}
+          {/* Disabled button */}
         </Grid>
       </Grid>
       <Grid
