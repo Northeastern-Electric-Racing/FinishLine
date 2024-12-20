@@ -1,12 +1,14 @@
-import { Box, Grid, Typography } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Grid, Typography, Button } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { useCurrentOrganization } from '../../hooks/organizations.hooks';
-import { useEffect } from 'react';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useHomePageContext } from '../../app/HomePageContext';
 import ChecklistSection from './components/ChecklistSection';
 import OnboardingInfoSection from './components/OnboardingInfoSection';
+import OnboardingProgressBar from '../../components/OnboardingProgressBar';
+import { NERButton } from '../../components/NERButton';
 
 const OnboardingHomePage = () => {
   const { data: organization, isError, error, isLoading } = useCurrentOrganization();
@@ -21,13 +23,12 @@ const OnboardingHomePage = () => {
 
   return (
     <PageLayout title="Home" hidePageTitle>
-      <Grid container display={'flex'} alignItems={'center'} marginLeft={2} marginTop={4}>
+      <Grid container display="flex" alignItems="center" marginLeft={2} marginTop={4}>
         <Grid item xs={12} md={7}>
           <Typography sx={{ fontSize: '2.5em' }}>Welcome to the {organization.name} Team</Typography>
         </Grid>
-        {/* This will be replaced with the 'Finished' button*/}
         <Grid item xs={12} md={5} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <Typography sx={{ fontSize: '2em' }}>Finished</Typography>
+          <NERButton variant="contained">Finished?</NERButton>
         </Grid>
       </Grid>
       <Grid
@@ -38,11 +39,15 @@ const OnboardingHomePage = () => {
           flexDirection: 'column'
         }}
       >
-        <Box display={'flex'} justifyContent={'center'}>
-          {/* This will be replaced with the 'Progress Bar' component*/}
-          <Typography sx={{ fontSize: '2em', mt: 4, ml: 2 }}>Progress Bar</Typography>
+        <Box display="flex" justifyContent="center">
+          <Box sx={{ width: '80%', mt: 4, ml: 2, display: 'flex', alignItems: 'center' }}>
+            <Typography sx={{ fontSize: '1.5em', flexShrink: 0, marginRight: 2 }}>Overall Progress</Typography>
+            <Box sx={{ flexGrow: 1 }}>
+              <OnboardingProgressBar value={50} />
+            </Box>
+          </Box>
         </Box>
-        <Grid container display={'flex'}>
+        <Grid container display="flex">
           <Grid
             item
             xs={12}
@@ -67,4 +72,5 @@ const OnboardingHomePage = () => {
     </PageLayout>
   );
 };
+
 export default OnboardingHomePage;

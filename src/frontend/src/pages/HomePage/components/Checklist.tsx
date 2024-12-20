@@ -3,6 +3,7 @@ import { Checklist as ChecklistType } from 'shared';
 import { Typography, Grid, Box, IconButton, useTheme } from '@mui/material';
 import { KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
 import Task from './Task';
+import OnboardingProgressBar from '../../../components/OnboardingProgressBar';
 
 const Checklist: React.FC<{ parentChecklists: ChecklistType[]; checklistName?: string }> = ({
   parentChecklists,
@@ -16,19 +17,23 @@ const Checklist: React.FC<{ parentChecklists: ChecklistType[]; checklistName?: s
   };
 
   return (
-    <Box sx={{ backgroundColor: theme.palette.background.paper, borderRadius: 5 }}>
-      <Grid container>
-        <Grid item xs={12} padding={2.5}>
-          <Grid display="flex" alignItems="center" justifyContent="space-between">
+    <Box sx={{ backgroundColor: theme.palette.background.paper, borderRadius: 5, p: 2 }}>
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <Grid container justifyContent="space-between" alignItems="center">
             <Typography fontSize="2em" fontWeight="bold">
               {checklistName ?? 'General'} Checklist
             </Typography>
-            <Grid display="flex" alignItems="center" gap={2}>
-              <progress value={50} max={100} />
+            <Grid container alignItems="center" gap={2} sx={{ flexGrow: 1 }}>
+              <Box sx={{ flexGrow: 1 }}>
+                <OnboardingProgressBar value={50} />
+              </Box>
               <IconButton onClick={toggleShowTasks}>{showTasks ? <KeyboardArrowDown /> : <KeyboardArrowRight />}</IconButton>
             </Grid>
           </Grid>
-          {showTasks && (
+        </Grid>
+        {showTasks && (
+          <Grid item xs={12}>
             <Box
               sx={{
                 marginTop: 3,
@@ -38,12 +43,12 @@ const Checklist: React.FC<{ parentChecklists: ChecklistType[]; checklistName?: s
                 justifyContent: 'center'
               }}
             >
-              {parentChecklists.map((parentChecklist) => (
-                <Task subtasks={parentChecklist.subtasks} parentTask={parentChecklist} />
+              {parentChecklists.map((parentChecklist, index) => (
+                <Task key={index} subtasks={parentChecklist.subtasks} parentTask={parentChecklist} />
               ))}
             </Box>
-          )}
-        </Grid>
+          </Grid>
+        )}
       </Grid>
     </Box>
   );
