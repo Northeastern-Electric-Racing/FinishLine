@@ -5,7 +5,6 @@ export default class OnboardingController {
   static async downloadImage(req: Request, res: Response, next: NextFunction) {
     try {
       const { fileId } = req.params;
-      console.log('FILE ID:', fileId);
 
       const imageData = await OnboardingServices.downloadImage(fileId);
 

@@ -10,7 +10,7 @@ import {
   setOrganizationLogo,
   setOrganizationFeaturedProjects
 } from '../apis/organizations.api';
-import { downloadGoogleImage } from '../apis/onboarding.api';
+import { downloadGoogleImage } from '../apis/organizations.api';
 
 interface OrganizationProvider {
   organizationId: string;
