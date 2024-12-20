@@ -57,12 +57,6 @@ const UpdateApplicationLinkModal: React.FC<UpdateApplicatioinLinkModalProps> = (
     }
   };
 
-  const onError = (errors: any) => {
-    if (errors.applicationLink) {
-      toast.error(errors.applicationLink.message);
-    }
-  };
-
   if (isLoading) return <LoadingIndicator />;
 
   return (
@@ -73,7 +67,7 @@ const UpdateApplicationLinkModal: React.FC<UpdateApplicatioinLinkModalProps> = (
       title="Update Application Link"
       reset={reset}
       handleUseFormSubmit={handleSubmit}
-      onFormSubmit={handleSubmit(onSubmit, onError)}
+      onFormSubmit={onSubmit}
     >
       <Box sx={{ width: '500px' }}>
         <TextField
