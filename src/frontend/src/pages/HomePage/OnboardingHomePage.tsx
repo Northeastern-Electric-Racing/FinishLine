@@ -1,16 +1,19 @@
-import { Box, Grid, Typography } from '@mui/material';
+import { Box, Grid, Typography, Button } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { useCurrentOrganization } from '../../hooks/organizations.hooks';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useHomePageContext } from '../../app/HomePageContext';
 import ChecklistSection from './components/ChecklistSection';
 import OnboardingInfoSection from './components/OnboardingInfoSection';
+import ConfirmOnboardingChecklistModal from './components/ConfirmOnboardingChecklistModal'; // Import the modal
+import { NERButton } from '../../components/NERButton';
 
 const OnboardingHomePage = () => {
   const { data: organization, isError, error, isLoading } = useCurrentOrganization();
   const { setCurrentHomePage } = useHomePageContext();
+  const [isModalOpen, setModalOpen] = useState(false); // State to manage modal visibility
 
   useEffect(() => {
     setCurrentHomePage('onboarding');
@@ -19,15 +22,25 @@ const OnboardingHomePage = () => {
   if (!organization || isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
+  const handleOpenModal = () => {
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+
   return (
     <PageLayout title="Home" hidePageTitle>
       <Grid container display={'flex'} alignItems={'center'} marginLeft={2} marginTop={4}>
         <Grid item xs={12} md={7}>
           <Typography sx={{ fontSize: '2.5em' }}>Welcome to the {organization.name} Team</Typography>
         </Grid>
-        {/* This will be replaced with the 'Finished' button*/}
         <Grid item xs={12} md={5} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <Typography sx={{ fontSize: '2em' }}>Finished</Typography>
+          {/* Replace with the 'Finished' button */}
+          <NERButton variant="contained" onClick={handleOpenModal}>
+            Finished
+          </NERButton>
         </Grid>
       </Grid>
       <Grid
@@ -39,7 +52,7 @@ const OnboardingHomePage = () => {
         }}
       >
         <Box display={'flex'} justifyContent={'center'}>
-          {/* This will be replaced with the 'Progress Bar' component*/}
+          {/* Replace with the 'Progress Bar' component */}
           <Typography sx={{ fontSize: '2em', mt: 4, ml: 2 }}>Progress Bar</Typography>
         </Box>
         <Grid container display={'flex'}>
@@ -64,7 +77,12 @@ const OnboardingHomePage = () => {
           </Grid>
         </Grid>
       </Grid>
+      {/* Render modal conditionally */}
+      {isModalOpen && <ConfirmOnboardingChecklistModal onClose={handleCloseModal} onFormSubmit={function (data: any): void {
+        throw new Error('Function not implemented.');
+      } } dataType={''} />}
     </PageLayout>
   );
 };
+
 export default OnboardingHomePage;
