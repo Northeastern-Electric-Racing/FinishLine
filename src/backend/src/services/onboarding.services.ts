@@ -320,7 +320,7 @@ export default class OnboardingServices {
     });
   }
 
-  static async toggleChecklistItem(checklistId: string, userId: string) {
+  static async toggleChecklist(checklistId: string, userId: string) {
     const checklist = await prisma.checklist.findUnique({
       where: { checklistId },
       include: { usersChecked: true, subtasks: { where: { dateDeleted: null }, include: { usersChecked: true } } }
@@ -332,14 +332,8 @@ export default class OnboardingServices {
 
     const isChecked = checklist.usersChecked.some((user) => user.userId === userId);
 
-    if (checklist.subtasks.length > 0 && !isChecked) {
-      const allSubtasksChecked = checklist.subtasks.every((subtask) =>
-        subtask.usersChecked.some((user) => user.userId === userId)
-      );
-
-      if (!allSubtasksChecked) {
-        throw new Error('Cannot check off this checklist item because not all of its subtasks are checked.');
-      }
+    if (checklist.parentChecklistId == null && checklist.subtasks.length > 0) {
+      throw new HttpException(400, 'Cannot check off this checklist item unless its childred have been checked.');
     }
 
     if (isChecked) {
@@ -386,21 +380,13 @@ export default class OnboardingServices {
               }
             }
           });
-        } else {
-          await prisma.checklist.update({
-            where: { checklistId: parentChecklist.checklistId },
-            data: {
-              usersChecked: {
-                disconnect: { userId }
-              }
-            }
-          });
         }
       }
     }
 
-    return checklist;
-}
+    return prisma.checklist.findUnique({ where: { checklistId } });
+  }
+
   static async downloadImage(fileId: string) {
     const fileData = await downloadImageFile(fileId);
 
