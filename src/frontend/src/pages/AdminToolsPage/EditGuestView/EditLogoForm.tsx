@@ -23,13 +23,6 @@ const EditLogoForm: React.FC<EditLogoFormProps> = ({ onSubmit, orgLogo, onHide }
     }
   });
 
-  const onSubmitWrapper = async (data: EditLogoInput) => {
-    if (!!data.logoImage) {
-      await onSubmit(data);
-    }
-    reset();
-  };
-
   const onHideWrapper = () => {
     onHide();
     reset();
@@ -106,12 +99,7 @@ const EditLogoForm: React.FC<EditLogoFormProps> = ({ onSubmit, orgLogo, onHide }
           <NERFailButton sx={{ mx: 1 }} form={'edit-organization-logo'} onClick={onHideWrapper}>
             Cancel
           </NERFailButton>
-          <NERSuccessButton
-            sx={{ mx: 1 }}
-            type="submit"
-            form={'edit-organization-logo'}
-            onClick={handleSubmit(onSubmitWrapper)}
-          >
+          <NERSuccessButton sx={{ mx: 1 }} type="submit" form={'edit-organization-logo'}>
             Save
           </NERSuccessButton>
         </Box>

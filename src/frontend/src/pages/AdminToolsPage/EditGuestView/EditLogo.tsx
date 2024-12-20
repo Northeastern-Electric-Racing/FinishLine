@@ -6,16 +6,24 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { Box, Card, Typography, useTheme } from '@mui/material';
 import LogoDisplay from '../../HomePage/components/LogoDisplay';
 import { NERButton } from '../../../components/NERButton';
+import ErrorPage from '../../ErrorPage';
 
 const EditLogo = () => {
-  const { data: organization, isLoading: organizationIsLoading } = useCurrentOrganization();
-  const { data: imageData, isLoading: imageDataIsLoading } = useOrganizationLogo();
+  const {
+    data: organization,
+    isLoading: organizationIsLoading,
+    isError: organizationIsError,
+    error: organizationError
+  } = useCurrentOrganization();
+  const { data: imageData, isLoading: imageDataIsLoading, isError: imageIsError, error: imageError } = useOrganizationLogo();
   const { mutateAsync, isLoading } = useSetOrganizationLogo();
   const toast = useToast();
   const [isEditMode, setIsEditMode] = useState(false);
   const theme = useTheme();
 
   if (isLoading || !mutateAsync || organizationIsLoading || !organization || imageDataIsLoading) return <LoadingIndicator />;
+  if (organizationIsError) return <ErrorPage message={organizationError.message} />;
+  if (imageIsError) return <ErrorPage message={imageError.message} />;
 
   const handleClose = () => {
     setIsEditMode(false);
@@ -23,8 +31,8 @@ const EditLogo = () => {
 
   const onSubmit = async (logoInput: EditLogoInput) => {
     try {
-      console.log(logoInput);
       if (!logoInput.logoImage) {
+        toast.error('No logo image submitted.');
         handleClose();
         return;
       }
