@@ -301,7 +301,8 @@ export const createTestChecklist = async (
     },
     include: {
       subtasks: true,
-      teamType: true
+      teamType: true,
+      usersChecked: true
     }
   });
 

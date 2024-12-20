@@ -16,7 +16,7 @@ export default class OnboardingServices {
   static async getAllChecklists(organization: Organization) {
     const allChecklists = await prisma.checklist.findMany({
       where: { organizationId: organization.organizationId, dateDeleted: null, parentChecklistId: null },
-      include: { subtasks: true, teamType: true }
+      include: { subtasks: true, teamType: true, usersChecked: true }
     });
 
     return allChecklists;
@@ -36,7 +36,7 @@ export default class OnboardingServices {
         dateDeleted: null,
         parentChecklistId: null
       },
-      include: { subtasks: true, teamType: true }
+      include: { subtasks: true, teamType: true, usersChecked: true }
     });
     return generalChecklists;
   }
@@ -397,8 +397,12 @@ export default class OnboardingServices {
         }
       }
     }
+    const updatedChecklist = await prisma.checklist.findUnique({
+      where: { checklistId },
+      include: { usersChecked: true }
+    });
 
-    return prisma.checklist.findUnique({ where: { checklistId } });
+    return updatedChecklist;
   }
 
   static async downloadImage(fileId: string) {
