@@ -578,13 +578,18 @@ export default class UsersService {
    * @returns the unread notifications of the user
    */
   static async getUserUnreadNotifications(userId: string, organization: Organization) {
-    const requestedUser = await prisma.user.findUnique({
-      where: { userId },
-      include: { unreadNotifications: getNotificationQueryArgs(organization.organizationId) }
+    const unreadNotifications = await prisma.notification.findMany({
+      where: {
+        users: {
+          some: { userId }
+        }
+      },
+      ...getNotificationQueryArgs(organization.organizationId)
     });
-    if (!requestedUser) throw new NotFoundException('User', userId);
 
-    return requestedUser.unreadNotifications.map(notificationTransformer);
+    if (!unreadNotifications) throw new HttpException(404, 'User Unread Notifications Not Found');
+
+    return unreadNotifications.map(notificationTransformer);
   }
 
   /**

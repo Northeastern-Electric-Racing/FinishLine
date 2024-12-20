@@ -4,6 +4,7 @@ import { batmanAppAdmin } from '../test-data/users.test-data';
 import UsersService from '../../src/services/users.services';
 import { NotFoundException } from '../../src/utils/errors.utils';
 import NotificationsService from '../../src/services/notifications.services';
+import AnnouncementService from '../../src/services/announcement.service';
 
 describe('User Tests', () => {
   let orgId: string;
@@ -51,12 +52,6 @@ describe('User Tests', () => {
   });
 
   describe('Get Notifications', () => {
-    it('fails on invalid user id', async () => {
-      await expect(async () => await UsersService.getUserUnreadNotifications('1', organization)).rejects.toThrow(
-        new NotFoundException('User', '1')
-      );
-    });
-
     it('Succeeds and gets user notifications', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
       await NotificationsService.sendNotifcationToUsers('test1', 'test1', [testBatman.userId], orgId);
@@ -71,17 +66,7 @@ describe('User Tests', () => {
   });
 
   describe('Remove Notifications', () => {
-    it('Fails with invalid user', async () => {
-      const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      await NotificationsService.sendNotifcationToUsers('test1', 'test1', [testBatman.userId], orgId);
-      const notifications = await UsersService.getUserUnreadNotifications(testBatman.userId, organization);
-
-      await expect(
-        async () => await UsersService.removeUserNotification('1', notifications[0].notificationId, organization)
-      ).rejects.toThrow(new NotFoundException('User', '1'));
-    });
-
-    it('Succeeds and gets user notifications', async () => {
+    it('Succeeds and removes user notification', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
       await NotificationsService.sendNotifcationToUsers('test1', 'test1', [testBatman.userId], orgId);
       await NotificationsService.sendNotifcationToUsers('test2', 'test2', [testBatman.userId], orgId);
@@ -100,6 +85,36 @@ describe('User Tests', () => {
 
       expect(updatedNotifications).toHaveLength(1);
       expect(updatedNotifications[0].text).toBe('test2');
+    });
+  });
+
+  describe('Get Announcements', () => {
+    it('Succeeds and gets user announcements', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      await AnnouncementService.createAnnouncement(
+        'test1',
+        [testBatman.userId],
+        new Date(),
+        'Thomas Emrax',
+        '1',
+        'software',
+        organization.organizationId
+      );
+      await AnnouncementService.createAnnouncement(
+        'test2',
+        [testBatman.userId],
+        new Date(),
+        'Superman',
+        '50',
+        'mechanical',
+        organization.organizationId
+      );
+
+      const announcements = await UsersService.getUserUnreadAnnouncements(testBatman.userId, organization);
+
+      expect(announcements).toHaveLength(2);
+      expect(announcements[0].text).toBe('test1');
+      expect(announcements[1].text).toBe('test2');
     });
   });
 });
