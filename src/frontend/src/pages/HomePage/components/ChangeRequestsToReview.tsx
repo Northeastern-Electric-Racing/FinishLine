@@ -19,7 +19,7 @@ const NoChangeRequestsToReview: React.FC = () => {
     <EmptyPageBlockDisplay
       icon={<CheckCircleOutlineOutlinedIcon sx={{ fontSize: 70 }} />}
       heading={`You're all caught up!`}
-      message={'You have no unreviewed changre requests!'}
+      message={'You have no unreviewed change requests!'}
     />
   );
 };

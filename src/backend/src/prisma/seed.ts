@@ -33,6 +33,7 @@ import { writeFileSync } from 'fs';
 import WorkPackageTemplatesService from '../services/work-package-template.services';
 import RecruitmentServices from '../services/recruitment.services';
 import OrganizationsService from '../services/organizations.services';
+import NotificationsService from '../services/notifications.services';
 
 const prisma = new PrismaClient();
 

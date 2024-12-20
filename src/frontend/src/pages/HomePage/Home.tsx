@@ -11,20 +11,26 @@ import { useState } from 'react';
 import MemberHomePage from './MemberHomePage';
 import LeadHomePage from './LeadHomePage';
 import AdminHomePage from './AdminHomePage';
+import NotificationAlert from '../../components/NotificationAlert';
 
 const Home = () => {
   const user = useCurrentUser();
   const [onMemberHomePage, setOnMemberHomePage] = useState(false);
-  return isGuest(user.role) && !onMemberHomePage ? (
-    <IntroGuestHomePage user={user} setOnMemberHomePage={setOnMemberHomePage} />
-  ) : isMember(user.role) ? (
-    <MemberHomePage user={user} />
-  ) : isLead(user.role) ? (
-    <LeadHomePage user={user} />
-  ) : isAdmin(user.role) ? (
-    <AdminHomePage user={user} />
-  ) : (
-    <GuestHomePage user={user} />
+  return (
+    <>
+      {!onMemberHomePage && <NotificationAlert user={user} />}
+      {isGuest(user.role) && !onMemberHomePage ? (
+        <IntroGuestHomePage user={user} setOnMemberHomePage={setOnMemberHomePage} />
+      ) : isMember(user.role) ? (
+        <MemberHomePage user={user} />
+      ) : isLead(user.role) ? (
+        <LeadHomePage user={user} />
+      ) : isAdmin(user.role) ? (
+        <AdminHomePage user={user} />
+      ) : (
+        <GuestHomePage user={user} />
+      )}
+    </>
   );
 };
 
