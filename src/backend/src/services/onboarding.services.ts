@@ -330,10 +330,14 @@ export default class OnboardingServices {
       throw new NotFoundException('Checklist', checklistId);
     }
 
+    if (checklist.dateDeleted) {
+      throw new DeletedException('Checklist', checklistId);
+    }
+
     const isChecked = checklist.usersChecked.some((user) => user.userId === userId);
 
     if (checklist.parentChecklistId == null && checklist.subtasks.length > 0) {
-      throw new HttpException(400, 'Cannot check off this checklist item unless its childred have been checked.');
+      throw new HttpException(400, 'Cannot check off this checklist item because not all of its subtasks are checked.');
     }
 
     if (isChecked) {
@@ -378,6 +382,15 @@ export default class OnboardingServices {
             data: {
               usersChecked: {
                 connect: { userId }
+              }
+            }
+          });
+        } else {
+          await prisma.checklist.update({
+            where: { checklistId: parentChecklist.checklistId },
+            data: {
+              usersChecked: {
+                disconnect: { userId }
               }
             }
           });
