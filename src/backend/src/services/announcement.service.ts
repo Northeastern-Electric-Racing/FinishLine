@@ -67,7 +67,7 @@ export default class AnnouncementService {
       data: {
         text,
         usersReceived: {
-          connect: usersReceivedIds.map((id) => ({
+          set: usersReceivedIds.map((id) => ({
             userId: id
           }))
         },
@@ -83,15 +83,24 @@ export default class AnnouncementService {
   }
 
   static async deleteAnnouncement(slackEventId: string, organizationId: string): Promise<Announcement> {
+    const originalAnnouncement = await prisma.announcement.findUnique({
+      where: {
+        slackEventId
+      }
+    });
+
+    if (!originalAnnouncement) throw new NotFoundException('Announcement', slackEventId);
+
     const announcement = await prisma.announcement.update({
       where: { slackEventId },
       data: {
-        dateDeleted: new Date()
+        dateDeleted: new Date(),
+        usersReceived: {
+          set: []
+        }
       },
       ...getAnnouncementQueryArgs(organizationId)
     });
-
-    if (!announcement) throw new NotFoundException('Announcement', slackEventId);
 
     return announcementTransformer(announcement);
   }

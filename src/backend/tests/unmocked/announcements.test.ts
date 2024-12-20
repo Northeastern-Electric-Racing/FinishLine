@@ -1,0 +1,158 @@
+import { Organization, User } from '@prisma/client';
+import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
+import {
+  batmanAppAdmin,
+  batmanSettings,
+  supermanAdmin,
+  supermanSettings,
+  wonderwomanGuest,
+  wonderwomanSettings
+} from '../test-data/users.test-data';
+import AnnouncementService from '../../src/services/announcement.service';
+import UsersService from '../../src/services/users.services';
+import { NotFoundException } from '../../src/utils/errors.utils';
+
+describe('announcement tests', () => {
+  let orgId: string;
+  let organization: Organization;
+  let batman: User;
+  let superman: User;
+  let wonderwoman: User;
+
+  beforeEach(async () => {
+    organization = await createTestOrganization();
+    orgId = organization.organizationId;
+    batman = await createTestUser(batmanAppAdmin, orgId, batmanSettings);
+    superman = await createTestUser(supermanAdmin, orgId, supermanSettings);
+    wonderwoman = await createTestUser(wonderwomanGuest, orgId, wonderwomanSettings);
+  });
+
+  afterEach(async () => {
+    await resetUsers();
+  });
+
+  it('creates announcements which can be recieved via users', async () => {
+    const announcement = await AnnouncementService.createAnnouncement(
+      'text',
+      [superman.userId, batman.userId],
+      new Date(1000000000000),
+      'sender name',
+      'slack id',
+      'channel name',
+      orgId
+    );
+    expect(announcement?.text).toBe('text');
+    expect(announcement?.usersReceived).toHaveLength(2);
+    expect(announcement?.senderName).toBe('sender name');
+    expect(announcement?.dateCreated).toStrictEqual(new Date(1000000000000));
+    expect(announcement?.slackEventId).toBe('slack id');
+    expect(announcement?.slackChannelName).toBe('channel name');
+    expect(announcement?.dateDeleted).toBeUndefined();
+
+    const smAnnouncements = await UsersService.getUserUnreadAnnouncements(superman.userId, organization);
+    const bmAnnouncements = await UsersService.getUserUnreadAnnouncements(batman.userId, organization);
+    const wwAnnouncements = await UsersService.getUserUnreadAnnouncements(wonderwoman.userId, organization);
+
+    expect(smAnnouncements).toHaveLength(1);
+    expect(smAnnouncements[0]?.text).toBe('text');
+    expect(smAnnouncements[0]?.usersReceived).toHaveLength(2);
+    expect(smAnnouncements[0]?.senderName).toBe('sender name');
+    expect(smAnnouncements[0]?.dateCreated).toStrictEqual(new Date(1000000000000));
+    expect(smAnnouncements[0]?.slackEventId).toBe('slack id');
+    expect(smAnnouncements[0]?.slackChannelName).toBe('channel name');
+    expect(smAnnouncements[0]?.dateDeleted).toBeUndefined();
+
+    expect(bmAnnouncements).toHaveLength(1);
+    expect(wwAnnouncements).toHaveLength(0);
+  });
+
+  it('updates an announcement', async () => {
+    await AnnouncementService.createAnnouncement(
+      'text',
+      [superman.userId, batman.userId],
+      new Date(1000000000000),
+      'sender name',
+      'slack id',
+      'channel name',
+      orgId
+    );
+
+    let smAnnouncements = await UsersService.getUserUnreadAnnouncements(superman.userId, organization);
+    let bmAnnouncements = await UsersService.getUserUnreadAnnouncements(batman.userId, organization);
+    let wwAnnouncements = await UsersService.getUserUnreadAnnouncements(wonderwoman.userId, organization);
+
+    expect(smAnnouncements).toHaveLength(1);
+    expect(bmAnnouncements).toHaveLength(1);
+    expect(wwAnnouncements).toHaveLength(0);
+
+    const updatedAnnouncement = await AnnouncementService.updateAnnouncement(
+      'new text',
+      [batman.userId, wonderwoman.userId],
+      new Date(1000000000000),
+      'sender name',
+      'slack id',
+      'channel name',
+      orgId
+    );
+
+    smAnnouncements = await UsersService.getUserUnreadAnnouncements(superman.userId, organization);
+    bmAnnouncements = await UsersService.getUserUnreadAnnouncements(batman.userId, organization);
+    wwAnnouncements = await UsersService.getUserUnreadAnnouncements(wonderwoman.userId, organization);
+
+    expect(smAnnouncements).toHaveLength(0);
+    expect(bmAnnouncements).toHaveLength(1);
+    expect(wwAnnouncements).toHaveLength(1);
+    expect(bmAnnouncements[0]?.text).toBe('new text');
+    expect(wwAnnouncements[0]?.text).toBe('new text');
+    expect(updatedAnnouncement?.text).toBe('new text');
+  });
+
+  it('fails to update if there is no slack id', async () => {
+    await expect(
+      async () =>
+        await AnnouncementService.updateAnnouncement(
+          'new text',
+          [batman.userId, wonderwoman.userId],
+          new Date(1000000000000),
+          'sender name',
+          'slack id',
+          'channel name',
+          orgId
+        )
+    ).rejects.toThrow(new NotFoundException('Announcement', 'slack id'));
+  });
+
+  it('deletes an announcement', async () => {
+    await AnnouncementService.createAnnouncement(
+      'text',
+      [superman.userId, batman.userId],
+      new Date(1000000000000),
+      'sender name',
+      'slack id',
+      'channel name',
+      orgId
+    );
+
+    let smAnnouncements = await UsersService.getUserUnreadAnnouncements(superman.userId, organization);
+    let bmAnnouncements = await UsersService.getUserUnreadAnnouncements(batman.userId, organization);
+
+    expect(smAnnouncements).toHaveLength(1);
+    expect(bmAnnouncements).toHaveLength(1);
+
+    const deletedAnnouncement = await AnnouncementService.deleteAnnouncement('slack id', orgId);
+
+    smAnnouncements = await UsersService.getUserUnreadAnnouncements(superman.userId, organization);
+    bmAnnouncements = await UsersService.getUserUnreadAnnouncements(batman.userId, organization);
+
+    expect(smAnnouncements).toHaveLength(0);
+    expect(bmAnnouncements).toHaveLength(0);
+    expect(deletedAnnouncement?.text).toBe('text');
+    expect(deletedAnnouncement?.dateDeleted).toBeDefined();
+  });
+
+  it('throws if it cannot find the announcement to delete', async () => {
+    await expect(async () => await AnnouncementService.deleteAnnouncement('non-existent id', orgId)).rejects.toThrow(
+      new NotFoundException('Announcement', 'non-existent id')
+    );
+  });
+});
