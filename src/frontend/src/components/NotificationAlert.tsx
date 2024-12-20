@@ -1,17 +1,13 @@
 import { Box } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { Notification, User } from 'shared';
+import { Notification } from 'shared';
 import NotificationCard from './NotificationCard';
 import { useRemoveUserNotification, useUserNotifications } from '../hooks/users.hooks';
 import { useHistory } from 'react-router-dom';
 
-interface NotificationAlertProps {
-  user: User;
-}
-
-const NotificationAlert: React.FC<NotificationAlertProps> = ({ user }) => {
-  const { data: notifications, isLoading: notificationsIsLoading } = useUserNotifications(user.userId);
-  const { mutateAsync: removeNotification, isLoading: removeIsLoading } = useRemoveUserNotification(user.userId);
+const NotificationAlert: React.FC = () => {
+  const { data: notifications, isLoading: notificationsIsLoading } = useUserNotifications();
+  const { mutateAsync: removeNotification, isLoading: removeIsLoading } = useRemoveUserNotification();
   const [currentNotification, setCurrentNotification] = useState<Notification>();
   const history = useHistory();
 

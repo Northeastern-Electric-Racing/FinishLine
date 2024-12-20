@@ -205,7 +205,7 @@ export default class UsersController {
 
   static async removeUserNotification(req: Request, res: Response, next: NextFunction) {
     try {
-      const { notificationId } = req.params;
+      const { notificationId } = req.body;
       const { organization, currentUser } = req;
 
       const unreadNotifications = await UsersService.removeUserNotification(

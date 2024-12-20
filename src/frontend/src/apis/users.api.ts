@@ -164,8 +164,8 @@ export const getManyUserTasks = (userIds: string[]) => {
 /*
  * Gets all unread notifications of the user with the given id
  */
-export const getNotifications = (id: string) => {
-  return axios.get<Notification[]>(apiUrls.userNotifications(id), {
+export const getNotifications = () => {
+  return axios.get<Notification[]>(apiUrls.userNotifications(), {
     transformResponse: (data) => JSON.parse(data)
   });
 };
@@ -173,6 +173,6 @@ export const getNotifications = (id: string) => {
 /*
  * Removes a notification from the user with the given id
  */
-export const removeNotification = (userId: string, notificationId: string) => {
-  return axios.post<Notification[]>(apiUrls.userRemoveNotifications(userId), { notificationId });
+export const removeNotification = (notificationId: string) => {
+  return axios.post<Notification[]>(apiUrls.userRemoveNotifications(), { notificationId });
 };
