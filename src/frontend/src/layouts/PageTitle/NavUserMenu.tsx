@@ -29,7 +29,7 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const history = useHistory();
   const auth = useAuth();
-  const { onPNMHomePage, onOnboardingHomePage } = useHomePageContext();
+  const { onPNMHomePage } = useHomePageContext();
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -132,7 +132,7 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
         >
           {auth.user?.email}
         </MenuItem>
-        {!(onPNMHomePage || onOnboardingHomePage) && (
+        {!onPNMHomePage && (
           <MenuItem component={RouterLink} to={routes.SETTINGS} onClick={handleClose} sx={{ py: 0 }}>
             <ListItemIcon>
               <SettingsIcon fontSize="small" />
