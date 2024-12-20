@@ -8,7 +8,7 @@ ALTER TABLE "Project" ADD COLUMN     "organizationId" TEXT;
 CREATE TABLE "Announcement" (
     "announcementId" TEXT NOT NULL,
     "text" TEXT NOT NULL,
-    "dateCreated" TIMESTAMP(3) NOT NULL,
+    "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "dateDeleted" TIMESTAMP(3),
     "senderName" TEXT NOT NULL,
     "slackEventId" TEXT NOT NULL,
