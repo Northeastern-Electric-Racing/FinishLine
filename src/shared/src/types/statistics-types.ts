@@ -1,4 +1,3 @@
-import { Car } from './project-types';
 import { User } from './user-types';
 
 export enum GraphDisplayType {
@@ -39,6 +38,7 @@ export interface Graph {
   startDate?: Date;
   endDate?: Date;
   title: string;
+  measure: Measure;
   graphType: GraphType;
   graphDisplayType: GraphDisplayType;
   userCreated: User;
@@ -46,6 +46,7 @@ export interface Graph {
   dateDeleted?: Date;
   graphData: GraphData[];
   graphCollectionId?: String;
+  carIds: string[];
   specialPermissions: SpecialPermission[];
 }
 
@@ -79,6 +80,11 @@ export interface GraphFormInput {
   endTime?: Date;
   graphDisplayType: GraphDisplayType;
   graphCollectionId?: string;
-  cars: Car[];
+  carIds: string[];
   specialPermissions: SpecialPermission[];
+}
+
+export interface GraphCollectionFormInput {
+  title: string;
+  permissions: SpecialPermission[];
 }
