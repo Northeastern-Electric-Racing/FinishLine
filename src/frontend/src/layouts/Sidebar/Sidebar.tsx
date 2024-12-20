@@ -16,7 +16,6 @@ import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import ArticleIcon from '@mui/icons-material/Article';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import NavPageLink from './NavPageLink';
 import NERDrawer from '../../components/NERDrawer';
 import NavUserMenu from '../PageTitle/NavUserMenu';
@@ -24,9 +23,7 @@ import DrawerHeader from '../../components/DrawerHeader';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useHomePageContext } from '../../app/HomePageContext';
 import SidebarButton from './SidebarButton';
-import { useHistory } from 'react-router-dom';
-import { useCurrentUser } from '../../hooks/users.hooks';
-import { Organization, isGuest } from 'shared';
+import { Organization } from 'shared';
 
 interface SidebarProps {
   drawerOpen: boolean;
@@ -37,10 +34,8 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organization }: SidebarProps) => {
-  const { onPNMHomePage, onOnboardingHomePage, setCurrentHomePage } = useHomePageContext();
-  const user = useCurrentUser();
+  const { onPNMHomePage, onOnboardingHomePage } = useHomePageContext();
   const theme = useTheme();
-  const history = useHistory();
 
   const memberLinkItems: LinkItem[] = [
     {
@@ -89,7 +84,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organ
     {
       name: 'Home',
       icon: <HomeIcon />,
-      route: routes.HOME_PNM
+      route: routes.HOME
     },
     {
       name: 'Teams',
@@ -139,22 +134,9 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organ
               icon={<ArticleIcon sx={{ fontSize: 27 }} style={{ color: theme.palette.text.primary }} />}
             />
           )}
-          {!(onOnboardingHomePage || onPNMHomePage) && <NavUserMenu open={drawerOpen} />}
+          <NavUserMenu open={drawerOpen} />
         </Box>
         <Box justifyContent={drawerOpen ? 'flex-start' : 'center'}>
-          {isGuest(user.role) && (
-            <Box marginBottom={2}>
-              {/* Return to guest mode button */}
-              <SidebarButton
-                onClick={() => {
-                  setCurrentHomePage('guest');
-                  history.push(routes.HOME_GUEST);
-                }}
-                icon={<ArrowBackIcon sx={{ fontSize: 27 }} style={{ color: theme.palette.text.primary }} />}
-                label={'Guest Home'}
-              />
-            </Box>
-          )}
           <Box marginLeft={1.1}>
             <Typography marginLeft={1.1}>Sponsored By:</Typography>
             <Box component="img" sx={{ height: 40 }} alt="Kaleidoscope Logo" src="/kaleidoscope-logo-lockup.svg" />

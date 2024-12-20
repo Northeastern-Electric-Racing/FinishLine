@@ -3,16 +3,11 @@ import { Box } from '@mui/system';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import OnboardingBlock from '../../../components/OnboardingBlock';
+import OnboardingBlock from '../../AdminToolsPage/OnboardingConfig/OnboardingBlock';
 import { useAllUsefulLinks } from '../../../hooks/projects.hooks';
 
 const OnboardingInfoSection: React.FC = () => {
   const theme = useTheme();
-  const contacts: string[] = [
-    'President - Allyson Kolesar kolesar.a@northeastern.edu',
-    'Chief Mechanical Engineer - Max Boone boone.m@northeastern.edu',
-    'Chief Software Engineer - Peyton Mckee mckee.p@northeastern.edu'
-  ];
   const {
     data: organization,
     isLoading: organizationIsLoading,
@@ -76,7 +71,7 @@ const OnboardingInfoSection: React.FC = () => {
       <Grid item>
         <Box
           sx={{
-            height: '25vh',
+            height: '100%',
             borderRadius: '10px',
             width: '100%',
             background: theme.palette.background.paper
@@ -85,10 +80,14 @@ const OnboardingInfoSection: React.FC = () => {
           <Typography variant="h5" ml={2} pt={2}>
             Questions?
           </Typography>
-          <Typography sx={{ mt: 1, mb: -1, ml: 2 }}>Feel free to contact:</Typography>
+          <Typography sx={{ mt: 1, ml: 2, fontWeight: 'bold' }}>Feel free to contact:</Typography>
           <List sx={{ listStyleType: 'disc', pl: 2 }}>
-            {contacts.map((contact) => {
-              return <ListItem sx={{ display: 'list-item', padding: 0, ml: 2 }}>{contact}</ListItem>;
+            {organization.contacts.map((contact) => {
+              return (
+                <ListItem sx={{ display: 'list-item', padding: 0.5, ml: 2 }}>
+                  {contact.user.firstName} {contact.user.lastName}: {contact.user.email} - {contact.title}
+                </ListItem>
+              );
             })}
           </List>
         </Box>

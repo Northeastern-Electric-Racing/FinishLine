@@ -1,6 +1,8 @@
+import React, { useState } from 'react';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import { Organization } from 'shared';
+import EditOnboardingTextModal from './EditOnboardingTextModal';
 
 interface OnboardingBlockProps {
   organization: Organization;
@@ -9,12 +11,18 @@ interface OnboardingBlockProps {
 
 const OnboardingBlock: React.FC<OnboardingBlockProps> = ({ organization, isAdmin }) => {
   const theme = useTheme();
+  const [showModal, setShowModal] = useState(false);
+
   const handleEdit = () => {
-    console.log('clicked');
+    setShowModal(true);
+  };
+
+  const handleClose = () => {
+    setShowModal(false);
   };
 
   return (
-    <Grid item>
+    <Grid>
       <Box
         sx={{
           height: '25vh',
@@ -27,12 +35,22 @@ const OnboardingBlock: React.FC<OnboardingBlockProps> = ({ organization, isAdmin
           <Typography variant="h5" ml={2} pt={2}>
             Onboarding
           </Typography>
-          {isAdmin && <EditIcon sx={{ marginRight: '15px', marginTop: '20px' }} onClick={handleEdit}></EditIcon>}
+          {isAdmin && (
+            <EditIcon
+              onClick={handleEdit}
+              sx={{
+                marginRight: '15px',
+                marginTop: '20px',
+                cursor: 'pointer'
+              }}
+            />
+          )}
         </Box>
-        <Typography sx={{ mt: 1, mb: -1, ml: 2, fontSize: { xs: 16, sm: 16, md: 18 }, marginRight: '15px' }}>
+        <Typography sx={{ mt: 1, ml: 2, fontSize: { xs: 16, sm: 16, md: 18 }, marginRight: '15px' }}>
           {organization.onboardingText}
         </Typography>
       </Box>
+      <EditOnboardingTextModal open={showModal} onHide={handleClose} currentOnboardingText={organization.onboardingText} />
     </Grid>
   );
 };

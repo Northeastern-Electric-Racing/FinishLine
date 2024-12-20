@@ -1,41 +1,64 @@
-import { Typography, useTheme, Grid } from '@mui/material';
+import { Typography, useTheme, Grid, IconButton } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import { Box } from '@mui/system';
 import React from 'react';
 import { Checklist } from 'shared';
+import { GridDragIcon } from '@mui/x-data-grid';
 
-const SubtaskSection: React.FC<{ subtasks: Checklist[]; parentTask: Checklist }> = ({ subtasks, parentTask }) => {
+const SubtaskSection: React.FC<{ subtasks: Checklist[]; parentTask: Checklist; isAdmin?: boolean }> = ({
+  subtasks,
+  parentTask,
+  isAdmin = false
+}) => {
   const theme = useTheme();
 
   return (
     <Box
-      sx={{ backgroundColor: '#CECECE', padding: 2, marginTop: -0.5, marginBottom: 3, borderRadius: '0px 0px 10px 10px' }}
+      sx={
+        isAdmin
+          ? {}
+          : {
+              padding: 2,
+              marginTop: -0.5,
+              marginBottom: 3,
+              borderRadius: '0px 0px 10px 10px',
+              backgroundColor: '#CECECE'
+            }
+      }
     >
       {subtasks.length > 0 ? (
         <Grid container sx={{ display: 'flex', alignContent: 'center', justifyContent: 'center', alignItems: 'center' }}>
           <Grid item xs={12} md={7}>
-            {subtasks.map((subtask) => (
-              <Box marginLeft={5} display={'flex'} alignItems={'center'} marginBottom={1}>
-                <Checkbox
-                  sx={{
-                    '& .MuiSvgIcon-root': {
-                      fill: 'black',
-                      backgroundColor: 'black',
-                      borderRadius: 1
-                    },
-                    '&.Mui-checked .MuiSvgIcon-root': {
-                      backgroundColor: 'white'
-                    },
-                    '&:hover': {
-                      backgroundColor: 'transparent'
-                    }
-                  }}
-                />
-                <Typography color={'black'} fontWeight={'bold'}>
-                  {subtask.name}
-                </Typography>
-              </Box>
-            ))}
+            <Box display="flex" flexDirection="column" marginLeft={5} gap={1}>
+              {subtasks.map((subtask) => (
+                <Box display={'flex'} alignItems={'center'}>
+                  {isAdmin ? (
+                    <IconButton>
+                      <GridDragIcon sx={{ color: 'black' }} />
+                    </IconButton>
+                  ) : (
+                    <Checkbox
+                      sx={{
+                        '& .MuiSvgIcon-root': {
+                          fill: 'black',
+                          backgroundColor: 'black',
+                          borderRadius: 1
+                        },
+                        '&.Mui-checked .MuiSvgIcon-root': {
+                          backgroundColor: 'white'
+                        },
+                        '&:hover': {
+                          backgroundColor: 'transparent'
+                        }
+                      }}
+                    />
+                  )}
+                  <Typography color={'black'} fontWeight={'bold'}>
+                    {subtask.name}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
           </Grid>
           <Grid
             item
@@ -55,7 +78,8 @@ const SubtaskSection: React.FC<{ subtasks: Checklist[]; parentTask: Checklist }>
           sx={{
             display: 'flex',
             justifyContent: 'space-between',
-            gap: 2
+            gap: 2,
+            marginTop: isAdmin ? 1 : 0
           }}
         >
           {parentTask.descriptions.map((description) => {
