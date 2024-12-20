@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Box, Grid, Typography } from '@mui/material';
+import { Box, Grid, Typography, useTheme } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { useCurrentOrganization } from '../../hooks/organizations.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -13,6 +13,7 @@ import { NERButton } from '../../components/NERButton';
 const OnboardingHomePage = () => {
   const { data: organization, isError, error, isLoading } = useCurrentOrganization();
   const { setCurrentHomePage } = useHomePageContext();
+  const theme = useTheme();
 
   useEffect(() => {
     setCurrentHomePage('onboarding');
@@ -23,16 +24,11 @@ const OnboardingHomePage = () => {
 
   return (
     <PageLayout title="Home" hidePageTitle>
-      <Grid container display="flex" alignItems="center" marginLeft={2} marginTop={4}>
+      <Grid container display="flex" alignItems="center" justifyContent={'space-between'} padding={1} marginTop={4}>
         <Grid item xs={12} md={7}>
           <Typography sx={{ fontSize: '2.5em' }}>Welcome to the {organization.name} Team</Typography>
         </Grid>
-        <Grid item xs={12} md={5} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <NERButton variant="contained" disabled>
-            Finished?
-          </NERButton>{' '}
-          {/* Disabled button */}
-        </Grid>
+        <NERButton variant="contained">Finished?</NERButton>
       </Grid>
       <Grid
         container
@@ -43,11 +39,25 @@ const OnboardingHomePage = () => {
         }}
       >
         <Box display="flex" justifyContent="center">
-          <Box sx={{ width: '80%', mt: 4, ml: 2, display: 'flex', alignItems: 'center' }}>
-            <Typography sx={{ fontSize: '1.5em', flexShrink: 0, marginRight: 2 }}>Overall Progress</Typography>
-            <Box sx={{ flexGrow: 1 }}>
-              <OnboardingProgressBar value={50} />
-            </Box>
+          <Box
+            sx={{
+              backgroundColor: theme.palette.background.paper,
+              borderRadius: 5,
+              p: 3.5,
+              flexGrow: 1,
+              width: '100%',
+              mt: 5,
+              ml: 4,
+              display: 'flex',
+              alignItems: 'center'
+            }}
+          >
+            <OnboardingProgressBar
+              value={50}
+              text={'Complete'}
+              typographySx={{ fontSize: '1.2em', ml: 1 }}
+              progressBarSx={{ height: '3vh' }}
+            />
           </Box>
         </Box>
         <Grid container display="flex">

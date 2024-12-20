@@ -1,14 +1,18 @@
-import { Box, LinearProgress, linearProgressClasses, styled, Typography } from '@mui/material';
+import { Box, LinearProgress, linearProgressClasses, styled, SxProps, Typography } from '@mui/material';
 
 interface ProgressBarWithValueProps {
   value: number;
+  text?: string;
+  typographySx?: SxProps;
+  progressBarSx?: SxProps;
 }
 
-const StyledProgressBar = styled(LinearProgress)(({ theme }) => ({
-  height: 20,
-  borderRadius: 5,
+const StyledProgressBar = styled(LinearProgress)(() => ({
+  height: '2.5vh',
+  borderRadius: 15,
+  border: '1px solid white',
   [`&.${linearProgressClasses.colorPrimary}`]: {
-    backgroundColor: theme.palette.grey[theme.palette.mode === 'light' ? 200 : 800]
+    backgroundColor: 'transparent'
   },
   [`& .${linearProgressClasses.bar}`]: {
     borderRadius: 5,
@@ -16,19 +20,21 @@ const StyledProgressBar = styled(LinearProgress)(({ theme }) => ({
   }
 }));
 
-const OnboardingProgressBar: React.FC<ProgressBarWithValueProps> = ({ value }) => {
+const OnboardingProgressBar: React.FC<ProgressBarWithValueProps> = ({ value, text, typographySx, progressBarSx }) => {
   return (
     <Box position="relative" display="flex" alignItems="center" width="100%">
-      <StyledProgressBar variant="determinate" value={value} style={{ flexGrow: 1 }} />
+      <StyledProgressBar variant="determinate" value={value} style={{ flexGrow: 1 }} sx={progressBarSx} />
       <Typography
         variant="caption"
         sx={{
-          marginLeft: 1,
+          position: 'absolute',
+          left: '10px',
           fontWeight: 'bold',
-          color: 'text.primary'
+          color: value > 50 ? 'white' : 'text.primary',
+          ...typographySx
         }}
       >
-        {`${Math.round(value)}%`}
+        {`${Math.round(value)}% ${text}`}
       </Typography>
     </Box>
   );
