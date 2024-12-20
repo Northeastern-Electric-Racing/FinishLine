@@ -21,10 +21,10 @@ const Checklist: React.FC<{ parentChecklists: ChecklistType[]; checklistName?: s
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <Grid container justifyContent="space-between" alignItems="center">
-            <Typography fontSize="2em" fontWeight="bold">
-              {checklistName ?? 'General'} Checklist
-            </Typography>
             <Grid container alignItems="center" gap={2} sx={{ flexGrow: 1 }}>
+              <Typography fontSize="2em" fontWeight="bold">
+                {checklistName ?? 'General'} Checklist
+              </Typography>
               <Box sx={{ flexGrow: 1 }}>
                 <OnboardingProgressBar value={50} />
               </Box>
