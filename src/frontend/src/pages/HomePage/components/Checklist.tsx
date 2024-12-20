@@ -26,7 +26,7 @@ const Checklist: React.FC<{ parentChecklists: ChecklistType[]; checklistName?: s
                 {checklistName ?? 'General'} Checklist
               </Typography>
               <Box sx={{ flexGrow: 1 }}>
-                <OnboardingProgressBar value={50} />
+                <OnboardingProgressBar value={51} />
               </Box>
               <IconButton onClick={toggleShowTasks}>{showTasks ? <KeyboardArrowDown /> : <KeyboardArrowRight />}</IconButton>
             </Grid>
