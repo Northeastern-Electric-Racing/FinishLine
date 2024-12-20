@@ -1,6 +1,7 @@
 import { Checklist } from 'shared';
 import { apiUrls } from '../utils/urls';
 import axios from '../utils/axios';
+import { ToggleChecklistPayload } from '../hooks/onboarding.hook';
 
 /**
  * API call to fetch all the checklists
@@ -21,11 +22,29 @@ export const getGeneralChecklists = () => {
 };
 
 /**
+ * API call to fetch the checked checklists
+ */
+export const getCheckedChecklists = () => {
+  return axios.get<Checklist[]>(apiUrls.checkedChecklists(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
  * API call to fetch all the users checklists
  */
 export const getUsersChecklists = () => {
   return axios.get<Checklist[]>(apiUrls.usersTeamTypeChecklists(), {
     transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
+ * API call to toggle a checklist
+ */
+export const toggleChecklist = (payload: ToggleChecklistPayload) => {
+  return axios.post<Checklist>(apiUrls.toggleChecklist(payload.checklistId), {
+    ...payload
   });
 };
 

@@ -3,6 +3,10 @@ import { useState } from 'react';
 import { KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
 import SubtaskSection from './SubtaskSection';
 import { Checklist } from 'shared';
+import { useCheckedChecklists, useToggleChecklist } from '../../../hooks/onboarding.hook';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface SubtaskProps {
   subtasks: Checklist[];
@@ -10,11 +14,35 @@ interface SubtaskProps {
 }
 
 const Task: React.FC<SubtaskProps> = ({ subtasks, parentTask }) => {
+  const toast = useToast();
   const [showSubtasks, setShowSubtasks] = useState(false);
+  const { mutateAsync: toggleChecklist } = useToggleChecklist();
+  const {
+    data: checkedChecklists,
+    isLoading: checkedChecklistsLoading,
+    isError: checkedChecklistsIsError,
+    error: checkedChecklistsError
+  } = useCheckedChecklists();
 
   const toggleShowSubtasks = () => {
     setShowSubtasks((prev) => !prev);
   };
+
+  const handleToggleChecklist = async () => {
+    try {
+      await toggleChecklist({ checklistId: parentTask.checklistId });
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
+  if (!checkedChecklists || checkedChecklistsLoading) return <LoadingIndicator />;
+
+  if (checkedChecklistsIsError) {
+    return <ErrorPage error={checkedChecklistsError} />;
+  }
+
+  const isParentTaskChecked = checkedChecklists.some((checklist) => checklist.checklistId === parentTask.checklistId);
 
   return (
     <Box sx={{ width: '85%' }}>
@@ -30,29 +58,31 @@ const Task: React.FC<SubtaskProps> = ({ subtasks, parentTask }) => {
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Checkbox
-            sx={{
-              '& .MuiSvgIcon-root': {
-                fill: 'black',
-                backgroundColor: 'black',
-                borderRadius: 1
-              },
-              '&.Mui-checked .MuiSvgIcon-root': {
-                backgroundColor: 'white'
-              },
-              '&:hover': {
-                backgroundColor: 'transparent'
-              }
-            }}
-          />
-
+          <IconButton onClick={handleToggleChecklist}>
+            <Checkbox
+              checked={isParentTaskChecked}
+              sx={{
+                '& .MuiSvgIcon-root': {
+                  fill: 'black',
+                  backgroundColor: 'black',
+                  borderRadius: 1
+                },
+                '&.Mui-checked .MuiSvgIcon-root': {
+                  backgroundColor: 'white'
+                },
+                '&:hover': {
+                  backgroundColor: 'transparent'
+                }
+              }}
+            />
+          </IconButton>
           <Typography sx={{ color: 'black', fontWeight: 'bold' }}>{parentTask.name}</Typography>
           <IconButton onClick={toggleShowSubtasks} sx={{ marginLeft: 'auto' }}>
             {showSubtasks ? <KeyboardArrowDown sx={{ color: 'black' }} /> : <KeyboardArrowRight sx={{ color: 'black' }} />}
           </IconButton>
         </Box>
       </Box>
-      {showSubtasks && <SubtaskSection subtasks={subtasks} parentTask={parentTask} />}
+      {showSubtasks && <SubtaskSection subtasks={subtasks} parentTask={parentTask} checkedChecklists={checkedChecklists} />}
     </Box>
   );
 };
