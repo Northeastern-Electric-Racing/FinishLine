@@ -320,6 +320,12 @@ export default class OnboardingServices {
     });
   }
 
+  /**
+   * Toggles a user's check on a checklist
+   * @param checklistId the id of the checklist to toggle
+   * @param userId the id of the user to toggle
+   * @returns the updated checklist
+   */
   static async toggleChecklist(checklistId: string, userId: string) {
     const checklist = await prisma.checklist.findUnique({
       where: { checklistId },
