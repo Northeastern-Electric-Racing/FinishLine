@@ -24,7 +24,7 @@ import { useAllLinkTypes } from '../../../../hooks/projects.hooks';
 import CreateUsefulLinkModal from './CreateUsefulLinkModal';
 import EditUsefulLinkModal from './EditUsefulLinkModal';
 import { linkToLinkCreateArgs } from '../../../../utils/link.utils';
-import AddIcon from '@mui/icons-material/Add';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
 const UsefulLinksTable = () => {
   const currentUser = useCurrentUser();
@@ -124,7 +124,7 @@ const UsefulLinksTable = () => {
             <Button
               onClick={() => setShowCreateModel(true)}
               variant="text"
-              startIcon={<AddIcon />}
+              startIcon={<AddCircleOutlineIcon />}
               sx={{
                 color: '#ef4345',
                 '&:hover': {

@@ -7,6 +7,7 @@ import {
   setOrganizationImages,
   setOnboardingText,
   updateOrganizationContacts
+  updateApplicationLink
 } from '../apis/organizations.api';
 
 interface OrganizationProvider {
@@ -20,6 +21,10 @@ export interface UpdateContactsPayload {
 
 export interface OnboardingTextPayload {
   onboardingText: string;
+}
+
+export interface ApplicationLinkPayload {
+  applicationLink: string;
 }
 
 export const useCurrentOrganization = () => {
@@ -88,6 +93,22 @@ export const useSetOnboardingText = () => {
     ['organizations', 'edit'],
     async (payload) => {
       const { data } = await setOnboardingText(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['organizations']);
+      }
+    }
+  );
+};
+
+export const useUpdateApplicationLink = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Organization, Error, ApplicationLinkPayload>(
+    ['organizations', 'edit'],
+    async (payload) => {
+      const { data } = await updateApplicationLink(payload);
       return data;
     },
     {

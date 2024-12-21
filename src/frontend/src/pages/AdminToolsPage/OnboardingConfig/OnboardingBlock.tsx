@@ -46,7 +46,7 @@ const OnboardingBlock: React.FC<OnboardingBlockProps> = ({ organization, isAdmin
             />
           )}
         </Box>
-        <Typography sx={{ mt: 1, mb: -1, ml: 2, fontSize: { xs: 16, sm: 16, md: 18 }, marginRight: '15px' }}>
+        <Typography sx={{ mt: 1, ml: 2, fontSize: { xs: 16, sm: 16, md: 18 }, marginRight: '15px' }}>
           {organization.onboardingText}
         </Typography>
       </Box>
