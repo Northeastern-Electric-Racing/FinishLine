@@ -6,7 +6,7 @@ import {
   getCurrentOrganization,
   setOrganizationImages,
   setOnboardingText,
-  updateOrganizationContacts
+  updateOrganizationContacts,
   updateApplicationLink
 } from '../apis/organizations.api';
 
