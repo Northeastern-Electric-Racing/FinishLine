@@ -38,8 +38,6 @@ import { getAuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args'
 import authenticatedUserTransformer from '../transformers/auth-user.transformer';
 import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args';
 import taskTransformer from '../transformers/tasks.transformer';
-import { getNotificationQueryArgs } from '../prisma-query-args/notifications.query-args';
-import notificationTransformer from '../transformers/notifications.transformer';
 import { getAnnouncementQueryArgs } from '../prisma-query-args/announcements.query.args';
 import announcementTransformer from '../transformers/announcements.transformer';
 
@@ -572,27 +570,6 @@ export default class UsersService {
   }
 
   /**
-   * Gets all of a user's unread notifications
-   * @param userId id of user to get unread notifications from
-   * @param organization the user's orgainzation
-   * @returns the unread notifications of the user
-   */
-  static async getUserUnreadNotifications(userId: string, organization: Organization) {
-    const unreadNotifications = await prisma.notification.findMany({
-      where: {
-        users: {
-          some: { userId }
-        }
-      },
-      ...getNotificationQueryArgs(organization.organizationId)
-    });
-
-    if (!unreadNotifications) throw new HttpException(404, 'User Unread Notifications Not Found');
-
-    return unreadNotifications.map(notificationTransformer);
-  }
-
-  /**
    * Gets all of a user's unread announcements
    * @param userId id of the current user
    * @param organization the user's orgainzation
@@ -611,30 +588,5 @@ export default class UsersService {
     if (!unreadAnnouncements) throw new HttpException(404, 'User Unread Announcements Not Found');
 
     return unreadAnnouncements.map(announcementTransformer);
-  }
-
-  /**
-   * Removes a notification from the user's unread notifications
-   * @param userId id of the current user
-   * @param notificationId id of the notification to remove
-   * @param organization the user's organization
-   * @returns the user's updated unread notifications
-   */
-  static async removeUserNotification(userId: string, notificationId: string, organization: Organization) {
-    const updatedUser = await prisma.user.update({
-      where: { userId },
-      data: {
-        unreadNotifications: {
-          disconnect: {
-            notificationId
-          }
-        }
-      },
-      include: { unreadNotifications: getNotificationQueryArgs(organization.organizationId) }
-    });
-
-    if (!updatedUser) throw new HttpException(404, `Failed to remove notication: ${notificationId}`);
-
-    return updatedUser.unreadNotifications.map(notificationTransformer);
   }
 }

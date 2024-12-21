@@ -192,33 +192,6 @@ export default class UsersController {
     }
   }
 
-  static async getUserUnreadNotifications(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { organization, currentUser } = req;
-
-      const unreadNotifications = await UsersService.getUserUnreadNotifications(currentUser.userId, organization);
-      res.status(200).json(unreadNotifications);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async removeUserNotification(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { notificationId } = req.body;
-      const { organization, currentUser } = req;
-
-      const unreadNotifications = await UsersService.removeUserNotification(
-        currentUser.userId,
-        notificationId,
-        organization
-      );
-      res.status(200).json(unreadNotifications);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
   static async getUserUnreadAnnouncements(req: Request, res: Response, next: NextFunction) {
     try {
       const { organization, currentUser } = req;

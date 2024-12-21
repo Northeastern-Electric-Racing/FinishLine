@@ -5,7 +5,6 @@
 
 import axios from '../utils/axios';
 import {
-  Notification,
   Project,
   SetUserScheduleSettingsPayload,
   Task,
@@ -159,20 +158,4 @@ export const getManyUserTasks = (userIds: string[]) => {
       transformResponse: (data) => JSON.parse(data).map(taskTransformer)
     }
   );
-};
-
-/*
- * Gets all unread notifications of the user with the given id
- */
-export const getNotifications = () => {
-  return axios.get<Notification[]>(apiUrls.userNotifications(), {
-    transformResponse: (data) => JSON.parse(data)
-  });
-};
-
-/*
- * Removes a notification from the user with the given id
- */
-export const removeNotification = (notificationId: string) => {
-  return axios.post<Notification[]>(apiUrls.userRemoveNotifications(), { notificationId });
 };
