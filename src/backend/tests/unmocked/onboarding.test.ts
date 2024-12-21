@@ -538,7 +538,7 @@ describe('Onboarding tests', () => {
       expect(childChecklistItem1?.usersChecked.length).toBe(0);
       expect(childChecklistItem2?.usersChecked.length).toBe(0);
 
-      await OnboardingServices.toggleChecklist(childChecklistItem1.checklistId, batman.userId);
+      await OnboardingServices.toggleChecklist(childChecklistItem1.checklistId, batman, organization);
 
       const updatedChildItem1 = await prisma.checklist.findUnique({
         where: { checklistId: childChecklistItem1.checklistId },
@@ -554,7 +554,7 @@ describe('Onboarding tests', () => {
       expect(partiallyUpdatedParentItem?.usersChecked.length).toBe(0);
 
       // check all child items to update parent item
-      await OnboardingServices.toggleChecklist(childChecklistItem2.checklistId, batman.userId);
+      await OnboardingServices.toggleChecklist(childChecklistItem2.checklistId, batman, organization);
 
       const updatedChildItem2 = await prisma.checklist.findUnique({
         where: { checklistId: childChecklistItem2.checklistId },
@@ -569,7 +569,7 @@ describe('Onboarding tests', () => {
       expect(fullyUpdatedParentItem?.usersChecked.length).toBe(1);
 
       // uncheck child item to automatically uncheck parent item
-      await OnboardingServices.toggleChecklist(childChecklistItem1.checklistId, batman.userId);
+      await OnboardingServices.toggleChecklist(childChecklistItem1.checklistId, batman, organization);
 
       const revertedChildItem1 = await prisma.checklist.findUnique({
         where: { checklistId: childChecklistItem1.checklistId },
@@ -586,7 +586,7 @@ describe('Onboarding tests', () => {
 
     it('throws NotFoundException when toggling a non-existing checklist item', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
-      await expect(OnboardingServices.toggleChecklist('nonExistingId', batman.userId)).rejects.toThrow(
+      await expect(OnboardingServices.toggleChecklist('nonExistingId', batman, organization)).rejects.toThrow(
         new NotFoundException('Checklist', 'nonExistingId')
       );
     });
@@ -599,7 +599,7 @@ describe('Onboarding tests', () => {
         data: { dateDeleted: new Date() }
       });
 
-      await expect(OnboardingServices.toggleChecklist(checklist.checklistId, batman.userId)).rejects.toThrow(
+      await expect(OnboardingServices.toggleChecklist(checklist.checklistId, batman, organization)).rejects.toThrow(
         new DeletedException('Checklist', checklist.checklistId)
       );
     });
@@ -635,17 +635,17 @@ describe('Onboarding tests', () => {
         parentChecklistItem.checklistId
       );
 
-      await OnboardingServices.toggleChecklist(childChecklistItem1.checklistId, batman.userId);
+      await OnboardingServices.toggleChecklist(childChecklistItem1.checklistId, batman, organization);
 
       await expect(
-        async () => await OnboardingServices.toggleChecklist(parentChecklist.checklistId, batman.userId)
+        async () => await OnboardingServices.toggleChecklist(parentChecklist.checklistId, batman, organization)
       ).rejects.toThrowError('Cannot check off this checklist item because not all of its subtasks are checked.');
     });
 
     it('Succeeds and toggles a checklist without any subtasks', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       const checklist = await createTestChecklist(batman, orgId, 'Checklist 1');
-      await OnboardingServices.toggleChecklist(checklist.checklistId, batman.userId);
+      await OnboardingServices.toggleChecklist(checklist.checklistId, batman, organization);
       const updatedChecklist = await prisma.checklist.findUnique({
         where: { checklistId: checklist.checklistId },
         include: { usersChecked: true }
