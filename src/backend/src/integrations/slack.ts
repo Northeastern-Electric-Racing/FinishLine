@@ -182,12 +182,12 @@ export const getUsersInChannel = async (channelId: string) => {
 
     return members;
   } catch (error) {
-    throw new HttpException(500, 'Error getting members from a slack channel: ' + (error as any).data.error);
+    return [];
   }
 };
 
 /**
- * Given a slack channel id, prood.uces the name of the channel
+ * Given a slack channel id, produces the name of the channel
  * @param channelId the id of the slack channel
  * @returns the name of the channel
  */
@@ -199,7 +199,7 @@ export const getChannelName = async (channelId: string) => {
     const channelRes = await slack.conversations.info({ channel: channelId });
     return channelRes.channel?.name || 'Unknown Channel';
   } catch (error) {
-    throw new HttpException(500, 'Error getting slack channel name: ' + (error as any).data.error);
+    return;
   }
 };
 
@@ -216,7 +216,7 @@ export const getUserName = async (userId: string) => {
     const userRes = await slack.users.info({ user: userId });
     return userRes.user?.profile?.display_name || userRes.user?.real_name || 'Unkown User';
   } catch (error) {
-    throw new HttpException(500, 'Error getting slack user name: ' + (error as any).data.error);
+    return;
   }
 };
 

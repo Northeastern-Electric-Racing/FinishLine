@@ -1,6 +1,14 @@
 import { ChangeRequest, daysBetween, Task, UserPreview, wbsPipe, calculateEndDate } from 'shared';
-import { User } from '@prisma/client';
-import { editMessage, reactToMessage, replyToMessageInThread, sendMessage } from '../integrations/slack';
+import { User, User_Settings } from '@prisma/client';
+import {
+  editMessage,
+  getChannelName,
+  getUserName,
+  getUsersInChannel,
+  reactToMessage,
+  replyToMessageInThread,
+  sendMessage
+} from '../integrations/slack';
 import { getUserFullName, getUserSlackId } from './users.utils';
 import prisma from '../prisma/prisma';
 import { HttpException } from './errors.utils';
@@ -11,6 +19,7 @@ import { addHours, meetingStartTimePipe } from './design-reviews.utils';
 import { WorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
 import { Prisma } from '@prisma/client';
 import { userTransformer } from '../transformers/user.transformer';
+import { SlackRichTextBlock } from '../services/slack.services';
 
 interface SlackMessageThread {
   messageInfoId: string;
@@ -469,4 +478,84 @@ export const addSlackThreadsToChangeRequest = async (crId: string, threads: { ch
     })
   );
   await Promise.all(promises);
+};
+
+/**
+ * Converts a SlackRichTextBlock into a string representation for an announcement.
+ * @param block the block of information from slack
+ * @returns the string that will be combined with other block's strings to create the announcement
+ */
+export const blockToString = async (block: SlackRichTextBlock) => {
+  switch (block.type) {
+    case 'broadcast':
+      return '@' + block.range;
+    case 'color':
+      return block.value ?? '';
+    case 'channel':
+      //channels are represented as an id, get the name from the slack api
+      const channelName: string =
+        (await getChannelName(block.channel_id ?? '')) ?? `ISSUE PARSING CHANNEL:${block.channel_id}`;
+      return '#' + channelName;
+    case 'date':
+      return new Date(block.timestamp ?? 0).toISOString();
+    case 'emoji':
+      //if the emoji is a unicode emoji, convert the unicode to a string,
+      //if it is a slack emoji just use the name of the emoji
+      if (block.unicode) {
+        return String.fromCodePoint(parseInt(block.unicode, 16));
+      }
+      return 'emoji:' + block.name;
+    case 'link':
+      if (block.text) {
+        return `${block.text}:(${block.url})`;
+      }
+      return block.url ?? '';
+    case 'text':
+      return block.text ?? '';
+    case 'user':
+      //users are represented as an id, get the name of the user from the slack api
+      const userName: string = (await getUserName(block.user_id ?? '')) ?? `Unknown User:${block.user_id}`;
+      return '@' + userName;
+    case 'usergroup':
+      return `usergroup:${block.usergroup_id}`;
+  }
+};
+
+/**
+ * Gets the users notified in a specific SlackRichTextBlock.
+ * @param block the block that may contain mentioned user/users
+ * @param usersSettings the settings of all the users in prisma
+ * @param channelId the id of the channel that the block is being sent in
+ * @returns an array of prisma user ids of users to be notified
+ */
+export const blockToMentionedUsers = async (
+  block: SlackRichTextBlock,
+  usersSettings: User_Settings[],
+  channelId: string
+) => {
+  switch (block.type) {
+    case 'broadcast':
+      switch (block.range) {
+        case 'everyone':
+          return usersSettings.map((usersSettings) => usersSettings.userId);
+        case 'channel':
+        case 'here':
+          //@here behaves the same as @channel; notifies all the users in that channel
+          const slackIds: string[] = await getUsersInChannel(channelId);
+          return usersSettings
+            .filter((userSettings) => {
+              return slackIds.some((slackId) => slackId === userSettings.slackId);
+            })
+            .map((user) => user.userId);
+        default:
+          return [];
+      }
+    case 'user':
+      return usersSettings
+        .filter((userSettings) => userSettings.slackId === block.user_id)
+        .map((userSettings) => userSettings.userId);
+    default:
+      //only broadcasts and specific user mentions add recievers to announcements
+      return [];
+  }
 };

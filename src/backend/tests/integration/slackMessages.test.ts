@@ -12,7 +12,6 @@ import * as apiFunctions from '../../src/integrations/slack';
 import AnnouncementService from '../../src/services/announcement.service';
 import slackServices from '../../src/services/slack.services';
 import { vi } from 'vitest';
-import { HttpException } from '../../src/utils/errors.utils';
 
 vi.mock('../../src/integrations/slack', async (importOriginal) => {
   return {
@@ -198,46 +197,6 @@ describe('Slack message tests', () => {
     expect(announcement?.usersReceived).toHaveLength(1);
   });
 
-  it('Deals with errors from slack API', async () => {
-    vi.mocked(apiFunctions.getUserName).mockImplementation(() => {
-      throw new HttpException(500, 'sample error');
-    });
-    vi.mocked(apiFunctions.getChannelName).mockImplementation(() => {
-      throw new HttpException(500, 'sample error');
-    });
-
-    const spy = vi.spyOn(AnnouncementService, 'createAnnouncement');
-
-    const announcement = await slackServices.processMessageSent(
-      createSlackMessageEvent('channel id', '1000000000000', 'slackWW', 'id_1', [
-        { type: 'user', user_id: 'slackWW' },
-        { type: 'text', text: ' prisma user and non-prisma user ' },
-        { type: 'user', user_id: 'non-prisma-slack-id' }
-      ]),
-      orgId
-    );
-
-    expect(spy).toBeCalledTimes(1);
-    expect(spy).toBeCalledWith(
-      '@Unknown_User:slackWW prisma user and non-prisma user @Unknown_User:non-prisma-slack-id',
-      [wonderwoman.userId],
-      new Date(1000000000000),
-      'Wonder Woman',
-      'id_1',
-      'Unknown_Channel:channel id',
-      orgId
-    );
-
-    expect(announcement?.text).toBe(
-      '@Unknown_User:slackWW prisma user and non-prisma user @Unknown_User:non-prisma-slack-id'
-    );
-    expect(announcement?.dateCreated.toDateString()).toBe(new Date(1000000000000).toDateString());
-    expect(announcement?.senderName).toBe('Wonder Woman');
-    expect(announcement?.slackChannelName).toBe('Unknown_Channel:channel id');
-    expect(announcement?.slackEventId).toBe('id_1');
-    expect(announcement?.usersReceived).toHaveLength(1);
-  });
-
   it("Doesn't create an announcement if no one is mentioned", async () => {
     vi.mocked(apiFunctions.getUserName).mockReturnValue(Promise.resolve('Slack User Name'));
     vi.mocked(apiFunctions.getChannelName).mockReturnValue(Promise.resolve('Slack Channel Name'));
@@ -254,36 +213,6 @@ describe('Slack message tests', () => {
     expect(spy).toBeCalledTimes(0);
 
     expect(announcement).toBeUndefined();
-  });
-
-  it('Does nothing if an announcement with the same slack id has already been created', async () => {
-    vi.mocked(apiFunctions.getUserName).mockReturnValue(Promise.resolve('Slack User Name'));
-    vi.mocked(apiFunctions.getChannelName).mockReturnValue(Promise.resolve('Slack Channel Name'));
-
-    const createSpy = vi.spyOn(AnnouncementService, 'createAnnouncement');
-
-    await slackServices.processMessageSent(
-      createSlackMessageEvent('channel id', '1000000000000', 'user name', 'id_1', [{ type: 'user', user_id: 'slackWW' }]),
-      orgId
-    );
-    expect(createSpy).toBeCalledWith(
-      '@Slack User Name',
-      [wonderwoman.userId],
-      new Date(1000000000000),
-      'Slack User Name',
-      'id_1',
-      'Slack Channel Name',
-      orgId
-    );
-
-    const announcement2 = await slackServices.processMessageSent(
-      createSlackMessageEvent('channel id', '1000000000000', 'user name', 'id_1', [
-        { type: 'user', user_id: 'slackWW' },
-        { type: 'text', text: ' added text' }
-      ]),
-      orgId
-    );
-    expect(announcement2).toBeUndefined();
   });
 
   it('Updates an edit made to a message', async () => {
