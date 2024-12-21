@@ -3,15 +3,28 @@ import MilestoneTable from './MilestoneTable';
 import FAQsTable from './FAQTable';
 import { useToast } from '../../../hooks/toasts.hooks';
 import NERUploadButton from '../../../components/NERUploadButton';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useCurrentOrganization, useSetOrganizationImages } from '../../../hooks/organizations.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useGetImageUrl } from '../../../hooks/onboarding.hooks';
+import ErrorPage from '../../ErrorPage';
 
 const AdminToolsRecruitmentConfig: React.FC = () => {
   const { mutateAsync: organizationImages } = useSetOrganizationImages();
   const toast = useToast();
-  const { data: organization } = useCurrentOrganization();
+  const {
+    data: organization,
+    isLoading: organizationIsLoading,
+    isError: organizationIsError,
+    error: organizationError
+  } = useCurrentOrganization();
+
+  if (!organization || organizationIsLoading) {
+    return <LoadingIndicator />;
+  }
+  if (organizationIsError) {
+    return <ErrorPage message={organizationError.message} />;
+  }
 
   const [addedImage1, setAddedImage1] = useState<File | undefined>(undefined);
   const [addedImage2, setAddedImage2] = useState<File | undefined>(undefined);
