@@ -26,8 +26,8 @@ const userScheduleSettings = (id: string) => `${usersById(id)}/schedule-settings
 const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
 const userTasks = (id: string) => `${usersById(id)}/tasks`;
 const manyUserTasks = () => `${users()}/tasks/get-many`;
-const userNotifications = (id: string) => `${usersById(id)}/notifications`;
-const userRemoveNotifications = (id: string) => `${usersById(id)}/notifications/remove`;
+const userNotifications = () => `${users()}/notifications/current-user`;
+const userRemoveNotifications = () => `${users()}/notifications/remove`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;

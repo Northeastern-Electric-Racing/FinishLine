@@ -18,7 +18,7 @@ const Home = () => {
   const [onMemberHomePage, setOnMemberHomePage] = useState(false);
   return (
     <>
-      {!onMemberHomePage && <NotificationAlert user={user} />}
+      {!onMemberHomePage && <NotificationAlert />}
       {isGuest(user.role) && !onMemberHomePage ? (
         <IntroGuestHomePage user={user} setOnMemberHomePage={setOnMemberHomePage} />
       ) : isMember(user.role) ? (

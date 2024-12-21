@@ -19,7 +19,6 @@ export default class AnnouncementService {
   static async createAnnouncement(
     text: string,
     usersReceivedIds: string[],
-    dateCreated: Date,
     senderName: string,
     slackEventId: string,
     slackChannelName: string,
@@ -33,7 +32,6 @@ export default class AnnouncementService {
             userId: id
           }))
         },
-        dateCreated,
         senderName,
         slackEventId,
         slackChannelName

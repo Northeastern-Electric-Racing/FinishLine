@@ -269,9 +269,9 @@ export const useManyUserTasks = (userIds: string[]) => {
  * @param userId id of user to get unread notifications from
  * @returns
  */
-export const useUserNotifications = (userId: string) => {
-  return useQuery<Notification[], Error>(['users', userId, 'notifications'], async () => {
-    const { data } = await getNotifications(userId);
+export const useUserNotifications = () => {
+  return useQuery<Notification[], Error>(['users', 'notifications'], async () => {
+    const { data } = await getNotifications();
     return data;
   });
 };
@@ -281,17 +281,17 @@ export const useUserNotifications = (userId: string) => {
  * @param userId id of user to get unread notifications from
  * @returns
  */
-export const useRemoveUserNotification = (userId: string) => {
+export const useRemoveUserNotification = () => {
   const queryClient = useQueryClient();
   return useMutation<Notification[], Error, Notification>(
-    ['users', userId, 'notifications', 'remove'],
+    ['users', 'notifications', 'remove'],
     async (notification: Notification) => {
-      const { data } = await removeNotification(userId, notification.notificationId);
+      const { data } = await removeNotification(notification.notificationId);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['users', userId, 'notifications']);
+        queryClient.invalidateQueries(['users', 'notifications']);
       }
     }
   );
