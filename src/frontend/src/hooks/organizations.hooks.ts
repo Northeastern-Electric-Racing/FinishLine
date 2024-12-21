@@ -6,8 +6,11 @@ import {
   getFeaturedProjects,
   getCurrentOrganization,
   setOrganizationDescription,
+  getOrganizationLogo,
+  setOrganizationLogo,
   setOrganizationFeaturedProjects
 } from '../apis/organizations.api';
+import { downloadGoogleImage } from '../apis/organizations.api';
 
 interface OrganizationProvider {
   organizationId: string;
@@ -83,4 +86,23 @@ export const useSetFeaturedProjects = () => {
       }
     }
   );
+};
+
+export const useSetOrganizationLogo = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Organization, Error, File>(['reimbursement-requsts', 'edit'], async (file: File) => {
+    const { data } = await setOrganizationLogo(file);
+    queryClient.invalidateQueries(['organizations']);
+    return data;
+  });
+};
+
+export const useOrganizationLogo = () => {
+  return useQuery<Blob | undefined, Error>(['organizations', 'logo'], async () => {
+    const { data: fileId } = await getOrganizationLogo();
+    if (!fileId) {
+      return;
+    }
+    return await downloadGoogleImage(fileId);
+  });
 };
