@@ -4,7 +4,7 @@ import { useAllChecklists } from '../../../hooks/onboarding.hook';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { groupChecklists } from '../../../utils/onboarding.utils';
-import { AdminChecklist } from './AdminChecklist';
+import { AdminChecklist } from './Checklists/AdminChecklist';
 
 const AdminToolsOnboardingConfig: React.FC = () => {
   const {

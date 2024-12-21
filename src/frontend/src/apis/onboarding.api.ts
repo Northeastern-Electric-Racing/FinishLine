@@ -1,6 +1,7 @@
 import { Checklist } from 'shared';
 import { apiUrls } from '../utils/urls';
 import axios from '../utils/axios';
+import { ChecklistCreateArgs } from '../hooks/onboarding.hook';
 
 /**
  * API call to fetch all the checklists
@@ -26,6 +27,12 @@ export const getGeneralChecklists = () => {
 export const getUsersChecklists = () => {
   return axios.get<Checklist[]>(apiUrls.usersTeamTypeChecklists(), {
     transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+export const createChecklist = (payload: ChecklistCreateArgs) => {
+  return axios.post(apiUrls.createChecklist(), {
+    ...payload
   });
 };
 

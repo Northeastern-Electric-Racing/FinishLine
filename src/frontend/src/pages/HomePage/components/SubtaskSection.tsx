@@ -5,13 +5,9 @@ import React from 'react';
 import { Checklist } from 'shared';
 import { GridDragIcon } from '@mui/x-data-grid';
 
-const SubtaskSection: React.FC<{ subtasks: Checklist[]; parentTask: Checklist; isAdmin?: boolean }> = ({
-  subtasks,
-  parentTask,
-  isAdmin = false
-}) => {
+const SubtaskSection: React.FC<{ parentTask: Checklist; isAdmin?: boolean }> = ({ parentTask, isAdmin = false }) => {
   const theme = useTheme();
-
+  const { subtasks } = parentTask;
   return (
     <Box
       sx={

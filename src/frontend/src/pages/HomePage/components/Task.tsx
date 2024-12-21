@@ -5,11 +5,10 @@ import SubtaskSection from './SubtaskSection';
 import { Checklist } from 'shared';
 
 interface SubtaskProps {
-  subtasks: Checklist[];
   parentTask: Checklist;
 }
 
-const Task: React.FC<SubtaskProps> = ({ subtasks, parentTask }) => {
+const Task: React.FC<SubtaskProps> = ({ parentTask }) => {
   const [showSubtasks, setShowSubtasks] = useState(false);
 
   const toggleShowSubtasks = () => {
@@ -52,7 +51,7 @@ const Task: React.FC<SubtaskProps> = ({ subtasks, parentTask }) => {
           </IconButton>
         </Box>
       </Box>
-      {showSubtasks && <SubtaskSection subtasks={subtasks} parentTask={parentTask} />}
+      {showSubtasks && <SubtaskSection parentTask={parentTask} />}
     </Box>
   );
 };

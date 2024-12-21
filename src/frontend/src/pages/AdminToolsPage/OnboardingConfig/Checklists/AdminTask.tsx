@@ -3,19 +3,18 @@ import { Typography, IconButton } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
 import { Checklist } from 'shared';
-import SubtaskSection from '../../HomePage/components/SubtaskSection';
+import SubtaskSection from '../../../HomePage/components/SubtaskSection';
 import { GridDragIcon } from '@mui/x-data-grid';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import EditIcon from '@mui/icons-material/Edit';
 
 interface AdminTaskProps {
-  subtasks: Checklist[];
   parentTask: Checklist;
 }
 
-const AdminTask: React.FC<AdminTaskProps> = ({ subtasks, parentTask }) => {
+const AdminTask: React.FC<AdminTaskProps> = ({ parentTask }) => {
   const [showSubtasks, setShowSubtasks] = useState(false);
-
+  const [showEdit, setShowEdit] = useState(false);
   const toggleShowSubtasks = () => {
     setShowSubtasks((prev) => !prev);
   };
@@ -32,7 +31,7 @@ const AdminTask: React.FC<AdminTaskProps> = ({ subtasks, parentTask }) => {
             <IconButton>
               <RemoveCircleOutlineIcon sx={{ color: 'black' }} />
             </IconButton>
-            <IconButton>
+            <IconButton onClick={() => setShowEdit(true)}>
               <EditIcon sx={{ color: 'black' }} />
             </IconButton>
             <IconButton onClick={toggleShowSubtasks} sx={{ marginLeft: 'auto' }}>
@@ -40,8 +39,9 @@ const AdminTask: React.FC<AdminTaskProps> = ({ subtasks, parentTask }) => {
             </IconButton>
           </Box>
         </Box>
-        {showSubtasks && <SubtaskSection subtasks={subtasks} parentTask={parentTask} isAdmin={true} />}
+        {showSubtasks && <SubtaskSection parentTask={parentTask} isAdmin={true} />}
       </Box>
+      {/* {showEdit && <EditChecklistModal open={showEdit} handleClose={() => setShowEdit(false)} />} */}
     </Box>
   );
 };

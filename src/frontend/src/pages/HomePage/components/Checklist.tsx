@@ -39,7 +39,7 @@ const Checklist: React.FC<{ parentChecklists: ChecklistType[]; checklistName?: s
               }}
             >
               {parentChecklists.map((parentChecklist) => (
-                <Task subtasks={parentChecklist.subtasks} parentTask={parentChecklist} />
+                <Task parentTask={parentChecklist} />
               ))}
             </Box>
           )}

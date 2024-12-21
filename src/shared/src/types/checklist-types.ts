@@ -14,7 +14,7 @@ export interface Checklist {
   team?: Team;
   descriptions: string[];
   isOptional: boolean;
-  subtasks: Checklist[];
+  subtasks: Subtask[];
   parentChecklist?: Checklist;
   usersChecked: User[];
   userCreated: User;
@@ -22,3 +22,11 @@ export interface Checklist {
   dateCreated: Date;
   dateDeleted?: Date;
 }
+
+export interface Subtask {
+  name: string;
+  isOptional: boolean;
+  subtasks: Subtask[];
+  usersChecked: string[];
+}
+

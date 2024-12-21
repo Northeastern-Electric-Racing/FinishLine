@@ -5,13 +5,14 @@ import { useState } from 'react';
 import { Checklist } from 'shared';
 import AdminTask from './AdminTask';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import CreateChecklistModal from './CreateChecklistModal';
 
 export const AdminChecklist: React.FC<{ parentChecklists: Checklist[]; checklistName?: string }> = ({
   parentChecklists,
   checklistName
 }) => {
   const [showTasks, setShowTasks] = useState(false);
-
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const toggleShowTasks = () => {
     setShowTasks((prev) => !prev);
   };
@@ -57,10 +58,10 @@ export const AdminChecklist: React.FC<{ parentChecklists: Checklist[]; checklist
               }}
             >
               {parentChecklists.map((parentChecklist) => (
-                <AdminTask subtasks={parentChecklist.subtasks} parentTask={parentChecklist} />
+                <AdminTask parentTask={parentChecklist} />
               ))}
               <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
-                <IconButton sx={{ color: 'red' }}>
+                <IconButton sx={{ color: 'red' }} onClick={() => setShowCreateModal(true)}>
                   <AddCircleOutlineIcon sx={{ mr: 1 }} />
                   <Typography>Add Task</Typography>
                 </IconButton>
@@ -69,6 +70,7 @@ export const AdminChecklist: React.FC<{ parentChecklists: Checklist[]; checklist
           )}
         </Grid>
       </Grid>
+      {showCreateModal && <CreateChecklistModal open={showCreateModal} handleClose={() => setShowCreateModal(false)} />}
     </Box>
   );
 };
