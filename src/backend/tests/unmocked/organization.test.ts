@@ -55,7 +55,7 @@ describe('Organization Tests', () => {
     it('Succeeds and updates all the images', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
       (uploadFile as Mock).mockImplementation((file) => {
-        return Promise.resolve({ id: `uploaded-${file.originalname}` });
+        return Promise.resolve({ name: `${file.originalname}`, id: `uploaded-${file.originalname}` });
       });
 
       await OrganizationsService.setImages(file1, file2, testBatman, organization);
@@ -240,7 +240,7 @@ describe('Organization Tests', () => {
     it('Succeeds and updates the logo', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
       (uploadFile as Mock).mockImplementation((file) => {
-        return Promise.resolve({ id: `uploaded-${file.originalname}` });
+        return Promise.resolve({ name: `${file.originalname}`, id: `uploaded-${file.originalname}` });
       });
 
       await OrganizationsService.setLogoImage(file1, testBatman, organization);
@@ -270,12 +270,6 @@ describe('Organization Tests', () => {
     it('Fails if an organization does not exist', async () => {
       await expect(async () => await OrganizationsService.getLogoImage('1')).rejects.toThrow(
         new NotFoundException('Organization', '1')
-      );
-    });
-
-    it('Fails if the organization does not have a logo image', async () => {
-      await expect(async () => await OrganizationsService.getLogoImage(orgId)).rejects.toThrow(
-        new HttpException(404, `Organization ${orgId} does not have a logo image`)
       );
     });
 

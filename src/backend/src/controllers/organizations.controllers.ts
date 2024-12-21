@@ -78,6 +78,7 @@ export default class OrganizationsController {
       if (!req.file) {
         throw new HttpException(400, 'Invalid or undefined image data');
       }
+
       const updatedOrg = await OrganizationsService.setLogoImage(req.file, req.currentUser, req.organization);
 
       res.status(200).json(updatedOrg);
