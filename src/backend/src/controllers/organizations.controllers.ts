@@ -117,4 +117,19 @@ export default class OrganizationsController {
       next(error);
     }
   }
+
+  static async setSlackWorkspaceId(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { workspaceId } = req.body;
+
+      const updatedOrg = await OrganizationsService.setSlackWorkspaceId(
+        workspaceId,
+        req.currentUser,
+        req.organization.organizationId
+      );
+      res.status(200).json(updatedOrg);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

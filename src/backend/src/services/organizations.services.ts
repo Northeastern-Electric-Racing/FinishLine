@@ -275,4 +275,16 @@ export default class OrganizationsService {
 
     return organization.featuredProjects.map(projectTransformer);
   }
+
+  static async setSlackWorkspaceId(workspaceId: string, submitter: User, organizationId: string) {
+    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('set workspace id');
+    }
+    const updatedOrg = await prisma.organization.update({
+      where: { organizationId },
+      data: { slackWorkspaceId: workspaceId }
+    });
+
+    return updatedOrg;
+  }
 }

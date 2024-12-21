@@ -878,6 +878,7 @@ model Organization {
   applyInterestImageId  String?   @unique
   exploreAsGuestImageId String?   @unique
   logoImageId           String?
+  slackWorkspaceId      String?
 
   // Relation references
   wbsElements              WBS_Element[]
@@ -935,7 +936,7 @@ model Announcement {
   announcementId String   @id @default(uuid())
   text           String
   usersReceived  User[]   @relation("receivedAnnouncements")
-  dateCrated     DateTime
+  dateCreated    DateTime @default(now())
   userCreatedId  String
   userCreated    User     @relation("createdAnnouncements", fields: [userCreatedId], references: [userId])
 }

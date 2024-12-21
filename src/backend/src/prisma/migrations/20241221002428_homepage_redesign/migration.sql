@@ -1,5 +1,6 @@
 -- AlterTable
-ALTER TABLE "Organization" ADD COLUMN     "logoImageId" TEXT;
+ALTER TABLE "Organization" ADD COLUMN     "logoImageId" TEXT,
+ADD COLUMN     "slackWorkspaceId" TEXT;
 
 -- AlterTable
 ALTER TABLE "Project" ADD COLUMN     "organizationId" TEXT;
@@ -8,7 +9,7 @@ ALTER TABLE "Project" ADD COLUMN     "organizationId" TEXT;
 CREATE TABLE "Announcement" (
     "announcementId" TEXT NOT NULL,
     "text" TEXT NOT NULL,
-    "dateCrated" TIMESTAMP(3) NOT NULL,
+    "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userCreatedId" TEXT NOT NULL,
 
     CONSTRAINT "Announcement_pkey" PRIMARY KEY ("announcementId")

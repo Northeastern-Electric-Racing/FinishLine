@@ -325,4 +325,15 @@ describe('Organization Tests', () => {
       expect(oldOrganization?.description).toBe(returnedOrganization.description);
     });
   });
+
+  describe('Set Organization Workspace Id', () => {
+    it('Succeeds and updates the workspace id', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+
+      const updatedOrganization = await OrganizationsService.setSlackWorkspaceId('1234', testBatman, orgId);
+
+      expect(updatedOrganization).not.toBeNull();
+      expect(updatedOrganization.slackWorkspaceId).toBe('1234');
+    });
+  });
 });
