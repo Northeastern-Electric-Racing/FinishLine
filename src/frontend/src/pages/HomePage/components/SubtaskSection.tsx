@@ -8,15 +8,15 @@ import { useToggleChecklist } from '../../../hooks/onboarding.hook';
 import { useToast } from '../../../hooks/toasts.hooks';
 
 interface SubtaskSectionProps {
-  subtasks: Checklist[];
   parentTask: Checklist;
   checkedChecklists?: Checklist[];
   isAdmin?: boolean;
 }
 
-const SubtaskSection: React.FC<SubtaskSectionProps> = ({ subtasks, parentTask, checkedChecklists, isAdmin = false }) => {
+const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChecklists, isAdmin = false }) => {
   const theme = useTheme();
   const toast = useToast();
+  const { subtasks } = parentTask;
   const { mutateAsync: toggleChecklist } = useToggleChecklist();
 
   const handleToggleChecklist = async (subtaskId: string) => {

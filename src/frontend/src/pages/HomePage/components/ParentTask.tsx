@@ -8,12 +8,11 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useToast } from '../../../hooks/toasts.hooks';
 
-interface SubtaskProps {
-  subtasks: Checklist[];
+interface ParentTaskProps {
   parentTask: Checklist;
 }
 
-const Task: React.FC<SubtaskProps> = ({ subtasks, parentTask }) => {
+const ParentTask: React.FC<ParentTaskProps> = ({ parentTask }) => {
   const toast = useToast();
   const [showSubtasks, setShowSubtasks] = useState(false);
   const { mutateAsync: toggleChecklist } = useToggleChecklist();
@@ -82,9 +81,9 @@ const Task: React.FC<SubtaskProps> = ({ subtasks, parentTask }) => {
           </IconButton>
         </Box>
       </Box>
-      {showSubtasks && <SubtaskSection subtasks={subtasks} parentTask={parentTask} checkedChecklists={checkedChecklists} />}
+      {showSubtasks && <SubtaskSection parentTask={parentTask} checkedChecklists={checkedChecklists} />}
     </Box>
   );
 };
 
-export default Task;
+export default ParentTask;
