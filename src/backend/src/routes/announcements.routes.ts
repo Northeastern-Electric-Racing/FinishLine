@@ -3,6 +3,6 @@ import AnnouncementController from '../controllers/announcements.controllers';
 
 const announcementsRouter = express.Router();
 
-announcementsRouter.get('/announcements/current-user', AnnouncementController.getUserUnreadAnnouncements);
+announcementsRouter.get('/current-user', AnnouncementController.getUserUnreadAnnouncements);
 
 export default announcementsRouter;
