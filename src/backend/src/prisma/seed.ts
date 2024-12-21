@@ -27,6 +27,7 @@ import {
   DesignReviewStatus,
   MaterialStatus,
   RoleEnum,
+  SpecialPermission,
   StandardChangeRequest,
   WbsElementStatus,
   WorkPackageStage
@@ -47,6 +48,7 @@ import RecruitmentServices from '../services/recruitment.services';
 import OrganizationsService from '../services/organizations.services';
 import StatisticsService from '../services/statistics.services';
 import { seedGraph } from './seed-data/statistics.seed';
+import { graphCollectionTransformer } from '../transformers/statistics-graphCollection.transformer';
 
 const prisma = new PrismaClient();
 
@@ -708,6 +710,32 @@ const performSeed: () => Promise<void> = async () => {
     thomasEmrax,
     ner
   );
+
+  /**
+   * Graph Collection 1
+   */
+  const graph2 = await prisma.graph.create({
+    data: {
+      title: 'graph2',
+      graphType: Graph_Type.PROJECT_BUDGET_BY_PROJECT,
+      displayGraphType: Graph_Display_Type.PIE,
+      measure: Measure.SUM,
+      userCreatedId: thomasEmrax.userId,
+      organizationId: ner.organizationId
+    }
+  });
+
+  const graphCollection1 = await prisma.graph_Collection.create({
+    data: {
+      title: 'Graph Collection 1',
+      viewPermissions: [SpecialPermission.FINANCE_ONLY],
+      graphs: {
+        connect: [{ id: graph2.id }]
+      },
+      userCreatedId: thomasEmrax.userId,
+      organizationId: ner.organizationId
+    }
+  });
 
   /**
    * Change Requests for Creating Work Packages

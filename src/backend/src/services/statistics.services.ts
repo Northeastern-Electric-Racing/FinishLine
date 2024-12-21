@@ -1,12 +1,13 @@
-import { Organization, User, Graph_Type, Measure, Graph_Display_Type, Special_Permission } from '@prisma/client';
+import { Organization, User, Graph_Type, Measure, Graph_Display_Type, Special_Permission, Prisma } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { DeletedException, InvalidOrganizationException, NotFoundException } from '../utils/errors.utils';
 import graphTransformer from '../transformers/statistics-graph.transformer';
-import { getGraphQueryArgs } from '../prisma-query-args/statistics.query-args';
+import { getGraphQueryArgs, getGraphCollectionQueryArgs, GraphQueryArgs } from '../prisma-query-args/statistics.query-args';
 import { userHasPermissionNew } from '../utils/users.utils';
 import { AccessDeniedException, HttpException } from '../utils/errors.utils';
-import { Graph } from 'shared';
+import { Graph, GraphCollection, GraphData } from 'shared';
 import { getGraphData } from '../utils/statistics.utils';
+import { graphCollectionTransformer } from '../transformers/statistics-graphCollection.transformer';
 
 export default class StatisticsService {
   /**
@@ -134,5 +135,45 @@ export default class StatisticsService {
         { carIds: requestedGraph.cars.map((car) => car.carId) }
       )
     });
+  }
+
+  /**
+   * Get all graph collections.
+   * @param organization organization that the user is in.
+   * @returns all the graph collections.
+   */
+
+  static async getAllGraphCollections(organization: Organization): Promise<GraphCollection[]> {
+    const graphCollections = await prisma.graph_Collection.findMany({
+      where: {
+        dateDeleted: null,
+        organizationId: organization.organizationId
+      },
+      ...getGraphCollectionQueryArgs(organization.organizationId)
+    });
+
+    return Promise.all(
+      graphCollections.map(async (graphCollection) => {
+        const addedDataGraphs: (Prisma.GraphGetPayload<GraphQueryArgs> & { graphData: GraphData[] })[] = await Promise.all(
+          graphCollection.graphs.map(async (graph) => ({
+            ...graph,
+            graphData: await getGraphData(
+              graph.graphType,
+              graph.measure,
+              organization.organizationId,
+              graph.startDate ?? null,
+              graph.endDate ?? null,
+              {
+                carIds: graph.cars.map((car) => {
+                  return car.carId;
+                })
+              }
+            )
+          }))
+        );
+
+        return graphCollectionTransformer(graphCollection, addedDataGraphs);
+      })
+    );
   }
 }
