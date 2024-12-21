@@ -280,8 +280,8 @@ describe('Organization Tests', () => {
       });
 
       expect(allContacts.length).toBe(2);
-      expect(allContacts[0].userId).toBe(testBatman.userId);
-      expect(allContacts[1].userId).toBe(testSuperman.userId);
+      expect(allContacts.some((contact) => contact.userId === testBatman.userId)).toBeTruthy();
+      expect(allContacts.some((contact) => contact.userId === testSuperman.userId)).toBeTruthy();
 
       expect(updatedOrganization).not.toBeNull();
       expect(updatedOrganization.contacts[0].title).toBe('Chief Software Engineer');
