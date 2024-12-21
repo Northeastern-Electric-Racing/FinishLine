@@ -38,6 +38,8 @@ import { getAuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args'
 import authenticatedUserTransformer from '../transformers/auth-user.transformer';
 import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args';
 import taskTransformer from '../transformers/tasks.transformer';
+import { getNotificationQueryArgs } from '../prisma-query-args/notifications.query-args';
+import notificationTransformer from '../transformers/notifications.transformer';
 
 export default class UsersService {
   /**
@@ -565,5 +567,50 @@ export default class UsersService {
 
     const resolvedTasks = await Promise.all(tasksPromises);
     return resolvedTasks.flat();
+  }
+
+  /**
+   * Gets all of a user's unread notifications
+   * @param userId id of user to get unread notifications from
+   * @param organization the user's orgainzation
+   * @returns the unread notifications of the user
+   */
+  static async getUserUnreadNotifications(userId: string, organization: Organization) {
+    const requestedUser = await prisma.user.findUnique({
+      where: { userId },
+      include: { unreadNotifications: getNotificationQueryArgs(organization.organizationId) }
+    });
+    if (!requestedUser) throw new NotFoundException('User', userId);
+
+    return requestedUser.unreadNotifications.map(notificationTransformer);
+  }
+
+  /**
+   * Removes a notification from the user's unread notifications
+   * @param userId id of the user to remove notification from
+   * @param notificationId id of the notification to remove
+   * @param organization the user's organization
+   * @returns the user's updated unread notifications
+   */
+  static async removeUserNotification(userId: string, notificationId: string, organization: Organization) {
+    const requestedUser = await prisma.user.findUnique({
+      where: { userId }
+    });
+
+    if (!requestedUser) throw new NotFoundException('User', userId);
+
+    const updatedUser = await prisma.user.update({
+      where: { userId },
+      data: {
+        unreadNotifications: {
+          disconnect: {
+            notificationId
+          }
+        }
+      },
+      include: { unreadNotifications: getNotificationQueryArgs(organization.organizationId) }
+    });
+
+    return updatedUser.unreadNotifications.map(notificationTransformer);
   }
 }

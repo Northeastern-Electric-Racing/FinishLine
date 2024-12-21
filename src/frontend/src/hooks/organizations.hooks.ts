@@ -7,9 +7,10 @@ import {
   getCurrentOrganization,
   setOrganizationDescription,
   getOrganizationLogo,
-  setOrganizationLogo
+  setOrganizationLogo,
+  setOrganizationFeaturedProjects
 } from '../apis/organizations.api';
-import { downloadGoogleImage } from '../apis/finance.api';
+import { downloadGoogleImage } from '../apis/organizations.api';
 
 interface OrganizationProvider {
   organizationId: string;
@@ -61,7 +62,22 @@ export const useSetOrganizationDescription = () => {
     ['organizations', 'description'],
     async (description: string) => {
       const { data } = await setOrganizationDescription(description);
-      queryClient.invalidateQueries(['organizations']);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['organizations']);
+      }
+    }
+  );
+};
+
+export const useSetFeaturedProjects = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Organization, Error, Project[]>(
+    ['organizations', 'featured-projects'],
+    async (featuredProjects: Project[]) => {
+      const { data } = await setOrganizationFeaturedProjects(featuredProjects.map((project) => project.id));
       return data;
     },
     {
@@ -82,11 +98,11 @@ export const useSetOrganizationLogo = () => {
 };
 
 export const useOrganizationLogo = () => {
-  return useQuery<string, Error>(['organizations', 'logo'], async () => {
+  return useQuery<Blob | undefined, Error>(['organizations', 'logo'], async () => {
     const { data: fileId } = await getOrganizationLogo();
-
-    const imageBlob = await downloadGoogleImage(fileId);
-
-    return URL.createObjectURL(imageBlob);
+    if (!fileId) {
+      return;
+    }
+    return await downloadGoogleImage(fileId);
   });
 };

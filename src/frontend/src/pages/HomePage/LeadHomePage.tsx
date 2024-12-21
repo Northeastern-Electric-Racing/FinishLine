@@ -11,6 +11,7 @@ import PageLayout, { PAGE_GRID_HEIGHT } from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
 import ChangeRequestsToReview from './components/ChangeRequestsToReview';
 import MyTeamsOverdueTasks from './components/MyTeamsOverdueTasks';
+import UpcomingDesignReviews from './components/UpcomingDesignReviews';
 
 interface LeadHomePageProps {
   user: AuthenticatedUser;
@@ -39,9 +40,12 @@ const LeadHomePage = ({ user }: LeadHomePageProps) => {
         <Box height={'40%'}>
           <ChangeRequestsToReview user={user} />
         </Box>
-        <Grid container height={'60%'}>
+        <Grid container height={'60%'} spacing={2}>
           <Grid item xs={12} md={6} height={'100%'}>
             <MyTeamsOverdueTasks user={user} />
+          </Grid>
+          <Grid item xs={12} md={6} height={'100%'}>
+            <UpcomingDesignReviews user={user} />
           </Grid>
         </Grid>
       </Box>
