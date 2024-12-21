@@ -292,8 +292,6 @@ export default class OrganizationsService {
       data: { slackWorkspaceId: workspaceId }
     });
 
-    console.log(updatedOrg);
-
     return updatedOrg;
   }
 }

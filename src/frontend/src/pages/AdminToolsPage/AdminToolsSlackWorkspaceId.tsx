@@ -30,6 +30,8 @@ const AdminToolsWorkspaceIdView: React.FC<AdminToolsWorkspaceIdViewProps> = ({ o
   const { mutateAsync, isLoading } = useSetWorkspaceId();
   const [workspaceId, setWorkspaceId] = useState(organization.slackWorkspaceId ?? '');
 
+  if (isLoading) return <LoadingIndicator />;
+
   const slackWorkspaceId = async () => {
     try {
       await mutateAsync(workspaceId);
