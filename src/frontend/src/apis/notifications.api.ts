@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import { Notification } from 'shared';
 

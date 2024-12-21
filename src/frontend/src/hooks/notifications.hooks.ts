@@ -22,14 +22,14 @@ export const useCurrentUserNotifications = () => {
 export const useRemoveUserNotification = () => {
   const queryClient = useQueryClient();
   return useMutation<Notification[], Error, Notification>(
-    ['notifications', 'currentUser', 'remove'],
+    ['notifications', 'current-user', 'remove'],
     async (notification: Notification) => {
       const { data } = await removeNotification(notification.notificationId);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['notifications', 'currentUser']);
+        queryClient.invalidateQueries(['notifications', 'current-user']);
       }
     }
   );
