@@ -29,3 +29,9 @@ export const setOrganizationFeaturedProjects = async (featuredProjectIds: string
     projectIds: featuredProjectIds
   });
 };
+
+export const setOrganizationWorkspaceId = async (workspaceId: string) => {
+  return axios.post<Organization>(apiUrls.organizationsSetWorkspaceId(), {
+    workspaceId
+  });
+};

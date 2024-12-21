@@ -6,7 +6,8 @@ import {
   getFeaturedProjects,
   getCurrentOrganization,
   setOrganizationDescription,
-  setOrganizationFeaturedProjects
+  setOrganizationFeaturedProjects,
+  setOrganizationWorkspaceId
 } from '../apis/organizations.api';
 
 interface OrganizationProvider {
@@ -75,6 +76,22 @@ export const useSetFeaturedProjects = () => {
     ['organizations', 'featured-projects'],
     async (featuredProjects: Project[]) => {
       const { data } = await setOrganizationFeaturedProjects(featuredProjects.map((project) => project.id));
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['organizations']);
+      }
+    }
+  );
+};
+
+export const useSetWorkspaceId = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Organization, Error, string>(
+    ['organizations', 'featured-projects'],
+    async (workspaceId: string) => {
+      const { data } = await setOrganizationWorkspaceId(workspaceId);
       return data;
     },
     {

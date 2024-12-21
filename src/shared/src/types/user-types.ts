@@ -44,6 +44,7 @@ export interface Organization {
   treasurer?: UserPreview;
   advisor?: UserPreview;
   description: string;
+  workspaceId?: string;
 }
 
 /**
