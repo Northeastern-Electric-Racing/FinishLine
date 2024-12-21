@@ -12,7 +12,7 @@ import { AuthenticatedUser } from 'shared';
 import MemberEncouragement from './components/MemberEncouragement';
 import GuestOrganizationInfo from './components/GuestOrganizationInfo';
 import FeaturedProjects from './components/FeaturedProjects';
-import LogoDisplay from './components/LogoDisplay';
+import OrganizationLogo from './components/OrganizationLogo';
 
 interface GuestHomePageProps {
   user: AuthenticatedUser;
@@ -50,7 +50,7 @@ const GuestHomePage = ({ user }: GuestHomePageProps) => {
             </Stack>
           </Grid>
           <Grid item height={'100%'} xs={3.5}>
-            <LogoDisplay />
+            <OrganizationLogo />
           </Grid>
         </Grid>
         <Box height={'40%'}>
