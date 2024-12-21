@@ -305,54 +305,60 @@ describe('Statistics Tests', () => {
 
   describe('Get all graph collections', () => {
     it('Succeeds and gets all the graphs', async () => {
-      // const graph1 = await prisma.graph.create({
-      //   data: {
-      //     startDate: new Date('12/12/2024'),
-      //     endDate: new Date(new Date('12/12/2024').getTime() + 10000),
-      //     title: 'title',
-      //     graphType: GraphType.CHANGE_REQUESTS_BY_PROJECT,
-      //     measure: Measure.AVG,
-      //     userCreatedId: user.userId,
-      //     organizationId: orgId
-      //   }
-      // });
-      // const graph2 = await prisma.graph.create({
-      //   data: {
-      //     startDate: new Date('12/12/2024'),
-      //     endDate: new Date(new Date('12/12/2024').getTime() + 10000),
-      //     title: 'title',
-      //     graphType: GraphType.BAR,
-      //     finalTable: graphGen.finalTable,
-      //     finalColumn: graphGen.finalColumn,
-      //     groupByColumn: graphGen.groupByColumn,
-      //     measure: Measure.AVG,
-      //     queryPaths: { create: [{ primaryKey: 'teamTypeId', table: 'Team_Type' }] },
-      //     userCreatedId: user.userId,
-      //     organizationId: orgId
-      //   }
-      // });
-      // const graphCollection1 = await prisma.graph_Collection.create({
-      //   data: {
-      //     title: 'Graph Collection 1',
-      //     viewPermissions: [Permission.VIEW_GRAPH_COLLECTION, Permission.CREATE_GRAPH_COLLECTION],
-      //     graphs: {
-      //       connect: [{ id: graph1.id }, { id: graph2.id }]
-      //     },
-      //     userCreatedId: user.userId,
-      //     organizationId: orgId
-      //   }
-      // });
-      // need to make some seed data graph collections
-      // const result = StatisticsService.getAllGraphCollections(orgId);
-      // expect it to contain the graph collections associated with the given organization
-      // expect(result).toContain({ graphCollection1 });
-      // expect(result).toStrictEqual([graphCollection1]);
-    });
+      const graph1 = await prisma.graph.create({
+        data: {
+          title: 'graph1',
+          graphType: Graph_Type.CHANGE_REQUESTS_BY_DIVISION,
+          displayGraphType: Graph_Display_Type.BAR,
+          measure: Measure.AVG,
+          userCreatedId: user.userId,
+          organizationId: orgId
+        }
+      });
 
-    it('Get Graph Collections with invalid org id returns no collections', async () => {
-      const invalidOrgId = 'invalid';
-      const result = StatisticsService.getAllGraphCollections(invalidOrgId);
-      expect(result).toContain({});
+      const graph2 = await prisma.graph.create({
+        data: {
+          title: 'graph2',
+          graphType: Graph_Type.PROJECT_BUDGET_BY_PROJECT,
+          displayGraphType: Graph_Display_Type.PIE,
+          measure: Measure.SUM,
+          userCreatedId: user.userId,
+          organizationId: orgId
+        }
+      });
+
+      const graphCollection1 = await prisma.graph_Collection.create({
+        data: {
+          title: 'Graph Collection 1',
+          viewPermissions: [SpecialPermission.FINANCE_ONLY],
+          graphs: {
+            connect: [{ id: graph1.id }, { id: graph2.id }]
+          },
+          userCreatedId: user.userId,
+          organizationId: orgId
+        }
+      });
+
+      const graphCollection2 = await prisma.graph_Collection.create({
+        data: {
+          title: 'Graph Collection 2',
+          viewPermissions: [SpecialPermission.FINANCE_ONLY],
+          graphs: {
+            connect: [{ id: graph1.id }, { id: graph2.id }]
+          },
+          userCreatedId: user.userId,
+          organizationId: orgId
+        }
+      });
+
+      const result = await StatisticsService.getAllGraphCollections(organization);
+      expect(result[0].userCreated.userId).toBe(user.userId);
+      expect(result.length).toBe(2);
+      expect(
+        result.map((graphCol) => {
+          return graphCol.id;
+        })
+      ).toEqual([graphCollection1.id, graphCollection2.id]);
     });
   });
 });
