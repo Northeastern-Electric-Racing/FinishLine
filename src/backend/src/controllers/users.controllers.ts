@@ -191,15 +191,4 @@ export default class UsersController {
       next(error);
     }
   }
-
-  static async getUserUnreadAnnouncements(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { organization, currentUser } = req;
-
-      const unreadAnnouncements = await UsersService.getUserUnreadAnnouncements(currentUser.userId, organization);
-      res.status(200).json(unreadAnnouncements);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
 }

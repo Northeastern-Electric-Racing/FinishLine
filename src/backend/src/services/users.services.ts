@@ -38,8 +38,6 @@ import { getAuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args'
 import authenticatedUserTransformer from '../transformers/auth-user.transformer';
 import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args';
 import taskTransformer from '../transformers/tasks.transformer';
-import { getAnnouncementQueryArgs } from '../prisma-query-args/announcements.query.args';
-import announcementTransformer from '../transformers/announcements.transformer';
 
 export default class UsersService {
   /**
@@ -567,26 +565,5 @@ export default class UsersService {
 
     const resolvedTasks = await Promise.all(tasksPromises);
     return resolvedTasks.flat();
-  }
-
-  /**
-   * Gets all of a user's unread announcements
-   * @param userId id of the current user
-   * @param organization the user's orgainzation
-   * @returns the unread announcements of the user
-   */
-  static async getUserUnreadAnnouncements(userId: string, organization: Organization) {
-    const unreadAnnouncements = await prisma.announcement.findMany({
-      where: {
-        usersReceived: {
-          some: { userId }
-        }
-      },
-      ...getAnnouncementQueryArgs(organization.organizationId)
-    });
-
-    if (!unreadAnnouncements) throw new HttpException(404, 'User Unread Announcements Not Found');
-
-    return unreadAnnouncements.map(announcementTransformer);
   }
 }

@@ -3,7 +3,6 @@ import { createTestOrganization, createTestTask, createTestUser, resetUsers } fr
 import { batmanAppAdmin } from '../test-data/users.test-data';
 import UsersService from '../../src/services/users.services';
 import { NotFoundException } from '../../src/utils/errors.utils';
-import AnnouncementService from '../../src/services/announcement.service';
 
 describe('User Tests', () => {
   let orgId: string;
@@ -47,34 +46,6 @@ describe('User Tests', () => {
       const userTasks = await UsersService.getManyUserTasks([testBatman.userId, testBatman.userId], organization);
 
       expect(userTasks).toStrictEqual([batmanTask, batmanTask]);
-    });
-  });
-
-  describe('Get Announcements', () => {
-    it('Succeeds and gets user announcements', async () => {
-      const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      await AnnouncementService.createAnnouncement(
-        'test1',
-        [testBatman.userId],
-        'Thomas Emrax',
-        '1',
-        'software',
-        organization.organizationId
-      );
-      await AnnouncementService.createAnnouncement(
-        'test2',
-        [testBatman.userId],
-        'Superman',
-        '50',
-        'mechanical',
-        organization.organizationId
-      );
-
-      const announcements = await UsersService.getUserUnreadAnnouncements(testBatman.userId, organization);
-
-      expect(announcements).toHaveLength(2);
-      expect(announcements[0].text).toBe('test1');
-      expect(announcements[1].text).toBe('test2');
     });
   });
 });

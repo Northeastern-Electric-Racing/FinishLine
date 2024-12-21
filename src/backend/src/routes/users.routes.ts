@@ -54,6 +54,5 @@ userRouter.post(
   validateInputs,
   UsersController.getManyUserTasks
 );
-userRouter.get('/announcements/current-user', UsersController.getUserUnreadAnnouncements);
 
 export default userRouter;
