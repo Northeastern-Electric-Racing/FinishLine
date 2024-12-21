@@ -12,27 +12,15 @@ import ErrorPage from '../../ErrorPage';
 const AdminToolsRecruitmentConfig: React.FC = () => {
   const { mutateAsync: organizationImages } = useSetOrganizationImages();
   const toast = useToast();
-  const {
-    data: organization,
-    isLoading: organizationIsLoading,
-    isError: organizationIsError,
-    error: organizationError
-  } = useCurrentOrganization();
+  const { data: organization } = useCurrentOrganization();
 
-  if (!organization || organizationIsLoading) {
-    return <LoadingIndicator />;
-  }
-  if (organizationIsError) {
-    return <ErrorPage message={organizationError.message} />;
-  }
+  const { data: applyInterestImageUrl } = useGetImageUrl(organization?.applyInterestImageId ?? null);
+  const { data: exploreGuestImageUrl } = useGetImageUrl(organization?.exploreAsGuestImageId ?? null);
 
   const [addedImage1, setAddedImage1] = useState<File | undefined>(undefined);
   const [addedImage2, setAddedImage2] = useState<File | undefined>(undefined);
   const [isUploadingApply, setIsUploadingApply] = useState(false);
   const [isUploadingExplore, setIsUploadingExplore] = useState(false);
-
-  const { data: applyInterestImageUrl } = useGetImageUrl(organization?.applyInterestImageId ?? null);
-  const { data: exploreGuestImageUrl } = useGetImageUrl(organization?.exploreAsGuestImageId ?? null);
 
   const handleFileUpload = async (files: File[], type: 'exploreAsGuest' | 'applyInterest') => {
     const validFiles: File[] = [];
