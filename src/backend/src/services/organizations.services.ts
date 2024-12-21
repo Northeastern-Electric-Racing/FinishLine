@@ -276,6 +276,13 @@ export default class OrganizationsService {
     return organization.featuredProjects.map(projectTransformer);
   }
 
+  /**
+   * sets the slack workspace id of the organization
+   * @param workspaceId workspace id to set
+   * @param submitter user who submitted the workspace id
+   * @param organizationId id of organization to update with workspace id
+   * @returns updated organization
+   */
   static async setSlackWorkspaceId(workspaceId: string, submitter: User, organizationId: string) {
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('set workspace id');
@@ -284,6 +291,8 @@ export default class OrganizationsService {
       where: { organizationId },
       data: { slackWorkspaceId: workspaceId }
     });
+
+    console.log(updatedOrg);
 
     return updatedOrg;
   }
