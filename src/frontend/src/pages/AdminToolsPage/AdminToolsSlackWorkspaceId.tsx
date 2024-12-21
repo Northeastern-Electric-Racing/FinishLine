@@ -4,13 +4,14 @@
  */
 
 import { NERButton } from '../../components/NERButton';
-import { Box, TextField, Typography } from '@mui/material';
+import { Box, Link, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useCurrentOrganization, useSetWorkspaceId } from '../../hooks/organizations.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { Organization } from 'shared';
+import HelpIcon from '@mui/icons-material/Help';
 
 interface AdminToolsWorkspaceIdViewProps {
   organization: Organization;
@@ -52,6 +53,9 @@ const AdminToolsWorkspaceIdView: React.FC<AdminToolsWorkspaceIdViewProps> = ({ o
           alignItems: 'center'
         }}
       >
+        <Link color={'#ffffff'} href={'https://slack.com/help/articles/221769328-Locate-your-Slack-URL-or-ID'}>
+          <HelpIcon sx={{ mr: 2, height: 50 }} />
+        </Link>
         <TextField value={workspaceId} onChange={(e) => setWorkspaceId(e.target.value)} />
         <Box>
           <NERButton variant="contained" disabled={isLoading} onClick={slackWorkspaceId}>
