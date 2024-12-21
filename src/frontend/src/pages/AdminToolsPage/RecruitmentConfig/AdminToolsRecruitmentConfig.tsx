@@ -7,7 +7,6 @@ import React, { useState } from 'react';
 import { useCurrentOrganization, useSetOrganizationImages } from '../../../hooks/organizations.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useGetImageUrl } from '../../../hooks/onboarding.hooks';
-import ErrorPage from '../../ErrorPage';
 
 const AdminToolsRecruitmentConfig: React.FC = () => {
   const { mutateAsync: organizationImages } = useSetOrganizationImages();
