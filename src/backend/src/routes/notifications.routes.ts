@@ -1,7 +1,5 @@
 import express from 'express';
 import NotificationsController from '../controllers/notifications.controllers';
-import { nonEmptyString } from '../utils/validation.utils';
-import { body } from 'express-validator';
 
 const notificationsRouter = express.Router();
 
