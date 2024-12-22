@@ -42,6 +42,12 @@ export const setOrganizationFeaturedProjects = async (featuredProjectIds: string
   });
 };
 
+export const setOrganizationWorkspaceId = async (workspaceId: string) => {
+  return axios.post<Organization>(apiUrls.organizationsSetWorkspaceId(), {
+    workspaceId
+  });
+};
+
 /**
  * Downloads a given fileId from google drive into a blob
  *
