@@ -1,6 +1,12 @@
-import { useQuery } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Checklist } from 'shared';
-import { getAllChecklists, getGeneralChecklists, getUsersChecklists, downloadGoogleImage } from '../apis/onboarding.api';
+import {
+  getAllChecklists,
+  getGeneralChecklists,
+  getUsersChecklists,
+  downloadGoogleImage,
+  deleteChecklist
+} from '../apis/onboarding.api';
 
 export const useAllChecklists = () => {
   return useQuery<Checklist[], Error>(['checklists'], async () => {
@@ -21,6 +27,22 @@ export const useUsersTeamTypeChecklists = () => {
     const { data } = await getUsersChecklists();
     return data;
   });
+};
+
+export const useDeleteChecklist = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['checklists', 'delete'],
+    async (checklistId: string) => {
+      const { data } = await deleteChecklist(checklistId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['checklists']);
+      }
+    }
+  );
 };
 
 export const useGetImageUrl = (imageFileId: string | null) => {

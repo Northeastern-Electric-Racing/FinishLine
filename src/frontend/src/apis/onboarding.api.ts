@@ -30,6 +30,13 @@ export const getUsersChecklists = () => {
 };
 
 /**
+ * API call to delete a checklist
+ */
+export const deleteChecklist = (checklistId: string) => {
+  return axios.post<{ message: string }>(apiUrls.checklistDelete(checklistId));
+};
+
+/**
  * API Call to download a google image
  * @param fileId file id to be downloaded
  * @returns an image blob
