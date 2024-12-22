@@ -1982,7 +1982,7 @@ const performSeed: () => Promise<void> = async () => {
     null,
     joinSlackChecklist.checklistId,
     ner,
-    false
+    true
   );
 
   await OnboardingServices.createChecklist(

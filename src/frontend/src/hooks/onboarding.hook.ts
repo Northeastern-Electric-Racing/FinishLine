@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Checklist } from 'shared';
-import { getAllChecklists, getGeneralChecklists, getUsersChecklists, downloadGoogleImage, createChecklist } from '../apis/onboarding.api';
+import { getAllChecklists, getUsersChecklists, downloadGoogleImage, createChecklist } from '../apis/onboarding.api';
 
 export interface ChecklistCreateArgs {
   name: string;
@@ -14,13 +14,6 @@ export interface ChecklistCreateArgs {
 export const useAllChecklists = () => {
   return useQuery<Checklist[], Error>(['checklists'], async () => {
     const { data } = await getAllChecklists();
-    return data;
-  });
-};
-
-export const useGeneralChecklists = () => {
-  return useQuery<Checklist[], Error>(['checklists', 'general'], async () => {
-    const { data } = await getGeneralChecklists();
     return data;
   });
 };

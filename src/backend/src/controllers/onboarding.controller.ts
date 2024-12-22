@@ -12,15 +12,6 @@ export default class OnboardingController {
     }
   }
 
-  static async getGeneralChecklists(req: Request, res: Response, next: NextFunction) {
-    try {
-      const generalChecklists = await OnboardingServices.getGeneralChecklists(req.organization);
-      res.status(200).json(generalChecklists);
-    } catch (error: unknown) {
-      return next(error);
-    }
-  }
-
   static async getCheckedChecklists(req: Request, res: Response, next: NextFunction) {
     try {
       const checkedChecklists = await OnboardingServices.getCheckedChecklists(req.currentUser, req.organization);

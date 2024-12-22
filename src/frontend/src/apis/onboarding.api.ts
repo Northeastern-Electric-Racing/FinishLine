@@ -13,15 +13,6 @@ export const getAllChecklists = () => {
 };
 
 /**
- * API call to fetch the general checklists
- */
-export const getGeneralChecklists = () => {
-  return axios.get<Checklist[]>(apiUrls.generalChecklists(), {
-    transformResponse: (data) => JSON.parse(data)
-  });
-};
-
-/**
  * API call to fetch all the users checklists
  */
 export const getUsersChecklists = () => {

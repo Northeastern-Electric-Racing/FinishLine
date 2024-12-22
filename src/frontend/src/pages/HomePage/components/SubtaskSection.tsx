@@ -50,7 +50,7 @@ const SubtaskSection: React.FC<{ parentTask: Checklist; isAdmin?: boolean }> = (
                     />
                   )}
                   <Typography color={'black'} fontWeight={'bold'}>
-                    {subtask.name}
+                    {subtask.name} {subtask.isOptional ? '(Optional)' : '(Required)'}
                   </Typography>
                 </Box>
               ))}

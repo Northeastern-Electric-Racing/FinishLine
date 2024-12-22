@@ -1,21 +1,12 @@
 import React, { useState } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import NERFormModal from '../../../../components/NERFormModal';
-import {
-  FormControl,
-  FormLabel,
-  Box,
-  TextField,
-  IconButton,
-  Checkbox,
-  Button,
-  useTheme,
-  InputAdornment
-} from '@mui/material';
+import { FormControl, FormLabel, Box, TextField, IconButton, Checkbox, useTheme, InputAdornment } from '@mui/material';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Checklist, ChecklistPreview } from 'shared';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { ChecklistCreateArgs } from '../../../../hooks/onboarding.hook';
 import { useToast } from '../../../../hooks/toasts.hooks';
 
@@ -37,7 +28,11 @@ interface ChecklistFormValues {
 const ChecklistFormModal = ({ open, handleClose, onSubmit, defaulValues, teamId, teamTypeId }: ChecklistFormModalProps) => {
   const theme = useTheme();
   const toast = useToast();
-  const [subtasks, setSubtasks] = useState<ChecklistPreview[]>(defaulValues?.subtasks || []);
+  const [subtasks, setSubtasks] = useState<ChecklistPreview[]>(
+    defaulValues?.subtasks?.length
+      ? defaulValues.subtasks
+      : [{ name: '', isOptional: false, dateCreated: new Date(), checklistId: '' }]
+  );
   const schema = yup.object().shape({
     name: yup.string().required('Name is Required'),
     descriptions: yup
@@ -82,7 +77,7 @@ const ChecklistFormModal = ({ open, handleClose, onSubmit, defaulValues, teamId,
       };
 
       const parentChecklist = await onSubmit(formattedData);
-            
+
       // Handle subtasks
       await Promise.all(
         subtasks.map((subtask) =>
@@ -142,7 +137,7 @@ const ChecklistFormModal = ({ open, handleClose, onSubmit, defaulValues, teamId,
               fontWeight: 'bold',
               fontSize: '1.5rem',
               textDecoration: 'underline',
-              minWidth: '25vw'
+              width: '39vw'
             }}
           >
             Task Name*
@@ -174,17 +169,28 @@ const ChecklistFormModal = ({ open, handleClose, onSubmit, defaulValues, teamId,
           />
         </FormControl>
         <Box>
-          <FormLabel
-            sx={{
-              color: theme.palette.error.main,
-              fontWeight: 'bold',
-              fontSize: '1.5rem',
-              textDecoration: 'underline'
-            }}
-          >
-            Subtasks
-          </FormLabel>
-          <Box sx={{ mt: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <FormLabel
+              sx={{
+                color: theme.palette.error.main,
+                fontWeight: 'bold',
+                fontSize: '1.5rem',
+                textDecoration: 'underline'
+              }}
+            >
+              Subtasks
+            </FormLabel>
+            <FormLabel
+              sx={{
+                color: theme.palette.text.primary,
+                fontSize: '1rem',
+                mr: 4.5
+              }}
+            >
+              Optional?
+            </FormLabel>
+          </Box>
+          <Box>
             {subtasks.map((subtask, index) => (
               <TextField
                 key={index}
@@ -218,9 +224,21 @@ const ChecklistFormModal = ({ open, handleClose, onSubmit, defaulValues, teamId,
               />
             ))}
           </Box>
-          <Button variant="outlined" onClick={addSubtask} sx={{ mt: 2 }}>
+          <IconButton
+            onClick={addSubtask}
+            sx={{
+              backgroundColor: theme.palette.background.paper,
+              borderRadius: 5,
+              mt: 1,
+              fontSize: '1rem',
+              padding: 1.5,
+              width: '100%',
+              justifyContent: 'flex-start'
+            }}
+          >
+            <AddCircleOutlineIcon sx={{ color: theme.palette.text.primary, mr: 1 }} />
             Add Subtask
-          </Button>
+          </IconButton>
         </Box>
         <FormControl fullWidth>
           <Box>
@@ -235,7 +253,7 @@ const ChecklistFormModal = ({ open, handleClose, onSubmit, defaulValues, teamId,
               Descriptions*
             </FormLabel>
             {fields.map((item, index) => (
-              <Box key={item.id} sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 2 }}>
+              <Box key={item.id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Controller
                   name={`descriptions.${index}.name`}
                   control={control}
@@ -245,8 +263,16 @@ const ChecklistFormModal = ({ open, handleClose, onSubmit, defaulValues, teamId,
                       {...field}
                       placeholder="Description"
                       fullWidth
+                      multiline
                       variant="outlined"
                       InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton onClick={() => remove(index)}>
+                              <RemoveCircleOutlineIcon sx={{ color: 'white' }} />
+                            </IconButton>
+                          </InputAdornment>
+                        ),
                         disableUnderline: true,
                         sx: { '& fieldset': { border: 'none' } }
                       }}
@@ -261,14 +287,23 @@ const ChecklistFormModal = ({ open, handleClose, onSubmit, defaulValues, teamId,
                     />
                   )}
                 />
-                <IconButton onClick={() => remove(index)}>
-                  <RemoveCircleOutlineIcon sx={{ color: 'white' }} />
-                </IconButton>
               </Box>
             ))}
-            <Button variant="outlined" onClick={() => append({ name: '' })} sx={{ mt: 2 }}>
+            <IconButton
+              onClick={() => append({ name: '' })}
+              sx={{
+                backgroundColor: theme.palette.background.paper,
+                borderRadius: 5,
+                mt: 1,
+                fontSize: '1rem',
+                padding: 1.5,
+                width: '100%',
+                justifyContent: 'flex-start'
+              }}
+            >
+              <AddCircleOutlineIcon sx={{ color: theme.palette.text.primary, mr: 1 }} />
               Add Description
-            </Button>
+            </IconButton>
           </Box>
         </FormControl>
       </Box>

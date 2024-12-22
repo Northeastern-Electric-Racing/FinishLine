@@ -21,25 +21,6 @@ export default class OnboardingServices {
   }
 
   /**
-   * Gets all the general checklists for the given organization
-   * @param organization the organization of the checklists
-   * @returns all the general checklists for the given organization
-   */
-  static async getGeneralChecklists(organization: Organization) {
-    const generalChecklists = await prisma.checklist.findMany({
-      where: {
-        organizationId: organization.organizationId,
-        teamId: null,
-        teamTypeId: null,
-        dateDeleted: null,
-        parentChecklistId: null
-      },
-      include: { subtasks: true, teamType: true, usersChecked: true }
-    });
-    return generalChecklists;
-  }
-
-  /**
    * Gets all the checklists that this user has checked
    * @param user the user who has checked the checklists
    * @param organization the organization of the checklists
