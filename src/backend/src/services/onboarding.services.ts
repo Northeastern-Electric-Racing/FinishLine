@@ -320,9 +320,15 @@ export default class OnboardingServices {
     });
   }
 
-  static async toggleChecklist(checklistId: string, userId: string) {
+  /**
+   * Toggles a user's check on a checklist
+   * @param checklistId the id of the checklist to toggle
+   * @param userId the id of the user to toggle
+   * @returns the updated checklist
+   */
+  static async toggleChecklist(checklistId: string, user: User, organization: Organization) {
     const checklist = await prisma.checklist.findUnique({
-      where: { checklistId },
+      where: { checklistId, organizationId: organization.organizationId },
       include: { usersChecked: true, subtasks: { where: { dateDeleted: null }, include: { usersChecked: true } } }
     });
 
@@ -334,29 +340,13 @@ export default class OnboardingServices {
       throw new DeletedException('Checklist', checklistId);
     }
 
+    const { userId } = user;
     const isChecked = checklist.usersChecked.some((user) => user.userId === userId);
 
-    if (checklist.parentChecklistId == null && isChecked) {
-      // Disconnect user from each child checklist
-      const childChecklists = await prisma.checklist.findMany({
-        where: { parentChecklistId: checklistId }
-      });
-
-      await Promise.all(
-        childChecklists.map((checklist) =>
-          prisma.checklist.update({
-            where: { checklistId: checklist.checklistId },
-            data: {
-              usersChecked: {
-                disconnect: { userId }
-              }
-            }
-          })
-        )
-      );
-    }
-
-    if (checklist.parentChecklistId == null && checklist.subtasks.length > 0 && !isChecked) {
+    if (
+      checklist.subtasks.length > 0 &&
+      !checklist.subtasks.every((subtask) => subtask.usersChecked.some((user) => user.userId === userId))
+    ) {
       throw new HttpException(400, 'Cannot check off this checklist item because not all of its subtasks are checked.');
     }
 

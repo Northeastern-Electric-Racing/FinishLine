@@ -92,9 +92,8 @@ export default class OnboardingController {
   static async toggleChecklist(req: Request, res: Response, next: NextFunction) {
     try {
       const { checklistId } = req.params;
-      const { userId } = req.currentUser;
 
-      const updatedItem = await OnboardingServices.toggleChecklist(checklistId, userId);
+      const updatedItem = await OnboardingServices.toggleChecklist(checklistId, req.currentUser, req.organization);
       res.status(200).json(updatedItem);
     } catch (error: unknown) {
       return next(error);
