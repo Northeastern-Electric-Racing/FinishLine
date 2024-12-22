@@ -5,7 +5,7 @@ import { DatePicker } from '@mui/x-date-pickers';
 import { Car, GraphCollection, GraphDisplayType, GraphFormInput, GraphType, Measure, SpecialPermission } from 'shared';
 import { displayEnum } from '../../../utils/pipes';
 import NERAutocomplete from '../../../components/NERAutocomplete';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   graphCollectionToAutoCompleteValue,
   graphTypeToAutoCompleteValue,
@@ -22,6 +22,17 @@ interface GraphFormViewProps {
 export const GraphFormView: React.FC<GraphFormViewProps> = ({ control, errors, graphCollections, cars }) => {
   const [startTimeDatePickerOpen, setStartTimeDatePickerOpen] = useState(false);
   const [endTimeDatePickerOpen, setEndTimeDatePickerOpen] = useState(false);
+  const [carMap, setCarMap] = useState(new Map<string, Car>());
+
+  useEffect(() => {
+    const tempSet = new Map<string, Car>();
+
+    cars.forEach((car) => {
+      tempSet.set(car.id, car);
+    });
+
+    setCarMap(tempSet);
+  }, [cars]);
 
   return (
     <Grid container spacing={2}>
@@ -222,19 +233,19 @@ export const GraphFormView: React.FC<GraphFormViewProps> = ({ control, errors, g
         <FormControl fullWidth>
           <FormLabel>Select Cars To Segment Data By</FormLabel>
           <Controller
-            name="cars"
+            name="carIds"
             control={control}
             render={({ field: { onChange, value } }) => {
               return (
                 <Autocomplete
-                  isOptionEqualToValue={(option, value) => option.id === value.id}
+                  isOptionEqualToValue={(option, value) => option?.id === value?.id}
                   filterSelectedOptions
                   multiple
                   id="carSelector"
                   options={cars}
-                  value={value}
+                  value={value.map((carId) => carMap.get(carId))}
                   onChange={(_event, newValue) => onChange(newValue)}
-                  getOptionLabel={(option) => option.name}
+                  getOptionLabel={(option) => option?.name ?? ''}
                   renderInput={(params) => (
                     <TextField {...params} variant="standard" placeholder="Select Cars (Leave Blank For All Cars)" />
                   )}
@@ -242,7 +253,7 @@ export const GraphFormView: React.FC<GraphFormViewProps> = ({ control, errors, g
               );
             }}
           />
-          <FormHelperText error={!!errors.cars}>{errors.cars?.message}</FormHelperText>
+          <FormHelperText error={!!errors.carIds}>{errors.carIds?.message}</FormHelperText>
         </FormControl>
       </Grid>
       <Grid item xs={6}>
@@ -269,7 +280,7 @@ export const GraphFormView: React.FC<GraphFormViewProps> = ({ control, errors, g
               );
             }}
           />
-          <FormHelperText error={!!errors.cars}>{errors.cars?.message}</FormHelperText>
+          <FormHelperText error={!!errors.specialPermissions}>{errors.specialPermissions?.message}</FormHelperText>
         </FormControl>
       </Grid>
     </Grid>
