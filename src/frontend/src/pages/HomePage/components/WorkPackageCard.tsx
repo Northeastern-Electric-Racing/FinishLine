@@ -40,7 +40,7 @@ const WorkPackageCard = ({ wp }: { wp: WorkPackage }) => {
     <Card
       variant="outlined"
       sx={{
-        minHeight: 'fit-content',
+        height: 'fit-content',
         minWidth: 'fit-content',
         mr: 3,
         background: theme.palette.background.default
