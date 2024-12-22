@@ -197,10 +197,10 @@ const faqCreate = () => `${recruitment()}/faq/create`;
 const faqEdit = (id: string) => `${recruitment()}/faq/${id}/edit`;
 const faqDelete = (id: string) => `${recruitment()}/faq/${id}/delete`;
 
-/************** Notification Endpoints ***************/
-const notifications = () => `${API_URL}/notifications`;
-const notificationsCurrentUser = () => `${notifications()}/current-user`;
-const notificationsRemove = (id: string) => `${notifications()}/${id}/remove`;
+/************** Pop Up Endpoints ***************/
+const popUps = () => `${API_URL}/pop-ups`;
+const popUpsCurrentUser = () => `${popUps()}/current-user`;
+const popUpsRemove = (id: string) => `${popUps()}/${id}/remove`;
 
 /************** Onboarding Endpoints ***************/
 const onboarding = () => `${API_URL}/onboarding`;
@@ -367,9 +367,9 @@ export const apiUrls = {
   faqDelete,
   imageById,
 
-  notifications,
-  notificationsCurrentUser,
-  notificationsRemove,
+  popUps,
+  popUpsCurrentUser,
+  popUpsRemove,
 
   version
 };
