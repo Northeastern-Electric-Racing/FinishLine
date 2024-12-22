@@ -7,9 +7,9 @@ export default class SlackController {
     try {
       const organizations = await OrganizationsService.getAllOrganizations();
       const nerSlackWorkspaceId = await getWorkspaceId();
-      const orgId = organizations.find((org) => org.slackWorkspaceId === nerSlackWorkspaceId)?.organizationId;
-      if (orgId) {
-        slackServices.processMessageSent(event, orgId);
+      const relatedOrganization = organizations.find((org) => org.slackWorkspaceId === nerSlackWorkspaceId);
+      if (relatedOrganization) {
+        slackServices.processMessageSent(event, relatedOrganization.organizationId);
       }
     } catch (error: unknown) {}
   }
