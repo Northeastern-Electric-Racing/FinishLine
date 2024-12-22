@@ -61,9 +61,7 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
         toast.success('Image uploaded successfully!');
       } catch (error: any) {
         if (organizationImagesIsError && organizationImagesError instanceof Error) {
-          toast.error(organizationImagesError.message, 5000);
-        } else {
-          toast.error('An unexpected error occurred during upload.', 5000);
+          toast.error(organizationImagesError.message);
         }
       } finally {
         type === 'applyInterest' ? setIsUploadingApply(false) : setIsUploadingExplore(false);
