@@ -7,14 +7,33 @@ import React, { useState } from 'react';
 import { useCurrentOrganization, useSetOrganizationImages } from '../../../hooks/organizations.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useGetImageUrl } from '../../../hooks/onboarding.hooks';
+import ErrorPage from '../../ErrorPage';
 
 const AdminToolsRecruitmentConfig: React.FC = () => {
-  const { mutateAsync: organizationImages } = useSetOrganizationImages();
-  const toast = useToast();
-  const { data: organization } = useCurrentOrganization();
+  const {
+    mutateAsync: organizationImages,
+    isLoading: organizationImagesIsLoading,
+    isError: organizationImagesIsError,
+    error: organizationImagesError
+  } = useSetOrganizationImages();
 
-  const { data: applyInterestImageUrl } = useGetImageUrl(organization?.applyInterestImageId ?? null);
-  const { data: exploreGuestImageUrl } = useGetImageUrl(organization?.exploreAsGuestImageId ?? null);
+  const toast = useToast();
+
+  const {
+    data: organization,
+    isLoading: organizationIsLoading,
+    isError: organizationIsError,
+    error: organizationError
+  } = useCurrentOrganization();
+
+  if (organizationIsError) {
+    return <ErrorPage message={organizationError.message} />;
+  }
+
+  if (organizationImagesIsLoading || !organization || organizationIsLoading) return <LoadingIndicator />;
+
+  const { data: applyInterestImageUrl } = useGetImageUrl(organization.applyInterestImageId);
+  const { data: exploreGuestImageUrl } = useGetImageUrl(organization.exploreAsGuestImageId);
 
   const [addedImage1, setAddedImage1] = useState<File | undefined>(undefined);
   const [addedImage2, setAddedImage2] = useState<File | undefined>(undefined);
@@ -39,8 +58,17 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
       try {
         type === 'applyInterest' ? setIsUploadingApply(true) : setIsUploadingExplore(true);
         await organizationImages(validFiles);
-      } catch (error) {
+        toast.success('Image uploaded successfully!');
+      } catch (error: any) {
         console.error('Error uploading images:', error);
+
+        // Check if the error is from organizationImagesError
+        if (organizationImagesIsError && organizationImagesError instanceof Error) {
+          toast.error(organizationImagesError.message, 5000);
+        } else {
+          // Default fallback for unexpected errors
+          toast.error('An unexpected error occurred during upload.', 5000);
+        }
       } finally {
         type === 'applyInterest' ? setIsUploadingApply(false) : setIsUploadingExplore(false);
       }
