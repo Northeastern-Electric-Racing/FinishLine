@@ -26,8 +26,6 @@ const userScheduleSettings = (id: string) => `${usersById(id)}/schedule-settings
 const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
 const userTasks = (id: string) => `${usersById(id)}/tasks`;
 const manyUserTasks = () => `${users()}/tasks/get-many`;
-const userNotifications = () => `${users()}/notifications/current-user`;
-const userRemoveNotifications = () => `${users()}/notifications/remove`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
@@ -179,6 +177,8 @@ const organizationsUsefulLinks = () => `${organizations()}/useful-links`;
 const organizationsSetUsefulLinks = () => `${organizationsUsefulLinks()}/set`;
 const organizationsSetDescription = () => `${organizations()}/description/set`;
 const organizationsFeaturedProjects = () => `${organizations()}/featured-projects`;
+const organizationsLogoImage = () => `${organizations()}/logo`;
+const organizationsSetLogoImage = () => `${organizations()}/logo/update`;
 const organizationsSetFeaturedProjects = () => `${organizationsFeaturedProjects()}/set`;
 
 /******************* Car Endpoints ********************/
@@ -195,6 +195,15 @@ const allFaqs = () => `${recruitment()}/faqs`;
 const faqCreate = () => `${recruitment()}/faq/create`;
 const faqEdit = (id: string) => `${recruitment()}/faq/${id}/edit`;
 const faqDelete = (id: string) => `${recruitment()}/faq/${id}/delete`;
+
+/************** Notification Endpoints ***************/
+const notifications = () => `${API_URL}/notifications`;
+const notificationsCurrentUser = () => `${notifications()}/current-user`;
+const notificationsRemoveCurrentUser = () => `${notificationsCurrentUser()}/remove`;
+
+/************** Onboarding Endpoints ***************/
+const onboarding = () => `${API_URL}/onboarding`;
+const imageById = (imageId: string) => `${onboarding()}/image/${imageId}`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -214,8 +223,6 @@ export const apiUrls = {
   userScheduleSettingsSet,
   userTasks,
   manyUserTasks,
-  userNotifications,
-  userRemoveNotifications,
 
   projects,
   allProjects,
@@ -341,6 +348,8 @@ export const apiUrls = {
   organizationsSetUsefulLinks,
   organizationsFeaturedProjects,
   organizationsSetDescription,
+  organizationsLogoImage,
+  organizationsSetLogoImage,
   organizationsSetFeaturedProjects,
 
   cars,
@@ -354,6 +363,11 @@ export const apiUrls = {
   faqCreate,
   faqEdit,
   faqDelete,
+  imageById,
+
+  notifications,
+  notificationsCurrentUser,
+  notificationsRemoveCurrentUser,
 
   version
 };

@@ -24,8 +24,35 @@ export const setOrganizationDescription = async (description: string) => {
   });
 };
 
+export const getOrganizationLogo = async () => {
+  return axios.get<string>(apiUrls.organizationsLogoImage(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+export const setOrganizationLogo = async (file: File) => {
+  const formData = new FormData();
+  formData.append('logo', file);
+  return axios.post(apiUrls.organizationsSetLogoImage(), formData);
+};
+
 export const setOrganizationFeaturedProjects = async (featuredProjectIds: string[]) => {
   return axios.post<Organization>(apiUrls.organizationsSetFeaturedProjects(), {
     projectIds: featuredProjectIds
   });
+};
+
+/**
+ * Downloads a given fileId from google drive into a blob
+ *
+ * @param fileId the google id of the file to download
+ * @returns the downloaded file as a Blob
+ */
+export const downloadGoogleImage = async (fileId: string): Promise<Blob> => {
+  const response = await axios.get(apiUrls.imageById(fileId), {
+    responseType: 'arraybuffer' // Set the response type to 'arraybuffer' to receive the image as a Buffer
+  });
+  const imageBuffer = new Uint8Array(response.data);
+  const imageBlob = new Blob([imageBuffer], { type: response.headers['content-type'] });
+  return imageBlob;
 };

@@ -78,11 +78,7 @@ export const sendHomeCrReviewedNotification = async (
   accepted: boolean,
   organizationId: string
 ) => {
-  const isProd = process.env.NODE_ENV === 'production';
-
-  const changeRequestLink = isProd
-    ? `https://finishlinebyner.com/change-requests/${changeRequest.crId}`
-    : `http://localhost:3000/change-requests/${changeRequest.crId}`;
+  const changeRequestLink = `/change-requests/${changeRequest.crId}`;
   await NotificationsService.sendNotifcationToUsers(
     `CR #${changeRequest.identifier} has been ${accepted ? 'approved!' : 'denied.'}`,
     accepted ? 'check_circle' : 'cancel',
