@@ -122,11 +122,11 @@ describe('Onboarding tests', () => {
             await createTestUser(wonderwomanGuest, orgId),
             'name',
             ['description1', 'description2'],
-            true,
             null,
             'teamTypeId',
             null,
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create a checklist'));
     });
@@ -138,11 +138,11 @@ describe('Onboarding tests', () => {
             await createTestUser(batmanAppAdmin, orgId),
             'name',
             ['description1', 'description2'],
-            true,
             'teamId',
             'teamTypeId',
             null,
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new HttpException(400, 'Checklist cannot be assigned to both a team and a team type'));
     });
@@ -157,11 +157,11 @@ describe('Onboarding tests', () => {
             batman,
             'name',
             ['description1', 'description2'],
-            true,
             null,
             null,
             parentChecklist.checklistId,
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new HttpException(400, 'Parent checklist must also be a general checklist'));
     });
@@ -174,11 +174,11 @@ describe('Onboarding tests', () => {
             batman,
             'name',
             ['description1', 'description2'],
-            true,
             'invalidTeamId',
             null,
             null,
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new NotFoundException('Team', 'invalidTeamId'));
     });
@@ -191,11 +191,11 @@ describe('Onboarding tests', () => {
             batman,
             'name',
             ['description1', 'description2'],
-            true,
             null,
             'invalidTeamTypeId',
             null,
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new NotFoundException('Team Type', 'invalidTeamTypeId'));
     });
@@ -208,11 +208,11 @@ describe('Onboarding tests', () => {
             batman,
             'name',
             ['description1', 'description2'],
-            true,
             null,
             null,
             'invalidChecklistId',
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new NotFoundException('Checklist', 'invalidChecklistId'));
     });
@@ -230,11 +230,11 @@ describe('Onboarding tests', () => {
             batman,
             'name',
             ['description1', 'description2'],
-            true,
             null,
             null,
             parentChecklist.checklistId,
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new DeletedException('Checklist', parentChecklist.checklistId));
     });
@@ -250,11 +250,11 @@ describe('Onboarding tests', () => {
             batman,
             'name',
             ['description1', 'description2'],
-            true,
             null,
             teamType2.teamTypeId,
             parentChecklist.checklistId,
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new HttpException(400, 'Parent checklist must have the same teamId or teamTypeId'));
     });
@@ -266,11 +266,11 @@ describe('Onboarding tests', () => {
         batman,
         'name',
         ['description1', 'description2'],
-        true,
         null,
         teamType1.teamTypeId,
         null,
-        organization
+        organization,
+        true
       );
       expect(result.name).toEqual('name');
     });
@@ -285,11 +285,11 @@ describe('Onboarding tests', () => {
             'checklidtId',
             'name',
             ['description1', 'description2'],
-            true,
             null,
             null,
             null,
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit a checklist'));
     });
@@ -302,11 +302,11 @@ describe('Onboarding tests', () => {
             'checklistId',
             'name',
             ['description1', 'description2'],
-            true,
             'teamId',
             'teamTypeId',
             null,
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new HttpException(400, 'Checklist cannot be assigned to both a team and a team type'));
     });
@@ -321,11 +321,11 @@ describe('Onboarding tests', () => {
             'checklistId',
             'name',
             ['description1', 'description2'],
-            true,
             null,
             null,
             null,
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new HttpException(400, 'General checklist already exists'));
     });
@@ -339,11 +339,11 @@ describe('Onboarding tests', () => {
             'checklistId',
             'name',
             ['description1', 'description2'],
-            true,
             'invalidTeamId',
             null,
             null,
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new NotFoundException('Team', 'invalidTeamId'));
     });
@@ -357,11 +357,11 @@ describe('Onboarding tests', () => {
             'checklistId',
             'name',
             ['description1', 'description2'],
-            true,
             null,
             'invalidTeamTypeId',
             null,
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new NotFoundException('Team Type', 'invalidTeamTypeId'));
     });
@@ -375,11 +375,11 @@ describe('Onboarding tests', () => {
             'checklistId',
             'name',
             ['description1', 'description2'],
-            true,
             null,
             null,
             'invalidChecklistId',
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new NotFoundException('Checklist', 'invalidChecklistId'));
     });
@@ -398,11 +398,11 @@ describe('Onboarding tests', () => {
             'checklistId',
             'name',
             ['description1', 'description2'],
-            true,
             null,
             null,
             parentChecklist.checklistId,
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new DeletedException('Checklist', parentChecklist.checklistId));
     });
@@ -419,11 +419,11 @@ describe('Onboarding tests', () => {
             'checklistId',
             'name',
             ['description1', 'description2'],
-            true,
             null,
             teamType2.teamTypeId,
             parentChecklist.checklistId,
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new HttpException(400, 'Parent checklist must have the same teamId or teamTypeId'));
     });
@@ -437,11 +437,11 @@ describe('Onboarding tests', () => {
         checklist.checklistId,
         'newName',
         ['description1', 'description2'],
-        true,
         null,
         teamType1.teamTypeId,
         null,
-        organization
+        organization,
+        true
       );
       expect(result.name).toEqual('newName');
       expect(result.teamTypeId).toEqual(teamType1.teamTypeId);

@@ -2,6 +2,7 @@ import ErrorPage from '../../../ErrorPage';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ChecklistFormModal from './ChecklistFormModal';
 import { ChecklistCreateArgs, useCreateChecklist } from '../../../../hooks/onboarding.hook';
+import { useToast } from '../../../../hooks/toasts.hooks';
 
 interface CreateChecklistModalProps {
   open: boolean;
@@ -10,14 +11,15 @@ interface CreateChecklistModalProps {
 
 const CreateChecklistModal = ({ open, handleClose }: CreateChecklistModalProps) => {
   const { mutateAsync: createChecklist, isLoading, isError, error } = useCreateChecklist();
+  const toast = useToast();
 
   const handleFormSubmit = async (data: ChecklistCreateArgs) => {
     try {
       const response = await createChecklist(data);
       return response;
     } catch (err) {
-      console.error('Error creating checklist:', err);
-      throw err; 
+      toast.error('Failed to create checklist');
+      throw err;
     }
   };
 

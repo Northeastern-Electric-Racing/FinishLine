@@ -115,11 +115,11 @@ export default class OnboardingServices {
     creator: User,
     name: string,
     descriptions: string[],
-    isOptional: boolean,
     teamId: string | null,
     teamTypeId: string | null,
     parentChecklistId: string | null,
-    organization: Organization
+    organization: Organization,
+    isOptional?: boolean
   ) {
     if (!(await userHasPermission(creator.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create a checklist');
@@ -203,11 +203,11 @@ export default class OnboardingServices {
     checklistId: string,
     name: string,
     descriptions: string[],
-    isOptional: boolean,
     teamId: string | null,
     teamTypeId: string | null,
     parentChecklistId: string | null,
-    organization: Organization
+    organization: Organization,
+    isOptional?: boolean
   ) {
     if (!(await userHasPermission(editor.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('edit a checklist');

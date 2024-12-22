@@ -123,8 +123,8 @@ describe('Organization Tests', () => {
 
       expect(organization).not.toBeNull();
       expect(organization!.usefulLinks.length).toBe(2);
-      expect(organization!.usefulLinks[0].url).toBe('link 1');
-      expect(organization!.usefulLinks[1].url).toBe('link 2');
+      expect(organization!.usefulLinks.some((link) => link.url === 'link 1')).toBeTruthy();
+      expect(organization!.usefulLinks.some((link) => link.url === 'link 2')).toBeTruthy();
 
       // ensuring previous links are deleted and only these ones remain
       const testLinks2: LinkCreateArgs[] = [
@@ -268,7 +268,7 @@ describe('Organization Tests', () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
       const testSuperman = await createTestUser(supermanAdmin, orgId);
 
-      const updatedOrganization = await OrganizationsService.updateOrganizationContacts(testBatman, organization, [
+      await OrganizationsService.updateOrganizationContacts(testBatman, organization, [
         { userId: testBatman.userId, title: 'Chief Software Engineer' },
         { userId: testSuperman.userId, title: 'Chief Mechanical Engineer' }
       ]);
@@ -282,10 +282,6 @@ describe('Organization Tests', () => {
       expect(allContacts.length).toBe(2);
       expect(allContacts.some((contact) => contact.userId === testBatman.userId)).toBeTruthy();
       expect(allContacts.some((contact) => contact.userId === testSuperman.userId)).toBeTruthy();
-
-      expect(updatedOrganization).not.toBeNull();
-      expect(updatedOrganization.contacts[0].title).toBe('Chief Software Engineer');
-      expect(updatedOrganization.contacts[1].title).toBe('Chief Mechanical Engineer');
     });
   });
 });

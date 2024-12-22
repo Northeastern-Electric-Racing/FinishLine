@@ -46,11 +46,11 @@ export default class OnboardingController {
         req.currentUser,
         name,
         descriptions,
-        isOptional,
         teamId,
         teamTypeId,
         parentChecklistId,
-        req.organization
+        req.organization,
+        isOptional
       );
       res.status(200).json(checklist);
     } catch (error: unknown) {
@@ -67,11 +67,11 @@ export default class OnboardingController {
         checklistId,
         name,
         descriptions,
-        isOptional,
         teamId,
         teamTypeId,
         parentChecklistId,
-        req.organization
+        req.organization,
+        isOptional
       );
       res.status(200).json(checklist);
     } catch (error: unknown) {

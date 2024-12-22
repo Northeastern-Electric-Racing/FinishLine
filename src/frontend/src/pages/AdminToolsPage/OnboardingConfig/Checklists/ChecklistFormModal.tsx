@@ -32,7 +32,7 @@ const ChecklistFormModal = ({ open, handleClose, onSubmit, defaulValues }: Check
   const [subtasks, setSubtasks] = useState<Subtask[]>(defaulValues?.subtasks || []);
   const schema = yup.object().shape({
     name: yup.string().required('Name is Required'),
-    descriptions: yup.array().of(yup.string().required('Description is Required')),
+    descriptions: yup.array().of(yup.string().required('Description is Required')).nullable(),
     subtasks: yup.array().of(
       yup.object().shape({
         name: yup.string().required('Subtask Name is Required'),
@@ -56,13 +56,12 @@ const ChecklistFormModal = ({ open, handleClose, onSubmit, defaulValues }: Check
 
   const onFormSubmit = async (data: ChecklistCreateArgs) => {
     try {
-      // create parent checklist
-      const parentChecklist = await onSubmit({
+      const formattedData = {
         ...data,
-        isOptional: false
-      });
+      };
+      const parentChecklist = await onSubmit(formattedData);
 
-      // create subtasks
+      // Handle subtasks
       await Promise.all(
         subtasks.map((subtask) =>
           onSubmit({
