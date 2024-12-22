@@ -38,7 +38,7 @@ export const editChecklist = (checklistId: string, payload: ChecklistCreateArgs)
   return axios.post(apiUrls.editChecklist(checklistId), {
     ...payload
   });
-}
+};
 
 /**
  * API Call to download a google image

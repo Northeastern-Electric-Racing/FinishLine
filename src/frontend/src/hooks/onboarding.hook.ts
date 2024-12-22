@@ -1,6 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Checklist } from 'shared';
-import { getAllChecklists, getUsersChecklists, downloadGoogleImage, createChecklist, editChecklist } from '../apis/onboarding.api';
+import {
+  getAllChecklists,
+  getUsersChecklists,
+  downloadGoogleImage,
+  createChecklist,
+  editChecklist
+} from '../apis/onboarding.api';
 
 export interface ChecklistCreateArgs {
   name: string;
@@ -69,7 +75,7 @@ export const useEditChecklist = (id: string) => {
       }
     }
   );
-}
+};
 
 export const useGetImageUrls = (imageFileIds: (string | null)[]) => {
   return useQuery<string[], Error>(
