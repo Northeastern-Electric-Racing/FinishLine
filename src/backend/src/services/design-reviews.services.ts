@@ -39,7 +39,7 @@ import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.quer
 import { UserWithSettings } from '../utils/auth.utils';
 import { getUserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args';
 import { createCalendarEvent, deleteCalendarEvent, updateCalendarEvent } from '../utils/google-integration.utils';
-import { sendHomeDrNotification } from '../utils/notifications.utils';
+import { sendDrPopUp } from '../utils/pop-up.utils';
 
 export default class DesignReviewsService {
   /**
@@ -206,7 +206,7 @@ export default class DesignReviewsService {
       }
     }
 
-    await sendHomeDrNotification(designReview, members, submitter, wbsElement.name, organization.organizationId);
+    await sendDrPopUp(designReview, members, submitter, wbsElement.name, organization.organizationId);
 
     const project = wbsElement.workPackage?.project;
     const teams = project?.teams;

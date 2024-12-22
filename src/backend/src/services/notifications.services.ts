@@ -11,10 +11,8 @@ import { daysBetween, startOfDay, wbsPipe } from 'shared';
 import { buildDueString } from '../utils/slack.utils';
 import WorkPackagesService from './work-packages.services';
 import { addWeeksToDate } from 'shared';
-import { HttpException, NotFoundException } from '../utils/errors.utils';
+import { HttpException } from '../utils/errors.utils';
 import { meetingStartTimePipe } from '../utils/design-reviews.utils';
-import { getNotificationQueryArgs } from '../prisma-query-args/notifications.query-args';
-import notificationTransformer from '../transformers/notifications.transformer';
 
 export default class NotificationsService {
   static async sendDailySlackNotifications() {
@@ -194,99 +192,5 @@ export default class NotificationsService {
     });
 
     await Promise.all(promises);
-  }
-
-  /**
-   * Gets all of a user's unread notifications
-   * @param userId id of user to get unread notifications from
-   * @param organization the user's orgainzation
-   * @returns the unread notifications of the user
-   */
-  static async getUserUnreadNotifications(userId: string, organizationId: string) {
-    const unreadNotifications = await prisma.notification.findMany({
-      where: {
-        users: {
-          some: { userId }
-        }
-      },
-      ...getNotificationQueryArgs(organizationId)
-    });
-
-    if (!unreadNotifications) throw new HttpException(404, 'User Unread Notifications Not Found');
-
-    return unreadNotifications.map(notificationTransformer);
-  }
-
-  /**
-   * Removes a notification from the user's unread notifications
-   * @param userId id of the current user
-   * @param notificationId id of the notification to remove
-   * @param organization the user's organization
-   * @returns the user's updated unread notifications
-   */
-  static async removeUserNotification(userId: string, notificationId: string, organizationId: string) {
-    const updatedUser = await prisma.user.update({
-      where: { userId },
-      data: {
-        unreadNotifications: {
-          disconnect: {
-            notificationId
-          }
-        }
-      },
-      include: { unreadNotifications: getNotificationQueryArgs(organizationId) }
-    });
-
-    if (!updatedUser) throw new HttpException(404, `Failed to remove notication: ${notificationId}`);
-
-    return updatedUser.unreadNotifications.map(notificationTransformer);
-  }
-
-  /**
-   * Creates and sends a notification to all users with the given userIds
-   * @param text writing in the notification
-   * @param iconName icon that appears in the notification
-   * @param userIds ids of users to send the notification to
-   * @param organizationId
-   * @param eventLink link the notification will go to when clicked
-   * @returns the created notification
-   */
-  static async sendNotifcationToUsers(
-    text: string,
-    iconName: string,
-    userIds: string[],
-    organizationId: string,
-    eventLink?: string
-  ) {
-    const createdNotification = await prisma.notification.create({
-      data: {
-        text,
-        iconName,
-        eventLink
-      },
-      ...getNotificationQueryArgs(organizationId)
-    });
-
-    if (!createdNotification) throw new HttpException(500, 'Failed to create notification');
-
-    const notificationsPromises = userIds.map(async (userId) => {
-      const requestedUser = await prisma.user.findUnique({
-        where: { userId }
-      });
-
-      if (!requestedUser) throw new NotFoundException('User', userId);
-
-      return await prisma.user.update({
-        where: { userId: requestedUser.userId },
-        data: {
-          unreadNotifications: {
-            connect: { notificationId: createdNotification.notificationId }
-          }
-        }
-      });
-    });
-
-    await Promise.all(notificationsPromises);
-    return notificationTransformer(createdNotification);
   }
 }
