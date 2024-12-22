@@ -607,8 +607,8 @@ describe('Onboarding tests', () => {
         parentChecklist.checklistId
       );
 
-      await OnboardingServices.toggleChecklist(childChecklistItem1.checklistId, batman.userId);
-      await OnboardingServices.toggleChecklist(childChecklistItem2.checklistId, batman.userId);
+      await OnboardingServices.toggleChecklist(childChecklistItem1.checklistId, batman, organization);
+      await OnboardingServices.toggleChecklist(childChecklistItem2.checklistId, batman, organization);
 
       const updatedChildItem1 = await prisma.checklist.findUnique({
         where: { checklistId: childChecklistItem1.checklistId },
@@ -623,7 +623,7 @@ describe('Onboarding tests', () => {
       expect(updatedChildItem1?.usersChecked.length).toBe(1);
       expect(updatedChildItem2?.usersChecked.length).toBe(1);
 
-      await OnboardingServices.toggleChecklist(parentChecklist.checklistId, batman.userId);
+      await OnboardingServices.toggleChecklist(parentChecklist.checklistId, batman, organization);
 
       const revertedChildItem1 = await prisma.checklist.findUnique({
         where: { checklistId: childChecklistItem1.checklistId },
