@@ -1,7 +1,7 @@
 import { Box } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { PopUp } from 'shared';
-import NotificationCard from './NotificationCard';
+import PopUpCard from './PopUpCard';
 import { useHistory } from 'react-router-dom';
 import { useCurrentUserPopUps, useRemoveUserPopUp } from '../hooks/pop-ups.hooks';
 
@@ -40,7 +40,7 @@ const PopUpAlert: React.FC = () => {
       }}
     >
       {!removeIsLoading && !popUpsIsLoading && currentPopUp && (
-        <NotificationCard popUp={currentPopUp} removePopUp={removePopUpWrapper} onClick={onClick} />
+        <PopUpCard popUp={currentPopUp} removePopUp={removePopUpWrapper} onClick={onClick} />
       )}
     </Box>
   );
