@@ -6,8 +6,6 @@ import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFou
 import { downloadImageFile } from '../utils/google-integration.utils';
 
 export default class OnboardingServices {
-  /* Checklist section */
-
   /**
    * gets all checklists for the given organization
    * @param organization the organization of the checklists
@@ -161,8 +159,11 @@ export default class OnboardingServices {
         throw new NotFoundException('Checklist', parentChecklistId);
       }
 
-      if (parentChecklist.teamId !== teamId || parentChecklist.teamTypeId !== teamTypeId) {
-        throw new HttpException(400, 'Parent checklist must have the same teamId or teamTypeId');
+      if (
+        (parentChecklist.teamId ?? null) !== (teamId ?? null) ||
+        (parentChecklist.teamTypeId ?? null) !== (teamTypeId ?? null)
+      ) {
+        throw new HttpException(400, 'Parent checklist must have the same teamId and teamTypeId');
       }
 
       if (parentChecklist.dateDeleted) {
@@ -275,7 +276,7 @@ export default class OnboardingServices {
       throw new DeletedException('Checklist', checklistId);
     }
 
-    const editedChecklist: Checklist = await prisma.checklist.update({
+    const editedChecklist = await prisma.checklist.update({
       where: { checklistId },
       data: {
         name,
@@ -407,6 +408,7 @@ export default class OnboardingServices {
         }
       }
     }
+
     const updatedChecklist = await prisma.checklist.findUnique({
       where: { checklistId },
       include: { usersChecked: true }

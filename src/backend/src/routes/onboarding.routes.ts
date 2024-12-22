@@ -22,7 +22,7 @@ onboardingRouter.post(
   nonEmptyString(body('teamId').optional()),
   nonEmptyString(body('teamTypeId').optional()),
   nonEmptyString(body('parentChecklistId').optional()),
-  nonEmptyString(body('isOptional').isBoolean()).optional(),
+  body('isOptional').isBoolean().optional(),
   validateInputs,
   OnboardingController.createChecklist
 );
@@ -35,7 +35,7 @@ onboardingRouter.post(
   nonEmptyString(body('teamId').optional()),
   nonEmptyString(body('teamTypeId').optional()),
   nonEmptyString(body('parentChecklistId').optional()),
-  nonEmptyString(body('isOptional').isBoolean()).optional(),
+  body('isOptional').isBoolean().optional(),
   validateInputs,
   OnboardingController.editChecklist
 );

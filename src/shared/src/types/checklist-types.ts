@@ -14,8 +14,8 @@ export interface Checklist {
   team?: Team;
   descriptions: string[];
   isOptional: boolean;
-  subtasks: Subtask[];
-  parentChecklist?: Checklist;
+  subtasks: ChecklistPreview[];
+  parentChecklistId?: string;
   usersChecked: User[];
   userCreated: User;
   userDeleted?: User;
@@ -23,10 +23,4 @@ export interface Checklist {
   dateDeleted?: Date;
 }
 
-export interface Subtask {
-  name: string;
-  isOptional: boolean;
-  subtasks: Subtask[];
-  usersChecked: string[];
-}
-
+export type ChecklistPreview = Pick<Checklist, 'checklistId' | 'name' | 'team' | 'teamType' | 'dateCreated' | 'isOptional'>;

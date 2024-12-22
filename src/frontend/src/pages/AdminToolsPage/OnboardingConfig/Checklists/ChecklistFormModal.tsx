@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import NERFormModal from '../../../../components/NERFormModal';
 import {
   FormControl,
@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Checklist, Subtask } from 'shared';
+import { Checklist, ChecklistPreview } from 'shared';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import { ChecklistCreateArgs } from '../../../../hooks/onboarding.hook';
 import { useToast } from '../../../../hooks/toasts.hooks';
@@ -24,15 +24,30 @@ interface ChecklistFormModalProps {
   handleClose: () => void;
   onSubmit: (data: ChecklistCreateArgs) => Promise<Checklist>;
   defaulValues?: Checklist;
+  teamId?: string;
+  teamTypeId?: string;
 }
 
-const ChecklistFormModal = ({ open, handleClose, onSubmit, defaulValues }: ChecklistFormModalProps) => {
+interface ChecklistFormValues {
+  name: string;
+  descriptions: { name: string }[];
+  subtasks: ChecklistPreview[];
+}
+
+const ChecklistFormModal = ({ open, handleClose, onSubmit, defaulValues, teamId, teamTypeId }: ChecklistFormModalProps) => {
   const theme = useTheme();
   const toast = useToast();
-  const [subtasks, setSubtasks] = useState<Subtask[]>(defaulValues?.subtasks || []);
+  const [subtasks, setSubtasks] = useState<ChecklistPreview[]>(defaulValues?.subtasks || []);
   const schema = yup.object().shape({
     name: yup.string().required('Name is Required'),
-    descriptions: yup.array().of(yup.string().required('Description is Required')).nullable(),
+    descriptions: yup
+      .array()
+      .of(
+        yup.object().shape({
+          name: yup.string().required('Description is Required')
+        })
+      )
+      .min(1, 'At least one description is required'),
     subtasks: yup.array().of(
       yup.object().shape({
         name: yup.string().required('Subtask Name is Required'),
@@ -46,11 +61,14 @@ const ChecklistFormModal = ({ open, handleClose, onSubmit, defaulValues }: Check
     control,
     reset,
     formState: { errors }
-  } = useForm({
+  } = useForm<ChecklistFormValues>({
     resolver: yupResolver(schema),
     defaultValues: {
       name: defaulValues?.name ?? '',
-      descriptions: defaulValues?.descriptions ?? []
+      descriptions: defaulValues?.descriptions?.length
+        ? defaulValues?.descriptions?.map((desc) => ({ name: desc }))
+        : [{ name: '' }],
+      subtasks: defaulValues?.subtasks ?? []
     }
   });
 
@@ -58,17 +76,21 @@ const ChecklistFormModal = ({ open, handleClose, onSubmit, defaulValues }: Check
     try {
       const formattedData = {
         ...data,
+        teamId,
+        teamTypeId,
+        descriptions: (data.descriptions as unknown as { name: string }[]).map((desc) => desc.name)
       };
-      const parentChecklist = await onSubmit(formattedData);
 
+      const parentChecklist = await onSubmit(formattedData);
+            
       // Handle subtasks
       await Promise.all(
         subtasks.map((subtask) =>
           onSubmit({
             name: subtask.name,
             descriptions: [],
-            teamId: data.teamId,
-            teamTypeId: data.teamTypeId,
+            teamId,
+            teamTypeId,
             parentChecklistId: parentChecklist.checklistId,
             isOptional: subtask.isOptional
           })
@@ -83,7 +105,7 @@ const ChecklistFormModal = ({ open, handleClose, onSubmit, defaulValues }: Check
   };
 
   const addSubtask = () => {
-    setSubtasks([...subtasks, { name: '', isOptional: false, subtasks: [], usersChecked: [] }]);
+    setSubtasks([...subtasks, { name: '', isOptional: false, dateCreated: new Date(), checklistId: '' }]);
   };
 
   const deleteSubtask = (index: number) => {
@@ -95,6 +117,11 @@ const ChecklistFormModal = ({ open, handleClose, onSubmit, defaulValues }: Check
     const updatedSubtasks = subtasks.map((subtask, i) => (i === index ? { ...subtask, [key]: value } : subtask));
     setSubtasks(updatedSubtasks);
   };
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'descriptions'
+  });
 
   return (
     <NERFormModal
@@ -126,6 +153,7 @@ const ChecklistFormModal = ({ open, handleClose, onSubmit, defaulValues }: Check
             render={({ field }) => (
               <TextField
                 {...field}
+                placeholder="Task Name"
                 variant="outlined"
                 InputProps={{
                   disableUnderline: true,
@@ -195,42 +223,53 @@ const ChecklistFormModal = ({ open, handleClose, onSubmit, defaulValues }: Check
           </Button>
         </Box>
         <FormControl fullWidth>
-          <FormLabel
-            sx={{
-              color: theme.palette.error.main,
-              fontWeight: 'bold',
-              fontSize: '1.5rem',
-              textDecoration: 'underline'
-            }}
-          >
-            Description*
-          </FormLabel>
-          <Controller
-            name="descriptions"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                variant="outlined"
-                multiline
-                rows={4}
-                InputProps={{
-                  disableUnderline: true,
-                  sx: {
-                    '& fieldset': { border: 'none' }
-                  }
-                }}
-                sx={{
-                  backgroundColor: theme.palette.background.paper,
-                  borderRadius: 5,
-                  mt: 1,
-                  width: '100%'
-                }}
-                error={!!errors.descriptions}
-                helperText={errors.descriptions?.message}
-              />
-            )}
-          />
+          <Box>
+            <FormLabel
+              sx={{
+                color: theme.palette.error.main,
+                fontWeight: 'bold',
+                fontSize: '1.5rem',
+                textDecoration: 'underline'
+              }}
+            >
+              Descriptions*
+            </FormLabel>
+            {fields.map((item, index) => (
+              <Box key={item.id} sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 2 }}>
+                <Controller
+                  name={`descriptions.${index}.name`}
+                  control={control}
+                  defaultValue={item.name || ''}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      placeholder="Description"
+                      fullWidth
+                      variant="outlined"
+                      InputProps={{
+                        disableUnderline: true,
+                        sx: { '& fieldset': { border: 'none' } }
+                      }}
+                      sx={{
+                        backgroundColor: theme.palette.background.paper,
+                        borderRadius: 5,
+                        mt: 1,
+                        width: '100%'
+                      }}
+                      error={!!errors.descriptions?.[index]?.name}
+                      helperText={errors.descriptions?.[index]?.name?.message}
+                    />
+                  )}
+                />
+                <IconButton onClick={() => remove(index)}>
+                  <RemoveCircleOutlineIcon sx={{ color: 'white' }} />
+                </IconButton>
+              </Box>
+            ))}
+            <Button variant="outlined" onClick={() => append({ name: '' })} sx={{ mt: 2 }}>
+              Add Description
+            </Button>
+          </Box>
         </FormControl>
       </Box>
     </NERFormModal>

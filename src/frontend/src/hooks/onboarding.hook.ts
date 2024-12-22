@@ -5,8 +5,8 @@ import { getAllChecklists, getGeneralChecklists, getUsersChecklists, downloadGoo
 export interface ChecklistCreateArgs {
   name: string;
   descriptions: string[];
-  teamId: string | null;
-  teamTypeId: string | null;
+  teamId?: string;
+  teamTypeId?: string;
   isOptional: boolean;
   parentChecklistId: string | null;
 }

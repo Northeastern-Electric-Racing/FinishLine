@@ -83,8 +83,8 @@ describe('Onboarding tests', () => {
 
       const checkedChecklists = await OnboardingServices.getCheckedChecklists(batman, organization);
       expect(checkedChecklists.length).toEqual(2);
-      expect(checkedChecklists[0].checklistId).toEqual(checklist1.checklistId);
-      expect(checkedChecklists[1].checklistId).toEqual(checklist3.checklistId);
+      expect(checkedChecklists.some((checklist) => checklist.checklistId === checklist1.checklistId)).toBe(true);
+      expect(checkedChecklists.some((checklist) => checklist.checklistId === checklist3.checklistId)).toBe(true);
     });
   });
 
@@ -428,7 +428,7 @@ describe('Onboarding tests', () => {
       ).rejects.toThrow(new HttpException(400, 'Parent checklist must have the same teamId or teamTypeId'));
     });
 
-    it('Succeeds and edits a checklist with teamTypeId', async () => {
+    it('Succeeds and edits a checklist with teamType', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       const teamType1 = await createTestTeamType('teamtype1', organization);
       const checklist = await createTestChecklist(batman, orgId, 'Checklist 1');

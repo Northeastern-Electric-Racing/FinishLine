@@ -70,7 +70,14 @@ export const AdminChecklist: React.FC<{ parentChecklists: Checklist[]; checklist
           )}
         </Grid>
       </Grid>
-      {showCreateModal && <CreateChecklistModal open={showCreateModal} handleClose={() => setShowCreateModal(false)} />}
+      {showCreateModal && (
+        <CreateChecklistModal
+          open={showCreateModal}
+          handleClose={() => setShowCreateModal(false)}
+          teamId={parentChecklists[0].team?.teamId}
+          teamTypeId={parentChecklists[0].teamType?.teamTypeId}
+        />
+      )}
     </Box>
   );
 };
