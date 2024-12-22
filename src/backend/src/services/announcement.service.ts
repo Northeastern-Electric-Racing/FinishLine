@@ -2,7 +2,7 @@ import { Announcement } from 'shared';
 import prisma from '../prisma/prisma';
 import { getAnnouncementQueryArgs } from '../prisma-query-args/announcements.query.args';
 import announcementTransformer from '../transformers/announcements.transformer';
-import { HttpException } from '../utils/errors.utils';
+import { HttpException, NotFoundException } from '../utils/errors.utils';
 
 export default class AnnouncementService {
   /**
@@ -62,5 +62,34 @@ export default class AnnouncementService {
     if (!unreadAnnouncements) throw new HttpException(404, 'User Unread Announcements Not Found');
 
     return unreadAnnouncements.map(announcementTransformer);
+  }
+
+  /**
+   * Removes a announcement from the user's unread announcement
+   * @param userId id of the user to remove announcement from
+   * @param announcementId id of the announcement to remove
+   * @param organization the user's organization
+   * @returns the user's updated unread announcement
+   */
+  static async removeUserAnnouncement(userId: string, announcementId: string, organizationId: string) {
+    const requestedUser = await prisma.user.findUnique({
+      where: { userId }
+    });
+
+    if (!requestedUser) throw new NotFoundException('User', userId);
+
+    const updatedUser = await prisma.user.update({
+      where: { userId },
+      data: {
+        unreadAnnouncements: {
+          disconnect: {
+            announcementId
+          }
+        }
+      },
+      include: { unreadAnnouncements: getAnnouncementQueryArgs(organizationId) }
+    });
+
+    return updatedUser.unreadAnnouncements.map(announcementTransformer);
   }
 }

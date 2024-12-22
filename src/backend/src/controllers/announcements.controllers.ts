@@ -15,4 +15,20 @@ export default class AnnouncementController {
       next(error);
     }
   }
+
+  static async removeUserAnnouncement(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { announcementId } = req.body;
+      const { organization, currentUser } = req;
+
+      const unreadAnnouncements = await AnnouncementService.removeUserAnnouncement(
+        currentUser.userId,
+        announcementId,
+        organization.organizationId
+      );
+      res.status(200).json(unreadAnnouncements);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
