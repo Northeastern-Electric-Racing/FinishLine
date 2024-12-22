@@ -3,6 +3,7 @@ import { Checklist as ChecklistType } from 'shared';
 import { Typography, Grid, Box, IconButton, useTheme } from '@mui/material';
 import { KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
 import Task from './Task';
+import OnboardingProgressBar from '../../../components/OnboardingProgressBar';
 
 const Checklist: React.FC<{ parentChecklists: ChecklistType[]; checklistName?: string }> = ({
   parentChecklists,
@@ -16,19 +17,19 @@ const Checklist: React.FC<{ parentChecklists: ChecklistType[]; checklistName?: s
   };
 
   return (
-    <Box sx={{ backgroundColor: theme.palette.background.paper, borderRadius: 5 }}>
-      <Grid container>
-        <Grid item xs={12} padding={2.5}>
-          <Grid display="flex" alignItems="center" justifyContent="space-between">
-            <Typography fontSize="2em" fontWeight="bold">
-              {checklistName} Checklist
-            </Typography>
-            <Grid display="flex" alignItems="center" gap={2}>
-              <progress value={50} max={100} />
-              <IconButton onClick={toggleShowTasks}>{showTasks ? <KeyboardArrowDown /> : <KeyboardArrowRight />}</IconButton>
-            </Grid>
-          </Grid>
-          {showTasks && (
+    <Box sx={{ backgroundColor: theme.palette.background.paper, borderRadius: 5, p: 2 }}>
+      <Grid container spacing={2}>
+        <Grid item xs={12} container justifyContent="space-between" alignItems="center" sx={{ flexGrow: 1 }}>
+          <Typography fontSize="2em" fontWeight="bold" sx={{ marginRight: 2 }}>
+            {checklistName ?? 'General'} Checklist
+          </Typography>
+          <Box sx={{ flexGrow: 1, mx: 2 }}>
+            <OnboardingProgressBar value={51} />
+          </Box>
+          <IconButton onClick={toggleShowTasks}>{showTasks ? <KeyboardArrowDown /> : <KeyboardArrowRight />}</IconButton>
+        </Grid>
+        {showTasks && (
+          <Grid item xs={12}>
             <Box
               sx={{
                 marginTop: 3,
@@ -42,8 +43,8 @@ const Checklist: React.FC<{ parentChecklists: ChecklistType[]; checklistName?: s
                 <Task parentTask={parentChecklist} />
               ))}
             </Box>
-          )}
-        </Grid>
+          </Grid>
+        )}
       </Grid>
     </Box>
   );

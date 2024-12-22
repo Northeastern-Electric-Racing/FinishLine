@@ -54,7 +54,7 @@ const OnboardingInfoSection: React.FC = () => {
                       backgroundColor: '#616161',
                       color: 'white',
                       borderRadius: '10px',
-                      height: '5vh',
+                      padding: 2.5,
                       '&:hover': { backgroundColor: '#ef4345' }
                     }}
                     href={link.url}
