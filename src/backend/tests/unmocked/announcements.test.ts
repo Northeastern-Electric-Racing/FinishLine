@@ -20,6 +20,7 @@ describe('Announcemnts Tests', () => {
       await AnnouncementService.createAnnouncement(
         'test1',
         [testBatman.userId],
+        new Date(),
         'Thomas Emrax',
         '1',
         'software',
@@ -28,6 +29,7 @@ describe('Announcemnts Tests', () => {
       await AnnouncementService.createAnnouncement(
         'test2',
         [testBatman.userId],
+        new Date(),
         'Superman',
         '50',
         'mechanical',

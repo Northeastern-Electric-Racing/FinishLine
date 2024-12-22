@@ -20,6 +20,7 @@ export default class AnnouncementService {
   static async createAnnouncement(
     text: string,
     usersReceivedIds: string[],
+    dateMessageSent: Date,
     senderName: string,
     slackEventId: string,
     slackChannelName: string,
@@ -33,6 +34,7 @@ export default class AnnouncementService {
             userId: id
           }))
         },
+        dateMessageSent,
         senderName,
         slackEventId,
         slackChannelName

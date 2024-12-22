@@ -9,7 +9,7 @@ ALTER TABLE "Project" ADD COLUMN     "organizationId" TEXT;
 CREATE TABLE "Announcement" (
     "announcementId" TEXT NOT NULL,
     "text" TEXT NOT NULL,
-    "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "dateMessageSent" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "dateDeleted" TIMESTAMP(3),
     "senderName" TEXT NOT NULL,
     "slackEventId" TEXT NOT NULL,
@@ -19,13 +19,13 @@ CREATE TABLE "Announcement" (
 );
 
 -- CreateTable
-CREATE TABLE "Notification" (
-    "notificationId" TEXT NOT NULL,
+CREATE TABLE "PopUp" (
+    "popUpId" TEXT NOT NULL,
     "text" TEXT NOT NULL,
     "iconName" TEXT NOT NULL,
     "eventLink" TEXT,
 
-    CONSTRAINT "Notification_pkey" PRIMARY KEY ("notificationId")
+    CONSTRAINT "PopUp_pkey" PRIMARY KEY ("popUpId")
 );
 
 -- CreateTable
@@ -35,7 +35,7 @@ CREATE TABLE "_receivedAnnouncements" (
 );
 
 -- CreateTable
-CREATE TABLE "_userNotifications" (
+CREATE TABLE "_userPopUps" (
     "A" TEXT NOT NULL,
     "B" TEXT NOT NULL
 );
@@ -50,10 +50,10 @@ CREATE UNIQUE INDEX "_receivedAnnouncements_AB_unique" ON "_receivedAnnouncement
 CREATE INDEX "_receivedAnnouncements_B_index" ON "_receivedAnnouncements"("B");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "_userNotifications_AB_unique" ON "_userNotifications"("A", "B");
+CREATE UNIQUE INDEX "_userPopUps_AB_unique" ON "_userPopUps"("A", "B");
 
 -- CreateIndex
-CREATE INDEX "_userNotifications_B_index" ON "_userNotifications"("B");
+CREATE INDEX "_userPopUps_B_index" ON "_userPopUps"("B");
 
 -- AddForeignKey
 ALTER TABLE "Project" ADD CONSTRAINT "Project_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -65,7 +65,7 @@ ALTER TABLE "_receivedAnnouncements" ADD CONSTRAINT "_receivedAnnouncements_A_fk
 ALTER TABLE "_receivedAnnouncements" ADD CONSTRAINT "_receivedAnnouncements_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("userId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_userNotifications" ADD CONSTRAINT "_userNotifications_A_fkey" FOREIGN KEY ("A") REFERENCES "Notification"("notificationId") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_userPopUps" ADD CONSTRAINT "_userPopUps_A_fkey" FOREIGN KEY ("A") REFERENCES "PopUp"("popUpId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_userNotifications" ADD CONSTRAINT "_userNotifications_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("userId") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_userPopUps" ADD CONSTRAINT "_userPopUps_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("userId") ON DELETE CASCADE ON UPDATE CASCADE;
