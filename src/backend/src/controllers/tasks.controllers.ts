@@ -13,11 +13,11 @@ export default class TasksController {
         wbsNum,
         title,
         notes,
-        new Date(deadline),
         priority,
         status,
         assignees,
-        req.organization
+        req.organization,
+        deadline ? new Date(deadline) : undefined
       );
 
       res.status(200).json(task);
