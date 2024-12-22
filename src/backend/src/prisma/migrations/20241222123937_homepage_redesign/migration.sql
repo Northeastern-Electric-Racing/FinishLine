@@ -1,5 +1,6 @@
 -- AlterTable
-ALTER TABLE "Organization" ADD COLUMN     "logoImageId" TEXT;
+ALTER TABLE "Organization" ADD COLUMN     "logoImageId" TEXT,
+ADD COLUMN     "slackWorkspaceId" TEXT;
 
 -- AlterTable
 ALTER TABLE "Project" ADD COLUMN     "organizationId" TEXT;

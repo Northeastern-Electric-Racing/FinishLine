@@ -19,6 +19,7 @@ import { routes } from '../../utils/routes';
 import { Box } from '@mui/system';
 import AdminToolsRecruitmentConfig from './RecruitmentConfig/AdminToolsRecruitmentConfig';
 import GuestViewConfig from './EditGuestView/GuestViewConfig';
+import AdminToolsWorkspaceId from './AdminToolsSlackWorkspaceId';
 
 const AdminToolsPage: React.FC = () => {
   const currentUser = useCurrentUser();
@@ -100,6 +101,7 @@ const AdminToolsPage: React.FC = () => {
           <Box pb={2}>
             <AdminToolsSlackUpcomingDeadlines />
           </Box>
+          <AdminToolsWorkspaceId />
           <AdminToolsAttendeeDesignReviewInfo />
         </Box>
       )}

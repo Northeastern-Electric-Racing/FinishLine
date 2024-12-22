@@ -89,7 +89,9 @@ export default class OrganizationsController {
 
   static async getOrganizationLogoImage(req: Request, res: Response, next: NextFunction) {
     try {
-      const logoImageId = await OrganizationsService.getLogoImage(req.organization.organizationId);
+      const { organization } = req;
+
+      const logoImageId = await OrganizationsService.getLogoImage(organization.organizationId);
       res.status(200).json(logoImageId);
     } catch (error: unknown) {
       next(error);
@@ -114,6 +116,21 @@ export default class OrganizationsController {
     try {
       const featuredProjects = await OrganizationsService.getOrganizationFeaturedProjects(req.organization.organizationId);
       res.status(200).json(featuredProjects);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async setSlackWorkspaceId(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { workspaceId } = req.body;
+
+      const updatedOrg = await OrganizationsService.setSlackWorkspaceId(
+        workspaceId,
+        req.currentUser,
+        req.organization.organizationId
+      );
+      res.status(200).json(updatedOrg);
     } catch (error: unknown) {
       next(error);
     }

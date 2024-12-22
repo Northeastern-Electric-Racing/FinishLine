@@ -36,4 +36,9 @@ organizationRouter.post(
   OrganizationsController.setOrganizationDescription
 );
 organizationRouter.get('/featured-projects', OrganizationsController.getOrganizationFeaturedProjects);
+organizationRouter.post(
+  '/workspaceId/set',
+  nonEmptyString(body('workspaceId')),
+  OrganizationsController.setSlackWorkspaceId
+);
 export default organizationRouter;

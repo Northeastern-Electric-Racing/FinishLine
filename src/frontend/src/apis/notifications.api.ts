@@ -15,5 +15,5 @@ export const getNotifications = () => {
  * Removes a notification from the user with the given id
  */
 export const removeNotification = (notificationId: string) => {
-  return axios.post<Notification[]>(apiUrls.notificationsRemoveCurrentUser(), { notificationId });
+  return axios.post<Notification[]>(apiUrls.notificationsRemove(notificationId));
 };

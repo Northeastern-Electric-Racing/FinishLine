@@ -180,6 +180,7 @@ const organizationsFeaturedProjects = () => `${organizations()}/featured-project
 const organizationsLogoImage = () => `${organizations()}/logo`;
 const organizationsSetLogoImage = () => `${organizations()}/logo/update`;
 const organizationsSetFeaturedProjects = () => `${organizationsFeaturedProjects()}/set`;
+const organizationsSetWorkspaceId = () => `${organizations()}/workspaceId/set`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
@@ -199,7 +200,7 @@ const faqDelete = (id: string) => `${recruitment()}/faq/${id}/delete`;
 /************** Notification Endpoints ***************/
 const notifications = () => `${API_URL}/notifications`;
 const notificationsCurrentUser = () => `${notifications()}/current-user`;
-const notificationsRemoveCurrentUser = () => `${notificationsCurrentUser()}/remove`;
+const notificationsRemove = (id: string) => `${notifications()}/${id}/remove`;
 
 /************** Onboarding Endpoints ***************/
 const onboarding = () => `${API_URL}/onboarding`;
@@ -351,6 +352,7 @@ export const apiUrls = {
   organizationsLogoImage,
   organizationsSetLogoImage,
   organizationsSetFeaturedProjects,
+  organizationsSetWorkspaceId,
 
   cars,
   carsCreate,
@@ -367,7 +369,7 @@ export const apiUrls = {
 
   notifications,
   notificationsCurrentUser,
-  notificationsRemoveCurrentUser,
+  notificationsRemove,
 
   version
 };

@@ -877,6 +877,7 @@ model Organization {
   applyInterestImageId  String?   @unique
   exploreAsGuestImageId String?   @unique
   logoImageId           String?
+  slackWorkspaceId      String?
 
   // Relation references
   wbsElements              WBS_Element[]
