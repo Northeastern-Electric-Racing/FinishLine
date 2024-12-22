@@ -254,9 +254,17 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
                   limitTags={1}
                   renderTags={() => null}
                   id="required-users"
-                  options={users.filter((user) => !optionalUsers.some((optUser) => optUser.id === user.id))}
+                  options={users}
                   value={requiredUsers}
-                  onChange={(_event, newValue) => setRequiredUsers(newValue)}
+                  onChange={(_event, newValue) => {
+                    let filteredOptionalUsers = optionalUsers;
+                    for (const reqUser of newValue) {
+                      filteredOptionalUsers = filteredOptionalUsers.filter((user) => user.id !== reqUser.id);
+                      console.log(reqUser);
+                    }
+                    setOptionalUsers(filteredOptionalUsers);
+                    setRequiredUsers(newValue);
+                  }}
                   getOptionLabel={(option) => option.label}
                   renderOption={(props, option, { selected }) => (
                     <li {...props}>
