@@ -4,6 +4,7 @@ import AnnouncementService from './announcement.service';
 import { Announcement } from 'shared';
 import prisma from '../prisma/prisma';
 import { blockToMentionedUsers, blockToString } from '../utils/slack.utils';
+import { NotFoundException } from '../utils/errors.utils';
 
 /**
  * Represents a slack event for a message in a channel.
@@ -159,7 +160,12 @@ export default class slackServices {
           slackChannelName,
           organizationId
         );
-      } catch (ignored) {}
+      } catch (error) {
+        //if couldn't find the announcement to edit, create a new one below
+        if (!(error instanceof NotFoundException)) {
+          throw error;
+        }
+      }
     }
     return await AnnouncementService.createAnnouncement(
       messageText,
