@@ -37,7 +37,7 @@ const EditFeaturedProjects = () => {
   return (
     <Card
       sx={{
-        width: { xs: '100%', md: '50%' },
+        width: '100%',
         background: 'transparent',
         padding: 2,
         ...(isEditMode && {
