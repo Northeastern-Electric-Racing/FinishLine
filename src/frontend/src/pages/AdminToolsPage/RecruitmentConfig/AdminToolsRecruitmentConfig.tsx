@@ -26,19 +26,19 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
     error: organizationError
   } = useCurrentOrganization();
 
-  if (organizationIsError) {
-    return <ErrorPage message={organizationError.message} />;
-  }
-
-  if (organizationImagesIsLoading || !organization || organizationIsLoading) return <LoadingIndicator />;
-
-  const { data: applyInterestImageUrl } = useGetImageUrl(organization.applyInterestImageId);
-  const { data: exploreGuestImageUrl } = useGetImageUrl(organization.exploreAsGuestImageId);
+  const { data: applyInterestImageUrl } = useGetImageUrl(organization?.applyInterestImageId ?? null);
+  const { data: exploreGuestImageUrl } = useGetImageUrl(organization?.exploreAsGuestImageId ?? null);
 
   const [addedImage1, setAddedImage1] = useState<File | undefined>(undefined);
   const [addedImage2, setAddedImage2] = useState<File | undefined>(undefined);
   const [isUploadingApply, setIsUploadingApply] = useState(false);
   const [isUploadingExplore, setIsUploadingExplore] = useState(false);
+
+  if (organizationIsError) {
+    return <ErrorPage message={organizationError.message} />;
+  }
+
+  if (organizationImagesIsLoading || !organization || organizationIsLoading) return <LoadingIndicator />;
 
   const handleFileUpload = async (files: File[], type: 'exploreAsGuest' | 'applyInterest') => {
     const validFiles: File[] = [];
@@ -60,13 +60,9 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
         await organizationImages(validFiles);
         toast.success('Image uploaded successfully!');
       } catch (error: any) {
-        console.error('Error uploading images:', error);
-
-        // Check if the error is from organizationImagesError
         if (organizationImagesIsError && organizationImagesError instanceof Error) {
           toast.error(organizationImagesError.message, 5000);
         } else {
-          // Default fallback for unexpected errors
           toast.error('An unexpected error occurred during upload.', 5000);
         }
       } finally {
