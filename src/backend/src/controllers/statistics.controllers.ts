@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import StatisticsService from '../services/statistics.services';
 import { Graph } from 'shared';
-import prisma from '../prisma/prisma';
 
 export default class StatisticsController {
   static async createGraph(req: Request, res: Response, next: NextFunction) {
