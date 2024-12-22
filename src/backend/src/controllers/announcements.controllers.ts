@@ -18,7 +18,7 @@ export default class AnnouncementController {
 
   static async removeUserAnnouncement(req: Request, res: Response, next: NextFunction) {
     try {
-      const { announcementId } = req.body;
+      const { announcementId } = req.params;
       const { organization, currentUser } = req;
 
       const unreadAnnouncements = await AnnouncementService.removeUserAnnouncement(
