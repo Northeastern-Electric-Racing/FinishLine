@@ -16,7 +16,7 @@ export default class OnboardingServices {
   static async getAllChecklists(organization: Organization) {
     const allChecklists = await prisma.checklist.findMany({
       where: { organizationId: organization.organizationId, dateDeleted: null, parentChecklistId: null },
-      include: { subtasks: true, teamType: true }
+      include: { subtasks: true, teamType: true, usersChecked: true }
     });
 
     return allChecklists;
@@ -36,7 +36,7 @@ export default class OnboardingServices {
         dateDeleted: null,
         parentChecklistId: null
       },
-      include: { subtasks: true, teamType: true }
+      include: { subtasks: true, teamType: true, usersChecked: true }
     });
     return generalChecklists;
   }
@@ -309,7 +309,6 @@ export default class OnboardingServices {
       throw new DeletedException('Checklist', checklistId);
     }
 
-    // delete all subtasks
     await prisma.checklist.updateMany({
       where: { parentChecklistId: checklistId },
       data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
@@ -319,6 +318,101 @@ export default class OnboardingServices {
       where: { checklistId },
       data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
     });
+  }
+
+  /**
+   * Toggles a user's check on a checklist
+   * @param checklistId the id of the checklist to toggle
+   * @param userId the id of the user to toggle
+   * @returns the updated checklist
+   */
+  static async toggleChecklist(checklistId: string, user: User, organization: Organization) {
+    const checklist = await prisma.checklist.findUnique({
+      where: { checklistId, organizationId: organization.organizationId },
+      include: { usersChecked: true, subtasks: { where: { dateDeleted: null }, include: { usersChecked: true } } }
+    });
+
+    if (!checklist) {
+      throw new NotFoundException('Checklist', checklistId);
+    }
+
+    if (checklist.dateDeleted) {
+      throw new DeletedException('Checklist', checklistId);
+    }
+
+    const { userId } = user;
+    const isChecked = checklist.usersChecked.some((user) => user.userId === userId);
+
+    if (
+      checklist.subtasks.length > 0 &&
+      !checklist.subtasks.every((subtask) => subtask.usersChecked.some((user) => user.userId === userId))
+    ) {
+      throw new HttpException(400, 'Cannot check off this checklist item because not all of its subtasks are checked.');
+    }
+
+    if (isChecked) {
+      await prisma.checklist.update({
+        where: { checklistId },
+        data: {
+          usersChecked: {
+            disconnect: { userId }
+          }
+        }
+      });
+    } else {
+      await prisma.checklist.update({
+        where: { checklistId },
+        data: {
+          usersChecked: {
+            connect: { userId }
+          }
+        }
+      });
+    }
+
+    // Check off the parent checklist if all subtasks are checked
+    if (checklist.parentChecklistId) {
+      const parentChecklist = await prisma.checklist.findUnique({
+        where: { checklistId: checklist.parentChecklistId },
+        include: {
+          subtasks: {
+            where: { dateDeleted: null },
+            include: { usersChecked: true }
+          }
+        }
+      });
+
+      if (parentChecklist) {
+        const allSubtasksChecked = parentChecklist.subtasks.every((subtask) =>
+          subtask.usersChecked.some((user) => user.userId === userId)
+        );
+        if (allSubtasksChecked) {
+          await prisma.checklist.update({
+            where: { checklistId: parentChecklist.checklistId },
+            data: {
+              usersChecked: {
+                connect: { userId }
+              }
+            }
+          });
+        } else {
+          await prisma.checklist.update({
+            where: { checklistId: parentChecklist.checklistId },
+            data: {
+              usersChecked: {
+                disconnect: { userId }
+              }
+            }
+          });
+        }
+      }
+    }
+    const updatedChecklist = await prisma.checklist.findUnique({
+      where: { checklistId },
+      include: { usersChecked: true }
+    });
+
+    return updatedChecklist;
   }
 
   static async downloadImage(fileId: string) {
