@@ -7,10 +7,6 @@ const notificationsRouter = express.Router();
 
 notificationsRouter.post('/task-deadlines', NotificationsController.sendDailySlackNotifications);
 notificationsRouter.get('/current-user', NotificationsController.getUserUnreadNotifications);
-notificationsRouter.post(
-  '/current-user/remove',
-  nonEmptyString(body('notificationId')),
-  NotificationsController.removeUserNotification
-);
+notificationsRouter.post('/:notificationId/remove', NotificationsController.removeUserNotification);
 
 export default notificationsRouter;
