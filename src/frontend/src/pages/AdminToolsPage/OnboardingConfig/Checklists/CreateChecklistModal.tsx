@@ -28,7 +28,15 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
   if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading) return <LoadingIndicator />;
 
-  return <ChecklistFormModal open={open} handleClose={handleClose} onSubmit={handleFormSubmit} teamId={teamId} teamTypeId={teamTypeId} />;
+  return (
+    <ChecklistFormModal
+      open={open}
+      handleClose={handleClose}
+      onSubmit={handleFormSubmit}
+      teamId={teamId}
+      teamTypeId={teamTypeId}
+    />
+  );
 };
 
 export default CreateChecklistModal;

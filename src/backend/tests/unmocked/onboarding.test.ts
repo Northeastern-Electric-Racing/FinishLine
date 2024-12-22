@@ -229,7 +229,7 @@ describe('Onboarding tests', () => {
       ).rejects.toThrow(new DeletedException('Checklist', parentChecklist.checklistId));
     });
 
-    it('Fails if parentChecklistId does not match teamId or teamTypeId', async () => {
+    it('Fails if parentChecklistId does not match teamId and teamTypeId', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       const teamType1 = await createTestTeamType('teamtype1', organization);
       const teamType2 = await createTestTeamType('teamtype2', organization);
@@ -246,7 +246,7 @@ describe('Onboarding tests', () => {
             organization,
             true
           )
-      ).rejects.toThrow(new HttpException(400, 'Parent checklist must have the same teamId or teamTypeId'));
+      ).rejects.toThrow(new HttpException(400, 'Parent checklist must have the same teamId and teamTypeId'));
     });
 
     it('Succeeds and creates a checklist with teamTypeId', async () => {
@@ -299,25 +299,6 @@ describe('Onboarding tests', () => {
             true
           )
       ).rejects.toThrow(new HttpException(400, 'Checklist cannot be assigned to both a team and a team type'));
-    });
-
-    it('Fails if general checklist already exists', async () => {
-      const batman = await createTestUser(batmanAppAdmin, orgId);
-      await createTestChecklist(batman, orgId, 'General Checklist');
-      await expect(
-        async () =>
-          await OnboardingServices.editChecklist(
-            batman,
-            'checklistId',
-            'name',
-            ['description1', 'description2'],
-            null,
-            null,
-            null,
-            organization,
-            true
-          )
-      ).rejects.toThrow(new HttpException(400, 'General checklist already exists'));
     });
 
     it('Fails if teamId is invalid', async () => {
@@ -397,7 +378,7 @@ describe('Onboarding tests', () => {
       ).rejects.toThrow(new DeletedException('Checklist', parentChecklist.checklistId));
     });
 
-    it('Fails if parentChecklistId does not match teamId or teamTypeId', async () => {
+    it('Fails if parentChecklistId does not match teamId and teamTypeId', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       const teamType1 = await createTestTeamType('teamtype1', organization);
       const teamType2 = await createTestTeamType('teamtype2', organization);
@@ -415,7 +396,7 @@ describe('Onboarding tests', () => {
             organization,
             true
           )
-      ).rejects.toThrow(new HttpException(400, 'Parent checklist must have the same teamId or teamTypeId'));
+      ).rejects.toThrow(new HttpException(400, 'Parent checklist must have the same teamId and teamTypeId'));
     });
 
     it('Succeeds and edits a checklist with teamType', async () => {

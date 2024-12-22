@@ -21,11 +21,24 @@ export const getUsersChecklists = () => {
   });
 };
 
+/**
+ * API call to create a checklist
+ * @param payload the checklist data
+ */
 export const createChecklist = (payload: ChecklistCreateArgs) => {
   return axios.post(apiUrls.createChecklist(), {
     ...payload
   });
 };
+
+/**
+ * API call to edit a checklist
+ */
+export const editChecklist = (checklistId: string, payload: ChecklistCreateArgs) => {
+  return axios.post(apiUrls.editChecklist(checklistId), {
+    ...payload
+  });
+}
 
 /**
  * API Call to download a google image

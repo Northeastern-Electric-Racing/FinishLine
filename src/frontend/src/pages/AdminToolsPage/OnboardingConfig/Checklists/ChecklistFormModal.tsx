@@ -14,7 +14,7 @@ interface ChecklistFormModalProps {
   open: boolean;
   handleClose: () => void;
   onSubmit: (data: ChecklistCreateArgs) => Promise<Checklist>;
-  defaulValues?: Checklist;
+  defaultValues?: Checklist;
   teamId?: string;
   teamTypeId?: string;
 }
@@ -25,12 +25,12 @@ interface ChecklistFormValues {
   subtasks: ChecklistPreview[];
 }
 
-const ChecklistFormModal = ({ open, handleClose, onSubmit, defaulValues, teamId, teamTypeId }: ChecklistFormModalProps) => {
+const ChecklistFormModal = ({ open, handleClose, onSubmit, defaultValues, teamId, teamTypeId }: ChecklistFormModalProps) => {
   const theme = useTheme();
   const toast = useToast();
   const [subtasks, setSubtasks] = useState<ChecklistPreview[]>(
-    defaulValues?.subtasks?.length
-      ? defaulValues.subtasks
+    defaultValues?.subtasks?.length
+      ? defaultValues.subtasks
       : [{ name: '', isOptional: false, dateCreated: new Date(), checklistId: '' }]
   );
   const schema = yup.object().shape({
@@ -59,11 +59,11 @@ const ChecklistFormModal = ({ open, handleClose, onSubmit, defaulValues, teamId,
   } = useForm<ChecklistFormValues>({
     resolver: yupResolver(schema),
     defaultValues: {
-      name: defaulValues?.name ?? '',
-      descriptions: defaulValues?.descriptions?.length
-        ? defaulValues?.descriptions?.map((desc) => ({ name: desc }))
+      name: defaultValues?.name ?? '',
+      descriptions: defaultValues?.descriptions?.length
+        ? defaultValues?.descriptions?.map((desc) => ({ name: desc }))
         : [{ name: '' }],
-      subtasks: defaulValues?.subtasks ?? []
+      subtasks: defaultValues?.subtasks ?? []
     }
   });
 
@@ -122,11 +122,11 @@ const ChecklistFormModal = ({ open, handleClose, onSubmit, defaulValues, teamId,
     <NERFormModal
       open={open}
       onHide={handleClose}
-      title={!!defaulValues ? 'Edit Checklist' : 'Create Checklist'}
+      title={!!defaultValues ? 'Edit Checklist' : 'Create Checklist'}
       reset={() => reset({ name: '', descriptions: [] })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
-      formId={!!defaulValues ? 'edit-UsefulLink-form' : 'create-UsefulLink-form'}
+      formId={!!defaultValues ? 'edit-UsefulLink-form' : 'create-UsefulLink-form'}
       showCloseButton
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>

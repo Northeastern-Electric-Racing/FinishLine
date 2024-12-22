@@ -7,6 +7,7 @@ import SubtaskSection from '../../../HomePage/components/SubtaskSection';
 import { GridDragIcon } from '@mui/x-data-grid';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import EditIcon from '@mui/icons-material/Edit';
+import EditChecklistModal from './EditChecklistModal';
 
 interface AdminTaskProps {
   parentTask: Checklist;
@@ -41,7 +42,15 @@ const AdminTask: React.FC<AdminTaskProps> = ({ parentTask }) => {
         </Box>
         {showSubtasks && <SubtaskSection parentTask={parentTask} isAdmin={true} />}
       </Box>
-      {/* {showEdit && <EditChecklistModal open={showEdit} handleClose={() => setShowEdit(false)} />} */}
+      {showEdit && (
+        <EditChecklistModal
+          open={showEdit}
+          handleClose={() => setShowEdit(false)}
+          teamId={parentTask.team?.teamId}
+          teamTypeId={parentTask.teamType?.teamTypeId}
+          defaultValues={parentTask}
+        />
+      )}
     </Box>
   );
 };
