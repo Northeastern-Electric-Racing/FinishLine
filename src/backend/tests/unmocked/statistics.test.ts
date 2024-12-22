@@ -301,4 +301,26 @@ describe('Statistics Tests', () => {
       );
     });
   });
+  describe('Create Graph Collection', () => {
+    it('Create graph collection fails if user does not have permission', async () => {
+      const guestUser = await createTestUser(wonderwomanGuest, orgId);
+
+      await expect(
+        async () => await StatisticsService.createGraphCollection(guestUser, 'Test Graph Collection', organization)
+      ).rejects.toThrow(new AccessDeniedException('You do not have permission to create a graph collection'));
+    });
+
+    it('Create graph collection works with valid inputs', async () => {
+      const result = await StatisticsService.createGraphCollection(user, 'Test Graph Collection', organization);
+
+      expect(result).toMatchObject({
+        title: 'Test Graph Collection',
+        userCreated: {
+          userId: user.userId
+        },
+        permissions: [],
+        graphs: []
+      });
+    });
+  });
 });

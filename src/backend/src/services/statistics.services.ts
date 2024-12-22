@@ -2,11 +2,12 @@ import { Organization, User, Graph_Type, Measure, Graph_Display_Type, Special_Pe
 import prisma from '../prisma/prisma';
 import { DeletedException, InvalidOrganizationException, NotFoundException } from '../utils/errors.utils';
 import graphTransformer from '../transformers/statistics-graph.transformer';
-import { getGraphQueryArgs } from '../prisma-query-args/statistics.query-args';
+import { getGraphQueryArgs, getGraphCollectionQueryArgs } from '../prisma-query-args/statistics.query-args';
 import { userHasPermissionNew } from '../utils/users.utils';
 import { AccessDeniedException, HttpException } from '../utils/errors.utils';
-import { Graph } from 'shared';
+import { Graph, GraphCollection } from 'shared';
 import { getGraphData } from '../utils/statistics.utils';
+import { graphCollectionTransformer } from '../transformers/statistics-graph.transformer';
 
 export default class StatisticsService {
   /**
@@ -133,6 +134,33 @@ export default class StatisticsService {
         requestedGraph.endDate,
         { carIds: requestedGraph.cars.map((car) => car.carId) }
       )
+    });
+  }
+  static async createGraphCollection(
+    userCreating: User,
+    title: string,
+    organization: Organization
+  ): Promise<GraphCollection> {
+    if (!(await userHasPermissionNew(userCreating.userId, organization.organizationId, ['CREATE_GRAPH_COLLECTION']))) {
+      throw new AccessDeniedException('You do not have permission to create a graph collection');
+    }
+    const newGraphCollection = await prisma.graph_Collection.create({
+      data: {
+        title,
+        organizationId: organization.organizationId,
+        userCreatedId: userCreating.userId,
+        dateDeleted: null,
+        userDeletedId: null
+      },
+      include: getGraphCollectionQueryArgs(organization.organizationId).include
+    });
+
+    return graphCollectionTransformer({
+      ...newGraphCollection,
+      graphs: newGraphCollection.graphs.map((graph) => ({
+        ...graph,
+        graphData: []
+      }))
     });
   }
 }

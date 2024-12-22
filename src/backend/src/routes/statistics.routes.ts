@@ -35,5 +35,11 @@ statisticsRouter.post(
 );
 
 statisticsRouter.get('/graph/:graphId', StatisticsController.getSingleGraph);
+statisticsRouter.post(
+  '/graphCollection/create',
+  nonEmptyString(body('title')),
+  validateInputs,
+  StatisticsController.createGraphCollection
+);
 
 export default statisticsRouter;
