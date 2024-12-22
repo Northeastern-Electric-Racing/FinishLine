@@ -6,8 +6,12 @@ import {
   getFeaturedProjects,
   getCurrentOrganization,
   setOrganizationDescription,
-  setOrganizationFeaturedProjects
+  setOrganizationFeaturedProjects,
+  setOrganizationWorkspaceId,
+  setOrganizationLogo,
+  getOrganizationLogo
 } from '../apis/organizations.api';
+import { downloadGoogleImage } from '../apis/organizations.api';
 
 interface OrganizationProvider {
   organizationId: string;
@@ -83,4 +87,39 @@ export const useSetFeaturedProjects = () => {
       }
     }
   );
+};
+
+export const useSetWorkspaceId = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Organization, Error, string>(
+    ['organizations', 'featured-projects'],
+    async (workspaceId: string) => {
+      const { data } = await setOrganizationWorkspaceId(workspaceId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['organizations']);
+      }
+    }
+  );
+};
+
+export const useSetOrganizationLogo = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Organization, Error, File>(['reimbursement-requsts', 'edit'], async (file: File) => {
+    const { data } = await setOrganizationLogo(file);
+    queryClient.invalidateQueries(['organizations']);
+    return data;
+  });
+};
+
+export const useOrganizationLogo = () => {
+  return useQuery<Blob | undefined, Error>(['organizations', 'logo'], async () => {
+    const { data: fileId } = await getOrganizationLogo();
+    if (!fileId) {
+      return;
+    }
+    return await downloadGoogleImage(fileId);
+  });
 };

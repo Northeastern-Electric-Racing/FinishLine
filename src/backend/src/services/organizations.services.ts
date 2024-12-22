@@ -209,6 +209,10 @@ export default class OrganizationsService {
 
     const logoImageData = await uploadFile(logoImage);
 
+    if (!logoImageData?.name) {
+      throw new HttpException(500, 'Image Name not found');
+    }
+
     const updatedOrg = await prisma.organization.update({
       where: { organizationId: organization.organizationId },
       data: {
@@ -224,17 +228,13 @@ export default class OrganizationsService {
    * @param organizationId the id of the organization
    * @returns the id of the image
    */
-  static async getLogoImage(organizationId: string): Promise<string> {
+  static async getLogoImage(organizationId: string): Promise<string | null> {
     const organization = await prisma.organization.findUnique({
       where: { organizationId }
     });
 
     if (!organization) {
       throw new NotFoundException('Organization', organizationId);
-    }
-
-    if (!organization.logoImageId) {
-      throw new HttpException(404, `Organization ${organizationId} does not have a logo image`);
     }
 
     return organization.logoImageId;
@@ -285,28 +285,21 @@ export default class OrganizationsService {
   }
 
   /**
-   * Sets the slack workspace id used to initialize slack bots for this organization
-   * @param slackWorkspaceId the id of the organization's slack workspace
-   * @param submitter the user making this submission (must be an admin)
-   * @param organization the organization being changed
-   * @returns the changed organization
+   * sets the slack workspace id of the organization
+   * @param workspaceId workspace id to set
+   * @param submitter user who submitted the workspace id
+   * @param organizationId id of organization to update with workspace id
+   * @returns updated organization
    */
-  static async setOrganizationSlackWorkspaceId(
-    slackWorkspaceId: string,
-    submitter: User,
-    organization: Organization
-  ): Promise<Organization> {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('set slack workspace id');
+  static async setSlackWorkspaceId(workspaceId: string, submitter: User, organizationId: string) {
+    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('set workspace id');
     }
-    const updatedOrg = prisma.organization.update({
-      where: {
-        organizationId: organization.organizationId
-      },
-      data: {
-        slackWorkspaceId
-      }
+    const updatedOrg = await prisma.organization.update({
+      where: { organizationId },
+      data: { slackWorkspaceId: workspaceId }
     });
+
     return updatedOrg;
   }
 }

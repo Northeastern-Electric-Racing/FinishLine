@@ -9,7 +9,6 @@ import {
   wonderwomanSettings
 } from '../test-data/users.test-data';
 import AnnouncementService from '../../src/services/announcement.service';
-import UsersService from '../../src/services/users.services';
 import { NotFoundException } from '../../src/utils/errors.utils';
 
 describe('announcement tests', () => {
@@ -44,20 +43,20 @@ describe('announcement tests', () => {
     expect(announcement?.text).toBe('text');
     expect(announcement?.usersReceived).toHaveLength(2);
     expect(announcement?.senderName).toBe('sender name');
-    expect(announcement?.dateCreated).toStrictEqual(new Date(1000000000000));
+    expect(announcement?.dateMessageSent).toStrictEqual(new Date(1000000000000));
     expect(announcement?.slackEventId).toBe('slack id');
     expect(announcement?.slackChannelName).toBe('channel name');
     expect(announcement?.dateDeleted).toBeUndefined();
 
-    const smAnnouncements = await UsersService.getUserUnreadAnnouncements(superman.userId, organization);
-    const bmAnnouncements = await UsersService.getUserUnreadAnnouncements(batman.userId, organization);
-    const wwAnnouncements = await UsersService.getUserUnreadAnnouncements(wonderwoman.userId, organization);
+    const smAnnouncements = await AnnouncementService.getUserUnreadAnnouncements(superman.userId, orgId);
+    const bmAnnouncements = await AnnouncementService.getUserUnreadAnnouncements(batman.userId, orgId);
+    const wwAnnouncements = await AnnouncementService.getUserUnreadAnnouncements(wonderwoman.userId, orgId);
 
     expect(smAnnouncements).toHaveLength(1);
     expect(smAnnouncements[0]?.text).toBe('text');
     expect(smAnnouncements[0]?.usersReceived).toHaveLength(2);
     expect(smAnnouncements[0]?.senderName).toBe('sender name');
-    expect(smAnnouncements[0]?.dateCreated).toStrictEqual(new Date(1000000000000));
+    expect(smAnnouncements[0]?.dateMessageSent).toStrictEqual(new Date(1000000000000));
     expect(smAnnouncements[0]?.slackEventId).toBe('slack id');
     expect(smAnnouncements[0]?.slackChannelName).toBe('channel name');
     expect(smAnnouncements[0]?.dateDeleted).toBeUndefined();
@@ -77,9 +76,9 @@ describe('announcement tests', () => {
       orgId
     );
 
-    let smAnnouncements = await UsersService.getUserUnreadAnnouncements(superman.userId, organization);
-    let bmAnnouncements = await UsersService.getUserUnreadAnnouncements(batman.userId, organization);
-    let wwAnnouncements = await UsersService.getUserUnreadAnnouncements(wonderwoman.userId, organization);
+    let smAnnouncements = await AnnouncementService.getUserUnreadAnnouncements(superman.userId, orgId);
+    let bmAnnouncements = await AnnouncementService.getUserUnreadAnnouncements(batman.userId, orgId);
+    let wwAnnouncements = await AnnouncementService.getUserUnreadAnnouncements(wonderwoman.userId, orgId);
 
     expect(smAnnouncements).toHaveLength(1);
     expect(bmAnnouncements).toHaveLength(1);
@@ -95,9 +94,9 @@ describe('announcement tests', () => {
       orgId
     );
 
-    smAnnouncements = await UsersService.getUserUnreadAnnouncements(superman.userId, organization);
-    bmAnnouncements = await UsersService.getUserUnreadAnnouncements(batman.userId, organization);
-    wwAnnouncements = await UsersService.getUserUnreadAnnouncements(wonderwoman.userId, organization);
+    smAnnouncements = await AnnouncementService.getUserUnreadAnnouncements(superman.userId, orgId);
+    bmAnnouncements = await AnnouncementService.getUserUnreadAnnouncements(batman.userId, orgId);
+    wwAnnouncements = await AnnouncementService.getUserUnreadAnnouncements(wonderwoman.userId, orgId);
 
     expect(smAnnouncements).toHaveLength(0);
     expect(bmAnnouncements).toHaveLength(1);
@@ -133,16 +132,16 @@ describe('announcement tests', () => {
       orgId
     );
 
-    let smAnnouncements = await UsersService.getUserUnreadAnnouncements(superman.userId, organization);
-    let bmAnnouncements = await UsersService.getUserUnreadAnnouncements(batman.userId, organization);
+    let smAnnouncements = await AnnouncementService.getUserUnreadAnnouncements(superman.userId, orgId);
+    let bmAnnouncements = await AnnouncementService.getUserUnreadAnnouncements(batman.userId, orgId);
 
     expect(smAnnouncements).toHaveLength(1);
     expect(bmAnnouncements).toHaveLength(1);
 
     const deletedAnnouncement = await AnnouncementService.deleteAnnouncement('slack id', orgId);
 
-    smAnnouncements = await UsersService.getUserUnreadAnnouncements(superman.userId, organization);
-    bmAnnouncements = await UsersService.getUserUnreadAnnouncements(batman.userId, organization);
+    smAnnouncements = await AnnouncementService.getUserUnreadAnnouncements(superman.userId, orgId);
+    bmAnnouncements = await AnnouncementService.getUserUnreadAnnouncements(batman.userId, orgId);
 
     expect(smAnnouncements).toHaveLength(0);
     expect(bmAnnouncements).toHaveLength(0);
@@ -154,5 +153,38 @@ describe('announcement tests', () => {
     await expect(async () => await AnnouncementService.deleteAnnouncement('non-existent id', orgId)).rejects.toThrow(
       new NotFoundException('Announcement', 'non-existent id')
     );
+  });
+
+  describe('Get Announcements', () => {
+    it('Succeeds and gets user announcements', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      await AnnouncementService.createAnnouncement(
+        'test1',
+        [testBatman.userId],
+        new Date(),
+        'Thomas Emrax',
+        '1',
+        'software',
+        organization.organizationId
+      );
+      await AnnouncementService.createAnnouncement(
+        'test2',
+        [testBatman.userId],
+        new Date(),
+        'Superman',
+        '50',
+        'mechanical',
+        organization.organizationId
+      );
+
+      const announcements = await AnnouncementService.getUserUnreadAnnouncements(
+        testBatman.userId,
+        organization.organizationId
+      );
+
+      expect(announcements).toHaveLength(2);
+      expect(announcements[0].text).toBe('test1');
+      expect(announcements[1].text).toBe('test2');
+    });
   });
 });

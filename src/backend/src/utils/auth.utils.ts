@@ -68,7 +68,7 @@ export const requireJwtDev = (req: Request, res: Response, next: NextFunction) =
   ) {
     next();
   } else if (
-    req.path.startsWith('/notifications') // task deadline notification endpoint
+    req.path.startsWith('/notifications/taskdeadlines') // task deadline notification endpoint
   ) {
     notificationEndpointAuth(req, res, next);
   } else {

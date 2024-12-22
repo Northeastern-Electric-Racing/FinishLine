@@ -37,6 +37,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({ notification, remov
           onClick={async () => await onClick(notification)}
           sx={{
             display: 'flex',
+            alignItems: 'center',
             gap: 1,
             cursor: !!notification.eventLink ? 'pointer' : 'default'
           }}

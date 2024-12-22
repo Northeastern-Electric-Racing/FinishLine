@@ -5,7 +5,7 @@ export interface Announcement {
   text: string;
   usersReceived: User[];
   senderName: string;
-  dateCreated: Date;
+  dateMessageSent: Date;
   slackEventId: string;
   slackChannelName: string;
   dateDeleted?: Date;

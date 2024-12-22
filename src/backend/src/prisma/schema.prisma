@@ -935,7 +935,7 @@ model Announcement {
   announcementId   String    @id @default(uuid())
   text             String
   usersReceived    User[]    @relation("receivedAnnouncements")
-  dateCreated      DateTime
+  dateMessageSent  DateTime  @default(now())
   dateDeleted      DateTime?
   senderName       String
   slackEventId     String    @unique

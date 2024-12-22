@@ -55,7 +55,7 @@ describe('Organization Tests', () => {
     it('Succeeds and updates all the images', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
       (uploadFile as Mock).mockImplementation((file) => {
-        return Promise.resolve({ id: `uploaded-${file.originalname}` });
+        return Promise.resolve({ name: `${file.originalname}`, id: `uploaded-${file.originalname}` });
       });
 
       await OrganizationsService.setImages(file1, file2, testBatman, organization);
@@ -240,7 +240,7 @@ describe('Organization Tests', () => {
     it('Succeeds and updates the logo', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
       (uploadFile as Mock).mockImplementation((file) => {
-        return Promise.resolve({ id: `uploaded-${file.originalname}` });
+        return Promise.resolve({ name: `${file.originalname}`, id: `uploaded-${file.originalname}` });
       });
 
       await OrganizationsService.setLogoImage(file1, testBatman, organization);
@@ -270,12 +270,6 @@ describe('Organization Tests', () => {
     it('Fails if an organization does not exist', async () => {
       await expect(async () => await OrganizationsService.getLogoImage('1')).rejects.toThrow(
         new NotFoundException('Organization', '1')
-      );
-    });
-
-    it('Fails if the organization does not have a logo image', async () => {
-      await expect(async () => await OrganizationsService.getLogoImage(orgId)).rejects.toThrow(
-        new HttpException(404, `Organization ${orgId} does not have a logo image`)
       );
     });
 
@@ -326,35 +320,14 @@ describe('Organization Tests', () => {
     });
   });
 
-  describe('Set Organization slack id', () => {
-    it('Fails if user is not an admin', async () => {
-      await expect(
-        OrganizationsService.setOrganizationSlackWorkspaceId(
-          'test slack id',
-          await createTestUser(wonderwomanGuest, orgId),
-          organization
-        )
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('set slack workspace id'));
-    });
-
-    it('Succeeds and updates the slack id', async () => {
+  describe('Set Organization Workspace Id', () => {
+    it('Succeeds and updates the workspace id', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
 
-      const returnedOrganization = await OrganizationsService.setOrganizationSlackWorkspaceId(
-        'sample slack id',
-        testBatman,
-        organization
-      );
+      const updatedOrganization = await OrganizationsService.setSlackWorkspaceId('1234', testBatman, orgId);
 
-      const oldOrganization = await prisma.organization.findUnique({
-        where: {
-          organizationId: orgId
-        }
-      });
-
-      expect(oldOrganization).not.toBeNull();
-      expect(oldOrganization?.slackWorkspaceId).toBe('sample slack id');
-      expect(oldOrganization?.slackWorkspaceId).toBe(returnedOrganization.slackWorkspaceId);
+      expect(updatedOrganization).not.toBeNull();
+      expect(updatedOrganization.slackWorkspaceId).toBe('1234');
     });
   });
 });

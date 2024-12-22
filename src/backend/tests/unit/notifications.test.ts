@@ -56,4 +56,47 @@ describe('Notifications Tests', () => {
       expect(supermanWithNotifications?.unreadNotifications[0].text).toBe('test notification');
     });
   });
+
+  describe('Get Notifications', () => {
+    it('Succeeds and gets user notifications', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      await NotificationService.sendNotifcationToUsers('test1', 'test1', [testBatman.userId], orgId);
+      await NotificationService.sendNotifcationToUsers('test2', 'test2', [testBatman.userId], orgId);
+
+      const notifications = await NotificationService.getUserUnreadNotifications(
+        testBatman.userId,
+        organization.organizationId
+      );
+
+      expect(notifications).toHaveLength(2);
+      expect(notifications[0].text).toBe('test1');
+      expect(notifications[1].text).toBe('test2');
+    });
+  });
+
+  describe('Remove Notifications', () => {
+    it('Succeeds and removes user notification', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      await NotificationService.sendNotifcationToUsers('test1', 'test1', [testBatman.userId], orgId);
+      await NotificationService.sendNotifcationToUsers('test2', 'test2', [testBatman.userId], orgId);
+
+      const notifications = await NotificationService.getUserUnreadNotifications(
+        testBatman.userId,
+        organization.organizationId
+      );
+
+      expect(notifications).toHaveLength(2);
+      expect(notifications[0].text).toBe('test1');
+      expect(notifications[1].text).toBe('test2');
+
+      const updatedNotifications = await NotificationService.removeUserNotification(
+        testBatman.userId,
+        notifications[0].notificationId,
+        organization.organizationId
+      );
+
+      expect(updatedNotifications).toHaveLength(1);
+      expect(updatedNotifications[0].text).toBe('test2');
+    });
+  });
 });

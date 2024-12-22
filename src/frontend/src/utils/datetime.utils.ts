@@ -34,3 +34,8 @@ export const formatDate = (date: Date) => {
 export const daysOverdue = (deadline: Date) => {
   return Math.round((new Date().getTime() - deadline.getTime()) / (1000 * 60 * 60 * 24));
 };
+
+export const timezoneOffset = (date: Date) => {
+  const timestamp = new Date(date).getTime() - new Date(date).getTimezoneOffset() * -60000;
+  return new Date(timestamp);
+};
