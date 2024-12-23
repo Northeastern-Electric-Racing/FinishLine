@@ -104,10 +104,8 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
   };
 
   const handleSelectingRequiredUser = (newValue: { label: string; id: string }[]) => {
-    let filteredOptionalUsers = optionalUsers;
-    for (const reqUser of newValue) {
-      filteredOptionalUsers = filteredOptionalUsers.filter((user) => user.id !== reqUser.id);
-    }
+    const newRequiredUserIds = new Set(newValue.map((user) => user.id));
+    const filteredOptionalUsers = optionalUsers.filter((user) => !newRequiredUserIds.has(user.id));
     setOptionalUsers(filteredOptionalUsers);
     setRequiredUsers(newValue);
   };
