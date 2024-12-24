@@ -441,7 +441,7 @@ describe('Statistics Tests', () => {
             [],
             []
           )
-      ).rejects.toThrow(new AccessDeniedException('You do not have permission to qedit a graph'));
+      ).rejects.toThrow(new AccessDeniedException('You do not have permission to edit a graph'));
     });
 
     it('Edit graph fails if graph is deleted', async () => {
