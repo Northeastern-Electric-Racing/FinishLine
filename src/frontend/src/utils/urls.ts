@@ -199,6 +199,8 @@ const faqDelete = (id: string) => `${recruitment()}/faq/${id}/delete`;
 const onboarding = () => `${API_URL}/onboarding`;
 const allChecklists = () => `${onboarding()}/checklists`;
 const generalChecklists = () => `${allChecklists()}/general`;
+const checkedChecklists = () => `${allChecklists()}/checked`;
+const toggleChecklist = (checklistId: string) => `${allChecklists()}/${checklistId}/toggle`;
 const usersTeamTypeChecklists = () => `${allChecklists()}/usersChecklists`;
 const imageById = (imageId: string) => `${onboarding()}/image/${imageId}`;
 
@@ -363,6 +365,8 @@ export const apiUrls = {
   onboarding,
   allChecklists,
   generalChecklists,
+  checkedChecklists,
+  toggleChecklist,
   usersTeamTypeChecklists,
   imageById,
 
