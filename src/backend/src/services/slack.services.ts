@@ -146,8 +146,6 @@ export default class slackServices {
       return;
     }
 
-    console.log('processed event');
-
     if (event.subtype === 'message_changed') {
       //try to edit the announcement, if no announcement with that id exists create a new announcement
       try {

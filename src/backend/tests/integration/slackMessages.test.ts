@@ -30,6 +30,7 @@ describe('Slack message tests', () => {
   let wonderwoman: User;
 
   beforeEach(async () => {
+    await resetUsers();
     organization = await createTestOrganization();
     orgId = organization.organizationId;
     batman = await createTestUser(batmanAppAdmin, orgId, batmanSettings);
@@ -49,7 +50,7 @@ describe('Slack message tests', () => {
     const spy = vi.spyOn(AnnouncementService, 'createAnnouncement');
 
     const announcement = await slackServices.processMessageSent(
-      createSlackMessageEvent('channel id', '1000000000000', 'user name', 'id_1', [
+      createSlackMessageEvent('channel id', '1', 'user name', 'id_1', [
         { type: 'text', text: 'test with ' },
         { type: 'broadcast', range: 'everyone' },
         { type: 'text', text: ' broadcast (@everyone)' }
@@ -63,7 +64,7 @@ describe('Slack message tests', () => {
     expect(spy).toBeCalledWith(
       'test with @everyone broadcast (@everyone)',
       [organization.userCreatedId, batman.userId, superman.userId, wonderwoman.userId],
-      new Date(1000000000000),
+      new Date(1000),
       'Slack User Name',
       'id_1',
       'Slack Channel Name',
@@ -71,7 +72,7 @@ describe('Slack message tests', () => {
     );
 
     expect(announcement?.text).toBe('test with @everyone broadcast (@everyone)');
-    expect(announcement?.dateCreated.toDateString()).toBe(new Date(1000000000000).toDateString());
+    expect(announcement?.dateMessageSent.toDateString()).toBe(new Date(1000).toDateString());
     expect(announcement?.senderName).toBe('Slack User Name');
     expect(announcement?.slackChannelName).toBe('Slack Channel Name');
     expect(announcement?.slackEventId).toBe('id_1');
@@ -86,7 +87,7 @@ describe('Slack message tests', () => {
     const spy = vi.spyOn(AnnouncementService, 'createAnnouncement');
 
     const announcement = await slackServices.processMessageSent(
-      createSlackMessageEvent('channel id', '1000000000000', 'user name', 'id_1', [
+      createSlackMessageEvent('channel id', '1', 'user name', 'id_1', [
         { type: 'text', text: 'test with ' },
         { type: 'broadcast', range: 'channel' },
         { type: 'text', text: ' broadcast (@channel)' },
@@ -100,7 +101,7 @@ describe('Slack message tests', () => {
     expect(spy).toBeCalledWith(
       'test with @channel broadcast (@channel)@Slack User Name@Slack User Name',
       [batman.userId, wonderwoman.userId, superman.userId],
-      new Date(1000000000000),
+      new Date(1000),
       'Slack User Name',
       'id_1',
       'Slack Channel Name',
@@ -108,7 +109,7 @@ describe('Slack message tests', () => {
     );
 
     expect(announcement?.text).toBe('test with @channel broadcast (@channel)@Slack User Name@Slack User Name');
-    expect(announcement?.dateCreated.toDateString()).toBe(new Date(1000000000000).toDateString());
+    expect(announcement?.dateMessageSent.toDateString()).toBe(new Date(1000).toDateString());
     expect(announcement?.senderName).toBe('Slack User Name');
     expect(announcement?.slackChannelName).toBe('Slack Channel Name');
     expect(announcement?.slackEventId).toBe('id_1');
@@ -122,7 +123,7 @@ describe('Slack message tests', () => {
     const spy = vi.spyOn(AnnouncementService, 'createAnnouncement');
 
     const announcement = await slackServices.processMessageSent(
-      createSlackMessageEvent('channel id', '1000000000000', 'user name', 'id_1', [
+      createSlackMessageEvent('channel id', '1', 'user name', 'id_1', [
         { type: 'text', text: 'test with ' },
         { type: 'user', user_id: 'slackWW' },
         { type: 'text', text: ' broadcast (@wonderwoman)' }
@@ -134,7 +135,7 @@ describe('Slack message tests', () => {
     expect(spy).toBeCalledWith(
       'test with @Slack User Name broadcast (@wonderwoman)',
       [wonderwoman.userId],
-      new Date(1000000000000),
+      new Date(1000),
       'Slack User Name',
       'id_1',
       'Slack Channel Name',
@@ -142,7 +143,7 @@ describe('Slack message tests', () => {
     );
 
     expect(announcement?.text).toBe('test with @Slack User Name broadcast (@wonderwoman)');
-    expect(announcement?.dateCreated.toDateString()).toBe(new Date(1000000000000).toDateString());
+    expect(announcement?.dateMessageSent.toDateString()).toBe(new Date(1000).toDateString());
     expect(announcement?.senderName).toBe('Slack User Name');
     expect(announcement?.slackChannelName).toBe('Slack Channel Name');
     expect(announcement?.slackEventId).toBe('id_1');
@@ -156,7 +157,7 @@ describe('Slack message tests', () => {
     const spy = vi.spyOn(AnnouncementService, 'createAnnouncement');
 
     const announcement = await slackServices.processMessageSent(
-      createSlackMessageEvent('channel id', '1000000000000', 'user name', 'id_1', [
+      createSlackMessageEvent('channel id', '1', 'user name', 'id_1', [
         { type: 'text', text: 'test with: ' },
         { type: 'link', url: 'http://www.example.com', text: 'link' },
         { type: 'text', text: 'Italics', style: { italic: true } },
@@ -180,7 +181,7 @@ describe('Slack message tests', () => {
     expect(spy).toBeCalledWith(
       'test with: link:(http://www.example.com)Italics and a unicode emoji: 😝 and a slack emoji: emoji:birthday-parrot@Slack User Name',
       [wonderwoman.userId],
-      new Date(1000000000000),
+      new Date(1000),
       'Slack User Name',
       'id_1',
       'Slack Channel Name',
@@ -190,7 +191,7 @@ describe('Slack message tests', () => {
     expect(announcement?.text).toBe(
       'test with: link:(http://www.example.com)Italics and a unicode emoji: 😝 and a slack emoji: emoji:birthday-parrot@Slack User Name'
     );
-    expect(announcement?.dateCreated.toDateString()).toBe(new Date(1000000000000).toDateString());
+    expect(announcement?.dateMessageSent.toDateString()).toBe(new Date(1000).toDateString());
     expect(announcement?.senderName).toBe('Slack User Name');
     expect(announcement?.slackChannelName).toBe('Slack Channel Name');
     expect(announcement?.slackEventId).toBe('id_1');
@@ -204,9 +205,7 @@ describe('Slack message tests', () => {
     const spy = vi.spyOn(AnnouncementService, 'createAnnouncement');
 
     const announcement = await slackServices.processMessageSent(
-      createSlackMessageEvent('channel id', '1000000000000', 'user name', 'id_1', [
-        { type: 'text', text: 'just a text message' }
-      ]),
+      createSlackMessageEvent('channel id', '1', 'user name', 'id_1', [{ type: 'text', text: 'just a text message' }]),
       orgId
     );
 
@@ -223,13 +222,13 @@ describe('Slack message tests', () => {
     const updateSpy = vi.spyOn(AnnouncementService, 'updateAnnouncement');
 
     await slackServices.processMessageSent(
-      createSlackMessageEvent('channel id', '1000000000000', 'user name', 'id_1', [{ type: 'user', user_id: 'slackWW' }]),
+      createSlackMessageEvent('channel id', '1', 'user name', 'id_1', [{ type: 'user', user_id: 'slackWW' }]),
       orgId
     );
     expect(createSpy).toBeCalledWith(
       '@Slack User Name',
       [wonderwoman.userId],
-      new Date(1000000000000),
+      new Date(1000),
       'Slack User Name',
       'id_1',
       'Slack Channel Name',
@@ -241,13 +240,13 @@ describe('Slack message tests', () => {
         type: 'message',
         subtype: 'message_changed',
         channel: 'channel id',
-        event_ts: '1000000000000',
+        event_ts: '1',
         channel_type: 'channel',
-        message: createSlackMessageEvent('channel id', '1000000000000', 'user name', 'id_1', [
+        message: createSlackMessageEvent('channel id', '1', 'user name', 'id_1', [
           { type: 'user', user_id: 'slackWW' },
           { type: 'text', text: ' added text' }
         ]),
-        previous_message: createSlackMessageEvent('channel id', '1000000000000', 'user name', 'id_1', [
+        previous_message: createSlackMessageEvent('channel id', '1', 'user name', 'id_1', [
           { type: 'user', user_id: 'slackWW' }
         ])
       },
@@ -257,7 +256,7 @@ describe('Slack message tests', () => {
     expect(updateSpy).toBeCalledWith(
       '@Slack User Name added text',
       [wonderwoman.userId],
-      new Date(1000000000000),
+      new Date(1000),
       'Slack User Name',
       'id_1',
       'Slack Channel Name',
@@ -265,7 +264,7 @@ describe('Slack message tests', () => {
     );
 
     expect(announcement2?.text).toBe('@Slack User Name added text');
-    expect(announcement2?.dateCreated.toDateString()).toBe(new Date(1000000000000).toDateString());
+    expect(announcement2?.dateMessageSent.toDateString()).toBe(new Date(1000).toDateString());
     expect(announcement2?.senderName).toBe('Slack User Name');
     expect(announcement2?.slackChannelName).toBe('Slack Channel Name');
     expect(announcement2?.slackEventId).toBe('id_1');
@@ -287,13 +286,13 @@ describe('Slack message tests', () => {
         type: 'message',
         subtype: 'message_changed',
         channel: 'channel id',
-        event_ts: '1000000000000',
+        event_ts: '1',
         channel_type: 'channel',
-        message: createSlackMessageEvent('channel id', '1000000000000', 'user name', 'id_1', [
+        message: createSlackMessageEvent('channel id', '1', 'user name', 'id_1', [
           { type: 'user', user_id: 'slackWW' },
           { type: 'text', text: ' added text' }
         ]),
-        previous_message: createSlackMessageEvent('channel id', '1000000000000', 'user name', 'id_1', [
+        previous_message: createSlackMessageEvent('channel id', '1', 'user name', 'id_1', [
           { type: 'user', user_id: 'slackWW' }
         ])
       },
@@ -303,7 +302,7 @@ describe('Slack message tests', () => {
     expect(updateSpy).toBeCalledWith(
       '@Slack User Name added text',
       [wonderwoman.userId],
-      new Date(1000000000000),
+      new Date(1000),
       'Slack User Name',
       'id_1',
       'Slack Channel Name',
@@ -313,7 +312,7 @@ describe('Slack message tests', () => {
     expect(createSpy).toBeCalledWith(
       '@Slack User Name added text',
       [wonderwoman.userId],
-      new Date(1000000000000),
+      new Date(1000),
       'Slack User Name',
       'id_1',
       'Slack Channel Name',
@@ -321,7 +320,7 @@ describe('Slack message tests', () => {
     );
 
     expect(announcement2?.text).toBe('@Slack User Name added text');
-    expect(announcement2?.dateCreated.toDateString()).toBe(new Date(1000000000000).toDateString());
+    expect(announcement2?.dateMessageSent.toDateString()).toBe(new Date(1000).toDateString());
     expect(announcement2?.senderName).toBe('Slack User Name');
     expect(announcement2?.slackChannelName).toBe('Slack Channel Name');
     expect(announcement2?.slackEventId).toBe('id_1');
@@ -339,13 +338,13 @@ describe('Slack message tests', () => {
     const deleteSpy = vi.spyOn(AnnouncementService, 'deleteAnnouncement');
 
     await slackServices.processMessageSent(
-      createSlackMessageEvent('channel id', '1000000000000', 'user name', 'id_1', [{ type: 'user', user_id: 'slackWW' }]),
+      createSlackMessageEvent('channel id', '1', 'user name', 'id_1', [{ type: 'user', user_id: 'slackWW' }]),
       orgId
     );
     expect(createSpy).toBeCalledWith(
       '@Slack User Name',
       [wonderwoman.userId],
-      new Date(1000000000000),
+      new Date(1000),
       'Slack User Name',
       'id_1',
       'Slack Channel Name',
@@ -357,9 +356,9 @@ describe('Slack message tests', () => {
         type: 'message',
         subtype: 'message_deleted',
         channel: 'channel id',
-        event_ts: '1000000000000',
+        event_ts: '1',
         channel_type: 'channel',
-        previous_message: createSlackMessageEvent('channel id', '1000000000000', 'user name', 'id_1', [
+        previous_message: createSlackMessageEvent('channel id', '1', 'user name', 'id_1', [
           { type: 'user', user_id: 'slackWW' }
         ])
       },
@@ -381,7 +380,7 @@ describe('Slack message tests', () => {
         type: 'message',
         subtype: 'other-nonprocessed-subtype',
         channel: 'channel id',
-        event_ts: '1000000000000',
+        event_ts: '1',
         channel_type: 'channel',
         bogus_data: 'other data'
       },

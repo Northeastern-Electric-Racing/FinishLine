@@ -19,6 +19,7 @@ describe('announcement tests', () => {
   let wonderwoman: User;
 
   beforeEach(async () => {
+    await resetUsers();
     organization = await createTestOrganization();
     orgId = organization.organizationId;
     batman = await createTestUser(batmanAppAdmin, orgId, batmanSettings);
@@ -157,10 +158,9 @@ describe('announcement tests', () => {
 
   describe('Get Announcements', () => {
     it('Succeeds and gets user announcements', async () => {
-      const testBatman = await createTestUser(batmanAppAdmin, orgId);
       await AnnouncementService.createAnnouncement(
         'test1',
-        [testBatman.userId],
+        [batman.userId],
         new Date(),
         'Thomas Emrax',
         '1',
@@ -169,7 +169,7 @@ describe('announcement tests', () => {
       );
       await AnnouncementService.createAnnouncement(
         'test2',
-        [testBatman.userId],
+        [batman.userId],
         new Date(),
         'Superman',
         '50',
@@ -177,14 +177,49 @@ describe('announcement tests', () => {
         organization.organizationId
       );
 
-      const announcements = await AnnouncementService.getUserUnreadAnnouncements(
-        testBatman.userId,
-        organization.organizationId
-      );
+      const announcements = await AnnouncementService.getUserUnreadAnnouncements(batman.userId, organization.organizationId);
 
       expect(announcements).toHaveLength(2);
       expect(announcements[0].text).toBe('test1');
       expect(announcements[1].text).toBe('test2');
+    });
+  });
+
+  describe('Remove Announcement', () => {
+    it('Succeeds and removes user announcement', async () => {
+      await AnnouncementService.createAnnouncement(
+        'test1',
+        [batman.userId],
+        new Date(),
+        'Thomas Emrax',
+        '1',
+        'software',
+        organization.organizationId
+      );
+      await AnnouncementService.createAnnouncement(
+        'test2',
+        [batman.userId],
+        new Date(),
+        'Superman',
+        '50',
+        'mechanical',
+        organization.organizationId
+      );
+
+      const announcements = await AnnouncementService.getUserUnreadAnnouncements(batman.userId, organization.organizationId);
+
+      expect(announcements).toHaveLength(2);
+      expect(announcements[0].text).toBe('test1');
+      expect(announcements[1].text).toBe('test2');
+
+      const updatedAnnouncements = await AnnouncementService.removeUserAnnouncement(
+        batman.userId,
+        announcements[0].announcementId,
+        organization.organizationId
+      );
+
+      expect(updatedAnnouncements).toHaveLength(1);
+      expect(updatedAnnouncements[0].text).toBe('test2');
     });
   });
 });
