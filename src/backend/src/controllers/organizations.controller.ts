@@ -52,15 +52,6 @@ export default class OrganizationsController {
     }
   }
 
-  static async getOrganizationImages(req: Request, res: Response, next: NextFunction) {
-    try {
-      const images = await OrganizationsService.getOrganizationImages(req.organization.organizationId);
-      res.status(200).json(images);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
   static async updateApplicationLink(req: Request, res: Response, next: NextFunction) {
     try {
       const { applicationLink } = req.body;
