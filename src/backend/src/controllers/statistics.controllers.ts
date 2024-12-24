@@ -67,28 +67,32 @@ export default class StatisticsController {
         title,
         graphType,
         measure,
-        graphGen,
+        graphDisplayType,
         organization,
-        graphCollectionId
+        graphCollectionId,
+        carIds,
+        specialPermissions
       } = req.body;
       const { graphId } = req.params;
 
       const updatedGraph = await StatisticsService.editGraph(
         userEditing,
         graphId,
-        new Date(startDate),
-        new Date(endDate),
         title,
         graphType,
         measure,
-        graphGen,
+        graphDisplayType,
         organization,
+        carIds,
+        specialPermissions,
+        startDate ? new Date(startDate) : undefined,
+        endDate ? new Date(endDate) : undefined,
         graphCollectionId
       );
 
-      return res.status(200).json(updatedGraph);
+      res.status(200).json(updatedGraph);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 }
