@@ -180,9 +180,8 @@ model User {
   deletedFrequentlyAskedQuestions FrequentlyAskedQuestion[] @relation(name: "frequentlyAskedQuestionDeleter")
   createdMilestones               Milestone[]               @relation(name: "milestoneCreator")
   deletedMilestones               Milestone[]               @relation(name: "milestoneDeleter")
-  receivedAnnouncements           Announcement[]            @relation(name: "receivedAnnouncements")
-  createdAnnouncements            Announcement[]            @relation(name: "createdAnnouncements")
-  unreadNotifications             Notification[]            @relation(name: "userNotifications")
+  unreadAnnouncements             Announcement[]            @relation(name: "receivedAnnouncements")
+  unreadPopUps                    PopUp[]                   @relation(name: "userPopUps")
 }
 
 model Role {
@@ -933,18 +932,20 @@ model Milestone {
 }
 
 model Announcement {
-  announcementId String   @id @default(uuid())
-  text           String
-  usersReceived  User[]   @relation("receivedAnnouncements")
-  dateCreated    DateTime @default(now())
-  userCreatedId  String
-  userCreated    User     @relation("createdAnnouncements", fields: [userCreatedId], references: [userId])
+  announcementId   String    @id @default(uuid())
+  text             String
+  usersReceived    User[]    @relation("receivedAnnouncements")
+  dateMessageSent  DateTime  @default(now())
+  dateDeleted      DateTime?
+  senderName       String
+  slackEventId     String    @unique
+  slackChannelName String
 }
 
-model Notification {
-  notificationId String  @id @default(uuid())
-  text           String
-  iconName       String
-  users          User[]  @relation("userNotifications")
-  eventLink      String?
+model PopUp {
+  popUpId   String  @id @default(uuid())
+  text      String
+  iconName  String
+  users     User[]  @relation("userPopUps")
+  eventLink String?
 }

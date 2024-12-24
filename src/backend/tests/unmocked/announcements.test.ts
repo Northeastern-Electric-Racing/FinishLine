@@ -1,0 +1,49 @@
+import { Organization } from '@prisma/client';
+import { batmanAppAdmin } from '../test-data/users.test-data';
+import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
+import AnnouncementService from '../../src/services/announcement.service';
+
+describe('Announcemnts Tests', () => {
+  let orgId: string;
+  let organization: Organization;
+  beforeEach(async () => {
+    organization = await createTestOrganization();
+    orgId = organization.organizationId;
+  });
+
+  afterEach(async () => {
+    await resetUsers();
+  });
+  describe('Get Announcements', () => {
+    it('Succeeds and gets user announcements', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      await AnnouncementService.createAnnouncement(
+        'test1',
+        [testBatman.userId],
+        new Date(),
+        'Thomas Emrax',
+        '1',
+        'software',
+        organization.organizationId
+      );
+      await AnnouncementService.createAnnouncement(
+        'test2',
+        [testBatman.userId],
+        new Date(),
+        'Superman',
+        '50',
+        'mechanical',
+        organization.organizationId
+      );
+
+      const announcements = await AnnouncementService.getUserUnreadAnnouncements(
+        testBatman.userId,
+        organization.organizationId
+      );
+
+      expect(announcements).toHaveLength(2);
+      expect(announcements[0].text).toBe('test1');
+      expect(announcements[1].text).toBe('test2');
+    });
+  });
+});

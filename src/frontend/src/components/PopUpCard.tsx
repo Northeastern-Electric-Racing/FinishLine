@@ -1,15 +1,15 @@
 import { Box, Card, Icon, IconButton, Typography, useTheme } from '@mui/material';
 import React from 'react';
-import { Notification } from 'shared';
+import { PopUp } from 'shared';
 import CloseIcon from '@mui/icons-material/Close';
 
-interface NotificationCardProps {
-  notification: Notification;
-  removeNotification: (notificationId: Notification) => Promise<void>;
-  onClick: (notificationId: Notification) => Promise<void>;
+interface PopUpCardProps {
+  popUp: PopUp;
+  removePopUp: (popUp: PopUp) => Promise<void>;
+  onClick: (popUp: PopUp) => Promise<void>;
 }
 
-const NotificationCard: React.FC<NotificationCardProps> = ({ notification, removeNotification, onClick }) => {
+const PopUpCard: React.FC<PopUpCardProps> = ({ popUp, removePopUp, onClick }) => {
   const theme = useTheme();
   return (
     <Card
@@ -34,11 +34,12 @@ const NotificationCard: React.FC<NotificationCardProps> = ({ notification, remov
         }}
       >
         <Box
-          onClick={async () => await onClick(notification)}
+          onClick={async () => await onClick(popUp)}
           sx={{
             display: 'flex',
+            alignItems: 'center',
             gap: 1,
-            cursor: !!notification.eventLink ? 'pointer' : 'default'
+            cursor: !!popUp.eventLink ? 'pointer' : 'default'
           }}
         >
           <Box
@@ -57,12 +58,12 @@ const NotificationCard: React.FC<NotificationCardProps> = ({ notification, remov
                 fontSize: 36
               }}
             >
-              {notification.iconName}
+              {popUp.iconName}
             </Icon>
           </Box>
-          <Typography variant="subtitle2">{notification.text}</Typography>
+          <Typography variant="subtitle2">{popUp.text}</Typography>
         </Box>
-        <IconButton onClick={() => removeNotification(notification)}>
+        <IconButton onClick={() => removePopUp(popUp)}>
           <CloseIcon />
         </IconButton>
       </Box>
@@ -70,4 +71,4 @@ const NotificationCard: React.FC<NotificationCardProps> = ({ notification, remov
   );
 };
 
-export default NotificationCard;
+export default PopUpCard;

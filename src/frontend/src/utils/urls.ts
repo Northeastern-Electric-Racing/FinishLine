@@ -26,8 +26,6 @@ const userScheduleSettings = (id: string) => `${usersById(id)}/schedule-settings
 const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
 const userTasks = (id: string) => `${usersById(id)}/tasks`;
 const manyUserTasks = () => `${users()}/tasks/get-many`;
-const userNotifications = (id: string) => `${usersById(id)}/notifications`;
-const userRemoveNotifications = (id: string) => `${usersById(id)}/notifications/remove`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
@@ -199,6 +197,11 @@ const faqCreate = () => `${recruitment()}/faq/create`;
 const faqEdit = (id: string) => `${recruitment()}/faq/${id}/edit`;
 const faqDelete = (id: string) => `${recruitment()}/faq/${id}/delete`;
 
+/************** Pop Up Endpoints ***************/
+const popUps = () => `${API_URL}/pop-ups`;
+const popUpsCurrentUser = () => `${popUps()}/current-user`;
+const popUpsRemove = (id: string) => `${popUps()}/${id}/remove`;
+
 /************** Onboarding Endpoints ***************/
 const onboarding = () => `${API_URL}/onboarding`;
 const imageById = (imageId: string) => `${onboarding()}/image/${imageId}`;
@@ -221,8 +224,6 @@ export const apiUrls = {
   userScheduleSettingsSet,
   userTasks,
   manyUserTasks,
-  userNotifications,
-  userRemoveNotifications,
 
   projects,
   allProjects,
@@ -365,6 +366,10 @@ export const apiUrls = {
   faqEdit,
   faqDelete,
   imageById,
+
+  popUps,
+  popUpsCurrentUser,
+  popUpsRemove,
 
   version
 };

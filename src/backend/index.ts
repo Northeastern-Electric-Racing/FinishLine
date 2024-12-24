@@ -17,7 +17,9 @@ import workPackageTemplatesRouter from './src/routes/work-package-templates.rout
 import carsRouter from './src/routes/cars.routes';
 import organizationRouter from './src/routes/organizations.routes';
 import recruitmentRouter from './src/routes/recruitment.routes';
+import announcementsRouter from './src/routes/announcements.routes';
 import onboardingRouter from './src/routes/onboarding.routes';
+import popUpsRouter from './src/routes/pop-up.routes';
 
 const app = express();
 
@@ -69,6 +71,8 @@ app.use('/templates', workPackageTemplatesRouter);
 app.use('/cars', carsRouter);
 app.use('/organizations', organizationRouter);
 app.use('/recruitment', recruitmentRouter);
+app.use('/pop-ups', popUpsRouter);
+app.use('/announcements', announcementsRouter);
 app.use('/onboarding', onboardingRouter);
 app.use('/', (_req, res) => {
   res.status(200).json('Welcome to FinishLine');
