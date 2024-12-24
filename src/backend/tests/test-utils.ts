@@ -122,7 +122,6 @@ export const resetUsers = async () => {
   await prisma.organization.deleteMany();
   await prisma.announcement.deleteMany();
   await prisma.user.deleteMany();
-  await prisma.announcement.deleteMany();
 };
 
 export const createFinanceTeamAndLead = async (organization?: Organization) => {
