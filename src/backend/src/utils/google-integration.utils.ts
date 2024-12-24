@@ -122,15 +122,12 @@ export const uploadFile = async (fileObject: Express.Multer.File) => {
       const gError = error as GoogleDriveError;
       throw new HttpException(
         gError.code,
-        `Failed to Upload Receipt(s): ${gError.message}, ${gError.errors.reduce(
-          (acc: string, curr: GoogleDriveErrorListError) => {
-            return acc + ' ' + curr.message + ' ' + curr.reason;
-          },
-          ''
-        )}`
+        `Failed to Upload : ${gError.message}, ${gError.errors.reduce((acc: string, curr: GoogleDriveErrorListError) => {
+          return acc + ' ' + curr.message + ' ' + curr.reason;
+        }, '')}`
       );
     } else if (error instanceof Error) {
-      throw new HttpException(500, `Failed to Upload Receipt(s): ${error.message}`);
+      throw new HttpException(500, `Failed to Upload : ${error.message}`);
     }
     console.log('error' + error);
     throw error;

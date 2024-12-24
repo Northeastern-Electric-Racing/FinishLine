@@ -1,4 +1,4 @@
-import { Graph_Type, Organization, User } from '@prisma/client';
+import { Graph_Type, Organization, User, Graph_Display_Type } from '@prisma/client';
 import { supermanAdmin, theVisitorGuest, wonderwomanGuest } from '../test-data/users.test-data';
 import {
   createTestCar,
@@ -11,50 +11,22 @@ import {
 } from '../test-utils';
 import StatisticsService from '../../src/services/statistics.services';
 import { AccessDeniedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
-import { Graph, GraphGen, GraphType, Measure } from 'shared';
+import { Graph, Measure, SpecialPermission } from 'shared';
+import prisma from '../../src/prisma/prisma';
 
 describe('Statistics Tests', () => {
   let orgId: string;
   let organization: Organization;
   let user: User;
-  const graphGen: GraphGen = {
-    finalColumn: 'budget',
-    finalTable: 'Project',
-    groupByColumn: 'name',
-    queryPath: {
-      table: 'Team_Type',
-      primaryKey: 'teamTypeId',
-      next: {
-        table: 'Team',
-        primaryKey: 'teamId',
-        parentForeignKey: 'teamTypeId',
-        next: {
-          table: '_assignedBy',
-          primaryKey: 'A',
-          parentForeignKey: 'B',
-          next: {
-            table: 'Project',
-            primaryKey: 'projectId',
-            parentForeignKey: 'projectId'
-          }
-        }
-      }
-    }
-  };
   let graph: Graph;
-
-  let expectedCreatedGraph: any;
+  let expectedCreatedGraphBase: any;
 
   beforeEach(async () => {
     organization = await createTestOrganization();
     user = await createTestUser(supermanAdmin, organization.organizationId);
     orgId = organization.organizationId;
-    expectedCreatedGraph = {
+    expectedCreatedGraphBase = {
       title: 'New Graph',
-      graphType: 'BAR',
-      finalTable: 'Project',
-      finalColumn: 'budget',
-      groupByColumn: 'name',
       measure: 'SUM',
       userCreatedId: user.userId,
       userDeletedId: null,
@@ -62,13 +34,15 @@ describe('Statistics Tests', () => {
     };
     graph = await StatisticsService.createGraph(
       user,
-      new Date(),
-      new Date(new Date().getTime() + 10000),
       'New Graph',
-      Graph_Type.BAR,
+      Graph_Type.PROJECT_BUDGET_BY_TEAM,
       Measure.SUM,
-      graphGen,
-      organization
+      Graph_Display_Type.BAR,
+      organization,
+      [],
+      [],
+      new Date(),
+      new Date(new Date().getTime() + 10000)
     );
   });
 
@@ -82,13 +56,15 @@ describe('Statistics Tests', () => {
         async () =>
           await StatisticsService.createGraph(
             await createTestUser(wonderwomanGuest, orgId),
-            new Date(),
-            new Date(new Date().getTime() + 10000),
             'New Graph',
-            Graph_Type.BAR,
+            Graph_Type.CHANGE_REQUESTS_BY_TEAM,
             Measure.SUM,
-            graphGen,
-            organization
+            Graph_Display_Type.BAR,
+            organization,
+            [],
+            [],
+            new Date(),
+            new Date(new Date().getTime() + 10000)
           )
       ).rejects.toThrow(new AccessDeniedException('You do not have permission to create a graph'));
     });
@@ -98,13 +74,15 @@ describe('Statistics Tests', () => {
         async () =>
           await StatisticsService.createGraph(
             user,
-            new Date('12/12/2024'),
-            new Date(new Date('12/12/2024').getTime() - 10000),
             'New Graph',
-            Graph_Type.BAR,
+            Graph_Type.CHANGE_REQUESTS_BY_DIVISION,
             Measure.SUM,
-            graphGen,
-            organization
+            Graph_Display_Type.PIE,
+            organization,
+            [],
+            [],
+            new Date('12/12/2024'),
+            new Date(new Date('12/12/2024').getTime() - 10000)
           )
       ).rejects.toThrow(new HttpException(400, 'End date must be after start date'));
     });
@@ -118,18 +96,22 @@ describe('Statistics Tests', () => {
 
       const result = await StatisticsService.createGraph(
         user,
-        new Date('12/12/2024'),
-        new Date(new Date('12/12/2024').getTime() + 10000),
         'New Graph',
-        GraphType.BAR,
+        Graph_Type.PROJECT_BUDGET_BY_DIVISION,
         Measure.SUM,
-        graphGen,
-        organization
+        Graph_Display_Type.BAR,
+        organization,
+        [],
+        [],
+        new Date('12/12/1970'),
+        new Date(new Date('12/12/2024').getTime() + 10000)
       );
 
-      expect(result).toContain(expectedCreatedGraph);
-      expect(result.startDate).toStrictEqual(new Date('12/12/2024'));
-      expect(result.endDate).toStrictEqual(new Date(new Date('12/12/2024').getTime() + 10000));
+      expect(result).toContain({
+        ...expectedCreatedGraphBase,
+        graphType: 'PROJECT_BUDGET_BY_DIVISION',
+        graphDisplayType: 'BAR'
+      });
 
       expect(result.graphData).toStrictEqual([
         {
@@ -139,7 +121,7 @@ describe('Statistics Tests', () => {
       ]);
     });
 
-    it('Create graph works for getting average project budget by division', async () => {
+    it('Create graph works for getting average project budget by division and using Pie Chart', async () => {
       const division = await createTestTeamType(orgId);
       const team = await createTestTeam(user.userId, division.teamTypeId, orgId);
       const car = await createTestCar(orgId, user.userId);
@@ -148,18 +130,25 @@ describe('Statistics Tests', () => {
 
       const result = await StatisticsService.createGraph(
         user,
-        new Date('12/12/2024'),
-        new Date(new Date('12/12/2024').getTime() + 10000),
         'New Graph',
-        GraphType.BAR,
+        Graph_Type.PROJECT_BUDGET_BY_DIVISION,
         Measure.AVG,
-        graphGen,
-        organization
+        Graph_Display_Type.PIE,
+        organization,
+        [],
+        [],
+        new Date('12/12/1970'),
+        new Date(new Date('12/12/2024').getTime() + 10000)
       );
 
-      expect(result).toContain({ ...expectedCreatedGraph, measure: Measure.AVG });
-      expect(result.startDate).toStrictEqual(new Date('12/12/2024'));
-      expect(result.endDate).toStrictEqual(new Date(new Date('12/12/2024').getTime() + 10000));
+      expect(result).toContain({
+        ...expectedCreatedGraphBase,
+        graphType: 'PROJECT_BUDGET_BY_DIVISION',
+        graphDisplayType: 'PIE',
+        measure: Measure.AVG
+      });
+      expect(result.startDate).toStrictEqual(new Date('12/12/1970'));
+      expect(result.endDate?.getTime()).toBeGreaterThan(new Date('12/12/2024').getTime());
 
       expect(result.graphData).toStrictEqual([
         {
@@ -168,6 +157,221 @@ describe('Statistics Tests', () => {
         }
       ]);
     });
+
+    it('Create graph works for getting average project budget by division neglecting deleted projects', async () => {
+      const division = await createTestTeamType(orgId);
+      const team = await createTestTeam(user.userId, division.teamTypeId, orgId);
+      const car = await createTestCar(orgId, user.userId);
+      await createTestProject(user, orgId, team.teamId, car.carId);
+      await createTestProject(user, orgId, team.teamId, car.carId, 2, new Date());
+
+      const result = await StatisticsService.createGraph(
+        user,
+        'New Graph',
+        Graph_Type.PROJECT_BUDGET_BY_DIVISION,
+        Measure.SUM,
+        Graph_Display_Type.BAR,
+        organization,
+        [],
+        [],
+        new Date('12/12/1970'),
+        new Date(new Date().getTime() + 100000)
+      );
+
+      expect(result).toContain({
+        ...expectedCreatedGraphBase,
+        graphType: 'PROJECT_BUDGET_BY_DIVISION',
+        graphDisplayType: 'BAR',
+        measure: Measure.SUM
+      });
+      expect(result.startDate).toStrictEqual(new Date('12/12/1970'));
+      expect(result.endDate?.getTime()).toBeGreaterThan(new Date('12/12/2024').getTime());
+
+      expect(result.graphData).toStrictEqual([
+        {
+          label: 'aTeam',
+          value: 1000
+        }
+      ]);
+    });
+
+    it('Create graph works for undefined start and end times', async () => {
+      const division = await createTestTeamType(orgId);
+      const team = await createTestTeam(user.userId, division.teamTypeId, orgId);
+      const car = await createTestCar(orgId, user.userId);
+      await createTestProject(user, orgId, team.teamId, car.carId);
+      await createTestProject(user, orgId, team.teamId, car.carId, 2, new Date());
+
+      const result = await StatisticsService.createGraph(
+        user,
+        'New Graph',
+        Graph_Type.PROJECT_BUDGET_BY_DIVISION,
+        Measure.SUM,
+        Graph_Display_Type.BAR,
+        organization,
+        [],
+        []
+      );
+
+      expect(result).toContain({
+        ...expectedCreatedGraphBase,
+        graphType: 'PROJECT_BUDGET_BY_DIVISION',
+        graphDisplayType: 'BAR',
+        measure: Measure.SUM
+      });
+      expect(result.startDate).toStrictEqual(undefined);
+      expect(result.endDate).toStrictEqual(undefined);
+
+      expect(result.graphData).toStrictEqual([
+        {
+          label: 'aTeam',
+          value: 1000
+        }
+      ]);
+    });
+
+    it('Create graph works for filtering out times outside of date range', async () => {
+      const division = await createTestTeamType(orgId);
+      const team = await createTestTeam(user.userId, division.teamTypeId, orgId);
+      const car = await createTestCar(orgId, user.userId);
+      await createTestProject(user, orgId, team.teamId, car.carId);
+      await createTestProject(user, orgId, team.teamId, car.carId, 2, new Date());
+
+      const result = await StatisticsService.createGraph(
+        user,
+        'New Graph',
+        Graph_Type.PROJECT_BUDGET_BY_DIVISION,
+        Measure.SUM,
+        Graph_Display_Type.BAR,
+        organization,
+        [],
+        [],
+        new Date('12/12/1970'),
+        new Date('12/12/1971')
+      );
+
+      expect(result).toContain({
+        ...expectedCreatedGraphBase,
+        graphType: 'PROJECT_BUDGET_BY_DIVISION',
+        graphDisplayType: 'BAR',
+        measure: Measure.SUM
+      });
+      expect(result.startDate).toStrictEqual(new Date('12/12/1970'));
+      expect(result.endDate).toStrictEqual(new Date('12/12/1971'));
+
+      expect(result.graphData).toStrictEqual([
+        {
+          label: 'aTeam',
+          value: 0
+        }
+      ]);
+    });
+  });
+
+  describe('Get Single Graph', () => {
+    it('Get single graph works for valid id', async () => {
+      const graph = await StatisticsService.createGraph(
+        user,
+        'New Graph',
+        Graph_Type.REIMBURSEMENT_TOTAL_BY_TEAM,
+        Measure.AVG,
+        Graph_Display_Type.PIE,
+        organization,
+        [],
+        [],
+        new Date('12/12/2024'),
+        new Date(new Date('12/12/2024').getTime() + 10000)
+      );
+
+      const result = await StatisticsService.getSingleGraph(graph.graphId, user, organization);
+      expect(result.graphId).toBe(graph.graphId);
+    });
+
+    it('View graph fails if user does not have permission', async () => {
+      const guest_user = await createTestUser(wonderwomanGuest, orgId);
+      const graph = await StatisticsService.createGraph(
+        user,
+        'New Graph',
+        Graph_Type.CHANGE_REQUESTS_BY_PROJECT,
+        Measure.AVG,
+        Graph_Display_Type.PIE,
+        organization,
+        [],
+        [],
+        new Date('12/12/2024'),
+        new Date(new Date('12/12/2024').getTime() + 10000)
+      );
+
+      await expect(async () => StatisticsService.getSingleGraph(graph.graphId, guest_user, organization)).rejects.toThrow(
+        new AccessDeniedException('You do not have permission to view graphs')
+      );
+    });
+
+    it('Get single graph fails with invalid id', async () => {
+      const invalidGraphId = 'invalidId';
+      await expect(async () => StatisticsService.getSingleGraph(invalidGraphId, user, organization)).rejects.toThrow(
+        new NotFoundException('Graph', invalidGraphId)
+      );
+    });
+  });
+
+  describe('Get all graph collections', () => {
+    it('Succeeds and gets all the graphs', async () => {
+      const graph1 = await prisma.graph.create({
+        data: {
+          title: 'graph1',
+          graphType: Graph_Type.CHANGE_REQUESTS_BY_DIVISION,
+          displayGraphType: Graph_Display_Type.BAR,
+          measure: Measure.AVG,
+          userCreatedId: user.userId,
+          organizationId: orgId
+        }
+      });
+
+      const graph2 = await prisma.graph.create({
+        data: {
+          title: 'graph2',
+          graphType: Graph_Type.PROJECT_BUDGET_BY_PROJECT,
+          displayGraphType: Graph_Display_Type.PIE,
+          measure: Measure.SUM,
+          userCreatedId: user.userId,
+          organizationId: orgId
+        }
+      });
+
+      const graphCollection1 = await prisma.graph_Collection.create({
+        data: {
+          title: 'Graph Collection 1',
+          viewPermissions: [SpecialPermission.FINANCE_ONLY],
+          graphs: {
+            connect: [{ id: graph1.id }, { id: graph2.id }]
+          },
+          userCreatedId: user.userId,
+          organizationId: orgId
+        }
+      });
+
+      const graphCollection2 = await prisma.graph_Collection.create({
+        data: {
+          title: 'Graph Collection 2',
+          viewPermissions: [SpecialPermission.FINANCE_ONLY],
+          graphs: {
+            connect: [{ id: graph1.id }, { id: graph2.id }]
+          },
+          userCreatedId: user.userId,
+          organizationId: orgId
+        }
+      });
+
+      const result = await StatisticsService.getAllGraphCollections(organization);
+      expect(result[0].userCreated.userId).toBe(user.userId);
+      expect(result.length).toBe(2);
+      expect(
+        result.map((graphCol) => {
+          return graphCol.id;
+        })
+      ).toEqual([graphCollection1.id, graphCollection2.id]);
+    });
   });
 
   describe('Edit Graph', () => {
@@ -175,27 +379,33 @@ describe('Statistics Tests', () => {
       const updatedStartDate = new Date('12/13/2024');
       const updatedEndDate = new Date(updatedStartDate.getTime() + 10000);
       const updatedTitle = 'Updated Graph';
-      const updatedGraphType = Graph_Type.LINE;
+      const updatedGraphType = Graph_Type.PROJECT_BUDGET_BY_PROJECT;
       const updatedMeasure = Measure.AVG;
+      const updatedGraphDisplayType = Graph_Display_Type.PIE;
+      const car = await createTestCar(organization.organizationId, user.userId);
 
       const updatedGraph = await StatisticsService.editGraph(
         user,
-        graph.id,
-        updatedStartDate,
-        updatedEndDate,
+        graph.graphId,
         updatedTitle,
         updatedGraphType,
         updatedMeasure,
-        graphGen,
-        organization
+        updatedGraphDisplayType,
+        organization,
+        [car.carId],
+        ['FINANCE_ONLY'],
+        updatedStartDate,
+        updatedEndDate
       );
 
       expect(updatedGraph.startDate).toStrictEqual(updatedStartDate);
       expect(updatedGraph.endDate).toStrictEqual(updatedEndDate);
       expect(updatedGraph.title).toStrictEqual(updatedTitle);
       expect(updatedGraph.graphType).toStrictEqual(updatedGraphType);
-      // Todo - Assert `editGraph` correctly updates `measure`
-      // `measure` is not a property of the shared Graph type. We would have to add it to make the assertion
+      expect(updatedGraph.carIds).toStrictEqual([car.carId]);
+      expect(updatedGraph.graphDisplayType).toStrictEqual(updatedGraphDisplayType);
+      expect(updatedGraph.specialPermissions).toStrictEqual(['FINANCE_ONLY']);
+      expect(updatedGraph.measure).toStrictEqual(updatedGraph.measure);
     });
 
     it('Edit graph fails if the graph id is invalid', async () => {
@@ -205,35 +415,33 @@ describe('Statistics Tests', () => {
           await StatisticsService.editGraph(
             user,
             invalidGraphId,
-            new Date(),
-            new Date(new Date().getTime() + 10000),
             'New Graph',
-            Graph_Type.BAR,
+            Graph_Type.PROJECT_BUDGET_BY_DIVISION,
             Measure.SUM,
-            graphGen,
-            organization
+            Graph_Display_Type.BAR,
+            organization,
+            [],
+            []
           )
       ).rejects.toThrow(new NotFoundException('Graph', invalidGraphId));
     });
 
-    it('Edit graph fails if editing user did not created graph', async () => {
-      // `graph` was created by `user`
-      // We try to edit `graph` using a user that isn't `user`
+    it('Edit graph fails if editing user does not have edit graph permissions', async () => {
       const userEditing = await createTestUser(theVisitorGuest, orgId);
       await expect(
         async () =>
           await StatisticsService.editGraph(
             userEditing,
-            graph.id,
-            new Date(),
-            new Date(new Date().getTime() + 10000),
+            graph.graphId,
             'New Graph',
-            Graph_Type.BAR,
+            Graph_Type.PROJECT_BUDGET_BY_DIVISION,
             Measure.SUM,
-            graphGen,
-            organization
+            Graph_Display_Type.BAR,
+            organization,
+            [],
+            []
           )
-      ).rejects.toThrow(new AccessDeniedException('Only the creator of an graph can update it'));
+      ).rejects.toThrow(new AccessDeniedException('You do not have permission to qedit a graph'));
     });
 
     it('Edit graph fails if graph is deleted', async () => {
@@ -245,14 +453,16 @@ describe('Statistics Tests', () => {
         async () =>
           await StatisticsService.editGraph(
             user,
-            graph.id,
-            new Date('12/12/2024'),
-            new Date(new Date('12/12/2024').getTime() - 10000),
+            graph.graphId,
             'New Graph',
-            Graph_Type.BAR,
+            Graph_Type.PROJECT_BUDGET_BY_DIVISION,
             Measure.SUM,
-            graphGen,
-            organization
+            Graph_Display_Type.BAR,
+            organization,
+            [],
+            [],
+            new Date(),
+            new Date(new Date().getTime() - 10000)
           )
       ).rejects.toThrow(new HttpException(400, 'End date must be after start date'));
     });

@@ -5,37 +5,53 @@
 
 import express from 'express';
 import StatisticsController from '../controllers/statistics.controllers';
-import { isDate, isGraphType, isMeasure, nonEmptyString, validateGraphGen, validateInputs } from '../utils/validation.utils';
+import {
+  isGraphDisplayType,
+  isGraphType,
+  isMeasure,
+  isOptionalDate,
+  isSpecialPermission,
+  nonEmptyString,
+  validateInputs
+} from '../utils/validation.utils';
 import { body } from 'express-validator';
 
 const statisticsRouter = express.Router();
 
 statisticsRouter.post(
   '/graph/create',
-  isDate(body('startDate')),
-  isDate(body('endDate')),
+  isOptionalDate(body('startDate')),
+  isOptionalDate(body('endDate')),
   nonEmptyString(body('title')),
   isGraphType(body('graphType')),
+  isGraphDisplayType(body('graphDisplayType')),
   isMeasure(body('measure')),
+  body('carId').optional().isString(),
   body('graphCollectionId').optional().isString(),
-  validateGraphGen(),
+  body('specialPermissions').isArray(),
+  isSpecialPermission(body('specialPermissions.*')),
   validateInputs,
   StatisticsController.createGraph
 );
 
 statisticsRouter.post(
   '/graph/:graphId/edit',
-  // todo - verify user is a user
-  
-  isDate(body('startDate')),
-  isDate(body('endDate')),
+  isOptionalDate(body('startDate')),
+  isOptionalDate(body('endDate')),
   nonEmptyString(body('title')),
   isGraphType(body('graphType')),
+  isGraphDisplayType(body('graphDisplayType')),
   isMeasure(body('measure')),
+  body('carId').optional().isString(),
   body('graphCollectionId').optional().isString(),
-  validateGraphGen(),
+  body('specialPermissions').isArray(),
+  isSpecialPermission(body('specialPermissions.*')),
   validateInputs,
   StatisticsController.editGraph
 );
+
+statisticsRouter.get('/graphCollections', StatisticsController.getAllGraphCollections);
+
+statisticsRouter.get('/graph/:graphId', StatisticsController.getSingleGraph);
 
 export default statisticsRouter;

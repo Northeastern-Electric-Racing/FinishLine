@@ -6,7 +6,15 @@
 import * as yup from 'yup';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { ChangeRequestReason, ChangeRequestType, Project, ProposedSolution, wbsPipe, WorkPackage } from 'shared';
+import {
+  ChangeRequestReason,
+  ChangeRequestType,
+  Project,
+  ProposedSolution,
+  wbsNamePipe,
+  wbsPipe,
+  WorkPackage
+} from 'shared';
 import { routes } from '../../utils/routes';
 import TextField from '@mui/material/TextField';
 import FormHelperText from '@mui/material/FormHelperText';
@@ -34,7 +42,6 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import { wbsTester } from '../../utils/form';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
-import { wbsNamePipe } from '../../utils/pipes';
 import PageLayout from '../../components/PageLayout';
 import { wbsNumComparator } from 'shared/src/validate-wbs';
 import { ChangeEvent } from 'react';

@@ -82,12 +82,15 @@ const teamsDelete = (id: string) => `${teamsById(id)}/delete`;
 const teamsSetMembers = (id: string) => `${teamsById(id)}/set-members`;
 const teamsSetTeamType = (id: string) => `${teamsById(id)}/set-team-type`;
 const teamsSetHead = (id: string) => `${teamsById(id)}/set-head`;
+const teamsArchive = (id: string) => `${teamsById(id)}/archive`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
 const teamsCreate = () => `${teams()}/create`;
 const teamsSetLeads = (id: string) => `${teamsById(id)}/set-leads`;
 const teamTypes = () => `${teams()}/teamType`;
 const allTeamTypes = () => `${teamTypes()}/all`;
 const teamTypesCreate = () => `${teamTypes()}/create`;
+const teamTypeEdit = (id: string) => `${teamTypes()}/${id}/edit`;
+const teamTypeSetImage = (id: string) => `${teamTypes()}/${id}/set-image`;
 
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
@@ -170,6 +173,7 @@ const workPackageTemplateDelete = (workPackageTemplateId: string) =>
 
 /******************* Organizations Endpoints ********************/
 const organizations = () => `${API_URL}/organizations`;
+const currentOrganization = () => `${organizations()}/current`;
 const organizationsUsefulLinks = () => `${organizations()}/useful-links`;
 const organizationsSetUsefulLinks = () => `${organizationsUsefulLinks()}/set`;
 
@@ -182,9 +186,21 @@ const recruitment = () => `${API_URL}/recruitment`;
 const allMilestones = () => `${recruitment()}/milestones`;
 const milestoneCreate = () => `${recruitment()}/milestone/create`;
 const milestoneEdit = (id: string) => `${recruitment()}/milestone/${id}/edit`;
+const milestoneDelete = (id: string) => `${recruitment()}/milestone/${id}/delete`;
 const allFaqs = () => `${recruitment()}/faqs`;
 const faqCreate = () => `${recruitment()}/faq/create`;
 const faqEdit = (id: string) => `${recruitment()}/faq/${id}/edit`;
+const faqDelete = (id: string) => `${recruitment()}/faq/${id}/delete`;
+
+/************** Statistics Endpoints ***************/
+const statistics = () => `${API_URL}/statistics`;
+const createGraph = () => `${statistics()}/graph/create`;
+const graphCollections = () => `${statistics()}/graph-collections`;
+const graphCollectionById = (id: string) => `${graphCollections()}/${id}`;
+const createGraphCollection = () => `${graphCollections()}/create`;
+const getGraphById = (id: string) => `${statistics()}/graph/${id}`;
+const updateGraph = (id: string) => `${getGraphById(id)}/update`;
+const updateGraphCollection = (id: string) => `${graphCollectionById(id)}/update`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -246,6 +262,7 @@ export const apiUrls = {
   teamsById,
   teamsDelete,
   teamsSetMembers,
+  teamsArchive,
   teamsSetHead,
   teamsSetDescription,
   teamsCreate,
@@ -253,6 +270,8 @@ export const apiUrls = {
   allTeamTypes,
   teamsSetTeamType,
   teamTypesCreate,
+  teamTypeEdit,
+  teamTypeSetImage,
 
   descriptionBulletsCheck,
   descriptionBulletTypes,
@@ -322,18 +341,31 @@ export const apiUrls = {
   workPackageTemplatesCreate,
   workPackageTemplateDelete,
 
+  currentOrganization,
   organizationsUsefulLinks,
   organizationsSetUsefulLinks,
 
   cars,
   carsCreate,
+
   recruitment,
   allMilestones,
   milestoneCreate,
   milestoneEdit,
+  milestoneDelete,
   allFaqs,
   faqCreate,
   faqEdit,
+  faqDelete,
+
+  statistics,
+  createGraph,
+  graphCollections,
+  graphCollectionById,
+  createGraphCollection,
+  getGraphById,
+  updateGraph,
+  updateGraphCollection,
 
   version
 };

@@ -10,7 +10,7 @@ export const getGraphQueryArgs = (organizationId: string) =>
       organization: true,
       userCreated: getUserWithSettingsQueryArgs(organizationId),
       userDeleted: getUserQueryArgs(organizationId),
-      queryPaths: true
+      cars: true
     }
   });
 

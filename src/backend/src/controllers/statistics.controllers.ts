@@ -5,24 +5,56 @@ import { Graph } from 'shared';
 export default class StatisticsController {
   static async createGraph(req: Request, res: Response, next: NextFunction) {
     try {
-      console.log('in controller');
-      const { startDate, endDate, title, graphType, measure, graphGen, graphCollectionId } = req.body;
+      const {
+        startDate,
+        endDate,
+        title,
+        graphType,
+        graphDisplayType,
+        measure,
+        carIds,
+        graphCollectionId,
+        specialPermissions
+      } = req.body;
 
       const graph: Graph = await StatisticsService.createGraph(
         req.currentUser,
-        new Date(startDate),
-        new Date(endDate),
         title,
         graphType,
         measure,
-        graphGen,
+        graphDisplayType,
         req.organization,
+        carIds,
+        specialPermissions,
+        startDate ? new Date(startDate) : undefined,
+        endDate ? new Date(endDate) : undefined,
         graphCollectionId
       );
 
-      return res.status(200).json(graph);
+      res.status(200).json(graph);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
+    }
+  }
+
+  static async getSingleGraph(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+
+      const requestedGraph = await StatisticsService.getSingleGraph(id, req.currentUser, req.organization);
+
+      res.status(200).json(requestedGraph);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllGraphCollections(req: Request, res: Response, next: NextFunction) {
+    try {
+      const graphCollections = await StatisticsService.getAllGraphCollections(req.organization);
+      res.status(200).json(graphCollections);
+    } catch (error: unknown) {
+      next(error);
     }
   }
 

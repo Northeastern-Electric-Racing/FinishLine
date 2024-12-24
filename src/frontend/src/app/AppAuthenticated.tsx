@@ -124,6 +124,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             <Route path={routes.CALENDAR} component={Calendar} />
             <Route path={routes.STATISTICS} component={Statistics} />
             <Route exact path={routes.HOME} component={Home} />
+            <Redirect from={routes.BASE} to={routes.HOME} />
             <Route path="*" component={PageNotFound} />
           </Switch>
         </Container>

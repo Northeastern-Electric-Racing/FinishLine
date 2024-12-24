@@ -4,6 +4,7 @@
  */
 
 /**************** General Section ****************/
+const BASE = `/`;
 const HOME = `/home`;
 const LOGIN = `/login`;
 const INFO = `/info`;
@@ -57,8 +58,11 @@ const ORGANIZATIONS = `/organizations`;
 
 /**************** Statistics ****************/
 const STATISTICS = `/statistics`;
+const CREATE_GRAPH = `/statistics/graph/create`;
+const GRAPH_COLLECTION_BY_ID = '/statistics/graph-collections/:id';
 
 export const routes = {
+  BASE,
   HOME,
   LOGIN,
   INFO,
@@ -104,5 +108,7 @@ export const routes = {
 
   ORGANIZATIONS,
 
-  STATISTICS
+  STATISTICS,
+  CREATE_GRAPH,
+  GRAPH_COLLECTION_BY_ID
 };
