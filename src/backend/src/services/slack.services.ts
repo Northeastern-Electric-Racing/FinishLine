@@ -78,7 +78,7 @@ export default class slackServices {
   static async processMessageSent(event: SlackMessageEvent, organizationId: string): Promise<Announcement | undefined> {
     //get the name of the channel from the slack api
     const slackChannelName: string = (await getChannelName(event.channel)) ?? `Unknown_Channel:${event.channel}`;
-    const dateCreated = new Date(Number(event.event_ts));
+    const dateCreated = new Date(1000 * Number(event.event_ts));
 
     //get the message that will be processed either as the event or within a subtype
     let eventMessage: SlackMessage;
