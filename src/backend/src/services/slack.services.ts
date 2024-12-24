@@ -167,6 +167,7 @@ export default class slackServices {
         }
       }
     }
+
     return await AnnouncementService.createAnnouncement(
       messageText,
       userIdsToNotify,
