@@ -1,9 +1,10 @@
 import { Typography, useTheme, Grid, IconButton } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import { Box } from '@mui/system';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Checklist } from 'shared';
 import { GridDragIcon } from '@mui/x-data-grid';
+import { useCurrentUser } from '../../../hooks/users.hooks';  // Assuming this hook gives the current user ID
 
 const SubtaskSection: React.FC<{ subtasks: Checklist[]; parentTask: Checklist; isAdmin?: boolean }> = ({
   subtasks,
@@ -11,6 +12,41 @@ const SubtaskSection: React.FC<{ subtasks: Checklist[]; parentTask: Checklist; i
   isAdmin = false
 }) => {
   const theme = useTheme();
+  const user = useCurrentUser();  // Get the current user's ID
+  const [checkedSubtasks, setCheckedSubtasks] = useState<string[]>([]);
+
+  // Update the checked state when the parentTask's usersChecked change
+  useEffect(() => {
+    const checkedSubtaskIds = parentTask.subtasks
+      .filter(subtask => subtask.usersChecked && subtask.usersChecked.includes(user)) // Ensure usersChecked is defined
+      .map(subtask => subtask.name);  // Assuming `subtask.name` is unique
+    setCheckedSubtasks(checkedSubtaskIds);
+  }, [parentTask.subtasks, user]);
+
+  const handleCheckboxChange = (subtaskName: string) => {
+    setCheckedSubtasks(prevState => {
+      const newState = [...prevState];
+      const index = newState.indexOf(subtaskName);
+
+      if (index === -1) {
+        newState.push(subtaskName);
+        // Add the user to the usersChecked for the subtask
+        const subtask = parentTask.subtasks.find(sub => sub.name === subtaskName);
+        if (subtask && subtask.usersChecked && !subtask.usersChecked.includes(user)) {
+          subtask.usersChecked.push(user);
+        }
+      } else {
+        newState.splice(index, 1);
+        // Remove the user from the usersChecked for the subtask
+        const subtask = parentTask.subtasks.find(sub => sub.name === subtaskName);
+        if (subtask && subtask.usersChecked) {
+          subtask.usersChecked = subtask.usersChecked.filter(u => u !== user);
+        }
+      }
+
+      return newState;
+    });
+  };
 
   return (
     <Box
@@ -38,6 +74,8 @@ const SubtaskSection: React.FC<{ subtasks: Checklist[]; parentTask: Checklist; i
                     </IconButton>
                   ) : (
                     <Checkbox
+                      checked={checkedSubtasks.includes(subtask.name)}
+                      onChange={() => handleCheckboxChange(subtask.name)}
                       sx={{
                         '& .MuiSvgIcon-root': {
                           fill: 'black',

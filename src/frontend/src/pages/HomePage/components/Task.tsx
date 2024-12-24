@@ -1,8 +1,9 @@
 import { Typography, Box, IconButton, Checkbox } from '@mui/material';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
 import SubtaskSection from './SubtaskSection';
 import { Checklist } from 'shared';
+import { useCurrentUser } from '../../../hooks/users.hooks'; 
 
 interface SubtaskProps {
   subtasks: Checklist[];
@@ -11,10 +12,32 @@ interface SubtaskProps {
 
 const Task: React.FC<SubtaskProps> = ({ subtasks, parentTask }) => {
   const [showSubtasks, setShowSubtasks] = useState(false);
+  const [isChecked, setIsChecked] = useState(false);
+  const user = useCurrentUser();  
+
+  console.log(parentTask)
 
   const toggleShowSubtasks = () => {
     setShowSubtasks((prev) => !prev);
   };
+
+  const handleCheckboxChange = () => {
+    setIsChecked((prev) => {
+      const newCheckedState = !prev;
+      if (newCheckedState) {
+        if (!parentTask.usersChecked.includes(user)) {
+          parentTask.usersChecked.push(user);
+        }
+      } else {
+        parentTask.usersChecked = parentTask.usersChecked.filter((checkedUser) => checkedUser !== user);
+      }
+      return newCheckedState;
+    });
+  };
+
+  useEffect(() => {
+    setIsChecked(parentTask.usersChecked.includes(user));
+  }, [parentTask.usersChecked, user]);
 
   return (
     <Box sx={{ width: '85%' }}>
@@ -31,6 +54,8 @@ const Task: React.FC<SubtaskProps> = ({ subtasks, parentTask }) => {
       >
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Checkbox
+            checked={isChecked}
+            onChange={handleCheckboxChange}
             sx={{
               '& .MuiSvgIcon-root': {
                 fill: 'black',
