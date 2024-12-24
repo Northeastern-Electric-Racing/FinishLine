@@ -34,6 +34,22 @@ statisticsRouter.post(
   StatisticsController.createGraph
 );
 
+statisticsRouter.post(
+  '/graph/:graphId/edit',
+  isOptionalDate(body('startDate')),
+  isOptionalDate(body('endDate')),
+  nonEmptyString(body('title')),
+  isGraphType(body('graphType')),
+  isGraphDisplayType(body('graphDisplayType')),
+  isMeasure(body('measure')),
+  body('carId').optional().isString(),
+  body('graphCollectionId').optional().isString(),
+  body('specialPermissions').isArray(),
+  isSpecialPermission(body('specialPermissions.*')),
+  validateInputs,
+  StatisticsController.editGraph
+);
+
 statisticsRouter.get('/graphCollections', StatisticsController.getAllGraphCollections);
 
 statisticsRouter.get('/graph/:graphId', StatisticsController.getSingleGraph);

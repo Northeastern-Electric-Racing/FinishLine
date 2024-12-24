@@ -57,4 +57,42 @@ export default class StatisticsController {
       next(error);
     }
   }
+
+  static async editGraph(req: Request, res: Response, next: NextFunction) {
+    try {
+      const {
+        currentUser: userEditing,
+        startDate,
+        endDate,
+        title,
+        graphType,
+        measure,
+        graphDisplayType,
+        organization,
+        graphCollectionId,
+        carIds,
+        specialPermissions
+      } = req.body;
+      const { graphId } = req.params;
+
+      const updatedGraph = await StatisticsService.editGraph(
+        userEditing,
+        graphId,
+        title,
+        graphType,
+        measure,
+        graphDisplayType,
+        organization,
+        carIds,
+        specialPermissions,
+        startDate ? new Date(startDate) : undefined,
+        endDate ? new Date(endDate) : undefined,
+        graphCollectionId
+      );
+
+      res.status(200).json(updatedGraph);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
