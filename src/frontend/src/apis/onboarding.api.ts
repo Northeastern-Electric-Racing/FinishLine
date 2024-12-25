@@ -52,8 +52,8 @@ export const deleteChecklist = (checklistId: string) => {
 export const toggleChecklist = (payload: ToggleChecklistPayload) => {
   return axios.post<Checklist>(apiUrls.toggleChecklist(payload.checklistId), {
     ...payload
+  });
 };
-
 /**
  * API Call to download a google image
  * @param fileId file id to be downloaded
