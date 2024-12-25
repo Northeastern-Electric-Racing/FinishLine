@@ -1,34 +1,26 @@
 import React from 'react';
 import { Typography, Box } from '@mui/material';
 import NERModal from '../../../components/NERModal';
-import { useCurrentUser } from '../../../hooks/users.hooks';
 
 interface ConfirmOnboardingChecklistModalProps {
   open: boolean;
   onHide: () => void;
+  onConfirm: () => void;
   title?: string;
+  message?: string;
 }
 
 const ConfirmOnboardingChecklistModal: React.FC<ConfirmOnboardingChecklistModalProps> = ({
   open,
   onHide,
+  onConfirm,
   title = 'Confirm Action'
 }) => {
-  const user = useCurrentUser();
-
-  const handleConfirm = () => {
-    if (user) {
-      user.role = 'MEMBER';
-    }
-    onHide();
-  };
-
   return (
-    <NERModal open={open} onHide={onHide} title={title} onSubmit={handleConfirm}>
+    <NERModal open={open} onHide={onHide} title={title} onSubmit={onConfirm}>
       <Box
         sx={{
           textAlign: 'center',
-          padding: '1.5rem',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center'

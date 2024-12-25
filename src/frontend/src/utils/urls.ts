@@ -21,9 +21,10 @@ const currentUserSecureSettings = () => `${users()}/secure-settings/current-user
 const userSecureSettingsSet = () => `${users()}/secure-settings/set`;
 const userRoleByUserId = (id: string) => `${usersById(id)}/change-role`;
 const userFavoriteProjects = (id: string) => `${usersById(id)}/favorite-projects`;
-const userSecureSettings = (id: string) => `${usersById(id)}/secure-settings`;
+const userSecureSettings = (id: string) => `${usersById(id)}/secure-psettings`;
 const userScheduleSettings = (id: string) => `${usersById(id)}/schedule-settings`;
 const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
+const toggleCompletedOnboarding = (id: string) => `${usersById(id)}/toggle-completed-onboarding`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
@@ -217,6 +218,7 @@ export const apiUrls = {
   userSecureSettings,
   userScheduleSettings,
   userScheduleSettingsSet,
+  toggleCompletedOnboarding,
 
   projects,
   allProjects,

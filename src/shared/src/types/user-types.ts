@@ -91,6 +91,10 @@ export interface UpdateUserRolePayload {
   role: string;
 }
 
+export interface ToggleCompletedOnboardingPayload {
+  userId: string;
+}
+
 export interface UserScheduleSettings {
   drScheduleSettingsId: string;
   personalGmail: string;
