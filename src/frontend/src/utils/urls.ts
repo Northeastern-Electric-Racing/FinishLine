@@ -175,6 +175,7 @@ const organizations = () => `${API_URL}/organizations`;
 const currentOrganization = () => `${organizations()}/current`;
 const organizationsUsefulLinks = () => `${organizations()}/useful-links`;
 const organizationsSetUsefulLinks = () => `${organizationsUsefulLinks()}/set`;
+const organizationsSetImages = () => `${organizations()}/images/update`;
 const organizationsUpdateContacts = () => `${organizations()}/contacts/set`;
 const organizationsSetOnboardingText = () => `${organizations()}/onboardingText/set`;
 const organizationsUpdateApplicationLink = () => `${organizations()}/application-link/update`;
@@ -198,6 +199,8 @@ const faqDelete = (id: string) => `${recruitment()}/faq/${id}/delete`;
 const onboarding = () => `${API_URL}/onboarding`;
 const allChecklists = () => `${onboarding()}/checklists`;
 const generalChecklists = () => `${allChecklists()}/general`;
+const checkedChecklists = () => `${allChecklists()}/checked`;
+const toggleChecklist = (checklistId: string) => `${allChecklists()}/${checklistId}/toggle`;
 const usersTeamTypeChecklists = () => `${allChecklists()}/usersChecklists`;
 const checklistDelete = (id: string) => `${onboarding()}/checklist/delete/${id}`;
 const imageById = (imageId: string) => `${onboarding()}/image/${imageId}`;
@@ -343,6 +346,7 @@ export const apiUrls = {
   currentOrganization,
   organizationsUsefulLinks,
   organizationsSetUsefulLinks,
+  organizationsSetImages,
   organizationsUpdateContacts,
   organizationsSetOnboardingText,
   organizationsUpdateApplicationLink,
@@ -362,6 +366,8 @@ export const apiUrls = {
   onboarding,
   allChecklists,
   generalChecklists,
+  checkedChecklists,
+  toggleChecklist,
   usersTeamTypeChecklists,
   checklistDelete,
   imageById,

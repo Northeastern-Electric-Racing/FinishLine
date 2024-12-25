@@ -43,6 +43,8 @@ export interface Organization {
   treasurer?: UserPreview;
   advisor?: UserPreview;
   description: string;
+  applyInterestImageId: string;
+  exploreAsGuestImageId: string;
   applicationLink: string;
   onboardingText?: string;
   contacts: Contact[];

@@ -57,7 +57,7 @@ export const AdminChecklist: React.FC<{ parentChecklists: Checklist[]; checklist
               }}
             >
               {parentChecklists.map((parentChecklist) => (
-                <AdminTask subtasks={parentChecklist.subtasks} parentTask={parentChecklist} />
+                <AdminTask parentTask={parentChecklist} />
               ))}
               <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
                 <IconButton sx={{ color: 'red' }}>

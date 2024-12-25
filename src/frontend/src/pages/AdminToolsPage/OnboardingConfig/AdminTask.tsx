@@ -12,11 +12,10 @@ import { useDeleteChecklist } from '../../../hooks/onboarding.hook';
 import { useToast } from '../../../hooks/toasts.hooks';
 
 interface AdminTaskProps {
-  subtasks: Checklist[];
   parentTask: Checklist;
 }
 
-const AdminTask: React.FC<AdminTaskProps> = ({ subtasks, parentTask }) => {
+const AdminTask: React.FC<AdminTaskProps> = ({ parentTask }) => {
   const [showSubtasks, setShowSubtasks] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<Checklist | null>(null);
 
@@ -59,7 +58,7 @@ const AdminTask: React.FC<AdminTaskProps> = ({ subtasks, parentTask }) => {
             </IconButton>
           </Box>
         </Box>
-        {showSubtasks && <SubtaskSection subtasks={subtasks} parentTask={parentTask} isAdmin={true} />}
+        {showSubtasks && <SubtaskSection parentTask={parentTask} isAdmin={true} />}
       </Box>
       {taskToDelete && (
         <NERDeleteModal

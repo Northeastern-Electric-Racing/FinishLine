@@ -1,18 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useQuery } from 'react-query';
 import { Checklist } from 'shared';
-import {
-  getAllChecklists,
-  getGeneralChecklists,
-  getUsersChecklists,
-  downloadGoogleImage,
-  deleteChecklist,
-  toggleChecklist,
-  getCheckedChecklists
-} from '../apis/onboarding.api';
-
-export interface ToggleChecklistPayload {
-  checklistId: string;
-}
+import { getAllChecklists, getGeneralChecklists, getUsersChecklists, downloadGoogleImage } from '../apis/onboarding.api';
 
 export const useAllChecklists = () => {
   return useQuery<Checklist[], Error>(['checklists'], async () => {
@@ -28,50 +16,11 @@ export const useGeneralChecklists = () => {
   });
 };
 
-export const useCheckedChecklists = () => {
-  return useQuery<Checklist[], Error>(['checklists', 'checked'], async () => {
-    const { data } = await getCheckedChecklists();
-    return data;
-  });
-};
-
 export const useUsersTeamTypeChecklists = () => {
   return useQuery<Checklist[], Error>(['checklists', 'teamTypeChecklists'], async () => {
     const { data } = await getUsersChecklists();
     return data;
   });
-};
-
-export const useDeleteChecklist = () => {
-  const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
-    ['checklists', 'delete'],
-    async (checklistId: string) => {
-      const { data } = await deleteChecklist(checklistId);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['checklists']);
-      }
-    }
-  );
-};
-
-export const useToggleChecklist = () => {
-  const queryClient = useQueryClient();
-  return useMutation<Checklist, Error, ToggleChecklistPayload>(
-    ['checklists', 'edit'],
-    async (payload) => {
-      const { data } = await toggleChecklist(payload);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['checklists']);
-      }
-    }
-  );
 };
 
 export const useGetImageUrl = (imageFileId: string | null) => {
