@@ -5,15 +5,39 @@ import { useState } from 'react';
 import { Checklist } from 'shared';
 import AdminTask from './AdminTask';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import { useDeleteChecklist } from '../../../hooks/onboarding.hook';
+import NERDeleteModal from '../../../components/NERDeleteModal';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 export const AdminChecklist: React.FC<{ parentChecklists: Checklist[]; checklistName?: string }> = ({
   parentChecklists,
   checklistName
 }) => {
   const [showTasks, setShowTasks] = useState(false);
+  const [tasksToDelete, setTasksToDelete] = useState<Checklist[] | null>(null);
 
   const toggleShowTasks = () => {
     setShowTasks((prev) => !prev);
+  };
+
+  const toast = useToast();
+  const { mutateAsync: deleteChecklist } = useDeleteChecklist();
+
+  const handleDelete = async () => {
+    if (!tasksToDelete) return;
+
+    try {
+      for (const task of tasksToDelete) {
+        await deleteChecklist(task.checklistId);
+      }
+      toast.success('All tasks deleted successfully');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    }
+    setTasksToDelete(null);
   };
 
   return (
@@ -33,6 +57,9 @@ export const AdminChecklist: React.FC<{ parentChecklists: Checklist[]; checklist
                 {checklistName} Checklist
               </Typography>
               <Grid display="flex" alignItems="center" gap={2}>
+                <IconButton onClick={() => setTasksToDelete(parentChecklists)}>
+                  <RemoveCircleOutlineIcon sx={{ color: 'black' }} />
+                </IconButton>
                 <IconButton onClick={toggleShowTasks}>
                   {showTasks ? (
                     <KeyboardArrowDown sx={{ color: 'black' }} />
@@ -69,6 +96,15 @@ export const AdminChecklist: React.FC<{ parentChecklists: Checklist[]; checklist
           )}
         </Grid>
       </Grid>
+      {tasksToDelete && (
+        <NERDeleteModal
+          open={!!tasksToDelete}
+          onHide={() => setTasksToDelete(null)}
+          formId="delete-task-form"
+          dataType="Task"
+          onFormSubmit={() => handleDelete()}
+        />
+      )}
     </Box>
   );
 };
