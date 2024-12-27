@@ -12,25 +12,28 @@ import { useGetAllGraphCollections } from '../../hooks/statistics.hooks';
 import { NERButton } from '../../components/NERButton';
 import CreateGraphCollectionForm from './GraphCollectionForm/CreateGraphCollectionForm';
 import { useState } from 'react';
+import BarChart from '../../components/StatsBarChart';
+import PieChart from '../../components/StatsPieChart';
+import LineGraph from '../../components/StatsLineGraph';
 
 const StatisticsPage: React.FC = () => {
   const { data: graphCollections, isLoading, isError, error } = useGetAllGraphCollections();
-  const [showCreateGraphCollectionModal, setShowCreateGraphCollectionModal] = useState(false);
+  // const [showCreateGraphCollectionModal, setShowCreateGraphCollectionModal] = useState(false);
 
   if (isError) {
     return <ErrorPage error={error} />;
   }
 
-  if (!graphCollections || isLoading) {
-    return <LoadingIndicator />;
-  }
+  // if (!graphCollections || isLoading) {
+  //   return <LoadingIndicator />;
+  // }
 
   return (
     <PageLayout
       title="Statistics"
-      headerRight={<NERButton onClick={() => setShowCreateGraphCollectionModal(true)}>Create Graph Collection</NERButton>}
+      // headerRight={<NERButton onClick={() => setShowCreateGraphCollectionModal(true)}>Create Graph Collection</NERButton>}
     >
-      <Box>
+      {/* <Box>
         <Typography variant="h5">Graph Collections</Typography>
         <Grid container mt={1} spacing={1}>
           {graphCollections.map((graphCollection) => {
@@ -45,7 +48,48 @@ const StatisticsPage: React.FC = () => {
       <CreateGraphCollectionForm
         open={showCreateGraphCollectionModal}
         onHide={() => setShowCreateGraphCollectionModal(false)}
-      />
+      /> */}
+
+      <Box style={{ display: 'flex', justifyContent: 'normal' }}>
+        <BarChart
+          xAxisData={['test1', 'test2', 'test3', 'test4']}
+          yAxisData={[100, 200, 50, 300]}
+          xAxisLabel="Categories"
+          yAxisLabel="Values"
+          graphTitle="Bar Chart Test"
+        />
+
+        <Box style={{ padding: '50px' }} />
+
+        <PieChart
+          xAxisData={[
+            'test1',
+            'test2',
+            'test3',
+            'test4',
+            'test5',
+            'test6',
+            'test7',
+            'test8',
+            'test9',
+            'test10',
+            'test11',
+            'test12'
+          ]}
+          yAxisData={[10, 20, 5, 35, 15, 25, 10, 20, 5, 10, 12, 20]}
+          graphTitle="Pie Chart Test"
+        />
+      </Box>
+
+      <Box style={{ display: 'flex', justifyContent: 'normal' }}>
+        <LineGraph
+          xAxisData={['test1', 'test2', 'test3', 'test4']}
+          yAxisData={[100, 200, 50, 500]}
+          xAxisLabel="Categories"
+          yAxisLabel="Values"
+          graphTitle="Line graph Test"
+        />
+      </Box>
     </PageLayout>
   );
 };
