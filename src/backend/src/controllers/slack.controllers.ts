@@ -11,6 +11,8 @@ export default class SlackController {
       if (relatedOrganization) {
         slackServices.processMessageSent(event, relatedOrganization.organizationId);
       }
-    } catch (error: unknown) {}
+    } catch (error: unknown) {
+      console.log(error);
+    }
   }
 }

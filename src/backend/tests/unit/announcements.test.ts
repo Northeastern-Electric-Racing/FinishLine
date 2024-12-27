@@ -88,7 +88,6 @@ describe('announcement tests', () => {
     const updatedAnnouncement = await AnnouncementService.updateAnnouncement(
       'new text',
       [batman.userId, wonderwoman.userId],
-      new Date(1000000000000),
       'sender name',
       'slack id',
       'channel name',
@@ -113,7 +112,6 @@ describe('announcement tests', () => {
         await AnnouncementService.updateAnnouncement(
           'new text',
           [batman.userId, wonderwoman.userId],
-          new Date(1000000000000),
           'sender name',
           'slack id',
           'channel name',

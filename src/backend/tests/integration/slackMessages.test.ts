@@ -12,6 +12,7 @@ import * as apiFunctions from '../../src/integrations/slack';
 import AnnouncementService from '../../src/services/announcement.service';
 import slackServices from '../../src/services/slack.services';
 import { vi } from 'vitest';
+import prisma from '../../src/prisma/prisma';
 
 vi.mock('../../src/integrations/slack', async (importOriginal) => {
   return {
@@ -36,6 +37,16 @@ describe('Slack message tests', () => {
     batman = await createTestUser(batmanAppAdmin, orgId, batmanSettings);
     superman = await createTestUser(supermanAdmin, orgId, supermanSettings);
     wonderwoman = await createTestUser(wonderwomanGuest, orgId, wonderwomanSettings);
+    await prisma.organization.update({
+      where: {
+        organizationId: orgId
+      },
+      data: {
+        users: {
+          set: [{ userId: batman.userId }, { userId: superman.userId }, { userId: wonderwoman.userId }]
+        }
+      }
+    });
   });
 
   afterEach(async () => {
@@ -58,12 +69,10 @@ describe('Slack message tests', () => {
       orgId
     );
 
-    console.log(announcement);
-
     expect(spy).toBeCalledTimes(1);
     expect(spy).toBeCalledWith(
       'test with @everyone broadcast (@everyone)',
-      [organization.userCreatedId, batman.userId, superman.userId, wonderwoman.userId],
+      [batman.userId, superman.userId, wonderwoman.userId],
       new Date(1000),
       'Slack User Name',
       'id_1',
@@ -76,7 +85,7 @@ describe('Slack message tests', () => {
     expect(announcement?.senderName).toBe('Slack User Name');
     expect(announcement?.slackChannelName).toBe('Slack Channel Name');
     expect(announcement?.slackEventId).toBe('id_1');
-    expect(announcement?.usersReceived).toHaveLength(4);
+    expect(announcement?.usersReceived).toHaveLength(3);
   });
 
   it('Adds message to people in channel with @channel and @mention (w/o duplicates)', async () => {
@@ -256,7 +265,6 @@ describe('Slack message tests', () => {
     expect(updateSpy).toBeCalledWith(
       '@Slack User Name added text',
       [wonderwoman.userId],
-      new Date(1000),
       'Slack User Name',
       'id_1',
       'Slack Channel Name',
@@ -302,7 +310,6 @@ describe('Slack message tests', () => {
     expect(updateSpy).toBeCalledWith(
       '@Slack User Name added text',
       [wonderwoman.userId],
-      new Date(1000),
       'Slack User Name',
       'id_1',
       'Slack Channel Name',

@@ -1,5 +1,5 @@
 import { ChangeRequest, daysBetween, Task, UserPreview, wbsPipe, calculateEndDate } from 'shared';
-import { User, User_Settings } from '@prisma/client';
+import { User } from '@prisma/client';
 import {
   editMessage,
   getChannelName,
@@ -20,6 +20,7 @@ import { WorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-a
 import { Prisma } from '@prisma/client';
 import { userTransformer } from '../transformers/user.transformer';
 import { SlackRichTextBlock } from '../services/slack.services';
+import UsersService from '../services/users.services';
 
 interface SlackMessageThread {
   messageInfoId: string;
@@ -524,38 +525,54 @@ export const blockToString = async (block: SlackRichTextBlock) => {
 /**
  * Gets the users notified in a specific SlackRichTextBlock.
  * @param block the block that may contain mentioned user/users
- * @param usersSettings the settings of all the users in prisma
+ * @param orgainzationId the id of the organization corresponding to this slack channel
  * @param channelId the id of the channel that the block is being sent in
  * @returns an array of prisma user ids of users to be notified
  */
 export const blockToMentionedUsers = async (
   block: SlackRichTextBlock,
-  usersSettings: User_Settings[],
+  organizationId: string,
   channelId: string
-) => {
+): Promise<string[]> => {
   switch (block.type) {
     case 'broadcast':
       switch (block.range) {
         case 'everyone':
-          return usersSettings.map((usersSettings) => usersSettings.userId);
+          const usersInOrg = await UsersService.getAllUsers(organizationId);
+          return usersInOrg.map((user) => user.userId);
         case 'channel':
         case 'here':
           //@here behaves the same as @channel; notifies all the users in that channel
           const slackIds: string[] = await getUsersInChannel(channelId);
-          return usersSettings
-            .filter((userSettings) => {
-              return slackIds.some((slackId) => slackId === userSettings.slackId);
-            })
-            .map((user) => user.userId);
+          const prismaIds: (string | undefined)[] = await Promise.all(slackIds.map(getUserIdFromSlackId));
+          return prismaIds.filter((id): id is string => id !== undefined);
         default:
           return [];
       }
     case 'user':
-      return usersSettings
-        .filter((userSettings) => userSettings.slackId === block.user_id)
-        .map((userSettings) => userSettings.userId);
+      const prismaId = await getUserIdFromSlackId(block.user_id ?? '');
+      return prismaId ? [prismaId] : [];
     default:
       //only broadcasts and specific user mentions add recievers to announcements
       return [];
   }
+};
+
+/**
+ * given a slack id, produce the user id of the corresponding user
+ * @param slackId the slack id in the settings of the user
+ * @returns the user id, or undefined if no users were found
+ */
+export const getUserIdFromSlackId = async (slackId: string): Promise<string | undefined> => {
+  const user = await prisma.user.findFirst({
+    where: {
+      userSettings: {
+        slackId
+      }
+    }
+  });
+
+  if (!user) return undefined;
+
+  return user.userId;
 };

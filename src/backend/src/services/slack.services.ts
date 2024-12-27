@@ -1,4 +1,3 @@
-import UsersService from './users.services';
 import { getChannelName, getUserName } from '../integrations/slack';
 import AnnouncementService from './announcement.service';
 import { Announcement } from 'shared';
@@ -105,14 +104,6 @@ export default class slackServices {
     let messageText = '';
     let userIdsToNotify: string[] = [];
 
-    //Get the settings of all users in this organization to compare slack ids
-    const users = await UsersService.getAllUsers();
-    const userSettings = await Promise.all(
-      users.map((user) => {
-        return UsersService.getUserSettings(user.userId);
-      })
-    );
-
     //get the name of the user that sent the message from slack
     let userName = (await getUserName(eventMessage.user)) ?? '';
 
@@ -132,7 +123,7 @@ export default class slackServices {
     if (richTextBlocks && richTextBlocks.length > 0 && richTextBlocks[0].elements.length > 0) {
       for (const element of richTextBlocks[0].elements[0].elements) {
         messageText += await blockToString(element);
-        userIdsToNotify = userIdsToNotify.concat(await blockToMentionedUsers(element, userSettings, event.channel));
+        userIdsToNotify = userIdsToNotify.concat(await blockToMentionedUsers(element, organizationId, event.channel));
       }
     } else {
       return;
@@ -152,7 +143,6 @@ export default class slackServices {
         return await AnnouncementService.updateAnnouncement(
           messageText,
           userIdsToNotify,
-          dateCreated,
           userName,
           eventMessage.client_msg_id,
           slackChannelName,

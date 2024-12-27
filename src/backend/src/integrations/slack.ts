@@ -182,41 +182,35 @@ export const getUsersInChannel = async (channelId: string) => {
 
     return members;
   } catch (error) {
-    return [];
+    return members;
   }
 };
 
 /**
  * Given a slack channel id, produces the name of the channel
  * @param channelId the id of the slack channel
- * @returns the name of the channel
+ * @returns the name of the channel or undefined if it cannot be found
  */
 export const getChannelName = async (channelId: string) => {
-  const { SLACK_BOT_TOKEN } = process.env;
-  if (!SLACK_BOT_TOKEN) return channelId;
-
   try {
     const channelRes = await slack.conversations.info({ channel: channelId });
-    return channelRes.channel?.name || 'Unknown Channel';
+    return channelRes.channel?.name;
   } catch (error) {
-    return;
+    return undefined;
   }
 };
 
 /**
  * Given a slack user id, prood.uces the name of the channel
  * @param userId the id of the slack user
- * @returns the name of the user (real name if no display name)
+ * @returns the name of the user (real name if no display name), undefined if cannot be found
  */
 export const getUserName = async (userId: string) => {
-  const { SLACK_BOT_TOKEN } = process.env;
-  if (!SLACK_BOT_TOKEN) return;
-
   try {
     const userRes = await slack.users.info({ user: userId });
-    return userRes.user?.profile?.display_name || userRes.user?.real_name || 'Unkown User';
+    return userRes.user?.profile?.display_name || userRes.user?.real_name;
   } catch (error) {
-    return;
+    return undefined;
   }
 };
 
@@ -225,9 +219,6 @@ export const getUserName = async (userId: string) => {
  * @returns the id of the workspace
  */
 export const getWorkspaceId = async () => {
-  const { SLACK_BOT_TOKEN } = process.env;
-  if (!SLACK_BOT_TOKEN) return;
-
   try {
     const response = await slack.auth.test();
     if (response.ok) {
