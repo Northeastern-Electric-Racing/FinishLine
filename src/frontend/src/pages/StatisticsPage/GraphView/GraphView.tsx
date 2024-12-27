@@ -42,7 +42,8 @@ const GraphView = ({ graph, height = 500 }: GraphViewProps) => {
     <Box justifyContent={'center'}>
       <Box display={'flex'}>
         <Graph />
-        <IconButton sx={{ height: 40}}
+        <IconButton
+          sx={{ height: 40 }}
           onClick={() =>
             history.push('/statistics/graph-collections/' + graphCollectionId + '/graph/' + graph.graphId + '/edit')
           }

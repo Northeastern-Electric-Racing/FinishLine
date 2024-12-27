@@ -41,10 +41,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
       {!hidePageTitle && title && (
         <>
           <Box mb={-1}>
-            <PageBreadcrumbs
-              currentPageTitle={title}
-              previousPages={previousPages}
-            />
+            <PageBreadcrumbs currentPageTitle={title} previousPages={previousPages} />
           </Box>
           <PageTitle sticky={stickyHeader} {...{ title, chips, headerRight, tabs }} />
         </>

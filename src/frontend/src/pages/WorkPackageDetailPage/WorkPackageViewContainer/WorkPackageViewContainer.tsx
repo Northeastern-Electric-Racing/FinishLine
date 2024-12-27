@@ -158,59 +158,59 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   const projectWbsString: string = wbsPipe({ ...workPackage.wbsNum, workPackageNumber: 0 });
 
   return (
-      <PageLayout
-        title={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
-        previousPages={[
-          { name: 'Projects', route: routes.PROJECTS },
-          { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
-        ]}
-        headerRight={projectActionsDropdown}
-        tabs={
-          <NERTabs
-            setTab={setTabValue}
-            tabsLabels={[
-              { tabUrlValue: 'overview', tabName: 'Overview' },
-              { tabUrlValue: 'scope', tabName: 'Scope' },
-              { tabUrlValue: 'changes', tabName: 'Changes' },
-              { tabUrlValue: 'change-requests', tabName: 'Change Requests' }
-            ]}
-            baseUrl={`${routes.PROJECTS}/${wbsNum}`}
-            defaultTab="overview"
-            id="wp-detail-tabs"
-          />
-        }
-      >
-        {tabValue === 0 ? (
-          <WorkPackageDetails workPackage={workPackage} dependencies={dependencies} />
-        ) : tabValue === 1 ? (
-          <ScopeTab workPackage={workPackage} />
-        ) : tabValue === 2 ? (
-          <ChangesList changes={workPackage.changes} />
-        ) : (
-          <ChangeRequestsTab workPackage={workPackage} />
-        )}
-        {showActivateModal && (
-          <ActivateWorkPackageModalContainer
-            wbsNum={workPackage.wbsNum}
-            modalShow={showActivateModal}
-            handleClose={() => setShowActivateModal(false)}
-          />
-        )}
-        {showStageGateModal && (
-          <StageGateWorkPackageModalContainer
-            wbsNum={workPackage.wbsNum}
-            modalShow={showStageGateModal}
-            handleClose={() => setShowStageGateModal(false)}
-          />
-        )}
-        {showDeleteModal && (
-          <DeleteWorkPackage
-            wbsNum={workPackage.wbsNum}
-            modalShow={showDeleteModal}
-            handleClose={() => setShowDeleteModal(false)}
-          />
-        )}
-      </PageLayout>
+    <PageLayout
+      title={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
+      previousPages={[
+        { name: 'Projects', route: routes.PROJECTS },
+        { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
+      ]}
+      headerRight={projectActionsDropdown}
+      tabs={
+        <NERTabs
+          setTab={setTabValue}
+          tabsLabels={[
+            { tabUrlValue: 'overview', tabName: 'Overview' },
+            { tabUrlValue: 'scope', tabName: 'Scope' },
+            { tabUrlValue: 'changes', tabName: 'Changes' },
+            { tabUrlValue: 'change-requests', tabName: 'Change Requests' }
+          ]}
+          baseUrl={`${routes.PROJECTS}/${wbsNum}`}
+          defaultTab="overview"
+          id="wp-detail-tabs"
+        />
+      }
+    >
+      {tabValue === 0 ? (
+        <WorkPackageDetails workPackage={workPackage} dependencies={dependencies} />
+      ) : tabValue === 1 ? (
+        <ScopeTab workPackage={workPackage} />
+      ) : tabValue === 2 ? (
+        <ChangesList changes={workPackage.changes} />
+      ) : (
+        <ChangeRequestsTab workPackage={workPackage} />
+      )}
+      {showActivateModal && (
+        <ActivateWorkPackageModalContainer
+          wbsNum={workPackage.wbsNum}
+          modalShow={showActivateModal}
+          handleClose={() => setShowActivateModal(false)}
+        />
+      )}
+      {showStageGateModal && (
+        <StageGateWorkPackageModalContainer
+          wbsNum={workPackage.wbsNum}
+          modalShow={showStageGateModal}
+          handleClose={() => setShowStageGateModal(false)}
+        />
+      )}
+      {showDeleteModal && (
+        <DeleteWorkPackage
+          wbsNum={workPackage.wbsNum}
+          modalShow={showDeleteModal}
+          handleClose={() => setShowDeleteModal(false)}
+        />
+      )}
+    </PageLayout>
   );
 };
 
