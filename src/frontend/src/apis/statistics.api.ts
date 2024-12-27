@@ -22,6 +22,7 @@ export const getSingleGraphCollection = (id: string) => {
 };
 
 export const createGraphCollection = (payload: GraphCollectionFormInput) => {
+  console.log(payload);
   return axios.post<GraphCollection>(apiUrls.createGraphCollection(), payload, {
     transformResponse: (data) => graphCollectionTransformer(JSON.parse(data))
   });

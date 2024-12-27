@@ -13,9 +13,9 @@ const GraphCollectionCard = ({ graphCollection }: GraphCollectionCardProps) => {
       <CardContent>
         <Grid container>
           <Grid item xs={12}>
-            <Link component={RouterLink} to={`/statistics/graph-collections/${graphCollection.id}}`}>
+            <Link component={RouterLink} to={`/statistics/graph-collections/${graphCollection.id}`}>
               <Typography variant="h5">{graphCollection.title}</Typography>
-            </Link>{' '}
+            </Link>
           </Grid>
           {graphCollection.graphs.map((graph) => (
             <Grid item xs={6}>

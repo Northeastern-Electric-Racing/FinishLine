@@ -3,7 +3,7 @@ import { Graph, GraphDisplayType } from 'shared';
 import GraphBarChartView from './GraphBarChartView';
 import GraphPieChartView from './GraphPieChartView';
 import { Edit } from '@mui/icons-material';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 
 interface GraphViewProps {
   graph: Graph;
@@ -11,6 +11,8 @@ interface GraphViewProps {
 
 const GraphView = ({ graph }: GraphViewProps) => {
   const history = useHistory();
+  const { graphCollectionId } = useParams<{ graphCollectionId: string }>();
+  console.log(graphCollectionId);
 
   const Graph = () => {
     switch (graph.graphDisplayType) {
@@ -26,7 +28,11 @@ const GraphView = ({ graph }: GraphViewProps) => {
   return (
     <Box display={'flex'} alignItems={'top'}>
       <Graph />
-      <IconButton onClick={() => history.push('/statistics/graph/' + graph.graphId)}>
+      <IconButton
+        onClick={() =>
+          history.push('/statistics/graph-collections/' + graphCollectionId + '/graph/' + graph.graphId + '/edit')
+        }
+      >
         <Edit />
       </IconButton>
     </Box>

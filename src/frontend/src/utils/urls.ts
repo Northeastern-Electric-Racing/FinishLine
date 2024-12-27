@@ -199,8 +199,8 @@ const graphCollections = () => `${statistics()}/graph-collections`;
 const graphCollectionById = (id: string) => `${graphCollections()}/${id}`;
 const createGraphCollection = () => `${graphCollections()}/create`;
 const getGraphById = (id: string) => `${statistics()}/graph/${id}`;
-const updateGraph = (id: string) => `${getGraphById(id)}/update`;
-const updateGraphCollection = (id: string) => `${graphCollectionById(id)}/update`;
+const updateGraph = (id: string) => `${getGraphById(id)}/edit`;
+const updateGraphCollection = (id: string) => `${graphCollectionById(id)}/edit`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;

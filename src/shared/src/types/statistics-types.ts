@@ -86,5 +86,5 @@ export interface GraphFormInput {
 
 export interface GraphCollectionFormInput {
   title: string;
-  permissions: SpecialPermission[];
+  specialPermissions: SpecialPermission[];
 }

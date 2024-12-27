@@ -18,14 +18,14 @@ const UpdateGraphCollectionForm = ({ open, onHide, graphCollection }: UpdateGrap
 
   const defaultValues: GraphCollectionFormInput = {
     title: graphCollection.title,
-    permissions: graphCollection.permissions
+    specialPermissions: graphCollection.permissions
   };
 
   return (
     <GraphCollectionForm
       open={open}
       onHide={onHide}
-      action={updateGraphCollection}
+      onSubmit={updateGraphCollection}
       title="Update Graph Collection"
       successText="Successfully updated graph collection"
       defaultValues={defaultValues}

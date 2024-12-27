@@ -45,7 +45,11 @@ const GraphCollectionViewContainer = () => {
         ))}
         <Grid item lg={4} md={6} xs={12}>
           <Box>
-            <NERButton onClick={() => history.push(routes.CREATE_GRAPH)}>Add Graph</NERButton>
+            <NERButton
+              onClick={() => history.push(`${routes.STATISTICS}/graph-collections/${graphCollection.id}/graph/create`)}
+            >
+              Add Graph
+            </NERButton>
           </Box>
         </Grid>
       </Grid>

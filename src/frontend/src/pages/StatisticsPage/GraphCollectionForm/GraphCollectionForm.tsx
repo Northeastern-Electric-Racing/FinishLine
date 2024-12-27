@@ -13,17 +13,17 @@ interface GraphCollectionFormProps {
   open: boolean;
   onHide: () => void;
   defaultValues: GraphCollectionFormInput;
-  action: (data: GraphCollectionFormInput) => Promise<GraphCollection>;
+  onSubmit: (data: GraphCollectionFormInput) => Promise<GraphCollection>;
   successText: string;
   title: string;
 }
 
 const schema = yup.object().shape({
   title: yup.string().required(),
-  permissions: yup.array().required()
+  specialPermissions: yup.array().required()
 });
 
-const GraphCollectionForm = ({ open, onHide, defaultValues, action, successText, title }: GraphCollectionFormProps) => {
+const GraphCollectionForm = ({ open, onHide, defaultValues, onSubmit, successText, title }: GraphCollectionFormProps) => {
   const toast = useToast();
   const history = useHistory();
 
@@ -39,7 +39,7 @@ const GraphCollectionForm = ({ open, onHide, defaultValues, action, successText,
 
   const onSubmitWrapper = async (formInput: GraphCollectionFormInput) => {
     try {
-      const createdCollection = await action(formInput);
+      const createdCollection = await onSubmit(formInput);
       toast.success(successText);
       history.push(`/statistics/graph-collections/${createdCollection.id}`);
     } catch (error) {
@@ -57,6 +57,7 @@ const GraphCollectionForm = ({ open, onHide, defaultValues, action, successText,
       reset={reset}
       open={open}
       onHide={onHide}
+      formId="graphCollectionForm"
     >
       <Grid container spacing={1}>
         <Grid item xs={12}>
@@ -72,9 +73,9 @@ const GraphCollectionForm = ({ open, onHide, defaultValues, action, successText,
         </Grid>
         <Grid item xs={12}>
           <FormControl fullWidth>
-            <FormLabel>Additional Permissions to Apply to the Graph</FormLabel>
+            <FormLabel>Additional Permissions to Apply to the Collection</FormLabel>
             <Controller
-              name="permissions"
+              name="specialPermissions"
               control={control}
               render={({ field: { onChange, value } }) => {
                 return (
@@ -94,7 +95,7 @@ const GraphCollectionForm = ({ open, onHide, defaultValues, action, successText,
                 );
               }}
             />
-            <FormHelperText error={!!errors.permissions}>{errors.permissions?.message}</FormHelperText>
+            <FormHelperText error={!!errors.specialPermissions}>{errors.specialPermissions?.message}</FormHelperText>
           </FormControl>
         </Grid>
       </Grid>

@@ -5,7 +5,7 @@ import GraphCollectionForm from './GraphCollectionForm';
 
 const defaultValues: GraphCollectionFormInput = {
   title: '',
-  permissions: []
+  specialPermissions: []
 };
 
 interface CreateGraphCollectionFormProps {
@@ -24,7 +24,7 @@ const CreateGraphCollectionForm = ({ open, onHide }: CreateGraphCollectionFormPr
     <GraphCollectionForm
       open={open}
       onHide={onHide}
-      action={createGraphCollection}
+      onSubmit={createGraphCollection}
       title="Create Graph Collection"
       successText="Successfully created graph collection"
       defaultValues={defaultValues}

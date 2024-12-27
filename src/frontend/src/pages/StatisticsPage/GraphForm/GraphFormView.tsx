@@ -2,24 +2,19 @@ import { Autocomplete, FormControl, FormHelperText, FormLabel, Grid, MenuItem, S
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { Control, Controller, FieldErrors } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
-import { Car, GraphCollection, GraphDisplayType, GraphFormInput, GraphType, Measure, SpecialPermission } from 'shared';
+import { Car, GraphDisplayType, GraphFormInput, GraphType, Measure, SpecialPermission } from 'shared';
 import { displayEnum } from '../../../utils/pipes';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 import { useEffect, useState } from 'react';
-import {
-  graphCollectionToAutoCompleteValue,
-  graphTypeToAutoCompleteValue,
-  specialPermissionToAutoCompleteValue
-} from '../../../utils/statistics.utils';
+import { graphTypeToAutoCompleteValue, specialPermissionToAutoCompleteValue } from '../../../utils/statistics.utils';
 
 interface GraphFormViewProps {
   control: Control<GraphFormInput, any>;
   errors: FieldErrors<GraphFormInput>;
-  graphCollections: GraphCollection[];
   cars: Car[];
 }
 
-export const GraphFormView: React.FC<GraphFormViewProps> = ({ control, errors, graphCollections, cars }) => {
+export const GraphFormView: React.FC<GraphFormViewProps> = ({ control, errors, cars }) => {
   const [startTimeDatePickerOpen, setStartTimeDatePickerOpen] = useState(false);
   const [endTimeDatePickerOpen, setEndTimeDatePickerOpen] = useState(false);
   const [carMap, setCarMap] = useState(new Map<string, Car>());
@@ -183,30 +178,6 @@ export const GraphFormView: React.FC<GraphFormViewProps> = ({ control, errors, g
 
       <Grid item xs={12}>
         <FormControl fullWidth>
-          <FormLabel>Select Graph Collection</FormLabel>
-          <Controller
-            name="graphCollectionId"
-            control={control}
-            render={({ field: { onChange, value } }) => {
-              return (
-                <NERAutocomplete
-                  sx={{ width: '100%' }}
-                  id="graphCollectionSelector"
-                  onChange={(_, collectionValue) => onChange(collectionValue?.id)}
-                  size="medium"
-                  value={{ label: value ?? '', id: value ?? '' }}
-                  placeholder="Select a collection (optional)"
-                  options={graphCollections.map(graphCollectionToAutoCompleteValue)}
-                  errorMessage={errors.graphCollectionId}
-                />
-              );
-            }}
-          />
-        </FormControl>
-      </Grid>
-
-      <Grid item xs={12}>
-        <FormControl fullWidth>
           <FormLabel>Select Data</FormLabel>
           <Controller
             name="graphType"
@@ -243,8 +214,11 @@ export const GraphFormView: React.FC<GraphFormViewProps> = ({ control, errors, g
                   multiple
                   id="carSelector"
                   options={cars}
-                  value={value.map((carId) => carMap.get(carId))}
-                  onChange={(_event, newValue) => onChange(newValue)}
+                  value={value.map((carId) => {
+                    console.log(carId);
+                    return carMap.get(carId);
+                  })}
+                  onChange={(_event, newValue) => onChange(newValue.map((car) => car?.id))}
                   getOptionLabel={(option) => option?.name ?? ''}
                   renderInput={(params) => (
                     <TextField {...params} variant="standard" placeholder="Select Cars (Leave Blank For All Cars)" />

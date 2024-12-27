@@ -20,3 +20,7 @@ const deeplyCopyObj = <T>(obj: T, transformer: (obj: T) => T = (obj) => obj): T 
 export const wbsNamePipe = (wbsElement: { wbsNum: WbsNumber; name: string }) => {
   return `${wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`;
 };
+
+export const isSubset = (elements: string[], suppliedArray: string[]): boolean => {
+  return elements.every((element) => suppliedArray.includes(element));
+};

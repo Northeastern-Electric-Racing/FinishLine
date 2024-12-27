@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import StatisticsService from '../services/statistics.services';
-import { Graph } from 'shared';
+import { Graph, GraphCollection } from 'shared';
 
 export default class StatisticsController {
   static async createGraph(req: Request, res: Response, next: NextFunction) {
@@ -51,7 +51,7 @@ export default class StatisticsController {
 
   static async getAllGraphCollections(req: Request, res: Response, next: NextFunction) {
     try {
-      const graphCollections = await StatisticsService.getAllGraphCollections(req.organization);
+      const graphCollections = await StatisticsService.getAllGraphCollections(req.currentUser, req.organization);
       res.status(200).json(graphCollections);
     } catch (error: unknown) {
       next(error);
@@ -61,14 +61,12 @@ export default class StatisticsController {
   static async editGraph(req: Request, res: Response, next: NextFunction) {
     try {
       const {
-        currentUser: userEditing,
         startDate,
         endDate,
         title,
         graphType,
         measure,
         graphDisplayType,
-        organization,
         graphCollectionId,
         carIds,
         specialPermissions
@@ -76,13 +74,13 @@ export default class StatisticsController {
       const { graphId } = req.params;
 
       const updatedGraph = await StatisticsService.editGraph(
-        userEditing,
+        req.currentUser,
         graphId,
         title,
         graphType,
         measure,
         graphDisplayType,
-        organization,
+        req.organization,
         carIds,
         specialPermissions,
         startDate ? new Date(startDate) : undefined,
@@ -91,6 +89,52 @@ export default class StatisticsController {
       );
 
       res.status(200).json(updatedGraph);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createGraphCollection(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { title, specialPermissions } = req.body;
+      const graphCollection: GraphCollection = await StatisticsService.createGraphCollection(
+        req.currentUser,
+        title,
+        specialPermissions,
+        req.organization
+      );
+      res.status(200).json(graphCollection);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editGraphCollection(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { title, specialPermissions } = req.body;
+      const { graphCollectionId } = req.params;
+      const graphCollection: GraphCollection = await StatisticsService.editGraphCollection(
+        req.currentUser,
+        graphCollectionId,
+        title,
+        specialPermissions,
+        req.organization
+      );
+      res.status(200).json(graphCollection);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getSingleGraphCollection(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { graphCollectionId } = req.params;
+      const graphCollection: GraphCollection = await StatisticsService.getSingleGraphCollection(
+        req.currentUser,
+        graphCollectionId,
+        req.organization
+      );
+      res.status(200).json(graphCollection);
     } catch (error: unknown) {
       next(error);
     }
