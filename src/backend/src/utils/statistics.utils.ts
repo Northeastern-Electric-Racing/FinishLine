@@ -105,7 +105,7 @@ export const getGraphDataForProjectBudgetByTeam = async (
       return prev + curr.budget;
     }, 0);
 
-    if (measure === Measure.AVG) {
+    if (measure === Measure.AVG && team.projects.length > 0) {
       value = value / team.projects.length;
     }
 
@@ -156,7 +156,7 @@ export const getGraphDataForProjectBudgetByDivision = async (
       );
     }, 0);
 
-    if (measure === Measure.AVG) {
+    if (measure === Measure.AVG && numProjects > 0) {
       value = value / numProjects;
     }
 
@@ -279,7 +279,7 @@ export const getGraphDataForChangeRequestsByTeam = async (
       return prev + curr.wbsElement.changeRequests.length + workPackageChangeRequests;
     }, 0);
 
-    if (measure === Measure.AVG) {
+    if (measure === Measure.AVG && team.projects.length > 0) {
       value = value / team.projects.length;
     }
 
@@ -328,7 +328,7 @@ export const getGraphDataForChangeRequestsByDivision = async (
       );
     }, 0);
 
-    if (measure === Measure.AVG) {
+    if (measure === Measure.AVG && numProjects > 0) {
       value = value / numProjects;
     }
 
@@ -397,7 +397,7 @@ export const getGraphDataForReimbursementRequestsByProject = async (
       return prev + (curr.reimbursementProduct?.cost ?? 0);
     }, 0);
 
-    if (measure === Measure.AVG) {
+    if (measure === Measure.AVG && project.wbsElement.reimbursementProductReasons.length > 0) {
       value = value / project.wbsElement.reimbursementProductReasons.length;
     }
 
@@ -451,7 +451,7 @@ export const getGraphDataForReimbursementRequestsByTeam = async (
       );
     }, 0);
 
-    if (measure === Measure.AVG) {
+    if (measure === Measure.AVG && team.projects.length > 0) {
       value = value / team.projects.length;
     }
 
@@ -501,7 +501,7 @@ export const getGraphDataForReimbursementRequestsByDivision = async (
       );
     }, 0);
 
-    if (measure === Measure.AVG) {
+    if (measure === Measure.AVG && division.teams.length > 0) {
       value = value / division.teams.length;
     }
 

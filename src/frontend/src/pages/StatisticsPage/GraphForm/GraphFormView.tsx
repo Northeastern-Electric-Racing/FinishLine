@@ -214,10 +214,7 @@ export const GraphFormView: React.FC<GraphFormViewProps> = ({ control, errors, c
                   multiple
                   id="carSelector"
                   options={cars}
-                  value={value.map((carId) => {
-                    console.log(carId);
-                    return carMap.get(carId);
-                  })}
+                  value={value.map((carId) => carMap.get(carId))}
                   onChange={(_event, newValue) => onChange(newValue.map((car) => car?.id))}
                   getOptionLabel={(option) => option?.name ?? ''}
                   renderInput={(params) => (

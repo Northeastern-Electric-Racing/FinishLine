@@ -22,11 +22,11 @@ export const getSingleGraphCollection = (id: string) => {
 };
 
 export const createGraphCollection = (payload: GraphCollectionFormInput) => {
-  console.log(payload);
   return axios.post<GraphCollection>(apiUrls.createGraphCollection(), payload, {
     transformResponse: (data) => graphCollectionTransformer(JSON.parse(data))
   });
 };
+
 export const updateGraph = (id: string, payload: CreateGraphArgs) => {
   return axios.post<Graph>(apiUrls.updateGraph(id), payload, {
     transformResponse: (data) => graphTransformer(JSON.parse(data))

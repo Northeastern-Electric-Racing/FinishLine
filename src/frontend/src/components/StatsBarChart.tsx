@@ -1,6 +1,22 @@
 import { Bar } from 'react-chartjs-2';
-import { Chart, CategoryScale, LinearScale, BarController, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import {
+  Chart,
+  CategoryScale,
+  LinearScale,
+  BarController,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  CoreChartOptions,
+  ElementChartOptions,
+  DatasetChartOptions,
+  PluginChartOptions,
+  BarControllerChartOptions,
+  ScaleChartOptions
+} from 'chart.js';
 import { Box } from '@mui/material';
+import { _DeepPartialObject } from 'chart.js/dist/types/utils';
 
 Chart.register(CategoryScale, LinearScale, BarController, BarElement, Title, Tooltip, Legend);
 
@@ -35,9 +51,16 @@ const StatsBarChart: React.FC<StatsBarChartProps> = ({
     ]
   };
 
-  const options = {
+  const options: _DeepPartialObject<
+    CoreChartOptions<'bar'> &
+      ElementChartOptions<'bar'> &
+      PluginChartOptions<'bar'> &
+      DatasetChartOptions<'bar'> &
+      ScaleChartOptions<'bar'> &
+      BarControllerChartOptions
+  > = {
     responsive: true,
-    maintainAspectRatio: true,
+    maintainAspectRatio: false,
     plugins: {
       title: {
         display: true,
@@ -48,8 +71,8 @@ const StatsBarChart: React.FC<StatsBarChartProps> = ({
         color: 'white'
       },
       legend: {
-        display: true,
-        position: 'top' as const,
+        display: false,
+        position: 'bottom',
         labels: {
           font: {
             size: 14
@@ -93,7 +116,7 @@ const StatsBarChart: React.FC<StatsBarChartProps> = ({
   };
 
   return (
-    <Box sx={{ width: '100%', height: '100%', maxWidth: width, maxHeight: height }}>
+    <Box sx={{ height, width: '100%', maxWidth: width }}>
       <Bar data={data} options={options} />
     </Box>
   );

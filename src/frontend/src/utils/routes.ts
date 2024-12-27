@@ -61,7 +61,7 @@ const STATISTICS = `/statistics`;
 const CREATE_GRAPH = `/statistics/graph-collections/:graphCollectionId/graph/create`;
 const EDIT_GRAPH = `/statistics/graph-collections/:graphCollectionId/graph/:graphId/edit`;
 
-const GRAPH_COLLECTION_BY_ID = '/statistics/graph-collections/:id';
+const GRAPH_COLLECTION_BY_ID = '/statistics/graph-collections/:graphCollectionId';
 
 export const routes = {
   BASE,

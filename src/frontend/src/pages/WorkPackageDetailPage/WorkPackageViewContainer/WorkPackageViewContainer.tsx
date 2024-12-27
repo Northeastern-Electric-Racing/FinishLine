@@ -14,7 +14,7 @@ import ChangesList from '../../../components/ChangesList';
 import StageGateWorkPackageModalContainer from '../StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
 import { NERButton } from '../../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { Box, Menu, MenuItem } from '@mui/material';
+import { Menu, MenuItem } from '@mui/material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import EditIcon from '@mui/icons-material/Edit';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
@@ -28,7 +28,6 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import ScopeTab from './ScopeTab';
 import NERTabs from '../../../components/Tabs';
-import PageBreadcrumbs from '../../../layouts/PageTitle/PageBreadcrumbs';
 import ChangeRequestsTab from './ChangeRequestsTab';
 
 interface WorkPackageViewContainerProps {
@@ -159,16 +158,6 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   const projectWbsString: string = wbsPipe({ ...workPackage.wbsNum, workPackageNumber: 0 });
 
   return (
-    <>
-      <Box mb={-1}>
-        <PageBreadcrumbs
-          currentPageTitle={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
-          previousPages={[
-            { name: 'Projects', route: routes.PROJECTS },
-            { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
-          ]}
-        />
-      </Box>
       <PageLayout
         title={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
         previousPages={[
@@ -222,7 +211,6 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
           />
         )}
       </PageLayout>
-    </>
   );
 };
 

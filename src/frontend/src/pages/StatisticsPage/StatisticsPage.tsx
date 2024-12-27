@@ -26,20 +26,31 @@ const StatisticsPage: React.FC = () => {
   }
 
   return (
-    <PageLayout
-      title="Statistics"
-      headerRight={<NERButton onClick={() => setShowCreateGraphCollectionModal(true)}>Create Graph Collection</NERButton>}
-    >
+    <PageLayout title="Statistics">
       <Box>
         <Typography variant="h5">Graph Collections</Typography>
         <Grid container mt={1} spacing={1}>
           {graphCollections.map((graphCollection) => {
             return (
-              <Grid item xs={3}>
+              <Grid item xs={12} md={6} lg={4}>
                 <GraphCollectionCard graphCollection={graphCollection} />
               </Grid>
             );
           })}
+          <Grid item lg={4} md={6} xs={12}>
+            <Box
+              sx={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                border: '2px dashed #ef4343'
+              }}
+            >
+              <NERButton onClick={() => setShowCreateGraphCollectionModal(true)}>Create Graph Collection</NERButton>
+            </Box>
+          </Grid>
         </Grid>
       </Box>
       <CreateGraphCollectionForm
