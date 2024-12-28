@@ -7,7 +7,7 @@ import CloseIcon from '@mui/icons-material/Close';
 
 interface GeneralAnnouncementCardProps {
   announcement: Announcement;
-  removeAnnouncement: (announcement: Announcement) => Promise<void>;
+  removeAnnouncement: (announcement: Announcement) => Promise<Announcement[]>;
 }
 
 const GeneralAnnouncementCard: React.FC<GeneralAnnouncementCardProps> = ({ announcement, removeAnnouncement }) => {

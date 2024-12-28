@@ -21,7 +21,7 @@ export const useUserAnnouncements = () => {
  */
 export const useRemoveUserAnnouncement = () => {
   const queryClient = useQueryClient();
-  return useMutation<Notification[], Error, Announcement>(
+  return useMutation<Announcement[], Error, Announcement>(
     ['announcements', 'current-user', 'remove'],
     async (announcement: Announcement) => {
       const { data } = await removeAnnouncement(announcement.announcementId);

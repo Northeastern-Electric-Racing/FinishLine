@@ -1,4 +1,3 @@
-import { Announcement } from 'shared';
 import ScrollablePageBlock from './ScrollablePageBlock';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
@@ -26,12 +25,8 @@ const GeneralAnnouncements: React.FC = () => {
   } = useUserAnnouncements();
   const { mutateAsync: removeAnnouncement, isLoading: removeAnnouncementIsLoading } = useRemoveUserAnnouncement();
 
-  if (isLoading || removeAnnouncementIsLoading || !unreadAnnouncements) return <LoadingIndicator />;
   if (announcementsIsError) return <ErrorPage message={announcementsError.message} />;
-
-  const removeAnnouncementWrapper = async (announcement: Announcement) => {
-    await removeAnnouncement(announcement);
-  };
+  if (isLoading || removeAnnouncementIsLoading || !unreadAnnouncements) return <LoadingIndicator />;
 
   return (
     <ScrollablePageBlock title={`General Announcements (${unreadAnnouncements.length})`}>
@@ -39,7 +34,7 @@ const GeneralAnnouncements: React.FC = () => {
         <NoGeneralAnnouncementsDisplay />
       ) : (
         unreadAnnouncements.map((announcement) => (
-          <GeneralAnnouncementCard announcement={announcement} removeAnnouncement={removeAnnouncementWrapper} />
+          <GeneralAnnouncementCard announcement={announcement} removeAnnouncement={removeAnnouncement} />
         ))
       )}
     </ScrollablePageBlock>
