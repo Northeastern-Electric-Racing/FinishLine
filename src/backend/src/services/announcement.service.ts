@@ -54,6 +54,7 @@ export default class AnnouncementService {
   static async getUserUnreadAnnouncements(userId: string, organizationId: string) {
     const unreadAnnouncements = await prisma.announcement.findMany({
       where: {
+        dateDeleted: null,
         usersReceived: {
           some: { userId }
         }
