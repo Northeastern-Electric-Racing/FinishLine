@@ -164,8 +164,6 @@ model User {
   createdDesignReviews            Design_Review[]           @relation(name: "designReviewCreator")
   deletedDesignReviews            Design_Review[]           @relation(name: "designReviewDeleter")
   drScheduleSettings              Schedule_Settings?
-  createdWorkPackageTemplate      Work_Package_Template[]   @relation(name: "workPackageTemplateCreator")
-  deletedWorkPackageTemplate      Work_Package_Template[]   @relation(name: "workPackageTemplateDeleter")
   wbsProposedlead                 Wbs_Proposed_Changes[]    @relation(name: "wbslead")
   wbsProposedmanager              Wbs_Proposed_Changes[]    @relation(name: "wbsmanager")
   organizations                   Organization[]            @relation(name: "organizationMembers")
@@ -180,6 +178,8 @@ model User {
   deletedFrequentlyAskedQuestions FrequentlyAskedQuestion[] @relation(name: "frequentlyAskedQuestionDeleter")
   createdMilestones               Milestone[]               @relation(name: "milestoneCreator")
   deletedMilestones               Milestone[]               @relation(name: "milestoneDeleter")
+  createdWBSElementTemplates      WBS_Element_Template[]    @relation(name: "wbsElementTemplateCreator")
+  deletedWBSElementTemplates      WBS_Element_Template[]    @relation(name: "wbsElementTemplateDeleter")
 }
 
 model Role {
@@ -472,12 +472,12 @@ model Description_Bullet {
   descriptionBulletType   Description_Bullet_Type @relation(fields: [descriptionBulletTypeId], references: [id])
 
   // Relation references, A description bullet can be either on a WBS_Element, a Proposed Change or a work package template, not multiple and not none
-  wbsElementId          String?
-  wbsElement            WBS_Element?           @relation(fields: [wbsElementId], references: [wbsElementId])
-  proposedChangeId      String?
-  proposedChange        Wbs_Proposed_Changes?  @relation(fields: [proposedChangeId], references: [wbsProposedChangesId], name: "proposedDescriptionBulletChanges")
-  workPackageTemplateId String?
-  workPackageTemplate   Work_Package_Template? @relation(fields: [workPackageTemplateId], references: [workPackageTemplateId])
+  wbsElementId         String?
+  wbsElement           WBS_Element?          @relation(fields: [wbsElementId], references: [wbsElementId])
+  proposedChangeId     String?
+  proposedChange       Wbs_Proposed_Changes? @relation(fields: [proposedChangeId], references: [wbsProposedChangesId], name: "proposedDescriptionBulletChanges")
+  wbsElementTemplate   WBS_Element_Template? @relation(fields: [wbsElementTemplateId], references: [wbsElementTemplateId])
+  wbsElementTemplateId String
 }
 
 model Task {
@@ -827,24 +827,39 @@ model Work_Package_Proposed_Changes {
   projectProposedChangesId     String?
 }
 
+model WBS_Element_Template {
+  wbsElementTemplateId String                 @id @default(uuid())
+  templateName         String
+  templateNotes        String
+  wbsElementName       String?
+  descriptionBullets   Description_Bullet[]
+  dateCreated          DateTime               @default(now())
+  userCreated          User                   @relation(fields: [userCreatedId], references: [userId], name: "wbsElementTemplateCreator")
+  userCreatedId        String
+  dateDeleted          DateTime?
+  userDeleted          User?                  @relation(fields: [userDeletedId], references: [userId], name: "wbsElementTemplateDeleter")
+  userDeletedId        String?
+  projectTemplate      Project_Template?
+  workPackageTemplate  Work_Package_Template?
+  organization         Organization           @relation(fields: [organizationId], references: [organizationId])
+  organizationId       String
+}
+
+model Project_Template {
+  wbsElementTemplate   WBS_Element_Template    @relation(fields: [wbsElementTemplateId], references: [wbsElementTemplateId])
+  wbsElementTemplateId String                  @unique
+  workPackageTemplates Work_Package_Template[]
+}
+
 model Work_Package_Template {
-  workPackageTemplateId String                  @id @default(uuid())
-  templateName          String
-  templateNotes         String
-  workPackageName       String?
-  stage                 Work_Package_Stage?
-  duration              Int?
-  blockedBy             Work_Package_Template[] @relation("blocking")
-  blocking              Work_Package_Template[] @relation("blocking")
-  descriptionBullets    Description_Bullet[]
-  dateCreated           DateTime                @default(now())
-  userCreated           User                    @relation(fields: [userCreatedId], references: [userId], name: "workPackageTemplateCreator")
-  userCreatedId         String
-  dateDeleted           DateTime?
-  userDeleted           User?                   @relation(fields: [userDeletedId], references: [userId], name: "workPackageTemplateDeleter")
-  userDeletedId         String?
-  organizationId        String
-  organization          Organization            @relation(fields: [organizationId], references: [organizationId])
+  wbsElementTemplate   WBS_Element_Template    @relation(fields: [wbsElementTemplateId], references: [wbsElementTemplateId])
+  wbsElementTemplateId String                  @id
+  stage                Work_Package_Stage?
+  duration             Int?
+  blockedBy            Work_Package_Template[] @relation("blocking")
+  blocking             Work_Package_Template[] @relation("blocking")
+  projectTemplate      Project_Template?       @relation(fields: [projectTemplateId], references: [wbsElementTemplateId])
+  projectTemplateId    String
 }
 
 model Car {
@@ -888,27 +903,27 @@ model Organization {
   reimbursements           Reimbursement[]
   units                    Unit[]
   descriptionBulletTypes   Description_Bullet_Type[]
-  workPackageTemplates     Work_Package_Template[]
   roles                    Role[]
   changeRequests           Change_Request[]
   reimbursementReqeusts    Reimbursement_Request[]
   usefulLinks              Link[]
   FrequentlyAskedQuestions FrequentlyAskedQuestion[]
   Milestone                Milestone[]
+  wbsElementTemplates      WBS_Element_Template[]
 }
 
 model FrequentlyAskedQuestion {
-  faqId String       @id @default(uuid())
-  question                  String
-  answer                    String
-  userCreated               User         @relation(fields: [userCreatedId], references: [userId], name: "frequentlyAskedQuestionCreator")
-  userCreatedId             String
-  userDeleted               User?        @relation(fields: [userDeletedId], references: [userId], name: "frequentlyAskedQuestionDeleter")
-  userDeletedId             String?
-  dateCreated               DateTime     @default(now())
-  dateDeleted               DateTime?
-  organizationId            String
-  organization              Organization @relation(fields: [organizationId], references: [organizationId])
+  faqId          String       @id @default(uuid())
+  question       String
+  answer         String
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "frequentlyAskedQuestionCreator")
+  userCreatedId  String
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "frequentlyAskedQuestionDeleter")
+  userDeletedId  String?
+  dateCreated    DateTime     @default(now())
+  dateDeleted    DateTime?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
 }
 
 model Milestone {
