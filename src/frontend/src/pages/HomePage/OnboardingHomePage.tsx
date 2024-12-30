@@ -9,7 +9,7 @@ import ChecklistSection from './components/ChecklistSection';
 import OnboardingInfoSection from './components/OnboardingInfoSection';
 import OnboardingProgressBar from '../../components/OnboardingProgressBar';
 import { NERButton } from '../../components/NERButton';
-import { useAllChecklists, useGeneralChecklists, useUsersTeamTypeChecklists } from '../../hooks/onboarding.hook';
+import { useGeneralChecklists, useUsersTeamTypeChecklists } from '../../hooks/onboarding.hook';
 import { groupChecklists } from '../../utils/onboarding.utils';
 import { useCurrentUser } from '../../hooks/users.hooks';
 
