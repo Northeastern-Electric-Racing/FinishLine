@@ -37,7 +37,8 @@ export default class AnnouncementService {
         dateMessageSent,
         senderName,
         slackEventId,
-        slackChannelName
+        slackChannelName,
+        organizationId
       },
       ...getAnnouncementQueryArgs(organizationId)
     });
@@ -62,6 +63,9 @@ export default class AnnouncementService {
     if (!originalAnnouncement) throw new NotFoundException('Announcement', slackEventId);
 
     if (originalAnnouncement.dateDeleted) throw new DeletedException('Announcement', slackEventId);
+
+    if (originalAnnouncement.organizationId !== organizationId)
+      throw new HttpException(400, `Announcement is not apart of the current organization`);
 
     const announcement = await prisma.announcement.update({
       where: { announcementId: originalAnnouncement.announcementId },
@@ -93,6 +97,9 @@ export default class AnnouncementService {
 
     if (originalAnnouncement.dateDeleted) throw new DeletedException('Announcement', slackEventId);
 
+    if (originalAnnouncement.organizationId !== organizationId)
+      throw new HttpException(400, `Announcement is not apart of the current organization`);
+
     const announcement = await prisma.announcement.update({
       where: { slackEventId },
       data: {
@@ -116,9 +123,11 @@ export default class AnnouncementService {
   static async getUserUnreadAnnouncements(userId: string, organizationId: string) {
     const unreadAnnouncements = await prisma.announcement.findMany({
       where: {
+        dateDeleted: null,
         usersReceived: {
           some: { userId }
-        }
+        },
+        organizationId
       },
       ...getAnnouncementQueryArgs(organizationId)
     });

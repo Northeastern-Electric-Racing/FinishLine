@@ -15,7 +15,8 @@ export class PopUpService {
       where: {
         users: {
           some: { userId }
-        }
+        },
+        organizationId
       },
       ...getPopUpQueryArgs(organizationId)
     });
@@ -70,7 +71,8 @@ export class PopUpService {
       data: {
         text,
         iconName,
-        eventLink
+        eventLink,
+        organizationId
       },
       ...getPopUpQueryArgs(organizationId)
     });

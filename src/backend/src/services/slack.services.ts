@@ -66,7 +66,7 @@ export interface SlackRichTextBlock {
   usergroup_id?: string;
 }
 
-export default class slackServices {
+export default class SlackServices {
   /**
    * Given a slack event representing a message in a channel,
    * make the appropriate announcement change in prisma.

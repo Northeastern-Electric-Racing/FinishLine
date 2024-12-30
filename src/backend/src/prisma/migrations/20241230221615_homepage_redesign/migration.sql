@@ -14,6 +14,7 @@ CREATE TABLE "Announcement" (
     "senderName" TEXT NOT NULL,
     "slackEventId" TEXT NOT NULL,
     "slackChannelName" TEXT NOT NULL,
+    "organizationId" TEXT NOT NULL,
 
     CONSTRAINT "Announcement_pkey" PRIMARY KEY ("announcementId")
 );
@@ -24,6 +25,7 @@ CREATE TABLE "PopUp" (
     "text" TEXT NOT NULL,
     "iconName" TEXT NOT NULL,
     "eventLink" TEXT,
+    "organizationId" TEXT NOT NULL,
 
     CONSTRAINT "PopUp_pkey" PRIMARY KEY ("popUpId")
 );
@@ -57,6 +59,12 @@ CREATE INDEX "_userPopUps_B_index" ON "_userPopUps"("B");
 
 -- AddForeignKey
 ALTER TABLE "Project" ADD CONSTRAINT "Project_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Announcement" ADD CONSTRAINT "Announcement_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PopUp" ADD CONSTRAINT "PopUp_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_receivedAnnouncements" ADD CONSTRAINT "_receivedAnnouncements_A_fkey" FOREIGN KEY ("A") REFERENCES "Announcement"("announcementId") ON DELETE CASCADE ON UPDATE CASCADE;
