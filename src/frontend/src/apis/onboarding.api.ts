@@ -42,8 +42,10 @@ export const getUsersChecklists = () => {
 /**
  * API call to toggle a checklist
  */
-export const toggleChecklist = (checklistId: string) => {
-  return axios.post<{ message: string }>(apiUrls.toggleChecklist(checklistId));
+export const toggleChecklist = (payload: ToggleChecklistPayload) => {
+  return axios.post<Checklist>(apiUrls.toggleChecklist(payload.checklistId), {
+    ...payload
+  });
 };
 
 /**

@@ -9,6 +9,10 @@ import {
   getCheckedChecklists
 } from '../apis/onboarding.api';
 
+export interface ToggleChecklistPayload {
+  checklistId: string;
+}
+
 export const useAllChecklists = () => {
   return useQuery<Checklist[], Error>(['checklists'], async () => {
     const { data } = await getAllChecklists();
@@ -39,10 +43,10 @@ export const useUsersTeamTypeChecklists = () => {
 
 export const useToggleChecklist = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
-    ['checklists', 'toggle'],
-    async (checklistId: string) => {
-      const { data } = await toggleChecklist(checklistId);
+  return useMutation<Checklist, Error, ToggleChecklistPayload>(
+    ['checklists', 'edit'],
+    async (payload) => {
+      const { data } = await toggleChecklist(payload);
       return data;
     },
     {

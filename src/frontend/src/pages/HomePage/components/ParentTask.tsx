@@ -81,7 +81,7 @@ const ParentTask: React.FC<ParentTaskProps> = ({ parentTask }) => {
           </IconButton>
         </Box>
       </Box>
-      {showSubtasks && <SubtaskSection parentTask={parentTask} checkedChecklists={checkedChecklists} />}
+      {showSubtasks && <SubtaskSection parentTask={parentTask} subtasks={parentTask.subtasks} />}
     </Box>
   );
 };

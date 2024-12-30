@@ -25,7 +25,7 @@ const Task: React.FC<SubtaskProps> = ({ subtasks, parentTask }) => {
     try {
       const newCheckedState = !isChecked;
       setIsChecked(newCheckedState);
-      await toggleChecklist(parentTask.checklistId);
+      await toggleChecklist(parentTask);
     } catch (error) {
       console.error('Error toggling checklist:', error);
       setIsChecked((prev) => !prev);

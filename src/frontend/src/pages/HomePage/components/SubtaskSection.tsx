@@ -34,10 +34,10 @@ const SubtaskSection: React.FC<{ subtasks: Checklist[]; parentTask: Checklist; i
 
     if (index === -1) {
       newState.push(subtaskName);
-      await toggleChecklist(subtask.checklistId);
+      await toggleChecklist(subtask);
     } else {
       newState.splice(index, 1);
-      await toggleChecklist(subtask.checklistId);
+      await toggleChecklist(subtask);
     }
 
     setCheckedSubtasks(newState);
