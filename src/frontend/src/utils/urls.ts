@@ -202,6 +202,11 @@ const popUps = () => `${API_URL}/pop-ups`;
 const popUpsCurrentUser = () => `${popUps()}/current-user`;
 const popUpsRemove = (id: string) => `${popUps()}/${id}/remove`;
 
+/************** Announcement Endpoints ***************/
+const announcements = () => `${API_URL}/announcements`;
+const announcementsCurrentUser = () => `${announcements()}/current-user`;
+const announcementsRemove = (id: string) => `${announcements()}/${id}/remove`;
+
 /************** Onboarding Endpoints ***************/
 const onboarding = () => `${API_URL}/onboarding`;
 const imageById = (imageId: string) => `${onboarding()}/image/${imageId}`;
@@ -370,6 +375,10 @@ export const apiUrls = {
   popUps,
   popUpsCurrentUser,
   popUpsRemove,
+
+  announcements,
+  announcementsCurrentUser,
+  announcementsRemove,
 
   version
 };

@@ -76,7 +76,7 @@ const UpcomingDesignReviewsCard: React.FC<DesignReviewProps> = ({ designReview, 
       variant="outlined"
       sx={{
         width: '100%',
-        minHeight: 'fit-content',
+        height: 'fit-content',
         mr: 3,
         background: theme.palette.background.default,
         borderRadius: 2

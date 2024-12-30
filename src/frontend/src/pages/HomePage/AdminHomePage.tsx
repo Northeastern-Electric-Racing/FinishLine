@@ -11,7 +11,8 @@ import PageLayout, { PAGE_GRID_HEIGHT } from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
 import WorkPackagesSelectionView from './components/WorkPackagesSelectionView';
 import ChangeRequestsToReview from './components/ChangeRequestsToReview';
-import OverdueWorkPackages from './components/OverdueWorkPackages';
+import GeneralAnnouncements from './components/GeneralAnnouncements';
+import UpcomingDesignReviews from './components/UpcomingDesignReviews';
 
 interface AdminHomePageProps {
   user: AuthenticatedUser;
@@ -41,11 +42,14 @@ const AdminHomePage = ({ user }: AdminHomePageProps) => {
           <ChangeRequestsToReview user={user} />
         </Box>
         <Grid container height={'60%'} spacing={2}>
-          <Grid item xs={7} md={7} height="100%">
+          <Grid item xs={4} md={4} height="100%">
+            <GeneralAnnouncements />
+          </Grid>
+          <Grid item xs={4} md={4} height="100%">
             <WorkPackagesSelectionView />
           </Grid>
-          <Grid item xs={5} md={5} height="100%">
-            <OverdueWorkPackages user={user} />
+          <Grid item xs={4} md={4} height="100%">
+            <UpcomingDesignReviews user={user} />
           </Grid>
         </Grid>
       </Box>

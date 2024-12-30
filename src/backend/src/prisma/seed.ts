@@ -1904,6 +1904,26 @@ const performSeed: () => Promise<void> = async () => {
     'software',
     ner.organizationId
   );
+
+  await AnnouncementService.createAnnouncement(
+    'Welcome to Finishline!',
+    [regina.userId],
+    new Date(),
+    'Damian',
+    '2',
+    'mechanical',
+    ner.organizationId
+  );
+
+  await AnnouncementService.createAnnouncement(
+    'Welcome to Finishline!',
+    [regina.userId],
+    new Date(),
+    'Batman',
+    '3',
+    'powertrain',
+    ner.organizationId
+  );
 };
 
 performSeed()

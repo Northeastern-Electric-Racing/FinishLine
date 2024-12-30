@@ -12,6 +12,7 @@ import { AuthenticatedUser } from 'shared';
 import ChangeRequestsToReview from './components/ChangeRequestsToReview';
 import MyTeamsOverdueTasks from './components/MyTeamsOverdueTasks';
 import UpcomingDesignReviews from './components/UpcomingDesignReviews';
+import GeneralAnnouncements from './components/GeneralAnnouncements';
 
 interface LeadHomePageProps {
   user: AuthenticatedUser;
@@ -41,10 +42,13 @@ const LeadHomePage = ({ user }: LeadHomePageProps) => {
           <ChangeRequestsToReview user={user} />
         </Box>
         <Grid container height={'60%'} spacing={2}>
-          <Grid item xs={12} md={6} height={'100%'}>
+          <Grid item xs={4} md={4} height={'100%'}>
+            <GeneralAnnouncements />
+          </Grid>
+          <Grid item xs={4} md={4} height={'100%'}>
             <MyTeamsOverdueTasks user={user} />
           </Grid>
-          <Grid item xs={12} md={6} height={'100%'}>
+          <Grid item xs={4} md={4} height={'100%'}>
             <UpcomingDesignReviews user={user} />
           </Grid>
         </Grid>
