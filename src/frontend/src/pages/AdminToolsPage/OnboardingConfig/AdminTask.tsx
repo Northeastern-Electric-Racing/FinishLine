@@ -39,7 +39,7 @@ const AdminTask: React.FC<AdminTaskProps> = ({ parentTask }) => {
             </IconButton>
           </Box>
         </Box>
-        {showSubtasks && <SubtaskSection parentTask={parentTask} isAdmin={true} />}
+        {showSubtasks && <SubtaskSection parentTask={parentTask} subtasks={parentTask.subtasks} isAdmin={true} />}
       </Box>
     </Box>
   );
