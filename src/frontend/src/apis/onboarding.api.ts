@@ -30,6 +30,13 @@ export const getUsersChecklists = () => {
 };
 
 /**
+ * API call to toggle a checklist
+ */
+export const toggleChecklist = (checklistId: string) => {
+  return axios.post<{ message: string }>(apiUrls.toggleChecklist(checklistId));
+};
+
+/**
  * API Call to download a google image
  * @param fileId file id to be downloaded
  * @returns an image blob

@@ -199,6 +199,7 @@ const onboarding = () => `${API_URL}/onboarding`;
 const allChecklists = () => `${onboarding()}/checklists`;
 const generalChecklists = () => `${allChecklists()}/general`;
 const usersTeamTypeChecklists = () => `${allChecklists()}/usersChecklists`;
+const toggleChecklist = (id: string) => `${onboarding()}/checklists/item/${id}/checked`;
 const imageById = (imageId: string) => `${onboarding()}/image/${imageId}`;
 
 /**************** Other Endpoints ****************/
@@ -362,6 +363,7 @@ export const apiUrls = {
   allChecklists,
   generalChecklists,
   usersTeamTypeChecklists,
+  toggleChecklist,
   imageById,
 
   version

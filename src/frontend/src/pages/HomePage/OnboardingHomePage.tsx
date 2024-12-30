@@ -54,7 +54,9 @@ const OnboardingHomePage = () => {
     }
 
     const completedGroups = groupNames.filter((group) =>
-      groupedChecklists[group].every((checklist) => checklist.usersChecked.includes(user))
+      groupedChecklists[group].every((checklist) =>
+        checklist.usersChecked.some((checkedUser) => checkedUser.userId === user.userId)
+      )
     ).length;
 
     setProgress((completedGroups / totalGroups) * 100);
@@ -81,7 +83,9 @@ const OnboardingHomePage = () => {
         <Grid item xs={12} md={7}>
           <Typography sx={{ fontSize: '2.5em' }}>Welcome to the {organization.name} Team</Typography>
         </Grid>
-        <NERButton variant="contained">Finished?</NERButton>
+        <NERButton variant="contained" disabled={progress < 100}>
+          Finished?
+        </NERButton>
       </Grid>
       <Grid
         container

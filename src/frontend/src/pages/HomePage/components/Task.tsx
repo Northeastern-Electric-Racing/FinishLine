@@ -2,8 +2,9 @@ import { Typography, Box, IconButton, Checkbox } from '@mui/material';
 import { useState, useEffect } from 'react';
 import { KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
 import SubtaskSection from './SubtaskSection';
-import { Checklist } from 'shared';
-import { useCurrentUser } from '../../../hooks/users.hooks'; 
+import { Checklist, User } from 'shared';
+import { useCurrentUser } from '../../../hooks/users.hooks';
+import { useToggleChecklist } from '../../../hooks/onboarding.hook';
 
 interface SubtaskProps {
   subtasks: Checklist[];
@@ -13,30 +14,30 @@ interface SubtaskProps {
 const Task: React.FC<SubtaskProps> = ({ subtasks, parentTask }) => {
   const [showSubtasks, setShowSubtasks] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
-  const user = useCurrentUser();  
-
-  console.log(parentTask)
+  const user = useCurrentUser();
+  const { mutateAsync: toggleChecklist } = useToggleChecklist();
 
   const toggleShowSubtasks = () => {
     setShowSubtasks((prev) => !prev);
   };
 
-  const handleCheckboxChange = () => {
-    setIsChecked((prev) => {
-      const newCheckedState = !prev;
-      if (newCheckedState) {
-        if (!parentTask.usersChecked.includes(user)) {
-          parentTask.usersChecked.push(user);
-        }
-      } else {
-        parentTask.usersChecked = parentTask.usersChecked.filter((checkedUser) => checkedUser !== user);
-      }
-      return newCheckedState;
-    });
+  const handleCheckboxChange = async () => {
+    try {
+      const newCheckedState = !isChecked;
+      setIsChecked(newCheckedState);
+      await toggleChecklist(parentTask.checklistId);
+    } catch (error) {
+      console.error('Error toggling checklist:', error);
+      setIsChecked((prev) => !prev);
+    }
   };
 
   useEffect(() => {
-    setIsChecked(parentTask.usersChecked.includes(user));
+    const isUserChecked =
+      Array.isArray(parentTask.usersChecked) &&
+      parentTask.usersChecked.some((checkedUser: User) => checkedUser.userId === user.userId);
+
+    setIsChecked(isUserChecked);
   }, [parentTask.usersChecked, user]);
 
   return (

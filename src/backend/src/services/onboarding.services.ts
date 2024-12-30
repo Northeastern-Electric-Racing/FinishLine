@@ -36,7 +36,15 @@ export default class OnboardingServices {
         dateDeleted: null,
         parentChecklistId: null
       },
-      include: { subtasks: true, teamType: true, usersChecked: true }
+      include: {
+        subtasks: {
+          include: {
+            usersChecked: true
+          }
+        },
+        teamType: true,
+        usersChecked: true
+      }
     });
     return generalChecklists;
   }
@@ -84,7 +92,14 @@ export default class OnboardingServices {
         teamTypeId: { in: teamTypeIds },
         parentChecklistId: null
       },
-      include: { subtasks: true, teamType: true }
+      include: {
+        subtasks: {
+          include: {
+            usersChecked: true
+          }
+        },
+        teamType: true
+      }
     });
 
     const teamChecklists = await prisma.checklist.findMany({
@@ -94,7 +109,14 @@ export default class OnboardingServices {
         teamId: { in: teamIds },
         parentChecklistId: null
       },
-      include: { subtasks: true, team: true }
+      include: {
+        subtasks: {
+          include: {
+            usersChecked: true
+          }
+        },
+        team: true
+      }
     });
 
     return [...teamTypeChecklists, ...teamChecklists];

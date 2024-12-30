@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Checklist as ChecklistType } from 'shared';
+import { Checklist as ChecklistType, User } from 'shared';
 import { Typography, Grid, Box, IconButton, useTheme } from '@mui/material';
 import { KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
 import Task from './Task';
@@ -20,18 +20,16 @@ const Checklist: React.FC<{ parentChecklists: ChecklistType[]; checklistName?: s
   };
 
   useEffect(() => {
-    const totalSubtasks = parentChecklists.reduce((total, checklist) => total + checklist.subtasks.length, 0);
-  
-    const completedSubtasks = parentChecklists.reduce(
-      (completed, checklist) =>
-        completed +
-        checklist.subtasks.filter((subtask) => Array.isArray(subtask.usersChecked) && subtask.usersChecked.includes(user)).length,
-      0
-    );
-  
-    setProgress(totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0);
+    const totalChecklists = parentChecklists.length;
+
+    const completedChecklists = parentChecklists.filter(
+      (checklist) =>
+        Array.isArray(checklist.usersChecked) &&
+        checklist.usersChecked.some((checkedUser: User) => checkedUser.userId === user.userId)
+    ).length;
+
+    setProgress(totalChecklists > 0 ? (completedChecklists / totalChecklists) * 100 : 0);
   }, [parentChecklists, user]);
-  
 
   return (
     <Box sx={{ backgroundColor: theme.palette.background.paper, borderRadius: 5, p: 2 }}>
@@ -53,7 +51,7 @@ const Checklist: React.FC<{ parentChecklists: ChecklistType[]; checklistName?: s
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                justifyContent: 'center' 
+                justifyContent: 'center'
               }}
             >
               {parentChecklists.map((parentChecklist, index) => (

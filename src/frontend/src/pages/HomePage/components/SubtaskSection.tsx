@@ -4,7 +4,8 @@ import { Box } from '@mui/system';
 import React, { useState, useEffect } from 'react';
 import { Checklist } from 'shared';
 import { GridDragIcon } from '@mui/x-data-grid';
-import { useCurrentUser } from '../../../hooks/users.hooks';  // Assuming this hook gives the current user ID
+import { useCurrentUser } from '../../../hooks/users.hooks';
+import { useToggleChecklist } from '../../../hooks/onboarding.hook';
 
 const SubtaskSection: React.FC<{ subtasks: Checklist[]; parentTask: Checklist; isAdmin?: boolean }> = ({
   subtasks,
@@ -12,40 +13,34 @@ const SubtaskSection: React.FC<{ subtasks: Checklist[]; parentTask: Checklist; i
   isAdmin = false
 }) => {
   const theme = useTheme();
-  const user = useCurrentUser();  // Get the current user's ID
+  const user = useCurrentUser();
+  const { mutateAsync: toggleChecklist } = useToggleChecklist();
   const [checkedSubtasks, setCheckedSubtasks] = useState<string[]>([]);
 
-  // Update the checked state when the parentTask's usersChecked change
   useEffect(() => {
     const checkedSubtaskIds = parentTask.subtasks
-      .filter(subtask => subtask.usersChecked && subtask.usersChecked.includes(user)) // Ensure usersChecked is defined
-      .map(subtask => subtask.name);  // Assuming `subtask.name` is unique
+      .filter((subtask) => subtask.usersChecked?.some((checkedUser) => checkedUser.userId === user.userId))
+      .map((subtask) => subtask.name);
+
     setCheckedSubtasks(checkedSubtaskIds);
   }, [parentTask.subtasks, user]);
 
-  const handleCheckboxChange = (subtaskName: string) => {
-    setCheckedSubtasks(prevState => {
-      const newState = [...prevState];
-      const index = newState.indexOf(subtaskName);
+  const handleCheckboxChange = async (subtaskName: string) => {
+    const subtask = parentTask.subtasks.find((sub) => sub.name === subtaskName);
+    if (!subtask) return;
 
-      if (index === -1) {
-        newState.push(subtaskName);
-        // Add the user to the usersChecked for the subtask
-        const subtask = parentTask.subtasks.find(sub => sub.name === subtaskName);
-        if (subtask && subtask.usersChecked && !subtask.usersChecked.includes(user)) {
-          subtask.usersChecked.push(user);
-        }
-      } else {
-        newState.splice(index, 1);
-        // Remove the user from the usersChecked for the subtask
-        const subtask = parentTask.subtasks.find(sub => sub.name === subtaskName);
-        if (subtask && subtask.usersChecked) {
-          subtask.usersChecked = subtask.usersChecked.filter(u => u !== user);
-        }
-      }
+    const newState = [...checkedSubtasks];
+    const index = newState.indexOf(subtaskName);
 
-      return newState;
-    });
+    if (index === -1) {
+      newState.push(subtaskName);
+      await toggleChecklist(subtask.checklistId);
+    } else {
+      newState.splice(index, 1);
+      await toggleChecklist(subtask.checklistId);
+    }
+
+    setCheckedSubtasks(newState);
   };
 
   return (
@@ -67,7 +62,7 @@ const SubtaskSection: React.FC<{ subtasks: Checklist[]; parentTask: Checklist; i
           <Grid item xs={12} md={7}>
             <Box display="flex" flexDirection="column" marginLeft={5} gap={1}>
               {subtasks.map((subtask) => (
-                <Box display={'flex'} alignItems={'center'}>
+                <Box display={'flex'} alignItems={'center'} key={subtask.checklistId}>
                   {isAdmin ? (
                     <IconButton>
                       <GridDragIcon sx={{ color: 'black' }} />
@@ -79,7 +74,7 @@ const SubtaskSection: React.FC<{ subtasks: Checklist[]; parentTask: Checklist; i
                       sx={{
                         '& .MuiSvgIcon-root': {
                           fill: 'black',
-                          backgroundColor: 'black',
+                          backgroundCpolor: 'black',
                           borderRadius: 1
                         },
                         '&.Mui-checked .MuiSvgIcon-root': {
@@ -120,22 +115,21 @@ const SubtaskSection: React.FC<{ subtasks: Checklist[]; parentTask: Checklist; i
             marginTop: isAdmin ? 1 : 0
           }}
         >
-          {parentTask.descriptions.map((description) => {
-            return (
-              <Grid
-                sx={{
-                  backgroundColor: theme.palette.background.paper,
-                  width: '50%',
-                  padding: 2,
-                  borderRadius: 2,
-                  display: 'flex',
-                  margin: 'auto'
-                }}
-              >
-                <Typography color={theme.palette.common.white}>{description}</Typography>
-              </Grid>
-            );
-          })}
+          {parentTask.descriptions.map((description) => (
+            <Grid
+              sx={{
+                backgroundColor: theme.palette.background.paper,
+                width: '50%',
+                padding: 2,
+                borderRadius: 2,
+                display: 'flex',
+                margin: 'auto'
+              }}
+              key={description}
+            >
+              <Typography color={theme.palette.common.white}>{description}</Typography>
+            </Grid>
+          ))}
         </Box>
       )}
     </Box>
