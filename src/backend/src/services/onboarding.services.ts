@@ -373,6 +373,23 @@ export default class OnboardingServices {
     }
 
     if (isChecked) {
+      const childChecklists = await prisma.checklist.findMany({
+        where: { parentChecklistId: checklistId }
+      });
+
+      await Promise.all(
+        childChecklists.map((checklist) =>
+          prisma.checklist.update({
+            where: { checklistId: checklist.checklistId },
+            data: {
+              usersChecked: {
+                disconnect: { userId }
+              }
+            }
+          })
+        )
+      );
+
       await prisma.checklist.update({
         where: { checklistId },
         data: {

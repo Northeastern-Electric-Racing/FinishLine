@@ -9,11 +9,10 @@ import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import EditIcon from '@mui/icons-material/Edit';
 
 interface AdminTaskProps {
-  subtasks: Checklist[];
   parentTask: Checklist;
 }
 
-const AdminTask: React.FC<AdminTaskProps> = ({ subtasks, parentTask }) => {
+const AdminTask: React.FC<AdminTaskProps> = ({ parentTask }) => {
   const [showSubtasks, setShowSubtasks] = useState(false);
 
   const toggleShowSubtasks = () => {
@@ -40,7 +39,7 @@ const AdminTask: React.FC<AdminTaskProps> = ({ subtasks, parentTask }) => {
             </IconButton>
           </Box>
         </Box>
-        {showSubtasks && <SubtaskSection subtasks={subtasks} parentTask={parentTask} isAdmin={true} />}
+        {showSubtasks && <SubtaskSection parentTask={parentTask} isAdmin={true} />}
       </Box>
     </Box>
   );

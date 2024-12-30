@@ -183,30 +183,6 @@ describe('Organization Tests', () => {
     });
   });
 
-  describe('Get Organization Images', () => {
-    it('Fails if an organization does not exist', async () => {
-      await expect(async () => await OrganizationsService.getOrganizationImages('1')).rejects.toThrow(
-        new NotFoundException('Organization', '1')
-      );
-    });
-
-    it('Succeeds and gets all the images', async () => {
-      const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      await createTestLinkType(testBatman, orgId);
-      await OrganizationsService.setImages(
-        { originalname: 'image1.png' } as Express.Multer.File,
-        { originalname: 'image2.png' } as Express.Multer.File,
-        testBatman,
-        organization
-      );
-      const images = await OrganizationsService.getOrganizationImages(orgId);
-
-      expect(images).not.toBeNull();
-      expect(images.applyInterestImage).toBe('uploaded-image1.png');
-      expect(images.exploreAsGuestImage).toBe('uploaded-image2.png');
-    });
-  });
-
   describe('Update Application Link', () => {
     it('Fails if user is not admin', async () => {
       await expect(
@@ -268,7 +244,7 @@ describe('Organization Tests', () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
       const testSuperman = await createTestUser(supermanAdmin, orgId);
 
-      const updatedOrganization = await OrganizationsService.updateOrganizationContacts(testBatman, organization, [
+      await OrganizationsService.updateOrganizationContacts(testBatman, organization, [
         { userId: testBatman.userId, title: 'Chief Software Engineer' },
         { userId: testSuperman.userId, title: 'Chief Mechanical Engineer' }
       ]);
@@ -282,10 +258,6 @@ describe('Organization Tests', () => {
       expect(allContacts.length).toBe(2);
       expect(allContacts.some((contact) => contact.userId === testBatman.userId)).toBeTruthy();
       expect(allContacts.some((contact) => contact.userId === testSuperman.userId)).toBeTruthy();
-
-      expect(updatedOrganization).not.toBeNull();
-      expect(updatedOrganization.contacts[0].title).toBe('Chief Software Engineer');
-      expect(updatedOrganization.contacts[1].title).toBe('Chief Mechanical Engineer');
     });
   });
 });

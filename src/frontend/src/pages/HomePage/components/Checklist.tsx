@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Checklist as ChecklistType, User } from 'shared';
 import { Typography, Grid, Box, IconButton, useTheme } from '@mui/material';
 import { KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
-import Task from './Task';
+import ParentTask from './ParentTask';
 import OnboardingProgressBar from '../../../components/OnboardingProgressBar';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 
@@ -54,8 +54,8 @@ const Checklist: React.FC<{ parentChecklists: ChecklistType[]; checklistName?: s
                 justifyContent: 'center'
               }}
             >
-              {parentChecklists.map((parentChecklist, index) => (
-                <Task key={index} subtasks={parentChecklist.subtasks} parentTask={parentChecklist} />
+              {parentChecklists.map((parentChecklist) => (
+                <ParentTask parentTask={parentChecklist} />
               ))}
             </Box>
           </Grid>
