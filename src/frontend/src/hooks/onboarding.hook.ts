@@ -2,11 +2,18 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Checklist } from 'shared';
 import {
   getAllChecklists,
+  getGeneralChecklists,
   getUsersChecklists,
   downloadGoogleImage,
+  toggleChecklist,
+  getCheckedChecklists,
   createChecklist,
   editChecklist
 } from '../apis/onboarding.api';
+
+export interface ToggleChecklistPayload {
+  checklistId: string;
+}
 
 export interface ChecklistCreateArgs {
   name: string;
@@ -24,11 +31,42 @@ export const useAllChecklists = () => {
   });
 };
 
+
+export const useGeneralChecklists = () => {
+  return useQuery<Checklist[], Error>(['checklists', 'general'], async () => {
+    const { data } = await getGeneralChecklists();
+    return data;
+  });
+};
+
+export const useCheckedChecklists = () => {
+  return useQuery<Checklist[], Error>(['checklists', 'checked'], async () => {
+    const { data } = await getCheckedChecklists();
+    return data;
+  });
+};
+
 export const useUsersTeamTypeChecklists = () => {
   return useQuery<Checklist[], Error>(['checklists', 'teamTypeChecklists'], async () => {
     const { data } = await getUsersChecklists();
     return data;
   });
+};
+
+export const useToggleChecklist = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Checklist, Error, ToggleChecklistPayload>(
+    ['checklists', 'edit'],
+    async (payload) => {
+      const { data } = await toggleChecklist(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['checklists']);
+      }
+    }
+  );
 };
 
 export const useGetImageUrl = (imageFileId: string | null) => {

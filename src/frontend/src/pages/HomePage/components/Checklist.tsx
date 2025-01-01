@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Checklist as ChecklistType } from 'shared';
 import { Typography, Grid, Box, IconButton, useTheme } from '@mui/material';
 import { KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
-import Task from './Task';
+import ParentTask from './ParentTask';
 import OnboardingProgressBar from '../../../components/OnboardingProgressBar';
 
 const Checklist: React.FC<{ parentChecklists: ChecklistType[]; checklistName?: string }> = ({
@@ -40,7 +40,7 @@ const Checklist: React.FC<{ parentChecklists: ChecklistType[]; checklistName?: s
               }}
             >
               {parentChecklists.map((parentChecklist) => (
-                <Task parentTask={parentChecklist} />
+                <ParentTask parentTask={parentChecklist} />
               ))}
             </Box>
           </Grid>

@@ -555,6 +555,61 @@ describe('Onboarding tests', () => {
       expect(revertedParentItem?.usersChecked.length).toBe(0);
     });
 
+    it('Unchecks all children when unchecking parent', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+
+      const parentChecklist = await createTestChecklist(batman, orgId, 'Parent Checklist', undefined, undefined, undefined);
+
+      const childChecklistItem1 = await createTestChecklist(
+        batman,
+        orgId,
+        'Child Checklist Item 1',
+        undefined,
+        undefined,
+        parentChecklist.checklistId
+      );
+
+      const childChecklistItem2 = await createTestChecklist(
+        batman,
+        orgId,
+        'Child Checklist Item 2',
+        undefined,
+        undefined,
+        parentChecklist.checklistId
+      );
+
+      await OnboardingServices.toggleChecklist(childChecklistItem1.checklistId, batman, organization);
+      await OnboardingServices.toggleChecklist(childChecklistItem2.checklistId, batman, organization);
+
+      const updatedChildItem1 = await prisma.checklist.findUnique({
+        where: { checklistId: childChecklistItem1.checklistId },
+        include: { usersChecked: true }
+      });
+
+      const updatedChildItem2 = await prisma.checklist.findUnique({
+        where: { checklistId: childChecklistItem2.checklistId },
+        include: { usersChecked: true }
+      });
+
+      expect(updatedChildItem1?.usersChecked.length).toBe(1);
+      expect(updatedChildItem2?.usersChecked.length).toBe(1);
+
+      await OnboardingServices.toggleChecklist(parentChecklist.checklistId, batman, organization);
+
+      const revertedChildItem1 = await prisma.checklist.findUnique({
+        where: { checklistId: childChecklistItem1.checklistId },
+        include: { usersChecked: true }
+      });
+
+      const revertedChildItem2 = await prisma.checklist.findUnique({
+        where: { checklistId: childChecklistItem2.checklistId },
+        include: { usersChecked: true }
+      });
+
+      expect(revertedChildItem1?.usersChecked.length).toBe(0);
+      expect(revertedChildItem2?.usersChecked.length).toBe(0);
+    });
+
     it('throws NotFoundException when toggling a non-existing checklist item', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       await expect(OnboardingServices.toggleChecklist('nonExistingId', batman, organization)).rejects.toThrow(

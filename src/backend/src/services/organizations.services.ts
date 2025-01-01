@@ -92,23 +92,26 @@ export default class OrganizationsService {
    * @param images the images which are being set
    */
   static async setImages(
-    applyInterestImage: Express.Multer.File,
-    exploreAsGuestImage: Express.Multer.File,
+    applyInterestImage: Express.Multer.File | null,
+    exploreAsGuestImage: Express.Multer.File | null,
     submitter: User,
     organization: Organization
   ) {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('update images');
+    }
 
-    const applyInterestImageData = uploadFile(applyInterestImage);
-    const exploreAsGuestImageData = uploadFile(exploreAsGuestImage);
+    const applyInterestImageData = applyInterestImage ? await uploadFile(applyInterestImage) : null;
+    const exploreAsGuestImageData = exploreAsGuestImage ? await uploadFile(exploreAsGuestImage) : null;
+
+    const updateData = {
+      ...(applyInterestImageData && { applyInterestImageId: applyInterestImageData.id }),
+      ...(exploreAsGuestImageData && { exploreAsGuestImageId: exploreAsGuestImageData.id })
+    };
 
     const newImages = await prisma.organization.update({
       where: { organizationId: organization.organizationId },
-      data: {
-        applyInterestImageId: (await applyInterestImageData).id,
-        exploreAsGuestImageId: (await exploreAsGuestImageData).id
-      }
+      data: updateData
     });
 
     return newImages;
@@ -136,27 +139,6 @@ export default class OrganizationsService {
       ...getLinkQueryArgs(organization.organizationId)
     });
     return links.map(linkTransformer);
-  }
-
-  /**
-   * Gets all organization Images for the given organization Id
-   * @param organizationId organization Id of the milestone
-   * @returns all the milestones from the given organization
-   */
-
-  static async getOrganizationImages(organizationId: string) {
-    const organization = await prisma.organization.findUnique({
-      where: { organizationId }
-    });
-
-    if (!organization) {
-      throw new NotFoundException('Organization', organizationId);
-    }
-
-    return {
-      applyInterestImage: organization.applyInterestImageId,
-      exploreAsGuestImage: organization.exploreAsGuestImageId
-    };
   }
 
   /**

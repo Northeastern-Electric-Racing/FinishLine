@@ -4,10 +4,33 @@ import { Box } from '@mui/system';
 import React from 'react';
 import { Checklist } from 'shared';
 import { GridDragIcon } from '@mui/x-data-grid';
+import { useToggleChecklist } from '../../../hooks/onboarding.hook';
+import { useToast } from '../../../hooks/toasts.hooks';
+interface SubtaskSectionProps {
+  parentTask: Checklist;
+  checkedChecklists?: Checklist[];
+  isAdmin?: boolean;
+}
 
-const SubtaskSection: React.FC<{ parentTask: Checklist; isAdmin?: boolean }> = ({ parentTask, isAdmin = false }) => {
+const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChecklists, isAdmin = false }) => {
   const theme = useTheme();
+  const toast = useToast();
   const { subtasks } = parentTask;
+  const { mutateAsync: toggleChecklist } = useToggleChecklist();
+
+  const handleToggleChecklist = async (subtaskId: string) => {
+    try {
+      await toggleChecklist({ checklistId: subtaskId });
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
+  const isChecklistChecked = (checklistId: string) => {
+    if (!checkedChecklists) return false;
+    return checkedChecklists.some((checklist) => checklist.checklistId === checklistId);
+  };
+
   return (
     <Box
       sx={
@@ -33,21 +56,24 @@ const SubtaskSection: React.FC<{ parentTask: Checklist; isAdmin?: boolean }> = (
                       <GridDragIcon sx={{ color: 'black' }} />
                     </IconButton>
                   ) : (
-                    <Checkbox
-                      sx={{
-                        '& .MuiSvgIcon-root': {
-                          fill: 'black',
-                          backgroundColor: 'black',
-                          borderRadius: 1
-                        },
-                        '&.Mui-checked .MuiSvgIcon-root': {
-                          backgroundColor: 'white'
-                        },
-                        '&:hover': {
-                          backgroundColor: 'transparent'
-                        }
-                      }}
-                    />
+                    <IconButton onClick={() => handleToggleChecklist(subtask.checklistId)}>
+                      <Checkbox
+                        checked={isChecklistChecked(subtask.checklistId)}
+                        sx={{
+                          '& .MuiSvgIcon-root': {
+                            fill: 'black',
+                            backgroundColor: 'black',
+                            borderRadius: 1
+                          },
+                          '&.Mui-checked .MuiSvgIcon-root': {
+                            backgroundColor: 'white'
+                          },
+                          '&:hover': {
+                            backgroundColor: 'transparent'
+                          }
+                        }}
+                      />
+                    </IconButton>
                   )}
                   <Typography color={'black'} fontWeight={'bold'}>
                     {subtask.name} {subtask.isOptional ? '(Optional)' : '(Required)'}
