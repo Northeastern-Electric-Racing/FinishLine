@@ -1,8 +1,7 @@
 import { Checklist } from 'shared';
 import { apiUrls } from '../utils/urls';
 import axios from '../utils/axios';
-import { ChecklistCreateArgs } from '../hooks/onboarding.hook';
-import { ToggleChecklistPayload } from '../hooks/onboarding.hook';
+import { ChecklistCreateArgs, ToggleChecklistPayload } from '../hooks/onboarding.hook';
 
 /**
  * API call to fetch all the checklists
@@ -32,7 +31,6 @@ export const getCheckedChecklists = () => {
 };
 
 /**
->>>>>>> feature/recruitment_and_onboarding
  * API call to fetch all the users checklists
  */
 export const getUsersChecklists = () => {
@@ -42,9 +40,14 @@ export const getUsersChecklists = () => {
 };
 
 /**
- * API call to create a checklist
- * @param payload the checklist data
+ * API call to toggle a checklist
  */
+export const toggleChecklist = (payload: ToggleChecklistPayload) => {
+  return axios.post<Checklist>(apiUrls.toggleChecklist(payload.checklistId), {
+    ...payload
+  });
+};
+
 export const createChecklist = (payload: ChecklistCreateArgs) => {
   return axios.post(apiUrls.createChecklist(), {
     ...payload
@@ -56,14 +59,6 @@ export const createChecklist = (payload: ChecklistCreateArgs) => {
  */
 export const editChecklist = (checklistId: string, payload: ChecklistCreateArgs) => {
   return axios.post(apiUrls.editChecklist(checklistId), {
-    ...payload
-  });
-};
-/**
- * API call to toggle a checklist
- */
-export const toggleChecklist = (payload: ToggleChecklistPayload) => {
-  return axios.post<Checklist>(apiUrls.toggleChecklist(payload.checklistId), {
     ...payload
   });
 };

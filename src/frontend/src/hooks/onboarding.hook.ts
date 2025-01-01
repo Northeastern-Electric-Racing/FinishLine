@@ -6,9 +6,9 @@ import {
   getUsersChecklists,
   downloadGoogleImage,
   toggleChecklist,
-  getCheckedChecklists,
   createChecklist,
-  editChecklist
+  editChecklist,
+  getCheckedChecklists
 } from '../apis/onboarding.api';
 
 export interface ToggleChecklistPayload {
