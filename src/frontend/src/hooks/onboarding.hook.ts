@@ -5,6 +5,7 @@ import {
   getGeneralChecklists,
   getUsersChecklists,
   downloadGoogleImage,
+  deleteChecklist,
   toggleChecklist,
   getCheckedChecklists
 } from '../apis/onboarding.api';
@@ -39,6 +40,22 @@ export const useUsersTeamTypeChecklists = () => {
     const { data } = await getUsersChecklists();
     return data;
   });
+};
+
+export const useDeleteChecklist = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['checklists', 'delete'],
+    async (checklistId: string) => {
+      const { data } = await deleteChecklist(checklistId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['checklists']);
+      }
+    }
+  );
 };
 
 export const useToggleChecklist = () => {
