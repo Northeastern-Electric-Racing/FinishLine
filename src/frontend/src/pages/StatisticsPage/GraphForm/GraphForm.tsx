@@ -62,7 +62,7 @@ const GraphForm = ({ title, action, defaultValues, submitText, successText }: Gr
       });
 
       toast.success(successText);
-      history.push(routes.STATISTICS);
+      history.push(routes.STATISTICS + '/graph-collections/' + graphCollectionId);
       reset();
     } catch (error) {
       if (error instanceof Error) {
@@ -72,7 +72,7 @@ const GraphForm = ({ title, action, defaultValues, submitText, successText }: Gr
   };
 
   const exitEditMode = () => {
-    history.push(routes.STATISTICS);
+    history.push(routes.STATISTICS + '/graph-collections/' + graphCollectionId);
   };
 
   if (isError) {
@@ -96,8 +96,8 @@ const GraphForm = ({ title, action, defaultValues, submitText, successText }: Gr
         stickyHeader
         title={title}
         previousPages={[
-          { name: 'statistics', route: routes.STATISTICS },
-          { name: 'collection', route: `${routes.STATISTICS}/graph-collections/${graphCollectionId}` }
+          { name: 'Statistics', route: routes.STATISTICS },
+          { name: 'Collection', route: `${routes.STATISTICS}/graph-collections/${graphCollectionId}` }
         ]}
         headerRight={
           <Box display="inline-flex" alignItems="center" justifyContent={'end'}>
@@ -110,11 +110,7 @@ const GraphForm = ({ title, action, defaultValues, submitText, successText }: Gr
           </Box>
         }
       >
-        <GraphFormView
-          control={control}
-          errors={errors}
-          cars={cars}
-        />
+        <GraphFormView control={control} errors={errors} cars={cars} />
       </PageLayout>
     </form>
   );

@@ -58,6 +58,7 @@ export interface GraphCollection {
   userCreated: User;
   userDeleted?: User;
   dateDeleted?: Date;
+  dateCreated: Date;
   permissions: SpecialPermission[];
 }
 

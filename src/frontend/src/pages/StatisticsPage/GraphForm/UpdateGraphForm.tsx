@@ -6,9 +6,9 @@ import ErrorPage from '../../ErrorPage';
 import { useGetSingleGraph, useUpdateGraph } from '../../../hooks/statistics.hooks';
 
 const UpdateGraphForm: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const { data: graph, isLoading, isError, error } = useGetSingleGraph(id);
-  const { mutateAsync: updateGraph, isLoading: updateIsLoading } = useUpdateGraph(id);
+  const { graphId } = useParams<{ graphId: string }>();
+  const { data: graph, isLoading, isError, error } = useGetSingleGraph(graphId);
+  const { mutateAsync: updateGraph, isLoading: updateIsLoading } = useUpdateGraph(graphId);
 
   if (isError) {
     return <ErrorPage error={error} />;

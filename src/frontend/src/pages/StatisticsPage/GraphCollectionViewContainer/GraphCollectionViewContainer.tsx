@@ -11,8 +11,8 @@ import UpdateGraphCollectionForm from '../GraphCollectionForm/UpdateGraphCollect
 import { useState } from 'react';
 
 const GraphCollectionViewContainer = () => {
-  const { id } = useParams<{ id: string }>();
-  const { data: graphCollection, isLoading, isError, error } = useGetSingleGraphCollection(id);
+  const { graphCollectionId } = useParams<{ graphCollectionId: string }>();
+  const { data: graphCollection, isLoading, isError, error } = useGetSingleGraphCollection(graphCollectionId);
   const history = useHistory();
   const [showEditGraphCollectionModal, setShowEditGraphCollectionModal] = useState(false);
 
@@ -28,7 +28,7 @@ const GraphCollectionViewContainer = () => {
     <PageLayout
       stickyHeader
       title={graphCollection.title}
-      previousPages={[{ name: 'statistics', route: routes.STATISTICS }]}
+      previousPages={[{ name: 'Statistics', route: routes.STATISTICS }]}
       headerRight={
         <Box display="inline-flex" alignItems="center" justifyContent={'end'}>
           <NERButton variant="contained" sx={{ mx: 1 }} onClick={() => setShowEditGraphCollectionModal(true)}>
@@ -37,14 +37,23 @@ const GraphCollectionViewContainer = () => {
         </Box>
       }
     >
-      <Grid container>
+      <Grid container spacing={1}>
         {graphCollection.graphs.map((graph) => (
-          <Grid item lg={4} md={6} xs={12}>
-            <GraphView graph={graph} />
+          <Grid item lg={4} md={6} xs={12} overflow={'hidden'}>
+            <GraphView graph={graph} height={400} />
           </Grid>
         ))}
         <Grid item lg={4} md={6} xs={12}>
-          <Box>
+          <Box
+            sx={{
+              width: '100%',
+              height: 400,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              border: '2px dashed #ef4343'
+            }}
+          >
             <NERButton
               onClick={() => history.push(`${routes.STATISTICS}/graph-collections/${graphCollection.id}/graph/create`)}
             >

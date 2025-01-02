@@ -1011,6 +1011,7 @@ model Graph_Collection {
   dateDeleted     DateTime?
   viewPermissions Special_Permission[]
   graphs          Graph[]
+  dateCreated     DateTime             @default(now())
 
   userCreatedId  String
   userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "graphCollectionsCreator")

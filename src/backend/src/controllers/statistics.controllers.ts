@@ -39,9 +39,9 @@ export default class StatisticsController {
 
   static async getSingleGraph(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params;
+      const { graphId } = req.params;
 
-      const requestedGraph = await StatisticsService.getSingleGraph(id, req.currentUser, req.organization);
+      const requestedGraph = await StatisticsService.getSingleGraph(graphId, req.currentUser, req.organization);
 
       res.status(200).json(requestedGraph);
     } catch (error: unknown) {

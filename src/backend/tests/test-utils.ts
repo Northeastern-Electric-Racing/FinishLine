@@ -31,7 +31,7 @@ export interface CreateTestUserParams {
   emailId?: string | null;
   googleAuthId: string;
   role: RoleEnum;
-  permissions?: Permission[];
+  permissions?: string[];
 }
 
 export const createTestUser = async (

@@ -18,6 +18,7 @@ export const graphCollectionTransformer = (
     }) as Graph[],
     title: graphCollection.title,
     linkId: graphCollection.id,
-    permissions: graphCollection.viewPermissions as SpecialPermission[]
+    permissions: graphCollection.viewPermissions as SpecialPermission[],
+    dateCreated: graphCollection.dateCreated
   };
 };
