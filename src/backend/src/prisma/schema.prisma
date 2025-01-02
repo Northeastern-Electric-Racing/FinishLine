@@ -900,6 +900,8 @@ model Organization {
   FrequentlyAskedQuestions FrequentlyAskedQuestion[]
   Milestone                Milestone[]
   featuredProjects         Project[]
+  PopUps                   PopUp[]
+  Announcements            Announcement[]
 }
 
 model FrequentlyAskedQuestion {
@@ -932,20 +934,24 @@ model Milestone {
 }
 
 model Announcement {
-  announcementId   String    @id @default(uuid())
+  announcementId   String       @id @default(uuid())
   text             String
-  usersReceived    User[]    @relation("receivedAnnouncements")
-  dateMessageSent  DateTime  @default(now())
+  usersReceived    User[]       @relation("receivedAnnouncements")
+  dateMessageSent  DateTime     @default(now())
   dateDeleted      DateTime?
   senderName       String
-  slackEventId     String    @unique
+  slackEventId     String       @unique
   slackChannelName String
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [organizationId])
 }
 
 model PopUp {
-  popUpId   String  @id @default(uuid())
-  text      String
-  iconName  String
-  users     User[]  @relation("userPopUps")
-  eventLink String?
+  popUpId        String       @id @default(uuid())
+  text           String
+  iconName       String
+  users          User[]       @relation("userPopUps")
+  eventLink      String?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
 }

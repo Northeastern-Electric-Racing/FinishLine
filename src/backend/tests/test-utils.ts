@@ -18,6 +18,7 @@ import { getWorkPackageTemplateQueryArgs } from '../src/prisma-query-args/work-p
 import DesignReviewsService from '../src/services/design-reviews.services';
 import TasksService from '../src/services/tasks.services';
 import ProjectsService from '../src/services/projects.services';
+import { SlackMessage } from '../src/services/slack.services';
 
 export interface CreateTestUserParams {
   firstName: string;
@@ -118,9 +119,10 @@ export const resetUsers = async () => {
   await prisma.wBS_Element.deleteMany();
   await prisma.milestone.deleteMany();
   await prisma.frequentlyAskedQuestion.deleteMany();
+  await prisma.announcement.deleteMany();
+  await prisma.popUp.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
-  await prisma.announcement.deleteMany();
 };
 
 export const createFinanceTeamAndLead = async (organization?: Organization) => {
@@ -454,4 +456,34 @@ export const createTestTask = async (user: User, organization?: Organization) =>
 
   if (!task) throw new Error('Failed to create task');
   return { task, organization, orgId };
+};
+
+export const createSlackMessageEvent = (
+  channel: string,
+  event_ts: string,
+  user: string,
+  client_msg_id: string,
+  elements: any[]
+): SlackMessage => {
+  return {
+    type: 'message',
+    channel,
+    event_ts,
+    channel_type: 'channel',
+    user,
+    client_msg_id,
+    text: 'sample text',
+    blocks: [
+      {
+        type: 'rich_text',
+        block_id: 'block id',
+        elements: [
+          {
+            type: 'rich_text_section',
+            elements
+          }
+        ]
+      }
+    ]
+  };
 };

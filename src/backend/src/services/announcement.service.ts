@@ -2,7 +2,7 @@ import { Announcement } from 'shared';
 import prisma from '../prisma/prisma';
 import { getAnnouncementQueryArgs } from '../prisma-query-args/announcements.query.args';
 import announcementTransformer from '../transformers/announcements.transformer';
-import { HttpException, NotFoundException } from '../utils/errors.utils';
+import { DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
 
 export default class AnnouncementService {
   /**
@@ -10,7 +10,7 @@ export default class AnnouncementService {
    * this data is populated from slack events
    * @param text slack message text
    * @param usersReceivedIds users to send announcements to
-   * @param dateCreated date created of slack message
+   * @param dateMessageSent date created of slack message
    * @param senderName name of user who sent slack message
    * @param slackEventId id of slack event (provided by slack api)
    * @param slackChannelName name of channel message was sent in
@@ -37,7 +37,76 @@ export default class AnnouncementService {
         dateMessageSent,
         senderName,
         slackEventId,
+        slackChannelName,
+        organizationId
+      },
+      ...getAnnouncementQueryArgs(organizationId)
+    });
+
+    return announcementTransformer(announcement);
+  }
+
+  static async updateAnnouncement(
+    text: string,
+    usersReceivedIds: string[],
+    senderName: string,
+    slackEventId: string,
+    slackChannelName: string,
+    organizationId: string
+  ): Promise<Announcement> {
+    const originalAnnouncement = await prisma.announcement.findUnique({
+      where: {
+        slackEventId
+      }
+    });
+
+    if (!originalAnnouncement) throw new NotFoundException('Announcement', slackEventId);
+
+    if (originalAnnouncement.dateDeleted) throw new DeletedException('Announcement', slackEventId);
+
+    if (originalAnnouncement.organizationId !== organizationId)
+      throw new HttpException(400, `Announcement is not apart of the current organization`);
+
+    const announcement = await prisma.announcement.update({
+      where: { announcementId: originalAnnouncement.announcementId },
+      data: {
+        text,
+        usersReceived: {
+          set: usersReceivedIds.map((id) => ({
+            userId: id
+          }))
+        },
+        slackEventId,
+        senderName,
         slackChannelName
+      },
+      ...getAnnouncementQueryArgs(organizationId)
+    });
+
+    return announcementTransformer(announcement);
+  }
+
+  static async deleteAnnouncement(slackEventId: string, organizationId: string): Promise<Announcement> {
+    const originalAnnouncement = await prisma.announcement.findUnique({
+      where: {
+        slackEventId
+      }
+    });
+
+    if (!originalAnnouncement) throw new NotFoundException('Announcement', slackEventId);
+
+    if (originalAnnouncement.dateDeleted) throw new DeletedException('Announcement', slackEventId);
+
+    if (originalAnnouncement.organizationId !== organizationId)
+      throw new HttpException(400, `Announcement is not apart of the current organization`);
+
+    const announcement = await prisma.announcement.update({
+      where: { slackEventId },
+      data: {
+        dateDeleted: new Date(),
+        usersReceived: {
+          set: []
+        }
       },
       ...getAnnouncementQueryArgs(organizationId)
     });
@@ -57,7 +126,8 @@ export default class AnnouncementService {
         dateDeleted: null,
         usersReceived: {
           some: { userId }
-        }
+        },
+        organizationId
       },
       ...getAnnouncementQueryArgs(organizationId)
     });

@@ -13,6 +13,14 @@ import projectTransformer from '../transformers/projects.transformer';
 
 export default class OrganizationsService {
   /**
+   * Retrieve all the organizations
+   * @returns an array of every organization
+   */
+  static async getAllOrganizations(): Promise<Organization[]> {
+    return prisma.organization.findMany();
+  }
+
+  /**
    * Gets the current organization
    * @param organizationId the organizationId to be fetched
    */
