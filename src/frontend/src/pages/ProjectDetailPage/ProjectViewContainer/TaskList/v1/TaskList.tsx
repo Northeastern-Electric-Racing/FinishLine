@@ -20,11 +20,17 @@ interface TaskListProps {
 
 // used two sort two Tasks based on ascending times
 const sortAscendingDate = (task1: Task, task2: Task) => {
-  const deadLine1 = task1.deadline.getTime();
-  const deadLine2 = task2.deadline.getTime();
-
-  if (deadLine1 !== deadLine2) return deadLine1 - deadLine2;
-  return task1.dateCreated.getTime() - task2.dateCreated.getTime();
+  if (task1.deadline && task2.deadline) {
+    const deadLine1 = task1.deadline.getTime();
+    const deadLine2 = task2.deadline.getTime();
+    if (deadLine1 !== deadLine2) return deadLine1 - deadLine2;
+    return task1.dateCreated.getTime() - task2.dateCreated.getTime();
+  } else if (task1.deadline && !task2.deadline) {
+    return 1;
+  } else if (task2.deadline && !task1.deadline) {
+    return -1;
+  }
+  return 0;
 };
 
 // Page block containing task list view

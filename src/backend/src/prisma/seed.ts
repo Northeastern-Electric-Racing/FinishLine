@@ -1369,11 +1369,11 @@ const performSeed: () => Promise<void> = async () => {
     project1WbsNumber,
     'Research attenuation',
     "I don't know what attenuation is yet",
-    new Date('01/01/2024'),
     Task_Priority.HIGH,
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId],
-    ner
+    ner,
+    new Date('01/01/2024')
   );
 
   await TasksService.createTask(
@@ -1381,11 +1381,11 @@ const performSeed: () => Promise<void> = async () => {
     project1WbsNumber,
     'Design Attenuator',
     'Autocad?',
-    new Date('01/01/2024'),
     Task_Priority.MEDIUM,
     Task_Status.IN_BACKLOG,
     [joeShmoe.userId],
-    ner
+    ner,
+    new Date('01/01/2024')
   );
 
   await TasksService.createTask(
@@ -1393,11 +1393,11 @@ const performSeed: () => Promise<void> = async () => {
     project1WbsNumber,
     'Research Impact',
     'Autocad?',
-    new Date('01/01/2024'),
     Task_Priority.MEDIUM,
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId, joeBlow.userId],
-    ner
+    ner,
+    new Date('01/01/2024')
   );
 
   await TasksService.createTask(
@@ -1406,11 +1406,11 @@ const performSeed: () => Promise<void> = async () => {
     'Impact Test',
     'Use our conveniently available jumbo watermelon and slingshot to test how well our impact attenuator can ' +
       'attenuate impact.',
-    new Date('2024-02-17T00:00:00-05:00'),
     Task_Priority.LOW,
     Task_Status.IN_PROGRESS,
     [joeBlow.userId],
-    ner
+    ner,
+    new Date('2024-02-17T00:00:00-05:00')
   );
 
   await TasksService.createTask(
@@ -1418,11 +1418,11 @@ const performSeed: () => Promise<void> = async () => {
     project1WbsNumber,
     'Review Compliance',
     'I think there are some rules we may or may not have overlooked...',
-    new Date('2024-01-01T00:00:00-05:00'),
     Task_Priority.MEDIUM,
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId],
-    ner
+    ner,
+    new Date('2024-01-01T00:00:00-05:00')
   );
 
   await TasksService.createTask(
@@ -1430,11 +1430,11 @@ const performSeed: () => Promise<void> = async () => {
     project1WbsNumber,
     'Decorate Impact Attenuator',
     'You know you want to.',
-    new Date('2024-01-20T00:00:00-05:00'),
     Task_Priority.LOW,
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId],
-    ner
+    ner,
+    new Date('2024-01-20T00:00:00-05:00')
   );
 
   await TasksService.createTask(
@@ -1442,11 +1442,11 @@ const performSeed: () => Promise<void> = async () => {
     project1WbsNumber,
     'Meet with the Department of Transportation',
     'Discuss design decisions',
-    new Date('2023-05-19T00:00:00-04:00'),
     Task_Priority.LOW,
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId],
-    ner
+    ner,
+    new Date('2023-05-19T00:00:00-04:00')
   );
 
   await TasksService.createTask(
@@ -1454,11 +1454,11 @@ const performSeed: () => Promise<void> = async () => {
     project1WbsNumber,
     'Build Attenuator',
     'WOOOO',
-    new Date('01/01/2024'),
     Task_Priority.LOW,
     Task_Status.DONE,
     [joeShmoe.userId],
-    ner
+    ner,
+    new Date('01/01/2024')
   );
 
   await TasksService.createTask(
@@ -1474,11 +1474,11 @@ const performSeed: () => Promise<void> = async () => {
       'a 5-foot drive test to hitting 60 miles per hour in competitions. "It\'s a go-kart that has 110 kilowatts of ' +
       'power, 109 kilowatts of power," says McCauley, a fourth-year electrical and computer engineering student. ' +
       '"That\'s over 100 horsepower."',
-    new Date('2022-11-16T00:00-05:00'),
     Task_Priority.HIGH,
     Task_Status.DONE,
     [joeShmoe.userId],
-    ner
+    ner,
+    new Date('2022-11-16T00:00-05:00')
   );
 
   await TasksService.createTask(
@@ -1486,11 +1486,11 @@ const performSeed: () => Promise<void> = async () => {
     project1WbsNumber,
     'Safety Training',
     'how to use (or not use) the impact attenuator',
-    new Date('2023-03-15T00:00:00-04:00'),
     Task_Priority.HIGH,
     Task_Status.DONE,
     [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId],
-    ner
+    ner,
+    new Date('2023-03-15T00:00:00-04:00')
   );
 
   await TasksService.createTask(
@@ -1498,11 +1498,11 @@ const performSeed: () => Promise<void> = async () => {
     project2WbsNumber,
     'Double-Check Inventory',
     'Nobody really wants to do this...',
-    new Date('2023-04-01T00:00:00-04:00'),
     Task_Priority.LOW,
     Task_Status.IN_BACKLOG,
     [],
-    ner
+    ner,
+    new Date('2023-04-01T00:00:00-04:00')
   );
 
   await TasksService.createTask(
@@ -1510,11 +1510,11 @@ const performSeed: () => Promise<void> = async () => {
     project2WbsNumber,
     'Aerodynamics Test',
     'Wind go wooooosh',
-    new Date('2024-01-01T00:00:00-05:00'),
     Task_Priority.MEDIUM,
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId],
-    ner
+    ner,
+    new Date('2024-01-01T00:00:00-05:00')
   );
 
   await TasksService.createTask(
@@ -1522,11 +1522,11 @@ const performSeed: () => Promise<void> = async () => {
     project2WbsNumber,
     'Ask Sponsors About Logo Sticker Placement',
     'the more sponsors the cooler we look',
-    new Date('2024-01-01T00:00:00-05:00'),
     Task_Priority.HIGH,
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId, joeShmoe.userId],
-    ner
+    ner,
+    new Date('2024-01-01T00:00:00-05:00')
   );
 
   await TasksService.createTask(
@@ -1534,11 +1534,11 @@ const performSeed: () => Promise<void> = async () => {
     project2WbsNumber,
     'Discuss Design With Powertrain Team',
     '',
-    new Date('2023-10-31T00:00:00-04:00'),
     Task_Priority.MEDIUM,
     Task_Status.DONE,
     [thomasEmrax.userId],
-    ner
+    ner,
+    new Date('2023-10-31T00:00:00-04:00')
   );
 
   await TasksService.createTask(
@@ -1546,11 +1546,11 @@ const performSeed: () => Promise<void> = async () => {
     project3WbsNumber,
     'Power the Battery Box',
     'With all our powers combined, we can win any Electric Racing competition!',
-    new Date('2024-05-01T00:00:00-04:00'),
     Task_Priority.MEDIUM,
     Task_Status.IN_BACKLOG,
     [thomasEmrax, joeShmoe, joeBlow].map((user) => user.userId),
-    ner
+    ner,
+    new Date('2024-05-01T00:00:00-04:00')
   );
 
   await TasksService.createTask(
@@ -1558,11 +1558,11 @@ const performSeed: () => Promise<void> = async () => {
     project3WbsNumber,
     'Wire Up Battery Box',
     'Too many wires... how to even keep track?',
-    new Date('2024-02-29T00:00:00-05:00'),
     Task_Priority.HIGH,
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId],
-    ner
+    ner,
+    new Date('2024-02-29T00:00:00-05:00')
   );
 
   await TasksService.createTask(
@@ -1570,11 +1570,11 @@ const performSeed: () => Promise<void> = async () => {
     project3WbsNumber,
     'Vibration Tests',
     "Battery box shouldn't blow up in the middle of racing...",
-    new Date('2024-03-17T00:00:00-05:00'),
     Task_Priority.MEDIUM,
     Task_Status.IN_BACKLOG,
     [joeShmoe.userId],
-    ner
+    ner,
+    new Date('2024-03-17T00:00:00-05:00')
   );
 
   await TasksService.createTask(
@@ -1582,11 +1582,11 @@ const performSeed: () => Promise<void> = async () => {
     project3WbsNumber,
     'Buy some Battery Juice',
     'mmm battery juice',
-    new Date('2024-04-15T00:00:00-04:00'),
     Task_Priority.LOW,
     Task_Status.DONE,
     [joeBlow.userId],
-    ner
+    ner,
+    new Date('2024-04-15T00:00:00-04:00')
   );
 
   await TasksService.createTask(
@@ -1594,11 +1594,11 @@ const performSeed: () => Promise<void> = async () => {
     project4WbsNumber,
     'Schematics',
     'schematics go brrrrr',
-    new Date('2024-04-15T00:00:00-04:00'),
     Task_Priority.HIGH,
     Task_Status.DONE,
     [joeBlow.userId],
-    ner
+    ner,
+    new Date('2024-04-15T00:00:00-04:00')
   );
 
   await TasksService.createTask(
@@ -1606,11 +1606,11 @@ const performSeed: () => Promise<void> = async () => {
     project5WbsNumber,
     'Cost Assessment',
     'So this is where our funding goes',
-    new Date('2023-06-23T00:00:00-04:00'),
     Task_Priority.HIGH,
     Task_Status.IN_PROGRESS,
     [regina.userId],
-    ner
+    ner,
+    new Date('2023-06-23T00:00:00-04:00')
   );
 
   /**

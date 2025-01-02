@@ -3,6 +3,8 @@ import {
   Organization,
   Project,
   Schedule_Settings,
+  Task_Priority,
+  Task_Status,
   User,
   User_Secure_Settings,
   User_Settings,
@@ -12,12 +14,10 @@ import prisma from '../src/prisma/prisma';
 import { dbSeedAllUsers } from '../src/prisma/seed-data/users.seed';
 import TeamsService from '../src/services/teams.services';
 import ReimbursementRequestService from '../src/services/reimbursement-requests.services';
-import { ClubAccount, RoleEnum, TaskPriority, TaskStatus } from 'shared';
+import { ClubAccount, RoleEnum } from 'shared';
 import { batmanAppAdmin, batmanScheduleSettings, batmanSecureSettings, batmanSettings } from './test-data/users.test-data';
 import { getWorkPackageTemplateQueryArgs } from '../src/prisma-query-args/work-package-template.query-args';
 import DesignReviewsService from '../src/services/design-reviews.services';
-import TasksService from '../src/services/tasks.services';
-import ProjectsService from '../src/services/projects.services';
 
 export interface CreateTestUserParams {
   firstName: string;
@@ -419,40 +419,46 @@ export const createTestDesignReview = async () => {
   return { dr, organization, orgId };
 };
 
-export const createTestTask = async (user: User, organization?: Organization) => {
-  if (!organization) organization = await createTestOrganization();
-  const orgId = organization.organizationId;
-  const team = await TeamsService.createTeam(user, 'Test team', user.userId, 'Test', '', false, organization);
-  if (!team) throw new Error('Failed to create team');
-  const project = await createTestProject(user, organization.organizationId);
-  if (!project) throw new Error('Failed to create project');
-  await ProjectsService.setProjectTeam(
-    user,
-    {
-      carNumber: 0,
-      projectNumber: 1,
-      workPackageNumber: 0
-    },
-    team.teamId,
-    organization
-  );
-
-  const task = await TasksService.createTask(
-    user,
-    {
-      carNumber: 0,
-      projectNumber: 1,
-      workPackageNumber: 0
-    },
-    'Test task',
-    'Test',
-    new Date(),
-    TaskPriority.High,
-    TaskStatus.IN_PROGRESS,
-    [user.userId],
-    organization
-  );
-
-  if (!task) throw new Error('Failed to create task');
-  return { task, organization, orgId };
+export const createTestTask = async (
+  user: User,
+  title: string,
+  notes: string,
+  assignees: User[],
+  priority: Task_Priority,
+  status: Task_Status,
+  organizationId?: string,
+  deadline?: Date
+) => {
+  if (!organizationId) organizationId = (await createTestOrganization().then((org) => org.organizationId)) as string;
+  const task = await prisma.task.create({
+    data: {
+      taskId: '0000000001',
+      title,
+      notes,
+      deadline,
+      assignees: {
+        connect: assignees.map((user) => ({ userId: user.userId }))
+      },
+      priority,
+      status,
+      dateCreated: new Date(),
+      createdBy: {
+        connect: { userId: user.userId }
+      },
+      wbsElement: {
+        create: {
+          carNumber: 0,
+          projectNumber: 0,
+          workPackageNumber: 0,
+          dateCreated: new Date('01/01/2023'),
+          name: 'Car',
+          status: WBS_Element_Status.INACTIVE,
+          leadId: user.userId,
+          managerId: user.userId,
+          organizationId
+        }
+      }
+    }
+  });
+  return task;
 };

@@ -486,7 +486,7 @@ model Task {
   taskId          String        @id @default(uuid())
   title           String
   notes           String
-  deadline        DateTime
+  deadline        DateTime?
   assignees       User[]        @relation(name: "assignedTo")
   priority        Task_Priority
   status          Task_Status
