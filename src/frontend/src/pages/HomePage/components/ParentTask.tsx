@@ -3,9 +3,7 @@ import { useState } from 'react';
 import { KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
 import SubtaskSection from './SubtaskSection';
 import { Checklist } from 'shared';
-import { useCheckedChecklists, useToggleChecklist } from '../../../hooks/onboarding.hook';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import ErrorPage from '../../ErrorPage';
+import { useToggleChecklist } from '../../../hooks/onboarding.hook';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { isChecklistChecked } from '../../../utils/onboarding.utils';
 
@@ -69,7 +67,7 @@ const ParentTask: React.FC<ParentTaskProps> = ({ parentTask, checkedChecklists }
           </IconButton>
         </Box>
       </Box>
-      {showSubtasks && <SubtaskSection parentTask={parentTask} checkedChecklists={checkedChecklists}/>}
+      {showSubtasks && <SubtaskSection parentTask={parentTask} checkedChecklists={checkedChecklists} />}
     </Box>
   );
 };
