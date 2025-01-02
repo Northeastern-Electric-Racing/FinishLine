@@ -40,6 +40,13 @@ export const getUsersChecklists = () => {
 };
 
 /**
+ * API call to delete a checklist
+ */
+export const deleteChecklist = (checklistId: string) => {
+  return axios.post<{ message: string }>(apiUrls.checklistDelete(checklistId));
+};
+
+/**
  * API call to toggle a checklist
  */
 export const toggleChecklist = (payload: ToggleChecklistPayload) => {
