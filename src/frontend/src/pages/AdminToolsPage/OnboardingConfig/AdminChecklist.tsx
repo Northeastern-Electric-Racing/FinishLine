@@ -56,7 +56,7 @@ export const AdminChecklist: React.FC<{ parentChecklists: Checklist[]; checklist
               <Typography fontSize="2em" fontWeight="bold" color="black">
                 {checklistName} Checklist
               </Typography>
-              <Grid display="flex" alignItems="center" gap={2}>
+              <Grid display="flex" alignItems="center">
                 <IconButton onClick={() => setTasksToDelete(parentChecklists)}>
                   <RemoveCircleOutlineIcon sx={{ color: 'black' }} />
                 </IconButton>
@@ -101,7 +101,7 @@ export const AdminChecklist: React.FC<{ parentChecklists: Checklist[]; checklist
           open={!!tasksToDelete}
           onHide={() => setTasksToDelete(null)}
           formId="delete-task-form"
-          dataType="Task"
+          dataType="Checklist"
           onFormSubmit={() => handleDelete()}
         />
       )}
