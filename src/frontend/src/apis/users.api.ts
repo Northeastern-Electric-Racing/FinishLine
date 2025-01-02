@@ -142,6 +142,6 @@ export const updateUserRole = (id: string, role: string) => {
   return axios.post<{ message: string }>(apiUrls.userRoleByUserId(id), { role });
 };
 
-export const toggleCompletedOnboarding = (id: string) => {
-  return axios.post<{ message: string }>(apiUrls.toggleCompletedOnboarding(id));
+export const toggleCompletedOnboarding = () => {
+  return axios.post<{ message: string }>(apiUrls.toggleCompletedOnboarding());
 };

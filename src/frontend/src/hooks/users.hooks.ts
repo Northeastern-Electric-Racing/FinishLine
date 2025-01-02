@@ -29,8 +29,7 @@ import {
   UserSecureSettings,
   UserScheduleSettings,
   UserWithScheduleSettings,
-  SetUserScheduleSettingsPayload,
-  ToggleCompletedOnboardingPayload
+  SetUserScheduleSettingsPayload
 } from 'shared';
 import { useAuth } from './auth.hooks';
 import { useContext } from 'react';
@@ -237,14 +236,14 @@ export const useUpdateUserRole = () => {
 };
 
 /**
- * Custom React Hook to update a user's role.
+ * Custom React Hook to toggle the current user's completed onboarding status.
  */
 export const useToggleCompletedOnboarding = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, ToggleCompletedOnboardingPayload>(
+  return useMutation<{ message: string }, Error>(
     ['users', 'toggle-onboarding'],
-    async (toggleCompletedOnboardingPayload: ToggleCompletedOnboardingPayload) => {
-      const { data } = await toggleCompletedOnboarding(toggleCompletedOnboardingPayload.userId);
+    async () => {
+      const { data } = await toggleCompletedOnboarding();
       return data;
     },
     {
