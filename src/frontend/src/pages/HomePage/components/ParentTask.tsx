@@ -7,21 +7,17 @@ import { useCheckedChecklists, useToggleChecklist } from '../../../hooks/onboard
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { isChecklistChecked } from '../../../utils/onboarding.utils';
 
 interface ParentTaskProps {
   parentTask: Checklist;
+  checkedChecklists?: Checklist[];
 }
 
-const ParentTask: React.FC<ParentTaskProps> = ({ parentTask }) => {
+const ParentTask: React.FC<ParentTaskProps> = ({ parentTask, checkedChecklists }) => {
   const toast = useToast();
   const [showSubtasks, setShowSubtasks] = useState(false);
   const { mutateAsync: toggleChecklist } = useToggleChecklist();
-  const {
-    data: checkedChecklists,
-    isLoading: checkedChecklistsLoading,
-    isError: checkedChecklistsIsError,
-    error: checkedChecklistsError
-  } = useCheckedChecklists();
 
   const toggleShowSubtasks = () => {
     setShowSubtasks((prev) => !prev);
@@ -34,14 +30,6 @@ const ParentTask: React.FC<ParentTaskProps> = ({ parentTask }) => {
       toast.error(error.message);
     }
   };
-
-  if (!checkedChecklists || checkedChecklistsLoading) return <LoadingIndicator />;
-
-  if (checkedChecklistsIsError) {
-    return <ErrorPage error={checkedChecklistsError} />;
-  }
-
-  const isParentTaskChecked = checkedChecklists.some((checklist) => checklist.checklistId === parentTask.checklistId);
 
   return (
     <Box sx={{ width: '85%' }}>
@@ -59,7 +47,7 @@ const ParentTask: React.FC<ParentTaskProps> = ({ parentTask }) => {
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <IconButton onClick={handleToggleChecklist}>
             <Checkbox
-              checked={isParentTaskChecked}
+              checked={isChecklistChecked(checkedChecklists, parentTask)}
               sx={{
                 '& .MuiSvgIcon-root': {
                   fill: 'black',
@@ -81,7 +69,7 @@ const ParentTask: React.FC<ParentTaskProps> = ({ parentTask }) => {
           </IconButton>
         </Box>
       </Box>
-      {showSubtasks && <SubtaskSection parentTask={parentTask} subtasks={parentTask.subtasks} />}
+      {showSubtasks && <SubtaskSection parentTask={parentTask} checkedChecklists={checkedChecklists}/>}
     </Box>
   );
 };

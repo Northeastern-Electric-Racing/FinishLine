@@ -7,11 +7,10 @@ import { useCurrentUser } from '../../../hooks/users.hooks';
 import { useToggleChecklist } from '../../../hooks/onboarding.hook';
 
 interface SubtaskProps {
-  subtasks: Checklist[];
   parentTask: Checklist;
 }
 
-const Task: React.FC<SubtaskProps> = ({ subtasks, parentTask }) => {
+const Task: React.FC<SubtaskProps> = ({ parentTask }) => {
   const [showSubtasks, setShowSubtasks] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   const user = useCurrentUser();
@@ -78,7 +77,7 @@ const Task: React.FC<SubtaskProps> = ({ subtasks, parentTask }) => {
           </IconButton>
         </Box>
       </Box>
-      {showSubtasks && <SubtaskSection subtasks={subtasks} parentTask={parentTask} />}
+      {showSubtasks && <SubtaskSection parentTask={parentTask} />}
     </Box>
   );
 };

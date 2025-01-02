@@ -31,3 +31,9 @@ export const groupChecklists = (checklists: Checklist[]) => {
 
   return sortedGroupedChecklists;
 };
+
+
+export const isChecklistChecked = (checkedChecklists: Checklist[] | undefined, checklist: Checklist) => {
+  if (!checkedChecklists) return false;
+  return checkedChecklists.some((c) => c.checklistId === checklist.checklistId);
+}

@@ -9,7 +9,7 @@ import { useHomePageContext } from '../../app/HomePageContext';
 import { useCurrentOrganization } from '../../hooks/organizations.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { useGetImageUrl } from '../../hooks/onboarding.hooks';
+import { useGetImageUrl } from '../../hooks/onboarding.hook';
 
 const GuestHomePage = () => {
   const user = useCurrentUser();

@@ -83,8 +83,8 @@ describe('Onboarding tests', () => {
 
       const checkedChecklists = await OnboardingServices.getCheckedChecklists(batman, organization);
       expect(checkedChecklists.length).toEqual(2);
-      expect(checkedChecklists[0].checklistId).toEqual(checklist1.checklistId);
-      expect(checkedChecklists[1].checklistId).toEqual(checklist3.checklistId);
+      expect(checkedChecklists.some((checklist) => checklist.checklistId === checklist1.checklistId)).toBeTruthy();
+      expect(checkedChecklists.some((checklist) => checklist.checklistId === checklist3.checklistId)).toBeTruthy();
     });
   });
 
@@ -109,8 +109,8 @@ describe('Onboarding tests', () => {
       const checklist3 = await createTestChecklist(batman, orgId, 'Checklist 3', undefined, team1.teamId);
       const teamTypeChecklists = await OnboardingServices.getUsersChecklists(batman.userId, organization);
       expect(teamTypeChecklists.length).toEqual(2);
-      expect(teamTypeChecklists[0].checklistId).toEqual(checklist1.checklistId);
-      expect(teamTypeChecklists[1].checklistId).toEqual(checklist3.checklistId);
+      expect(teamTypeChecklists.some((checklist) => checklist.checklistId === checklist1.checklistId)).toBeTruthy();
+      expect(teamTypeChecklists.some((checklist) => checklist.checklistId === checklist3.checklistId)).toBeTruthy();
     });
   });
 

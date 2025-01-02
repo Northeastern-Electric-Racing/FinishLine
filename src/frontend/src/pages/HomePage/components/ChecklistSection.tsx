@@ -1,46 +1,24 @@
 import { Box, Grid } from '@mui/material';
 import { groupChecklists } from '../../../utils/onboarding.utils';
 import Checklist from './Checklist';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useGeneralChecklists, useUsersTeamTypeChecklists } from '../../../hooks/onboarding.hook';
-import ErrorPage from '../../ErrorPage';
+import { Checklist as ChecklistType } from 'shared';
 
-const ChecklistSection: React.FC = () => {
-  const {
-    data: generalChecklists,
-    isError: generalChecklistsIsError,
-    error: generalChecklistsError,
-    isLoading: generalChecklistsIsLoading
-  } = useGeneralChecklists();
+interface ChecklistSectionProps {
+  usersChecklists: ChecklistType[];
+  checkedChecklists: ChecklistType[];
+  generalChecklists: ChecklistType[];
+}
 
-  const {
-    data: usersTeamTypeChecklists,
-    isError: usersTeamTypeChecklistsIsError,
-    error: usersTeamTypeChecklistsError,
-    isLoading: usersTeamTypeChecklistsIsLoading
-  } = useUsersTeamTypeChecklists();
-
-  if (generalChecklistsIsError) {
-    return <ErrorPage error={generalChecklistsError} />;
-  }
-
-  if (usersTeamTypeChecklistsIsError) {
-    return <ErrorPage error={usersTeamTypeChecklistsError} />;
-  }
-
-  if (!generalChecklists || generalChecklistsIsLoading || usersTeamTypeChecklistsIsLoading || !usersTeamTypeChecklists) {
-    return <LoadingIndicator />;
-  }
-
-  const allChecklists = [...generalChecklists, ...usersTeamTypeChecklists];
+const ChecklistSection: React.FC<ChecklistSectionProps> = ({ usersChecklists, checkedChecklists, generalChecklists }) => {
+  const allChecklists = [...generalChecklists, ...usersChecklists];
   const groupedChecklists = groupChecklists(allChecklists);
-
+  console.log(groupedChecklists);
   return (
     <Box>
       <Grid container>
         {Object.entries(groupedChecklists).map(([checklistName, checklists]) => (
           <Grid item xs={12} padding={2} key={checklistName}>
-            <Checklist parentChecklists={checklists} checklistName={checklistName} />
+            <Checklist parentChecklists={checklists} checkedChecklists={checkedChecklists} checklistName={checklistName} />
           </Grid>
         ))}
       </Grid>

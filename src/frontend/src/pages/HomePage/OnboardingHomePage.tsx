@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { useCurrentOrganization } from '../../hooks/organizations.hooks';
@@ -9,71 +9,73 @@ import ChecklistSection from './components/ChecklistSection';
 import OnboardingInfoSection from './components/OnboardingInfoSection';
 import OnboardingProgressBar from '../../components/OnboardingProgressBar';
 import { NERButton } from '../../components/NERButton';
-import { useGeneralChecklists, useUsersTeamTypeChecklists } from '../../hooks/onboarding.hook';
-import { groupChecklists } from '../../utils/onboarding.utils';
-import { useCurrentUser } from '../../hooks/users.hooks';
+import {
+  useCheckedChecklists,
+  useUsersChecklists,
+  useAllChecklists,
+  useChecklistProgress
+} from '../../hooks/onboarding.hook';
+import { Checklist } from 'shared';
 
 const OnboardingHomePage = () => {
-  const user = useCurrentUser();
   const { data: organization, isError, error, isLoading } = useCurrentOrganization();
   const { setCurrentHomePage } = useHomePageContext();
   const theme = useTheme();
-
-  const {
-    data: generalChecklists,
-    isError: generalChecklistsIsError,
-    error: generalChecklistsError,
-    isLoading: generalChecklistsIsLoading
-  } = useGeneralChecklists();
-
-  const {
-    data: usersTeamTypeChecklists,
-    isError: usersTeamTypeChecklistsIsError,
-    error: usersTeamTypeChecklistsError,
-    isLoading: usersTeamTypeChecklistsIsLoading
-  } = useUsersTeamTypeChecklists();
-
-  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     setCurrentHomePage('onboarding');
   }, [setCurrentHomePage]);
 
-  useEffect(() => {
-    if (!generalChecklists || !usersTeamTypeChecklists) return;
+  const {
+    data: allChecklists,
+    isError: allChecklistsIsError,
+    error: allChecklistsError,
+    isLoading: allChecklistsIsLoading
+  } = useAllChecklists();
 
-    const allChecklists = [...generalChecklists, ...usersTeamTypeChecklists];
-    const groupedChecklists = groupChecklists(allChecklists);
+  const {
+    data: usersChecklists,
+    isError: usersChecklistsIsError,
+    error: usersChecklistsError,
+    isLoading: usersChecklistsIsLoading
+  } = useUsersChecklists();
 
-    const groupNames = Object.keys(groupedChecklists);
-    const totalGroups = groupNames.length;
+  const {
+    data: checkedChecklists,
+    isLoading: checkedChecklistsLoading,
+    isError: checkedChecklistsIsError,
+    error: checkedChecklistsError
+  } = useCheckedChecklists();
 
-    if (totalGroups === 0) {
-      setProgress(0);
-      return;
-    }
+  const generalChecklists =
+    allChecklists?.filter((checklist: Checklist) => checklist.team === null && checklist.teamType === null) || [];
 
-    const completedGroups = groupNames.filter((group) =>
-      groupedChecklists[group].every((checklist) =>
-        checklist.usersChecked.some((checkedUser) => checkedUser.userId === user.userId)
-      )
-    ).length;
+  const progress = useChecklistProgress([...generalChecklists, ...(usersChecklists || [])], checkedChecklists || []);
 
-    setProgress((completedGroups / totalGroups) * 100);
-  }, [generalChecklists, usersTeamTypeChecklists, user]);
-
-  if (!organization || isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
-  if (generalChecklistsIsError) {
-    return <ErrorPage error={generalChecklistsError} />;
+  if (usersChecklistsIsError) {
+    return <ErrorPage error={usersChecklistsError} />;
   }
 
-  if (usersTeamTypeChecklistsIsError) {
-    return <ErrorPage error={usersTeamTypeChecklistsError} />;
+  if (checkedChecklistsIsError) {
+    return <ErrorPage error={checkedChecklistsError} />;
   }
 
-  if (generalChecklistsIsLoading || usersTeamTypeChecklistsIsLoading) {
+  if (allChecklistsIsError) {
+    return <ErrorPage error={allChecklistsError} />;
+  }
+
+  if (
+    !organization ||
+    isLoading ||
+    usersChecklistsIsLoading ||
+    !usersChecklists ||
+    checkedChecklistsLoading ||
+    !checkedChecklists ||
+    allChecklistsIsLoading ||
+    !allChecklists
+  ) {
     return <LoadingIndicator />;
   }
 
@@ -130,7 +132,11 @@ const OnboardingHomePage = () => {
               padding: 2
             }}
           >
-            <ChecklistSection />
+            <ChecklistSection
+              usersChecklists={usersChecklists}
+              checkedChecklists={checkedChecklists}
+              generalChecklists={generalChecklists}
+            />
           </Grid>
           <Grid container item xs={12} md={5} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 4 }}>
             <Grid item>
