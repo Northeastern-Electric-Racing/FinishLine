@@ -1,4 +1,4 @@
-import { Box, Grid, Typography } from '@mui/material';
+import { Box, Grid, Typography, useTheme } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { useCurrentOrganization } from '../../hooks/organizations.hooks';
 import React, { useEffect, useState } from 'react';
@@ -18,11 +18,14 @@ import {
 import { Checklist } from 'shared';
 import { useToggleCompletedOnboarding } from '../../hooks/users.hooks';
 import { useToast } from '../../hooks/toasts.hooks';
+import OnboardingProgressBar from '../../components/OnboardingProgressBar';
 
 const OnboardingHomePage = () => {
   const { data: organization, isError, error, isLoading } = useCurrentOrganization();
   const { setCurrentHomePage } = useHomePageContext();
   const [isModalOpen, setModalOpen] = useState(false);
+
+  const theme = useTheme();
 
   const toast = useToast();
 
@@ -84,7 +87,7 @@ const OnboardingHomePage = () => {
   ) {
     return <LoadingIndicator />;
   }
-  
+
   const handleOpenModal = () => {
     setModalOpen(true);
   };
@@ -138,6 +141,7 @@ const OnboardingHomePage = () => {
               progressBarSx={{ height: '3vh' }}
             />
           </Box>
+        </Box>
         <Box display={'flex'} justifyContent={'center'}>
           <Typography sx={{ fontSize: '2em', mt: 4, ml: 2 }}>Progress Bar</Typography>
         </Box>
