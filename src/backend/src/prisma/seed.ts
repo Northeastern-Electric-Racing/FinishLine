@@ -1980,7 +1980,7 @@ const performSeed: () => Promise<void> = async () => {
     batman,
     'Include your major and/or year',
     [],
-    false,
+    true,
     null,
     null,
     joinSlackChecklist.checklistId,

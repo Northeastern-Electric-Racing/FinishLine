@@ -422,9 +422,9 @@ export default class OnboardingServices {
       });
 
       if (parentChecklist) {
-        const allSubtasksChecked = parentChecklist.subtasks.every((subtask) =>
-          subtask.usersChecked.some((user) => user.userId === userId)
-        );
+        const allSubtasksChecked = parentChecklist.subtasks
+          .filter((subtask) => !subtask.isOptional)
+          .every((subtask) => subtask.usersChecked.some((user) => user.userId === userId));
         if (allSubtasksChecked) {
           await prisma.checklist.update({
             where: { checklistId: parentChecklist.checklistId },

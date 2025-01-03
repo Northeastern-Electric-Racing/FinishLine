@@ -73,7 +73,7 @@ const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChec
                     </IconButton>
                   )}
                   <Typography color={'black'} fontWeight={'bold'}>
-                    {subtask.name}
+                    {subtask.name} {subtask.isOptional && '(Optional)'}
                   </Typography>
                 </Box>
               ))}

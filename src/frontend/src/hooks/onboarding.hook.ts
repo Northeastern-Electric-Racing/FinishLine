@@ -111,19 +111,19 @@ export const useGetImageUrls = (imageFileIds: (string | null)[]) => {
   );
 };
 
-export const useChecklistProgress = (allChecklists: Checklist[], checkedChecklists: Checklist[]) => {
+export const useChecklistProgress = (parentChecklists: Checklist[], checkedChecklists: Checklist[]) => {
   const [progress, setProgress] = useState(0);
   useEffect(() => {
-    if (!checkedChecklists || allChecklists.length === 0) return;
+    if (!checkedChecklists || parentChecklists.length === 0) return;
 
-    const totalChecklistsLength = allChecklists.length;
+    const totalChecklistsLength = parentChecklists.length;
 
-    const completedChecklistsLength = allChecklists.reduce((count, checklist) => {
+    const completedChecklistsLength = parentChecklists.reduce((count, checklist) => {
       return isChecklistChecked(checkedChecklists, checklist) ? count + 1 : count;
     }, 0);
 
     setProgress((completedChecklistsLength / totalChecklistsLength) * 100);
-  }, [allChecklists, checkedChecklists]);
+  }, [parentChecklists, checkedChecklists]);
 
   return progress;
 };
