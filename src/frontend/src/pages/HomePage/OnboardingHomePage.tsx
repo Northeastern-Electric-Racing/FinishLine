@@ -1,13 +1,13 @@
-import React, { useEffect } from 'react';
-import { Box, Grid, Typography, useTheme } from '@mui/material';
+import { Box, Grid, Typography } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { useCurrentOrganization } from '../../hooks/organizations.hooks';
+import React, { useEffect, useState } from 'react';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useHomePageContext } from '../../app/HomePageContext';
 import ChecklistSection from './components/ChecklistSection';
 import OnboardingInfoSection from './components/OnboardingInfoSection';
-import OnboardingProgressBar from '../../components/OnboardingProgressBar';
+import ConfirmOnboardingChecklistModal from './components/ConfirmOnboardingChecklistModal';
 import { NERButton } from '../../components/NERButton';
 import {
   useCheckedChecklists,
@@ -16,11 +16,17 @@ import {
   useChecklistProgress
 } from '../../hooks/onboarding.hook';
 import { Checklist } from 'shared';
+import { useToggleCompletedOnboarding } from '../../hooks/users.hooks';
+import { useToast } from '../../hooks/toasts.hooks';
 
 const OnboardingHomePage = () => {
   const { data: organization, isError, error, isLoading } = useCurrentOrganization();
   const { setCurrentHomePage } = useHomePageContext();
-  const theme = useTheme();
+  const [isModalOpen, setModalOpen] = useState(false);
+
+  const toast = useToast();
+
+  const toggleCompletedOnboarding = useToggleCompletedOnboarding();
 
   useEffect(() => {
     setCurrentHomePage('onboarding');
@@ -78,14 +84,28 @@ const OnboardingHomePage = () => {
   ) {
     return <LoadingIndicator />;
   }
+  
+  const handleOpenModal = () => {
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+
+  const handleConfirmModal = async () => {
+    await toggleCompletedOnboarding.mutateAsync();
+    toast.success('Role updated successfully!');
+    setModalOpen(false);
+  };
 
   return (
     <PageLayout title="Home" hidePageTitle>
-      <Grid container display="flex" alignItems="center" justifyContent={'space-between'} padding={1} marginTop={4}>
+      <Grid container display={'flex'} alignItems={'center'} marginLeft={2} marginTop={4}>
         <Grid item xs={12} md={7}>
           <Typography sx={{ fontSize: '2.5em' }}>Welcome to the {organization.name} Team</Typography>
         </Grid>
-        <NERButton variant="contained" disabled={progress < 100}>
+        <NERButton variant="contained" disabled={progress < 100} onClick={handleOpenModal}>
           Finished?
         </NERButton>
       </Grid>
@@ -118,8 +138,10 @@ const OnboardingHomePage = () => {
               progressBarSx={{ height: '3vh' }}
             />
           </Box>
+        <Box display={'flex'} justifyContent={'center'}>
+          <Typography sx={{ fontSize: '2em', mt: 4, ml: 2 }}>Progress Bar</Typography>
         </Box>
-        <Grid container display="flex">
+        <Grid container display={'flex'}>
           <Grid
             item
             xs={12}
@@ -145,6 +167,14 @@ const OnboardingHomePage = () => {
           </Grid>
         </Grid>
       </Grid>
+      {isModalOpen && (
+        <ConfirmOnboardingChecklistModal
+          open={isModalOpen}
+          onHide={handleCloseModal}
+          onConfirm={handleConfirmModal}
+          title="Confirm Onboarding Checklist"
+        />
+      )}
     </PageLayout>
   );
 };

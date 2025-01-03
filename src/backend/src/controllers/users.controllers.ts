@@ -117,7 +117,7 @@ export default class UsersController {
 
   static async toggleCompletedOnboarding(req: Request, res: Response, next: NextFunction) {
     try {
-      const { userId } = req.params;
+      const { userId } = req.currentUser;
 
       await UsersService.toggleCompletedOnboarding(userId, req.organization);
 
