@@ -46,7 +46,6 @@ const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChec
             <Box display="flex" flexDirection="column" marginLeft={5} gap={1}>
               {subtasks.map((subtask) => (
                 <Box display={'flex'} alignItems={'center'}>
-                  (
                   <IconButton onClick={() => handleToggleChecklist(subtask.checklistId)}>
                     <Checkbox
                       checked={isChecklistChecked(subtask.checklistId)}
@@ -65,7 +64,6 @@ const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChec
                       }}
                     />
                   </IconButton>
-                  )
                   <Typography color={'black'} fontWeight={'bold'}>
                     {subtask.name} {subtask.isOptional && '(Optional)'}
                   </Typography>
