@@ -19,10 +19,15 @@ export interface ToggleChecklistPayload {
 export interface ChecklistCreateArgs {
   name: string;
   descriptions: string[];
+  isOptional: boolean;
+  parentChecklistId?: string;
   teamId?: string;
   teamTypeId?: string;
+}
+
+export interface SubtaskCreateArgs {
+  name: string;
   isOptional: boolean;
-  parentChecklistId: string | null;
 }
 
 export const useAllChecklists = () => {
@@ -31,7 +36,6 @@ export const useAllChecklists = () => {
     return data;
   });
 };
-
 
 export const useGeneralChecklists = () => {
   return useQuery<Checklist[], Error>(['checklists', 'general'], async () => {

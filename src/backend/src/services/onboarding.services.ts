@@ -14,7 +14,7 @@ export default class OnboardingServices {
   static async getAllChecklists(organization: Organization) {
     const allChecklists = await prisma.checklist.findMany({
       where: { organizationId: organization.organizationId, dateDeleted: null, parentChecklistId: null },
-      include: { subtasks: true, teamType: true, usersChecked: true }
+      include: { subtasks: { where: { dateDeleted: null } }, teamType: true, usersChecked: true }
     });
 
     return allChecklists;
@@ -29,7 +29,7 @@ export default class OnboardingServices {
   static async getCheckedChecklists(user: User, organization: Organization) {
     const allChecklists = await prisma.checklist.findMany({
       where: { organizationId: organization.organizationId, dateDeleted: null },
-      include: { subtasks: true, usersChecked: true }
+      include: { subtasks: { where: { dateDeleted: null } }, usersChecked: true }
     });
 
     const checkedChecklists = allChecklists.filter((checklist) =>
@@ -63,7 +63,7 @@ export default class OnboardingServices {
         teamTypeId: { in: teamTypeIds },
         parentChecklistId: null
       },
-      include: { subtasks: true, teamType: true }
+      include: { subtasks: { where: { dateDeleted: null } }, teamType: true }
     });
 
     const teamChecklists = await prisma.checklist.findMany({
@@ -73,7 +73,7 @@ export default class OnboardingServices {
         teamId: { in: teamIds },
         parentChecklistId: null
       },
-      include: { subtasks: true, team: true }
+      include: { subtasks: { where: { dateDeleted: null } }, team: true }
     });
 
     return [...teamTypeChecklists, ...teamChecklists];

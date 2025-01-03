@@ -1,20 +1,19 @@
 import { Typography, useTheme, Grid, IconButton } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import { Box } from '@mui/system';
-import React from 'react';
 import { Checklist } from 'shared';
-import { GridDragIcon } from '@mui/x-data-grid';
 import { useToggleChecklist } from '../../../hooks/onboarding.hook';
 import { useToast } from '../../../hooks/toasts.hooks';
+
 interface SubtaskSectionProps {
   parentTask: Checklist;
   checkedChecklists?: Checklist[];
-  isAdmin?: boolean;
 }
 
-const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChecklists, isAdmin = false }) => {
+const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChecklists }) => {
   const theme = useTheme();
   const toast = useToast();
+
   const { subtasks } = parentTask;
   const { mutateAsync: toggleChecklist } = useToggleChecklist();
 
@@ -33,17 +32,13 @@ const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChec
 
   return (
     <Box
-      sx={
-        isAdmin
-          ? {}
-          : {
-              padding: 2,
-              marginTop: -0.5,
-              marginBottom: 3,
-              borderRadius: '0px 0px 10px 10px',
-              backgroundColor: '#CECECE'
-            }
-      }
+      sx={{
+        padding: 2,
+        marginTop: -0.5,
+        marginBottom: 3,
+        borderRadius: '0px 0px 10px 10px',
+        backgroundColor: '#CECECE'
+      }}
     >
       {subtasks.length > 0 ? (
         <Grid container sx={{ display: 'flex', alignContent: 'center', justifyContent: 'center', alignItems: 'center' }}>
@@ -51,32 +46,28 @@ const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChec
             <Box display="flex" flexDirection="column" marginLeft={5} gap={1}>
               {subtasks.map((subtask) => (
                 <Box display={'flex'} alignItems={'center'}>
-                  {isAdmin ? (
-                    <IconButton>
-                      <GridDragIcon sx={{ color: 'black' }} />
-                    </IconButton>
-                  ) : (
-                    <IconButton onClick={() => handleToggleChecklist(subtask.checklistId)}>
-                      <Checkbox
-                        checked={isChecklistChecked(subtask.checklistId)}
-                        sx={{
-                          '& .MuiSvgIcon-root': {
-                            fill: 'black',
-                            backgroundColor: 'black',
-                            borderRadius: 1
-                          },
-                          '&.Mui-checked .MuiSvgIcon-root': {
-                            backgroundColor: 'white'
-                          },
-                          '&:hover': {
-                            backgroundColor: 'transparent'
-                          }
-                        }}
-                      />
-                    </IconButton>
-                  )}
+                  (
+                  <IconButton onClick={() => handleToggleChecklist(subtask.checklistId)}>
+                    <Checkbox
+                      checked={isChecklistChecked(subtask.checklistId)}
+                      sx={{
+                        '& .MuiSvgIcon-root': {
+                          fill: 'black',
+                          backgroundColor: 'black',
+                          borderRadius: 1
+                        },
+                        '&.Mui-checked .MuiSvgIcon-root': {
+                          backgroundColor: 'white'
+                        },
+                        '&:hover': {
+                          backgroundColor: 'transparent'
+                        }
+                      }}
+                    />
+                  </IconButton>
+                  )
                   <Typography color={'black'} fontWeight={'bold'}>
-                    {subtask.name} {subtask.isOptional ? '(Optional)' : '(Required)'}
+                    {subtask.name} {subtask.isOptional && '(Optional)'}
                   </Typography>
                 </Box>
               ))}
@@ -101,7 +92,7 @@ const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChec
             display: 'flex',
             justifyContent: 'space-between',
             gap: 2,
-            marginTop: isAdmin ? 1 : 0
+            marginTop: 0
           }}
         >
           {parentTask.descriptions.map((description) => {

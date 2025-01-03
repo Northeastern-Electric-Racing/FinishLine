@@ -91,7 +91,7 @@ export const AdminChecklist: React.FC<{ parentChecklists: Checklist[]; checklist
               <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
                 <IconButton sx={{ color: 'red' }} onClick={() => setShowCreateModal(true)}>
                   <AddCircleOutlineIcon sx={{ mr: 1 }} />
-                  <Typography>Add Task</Typography>
+                  <Typography sx={{ fontSize: '0.8em' }}>Add Task</Typography>
                 </IconButton>
               </Box>
             </Box>
@@ -105,7 +105,8 @@ export const AdminChecklist: React.FC<{ parentChecklists: Checklist[]; checklist
           handleClose={() => setShowCreateModal(false)}
           teamId={parentChecklists[0].team?.teamId}
           teamTypeId={parentChecklists[0].teamType?.teamTypeId}
-          />)}
+        />
+      )}
       {tasksToDelete && (
         <NERDeleteModal
           open={!!tasksToDelete}
