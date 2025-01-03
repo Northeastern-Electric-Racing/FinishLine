@@ -77,7 +77,8 @@ export default class NotificationsService {
     const promises = Array.from(teamTaskMap).map(async ([slackId, tasks]) => {
       const messageBlock = tasks
         .map((task) => {
-          const daysUntilDeadline = daysBetween(task.deadline, new Date());
+          // prisma call earlier allows the forced unwrap (deadline is guaranteed to be a non-null value)
+          const daysUntilDeadline = daysBetween(task.deadline!, new Date());
 
           return `${usersToSlackPings(task.assignees ?? [])} <https://finishlinebyner.com/projects/${wbsPipe(
             task.wbsElement
