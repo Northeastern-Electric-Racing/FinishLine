@@ -395,7 +395,7 @@ export default class UsersService {
   }
 
   /**
-   * Toggles the completed onboarding status of a user
+   * Toggles the completed onboarding status of a user and elevates role to member if user completed onboarding
    * @param user the user who's onboarding status is being toggled
    * @returns the updated user
    */
@@ -409,8 +409,24 @@ export default class UsersService {
       ...getUserQueryArgs(organization.organizationId)
     });
 
+    if (updatedUser.completedOnboarding) {
+      const currentRole = updatedUser.roles.find((role) => role.organizationId === organization.organizationId);
+
+      if (currentRole && currentRole.roleType !== RoleEnum.MEMBER) {
+        await prisma.role.update({
+          where: {
+            uniqueRole: { userId, organizationId: organization.organizationId }
+          },
+          data: {
+            roleType: RoleEnum.MEMBER
+          }
+        });
+      }
+    }
+
     return userTransformer(updatedUser);
   }
+
   /**
    * Gets a user's secure settings
    * @param userId the id of user who's secure settings are being returned
