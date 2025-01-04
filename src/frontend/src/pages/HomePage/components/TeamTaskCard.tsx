@@ -64,7 +64,7 @@ const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ task, taskNumber }) => {
               label={task.priority}
               size="medium"
             />
-            <Chip icon={<CalendarMonthIcon />} label={formatDate(new Date(task.deadline))} size="medium" />
+            {task.deadline && <Chip icon={<CalendarMonthIcon />} label={formatDate(task.deadline)} size="medium" />}
           </Stack>
         </Box>
       </CardContent>
