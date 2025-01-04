@@ -60,8 +60,6 @@ const AdminToolsOnboardingConfig: React.FC = () => {
             {Object.entries(sortedGroupNames).map(([checklistName, checklists]) => {
               const teamType = teamTypes.find((team) => team.name === checklistName);
 
-              console.log(teamType);
-
               return (
                 <Grid item xs={12} key={checklistName}>
                   <AdminChecklist parentChecklists={checklists} checklistName={checklistName} teamType={teamType} />
