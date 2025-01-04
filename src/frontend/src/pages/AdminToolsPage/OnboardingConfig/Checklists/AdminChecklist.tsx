@@ -2,7 +2,7 @@ import { KeyboardArrowDown, KeyboardArrowRight } from '@mui/icons-material';
 import { Grid, Typography, IconButton } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
-import { Checklist } from 'shared';
+import { Checklist, TeamType } from 'shared';
 import AdminTask from './AdminTask';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CreateChecklistModal from './CreateChecklistModal';
@@ -11,9 +11,10 @@ import { useToast } from '../../../../hooks/toasts.hooks';
 import { useDeleteChecklist } from '../../../../hooks/onboarding.hook';
 import NERDeleteModal from '../../../../components/NERDeleteModal';
 
-export const AdminChecklist: React.FC<{ parentChecklists: Checklist[]; checklistName?: string }> = ({
+export const AdminChecklist: React.FC<{ parentChecklists: Checklist[]; checklistName?: string; teamType?: TeamType }> = ({
   parentChecklists,
-  checklistName
+  checklistName,
+  teamType
 }) => {
   const [showTasks, setShowTasks] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -103,8 +104,8 @@ export const AdminChecklist: React.FC<{ parentChecklists: Checklist[]; checklist
         <CreateChecklistModal
           open={showCreateModal}
           handleClose={() => setShowCreateModal(false)}
-          teamId={parentChecklists[0].team?.teamId}
-          teamTypeId={parentChecklists[0].teamType?.teamTypeId}
+          teamId={parentChecklists[0]?.team?.teamId}
+          teamTypeId={teamType?.teamTypeId || parentChecklists[0]?.teamType?.teamTypeId}
         />
       )}
       {tasksToDelete && (

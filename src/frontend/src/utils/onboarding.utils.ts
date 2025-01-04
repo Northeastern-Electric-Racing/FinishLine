@@ -1,5 +1,23 @@
 import { Checklist } from 'shared';
 
+export const sortGroupNames = (groupedChecklists: Record<string, Checklist[]>): Record<string, Checklist[]> => {
+  const groupNames = Object.keys(groupedChecklists);
+
+  groupNames.sort((group1, group2) => {
+    if (group1 === 'General') return -1;
+    if (group2 === 'General') return 1;
+
+    return group1.localeCompare(group2);
+  });
+
+  const sortedGroupedChecklists: Record<string, Checklist[]> = {};
+  groupNames.forEach((groupName) => {
+    sortedGroupedChecklists[groupName] = groupedChecklists[groupName];
+  });
+
+  return sortedGroupedChecklists;
+};
+
 export const groupChecklists = (checklists: Checklist[]) => {
   const groupedChecklists = checklists.reduce<Record<string, Checklist[]>>((groupedChecklists, checklist) => {
     let checklistName: string;
@@ -18,16 +36,5 @@ export const groupChecklists = (checklists: Checklist[]) => {
     return groupedChecklists;
   }, {});
 
-  const sortedGroupNames = Object.keys(groupedChecklists).sort((group1, group2) => {
-    if (group1 === 'General') return -1;
-    if (group2 === 'General') return 1;
-    return group1.localeCompare(group2);
-  });
-
-  const sortedGroupedChecklists: Record<string, Checklist[]> = {};
-  sortedGroupNames.forEach((groupName) => {
-    sortedGroupedChecklists[groupName] = groupedChecklists[groupName];
-  });
-
-  return sortedGroupedChecklists;
+  return sortGroupNames(groupedChecklists);
 };
