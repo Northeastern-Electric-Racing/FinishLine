@@ -21,11 +21,11 @@ import { taskTransformer } from './transformers/tasks.transformers';
 export const createSingleTask = (
   wbsNum: WbsNumber,
   title: string,
-  deadline: string,
   priority: TaskPriority,
   status: TaskStatus,
   assignees: string[],
-  notes: string
+  notes: string,
+  deadline?: string
 ) => {
   return axios.post<Task>(
     apiUrls.tasksCreate(wbsPipe(wbsNum)),
@@ -53,7 +53,7 @@ export const createSingleTask = (
  * @param assignees the new assignees
  * @returns the edited task
  */
-export const editTask = (taskId: string, title: string, notes: string, priority: TaskPriority, deadline: Date) => {
+export const editTask = (taskId: string, title: string, notes: string, priority: TaskPriority, deadline?: Date) => {
   return axios.post<{ message: string }>(apiUrls.editTaskById(taskId), {
     title,
     notes,

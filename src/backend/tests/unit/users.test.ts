@@ -3,6 +3,7 @@ import { createTestOrganization, createTestTask, createTestUser, resetUsers } fr
 import { batmanAppAdmin } from '../test-data/users.test-data';
 import UsersService from '../../src/services/users.services';
 import { NotFoundException } from '../../src/utils/errors.utils';
+import { TaskPriority, TaskStatus } from 'shared';
 
 describe('User Tests', () => {
   let orgId: string;
@@ -26,10 +27,19 @@ describe('User Tests', () => {
     it("Succeeds and gets user's assigned tasks", async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
 
-      const { task } = await createTestTask(testBatman, organization);
+      await createTestTask(
+        testBatman,
+        'Test task 1',
+        'test 1',
+        [testBatman],
+        TaskPriority.Low,
+        TaskStatus.IN_PROGRESS,
+        organization.organizationId
+      );
       const userTasks = await UsersService.getUserTasks(testBatman.userId, organization);
 
-      expect(userTasks).toStrictEqual([task]);
+      expect(userTasks).toHaveLength(1);
+      expect(userTasks[0].title).toBe('Test task 1');
     });
   });
 
@@ -40,12 +50,43 @@ describe('User Tests', () => {
       );
     });
 
-    it("Succeeds and gets all user' tasks in the list", async () => {
+    it("Succeeds and gets all a user's tasks in the list", async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      const { task: batmanTask } = await createTestTask(testBatman, organization);
+      await createTestTask(
+        testBatman,
+        'Test task 1',
+        'test 1',
+        [testBatman],
+        TaskPriority.Low,
+        TaskStatus.IN_PROGRESS,
+        organization.organizationId,
+        new Date(),
+        {
+          carNumber: 0,
+          projectNumber: 0,
+          workPackageNumber: 0
+        }
+      );
+      await createTestTask(
+        testBatman,
+        'Test task 2',
+        'test 2',
+        [testBatman],
+        TaskPriority.High,
+        TaskStatus.IN_BACKLOG,
+        organization.organizationId,
+        new Date(),
+        {
+          carNumber: 1,
+          projectNumber: 1,
+          workPackageNumber: 1
+        }
+      );
+
       const userTasks = await UsersService.getManyUserTasks([testBatman.userId, testBatman.userId], organization);
 
-      expect(userTasks).toStrictEqual([batmanTask, batmanTask]);
+      expect(userTasks[0].title).toStrictEqual('Test task 1');
+      expect(userTasks[1].title).toStrictEqual('Test task 2');
     });
   });
 });

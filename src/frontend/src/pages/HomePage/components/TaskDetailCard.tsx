@@ -31,7 +31,7 @@ const NERToolTip = styled(({ className, ...props }: TooltipProps) => (
 
 const TaskDetailCard: React.FC<TaskDetailCardProps> = ({ task, taskNumber }) => {
   const theme = useTheme();
-  const taskDaysOverdue = daysOverdue(new Date(task.deadline));
+  const taskDaysOverdue = task.deadline ? daysOverdue(task.deadline) : 0;
   const taskOverdue = taskDaysOverdue > 0;
   const [hover, setHover] = useState<boolean>(false);
   const { data: project, isLoading, isError, error } = useSingleProject(task.wbsNum);
@@ -99,7 +99,7 @@ const TaskDetailCard: React.FC<TaskDetailCardProps> = ({ task, taskNumber }) => 
                 label={task.priority}
                 size="small"
               />
-              <Chip icon={<CalendarMonthIcon />} label={formatDate(new Date(task.deadline))} size="small" />
+              {task.deadline && <Chip icon={<CalendarMonthIcon />} label={formatDate(task.deadline)} size="small" />}
             </Stack>
           </Box>
           <Box
