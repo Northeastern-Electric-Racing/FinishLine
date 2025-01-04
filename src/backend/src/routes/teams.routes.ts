@@ -2,13 +2,10 @@ import express from 'express';
 import TeamsController from '../controllers/teams.controllers';
 import { body } from 'express-validator';
 import { nonEmptyString, validateInputs } from '../utils/validation.utils';
-import multer, { memoryStorage } from 'multer';
 
 const teamsRouter = express.Router();
-const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage() });
 
 teamsRouter.get('/', TeamsController.getAllTeams);
-teamsRouter.get('/archive', TeamsController.getAllArchivedTeams);
 teamsRouter.get('/:teamId', TeamsController.getSingleTeam);
 teamsRouter.post(
   '/:teamId/set-members',
@@ -30,7 +27,6 @@ teamsRouter.post(
   validateInputs,
   TeamsController.editDescription
 );
-
 teamsRouter.post('/:teamId/set-head', nonEmptyString(body('userId')), validateInputs, TeamsController.setTeamHead);
 teamsRouter.post('/:teamId/delete', TeamsController.deleteTeam);
 teamsRouter.post(
@@ -43,7 +39,6 @@ teamsRouter.post(
   validateInputs,
   TeamsController.createTeam
 );
-teamsRouter.post('/:teamId/archive', TeamsController.archiveTeam);
 
 /**************** Team Type Section ****************/
 
@@ -51,31 +46,13 @@ teamsRouter.get('/teamType/all', TeamsController.getAllTeamTypes);
 
 teamsRouter.get('/teamType/:teamTypeId/single', TeamsController.getSingleTeamType);
 
-teamsRouter.post('/:teamId/set-team-type', nonEmptyString(body('teamTypeId')), validateInputs, TeamsController.setTeamType);
-
 teamsRouter.post(
   '/teamType/create',
   nonEmptyString(body('name')),
   nonEmptyString(body('iconName')),
-  nonEmptyString(body('description')),
   validateInputs,
   TeamsController.createTeamType
 );
 
-teamsRouter.post(
-  '/teamType/:teamTypeId/edit',
-  nonEmptyString(body('name')),
-  nonEmptyString(body('iconName')),
-  nonEmptyString(body('description')),
-  validateInputs,
-  TeamsController.editTeamType
-);
-
-teamsRouter.post(
-  '/teamType/:teamTypeId/set-image',
-  upload.single('image'),
-  validateInputs,
-  TeamsController.setTeamTypeImage
-);
-
+teamsRouter.post('/:teamId/set-team-type', nonEmptyString(body('teamTypeId')), validateInputs, TeamsController.setTeamType);
 export default teamsRouter;

@@ -180,6 +180,8 @@ model User {
   deletedFrequentlyAskedQuestions FrequentlyAskedQuestion[] @relation(name: "frequentlyAskedQuestionDeleter")
   createdMilestones               Milestone[]               @relation(name: "milestoneCreator")
   deletedMilestones               Milestone[]               @relation(name: "milestoneDeleter")
+  unreadAnnouncements             Announcement[]            @relation(name: "receivedAnnouncements")
+  unreadPopUps                    PopUp[]                   @relation(name: "userPopUps")
 }
 
 model Role {
@@ -712,8 +714,6 @@ model Team_Type {
   iconName       String
   designReviews  Design_Review[]
   team           Team[]
-  description    String
-  imageFileId    String?
   organizationId String
   organization   Organization    @relation(fields: [organizationId], references: [organizationId])
   calendarId     String?
@@ -877,6 +877,7 @@ model Organization {
   applyInterestImageId  String?   @unique
   exploreAsGuestImageId String?   @unique
   logoImageId           String?
+  slackWorkspaceId      String?
 
   // Relation references
   wbsElements              WBS_Element[]
@@ -899,6 +900,8 @@ model Organization {
   FrequentlyAskedQuestions FrequentlyAskedQuestion[]
   Milestone                Milestone[]
   featuredProjects         Project[]
+  PopUps                   PopUp[]
+  Announcements            Announcement[]
 }
 
 model FrequentlyAskedQuestion {
@@ -926,6 +929,29 @@ model Milestone {
   userDeletedId  String?
   dateCreated    DateTime     @default(now())
   dateDeleted    DateTime?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+}
+
+model Announcement {
+  announcementId   String       @id @default(uuid())
+  text             String
+  usersReceived    User[]       @relation("receivedAnnouncements")
+  dateMessageSent  DateTime     @default(now())
+  dateDeleted      DateTime?
+  senderName       String
+  slackEventId     String       @unique
+  slackChannelName String
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [organizationId])
+}
+
+model PopUp {
+  popUpId        String       @id @default(uuid())
+  text           String
+  iconName       String
+  users          User[]       @relation("userPopUps")
+  eventLink      String?
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [organizationId])
 }

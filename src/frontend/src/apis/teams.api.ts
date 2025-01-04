@@ -15,12 +15,6 @@ export const getAllTeams = () => {
   });
 };
 
-export const getAllArchivedTeams = () => {
-  return axios.get<Team[]>(apiUrls.teams() + '/archive', {
-    transformResponse: (data) => JSON.parse(data).map(teamTransformer)
-  });
-};
-
 export const getSingleTeam = (id: string) => {
   return axios.get<Team>(apiUrls.teamsById(id), {
     transformResponse: (data) => teamTransformer(JSON.parse(data))
@@ -43,10 +37,6 @@ export const setTeamHead = (id: string, userId: string) => {
   return axios.post<Team>(apiUrls.teamsSetHead(id), {
     userId
   });
-};
-
-export const archiveTeam = (id: string) => {
-  return axios.post<Team>(apiUrls.teamsArchive(id));
 };
 
 export const deleteTeam = (id: string) => {

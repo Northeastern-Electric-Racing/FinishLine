@@ -1,46 +1,65 @@
-import { Card, CardContent, Typography, useTheme } from '@mui/material';
+import { Box, Card, CardContent, Typography, useTheme } from '@mui/material';
 import React from 'react';
-import { PAGE_GRID_HEIGHT } from '../../../components/PageLayout';
 
 interface ScrollablePageBlockProps {
   children: React.ReactNode;
   title?: String;
+  horizontal?: boolean;
 }
 
-const ScrollablePageBlock: React.FC<ScrollablePageBlockProps> = ({ children, title }) => {
+const ScrollablePageBlock: React.FC<ScrollablePageBlockProps> = ({ children, title, horizontal }) => {
   const theme = useTheme();
   return (
     <Card
       sx={{
-        overflowY: 'auto',
-        '&::-webkit-scrollbar': {
-          height: '20px'
-        },
-        '&::-webkit-scrollbar-track': {
-          backgroundColor: 'transparent'
-        },
-        '&::-webkit-scrollbar-thumb': {
-          backgroundColor: theme.palette.error.dark,
-          borderRadius: '20px',
-          border: '6px solid transparent',
-          backgroundClip: 'content-box'
-        },
         height: '100%',
-        my: 2,
         background: theme.palette.background.paper
       }}
       variant="outlined"
     >
-      <CardContent sx={{ height: `100%`, maxHeight: `calc(${PAGE_GRID_HEIGHT}vh - 200px)` }}>
+      <CardContent
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          flexWrap: 'nowrap'
+        }}
+      >
         {title && (
-          <Typography mb={1} variant="h5">
+          <Typography ml={2} mt={2} variant="h5">
             {title}
           </Typography>
         )}
-        {children}
+        <Box
+          sx={{
+            mt: 2,
+            display: 'flex',
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            gap: 2,
+            height: '100%',
+            overflowX: horizontal ? 'auto' : 'hidden',
+            overflowY: horizontal ? 'hidden' : 'auto',
+            '&::-webkit-scrollbar': {
+              width: '20px'
+            },
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: 'transparent'
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: theme.palette.primary.main,
+              borderRadius: '20px',
+              border: '6px solid transparent',
+              backgroundClip: 'content-box'
+            },
+            scrollbarWidth: 'auto',
+            scrollbarColor: `${theme.palette.primary.main} transparent`
+          }}
+        >
+          {children}
+        </Box>
       </CardContent>
     </Card>
   );
 };
-
 export default ScrollablePageBlock;

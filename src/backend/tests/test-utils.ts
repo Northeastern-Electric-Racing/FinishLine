@@ -14,10 +14,11 @@ import prisma from '../src/prisma/prisma';
 import { dbSeedAllUsers } from '../src/prisma/seed-data/users.seed';
 import TeamsService from '../src/services/teams.services';
 import ReimbursementRequestService from '../src/services/reimbursement-requests.services';
-import { ClubAccount, RoleEnum } from 'shared';
+import { ClubAccount, RoleEnum, WbsNumber } from 'shared';
 import { batmanAppAdmin, batmanScheduleSettings, batmanSecureSettings, batmanSettings } from './test-data/users.test-data';
 import { getWorkPackageTemplateQueryArgs } from '../src/prisma-query-args/work-package-template.query-args';
 import DesignReviewsService from '../src/services/design-reviews.services';
+import { SlackMessage } from '../src/services/slack.services';
 
 export interface CreateTestUserParams {
   firstName: string;
@@ -118,6 +119,8 @@ export const resetUsers = async () => {
   await prisma.wBS_Element.deleteMany();
   await prisma.milestone.deleteMany();
   await prisma.frequentlyAskedQuestion.deleteMany();
+  await prisma.announcement.deleteMany();
+  await prisma.popUp.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
 };
@@ -386,9 +389,7 @@ export const createTestDesignReview = async () => {
   if (!head) throw new Error('Failed to find user');
   if (!lead) throw new Error('Failed to find user');
   await createTestProject(head, organization.organizationId);
-
-  const teamType = await TeamsService.createTeamType(head, 'Team1', 'Software', 'Software team', organization);
-
+  const teamType = await TeamsService.createTeamType(head, 'Team1', 'Software', organization);
   const { designReviewId } = await DesignReviewsService.createDesignReview(
     lead,
     '03/25/2027',
@@ -427,12 +428,12 @@ export const createTestTask = async (
   priority: Task_Priority,
   status: Task_Status,
   organizationId?: string,
-  deadline?: Date
+  deadline?: Date,
+  wbsNum?: WbsNumber
 ) => {
   if (!organizationId) organizationId = (await createTestOrganization().then((org) => org.organizationId)) as string;
   const task = await prisma.task.create({
     data: {
-      taskId: '0000000001',
       title,
       notes,
       deadline,
@@ -447,9 +448,9 @@ export const createTestTask = async (
       },
       wbsElement: {
         create: {
-          carNumber: 0,
-          projectNumber: 0,
-          workPackageNumber: 0,
+          carNumber: wbsNum ? wbsNum.carNumber : 0,
+          projectNumber: wbsNum ? wbsNum.projectNumber : 0,
+          workPackageNumber: wbsNum ? wbsNum.workPackageNumber : 0,
           dateCreated: new Date('01/01/2023'),
           name: 'Car',
           status: WBS_Element_Status.INACTIVE,
@@ -461,4 +462,34 @@ export const createTestTask = async (
     }
   });
   return task;
+};
+
+export const createSlackMessageEvent = (
+  channel: string,
+  event_ts: string,
+  user: string,
+  client_msg_id: string,
+  elements: any[]
+): SlackMessage => {
+  return {
+    type: 'message',
+    channel,
+    event_ts,
+    channel_type: 'channel',
+    user,
+    client_msg_id,
+    text: 'sample text',
+    blocks: [
+      {
+        type: 'rich_text',
+        block_id: 'block id',
+        elements: [
+          {
+            type: 'rich_text_section',
+            elements
+          }
+        ]
+      }
+    ]
+  };
 };

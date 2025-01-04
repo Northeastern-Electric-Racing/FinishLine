@@ -1,4 +1,4 @@
-import { WbsElement, WbsElementStatus, wbsPipe, WorkPackage } from 'shared';
+import { addWeeksToDate, WbsElement, WbsElementStatus, wbsPipe, WorkPackage } from 'shared';
 import { WPFormType } from './form';
 
 export const getTitleFromFormType = (formType: WPFormType, wbsElement: WbsElement): string => {
@@ -13,22 +13,36 @@ export const getTitleFromFormType = (formType: WPFormType, wbsElement: WbsElemen
 };
 
 /**
- * Given a list of work packages, return work packages with a start date within the next 2 weeks of the current day
+ * Given a list of work packages, return the work packages that are overdue.
  * @param wpList a list of work packages.
- * @returns a list of work packages with a start date within the next 2 weeks of the current day
+ * @returns a sub-list of work packages that are not complete, and have end dates before the current date.
  */
-export const getUpcomingWorkPackages = (wpList: WorkPackage[]): WorkPackage[] => {
-  const currentTime = new Date();
-  const twoWeeks = new Date();
-  twoWeeks.setDate(currentTime.getDate() + 14);
-  return wpList.filter(({ startDate }) => currentTime < startDate && startDate <= twoWeeks);
+export const getOverdueWorkPackages = (wpList: WorkPackage[]): WorkPackage[] => {
+  return wpList.filter((wp) => wp.status !== WbsElementStatus.Complete && new Date(wp.endDate) <= new Date());
 };
 
 /**
- * Given a list of work packages, return the work packages that are overdue.
+ * Given a list of work packages, return the work packages that are upcoming.
  * @param wpList a list of work packages.
- * @returns a list of work packages that are overdue.
+ * @returns a sub-list of work packages that are active and have a start date within the next 2 weeks.
  */
-export const getOverdueWorkPackages = (wpList: WorkPackage[]): WorkPackage[] => {
-  return wpList.filter((wp) => wp.status !== WbsElementStatus.Complete && wp.endDate < new Date());
+export const getUpcomingWorkPackages = (wpList: WorkPackage[]): WorkPackage[] => {
+  return wpList.filter(
+    (wp) =>
+      wp.status !== WbsElementStatus.Complete &&
+      new Date(wp.startDate) <= addWeeksToDate(new Date(), 2) &&
+      new Date(wp.startDate) >= new Date()
+  );
+};
+
+/**
+ * Given a list of work packages, return the work packages that are in progress.
+ * @param wpList a list of work packages.
+ * @returns a sub-list of work packages that are active, have a start date in the past, and an end date in the future.
+ */
+export const getInProgressWorkPackages = (wpList: WorkPackage[]): WorkPackage[] => {
+  return wpList.filter(
+    (wp) =>
+      wp.status === WbsElementStatus.Active && new Date(wp.endDate) >= new Date() && new Date(wp.startDate) <= new Date()
+  );
 };

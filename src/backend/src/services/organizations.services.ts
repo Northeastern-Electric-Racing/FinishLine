@@ -8,8 +8,18 @@ import { linkTransformer } from '../transformers/links.transformer';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
 import { uploadFile } from '../utils/google-integration.utils';
 import { getProjects } from '../utils/projects.utils';
+import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
+import projectTransformer from '../transformers/projects.transformer';
 
 export default class OrganizationsService {
+  /**
+   * Retrieve all the organizations
+   * @returns an array of every organization
+   */
+  static async getAllOrganizations(): Promise<Organization[]> {
+    return prisma.organization.findMany();
+  }
+
   /**
    * Gets the current organization
    * @param organizationId the organizationId to be fetched
@@ -199,6 +209,10 @@ export default class OrganizationsService {
 
     const logoImageData = await uploadFile(logoImage);
 
+    if (!logoImageData?.name) {
+      throw new HttpException(500, 'Image Name not found');
+    }
+
     const updatedOrg = await prisma.organization.update({
       where: { organizationId: organization.organizationId },
       data: {
@@ -214,17 +228,13 @@ export default class OrganizationsService {
    * @param organizationId the id of the organization
    * @returns the id of the image
    */
-  static async getLogoImage(organizationId: string): Promise<string> {
+  static async getLogoImage(organizationId: string): Promise<string | null> {
     const organization = await prisma.organization.findUnique({
       where: { organizationId }
     });
 
     if (!organization) {
       throw new NotFoundException('Organization', organizationId);
-    }
-
-    if (!organization.logoImageId) {
-      throw new HttpException(404, `Organization ${organizationId} does not have a logo image`);
     }
 
     return organization.logoImageId;
@@ -264,13 +274,32 @@ export default class OrganizationsService {
   static async getOrganizationFeaturedProjects(organizationId: string) {
     const organization = await prisma.organization.findUnique({
       where: { organizationId },
-      include: { featuredProjects: true }
+      include: { featuredProjects: getProjectQueryArgs(organizationId) }
     });
 
     if (!organization) {
       throw new NotFoundException('Organization', organizationId);
     }
 
-    return organization.featuredProjects;
+    return organization.featuredProjects.map(projectTransformer);
+  }
+
+  /**
+   * sets the slack workspace id of the organization
+   * @param workspaceId workspace id to set
+   * @param submitter user who submitted the workspace id
+   * @param organizationId id of organization to update with workspace id
+   * @returns updated organization
+   */
+  static async setSlackWorkspaceId(workspaceId: string, submitter: User, organizationId: string) {
+    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('set workspace id');
+    }
+    const updatedOrg = await prisma.organization.update({
+      where: { organizationId },
+      data: { slackWorkspaceId: workspaceId }
+    });
+
+    return updatedOrg;
   }
 }

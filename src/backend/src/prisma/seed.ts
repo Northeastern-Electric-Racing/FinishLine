@@ -33,6 +33,7 @@ import { writeFileSync } from 'fs';
 import WorkPackageTemplatesService from '../services/work-package-template.services';
 import RecruitmentServices from '../services/recruitment.services';
 import OrganizationsService from '../services/organizations.services';
+import AnnouncementService from '../services/announcement.service';
 
 const prisma = new PrismaClient();
 
@@ -257,9 +258,9 @@ const performSeed: () => Promise<void> = async () => {
    * TEAMS
    */
   /** Creating Team Types */
-  const teamType1 = await TeamsService.createTeamType(batman, 'Mechanical', 'YouTubeIcon', '', ner);
-  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'Software', 'InstagramIcon', '', ner);
-  const teamType3 = await TeamsService.createTeamType(cyborg, 'Electrical', 'SettingsIcon', '', ner);
+  const teamType1 = await TeamsService.createTeamType(batman, 'Mechanical', 'YouTubeIcon', ner);
+  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'Software', 'InstagramIcon', ner);
+  const teamType3 = await TeamsService.createTeamType(cyborg, 'Electrical', 'SettingsIcon', ner);
 
   /** Creating Teams */
   const justiceLeague: Team = await prisma.team.create(dbSeedAllTeams.justiceLeague(batman.userId, organizationId));
@@ -428,7 +429,7 @@ const performSeed: () => Promise<void> = async () => {
    */
 
   /** Project 1 */
-  const { projectWbsNumber: project1WbsNumber } = await seedProject(
+  const { projectWbsNumber: project1WbsNumber, projectId: project1Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
     fergus.wbsElement.carNumber,
@@ -456,7 +457,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Project 2 */
-  const { projectWbsNumber: project2WbsNumber } = await seedProject(
+  const { projectWbsNumber: project2WbsNumber, projectId: project2Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
     fergus.wbsElement.carNumber,
@@ -484,7 +485,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Project 3 */
-  const { projectWbsNumber: project3WbsNumber } = await seedProject(
+  const { projectWbsNumber: project3WbsNumber, projectId: project3Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
     fergus.wbsElement.carNumber,
@@ -512,7 +513,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Project 4 */
-  const { projectWbsNumber: project4WbsNumber } = await seedProject(
+  const { projectWbsNumber: project4WbsNumber, projectId: project4Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
     fergus.wbsElement.carNumber,
@@ -1869,6 +1870,8 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
+  await OrganizationsService.setFeaturedProjects([project1Id, project2Id, project3Id, project4Id], ner, thomasEmrax);
+
   await OrganizationsService.setUsefulLinks(batman, organizationId, [
     {
       linkId: '1',
@@ -1891,6 +1894,36 @@ const performSeed: () => Promise<void> = async () => {
   await RecruitmentServices.createFaq(batman, 'When was FinishLine created?', 'FinishLine was created in 2019', ner);
 
   await RecruitmentServices.createFaq(batman, 'How many developers are working on FinishLine?', '178 as of 2024', ner);
+
+  await AnnouncementService.createAnnouncement(
+    'Welcome to Finishline!',
+    [regina.userId],
+    new Date(),
+    'Thomas Emrax',
+    '1',
+    'software',
+    ner.organizationId
+  );
+
+  await AnnouncementService.createAnnouncement(
+    'Welcome to Finishline!',
+    [regina.userId],
+    new Date(),
+    'Damian',
+    '2',
+    'mechanical',
+    ner.organizationId
+  );
+
+  await AnnouncementService.createAnnouncement(
+    'Welcome to Finishline!',
+    [regina.userId],
+    new Date(),
+    'Batman',
+    '3',
+    'powertrain',
+    ner.organizationId
+  );
 };
 
 performSeed()

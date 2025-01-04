@@ -18,6 +18,8 @@ import NERTabs from '../../components/Tabs';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/system';
 import AdminToolsRecruitmentConfig from './RecruitmentConfig/AdminToolsRecruitmentConfig';
+import GuestViewConfig from './EditGuestView/GuestViewConfig';
+import AdminToolsWorkspaceId from './AdminToolsSlackWorkspaceId';
 
 const AdminToolsPage: React.FC = () => {
   const currentUser = useCurrentUser();
@@ -43,6 +45,19 @@ const AdminToolsPage: React.FC = () => {
     tabs.push({ tabUrlValue: 'guest-view', tabName: 'Guest View' });
     tabs.push({ tabUrlValue: 'miscellaneous', tabName: 'Miscellaneous' });
   }
+
+  const UserManagementTab = () => {
+    return isUserAdmin ? (
+      <Box>
+        <Box mb={2}>
+          <AdminToolsUserManagement />
+        </Box>
+        <TeamsTools />
+      </Box>
+    ) : (
+      <AdminToolsUserManagement />
+    );
+  };
 
   const ProjectConfigurationTab = () => {
     return isUserAdmin ? (
@@ -72,10 +87,7 @@ const AdminToolsPage: React.FC = () => {
       }
     >
       {tabIndex === 0 ? (
-        <>
-          <AdminToolsUserManagement />
-          {isUserAdmin && <TeamsTools />}
-        </>
+        <UserManagementTab />
       ) : tabIndex === 1 ? (
         <ProjectConfigurationTab />
       ) : tabIndex === 2 ? (
@@ -83,12 +95,13 @@ const AdminToolsPage: React.FC = () => {
       ) : tabIndex === 3 ? (
         <AdminToolsRecruitmentConfig />
       ) : tabIndex === 4 ? (
-        <Box></Box>
+        <GuestViewConfig />
       ) : (
         <Box>
           <Box pb={2}>
             <AdminToolsSlackUpcomingDeadlines />
           </Box>
+          <AdminToolsWorkspaceId />
           <AdminToolsAttendeeDesignReviewInfo />
         </Box>
       )}

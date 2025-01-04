@@ -1,21 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import TeamsService from '../services/teams.services';
-import { HttpException } from '../utils/errors.utils';
 
 export default class TeamsController {
   static async getAllTeams(req: Request, res: Response, next: NextFunction) {
     try {
       const teams = await TeamsService.getAllTeams(req.organization);
-
-      res.status(200).json(teams);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async getAllArchivedTeams(req: Request, res: Response, next: NextFunction) {
-    try {
-      const teams = await TeamsService.getAllArchivedTeams(req.organization);
 
       res.status(200).json(teams);
     } catch (error: unknown) {
@@ -125,14 +114,12 @@ export default class TeamsController {
     }
   }
 
-  static async setTeamType(req: Request, res: Response, next: NextFunction) {
+  static async createTeamType(req: Request, res: Response, next: NextFunction) {
     try {
-      const { teamTypeId } = req.body;
-      const { teamId } = req.params;
+      const { name, iconName } = req.body;
 
-      const updatedTeam = await TeamsService.setTeamType(req.currentUser, teamId, teamTypeId, req.organization);
-
-      res.status(200).json(updatedTeam);
+      const createdTeamType = await TeamsService.createTeamType(req.currentUser, name, iconName, req.organization);
+      res.status(200).json(createdTeamType);
     } catch (error: unknown) {
       next(error);
     }
@@ -155,51 +142,18 @@ export default class TeamsController {
       const teamTypes = await TeamsService.getAllTeamTypes(req.organization);
       res.status(200).json(teamTypes);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
-  static async createTeamType(req: Request, res: Response, next: NextFunction) {
+  static async setTeamType(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, iconName, description } = req.body;
+      const { teamTypeId } = req.body;
+      const { teamId } = req.params;
 
-      const createdTeamType = await TeamsService.createTeamType(
-        req.currentUser,
-        name,
-        iconName,
-        description,
-        req.organization
-      );
-      res.status(200).json(createdTeamType);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
+      const updatedTeam = await TeamsService.setTeamType(req.currentUser, teamId, teamTypeId, req.organization);
 
-  static async editTeamType(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { name, iconName, description } = req.body;
-
-      const teamType = await TeamsService.editTeamType(
-        req.currentUser,
-        req.params.teamTypeId,
-        name,
-        iconName,
-        description,
-        req.organization
-      );
-      res.status(200).json(teamType);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async setTeamTypeImage(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { file } = req;
-      if (!file) throw new HttpException(400, 'Invalid or undefined image data');
-      const teamType = await TeamsService.setTeamTypeImage(req.currentUser, req.params.teamTypeId, file, req.organization);
-      res.status(200).json(teamType);
+      res.status(200).json(updatedTeam);
     } catch (error: unknown) {
       next(error);
     }

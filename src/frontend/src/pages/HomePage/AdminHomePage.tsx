@@ -3,12 +3,16 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Typography } from '@mui/material';
+import { Typography, Grid, Box } from '@mui/material';
 import { useSingleUserSettings } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import PageLayout from '../../components/PageLayout';
+import PageLayout, { PAGE_GRID_HEIGHT } from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
+import WorkPackagesSelectionView from './components/WorkPackagesSelectionView';
+import ChangeRequestsToReview from './components/ChangeRequestsToReview';
+import GeneralAnnouncements from './components/GeneralAnnouncements';
+import UpcomingDesignReviews from './components/UpcomingDesignReviews';
 
 interface AdminHomePageProps {
   user: AuthenticatedUser;
@@ -25,6 +29,30 @@ const AdminHomePage = ({ user }: AdminHomePageProps) => {
       <Typography variant="h3" marginLeft="auto" sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0 }}>
         Welcome, {user.firstName}!
       </Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: `${PAGE_GRID_HEIGHT}vh`,
+          gap: 2,
+          mt: 1
+        }}
+      >
+        <Box height={'40%'}>
+          <ChangeRequestsToReview user={user} />
+        </Box>
+        <Grid container height={'60%'} spacing={2}>
+          <Grid item xs={4} md={4} height="100%">
+            <GeneralAnnouncements />
+          </Grid>
+          <Grid item xs={4} md={4} height="100%">
+            <WorkPackagesSelectionView />
+          </Grid>
+          <Grid item xs={4} md={4} height="100%">
+            <UpcomingDesignReviews user={user} />
+          </Grid>
+        </Grid>
+      </Box>
     </PageLayout>
   );
 };

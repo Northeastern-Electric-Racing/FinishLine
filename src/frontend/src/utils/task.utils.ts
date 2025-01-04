@@ -8,6 +8,7 @@ import { Project, Task, TaskPriority, TaskStatus, TeamPreview, User, UserPreview
 import { EditTaskFormInput } from '../pages/ProjectDetailPage/ProjectViewContainer/TaskList/TaskFormModal';
 import { fullNamePipe } from './pipes';
 import { makeTeamList } from './teams.utils';
+import { daysOverdue } from './datetime.utils';
 
 //this is needed to fix some weird bug with getActions()
 //see comment by michaldudak commented on Dec 5, 2022
@@ -77,4 +78,9 @@ export const taskPriorityColor = (task: Task) => {
     : task.priority === TaskPriority.High
     ? '#EF4345'
     : '';
+};
+
+export const getOverdueTasks = (tasks: Task[]) => {
+  const overdueTasks = new Set(tasks.filter((task) => daysOverdue(new Date(task.deadline)) > 0));
+  return [...overdueTasks];
 };
