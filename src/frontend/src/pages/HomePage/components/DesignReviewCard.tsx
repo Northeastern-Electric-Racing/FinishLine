@@ -7,7 +7,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import { LocationOnOutlined, Computer } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { NERButton } from '../../../components/NERButton';
-import { meetingStartTimePipe } from '../../../../../backend/src/utils/design-reviews.utils';
+import { meetingStartTimePipe } from '../../../utils/pipes';
 import { timezoneOffset } from '../../../utils/datetime.utils';
 
 interface DesignReviewProps {
