@@ -13,8 +13,17 @@ export default class OnboardingServices {
    */
   static async getAllChecklists(organization: Organization) {
     const allChecklists = await prisma.checklist.findMany({
-      where: { organizationId: organization.organizationId, dateDeleted: null, parentChecklistId: null },
-      include: { subtasks: { where: { dateDeleted: null } }, teamType: true, usersChecked: true }
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        parentChecklistId: null
+      },
+      include: {
+        subtasks: { where: { dateDeleted: null } },
+        teamType: true,
+        usersChecked: true,
+        team: true
+      }
     });
 
     return allChecklists;
