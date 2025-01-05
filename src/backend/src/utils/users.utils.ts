@@ -1,7 +1,15 @@
 import { Prisma, User, User_Settings } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { HttpException, InvalidOrganizationException, NotFoundException } from './errors.utils';
-import { AvailabilityCreateArgs, getPermissionsForRoleType, isSameDay, PermissionCheck, Role, RoleEnum } from 'shared';
+import {
+  AvailabilityCreateArgs,
+  getPermissionsForRoleType,
+  isSameDay,
+  isSubset,
+  PermissionCheck,
+  Role,
+  RoleEnum
+} from 'shared';
 import { UserWithId } from './teams.utils';
 import { UserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args';
 
@@ -111,7 +119,7 @@ const getUserWithPermissions = async (userId: string, organizationId: string): P
 export const userHasPermissionNew = async (userId: string, organizationId: string, permissionsToCheckFor: string[]) => {
   const user = await getUserWithPermissions(userId, organizationId);
 
-  return user.permissions.some((perm) => permissionsToCheckFor.includes(perm));
+  return isSubset(permissionsToCheckFor, user.permissions);
 };
 
 export const userHasPermission = async (

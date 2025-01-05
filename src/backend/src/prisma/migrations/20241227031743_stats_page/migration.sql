@@ -49,6 +49,7 @@ CREATE TABLE "Graph_Collection" (
     "title" TEXT NOT NULL,
     "dateDeleted" TIMESTAMP(3),
     "viewPermissions" "Special_Permission"[],
+    "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userCreatedId" TEXT NOT NULL,
     "userDeletedId" TEXT,
     "organizationId" TEXT NOT NULL,

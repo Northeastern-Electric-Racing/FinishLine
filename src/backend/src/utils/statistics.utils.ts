@@ -1,6 +1,9 @@
-import { Graph_Type, Measure, Prisma } from '@prisma/client';
-import { GraphData, wbsPipe, wbsNamePipe } from 'shared';
+import { Graph_Type, Measure, Organization, Prisma, User } from '@prisma/client';
+import { GraphData, wbsPipe, wbsNamePipe, Permission } from 'shared';
 import prisma from '../prisma/prisma';
+import { getGraphCollectionQueryArgs } from '../prisma-query-args/statistics.query-args';
+import { AccessDeniedException, DeletedException, InvalidOrganizationException, NotFoundException } from './errors.utils';
+import { userHasPermissionNew } from './users.utils';
 
 interface CarSegmentedData {
   carIds: string[];
@@ -102,7 +105,7 @@ export const getGraphDataForProjectBudgetByTeam = async (
       return prev + curr.budget;
     }, 0);
 
-    if (measure === Measure.AVG) {
+    if (measure === Measure.AVG && team.projects.length > 0) {
       value = value / team.projects.length;
     }
 
@@ -153,7 +156,7 @@ export const getGraphDataForProjectBudgetByDivision = async (
       );
     }, 0);
 
-    if (measure === Measure.AVG) {
+    if (measure === Measure.AVG && numProjects > 0) {
       value = value / numProjects;
     }
 
@@ -276,7 +279,7 @@ export const getGraphDataForChangeRequestsByTeam = async (
       return prev + curr.wbsElement.changeRequests.length + workPackageChangeRequests;
     }, 0);
 
-    if (measure === Measure.AVG) {
+    if (measure === Measure.AVG && team.projects.length > 0) {
       value = value / team.projects.length;
     }
 
@@ -325,7 +328,7 @@ export const getGraphDataForChangeRequestsByDivision = async (
       );
     }, 0);
 
-    if (measure === Measure.AVG) {
+    if (measure === Measure.AVG && numProjects > 0) {
       value = value / numProjects;
     }
 
@@ -394,7 +397,7 @@ export const getGraphDataForReimbursementRequestsByProject = async (
       return prev + (curr.reimbursementProduct?.cost ?? 0);
     }, 0);
 
-    if (measure === Measure.AVG) {
+    if (measure === Measure.AVG && project.wbsElement.reimbursementProductReasons.length > 0) {
       value = value / project.wbsElement.reimbursementProductReasons.length;
     }
 
@@ -448,7 +451,7 @@ export const getGraphDataForReimbursementRequestsByTeam = async (
       );
     }, 0);
 
-    if (measure === Measure.AVG) {
+    if (measure === Measure.AVG && team.projects.length > 0) {
       value = value / team.projects.length;
     }
 
@@ -498,7 +501,7 @@ export const getGraphDataForReimbursementRequestsByDivision = async (
       );
     }, 0);
 
-    if (measure === Measure.AVG) {
+    if (measure === Measure.AVG && division.teams.length > 0) {
       value = value / division.teams.length;
     }
 
@@ -539,4 +542,30 @@ export const getGraphData = (
     case Graph_Type.REIMBURSEMENT_TOTAL_BY_DIVISION:
       return getGraphDataForReimbursementRequestsByDivision(measure, organizationId, startDate, endDate, params);
   }
+};
+
+export const getGraphCollectionAndVerifyPermissions = async (
+  user: User,
+  graphCollectionId: string,
+  organization: Organization
+) => {
+  const requestedGraphCollection = await prisma.graph_Collection.findUnique({
+    where: { id: graphCollectionId, organizationId: organization.organizationId },
+    ...getGraphCollectionQueryArgs(organization.organizationId)
+  });
+
+  if (!requestedGraphCollection) throw new NotFoundException('Graph Collection', graphCollectionId);
+  if (requestedGraphCollection.dateDeleted) throw new DeletedException('Graph', graphCollectionId);
+  if (requestedGraphCollection.organizationId !== organization.organizationId)
+    throw new InvalidOrganizationException('Graph');
+  if (
+    !(await userHasPermissionNew(user.userId, organization.organizationId, [
+      ...requestedGraphCollection.viewPermissions,
+      Permission.VIEW_GRAPH
+    ]))
+  ) {
+    throw new AccessDeniedException('You do not have permission to view graphs');
+  }
+
+  return requestedGraphCollection;
 };

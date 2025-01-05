@@ -1,10 +1,9 @@
 import { Box } from '@mui/material';
 import { useForm } from 'react-hook-form';
-import { GraphDisplayType, GraphFormInput, Measure } from 'shared';
+import { CreateGraphArgs, Graph, GraphFormInput } from 'shared';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
-import { useHistory } from 'react-router-dom';
-import { useCreateGraph } from '../../../hooks/statistics.hooks';
+import { useHistory, useParams } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { useToast } from '../../../hooks/toasts.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -14,17 +13,7 @@ import ErrorPage from '../../ErrorPage';
 import PageLayout from '../../../components/PageLayout';
 import { GraphFormView } from './GraphFormView';
 import { useGetAllCars } from '../../../hooks/cars.hooks';
-
-const defaultValues: GraphFormInput = {
-  measure: Measure.SUM,
-  startTime: undefined,
-  endTime: undefined,
-  title: '',
-  graphType: null,
-  graphDisplayType: GraphDisplayType.BAR,
-  cars: [],
-  specialPermissions: []
-};
+import { SubmitText } from '../../../utils/teams.utils';
 
 const schema = yup.object().shape({
   endTime: yup.date().optional(),
@@ -32,14 +21,23 @@ const schema = yup.object().shape({
   title: yup.string().required(),
   graphType: yup.string().required(),
   graphDisplayType: yup.string().required(),
-  cars: yup.array().required(),
+  carIds: yup.array().required(),
   measure: yup.string().required()
 });
 
-const CreateGraphForm: React.FC = () => {
+interface GraphFormProps {
+  action: (data: CreateGraphArgs) => Promise<Graph>;
+  defaultValues: Omit<GraphFormInput, 'graphCollectionId'>;
+  submitText: SubmitText;
+  successText: string;
+  title: string;
+}
+
+const GraphForm = ({ title, action, defaultValues, submitText, successText }: GraphFormProps) => {
+  const { graphCollectionId } = useParams<{ graphCollectionId: string }>();
+
   const history = useHistory();
   const toast = useToast();
-  const { mutateAsync: createGraph, isLoading: createIsLoading } = useCreateGraph();
   const { data: cars, isLoading, isError, error } = useGetAllCars();
 
   const {
@@ -55,16 +53,16 @@ const CreateGraphForm: React.FC = () => {
   const onSubmit = async (formInput: GraphFormInput) => {
     try {
       if (!formInput.graphType) throw new Error('Please enter graph type');
-      await createGraph({
+      await action({
         ...formInput,
         startDate: formInput.startTime,
         endDate: formInput.endTime,
         graphType: formInput.graphType,
-        carIds: formInput.cars.map((car) => car.id)
+        graphCollectionId
       });
 
-      toast.success('Successfully created graph');
-      history.push(routes.STATISTICS);
+      toast.success(successText);
+      history.push(routes.STATISTICS + '/graph-collections/' + graphCollectionId);
       reset();
     } catch (error) {
       if (error instanceof Error) {
@@ -74,14 +72,14 @@ const CreateGraphForm: React.FC = () => {
   };
 
   const exitEditMode = () => {
-    history.push(routes.STATISTICS);
+    history.push(routes.STATISTICS + '/graph-collections/' + graphCollectionId);
   };
 
   if (isError) {
     return <ErrorPage error={error} />;
   }
 
-  if (createIsLoading || !cars || isLoading) {
+  if (!cars || isLoading) {
     return <LoadingIndicator />;
   }
 
@@ -96,28 +94,26 @@ const CreateGraphForm: React.FC = () => {
     >
       <PageLayout
         stickyHeader
-        title={'New Graph'}
-        previousPages={[{ name: 'statistics', route: routes.STATISTICS }]}
+        title={title}
+        previousPages={[
+          { name: 'Statistics', route: routes.STATISTICS },
+          { name: 'Collection', route: `${routes.STATISTICS}/graph-collections/${graphCollectionId}` }
+        ]}
         headerRight={
           <Box display="inline-flex" alignItems="center" justifyContent={'end'}>
             <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
               Cancel
             </NERFailButton>
             <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
-              Submit
+              {submitText}
             </NERSuccessButton>
           </Box>
         }
       >
-        <GraphFormView
-          control={control}
-          errors={errors}
-          graphCollections={[]} // TODO replace with graph collections
-          cars={cars}
-        />
+        <GraphFormView control={control} errors={errors} cars={cars} />
       </PageLayout>
     </form>
   );
 };
 
-export default CreateGraphForm;
+export default GraphForm;

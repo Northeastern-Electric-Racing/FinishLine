@@ -8,9 +8,16 @@ import {
   PointElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  CoreChartOptions,
+  ElementChartOptions,
+  DatasetChartOptions,
+  PluginChartOptions,
+  BarControllerChartOptions,
+  ScaleChartOptions
 } from 'chart.js';
 import { Box } from '@mui/material';
+import { _DeepPartialObject } from 'chart.js/dist/types/utils';
 
 Chart.register(CategoryScale, LinearScale, LineController, LineElement, PointElement, Title, Tooltip, Legend);
 
@@ -46,9 +53,16 @@ const StatsLineGraph: React.FC<StatsLineGraphProps> = ({
     ]
   };
 
-  const options = {
+  const options: _DeepPartialObject<
+    CoreChartOptions<'line'> &
+      ElementChartOptions<'line'> &
+      PluginChartOptions<'line'> &
+      DatasetChartOptions<'line'> &
+      ScaleChartOptions<'line'> &
+      BarControllerChartOptions
+  > = {
     responsive: true,
-    maintainAspectRatio: true,
+    maintainAspectRatio: false,
     plugins: {
       title: {
         display: true,
@@ -59,8 +73,8 @@ const StatsLineGraph: React.FC<StatsLineGraphProps> = ({
         color: 'white'
       },
       legend: {
-        display: true,
-        position: 'top' as const,
+        display: false,
+        position: 'bottom',
         labels: {
           font: {
             size: 14
@@ -105,7 +119,7 @@ const StatsLineGraph: React.FC<StatsLineGraphProps> = ({
   };
 
   return (
-    <Box sx={{ width: '100%', height: '100%', maxWidth: width, maxHeight: height }}>
+    <Box sx={{ height, width: '100%', maxWidth: width }}>
       <Line data={data} options={options} />
     </Box>
   );
