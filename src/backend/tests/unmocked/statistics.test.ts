@@ -1,5 +1,5 @@
-import { Graph_Type, Organization, User, Graph_Display_Type } from '@prisma/client';
-import { supermanAdmin, theVisitorGuest, wonderwomanGuest } from '../test-data/users.test-data';
+import { Graph_Type, Organization, User, Graph_Display_Type, Special_Permission } from '@prisma/client';
+import { batmanAppAdmin, supermanAdmin, theVisitorGuest, wonderwomanGuest } from '../test-data/users.test-data';
 import {
   createTestCar,
   createTestOrganization,
@@ -316,7 +316,7 @@ describe('Statistics Tests', () => {
   });
 
   describe('Get all graph collections', () => {
-    it('Succeeds and gets all the graphs', async () => {
+    it('Succeeds and gets all the graphs the user has permission to see without permissions', async () => {
       const graph1 = await prisma.graph.create({
         data: {
           title: 'graph1',
@@ -342,7 +342,65 @@ describe('Statistics Tests', () => {
       const graphCollection1 = await prisma.graph_Collection.create({
         data: {
           title: 'Graph Collection 1',
+          viewPermissions: [],
+          graphs: {
+            connect: [{ id: graph1.id }, { id: graph2.id }]
+          },
+          userCreatedId: user.userId,
+          organizationId: orgId
+        }
+      });
+
+      await prisma.graph_Collection.create({
+        data: {
+          title: 'Graph Collection 2',
           viewPermissions: [SpecialPermission.FINANCE_ONLY],
+          graphs: {
+            connect: [{ id: graph1.id }, { id: graph2.id }]
+          },
+          userCreatedId: user.userId,
+          organizationId: orgId
+        }
+      });
+
+      const result = await StatisticsService.getAllGraphCollections(user, organization);
+      expect(result[0].userCreated.userId).toBe(user.userId);
+      expect(result.length).toBe(1);
+      expect(
+        result.map((graphCol) => {
+          return graphCol.id;
+        })
+      ).toEqual([graphCollection1.id]);
+    });
+
+    it('Succeeds and gets all the graphs the user has permission to see with permissions', async () => {
+      user = await createTestUser({ ...batmanAppAdmin, permissions: [Special_Permission.FINANCE_ONLY] }, orgId);
+      const graph1 = await prisma.graph.create({
+        data: {
+          title: 'graph1',
+          graphType: Graph_Type.CHANGE_REQUESTS_BY_DIVISION,
+          displayGraphType: Graph_Display_Type.BAR,
+          measure: Measure.AVG,
+          userCreatedId: user.userId,
+          organizationId: orgId
+        }
+      });
+
+      const graph2 = await prisma.graph.create({
+        data: {
+          title: 'graph2',
+          graphType: Graph_Type.PROJECT_BUDGET_BY_PROJECT,
+          displayGraphType: Graph_Display_Type.PIE,
+          measure: Measure.SUM,
+          userCreatedId: user.userId,
+          organizationId: orgId
+        }
+      });
+
+      const graphCollection1 = await prisma.graph_Collection.create({
+        data: {
+          title: 'Graph Collection 1',
+          viewPermissions: [],
           graphs: {
             connect: [{ id: graph1.id }, { id: graph2.id }]
           },
@@ -363,7 +421,7 @@ describe('Statistics Tests', () => {
         }
       });
 
-      const result = await StatisticsService.getAllGraphCollections(organization);
+      const result = await StatisticsService.getAllGraphCollections(user, organization);
       expect(result[0].userCreated.userId).toBe(user.userId);
       expect(result.length).toBe(2);
       expect(

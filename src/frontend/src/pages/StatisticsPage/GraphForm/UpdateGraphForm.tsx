@@ -5,10 +5,10 @@ import { useParams } from 'react-router-dom';
 import ErrorPage from '../../ErrorPage';
 import { useGetSingleGraph, useUpdateGraph } from '../../../hooks/statistics.hooks';
 
-const CreateGraphForm: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const { data: graph, isLoading, isError, error } = useGetSingleGraph(id);
-  const { mutateAsync: updateGraph, isLoading: updateIsLoading } = useUpdateGraph(id);
+const UpdateGraphForm: React.FC = () => {
+  const { graphId } = useParams<{ graphId: string }>();
+  const { data: graph, isLoading, isError, error } = useGetSingleGraph(graphId);
+  const { mutateAsync: updateGraph, isLoading: updateIsLoading } = useUpdateGraph(graphId);
 
   if (isError) {
     return <ErrorPage error={error} />;
@@ -40,4 +40,4 @@ const CreateGraphForm: React.FC = () => {
   );
 };
 
-export default CreateGraphForm;
+export default UpdateGraphForm;

@@ -18,6 +18,8 @@ import { body } from 'express-validator';
 
 const statisticsRouter = express.Router();
 
+statisticsRouter.get('/graph/:graphId', StatisticsController.getSingleGraph);
+
 statisticsRouter.post(
   '/graph/create',
   isOptionalDate(body('startDate')),
@@ -50,8 +52,26 @@ statisticsRouter.post(
   StatisticsController.editGraph
 );
 
-statisticsRouter.get('/graphCollections', StatisticsController.getAllGraphCollections);
+statisticsRouter.get('/graph-collections', StatisticsController.getAllGraphCollections);
 
-statisticsRouter.get('/graph/:graphId', StatisticsController.getSingleGraph);
+statisticsRouter.post(
+  '/graph-collections/create',
+  nonEmptyString(body('title')),
+  body('specialPermissions').isArray(),
+  isSpecialPermission(body('specialPermissions.*')),
+  validateInputs,
+  StatisticsController.createGraphCollection
+);
+
+statisticsRouter.get('/graph-collections/:graphCollectionId', StatisticsController.getSingleGraphCollection);
+
+statisticsRouter.post(
+  '/graph-collections/:graphCollectionId/edit',
+  nonEmptyString(body('title')),
+  body('specialPermissions').isArray(),
+  isSpecialPermission(body('specialPermissions.*')),
+  validateInputs,
+  StatisticsController.editGraphCollection
+);
 
 export default statisticsRouter;

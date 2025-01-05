@@ -18,6 +18,7 @@ export const graphCollectionTransformer = (graphCollection: GraphCollection): Gr
     userCreated: userTransformer(graphCollection.userCreated),
     userDeleted: graphCollection.userDeleted ? userTransformer(graphCollection.userDeleted) : undefined,
     dateDeleted: graphCollection.dateDeleted ? new Date(graphCollection.dateDeleted) : undefined,
+    dateCreated: new Date(graphCollection.dateCreated),
     graphs: graphCollection.graphs.map(graphTransformer)
   };
 };

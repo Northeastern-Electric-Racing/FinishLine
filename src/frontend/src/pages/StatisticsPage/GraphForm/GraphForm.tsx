@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { CreateGraphArgs, Graph, GraphFormInput } from 'shared';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { useToast } from '../../../hooks/toasts.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -21,19 +21,21 @@ const schema = yup.object().shape({
   title: yup.string().required(),
   graphType: yup.string().required(),
   graphDisplayType: yup.string().required(),
-  cars: yup.array().required(),
+  carIds: yup.array().required(),
   measure: yup.string().required()
 });
 
 interface GraphFormProps {
   action: (data: CreateGraphArgs) => Promise<Graph>;
-  defaultValues: GraphFormInput;
+  defaultValues: Omit<GraphFormInput, 'graphCollectionId'>;
   submitText: SubmitText;
   successText: string;
   title: string;
 }
 
 const GraphForm = ({ title, action, defaultValues, submitText, successText }: GraphFormProps) => {
+  const { graphCollectionId } = useParams<{ graphCollectionId: string }>();
+
   const history = useHistory();
   const toast = useToast();
   const { data: cars, isLoading, isError, error } = useGetAllCars();
@@ -55,11 +57,12 @@ const GraphForm = ({ title, action, defaultValues, submitText, successText }: Gr
         ...formInput,
         startDate: formInput.startTime,
         endDate: formInput.endTime,
-        graphType: formInput.graphType
+        graphType: formInput.graphType,
+        graphCollectionId
       });
 
       toast.success(successText);
-      history.push(routes.STATISTICS);
+      history.push(routes.STATISTICS + '/graph-collections/' + graphCollectionId);
       reset();
     } catch (error) {
       if (error instanceof Error) {
@@ -69,7 +72,7 @@ const GraphForm = ({ title, action, defaultValues, submitText, successText }: Gr
   };
 
   const exitEditMode = () => {
-    history.push(routes.STATISTICS);
+    history.push(routes.STATISTICS + '/graph-collections/' + graphCollectionId);
   };
 
   if (isError) {
@@ -92,7 +95,10 @@ const GraphForm = ({ title, action, defaultValues, submitText, successText }: Gr
       <PageLayout
         stickyHeader
         title={title}
-        previousPages={[{ name: 'statistics', route: routes.STATISTICS }]}
+        previousPages={[
+          { name: 'Statistics', route: routes.STATISTICS },
+          { name: 'Collection', route: `${routes.STATISTICS}/graph-collections/${graphCollectionId}` }
+        ]}
         headerRight={
           <Box display="inline-flex" alignItems="center" justifyContent={'end'}>
             <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
@@ -104,12 +110,7 @@ const GraphForm = ({ title, action, defaultValues, submitText, successText }: Gr
           </Box>
         }
       >
-        <GraphFormView
-          control={control}
-          errors={errors}
-          graphCollections={[]} // TODO replace with graph collections
-          cars={cars}
-        />
+        <GraphFormView control={control} errors={errors} cars={cars} />
       </PageLayout>
     </form>
   );

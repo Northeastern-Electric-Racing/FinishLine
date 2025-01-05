@@ -5,8 +5,8 @@ import graphTransformer from '../transformers/statistics-graph.transformer';
 import { getGraphQueryArgs, getGraphCollectionQueryArgs, GraphQueryArgs } from '../prisma-query-args/statistics.query-args';
 import { userHasPermissionNew } from '../utils/users.utils';
 import { AccessDeniedException, HttpException } from '../utils/errors.utils';
-import { Graph, GraphCollection, GraphData, isUnderWordCount, Permission } from 'shared';
-import { getGraphData } from '../utils/statistics.utils';
+import { Graph, GraphCollection, GraphData, isSubset, isUnderWordCount, Permission } from 'shared';
+import { getGraphCollectionAndVerifyPermissions, getGraphData } from '../utils/statistics.utils';
 import { graphCollectionTransformer } from '../transformers/statistics-graphCollection.transformer';
 
 export default class StatisticsService {
@@ -246,11 +246,10 @@ export default class StatisticsService {
     if (requestedGraph.dateDeleted) throw new DeletedException('Graph', id);
     if (requestedGraph.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Graph');
     if (
-      !(await userHasPermissionNew(
-        user.userId,
-        organization.organizationId,
-        ['VIEW_GRAPH'].concat(requestedGraph.specialPermissions)
-      ))
+      !(await userHasPermissionNew(user.userId, organization.organizationId, [
+        ...requestedGraph.specialPermissions,
+        Permission.VIEW_GRAPH
+      ]))
     ) {
       throw new AccessDeniedException('You do not have permission to view graphs');
     }
@@ -270,17 +269,27 @@ export default class StatisticsService {
 
   /**
    * Get all graph collections.
+   * @param user The user trying to get the graph collections
    * @param organization organization that the user is in.
    * @returns all the graph collections.
    */
-  static async getAllGraphCollections(organization: Organization): Promise<GraphCollection[]> {
-    const graphCollections = await prisma.graph_Collection.findMany({
+  static async getAllGraphCollections(user: User, organization: Organization): Promise<GraphCollection[]> {
+    if (!(await userHasPermissionNew(user.userId, organization.organizationId, [Permission.VIEW_GRAPH_COLLECTION]))) {
+      throw new AccessDeniedException('You do not have permission to view graph collections');
+    }
+
+    let graphCollections = await prisma.graph_Collection.findMany({
       where: {
         dateDeleted: null,
         organizationId: organization.organizationId
       },
       ...getGraphCollectionQueryArgs(organization.organizationId)
     });
+
+    // Prisma does not support the kind of filtering we need natively, so do it after the query based on permissions
+    graphCollections = graphCollections.filter((graphCollection) =>
+      isSubset(graphCollection.viewPermissions, user.additionalPermissions)
+    );
 
     return Promise.all(
       graphCollections.map(async (graphCollection) => {
@@ -304,6 +313,133 @@ export default class StatisticsService {
 
         return graphCollectionTransformer(graphCollection, addedDataGraphs);
       })
+    );
+  }
+
+  static async createGraphCollection(
+    user: User,
+    title: string,
+    specialPermissions: Special_Permission[],
+    organization: Organization
+  ) {
+    if (!(await userHasPermissionNew(user.userId, organization.organizationId, [Permission.CREATE_GRAPH_COLLECTION]))) {
+      throw new AccessDeniedException('You do not have permission to create graph collections');
+    }
+
+    if (!isUnderWordCount(title, 20)) {
+      throw new HttpException(400, 'Title must be less than 20 words');
+    }
+
+    const graphCollection = await prisma.graph_Collection.create({
+      data: {
+        organizationId: organization.organizationId,
+        title,
+        viewPermissions: specialPermissions,
+        userCreatedId: user.userId
+      },
+      ...getGraphCollectionQueryArgs(organization.organizationId)
+    });
+
+    return graphCollectionTransformer(
+      graphCollection,
+      await Promise.all(
+        graphCollection.graphs.map(async (graph) => {
+          return {
+            ...graph,
+            graphData: await getGraphData(
+              graph.graphType,
+              graph.measure,
+              organization.organizationId,
+              graph.startDate ?? null,
+              graph.endDate ?? null,
+              {
+                carIds: graph.cars.map((car) => {
+                  return car.carId;
+                })
+              }
+            )
+          };
+        })
+      )
+    );
+  }
+
+  static async getSingleGraphCollection(user: User, graphCollectionId: string, organization: Organization) {
+    const requestedGraphCollection = await getGraphCollectionAndVerifyPermissions(user, graphCollectionId, organization);
+
+    return graphCollectionTransformer(
+      requestedGraphCollection,
+      await Promise.all(
+        requestedGraphCollection.graphs.map(async (graph) => {
+          return {
+            ...graph,
+            graphData: await getGraphData(
+              graph.graphType,
+              graph.measure,
+              organization.organizationId,
+              graph.startDate ?? null,
+              graph.endDate ?? null,
+              {
+                carIds: graph.cars.map((car) => {
+                  return car.carId;
+                })
+              }
+            )
+          };
+        })
+      )
+    );
+  }
+
+  static async editGraphCollection(
+    user: User,
+    graphCollectionId: string,
+    title: string,
+    specialPermission: Special_Permission[],
+    organization: Organization
+  ) {
+    if (!(await userHasPermissionNew(user.userId, organization.organizationId, [Permission.EDIT_GRAPH_COLLECTION]))) {
+      throw new AccessDeniedException('You do not have permission to edit graph collections');
+    }
+
+    if (!isUnderWordCount(title, 20)) {
+      throw new HttpException(400, 'Title must be less than 20 words');
+    }
+
+    const graphCollection = await getGraphCollectionAndVerifyPermissions(user, graphCollectionId, organization);
+
+    const updatedCollection = await prisma.graph_Collection.update({
+      where: {
+        id: graphCollection.id
+      },
+      data: {
+        viewPermissions: specialPermission,
+        title
+      },
+      ...getGraphCollectionQueryArgs(organization.organizationId)
+    });
+
+    return graphCollectionTransformer(
+      updatedCollection,
+      await Promise.all(
+        updatedCollection.graphs.map(async (graph) => {
+          return {
+            ...graph,
+            graphData: await getGraphData(
+              graph.graphType,
+              graph.measure,
+              organization.organizationId,
+              graph.startDate ?? null,
+              graph.endDate ?? null,
+              {
+                carIds: graph.cars.map((car) => {
+                  return car.carId;
+                })
+              }
+            )
+          };
+        })
+      )
     );
   }
 }

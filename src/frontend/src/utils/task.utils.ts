@@ -25,7 +25,7 @@ declare global {
 export type Row = {
   id: number;
   title: string;
-  deadline: Date;
+  deadline?: Date;
   priority: TaskPriority;
   assignees: UserPreview[];
   taskId: string;
@@ -49,12 +49,12 @@ export interface TaskListDataGridProps {
   tableRowCount: string;
   setSelectedTask: Dispatch<SetStateAction<Task | undefined>>;
   setModalShow: Dispatch<SetStateAction<boolean>>;
-  createTask: (title: string, deadline: Date, priority: TaskPriority, assignees: UserPreview[]) => Promise<void>;
+  createTask: (title: string, priority: TaskPriority, assignees: UserPreview[], deadline?: Date) => Promise<void>;
   status: TaskStatus;
   addTask: boolean;
   onAddCancel: () => void;
   deleteRow: (taskId: string) => MouseEventHandler<HTMLLIElement>;
-  moveToInProgress: (taskId: string) => MouseEventHandler<HTMLLIElement>;
+  moveToInProgress: (taskId: string, assignees: string, deadline: Date | undefined) => MouseEventHandler<HTMLLIElement>;
   moveToDone: (taskId: string) => MouseEventHandler<HTMLLIElement>;
   moveToBacklog: (taskId: string) => MouseEventHandler<HTMLLIElement>;
   editTask: (editInfo: EditTaskFormInput) => Promise<void>;

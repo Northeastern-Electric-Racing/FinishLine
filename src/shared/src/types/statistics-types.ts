@@ -58,6 +58,7 @@ export interface GraphCollection {
   userCreated: User;
   userDeleted?: User;
   dateDeleted?: Date;
+  dateCreated: Date;
   permissions: SpecialPermission[];
 }
 
@@ -86,5 +87,5 @@ export interface GraphFormInput {
 
 export interface GraphCollectionFormInput {
   title: string;
-  permissions: SpecialPermission[];
+  specialPermissions: SpecialPermission[];
 }
