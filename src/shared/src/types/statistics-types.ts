@@ -41,7 +41,7 @@ export interface Graph {
   measure: Measure;
   graphType: GraphType;
   xAxisLabel: string;
-  yAxisLabel: string
+  yAxisLabel: string;
   graphDisplayType: GraphDisplayType;
   userCreated: User;
   userDeleted?: User;
