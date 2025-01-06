@@ -1,5 +1,4 @@
 import { Autocomplete, FormControl, FormHelperText, FormLabel, Grid, MenuItem, Select, TextField } from '@mui/material';
-import ReactHookTextField from '../../../components/ReactHookTextField';
 import { Control, Controller, FieldErrors } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Car, GraphDisplayType, GraphFormInput, GraphType, Measure, SpecialPermission } from 'shared';
@@ -31,13 +30,6 @@ export const GraphFormView: React.FC<GraphFormViewProps> = ({ control, errors, c
 
   return (
     <Grid container spacing={2}>
-      <Grid item xs={12}>
-        <FormControl fullWidth>
-          <FormLabel>Title</FormLabel>
-          <ReactHookTextField placeholder="Enter graph title" control={control} name="title" />
-        </FormControl>
-      </Grid>
-
       <Grid item xs={6}>
         <FormControl fullWidth>
           <FormLabel>Start Date</FormLabel>

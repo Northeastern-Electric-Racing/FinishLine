@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import { Graph, GraphData, GraphDisplayType, GraphType, Measure, SpecialPermission } from 'shared';
 import { userTransformer } from './user.transformer';
 import { GraphQueryArgs } from '../prisma-query-args/statistics.query-args';
+import { getAxisLabels } from '../utils/statistics.utils';
 
 const graphTransformer = (graph: Prisma.GraphGetPayload<GraphQueryArgs> & { graphData: GraphData[] }): Graph => {
   return {
@@ -17,7 +18,9 @@ const graphTransformer = (graph: Prisma.GraphGetPayload<GraphQueryArgs> & { grap
     startDate: graph.startDate ?? undefined,
     endDate: graph.endDate ?? undefined,
     carIds: graph.cars.map((car) => car.carId),
-    specialPermissions: graph.specialPermissions as SpecialPermission[]
+    specialPermissions: graph.specialPermissions as SpecialPermission[],
+    xAxisLabel: getAxisLabels(graph.graphType).x,
+    yAxisLabel: getAxisLabels(graph.graphType).y
   };
 };
 

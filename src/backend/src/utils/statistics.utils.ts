@@ -569,3 +569,23 @@ export const getGraphCollectionAndVerifyPermissions = async (
 
   return requestedGraphCollection;
 };
+
+export const getAxisLabels = (graphType: Graph_Type): { x: string; y: string } => {
+  switch (graphType) {
+    case Graph_Type.CHANGE_REQUESTS_BY_DIVISION:
+      return { x: 'Division', y: '# Change Requests' };
+    case Graph_Type.CHANGE_REQUESTS_BY_TEAM:
+      return { x: 'Team', y: '# Change Requests' };
+    case Graph_Type.CHANGE_REQUESTS_BY_PROJECT:
+      return { x: 'Project', y: '# Change Requests' };
+    case Graph_Type.REIMBURSEMENT_TOTAL_BY_DIVISION:
+    case Graph_Type.PROJECT_BUDGET_BY_DIVISION:
+      return { x: 'Division', y: 'Dollars' };
+    case Graph_Type.REIMBURSEMENT_TOTAL_BY_TEAM:
+    case Graph_Type.PROJECT_BUDGET_BY_TEAM:
+      return { x: 'Team', y: 'Dollars' };
+    case Graph_Type.REIMBURSEMENT_TOTAL_BY_PROJECT:
+    case Graph_Type.PROJECT_BUDGET_BY_PROJECT:
+      return { x: 'Project', y: 'Dollars' };
+  }
+};

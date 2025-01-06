@@ -10,13 +10,13 @@ interface GraphBarChartViewProps {
 const GraphBarChartView = ({ graph, height, cars }: GraphBarChartViewProps) => {
   return (
     <StatsBarChart
-      graphTitle={`${graph.title} - ${displayEnum(graph.graphType)} ${
+      graphTitle={`${displayEnum(graph.measure)} ${graph.title} - ${displayEnum(graph.graphType)} ${
         cars.length > 0 ? `(${cars.map((car) => car.name).join(',')})` : ''
       }`}
       xAxisData={graph.graphData.map((data) => data.label)}
       yAxisData={graph.graphData.map((data) => data.value)}
-      xAxisLabel=""
-      yAxisLabel={graph.measure}
+      xAxisLabel={graph.xAxisLabel}
+      yAxisLabel={graph.yAxisLabel}
       height={height}
     />
   );

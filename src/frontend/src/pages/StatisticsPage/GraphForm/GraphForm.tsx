@@ -18,7 +18,7 @@ import { SubmitText } from '../../../utils/teams.utils';
 const schema = yup.object().shape({
   endTime: yup.date().optional(),
   startTime: yup.date().optional(),
-  title: yup.string().required(),
+  title: yup.string().optional(),
   graphType: yup.string().required(),
   graphDisplayType: yup.string().required(),
   carIds: yup.array().required(),

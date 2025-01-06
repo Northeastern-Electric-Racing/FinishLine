@@ -40,6 +40,8 @@ export interface Graph {
   title: string;
   measure: Measure;
   graphType: GraphType;
+  xAxisLabel: string;
+  yAxisLabel: string
   graphDisplayType: GraphDisplayType;
   userCreated: User;
   userDeleted?: User;

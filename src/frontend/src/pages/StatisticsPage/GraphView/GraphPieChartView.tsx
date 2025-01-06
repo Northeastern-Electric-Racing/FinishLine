@@ -11,7 +11,7 @@ interface GraphPieChartViewProps {
 const GraphPieChartView = ({ graph, height, cars }: GraphPieChartViewProps) => {
   return (
     <StatsPieChart
-      graphTitle={`${graph.title} - ${displayEnum(graph.graphType)} ${
+      graphTitle={`${displayEnum(graph.measure)} ${graph.title} - ${displayEnum(graph.graphType)} ${
         cars.length > 0 ? `(${cars.map((car) => car.name).join(',')})` : ''
       }`}
       xAxisData={graph.graphData.map((data) => data.label)}

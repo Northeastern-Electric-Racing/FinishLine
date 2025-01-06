@@ -85,7 +85,7 @@ const StatsPieChart: React.FC<StatsPieChartProps> = ({ xAxisData, yAxisData, wid
       },
       legend: {
         display: true,
-        position: 'bottom',
+        position: 'right',
         labels: {
           font: {
             size: 14
