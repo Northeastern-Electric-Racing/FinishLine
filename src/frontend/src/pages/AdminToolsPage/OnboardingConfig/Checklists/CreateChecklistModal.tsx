@@ -26,42 +26,36 @@ interface ChecklistFormValues {
   subtasks: ChecklistPreview[];
 }
 
+const schema = yup.object().shape({
+  name: yup.string().required('Name is Required'),
+  descriptions: yup
+    .array()
+    .of(
+      yup.object().shape({
+        name: yup.string().required('Description is Required')
+      })
+    )
+    .min(1, 'At least one description is required'),
+  subtasks: yup.array().of(
+    yup.object().shape({
+      name: yup.string().required('Subtask Name is Required'),
+      isOptional: yup.boolean().required('Is Optional is Required')
+    })
+  )
+});
+
 const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateChecklistModalProps) => {
   const theme = useTheme();
   const toast = useToast();
   const { mutateAsync: createChecklist, isLoading, isError, error } = useCreateChecklist();
 
-  const handleFormSubmit = async (data: ChecklistCreateArgs) => {
-    try {
-      const response = await createChecklist(data);
-      return response;
-    } catch (err) {
-      toast.error('Failed to create checklist');
-      throw err;
-    }
+  const [subtasks, setSubtasks] = useState<ChecklistCreateArgs[]>([{ name: '', isOptional: false, descriptions: [] }]);
+
+  const defaultValues = {
+    name: '',
+    descriptions: [{ name: '' }],
+    subtasks: []
   };
-
-  const [subtasks, setSubtasks] = useState<ChecklistPreview[]>([
-    { name: '', isOptional: false, dateCreated: new Date(), checklistId: '' }
-  ]);
-
-  const schema = yup.object().shape({
-    name: yup.string().required('Name is Required'),
-    descriptions: yup
-      .array()
-      .of(
-        yup.object().shape({
-          name: yup.string().required('Description is Required')
-        })
-      )
-      .min(1, 'At least one description is required'),
-    subtasks: yup.array().of(
-      yup.object().shape({
-        name: yup.string().required('Subtask Name is Required'),
-        isOptional: yup.boolean().required('Is Optional is Required')
-      })
-    )
-  });
 
   const {
     handleSubmit,
@@ -70,11 +64,7 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
     formState: { errors }
   } = useForm<ChecklistFormValues>({
     resolver: yupResolver(schema),
-    defaultValues: {
-      name: '',
-      descriptions: [{ name: '' }],
-      subtasks: []
-    }
+    defaultValues
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -94,13 +84,13 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
         descriptions: (data.descriptions as unknown as { name: string }[]).map((desc) => desc.name)
       };
 
-      const parentChecklist = await handleFormSubmit(formattedData);
+      const parentChecklist = await createChecklist(formattedData);
 
       // Handle subtasks
       const filteredSubtasks = subtasks.filter((subtask) => subtask.name !== '');
       await Promise.all(
         filteredSubtasks.map((subtask) =>
-          handleFormSubmit({
+          createChecklist({
             name: subtask.name,
             descriptions: [],
             teamId,
@@ -119,7 +109,7 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
   };
 
   const addSubtask = () => {
-    setSubtasks([...subtasks, { name: '', isOptional: false, dateCreated: new Date(), checklistId: '' }]);
+    setSubtasks([...subtasks, { name: '', isOptional: false, descriptions: [] }]);
   };
 
   const deleteSubtask = (index: number) => {

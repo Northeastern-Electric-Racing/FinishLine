@@ -25,32 +25,22 @@ interface ChecklistFormValues {
   descriptions: { name: string }[];
 }
 
+const schema = yup.object().shape({
+  name: yup.string().required('Name is Required'),
+  descriptions: yup
+    .array()
+    .of(
+      yup.object().shape({
+        name: yup.string().required('Description is Required').trim()
+      })
+    )
+    .min(1, 'At least one description is required')
+});
+
 const EditChecklistModal = ({ open, handleClose, defaultValues, teamId, teamTypeId }: EditChecklistModalProps) => {
   const theme = useTheme();
   const toast = useToast();
   const { mutateAsync: editChecklist, isLoading, isError, error } = useEditChecklist(defaultValues.checklistId);
-
-  const handleFormSubmit = async (data: ChecklistCreateArgs) => {
-    try {
-      const response = await editChecklist(data);
-      return response;
-    } catch (err) {
-      toast.error('Failed to edit checklist');
-      throw err;
-    }
-  };
-
-  const schema = yup.object().shape({
-    name: yup.string().required('Name is Required'),
-    descriptions: yup
-      .array()
-      .of(
-        yup.object().shape({
-          name: yup.string().required('Description is Required').trim()
-        })
-      )
-      .min(1, 'At least one description is required')
-  });
 
   const {
     handleSubmit,
@@ -76,7 +66,7 @@ const EditChecklistModal = ({ open, handleClose, defaultValues, teamId, teamType
         descriptions: (data.descriptions as unknown as { name: string }[]).map((desc) => desc.name)
       };
 
-      await handleFormSubmit(formattedData);
+      await editChecklist(formattedData);
 
       handleClose();
     } catch (error) {
