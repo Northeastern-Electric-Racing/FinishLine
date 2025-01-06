@@ -12,7 +12,6 @@ import { useGetAllGraphCollections } from '../../hooks/statistics.hooks';
 import { NERButton } from '../../components/NERButton';
 import CreateGraphCollectionForm from './GraphCollectionForm/CreateGraphCollectionForm';
 import { useState } from 'react';
-import LineGraph from '../../components/StatsLineGraph';
 
 const StatisticsPage: React.FC = () => {
   const { data: graphCollections, isLoading, isError, error } = useGetAllGraphCollections();
@@ -58,35 +57,6 @@ const StatisticsPage: React.FC = () => {
         open={showCreateGraphCollectionModal}
         onHide={() => setShowCreateGraphCollectionModal(false)}
       />
-
-      <Box mt={4}>
-        <Typography variant="h5">Graphs</Typography>
-      </Box>
-
-      <Box style={{ display: 'flex', justifyContent: 'normal' }}>
-        <LineGraph
-          xAxisData={[
-            'testing1',
-            'testing2',
-            'testing3',
-            'testing4',
-            'testing5',
-            'testing6',
-            'testing7',
-            'testing8',
-            'testing9',
-            'testing10',
-            'testing11',
-            'testing12',
-            'testing13',
-            'testing14'
-          ]}
-          yAxisData={[100, 200, 50, 500, 300, 400, 150, 250, 350, 450, 550, 650, 750, 850]}
-          xAxisLabel="Categories"
-          yAxisLabel="Values"
-          graphTitle="Line graph Test"
-        />
-      </Box>
     </PageLayout>
   );
 };
