@@ -14,6 +14,7 @@ const CREDITS = `/credits`;
 const HOME = `/home`;
 const HOME_GUEST = HOME + `/guest`;
 const HOME_PNM = HOME + `/pnm`;
+const HOME_SELECT_SUBTEAM = HOME + `/select-subteam`;
 const HOME_MEMBER = HOME + `/member`;
 const HOME_ONBOARDING = HOME + `/onboarding`;
 
@@ -71,8 +72,9 @@ export const routes = {
   HOME,
   HOME_GUEST,
   HOME_PNM,
-  HOME_MEMBER,
+  HOME_SELECT_SUBTEAM,
   HOME_ONBOARDING,
+  HOME_MEMBER,
 
   TEAMS,
   TEAMS_BY_ID,

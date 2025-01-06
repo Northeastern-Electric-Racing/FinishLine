@@ -5,10 +5,11 @@ interface HomePageContextProps {
   onGuestHomePage: boolean;
   onOnboardingHomePage: boolean;
   onMemberHomePage: boolean;
+  onSelectSubteamPage: boolean;
   setCurrentHomePage: (homePage: HomePage) => void;
 }
 
-type HomePage = 'guest' | 'member' | 'pnm' | 'onboarding';
+type HomePage = 'guest' | 'member' | 'pnm' | 'onboarding' | 'selectSubteam';
 
 const HomePageContext = createContext<HomePageContextProps | undefined>(undefined);
 
@@ -17,6 +18,7 @@ export const HomePageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [onPNMHomePage, setOnPNMHomePage] = useState(false);
   const [onOnboardingHomePage, setOnOnboardingHomePage] = useState(false);
   const [onMemberHomePage, setOnMemberHomePage] = useState(false);
+  const [onSelectSubteamPage, setOnSelectSubteamPage] = useState(false);
 
   const setCurrentHomePage = (homePage: HomePage) => {
     switch (homePage) {
@@ -24,25 +26,36 @@ export const HomePageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setOnPNMHomePage(false);
         setOnOnboardingHomePage(false);
         setOnMemberHomePage(false);
+        setOnSelectSubteamPage(false);
         setOnGuestHomePage(true);
         break;
       case 'member':
         setOnGuestHomePage(false);
         setOnPNMHomePage(false);
         setOnOnboardingHomePage(false);
+        setOnSelectSubteamPage(false);
         setOnMemberHomePage(true);
         break;
       case 'onboarding':
         setOnPNMHomePage(false);
         setOnGuestHomePage(false);
         setOnMemberHomePage(false);
+        setOnSelectSubteamPage(false);
         setOnOnboardingHomePage(true);
         break;
       case 'pnm':
         setOnGuestHomePage(false);
         setOnMemberHomePage(false);
         setOnOnboardingHomePage(false);
+        setOnSelectSubteamPage(false);
         setOnPNMHomePage(true);
+        break;
+      case 'selectSubteam':
+        setOnGuestHomePage(false);
+        setOnMemberHomePage(false);
+        setOnOnboardingHomePage(false);
+        setOnPNMHomePage(false);
+        setOnSelectSubteamPage(true);
     }
   };
 
@@ -53,6 +66,7 @@ export const HomePageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         onPNMHomePage,
         onOnboardingHomePage,
         onMemberHomePage,
+        onSelectSubteamPage,
         setCurrentHomePage
       }}
     >

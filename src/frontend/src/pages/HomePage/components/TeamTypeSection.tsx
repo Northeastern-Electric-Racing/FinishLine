@@ -2,45 +2,79 @@ import { Box, Grid, Typography } from '@mui/material';
 import { TeamType } from 'shared';
 import { useGetImageUrl } from '../../../hooks/onboarding.hook';
 import LoadingIndicator from '../../../components/LoadingIndicator';
+import { useAllTeamTypes } from '../../../hooks/team-types.hooks';
+import ErrorPage from '../../ErrorPage';
+import { useState } from 'react';
+import Tabs from '../../../components/Tabs';
+import { NERButton } from '../../../components/NERButton';
 
 interface TeamTypeSectionProps {
   teamType: TeamType;
+  onSelectSubteamPage?: boolean;
 }
 
-const TeamTypeSection = ({ teamType }: TeamTypeSectionProps) => {
-  const { data: imageUrl, isLoading } = useGetImageUrl(teamType.imageFileId);
+const TeamTypesSection = ({ onSelectSubteamPage }: { onSelectSubteamPage?: boolean }) => {
+  const {
+    data: teamTypes,
+    isLoading: teamTypesIsLoading,
+    isError: teamTypesIsError,
+    error: teamTypesError
+  } = useAllTeamTypes();
 
+  const [teamTypeTabValue, setTeamTypeTabValue] = useState(0);
+
+  if (!teamTypes || teamTypesIsLoading) return <LoadingIndicator />;
+  if (teamTypesIsError) return <ErrorPage message={teamTypesError?.message} />;
+
+  const orderedTeamTypes = teamTypes.sort((a: TeamType, b: TeamType) => {
+    return a.name.localeCompare(b.name);
+  });
+
+  const teamTypeTabs = orderedTeamTypes.map((teamType) => {
+    return {
+      label: teamType.name,
+      component: <TeamTypeSection teamType={teamType} onSelectSubteamPage={onSelectSubteamPage} />
+    };
+  });
+
+  return <Tabs tabs={teamTypeTabs} tabValue={teamTypeTabValue} setTabValue={setTeamTypeTabValue} />;
+};
+
+const TeamTypeSection = ({ teamType, onSelectSubteamPage = false }: TeamTypeSectionProps) => {
+  const { data: imageUrl, isLoading } = useGetImageUrl(teamType.imageFileId);
   if (isLoading) return <LoadingIndicator />;
 
   return (
     <Grid container spacing={4} alignItems="flex-start" sx={{ p: 2 }}>
-      {imageUrl ? (
-        <>
-          <Grid item xs={12} md={6}>
-            <Box
-              component="img"
-              src={imageUrl}
-              sx={{
-                width: '30vw',
-                height: 'auto',
-                maxWidth: '400px',
-                display: 'block',
-                mx: 'auto'
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Box sx={{ p: 2 }}>
-              <Typography sx={{ fontSize: '1.3em', textAlign: 'left' }}>{teamType.description}</Typography>
-            </Box>
-          </Grid>
-        </>
-      ) : (
-        <Grid item xs={12}>
+      <Grid item xs={12} md={imageUrl ? 6 : 12}>
+        {imageUrl && (
+          <Box
+            component="img"
+            src={imageUrl}
+            sx={{
+              width: '30vw',
+              height: 'auto',
+              maxWidth: '400px',
+              display: 'block',
+              mx: 'auto'
+            }}
+          />
+        )}
+      </Grid>
+      <Grid item xs={12} md={imageUrl ? 6 : 12}>
+        <Box sx={{ p: 2 }}>
           <Typography sx={{ fontSize: '1.3em', textAlign: 'left' }}>{teamType.description}</Typography>
-        </Grid>
-      )}
+          {onSelectSubteamPage && (
+            <Box sx={{ textAlign: 'center', mt: 4 }}>
+              <NERButton variant="contained" onClick={() => console.log('clicked')}>
+                Select
+              </NERButton>
+            </Box>
+          )}
+        </Box>
+      </Grid>
     </Grid>
   );
 };
-export default TeamTypeSection;
+
+export default TeamTypesSection;
