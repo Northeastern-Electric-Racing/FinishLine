@@ -1,4 +1,4 @@
-import { AuthenticatedUser, RoleEnum } from 'shared';
+import { AuthenticatedUser, getPermissionsForRoleType, Permission, RoleEnum } from 'shared';
 import { AuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
 import {
   isAuthUserHeadOfFinance,
@@ -26,7 +26,11 @@ const authenticatedUserTransformer = (
     isAtLeastFinanceLead: isAuthUserAtLeastLeadForFinance(user),
     changeRequestsToReviewId: user.changeRequestsToReview.map((changeRequest) => changeRequest.crId),
     organizations: user.organizations.map((organization) => organization.organizationId),
-    currentOrganization: user.organizations.find((organization) => organization.organizationId === organizationId)
+    currentOrganization: user.organizations.find((organization) => organization.organizationId === organizationId),
+    permissions: user.roles
+      .map((role) => getPermissionsForRoleType(role.roleType))
+      .flat()
+      .concat(user.additionalPermissions as Permission[])
   };
 };
 

@@ -19,7 +19,6 @@ const TeamsPage: React.FC = () => {
     data: archivedTeams,
     error: archivedTeamsError
   } = useAllArchivedTeams();
-  console.log(archivedTeams);
 
   if (teamsLoading || !teams) return <LoadingIndicator />;
   if (archivedTeamsLoading || !archivedTeams) return <LoadingIndicator />;

@@ -5,7 +5,19 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { CR_Type, Club_Accounts, PrismaClient, Scope_CR_Why_Type, Task_Priority, Task_Status, Team } from '@prisma/client';
+import {
+  CR_Type,
+  Club_Accounts,
+  Graph,
+  Graph_Display_Type,
+  Graph_Type,
+  Measure,
+  PrismaClient,
+  Scope_CR_Why_Type,
+  Task_Priority,
+  Task_Status,
+  Team
+} from '@prisma/client';
 import { createUser, dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
 import ChangeRequestsService from '../services/change-requests.services';
@@ -15,6 +27,7 @@ import {
   DesignReviewStatus,
   MaterialStatus,
   RoleEnum,
+  SpecialPermission,
   StandardChangeRequest,
   WbsElementStatus,
   WorkPackageStage
@@ -33,6 +46,9 @@ import { writeFileSync } from 'fs';
 import WorkPackageTemplatesService from '../services/work-package-template.services';
 import RecruitmentServices from '../services/recruitment.services';
 import OrganizationsService from '../services/organizations.services';
+import StatisticsService from '../services/statistics.services';
+import { seedGraph } from './seed-data/statistics.seed';
+import { graphCollectionTransformer } from '../transformers/statistics-graphCollection.transformer';
 
 const prisma = new PrismaClient();
 
@@ -678,6 +694,48 @@ const performSeed: () => Promise<void> = async () => {
     glen.userId,
     ner
   );
+
+  /**
+   * Graphs
+   */
+
+  /** Graph 1 */
+  const graph1 = await seedGraph(
+    new Date('12/12/2024'),
+    new Date('12/12/2027'),
+    'new graph',
+    Graph_Type.PROJECT_BUDGET_BY_DIVISION,
+    Graph_Display_Type.BAR,
+    Measure.SUM,
+    thomasEmrax,
+    ner
+  );
+
+  /**
+   * Graph Collection 1
+   */
+  const graph2 = await prisma.graph.create({
+    data: {
+      title: 'graph2',
+      graphType: Graph_Type.PROJECT_BUDGET_BY_PROJECT,
+      displayGraphType: Graph_Display_Type.PIE,
+      measure: Measure.SUM,
+      userCreatedId: thomasEmrax.userId,
+      organizationId: ner.organizationId
+    }
+  });
+
+  const graphCollection1 = await prisma.graph_Collection.create({
+    data: {
+      title: 'Graph Collection 1',
+      viewPermissions: [SpecialPermission.FINANCE_ONLY],
+      graphs: {
+        connect: [{ id: graph2.id }]
+      },
+      userCreatedId: thomasEmrax.userId,
+      organizationId: ner.organizationId
+    }
+  });
 
   /**
    * Change Requests for Creating Work Packages

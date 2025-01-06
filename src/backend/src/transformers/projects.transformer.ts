@@ -18,6 +18,7 @@ import { userTransformer } from './user.transformer';
 import { ProjectQueryArgs } from '../prisma-query-args/projects.query-args';
 import teamTransformer from './teams.transformer';
 import { designReviewTransformer } from './design-reviews.transformer';
+import { teamTypeTransformer } from './team-types.transformer';
 
 const projectTransformer = (project: Prisma.ProjectGetPayload<ProjectQueryArgs>): Project => {
   const { wbsElement } = project;
@@ -82,7 +83,7 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<ProjectQueryArgs>)
         duration: workPackage.duration,
         blockedBy: workPackage.blockedBy.map(wbsNumOf),
         descriptionBullets: workPackage.wbsElement.descriptionBullets.map(descBulletConverter),
-        teamTypes: project.teams.flatMap((team) => team.teamType ?? []),
+        teamTypes: project.teams.flatMap((team) => team.teamType ?? []).map(teamTypeTransformer),
         projectName: wbsElement.name,
         stage: (workPackage.stage || undefined) as WorkPackageStage,
         materials: workPackage.wbsElement?.materials.map(materialTransformer),
