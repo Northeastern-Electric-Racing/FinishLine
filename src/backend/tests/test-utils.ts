@@ -570,6 +570,44 @@ export const createTestTask = async (
   return task;
 };
 
+export const createTestTaskWithOrganization = async (user: User, organization?: Organization) => {
+  if (!organization) organization = await createTestOrganization();
+  const orgId = organization.organizationId;
+  const team = await TeamsService.createTeam(user, 'Test team', user.userId, 'Test', '', false, organization);
+  if (!team) throw new Error('Failed to create team');
+  const project = await createTestProject(user, organization.organizationId);
+  if (!project) throw new Error('Failed to create project');
+  await ProjectsService.setProjectTeam(
+    user,
+    {
+      carNumber: 0,
+      projectNumber: 1,
+      workPackageNumber: 0
+    },
+    team.teamId,
+    organization
+  );
+
+  const task = await TasksService.createTask(
+    user,
+    {
+      carNumber: 0,
+      projectNumber: 1,
+      workPackageNumber: 0
+    },
+    'Test task',
+    'Test',
+    TaskPriority.High,
+    TaskStatus.IN_PROGRESS,
+    [user.userId],
+    organization,
+    new Date()
+  );
+
+  if (!task) throw new Error('Failed to create task');
+  return { task, organization, orgId };
+};
+
 export const createSlackMessageEvent = (
   channel: string,
   event_ts: string,

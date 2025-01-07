@@ -24,6 +24,7 @@ describe('Team Type Tests', () => {
             await createTestUser(wonderwomanGuest, orgId),
             'Team 2',
             'Warning icon',
+            'team2 Description',
             organization
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create a team type'));
@@ -34,6 +35,7 @@ describe('Team Type Tests', () => {
         await createTestUser(supermanAdmin, orgId),
         'teamType1',
         'YouTubeIcon',
+        'teamType1 Description',
         organization
       );
       await expect(
@@ -42,6 +44,7 @@ describe('Team Type Tests', () => {
             await createTestUser(batmanAppAdmin, orgId),
             'teamType1',
             'Warning icon',
+            'teamType1 Description',
             organization
           )
       ).rejects.toThrow(new HttpException(400, 'Cannot create a teamType with a name that already exists'));
@@ -52,6 +55,7 @@ describe('Team Type Tests', () => {
         await createTestUser(supermanAdmin, orgId),
         'teamType3',
         'YouTubeIcon',
+        'teamType3 Description',
         organization
       );
 
@@ -60,7 +64,11 @@ describe('Team Type Tests', () => {
         iconName: 'YouTubeIcon',
         organizationId: orgId,
         teamTypeId: result.teamTypeId,
-        calendarId: null
+        calendarId: null,
+        dateDeleted: undefined,
+        deletedById: undefined,
+        description: 'teamType3 Description',
+        imageFileId: null
       });
     });
   });
@@ -71,12 +79,14 @@ describe('Team Type Tests', () => {
         await createTestUser(supermanAdmin, orgId),
         'teamType1',
         'YouTubeIcon',
+        'teamType1 Description',
         organization
       );
       const teamType2 = await TeamsService.createTeamType(
         await createTestUser(batmanAppAdmin, orgId),
         'teamType2',
         'WarningIcon',
+        'teamType1 Description',
         organization
       );
       const result = await TeamsService.getAllTeamTypes(organization);
@@ -90,6 +100,7 @@ describe('Team Type Tests', () => {
         await createTestUser(supermanAdmin, orgId),
         'teamType1',
         'YouTubeIcon',
+        'teamType1 Description',
         organization
       );
       const result = await TeamsService.getSingleTeamType(teamType1.teamTypeId, organization);

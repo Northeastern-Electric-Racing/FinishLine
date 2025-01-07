@@ -1,7 +1,7 @@
 import { Organization, User } from '@prisma/client';
 import { LinkCreateArgs, isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException, DeletedException, HttpException, DeletedException, NotFoundException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { createUsefulLinks } from '../utils/organizations.utils';
 import { linkTransformer } from '../transformers/links.transformer';
@@ -12,26 +12,6 @@ import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
 import projectTransformer from '../transformers/projects.transformer';
 
 export default class OrganizationsService {
-  /**
-   * Gets the current organization
-   * @param organizationId the organizationId to be fetched
-   */
-  static async getCurrentOrganization(organizationId: string) {
-    const organization = await prisma.organization.findUnique({
-      where: { organizationId }
-    });
-
-    if (!organization) {
-      throw new NotFoundException('Organization', organizationId);
-    }
-
-    if (organization.dateDeleted) {
-      throw new DeletedException('Organization', organizationId);
-    }
-
-    return organization;
-  }
-
   /**
    * Retrieve all the organizations
    * @returns an array of every organization
