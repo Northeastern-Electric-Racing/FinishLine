@@ -81,6 +81,6 @@ export const taskPriorityColor = (task: Task) => {
 };
 
 export const getOverdueTasks = (tasks: Task[]) => {
-  const overdueTasks = new Set(tasks.filter((task) => daysOverdue(new Date(task.deadline)) > 0));
+  const overdueTasks = new Set(tasks.filter((task) => (task.deadline ? daysOverdue(new Date(task.deadline)) : 0) > 0));
   return [...overdueTasks];
 };
