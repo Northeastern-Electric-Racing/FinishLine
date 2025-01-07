@@ -35,7 +35,7 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organization }: SidebarProps) => {
-  const { onPNMHomePage, onOnboardingHomePage, onSelectSubteamPage } = useHomePageContext();
+  const { onPNMHomePage, onOnboardingHomePage } = useHomePageContext();
   const theme = useTheme();
   const history = useHistory();
 
@@ -95,7 +95,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organ
     }
   ];
 
-  const linkItems = onPNMHomePage || onOnboardingHomePage || onSelectSubteamPage ? onboardingLinkItems : memberLinkItems;
+  const linkItems = onPNMHomePage || onOnboardingHomePage ? onboardingLinkItems : memberLinkItems;
 
   const handleMoveContent = () => {
     if (moveContent) {

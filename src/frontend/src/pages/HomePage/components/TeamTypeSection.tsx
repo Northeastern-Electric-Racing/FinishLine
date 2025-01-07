@@ -7,6 +7,10 @@ import ErrorPage from '../../ErrorPage';
 import { useState } from 'react';
 import Tabs from '../../../components/Tabs';
 import { NERButton } from '../../../components/NERButton';
+import { useCurrentUser, useToggleCompletedOnboarding } from '../../../hooks/users.hooks';
+import NERModal from '../../../components/NERModal';
+import { useHistory } from 'react-router-dom';
+import { routes } from '../../../utils/routes';
 
 interface TeamTypeSectionProps {
   teamType: TeamType;
@@ -41,8 +45,12 @@ const TeamTypesSection = ({ onSelectSubteamPage }: { onSelectSubteamPage?: boole
 };
 
 const TeamTypeSection = ({ teamType, onSelectSubteamPage = false }: TeamTypeSectionProps) => {
-  const { data: imageUrl, isLoading } = useGetImageUrl(teamType.imageFileId);
-  if (isLoading) return <LoadingIndicator />;
+  const [showModal, setShowModal] = useState(false);
+  const history = useHistory();
+
+  const { data: imageUrl, isLoading: imageIsLoading } = useGetImageUrl(teamType.imageFileId);
+
+  if (imageIsLoading) return <LoadingIndicator />;
 
   return (
     <Grid container spacing={4} alignItems="flex-start" sx={{ p: 2 }}>
@@ -56,23 +64,36 @@ const TeamTypeSection = ({ teamType, onSelectSubteamPage = false }: TeamTypeSect
               height: 'auto',
               maxWidth: '400px',
               display: 'block',
-              mx: 'auto'
+              ml: '0', // Align image to the left
             }}
           />
         )}
       </Grid>
       <Grid item xs={12} md={imageUrl ? 6 : 12}>
         <Box sx={{ p: 2 }}>
-          <Typography sx={{ fontSize: '1.3em', textAlign: 'left' }}>{teamType.description}</Typography>
+          <Typography sx={{ fontSize: '1.3em', textAlign: 'center' }}>{teamType.description}</Typography>
           {onSelectSubteamPage && (
             <Box sx={{ textAlign: 'center', mt: 4 }}>
-              <NERButton variant="contained" onClick={() => console.log('clicked')}>
+              <NERButton variant="contained" onClick={() => setShowModal(true)}>
                 Select
               </NERButton>
             </Box>
           )}
         </Box>
       </Grid>
+      {showModal && (
+        <NERModal
+          open={showModal}
+          onHide={() => setShowModal(false)}
+          title="Select Subteam"
+          onSubmit={() => {
+            setShowModal(false);
+            history.push(routes.HOME_ACCEPT, { teamType });
+          }}
+        >
+          Are you sure you want to join the {teamType.name} division?
+        </NERModal>
+      )}
     </Grid>
   );
 };

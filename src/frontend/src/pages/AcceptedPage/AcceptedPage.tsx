@@ -1,21 +1,30 @@
 import { Typography, Box, Grid } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { AuthenticatedUser, TeamType } from 'shared';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import ErrorPage from '../ErrorPage';
-import { useSingleUserSettings } from '../../hooks/users.hooks';
+import { TeamType } from 'shared';
 import { NERButton } from '../../components/NERButton';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import { useHistory, useLocation } from 'react-router-dom';
+import { useCurrentUser, useToggleCompletedOnboarding } from '../../hooks/users.hooks';
+import { routes } from '../../utils/routes';
 
-interface AcceptedPageProps {
-  user: AuthenticatedUser;
-  team: TeamType;
-}
+const AcceptedPage = () => {
+  const location = useLocation();
+  const history = useHistory();
+  const user = useCurrentUser();
+  const { teamType } = location.state as { teamType: TeamType };
 
-const AcceptedPage = ({ user, team }: AcceptedPageProps) => {
-  const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId);
+  const { mutateAsync: toggleCompletedOnboarding, isLoading: toggleOnboardingIsLoading } = useToggleCompletedOnboarding();
 
-  if (isLoading || !userSettingsData) return <LoadingIndicator />;
-  if (isError) return <ErrorPage error={error} message={error.message} />;
+  if (toggleOnboardingIsLoading) {
+    return <LoadingIndicator />;
+  }
+
+  const handleClick = () => {
+    toggleCompletedOnboarding();
+
+    // I feel like there has to be a better way to do this
+    window.location.reload();
+  };
 
   return (
     <PageLayout title="Accepted" hidePageTitle>
@@ -28,7 +37,7 @@ const AcceptedPage = ({ user, team }: AcceptedPageProps) => {
           marginLeft="auto"
           sx={{ marginTop: 2, textAlign: 'center', pt: 1, padding: 0, fontWeight: 1 }}
         >
-          We are so excited to welcome you to Northeastern Electric Racing!
+          We are so excited to welcome you to Northeastern Electric Racing {teamType.name} team!
         </Typography>
       </Box>
       <Box
@@ -49,8 +58,8 @@ const AcceptedPage = ({ user, team }: AcceptedPageProps) => {
           marginLeft="auto"
           sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0, fontFamily: 'oswald', fontWeight: 1, fontSize: 25 }}
         >
-          Before you get started on the {team.name}, all new members will have to complete general and subteam-specific
-          onboarding. Please accept this offer within 5 days to start onboarding.
+          Before you get started on the {teamType.name} team, all new members will have to complete general and subteam-specific
+          onboarding.
         </Typography>
         <Typography
           variant="h6"
@@ -70,12 +79,12 @@ const AcceptedPage = ({ user, team }: AcceptedPageProps) => {
       >
         <Grid container justifyContent="center" spacing={8} sx={{ maxWidth: '500px' }}>
           <Grid item>
-            <NERButton variant="contained" sx={{ fontSize: 20 }}>
+            <NERButton variant="contained" sx={{ fontSize: 20 }} onClick={handleClick}>
               Accept
             </NERButton>
           </Grid>
           <Grid item>
-            <NERButton variant="contained" sx={{ fontSize: 20 }}>
+            <NERButton variant="contained" sx={{ fontSize: 20 }} onClick={() => history.push(routes.HOME_SELECT_SUBTEAM)}>
               Reject
             </NERButton>
           </Grid>

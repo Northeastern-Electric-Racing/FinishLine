@@ -12,7 +12,7 @@ const SelectSubteamPage = () => {
   const { setCurrentHomePage } = useHomePageContext();
 
   useEffect(() => {
-    setCurrentHomePage('selectSubteam');
+    setCurrentHomePage('pnm');
   }, [setCurrentHomePage]);
 
   return (
@@ -20,31 +20,36 @@ const SelectSubteamPage = () => {
       <Box
         sx={{
           padding: 4,
-          pt: '2in'
+          minHeight: '80vh',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          alignItems: 'center',
         }}
       >
-        <Typography
-          variant="h3"
-          marginLeft="auto"
-          sx={{ marginTop: 2, textAlign: 'center', justifyContent: 'center', pt: 1, padding: 0, fontWeight: 1 }}
-        >
-          Select Subteam
-        </Typography>
-        <Typography
-          variant="h5"
-          marginLeft="auto"
-          sx={{ marginTop: 2, textAlign: 'center', justifyContent: 'center', pt: 1, padding: 0, fontWeight: 1 }}
-        >
-          The application link has opened in a new tab. Please complete the application and return to this page to select a
-          subteam.
-        </Typography>
-
-        <Box sx={{ textAlign: 'center', mt: 4 }}>
+        <Box sx={{ textAlign: 'center', width: '60%' }}>
+          <Typography
+            variant="h3"
+            sx={{ textAlign: 'center', fontWeight: 'bold', mb: 3 }}
+          >
+            Select Subteam
+          </Typography>
+          <Typography
+            variant="h5"
+            sx={{ textAlign: 'center', mb: 4 }}
+          >
+            The application link has opened in a new tab. Please complete the application and return to this page to select a subteam.
+          </Typography>
           <TeamTypesSection onSelectSubteamPage={true} />
-          <NERButton variant="contained" onClick={() => history.push(routes.HOME_GUEST)}>
-            Return to Home Page
-          </NERButton>
         </Box>
+
+        <NERButton
+          variant="contained"
+          sx={{ mt: 4, fontSize: '1.3rem', alignSelf: 'center' }}
+          onClick={() => history.push(routes.HOME_GUEST)}
+        >
+          Return to Home Page
+        </NERButton>
       </Box>
     </PageLayout>
   );

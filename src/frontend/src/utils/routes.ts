@@ -15,6 +15,7 @@ const HOME = `/home`;
 const HOME_GUEST = HOME + `/guest`;
 const HOME_PNM = HOME + `/pnm`;
 const HOME_SELECT_SUBTEAM = HOME + `/select-subteam`;
+const HOME_ACCEPT = HOME + `/accept`;
 const HOME_MEMBER = HOME + `/member`;
 const HOME_ONBOARDING = HOME + `/onboarding`;
 
@@ -74,6 +75,7 @@ export const routes = {
   HOME_PNM,
   HOME_SELECT_SUBTEAM,
   HOME_ONBOARDING,
+  HOME_ACCEPT,
   HOME_MEMBER,
 
   TEAMS,
