@@ -106,7 +106,7 @@ export default class RecruitmentServices {
    */
   static async getAllFaqs(organization: Organization) {
     const allFaqs = await prisma.frequentlyAskedQuestion.findMany({
-      where: { organizationId: organization.organizationId }
+      where: { dateDeleted: null, organizationId: organization.organizationId }
     });
 
     return allFaqs;

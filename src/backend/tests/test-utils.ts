@@ -12,10 +12,13 @@ import prisma from '../src/prisma/prisma';
 import { dbSeedAllUsers } from '../src/prisma/seed-data/users.seed';
 import TeamsService from '../src/services/teams.services';
 import ReimbursementRequestService from '../src/services/reimbursement-requests.services';
-import { ClubAccount, RoleEnum } from 'shared';
+import { ClubAccount, RoleEnum, TaskPriority, TaskStatus } from 'shared';
 import { batmanAppAdmin, batmanScheduleSettings, batmanSecureSettings, batmanSettings } from './test-data/users.test-data';
 import { getWorkPackageTemplateQueryArgs } from '../src/prisma-query-args/work-package-template.query-args';
 import DesignReviewsService from '../src/services/design-reviews.services';
+import TasksService from '../src/services/tasks.services';
+import ProjectsService from '../src/services/projects.services';
+import { SlackMessage } from '../src/services/slack.services';
 
 export interface CreateTestUserParams {
   firstName: string;
@@ -116,6 +119,8 @@ export const resetUsers = async () => {
   await prisma.wBS_Element.deleteMany();
   await prisma.milestone.deleteMany();
   await prisma.frequentlyAskedQuestion.deleteMany();
+  await prisma.announcement.deleteMany();
+  await prisma.popUp.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
 };
@@ -413,4 +418,72 @@ export const createTestDesignReview = async () => {
 
   const orgId = organization.organizationId;
   return { dr, organization, orgId };
+};
+
+export const createTestTask = async (user: User, organization?: Organization) => {
+  if (!organization) organization = await createTestOrganization();
+  const orgId = organization.organizationId;
+  const team = await TeamsService.createTeam(user, 'Test team', user.userId, 'Test', '', false, organization);
+  if (!team) throw new Error('Failed to create team');
+  const project = await createTestProject(user, organization.organizationId);
+  if (!project) throw new Error('Failed to create project');
+  await ProjectsService.setProjectTeam(
+    user,
+    {
+      carNumber: 0,
+      projectNumber: 1,
+      workPackageNumber: 0
+    },
+    team.teamId,
+    organization
+  );
+
+  const task = await TasksService.createTask(
+    user,
+    {
+      carNumber: 0,
+      projectNumber: 1,
+      workPackageNumber: 0
+    },
+    'Test task',
+    'Test',
+    new Date(),
+    TaskPriority.High,
+    TaskStatus.IN_PROGRESS,
+    [user.userId],
+    organization
+  );
+
+  if (!task) throw new Error('Failed to create task');
+  return { task, organization, orgId };
+};
+
+export const createSlackMessageEvent = (
+  channel: string,
+  event_ts: string,
+  user: string,
+  client_msg_id: string,
+  elements: any[]
+): SlackMessage => {
+  return {
+    type: 'message',
+    channel,
+    event_ts,
+    channel_type: 'channel',
+    user,
+    client_msg_id,
+    text: 'sample text',
+    blocks: [
+      {
+        type: 'rich_text',
+        block_id: 'block id',
+        elements: [
+          {
+            type: 'rich_text_section',
+            elements
+          }
+        ]
+      }
+    ]
+  };
 };

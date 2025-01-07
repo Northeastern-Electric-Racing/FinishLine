@@ -18,6 +18,8 @@ import NERTabs from '../../components/Tabs';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/system';
 import AdminToolsRecruitmentConfig from './RecruitmentConfig/AdminToolsRecruitmentConfig';
+import GuestViewConfig from './EditGuestView/GuestViewConfig';
+import AdminToolsWorkspaceId from './AdminToolsSlackWorkspaceId';
 
 const AdminToolsPage: React.FC = () => {
   const currentUser = useCurrentUser();
@@ -40,6 +42,7 @@ const AdminToolsPage: React.FC = () => {
   }
   if (isUserAdmin) {
     tabs.push({ tabUrlValue: 'recruitment', tabName: 'Recruitment' });
+    tabs.push({ tabUrlValue: 'guest-view', tabName: 'Guest View' });
     tabs.push({ tabUrlValue: 'miscellaneous', tabName: 'Miscellaneous' });
   }
 
@@ -91,11 +94,14 @@ const AdminToolsPage: React.FC = () => {
         <AdminToolsFinanceConfig />
       ) : tabIndex === 3 ? (
         <AdminToolsRecruitmentConfig />
+      ) : tabIndex === 4 ? (
+        <GuestViewConfig />
       ) : (
         <Box>
           <Box pb={2}>
             <AdminToolsSlackUpcomingDeadlines />
           </Box>
+          <AdminToolsWorkspaceId />
           <AdminToolsAttendeeDesignReviewInfo />
         </Box>
       )}

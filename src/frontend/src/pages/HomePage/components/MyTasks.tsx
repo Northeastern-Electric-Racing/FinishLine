@@ -1,0 +1,45 @@
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import { useCurrentUser, useUserTasks } from '../../../hooks/users.hooks';
+import TaskDetailCard from './TaskDetailCard';
+import ErrorPage from '../../ErrorPage';
+import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
+import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
+import ScrollablePageBlock from './ScrollablePageBlock';
+
+const NoTasksDisplay: React.FC = () => {
+  return (
+    <EmptyPageBlockDisplay
+      icon={<CheckCircleOutlineOutlinedIcon sx={{ fontSize: 128 }} />}
+      heading={"You're all caught up!"}
+      message={"You've completed all of your assigned tasks!"}
+    />
+  );
+};
+
+const MyTasks: React.FC = () => {
+  const currentUser = useCurrentUser();
+
+  const {
+    data: userTasks,
+    isLoading: userTasksIsLoading,
+    error: userTasksError,
+    isError: userTasksIsError
+  } = useUserTasks(currentUser.userId);
+
+  if (userTasksIsLoading || !userTasks) return <LoadingIndicator />;
+  if (userTasksIsError) return <ErrorPage message={userTasksError.message} />;
+
+  return (
+    <ScrollablePageBlock title={`My Tasks (${userTasks.length})`}>
+      {userTasks.length === 0 ? (
+        <NoTasksDisplay />
+      ) : (
+        userTasks.map((task, index) => {
+          return <TaskDetailCard task={task} taskNumber={index + 1} />;
+        })
+      )}
+    </ScrollablePageBlock>
+  );
+};
+
+export default MyTasks;

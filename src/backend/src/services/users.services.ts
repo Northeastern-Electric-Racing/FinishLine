@@ -36,6 +36,8 @@ import {
 } from '../prisma-query-args/user.query-args';
 import { getAuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
 import authenticatedUserTransformer from '../transformers/auth-user.transformer';
+import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args';
+import taskTransformer from '../transformers/tasks.transformer';
 
 export default class UsersService {
   /**
@@ -197,14 +199,6 @@ export default class UsersService {
       }
     });
 
-    if (!payload['given_name']) {
-      throw new HttpException(400, 'First Name was not Found on Google Account');
-    }
-
-    if (!payload['family_name']) {
-      throw new HttpException(400, 'Last Name was not Found on Google Account');
-    }
-
     if (!payload['email']) {
       throw new HttpException(400, 'Email was not Found on Google Account');
     }
@@ -214,10 +208,13 @@ export default class UsersService {
       const emailId = payload['email']!.includes('@husky.neu.edu') ? payload['email']!.split('@')[0] : null;
       const organization = await prisma.organization.findFirst();
 
+      const firstName = payload['given_name'] ?? payload['email']!.split('@')[0]; // Defaults to id of email
+      const lastName = payload['family_name'] ?? ''; // Defaults to no last name
+
       const createdUser = await prisma.user.create({
         data: {
-          firstName: payload['given_name'],
-          lastName: payload['family_name'],
+          firstName,
+          lastName,
           googleAuthId: userId,
           email: payload['email'],
           emailId,
@@ -537,5 +534,36 @@ export default class UsersService {
     await updateUserAvailability(availabilities, newUserScheduleSettings, user);
 
     return userScheduleSettingsTransformer(newUserScheduleSettings);
+  }
+
+  /**
+   * Get's a user's assigned tasks
+   * @param userId the id of the user who's tasks are being returned
+   * @param organization the user's organization
+   * @returns a list of the user's assigned tasks
+   */
+  static async getUserTasks(userId: string, organization: Organization) {
+    const requestedUser = await prisma.user.findUnique({
+      where: { userId },
+      include: { assignedTasks: getTaskQueryArgs(organization.organizationId) }
+    });
+    if (!requestedUser) throw new NotFoundException('User', userId);
+
+    return requestedUser.assignedTasks.map(taskTransformer);
+  }
+
+  /**
+   * Get all tasks from a list of userIds
+   * @param userIds list of users to get the tasks from
+   * @param organization the users' organization
+   * @returns a list of tasks of the given users
+   */
+  static async getManyUserTasks(userIds: string[], organization: Organization) {
+    const tasksPromises = userIds.map(async (userId) => {
+      return UsersService.getUserTasks(userId, organization);
+    });
+
+    const resolvedTasks = await Promise.all(tasksPromises);
+    return resolvedTasks.flat();
   }
 }
