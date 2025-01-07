@@ -24,3 +24,9 @@ export const wbsNamePipe = (wbsElement: { wbsNum: WbsNumber; name: string }) => 
 export const isSubset = (elements: string[], suppliedArray: string[]): boolean => {
   return elements.every((element) => suppliedArray.includes(element));
 };
+
+export const meetingStartTimePipe = (times: number[]) => {
+  const time = (times[0] % 12) + 10;
+
+  return time <= 12 ? time + 'am' : time - 12 + 'pm';
+};

@@ -1,5 +1,5 @@
 import { Box, Card, CardContent, Link, Stack, Typography, useTheme } from '@mui/material';
-import { DesignReview, User } from 'shared';
+import { DesignReview, meetingStartTimePipe, User } from 'shared';
 import { datePipe, projectWbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
@@ -7,7 +7,6 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import { LocationOnOutlined, Computer } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { NERButton } from '../../../components/NERButton';
-import { meetingStartTimePipe } from '../../../../../backend/src/utils/design-reviews.utils';
 import { timezoneOffset } from '../../../utils/datetime.utils';
 
 interface DesignReviewProps {

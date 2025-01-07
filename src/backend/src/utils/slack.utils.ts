@@ -1,4 +1,4 @@
-import { ChangeRequest, daysBetween, Task, UserPreview, wbsPipe, calculateEndDate } from 'shared';
+import { ChangeRequest, daysBetween, Task, UserPreview, wbsPipe, calculateEndDate, meetingStartTimePipe } from 'shared';
 import { User } from '@prisma/client';
 import {
   editMessage,
@@ -15,7 +15,7 @@ import { HttpException } from './errors.utils';
 import { Change_Request, Design_Review, Team, WBS_Element } from '@prisma/client';
 import { UserWithSettings } from './auth.utils';
 import { usersToSlackPings, userToSlackPing } from './notifications.utils';
-import { addHours, meetingStartTimePipe } from './design-reviews.utils';
+import { addHours } from './design-reviews.utils';
 import { WorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
 import { Prisma } from '@prisma/client';
 import { userTransformer } from '../transformers/user.transformer';
