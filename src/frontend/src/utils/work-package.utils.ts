@@ -1,4 +1,4 @@
-import { addWeeksToDate, WbsElement, WbsElementStatus, wbsPipe, WorkPackage } from 'shared';
+import { addWeeksToDate, WbsElement, WbsElementStatus, WbsElementStatus, wbsPipe, WorkPackage, WorkPackage } from 'shared';
 import { WPFormType } from './form';
 
 export const getTitleFromFormType = (formType: WPFormType, wbsElement: WbsElement): string => {

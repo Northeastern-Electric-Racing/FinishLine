@@ -84,12 +84,15 @@ const teamsDelete = (id: string) => `${teamsById(id)}/delete`;
 const teamsSetMembers = (id: string) => `${teamsById(id)}/set-members`;
 const teamsSetTeamType = (id: string) => `${teamsById(id)}/set-team-type`;
 const teamsSetHead = (id: string) => `${teamsById(id)}/set-head`;
+const teamsArchive = (id: string) => `${teamsById(id)}/archive`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
 const teamsCreate = () => `${teams()}/create`;
 const teamsSetLeads = (id: string) => `${teamsById(id)}/set-leads`;
 const teamTypes = () => `${teams()}/teamType`;
 const allTeamTypes = () => `${teamTypes()}/all`;
 const teamTypesCreate = () => `${teamTypes()}/create`;
+const teamTypeEdit = (id: string) => `${teamTypes()}/${id}/edit`;
+const teamTypeSetImage = (id: string) => `${teamTypes()}/${id}/set-image`;
 
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
@@ -210,6 +213,15 @@ const announcementsRemove = (id: string) => `${announcements()}/${id}/remove`;
 /************** Onboarding Endpoints ***************/
 const onboarding = () => `${API_URL}/onboarding`;
 const imageById = (imageId: string) => `${onboarding()}/image/${imageId}`;
+/************** Statistics Endpoints ***************/
+const statistics = () => `${API_URL}/statistics`;
+const createGraph = () => `${statistics()}/graph/create`;
+const graphCollections = () => `${statistics()}/graph-collections`;
+const graphCollectionById = (id: string) => `${graphCollections()}/${id}`;
+const createGraphCollection = () => `${graphCollections()}/create`;
+const getGraphById = (id: string) => `${statistics()}/graph/${id}`;
+const updateGraph = (id: string) => `${getGraphById(id)}/edit`;
+const updateGraphCollection = (id: string) => `${graphCollectionById(id)}/edit`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -273,6 +285,7 @@ export const apiUrls = {
   teamsById,
   teamsDelete,
   teamsSetMembers,
+  teamsArchive,
   teamsSetHead,
   teamsSetDescription,
   teamsCreate,
@@ -280,6 +293,8 @@ export const apiUrls = {
   allTeamTypes,
   teamsSetTeamType,
   teamTypesCreate,
+  teamTypeEdit,
+  teamTypeSetImage,
 
   descriptionBulletsCheck,
   descriptionBulletTypes,
@@ -361,6 +376,7 @@ export const apiUrls = {
 
   cars,
   carsCreate,
+
   recruitment,
   allMilestones,
   milestoneCreate,
@@ -379,6 +395,15 @@ export const apiUrls = {
   announcements,
   announcementsCurrentUser,
   announcementsRemove,
+
+  statistics,
+  createGraph,
+  graphCollections,
+  graphCollectionById,
+  createGraphCollection,
+  getGraphById,
+  updateGraph,
+  updateGraphCollection,
 
   version
 };

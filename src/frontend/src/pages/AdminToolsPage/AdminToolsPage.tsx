@@ -46,19 +46,6 @@ const AdminToolsPage: React.FC = () => {
     tabs.push({ tabUrlValue: 'miscellaneous', tabName: 'Miscellaneous' });
   }
 
-  const UserManagementTab = () => {
-    return isUserAdmin ? (
-      <Box>
-        <Box mb={2}>
-          <AdminToolsUserManagement />
-        </Box>
-        <TeamsTools />
-      </Box>
-    ) : (
-      <AdminToolsUserManagement />
-    );
-  };
-
   const ProjectConfigurationTab = () => {
     return isUserAdmin ? (
       <>
@@ -87,7 +74,10 @@ const AdminToolsPage: React.FC = () => {
       }
     >
       {tabIndex === 0 ? (
-        <UserManagementTab />
+        <>
+          <AdminToolsUserManagement />
+          {isUserAdmin && <TeamsTools />}
+        </>
       ) : tabIndex === 1 ? (
         <ProjectConfigurationTab />
       ) : tabIndex === 2 ? (

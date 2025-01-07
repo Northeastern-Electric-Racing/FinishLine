@@ -12,7 +12,7 @@ const taskTransformer = (task: Prisma.TaskGetPayload<TaskQueryArgs>): Task => {
     wbsNum,
     title: task.title,
     notes: task.notes,
-    deadline: task.deadline,
+    deadline: task.deadline ?? undefined,
     priority: convertTaskPriority(task.priority),
     status: convertTaskStatus(task.status),
     createdBy: userTransformer(task.createdBy),

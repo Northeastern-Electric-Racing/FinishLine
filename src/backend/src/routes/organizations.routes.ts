@@ -1,6 +1,6 @@
 import express from 'express';
 import { linkValidators, nonEmptyString, validateInputs } from '../utils/validation.utils';
-import OrganizationsController from '../controllers/organizations.controllers';
+import OrganizationsController from '../controllers/organizations.controllerss';
 import multer, { memoryStorage } from 'multer';
 import { body } from 'express-validator';
 
