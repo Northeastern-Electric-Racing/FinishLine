@@ -8,7 +8,6 @@ import React, { ReactNode, ReactElement } from 'react';
 import PageTitle from '../layouts/PageTitle/PageTitle';
 import { LinkItem } from '../utils/types';
 import { Box } from '@mui/system';
-import PageBreadcrumbs from '../layouts/PageTitle/PageBreadcrumbs';
 
 interface PageLayoutProps {
   children: ReactNode;
@@ -20,6 +19,8 @@ interface PageLayoutProps {
   tabs?: ReactElement;
   stickyHeader?: boolean;
 }
+
+export const PAGE_GRID_HEIGHT = 85;
 
 const PageLayout: React.FC<PageLayoutProps> = ({
   children,
@@ -37,14 +38,8 @@ const PageLayout: React.FC<PageLayoutProps> = ({
         <title>{`FinishLine ${title && `| ${title}`}`}</title>
         <meta name="description" content="FinishLine Project Management Dashboard" />
       </Helmet>
-
       {!hidePageTitle && title && (
-        <>
-          <Box mb={-1}>
-            <PageBreadcrumbs currentPageTitle={title} previousPages={previousPages} />
-          </Box>
-          <PageTitle sticky={stickyHeader} {...{ title, chips, headerRight, tabs }} />
-        </>
+        <PageTitle sticky={stickyHeader} {...{ title, chips, previousPages, headerRight, tabs }} />
       )}
       {children}
     </Box>

@@ -56,13 +56,6 @@ const DESIGN_REVIEW_BY_ID = CALENDAR + `/:id`;
 /**************** Organizations ****************/
 const ORGANIZATIONS = `/organizations`;
 
-/**************** Statistics ****************/
-const STATISTICS = `/statistics`;
-const CREATE_GRAPH = `/statistics/graph-collections/:graphCollectionId/graph/create`;
-const EDIT_GRAPH = `/statistics/graph-collections/:graphCollectionId/graph/:graphId/edit`;
-
-const GRAPH_COLLECTION_BY_ID = '/statistics/graph-collections/:graphCollectionId';
-
 export const routes = {
   BASE,
   HOME,
@@ -108,10 +101,5 @@ export const routes = {
   CALENDAR,
   DESIGN_REVIEW_BY_ID,
 
-  ORGANIZATIONS,
-
-  STATISTICS,
-  CREATE_GRAPH,
-  EDIT_GRAPH,
-  GRAPH_COLLECTION_BY_ID
+  ORGANIZATIONS
 };

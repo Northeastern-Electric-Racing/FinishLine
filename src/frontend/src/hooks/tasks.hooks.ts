@@ -9,7 +9,7 @@ import { createSingleTask, deleteSingleTask, editSingleTaskStatus, editTask, edi
 
 export interface CreateTaskPayload {
   title: string;
-  deadline?: string;
+  deadline: string;
   priority: TaskPriority;
   status: TaskStatus;
   notes: string;
@@ -24,11 +24,11 @@ export const useCreateTask = (wbsNum: WbsNumber) => {
       const { data } = await createSingleTask(
         wbsNum,
         createTaskPayload.title,
+        createTaskPayload.deadline,
         createTaskPayload.priority,
         createTaskPayload.status,
         createTaskPayload.assignees,
-        createTaskPayload.notes,
-        createTaskPayload.deadline
+        createTaskPayload.notes
       );
       return data;
     },
@@ -44,7 +44,7 @@ export interface TaskPayload {
   taskId: string;
   notes: string;
   title: string;
-  deadline?: Date;
+  deadline: Date;
   priority: TaskPriority;
 }
 

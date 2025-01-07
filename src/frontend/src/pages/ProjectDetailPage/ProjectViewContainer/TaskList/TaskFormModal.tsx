@@ -10,7 +10,7 @@ import NERFormModal from '../../../../components/NERFormModal';
 
 const schema = yup.object().shape({
   notes: yup.string(),
-  deadline: yup.date().optional(),
+  deadline: yup.date().required(),
   priority: yup.string().required(),
   assignees: yup.array(),
   title: yup.string().required()
@@ -21,7 +21,7 @@ export interface EditTaskFormInput {
   title: string;
   notes: string;
   assignees: string[];
-  deadline?: Date;
+  deadline: Date;
   priority: TaskPriority;
 }
 
@@ -50,7 +50,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
       title: task?.title ?? '',
       taskId: task?.taskId ?? '-1',
       notes: task?.notes ?? '',
-      deadline: task?.deadline ?? undefined,
+      deadline: task?.deadline ?? new Date(),
       priority: task?.priority ?? TaskPriority.Low,
       assignees: task?.assignees.map((assignee) => assignee.userId) ?? []
     }
@@ -155,7 +155,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
               <Controller
                 name="deadline"
                 control={control}
-                rules={{ required: false }}
+                rules={{ required: true }}
                 render={({ field: { onChange, value } }) => (
                   <DatePicker
                     format="MM-dd-yyyy"

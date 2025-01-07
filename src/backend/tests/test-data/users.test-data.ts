@@ -1,5 +1,5 @@
 import { Theme, User_Settings, User_Secure_Settings, Team, Schedule_Settings } from '@prisma/client';
-import { Permission, RoleEnum, User as SharedUser, UserScheduleSettings } from 'shared';
+import { RoleEnum, User as SharedUser, UserScheduleSettings } from 'shared';
 import { CreateTestUserParams } from '../test-utils';
 
 export const batmanAppAdmin: CreateTestUserParams = {
@@ -26,8 +26,7 @@ export const supermanAdmin: CreateTestUserParams = {
   email: 'clark.kent@thedailyplanet.com',
   emailId: 'clark.kent',
   role: RoleEnum.ADMIN,
-  googleAuthId: 's',
-  permissions: [Permission.CREATE_GRAPH]
+  googleAuthId: 's'
 };
 
 export const supermanSettings: User_Settings = {
@@ -111,8 +110,7 @@ export const sharedBatman: SharedUser = {
   lastName: 'Wayne',
   email: 'notbatman@gmail.com',
   emailId: 'notbatman',
-  role: 'APP_ADMIN',
-  permissions: [Permission.CREATE_GRAPH, Permission.EDIT_GRAPH, Permission.VIEW_GRAPH, Permission.DELETE_GRAPH]
+  role: 'APP_ADMIN'
 };
 
 export const batmanSecureSettings: User_Secure_Settings = {

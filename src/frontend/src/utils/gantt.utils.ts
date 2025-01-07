@@ -21,7 +21,7 @@ import {
 } from 'shared';
 import { projectWbsPipe } from './pipes';
 import dayjs from 'dayjs';
-import { deepOrange, green, grey, indigo, orange, pink } from '@mui/material/colors';
+import { deepOrange, green, grey, indigo, orange, pink, yellow } from '@mui/material/colors';
 import { projectPreviewTranformer } from '../apis/transformers/projects.transformers';
 
 export const NO_TEAM = 'No Team';
@@ -360,7 +360,7 @@ export const transformWorkPackageToGanttTask = (
     allWorkPackages,
     blocking: workPackage.blocking,
     styles: {
-      color: GanttWorkPackageTextColor,
+      color: GanttWorkPackageTextColorPipe(workPackage.stage),
       backgroundColor: GanttWorkPackageStageColorPipe(workPackage.stage, workPackage.status)
     },
     onClick: () => {
@@ -450,7 +450,7 @@ export const GanttWorkPackageStageColorPipe: (stage: WorkPackageStage | undefine
       case WorkPackageStage.Install:
         return pink[500];
       case WorkPackageStage.Testing:
-        return '#44a0b1';
+        return yellow[600];
       default:
         return grey[500];
     }
@@ -465,7 +465,7 @@ export const GanttWorkPackageStageColorPipe: (stage: WorkPackageStage | undefine
       case WorkPackageStage.Install:
         return pink[300];
       case WorkPackageStage.Testing:
-        return '#55c7dd';
+        return yellow[300];
       default:
         return grey[500];
     }
@@ -480,14 +480,27 @@ export const GanttWorkPackageStageColorPipe: (stage: WorkPackageStage | undefine
       case WorkPackageStage.Install:
         return pink[800];
       case WorkPackageStage.Testing:
-        return '#2d6b77';
+        return yellow[800];
       default:
         return grey[500];
     }
   }
 };
 
-export const GanttWorkPackageTextColor: string = '#ffffff';
+// maps stage to the desired text color
+export const GanttWorkPackageTextColorPipe: (stage: WorkPackageStage | undefined) => string = (stage) => {
+  switch (stage) {
+    case WorkPackageStage.Research:
+    case WorkPackageStage.Design:
+    case WorkPackageStage.Manufacturing:
+    case WorkPackageStage.Install:
+      return '#ffffff';
+    case WorkPackageStage.Testing:
+      return '#000000';
+    default:
+      return '#ffffff';
+  }
+};
 
 /**
  * Determines if the highlighted change is on the wbs elements project.

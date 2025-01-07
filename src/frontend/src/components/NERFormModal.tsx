@@ -6,7 +6,6 @@ interface NERFormModalProps<T extends FieldValues> extends NERModalProps {
   reset: UseFormReset<T>;
   handleUseFormSubmit: UseFormHandleSubmit<T, any>;
   onFormSubmit: (data: T) => void;
-  formId: string;
   children?: ReactNode;
 }
 

@@ -67,12 +67,8 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     }
   };
 
-  const moveToInProgress = (id: string, assignees: string, deadline?: Date) => async () => {
+  const moveToInProgress = (id: string) => async () => {
     try {
-      if (!deadline || assignees.length === 0) {
-        toast.error('A task must have a deadline and assignees to be in progress!');
-        return;
-      }
       await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.IN_PROGRESS });
     } catch (e: unknown) {
       if (e instanceof Error) {
@@ -101,11 +97,11 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     }
   };
 
-  const createTask = async (title: string, priority: TaskPriority, assignees: UserPreview[], deadline?: Date) => {
+  const createTask = async (title: string, deadline: Date, priority: TaskPriority, assignees: UserPreview[]) => {
     try {
       await createTaskMutate({
         title,
-        deadline: deadline ? transformDate(deadline) : undefined,
+        deadline: transformDate(deadline),
         priority,
         status,
         assignees: assignees.map((user) => user.userId),

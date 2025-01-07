@@ -4,6 +4,7 @@
  */
 
 import { AvailabilityCreateArgs } from './design-review-types';
+import { Team } from './team-types';
 
 export interface User {
   userId: string;
@@ -12,10 +13,9 @@ export interface User {
   email: string;
   emailId: string | null;
   role: Role;
-  permissions: Permission[];
 }
 
-export type UserPreview = Pick<User, 'userId' | 'firstName' | 'lastName' | 'email' | 'emailId' | 'role' | 'permissions'>;
+export type UserPreview = Pick<User, 'userId' | 'firstName' | 'lastName' | 'email' | 'emailId' | 'role'>;
 
 export type Role = 'APP_ADMIN' | 'ADMIN' | 'HEAD' | 'LEADERSHIP' | 'MEMBER' | 'GUEST';
 export enum RoleEnum {
@@ -25,17 +25,6 @@ export enum RoleEnum {
   LEADERSHIP = 'LEADERSHIP',
   MEMBER = 'MEMBER',
   GUEST = 'GUEST'
-}
-
-export enum Permission {
-  EDIT_GRAPH = 'EDIT_GRAPH',
-  CREATE_GRAPH = 'CREATE_GRAPH',
-  VIEW_GRAPH = 'VIEW_GRAPH',
-  DELETE_GRAPH = 'DELETE_GRAPH',
-  EDIT_GRAPH_COLLECTION = 'EDIT_GRAPH_COLLECTION',
-  CREATE_GRAPH_COLLECTION = 'CREATE_GRAPH_COLLECTION',
-  VIEW_GRAPH_COLLECTION = 'VIEW_GRAPH_COLLECTION',
-  DELETE_GRAPH_COLLECTION = 'DELETE_GRAPH_COLLECTION'
 }
 
 export type ThemeName = 'DARK' | 'LIGHT';
@@ -55,6 +44,7 @@ export interface Organization {
   treasurer?: UserPreview;
   advisor?: UserPreview;
   description: string;
+  slackWorkspaceId?: string;
 }
 
 /**
@@ -76,7 +66,8 @@ export interface AuthenticatedUser {
   isAtLeastFinanceLead?: boolean;
   organizations: string[];
   currentOrganization?: OrganizationPreview;
-  permissions: Permission[];
+  teamsAsHead?: Team[];
+  teamsAsLead?: Team[];
 }
 
 export interface UserSettings {
@@ -112,7 +103,13 @@ export interface Availability {
   availability: number[];
 }
 
-export interface UserWithScheduleSettings extends User {
+export interface UserWithScheduleSettings {
+  userId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  emailId: string | null;
+  role: Role;
   scheduleSettings?: UserScheduleSettings;
 }
 

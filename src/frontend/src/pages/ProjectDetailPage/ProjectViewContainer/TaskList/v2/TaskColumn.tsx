@@ -33,7 +33,7 @@ export const TaskColumn = ({
     try {
       const task = await createTask({
         title,
-        deadline: deadline ? transformDate(deadline) : undefined,
+        deadline: transformDate(deadline),
         priority,
         status: status as TaskStatus,
         assignees,

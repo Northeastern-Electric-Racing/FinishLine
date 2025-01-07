@@ -103,13 +103,6 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
     }
   };
 
-  const handleSelectingRequiredUser = (newValue: { label: string; id: string }[]) => {
-    const newRequiredUserIds = new Set(newValue.map((user) => user.id));
-    const filteredOptionalUsers = optionalUsers.filter((user) => !newRequiredUserIds.has(user.id));
-    setOptionalUsers(filteredOptionalUsers);
-    setRequiredUsers(newValue);
-  };
-
   const handleEdit = async (data?: FinalizeReviewInformation) => {
     const times = [];
     for (let i = startTime; i < endTime; i++) {
@@ -261,9 +254,9 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
                   limitTags={1}
                   renderTags={() => null}
                   id="required-users"
-                  options={users}
+                  options={users.filter((user) => !optionalUsers.some((optUser) => optUser.id === user.id))}
                   value={requiredUsers}
-                  onChange={(_event, newValue) => handleSelectingRequiredUser(newValue)}
+                  onChange={(_event, newValue) => setRequiredUsers(newValue)}
                   getOptionLabel={(option) => option.label}
                   renderOption={(props, option, { selected }) => (
                     <li {...props}>

@@ -38,11 +38,7 @@ export interface TeamType {
   teamTypeId: string;
   name: string;
   iconName: string;
-  description: string;
-  imageFileId: string | null;
-  calendarId: string | null;
-  dateDeleted: Date | undefined;
-  deletedById: string | undefined;
+  calendarId?: string | null;
 }
 
 export interface AvailabilityCreateArgs {

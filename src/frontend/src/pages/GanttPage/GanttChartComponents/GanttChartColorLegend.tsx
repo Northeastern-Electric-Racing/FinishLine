@@ -8,7 +8,7 @@ import { DesignReviewStatus, WbsElementStatus, WorkPackageStage } from 'shared';
 import {
   GanttDesignReviewStatusColorPipe,
   GanttWorkPackageStageColorPipe,
-  GanttWorkPackageTextColor
+  GanttWorkPackageTextColorPipe
 } from '../../../utils/gantt.utils';
 import { DesignReviewStatusTextPipe, WbsElementStatusTextPipe, WorkPackageStageTextPipe } from '../../../utils/enum-pipes';
 
@@ -41,7 +41,7 @@ Object.values(WorkPackageStage).map((stage) =>
                 alignItems: 'center'
               }}
             >
-              <Typography variant="body1" sx={{ color: GanttWorkPackageTextColor }}>
+              <Typography variant="body1" sx={{ color: GanttWorkPackageTextColorPipe(stage) }}>
                 {WbsElementStatusTextPipe(status)}
               </Typography>
             </Box>
@@ -135,7 +135,7 @@ const GanttChartColorLegend = () => {
               >
                 <Typography
                   variant="body2"
-                  sx={{ color: GanttWorkPackageTextColor, overflow: 'hidden', textWrap: 'nowrap' }}
+                  sx={{ color: GanttWorkPackageTextColorPipe(stage), overflow: 'hidden', textWrap: 'nowrap' }}
                 >
                   {WorkPackageStageTextPipe(stage)}
                 </Typography>

@@ -136,7 +136,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
           icon={<SaveIcon fontSize="small" />}
           label="Save"
           onClick={() => {
-            createTask(title, priority, assignees, deadline);
+            createTask(title, deadline, priority, assignees);
             deleteCreateTask();
           }}
         />
@@ -184,7 +184,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
           <GridActionsCellItem
             icon={<PlayArrowIcon fontSize="small" />}
             label="Move to In Progress"
-            onClick={moveToInProgress(params.row.taskId, params.row.deadline, params.row.assignees)}
+            onClick={moveToInProgress(params.row.taskId)}
             showInMenu
             disabled={!editTaskPermissions(params.row.task)}
           />
@@ -335,7 +335,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
         title: '',
         notes: '',
         dateCreated: new Date(),
-        createdBy: { userId: '', firstName: '', lastName: '', email: '', emailId: '', role: 'GUEST', permissions: [] },
+        createdBy: { userId: '', firstName: '', lastName: '', email: '', emailId: '', role: 'GUEST' },
         assignees: [],
         deadline: new Date(),
         priority: TaskPriority.High,

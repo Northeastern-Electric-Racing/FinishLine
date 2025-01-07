@@ -88,11 +88,6 @@ export const uploadFile = async (fileObject: Express.Multer.File) => {
   const bufferStream = new stream.PassThrough();
   bufferStream.end(fileObject.buffer);
 
-  if (fileObject.filename.length > 20) throw new HttpException(400, 'File name can only be at most 20 characters long');
-  //The regex /^[\w.]+$/ limits the file name to the set of alphanumeric characters (\w) and dots (for file type)
-  if (!/^[\w.]+$/.test(fileObject.filename))
-    throw new HttpException(400, 'File name should only contain letters and numbers');
-
   oauth2Client.setCredentials({
     refresh_token: DRIVE_REFRESH_TOKEN
   });
@@ -127,12 +122,15 @@ export const uploadFile = async (fileObject: Express.Multer.File) => {
       const gError = error as GoogleDriveError;
       throw new HttpException(
         gError.code,
-        `Failed to Upload : ${gError.message}, ${gError.errors.reduce((acc: string, curr: GoogleDriveErrorListError) => {
-          return acc + ' ' + curr.message + ' ' + curr.reason;
-        }, '')}`
+        `Failed to Upload Receipt(s): ${gError.message}, ${gError.errors.reduce(
+          (acc: string, curr: GoogleDriveErrorListError) => {
+            return acc + ' ' + curr.message + ' ' + curr.reason;
+          },
+          ''
+        )}`
       );
     } else if (error instanceof Error) {
-      throw new HttpException(500, `Failed to Upload : ${error.message}`);
+      throw new HttpException(500, `Failed to Upload Receipt(s): ${error.message}`);
     }
     console.log('error' + error);
     throw error;

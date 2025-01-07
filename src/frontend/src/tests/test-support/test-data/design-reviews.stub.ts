@@ -10,12 +10,7 @@ import { exampleWbsProject1 } from './wbs-numbers.stub';
 export const teamType1: TeamType = {
   teamTypeId: '1',
   iconName: 'YouTubeIcon',
-  description: '',
-  imageFileId: null,
-  calendarId: null,
-  name: 'teamType1',
-  dateDeleted: undefined,
-  deletedById: undefined
+  name: 'teamType1'
 };
 
 export const exampleDesignReview1: DesignReview = {

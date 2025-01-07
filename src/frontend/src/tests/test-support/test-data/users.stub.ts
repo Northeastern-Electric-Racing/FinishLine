@@ -11,8 +11,7 @@ export const exampleAppAdminUser: User = {
   lastName: 'Emrax',
   email: 'emrax.t@husky.neu.edu',
   emailId: 'emrax.t',
-  role: RoleEnum.APP_ADMIN,
-  permissions: []
+  role: RoleEnum.APP_ADMIN
 };
 
 export const exampleAdminUser: AuthenticatedUser = {
@@ -24,8 +23,7 @@ export const exampleAdminUser: AuthenticatedUser = {
   role: RoleEnum.ADMIN,
   favoritedProjectsId: [],
   changeRequestsToReviewId: [],
-  organizations: ['yello'],
-  permissions: []
+  organizations: ['yello']
 };
 
 export const exampleAdminUser2: AuthenticatedUser = {
@@ -37,8 +35,7 @@ export const exampleAdminUser2: AuthenticatedUser = {
   role: RoleEnum.ADMIN,
   favoritedProjectsId: [],
   changeRequestsToReviewId: [],
-  organizations: [],
-  permissions: []
+  organizations: []
 };
 
 export const exampleLeadershipUser: User = {
@@ -47,8 +44,7 @@ export const exampleLeadershipUser: User = {
   lastName: 'Blow',
   email: 'blow.j@husky.neu.edu',
   emailId: 'blow.j',
-  role: RoleEnum.LEADERSHIP,
-  permissions: []
+  role: RoleEnum.LEADERSHIP
 };
 
 export const exampleLeadUser: User = {
@@ -57,8 +53,7 @@ export const exampleLeadUser: User = {
   lastName: 'Smith',
   email: 'smith.a@husky.neu.edu',
   emailId: 'smith.a',
-  role: RoleEnum.HEAD,
-  permissions: []
+  role: RoleEnum.HEAD
 };
 
 export const exampleManagerUser: User = {
@@ -67,8 +62,7 @@ export const exampleManagerUser: User = {
   lastName: 'Barmatha',
   email: 'barmatha.r@husky.neu.edu',
   emailId: 'barmatha.r',
-  role: RoleEnum.MEMBER,
-  permissions: []
+  role: RoleEnum.MEMBER
 };
 
 export const exampleMemberUser: AuthenticatedUser = {
@@ -80,8 +74,7 @@ export const exampleMemberUser: AuthenticatedUser = {
   role: RoleEnum.HEAD,
   favoritedProjectsId: [],
   changeRequestsToReviewId: [],
-  organizations: [],
-  permissions: []
+  organizations: []
 };
 
 export const exampleGuestUser: AuthenticatedUser = {
@@ -93,8 +86,7 @@ export const exampleGuestUser: AuthenticatedUser = {
   role: RoleEnum.GUEST,
   favoritedProjectsId: [],
   changeRequestsToReviewId: [],
-  organizations: [],
-  permissions: []
+  organizations: []
 };
 
 export const exampleGuestUser2: User = {
@@ -103,8 +95,7 @@ export const exampleGuestUser2: User = {
   lastName: 'Jackson',
   email: 'jackson.j@husky.neu.edu',
   emailId: 'jackson.j',
-  role: RoleEnum.GUEST,
-  permissions: []
+  role: RoleEnum.GUEST
 };
 
 export const exampleAllUsers: User[] = [

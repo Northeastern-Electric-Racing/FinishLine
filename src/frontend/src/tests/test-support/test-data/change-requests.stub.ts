@@ -152,8 +152,7 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
         lastName: 'Schmoe',
         email: 'j.schmoe@northeastern.edu',
         emailId: null,
-        role: RoleEnum.LEADERSHIP,
-        permissions: []
+        role: RoleEnum.LEADERSHIP
       },
       detail: 'Adjust description',
       dateImplemented: new Date('02/25/21')
@@ -172,8 +171,7 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
         lastName: 'Schmoe',
         email: 'j.schmoe@northeastern.edu',
         emailId: null,
-        role: RoleEnum.LEADERSHIP,
-        permissions: []
+        role: RoleEnum.LEADERSHIP
       },
       detail: 'Increase budget to 200',
       dateImplemented: new Date('02/25/21')
@@ -192,8 +190,7 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
         lastName: 'Schmoe',
         email: 'j.schmoe@northeastern.edu',
         emailId: null,
-        role: RoleEnum.LEADERSHIP,
-        permissions: []
+        role: RoleEnum.LEADERSHIP
       },
       detail: 'Add 3 weeks',
       dateImplemented: new Date('02/25/21')

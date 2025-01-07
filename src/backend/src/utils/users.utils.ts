@@ -1,15 +1,7 @@
 import { Prisma, User, User_Settings } from '@prisma/client';
 import prisma from '../prisma/prisma';
-import { HttpException, InvalidOrganizationException, NotFoundException } from './errors.utils';
-import {
-  AvailabilityCreateArgs,
-  getPermissionsForRoleType,
-  isSameDay,
-  isSubset,
-  PermissionCheck,
-  Role,
-  RoleEnum
-} from 'shared';
+import { HttpException, NotFoundException } from './errors.utils';
+import { AvailabilityCreateArgs, isSameDay, PermissionCheck, Role, RoleEnum } from 'shared';
 import { UserWithId } from './teams.utils';
 import { UserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args';
 
@@ -97,29 +89,6 @@ const validateFoundUsers = (users: User[], userIds: string[]) => {
     const missingUserIds = userIds.filter((id) => !prismaUserIds.includes(id));
     throw new HttpException(404, `User(s) with the following ids not found: ${missingUserIds.join(', ')}`);
   }
-};
-
-const getUserWithPermissions = async (userId: string, organizationId: string): Promise<User & { permissions: string[] }> => {
-  const user = await prisma.user.findUnique({
-    where: { userId },
-    include: {
-      roles: {
-        where: {
-          organizationId
-        }
-      }
-    }
-  });
-  if (!user) throw new NotFoundException('User', userId);
-  if (user.roles.length === 0) throw new InvalidOrganizationException('User');
-
-  return { ...user, permissions: user.additionalPermissions.concat(getPermissionsForRoleType(user.roles[0].roleType)) };
-};
-
-export const userHasPermissionNew = async (userId: string, organizationId: string, permissionsToCheckFor: string[]) => {
-  const user = await getUserWithPermissions(userId, organizationId);
-
-  return isSubset(permissionsToCheckFor, user.permissions);
 };
 
 export const userHasPermission = async (

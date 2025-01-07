@@ -178,9 +178,6 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
     );
   };
 
-  const today = new Date().toDateString();
-  const isCurrentDay = cardDate.toDateString() === today;
-
   return (
     <>
       <DesignReviewCreateModal
@@ -191,15 +188,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
         teamTypes={teamTypes}
         defaultDate={cardDate}
       />
-      <Card
-        sx={{
-          borderRadius: 2,
-          width: { xs: '95%', md: '80%' },
-          height: { xs: '10vh', sm: '15vh' },
-          border: isCurrentDay ? '2px solid gray' : 'none',
-          boxShadow: isCurrentDay ? '0 0 10px rgba(255, 255, 255, 0.5)' : 'none'
-        }}
-      >
+      <Card sx={{ borderRadius: 2, width: { xs: '95%', md: '80%' }, height: { xs: '10vh', sm: '15vh' } }}>
         <CardContent sx={{ padding: 0 }}>
           <DayCardTitle />
           {events.length < 3 ? (

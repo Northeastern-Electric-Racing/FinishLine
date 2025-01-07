@@ -5,7 +5,6 @@ import { convertStatus, wbsNumOf } from '../utils/utils';
 import { userTransformer } from './user.transformer';
 import { WorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
 import { designReviewTransformer } from './design-reviews.transformer';
-import { teamTypeTransformer } from './team-types.transformer';
 
 const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>): WorkPackage => {
   const wbsNum = wbsNumOf(wpInput.wbsElement);
@@ -35,7 +34,7 @@ const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPacka
       detail: change.detail,
       dateImplemented: change.dateImplemented
     })),
-    teamTypes: wpInput.project.teams.flatMap((team) => team.teamType ?? []).map(teamTypeTransformer),
+    teamTypes: wpInput.project.teams.flatMap((team) => team.teamType ?? []),
     projectName: wpInput.project.wbsElement.name,
     stage: (wpInput.stage as WorkPackageStage) || undefined,
     blocking: wpInput.wbsElement.blocking.map((wp) => wbsNumOf(wp.wbsElement)),

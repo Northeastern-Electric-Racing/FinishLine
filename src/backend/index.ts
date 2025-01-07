@@ -17,7 +17,10 @@ import workPackageTemplatesRouter from './src/routes/work-package-templates.rout
 import carsRouter from './src/routes/cars.routes';
 import organizationRouter from './src/routes/organizations.routes';
 import recruitmentRouter from './src/routes/recruitment.routes';
-import statisticsRouter from './src/routes/statistics.routes';
+import { slackEvents } from './src/routes/slack.routes';
+import announcementsRouter from './src/routes/announcements.routes';
+import onboardingRouter from './src/routes/onboarding.routes';
+import popUpsRouter from './src/routes/pop-up.routes';
 
 const app = express();
 
@@ -40,6 +43,10 @@ const options: cors.CorsOptions = {
   optionsSuccessStatus: 204,
   allowedHeaders
 };
+
+// so we can listen to slack messages
+// NOTE: must be done before using json
+app.use('/slack', slackEvents.requestListener());
 
 // so that we can use cookies and json
 app.use(cookieParser());
@@ -69,7 +76,9 @@ app.use('/templates', workPackageTemplatesRouter);
 app.use('/cars', carsRouter);
 app.use('/organizations', organizationRouter);
 app.use('/recruitment', recruitmentRouter);
-app.use('/statistics', statisticsRouter);
+app.use('/pop-ups', popUpsRouter);
+app.use('/announcements', announcementsRouter);
+app.use('/onboarding', onboardingRouter);
 app.use('/', (_req, res) => {
   res.status(200).json('Welcome to FinishLine');
 });

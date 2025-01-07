@@ -14,6 +14,5 @@ export const exampleAuthenticatedAdminUser: AuthenticatedUser = {
   role: RoleEnum.ADMIN,
   favoritedProjectsId: [],
   changeRequestsToReviewId: [],
-  organizations: [],
-  permissions: []
+  organizations: []
 };
