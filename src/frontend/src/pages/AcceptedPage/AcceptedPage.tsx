@@ -58,8 +58,8 @@ const AcceptedPage = () => {
           marginLeft="auto"
           sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0, fontFamily: 'oswald', fontWeight: 1, fontSize: 25 }}
         >
-          Before you get started on the {teamType.name} team, all new members will have to complete general and subteam-specific
-          onboarding.
+          Before you get started on the {teamType.name} team, all new members will have to complete general and
+          subteam-specific onboarding.
         </Typography>
         <Typography
           variant="h6"

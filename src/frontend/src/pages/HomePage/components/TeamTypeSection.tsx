@@ -7,7 +7,6 @@ import ErrorPage from '../../ErrorPage';
 import { useState } from 'react';
 import Tabs from '../../../components/Tabs';
 import { NERButton } from '../../../components/NERButton';
-import { useCurrentUser, useToggleCompletedOnboarding } from '../../../hooks/users.hooks';
 import NERModal from '../../../components/NERModal';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
@@ -64,7 +63,7 @@ const TeamTypeSection = ({ teamType, onSelectSubteamPage = false }: TeamTypeSect
               height: 'auto',
               maxWidth: '400px',
               display: 'block',
-              ml: '0', // Align image to the left
+              ml: '0' // Align image to the left
             }}
           />
         )}

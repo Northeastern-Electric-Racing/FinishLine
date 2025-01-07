@@ -45,7 +45,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole, c
   const theme = useTheme();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [moveContent, setMoveContent] = useState(false);
-  const { onGuestHomePage, onMemberHomePage } = useHomePageContext();
+  const { onGuestHomePage } = useHomePageContext();
 
   const {
     data: organization,

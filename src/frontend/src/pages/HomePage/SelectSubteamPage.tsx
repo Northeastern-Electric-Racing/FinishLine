@@ -24,21 +24,16 @@ const SelectSubteamPage = () => {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          alignItems: 'center',
+          alignItems: 'center'
         }}
       >
         <Box sx={{ textAlign: 'center', width: '60%' }}>
-          <Typography
-            variant="h3"
-            sx={{ textAlign: 'center', fontWeight: 'bold', mb: 3 }}
-          >
+          <Typography variant="h3" sx={{ textAlign: 'center', fontWeight: 'bold', mb: 3 }}>
             Select Subteam
           </Typography>
-          <Typography
-            variant="h5"
-            sx={{ textAlign: 'center', mb: 4 }}
-          >
-            The application link has opened in a new tab. Please complete the application and return to this page to select a subteam.
+          <Typography variant="h5" sx={{ textAlign: 'center', mb: 4 }}>
+            The application link has opened in a new tab. Please complete the application and return to this page to select a
+            subteam.
           </Typography>
           <TeamTypesSection onSelectSubteamPage={true} />
         </Box>
