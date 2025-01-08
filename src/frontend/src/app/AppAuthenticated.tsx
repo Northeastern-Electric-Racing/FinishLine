@@ -118,6 +118,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole, c
           <Switch>
             {!completedOnboarding && <Redirect exact path={routes.HOME} to={routes.HOME_ONBOARDING} />}
             {!completedOnboarding && <Redirect exact path={routes.HOME_ACCEPT} to={routes.HOME_ONBOARDING} />}
+            {completedOnboarding && <Redirect exact path={routes.HOME_ONBOARDING} to={routes.HOME_MEMBER} />}
             {isGuest(userRole) && <Redirect exact path={routes.HOME} to={routes.HOME_GUEST} />}
             {!isGuest(userRole) && <Redirect exact path={routes.HOME_GUEST} to={routes.HOME} />}
             {!isGuest(userRole) && <Redirect exact path={routes.HOME_PNM} to={routes.HOME} />}

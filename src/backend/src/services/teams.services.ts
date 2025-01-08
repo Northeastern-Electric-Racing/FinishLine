@@ -52,6 +52,56 @@ export default class TeamsService {
   }
 
   /**
+   * Gets a team with the given team type id
+   * @param teamTypeId - id of team to retrieve
+   * @param organizationId The organization the user is currently in
+   * @returns a team
+   * @throws if the team is not found in the db
+   */
+  static async getSingleTeamByTeamType(teamTypeId: string, organization: Organization): Promise<Team> {
+    const team = await prisma.team.findFirst({
+      where: { teamTypeId },
+      ...getTeamQueryArgs(organization.organizationId)
+    });
+
+    if (!team) throw new NotFoundException('Team', teamTypeId);
+
+    if (team.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Team');
+
+    return teamTransformer(team);
+  }
+
+  /**
+   * Sets the initial team member for a team
+   * @param teamId the id of the team to add the user to
+   * @param userId the id of the user to add to the team
+   * @param organizationId The organization the user is currently in
+   * @returns the updated team
+   */
+  static async setInitialTeamMember(teamId: string, userId: string, organization: Organization) {
+    const team = await TeamsService.getSingleTeam(teamId, organization);
+    if (team.dateArchived) throw new HttpException(400, 'Cannot edit the members of an archived team');
+
+    const user = await prisma.user.findUnique({
+      where: { userId }
+    });
+
+    if (!user) throw new NotFoundException('User', userId);
+
+    const updateTeam = await prisma.team.update({
+      where: { teamId },
+      data: {
+        members: {
+          connect: { userId }
+        }
+      },
+      ...getTeamQueryArgs(organization.organizationId)
+    });
+
+    return teamTransformer(updateTeam);
+  }
+
+  /**
    * Update the given teamId's team's members
    * @param submitter a user who's making this request
    * @param teamId a id of team to be updated

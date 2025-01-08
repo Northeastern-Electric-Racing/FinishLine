@@ -25,12 +25,36 @@ export default class TeamsController {
     }
   }
 
+  static async getSingleTeamByTeamType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamTypeId } = req.params;
+
+      const team = await TeamsService.getSingleTeamByTeamType(teamTypeId, req.organization);
+
+      return res.status(200).json(team);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
+  static async setInitialTeamMember(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.body;
+      const { teamId } = req.params;
+
+      const team = await TeamsService.setInitialTeamMember(teamId, userId, req.organization);
+      return res.status(200).json(team);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
   static async setTeamMembers(req: Request, res: Response, next: NextFunction) {
     try {
       const { userIds } = req.body;
-
+      const { teamId } = req.params;
       // update the team with the input fields
-      const updateTeam = await TeamsService.setTeamMembers(req.currentUser, req.params.teamId, userIds, req.organization);
+      const updateTeam = await TeamsService.setTeamMembers(req.currentUser, teamId, userIds, req.organization);
 
       //  the updated team
       return res.status(200).json(updateTeam);

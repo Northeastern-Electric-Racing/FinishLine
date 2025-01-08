@@ -10,6 +10,7 @@ import { NERButton } from '../../../components/NERButton';
 import NERModal from '../../../components/NERModal';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
+import { useSingleTeamByTeamType } from '../../../hooks/teams.hooks';
 
 interface TeamTypeSectionProps {
   teamType: TeamType;
@@ -17,14 +18,14 @@ interface TeamTypeSectionProps {
 }
 
 const TeamTypesSection = ({ onSelectSubteamPage }: { onSelectSubteamPage?: boolean }) => {
+  const [teamTypeTabValue, setTeamTypeTabValue] = useState(0);
+
   const {
     data: teamTypes,
     isLoading: teamTypesIsLoading,
     isError: teamTypesIsError,
     error: teamTypesError
   } = useAllTeamTypes();
-
-  const [teamTypeTabValue, setTeamTypeTabValue] = useState(0);
 
   if (!teamTypes || teamTypesIsLoading) return <LoadingIndicator />;
   if (teamTypesIsError) return <ErrorPage message={teamTypesError?.message} />;
@@ -48,8 +49,9 @@ const TeamTypeSection = ({ teamType, onSelectSubteamPage = false }: TeamTypeSect
   const history = useHistory();
 
   const { data: imageUrl, isLoading: imageIsLoading } = useGetImageUrl(teamType.imageFileId);
+  const { data: team, isLoading: teamIsLoading } = useSingleTeamByTeamType(teamType.teamTypeId);
 
-  if (imageIsLoading) return <LoadingIndicator />;
+  if (imageIsLoading || teamIsLoading) return <LoadingIndicator />;
 
   return (
     <Grid container spacing={4} alignItems="flex-start" sx={{ p: 2 }}>
@@ -63,7 +65,7 @@ const TeamTypeSection = ({ teamType, onSelectSubteamPage = false }: TeamTypeSect
               height: 'auto',
               maxWidth: '400px',
               display: 'block',
-              ml: '0' // Align image to the left
+              ml: '0'
             }}
           />
         )}
@@ -87,7 +89,7 @@ const TeamTypeSection = ({ teamType, onSelectSubteamPage = false }: TeamTypeSect
           title="Select Subteam"
           onSubmit={() => {
             setShowModal(false);
-            history.push(routes.HOME_ACCEPT, { teamType });
+            history.push(routes.HOME_ACCEPT, { teamType, team });
           }}
         >
           Are you sure you want to join the {teamType.name} division?

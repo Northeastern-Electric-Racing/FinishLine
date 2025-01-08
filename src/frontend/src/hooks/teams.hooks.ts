@@ -13,7 +13,9 @@ import {
   setTeamHead,
   deleteTeam,
   createTeam,
-  setTeamLeads
+  setTeamLeads,
+  getSingleTeamByTeamType,
+  setTeamInitialMember
 } from '../apis/teams.api';
 
 export interface CreateTeamPayload {
@@ -36,6 +38,29 @@ export const useSingleTeam = (teamId: string) => {
     const { data } = await getSingleTeam(teamId);
     return data;
   });
+};
+
+export const useSingleTeamByTeamType = (teamTypeId: string) => {
+  return useQuery<Team, Error>(['teams', teamTypeId], async () => {
+    const { data } = await getSingleTeamByTeamType(teamTypeId);
+    return data;
+  });
+};
+
+export const useSetTeamInitialMember = (teamId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, string>(
+    ['teams', 'edit'],
+    async (userId: string) => {
+      const { data } = await setTeamInitialMember(teamId, userId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['teams']);
+      }
+    }
+  );
 };
 
 export const useSetTeamMembers = (teamId: string) => {

@@ -10,16 +10,13 @@ import OnboardingInfoSection from './components/OnboardingInfoSection';
 import ConfirmOnboardingChecklistModal from './components/ConfirmOnboardingChecklistModal';
 import { NERButton } from '../../components/NERButton';
 import { useToggleCompletedOnboarding } from '../../hooks/users.hooks';
-import { useToast } from '../../hooks/toasts.hooks';
 
 const OnboardingHomePage = () => {
   const { data: organization, isError, error, isLoading } = useCurrentOrganization();
   const { setCurrentHomePage } = useHomePageContext();
   const [isModalOpen, setModalOpen] = useState(false);
 
-  const toast = useToast();
-
-  const toggleCompletedOnboarding = useToggleCompletedOnboarding();
+  const { mutateAsync: toggleCompletedOnboarding } = useToggleCompletedOnboarding();
 
   useEffect(() => {
     setCurrentHomePage('onboarding');
@@ -37,9 +34,9 @@ const OnboardingHomePage = () => {
   };
 
   const handleConfirmModal = async () => {
-    await toggleCompletedOnboarding.mutateAsync();
-    toast.success('Role updated successfully!');
+    await toggleCompletedOnboarding();
     setModalOpen(false);
+    window.location.reload();
   };
 
   return (

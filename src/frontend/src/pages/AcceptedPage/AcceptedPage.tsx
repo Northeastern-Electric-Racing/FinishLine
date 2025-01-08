@@ -1,28 +1,32 @@
 import { Typography, Box, Grid } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { TeamType } from 'shared';
+import { Team, TeamType } from 'shared';
 import { NERButton } from '../../components/NERButton';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useCurrentUser, useToggleCompletedOnboarding } from '../../hooks/users.hooks';
 import { routes } from '../../utils/routes';
+import { useSetTeamInitialMember } from '../../hooks/teams.hooks';
 
 const AcceptedPage = () => {
   const location = useLocation();
   const history = useHistory();
   const user = useCurrentUser();
-  const { teamType } = location.state as { teamType: TeamType };
+
+  // is there a better way to pass in props to this page because I am navigating to this page using history.push
+  // so i can't pass in props normally
+  const { teamType, team } = location.state as { teamType: TeamType; team: Team };
 
   const { mutateAsync: toggleCompletedOnboarding, isLoading: toggleOnboardingIsLoading } = useToggleCompletedOnboarding();
+  const { mutateAsync: setTeamInitialMember, isLoading: setTeamMembersIsLoading } = useSetTeamInitialMember(team.teamId);
 
-  if (toggleOnboardingIsLoading) {
+  if (toggleOnboardingIsLoading || setTeamMembersIsLoading) {
     return <LoadingIndicator />;
   }
 
-  const handleClick = () => {
-    toggleCompletedOnboarding();
-
-    // I feel like there has to be a better way to do this
+  const handleClick = async () => {
+    await toggleCompletedOnboarding();
+    await setTeamInitialMember(user.userId);
     window.location.reload();
   };
 
