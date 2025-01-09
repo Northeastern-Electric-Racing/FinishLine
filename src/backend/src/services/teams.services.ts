@@ -15,6 +15,9 @@ import { removeUsersFromList } from '../utils/teams.utils';
 import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
 import { uploadFile } from '../utils/google-integration.utils';
 import { createCalendar } from '../utils/google-integration.utils';
+import { connect } from 'http2';
+import { getUserQueryArgs } from '../prisma-query-args/user.query-args';
+import { userTransformer } from '../transformers/user.transformer';
 
 export default class TeamsService {
   /**
@@ -491,7 +494,10 @@ export default class TeamsService {
    * @returns all the team types for the given organization
    */
   static async getAllTeamTypes(organization: Organization): Promise<TeamType[]> {
-    const teamTypes = await prisma.team_Type.findMany({ where: { organizationId: organization.organizationId } });
+    const teamTypes = await prisma.team_Type.findMany({
+      where: { organizationId: organization.organizationId }
+    });
+
     return teamTypes;
   }
 
@@ -578,6 +584,50 @@ export default class TeamsService {
     });
 
     return teamTransformer(updatedTeam);
+  }
+
+  /**
+   * Adds the user to the team types onboarding list
+   * @param submitter the user who is setting the onboarding team type
+   * @param teamTypeId the id of the team type
+   * @param organization the organization the user is currently in
+   * @returns the updated team type
+   */
+  static async toggleOnboardingUser(submitter: User, teamTypeId: string, organization: Organization): Promise<TeamType> {
+    const teamType = await prisma.team_Type.findUnique({
+      where: { teamTypeId, organizationId: organization.organizationId },
+      include: { usersOnboarding: true }
+    });
+
+    if (!teamType) throw new NotFoundException('Team Type', teamTypeId);
+
+    if (teamType.usersOnboarding.some((user) => user.userId === submitter.userId)) {
+      await prisma.team_Type.update({
+        where: { teamTypeId },
+        data: {
+          usersOnboarding: {
+            disconnect: { userId: submitter.userId }
+          }
+        }
+      });
+    } else {
+      await prisma.team_Type.update({
+        where: { teamTypeId },
+        data: {
+          usersOnboarding: {
+            connect: { userId: submitter.userId }
+          }
+        }
+      });
+    }
+
+    const updatedTeamType = await prisma.team_Type.findUnique({
+      where: { teamTypeId }
+    });
+
+    if (!updatedTeamType) throw new NotFoundException('Team Type', teamTypeId);
+
+    return updatedTeamType;
   }
 
   static async setTeamTypeImage(

@@ -152,6 +152,18 @@ export default class TeamsController {
     }
   }
 
+  static async toggleOnboardingUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamTypeId } = req.params;
+
+      const updatedTeamType = await TeamsService.toggleOnboardingUser(req.currentUser, teamTypeId, req.organization);
+
+      return res.status(200).json(updatedTeamType);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
   static async getSingleTeamType(req: Request, res: Response, next: NextFunction) {
     try {
       const { teamTypeId } = req.params;

@@ -60,6 +60,8 @@ teamsRouter.get('/teamType/:teamTypeId/single', TeamsController.getSingleTeamTyp
 
 teamsRouter.post('/:teamId/set-team-type', nonEmptyString(body('teamTypeId')), validateInputs, TeamsController.setTeamType);
 
+teamsRouter.post('/teamType/:teamTypeId/toggle-onboarding-user', TeamsController.toggleOnboardingUser);
+
 teamsRouter.post(
   '/teamType/create',
   nonEmptyString(body('name')),

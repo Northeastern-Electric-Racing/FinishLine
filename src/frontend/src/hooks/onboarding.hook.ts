@@ -9,6 +9,8 @@ import {
   toggleChecklist,
   getCheckedChecklists
 } from '../apis/onboarding.api';
+import { useState, useEffect } from 'react';
+import { useAllTeamTypes } from './team-types.hooks';
 
 export interface ToggleChecklistPayload {
   checklistId: string;
@@ -35,8 +37,8 @@ export const useCheckedChecklists = () => {
   });
 };
 
-export const useUsersTeamTypeChecklists = () => {
-  return useQuery<Checklist[], Error>(['checklists', 'teamTypeChecklists'], async () => {
+export const useUsersChecklists = () => {
+  return useQuery<Checklist[], Error>(['checklists', 'checklists'], async () => {
     const { data } = await getUsersChecklists();
     return data;
   });
@@ -108,3 +110,17 @@ export const useGetImageUrls = (imageFileIds: (string | null)[]) => {
     }
   );
 };
+
+// export const useCompletedOnboarding = (userId: string) => {
+//   const [completedOnboarding, setCompletedOnboarding] = useState(false);
+//   const { data: teamTypes } = useAllTeamTypes();
+
+//   useEffect(() => {
+//     if (teamTypes) {
+//       const completed = teamTypes.some((teamType) => teamType.usersOnboarding.some((user) => user.userId === userId));
+//       setCompletedOnboarding(completed);
+//     }
+//   }, [teamTypes]);
+
+//   return completedOnboarding;
+// };

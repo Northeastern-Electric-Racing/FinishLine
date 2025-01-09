@@ -2,15 +2,15 @@ import { Box, Grid, Typography } from '@mui/material';
 import { TeamType } from 'shared';
 import { useGetImageUrl } from '../../../hooks/onboarding.hook';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useAllTeamTypes } from '../../../hooks/team-types.hooks';
+import { useAllTeamTypes, useToggleOnboardingUser } from '../../../hooks/team-types.hooks';
+import { useToggleCompletedOnboarding } from '../../../hooks/users.hooks';
 import ErrorPage from '../../ErrorPage';
 import { useState } from 'react';
 import Tabs from '../../../components/Tabs';
 import { NERButton } from '../../../components/NERButton';
 import NERModal from '../../../components/NERModal';
-import { useHistory } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
-import { useSingleTeamByTeamType } from '../../../hooks/teams.hooks';
+import { useHistory } from 'react-router-dom';
 
 interface TeamTypeSectionProps {
   teamType: TeamType;
@@ -47,11 +47,21 @@ const TeamTypesSection = ({ onSelectSubteamPage }: { onSelectSubteamPage?: boole
 const TeamTypeSection = ({ teamType, onSelectSubteamPage = false }: TeamTypeSectionProps) => {
   const [showModal, setShowModal] = useState(false);
   const history = useHistory();
-
   const { data: imageUrl, isLoading: imageIsLoading } = useGetImageUrl(teamType.imageFileId);
-  const { data: team, isLoading: teamIsLoading } = useSingleTeamByTeamType(teamType.teamTypeId);
+  const { mutateAsync: toggleOnboardingUser, isLoading: toggleOnboardingIsLoading } = useToggleOnboardingUser(
+    teamType.teamTypeId
+  );
+  const { mutateAsync: toggleCompletedOnboarding, isLoading: toggleCompletedOnboardingIsLoading } =
+    useToggleCompletedOnboarding();
 
-  if (imageIsLoading || teamIsLoading) return <LoadingIndicator />;
+  if (imageIsLoading || toggleOnboardingIsLoading || toggleCompletedOnboardingIsLoading) return <LoadingIndicator />;
+
+  const handleSubmit = async () => {
+    setShowModal(false);
+    await toggleOnboardingUser();
+    await toggleCompletedOnboarding();
+    history.push(routes.HOME_ONBOARDING, { teamType });
+  };
 
   return (
     <Grid container spacing={4} alignItems="flex-start" sx={{ p: 2 }}>
@@ -83,15 +93,7 @@ const TeamTypeSection = ({ teamType, onSelectSubteamPage = false }: TeamTypeSect
         </Box>
       </Grid>
       {showModal && (
-        <NERModal
-          open={showModal}
-          onHide={() => setShowModal(false)}
-          title="Select Subteam"
-          onSubmit={() => {
-            setShowModal(false);
-            history.push(routes.HOME_ACCEPT, { teamType, team });
-          }}
-        >
+        <NERModal open={showModal} onHide={() => setShowModal(false)} title="Select Subteam" onSubmit={handleSubmit}>
           Are you sure you want to join the {teamType.name} division?
         </NERModal>
       )}

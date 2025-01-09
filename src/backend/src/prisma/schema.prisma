@@ -185,6 +185,7 @@ model User {
   deletedChecklists               Checklist[]               @relation(name: "checklistDeleter")
   checkedChecklists               Checklist[]               @relation(name: "checkedChecklists")
   contacts                        Contact[]
+  onboardingTeamTypes             Team_Type[]               @relation(name: "onboardingTeamTypes")
 }
 
 model Role {
@@ -710,17 +711,18 @@ model Manufacturer {
 }
 
 model Team_Type {
-  teamTypeId     String          @id @default(uuid())
-  name           String
-  iconName       String
-  designReviews  Design_Review[]
-  team           Team[]
-  description    String
-  imageFileId    String?
-  organizationId String
-  organization   Organization    @relation(fields: [organizationId], references: [organizationId])
-  calendarId     String?
-  checklists     Checklist[]
+  teamTypeId      String          @id @default(uuid())
+  name            String
+  iconName        String
+  designReviews   Design_Review[]
+  team            Team[]
+  description     String
+  imageFileId     String?
+  organizationId  String
+  organization    Organization    @relation(fields: [organizationId], references: [organizationId])
+  calendarId      String?
+  checklists      Checklist[]
+  usersOnboarding User[]          @relation(name: "onboardingTeamTypes")
 
   @@unique([name, organizationId], name: "uniqueTeamType")
 }

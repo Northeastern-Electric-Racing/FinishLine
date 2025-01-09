@@ -9,14 +9,16 @@ import ChecklistSection from './components/ChecklistSection';
 import OnboardingInfoSection from './components/OnboardingInfoSection';
 import ConfirmOnboardingChecklistModal from './components/ConfirmOnboardingChecklistModal';
 import { NERButton } from '../../components/NERButton';
-import { useToggleCompletedOnboarding } from '../../hooks/users.hooks';
+import { useHistory, useLocation } from 'react-router-dom';
+import { routes } from '../../utils/routes';
 
 const OnboardingHomePage = () => {
   const { data: organization, isError, error, isLoading } = useCurrentOrganization();
   const { setCurrentHomePage } = useHomePageContext();
   const [isModalOpen, setModalOpen] = useState(false);
-
-  const { mutateAsync: toggleCompletedOnboarding } = useToggleCompletedOnboarding();
+  const history = useHistory();
+  const location = useLocation();
+  const { teamType } = location.state as { teamType: TeamType };
 
   useEffect(() => {
     setCurrentHomePage('onboarding');
@@ -25,18 +27,8 @@ const OnboardingHomePage = () => {
   if (!organization || isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
-  const handleOpenModal = () => {
-    setModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setModalOpen(false);
-  };
-
   const handleConfirmModal = async () => {
-    await toggleCompletedOnboarding();
-    setModalOpen(false);
-    window.location.reload();
+    history.push(routes.HOME_ACCEPT, { teamType });
   };
 
   return (
@@ -46,7 +38,7 @@ const OnboardingHomePage = () => {
           <Typography sx={{ fontSize: '2.5em' }}>Welcome to the {organization.name} Team</Typography>
         </Grid>
         <Grid item xs={12} md={5} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <NERButton variant="contained" onClick={handleOpenModal}>
+          <NERButton variant="contained" onClick={() => setModalOpen(true)}>
             Finished?
           </NERButton>
         </Grid>
@@ -87,7 +79,7 @@ const OnboardingHomePage = () => {
       {isModalOpen && (
         <ConfirmOnboardingChecklistModal
           open={isModalOpen}
-          onHide={handleCloseModal}
+          onHide={() => setModalOpen(false)}
           onConfirm={handleConfirmModal}
           title="Confirm Onboarding Checklist"
         />

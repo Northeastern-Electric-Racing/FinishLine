@@ -1,19 +1,12 @@
 import { Typography, Box } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { NERButton } from '../../components/NERButton';
-import { useEffect } from 'react';
-import { useHomePageContext } from '../../app/HomePageContext';
 import { routes } from '../../utils/routes';
 import { useHistory } from 'react-router-dom';
 import TeamTypesSection from './components/TeamTypeSection';
 
 const SelectSubteamPage = () => {
   const history = useHistory();
-  const { setCurrentHomePage } = useHomePageContext();
-
-  useEffect(() => {
-    setCurrentHomePage('pnm');
-  }, [setCurrentHomePage]);
 
   return (
     <PageLayout title="Select Subteam" hidePageTitle>
@@ -37,7 +30,6 @@ const SelectSubteamPage = () => {
           </Typography>
           <TeamTypesSection onSelectSubteamPage={true} />
         </Box>
-
         <NERButton
           variant="contained"
           sx={{ mt: 4, fontSize: '1.3rem', alignSelf: 'center' }}
