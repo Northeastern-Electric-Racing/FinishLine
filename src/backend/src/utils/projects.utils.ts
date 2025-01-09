@@ -225,7 +225,7 @@ export const checkMaterialInputs = async (
  */
 export const getProjects = async (projectIds: string[], organizationId: string) => {
   const projects = await prisma.project.findMany({
-    where: { projectId: { in: projectIds } },
+    where: { projectId: { in: projectIds }, wbsElement: { organizationId, dateDeleted: null } },
     ...getProjectQueryArgs(organizationId)
   });
 

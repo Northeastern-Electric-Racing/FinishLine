@@ -21,7 +21,7 @@ ALTER TABLE "Organization" ADD COLUMN     "logoImageId" TEXT,
 ADD COLUMN     "slackWorkspaceId" TEXT;
 
 -- AlterTable
-ALTER TABLE "Project" ADD COLUMN     "organizationId" TEXT;
+ALTER TABLE "Project" ADD COLUMN     "featuredByOrganizationId" TEXT;
 
 -- AlterTable
 ALTER TABLE "Task" ALTER COLUMN "deadline" DROP NOT NULL;
@@ -132,7 +132,7 @@ CREATE UNIQUE INDEX "_userPopUps_AB_unique" ON "_userPopUps"("A", "B");
 CREATE INDEX "_userPopUps_B_index" ON "_userPopUps"("B");
 
 -- AddForeignKey
-ALTER TABLE "Project" ADD CONSTRAINT "Project_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Project" ADD CONSTRAINT "Project_featuredByOrganizationId_fkey" FOREIGN KEY ("featuredByOrganizationId") REFERENCES "Organization"("organizationId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Team_Type" ADD CONSTRAINT "Team_Type_deletedById_fkey" FOREIGN KEY ("deletedById") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;

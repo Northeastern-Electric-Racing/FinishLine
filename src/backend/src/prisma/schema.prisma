@@ -432,18 +432,18 @@ model WBS_Element {
 }
 
 model Project {
-  projectId      String         @id @default(uuid())
-  wbsElementId   String         @unique
-  wbsElement     WBS_Element    @relation(fields: [wbsElementId], references: [wbsElementId])
-  budget         Int            @default(0)
-  summary        String
-  workPackages   Work_Package[]
-  carId          String
-  car            Car            @relation(fields: [carId], references: [carId])
-  teams          Team[]         @relation(name: "assignedBy")
-  favoritedBy    User[]         @relation(name: "favoritedBy")
-  organizationId String?
-  organization   Organization?  @relation(fields: [organizationId], references: [organizationId])
+  projectId                String         @id @default(uuid())
+  wbsElementId             String         @unique
+  wbsElement               WBS_Element    @relation(fields: [wbsElementId], references: [wbsElementId])
+  budget                   Int            @default(0)
+  summary                  String
+  workPackages             Work_Package[]
+  carId                    String
+  car                      Car            @relation(fields: [carId], references: [carId])
+  teams                    Team[]         @relation(name: "assignedBy")
+  favoritedBy              User[]         @relation(name: "favoritedBy")
+  featuredByOrganizationId String?
+  featuredByOrganization   Organization?  @relation(fields: [featuredByOrganizationId], references: [organizationId])
 }
 
 model Work_Package {
@@ -1047,7 +1047,7 @@ model PopUp {
   popUpId        String       @id @default(uuid())
   text           String
   iconName       String
-  users          User[]       @relation("userPopUps")
+  usersReceived  User[]       @relation("userPopUps")
   eventLink      String?
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [organizationId])

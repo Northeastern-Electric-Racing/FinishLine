@@ -60,6 +60,7 @@ export const createTestUser = async (
         }
       },
       additionalPermissions: permissions
+      organizations: { connect: { organizationId } }
     }
   });
 
