@@ -1,11 +1,5 @@
 import { Organization } from '@prisma/client';
-import {
-  createTestChecklist,
-  createTestOrganization,
-  createTestTeamType,
-  createTestUser,
-  resetUsers
-} from '../test-utils';
+import { createTestChecklist, createTestOrganization, createTestTeamType, createTestUser, resetUsers } from '../test-utils';
 import OnboardingServices from '../../src/services/onboarding.services';
 import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import {
