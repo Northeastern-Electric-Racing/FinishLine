@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 import { JwtPayload, VerifyErrors } from 'jsonwebtoken';
 import prisma from '../prisma/prisma';
-import { AccessDeniedException, HttpException, NotFoundException } from './errors.utils';
+import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from './errors.utils';
 import { Organization, User, User_Secure_Settings, User_Settings } from '@prisma/client';
 import { IncomingHttpHeaders } from 'http';
 
@@ -148,6 +148,10 @@ export const getOrganization = async (headers: IncomingHttpHeaders, currentUser:
 
   if (!organization) {
     throw new NotFoundException('Organization', organizationid);
+  }
+
+  if (organization.dateDeleted) {
+    throw new DeletedException('Organization', organization.organizationId);
   }
 
   if (!organization.users.some((user) => user.userId === currentUser.userId)) {
