@@ -24,7 +24,6 @@ const userFavoriteProjects = (id: string) => `${usersById(id)}/favorite-projects
 const userSecureSettings = (id: string) => `${usersById(id)}/secure-settings`;
 const userScheduleSettings = (id: string) => `${usersById(id)}/schedule-settings`;
 const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
-const toggleCompletedOnboarding = () => `${users()}/toggle-completed-onboarding`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
@@ -225,7 +224,6 @@ export const apiUrls = {
   userSecureSettings,
   userScheduleSettings,
   userScheduleSettingsSet,
-  toggleCompletedOnboarding,
 
   projects,
   allProjects,

@@ -116,7 +116,6 @@ model User {
   googleAuthId        String                @unique
   email               String                @unique
   emailId             String?               @unique
-  completedOnboarding Boolean               @default(true)
   roles               Role[]
   userSettings        User_Settings?
   userSecureSettings  User_Secure_Settings?

@@ -3,7 +3,6 @@ import { TeamType } from 'shared';
 import { useGetImageUrl } from '../../../hooks/onboarding.hook';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useAllTeamTypes, useToggleOnboardingUser } from '../../../hooks/team-types.hooks';
-import { useToggleCompletedOnboarding } from '../../../hooks/users.hooks';
 import ErrorPage from '../../ErrorPage';
 import { useState } from 'react';
 import Tabs from '../../../components/Tabs';
@@ -51,15 +50,12 @@ const TeamTypeSection = ({ teamType, onSelectSubteamPage = false }: TeamTypeSect
   const { mutateAsync: toggleOnboardingUser, isLoading: toggleOnboardingIsLoading } = useToggleOnboardingUser(
     teamType.teamTypeId
   );
-  const { mutateAsync: toggleCompletedOnboarding, isLoading: toggleCompletedOnboardingIsLoading } =
-    useToggleCompletedOnboarding();
 
-  if (imageIsLoading || toggleOnboardingIsLoading || toggleCompletedOnboardingIsLoading) return <LoadingIndicator />;
+  if (imageIsLoading || toggleOnboardingIsLoading) return <LoadingIndicator />;
 
   const handleSubmit = async () => {
     setShowModal(false);
     await toggleOnboardingUser();
-    await toggleCompletedOnboarding();
     history.push(routes.HOME_ONBOARDING, { teamType });
   };
 

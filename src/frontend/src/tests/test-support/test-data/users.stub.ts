@@ -24,7 +24,6 @@ export const exampleAdminUser: AuthenticatedUser = {
   favoritedProjectsId: [],
   changeRequestsToReviewId: [],
   organizations: ['yello'],
-  completedOnboarding: true,
   onboardingTeamTypeIds: []
 };
 
@@ -38,7 +37,6 @@ export const exampleAdminUser2: AuthenticatedUser = {
   favoritedProjectsId: [],
   changeRequestsToReviewId: [],
   organizations: [],
-  completedOnboarding: true,
   onboardingTeamTypeIds: []
 };
 
@@ -79,7 +77,6 @@ export const exampleMemberUser: AuthenticatedUser = {
   favoritedProjectsId: [],
   changeRequestsToReviewId: [],
   organizations: [],
-  completedOnboarding: true,
   onboardingTeamTypeIds: []
 };
 
@@ -93,7 +90,6 @@ export const exampleGuestUser: AuthenticatedUser = {
   favoritedProjectsId: [],
   changeRequestsToReviewId: [],
   organizations: [],
-  completedOnboarding: true,
   onboardingTeamTypeIds: []
 };
 

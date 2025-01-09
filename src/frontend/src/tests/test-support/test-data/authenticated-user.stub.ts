@@ -15,6 +15,5 @@ export const exampleAuthenticatedAdminUser: AuthenticatedUser = {
   favoritedProjectsId: [],
   changeRequestsToReviewId: [],
   organizations: [],
-  completedOnboarding: true,
   onboardingTeamTypeIds: []
 };

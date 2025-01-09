@@ -19,7 +19,6 @@ userRouter.post(
   UsersController.updateUserSettings
 );
 userRouter.post('/:userId/change-role', isRole(body('role')), validateInputs, UsersController.updateUserRole);
-userRouter.post('/toggle-completed-onboarding', UsersController.toggleCompletedOnboarding);
 userRouter.post('/auth/login', UsersController.logUserIn);
 userRouter.post('/auth/login/dev', UsersController.logUserInDev);
 userRouter.post(

@@ -1,30 +1,21 @@
 import { Typography, Box, Grid } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { NERButton } from '../../components/NERButton';
-import LoadingIndicator from '../../components/LoadingIndicator';
 import { useHistory } from 'react-router-dom';
-import { useCurrentUser, useToggleCompletedOnboarding } from '../../hooks/users.hooks';
+import { useCurrentUser } from '../../hooks/users.hooks';
 import { routes } from '../../utils/routes';
-import { useToggleOnboardingUser } from '../../hooks/team-types.hooks';
 
 const AcceptedPage = () => {
   const history = useHistory();
   const user = useCurrentUser();
 
-  const { mutateAsync: toggleCompletedOnboarding, isLoading: toggleCompletedOnboardingIsLoading } =
-    useToggleCompletedOnboarding();
   // const { mutateAsync: toggleOnboardingUser, isLoading: toggleOnboardingIsLoading } = useToggleOnboardingUser(
   //   teamType.teamTypeId
   // );
 
   // const { mutateAsync: setTeamInitialMember, isLoading: setTeamMembersIsLoading } = useSetTeamInitialMember(team.teamId);
 
-  if (toggleCompletedOnboardingIsLoading) {
-    return <LoadingIndicator />;
-  }
-
   const handleClick = async () => {
-    // await toggleCompletedOnboarding();
     // await toggleOnboardingUser();
     // await setTeamInitialMember(user.userId);
     window.location.reload();
