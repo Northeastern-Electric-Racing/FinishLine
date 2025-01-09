@@ -11,14 +11,13 @@ import ConfirmOnboardingChecklistModal from './components/ConfirmOnboardingCheck
 import { NERButton } from '../../components/NERButton';
 import { useHistory, useLocation } from 'react-router-dom';
 import { routes } from '../../utils/routes';
+import { TeamType } from 'shared';
 
 const OnboardingHomePage = () => {
   const { data: organization, isError, error, isLoading } = useCurrentOrganization();
   const { setCurrentHomePage } = useHomePageContext();
   const [isModalOpen, setModalOpen] = useState(false);
   const history = useHistory();
-  const location = useLocation();
-  const { teamType } = location.state as { teamType: TeamType };
 
   useEffect(() => {
     setCurrentHomePage('onboarding');
@@ -28,7 +27,7 @@ const OnboardingHomePage = () => {
   if (isError) return <ErrorPage message={error?.message} />;
 
   const handleConfirmModal = async () => {
-    history.push(routes.HOME_ACCEPT, { teamType });
+    history.push(routes.HOME_ACCEPT);
   };
 
   return (

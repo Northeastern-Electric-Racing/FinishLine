@@ -601,25 +601,26 @@ export default class TeamsService {
 
     if (!teamType) throw new NotFoundException('Team Type', teamTypeId);
 
-    if (teamType.usersOnboarding.some((user) => user.userId === submitter.userId)) {
-      await prisma.team_Type.update({
-        where: { teamTypeId },
-        data: {
-          usersOnboarding: {
-            disconnect: { userId: submitter.userId }
-          }
+    // if the user is in any onboarding team type, remove them
+    await prisma.user.update({
+      where: { userId: submitter.userId },
+      data: {
+        onboardingTeamTypes: {
+          set: []
         }
-      });
-    } else {
-      await prisma.team_Type.update({
-        where: { teamTypeId },
-        data: {
-          usersOnboarding: {
-            connect: { userId: submitter.userId }
-          }
-        }
-      });
-    }
+      }
+    });
+
+    const isUserInTeam = teamType.usersOnboarding.some((user) => user.userId === submitter.userId);
+
+    await prisma.team_Type.update({
+      where: { teamTypeId },
+      data: {
+        usersOnboarding: isUserInTeam
+          ? { disconnect: { userId: submitter.userId } }
+          : { connect: { userId: submitter.userId } }
+      }
+    });
 
     const updatedTeamType = await prisma.team_Type.findUnique({
       where: { teamTypeId }

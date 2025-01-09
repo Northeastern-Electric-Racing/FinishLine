@@ -62,7 +62,7 @@ export const useSetTeamType = (teamId: string) => {
  */
 export const useToggleOnboardingUser = (teamTypeId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<TeamType, Error, string>(
+  return useMutation<TeamType, Error>(
     ['team types', 'edit'],
     async () => {
       const { data } = await toggleOnboardingUser(teamTypeId);

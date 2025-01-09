@@ -1,37 +1,31 @@
 import { Typography, Box, Grid } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { TeamType } from 'shared';
 import { NERButton } from '../../components/NERButton';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { useCurrentUser, useToggleCompletedOnboarding } from '../../hooks/users.hooks';
 import { routes } from '../../utils/routes';
 import { useToggleOnboardingUser } from '../../hooks/team-types.hooks';
 
 const AcceptedPage = () => {
-  const location = useLocation();
   const history = useHistory();
   const user = useCurrentUser();
 
-  // is there a better way to pass in props to this page because I am navigating to this page using history.push
-  // so i can't pass in props normally
-  const { teamType } = location.state as { teamType: TeamType };
-
   const { mutateAsync: toggleCompletedOnboarding, isLoading: toggleCompletedOnboardingIsLoading } =
     useToggleCompletedOnboarding();
-  const { mutateAsync: toggleOnboardingUser, isLoading: toggleOnboardingIsLoading } = useToggleOnboardingUser(
-    teamType.teamTypeId
-  );
+  // const { mutateAsync: toggleOnboardingUser, isLoading: toggleOnboardingIsLoading } = useToggleOnboardingUser(
+  //   teamType.teamTypeId
+  // );
 
   // const { mutateAsync: setTeamInitialMember, isLoading: setTeamMembersIsLoading } = useSetTeamInitialMember(team.teamId);
 
-  if (toggleCompletedOnboardingIsLoading || toggleOnboardingIsLoading) {
+  if (toggleCompletedOnboardingIsLoading) {
     return <LoadingIndicator />;
   }
 
   const handleClick = async () => {
-    await toggleCompletedOnboarding();
-    await toggleOnboardingUser();
+    // await toggleCompletedOnboarding();
+    // await toggleOnboardingUser();
     // await setTeamInitialMember(user.userId);
     window.location.reload();
   };
@@ -47,7 +41,7 @@ const AcceptedPage = () => {
           marginLeft="auto"
           sx={{ marginTop: 2, textAlign: 'center', pt: 1, padding: 0, fontWeight: 1 }}
         >
-          We are so excited to welcome you to Northeastern Electric Racing {teamType.name} team!
+          We are so excited to welcome you to Northeastern Electric Racing team!
         </Typography>
       </Box>
       <Box
@@ -63,14 +57,6 @@ const AcceptedPage = () => {
         }}
       />
       <Box sx={{ mt: 2, ml: 2 }}>
-        <Typography
-          variant="h6"
-          marginLeft="auto"
-          sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0, fontFamily: 'oswald', fontWeight: 1, fontSize: 25 }}
-        >
-          Before you get started on the {teamType.name} team, all new members will have to complete general and
-          subteam-specific onboarding.
-        </Typography>
         <Typography
           variant="h6"
           marginLeft="auto"
