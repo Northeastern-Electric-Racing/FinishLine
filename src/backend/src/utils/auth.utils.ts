@@ -120,7 +120,7 @@ export type UserWithSecureSettings = UserWithSettings & {
   userSecureSettings: User_Secure_Settings | null;
 };
 
-export const getOrganization = async (headers: IncomingHttpHeaders): Promise<Organization> => {
+export const getOrganization = async (headers: IncomingHttpHeaders, currentUser: User): Promise<Organization> => {
   let { organizationid } = headers;
 
   const isProd = process.env.NODE_ENV === 'production';
@@ -141,12 +141,17 @@ export const getOrganization = async (headers: IncomingHttpHeaders): Promise<Org
     where: { organizationId: organizationid },
     include: {
       advisor: true,
-      usefulLinks: true
+      usefulLinks: true,
+      users: true
     }
   });
 
   if (!organization) {
     throw new NotFoundException('Organization', organizationid);
+  }
+
+  if (!organization.users.some((user) => user.userId === currentUser.userId)) {
+    throw new AccessDeniedException('Cannot access this organization');
   }
 
   return organization;
@@ -181,7 +186,7 @@ export const getUserAndOrganization = async (req: Request, res: Response, next: 
   }
   try {
     const user = await getCurrentUser(res);
-    const organization = await getOrganization(req.headers);
+    const organization = await getOrganization(req.headers, user);
     req.currentUser = user;
     req.organization = organization;
     return next();
