@@ -22,7 +22,7 @@ export const setTeamType = (id: string, teamTypeId: string) => {
 
 export const toggleOnboardingUser = (teamTypeId: string) => {
   return axios.post<TeamType>(apiUrls.toggleOnboardingUser(teamTypeId));
-}
+};
 
 export const createTeamType = (payload: CreateTeamTypePayload) => {
   return axios.post<TeamType>(apiUrls.teamTypesCreate(), payload);
