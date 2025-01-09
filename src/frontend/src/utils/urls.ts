@@ -205,6 +205,8 @@ const generalChecklists = () => `${allChecklists()}/general`;
 const checkedChecklists = () => `${allChecklists()}/checked`;
 const toggleChecklist = (checklistId: string) => `${allChecklists()}/${checklistId}/toggle`;
 const usersTeamTypeChecklists = () => `${allChecklists()}/usersChecklists`;
+const createChecklist = () => `${onboarding()}/checklist/create`;
+const editChecklist = (checklistId: string) => `${onboarding()}/checklist/edit/${checklistId}`;
 const checklistDelete = (id: string) => `${onboarding()}/checklist/delete/${id}`;
 const imageById = (imageId: string) => `${onboarding()}/image/${imageId}`;
 
@@ -375,6 +377,8 @@ export const apiUrls = {
   checkedChecklists,
   toggleChecklist,
   usersTeamTypeChecklists,
+  createChecklist,
+  editChecklist,
   checklistDelete,
   imageById,
 

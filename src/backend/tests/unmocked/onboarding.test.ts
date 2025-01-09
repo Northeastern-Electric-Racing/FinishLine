@@ -46,16 +46,6 @@ describe('Onboarding tests', () => {
     });
   });
 
-  describe('Get General Checklists', () => {
-    it('Gets all general checklists for the given organization', async () => {
-      const batman = await createTestUser(batmanAppAdmin, orgId);
-      const checklist1 = await createTestChecklist(batman, orgId, 'Checklist 1');
-      const checklist2 = await createTestChecklist(batman, orgId, 'Checklist 2');
-      const generalChecklists = await OnboardingServices.getGeneralChecklists(organization);
-      expect(generalChecklists).toEqual([checklist1, checklist2]);
-    });
-  });
-
   describe('Get Checked Checklists', () => {
     it('Succeeds and gets all checked checklists for the user', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
@@ -76,8 +66,8 @@ describe('Onboarding tests', () => {
 
       const checkedChecklists = await OnboardingServices.getCheckedChecklists(batman, organization);
       expect(checkedChecklists.length).toEqual(2);
-      expect(checkedChecklists[0].checklistId).toEqual(checklist1.checklistId);
-      expect(checkedChecklists[1].checklistId).toEqual(checklist3.checklistId);
+      expect(checkedChecklists.some((checklist) => checklist.checklistId === checklist1.checklistId)).toBe(true);
+      expect(checkedChecklists.some((checklist) => checklist.checklistId === checklist3.checklistId)).toBe(true);
     });
   });
 
@@ -112,11 +102,11 @@ describe('Onboarding tests', () => {
             await createTestUser(wonderwomanGuest, orgId),
             'name',
             ['description1', 'description2'],
-            true,
             null,
             'teamTypeId',
             null,
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create a checklist'));
     });
@@ -128,11 +118,11 @@ describe('Onboarding tests', () => {
             await createTestUser(batmanAppAdmin, orgId),
             'name',
             ['description1', 'description2'],
-            true,
             'teamId',
             'teamTypeId',
             null,
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new HttpException(400, 'Checklist cannot be assigned to both a team and a team type'));
     });
@@ -147,11 +137,11 @@ describe('Onboarding tests', () => {
             batman,
             'name',
             ['description1', 'description2'],
-            true,
             null,
             null,
             parentChecklist.checklistId,
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new HttpException(400, 'Parent checklist must also be a general checklist'));
     });
@@ -164,11 +154,11 @@ describe('Onboarding tests', () => {
             batman,
             'name',
             ['description1', 'description2'],
-            true,
             'invalidTeamId',
             null,
             null,
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new NotFoundException('Team', 'invalidTeamId'));
     });
@@ -181,11 +171,11 @@ describe('Onboarding tests', () => {
             batman,
             'name',
             ['description1', 'description2'],
-            true,
             null,
             'invalidTeamTypeId',
             null,
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new NotFoundException('Team Type', 'invalidTeamTypeId'));
     });
@@ -198,11 +188,11 @@ describe('Onboarding tests', () => {
             batman,
             'name',
             ['description1', 'description2'],
-            true,
             null,
             null,
             'invalidChecklistId',
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new NotFoundException('Checklist', 'invalidChecklistId'));
     });
@@ -220,16 +210,16 @@ describe('Onboarding tests', () => {
             batman,
             'name',
             ['description1', 'description2'],
-            true,
             null,
             null,
             parentChecklist.checklistId,
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new DeletedException('Checklist', parentChecklist.checklistId));
     });
 
-    it('Fails if parentChecklistId does not match teamId or teamTypeId', async () => {
+    it('Fails if parentChecklistId does not match teamId and teamTypeId', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       const teamType1 = await createTestTeamType('teamtype1', organization);
       const teamType2 = await createTestTeamType('teamtype2', organization);
@@ -240,13 +230,13 @@ describe('Onboarding tests', () => {
             batman,
             'name',
             ['description1', 'description2'],
-            true,
             null,
             teamType2.teamTypeId,
             parentChecklist.checklistId,
-            organization
+            organization,
+            true
           )
-      ).rejects.toThrow(new HttpException(400, 'Parent checklist must have the same teamId or teamTypeId'));
+      ).rejects.toThrow(new HttpException(400, 'Parent checklist must have the same teamId and teamTypeId'));
     });
 
     it('Succeeds and creates a checklist with teamTypeId', async () => {
@@ -256,11 +246,11 @@ describe('Onboarding tests', () => {
         batman,
         'name',
         ['description1', 'description2'],
-        true,
         null,
         teamType1.teamTypeId,
         null,
-        organization
+        organization,
+        true
       );
       expect(result.name).toEqual('name');
     });
@@ -275,11 +265,11 @@ describe('Onboarding tests', () => {
             'checklidtId',
             'name',
             ['description1', 'description2'],
-            true,
             null,
             null,
             null,
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit a checklist'));
     });
@@ -292,32 +282,13 @@ describe('Onboarding tests', () => {
             'checklistId',
             'name',
             ['description1', 'description2'],
-            true,
             'teamId',
             'teamTypeId',
             null,
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new HttpException(400, 'Checklist cannot be assigned to both a team and a team type'));
-    });
-
-    it('Fails if general checklist already exists', async () => {
-      const batman = await createTestUser(batmanAppAdmin, orgId);
-      await createTestChecklist(batman, orgId, 'General Checklist');
-      await expect(
-        async () =>
-          await OnboardingServices.editChecklist(
-            batman,
-            'checklistId',
-            'name',
-            ['description1', 'description2'],
-            true,
-            null,
-            null,
-            null,
-            organization
-          )
-      ).rejects.toThrow(new HttpException(400, 'General checklist already exists'));
     });
 
     it('Fails if teamId is invalid', async () => {
@@ -329,11 +300,11 @@ describe('Onboarding tests', () => {
             'checklistId',
             'name',
             ['description1', 'description2'],
-            true,
             'invalidTeamId',
             null,
             null,
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new NotFoundException('Team', 'invalidTeamId'));
     });
@@ -347,11 +318,11 @@ describe('Onboarding tests', () => {
             'checklistId',
             'name',
             ['description1', 'description2'],
-            true,
             null,
             'invalidTeamTypeId',
             null,
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new NotFoundException('Team Type', 'invalidTeamTypeId'));
     });
@@ -365,11 +336,11 @@ describe('Onboarding tests', () => {
             'checklistId',
             'name',
             ['description1', 'description2'],
-            true,
             null,
             null,
             'invalidChecklistId',
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new NotFoundException('Checklist', 'invalidChecklistId'));
     });
@@ -388,16 +359,16 @@ describe('Onboarding tests', () => {
             'checklistId',
             'name',
             ['description1', 'description2'],
-            true,
             null,
             null,
             parentChecklist.checklistId,
-            organization
+            organization,
+            true
           )
       ).rejects.toThrow(new DeletedException('Checklist', parentChecklist.checklistId));
     });
 
-    it('Fails if parentChecklistId does not match teamId or teamTypeId', async () => {
+    it('Fails if parentChecklistId does not match teamId and teamTypeId', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       const teamType1 = await createTestTeamType('teamtype1', organization);
       const teamType2 = await createTestTeamType('teamtype2', organization);
@@ -409,16 +380,16 @@ describe('Onboarding tests', () => {
             'checklistId',
             'name',
             ['description1', 'description2'],
-            true,
             null,
             teamType2.teamTypeId,
             parentChecklist.checklistId,
-            organization
+            organization,
+            true
           )
-      ).rejects.toThrow(new HttpException(400, 'Parent checklist must have the same teamId or teamTypeId'));
+      ).rejects.toThrow(new HttpException(400, 'Parent checklist must have the same teamId and teamTypeId'));
     });
 
-    it('Succeeds and edits a checklist with teamTypeId', async () => {
+    it('Succeeds and edits a checklist with teamType', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       const teamType1 = await createTestTeamType('teamtype1', organization);
       const checklist = await createTestChecklist(batman, orgId, 'Checklist 1');
@@ -427,11 +398,11 @@ describe('Onboarding tests', () => {
         checklist.checklistId,
         'newName',
         ['description1', 'description2'],
-        true,
         null,
         teamType1.teamTypeId,
         null,
-        organization
+        organization,
+        true
       );
       expect(result.name).toEqual('newName');
       expect(result.teamTypeId).toEqual(teamType1.teamTypeId);

@@ -1,9 +1,7 @@
 import { Box, Grid, Typography } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { useCurrentOrganization } from '../../hooks/organizations.hooks';
 import React, { useEffect, useState } from 'react';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import ErrorPage from '../ErrorPage';
 import { useHomePageContext } from '../../app/HomePageContext';
 import ChecklistSection from './components/ChecklistSection';
 import OnboardingInfoSection from './components/OnboardingInfoSection';
@@ -11,60 +9,21 @@ import ConfirmOnboardingChecklistModal from './components/ConfirmOnboardingCheck
 import { NERButton } from '../../components/NERButton';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
-import { useGeneralChecklists, useUsersChecklists } from '../../hooks/onboarding.hook';
+import { useCurrentOrganization } from '../../hooks/organizations.hooks';
 
 const OnboardingHomePage = () => {
   const history = useHistory();
   const [isModalOpen, setModalOpen] = useState(false);
   const { setCurrentHomePage } = useHomePageContext();
-
-  const {
-    data: organization,
-    isError: organizationIsError,
-    error: organizationError,
-    isLoading: organizationIsLoading
-  } = useCurrentOrganization();
-
-  const {
-    data: generalChecklists,
-    isError: generalChecklistsIsError,
-    error: generalChecklistsError,
-    isLoading: generalChecklistsIsLoading
-  } = useGeneralChecklists();
-
-  const {
-    data: usersChecklists,
-    isError: usersChecklistsIsError,
-    error: usersChecklistsError,
-    isLoading: usersChecklistsIsLoading
-  } = useUsersChecklists();
+  const { data: organization, isLoading: organizationIsLoading } = useCurrentOrganization();
 
   useEffect(() => {
     setCurrentHomePage('onboarding');
   }, [setCurrentHomePage]);
 
-  if (generalChecklistsIsError) {
-    return <ErrorPage error={generalChecklistsError} />;
-  }
-
-  if (usersChecklistsIsError) {
-    return <ErrorPage error={usersChecklistsError} />;
-  }
-
-  if (organizationIsError) return <ErrorPage message={organizationError?.message} />;
-
-  if (
-    !generalChecklists ||
-    generalChecklistsIsLoading ||
-    !usersChecklists ||
-    usersChecklistsIsLoading ||
-    !organization ||
-    organizationIsLoading
-  ) {
+  if (organizationIsLoading || !organization) {
     return <LoadingIndicator />;
   }
-
-  const allChecklists = [...generalChecklists, ...usersChecklists];
 
   const handleConfirmModal = async () => {
     history.push(routes.HOME_ACCEPT);
@@ -106,7 +65,7 @@ const OnboardingHomePage = () => {
               padding: 2
             }}
           >
-            <ChecklistSection checklists={allChecklists} />
+            <ChecklistSection />
           </Grid>
           <Grid container item xs={12} md={5} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 4 }}>
             <Grid item>

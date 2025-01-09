@@ -7,11 +7,27 @@ import {
   downloadGoogleImage,
   deleteChecklist,
   toggleChecklist,
+  createChecklist,
+  editChecklist,
   getCheckedChecklists
 } from '../apis/onboarding.api';
 
 export interface ToggleChecklistPayload {
   checklistId: string;
+}
+
+export interface ChecklistCreateArgs {
+  name: string;
+  descriptions: string[];
+  isOptional: boolean;
+  parentChecklistId?: string;
+  teamId?: string;
+  teamTypeId?: string;
+}
+
+export interface SubtaskCreateArgs {
+  name: string;
+  isOptional: boolean;
 }
 
 export const useAllChecklists = () => {
@@ -84,6 +100,38 @@ export const useGetImageUrl = (imageFileId: string | null) => {
     },
     {
       enabled: !!imageFileId
+    }
+  );
+};
+
+export const useCreateChecklist = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Checklist, Error, ChecklistCreateArgs>(
+    ['checklists', 'create'],
+    async (payload) => {
+      const { data } = await createChecklist(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['checklists']);
+      }
+    }
+  );
+};
+
+export const useEditChecklist = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Checklist, Error, ChecklistCreateArgs>(
+    ['checklists', 'edit'],
+    async (payload) => {
+      const { data } = await editChecklist(id, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['checklists']);
+      }
     }
   );
 };

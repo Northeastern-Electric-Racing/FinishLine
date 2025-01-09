@@ -1,7 +1,7 @@
 import { Checklist } from 'shared';
 import { apiUrls } from '../utils/urls';
 import axios from '../utils/axios';
-import { ToggleChecklistPayload } from '../hooks/onboarding.hook';
+import { ChecklistCreateArgs, ToggleChecklistPayload } from '../hooks/onboarding.hook';
 
 /**
  * API call to fetch all the checklists
@@ -54,6 +54,22 @@ export const toggleChecklist = (payload: ToggleChecklistPayload) => {
     ...payload
   });
 };
+
+export const createChecklist = (payload: ChecklistCreateArgs) => {
+  return axios.post(apiUrls.createChecklist(), {
+    ...payload
+  });
+};
+
+/**
+ * API call to edit a checklist
+ */
+export const editChecklist = (checklistId: string, payload: ChecklistCreateArgs) => {
+  return axios.post(apiUrls.editChecklist(checklistId), {
+    ...payload
+  });
+};
+
 /**
  * API Call to download a google image
  * @param fileId file id to be downloaded

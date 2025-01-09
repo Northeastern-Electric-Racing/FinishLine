@@ -14,11 +14,13 @@ export interface Checklist {
   team?: Team;
   descriptions: string[];
   isOptional: boolean;
-  subtasks: Checklist[];
-  parentChecklist?: Checklist;
+  subtasks: ChecklistPreview[];
+  parentChecklistId?: string;
   usersChecked: User[];
   userCreated: User;
   userDeleted?: User;
   dateCreated: Date;
   dateDeleted?: Date;
 }
+
+export type ChecklistPreview = Pick<Checklist, 'checklistId' | 'name' | 'team' | 'teamType' | 'dateCreated' | 'isOptional'>;
