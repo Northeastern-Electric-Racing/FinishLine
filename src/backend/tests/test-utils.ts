@@ -48,7 +48,8 @@ export const createTestUser = async (
           roleType: role,
           organizationId
         }
-      }
+      },
+      organizations: { connect: { organizationId } }
     }
   });
 

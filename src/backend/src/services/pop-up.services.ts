@@ -13,7 +13,7 @@ export class PopUpService {
   static async getUserUnreadPopUps(userId: string, organizationId: string) {
     const unreadPopUps = await prisma.popUp.findMany({
       where: {
-        users: {
+        usersReceived: {
           some: { userId }
         },
         organizationId
@@ -34,6 +34,12 @@ export class PopUpService {
    * @returns the user's updated unread pop up
    */
   static async removeUserPopUp(userId: string, popUpId: string, organizationId: string) {
+    const popUp = await prisma.popUp.findUnique({
+      where: { popUpId }
+    });
+
+    if (!popUp) throw new NotFoundException('Pop Up', popUpId);
+
     const updatedUser = await prisma.user.update({
       where: { userId },
       data: {
