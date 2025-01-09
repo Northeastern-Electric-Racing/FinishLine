@@ -2,7 +2,6 @@ import { Organization } from '@prisma/client';
 import {
   createTestChecklist,
   createTestOrganization,
-  createTestTeam,
   createTestTeamType,
   createTestUser,
   resetUsers
