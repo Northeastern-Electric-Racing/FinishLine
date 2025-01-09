@@ -2,16 +2,16 @@ import { Box, Grid } from '@mui/material';
 import { groupChecklists } from '../../../utils/onboarding.utils';
 import Checklist from './Checklist';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useGeneralChecklists, useUsersTeamTypeChecklists } from '../../../hooks/onboarding.hook';
+import { useAllChecklists, useUsersTeamTypeChecklists } from '../../../hooks/onboarding.hook';
 import ErrorPage from '../../ErrorPage';
 
 const ChecklistSection: React.FC = () => {
   const {
-    data: generalChecklists,
-    isError: generalChecklistsIsError,
-    error: generalChecklistsError,
-    isLoading: generalChecklistsIsLoading
-  } = useGeneralChecklists();
+    data: checklists,
+    isError: checklistsIsError,
+    error: checklistsError,
+    isLoading: checklistsIsLoading
+  } = useAllChecklists();
 
   const {
     data: usersTeamTypeChecklists,
@@ -20,17 +20,21 @@ const ChecklistSection: React.FC = () => {
     isLoading: usersTeamTypeChecklistsIsLoading
   } = useUsersTeamTypeChecklists();
 
-  if (generalChecklistsIsError) {
-    return <ErrorPage error={generalChecklistsError} />;
+  if (checklistsIsError) {
+    return <ErrorPage error={checklistsError} />;
   }
 
   if (usersTeamTypeChecklistsIsError) {
     return <ErrorPage error={usersTeamTypeChecklistsError} />;
   }
 
-  if (!generalChecklists || generalChecklistsIsLoading || usersTeamTypeChecklistsIsLoading || !usersTeamTypeChecklists) {
+  if (!checklists || checklistsIsLoading || usersTeamTypeChecklistsIsLoading || !usersTeamTypeChecklists) {
     return <LoadingIndicator />;
   }
+
+  const generalChecklists = checklists.filter(
+    (checklist) => checklist.team?.teamId === undefined && checklist.teamType?.teamTypeId === undefined
+  );
 
   const allChecklists = [...generalChecklists, ...usersTeamTypeChecklists];
   const groupedChecklists = groupChecklists(allChecklists);
