@@ -1,9 +1,3 @@
-/*
-  Warnings:
-
-  - You are about to drop the column `logoImage` on the `Organization` table. All the data in the column will be lost.
-
-*/
 -- CreateEnum
 CREATE TYPE "Graph_Type" AS ENUM ('PROJECT_BUDGET_BY_PROJECT', 'PROJECT_BUDGET_BY_TEAM', 'PROJECT_BUDGET_BY_DIVISION', 'CHANGE_REQUESTS_BY_PROJECT', 'CHANGE_REQUESTS_BY_TEAM', 'CHANGE_REQUESTS_BY_DIVISION', 'REIMBURSEMENT_TOTAL_BY_PROJECT', 'REIMBURSEMENT_TOTAL_BY_TEAM', 'REIMBURSEMENT_TOTAL_BY_DIVISION');
 
@@ -23,9 +17,14 @@ CREATE TYPE "Graph_Collection_Permission" AS ENUM ('EDIT_GRAPH_COLLECTION', 'CRE
 CREATE TYPE "Special_Permission" AS ENUM ('FINANCE_ONLY');
 
 -- AlterTable
-ALTER TABLE "Organization" DROP COLUMN "logoImage",
-ADD COLUMN     "logoImageId" TEXT,
+ALTER TABLE "Organization" ADD COLUMN     "logoImageId" TEXT,
 ADD COLUMN     "slackWorkspaceId" TEXT;
+
+-- AlterTable
+ALTER TABLE "Project" ADD COLUMN     "organizationId" TEXT;
+
+-- AlterTable
+ALTER TABLE "Task" ALTER COLUMN "deadline" DROP NOT NULL;
 
 -- AlterTable
 ALTER TABLE "Team_Type" ADD COLUMN     "dateDeleted" TIMESTAMP(3),
@@ -131,6 +130,9 @@ CREATE UNIQUE INDEX "_userPopUps_AB_unique" ON "_userPopUps"("A", "B");
 
 -- CreateIndex
 CREATE INDEX "_userPopUps_B_index" ON "_userPopUps"("B");
+
+-- AddForeignKey
+ALTER TABLE "Project" ADD CONSTRAINT "Project_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Team_Type" ADD CONSTRAINT "Team_Type_deletedById_fkey" FOREIGN KEY ("deletedById") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
