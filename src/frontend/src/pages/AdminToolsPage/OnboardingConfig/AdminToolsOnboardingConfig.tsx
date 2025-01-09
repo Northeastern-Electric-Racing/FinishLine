@@ -3,11 +3,13 @@ import { Box } from '@mui/system';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useAllChecklists } from '../../../hooks/onboarding.hook';
 import { useAllTeamTypes } from '../../../hooks/team-types.hooks';
-import { groupAndSortChecklists } from '../../../utils/onboarding.utils';
+import { groupChecklists, sortGroupNames } from '../../../utils/onboarding.utils';
 import ErrorPage from '../../ErrorPage';
 import { AdminChecklist } from './Checklists/AdminChecklist';
 import OnboardingInfoSection from './OnboardingInfoSection';
-import { useAllTeams } from '../../../hooks/teams.hooks';
+import { Checklist } from 'shared';
+
+type GroupedChecklists = Record<string, Checklist[]>; // Change made here
 
 const AdminToolsOnboardingConfig: React.FC = () => {
   const {
@@ -24,8 +26,6 @@ const AdminToolsOnboardingConfig: React.FC = () => {
     error: teamTypesError
   } = useAllTeamTypes();
 
-  const { data: allTeams, isLoading: teamsIsLoading, isError: teamsIsError, error: teamsError } = useAllTeams();
-
   if (allChecklistsIsError) {
     return <ErrorPage error={allChecklistsError} />;
   }
@@ -34,15 +34,20 @@ const AdminToolsOnboardingConfig: React.FC = () => {
     return <ErrorPage error={teamTypesError} />;
   }
 
-  if (teamsIsError) {
-    return <ErrorPage error={teamsError} />;
-  }
-
-  if (!allChecklists || allChecklistsIsLoading || !teamTypes || teamTypesIsLoading || !allTeams || teamsIsLoading) {
+  if (!allChecklists || allChecklistsIsLoading || !teamTypes || teamTypesIsLoading) {
     return <LoadingIndicator />;
   }
 
-  const groupedChecklists = groupAndSortChecklists(allChecklists, teamTypes, allTeams);
+  const existingGroupedChecklists = groupChecklists(allChecklists);
+
+  const groupedChecklists: GroupedChecklists = teamTypes.reduce((acc, teamType) => {
+    acc[teamType.name] = existingGroupedChecklists[teamType.name] || [];
+    return acc;
+  }, {} as GroupedChecklists);
+
+  groupedChecklists['General'] = existingGroupedChecklists['General'] || [];
+
+  const sortedGroupNames = sortGroupNames(groupedChecklists);
 
   return (
     <Box padding="5px">
@@ -52,18 +57,12 @@ const AdminToolsOnboardingConfig: React.FC = () => {
       <Grid container spacing={2} padding={1} sx={{ width: '100%' }}>
         <Grid item xs={12} md={7}>
           <Box>
-            {Object.entries(groupedChecklists).map(([checklistName, checklists]) => {
+            {Object.entries(sortedGroupNames).map(([checklistName, checklists]) => {
               const teamType = teamTypes.find((team) => team.name === checklistName);
-              const team = allTeams.find((team) => team.teamName === checklistName);
 
               return (
                 <Grid item xs={12} key={checklistName}>
-                  <AdminChecklist
-                    parentChecklists={checklists}
-                    checklistName={checklistName}
-                    teamType={teamType}
-                    team={team}
-                  />
+                  <AdminChecklist parentChecklists={checklists} checklistName={checklistName} teamType={teamType} />
                 </Grid>
               );
             })}
