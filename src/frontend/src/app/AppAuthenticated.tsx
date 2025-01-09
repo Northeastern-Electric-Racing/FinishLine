@@ -40,7 +40,6 @@ interface AppAuthenticatedProps {
 }
 
 const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole, onOnboarding }) => {
-  console.log('onOnboarding', onOnboarding);
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
 
   const theme = useTheme();
@@ -117,9 +116,9 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole, o
           sx={{ width: !onGuestHomePage && moveContent ? 'calc(100vw - 220px)' : `calc(100vw - 30px)` }}
         >
           <Switch>
-            {!onOnboarding && <Redirect exact path={routes.HOME} to={routes.HOME_GUEST} />}
-            {onOnboarding && <Redirect exact path={routes.HOME} to={routes.HOME_ONBOARDING} />}
-            {onOnboarding && <Redirect exact path={routes.HOME_SELECT_SUBTEAM} to={routes.HOME_ONBOARDING} />}
+            {!onOnboarding && isGuest(userRole) && <Redirect exact path={routes.HOME} to={routes.HOME_GUEST} />}
+            {!onOnboarding && <Redirect exact path={routes.HOME_ACCEPT} to={routes.HOME} />}
+            {onOnboarding && <Redirect exact path={routes.HOME} to={routes.HOME_SELECT_SUBTEAM} />}
             {!isGuest(userRole) && <Redirect exact path={routes.HOME_GUEST} to={routes.HOME} />}
             {!isGuest(userRole) && <Redirect exact path={routes.HOME_PNM} to={routes.HOME} />}
             {!isGuest(userRole) && <Redirect exact path={routes.HOME_ONBOARDING} to={routes.HOME} />}

@@ -4,20 +4,25 @@ import { NERButton } from '../../components/NERButton';
 import { useHistory } from 'react-router-dom';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { routes } from '../../utils/routes';
+import { useToggleOnboardingUser } from '../../hooks/team-types.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import { useCurrentOrganization } from '../../hooks/organizations.hooks';
 
 const AcceptedPage = () => {
   const history = useHistory();
   const user = useCurrentUser();
+  const { data: organization, isLoading: organizationIsLoading } = useCurrentOrganization();
 
-  // const { mutateAsync: toggleOnboardingUser, isLoading: toggleOnboardingIsLoading } = useToggleOnboardingUser(
-  //   teamType.teamTypeId
-  // );
+  const { mutateAsync: toggleOnboardingUser, isLoading: toggleOnboardingIsLoading } = useToggleOnboardingUser();
+
+  if (toggleOnboardingIsLoading || !organization || organizationIsLoading) {
+    return <LoadingIndicator />;
+  }
 
   // const { mutateAsync: setTeamInitialMember, isLoading: setTeamMembersIsLoading } = useSetTeamInitialMember(team.teamId);
 
   const handleClick = async () => {
-    // await toggleOnboardingUser();
-    // await setTeamInitialMember(user.userId);
+    Promise.all(user.onboardingTeamTypeIds.map((teamTypeId) => toggleOnboardingUser(teamTypeId)));
     window.location.reload();
   };
 
@@ -32,7 +37,7 @@ const AcceptedPage = () => {
           marginLeft="auto"
           sx={{ marginTop: 2, textAlign: 'center', pt: 1, padding: 0, fontWeight: 1 }}
         >
-          We are so excited to welcome you to Northeastern Electric Racing team!
+          We are so excited to welcome you to {organization.name} team!
         </Typography>
       </Box>
       <Box

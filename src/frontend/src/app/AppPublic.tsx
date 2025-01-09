@@ -34,8 +34,7 @@ const AppPublic: React.FC = () => {
       if (!organization.organizationId) {
         return <Organizations></Organizations>;
       }
-      console.log('user', auth.user);
-      console.log('teamtypeids', auth.user.onboardingTeamTypeIds);
+
       return (
         <AppAuthenticated
           userId={auth.user.userId}

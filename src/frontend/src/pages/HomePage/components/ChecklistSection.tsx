@@ -1,39 +1,10 @@
 import { Box, Grid } from '@mui/material';
 import { groupChecklists } from '../../../utils/onboarding.utils';
 import Checklist from './Checklist';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useGeneralChecklists, useUsersChecklists } from '../../../hooks/onboarding.hook';
-import ErrorPage from '../../ErrorPage';
+import { Checklist as ChecklistType } from 'shared';
 
-const ChecklistSection: React.FC = () => {
-  const {
-    data: generalChecklists,
-    isError: generalChecklistsIsError,
-    error: generalChecklistsError,
-    isLoading: generalChecklistsIsLoading
-  } = useGeneralChecklists();
-
-  const {
-    data: usersChecklists,
-    isError: usersChecklistsIsError,
-    error: usersChecklistsError,
-    isLoading: usersChecklistsIsLoading
-  } = useUsersChecklists();
-
-  if (generalChecklistsIsError) {
-    return <ErrorPage error={generalChecklistsError} />;
-  }
-
-  if (usersChecklistsIsError) {
-    return <ErrorPage error={usersChecklistsError} />;
-  }
-
-  if (!generalChecklists || generalChecklistsIsLoading || usersChecklistsIsLoading || !usersChecklists) {
-    return <LoadingIndicator />;
-  }
-
-  const allChecklists = [...generalChecklists, ...usersChecklists];
-  const groupedChecklists = groupChecklists(allChecklists);
+const ChecklistSection: React.FC<{ checklists: ChecklistType[] }> = ({ checklists }) => {
+  const groupedChecklists = groupChecklists(checklists);
 
   return (
     <Box>

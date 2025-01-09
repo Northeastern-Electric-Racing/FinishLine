@@ -47,15 +47,13 @@ const TeamTypeSection = ({ teamType, onSelectSubteamPage = false }: TeamTypeSect
   const [showModal, setShowModal] = useState(false);
   const history = useHistory();
   const { data: imageUrl, isLoading: imageIsLoading } = useGetImageUrl(teamType.imageFileId);
-  const { mutateAsync: toggleOnboardingUser, isLoading: toggleOnboardingIsLoading } = useToggleOnboardingUser(
-    teamType.teamTypeId
-  );
+  const { mutateAsync: toggleOnboardingUser, isLoading: toggleOnboardingIsLoading } = useToggleOnboardingUser();
 
   if (imageIsLoading || toggleOnboardingIsLoading) return <LoadingIndicator />;
 
   const handleSubmit = async () => {
     setShowModal(false);
-    await toggleOnboardingUser();
+    await toggleOnboardingUser(teamType.teamTypeId);
     history.push(routes.HOME_ONBOARDING, { teamType });
   };
 

@@ -1,4 +1,4 @@
-import { isAdmin, isHead, Team, TeamType } from 'shared';
+import { isAdmin, isHead, RoleEnum, Team, TeamType } from 'shared';
 import { Organization, User, WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import teamTransformer from '../transformers/teams.transformer';
@@ -15,9 +15,6 @@ import { removeUsersFromList } from '../utils/teams.utils';
 import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
 import { uploadFile } from '../utils/google-integration.utils';
 import { createCalendar } from '../utils/google-integration.utils';
-import { connect } from 'http2';
-import { getUserQueryArgs } from '../prisma-query-args/user.query-args';
-import { userTransformer } from '../transformers/user.transformer';
 
 export default class TeamsService {
   /**
@@ -602,8 +599,11 @@ export default class TeamsService {
     if (!teamType) throw new NotFoundException('Team Type', teamTypeId);
 
     // if the user is in any onboarding team type, remove them
-    await prisma.user.update({
+    const user = await prisma.user.update({
       where: { userId: submitter.userId },
+      include: {
+        roles: true
+      },
       data: {
         onboardingTeamTypes: {
           set: []
@@ -621,6 +621,21 @@ export default class TeamsService {
           : { connect: { userId: submitter.userId } }
       }
     });
+
+    // update the users role to member after they complete their onboarding
+    if (isUserInTeam) {
+      const currentRole = user.roles.find((role) => role.organizationId === organization.organizationId);
+      if (currentRole && currentRole.roleType !== RoleEnum.MEMBER) {
+        await prisma.role.update({
+          where: {
+            uniqueRole: { userId: user.userId, organizationId: organization.organizationId }
+          },
+          data: {
+            roleType: RoleEnum.MEMBER
+          }
+        });
+      }
+    }
 
     const updatedTeamType = await prisma.team_Type.findUnique({
       where: { teamTypeId }
