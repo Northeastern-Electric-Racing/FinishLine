@@ -6,8 +6,6 @@ import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFou
 import { downloadImageFile } from '../utils/google-integration.utils';
 
 export default class OnboardingServices {
-  /* Checklist section */
-
   /**
    * gets all checklists for the given organization
    * @param organization the organization of the checklists
@@ -16,37 +14,10 @@ export default class OnboardingServices {
   static async getAllChecklists(organization: Organization) {
     const allChecklists = await prisma.checklist.findMany({
       where: { organizationId: organization.organizationId, dateDeleted: null, parentChecklistId: null },
-      include: { subtasks: true, teamType: true, usersChecked: true }
+      include: { subtasks: { where: { dateDeleted: null } }, teamType: true, usersChecked: true }
     });
 
     return allChecklists;
-  }
-
-  /**
-   * Gets all the general checklists for the given organization
-   * @param organization the organization of the checklists
-   * @returns all the general checklists for the given organization
-   */
-  static async getGeneralChecklists(organization: Organization) {
-    const generalChecklists = await prisma.checklist.findMany({
-      where: {
-        organizationId: organization.organizationId,
-        teamId: null,
-        teamTypeId: null,
-        dateDeleted: null,
-        parentChecklistId: null
-      },
-      include: {
-        subtasks: {
-          include: {
-            usersChecked: true
-          }
-        },
-        teamType: true,
-        usersChecked: true
-      }
-    });
-    return generalChecklists;
   }
 
   /**
@@ -58,7 +29,7 @@ export default class OnboardingServices {
   static async getCheckedChecklists(user: User, organization: Organization) {
     const allChecklists = await prisma.checklist.findMany({
       where: { organizationId: organization.organizationId, dateDeleted: null },
-      include: { subtasks: true, usersChecked: true }
+      include: { subtasks: { where: { dateDeleted: null } }, usersChecked: true }
     });
 
     const checkedChecklists = allChecklists.filter((checklist) =>
@@ -137,11 +108,11 @@ export default class OnboardingServices {
     creator: User,
     name: string,
     descriptions: string[],
-    isOptional: boolean,
     teamId: string | null,
     teamTypeId: string | null,
     parentChecklistId: string | null,
-    organization: Organization
+    organization: Organization,
+    isOptional?: boolean
   ) {
     if (!(await userHasPermission(creator.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create a checklist');
@@ -183,8 +154,11 @@ export default class OnboardingServices {
         throw new NotFoundException('Checklist', parentChecklistId);
       }
 
-      if (parentChecklist.teamId !== teamId || parentChecklist.teamTypeId !== teamTypeId) {
-        throw new HttpException(400, 'Parent checklist must have the same teamId or teamTypeId');
+      if (
+        (parentChecklist.teamId ?? null) !== (teamId ?? null) ||
+        (parentChecklist.teamTypeId ?? null) !== (teamTypeId ?? null)
+      ) {
+        throw new HttpException(400, 'Parent checklist must have the same teamId and teamTypeId');
       }
 
       if (parentChecklist.dateDeleted) {
@@ -225,11 +199,11 @@ export default class OnboardingServices {
     checklistId: string,
     name: string,
     descriptions: string[],
-    isOptional: boolean,
     teamId: string | null,
     teamTypeId: string | null,
     parentChecklistId: string | null,
-    organization: Organization
+    organization: Organization,
+    isOptional?: boolean
   ) {
     if (!(await userHasPermission(editor.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('edit a checklist');
@@ -240,18 +214,11 @@ export default class OnboardingServices {
     }
 
     if (!teamId && !teamTypeId) {
-      const generalChecklist = await prisma.checklist.findFirst({
-        where: { organizationId: organization.organizationId, teamId: null, teamTypeId: null, dateDeleted: null }
-      });
-
-      if (generalChecklist && parentChecklistId) {
-        if (generalChecklist.checklistId !== parentChecklistId) {
-          throw new HttpException(400, 'Parent checklist must be the general checklist');
+      if (parentChecklistId) {
+        const parentChecklist = await prisma.checklist.findFirst({ where: { checklistId: parentChecklistId } });
+        if (parentChecklist?.teamId || parentChecklist?.teamTypeId) {
+          throw new HttpException(400, 'Parent checklist must also be a general checklist');
         }
-      }
-
-      if (generalChecklist && !parentChecklistId) {
-        throw new HttpException(400, 'General checklist already exists');
       }
     }
 
@@ -278,12 +245,15 @@ export default class OnboardingServices {
         throw new NotFoundException('Checklist', parentChecklistId);
       }
 
-      if (parentChecklist.dateDeleted) {
-        throw new DeletedException('Checklist', parentChecklistId);
+      if (
+        (parentChecklist.teamId ?? null) !== (teamId ?? null) ||
+        (parentChecklist.teamTypeId ?? null) !== (teamTypeId ?? null)
+      ) {
+        throw new HttpException(400, 'Parent checklist must have the same teamId and teamTypeId');
       }
 
-      if (parentChecklist.teamId !== teamId || parentChecklist.teamTypeId !== teamTypeId) {
-        throw new HttpException(400, 'Parent checklist must have the same teamId or teamTypeId');
+      if (parentChecklist.dateDeleted) {
+        throw new DeletedException('Checklist', parentChecklistId);
       }
     }
 
@@ -297,7 +267,7 @@ export default class OnboardingServices {
       throw new DeletedException('Checklist', checklistId);
     }
 
-    const editedChecklist: Checklist = await prisma.checklist.update({
+    const editedChecklist = await prisma.checklist.update({
       where: { checklistId },
       data: {
         name,
@@ -446,6 +416,7 @@ export default class OnboardingServices {
         }
       }
     }
+
     const updatedChecklist = await prisma.checklist.findUnique({
       where: { checklistId },
       include: { usersChecked: true }

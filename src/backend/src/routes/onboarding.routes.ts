@@ -8,8 +8,6 @@ const onboardingRouter = express.Router();
 /* Checklists Section */
 onboardingRouter.get('/checklists', OnboardingController.getAllChecklists);
 
-onboardingRouter.get('/checklists/general', OnboardingController.getGeneralChecklists);
-
 onboardingRouter.get('/checklists/checked', OnboardingController.getCheckedChecklists);
 
 onboardingRouter.get('/checklists/usersChecklists', OnboardingController.getUsersChecklists);
@@ -19,10 +17,10 @@ onboardingRouter.post(
   nonEmptyString(body('name')),
   body('descriptions').isArray(),
   nonEmptyString(body('descriptions.*')),
-  nonEmptyString(body('isOptional').isBoolean()),
   nonEmptyString(body('teamId').optional()),
   nonEmptyString(body('teamTypeId').optional()),
   nonEmptyString(body('parentChecklistId').optional()),
+  body('isOptional').isBoolean().optional(),
   validateInputs,
   OnboardingController.createChecklist
 );
@@ -32,10 +30,10 @@ onboardingRouter.post(
   nonEmptyString(body('name')),
   body('descriptions').isArray(),
   nonEmptyString(body('descriptions.*')),
-  nonEmptyString(body('isOptional').isBoolean()),
   nonEmptyString(body('teamId').optional()),
   nonEmptyString(body('teamTypeId').optional()),
   nonEmptyString(body('parentChecklistId').optional()),
+  body('isOptional').isBoolean().optional(),
   validateInputs,
   OnboardingController.editChecklist
 );

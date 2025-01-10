@@ -11,7 +11,7 @@ import ConfirmOnboardingChecklistModal from './components/ConfirmOnboardingCheck
 import { NERButton } from '../../components/NERButton';
 import {
   useCheckedChecklists,
-  useUsersChecklists,
+  useUsersTeamTypeChecklists,
   useAllChecklists,
   useChecklistProgress
 } from '../../hooks/onboarding.hook';
@@ -47,7 +47,7 @@ const OnboardingHomePage = () => {
     isError: usersChecklistsIsError,
     error: usersChecklistsError,
     isLoading: usersChecklistsIsLoading
-  } = useUsersChecklists();
+  } = useUsersTeamTypeChecklists();
 
   const {
     data: checkedChecklists,
@@ -158,11 +158,7 @@ const OnboardingHomePage = () => {
               padding: 2
             }}
           >
-            <ChecklistSection
-              usersChecklists={usersChecklists}
-              checkedChecklists={checkedChecklists}
-              generalChecklists={generalChecklists}
-            />
+            <ChecklistSection />
           </Grid>
           <Grid container item xs={12} md={5} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 4 }}>
             <Grid item>

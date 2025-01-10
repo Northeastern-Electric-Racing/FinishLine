@@ -1,4 +1,22 @@
-import { Checklist } from 'shared';
+import { Checklist, ChecklistPreview } from 'shared';
+
+export const sortGroupNames = (groupedChecklists: Record<string, Checklist[]>): Record<string, Checklist[]> => {
+  const groupNames = Object.keys(groupedChecklists);
+
+  groupNames.sort((group1, group2) => {
+    if (group1 === 'General') return -1;
+    if (group2 === 'General') return 1;
+
+    return group1.localeCompare(group2);
+  });
+
+  const sortedGroupedChecklists: Record<string, Checklist[]> = {};
+  groupNames.forEach((groupName) => {
+    sortedGroupedChecklists[groupName] = groupedChecklists[groupName];
+  });
+
+  return sortedGroupedChecklists;
+};
 
 export const groupChecklists = (checklists: Checklist[]) => {
   const groupedChecklists = checklists.reduce<Record<string, Checklist[]>>((groupedChecklists, checklist) => {
@@ -18,21 +36,10 @@ export const groupChecklists = (checklists: Checklist[]) => {
     return groupedChecklists;
   }, {});
 
-  const sortedGroupNames = Object.keys(groupedChecklists).sort((group1, group2) => {
-    if (group1 === 'General') return -1;
-    if (group2 === 'General') return 1;
-    return group1.localeCompare(group2);
-  });
-
-  const sortedGroupedChecklists: Record<string, Checklist[]> = {};
-  sortedGroupNames.forEach((groupName) => {
-    sortedGroupedChecklists[groupName] = groupedChecklists[groupName];
-  });
-
-  return sortedGroupedChecklists;
+  return sortGroupNames(groupedChecklists);
 };
 
-export const isChecklistChecked = (checkedChecklists: Checklist[] | undefined, checklist: Checklist) => {
+export const isChecklistChecked = (checkedChecklists: Checklist[] | undefined, checklist: ChecklistPreview) => {
   if (!checkedChecklists) return false;
   return checkedChecklists.some((c) => c.checklistId === checklist.checklistId);
 };

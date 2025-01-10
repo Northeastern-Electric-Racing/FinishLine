@@ -2,19 +2,22 @@ import { KeyboardArrowDown, KeyboardArrowRight } from '@mui/icons-material';
 import { Grid, Typography, IconButton } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
-import { Checklist } from 'shared';
+import { Checklist, TeamType } from 'shared';
 import AdminTask from './AdminTask';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import { useDeleteChecklist } from '../../../hooks/onboarding.hook';
-import NERDeleteModal from '../../../components/NERDeleteModal';
+import CreateChecklistModal from './CreateChecklistModal';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
-import { useToast } from '../../../hooks/toasts.hooks';
+import { useToast } from '../../../../hooks/toasts.hooks';
+import { useDeleteChecklist } from '../../../../hooks/onboarding.hook';
+import NERDeleteModal from '../../../../components/NERDeleteModal';
 
-export const AdminChecklist: React.FC<{ parentChecklists: Checklist[]; checklistName?: string }> = ({
+export const AdminChecklist: React.FC<{ parentChecklists: Checklist[]; checklistName?: string; teamType?: TeamType }> = ({
   parentChecklists,
-  checklistName
+  checklistName,
+  teamType
 }) => {
   const [showTasks, setShowTasks] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [tasksToDelete, setTasksToDelete] = useState<Checklist[] | null>(null);
 
   const toggleShowTasks = () => {
@@ -87,15 +90,24 @@ export const AdminChecklist: React.FC<{ parentChecklists: Checklist[]; checklist
                 <AdminTask parentTask={parentChecklist} />
               ))}
               <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
-                <IconButton sx={{ color: 'red' }}>
+                <IconButton sx={{ color: 'red' }} onClick={() => setShowCreateModal(true)}>
                   <AddCircleOutlineIcon sx={{ mr: 1 }} />
-                  <Typography>Add Task</Typography>
+                  <Typography sx={{ fontSize: '0.8em' }}>Add Task</Typography>
                 </IconButton>
               </Box>
             </Box>
           )}
         </Grid>
       </Grid>
+
+      {showCreateModal && (
+        <CreateChecklistModal
+          open={showCreateModal}
+          handleClose={() => setShowCreateModal(false)}
+          teamId={parentChecklists[0]?.team?.teamId}
+          teamTypeId={teamType?.teamTypeId || parentChecklists[0]?.teamType?.teamTypeId}
+        />
+      )}
       {tasksToDelete && (
         <NERDeleteModal
           open={!!tasksToDelete}

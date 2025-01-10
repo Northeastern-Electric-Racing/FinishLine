@@ -1,18 +1,57 @@
 import { Box, Grid } from '@mui/material';
 import { groupChecklists } from '../../../utils/onboarding.utils';
 import Checklist from './Checklist';
-import { Checklist as ChecklistType } from 'shared';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import { useAllChecklists, useCheckedChecklists, useUsersTeamTypeChecklists } from '../../../hooks/onboarding.hook';
+import ErrorPage from '../../ErrorPage';
 
-interface ChecklistSectionProps {
-  usersChecklists: ChecklistType[];
-  checkedChecklists: ChecklistType[];
-  generalChecklists: ChecklistType[];
-}
+const ChecklistSection: React.FC = () => {
+  const {
+    data: checklists,
+    isError: checklistsIsError,
+    error: checklistsError,
+    isLoading: checklistsIsLoading
+  } = useAllChecklists();
 
-const ChecklistSection: React.FC<ChecklistSectionProps> = ({ usersChecklists, checkedChecklists, generalChecklists }) => {
-  const allChecklists = [...generalChecklists, ...usersChecklists];
-  const groupedChecklists = groupChecklists(allChecklists);
-  console.log(groupedChecklists);
+  const {
+    data: usersTeamTypeChecklists,
+    isError: usersTeamTypeChecklistsIsError,
+    error: usersTeamTypeChecklistsError,
+    isLoading: usersTeamTypeChecklistsIsLoading
+  } = useUsersTeamTypeChecklists();
+
+  const {
+    data: checkedChecklists,
+    isError: checkedChecklistsIsError,
+    error: checkedChecklistsError,
+    isLoading: checkedChecklistsLoading
+  } = useCheckedChecklists();
+
+  if (checklistsIsError) {
+    return <ErrorPage error={checklistsError} />;
+  }
+
+  if (checkedChecklistsIsError) {
+    return <ErrorPage error={checkedChecklistsError} />;
+  }
+
+  if (usersTeamTypeChecklistsIsError) {
+    return <ErrorPage error={usersTeamTypeChecklistsError} />;
+  }
+
+  if (
+    !checklists ||
+    checklistsIsLoading ||
+    usersTeamTypeChecklistsIsLoading ||
+    !usersTeamTypeChecklists ||
+    !checkedChecklists ||
+    checkedChecklistsLoading
+  ) {
+    return <LoadingIndicator />;
+  }
+
+  const groupedChecklists = groupChecklists(usersTeamTypeChecklists);
+
   return (
     <Box>
       <Grid container>

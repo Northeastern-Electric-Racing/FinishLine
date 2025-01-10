@@ -1947,88 +1947,88 @@ const performSeed: () => Promise<void> = async () => {
     [
       'Slack is our primary method of communication outside of meetings and the shop. To join, you must use your @northeastern.edu email (No personal emails!). We do not send email reminders for meetings, so you will need to stay in the loop via Slack and Google Calandar.'
     ],
-    false,
     null,
     null,
     null,
-    ner
+    ner,
+    false
   );
 
   await OnboardingServices.createChecklist(
     batman,
     'Put your name and pronouns',
     [],
-    false,
     null,
     null,
     joinSlackChecklist.checklistId,
-    ner
+    ner,
+    false
   );
 
   await OnboardingServices.createChecklist(
     batman,
     'Include your team and/or subteam',
     [],
-    false,
     null,
     null,
     joinSlackChecklist.checklistId,
-    ner
+    ner,
+    false
   );
 
   await OnboardingServices.createChecklist(
     batman,
     'Include your major and/or year',
     [],
-    true,
     null,
     null,
     joinSlackChecklist.checklistId,
-    ner
+    ner,
+    true
   );
 
   await OnboardingServices.createChecklist(
     batman,
     'Turn on notifications',
     [],
-    false,
     null,
     null,
     joinSlackChecklist.checklistId,
-    ner
+    ner,
+    false
   );
 
   const engageChecklist = await OnboardingServices.createChecklist(
     batman,
     'Engage',
     ['Join NER on engage. This is what Northeastern uses to keep track of our roster'],
-    false,
     null,
     null,
     null,
-    ner
+    ner,
+    false
   );
 
   const learnGitChecklist = await OnboardingServices.createChecklist(
     batman,
     'Learn how to use git',
     ['Go online and learn how to use git'],
-    false,
     null,
     software.teamTypeId,
     null,
-    ner
+    ner,
+    false
   );
 
   await OnboardingServices.createChecklist(
     batman,
     'Create your first project',
     [],
-    false,
     null,
     software.teamTypeId,
     learnGitChecklist.checklistId,
-    ner
+    ner,
+    false
   );
 };
 
