@@ -34,7 +34,7 @@ export const getCheckedChecklists = () => {
  * API call to fetch all the users checklists
  */
 export const getUsersChecklists = () => {
-  return axios.get<Checklist[]>(apiUrls.usersChecklists(), {
+  return axios.get<Checklist[]>(apiUrls.usersTeamTypeChecklists(), {
     transformResponse: (data) => JSON.parse(data)
   });
 };
