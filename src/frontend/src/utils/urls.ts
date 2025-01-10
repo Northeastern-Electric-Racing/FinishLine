@@ -78,7 +78,6 @@ const changeRequestRequestReviewer = (id: string) => changeRequestsById(id) + '/
 /**************** Teams Endpoints ****************/
 const teams = () => `${API_URL}/teams`;
 const teamsById = (id: string) => `${teams()}/${id}`;
-const teamByTeamType = (id: string) => `${teams()}/teamType/single/${id}`;
 const teamsDelete = (id: string) => `${teamsById(id)}/delete`;
 const teamsSetInitialMember = (id: string) => `${teamsById(id)}/set-initial-member`;
 const teamsSetMembers = (id: string) => `${teamsById(id)}/set-members`;
@@ -268,7 +267,6 @@ export const apiUrls = {
 
   teams,
   teamsById,
-  teamByTeamType,
   teamsDelete,
   teamsSetInitialMember,
   teamsSetMembers,

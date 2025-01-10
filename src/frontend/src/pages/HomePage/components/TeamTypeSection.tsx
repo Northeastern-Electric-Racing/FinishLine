@@ -54,7 +54,7 @@ const TeamTypeSection = ({ teamType, onSelectSubteamPage = false }: TeamTypeSect
   const handleSubmit = async () => {
     setShowModal(false);
     await toggleOnboardingUser(teamType.teamTypeId);
-    history.push(routes.HOME_ONBOARDING, { teamType });
+    history.push(routes.HOME_ONBOARDING);
   };
 
   return (

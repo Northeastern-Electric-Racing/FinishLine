@@ -52,26 +52,6 @@ export default class TeamsService {
   }
 
   /**
-   * Gets a team with the given team type id
-   * @param teamTypeId - id of team to retrieve
-   * @param organizationId The organization the user is currently in
-   * @returns a team
-   * @throws if the team is not found in the db
-   */
-  static async getSingleTeamByTeamType(teamTypeId: string, organization: Organization): Promise<Team> {
-    const team = await prisma.team.findFirst({
-      where: { teamTypeId },
-      ...getTeamQueryArgs(organization.organizationId)
-    });
-
-    if (!team) throw new NotFoundException('Team', teamTypeId);
-
-    if (team.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Team');
-
-    return teamTransformer(team);
-  }
-
-  /**
    * Sets the initial team member for a team
    * @param teamId the id of the team to add the user to
    * @param userId the id of the user to add to the team

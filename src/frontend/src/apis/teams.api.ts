@@ -21,12 +21,6 @@ export const getSingleTeam = (id: string) => {
   });
 };
 
-export const getSingleTeamByTeamType = (teamTypeId: string) => {
-  return axios.get<Team>(apiUrls.teamByTeamType(teamTypeId), {
-    transformResponse: (data) => teamTransformer(JSON.parse(data))
-  });
-};
-
 export const setTeamInitialMember = (id: string, userId: string) => {
   return axios.post<{ message: string }>(apiUrls.teamsSetInitialMember(id), {
     userId

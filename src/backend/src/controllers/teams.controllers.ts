@@ -25,18 +25,6 @@ export default class TeamsController {
     }
   }
 
-  static async getSingleTeamByTeamType(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { teamTypeId } = req.params;
-
-      const team = await TeamsService.getSingleTeamByTeamType(teamTypeId, req.organization);
-
-      return res.status(200).json(team);
-    } catch (error: unknown) {
-      return next(error);
-    }
-  }
-
   static async setInitialTeamMember(req: Request, res: Response, next: NextFunction) {
     try {
       const { userId } = req.body;

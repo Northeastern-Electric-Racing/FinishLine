@@ -14,7 +14,6 @@ import {
   deleteTeam,
   createTeam,
   setTeamLeads,
-  getSingleTeamByTeamType,
   setTeamInitialMember
 } from '../apis/teams.api';
 
@@ -36,13 +35,6 @@ export const useAllTeams = () => {
 export const useSingleTeam = (teamId: string) => {
   return useQuery<Team, Error>(['teams', teamId], async () => {
     const { data } = await getSingleTeam(teamId);
-    return data;
-  });
-};
-
-export const useSingleTeamByTeamType = (teamTypeId: string) => {
-  return useQuery<Team, Error>(['teams', teamTypeId], async () => {
-    const { data } = await getSingleTeamByTeamType(teamTypeId);
     return data;
   });
 };
