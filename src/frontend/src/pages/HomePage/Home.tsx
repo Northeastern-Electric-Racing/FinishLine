@@ -4,18 +4,33 @@
  */
 
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { isGuest } from 'shared';
+import { isAdmin, isGuest, isLead, isMember } from 'shared';
+import IntroGuestHomePage from './IntroGuestHomePage';
 import GuestHomePage from './GuestHomePage';
-import MemberHomePage from './MemberHomePage';
 import { useState } from 'react';
+import MemberHomePage from './MemberHomePage';
+import LeadHomePage from './LeadHomePage';
+import AdminHomePage from './AdminHomePage';
+import PopUpAlert from '../../components/PopUpAlert';
 
 const Home = () => {
   const user = useCurrentUser();
   const [onMemberHomePage, setOnMemberHomePage] = useState(false);
-  return isGuest(user.role) && !onMemberHomePage ? (
-    <GuestHomePage user={user} setOnMemberHomePage={setOnMemberHomePage} />
-  ) : (
-    <MemberHomePage user={user} />
+  return (
+    <>
+      {!onMemberHomePage && <PopUpAlert />}
+      {isGuest(user.role) && !onMemberHomePage ? (
+        <IntroGuestHomePage user={user} setOnMemberHomePage={setOnMemberHomePage} />
+      ) : isMember(user.role) ? (
+        <MemberHomePage user={user} />
+      ) : isLead(user.role) ? (
+        <LeadHomePage user={user} />
+      ) : isAdmin(user.role) ? (
+        <AdminHomePage user={user} />
+      ) : (
+        <GuestHomePage user={user} />
+      )}
+    </>
   );
 };
 

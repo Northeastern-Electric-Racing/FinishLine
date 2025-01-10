@@ -24,6 +24,8 @@ const userFavoriteProjects = (id: string) => `${usersById(id)}/favorite-projects
 const userSecureSettings = (id: string) => `${usersById(id)}/secure-settings`;
 const userScheduleSettings = (id: string) => `${usersById(id)}/schedule-settings`;
 const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
+const userTasks = (id: string) => `${usersById(id)}/tasks`;
+const manyUserTasks = () => `${users()}/tasks/get-many`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
@@ -176,6 +178,12 @@ const organizations = () => `${API_URL}/organizations`;
 const currentOrganization = () => `${organizations()}/current`;
 const organizationsUsefulLinks = () => `${organizations()}/useful-links`;
 const organizationsSetUsefulLinks = () => `${organizationsUsefulLinks()}/set`;
+const organizationsSetDescription = () => `${organizations()}/description/set`;
+const organizationsFeaturedProjects = () => `${organizations()}/featured-projects`;
+const organizationsLogoImage = () => `${organizations()}/logo`;
+const organizationsSetLogoImage = () => `${organizations()}/logo/update`;
+const organizationsSetFeaturedProjects = () => `${organizationsFeaturedProjects()}/set`;
+const organizationsSetWorkspaceId = () => `${organizations()}/workspaceId/set`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
@@ -192,6 +200,19 @@ const faqCreate = () => `${recruitment()}/faq/create`;
 const faqEdit = (id: string) => `${recruitment()}/faq/${id}/edit`;
 const faqDelete = (id: string) => `${recruitment()}/faq/${id}/delete`;
 
+/************** Pop Up Endpoints ***************/
+const popUps = () => `${API_URL}/pop-ups`;
+const popUpsCurrentUser = () => `${popUps()}/current-user`;
+const popUpsRemove = (id: string) => `${popUps()}/${id}/remove`;
+
+/************** Announcement Endpoints ***************/
+const announcements = () => `${API_URL}/announcements`;
+const announcementsCurrentUser = () => `${announcements()}/current-user`;
+const announcementsRemove = (id: string) => `${announcements()}/${id}/remove`;
+
+/************** Onboarding Endpoints ***************/
+const onboarding = () => `${API_URL}/onboarding`;
+const imageById = (imageId: string) => `${onboarding()}/image/${imageId}`;
 /************** Statistics Endpoints ***************/
 const statistics = () => `${API_URL}/statistics`;
 const createGraph = () => `${statistics()}/graph/create`;
@@ -218,6 +239,8 @@ export const apiUrls = {
   userSecureSettings,
   userScheduleSettings,
   userScheduleSettingsSet,
+  userTasks,
+  manyUserTasks,
 
   projects,
   allProjects,
@@ -344,6 +367,12 @@ export const apiUrls = {
   currentOrganization,
   organizationsUsefulLinks,
   organizationsSetUsefulLinks,
+  organizationsFeaturedProjects,
+  organizationsSetDescription,
+  organizationsLogoImage,
+  organizationsSetLogoImage,
+  organizationsSetFeaturedProjects,
+  organizationsSetWorkspaceId,
 
   cars,
   carsCreate,
@@ -357,6 +386,15 @@ export const apiUrls = {
   faqCreate,
   faqEdit,
   faqDelete,
+  imageById,
+
+  popUps,
+  popUpsCurrentUser,
+  popUpsRemove,
+
+  announcements,
+  announcementsCurrentUser,
+  announcementsRemove,
 
   statistics,
   createGraph,

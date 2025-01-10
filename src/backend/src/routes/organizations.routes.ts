@@ -1,7 +1,8 @@
 import express from 'express';
-import { linkValidators, validateInputs } from '../utils/validation.utils';
+import { linkValidators, nonEmptyString, validateInputs } from '../utils/validation.utils';
 import OrganizationsController from '../controllers/organizations.controllers';
 import multer, { memoryStorage } from 'multer';
+import { body } from 'express-validator';
 
 const organizationRouter = express.Router();
 const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage() });
@@ -19,4 +20,25 @@ organizationRouter.post(
 );
 
 organizationRouter.get('/images', OrganizationsController.getOrganizationImages);
+organizationRouter.post(
+  '/featured-projects/set',
+  body('projectIds').isArray(),
+  nonEmptyString(body('projectIds.*')),
+  validateInputs,
+  OrganizationsController.setOrganizationFeaturedProjects
+);
+organizationRouter.post('/logo/update', upload.single('logo'), OrganizationsController.setLogoImage);
+organizationRouter.get('/logo', OrganizationsController.getOrganizationLogoImage);
+organizationRouter.post(
+  '/description/set',
+  body('description').isString(),
+  validateInputs,
+  OrganizationsController.setOrganizationDescription
+);
+organizationRouter.get('/featured-projects', OrganizationsController.getOrganizationFeaturedProjects);
+organizationRouter.post(
+  '/workspaceId/set',
+  nonEmptyString(body('workspaceId')),
+  OrganizationsController.setSlackWorkspaceId
+);
 export default organizationRouter;

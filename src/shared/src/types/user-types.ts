@@ -4,6 +4,7 @@
  */
 
 import { AvailabilityCreateArgs } from './design-review-types';
+import { Team } from './team-types';
 
 export interface User {
   userId: string;
@@ -55,6 +56,7 @@ export interface Organization {
   treasurer?: UserPreview;
   advisor?: UserPreview;
   description: string;
+  slackWorkspaceId?: string;
 }
 
 /**
@@ -76,6 +78,8 @@ export interface AuthenticatedUser {
   isAtLeastFinanceLead?: boolean;
   organizations: string[];
   currentOrganization?: OrganizationPreview;
+  teamsAsHead?: Team[];
+  teamsAsLead?: Team[];
   permissions: Permission[];
 }
 

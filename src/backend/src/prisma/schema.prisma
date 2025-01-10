@@ -228,6 +228,8 @@ model User {
   createdGraphs                   Graph[]                   @relation(name: "graphCreator")
   deletedGraphs                   Graph[]                   @relation(name: "graphDeleter")
   deletedTeamTypes                Team_Type[]               @relation(name: "teamTypeDeleter")
+  unreadAnnouncements             Announcement[]            @relation(name: "receivedAnnouncements")
+  unreadPopUps                    PopUp[]                   @relation(name: "userPopUps")
 }
 
 model Role {
@@ -430,16 +432,18 @@ model WBS_Element {
 }
 
 model Project {
-  projectId    String         @id @default(uuid())
-  wbsElementId String         @unique
-  wbsElement   WBS_Element    @relation(fields: [wbsElementId], references: [wbsElementId])
-  budget       Int            @default(0)
-  summary      String
-  workPackages Work_Package[]
-  carId        String
-  car          Car            @relation(fields: [carId], references: [carId])
-  teams        Team[]         @relation(name: "assignedBy")
-  favoritedBy  User[]         @relation(name: "favoritedBy")
+  projectId                String         @id @default(uuid())
+  wbsElementId             String         @unique
+  wbsElement               WBS_Element    @relation(fields: [wbsElementId], references: [wbsElementId])
+  budget                   Int            @default(0)
+  summary                  String
+  workPackages             Work_Package[]
+  carId                    String
+  car                      Car            @relation(fields: [carId], references: [carId])
+  teams                    Team[]         @relation(name: "assignedBy")
+  favoritedBy              User[]         @relation(name: "favoritedBy")
+  featuredByOrganizationId String?
+  featuredByOrganization   Organization?  @relation(fields: [featuredByOrganizationId], references: [organizationId])
 }
 
 model Work_Package {
@@ -927,6 +931,8 @@ model Organization {
   description           String
   applyInterestImageId  String?   @unique
   exploreAsGuestImageId String?   @unique
+  logoImageId           String?
+  slackWorkspaceId      String?
 
   // Relation references
   wbsElements              WBS_Element[]
@@ -950,6 +956,9 @@ model Organization {
   milestones               Milestone[]
   graphCollections         Graph_Collection[]
   graphs                   Graph[]
+  featuredProjects         Project[]
+  popUps                   PopUp[]
+  announcements            Announcement[]
 }
 
 model FrequentlyAskedQuestion {
@@ -1017,6 +1026,29 @@ model Graph_Collection {
   userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "graphCollectionsCreator")
   userDeletedId  String?
   userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "graphCollectionDeleter")
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+}
+
+model Announcement {
+  announcementId   String       @id @default(uuid())
+  text             String
+  usersReceived    User[]       @relation("receivedAnnouncements")
+  dateMessageSent  DateTime     @default(now())
+  dateDeleted      DateTime?
+  senderName       String
+  slackEventId     String       @unique
+  slackChannelName String
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [organizationId])
+}
+
+model PopUp {
+  popUpId        String       @id @default(uuid())
+  text           String
+  iconName       String
+  usersReceived  User[]       @relation("userPopUps")
+  eventLink      String?
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [organizationId])
 }

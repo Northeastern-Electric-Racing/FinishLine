@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 import { JwtPayload, VerifyErrors } from 'jsonwebtoken';
 import prisma from '../prisma/prisma';
-import { AccessDeniedException, HttpException, NotFoundException } from './errors.utils';
+import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from './errors.utils';
 import { Organization, User, User_Secure_Settings, User_Settings } from '@prisma/client';
 import { IncomingHttpHeaders } from 'http';
 
@@ -31,7 +31,8 @@ export const requireJwtProd = (req: Request, res: Response, next: NextFunction) 
   if (
     req.path === '/users/auth/login' || // logins dont have cookies yet
     req.path === '/' || // base route is available so aws can listen and check the health
-    req.method === 'OPTIONS' // this is a pre-flight request and those don't send cookies
+    req.method === 'OPTIONS' || // this is a pre-flight request and those don't send cookies
+    req.path === '/slack' // slack http endpoint is only used from slack api
   ) {
     return next();
   } else if (
@@ -62,7 +63,8 @@ export const requireJwtDev = (req: Request, res: Response, next: NextFunction) =
     req.path === '/users/auth/login/dev' || // logins dont have cookies yet
     req.path === '/' || // base route is available so aws can listen and check the health
     req.method === 'OPTIONS' || // this is a pre-flight request and those don't send cookies
-    req.path === '/users' // dev login needs the list of users to log in
+    req.path === '/users' || // dev login needs the list of users to log in
+    req.path === '/slack' // slack http endpoint is only used from slack api
   ) {
     next();
   } else if (
@@ -118,7 +120,7 @@ export type UserWithSecureSettings = UserWithSettings & {
   userSecureSettings: User_Secure_Settings | null;
 };
 
-export const getOrganization = async (headers: IncomingHttpHeaders): Promise<Organization> => {
+export const getOrganization = async (headers: IncomingHttpHeaders, currentUser: User): Promise<Organization> => {
   let { organizationid } = headers;
 
   const isProd = process.env.NODE_ENV === 'production';
@@ -139,12 +141,21 @@ export const getOrganization = async (headers: IncomingHttpHeaders): Promise<Org
     where: { organizationId: organizationid },
     include: {
       advisor: true,
-      usefulLinks: true
+      usefulLinks: true,
+      users: true
     }
   });
 
   if (!organization) {
     throw new NotFoundException('Organization', organizationid);
+  }
+
+  if (organization.dateDeleted) {
+    throw new DeletedException('Organization', organization.organizationId);
+  }
+
+  if (!organization.users.some((user) => user.userId === currentUser.userId)) {
+    throw new AccessDeniedException('Cannot access this organization');
   }
 
   return organization;
@@ -172,13 +183,14 @@ export const getUserAndOrganization = async (req: Request, res: Response, next: 
     req.path === '/users/auth/login/dev' ||
     req.path === '/' || // base route is available so aws can listen and check the health
     req.method === 'OPTIONS' || // this is a pre-flight request and those don't send cookies
-    req.path === '/users' // dev login needs the list of users to log in
+    req.path === '/users' || // dev login needs the list of users to log in
+    req.path === '/slack' // slack http endpoint is only used from slack api
   ) {
     return next();
   }
   try {
     const user = await getCurrentUser(res);
-    const organization = await getOrganization(req.headers);
+    const organization = await getOrganization(req.headers, user);
     req.currentUser = user;
     req.organization = organization;
     return next();

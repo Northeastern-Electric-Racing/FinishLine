@@ -7,12 +7,11 @@ import {
   usersToSlackPings
 } from '../utils/notifications.utils';
 import { sendMessage } from '../integrations/slack';
-import { daysBetween, startOfDay, wbsPipe } from 'shared';
+import { daysBetween, meetingStartTimePipe, startOfDay, wbsPipe } from 'shared';
 import { buildDueString } from '../utils/slack.utils';
 import WorkPackagesService from './work-packages.services';
 import { addWeeksToDate } from 'shared';
 import { HttpException } from '../utils/errors.utils';
-import { meetingStartTimePipe } from '../utils/design-reviews.utils';
 
 export default class NotificationsService {
   static async sendDailySlackNotifications() {

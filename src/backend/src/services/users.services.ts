@@ -36,6 +36,8 @@ import {
 } from '../prisma-query-args/user.query-args';
 import { getAuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
 import authenticatedUserTransformer from '../transformers/auth-user.transformer';
+import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args';
+import taskTransformer from '../transformers/tasks.transformer';
 
 export default class UsersService {
   /**
@@ -532,5 +534,38 @@ export default class UsersService {
     await updateUserAvailability(availabilities, newUserScheduleSettings, user);
 
     return userScheduleSettingsTransformer(newUserScheduleSettings);
+  }
+
+  /**
+   * Get's a user's assigned tasks
+   * @param userId the id of the user who's tasks are being returned
+   * @param organization the user's organization
+   * @returns a list of the user's assigned tasks
+   */
+  static async getUserTasks(userId: string, organization: Organization) {
+    const requestedUser = await prisma.user.findUnique({
+      where: { userId },
+      include: { assignedTasks: getTaskQueryArgs(organization.organizationId), organizations: true }
+    });
+    if (!requestedUser) throw new NotFoundException('User', userId);
+    if (!requestedUser.organizations.map((org) => org.organizationId).includes(organization.organizationId))
+      throw new HttpException(400, `User ${userId} is not apart of the current organization`);
+
+    return requestedUser.assignedTasks.map(taskTransformer);
+  }
+
+  /**
+   * Get all tasks from a list of userIds
+   * @param userIds list of users to get the tasks from
+   * @param organization the users' organization
+   * @returns a list of tasks of the given users
+   */
+  static async getManyUserTasks(userIds: string[], organization: Organization) {
+    const tasksPromises = userIds.map(async (userId) => {
+      return UsersService.getUserTasks(userId, organization);
+    });
+
+    const resolvedTasks = await Promise.all(tasksPromises);
+    return resolvedTasks.flat();
   }
 }
