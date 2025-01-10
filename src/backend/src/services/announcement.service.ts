@@ -3,6 +3,7 @@ import prisma from '../prisma/prisma';
 import { getAnnouncementQueryArgs } from '../prisma-query-args/announcements.query.args';
 import announcementTransformer from '../transformers/announcements.transformer';
 import { DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
+import { getUsers } from '../utils/users.utils';
 
 export default class AnnouncementService {
   /**
@@ -26,12 +27,15 @@ export default class AnnouncementService {
     slackChannelName: string,
     organizationId: string
   ): Promise<Announcement> {
+    // throws if a user id is invalid
+    const usersToSend = await getUsers(usersReceivedIds);
+
     const announcement = await prisma.announcement.create({
       data: {
         text,
         usersReceived: {
-          connect: usersReceivedIds.map((id) => ({
-            userId: id
+          connect: usersToSend.map((user) => ({
+            userId: user.userId
           }))
         },
         dateMessageSent,

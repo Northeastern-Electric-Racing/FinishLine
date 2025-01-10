@@ -545,9 +545,11 @@ export default class UsersService {
   static async getUserTasks(userId: string, organization: Organization) {
     const requestedUser = await prisma.user.findUnique({
       where: { userId },
-      include: { assignedTasks: getTaskQueryArgs(organization.organizationId) }
+      include: { assignedTasks: getTaskQueryArgs(organization.organizationId), organizations: true }
     });
     if (!requestedUser) throw new NotFoundException('User', userId);
+    if (!requestedUser.organizations.map((org) => org.organizationId).includes(organization.organizationId))
+      throw new HttpException(400, `User ${userId} is not apart of the current organization`);
 
     return requestedUser.assignedTasks.map(taskTransformer);
   }

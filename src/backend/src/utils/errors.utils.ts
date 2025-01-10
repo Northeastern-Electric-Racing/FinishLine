@@ -139,6 +139,7 @@ export type ExceptionObjectNames =
   | 'Car'
   | 'Milestone'
   | 'Faq'
+  | 'Pop Up'
   | 'Announcement'
   | 'Graph'
   | 'Graph Collection';
