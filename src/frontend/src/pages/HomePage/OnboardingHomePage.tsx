@@ -11,7 +11,7 @@ import ConfirmOnboardingChecklistModal from './components/ConfirmOnboardingCheck
 import { NERButton } from '../../components/NERButton';
 import {
   useCheckedChecklists,
-  useUsersTeamTypeChecklists,
+  useUsersChecklists,
   useAllChecklists,
   useChecklistProgress
 } from '../../hooks/onboarding.hook';
@@ -47,7 +47,7 @@ const OnboardingHomePage = () => {
     isError: usersChecklistsIsError,
     error: usersChecklistsError,
     isLoading: usersChecklistsIsLoading
-  } = useUsersTeamTypeChecklists();
+  } = useUsersChecklists();
 
   const {
     data: checkedChecklists,

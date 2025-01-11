@@ -53,7 +53,7 @@ export const useCheckedChecklists = () => {
   });
 };
 
-export const useUsersTeamTypeChecklists = () => {
+export const useUsersChecklists = () => {
   return useQuery<Checklist[], Error>(['checklists'], async () => {
     const { data } = await getUsersChecklists();
     return data;
