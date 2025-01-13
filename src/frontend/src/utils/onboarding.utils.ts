@@ -1,4 +1,4 @@
-import { Checklist } from 'shared';
+import { Checklist, ChecklistPreview } from 'shared';
 
 export const sortGroupNames = (groupedChecklists: Record<string, Checklist[]>): Record<string, Checklist[]> => {
   const groupNames = Object.keys(groupedChecklists);
@@ -37,4 +37,9 @@ export const groupChecklists = (checklists: Checklist[]) => {
   }, {});
 
   return sortGroupNames(groupedChecklists);
+};
+
+export const isChecklistChecked = (checkedChecklists: Checklist[] | undefined, checklist: ChecklistPreview) => {
+  if (!checkedChecklists) return false;
+  return checkedChecklists.some((c) => c.checklistId === checklist.checklistId);
 };

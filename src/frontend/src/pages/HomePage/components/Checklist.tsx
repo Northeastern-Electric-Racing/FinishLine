@@ -4,13 +4,16 @@ import { Typography, Grid, Box, IconButton, useTheme } from '@mui/material';
 import { KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
 import ParentTask from './ParentTask';
 import OnboardingProgressBar from '../../../components/OnboardingProgressBar';
+import { useChecklistProgress } from '../../../hooks/onboarding.hook';
 
-const Checklist: React.FC<{ parentChecklists: ChecklistType[]; checklistName?: string }> = ({
-  parentChecklists,
-  checklistName
-}) => {
+const Checklist: React.FC<{
+  parentChecklists: ChecklistType[];
+  checkedChecklists: ChecklistType[];
+  checklistName?: string;
+}> = ({ parentChecklists, checkedChecklists, checklistName }) => {
   const theme = useTheme();
   const [showTasks, setShowTasks] = useState(false);
+  const progress = useChecklistProgress(parentChecklists, checkedChecklists);
 
   const toggleShowTasks = () => {
     setShowTasks((prev) => !prev);
@@ -24,7 +27,7 @@ const Checklist: React.FC<{ parentChecklists: ChecklistType[]; checklistName?: s
             {checklistName ?? 'General'} Checklist
           </Typography>
           <Box sx={{ flexGrow: 1, mx: 2 }}>
-            <OnboardingProgressBar value={51} />
+            <OnboardingProgressBar value={progress} />
           </Box>
           <IconButton onClick={toggleShowTasks}>{showTasks ? <KeyboardArrowDown /> : <KeyboardArrowRight />}</IconButton>
         </Grid>
@@ -40,7 +43,7 @@ const Checklist: React.FC<{ parentChecklists: ChecklistType[]; checklistName?: s
               }}
             >
               {parentChecklists.map((parentChecklist) => (
-                <ParentTask parentTask={parentChecklist} />
+                <ParentTask parentTask={parentChecklist} checkedChecklists={checkedChecklists} />
               ))}
             </Box>
           </Grid>

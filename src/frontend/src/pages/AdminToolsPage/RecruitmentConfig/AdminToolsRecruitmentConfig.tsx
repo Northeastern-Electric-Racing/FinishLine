@@ -6,7 +6,7 @@ import NERUploadButton from '../../../components/NERUploadButton';
 import React, { useState } from 'react';
 import { useCurrentOrganization, useSetOrganizationImages } from '../../../hooks/organizations.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useGetImageUrl } from '../../../hooks/onboarding.hooks';
+import { useGetImageUrl } from '../../../hooks/onboarding.hook';
 import ErrorPage from '../../ErrorPage';
 import ApplicationLinkTable from './ApplicationLinkTable';
 

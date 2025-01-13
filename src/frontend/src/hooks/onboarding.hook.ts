@@ -11,6 +11,8 @@ import {
   editChecklist,
   getCheckedChecklists
 } from '../apis/onboarding.api';
+import { useEffect, useState } from 'react';
+import { isChecklistChecked } from '../utils/onboarding.utils';
 
 export interface ToggleChecklistPayload {
   checklistId: string;
@@ -51,8 +53,8 @@ export const useCheckedChecklists = () => {
   });
 };
 
-export const useUsersTeamTypeChecklists = () => {
-  return useQuery<Checklist[], Error>(['checklists', 'teamTypeChecklists'], async () => {
+export const useUsersChecklists = () => {
+  return useQuery<Checklist[], Error>(['checklists'], async () => {
     const { data } = await getUsersChecklists();
     return data;
   });
@@ -155,4 +157,21 @@ export const useGetImageUrls = (imageFileIds: (string | null)[]) => {
       enabled: !!imageFileIds
     }
   );
+};
+
+export const useChecklistProgress = (parentChecklists: Checklist[], checkedChecklists: Checklist[]) => {
+  const [progress, setProgress] = useState(0);
+  useEffect(() => {
+    if (!checkedChecklists || parentChecklists.length === 0) return;
+
+    const totalChecklistsLength = parentChecklists.length;
+
+    const completedChecklistsLength = parentChecklists.reduce((count, checklist) => {
+      return isChecklistChecked(checkedChecklists, checklist) ? count + 1 : count;
+    }, 0);
+
+    setProgress((completedChecklistsLength / totalChecklistsLength) * 100);
+  }, [parentChecklists, checkedChecklists]);
+
+  return progress;
 };

@@ -2,7 +2,7 @@ import { Box, Grid } from '@mui/material';
 import { groupChecklists } from '../../../utils/onboarding.utils';
 import Checklist from './Checklist';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useAllChecklists, useUsersTeamTypeChecklists } from '../../../hooks/onboarding.hook';
+import { useAllChecklists, useCheckedChecklists, useUsersChecklists } from '../../../hooks/onboarding.hook';
 import ErrorPage from '../../ErrorPage';
 
 const ChecklistSection: React.FC = () => {
@@ -14,37 +14,50 @@ const ChecklistSection: React.FC = () => {
   } = useAllChecklists();
 
   const {
-    data: usersTeamTypeChecklists,
-    isError: usersTeamTypeChecklistsIsError,
-    error: usersTeamTypeChecklistsError,
-    isLoading: usersTeamTypeChecklistsIsLoading
-  } = useUsersTeamTypeChecklists();
+    data: usersChecklists,
+    isError: usersChecklistsIsError,
+    error: usersChecklistsError,
+    isLoading: usersChecklistsIsLoading
+  } = useUsersChecklists();
+
+  const {
+    data: checkedChecklists,
+    isError: checkedChecklistsIsError,
+    error: checkedChecklistsError,
+    isLoading: checkedChecklistsLoading
+  } = useCheckedChecklists();
 
   if (checklistsIsError) {
     return <ErrorPage error={checklistsError} />;
   }
 
-  if (usersTeamTypeChecklistsIsError) {
-    return <ErrorPage error={usersTeamTypeChecklistsError} />;
+  if (checkedChecklistsIsError) {
+    return <ErrorPage error={checkedChecklistsError} />;
   }
 
-  if (!checklists || checklistsIsLoading || usersTeamTypeChecklistsIsLoading || !usersTeamTypeChecklists) {
+  if (usersChecklistsIsError) {
+    return <ErrorPage error={usersChecklistsError} />;
+  }
+
+  if (
+    !checklists ||
+    checklistsIsLoading ||
+    usersChecklistsIsLoading ||
+    !usersChecklists ||
+    !checkedChecklists ||
+    checkedChecklistsLoading
+  ) {
     return <LoadingIndicator />;
   }
 
-  const generalChecklists = checklists.filter(
-    (checklist) => checklist.team?.teamId === undefined && checklist.teamType?.teamTypeId === undefined
-  );
-
-  const allChecklists = [...generalChecklists, ...usersTeamTypeChecklists];
-  const groupedChecklists = groupChecklists(allChecklists);
+  const groupedChecklists = groupChecklists(usersChecklists);
 
   return (
     <Box>
       <Grid container>
         {Object.entries(groupedChecklists).map(([checklistName, checklists]) => (
           <Grid item xs={12} padding={2} key={checklistName}>
-            <Checklist parentChecklists={checklists} checklistName={checklistName} />
+            <Checklist parentChecklists={checklists} checkedChecklists={checkedChecklists} checklistName={checklistName} />
           </Grid>
         ))}
       </Grid>
