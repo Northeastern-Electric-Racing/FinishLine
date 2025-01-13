@@ -1,6 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import TeamsService from '../services/teams.services';
-import { HttpException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
+import { userHasPermission } from '../utils/users.utils';
+import prisma from '../prisma/prisma';
+import { Organization, User } from '@prisma/client';
+import { isAdmin } from 'shared';
 
 export default class TeamsController {
   static async getAllTeams(req: Request, res: Response, next: NextFunction) {
@@ -189,6 +193,17 @@ export default class TeamsController {
         req.organization
       );
       res.status(200).json(teamType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteTeamType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamTypeId } = req.params;
+      const deleter = req.currentUser;
+      await TeamsService.deleteTeamType(deleter, teamTypeId, req.organization);
+      res.status(200).json({ message: `Successfully deleted team type ${req.params.teamTypeId}` });
     } catch (error: unknown) {
       next(error);
     }

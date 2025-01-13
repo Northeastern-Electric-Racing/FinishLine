@@ -4,7 +4,8 @@ import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
   HttpException,
-  NotFoundException
+  NotFoundException,
+  DeletedException
 } from '../../src/utils/errors.utils';
 import { batmanAppAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
@@ -177,6 +178,62 @@ describe('Team Type Tests', () => {
       expect(updatedTeamType.name).toBe('new name');
       expect(updatedTeamType.iconName).toBe('new icon');
       expect(updatedTeamType.description).toBe('new description');
+    });
+  });
+
+  describe('Delete team type', () => {
+    it('Fails if user is not an admin', async () => {
+      const teamType = await TeamsService.createTeamType(
+        await createTestUser(supermanAdmin, orgId),
+        'teamType1',
+        '',
+        '',
+        organization
+      );
+      await expect(
+        async () =>
+          await TeamsService.deleteTeamType(await createTestUser(wonderwomanGuest, orgId), teamType.teamTypeId, organization)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('you must be an admin to delete a team type'));
+    });
+
+    it('Fails if team type doesn`t exist', async () => {
+      await expect(
+        async () => await TeamsService.deleteTeamType(await createTestUser(wonderwomanGuest, orgId), '1', organization)
+      ).rejects.toThrow(new NotFoundException('Team Type', '1'));
+    });
+
+    it('Fails if team type is already deleted', async () => {
+      const teamType = await TeamsService.createTeamType(
+        await createTestUser(supermanAdmin, orgId),
+        'teamType1',
+        '',
+        '',
+        organization
+      );
+      await TeamsService.deleteTeamType(await createTestUser(supermanAdmin, orgId), teamType.teamTypeId, organization);
+
+      await expect(
+        async () =>
+          await TeamsService.deleteTeamType(await createTestUser(supermanAdmin, orgId), teamType.teamTypeId, organization)
+      ).rejects.toThrow(new DeletedException('Team Type', teamType.teamTypeId));
+    });
+
+    it('Successfully soft deletes the team type', async () => {
+      const teamType = await TeamsService.createTeamType(
+        await createTestUser(supermanAdmin, orgId),
+        'teamType1',
+        '',
+        '',
+        organization
+      );
+      await TeamsService.deleteTeamType(await createTestUser(supermanAdmin, orgId), teamType.teamTypeId, organization);
+
+      const deletedTeamType = await prisma.team_Type.findUnique({
+        where: { teamTypeId: teamType.teamTypeId }
+      });
+
+      expect(deletedTeamType.dateDeleted).not.toBe(null);
+      expect(deletedTeamType.deletedById).not.toBe(null);
     });
   });
 });

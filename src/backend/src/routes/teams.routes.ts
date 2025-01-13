@@ -78,4 +78,6 @@ teamsRouter.post(
   TeamsController.setTeamTypeImage
 );
 
+teamsRouter.delete('teamType/:teamTypeId/delete', TeamsController.deleteTeamType);
+
 export default teamsRouter;

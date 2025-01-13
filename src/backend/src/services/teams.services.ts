@@ -6,6 +6,7 @@ import {
   NotFoundException,
   AccessDeniedException,
   HttpException,
+  DeletedException,
   AccessDeniedAdminOnlyException,
   InvalidOrganizationException
 } from '../utils/errors.utils';
@@ -542,6 +543,31 @@ export default class TeamsService {
     });
 
     return teamTransformer(updatedTeam);
+  }
+
+  /**
+   * Deletes the Team Type with the given organization Id and Team_Type id
+   * @param deleter a user who is making this request
+   * @param teamTypeId the id of the Team Type to be deleted
+   * @param organizationId the organization Id of the Team Type
+   */
+  static async deleteTeamType(deleter: User, teamTypeId: string, organization: Organization) {
+    if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('only admins can delete team types');
+
+    const teamType = await prisma.team_Type.findUnique({
+      where: { teamTypeId }
+    });
+
+    if (!teamType) throw new NotFoundException('Team Type', teamTypeId);
+    if (teamType.dateDeleted) throw new DeletedException('Team Type', teamTypeId);
+
+    await prisma.team_Type.update({
+      where: { teamTypeId },
+      data: { dateDeleted: new Date(), deletedById: deleter.userId }
+    });
+
+    return teamType;
   }
 
   static async setTeamTypeImage(
