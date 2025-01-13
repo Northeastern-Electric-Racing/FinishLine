@@ -194,12 +194,12 @@ describe('Team Type Tests', () => {
       await expect(
         async () =>
           await TeamsService.deleteTeamType(await createTestUser(wonderwomanGuest, orgId), teamType.teamTypeId, organization)
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('you must be an admin to delete a team type'));
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('only admins can delete team types'));
     });
 
     it('Fails if team type doesn`t exist', async () => {
       await expect(
-        async () => await TeamsService.deleteTeamType(await createTestUser(wonderwomanGuest, orgId), '1', organization)
+        async () => await TeamsService.deleteTeamType(await createTestUser(supermanAdmin, orgId), '1', organization)
       ).rejects.toThrow(new NotFoundException('Team Type', '1'));
     });
 

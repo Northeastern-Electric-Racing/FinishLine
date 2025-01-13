@@ -1,10 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import TeamsService from '../services/teams.services';
-import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
-import { userHasPermission } from '../utils/users.utils';
-import prisma from '../prisma/prisma';
-import { Organization, User } from '@prisma/client';
-import { isAdmin } from 'shared';
+import { HttpException } from '../utils/errors.utils';
 
 export default class TeamsController {
   static async getAllTeams(req: Request, res: Response, next: NextFunction) {
