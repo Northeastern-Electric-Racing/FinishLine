@@ -561,6 +561,7 @@ export default class TeamsService {
 
     if (!teamType) throw new NotFoundException('Team Type', teamTypeId);
     if (teamType.dateDeleted) throw new DeletedException('Team Type', teamTypeId);
+    if (teamType.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Team Type');
 
     await prisma.team_Type.update({
       where: { teamTypeId },
