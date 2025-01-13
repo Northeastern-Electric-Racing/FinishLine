@@ -1,3 +1,4 @@
+import prisma from '../../src/prisma/prisma';
 import { Organization } from '@prisma/client';
 import TeamsService from '../../src/services/teams.services';
 import {
@@ -232,8 +233,9 @@ describe('Team Type Tests', () => {
         where: { teamTypeId: teamType.teamTypeId }
       });
 
-      expect(deletedTeamType.dateDeleted).not.toBe(null);
-      expect(deletedTeamType.deletedById).not.toBe(null);
+      expect(deletedTeamType).not.toBe(null);
+      expect(deletedTeamType!.dateDeleted).not.toBe(null);
+      expect(deletedTeamType!.deletedById).not.toBe(null);
     });
   });
 });
