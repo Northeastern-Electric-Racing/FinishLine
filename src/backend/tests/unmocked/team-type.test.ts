@@ -207,7 +207,7 @@ describe('Team Type Tests', () => {
       const teamType = await TeamsService.createTeamType(
         await createTestUser(supermanAdmin, orgId),
         'teamType1',
-        '',
+        'YouTubeIcon',
         '',
         organization
       );
@@ -215,7 +215,7 @@ describe('Team Type Tests', () => {
 
       await expect(
         async () =>
-          await TeamsService.deleteTeamType(await createTestUser(supermanAdmin, orgId), teamType.teamTypeId, organization)
+          await TeamsService.deleteTeamType(await createTestUser(batmanAppAdmin, orgId), teamType.teamTypeId, organization)
       ).rejects.toThrow(new DeletedException('Team Type', teamType.teamTypeId));
     });
 
@@ -223,19 +223,19 @@ describe('Team Type Tests', () => {
       const teamType = await TeamsService.createTeamType(
         await createTestUser(supermanAdmin, orgId),
         'teamType1',
-        '',
+        'YouTubeIcon',
         '',
         organization
       );
-      await TeamsService.deleteTeamType(await createTestUser(supermanAdmin, orgId), teamType.teamTypeId, organization);
+      await TeamsService.deleteTeamType(await createTestUser(batmanAppAdmin, orgId), teamType.teamTypeId, organization);
 
       const deletedTeamType = await prisma.team_Type.findUnique({
         where: { teamTypeId: teamType.teamTypeId }
       });
 
       expect(deletedTeamType).not.toBe(null);
-      expect(deletedTeamType!.dateDeleted).not.toBe(null);
-      expect(deletedTeamType!.deletedById).not.toBe(null);
+      expect(deletedTeamType?.dateDeleted).not.toBe(null);
+      expect(deletedTeamType?.deletedById).not.toBe(null);
     });
   });
 });
