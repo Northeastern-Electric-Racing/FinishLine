@@ -8,7 +8,7 @@ import {
   NotFoundException,
   DeletedException
 } from '../../src/utils/errors.utils';
-import { batmanAppAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
+import { batmanAppAdmin, supermanAdmin, wonderwomanGuest, flashAdmin } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import { vi } from 'vitest';
 
@@ -211,7 +211,7 @@ describe('Team Type Tests', () => {
         '',
         organization
       );
-      await TeamsService.deleteTeamType(await createTestUser(supermanAdmin, orgId), teamType.teamTypeId, organization);
+      await TeamsService.deleteTeamType(await createTestUser(flashAdmin, orgId), teamType.teamTypeId, organization);
 
       await expect(
         async () =>
