@@ -194,6 +194,17 @@ export default class TeamsController {
     }
   }
 
+  static async deleteTeamType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamTypeId } = req.params;
+      const deleter = req.currentUser;
+      await TeamsService.deleteTeamType(deleter, teamTypeId, req.organization);
+      res.status(200).json({ message: `Successfully deleted team type ${req.params.teamTypeId}` });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async setTeamTypeImage(req: Request, res: Response, next: NextFunction) {
     try {
       const { file } = req;
