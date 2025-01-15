@@ -265,16 +265,18 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
                   render={({ field }) => (
                     <TextField
                       {...field}
-                      placeholder="Description"
+                      placeholder="Enter description..."
                       fullWidth
                       multiline
                       variant="outlined"
                       InputProps={{
                         endAdornment: (
                           <InputAdornment position="end">
-                            <IconButton onClick={() => remove(index)}>
-                              <RemoveCircleOutlineIcon sx={{ color: 'white' }} />
-                            </IconButton>
+                            {index !== 0 && (
+                              <IconButton onClick={() => remove(index)}>
+                                <RemoveCircleOutlineIcon sx={{ color: 'white' }} />
+                              </IconButton>
+                            )}
                           </InputAdornment>
                         ),
                         disableUnderline: true,
@@ -284,7 +286,11 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
                         backgroundColor: theme.palette.background.paper,
                         borderRadius: 5,
                         mt: 1,
-                        width: '100%'
+                        width: '100%',
+                        ...(index === 0 && {
+                          minHeight: '150px',
+                          fontSize: '1.25rem'
+                        })
                       }}
                       error={!!errors.descriptions?.[index]?.name}
                       helperText={errors.descriptions?.[index]?.name?.message}
@@ -293,6 +299,7 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
                 />
               </Box>
             ))}
+
             <IconButton
               onClick={() => append({ name: '' })}
               sx={{
@@ -306,7 +313,7 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
               }}
             >
               <AddCircleOutlineIcon sx={{ color: theme.palette.text.primary, mr: 1 }} />
-              Add Description
+              Add Additional Information
             </IconButton>
           </Box>
         </FormControl>

@@ -67,7 +67,14 @@ export default class OnboardingServices {
         teamTypeId: { in: teamTypeIds },
         parentChecklistId: null
       },
-      include: { subtasks: { where: { dateDeleted: null } }, teamType: true }
+      include: {
+        subtasks: {
+          include: {
+            usersChecked: true
+          }
+        },
+        teamType: true
+      }
     });
 
     return teamTypeChecklists;
@@ -372,9 +379,9 @@ export default class OnboardingServices {
       });
 
       if (parentChecklist) {
-        const allSubtasksChecked = parentChecklist.subtasks.every((subtask) =>
-          subtask.usersChecked.some((user) => user.userId === userId)
-        );
+        const allSubtasksChecked = parentChecklist.subtasks
+          .filter((subtask) => !subtask.isOptional)
+          .every((subtask) => subtask.usersChecked.some((user) => user.userId === userId));
         if (allSubtasksChecked) {
           await prisma.checklist.update({
             where: { checklistId: parentChecklist.checklistId },
