@@ -19,8 +19,6 @@ const AcceptedPage = () => {
     return <LoadingIndicator />;
   }
 
-  // const { mutateAsync: setTeamInitialMember, isLoading: setTeamMembersIsLoading } = useSetTeamInitialMember(team.teamId);
-
   const handleClick = async () => {
     Promise.all(user.onboardingTeamTypeIds.map((teamTypeId) => toggleOnboardingUser(teamTypeId)));
     window.location.reload();
@@ -37,7 +35,7 @@ const AcceptedPage = () => {
           marginLeft="auto"
           sx={{ marginTop: 2, textAlign: 'center', pt: 1, padding: 0, fontWeight: 1 }}
         >
-          We are so excited to welcome you to {organization.name} team!
+          We are so excited to welcome you to {organization.name}!
         </Typography>
       </Box>
       <Box

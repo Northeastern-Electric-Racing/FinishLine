@@ -58,7 +58,6 @@ const OnboardingHomePage = () => {
 
   const progress = useChecklistProgress([...generalChecklists, ...(usersChecklists || [])], checkedChecklists || []);
 
-
   if (usersChecklistsIsError) {
     return <ErrorPage error={usersChecklistsError} />;
   }
@@ -78,7 +77,8 @@ const OnboardingHomePage = () => {
     checkedChecklistsLoading ||
     !checkedChecklists ||
     allChecklistsIsLoading ||
-    !allChecklists
+    !allChecklists ||
+    organizationIsLoading
   ) {
     return <LoadingIndicator />;
   }
@@ -90,10 +90,6 @@ const OnboardingHomePage = () => {
   const handleCloseModal = () => {
     setModalOpen(false);
   };
-
-  if (organizationIsLoading || !organization) {
-    return <LoadingIndicator />;
-  }
 
   const handleConfirmModal = async () => {
     history.push(routes.HOME_ACCEPT);
