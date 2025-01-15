@@ -18,6 +18,7 @@ import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import { useCurrentOrganization } from '../../hooks/organizations.hooks';
 import OnboardingProgressBar from '../../components/OnboardingProgressBar';
+import ErrorPage from '../ErrorPage';
 
 const OnboardingHomePage = () => {
   const history = useHistory();
@@ -26,10 +27,6 @@ const OnboardingHomePage = () => {
   const { data: organization, isLoading: organizationIsLoading } = useCurrentOrganization();
 
   const theme = useTheme();
-
-  const toast = useToast();
-
-  const toggleCompletedOnboarding = useToggleCompletedOnboarding();
 
   useEffect(() => {
     setCurrentHomePage('onboarding');
@@ -93,6 +90,7 @@ const OnboardingHomePage = () => {
   const handleCloseModal = () => {
     setModalOpen(false);
   };
+
   if (organizationIsLoading || !organization) {
     return <LoadingIndicator />;
   }
@@ -169,7 +167,7 @@ const OnboardingHomePage = () => {
       {isModalOpen && (
         <ConfirmOnboardingChecklistModal
           open={isModalOpen}
-          onHide={() => setModalOpen(false)}
+          onHide={handleCloseModal}
           onConfirm={handleConfirmModal}
           title="Confirm Onboarding Checklist"
         />

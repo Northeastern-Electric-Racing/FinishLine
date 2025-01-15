@@ -2,7 +2,7 @@ import { Box, Grid } from '@mui/material';
 import { groupChecklists } from '../../../utils/onboarding.utils';
 import Checklist from './Checklist';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useAllChecklists, useUsersTeamTypeChecklists } from '../../../hooks/onboarding.hook';
+import { useAllChecklists, useCheckedChecklists, useUsersChecklists } from '../../../hooks/onboarding.hook';
 import ErrorPage from '../../ErrorPage';
 
 const ChecklistSection: React.FC = () => {
@@ -14,11 +14,18 @@ const ChecklistSection: React.FC = () => {
   } = useAllChecklists();
 
   const {
-    data: usersTeamTypeChecklists,
-    isError: usersTeamTypeChecklistsIsError,
-    error: usersTeamTypeChecklistsError,
-    isLoading: usersTeamTypeChecklistsIsLoading
-  } = useUsersTeamTypeChecklists();
+    data: usersChecklists,
+    isError: usersChecklistsIsError,
+    error: usersChecklistsError,
+    isLoading: usersChecklistsIsLoading
+  } = useUsersChecklists();
+
+  const {
+    data: checkedChecklists,
+    isError: checkedChecklistsIsError,
+    error: checkedChecklistsError,
+    isLoading: checkedChecklistsLoading
+  } = useCheckedChecklists();
 
   if (checklistsIsError) {
     return <ErrorPage error={checklistsError} />;
