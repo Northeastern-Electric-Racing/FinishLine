@@ -7,9 +7,6 @@
 -- AlterTable
 ALTER TABLE "Organization" DROP COLUMN "contacts";
 
--- AlterTable
-ALTER TABLE "User" ADD COLUMN     "completedOnboarding" BOOLEAN NOT NULL DEFAULT true;
-
 -- CreateTable
 CREATE TABLE "Checklist" (
     "checklistId" TEXT NOT NULL,

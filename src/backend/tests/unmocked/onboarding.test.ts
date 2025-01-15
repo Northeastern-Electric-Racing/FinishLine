@@ -1,12 +1,5 @@
 import { Organization } from '@prisma/client';
-import {
-  createTestChecklist,
-  createTestOrganization,
-  createTestTeam,
-  createTestTeamType,
-  createTestUser,
-  resetUsers
-} from '../test-utils';
+import { createTestChecklist, createTestOrganization, createTestTeamType, createTestUser, resetUsers } from '../test-utils';
 import OnboardingServices from '../../src/services/onboarding.services';
 import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import {
@@ -78,7 +71,7 @@ describe('Onboarding tests', () => {
     });
   });
 
-  describe('Get Users TeamType Checklists', () => {
+  describe('Get Users Checklists', () => {
     it('Fails if user does not exists', async () => {
       await expect(async () => await OnboardingServices.getUsersChecklists('1', organization)).rejects.toThrow(
         new NotFoundException('User', '1')
@@ -89,18 +82,15 @@ describe('Onboarding tests', () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       const teamType1 = await createTestTeamType('teamtype1', organization);
       const teamType2 = await createTestTeamType('teamtype2', organization);
-      const team1 = await createTestTeam('team1', organization, teamType1.teamTypeId, batman.userId);
-      await prisma.user.update({
-        where: { userId: batman.userId },
-        data: { teamsAsMember: { connect: { teamId: team1.teamId } } }
-      });
       const checklist1 = await createTestChecklist(batman, orgId, 'Checklist 1', teamType1.teamTypeId);
       await createTestChecklist(batman, orgId, 'Checklist 2', teamType2.teamTypeId);
-      const checklist3 = await createTestChecklist(batman, orgId, 'Checklist 3', undefined, team1.teamId);
+      await prisma.user.update({
+        where: { userId: batman.userId },
+        data: { onboardingTeamTypes: { connect: { teamTypeId: teamType1.teamTypeId } } }
+      });
       const teamTypeChecklists = await OnboardingServices.getUsersChecklists(batman.userId, organization);
-      expect(teamTypeChecklists.length).toEqual(2);
-      expect(teamTypeChecklists.some((checklist) => checklist.checklistId === checklist1.checklistId)).toBeTruthy();
-      expect(teamTypeChecklists.some((checklist) => checklist.checklistId === checklist3.checklistId)).toBeTruthy();
+      expect(teamTypeChecklists.length).toEqual(1);
+      expect(teamTypeChecklists[0].checklistId).toEqual(checklist1.checklistId);
     });
   });
 

@@ -8,9 +8,7 @@ import Tabs from '../../components/Tabs';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useHomePageContext } from '../../app/HomePageContext';
-import { useAllTeamTypes } from '../../hooks/team-types.hooks';
-import TeamTypeSection from './components/TeamTypeSection';
-import { TeamType } from 'shared';
+import TeamTypesSection from './components/TeamTypeSection';
 
 const PNMHomePage = () => {
   const {
@@ -19,40 +17,21 @@ const PNMHomePage = () => {
     error: organizationError,
     isLoading: organizationIsLoading
   } = useCurrentOrganization();
-  const {
-    data: teamTypes,
-    isLoading: teamTypesIsLoading,
-    isError: teamTypesIsError,
-    error: teamTypesError
-  } = useAllTeamTypes();
 
   const [recruitmentInfoTabValue, setRecruitmentInfoTabValue] = useState(0);
-  const [teamTypeTabValue, setTeamTypeTabValue] = useState(0);
   const { setCurrentHomePage } = useHomePageContext();
 
   useEffect(() => {
     setCurrentHomePage('pnm');
   }, [setCurrentHomePage]);
 
-  if (!organization || organizationIsLoading || !teamTypes || teamTypesIsLoading) return <LoadingIndicator />;
+  if (!organization || organizationIsLoading) return <LoadingIndicator />;
   if (organizationIsError) return <ErrorPage message={organizationError?.message} />;
-  if (teamTypesIsError) return <ErrorPage message={teamTypesError?.message} />;
 
   const recruitmentInfoTabs = [
     { label: 'FAQs', component: <FAQsSection /> },
     { label: 'Timeline', component: <TimelineSection /> }
   ];
-
-  const orderedTeamTypes = teamTypes.sort((a: TeamType, b: TeamType) => {
-    return a.name.localeCompare(b.name);
-  });
-
-  const teamTypeTabs = orderedTeamTypes.map((teamType) => {
-    return {
-      label: teamType.name,
-      component: <TeamTypeSection teamType={teamType} />
-    };
-  });
 
   return (
     <PageLayout title="Home" hidePageTitle>
@@ -86,7 +65,7 @@ const PNMHomePage = () => {
                 }}
               >
                 <Typography variant="h3">Our Divisions</Typography>
-                <Tabs tabs={teamTypeTabs} tabValue={teamTypeTabValue} setTabValue={setTeamTypeTabValue} />
+                <TeamTypesSection />
               </Box>
             </Box>
           </Grid>

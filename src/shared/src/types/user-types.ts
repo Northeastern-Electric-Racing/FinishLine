@@ -4,7 +4,6 @@
  */
 
 import { AvailabilityCreateArgs } from './design-review-types';
-
 export interface User {
   userId: string;
   firstName: string;
@@ -69,7 +68,7 @@ export interface AuthenticatedUser {
   isAtLeastFinanceLead?: boolean;
   organizations: string[];
   currentOrganization?: OrganizationPreview;
-  completedOnboarding: boolean;
+  onboardingTeamTypeIds: string[];
 }
 
 export interface UserSettings {

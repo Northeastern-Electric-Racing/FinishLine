@@ -17,8 +17,7 @@ import {
   getCurrentUserSecureSettings,
   getUserSecureSettings,
   getUserScheduleSettings,
-  updateUserScheduleSettings,
-  toggleCompletedOnboarding
+  updateUserScheduleSettings
 } from '../apis/users.api';
 import {
   User,
@@ -225,25 +224,6 @@ export const useUpdateUserRole = () => {
     async (updateUserPayload: UpdateUserRolePayload) => {
       if (!auth.user) throw new Error('Update role not allowed when not logged in');
       const { data } = await updateUserRole(updateUserPayload.userId, updateUserPayload.role);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['users']);
-      }
-    }
-  );
-};
-
-/**
- * Custom React Hook to toggle the current user's completed onboarding status.
- */
-export const useToggleCompletedOnboarding = () => {
-  const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error>(
-    ['users', 'toggle-onboarding'],
-    async () => {
-      const { data } = await toggleCompletedOnboarding();
       return data;
     },
     {

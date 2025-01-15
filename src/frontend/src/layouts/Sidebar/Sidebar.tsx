@@ -24,6 +24,7 @@ import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useHomePageContext } from '../../app/HomePageContext';
 import SidebarButton from './SidebarButton';
 import { Organization } from 'shared';
+import { useHistory } from 'react-router-dom';
 
 interface SidebarProps {
   drawerOpen: boolean;
@@ -36,6 +37,7 @@ interface SidebarProps {
 const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organization }: SidebarProps) => {
   const { onPNMHomePage, onOnboardingHomePage } = useHomePageContext();
   const theme = useTheme();
+  const history = useHistory();
 
   const memberLinkItems: LinkItem[] = [
     {
@@ -129,7 +131,10 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organ
           {onPNMHomePage && (
             // Apply button
             <SidebarButton
-              onClick={() => window.open(organization?.applicationLink, '_blank')}
+              onClick={() => {
+                history.push(routes.HOME_SELECT_SUBTEAM);
+                window.open(organization?.applicationLink);
+              }}
               label={'Apply'}
               icon={<ArticleIcon sx={{ fontSize: 27 }} style={{ color: theme.palette.text.primary }} />}
             />

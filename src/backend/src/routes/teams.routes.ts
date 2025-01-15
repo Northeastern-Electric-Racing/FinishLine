@@ -9,6 +9,13 @@ const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage()
 
 teamsRouter.get('/', TeamsController.getAllTeams);
 teamsRouter.get('/:teamId', TeamsController.getSingleTeam);
+
+teamsRouter.post(
+  '/:teamId/set-initial-member',
+  nonEmptyString(body('userId')),
+  validateInputs,
+  TeamsController.setInitialTeamMember
+);
 teamsRouter.post(
   '/:teamId/set-members',
   body('userIds').isArray(),
@@ -51,6 +58,8 @@ teamsRouter.get('/teamType/all', TeamsController.getAllTeamTypes);
 teamsRouter.get('/teamType/:teamTypeId/single', TeamsController.getSingleTeamType);
 
 teamsRouter.post('/:teamId/set-team-type', nonEmptyString(body('teamTypeId')), validateInputs, TeamsController.setTeamType);
+
+teamsRouter.post('/teamType/:teamTypeId/toggle-onboarding-user', TeamsController.toggleOnboardingUser);
 
 teamsRouter.post(
   '/teamType/create',

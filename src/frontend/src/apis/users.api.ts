@@ -141,7 +141,3 @@ export const updateUserScheduleSettings = (settings: SetUserScheduleSettingsPayl
 export const updateUserRole = (id: string, role: string) => {
   return axios.post<{ message: string }>(apiUrls.userRoleByUserId(id), { role });
 };
-
-export const toggleCompletedOnboarding = () => {
-  return axios.post<{ message: string }>(apiUrls.toggleCompletedOnboarding());
-};

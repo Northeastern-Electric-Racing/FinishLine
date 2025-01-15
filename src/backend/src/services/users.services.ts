@@ -282,7 +282,8 @@ export default class UsersService {
         teamsAsHead: [],
         teamsAsLead: [],
         teamsAsMember: [],
-        roles: []
+        roles: [],
+        onboardingTeamTypes: []
       }),
       token
     };
@@ -334,7 +335,8 @@ export default class UsersService {
       teamsAsHead: [],
       teamsAsLead: [],
       teamsAsMember: [],
-      roles: []
+      roles: [],
+      onboardingTeamTypes: []
     });
   }
 
@@ -392,39 +394,6 @@ export default class UsersService {
     }
 
     return userTransformer(targetUser);
-  }
-
-  /**
-   * Toggles the completed onboarding status of a user and elevates role to member if user completed onboarding
-   * @param user the user who's onboarding status is being toggled
-   * @returns the updated user
-   */
-  static async toggleCompletedOnboarding(userId: string, organization: Organization): Promise<SharedUser> {
-    const user = await prisma.user.findUnique({ where: { userId } });
-    if (!user) throw new NotFoundException('User', userId);
-
-    const updatedUser = await prisma.user.update({
-      where: { userId },
-      data: { completedOnboarding: !user.completedOnboarding },
-      ...getUserQueryArgs(organization.organizationId)
-    });
-
-    if (updatedUser.completedOnboarding) {
-      const currentRole = updatedUser.roles.find((role) => role.organizationId === organization.organizationId);
-
-      if (currentRole && currentRole.roleType !== RoleEnum.MEMBER) {
-        await prisma.role.update({
-          where: {
-            uniqueRole: { userId, organizationId: organization.organizationId }
-          },
-          data: {
-            roleType: RoleEnum.MEMBER
-          }
-        });
-      }
-    }
-
-    return userTransformer(updatedUser);
   }
 
   /**

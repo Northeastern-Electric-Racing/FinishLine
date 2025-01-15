@@ -1,4 +1,4 @@
-import { isAdmin, isHead, Team, TeamType } from 'shared';
+import { isAdmin, isHead, RoleEnum, Team, TeamType } from 'shared';
 import { Organization, User, WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import teamTransformer from '../transformers/teams.transformer';
@@ -49,6 +49,36 @@ export default class TeamsService {
     if (team.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Team');
 
     return teamTransformer(team);
+  }
+
+  /**
+   * Sets the initial team member for a team
+   * @param teamId the id of the team to add the user to
+   * @param userId the id of the user to add to the team
+   * @param organizationId The organization the user is currently in
+   * @returns the updated team
+   */
+  static async setInitialTeamMember(teamId: string, userId: string, organization: Organization) {
+    const team = await TeamsService.getSingleTeam(teamId, organization);
+    if (team.dateArchived) throw new HttpException(400, 'Cannot edit the members of an archived team');
+
+    const user = await prisma.user.findUnique({
+      where: { userId }
+    });
+
+    if (!user) throw new NotFoundException('User', userId);
+
+    const updateTeam = await prisma.team.update({
+      where: { teamId },
+      data: {
+        members: {
+          connect: { userId }
+        }
+      },
+      ...getTeamQueryArgs(organization.organizationId)
+    });
+
+    return teamTransformer(updateTeam);
   }
 
   /**
@@ -441,7 +471,10 @@ export default class TeamsService {
    * @returns all the team types for the given organization
    */
   static async getAllTeamTypes(organization: Organization): Promise<TeamType[]> {
-    const teamTypes = await prisma.team_Type.findMany({ where: { organizationId: organization.organizationId } });
+    const teamTypes = await prisma.team_Type.findMany({
+      where: { organizationId: organization.organizationId }
+    });
+
     return teamTypes;
   }
 
@@ -528,6 +561,69 @@ export default class TeamsService {
     });
 
     return teamTransformer(updatedTeam);
+  }
+
+  /**
+   * Adds the user to the team types onboarding list
+   * @param submitter the user who is setting the onboarding team type
+   * @param teamTypeId the id of the team type
+   * @param organization the organization the user is currently in
+   * @returns the updated team type
+   */
+  static async toggleOnboardingUser(submitter: User, teamTypeId: string, organization: Organization): Promise<TeamType> {
+    const teamType = await prisma.team_Type.findUnique({
+      where: { teamTypeId, organizationId: organization.organizationId },
+      include: { usersOnboarding: true }
+    });
+
+    if (!teamType) throw new NotFoundException('Team Type', teamTypeId);
+
+    // if the user is in any onboarding team type, remove them
+    const user = await prisma.user.update({
+      where: { userId: submitter.userId },
+      include: {
+        roles: true
+      },
+      data: {
+        onboardingTeamTypes: {
+          set: []
+        }
+      }
+    });
+
+    const isUserInTeam = teamType.usersOnboarding.some((user) => user.userId === submitter.userId);
+
+    await prisma.team_Type.update({
+      where: { teamTypeId },
+      data: {
+        usersOnboarding: isUserInTeam
+          ? { disconnect: { userId: submitter.userId } }
+          : { connect: { userId: submitter.userId } }
+      }
+    });
+
+    // update the users role to member after they complete their onboarding
+    if (isUserInTeam) {
+      const currentRole = user.roles.find((role) => role.organizationId === organization.organizationId);
+      if (currentRole && currentRole.roleType !== RoleEnum.MEMBER) {
+        await prisma.role.update({
+          where: {
+            uniqueRole: { userId: user.userId, organizationId: organization.organizationId }
+          },
+          data: {
+            roleType: RoleEnum.MEMBER
+          }
+        });
+      }
+    }
+
+    const updatedTeamType = await prisma.team_Type.findUnique({
+      where: { teamTypeId }
+    });
+
+    if (!updatedTeamType) throw new NotFoundException('Team Type', teamTypeId);
+
+    return updatedTeamType;
   }
 
   static async setTeamTypeImage(

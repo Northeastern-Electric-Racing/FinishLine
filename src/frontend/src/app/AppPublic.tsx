@@ -39,7 +39,7 @@ const AppPublic: React.FC = () => {
         <AppAuthenticated
           userId={auth.user.userId}
           userRole={auth.user.role}
-          completedOnboarding={auth.user.completedOnboarding}
+          onOnboarding={auth.user.onboardingTeamTypeIds.length > 0}
         />
       );
     }

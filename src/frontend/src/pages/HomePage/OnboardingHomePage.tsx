@@ -1,9 +1,7 @@
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { useCurrentOrganization } from '../../hooks/organizations.hooks';
 import React, { useEffect, useState } from 'react';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import ErrorPage from '../ErrorPage';
 import { useHomePageContext } from '../../app/HomePageContext';
 import ChecklistSection from './components/ChecklistSection';
 import OnboardingInfoSection from './components/OnboardingInfoSection';
@@ -16,20 +14,19 @@ import {
   useChecklistProgress
 } from '../../hooks/onboarding.hook';
 import { Checklist } from 'shared';
-import { useToggleCompletedOnboarding } from '../../hooks/users.hooks';
-import { useToast } from '../../hooks/toasts.hooks';
+import { useHistory } from 'react-router-dom';
+import { routes } from '../../utils/routes';
+import { useCurrentOrganization } from '../../hooks/organizations.hooks';
 import OnboardingProgressBar from '../../components/OnboardingProgressBar';
+import ErrorPage from '../ErrorPage';
 
 const OnboardingHomePage = () => {
-  const { data: organization, isError, error, isLoading } = useCurrentOrganization();
-  const { setCurrentHomePage } = useHomePageContext();
+  const history = useHistory();
   const [isModalOpen, setModalOpen] = useState(false);
+  const { setCurrentHomePage } = useHomePageContext();
+  const { data: organization, isLoading: organizationIsLoading } = useCurrentOrganization();
 
   const theme = useTheme();
-
-  const toast = useToast();
-
-  const toggleCompletedOnboarding = useToggleCompletedOnboarding();
 
   useEffect(() => {
     setCurrentHomePage('onboarding');
@@ -61,8 +58,6 @@ const OnboardingHomePage = () => {
 
   const progress = useChecklistProgress([...generalChecklists, ...(usersChecklists || [])], checkedChecklists || []);
 
-  if (isError) return <ErrorPage message={error?.message} />;
-
   if (usersChecklistsIsError) {
     return <ErrorPage error={usersChecklistsError} />;
   }
@@ -77,13 +72,13 @@ const OnboardingHomePage = () => {
 
   if (
     !organization ||
-    isLoading ||
     usersChecklistsIsLoading ||
     !usersChecklists ||
     checkedChecklistsLoading ||
     !checkedChecklists ||
     allChecklistsIsLoading ||
-    !allChecklists
+    !allChecklists ||
+    organizationIsLoading
   ) {
     return <LoadingIndicator />;
   }
@@ -97,9 +92,7 @@ const OnboardingHomePage = () => {
   };
 
   const handleConfirmModal = async () => {
-    await toggleCompletedOnboarding.mutateAsync();
-    toast.success('Role updated successfully!');
-    setModalOpen(false);
+    history.push(routes.HOME_ACCEPT);
   };
 
   return (

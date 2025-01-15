@@ -27,7 +27,7 @@ const authenticatedUserTransformer = (
     changeRequestsToReviewId: user.changeRequestsToReview.map((changeRequest) => changeRequest.crId),
     organizations: user.organizations.map((organization) => organization.organizationId),
     currentOrganization: user.organizations.find((organization) => organization.organizationId === organizationId),
-    completedOnboarding: user.completedOnboarding
+    onboardingTeamTypeIds: user.onboardingTeamTypes.map((teamType) => teamType.teamTypeId)
   };
 };
 
