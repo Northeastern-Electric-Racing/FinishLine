@@ -87,11 +87,11 @@ const EditChecklistModal = ({ open, handleClose, defaultValues, teamId, teamType
     <NERFormModal
       open={open}
       onHide={handleClose}
-      title={!!defaultValues ? 'Edit Checklist' : 'Create Checklist'}
+      title={'Edit Task'}
       reset={() => reset({ name: '', descriptions: [] })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
-      formId={!!defaultValues ? 'edit-UsefulLink-form' : 'create-UsefulLink-form'}
+      formId={'edit-task-form'}
       showCloseButton
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>

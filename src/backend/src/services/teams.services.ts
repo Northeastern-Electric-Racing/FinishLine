@@ -58,8 +58,14 @@ export default class TeamsService {
    * @param organizationId The organization the user is currently in
    * @returns the updated team
    */
-  static async setInitialTeamMember(teamId: string, userId: string, organization: Organization) {
-    const team = await TeamsService.getSingleTeam(teamId, organization);
+  static async setInitialTeamMember(teamTypeId: string, userId: string, organization: Organization) {
+    const team = await prisma.team.findFirst({
+      where: { teamTypeId }
+    });
+
+    if (!team) throw new HttpException(400, 'This team type has not been assigned to a team yet');
+    console.log('team', team);
+
     if (team.dateArchived) throw new HttpException(400, 'Cannot edit the members of an archived team');
 
     const user = await prisma.user.findUnique({
@@ -69,7 +75,7 @@ export default class TeamsService {
     if (!user) throw new NotFoundException('User', userId);
 
     const updateTeam = await prisma.team.update({
-      where: { teamId },
+      where: { teamId: team.teamId },
       data: {
         members: {
           connect: { userId }
@@ -77,6 +83,8 @@ export default class TeamsService {
       },
       ...getTeamQueryArgs(organization.organizationId)
     });
+
+    console.log('updateTeam', updateTeam);
 
     return teamTransformer(updateTeam);
   }

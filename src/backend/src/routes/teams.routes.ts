@@ -11,7 +11,7 @@ teamsRouter.get('/', TeamsController.getAllTeams);
 teamsRouter.get('/:teamId', TeamsController.getSingleTeam);
 
 teamsRouter.post(
-  '/:teamId/set-initial-member',
+  '/:teamTypeId/set-initial-member',
   nonEmptyString(body('userId')),
   validateInputs,
   TeamsController.setInitialTeamMember

@@ -28,9 +28,9 @@ export default class TeamsController {
   static async setInitialTeamMember(req: Request, res: Response, next: NextFunction) {
     try {
       const { userId } = req.body;
-      const { teamId } = req.params;
+      const { teamTypeId } = req.params;
 
-      const team = await TeamsService.setInitialTeamMember(teamId, userId, req.organization);
+      const team = await TeamsService.setInitialTeamMember(teamTypeId, userId, req.organization);
       return res.status(200).json(team);
     } catch (error: unknown) {
       return next(error);

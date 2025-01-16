@@ -7,6 +7,7 @@ import { routes } from '../../utils/routes';
 import { useToggleOnboardingUser } from '../../hooks/team-types.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useCurrentOrganization } from '../../hooks/organizations.hooks';
+// import { useSetInitialTeamMember } from '../../hooks/teams.hooks';
 
 const AcceptedPage = () => {
   const history = useHistory();
@@ -14,13 +15,22 @@ const AcceptedPage = () => {
   const { data: organization, isLoading: organizationIsLoading } = useCurrentOrganization();
 
   const { mutateAsync: toggleOnboardingUser, isLoading: toggleOnboardingIsLoading } = useToggleOnboardingUser();
+  // const { mutateAsync: setInitialTeamMember, isLoading: setInitialTeamMemberIsLoading } = useSetInitialTeamMember();
 
   if (toggleOnboardingIsLoading || !organization || organizationIsLoading) {
     return <LoadingIndicator />;
   }
 
   const handleClick = async () => {
-    Promise.all(user.onboardingTeamTypeIds.map((teamTypeId) => toggleOnboardingUser(teamTypeId)));
+    // add the user to the team
+    console.log('onboarding ids', user.onboardingTeamTypeIds);
+    // await Promise.all(
+    //   user.onboardingTeamTypeIds.map((teamTypeId) => setInitialTeamMember({ teamTypeId, userId: user.userId }))
+    // );
+
+    // remove the onboarding team type from the user
+    await Promise.all(user.onboardingTeamTypeIds.map((teamTypeId) => toggleOnboardingUser(teamTypeId)));
+
     window.location.reload();
   };
 

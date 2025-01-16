@@ -21,7 +21,7 @@ export const getSingleTeam = (id: string) => {
   });
 };
 
-export const setTeamInitialMember = (id: string, userId: string) => {
+export const setInitialTeamMember = (id: string, userId: string) => {
   return axios.post<{ message: string }>(apiUrls.teamsSetInitialMember(id), {
     userId
   });

@@ -14,7 +14,7 @@ import {
   deleteTeam,
   createTeam,
   setTeamLeads,
-  setTeamInitialMember
+  setInitialTeamMember
 } from '../apis/teams.api';
 
 export interface CreateTeamPayload {
@@ -39,12 +39,12 @@ export const useSingleTeam = (teamId: string) => {
   });
 };
 
-export const useSetTeamInitialMember = (teamId: string) => {
+export const useSetInitialTeamMember = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, string>(
+  return useMutation<{ message: string }, Error, { teamTypeId: string; userId: string }>(
     ['teams', 'edit'],
-    async (userId: string) => {
-      const { data } = await setTeamInitialMember(teamId, userId);
+    async ({ teamTypeId, userId }) => {
+      const { data } = await setInitialTeamMember(teamTypeId, userId);
       return data;
     },
     {
