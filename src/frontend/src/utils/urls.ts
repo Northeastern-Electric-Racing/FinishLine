@@ -24,6 +24,8 @@ const userFavoriteProjects = (id: string) => `${usersById(id)}/favorite-projects
 const userSecureSettings = (id: string) => `${usersById(id)}/secure-settings`;
 const userScheduleSettings = (id: string) => `${usersById(id)}/schedule-settings`;
 const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
+const userTasks = (id: string) => `${usersById(id)}/tasks`;
+const manyUserTasks = () => `${users()}/tasks/get-many`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
@@ -84,6 +86,7 @@ const teamsSetMembers = (id: string) => `${teamsById(id)}/set-members`;
 const teamsSetTeamType = (id: string) => `${teamsById(id)}/set-team-type`;
 const toggleOnboardingUser = (id: string) => `${teams()}/teamType/${id}/toggle-onboarding-user`;
 const teamsSetHead = (id: string) => `${teamsById(id)}/set-head`;
+const teamsArchive = (id: string) => `${teamsById(id)}/archive`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
 const teamsCreate = () => `${teams()}/create`;
 const teamsSetLeads = (id: string) => `${teamsById(id)}/set-leads`;
@@ -181,6 +184,12 @@ const organizationsSetImages = () => `${organizations()}/images/update`;
 const organizationsUpdateContacts = () => `${organizations()}/contacts/set`;
 const organizationsSetOnboardingText = () => `${organizations()}/onboardingText/set`;
 const organizationsUpdateApplicationLink = () => `${organizations()}/application-link/update`;
+const organizationsSetDescription = () => `${organizations()}/description/set`;
+const organizationsFeaturedProjects = () => `${organizations()}/featured-projects`;
+const organizationsLogoImage = () => `${organizations()}/logo`;
+const organizationsSetLogoImage = () => `${organizations()}/logo/update`;
+const organizationsSetFeaturedProjects = () => `${organizationsFeaturedProjects()}/set`;
+const organizationsSetWorkspaceId = () => `${organizations()}/workspaceId/set`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
@@ -209,6 +218,26 @@ const editChecklist = (checklistId: string) => `${onboarding()}/checklist/edit/$
 const checklistDelete = (id: string) => `${onboarding()}/checklist/delete/${id}`;
 const imageById = (imageId: string) => `${onboarding()}/image/${imageId}`;
 
+/************** Pop Up Endpoints ***************/
+const popUps = () => `${API_URL}/pop-ups`;
+const popUpsCurrentUser = () => `${popUps()}/current-user`;
+const popUpsRemove = (id: string) => `${popUps()}/${id}/remove`;
+
+/************** Announcement Endpoints ***************/
+const announcements = () => `${API_URL}/announcements`;
+const announcementsCurrentUser = () => `${announcements()}/current-user`;
+const announcementsRemove = (id: string) => `${announcements()}/${id}/remove`;
+
+/************** Statistics Endpoints ***************/
+const statistics = () => `${API_URL}/statistics`;
+const createGraph = () => `${statistics()}/graph/create`;
+const graphCollections = () => `${statistics()}/graph-collections`;
+const graphCollectionById = (id: string) => `${graphCollections()}/${id}`;
+const createGraphCollection = () => `${graphCollections()}/create`;
+const getGraphById = (id: string) => `${statistics()}/graph/${id}`;
+const updateGraph = (id: string) => `${getGraphById(id)}/edit`;
+const updateGraphCollection = (id: string) => `${graphCollectionById(id)}/edit`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -225,6 +254,8 @@ export const apiUrls = {
   userSecureSettings,
   userScheduleSettings,
   userScheduleSettingsSet,
+  userTasks,
+  manyUserTasks,
 
   projects,
   allProjects,
@@ -270,6 +301,7 @@ export const apiUrls = {
   teamsDelete,
   teamsSetInitialMember,
   teamsSetMembers,
+  teamsArchive,
   teamsSetHead,
   teamsSetDescription,
   teamsCreate,
@@ -356,9 +388,16 @@ export const apiUrls = {
   organizationsUpdateContacts,
   organizationsSetOnboardingText,
   organizationsUpdateApplicationLink,
+  organizationsFeaturedProjects,
+  organizationsSetDescription,
+  organizationsLogoImage,
+  organizationsSetLogoImage,
+  organizationsSetFeaturedProjects,
+  organizationsSetWorkspaceId,
 
   cars,
   carsCreate,
+
   recruitment,
   allMilestones,
   milestoneCreate,
@@ -368,6 +407,24 @@ export const apiUrls = {
   faqCreate,
   faqEdit,
   faqDelete,
+  imageById,
+
+  popUps,
+  popUpsCurrentUser,
+  popUpsRemove,
+
+  announcements,
+  announcementsCurrentUser,
+  announcementsRemove,
+
+  statistics,
+  createGraph,
+  graphCollections,
+  graphCollectionById,
+  createGraphCollection,
+  getGraphById,
+  updateGraph,
+  updateGraphCollection,
 
   onboarding,
   allChecklists,
@@ -378,7 +435,6 @@ export const apiUrls = {
   createChecklist,
   editChecklist,
   checklistDelete,
-  imageById,
 
   version
 };

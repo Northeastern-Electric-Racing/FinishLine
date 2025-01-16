@@ -14,7 +14,9 @@ import {
   deleteTeam,
   createTeam,
   setTeamLeads,
-  setTeamInitialMember
+  setTeamInitialMember,
+  archiveTeam,
+  getAllArchivedTeams
 } from '../apis/teams.api';
 
 export interface CreateTeamPayload {
@@ -26,8 +28,15 @@ export interface CreateTeamPayload {
 }
 
 export const useAllTeams = () => {
-  return useQuery<Team[], Error>(['teams'], async () => {
+  return useQuery<Team[], Error>(['teams', false], async () => {
     const { data } = await getAllTeams();
+    return data;
+  });
+};
+
+export const useAllArchivedTeams = () => {
+  return useQuery<Team[], Error>(['teams', true], async () => {
+    const { data } = await getAllArchivedTeams();
     return data;
   });
 };
@@ -61,6 +70,22 @@ export const useSetTeamMembers = (teamId: string) => {
     ['teams', 'edit'],
     async (userIds: string[]) => {
       const { data } = await setTeamMembers(teamId, userIds);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['teams']);
+      }
+    }
+  );
+};
+
+export const useArchiveTeam = (teamId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Team, Error, string>(
+    ['teams', 'edit'],
+    async () => {
+      const { data } = await archiveTeam(teamId);
       return data;
     },
     {

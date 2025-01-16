@@ -109,16 +109,59 @@ enum Design_Review_Status {
   DONE
 }
 
+enum Graph_Type {
+  PROJECT_BUDGET_BY_PROJECT
+  PROJECT_BUDGET_BY_TEAM
+  PROJECT_BUDGET_BY_DIVISION
+
+  CHANGE_REQUESTS_BY_PROJECT
+  CHANGE_REQUESTS_BY_TEAM
+  CHANGE_REQUESTS_BY_DIVISION
+
+  REIMBURSEMENT_TOTAL_BY_PROJECT
+  REIMBURSEMENT_TOTAL_BY_TEAM
+  REIMBURSEMENT_TOTAL_BY_DIVISION
+}
+
+enum Graph_Display_Type {
+  PIE
+  BAR
+}
+
+enum Measure {
+  SUM
+  AVG
+}
+
+enum Graph_Permission {
+  EDIT_GRAPH
+  CREATE_GRAPH
+  VIEW_GRAPH
+  DELETE_GRAPH
+}
+
+enum Graph_Collection_Permission {
+  EDIT_GRAPH_COLLECTION
+  CREATE_GRAPH_COLLECTION
+  VIEW_GRAPH_COLLECTION
+  DELETE_GRAPH_COLLECTION
+}
+
+enum Special_Permission {
+  FINANCE_ONLY
+}
+
 model User {
-  userId              String                @id @default(uuid())
-  firstName           String
-  lastName            String
-  googleAuthId        String                @unique
-  email               String                @unique
-  emailId             String?               @unique
-  roles               Role[]
-  userSettings        User_Settings?
-  userSecureSettings  User_Secure_Settings?
+  userId                String                @id @default(uuid())
+  firstName             String
+  lastName              String
+  googleAuthId          String                @unique
+  email                 String                @unique
+  emailId               String?               @unique
+  roles                 Role[]
+  additionalPermissions String[]
+  userSettings          User_Settings?
+  userSecureSettings    User_Secure_Settings?
 
   // Relation references
   submittedChangeRequests         Change_Request[]          @relation(name: "submittedChangeRequests")
@@ -180,6 +223,13 @@ model User {
   deletedFrequentlyAskedQuestions FrequentlyAskedQuestion[] @relation(name: "frequentlyAskedQuestionDeleter")
   createdMilestones               Milestone[]               @relation(name: "milestoneCreator")
   deletedMilestones               Milestone[]               @relation(name: "milestoneDeleter")
+  createdGraphCollections         Graph_Collection[]        @relation(name: "graphCollectionsCreator")
+  deletedGraphCollections         Graph_Collection[]        @relation(name: "graphCollectionDeleter")
+  createdGraphs                   Graph[]                   @relation(name: "graphCreator")
+  deletedGraphs                   Graph[]                   @relation(name: "graphDeleter")
+  deletedTeamTypes                Team_Type[]               @relation(name: "teamTypeDeleter")
+  unreadAnnouncements             Announcement[]            @relation(name: "receivedAnnouncements")
+  unreadPopUps                    PopUp[]                   @relation(name: "userPopUps")
   createdChecklists               Checklist[]               @relation(name: "checklistCreator")
   deletedChecklists               Checklist[]               @relation(name: "checklistDeleter")
   checkedChecklists               Checklist[]               @relation(name: "checkedChecklists")
@@ -387,16 +437,18 @@ model WBS_Element {
 }
 
 model Project {
-  projectId    String         @id @default(uuid())
-  wbsElementId String         @unique
-  wbsElement   WBS_Element    @relation(fields: [wbsElementId], references: [wbsElementId])
-  budget       Int            @default(0)
-  summary      String
-  workPackages Work_Package[]
-  carId        String
-  car          Car            @relation(fields: [carId], references: [carId])
-  teams        Team[]         @relation(name: "assignedBy")
-  favoritedBy  User[]         @relation(name: "favoritedBy")
+  projectId                String         @id @default(uuid())
+  wbsElementId             String         @unique
+  wbsElement               WBS_Element    @relation(fields: [wbsElementId], references: [wbsElementId])
+  budget                   Int            @default(0)
+  summary                  String
+  workPackages             Work_Package[]
+  carId                    String
+  car                      Car            @relation(fields: [carId], references: [carId])
+  teams                    Team[]         @relation(name: "assignedBy")
+  favoritedBy              User[]         @relation(name: "favoritedBy")
+  featuredByOrganizationId String?
+  featuredByOrganization   Organization?  @relation(fields: [featuredByOrganizationId], references: [organizationId])
 }
 
 model Work_Package {
@@ -489,7 +541,7 @@ model Task {
   taskId          String        @id @default(uuid())
   title           String
   notes           String
-  deadline        DateTime
+  deadline        DateTime?
   assignees       User[]        @relation(name: "assignedTo")
   priority        Task_Priority
   status          Task_Status
@@ -714,7 +766,7 @@ model Team_Type {
   name            String
   iconName        String
   designReviews   Design_Review[]
-  team            Team[]
+  teams          Team[]
   description     String
   imageFileId     String?
   organizationId  String
@@ -722,6 +774,10 @@ model Team_Type {
   calendarId      String?
   checklists      Checklist[]
   usersOnboarding User[]          @relation(name: "onboardingTeamTypes")
+
+  dateDeleted DateTime?
+  deletedById String?
+  deletedBy   User?     @relation(name: "teamTypeDeleter", fields: [deletedById], references: [userId])
 
   @@unique([name, organizationId], name: "uniqueTeamType")
 }
@@ -863,6 +919,7 @@ model Car {
   projectProposedChanges Project_Proposed_Changes[]
   wbsElementId           String                     @unique
   wbsElement             WBS_Element                @relation(fields: [wbsElementId], references: [wbsElementId])
+  linkedGraphs           Graph[]                    @relation(name: "graphCars")
 }
 
 model Organization {
@@ -881,6 +938,8 @@ model Organization {
   description           String
   applyInterestImageId  String?   @unique
   exploreAsGuestImageId String?   @unique
+  logoImageId           String?
+  slackWorkspaceId      String?
   applicationLink       String
   onboardingText        String?
 
@@ -902,8 +961,13 @@ model Organization {
   changeRequests           Change_Request[]
   reimbursementReqeusts    Reimbursement_Request[]
   usefulLinks              Link[]
-  FrequentlyAskedQuestions FrequentlyAskedQuestion[]
-  Milestone                Milestone[]
+  frequentlyAskedQuestions FrequentlyAskedQuestion[]
+  milestones               Milestone[]
+  graphCollections         Graph_Collection[]
+  graphs                   Graph[]
+  featuredProjects         Project[]
+  popUps                   PopUp[]
+  announcements            Announcement[]
   checklists               Checklist[]
   contacts                 Contact[]
 }
@@ -933,6 +997,69 @@ model Milestone {
   userDeletedId  String?
   dateCreated    DateTime     @default(now())
   dateDeleted    DateTime?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+}
+
+model Graph {
+  id                 String               @id @default(uuid())
+  startDate          DateTime?
+  endDate            DateTime?
+  title              String
+  graphType          Graph_Type
+  displayGraphType   Graph_Display_Type
+  measure            Measure
+  dateDeleted        DateTime?
+  dateCreated        DateTime             @default(now())
+  specialPermissions Special_Permission[]
+
+  graphCollectionId String?
+  graphCollection   Graph_Collection? @relation(fields: [graphCollectionId], references: [id])
+
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "graphCreator")
+  userCreatedId  String
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "graphDeleter")
+  userDeletedId  String?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  cars           Car[]        @relation(name: "graphCars")
+}
+
+model Graph_Collection {
+  id              String               @id @default(uuid())
+  title           String
+  dateDeleted     DateTime?
+  viewPermissions Special_Permission[]
+  graphs          Graph[]
+  dateCreated     DateTime             @default(now())
+
+  userCreatedId  String
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "graphCollectionsCreator")
+  userDeletedId  String?
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "graphCollectionDeleter")
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+}
+
+model Announcement {
+  announcementId   String       @id @default(uuid())
+  text             String
+  usersReceived    User[]       @relation("receivedAnnouncements")
+  dateMessageSent  DateTime     @default(now())
+  dateDeleted      DateTime?
+  senderName       String
+  slackEventId     String       @unique
+  slackChannelName String
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [organizationId])
+}
+
+model PopUp {
+  popUpId        String       @id @default(uuid())
+  text           String
+  iconName       String
+  usersReceived  User[]       @relation("userPopUps")
+  eventLink      String?
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [organizationId])
 }

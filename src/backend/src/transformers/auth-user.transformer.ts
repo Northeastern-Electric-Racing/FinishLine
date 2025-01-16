@@ -1,4 +1,4 @@
-import { AuthenticatedUser, RoleEnum } from 'shared';
+import { AuthenticatedUser, getPermissionsForRoleType, Permission, RoleEnum } from 'shared';
 import { AuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
 import {
   isAuthUserHeadOfFinance,
@@ -6,6 +6,7 @@ import {
   isAuthUserOnFinance
 } from '../utils/reimbursement-requests.utils';
 import { Prisma } from '@prisma/client';
+import teamTransformer from './teams.transformer';
 
 const authenticatedUserTransformer = (
   user: Prisma.UserGetPayload<AuthUserQueryArgs>,
@@ -27,7 +28,13 @@ const authenticatedUserTransformer = (
     changeRequestsToReviewId: user.changeRequestsToReview.map((changeRequest) => changeRequest.crId),
     organizations: user.organizations.map((organization) => organization.organizationId),
     currentOrganization: user.organizations.find((organization) => organization.organizationId === organizationId),
-    onboardingTeamTypeIds: user.onboardingTeamTypes.map((teamType) => teamType.teamTypeId)
+    onboardingTeamTypeIds: user.onboardingTeamTypes.map((teamType) => teamType.teamTypeId),
+    teamsAsHead: user.teamsAsHead.map(teamTransformer),
+    teamsAsLead: user.teamsAsLead.map(teamTransformer),
+    permissions: user.roles
+      .map((role) => getPermissionsForRoleType(role.roleType))
+      .flat()
+      .concat(user.additionalPermissions as Permission[])
   };
 };
 

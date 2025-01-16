@@ -1,6 +1,6 @@
 import express from 'express';
-import { linkValidators, validateInputs, nonEmptyString } from '../utils/validation.utils';
-import OrganizationsController from '../controllers/organizations.controller';
+import { linkValidators, nonEmptyString, validateInputs } from '../utils/validation.utils';
+import OrganizationsController from '../controllers/organizations.controllers';
 import multer, { memoryStorage } from 'multer';
 import { body } from 'express-validator';
 
@@ -41,4 +41,25 @@ organizationRouter.post(
   OrganizationsController.updateOrganizationContacts
 );
 
+organizationRouter.post(
+  '/featured-projects/set',
+  body('projectIds').isArray(),
+  nonEmptyString(body('projectIds.*')),
+  validateInputs,
+  OrganizationsController.setOrganizationFeaturedProjects
+);
+organizationRouter.post('/logo/update', upload.single('logo'), OrganizationsController.setLogoImage);
+organizationRouter.get('/logo', OrganizationsController.getOrganizationLogoImage);
+organizationRouter.post(
+  '/description/set',
+  body('description').isString(),
+  validateInputs,
+  OrganizationsController.setOrganizationDescription
+);
+organizationRouter.get('/featured-projects', OrganizationsController.getOrganizationFeaturedProjects);
+organizationRouter.post(
+  '/workspaceId/set',
+  nonEmptyString(body('workspaceId')),
+  OrganizationsController.setSlackWorkspaceId
+);
 export default organizationRouter;

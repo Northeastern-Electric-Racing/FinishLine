@@ -14,6 +14,8 @@ export * from './src/types/design-review-types';
 export * from './src/types/frequently-asked-questions-types';
 export * from './src/types/milestone-types';
 export * from './src/types/checklist-types';
+export * from './src/types/pop-up-types';
+export * from './src/types/announcements.types';
 
 export * from './src/validate-wbs';
 export * from './src/date-utils';
@@ -23,3 +25,6 @@ export * from './src/word-count';
 
 export * from './src/permission-utils';
 export * from './src/types/bom-types';
+export * from './src/types/statistics-types';
+
+export * from './src/utils';

@@ -25,6 +25,7 @@ import { useHomePageContext } from '../../app/HomePageContext';
 import SidebarButton from './SidebarButton';
 import { Organization } from 'shared';
 import { useHistory } from 'react-router-dom';
+import BarChartIcon from '@mui/icons-material/BarChart';
 
 interface SidebarProps {
   drawerOpen: boolean;
@@ -74,6 +75,11 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organ
       name: 'Calendar',
       icon: <CalendarTodayIcon />,
       route: routes.CALENDAR
+    },
+    {
+      name: 'Statistics',
+      icon: <BarChartIcon />,
+      route: routes.STATISTICS
     },
     {
       name: 'Info',

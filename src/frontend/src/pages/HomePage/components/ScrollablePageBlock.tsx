@@ -1,0 +1,65 @@
+import { Box, Card, CardContent, Typography, useTheme } from '@mui/material';
+import React from 'react';
+
+interface ScrollablePageBlockProps {
+  children: React.ReactNode;
+  title?: String;
+  horizontal?: boolean;
+}
+
+const ScrollablePageBlock: React.FC<ScrollablePageBlockProps> = ({ children, title, horizontal }) => {
+  const theme = useTheme();
+  return (
+    <Card
+      sx={{
+        height: '100%',
+        background: theme.palette.background.paper
+      }}
+      variant="outlined"
+    >
+      <CardContent
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          flexWrap: 'nowrap'
+        }}
+      >
+        {title && (
+          <Typography ml={2} mt={2} variant="h5">
+            {title}
+          </Typography>
+        )}
+        <Box
+          sx={{
+            mt: 2,
+            display: 'flex',
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            gap: 2,
+            height: '100%',
+            overflowX: horizontal ? 'auto' : 'hidden',
+            overflowY: horizontal ? 'hidden' : 'auto',
+            '&::-webkit-scrollbar': {
+              width: '20px'
+            },
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: 'transparent'
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: theme.palette.primary.main,
+              borderRadius: '20px',
+              border: '6px solid transparent',
+              backgroundClip: 'content-box'
+            },
+            scrollbarWidth: 'auto',
+            scrollbarColor: `${theme.palette.primary.main} transparent`
+          }}
+        >
+          {children}
+        </Box>
+      </CardContent>
+    </Card>
+  );
+};
+export default ScrollablePageBlock;

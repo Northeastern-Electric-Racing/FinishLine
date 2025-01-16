@@ -1,8 +1,11 @@
+/* eslint-disable prefer-destructuring */
 import {
   Club_Accounts,
   Organization,
   Project,
   Schedule_Settings,
+  Task_Priority,
+  Task_Status,
   User,
   User_Secure_Settings,
   User_Settings,
@@ -12,10 +15,19 @@ import prisma from '../src/prisma/prisma';
 import { dbSeedAllUsers } from '../src/prisma/seed-data/users.seed';
 import TeamsService from '../src/services/teams.services';
 import ReimbursementRequestService from '../src/services/reimbursement-requests.services';
-import { ClubAccount, RoleEnum } from 'shared';
-import { batmanAppAdmin, batmanScheduleSettings, batmanSecureSettings, batmanSettings } from './test-data/users.test-data';
+import { ClubAccount, Permission, RoleEnum, TaskPriority, TaskStatus } from 'shared';
+import {
+  batmanAppAdmin,
+  batmanScheduleSettings,
+  batmanSecureSettings,
+  batmanSettings,
+  supermanAdmin
+} from './test-data/users.test-data';
 import { getWorkPackageTemplateQueryArgs } from '../src/prisma-query-args/work-package-template.query-args';
 import DesignReviewsService from '../src/services/design-reviews.services';
+import TasksService from '../src/services/tasks.services';
+import ProjectsService from '../src/services/projects.services';
+import { SlackMessage } from '../src/services/slack.services';
 
 export interface CreateTestUserParams {
   firstName: string;
@@ -24,10 +36,11 @@ export interface CreateTestUserParams {
   emailId?: string | null;
   googleAuthId: string;
   role: RoleEnum;
+  permissions?: string[];
 }
 
 export const createTestUser = async (
-  { firstName, lastName, email, emailId, googleAuthId, role }: CreateTestUserParams,
+  { firstName, lastName, email, emailId, googleAuthId, role, permissions }: CreateTestUserParams,
   organizationId: string,
   userSettings?: User_Settings,
   userSecureSettings?: User_Secure_Settings,
@@ -45,7 +58,9 @@ export const createTestUser = async (
           roleType: role,
           organizationId
         }
-      }
+      },
+      additionalPermissions: permissions,
+      organizations: { connect: { organizationId } }
     }
   });
 
@@ -118,6 +133,10 @@ export const resetUsers = async () => {
   await prisma.frequentlyAskedQuestion.deleteMany();
   await prisma.checklist.deleteMany();
   await prisma.contact.deleteMany();
+  await prisma.graph.deleteMany();
+  await prisma.graph_Collection.deleteMany();
+  await prisma.announcement.deleteMany();
+  await prisma.popUp.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
 };
@@ -133,12 +152,22 @@ export const createFinanceTeamAndLead = async (organization?: Organization) => {
   );
 
   const lead = await createTestUser(
-    { ...dbSeedAllUsers.aang, googleAuthId: 'financeLead', role: RoleEnum.LEADERSHIP },
+    {
+      ...dbSeedAllUsers.aang,
+      googleAuthId: 'financeLead',
+      role: RoleEnum.LEADERSHIP,
+      permissions: dbSeedAllUsers.aang.additionalPermissions as Permission[]
+    },
     organization.organizationId
   );
 
   const financeMember = await createTestUser(
-    { ...dbSeedAllUsers.johnBoddy, googleAuthId: 'financeMember', role: RoleEnum.MEMBER },
+    {
+      ...dbSeedAllUsers.johnBoddy,
+      googleAuthId: 'financeMember',
+      role: RoleEnum.MEMBER,
+      permissions: dbSeedAllUsers.aang.additionalPermissions as Permission[]
+    },
     organization.organizationId
   );
 
@@ -328,8 +357,10 @@ export const createTestLinkType = async (user: User, organizationId?: string) =>
   return linkType;
 };
 
-export const createTestProject = async (user: User, organizationId?: string): Promise<Project> => {
-  if (!organizationId) organizationId = (await createTestOrganization().then((org) => org.organizationId)) as string;
+export const createTestCar = async (orgId?: string, userIdentification?: string) => {
+  if (!orgId) orgId = (await createTestOrganization()).organizationId;
+  if (!userIdentification) userIdentification = (await createTestUser(supermanAdmin, orgId)).userId;
+
   const car = await prisma.car.create({
     data: {
       wbsElement: {
@@ -340,38 +371,68 @@ export const createTestProject = async (user: User, organizationId?: string): Pr
           dateCreated: new Date('01/01/2023'),
           name: 'Car',
           status: WBS_Element_Status.INACTIVE,
-          leadId: user.userId,
-          managerId: user.userId,
-          organizationId
+          leadId: userIdentification,
+          managerId: userIdentification,
+          organizationId: orgId
         }
       }
     }
   });
+
+  return car;
+};
+
+export const createTestProject = async (
+  user: User,
+  organizationId?: string,
+  teamId?: string,
+  carId?: string,
+  projectNumber: number = 1,
+  dateDeleted?: Date
+): Promise<Project> => {
+  if (!organizationId) organizationId = (await createTestOrganization()).organizationId as string;
+  if (!carId) carId = (await createTestCar(organizationId, user.userId)).carId;
 
   const genesisProject = await prisma.project.create({
     data: {
       wbsElement: {
         create: {
           carNumber: 0,
-          projectNumber: 1,
+          projectNumber,
           workPackageNumber: 0,
           dateCreated: new Date('01/01/2023'),
           name: 'Genesis',
           status: WBS_Element_Status.INACTIVE,
           leadId: user.userId,
           managerId: user.userId,
-          organizationId
+          organizationId,
+          dateDeleted: dateDeleted ?? null
         }
       },
       car: {
         connect: {
-          carId: car.carId
+          carId
         }
       },
       summary: 'Initial Car so that we can make change requests and projects and other stuff',
       budget: 1000
     }
   });
+
+  if (teamId) {
+    await prisma.project.update({
+      where: {
+        projectId: genesisProject.projectId
+      },
+      data: {
+        teams: {
+          connect: {
+            teamId
+          }
+        }
+      }
+    });
+  }
 
   return genesisProject;
 };
@@ -439,7 +500,12 @@ export const createTestDesignReview = async () => {
     organization.organizationId
   );
   const lead = await createTestUser(
-    { ...dbSeedAllUsers.aang, googleAuthId: 'financeLead', role: RoleEnum.LEADERSHIP },
+    {
+      ...dbSeedAllUsers.aang,
+      googleAuthId: 'financeLead',
+      role: RoleEnum.LEADERSHIP,
+      permissions: dbSeedAllUsers.aang.additionalPermissions as Permission[]
+    },
     organization.organizationId
   );
   if (!head) throw new Error('Failed to find user');
@@ -476,4 +542,160 @@ export const createTestDesignReview = async () => {
 
   const orgId = organization.organizationId;
   return { dr, organization, orgId };
+};
+
+export const createTestTeamType = async (organizationId?: string) => {
+  let orgId = organizationId;
+  if (!organizationId) {
+    orgId = (await createTestOrganization()).organizationId;
+  }
+
+  return await prisma.team_Type.create({
+    data: {
+      name: 'aTeam',
+      description: 'aDescription',
+      iconName: 'gear',
+      organizationId: orgId!
+    }
+  });
+};
+
+export const createTestTeam = async (headId?: string, divId?: string, orgId?: string) => {
+  if (!divId) {
+    const division = await createTestTeamType(orgId);
+    divId = division.teamTypeId;
+    orgId = division.organizationId;
+  } else if (!orgId) {
+    orgId = (await createTestOrganization()).organizationId;
+  }
+
+  if (!headId) {
+    headId = (await createTestUser(supermanAdmin, orgId)).userId;
+  }
+
+  const team = await prisma.team.create({
+    data: {
+      teamName: 'aTeamName',
+      slackId: 'aSlackId',
+      description: 'aDescription',
+      financeTeam: false,
+      headId: headId!,
+      teamTypeId: divId,
+      organizationId: orgId
+    }
+  });
+
+  return team;
+};
+
+export const createTestTask = async (
+  user: User,
+  title: string,
+  notes: string,
+  assignees: User[],
+  priority: Task_Priority,
+  status: Task_Status,
+  organizationId?: string,
+  deadline?: Date
+) => {
+  if (!organizationId) organizationId = (await createTestOrganization().then((org) => org.organizationId)) as string;
+  const task = await prisma.task.create({
+    data: {
+      taskId: '0000000001',
+      title,
+      notes,
+      deadline,
+      assignees: {
+        connect: assignees.map((user) => ({ userId: user.userId }))
+      },
+      priority,
+      status,
+      dateCreated: new Date(),
+      createdBy: {
+        connect: { userId: user.userId }
+      },
+      wbsElement: {
+        create: {
+          carNumber: 0,
+          projectNumber: 0,
+          workPackageNumber: 0,
+          dateCreated: new Date('01/01/2023'),
+          name: 'Car',
+          status: WBS_Element_Status.INACTIVE,
+          leadId: user.userId,
+          managerId: user.userId,
+          organizationId
+        }
+      }
+    }
+  });
+  return task;
+};
+
+export const createTestTaskWithOrganization = async (user: User, organization?: Organization) => {
+  if (!organization) organization = await createTestOrganization();
+  const orgId = organization.organizationId;
+  const team = await TeamsService.createTeam(user, 'Test team', user.userId, 'Test', '', false, organization);
+  if (!team) throw new Error('Failed to create team');
+  const project = await createTestProject(user, organization.organizationId);
+  if (!project) throw new Error('Failed to create project');
+  await ProjectsService.setProjectTeam(
+    user,
+    {
+      carNumber: 0,
+      projectNumber: 1,
+      workPackageNumber: 0
+    },
+    team.teamId,
+    organization
+  );
+
+  const task = await TasksService.createTask(
+    user,
+    {
+      carNumber: 0,
+      projectNumber: 1,
+      workPackageNumber: 0
+    },
+    'Test task',
+    'Test',
+    TaskPriority.High,
+    TaskStatus.IN_PROGRESS,
+    [user.userId],
+    organization,
+    new Date()
+  );
+
+  if (!task) throw new Error('Failed to create task');
+  return { task, organization, orgId };
+};
+
+export const createSlackMessageEvent = (
+  channel: string,
+  event_ts: string,
+  user: string,
+  client_msg_id: string,
+  elements: any[]
+): SlackMessage => {
+  return {
+    type: 'message',
+    channel,
+    event_ts,
+    channel_type: 'channel',
+    user,
+    client_msg_id,
+    text: 'sample text',
+    blocks: [
+      {
+        type: 'rich_text',
+        block_id: 'block id',
+        elements: [
+          {
+            type: 'rich_text_section',
+            elements
+          }
+        ]
+      }
+    ]
+  };
 };

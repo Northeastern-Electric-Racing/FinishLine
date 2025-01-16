@@ -23,4 +23,4 @@ jobs:
       - name: Yarn Install
         run: yarn install
       - name: Run Tests
-        run: yarn containerize:teste2e
+        run: yarn containerize:test:e2e

@@ -32,6 +32,7 @@ import ArrowCircleRightTwoToneIcon from '@mui/icons-material/ArrowCircleRightTwo
 import HiddenContentMargin from '../components/HiddenContentMargin';
 import { useHomePageContext } from './HomePageContext';
 import { useCurrentOrganization } from '../hooks/organizations.hooks';
+import Statistics from '../pages/StatisticsPage/Statistics';
 
 interface AppAuthenticatedProps {
   userId: string;
@@ -133,7 +134,8 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole, o
             <Route path={routes.CREDITS} component={Credits} />
             <Route path={routes.FINANCE} component={Finance} />
             <Route path={routes.CALENDAR} component={Calendar} />
-            <Route path={routes.HOME} component={Home} />
+            <Route path={routes.STATISTICS} component={Statistics} />
+            <Route exact path={routes.HOME} component={Home} />
             <Redirect from={routes.BASE} to={routes.HOME} />
             <Route path="*" component={PageNotFound} />
           </Switch>

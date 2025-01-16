@@ -16,6 +16,14 @@ export const useGetAllCars = () => {
   });
 };
 
+//TODO Move this logic to backend
+export const useGetCarsByIds = (ids: Set<string>) => {
+  return useQuery<Car[], Error>(['cars'], async () => {
+    const { data } = await getAllCars();
+    return data.filter((car) => ids.has(car.id));
+  });
+};
+
 export const useCreateCar = () => {
   const queryClient = useQueryClient();
   return useMutation<Car, Error, CreateCarPayload>(

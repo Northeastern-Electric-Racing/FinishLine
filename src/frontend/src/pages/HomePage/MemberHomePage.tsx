@@ -3,17 +3,19 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Typography } from '@mui/material';
-import OverdueWorkPackageAlerts from './components/OverdueWorkPackageAlerts';
-import UsefulLinks from './components/UsefulLinks';
-import WorkPackagesByTimelineStatus from './components/WorkPackagesByTimelineStatus';
-import UpcomingDeadlines from './components/UpcomingDeadlines';
-import { useCurrentUser, useSingleUserSettings } from '../../hooks/users.hooks';
+import { Box, Grid, Typography } from '@mui/material';
+import { useSingleUserSettings } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import PageLayout from '../../components/PageLayout';
-import { useEffect } from 'react';
-import { useHomePageContext } from '../../app/HomePageContext';
+import PageLayout, { PAGE_GRID_HEIGHT } from '../../components/PageLayout';
+import { AuthenticatedUser } from 'shared';
+import MyTasks from './components/MyTasks';
+import TeamWorkPackageDisplay from './components/TeamWorkPackageDisplay';
+import GeneralAnnouncements from './components/GeneralAnnouncements';
+
+interface MemberHomePageProps {
+  user: AuthenticatedUser;
+}
 
 const MemberHomePage = () => {
   const user = useCurrentUser();
@@ -32,10 +34,28 @@ const MemberHomePage = () => {
       <Typography variant="h3" marginLeft="auto" sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0 }}>
         Welcome, {user.firstName}!
       </Typography>
-      <OverdueWorkPackageAlerts />
-      <UsefulLinks />
-      <UpcomingDeadlines />
-      <WorkPackagesByTimelineStatus />
+      <Grid container height={`${PAGE_GRID_HEIGHT}vh`} mt={1} spacing={2}>
+        <Grid item xs={12} md={6} height={'100%'}>
+          <MyTasks />
+        </Grid>
+        <Grid item xs={12} md={6} height={'100%'}>
+          <Box
+            height={'100%'}
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2
+            }}
+          >
+            <Box height={'49%'}>
+              <GeneralAnnouncements />
+            </Box>
+            <Box height={'49%'}>
+              <TeamWorkPackageDisplay user={user} />
+            </Box>
+          </Box>
+        </Grid>
+      </Grid>
     </PageLayout>
   );
 };
