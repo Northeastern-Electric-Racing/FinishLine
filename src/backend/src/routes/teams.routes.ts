@@ -11,12 +11,6 @@ teamsRouter.get('/', TeamsController.getAllTeams);
 teamsRouter.get('/:teamId', TeamsController.getSingleTeam);
 
 teamsRouter.post(
-  '/:teamTypeId/set-initial-member',
-  nonEmptyString(body('userId')),
-  validateInputs,
-  TeamsController.setInitialTeamMember
-);
-teamsRouter.post(
   '/:teamId/set-members',
   body('userIds').isArray(),
   nonEmptyString(body('userIds.*')),
@@ -59,7 +53,9 @@ teamsRouter.get('/teamType/:teamTypeId/single', TeamsController.getSingleTeamTyp
 
 teamsRouter.post('/:teamId/set-team-type', nonEmptyString(body('teamTypeId')), validateInputs, TeamsController.setTeamType);
 
-teamsRouter.post('/teamType/:teamTypeId/toggle-onboarding-user', TeamsController.toggleOnboardingUser);
+teamsRouter.post('/teamType/:teamTypeId/set-onboarding-user', TeamsController.setOnboardingUser);
+
+teamsRouter.post('/teamType/complete-onboarding', TeamsController.completeOnboarding);
 
 teamsRouter.post(
   '/teamType/create',

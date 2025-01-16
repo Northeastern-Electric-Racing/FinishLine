@@ -78,9 +78,11 @@ const OnboardingHomePage = () => {
         <Grid item xs={12} md={7}>
           <Typography sx={{ fontSize: '2.5em' }}>Welcome to the {organization.name} Team</Typography>
         </Grid>
-        <NERButton variant="contained" disabled={progress < 100} onClick={handleOpenModal}>
-          Finished?
-        </NERButton>
+        <Grid item xs={12} md={5} display={'flex'} justifyContent={'flex-end'} paddingRight={3}>
+          <NERButton variant="contained" disabled={progress < 100} onClick={handleOpenModal}>
+            Finished?
+          </NERButton>
+        </Grid>
       </Grid>
       <Grid
         container

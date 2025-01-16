@@ -52,44 +52,6 @@ export default class TeamsService {
   }
 
   /**
-   * Sets the initial team member for a team
-   * @param teamId the id of the team to add the user to
-   * @param userId the id of the user to add to the team
-   * @param organizationId The organization the user is currently in
-   * @returns the updated team
-   */
-  static async setInitialTeamMember(teamTypeId: string, userId: string, organization: Organization) {
-    const team = await prisma.team.findFirst({
-      where: { teamTypeId }
-    });
-
-    if (!team) throw new HttpException(400, 'This team type has not been assigned to a team yet');
-    console.log('team', team);
-
-    if (team.dateArchived) throw new HttpException(400, 'Cannot edit the members of an archived team');
-
-    const user = await prisma.user.findUnique({
-      where: { userId }
-    });
-
-    if (!user) throw new NotFoundException('User', userId);
-
-    const updateTeam = await prisma.team.update({
-      where: { teamId: team.teamId },
-      data: {
-        members: {
-          connect: { userId }
-        }
-      },
-      ...getTeamQueryArgs(organization.organizationId)
-    });
-
-    console.log('updateTeam', updateTeam);
-
-    return teamTransformer(updateTeam);
-  }
-
-  /**
    * Update the given teamId's team's members
    * @param submitter a user who's making this request
    * @param teamId a id of team to be updated
@@ -578,7 +540,7 @@ export default class TeamsService {
    * @param organization the organization the user is currently in
    * @returns the updated team type
    */
-  static async toggleOnboardingUser(submitter: User, teamTypeId: string, organization: Organization): Promise<TeamType> {
+  static async setOnboardingUser(submitter: User, teamTypeId: string, organization: Organization): Promise<TeamType> {
     const teamType = await prisma.team_Type.findUnique({
       where: { teamTypeId, organizationId: organization.organizationId },
       include: { usersOnboarding: true }
@@ -587,11 +549,8 @@ export default class TeamsService {
     if (!teamType) throw new NotFoundException('Team Type', teamTypeId);
 
     // if the user is in any onboarding team type, remove them
-    const user = await prisma.user.update({
+    await prisma.user.update({
       where: { userId: submitter.userId },
-      include: {
-        roles: true
-      },
       data: {
         onboardingTeamTypes: {
           set: []
@@ -599,39 +558,40 @@ export default class TeamsService {
       }
     });
 
-    const isUserInTeam = teamType.usersOnboarding.some((user) => user.userId === submitter.userId);
-
-    await prisma.team_Type.update({
+    const updatedTeamType = await prisma.team_Type.update({
       where: { teamTypeId },
       data: {
-        usersOnboarding: isUserInTeam
-          ? { disconnect: { userId: submitter.userId } }
-          : { connect: { userId: submitter.userId } }
+        usersOnboarding: { connect: { userId: submitter.userId } }
+      }
+    });
+
+    return updatedTeamType;
+  }
+
+  static async completeOnboarding(submitter: User, organization: Organization) {
+    // remove the user from any onboardingTeamTypes they are a part of
+    const user = await prisma.user.update({
+      where: { userId: submitter.userId },
+      include: { roles: true },
+      data: {
+        onboardingTeamTypes: {
+          set: []
+        }
       }
     });
 
     // update the users role to member after they complete their onboarding
-    if (isUserInTeam) {
-      const currentRole = user.roles.find((role) => role.organizationId === organization.organizationId);
-      if (currentRole && currentRole.roleType !== RoleEnum.MEMBER) {
-        await prisma.role.update({
-          where: {
-            uniqueRole: { userId: user.userId, organizationId: organization.organizationId }
-          },
-          data: {
-            roleType: RoleEnum.MEMBER
-          }
-        });
-      }
+    const currentRole = user.roles.find((role) => role.organizationId === organization.organizationId);
+    if (currentRole && currentRole.roleType !== RoleEnum.MEMBER) {
+      await prisma.role.update({
+        where: {
+          uniqueRole: { userId: user.userId, organizationId: organization.organizationId }
+        },
+        data: {
+          roleType: RoleEnum.MEMBER
+        }
+      });
     }
-
-    const updatedTeamType = await prisma.team_Type.findUnique({
-      where: { teamTypeId }
-    });
-
-    if (!updatedTeamType) throw new NotFoundException('Team Type', teamTypeId);
-
-    return updatedTeamType;
   }
 
   static async setTeamTypeImage(

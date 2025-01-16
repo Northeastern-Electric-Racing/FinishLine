@@ -2,7 +2,7 @@ import { Box, Grid, Typography } from '@mui/material';
 import { TeamType } from 'shared';
 import { useGetImageUrl } from '../../../hooks/onboarding.hook';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useAllTeamTypes, useToggleOnboardingUser } from '../../../hooks/team-types.hooks';
+import { useAllTeamTypes, useSetOnboardingUser } from '../../../hooks/team-types.hooks';
 import ErrorPage from '../../ErrorPage';
 import { useState } from 'react';
 import Tabs from '../../../components/Tabs';
@@ -47,13 +47,13 @@ const TeamTypeSection = ({ teamType, onSelectSubteamPage = false }: TeamTypeSect
   const [showModal, setShowModal] = useState(false);
   const history = useHistory();
   const { data: imageUrl, isLoading: imageIsLoading } = useGetImageUrl(teamType.imageFileId);
-  const { mutateAsync: toggleOnboardingUser, isLoading: toggleOnboardingIsLoading } = useToggleOnboardingUser();
+  const { mutateAsync: setOnboardingUser, isLoading: setOnboardingIsLoading } = useSetOnboardingUser();
 
-  if (imageIsLoading || toggleOnboardingIsLoading) return <LoadingIndicator />;
+  if (imageIsLoading || setOnboardingIsLoading) return <LoadingIndicator />;
 
   const handleSubmit = async () => {
     setShowModal(false);
-    await toggleOnboardingUser(teamType.teamTypeId);
+    await setOnboardingUser(teamType.teamTypeId);
     history.push(routes.HOME_ONBOARDING);
   };
 

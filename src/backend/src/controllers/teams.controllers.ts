@@ -25,18 +25,6 @@ export default class TeamsController {
     }
   }
 
-  static async setInitialTeamMember(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { userId } = req.body;
-      const { teamTypeId } = req.params;
-
-      const team = await TeamsService.setInitialTeamMember(teamTypeId, userId, req.organization);
-      return res.status(200).json(team);
-    } catch (error: unknown) {
-      return next(error);
-    }
-  }
-
   static async setTeamMembers(req: Request, res: Response, next: NextFunction) {
     try {
       const { userIds } = req.body;
@@ -140,13 +128,23 @@ export default class TeamsController {
     }
   }
 
-  static async toggleOnboardingUser(req: Request, res: Response, next: NextFunction) {
+  static async setOnboardingUser(req: Request, res: Response, next: NextFunction) {
     try {
       const { teamTypeId } = req.params;
 
-      const updatedTeamType = await TeamsService.toggleOnboardingUser(req.currentUser, teamTypeId, req.organization);
+      const updatedTeamType = await TeamsService.setOnboardingUser(req.currentUser, teamTypeId, req.organization);
 
       return res.status(200).json(updatedTeamType);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
+  static async completeOnboarding(req: Request, res: Response, next: NextFunction) {
+    try {
+      await TeamsService.completeOnboarding(req.currentUser, req.organization);
+
+      return res.status(200).json({ message: 'Successfully completed onboarding' });
     } catch (error: unknown) {
       return next(error);
     }
