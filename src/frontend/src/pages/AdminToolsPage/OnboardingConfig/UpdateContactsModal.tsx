@@ -13,12 +13,15 @@ import { Contact, User } from 'shared';
 import { useAllUsers } from '../../../hooks/users.hooks';
 
 const schema = yup.object().shape({
-  contacts: yup.array().of(
-    yup.object({
-      userId: yup.string().required('User cannot be empty'),
-      title: yup.string().required('Title cannot be empty')
-    })
-  )
+  contacts: yup
+    .array()
+    .of(
+      yup.object({
+        userId: yup.string().required('User cannot be empty'),
+        title: yup.string().required('Title cannot be empty')
+      })
+    )
+    .required()
 });
 
 interface FormValues {

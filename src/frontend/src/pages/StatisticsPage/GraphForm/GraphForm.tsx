@@ -1,6 +1,6 @@
 import { Box } from '@mui/material';
 import { useForm } from 'react-hook-form';
-import { CreateGraphArgs, Graph, GraphFormInput } from 'shared';
+import { CreateGraphArgs, Graph, GraphDisplayType, GraphFormInput, GraphType, Measure } from 'shared';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import { useHistory, useParams } from 'react-router-dom';
@@ -19,10 +19,11 @@ const schema = yup.object().shape({
   endTime: yup.date().optional(),
   startTime: yup.date().optional(),
   title: yup.string().optional(),
-  graphType: yup.string().required(),
-  graphDisplayType: yup.string().required(),
+  graphType: yup.mixed<GraphType>().oneOf(Object.values(GraphType)),
+  graphDisplayType: yup.mixed<GraphDisplayType>().oneOf(Object.values(GraphDisplayType)).required(),
   carIds: yup.array().required(),
-  measure: yup.string().required()
+  measure: yup.mixed<Measure>().oneOf(Object.values(Measure)).required(),
+  specialPermissions: yup.array().required()
 });
 
 interface GraphFormProps {
@@ -58,7 +59,8 @@ const GraphForm = ({ title, action, defaultValues, submitText, successText }: Gr
         startDate: formInput.startTime,
         endDate: formInput.endTime,
         graphType: formInput.graphType,
-        graphCollectionId
+        graphCollectionId,
+        title: formInput.title ?? ''
       });
 
       toast.success(successText);

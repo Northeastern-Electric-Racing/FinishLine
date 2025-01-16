@@ -30,10 +30,10 @@ const AddSABONumberModal = ({ modalShow, onHide, reimbursementRequestId }: AddSA
     control,
     formState: { errors, isValid },
     reset
-  } = useForm({
+  } = useForm<{ saboNumber: number }>({
     resolver: yupResolver(schema),
     defaultValues: {
-      saboNumber: ''
+      saboNumber: 0
     },
     mode: 'onChange'
   });

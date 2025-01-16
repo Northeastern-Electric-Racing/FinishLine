@@ -207,34 +207,6 @@ export const createTestFAQ = async (orgId: string, faqId: string) => {
   });
 };
 
-export const createTestTeamType = async (name: string, organization: Organization) => {
-  return await prisma.team_Type.create({
-    data: {
-      name,
-      iconName: 'YouTubeIcon',
-      description: '',
-      organizationId: organization.organizationId
-    }
-  });
-};
-
-export const createTestTeam = async (
-  teamName: string,
-  organization: Organization,
-  teamTypeId: string,
-  headUserId: string
-) => {
-  return await prisma.team.create({
-    data: {
-      teamName,
-      organizationId: organization.organizationId,
-      teamTypeId,
-      slackId: 'slackId',
-      headId: headUserId
-    }
-  });
-};
-
 export const createTestOrganization = async () => {
   const user = await prisma.user.create({
     data: {
@@ -544,7 +516,7 @@ export const createTestDesignReview = async () => {
   return { dr, organization, orgId };
 };
 
-export const createTestTeamType = async (organizationId?: string) => {
+export const createTestTeamType = async (name: string = 'aTeam', organizationId?: string) => {
   let orgId = organizationId;
   if (!organizationId) {
     orgId = (await createTestOrganization()).organizationId;
@@ -552,7 +524,7 @@ export const createTestTeamType = async (organizationId?: string) => {
 
   return await prisma.team_Type.create({
     data: {
-      name: 'aTeam',
+      name,
       description: 'aDescription',
       iconName: 'gear',
       organizationId: orgId!

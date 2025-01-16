@@ -37,10 +37,9 @@ import Statistics from '../pages/StatisticsPage/Statistics';
 interface AppAuthenticatedProps {
   userId: string;
   userRole: Role;
-  onOnboarding: boolean;
 }
 
-const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole, onOnboarding }) => {
+const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole }) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
 
   const theme = useTheme();
@@ -117,12 +116,6 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole, o
           sx={{ width: !onGuestHomePage && moveContent ? 'calc(100vw - 220px)' : `calc(100vw - 30px)` }}
         >
           <Switch>
-            {!onOnboarding && isGuest(userRole) && <Redirect exact path={routes.HOME} to={routes.HOME_GUEST} />}
-            {!onOnboarding && <Redirect exact path={routes.HOME_ACCEPT} to={routes.HOME} />}
-            {onOnboarding && <Redirect exact path={routes.HOME} to={routes.HOME_SELECT_SUBTEAM} />}
-            {!isGuest(userRole) && <Redirect exact path={routes.HOME_GUEST} to={routes.HOME} />}
-            {!isGuest(userRole) && <Redirect exact path={routes.HOME_PNM} to={routes.HOME} />}
-            {!isGuest(userRole) && <Redirect exact path={routes.HOME_ONBOARDING} to={routes.HOME} />}
             <Route path={routes.PROJECTS} component={Projects} />
             <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
             <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
@@ -135,7 +128,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole, o
             <Route path={routes.FINANCE} component={Finance} />
             <Route path={routes.CALENDAR} component={Calendar} />
             <Route path={routes.STATISTICS} component={Statistics} />
-            <Route exact path={routes.HOME} component={Home} />
+            <Route path={routes.HOME} component={Home} />
             <Redirect from={routes.BASE} to={routes.HOME} />
             <Route path="*" component={PageNotFound} />
           </Switch>

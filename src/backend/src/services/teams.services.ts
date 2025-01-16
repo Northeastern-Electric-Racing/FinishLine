@@ -664,7 +664,7 @@ export default class TeamsService {
 
     if (!updatedTeamType) throw new NotFoundException('Team Type', teamTypeId);
 
-    return updatedTeamType;
+    return teamTypeTransformer(updatedTeamType);
   }
 
   static async setTeamTypeImage(

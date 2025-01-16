@@ -41,9 +41,9 @@ export default class TeamsController {
       const { teamId } = req.params;
 
       const team = await TeamsService.setInitialTeamMember(teamId, userId, req.organization);
-      return res.status(200).json(team);
+       res.status(200).json(team);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -156,9 +156,9 @@ export default class TeamsController {
 
       const updatedTeamType = await TeamsService.toggleOnboardingUser(req.currentUser, teamTypeId, req.organization);
 
-      return res.status(200).json(updatedTeamType);
+       res.status(200).json(updatedTeamType);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 

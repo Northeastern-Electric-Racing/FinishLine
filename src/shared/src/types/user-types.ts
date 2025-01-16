@@ -127,8 +127,8 @@ export interface UserWithScheduleSettings extends User {
 }
 
 export interface SetUserScheduleSettingsArgs {
-  personalGmail: string;
-  personalZoomLink: string;
+  personalGmail?: string;
+  personalZoomLink?: string;
   availability: AvailabilityCreateArgs[];
 }
 

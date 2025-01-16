@@ -23,9 +23,10 @@ import DrawerHeader from '../../components/DrawerHeader';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useHomePageContext } from '../../app/HomePageContext';
 import SidebarButton from './SidebarButton';
-import { Organization } from 'shared';
+import { isGuest, Organization } from 'shared';
 import { useHistory } from 'react-router-dom';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import { useCurrentUser } from '../../hooks/users.hooks';
 
 interface SidebarProps {
   drawerOpen: boolean;
@@ -39,6 +40,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organ
   const { onPNMHomePage, onOnboardingHomePage } = useHomePageContext();
   const theme = useTheme();
   const history = useHistory();
+  const user = useCurrentUser();
 
   const memberLinkItems: LinkItem[] = [
     {
@@ -62,11 +64,6 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organ
       route: routes.CHANGE_REQUESTS
     },
     {
-      name: 'Finance',
-      icon: <AttachMoneyIcon />,
-      route: routes.FINANCE
-    },
-    {
       name: 'Teams',
       icon: <GroupIcon />,
       route: routes.TEAMS
@@ -77,16 +74,28 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organ
       route: routes.CALENDAR
     },
     {
-      name: 'Statistics',
-      icon: <BarChartIcon />,
-      route: routes.STATISTICS
-    },
-    {
       name: 'Info',
       icon: <QuestionMarkIcon />,
       route: routes.INFO
     }
   ];
+
+  if (!isGuest(user.role)) {
+    memberLinkItems.splice(
+      6,
+      0,
+      {
+        name: 'Finance',
+        icon: <AttachMoneyIcon />,
+        route: routes.FINANCE
+      },
+      {
+        name: 'Statistics',
+        icon: <BarChartIcon />,
+        route: routes.STATISTICS
+      }
+    );
+  }
 
   const onboardingLinkItems: LinkItem[] = [
     {

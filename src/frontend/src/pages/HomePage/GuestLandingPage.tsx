@@ -11,7 +11,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useGetImageUrl } from '../../hooks/onboarding.hook';
 
-const IntroGuestHomePage = () => {
+const GuestHomePage = () => {
   const user = useCurrentUser();
   const history = useHistory();
   const {
@@ -82,4 +82,4 @@ const IntroGuestHomePage = () => {
   );
 };
 
-export default IntroGuestHomePage;
+export default GuestHomePage;

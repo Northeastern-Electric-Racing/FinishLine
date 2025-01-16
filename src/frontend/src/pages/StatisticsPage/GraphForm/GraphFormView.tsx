@@ -101,7 +101,7 @@ export const GraphFormView: React.FC<GraphFormViewProps> = ({ control, errors, c
             render={({ field }) => (
               <Select
                 displayEmpty
-                placeholder={'Change Graph Display Type'}
+                label={'Change Graph Display Type'}
                 sx={{ height: 56, width: '100%', textAlign: 'left' }}
                 fullWidth
                 MenuProps={{
@@ -140,7 +140,7 @@ export const GraphFormView: React.FC<GraphFormViewProps> = ({ control, errors, c
               <Select
                 displayEmpty
                 fullWidth
-                placeholder={'Change Measure'}
+                label={'Change Measure'}
                 sx={{ height: 56, width: '100%', textAlign: 'left' }}
                 MenuProps={{
                   anchorOrigin: {
