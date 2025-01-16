@@ -79,13 +79,13 @@ const AcceptedPage = () => {
       >
         <Grid container justifyContent="center" spacing={8} sx={{ maxWidth: '500px' }}>
           <Grid item>
-            <NERButton variant="contained" sx={{ fontSize: 20 }} onClick={handleClick}>
-              Accept
+            <NERButton variant="contained" sx={{ fontSize: 20 }} onClick={() => history.push(routes.HOME_SELECT_SUBTEAM)}>
+              Reject
             </NERButton>
           </Grid>
           <Grid item>
-            <NERButton variant="contained" sx={{ fontSize: 20 }} onClick={() => history.push(routes.HOME_SELECT_SUBTEAM)}>
-              Reject
+            <NERButton variant="contained" sx={{ fontSize: 20 }} onClick={handleClick}>
+              Accept
             </NERButton>
           </Grid>
         </Grid>
