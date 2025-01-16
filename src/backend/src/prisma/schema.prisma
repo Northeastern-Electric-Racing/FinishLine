@@ -766,8 +766,8 @@ model Team_Type {
   name            String
   iconName        String
   designReviews   Design_Review[]
-  teams          Team[]
-  description     String
+  teams           Team[]
+  description     String          @default("")
   imageFileId     String?
   organizationId  String
   organization    Organization    @relation(fields: [organizationId], references: [organizationId])
@@ -935,12 +935,12 @@ model Organization {
   treasurer             User?     @relation(name: "treasurer", fields: [treasurerId], references: [userId])
   advisor               User?     @relation(name: "advisor", fields: [advisorId], references: [userId])
   advisorId             String?
-  description           String
-  applyInterestImageId  String?   @unique
-  exploreAsGuestImageId String?   @unique
+  description           String    @default("")
+  applyInterestImageId  String?
+  exploreAsGuestImageId String?
   logoImageId           String?
   slackWorkspaceId      String?
-  applicationLink       String
+  applicationLink       String?
   onboardingText        String?
 
   // Relation references
