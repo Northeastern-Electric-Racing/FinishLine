@@ -91,7 +91,7 @@ export const useCompleteOnboarding = () => {
       }
     }
   );
-}
+};
 
 /**
  * Custom react hook to create a team type
