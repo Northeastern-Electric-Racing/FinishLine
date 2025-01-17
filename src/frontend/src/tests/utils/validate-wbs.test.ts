@@ -1,5 +1,4 @@
 import { wbsNumComparator } from 'shared';
-import '@testing-library/jest-dom/extend-expect';
 
 describe('wbsNumComparator', () => {
   it('should correctly compare two WBS Numbers', () => {

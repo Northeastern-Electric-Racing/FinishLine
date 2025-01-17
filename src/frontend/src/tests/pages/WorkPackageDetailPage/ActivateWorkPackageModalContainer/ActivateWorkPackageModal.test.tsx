@@ -48,7 +48,7 @@ describe('activate work package modal test suite', () => {
 
     expect(screen.getByText('Cancel')).toBeInTheDocument();
     expect(screen.getByText('Submit')).toBeInTheDocument();
-  });
+  }); 
 
   it("doesn't display modal", () => {
     renderComponent(false);
