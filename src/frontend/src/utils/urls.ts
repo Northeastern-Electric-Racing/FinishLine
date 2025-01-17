@@ -81,10 +81,10 @@ const changeRequestRequestReviewer = (id: string) => changeRequestsById(id) + '/
 const teams = () => `${API_URL}/teams`;
 const teamsById = (id: string) => `${teams()}/${id}`;
 const teamsDelete = (id: string) => `${teamsById(id)}/delete`;
-const teamsSetInitialMember = (id: string) => `${teamsById(id)}/set-initial-member`;
 const teamsSetMembers = (id: string) => `${teamsById(id)}/set-members`;
 const teamsSetTeamType = (id: string) => `${teamsById(id)}/set-team-type`;
-const toggleOnboardingUser = (id: string) => `${teams()}/teamType/${id}/toggle-onboarding-user`;
+const setOnboardingUser = (id: string) => `${teams()}/teamType/${id}/set-onboarding-user`;
+const completeOnboarding = () => `${teams()}/teamType/complete-onboarding`;
 const teamsSetHead = (id: string) => `${teamsById(id)}/set-head`;
 const teamsArchive = (id: string) => `${teamsById(id)}/archive`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
@@ -299,7 +299,6 @@ export const apiUrls = {
   teams,
   teamsById,
   teamsDelete,
-  teamsSetInitialMember,
   teamsSetMembers,
   teamsArchive,
   teamsSetHead,
@@ -308,7 +307,8 @@ export const apiUrls = {
   teamsSetLeads,
   allTeamTypes,
   teamsSetTeamType,
-  toggleOnboardingUser,
+  setOnboardingUser,
+  completeOnboarding,
   teamTypesCreate,
   teamTypeEdit,
   teamTypeSetImage,

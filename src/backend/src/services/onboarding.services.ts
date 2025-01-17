@@ -46,19 +46,12 @@ export default class OnboardingServices {
    * @returns all the checklists for the given teamType Ids
    */
   static async getUsersChecklists(userId: string, organization: Organization) {
-    const user = await prisma.user.findUnique({ where: { userId } });
+    const user = await prisma.user.findUnique({ where: { userId }, include: { onboardingTeamTypes: true } });
     if (!user) {
       throw new NotFoundException('User', userId);
     }
 
-    const teamTypes = await prisma.team_Type.findMany({
-      where: {
-        organizationId: organization.organizationId,
-        usersOnboarding: { some: { userId } }
-      }
-    });
-
-    const teamTypeIds = teamTypes.map((teamType) => teamType.teamTypeId);
+    const teamTypeIds = user.onboardingTeamTypes.map((teamType) => teamType.teamTypeId);
 
     const teamTypeChecklists = await prisma.checklist.findMany({
       where: {
@@ -77,7 +70,25 @@ export default class OnboardingServices {
       }
     });
 
-    return teamTypeChecklists;
+    const generalChecklists = await prisma.checklist.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        teamTypeId: null,
+        teamId: null,
+        parentChecklistId: null
+      },
+      include: {
+        subtasks: {
+          include: {
+            usersChecked: true
+          }
+        },
+        teamType: true
+      }
+    });
+
+    return [...generalChecklists, ...teamTypeChecklists];
   }
 
   /**

@@ -130,11 +130,11 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
     <NERFormModal
       open={open}
       onHide={handleClose}
-      title={'Create Checklist'}
+      title={'Create Task'}
       reset={() => reset({ name: '', descriptions: [] })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
-      formId={'create-UsefulLink-form'}
+      formId={'create-task-form'}
       showCloseButton
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
