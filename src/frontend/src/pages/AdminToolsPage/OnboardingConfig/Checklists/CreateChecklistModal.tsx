@@ -42,7 +42,7 @@ const schema = yup.object().shape({
     .of(
       yup.object().shape({
         name: yup.string().required('Subtask Name is Required'),
-        isOptional: yup.boolean().required('Is Optional is Required'),
+        isOptional: yup.boolean().required('Is Optional is Required')
       })
     )
     .required()

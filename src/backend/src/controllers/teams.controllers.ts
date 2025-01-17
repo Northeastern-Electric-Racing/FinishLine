@@ -144,9 +144,9 @@ export default class TeamsController {
 
       const updatedTeamType = await TeamsService.setOnboardingUser(req.currentUser, teamTypeId, req.organization);
 
-       res.status(200).json(updatedTeamType);
+      res.status(200).json(updatedTeamType);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 

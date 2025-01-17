@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+// @ts-ignore Some reason it doesnt recognize this package
 import { createRoot } from 'react-dom/client';
 import AppMain from './app/AppMain';
 import reportWebVitals from './reportWebVitals';

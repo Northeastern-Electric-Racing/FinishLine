@@ -6,6 +6,6 @@ export default defineConfig({
     globals: true,
     maxConcurrency: 1,
     maxWorkers: 1,
-    minWorkers: 1,
+    minWorkers: 1
   }
 });
