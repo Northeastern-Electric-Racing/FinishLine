@@ -151,8 +151,6 @@ const ProjectsTable: React.FC = () => {
     };
   }, []);
 
-  console.log(data);
-
   return (
     <Box
       sx={{
