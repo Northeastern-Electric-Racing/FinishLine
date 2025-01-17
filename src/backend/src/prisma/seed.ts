@@ -5,7 +5,19 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { CR_Type, Club_Accounts, PrismaClient, Scope_CR_Why_Type, Task_Priority, Task_Status, Team } from '@prisma/client';
+import {
+  CR_Type,
+  Club_Accounts,
+  Graph,
+  Graph_Display_Type,
+  Graph_Type,
+  Measure,
+  PrismaClient,
+  Scope_CR_Why_Type,
+  Task_Priority,
+  Task_Status,
+  Team
+} from '@prisma/client';
 import { createUser, dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
 import ChangeRequestsService from '../services/change-requests.services';
@@ -15,6 +27,7 @@ import {
   DesignReviewStatus,
   MaterialStatus,
   RoleEnum,
+  SpecialPermission,
   StandardChangeRequest,
   WbsElementStatus,
   WorkPackageStage
@@ -33,6 +46,10 @@ import { writeFileSync } from 'fs';
 import WorkPackageTemplatesService from '../services/work-package-template.services';
 import RecruitmentServices from '../services/recruitment.services';
 import OrganizationsService from '../services/organizations.services';
+import StatisticsService from '../services/statistics.services';
+import { seedGraph } from './seed-data/statistics.seed';
+import { graphCollectionTransformer } from '../transformers/statistics-graphCollection.transformer';
+import AnnouncementService from '../services/announcement.service';
 import OnboardingServices from '../services/onboarding.services';
 
 const prisma = new PrismaClient();
@@ -180,11 +197,11 @@ const performSeed: () => Promise<void> = async () => {
   const glen = await createUser(dbSeedAllUsers.glen, RoleEnum.LEADERSHIP, organizationId);
   const shane = await createUser(dbSeedAllUsers.shane, RoleEnum.LEADERSHIP, organizationId);
   const june = await createUser(dbSeedAllUsers.june, RoleEnum.LEADERSHIP, organizationId);
-  const kevin = await createUser(dbSeedAllUsers.kevin, RoleEnum.LEADERSHIP, organizationId);
-  const norbury = await createUser(dbSeedAllUsers.norbury, RoleEnum.LEADERSHIP, organizationId);
-  const carr = await createUser(dbSeedAllUsers.carr, RoleEnum.LEADERSHIP, organizationId);
-  const trang = await createUser(dbSeedAllUsers.trang, RoleEnum.LEADERSHIP, organizationId);
-  const regina = await createUser(dbSeedAllUsers.regina, RoleEnum.LEADERSHIP, organizationId);
+  const kevin = await createUser(dbSeedAllUsers.kevin, RoleEnum.MEMBER, organizationId);
+  const norbury = await createUser(dbSeedAllUsers.norbury, RoleEnum.MEMBER, organizationId);
+  const carr = await createUser(dbSeedAllUsers.carr, RoleEnum.MEMBER, organizationId);
+  const trang = await createUser(dbSeedAllUsers.trang, RoleEnum.MEMBER, organizationId);
+  const regina = await createUser(dbSeedAllUsers.regina, RoleEnum.MEMBER, organizationId);
   const patrick = await createUser(dbSeedAllUsers.patrick, RoleEnum.MEMBER, organizationId);
   const spongebob = await createUser(dbSeedAllUsers.spongebob, RoleEnum.GUEST, organizationId);
 
@@ -455,7 +472,7 @@ const performSeed: () => Promise<void> = async () => {
    */
 
   /** Project 1 */
-  const { projectWbsNumber: project1WbsNumber } = await seedProject(
+  const { projectWbsNumber: project1WbsNumber, projectId: project1Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
     fergus.wbsElement.carNumber,
@@ -483,7 +500,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Project 2 */
-  const { projectWbsNumber: project2WbsNumber } = await seedProject(
+  const { projectWbsNumber: project2WbsNumber, projectId: project2Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
     fergus.wbsElement.carNumber,
@@ -511,7 +528,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Project 3 */
-  const { projectWbsNumber: project3WbsNumber } = await seedProject(
+  const { projectWbsNumber: project3WbsNumber, projectId: project3Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
     fergus.wbsElement.carNumber,
@@ -539,7 +556,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Project 4 */
-  const { projectWbsNumber: project4WbsNumber } = await seedProject(
+  const { projectWbsNumber: project4WbsNumber, projectId: project4Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
     fergus.wbsElement.carNumber,
@@ -705,6 +722,48 @@ const performSeed: () => Promise<void> = async () => {
     glen.userId,
     ner
   );
+
+  /**
+   * Graphs
+   */
+
+  /** Graph 1 */
+  const graph1 = await seedGraph(
+    new Date('12/12/2024'),
+    new Date('12/12/2027'),
+    'new graph',
+    Graph_Type.PROJECT_BUDGET_BY_DIVISION,
+    Graph_Display_Type.BAR,
+    Measure.SUM,
+    thomasEmrax,
+    ner
+  );
+
+  /**
+   * Graph Collection 1
+   */
+  const graph2 = await prisma.graph.create({
+    data: {
+      title: 'graph2',
+      graphType: Graph_Type.PROJECT_BUDGET_BY_PROJECT,
+      displayGraphType: Graph_Display_Type.PIE,
+      measure: Measure.SUM,
+      userCreatedId: thomasEmrax.userId,
+      organizationId: ner.organizationId
+    }
+  });
+
+  const graphCollection1 = await prisma.graph_Collection.create({
+    data: {
+      title: 'Graph Collection 1',
+      viewPermissions: [SpecialPermission.FINANCE_ONLY],
+      graphs: {
+        connect: [{ id: graph2.id }]
+      },
+      userCreatedId: thomasEmrax.userId,
+      organizationId: ner.organizationId
+    }
+  });
 
   /**
    * Change Requests for Creating Work Packages
@@ -1396,11 +1455,11 @@ const performSeed: () => Promise<void> = async () => {
     project1WbsNumber,
     'Research attenuation',
     "I don't know what attenuation is yet",
-    new Date('01/01/2024'),
     Task_Priority.HIGH,
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId],
-    ner
+    ner,
+    new Date('01/01/2024')
   );
 
   await TasksService.createTask(
@@ -1408,11 +1467,11 @@ const performSeed: () => Promise<void> = async () => {
     project1WbsNumber,
     'Design Attenuator',
     'Autocad?',
-    new Date('01/01/2024'),
     Task_Priority.MEDIUM,
     Task_Status.IN_BACKLOG,
     [joeShmoe.userId],
-    ner
+    ner,
+    new Date('01/01/2024')
   );
 
   await TasksService.createTask(
@@ -1420,11 +1479,11 @@ const performSeed: () => Promise<void> = async () => {
     project1WbsNumber,
     'Research Impact',
     'Autocad?',
-    new Date('01/01/2024'),
     Task_Priority.MEDIUM,
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId, joeBlow.userId],
-    ner
+    ner,
+    new Date('01/01/2024')
   );
 
   await TasksService.createTask(
@@ -1433,11 +1492,11 @@ const performSeed: () => Promise<void> = async () => {
     'Impact Test',
     'Use our conveniently available jumbo watermelon and slingshot to test how well our impact attenuator can ' +
       'attenuate impact.',
-    new Date('2024-02-17T00:00:00-05:00'),
     Task_Priority.LOW,
     Task_Status.IN_PROGRESS,
     [joeBlow.userId],
-    ner
+    ner,
+    new Date('2024-02-17T00:00:00-05:00')
   );
 
   await TasksService.createTask(
@@ -1445,11 +1504,11 @@ const performSeed: () => Promise<void> = async () => {
     project1WbsNumber,
     'Review Compliance',
     'I think there are some rules we may or may not have overlooked...',
-    new Date('2024-01-01T00:00:00-05:00'),
     Task_Priority.MEDIUM,
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId],
-    ner
+    ner,
+    new Date('2024-01-01T00:00:00-05:00')
   );
 
   await TasksService.createTask(
@@ -1457,11 +1516,11 @@ const performSeed: () => Promise<void> = async () => {
     project1WbsNumber,
     'Decorate Impact Attenuator',
     'You know you want to.',
-    new Date('2024-01-20T00:00:00-05:00'),
     Task_Priority.LOW,
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId],
-    ner
+    ner,
+    new Date('2024-01-20T00:00:00-05:00')
   );
 
   await TasksService.createTask(
@@ -1469,11 +1528,11 @@ const performSeed: () => Promise<void> = async () => {
     project1WbsNumber,
     'Meet with the Department of Transportation',
     'Discuss design decisions',
-    new Date('2023-05-19T00:00:00-04:00'),
     Task_Priority.LOW,
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId],
-    ner
+    ner,
+    new Date('2023-05-19T00:00:00-04:00')
   );
 
   await TasksService.createTask(
@@ -1481,11 +1540,11 @@ const performSeed: () => Promise<void> = async () => {
     project1WbsNumber,
     'Build Attenuator',
     'WOOOO',
-    new Date('01/01/2024'),
     Task_Priority.LOW,
     Task_Status.DONE,
     [joeShmoe.userId],
-    ner
+    ner,
+    new Date('01/01/2024')
   );
 
   await TasksService.createTask(
@@ -1501,11 +1560,11 @@ const performSeed: () => Promise<void> = async () => {
       'a 5-foot drive test to hitting 60 miles per hour in competitions. "It\'s a go-kart that has 110 kilowatts of ' +
       'power, 109 kilowatts of power," says McCauley, a fourth-year electrical and computer engineering student. ' +
       '"That\'s over 100 horsepower."',
-    new Date('2022-11-16T00:00-05:00'),
     Task_Priority.HIGH,
     Task_Status.DONE,
     [joeShmoe.userId],
-    ner
+    ner,
+    new Date('2022-11-16T00:00-05:00')
   );
 
   await TasksService.createTask(
@@ -1513,11 +1572,11 @@ const performSeed: () => Promise<void> = async () => {
     project1WbsNumber,
     'Safety Training',
     'how to use (or not use) the impact attenuator',
-    new Date('2023-03-15T00:00:00-04:00'),
     Task_Priority.HIGH,
     Task_Status.DONE,
     [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId],
-    ner
+    ner,
+    new Date('2023-03-15T00:00:00-04:00')
   );
 
   await TasksService.createTask(
@@ -1525,11 +1584,11 @@ const performSeed: () => Promise<void> = async () => {
     project2WbsNumber,
     'Double-Check Inventory',
     'Nobody really wants to do this...',
-    new Date('2023-04-01T00:00:00-04:00'),
     Task_Priority.LOW,
     Task_Status.IN_BACKLOG,
     [],
-    ner
+    ner,
+    new Date('2023-04-01T00:00:00-04:00')
   );
 
   await TasksService.createTask(
@@ -1537,11 +1596,11 @@ const performSeed: () => Promise<void> = async () => {
     project2WbsNumber,
     'Aerodynamics Test',
     'Wind go wooooosh',
-    new Date('2024-01-01T00:00:00-05:00'),
     Task_Priority.MEDIUM,
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId],
-    ner
+    ner,
+    new Date('2024-01-01T00:00:00-05:00')
   );
 
   await TasksService.createTask(
@@ -1549,11 +1608,11 @@ const performSeed: () => Promise<void> = async () => {
     project2WbsNumber,
     'Ask Sponsors About Logo Sticker Placement',
     'the more sponsors the cooler we look',
-    new Date('2024-01-01T00:00:00-05:00'),
     Task_Priority.HIGH,
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId, joeShmoe.userId],
-    ner
+    ner,
+    new Date('2024-01-01T00:00:00-05:00')
   );
 
   await TasksService.createTask(
@@ -1561,11 +1620,11 @@ const performSeed: () => Promise<void> = async () => {
     project2WbsNumber,
     'Discuss Design With Powertrain Team',
     '',
-    new Date('2023-10-31T00:00:00-04:00'),
     Task_Priority.MEDIUM,
     Task_Status.DONE,
     [thomasEmrax.userId],
-    ner
+    ner,
+    new Date('2023-10-31T00:00:00-04:00')
   );
 
   await TasksService.createTask(
@@ -1573,11 +1632,11 @@ const performSeed: () => Promise<void> = async () => {
     project3WbsNumber,
     'Power the Battery Box',
     'With all our powers combined, we can win any Electric Racing competition!',
-    new Date('2024-05-01T00:00:00-04:00'),
     Task_Priority.MEDIUM,
     Task_Status.IN_BACKLOG,
     [thomasEmrax, joeShmoe, joeBlow].map((user) => user.userId),
-    ner
+    ner,
+    new Date('2024-05-01T00:00:00-04:00')
   );
 
   await TasksService.createTask(
@@ -1585,11 +1644,11 @@ const performSeed: () => Promise<void> = async () => {
     project3WbsNumber,
     'Wire Up Battery Box',
     'Too many wires... how to even keep track?',
-    new Date('2024-02-29T00:00:00-05:00'),
     Task_Priority.HIGH,
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId],
-    ner
+    ner,
+    new Date('2024-02-29T00:00:00-05:00')
   );
 
   await TasksService.createTask(
@@ -1597,11 +1656,11 @@ const performSeed: () => Promise<void> = async () => {
     project3WbsNumber,
     'Vibration Tests',
     "Battery box shouldn't blow up in the middle of racing...",
-    new Date('2024-03-17T00:00:00-05:00'),
     Task_Priority.MEDIUM,
     Task_Status.IN_BACKLOG,
     [joeShmoe.userId],
-    ner
+    ner,
+    new Date('2024-03-17T00:00:00-05:00')
   );
 
   await TasksService.createTask(
@@ -1609,11 +1668,11 @@ const performSeed: () => Promise<void> = async () => {
     project3WbsNumber,
     'Buy some Battery Juice',
     'mmm battery juice',
-    new Date('2024-04-15T00:00:00-04:00'),
     Task_Priority.LOW,
     Task_Status.DONE,
     [joeBlow.userId],
-    ner
+    ner,
+    new Date('2024-04-15T00:00:00-04:00')
   );
 
   await TasksService.createTask(
@@ -1621,11 +1680,11 @@ const performSeed: () => Promise<void> = async () => {
     project4WbsNumber,
     'Schematics',
     'schematics go brrrrr',
-    new Date('2024-04-15T00:00:00-04:00'),
     Task_Priority.HIGH,
     Task_Status.DONE,
     [joeBlow.userId],
-    ner
+    ner,
+    new Date('2024-04-15T00:00:00-04:00')
   );
 
   await TasksService.createTask(
@@ -1633,11 +1692,11 @@ const performSeed: () => Promise<void> = async () => {
     project5WbsNumber,
     'Cost Assessment',
     'So this is where our funding goes',
-    new Date('2023-06-23T00:00:00-04:00'),
     Task_Priority.HIGH,
     Task_Status.IN_PROGRESS,
     [regina.userId],
-    ner
+    ner,
+    new Date('2023-06-23T00:00:00-04:00')
   );
 
   /**
@@ -1896,6 +1955,8 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
+  await OrganizationsService.setFeaturedProjects([project1Id, project2Id, project3Id, project4Id], ner, thomasEmrax);
+
   await OrganizationsService.setUsefulLinks(batman, organizationId, [
     {
       linkId: '1',
@@ -1939,6 +2000,36 @@ const performSeed: () => Promise<void> = async () => {
   await RecruitmentServices.createFaq(batman, 'Who is the Chief Software Engineer?', 'Peyton McKee', ner);
   await RecruitmentServices.createFaq(batman, 'When was FinishLine created?', 'FinishLine was created in 2019', ner);
   await RecruitmentServices.createFaq(batman, 'How many developers are working on FinishLine?', '178 as of 2024', ner);
+
+  await AnnouncementService.createAnnouncement(
+    'Welcome to Finishline!',
+    [regina.userId],
+    new Date(),
+    'Thomas Emrax',
+    '1',
+    'software',
+    ner.organizationId
+  );
+
+  await AnnouncementService.createAnnouncement(
+    'Welcome to Finishline!',
+    [regina.userId],
+    new Date(),
+    'Damian',
+    '2',
+    'mechanical',
+    ner.organizationId
+  );
+
+  await AnnouncementService.createAnnouncement(
+    'Welcome to Finishline!',
+    [regina.userId],
+    new Date(),
+    'Batman',
+    '3',
+    'powertrain',
+    ner.organizationId
+  );
 
   const joinSlackChecklist = await OnboardingServices.createChecklist(
     batman,

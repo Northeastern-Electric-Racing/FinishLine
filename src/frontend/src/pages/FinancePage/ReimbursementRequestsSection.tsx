@@ -1,6 +1,6 @@
 import { Box, useTheme } from '@mui/material';
 import { useState } from 'react';
-import { ReimbursementRequest, isAdmin } from 'shared';
+import { ReimbursementRequest, isHead } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import ReimbursementRequestInfo from './FinanceComponents/ReimbursementRequestInfo';
 import Tabs from '../../components/Tabs';
@@ -17,7 +17,7 @@ const ReimbursementRequestTable = ({
   const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
   const user = useCurrentUser();
-  const canViewAllReimbursementRequests = user.isFinance || isAdmin(user.role);
+  const canViewAllReimbursementRequests = user.isFinance || isHead(user.role);
 
   const tabs = [
     {

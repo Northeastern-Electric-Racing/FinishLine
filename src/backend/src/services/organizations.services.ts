@@ -1,14 +1,25 @@
 import { Organization, User } from '@prisma/client';
 import { LinkCreateArgs, isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { createUsefulLinks } from '../utils/organizations.utils';
 import { linkTransformer } from '../transformers/links.transformer';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
 import { uploadFile } from '../utils/google-integration.utils';
+import { getProjects } from '../utils/projects.utils';
+import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
+import projectTransformer from '../transformers/projects.transformer';
 
 export default class OrganizationsService {
+  /**
+   * Retrieve all the organizations
+   * @returns an array of every organization
+   */
+  static async getAllOrganizations(): Promise<Organization[]> {
+    return prisma.organization.findMany();
+  }
+
   /**
    * Gets the current organization
    * @param organizationId the organizationId to be fetched
@@ -235,5 +246,165 @@ export default class OrganizationsService {
     });
 
     return updatedOrganization;
+  }
+
+  /**
+   * Gets all organization Images for the given organization Id
+   * @param organizationId organization Id of the milestone
+   * @returns all the milestones from the given organization
+   */
+  static async getOrganizationImages(organizationId: string) {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId }
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+
+    return {
+      applyInterestImage: organization.applyInterestImageId,
+      exploreAsGuestImage: organization.exploreAsGuestImageId
+    };
+  }
+
+  /**
+   * Updates the featured projects of an organization
+   * @param projectIds project ids of featured projects
+   * @param organization user's organization
+   * @param submitter user submitting featured projects
+   * @returns updated organization with featured projects
+   */
+  static async setFeaturedProjects(projectIds: string[], organization: Organization, submitter: User) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('update featured projects');
+
+    //throws if all projects are not found
+    const featuredProjects = await getProjects(projectIds, organization.organizationId);
+
+    const updatedOrg = await prisma.organization.update({
+      where: { organizationId: organization.organizationId },
+      data: {
+        featuredProjects: {
+          set: featuredProjects.map((project) => ({ projectId: project.projectId }))
+        }
+      },
+      include: { featuredProjects: true }
+    });
+
+    return updatedOrg;
+  }
+
+  /**
+   * Sets the logo for an organization, User must be admin
+   * @param logoImage the image which will be uploaded and have its id stored in the org
+   * @param submitter the user submitting the logo
+   * @param organization the organization who's logo is being set
+   * @returns the updated organization
+   * @throws if the user is not an admin
+   */
+  static async setLogoImage(
+    logoImage: Express.Multer.File,
+    submitter: User,
+    organization: Organization
+  ): Promise<Organization> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('update logo');
+    }
+
+    const logoImageData = await uploadFile(logoImage);
+
+    if (!logoImageData?.name) {
+      throw new HttpException(500, 'Image Name not found');
+    }
+
+    const updatedOrg = await prisma.organization.update({
+      where: { organizationId: organization.organizationId },
+      data: {
+        logoImageId: logoImageData.id
+      }
+    });
+
+    return updatedOrg;
+  }
+
+  /**
+   * Gets the logo image of the organization
+   * @param organizationId the id of the organization
+   * @returns the id of the image
+   */
+  static async getLogoImage(organizationId: string): Promise<string | null> {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId }
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+
+    return organization.logoImageId;
+  }
+
+  /**
+   * Sets the description of a given organization.
+   * @param description the new description
+   * @param submitter the user making the change (must be admin)
+   * @param organization the organization whos description is changing
+   * @throws if the user is not an admin
+   */
+  static async setOrganizationDescription(
+    description: string,
+    submitter: User,
+    organization: Organization
+  ): Promise<Organization> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('set description');
+    }
+    const updatedOrg = prisma.organization.update({
+      where: {
+        organizationId: organization.organizationId
+      },
+      data: {
+        description
+      }
+    });
+    return updatedOrg;
+  }
+
+  /**
+   * Gets the featured projects for the given organization Id
+   * @param organizationId the organization to get the projects for
+   * @returns all the featured projects for the organization
+   */
+  static async getOrganizationFeaturedProjects(organizationId: string) {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId },
+      include: { featuredProjects: getProjectQueryArgs(organizationId) }
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+
+    return organization.featuredProjects.map(projectTransformer);
+  }
+
+  /**
+   * sets the slack workspace id of the organization
+   * @param workspaceId workspace id to set
+   * @param submitter user who submitted the workspace id
+   * @param organizationId id of organization to update with workspace id
+   * @returns updated organization
+   */
+  static async setSlackWorkspaceId(workspaceId: string, submitter: User, organizationId: string) {
+    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('set workspace id');
+    }
+    const updatedOrg = await prisma.organization.update({
+      where: { organizationId },
+      data: { slackWorkspaceId: workspaceId }
+    });
+
+    return updatedOrg;
   }
 }

@@ -7,7 +7,7 @@ import { FormControl, FormLabel, TextField, InputAdornment, Checkbox, IconButton
 import { Box } from '@mui/system';
 import React, { useState } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
-import { ChecklistPreview } from 'shared';
+import { CreateChecklistPreview } from 'shared';
 import NERFormModal from '../../../../components/NERFormModal';
 import * as yup from 'yup';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
@@ -23,7 +23,7 @@ interface CreateChecklistModalProps {
 interface ChecklistFormValues {
   name: string;
   descriptions: { name: string }[];
-  subtasks: ChecklistPreview[];
+  subtasks: CreateChecklistPreview[];
 }
 
 const schema = yup.object().shape({
@@ -35,13 +35,17 @@ const schema = yup.object().shape({
         name: yup.string().required('Description is Required')
       })
     )
+    .required()
     .min(1, 'At least one description is required'),
-  subtasks: yup.array().of(
-    yup.object().shape({
-      name: yup.string().required('Subtask Name is Required'),
-      isOptional: yup.boolean().required('Is Optional is Required')
-    })
-  )
+  subtasks: yup
+    .array()
+    .of(
+      yup.object().shape({
+        name: yup.string().required('Subtask Name is Required'),
+        isOptional: yup.boolean().required('Is Optional is Required'),
+      })
+    )
+    .required()
 });
 
 const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateChecklistModalProps) => {

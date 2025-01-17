@@ -1,81 +1,60 @@
-import { Typography, Box } from '@mui/material';
-import PageLayout from '../../components/PageLayout';
-import ImageWithButton from './components/ImageWithButton';
-import { useHistory } from 'react-router-dom';
-import { routes } from '../../utils/routes';
-import { useCurrentUser } from '../../hooks/users.hooks';
-import { useEffect } from 'react';
-import { useHomePageContext } from '../../app/HomePageContext';
-import { useCurrentOrganization } from '../../hooks/organizations.hooks';
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
+import { Box, Grid, Stack, Typography } from '@mui/material';
+import { useSingleUserSettings } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { useGetImageUrl } from '../../hooks/onboarding.hook';
+import PageLayout, { PAGE_GRID_HEIGHT } from '../../components/PageLayout';
+import { AuthenticatedUser } from 'shared';
+import MemberEncouragement from './components/MemberEncouragement';
+import GuestOrganizationInfo from './components/GuestOrganizationInfo';
+import FeaturedProjects from './components/FeaturedProjects';
+import OrganizationLogo from './components/OrganizationLogo';
 
-const GuestHomePage = () => {
-  const user = useCurrentUser();
-  const history = useHistory();
-  const {
-    data: organization,
-    isLoading: organizationIsLoading,
-    isError: organizationIsError,
-    error: organizationError
-  } = useCurrentOrganization();
-  const { setCurrentHomePage } = useHomePageContext();
+interface GuestHomePageProps {
+  user: AuthenticatedUser;
+}
 
-  const {
-    data: applyInterestImageUrl,
-    isLoading: applyImageLoading,
-    isError: applyImageIsError,
-    error: applyImageError
-  } = useGetImageUrl(organization?.applyInterestImageId ?? null);
-  const {
-    data: exploreGuestImageUrl,
-    isLoading: exploreImageLoading,
-    isError: exploreImageIsError,
-    error: exploreImageError
-  } = useGetImageUrl(organization?.exploreAsGuestImageId ?? null);
+const GuestHomePage = ({ user }: GuestHomePageProps) => {
+  const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId);
 
-  useEffect(() => {
-    setCurrentHomePage('guest');
-  }, [setCurrentHomePage]);
-
-  if (organizationIsError) {
-    return <ErrorPage message={organizationError.message} />;
-  }
-  if (applyImageIsError) return <ErrorPage message={applyImageError.message} />;
-  if (exploreImageIsError) return <ErrorPage message={exploreImageError.message} />;
-
-  if (!organization || organizationIsLoading || applyImageLoading || exploreImageLoading) return <LoadingIndicator />;
-  if (!applyInterestImageUrl || !exploreGuestImageUrl) return <LoadingIndicator />;
+  if (isLoading || !userSettingsData) return <LoadingIndicator />;
+  if (isError) return <ErrorPage error={error} message={error.message} />;
 
   return (
     <PageLayout title="Home" hidePageTitle>
-      <Typography variant="h3" textAlign="center" sx={{ mt: 2, pt: 3 }}>
-        {user ? `Welcome, ${user.firstName}!` : 'Welcome, Guest!'}
+      <Typography variant="h3" marginLeft="auto" sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0 }}>
+        Welcome, {user.firstName}!
       </Typography>
       <Box
         sx={{
           display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          flexDirection: { xs: 'column', md: 'row' },
-          mt: 4,
-          padding: '20px'
+          flexDirection: 'column',
+          gap: 1.5,
+          height: `${PAGE_GRID_HEIGHT}vh`,
+          mt: 2
         }}
       >
-        <Box sx={{ display: 'flex', gap: 5 }}>
-          <ImageWithButton
-            title="Interested in applying"
-            imageSrc={applyInterestImageUrl}
-            buttonText="Learn More"
-            onClick={() => history.push(routes.HOME_PNM)}
-          />
-          <ImageWithButton
-            title="Explore Our Work as a Guest"
-            imageSrc={exploreGuestImageUrl}
-            buttonText="FinishLine"
-            onClick={() => history.push(routes.HOME_MEMBER)}
-          />
+        <Grid container height={'60%'} spacing={2}>
+          <Grid item height={'100%'} xs={8.5}>
+            <Stack height={'100%'} spacing={1.5}>
+              <Box height={'70%'}>
+                <GuestOrganizationInfo />
+              </Box>
+              <Box height={'30%'}>
+                <MemberEncouragement />
+              </Box>
+            </Stack>
+          </Grid>
+          <Grid item height={'100%'} xs={3.5}>
+            <OrganizationLogo />
+          </Grid>
+        </Grid>
+        <Box height={'40%'}>
+          <FeaturedProjects />
         </Box>
       </Box>
     </PageLayout>

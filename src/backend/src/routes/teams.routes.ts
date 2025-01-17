@@ -8,6 +8,7 @@ const teamsRouter = express.Router();
 const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage() });
 
 teamsRouter.get('/', TeamsController.getAllTeams);
+teamsRouter.get('/archive', TeamsController.getAllArchivedTeams);
 teamsRouter.get('/:teamId', TeamsController.getSingleTeam);
 
 teamsRouter.post(
@@ -43,7 +44,7 @@ teamsRouter.post(
   validateInputs,
   TeamsController.createTeam
 );
-teamsRouter.post('/:teamId/archive');
+teamsRouter.post('/:teamId/archive', TeamsController.archiveTeam);
 
 /**************** Team Type Section ****************/
 
@@ -81,5 +82,7 @@ teamsRouter.post(
   validateInputs,
   TeamsController.setTeamTypeImage
 );
+
+teamsRouter.delete('teamType/:teamTypeId/delete', TeamsController.deleteTeamType);
 
 export default teamsRouter;

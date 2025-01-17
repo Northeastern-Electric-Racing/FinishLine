@@ -4,6 +4,8 @@
  */
 
 import { AvailabilityCreateArgs } from './design-review-types';
+import { Team } from './team-types';
+
 export interface User {
   userId: string;
   firstName: string;
@@ -11,9 +13,10 @@ export interface User {
   email: string;
   emailId: string | null;
   role: Role;
+  permissions: Permission[];
 }
 
-export type UserPreview = Pick<User, 'userId' | 'firstName' | 'lastName' | 'email' | 'emailId' | 'role'>;
+export type UserPreview = Pick<User, 'userId' | 'firstName' | 'lastName' | 'email' | 'emailId' | 'role' | 'permissions'>;
 
 export type Role = 'APP_ADMIN' | 'ADMIN' | 'HEAD' | 'LEADERSHIP' | 'MEMBER' | 'GUEST';
 export enum RoleEnum {
@@ -23,6 +26,17 @@ export enum RoleEnum {
   LEADERSHIP = 'LEADERSHIP',
   MEMBER = 'MEMBER',
   GUEST = 'GUEST'
+}
+
+export enum Permission {
+  EDIT_GRAPH = 'EDIT_GRAPH',
+  CREATE_GRAPH = 'CREATE_GRAPH',
+  VIEW_GRAPH = 'VIEW_GRAPH',
+  DELETE_GRAPH = 'DELETE_GRAPH',
+  EDIT_GRAPH_COLLECTION = 'EDIT_GRAPH_COLLECTION',
+  CREATE_GRAPH_COLLECTION = 'CREATE_GRAPH_COLLECTION',
+  VIEW_GRAPH_COLLECTION = 'VIEW_GRAPH_COLLECTION',
+  DELETE_GRAPH_COLLECTION = 'DELETE_GRAPH_COLLECTION'
 }
 
 export type ThemeName = 'DARK' | 'LIGHT';
@@ -42,11 +56,12 @@ export interface Organization {
   treasurer?: UserPreview;
   advisor?: UserPreview;
   description: string;
-  applyInterestImageId: string;
-  exploreAsGuestImageId: string;
-  applicationLink: string;
+  applyInterestImageId?: string;
+  exploreAsGuestImageId?: string;
+  applicationLink?: string;
   onboardingText?: string;
   contacts: Contact[];
+  slackWorkspaceId?: string;
 }
 
 /**
@@ -69,6 +84,9 @@ export interface AuthenticatedUser {
   organizations: string[];
   currentOrganization?: OrganizationPreview;
   onboardingTeamTypeIds: string[];
+  teamsAsHead?: Team[];
+  teamsAsLead?: Team[];
+  permissions: Permission[];
 }
 
 export interface UserSettings {
@@ -104,19 +122,13 @@ export interface Availability {
   availability: number[];
 }
 
-export interface UserWithScheduleSettings {
-  userId: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  emailId: string | null;
-  role: Role;
+export interface UserWithScheduleSettings extends User {
   scheduleSettings?: UserScheduleSettings;
 }
 
 export interface SetUserScheduleSettingsArgs {
-  personalGmail: string;
-  personalZoomLink: string;
+  personalGmail?: string;
+  personalZoomLink?: string;
   availability: AvailabilityCreateArgs[];
 }
 

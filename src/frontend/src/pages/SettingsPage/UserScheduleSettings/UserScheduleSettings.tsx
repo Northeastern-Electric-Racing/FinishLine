@@ -27,8 +27,8 @@ import { deeplyCopy } from 'shared/src/utils';
 import { availabilityTransformer } from '../../../apis/transformers/users.transformers';
 
 export interface ScheduleSettingsFormInput {
-  personalGmail: string;
-  personalZoomLink: string;
+  personalGmail?: string;
+  personalZoomLink?: string;
 }
 
 export interface ScheduleSettingsPayload extends ScheduleSettingsFormInput {

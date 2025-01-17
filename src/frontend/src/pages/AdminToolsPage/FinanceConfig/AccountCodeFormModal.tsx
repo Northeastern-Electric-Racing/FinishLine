@@ -13,7 +13,11 @@ import { useTheme } from '@mui/material/styles';
 const schema = yup.object().shape({
   code: yup.number().typeError('Account Code must be a number').required('Account Code is Required'),
   name: yup.string().required('Account Name is Required'),
-  allowed: yup.boolean().required('Allowed is Required')
+  allowed: yup.boolean().required('Allowed is Required'),
+  allowedRefundSources: yup
+    .array()
+    .of(yup.mixed<ClubAccount>().oneOf(Object.values(ClubAccount)).required())
+    .required()
 });
 
 interface AccountCodeFormModalProps {
@@ -30,7 +34,7 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
     control,
     reset,
     formState: { errors }
-  } = useForm({
+  } = useForm<AccountCodePayload>({
     resolver: yupResolver(schema),
     defaultValues: {
       code: defaultValues?.code,

@@ -80,8 +80,8 @@ describe('Onboarding tests', () => {
 
     it('Succeeds and gets all checklists for the user`s team and teamtype', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
-      const teamType1 = await createTestTeamType('teamtype1', organization);
-      const teamType2 = await createTestTeamType('teamtype2', organization);
+      const teamType1 = await createTestTeamType('teamtype1', organization.organizationId);
+      const teamType2 = await createTestTeamType('teamtype2', organization.organizationId);
       const checklist1 = await createTestChecklist(batman, orgId, 'Checklist 1', teamType1.teamTypeId);
       await createTestChecklist(batman, orgId, 'Checklist 2', teamType2.teamTypeId);
       await prisma.user.update({
@@ -129,7 +129,7 @@ describe('Onboarding tests', () => {
 
     it('Fails if creating a general checklist and its parent is not also a general checklist', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
-      const teamtype1 = await createTestTeamType('teamtype1', organization);
+      const teamtype1 = await createTestTeamType('teamtype1', organization.organizationId);
       const parentChecklist = await createTestChecklist(batman, orgId, 'Parent Checklist', teamtype1.teamTypeId);
       await expect(
         async () =>
@@ -221,8 +221,8 @@ describe('Onboarding tests', () => {
 
     it('Fails if parentChecklistId does not match teamId and teamTypeId', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
-      const teamType1 = await createTestTeamType('teamtype1', organization);
-      const teamType2 = await createTestTeamType('teamtype2', organization);
+      const teamType1 = await createTestTeamType('teamtype1', organization.organizationId);
+      const teamType2 = await createTestTeamType('teamtype2', organization.organizationId);
       const parentChecklist = await createTestChecklist(batman, orgId, 'Parent Checklist', teamType1.teamTypeId);
       await expect(
         async () =>
@@ -241,7 +241,7 @@ describe('Onboarding tests', () => {
 
     it('Succeeds and creates a checklist with teamTypeId', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
-      const teamType1 = await createTestTeamType('teamtype1', organization);
+      const teamType1 = await createTestTeamType('teamtype1', organization.organizationId);
       const result = await OnboardingServices.createChecklist(
         batman,
         'name',
@@ -370,8 +370,8 @@ describe('Onboarding tests', () => {
 
     it('Fails if parentChecklistId does not match teamId and teamTypeId', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
-      const teamType1 = await createTestTeamType('teamtype1', organization);
-      const teamType2 = await createTestTeamType('teamtype2', organization);
+      const teamType1 = await createTestTeamType('teamtype1', organization.organizationId);
+      const teamType2 = await createTestTeamType('teamtype2', organization.organizationId);
       const parentChecklist = await createTestChecklist(batman, orgId, 'Parent Checklist', teamType1.teamTypeId);
       await expect(
         async () =>
@@ -391,7 +391,7 @@ describe('Onboarding tests', () => {
 
     it('Succeeds and edits a checklist with teamType', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
-      const teamType1 = await createTestTeamType('teamtype1', organization);
+      const teamType1 = await createTestTeamType('teamtype1', organization.organizationId);
       const checklist = await createTestChecklist(batman, orgId, 'Checklist 1');
       const result = await OnboardingServices.editChecklist(
         batman,

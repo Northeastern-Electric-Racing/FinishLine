@@ -7,7 +7,8 @@ import NERFormModal from '../../../components/NERFormModal';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 
 const schema = yup.object().shape({
-  name: yup.string().required('Work Package name is Required')
+  name: yup.string().required('Work Package name is Required'),
+  stage: yup.string().required('Work Package stage is required')
 });
 
 interface AddGanttWorkPackageModalProps {

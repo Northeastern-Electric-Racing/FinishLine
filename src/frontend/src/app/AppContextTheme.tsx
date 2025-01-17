@@ -5,7 +5,7 @@
 
 import { createContext, useMemo } from 'react';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { useProvideThemeToggle } from '../hooks/theme.hooks';
@@ -40,7 +40,7 @@ const AppContextSettings: React.FC = (props) => {
     <ThemeToggleContext.Provider value={theme}>
       <ThemeProvider theme={fullTheme}>
         <CssBaseline />
-        <LocalizationProvider dateAdapter={AdapterDateFns}>{props.children}</LocalizationProvider>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>{props.children}</LocalizationProvider>
       </ThemeProvider>
     </ThemeToggleContext.Provider>
   );

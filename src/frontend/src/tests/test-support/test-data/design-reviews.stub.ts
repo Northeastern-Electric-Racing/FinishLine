@@ -13,7 +13,9 @@ export const teamType1: TeamType = {
   description: '',
   imageFileId: null,
   calendarId: null,
-  name: 'teamType1'
+  name: 'teamType1',
+  dateDeleted: undefined,
+  deletedById: undefined
 };
 
 export const exampleDesignReview1: DesignReview = {

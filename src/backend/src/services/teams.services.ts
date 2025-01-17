@@ -6,6 +6,7 @@ import {
   NotFoundException,
   AccessDeniedException,
   HttpException,
+  DeletedException,
   AccessDeniedAdminOnlyException,
   InvalidOrganizationException
 } from '../utils/errors.utils';
@@ -15,16 +16,30 @@ import { removeUsersFromList } from '../utils/teams.utils';
 import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
 import { uploadFile } from '../utils/google-integration.utils';
 import { createCalendar } from '../utils/google-integration.utils';
+import { teamTypeTransformer } from '../transformers/team-types.transformer';
 
 export default class TeamsService {
   /**
-   * Gets all teams
+   * Gets all teams (archived teams are not included)
    * @param organizationId The organization the user is currently in
    * @returns a list of teams
    */
   static async getAllTeams(organization: Organization): Promise<Team[]> {
     const teams = await prisma.team.findMany({
       where: { dateArchived: null, organizationId: organization.organizationId },
+      ...getTeamQueryArgs(organization.organizationId)
+    });
+    return teams.map(teamTransformer);
+  }
+
+  /**
+   * Gets all archived teams
+   * @param organizationId The organization the user is currently in
+   * @returns a list of teams
+   */
+  static async getAllArchivedTeams(organization: Organization): Promise<Team[]> {
+    const teams = await prisma.team.findMany({
+      where: { dateArchived: { not: null }, organizationId: organization.organizationId },
       ...getTeamQueryArgs(organization.organizationId)
     });
     return teams.map(teamTransformer);
@@ -414,7 +429,7 @@ export default class TeamsService {
       }
     });
 
-    return teamType;
+    return teamTypeTransformer(teamType);
   }
 
   /**
@@ -432,7 +447,7 @@ export default class TeamsService {
     if (!teamType) throw new NotFoundException('Team Type', teamTypeId);
     if (teamType.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Team Type');
 
-    return teamType;
+    return teamTypeTransformer(teamType);
   }
 
   /**
@@ -445,7 +460,7 @@ export default class TeamsService {
       where: { organizationId: organization.organizationId }
     });
 
-    return teamTypes;
+    return teamTypes.map(teamTypeTransformer);
   }
 
   /**
@@ -489,7 +504,7 @@ export default class TeamsService {
       }
     });
 
-    return updatedTeamType;
+    return teamTypeTransformer(updatedTeamType);
   }
 
   /**
@@ -531,6 +546,32 @@ export default class TeamsService {
     });
 
     return teamTransformer(updatedTeam);
+  }
+
+  /**
+   * Deletes the Team Type with the given organization Id and Team_Type id
+   * @param deleter a user who is making this request
+   * @param teamTypeId the id of the Team Type to be deleted
+   * @param organizationId the organization Id of the Team Type
+   */
+  static async deleteTeamType(deleter: User, teamTypeId: string, organization: Organization) {
+    if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('only admins can delete team types');
+
+    const teamType = await prisma.team_Type.findUnique({
+      where: { teamTypeId }
+    });
+
+    if (!teamType) throw new NotFoundException('Team Type', teamTypeId);
+    if (teamType.dateDeleted) throw new DeletedException('Team Type', teamTypeId);
+    if (teamType.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Team Type');
+
+    await prisma.team_Type.update({
+      where: { teamTypeId },
+      data: { dateDeleted: new Date(), deletedById: deleter.userId }
+    });
+
+    return teamType;
   }
 
   /**

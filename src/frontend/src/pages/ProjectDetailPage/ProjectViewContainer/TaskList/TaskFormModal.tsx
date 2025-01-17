@@ -9,11 +9,12 @@ import { getTaskAssigneeOptions, taskUserToAutocompleteOption } from '../../../.
 import NERFormModal from '../../../../components/NERFormModal';
 
 const schema = yup.object().shape({
-  notes: yup.string(),
-  deadline: yup.date().required(),
-  priority: yup.string().required(),
-  assignees: yup.array(),
-  title: yup.string().required()
+  notes: yup.string().required(),
+  deadline: yup.date().optional(),
+  priority: yup.mixed<TaskPriority>().oneOf(Object.values(TaskPriority)).required(),
+  assignees: yup.array().required(),
+  title: yup.string().required(),
+  taskId: yup.string().required()
 });
 
 export interface EditTaskFormInput {
@@ -21,7 +22,7 @@ export interface EditTaskFormInput {
   title: string;
   notes: string;
   assignees: string[];
-  deadline: Date;
+  deadline?: Date;
   priority: TaskPriority;
 }
 
@@ -44,13 +45,13 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
     control,
     formState: { errors },
     reset
-  } = useForm({
+  } = useForm<EditTaskFormInput>({
     resolver: yupResolver(schema),
     defaultValues: {
       title: task?.title ?? '',
       taskId: task?.taskId ?? '-1',
       notes: task?.notes ?? '',
-      deadline: task?.deadline ?? new Date(),
+      deadline: task?.deadline ?? undefined,
       priority: task?.priority ?? TaskPriority.Low,
       assignees: task?.assignees.map((assignee) => assignee.userId) ?? []
     }
@@ -155,7 +156,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
               <Controller
                 name="deadline"
                 control={control}
-                rules={{ required: true }}
+                rules={{ required: false }}
                 render={({ field: { onChange, value } }) => (
                   <DatePicker
                     format="MM-dd-yyyy"

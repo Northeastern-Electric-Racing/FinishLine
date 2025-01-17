@@ -35,6 +35,7 @@ const schema = yup.object().shape({
       })
     )
     .min(1, 'At least one description is required')
+    .required()
 });
 
 const EditChecklistModal = ({ open, handleClose, defaultValues, teamId, teamTypeId }: EditChecklistModalProps) => {

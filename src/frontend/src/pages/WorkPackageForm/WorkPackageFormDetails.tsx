@@ -93,7 +93,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
         </Grid>
         <Grid item xs={12} md={4}>
           <FormControl fullWidth sx={{ overflow: 'hidden' }}>
-            <FormLabel sx={{ whiteSpace: 'noWrap' }}>Start Date (YYYY-MM-DD)</FormLabel>
+            <FormLabel sx={{ whiteSpace: 'noWrap' }}>Start Date (MM-DD-YYYY)</FormLabel>
             <Controller
               name="startDate"
               control={control}
@@ -129,7 +129,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
         </Grid>
         <Grid item xs={12} md={4}>
           <FormControl fullWidth sx={{ overflow: 'hidden' }}>
-            <FormLabel sx={{ whiteSpace: 'noWrap' }}>Calculated End Date (YYYY-MM-DD)</FormLabel>
+            <FormLabel sx={{ whiteSpace: 'noWrap' }}>Calculated End Date (MM-DD-YYYY)</FormLabel>
             <TextField value={endDate.toLocaleDateString()} disabled />
           </FormControl>
         </Grid>

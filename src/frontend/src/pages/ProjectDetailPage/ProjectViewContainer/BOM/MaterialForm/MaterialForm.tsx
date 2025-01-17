@@ -15,7 +15,7 @@ import { Decimal } from 'decimal.js';
 
 const schema = yup.object().shape({
   name: yup.string().required('Enter a name!'),
-  status: yup.string().required('Select a status!'),
+  status: yup.mixed<MaterialStatus>().oneOf(Object.values(MaterialStatus)).required('Select a status!'),
   materialTypeName: yup.string().required('Select a Material Type!'),
   manufacturerName: yup.string().required('Select a Manufacturer'),
   manufacturerPartNumber: yup.string().required('Manufacturer Part Number is required!'),
@@ -23,7 +23,9 @@ const schema = yup.object().shape({
   price: yup.number().required('Price per Unit is required!'),
   unitName: yup.string().optional(),
   linkUrl: yup.string().required('URL is required!').url('Invalid URL'),
-  notes: yup.string().optional()
+  notes: yup.string().optional(),
+  pdmFileName: yup.string().optional(),
+  assemblyId: yup.string().optional()
 });
 
 export interface MaterialFormInput {

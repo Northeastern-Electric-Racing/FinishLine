@@ -46,6 +46,7 @@ import {
 import { ChangeRequestQueryArgs, getChangeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
 import proposedSolutionTransformer from '../transformers/proposed-solutions.transformer';
 import { getProposedSolutionQueryArgs } from '../prisma-query-args/proposed-solutions.query-args';
+import { sendCrRequestReviewPopUp, sendCrReviewedPopUp } from '../utils/pop-up.utils';
 
 export default class ChangeRequestsService {
   /**
@@ -132,7 +133,6 @@ export default class ChangeRequestsService {
     } else if (foundCR.type === CR_Type.ACTIVATION && foundCR.activationChangeRequest && accepted) {
       await this.reviewActivationChangeRequest(foundCR, reviewer);
     }
-
     // finally we can update change request
     const updated = await prisma.change_Request.update({
       where: { crId },
@@ -143,14 +143,15 @@ export default class ChangeRequestsService {
         dateReviewed: new Date()
       },
       include: {
-        activationChangeRequest: true,
-        notificationSlackThreads: true,
-        wbsElement: { include: { workPackage: true } }
+        ...getChangeRequestQueryArgs(organization.organizationId).include,
+        notificationSlackThreads: true
       }
     });
 
-    // send the creator of the cr a slack notification that their cr was reviewed
-    await sendCRSubmitterReviewedNotification(foundCR);
+    // send a notification to the submitter that their change request has been reviewed
+    await sendCRSubmitterReviewedNotification(updated);
+
+    await sendCrReviewedPopUp(foundCR, updated.submitter, accepted, organization.organizationId);
 
     // send a reply to a CR's notifications of its updated status
     await sendSlackCRStatusToThread(updated.notificationSlackThreads, foundCR.crId, foundCR.identifier, accepted);
@@ -1080,5 +1081,7 @@ export default class ChangeRequestsService {
 
     // send slack message to CR reviewers
     await sendSlackRequestedReviewNotification(newReviewers, changeRequestTransformer(foundCR));
+
+    await sendCrRequestReviewPopUp(foundCR, newReviewers, organization.organizationId);
   }
 }

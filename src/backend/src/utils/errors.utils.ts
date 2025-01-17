@@ -140,4 +140,8 @@ export type ExceptionObjectNames =
   | 'Milestone'
   | 'Faq'
   | 'Checklist'
-  | 'Checklist Item';
+  | 'Checklist Item'
+  | 'Pop Up'
+  | 'Announcement'
+  | 'Graph'
+  | 'Graph Collection';

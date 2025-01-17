@@ -68,8 +68,19 @@ interface ChangeRequestDetailCardProps {
 }
 
 const ChangeRequestDetailCard: React.FC<ChangeRequestDetailCardProps> = ({ changeRequest }) => {
+  const theme = useTheme();
   return (
-    <Card sx={{ minWidth: 325, maxWidth: 325, mr: 2, borderRadius: 3, mb: 2 }}>
+    <Card
+      sx={{
+        minWidth: 325,
+        maxWidth: 325,
+        mr: 2,
+        borderRadius: 3,
+        mb: 2,
+        minHeight: 'fit-content',
+        background: theme.palette.background.default
+      }}
+    >
       <CardContent>
         <Grid container justifyContent="space-between" alignItems="flex-start">
           <Grid item xs mb={1} mt={-1.5}>
