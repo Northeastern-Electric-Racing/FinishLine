@@ -23,7 +23,7 @@ const Home: React.FC = () => {
     <Switch>
       {!onOnboarding && isGuest(userRole) && <Redirect exact path={routes.HOME} to={routes.HOME_GUEST} />}
       {!onOnboarding && <Redirect exact path={routes.HOME_ACCEPT} to={routes.HOME} />}
-      {onOnboarding && <Redirect exact path={routes.HOME} to={routes.HOME_SELECT_SUBTEAM} />}
+      {onOnboarding && <Redirect exact path={routes.HOME} to={routes.HOME_PNM} />}
       {!isGuest(userRole) && <Redirect exact path={routes.HOME_GUEST} to={routes.HOME} />}
       {!isGuest(userRole) && <Redirect exact path={routes.HOME_PNM} to={routes.HOME} />}
       {!isGuest(userRole) && <Redirect exact path={routes.HOME_ONBOARDING} to={routes.HOME} />}
