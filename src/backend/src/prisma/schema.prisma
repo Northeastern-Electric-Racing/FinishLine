@@ -230,6 +230,8 @@ model User {
   deletedTeamTypes                Team_Type[]               @relation(name: "teamTypeDeleter")
   unreadAnnouncements             Announcement[]            @relation(name: "receivedAnnouncements")
   unreadPopUps                    PopUp[]                   @relation(name: "userPopUps")
+  submissions                     Submission[]
+  reviews                         Review[]
 }
 
 model Role {
@@ -444,6 +446,7 @@ model Project {
   favoritedBy              User[]         @relation(name: "favoritedBy")
   featuredByOrganizationId String?
   featuredByOrganization   Organization?  @relation(fields: [featuredByOrganizationId], references: [organizationId])
+  parts                    Part[]
 }
 
 model Work_Package {
@@ -1051,4 +1054,54 @@ model PopUp {
   eventLink      String?
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [organizationId])
+}
+
+model Part {
+  id          String       @id @default(uuid())
+  index       Int
+  commonName  String
+  description String
+  status      String
+  tags        String[]
+  submissions Submission[]
+  reviews     Review[]
+  project     Project      @relation(fields: [projectId], references: [id])
+  projectId   Int
+  assignees   User[]       @relation("PartAssignees")
+  reviewers   User[]       @relation("PartReviewers")
+  history     String[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Submission {
+  id        String   @id @default(uuid())
+  files     String[] // how do we represent files in the database?
+  name      String
+  notes     String?
+  part      Part     @relation(fields: [partId], references: [id])
+  partId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Review {
+  id           String     @id @default(uuid())
+  files        String[]
+  notes        String?
+  submission   Submission @relation(fields: [submissionId], references: [id])
+  submissionId Int
+  part         Part       @relation(fields: [partId], references: [id])
+  partId       Int
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model Popup {
+  id          String      @id @default(uuid())
+  coordinate  String
+  title       String
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
