@@ -4,7 +4,7 @@ import { NERButton } from '../../components/NERButton';
 import { useHistory } from 'react-router-dom';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { routes } from '../../utils/routes';
-import { useToggleOnboardingUser } from '../../hooks/team-types.hooks';
+import { useCompleteOnboarding } from '../../hooks/team-types.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useCurrentOrganization } from '../../hooks/organizations.hooks';
 
@@ -13,14 +13,14 @@ const AcceptedPage = () => {
   const user = useCurrentUser();
   const { data: organization, isLoading: organizationIsLoading } = useCurrentOrganization();
 
-  const { mutateAsync: toggleOnboardingUser, isLoading: toggleOnboardingIsLoading } = useToggleOnboardingUser();
+  const { mutateAsync: completeOnboarding, isLoading: completeOnboardingIsLoading } = useCompleteOnboarding();
 
-  if (toggleOnboardingIsLoading || !organization || organizationIsLoading) {
+  if (completeOnboardingIsLoading || !organization || organizationIsLoading) {
     return <LoadingIndicator />;
   }
 
   const handleClick = async () => {
-    Promise.all(user.onboardingTeamTypeIds.map((teamTypeId) => toggleOnboardingUser(teamTypeId)));
+    await completeOnboarding();
     window.location.reload();
   };
 
@@ -69,13 +69,13 @@ const AcceptedPage = () => {
       >
         <Grid container justifyContent="center" spacing={8} sx={{ maxWidth: '500px' }}>
           <Grid item>
-            <NERButton variant="contained" sx={{ fontSize: 20 }} onClick={handleClick}>
-              Accept
+            <NERButton variant="contained" sx={{ fontSize: 20 }} onClick={() => history.push(routes.HOME_SELECT_SUBTEAM)}>
+              Reject
             </NERButton>
           </Grid>
           <Grid item>
-            <NERButton variant="contained" sx={{ fontSize: 20 }} onClick={() => history.push(routes.HOME_SELECT_SUBTEAM)}>
-              Reject
+            <NERButton variant="contained" sx={{ fontSize: 20 }} onClick={handleClick}>
+              Accept
             </NERButton>
           </Grid>
         </Grid>

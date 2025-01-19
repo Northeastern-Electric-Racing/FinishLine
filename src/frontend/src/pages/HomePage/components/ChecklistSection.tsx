@@ -1,55 +1,14 @@
 import { Box, Grid } from '@mui/material';
 import { groupChecklists } from '../../../utils/onboarding.utils';
 import Checklist from './Checklist';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useAllChecklists, useCheckedChecklists, useUsersChecklists } from '../../../hooks/onboarding.hook';
-import ErrorPage from '../../ErrorPage';
+import { Checklist as ChecklistType } from 'shared';
 
-const ChecklistSection: React.FC = () => {
-  const {
-    data: checklists,
-    isError: checklistsIsError,
-    error: checklistsError,
-    isLoading: checklistsIsLoading
-  } = useAllChecklists();
+interface ChecklistSectionProps {
+  usersChecklists: ChecklistType[];
+  checkedChecklists: ChecklistType[];
+}
 
-  const {
-    data: usersChecklists,
-    isError: usersChecklistsIsError,
-    error: usersChecklistsError,
-    isLoading: usersChecklistsIsLoading
-  } = useUsersChecklists();
-
-  const {
-    data: checkedChecklists,
-    isError: checkedChecklistsIsError,
-    error: checkedChecklistsError,
-    isLoading: checkedChecklistsLoading
-  } = useCheckedChecklists();
-
-  if (checklistsIsError) {
-    return <ErrorPage error={checklistsError} />;
-  }
-
-  if (checkedChecklistsIsError) {
-    return <ErrorPage error={checkedChecklistsError} />;
-  }
-
-  if (usersChecklistsIsError) {
-    return <ErrorPage error={usersChecklistsError} />;
-  }
-
-  if (
-    !checklists ||
-    checklistsIsLoading ||
-    usersChecklistsIsLoading ||
-    !usersChecklists ||
-    !checkedChecklists ||
-    checkedChecklistsLoading
-  ) {
-    return <LoadingIndicator />;
-  }
-
+const ChecklistSection: React.FC<ChecklistSectionProps> = ({ usersChecklists, checkedChecklists }) => {
   const groupedChecklists = groupChecklists(usersChecklists);
 
   return (

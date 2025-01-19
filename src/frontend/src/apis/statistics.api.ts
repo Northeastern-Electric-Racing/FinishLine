@@ -11,10 +11,7 @@ export const createGraph = (payload: CreateGraphArgs) => {
 
 export const getAllGraphCollections = () => {
   return axios.get<GraphCollection[]>(apiUrls.graphCollections(), {
-    transformResponse: (data) => {
-      console.log(data);
-      return JSON.parse(data).map(graphCollectionTransformer);
-    }
+    transformResponse: (data) => JSON.parse(data).map(graphCollectionTransformer)
   });
 };
 

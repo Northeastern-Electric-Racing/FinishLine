@@ -8,9 +8,10 @@ import {
   createTeamType,
   editTeamType,
   getAllTeamTypes,
-  toggleOnboardingUser,
+  setOnboardingUser,
   setTeamType,
-  setTeamTypeImage
+  setTeamTypeImage,
+  completeOnboarding
 } from '../apis/team-types.api';
 import { TeamType } from 'shared';
 
@@ -60,12 +61,28 @@ export const useSetTeamType = (teamId: string) => {
  * @param teamTypeId id of the team type to set as onboarding team type
  * @returns the updated team type
  */
-export const useToggleOnboardingUser = () => {
+export const useSetOnboardingUser = () => {
   const queryClient = useQueryClient();
   return useMutation<TeamType, Error, string>(
     ['team types', 'edit'],
     async (teamTypeId: string) => {
-      const { data } = await toggleOnboardingUser(teamTypeId);
+      const { data } = await setOnboardingUser(teamTypeId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['team types']);
+      }
+    }
+  );
+};
+
+export const useCompleteOnboarding = () => {
+  const queryClient = useQueryClient();
+  return useMutation<TeamType, Error>(
+    ['team types', 'edit'],
+    async () => {
+      const { data } = await completeOnboarding();
       return data;
     },
     {

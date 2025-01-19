@@ -147,7 +147,7 @@ export default class NotificationsService {
     designReviews.forEach((designReview) => {
       const teamSlackIds = designReview.wbsElement.project
         ? designReview.wbsElement.project.teams.map((team) => team.slackId)
-        : designReview.wbsElement.workPackage?.project.teams.map((team) => team.slackId) ?? [];
+        : (designReview.wbsElement.workPackage?.project.teams.map((team) => team.slackId) ?? []);
 
       teamSlackIds.forEach((teamSlackId) => {
         const currentTasks = designReviewTeamMap.get(teamSlackId);

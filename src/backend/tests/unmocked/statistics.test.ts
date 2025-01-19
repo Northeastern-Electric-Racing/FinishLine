@@ -107,7 +107,7 @@ describe('Statistics Tests', () => {
         new Date(new Date('12/12/2024').getTime() + 10000)
       );
 
-      expect(result).toContain({
+      expect(result).toMatchObject({
         ...expectedCreatedGraphBase,
         graphType: 'PROJECT_BUDGET_BY_DIVISION',
         graphDisplayType: 'BAR'
@@ -141,7 +141,7 @@ describe('Statistics Tests', () => {
         new Date(new Date('12/12/2024').getTime() + 10000)
       );
 
-      expect(result).toContain({
+      expect(result).toMatchObject({
         ...expectedCreatedGraphBase,
         graphType: 'PROJECT_BUDGET_BY_DIVISION',
         graphDisplayType: 'PIE',
@@ -178,7 +178,7 @@ describe('Statistics Tests', () => {
         new Date(new Date().getTime() + 100000)
       );
 
-      expect(result).toContain({
+      expect(result).toMatchObject({
         ...expectedCreatedGraphBase,
         graphType: 'PROJECT_BUDGET_BY_DIVISION',
         graphDisplayType: 'BAR',
@@ -213,7 +213,7 @@ describe('Statistics Tests', () => {
         []
       );
 
-      expect(result).toContain({
+      expect(result).toMatchObject({
         ...expectedCreatedGraphBase,
         graphType: 'PROJECT_BUDGET_BY_DIVISION',
         graphDisplayType: 'BAR',
@@ -250,7 +250,7 @@ describe('Statistics Tests', () => {
         new Date('12/12/1971')
       );
 
-      expect(result).toContain({
+      expect(result).toMatchObject({
         ...expectedCreatedGraphBase,
         graphType: 'PROJECT_BUDGET_BY_DIVISION',
         graphDisplayType: 'BAR',

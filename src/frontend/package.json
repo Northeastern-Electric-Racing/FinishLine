@@ -13,7 +13,7 @@
     "@mui/material": "^6.4.0",
     "@mui/system": "^6.4.0",
     "@mui/x-data-grid": "^5.16.0",
-    "@mui/x-date-pickers": "^6.19.4",
+    "@mui/x-date-pickers": "^7.24.0",
     "@types/file-saver": "^2.0.5",
     "@vitejs/plugin-react": "^4.0.0",
     "axios": "^1.7.9",

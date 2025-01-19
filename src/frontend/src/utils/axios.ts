@@ -8,11 +8,9 @@ const axios = axiosStatic.create({
 // All express responses must be: res.status(404).json({ message: "You are not authorized to do that." })
 axios.interceptors.response.use(
   (response) => {
-    console.log(response);
     return response;
   },
   (error) => {
-    console.log(error);
     // this is how normal errors get sent (e.g., res.status(400).json({message: 'blah blah'}))
     const message = error?.response?.data?.message;
     if (message) {

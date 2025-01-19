@@ -14,7 +14,6 @@ import {
   deleteTeam,
   createTeam,
   setTeamLeads,
-  setTeamInitialMember,
   archiveTeam,
   getAllArchivedTeams
 } from '../apis/teams.api';
@@ -46,22 +45,6 @@ export const useSingleTeam = (teamId: string) => {
     const { data } = await getSingleTeam(teamId);
     return data;
   });
-};
-
-export const useSetTeamInitialMember = (teamId: string) => {
-  const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, string>(
-    ['teams', 'edit'],
-    async (userId: string) => {
-      const { data } = await setTeamInitialMember(teamId, userId);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['teams']);
-      }
-    }
-  );
 };
 
 export const useSetTeamMembers = (teamId: string) => {
