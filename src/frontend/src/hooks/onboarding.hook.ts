@@ -139,7 +139,7 @@ export const useEditChecklist = (id: string) => {
 };
 
 export const useGetImageUrls = (imageList: { objectId: string; imageFileId: string | null }[]) => {
-  return useQuery<{ id: string; url: string | undefined}[], Error>(
+  return useQuery<{ id: string; url: string | undefined }[], Error>(
     ['image', imageList],
     async () => {
       const imageBlobsList = await Promise.all(
