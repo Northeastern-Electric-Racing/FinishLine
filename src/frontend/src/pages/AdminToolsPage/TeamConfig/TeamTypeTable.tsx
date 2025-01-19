@@ -7,7 +7,7 @@ import CreateTeamTypeFormModal from './CreateTeamTypeFormModal';
 import { TeamType } from 'shared';
 import EditTeamTypeFormModal from './EditTeamTypeFormModal';
 import { useAllTeamTypes, useSetTeamTypeImage } from '../../../hooks/team-types.hooks';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import NERUploadButton from '../../../components/NERUploadButton';
 import { useGetImageUrls } from '../../../hooks/onboarding.hook';
@@ -25,27 +25,30 @@ const TeamTypeTable: React.FC = () => {
   const [addedImages, setAddedImages] = useState<{ [key: string]: File | undefined }>({});
   const toast = useToast();
 
-  const imageFileIds = teamTypes?.map((teamType) => teamType.imageFileId) ?? [];
-  const { data: imageUrlsList, isLoading, isError } = useGetImageUrls(imageFileIds);
+  const teamTypeImageList =
+    teamTypes?.map((teamType) => {
+      return { objectId: teamType.teamTypeId, imageFileId: teamType.imageFileId };
+    }) ?? [];
+
+  const { data: imageUrlsList, isLoading, isError, error } = useGetImageUrls(teamTypeImageList);
   const { mutateAsync: setTeamTypeImage, isLoading: setTeamTypeIsLoading } = useSetTeamTypeImage();
-
-  const imageUrls = useMemo(() => {
-    if (!imageUrlsList || isLoading || isError) return {};
-
-    const urlMap: { [key: string]: string | undefined } = {};
-    teamTypes?.forEach((teamType, index) => {
-      urlMap[teamType.teamTypeId] = imageUrlsList[index];
-    });
-    return urlMap;
-  }, [imageUrlsList, isLoading, isError, teamTypes]);
 
   if (teamTypesIsError) {
     return <ErrorPage message={teamTypesError?.message} />;
   }
 
-  if (!teamTypes || teamTypesIsLoading || setTeamTypeIsLoading) {
+  if (isError) {
+    return <ErrorPage message={error?.message} />;
+  }
+
+  if (!teamTypes || teamTypesIsLoading || setTeamTypeIsLoading || !imageUrlsList || isLoading) {
     return <LoadingIndicator />;
   }
+
+  const imageUrlsMap: { [key: string]: string | undefined } = {};
+  imageUrlsList.forEach((item) => {
+    imageUrlsMap[item.id] = item.url;
+  });
 
   const onSubmitTeamTypeImage = async (teamTypeId: string) => {
     const addedImage = addedImages[teamTypeId];
@@ -78,6 +81,7 @@ const TeamTypeTable: React.FC = () => {
   };
 
   const teamTypesTableRows = teamTypes.map((teamType) => {
+    console.log('teamType', teamType);
     return (
       <TableRow>
         <TableCell onClick={() => setEditingTeamType(teamType)} sx={{ cursor: 'pointer', border: '2px solid black' }}>
@@ -96,7 +100,12 @@ const TeamTypeTable: React.FC = () => {
         </TableCell>
         <TableCell
           onClick={() => setEditingTeamType(teamType)}
-          sx={{ cursor: 'pointer', border: '2px solid black', verticalAlign: 'middle' }}
+          sx={{
+            cursor: 'pointer',
+            border: '2px solid black',
+            verticalAlign: 'middle',
+            maxWidth: '15vw'
+          }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Typography variant="body1" sx={{ marginLeft: 1 }}>
@@ -109,7 +118,7 @@ const TeamTypeTable: React.FC = () => {
             {teamType.imageFileId && !addedImages[teamType.teamTypeId] && (
               <Box
                 component="img"
-                src={imageUrls[teamType.teamTypeId]}
+                src={imageUrlsMap[teamType.teamTypeId]}
                 alt="Image Preview"
                 sx={{ maxWidth: '100px', mt: 1, mb: 1 }}
               />

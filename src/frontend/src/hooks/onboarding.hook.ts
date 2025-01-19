@@ -138,23 +138,21 @@ export const useEditChecklist = (id: string) => {
   );
 };
 
-export const useGetImageUrls = (imageFileIds: (string | null)[]) => {
-  return useQuery<string[], Error>(
-    ['image', imageFileIds],
+export const useGetImageUrls = (imageList: { objectId: string; imageFileId: string | null }[]) => {
+  return useQuery<{ id: string; url: string | undefined}[], Error>(
+    ['image', imageList],
     async () => {
-      if (!imageFileIds) throw new Error('No image ID provided');
-      const imageBlobs = await Promise.all(
-        imageFileIds
-          .filter((id): id is string => id !== null)
-          .map(async (imageId) => {
-            const imageBlob = await downloadGoogleImage(imageId);
-            return URL.createObjectURL(imageBlob);
-          })
+      const imageBlobsList = await Promise.all(
+        imageList.map(async (object) => {
+          const imageBlob = object.imageFileId ? await downloadGoogleImage(object.imageFileId) : undefined;
+          const url = imageBlob ? URL.createObjectURL(imageBlob) : undefined;
+          return { id: object.objectId, url };
+        })
       );
-      return imageBlobs;
+      return imageBlobsList;
     },
     {
-      enabled: !!imageFileIds
+      enabled: !!imageList
     }
   );
 };

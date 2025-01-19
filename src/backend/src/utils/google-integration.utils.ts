@@ -87,10 +87,9 @@ interface GoogleDriveError {
 export const uploadFile = async (fileObject: Express.Multer.File) => {
   const bufferStream = new stream.PassThrough();
   bufferStream.end(fileObject.buffer);
-
-  if (fileObject.filename.length > 20) throw new HttpException(400, 'File name can only be at most 20 characters long');
+  if (fileObject.fieldname.length > 20) throw new HttpException(400, 'File name can only be at most 20 characters long');
   //The regex /^[\w.]+$/ limits the file name to the set of alphanumeric characters (\w) and dots (for file type)
-  if (!/^[\w.]+$/.test(fileObject.filename))
+  if (!/^[\w.]+$/.test(fileObject.fieldname))
     throw new HttpException(400, 'File name should only contain letters and numbers');
 
   oauth2Client.setCredentials({
