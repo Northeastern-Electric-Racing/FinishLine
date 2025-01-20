@@ -75,6 +75,11 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
           name: 'Companies & Sponsors',
           icon: <ShoppingCartIcon />,
           route: routes.COMPANIES_SPONSORS
+        },
+        {
+          name: 'Original Page',
+          icon: <AttachMoneyIcon />,
+          route: routes.FINANCE
         }
       ]
     },

@@ -10,6 +10,7 @@ import EditReimbursementRequestPage from './EditReimbursementRequest/EditReimbur
 import ReimbursementRequestDetails from './ReimbursementRequestDetailPage/ReimbursementRequestDetails';
 import FinanceDashboard from './FinanceDashboard';
 import ReimbursmentRequests from './ReimbursmentRequests';
+import CompaniesAndSponsors from './CompaniesAndSponsors';
 
 const Finance: React.FC = () => {
   return (
@@ -19,6 +20,7 @@ const Finance: React.FC = () => {
       <Route path={routes.REIMBURSEMENT_REQUEST_BY_ID} component={ReimbursementRequestDetails} />
       <Route path={routes.FINANCE_DASHBOARD} component={FinanceDashboard} />
       <Route path={routes.REIMBURSEMENT_REQUESTS} component={ReimbursmentRequests} />
+      <Route path={routes.COMPANIES_SPONSORS} component={CompaniesAndSponsors} />
       <Route path={routes.FINANCE} component={FinancePage} />
     </Switch>
   );
