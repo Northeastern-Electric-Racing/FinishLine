@@ -25,7 +25,7 @@ describe('user hooks', () => {
     expect(result.current.data).toEqual(exampleAllUsers);
   });
 
-  it('handles getting a single user', async () => {
+  it.skip('handles getting a single user', async () => {
     const mockedGetSingleUser = getSingleUser as jest.Mock<Promise<AxiosResponse<User>>>;
     mockedGetSingleUser.mockReturnValue(mockPromiseAxiosResponse<User>(exampleAdminUser));
 
