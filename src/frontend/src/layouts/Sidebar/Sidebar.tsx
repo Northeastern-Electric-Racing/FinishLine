@@ -64,17 +64,17 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
         {
           name: 'Finance Dashboard',
           icon: <QueryStatsIcon />,
-          route: routes.FINANCE
+          route: routes.FINANCE_DASHBOARD
         },
         {
           name: 'Reimbursments',
           icon: <CurrencyExchangeIcon />,
-          route: routes.FINANCE
+          route: routes.REIMBURSEMENT_REQUESTS
         },
         {
           name: 'Companies & Sponsors',
           icon: <ShoppingCartIcon />,
-          route: routes.HOME
+          route: routes.COMPANIES_SPONSORS
         }
       ]
     },
