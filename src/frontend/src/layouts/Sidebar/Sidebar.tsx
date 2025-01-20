@@ -63,22 +63,23 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       subItems: [
         {
           name: 'Finance Dashboard',
-          icon: <QueryStatsIcon />,
+          icon: <QueryStatsIcon sx={{ fontSize: '20px' }} />,
           route: routes.FINANCE_DASHBOARD
         },
         {
           name: 'Reimbursments',
-          icon: <CurrencyExchangeIcon />,
+          icon: <CurrencyExchangeIcon sx={{ fontSize: '20px' }} />,
           route: routes.REIMBURSEMENT_REQUESTS
         },
         {
           name: 'Companies & Sponsors',
-          icon: <ShoppingCartIcon />,
+          icon: <ShoppingCartIcon sx={{ fontSize: '20px' }} />,
           route: routes.COMPANIES_SPONSORS
         },
         {
+          /* FOR REFRENCE (TO BE REMOVED) */
           name: 'Original Page',
-          icon: <AttachMoneyIcon />,
+          icon: <AttachMoneyIcon sx={{ fontSize: '20px' }} />,
           route: routes.FINANCE
         }
       ]
