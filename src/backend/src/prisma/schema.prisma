@@ -230,8 +230,14 @@ model User {
   deletedTeamTypes                Team_Type[]               @relation(name: "teamTypeDeleter")
   unreadAnnouncements             Announcement[]            @relation(name: "receivedAnnouncements")
   unreadPopUps                    PopUp[]                   @relation(name: "userPopUps")
-  submissions                     Submission[]
-  reviews                         Review[]
+  createdParts                    Part[]                    @relation(name: "partCreator")
+  deletedParts                    Part[]                    @relation(name: "partDeleter")
+  createdPartSubmissions          Submission[]              @relation(name: "partsSubmissionCreator")
+  deletedPartSubmissions          Submission[]              @relation(name: "partsSubmissionDeleter")
+  createdPartReviews              Review[]                  @relation(name: "partsReviewCreator")
+  deletedPartReviews              Review[]                  @relation(name: "partsReviewDeleter")
+  partsToReview                   Part[]                    @relation(name: "PartReviewers")
+  assignedParts                   Part[]                    @relation(name: "PartAssignees")
 }
 
 model Role {
@@ -446,6 +452,7 @@ model Project {
   favoritedBy              User[]         @relation(name: "favoritedBy")
   featuredByOrganizationId String?
   featuredByOrganization   Organization?  @relation(fields: [featuredByOrganizationId], references: [organizationId])
+  abbreviation             String
   parts                    Part[]
 }
 
@@ -962,6 +969,7 @@ model Organization {
   featuredProjects         Project[]
   popUps                   PopUp[]
   announcements            Announcement[]
+  parts                    Part[]
 }
 
 model FrequentlyAskedQuestion {
@@ -1057,51 +1065,79 @@ model PopUp {
 }
 
 model Part {
-  id          String       @id @default(uuid())
-  index       Int
-  commonName  String
-  description String
-  status      String
-  tags        String[]
-  submissions Submission[]
-  reviews     Review[]
-  project     Project      @relation(fields: [projectId], references: [id])
-  projectId   Int
-  assignees   User[]       @relation("PartAssignees")
-  reviewers   User[]       @relation("PartReviewers")
-  history     String[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  index          Int
+  commonName     String
+  description    String
+  status         String
+  tags           PartTag[]
+  submissions    Submission[]
+  reviews        Review[]
+  project        Project      @relation(fields: [projectId], references: [projectId])
+  projectId      String
+  assignees      User[]       @relation("PartAssignees")
+  reviewers      User[]       @relation("PartReviewers")
+  history        String[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  userCreatedId  String
+  userCreated    User         @relation(name: "partCreator", fields: [userCreatedId], references: [userId])
+  userDeletedId  String
+  userDeleted    User         @relation(name: "partDeleter", fields: [userDeletedId], references: [userId])
+}
+
+model PartTag {
+  id    String @id @default(uuid())
+  name  String
+  color String
+
+  parts Part[]
 }
 
 model Submission {
-  id        String   @id @default(uuid())
-  files     String[] // how do we represent files in the database?
-  name      String
-  notes     String?
-  part      Part     @relation(fields: [partId], references: [id])
-  partId    Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(uuid())
+  files         String[] // how do we represent files in the database?
+  name          String
+  notes         String?
+  part          Part     @relation(fields: [partId], references: [id])
+  partId        String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  userCreatedId String
+  userCreated   User     @relation(name: "partsSubmissionCreator", fields: [userCreatedId], references: [userId])
+  userDeletedId String
+  userDeleted   User     @relation(name: "partsSubmissionDeleter", fields: [userDeletedId], references: [userId])
+  Review        Review[]
 }
 
 model Review {
-  id           String     @id @default(uuid())
-  files        String[]
-  notes        String?
-  submission   Submission @relation(fields: [submissionId], references: [id])
-  submissionId Int
-  part         Part       @relation(fields: [partId], references: [id])
-  partId       Int
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  id            String              @id @default(uuid())
+  files         String[]
+  notes         String?
+  submission    Submission          @relation(fields: [submissionId], references: [id])
+  submissionId  String
+  part          Part                @relation(fields: [partId], references: [id])
+  partId        String
+  popUps        Part_Review_Popup[]
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  userCreatedId String
+  userCreated   User                @relation(name: "partsReviewCreator", fields: [userCreatedId], references: [userId])
+  deletedAt     DateTime?
+  userDeletedId String
+  userDeleted   User                @relation(name: "partsReviewDeleter", fields: [userDeletedId], references: [userId])
 }
 
-model Popup {
-  id          String      @id @default(uuid())
-  coordinate  String
+model Part_Review_Popup {
+  id          String   @id @default(uuid())
+  xCoord      Float
+  yCoord      Float
   title       String
   description String
+  reviewId    String
+  review      Review   @relation(fields: [reviewId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
