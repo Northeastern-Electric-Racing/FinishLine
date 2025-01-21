@@ -6,7 +6,15 @@
 import * as yup from 'yup';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { ChangeRequestReason, ChangeRequestType, Project, ProposedSolution, wbsPipe, WorkPackage } from 'shared';
+import {
+  ChangeRequestReason,
+  ChangeRequestType,
+  Project,
+  ProposedSolutionFormInput,
+  wbsNamePipe,
+  wbsPipe,
+  WorkPackage
+} from 'shared';
 import { routes } from '../../utils/routes';
 import TextField from '@mui/material/TextField';
 import FormHelperText from '@mui/material/FormHelperText';
@@ -26,7 +34,7 @@ import {
   RadioGroup,
   Select
 } from '@mui/material';
-import { FormInput } from './CreateChangeRequest';
+import { FormInput, StandardChangeRequestType } from './CreateChangeRequest';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
@@ -34,7 +42,6 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import { wbsTester } from '../../utils/form';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
-import { wbsNamePipe } from '../../utils/pipes';
 import PageLayout from '../../components/PageLayout';
 import { wbsNumComparator } from 'shared/src/validate-wbs';
 import { ChangeEvent } from 'react';
@@ -46,14 +53,14 @@ interface CreateChangeRequestViewProps {
   setWbsNum: (val: string) => void;
   crDesc: string;
   onSubmit: (data: FormInput) => Promise<void>;
-  proposedSolutions: ProposedSolution[];
-  setProposedSolutions: (ps: ProposedSolution[]) => void;
+  proposedSolutions: ProposedSolutionFormInput[];
+  setProposedSolutions: (ps: ProposedSolutionFormInput[]) => void;
   handleCancel: () => void;
   modalView?: boolean;
 }
 
 const schema = yup.object().shape({
-  type: yup.string().required('Type is required'),
+  type: yup.mixed<StandardChangeRequestType>().required('Type is required'),
   what: yup.string().required('What is required'),
   why: yup
     .array()
@@ -61,14 +68,15 @@ const schema = yup.object().shape({
     .required('Why is required')
     .of(
       yup.object().shape({
-        type: yup.string().required('Why Type is required'),
+        type: yup.mixed<ChangeRequestReason>().required('Why Type is required'),
         explain: yup
           .string()
           .required('Why Explain is required')
-          .when('type', {
-            is: ChangeRequestReason.OtherProject,
-            then: yup.string().test('wbs-num-valid', 'WBS Number is not valid', wbsTester)
-          })
+          .when('type', ([type], schema) =>
+            type === ChangeRequestReason.OtherProject
+              ? schema.required().test('wbs-num-valid', 'WBS Number is not valid', wbsTester)
+              : yup.string()
+          )
       })
     )
 });
@@ -90,7 +98,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
     formState: { errors },
     register,
     watch
-  } = useForm({
+  } = useForm<FormInput>({
     resolver: yupResolver(schema),
     defaultValues: query.get('budgetChange')
       ? {
@@ -99,22 +107,22 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
           type: ChangeRequestType.Issue
         }
       : query.get('timelineDelay')
-      ? {
-          what: 'Timeline delay',
-          why: [{ type: ChangeRequestReason.Other, explain: 'Decided to extend timeline after design review' }],
-          type: ChangeRequestType.Redefinition
-        }
-      : query.get('createWP')
-      ? {
-          what: crDesc,
-          why: [{ type: ChangeRequestReason.Initialization, explain: 'Creating a Work Package on this Project' }],
-          type: ChangeRequestType.Redefinition
-        }
-      : {
-          what: crDesc,
-          why: [{ type: ChangeRequestReason.Other, explain: '' }],
-          type: ChangeRequestType.Issue
-        }
+        ? {
+            what: 'Timeline delay',
+            why: [{ type: ChangeRequestReason.Other, explain: 'Decided to extend timeline after design review' }],
+            type: ChangeRequestType.Redefinition
+          }
+        : query.get('createWP')
+          ? {
+              what: crDesc,
+              why: [{ type: ChangeRequestReason.Initialization, explain: 'Creating a Work Package on this Project' }],
+              type: ChangeRequestType.Redefinition
+            }
+          : {
+              what: crDesc,
+              why: [{ type: ChangeRequestReason.Other, explain: '' }],
+              type: ChangeRequestType.Issue
+            }
   });
   const { fields: whys, append: appendWhy, remove: removeWhy } = useFieldArray({ control, name: 'why' });
 

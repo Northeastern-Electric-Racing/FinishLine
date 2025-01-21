@@ -9,7 +9,7 @@ import {
   deleteReimbursementRequest,
   denyReimbursementRequest,
   downloadBlobsToPdf,
-  downloadGoogleImage,
+  downloadFinanceImage,
   editReimbursementRequest,
   getAllReimbursementRequests,
   getAllReimbursements,
@@ -83,6 +83,10 @@ export interface EditVendorPayload {
 export interface RefundPayload {
   amount: number;
   dateReceived: string;
+}
+
+export interface MarkDeliveredRequestPayload {
+  dateDelivered: Date;
 }
 
 /**
@@ -232,10 +236,10 @@ export const useAllReimbursements = () => {
  */
 export const useMarkReimbursementRequestAsDelivered = (id: string) => {
   const queryClient = useQueryClient();
-  return useMutation<ReimbursementRequest, Error>(
+  return useMutation<ReimbursementRequest, Error, MarkDeliveredRequestPayload>(
     ['reimbursement-requests', 'edit'],
-    async () => {
-      const { data } = await markReimbursementRequestAsDelivered(id);
+    async (markDeliveredData: MarkDeliveredRequestPayload) => {
+      const { data } = await markReimbursementRequestAsDelivered(id, markDeliveredData);
       return data;
     },
     {
@@ -376,7 +380,7 @@ export const useDenyReimbursementRequest = (id: string) => {
 export const useDownloadPDFOfImages = () => {
   return useMutation(['reimbursement-requests'], async (formData: DownloadReceiptsFormInput) => {
     const promises = formData.fileIds.map((fileId) => {
-      return downloadGoogleImage(fileId);
+      return downloadFinanceImage(fileId);
     });
 
     const blobs = await Promise.all(promises);

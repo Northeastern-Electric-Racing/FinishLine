@@ -8,6 +8,7 @@ import { Project, Task, TaskPriority, TaskStatus, TeamPreview, User, UserPreview
 import { EditTaskFormInput } from '../pages/ProjectDetailPage/ProjectViewContainer/TaskList/TaskFormModal';
 import { fullNamePipe } from './pipes';
 import { makeTeamList } from './teams.utils';
+import { daysOverdue } from './datetime.utils';
 
 //this is needed to fix some weird bug with getActions()
 //see comment by michaldudak commented on Dec 5, 2022
@@ -25,7 +26,7 @@ declare global {
 export type Row = {
   id: number;
   title: string;
-  deadline: Date;
+  deadline?: Date;
   priority: TaskPriority;
   assignees: UserPreview[];
   taskId: string;
@@ -49,12 +50,12 @@ export interface TaskListDataGridProps {
   tableRowCount: string;
   setSelectedTask: Dispatch<SetStateAction<Task | undefined>>;
   setModalShow: Dispatch<SetStateAction<boolean>>;
-  createTask: (title: string, deadline: Date, priority: TaskPriority, assignees: UserPreview[]) => Promise<void>;
+  createTask: (title: string, priority: TaskPriority, assignees: UserPreview[], deadline?: Date) => Promise<void>;
   status: TaskStatus;
   addTask: boolean;
   onAddCancel: () => void;
   deleteRow: (taskId: string) => MouseEventHandler<HTMLLIElement>;
-  moveToInProgress: (taskId: string) => MouseEventHandler<HTMLLIElement>;
+  moveToInProgress: (taskId: string, assignees: string, deadline: Date | undefined) => MouseEventHandler<HTMLLIElement>;
   moveToDone: (taskId: string) => MouseEventHandler<HTMLLIElement>;
   moveToBacklog: (taskId: string) => MouseEventHandler<HTMLLIElement>;
   editTask: (editInfo: EditTaskFormInput) => Promise<void>;
@@ -67,4 +68,19 @@ export const taskUserToAutocompleteOption = (user: User): { label: string; id: s
 
 export const getTaskAssigneeOptions = (teams: TeamPreview[]): User[] => {
   return teams.map((team) => makeTeamList(team)).flat();
+};
+
+export const taskPriorityColor = (task: Task) => {
+  return task.priority === TaskPriority.Low
+    ? '#1CAC19'
+    : task.priority === TaskPriority.Medium
+      ? '#ffc700'
+      : task.priority === TaskPriority.High
+        ? '#EF4345'
+        : '';
+};
+
+export const getOverdueTasks = (tasks: Task[]) => {
+  const overdueTasks = new Set(tasks.filter((task) => (task.deadline ? daysOverdue(new Date(task.deadline)) : 0) > 0));
+  return [...overdueTasks];
 };

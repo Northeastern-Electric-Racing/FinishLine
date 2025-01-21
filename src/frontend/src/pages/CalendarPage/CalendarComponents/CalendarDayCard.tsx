@@ -48,6 +48,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
 
   const EventCard = ({ event }: { event: DesignReview }) => {
     const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
+    const [markedStatus, setMarkedStatus] = useState(event.status);
     const name = event.wbsName;
 
     return (
@@ -57,11 +58,13 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
           onHide={() => setIsSummaryModalOpen(false)}
           designReview={event}
           teamTypes={teamTypes}
+          markedStatus={markedStatus}
+          setMarkedStatus={setMarkedStatus}
         />
         <Box marginLeft={0.5} marginBottom={0.5} onClick={() => setIsSummaryModalOpen(true)} sx={{ cursor: 'pointer' }}>
           <Card
             sx={{
-              backgroundColor: designReviewStatusColor(event.status),
+              backgroundColor: designReviewStatusColor(markedStatus),
               borderRadius: 1,
               width: '100%',
               minHeight: 20,
@@ -91,6 +94,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
 
   const ExtraEventNote = ({ event }: { event: DesignReview }) => {
     const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
+    const [markedStatus, setMarkedStatus] = useState(event.status);
 
     return (
       <>
@@ -99,6 +103,8 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
           onHide={() => setIsSummaryModalOpen(false)}
           designReview={event}
           teamTypes={teamTypes}
+          markedStatus={markedStatus}
+          setMarkedStatus={setMarkedStatus}
         />
         <Link
           style={{ cursor: 'pointer' }}
@@ -172,6 +178,9 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
     );
   };
 
+  const today = new Date().toDateString();
+  const isCurrentDay = cardDate.toDateString() === today;
+
   return (
     <>
       <DesignReviewCreateModal
@@ -182,7 +191,15 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
         teamTypes={teamTypes}
         defaultDate={cardDate}
       />
-      <Card sx={{ borderRadius: 2, width: { xs: '95%', md: '80%' }, height: { xs: '10vh', sm: '15vh' } }}>
+      <Card
+        sx={{
+          borderRadius: 2,
+          width: { xs: '95%', md: '80%' },
+          height: { xs: '10vh', sm: '15vh' },
+          border: isCurrentDay ? '2px solid gray' : 'none',
+          boxShadow: isCurrentDay ? '0 0 10px rgba(255, 255, 255, 0.5)' : 'none'
+        }}
+      >
         <CardContent sx={{ padding: 0 }}>
           <DayCardTitle />
           {events.length < 3 ? (

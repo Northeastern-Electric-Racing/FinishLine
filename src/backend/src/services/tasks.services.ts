@@ -1,4 +1,4 @@
-import { Task_Priority, Task_Status, User } from '@prisma/client';
+import { Task_Priority, Task_Status, User, Organization } from '@prisma/client';
 import { isAdmin, isLeadership, isUnderWordCount, Task, WbsNumber, wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
 import taskTransformer from '../transformers/tasks.transformer';
@@ -18,11 +18,11 @@ export default class TasksService {
    * @param wbsNum the WBS Number to create the task for
    * @param title the title of the tas
    * @param notes the notes of the task
-   * @param deadline the deadline of the task
    * @param priority the priority of the task
    * @param status the status of the task
    * @param assignees the assignees ids of the task
    * @param organizationId the organization that the user is currently in
+   * @param deadline the deadline of the task
    * @returns the id of the successfully created task
    * @throws if the user does not have access to create a task, wbs element does not exist, or wbs element is deleted
    */
@@ -31,23 +31,23 @@ export default class TasksService {
     wbsNum: WbsNumber,
     title: string,
     notes: string,
-    deadline: Date,
     priority: Task_Priority,
     status: Task_Status,
     assignees: string[],
-    organizationId: string
+    organization: Organization,
+    deadline?: Date
   ): Promise<Task> {
     const requestedWbsElement = await prisma.wBS_Element.findUnique({
       where: {
         wbsNumber: {
           ...wbsNum,
-          organizationId
+          organizationId: organization.organizationId
         }
       },
       include: {
         project: {
           include: {
-            teams: getTeamQueryArgs(organizationId),
+            teams: getTeamQueryArgs(organization.organizationId),
             wbsElement: true,
             workPackages: { include: { wbsElement: true } }
           }
@@ -73,7 +73,7 @@ export default class TasksService {
     });
 
     if (
-      !(await userHasPermission(createdBy.userId, organizationId, isLeadership)) &&
+      !(await userHasPermission(createdBy.userId, organization.organizationId, isLeadership)) &&
       !isLeadOrManager &&
       !isWorkPackageLeadOrManager &&
       !teams.some((team) => isUserOnTeam(team, createdBy))
@@ -94,13 +94,17 @@ export default class TasksService {
     if (!isUnderWordCount(title, 15)) throw new HttpException(400, 'Title must be less than 15 words');
     if (!isUnderWordCount(notes, 250)) throw new HttpException(400, 'Notes must be less than 250 words');
 
+    if (status === 'IN_PROGRESS' && (!deadline || assignees.length === 0)) {
+      throw new HttpException(400, 'Tasks in progress must have a dealine and assignees');
+    }
+
     const createdTask = await prisma.task.create({
       data: {
         wbsElement: {
           connect: {
             wbsNumber: {
               ...wbsNum,
-              organizationId
+              organizationId: organization.organizationId
             }
           }
         },
@@ -112,12 +116,12 @@ export default class TasksService {
         createdBy: { connect: { userId: createdBy.userId } },
         assignees: { connect: users.map((user) => ({ userId: user.userId })) }
       },
-      ...getTaskQueryArgs(organizationId)
+      ...getTaskQueryArgs(organization.organizationId)
     });
 
     const newTask = taskTransformer(createdTask);
 
-    await sendSlackTaskAssignedNotificationToUsers(newTask, assignees, organizationId);
+    await sendSlackTaskAssignedNotificationToUsers(newTask, assignees, organization.organizationId);
 
     return newTask;
   }
@@ -165,9 +169,13 @@ export default class TasksService {
    */
   static async editTaskStatus(user: User, taskId: string, status: Task_Status) {
     // Get the original task and check if it exists
-    const originalTask = await prisma.task.findUnique({ where: { taskId }, include: { wbsElement: true } });
+    const originalTask = await prisma.task.findUnique({ where: { taskId }, include: { assignees: true, wbsElement: true } });
     if (!originalTask) throw new NotFoundException('Task', taskId);
     if (originalTask.dateDeleted) throw new DeletedException('Task', taskId);
+
+    if (status === 'IN_PROGRESS' && (!originalTask.deadline || originalTask.assignees.length === 0)) {
+      throw new HttpException(400, 'A task in progress must have a deadline and assignees!');
+    }
 
     const hasPermission = await hasPermissionToEditTask(user, taskId);
     if (!hasPermission)
@@ -192,12 +200,17 @@ export default class TasksService {
    * @returns the updated task
    * @throws if the task does not exist, the task is already deleted, any of the assignees don't exist, or if the user does not have permissions
    */
-  static async editTaskAssignees(user: User, taskId: string, assignees: string[], organizationId: string): Promise<Task> {
+  static async editTaskAssignees(
+    user: User,
+    taskId: string,
+    assignees: string[],
+    organization: Organization
+  ): Promise<Task> {
     // Get the original task and check if it exists
     const originalTask = await prisma.task.findUnique({
       where: { taskId },
       include: {
-        wbsElement: { include: { project: getProjectQueryArgs(organizationId) } },
+        wbsElement: { include: { project: getProjectQueryArgs(organization.organizationId) } },
         assignees: true
       }
     });
@@ -243,11 +256,11 @@ export default class TasksService {
             set: transformedAssigneeUsers
           }
         },
-        ...getTaskQueryArgs(organizationId)
+        ...getTaskQueryArgs(organization.organizationId)
       })
     );
 
-    await sendSlackTaskAssignedNotificationToUsers(updatedTask, newAssigneeIds, organizationId);
+    await sendSlackTaskAssignedNotificationToUsers(updatedTask, newAssigneeIds, organization.organizationId);
 
     return updatedTask;
   }
@@ -260,8 +273,8 @@ export default class TasksService {
    * @returns the deleted task
    * @throws if the user does not have permission
    */
-  static async deleteTask(currentUser: User, taskId: string, organizationId: string): Promise<string> {
-    const task = await prisma.task.findUnique({ where: { taskId }, ...getTaskQueryArgs(organizationId) });
+  static async deleteTask(currentUser: User, taskId: string, organization: Organization): Promise<string> {
+    const task = await prisma.task.findUnique({ where: { taskId }, ...getTaskQueryArgs(organization.organizationId) });
     if (!task) throw new NotFoundException('Task', taskId);
     if (task.dateDeleted) throw new DeletedException('Task', taskId);
 
@@ -274,7 +287,7 @@ export default class TasksService {
 
     // this checks the current users permissions
     const isLead = wbsElement.leadId === currentUser.userId || wbsElement.managerId === currentUser.userId;
-    if (!(await userHasPermission(currentUser.userId, organizationId, isAdmin)) && !isLead) {
+    if (!(await userHasPermission(currentUser.userId, organization.organizationId, isAdmin)) && !isLead) {
       throw new AccessDeniedException('Only admin, app-admins, project leads, and project managers can delete tasks');
     }
 

@@ -4,11 +4,20 @@
  */
 
 /**************** General Section ****************/
-const HOME = `/`;
+const BASE = `/`;
 const LOGIN = `/login`;
 const INFO = `/info`;
 const GANTT = `/gantt`;
 const CREDITS = `/credits`;
+
+/**************** Home Section ****************/
+const HOME = `/home`;
+const HOME_GUEST = HOME + `/guest`;
+const HOME_PNM = HOME + `/pnm`;
+const HOME_SELECT_SUBTEAM = HOME + `/select-subteam`;
+const HOME_ACCEPT = HOME + `/accept`;
+const HOME_MEMBER = HOME + `/member`;
+const HOME_ONBOARDING = HOME + `/onboarding`;
 
 /**************** Finance Section ****************/
 const FINANCE = `/finance`;
@@ -55,11 +64,26 @@ const DESIGN_REVIEW_BY_ID = CALENDAR + `/:id`;
 /**************** Organizations ****************/
 const ORGANIZATIONS = `/organizations`;
 
+/**************** Statistics ****************/
+const STATISTICS = `/statistics`;
+const CREATE_GRAPH = `/statistics/graph-collections/:graphCollectionId/graph/create`;
+const EDIT_GRAPH = `/statistics/graph-collections/:graphCollectionId/graph/:graphId/edit`;
+
+const GRAPH_COLLECTION_BY_ID = '/statistics/graph-collections/:graphCollectionId';
+
 export const routes = {
-  HOME,
+  BASE,
   LOGIN,
   INFO,
   CREDITS,
+
+  HOME,
+  HOME_GUEST,
+  HOME_PNM,
+  HOME_SELECT_SUBTEAM,
+  HOME_ONBOARDING,
+  HOME_ACCEPT,
+  HOME_MEMBER,
 
   TEAMS,
   TEAMS_BY_ID,
@@ -99,5 +123,10 @@ export const routes = {
   CALENDAR,
   DESIGN_REVIEW_BY_ID,
 
-  ORGANIZATIONS
+  ORGANIZATIONS,
+
+  STATISTICS,
+  CREATE_GRAPH,
+  EDIT_GRAPH,
+  GRAPH_COLLECTION_BY_ID
 };

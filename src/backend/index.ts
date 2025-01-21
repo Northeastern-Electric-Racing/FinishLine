@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import { prodHeaders, requireJwtDev, requireJwtProd } from './src/utils/auth.utils';
+import { getUserAndOrganization, prodHeaders, requireJwtDev, requireJwtProd } from './src/utils/auth.utils';
 import { errorHandler } from './src/utils/errors.utils';
 import userRouter from './src/routes/users.routes';
 import projectRouter from './src/routes/projects.routes';
@@ -16,6 +16,12 @@ import designReviewsRouter from './src/routes/design-reviews.routes';
 import workPackageTemplatesRouter from './src/routes/work-package-templates.routes';
 import carsRouter from './src/routes/cars.routes';
 import organizationRouter from './src/routes/organizations.routes';
+import recruitmentRouter from './src/routes/recruitment.routes';
+import { slackEvents } from './src/routes/slack.routes';
+import announcementsRouter from './src/routes/announcements.routes';
+import onboardingRouter from './src/routes/onboarding.routes';
+import popUpsRouter from './src/routes/pop-up.routes';
+import statisticsRouter from './src/routes/statistics.routes';
 
 const app = express();
 
@@ -39,6 +45,10 @@ const options: cors.CorsOptions = {
   allowedHeaders
 };
 
+// so we can listen to slack messages
+// NOTE: must be done before using json
+app.use('/slack', slackEvents.requestListener());
+
 // so that we can use cookies and json
 app.use(cookieParser());
 app.use(express.json());
@@ -48,6 +58,9 @@ app.use(cors(options));
 
 // ensure each request is authorized using JWT
 app.use(isProd ? requireJwtProd : requireJwtDev);
+
+// get user and organization
+app.use(getUserAndOrganization);
 
 // routes
 app.use('/users', userRouter);
@@ -63,6 +76,11 @@ app.use('/notifications', notificationsRouter);
 app.use('/templates', workPackageTemplatesRouter);
 app.use('/cars', carsRouter);
 app.use('/organizations', organizationRouter);
+app.use('/recruitment', recruitmentRouter);
+app.use('/pop-ups', popUpsRouter);
+app.use('/announcements', announcementsRouter);
+app.use('/onboarding', onboardingRouter);
+app.use('/statistics', statisticsRouter);
 app.use('/', (_req, res) => {
   res.status(200).json('Welcome to FinishLine');
 });

@@ -17,7 +17,6 @@ import ProjectFormDetails from './ProjectFormDetails';
 import { useAllUsers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { ObjectShape } from 'yup/lib/object';
 import CreateChangeRequestModal from '../../CreateChangeRequestPage/CreateChangeRequestModal';
 import { ProjectCreateChangeRequestFormInput } from './ProjectEditContainer';
 import { useState } from 'react';
@@ -45,7 +44,7 @@ interface ProjectFormContainerProps {
   defaultValues: ProjectFormInput;
   setManagerId: (id?: string) => void;
   setLeadId: (id?: string) => void;
-  schema: yup.ObjectSchema<ObjectShape>;
+  schema: yup.ObjectSchema<any>;
   leadId?: string;
   managerId?: string;
   onSubmitChangeRequest?: (data: ProjectCreateChangeRequestFormInput) => void;
@@ -73,7 +72,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
     control,
     watch,
     formState: { errors }
-  } = useForm({
+  } = useForm<ProjectFormInput>({
     resolver: yupResolver(schema),
     defaultValues: {
       name: defaultValues?.name,
@@ -82,7 +81,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
       crId: defaultValues?.crId,
       carNumber: defaultValues?.carNumber,
       links: defaultValues?.links,
-      descriptionBullets: defaultValues?.descriptionBullets,
+      descriptionBullets: defaultValues?.descriptionBullets ?? [],
       teamIds: defaultValues?.teamIds
     }
   });
@@ -182,11 +181,13 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
             </Typography>
             <LinksEditView
               watch={watch}
+              control={control}
               ls={links}
               register={register}
               append={appendLink}
               remove={removeLink}
               enforceRequired={!!project}
+              errors={errors}
             />
           </Box>
           <Box>

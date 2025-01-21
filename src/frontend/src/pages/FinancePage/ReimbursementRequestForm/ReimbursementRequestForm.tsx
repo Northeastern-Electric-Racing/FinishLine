@@ -29,7 +29,7 @@ export interface ReimbursementRequestInformation {
   dateOfExpense?: Date;
   accountCodeId: string;
   receiptFiles: ReimbursementReceiptUploadArgs[];
-  account: ClubAccount | undefined;
+  account: ClubAccount;
 }
 export interface ReimbursementRequestFormInput extends ReimbursementRequestInformation {
   reimbursementProducts: ReimbursementProductFormArgs[];
@@ -52,7 +52,7 @@ const RECEIPTS_REQUIRED = import.meta.env.VITE_RR_RECEIPT_REQUIREMENT || 'disabl
 
 const schema = yup.object().shape({
   vendorId: yup.string().required('Vendor is required'),
-  account: yup.string().required('Account is required'),
+  account: yup.mixed<ClubAccount>().oneOf(Object.values(ClubAccount)).required('Account is required'),
   dateOfExpense: yup.date().optional(),
   accountCodeId: yup.string().required('Account code is required'),
   reimbursementProducts: yup
@@ -64,7 +64,8 @@ const schema = yup.object().shape({
           .number()
           .typeError('Amount is required')
           .required('Amount is required')
-          .min(0.01, 'Amount must be greater than 0')
+          .min(0.01, 'Amount must be greater than 0'),
+        reason: yup.mixed<OtherProductReason | WbsNumber>().required()
       })
     )
     .required('reimbursement products required')
@@ -73,9 +74,10 @@ const schema = yup.object().shape({
     // The requirements for receipt uploads is disabled by default on development to make testing easier;
     // if testing proper receipt uploads is needed, create an environment variable called VITE_RR_RECEIPT_REQUIREMENT
     // in src/frontend/.env and set it to 'enabled'.
-    import.meta.env.MODE === 'development' && RECEIPTS_REQUIRED !== 'enabled'
+    (import.meta.env.MODE === 'development' && RECEIPTS_REQUIRED !== 'enabled'
       ? yup.array()
       : yup.array().required('receipt files required').max(7, 'At most 7 Receipts are allowed')
+    ).of(yup.mixed<ReimbursementReceiptUploadArgs>().required())
 });
 
 const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
@@ -91,11 +93,11 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     watch,
     setValue
   } = useForm<ReimbursementRequestFormInput>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(schema as any), // Typing any because its difficult to get around the env variable for the reimbursement files
     defaultValues: {
       vendorId: defaultValues?.vendorId ?? '',
       account: defaultValues?.account,
-      dateOfExpense: defaultValues?.dateOfExpense ,
+      dateOfExpense: defaultValues?.dateOfExpense,
       accountCodeId: defaultValues?.accountCodeId ?? '',
       reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductFormArgs[]),
       receiptFiles: defaultValues?.receiptFiles ?? ([] as ReimbursementReceiptUploadArgs[])

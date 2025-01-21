@@ -28,6 +28,10 @@ export const weeksPipe = (weeks: number) => {
   return `${weeks} week${weeks === 1 ? '' : 's'}`;
 };
 
+export const blobPipe = (blob: Blob, fileName: string) => {
+  return new File([blob], fileName, { type: blob.type });
+};
+
 /** Display number as "$535" */
 export const dollarsPipe = (dollars: number) => {
   return `$${dollars}`;
@@ -120,11 +124,6 @@ export const daysToDaysOrWeeksPipe = (days: number): string => {
 
 export const daysOrWeeksLeftOrLate = (daysLeft: number) => {
   return `${daysToDaysOrWeeksPipe(Math.abs(daysLeft))} ${daysLeft > 0 ? 'left' : 'late'}`;
-};
-
-/** Display WBS number as string "1.2.0 - Project Name" */
-export const wbsNamePipe = (wbsElement: WbsElement) => {
-  return `${wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`;
 };
 
 export const designReviewNamePipe = (designReview: DesignReview) => {

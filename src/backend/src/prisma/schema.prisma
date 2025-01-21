@@ -109,79 +109,137 @@ enum Design_Review_Status {
   DONE
 }
 
+enum Graph_Type {
+  PROJECT_BUDGET_BY_PROJECT
+  PROJECT_BUDGET_BY_TEAM
+  PROJECT_BUDGET_BY_DIVISION
+
+  CHANGE_REQUESTS_BY_PROJECT
+  CHANGE_REQUESTS_BY_TEAM
+  CHANGE_REQUESTS_BY_DIVISION
+
+  REIMBURSEMENT_TOTAL_BY_PROJECT
+  REIMBURSEMENT_TOTAL_BY_TEAM
+  REIMBURSEMENT_TOTAL_BY_DIVISION
+}
+
+enum Graph_Display_Type {
+  PIE
+  BAR
+}
+
+enum Measure {
+  SUM
+  AVG
+}
+
+enum Graph_Permission {
+  EDIT_GRAPH
+  CREATE_GRAPH
+  VIEW_GRAPH
+  DELETE_GRAPH
+}
+
+enum Graph_Collection_Permission {
+  EDIT_GRAPH_COLLECTION
+  CREATE_GRAPH_COLLECTION
+  VIEW_GRAPH_COLLECTION
+  DELETE_GRAPH_COLLECTION
+}
+
+enum Special_Permission {
+  FINANCE_ONLY
+}
+
 model User {
-  userId             String                @id @default(uuid())
-  firstName          String
-  lastName           String
-  googleAuthId       String                @unique
-  email              String                @unique
-  emailId            String?               @unique
-  roles              Role[]
-  userSettings       User_Settings?
-  userSecureSettings User_Secure_Settings?
+  userId                String                @id @default(uuid())
+  firstName             String
+  lastName              String
+  googleAuthId          String                @unique
+  email                 String                @unique
+  emailId               String?               @unique
+  roles                 Role[]
+  additionalPermissions String[]
+  userSettings          User_Settings?
+  userSecureSettings    User_Secure_Settings?
 
   // Relation references
-  submittedChangeRequests    Change_Request[]          @relation(name: "submittedChangeRequests")
-  reviewedChangeRequests     Change_Request[]          @relation(name: "reviewedChangeRequests")
-  deletedChangeRequests      Change_Request[]          @relation(name: "deletedChangeRequests")
-  changeRequestsToReview     Change_Request[]          @relation(name: "requestedChangeRequestReviewers")
-  markedAslead               Activation_CR[]           @relation(name: "markAsLead")
-  markedAsmanager            Activation_CR[]           @relation(name: "markAsManager")
-  changes                    Change[]
-  lead                       WBS_Element[]             @relation(name: "lead")
-  manager                    WBS_Element[]             @relation(name: "manager")
-  Session                    Session[]
-  teamsAsMember              Team[]                    @relation(name: "teamsAsMember")
-  teamsAsHead                Team[]                    @relation(name: "teamsAsHead")
-  teamsAsLead                Team[]                    @relation(name: "teamsAsLead")
-  deletedWBSElements         WBS_Element[]             @relation(name: "deletedWbsElements")
-  checkedDescriptionBullets  Description_Bullet[]      @relation(name: "checkDescriptionBullets")
-  createdProposedSolutions   Proposed_Solution[]
-  createdTasks               Task[]                    @relation(name: "createdBy")
-  deletedTasks               Task[]                    @relation(name: "deletedBy")
-  assignedTasks              Task[]                    @relation(name: "assignedTo")
-  favoriteProjects           Project[]                 @relation(name: "favoritedBy")
-  reimbursementRequests      Reimbursement_Request[]   @relation(name: "reimbursementRequestRecipient")
-  reimbursementStatuses      Reimbursement_Status[]
-  reimbursements             Reimbursement[]           @relation(name: "purchaser")
-  submittedReimbursements    Reimbursement[]           @relation(name: "submitter")
-  createdLinks               Link[]                    @relation(name: "linkCreator")
-  createdLinkTypes           Link_Type[]               @relation(name: "linkTypeCreator")
-  deletedReceipts            Receipt[]                 @relation(name: "deletedReceipts")
-  createdReceipts            Receipt[]                 @relation(name: "receiptsCreatedBy")
-  deletedAssemblies          Assembly[]                @relation(name: "assemblyDeleter")
-  createdAssemblies          Assembly[]                @relation(name: "assemblyCreator")
-  deletedMaterials           Material[]                @relation(name: "materialDeleter")
-  createdMaterials           Material[]                @relation(name: "materialCreator")
-  archivedTeams              Team[]                    @relation(name: "userArchived")
-  createdMaterialTypes       Material_Type[]           @relation(name: "materialTypeCreator")
-  createdManufacturers       Manufacturer[]            @relation(name: "manufacturerCreator")
-  requiredDesignReviews      Design_Review[]           @relation(name: "requiredAttendee")
-  optionalDesignReviews      Design_Review[]           @relation(name: "optionalAttendee")
-  userConfirmedDesignReviews Design_Review[]           @relation(name: "confirmedAttendee")
-  userDeniedDesignReviews    Design_Review[]           @relation(name: "deniedAttendee")
-  attendedDesignReviews      Design_Review[]           @relation(name: "userAttended")
-  createdDesignReviews       Design_Review[]           @relation(name: "designReviewCreator")
-  deletedDesignReviews       Design_Review[]           @relation(name: "designReviewDeleter")
-  drScheduleSettings         Schedule_Settings?
-  createdWorkPackageTemplate Work_Package_Template[]   @relation(name: "workPackageTemplateCreator")
-  deletedWorkPackageTemplate Work_Package_Template[]   @relation(name: "workPackageTemplateDeleter")
-  wbsProposedlead            Wbs_Proposed_Changes[]    @relation(name: "wbslead")
-  wbsProposedmanager         Wbs_Proposed_Changes[]    @relation(name: "wbsmanager")
-  organizations              Organization[]            @relation(name: "organizationMembers")
-  deletedOrganizations       Organization[]            @relation(name: "organizationDeleter")
-  createdOrganizations       Organization[]            @relation(name: "organizationCreator")
-  createdDescriptionBullets  Description_Bullet_Type[] @relation(name: "descriptionBulletTypeCreator")
-  deletedDescriptionBullets  Description_Bullet_Type[] @relation(name: "descriptionBulletTypeDeleter")
-  createdUnits               Unit[]                    @relation(name: "unitCreator")
-  organizationsAsAdvisor     Organization[]            @relation(name: "advisor")
-  organizationsAsTreasurer   Organization[]            @relation(name: "treasurer")
+  submittedChangeRequests         Change_Request[]          @relation(name: "submittedChangeRequests")
+  reviewedChangeRequests          Change_Request[]          @relation(name: "reviewedChangeRequests")
+  deletedChangeRequests           Change_Request[]          @relation(name: "deletedChangeRequests")
+  changeRequestsToReview          Change_Request[]          @relation(name: "requestedChangeRequestReviewers")
+  markedAslead                    Activation_CR[]           @relation(name: "markAsLead")
+  markedAsmanager                 Activation_CR[]           @relation(name: "markAsManager")
+  changes                         Change[]
+  lead                            WBS_Element[]             @relation(name: "lead")
+  manager                         WBS_Element[]             @relation(name: "manager")
+  Session                         Session[]
+  teamsAsMember                   Team[]                    @relation(name: "teamsAsMember")
+  teamsAsHead                     Team[]                    @relation(name: "teamsAsHead")
+  teamsAsLead                     Team[]                    @relation(name: "teamsAsLead")
+  deletedWBSElements              WBS_Element[]             @relation(name: "deletedWbsElements")
+  checkedDescriptionBullets       Description_Bullet[]      @relation(name: "checkDescriptionBullets")
+  createdProposedSolutions        Proposed_Solution[]
+  createdTasks                    Task[]                    @relation(name: "createdBy")
+  deletedTasks                    Task[]                    @relation(name: "deletedBy")
+  assignedTasks                   Task[]                    @relation(name: "assignedTo")
+  favoriteProjects                Project[]                 @relation(name: "favoritedBy")
+  reimbursementRequests           Reimbursement_Request[]   @relation(name: "reimbursementRequestRecipient")
+  reimbursementStatuses           Reimbursement_Status[]
+  reimbursements                  Reimbursement[]           @relation(name: "purchaser")
+  submittedReimbursements         Reimbursement[]           @relation(name: "submitter")
+  createdLinks                    Link[]                    @relation(name: "linkCreator")
+  createdLinkTypes                Link_Type[]               @relation(name: "linkTypeCreator")
+  deletedReceipts                 Receipt[]                 @relation(name: "deletedReceipts")
+  createdReceipts                 Receipt[]                 @relation(name: "receiptsCreatedBy")
+  deletedAssemblies               Assembly[]                @relation(name: "assemblyDeleter")
+  createdAssemblies               Assembly[]                @relation(name: "assemblyCreator")
+  deletedMaterials                Material[]                @relation(name: "materialDeleter")
+  createdMaterials                Material[]                @relation(name: "materialCreator")
+  archivedTeams                   Team[]                    @relation(name: "userArchived")
+  createdMaterialTypes            Material_Type[]           @relation(name: "materialTypeCreator")
+  createdManufacturers            Manufacturer[]            @relation(name: "manufacturerCreator")
+  requiredDesignReviews           Design_Review[]           @relation(name: "requiredAttendee")
+  optionalDesignReviews           Design_Review[]           @relation(name: "optionalAttendee")
+  userConfirmedDesignReviews      Design_Review[]           @relation(name: "confirmedAttendee")
+  userDeniedDesignReviews         Design_Review[]           @relation(name: "deniedAttendee")
+  attendedDesignReviews           Design_Review[]           @relation(name: "userAttended")
+  createdDesignReviews            Design_Review[]           @relation(name: "designReviewCreator")
+  deletedDesignReviews            Design_Review[]           @relation(name: "designReviewDeleter")
+  drScheduleSettings              Schedule_Settings?
+  createdWorkPackageTemplate      Work_Package_Template[]   @relation(name: "workPackageTemplateCreator")
+  deletedWorkPackageTemplate      Work_Package_Template[]   @relation(name: "workPackageTemplateDeleter")
+  wbsProposedlead                 Wbs_Proposed_Changes[]    @relation(name: "wbslead")
+  wbsProposedmanager              Wbs_Proposed_Changes[]    @relation(name: "wbsmanager")
+  organizations                   Organization[]            @relation(name: "organizationMembers")
+  deletedOrganizations            Organization[]            @relation(name: "organizationDeleter")
+  createdOrganizations            Organization[]            @relation(name: "organizationCreator")
+  createdDescriptionBullets       Description_Bullet_Type[] @relation(name: "descriptionBulletTypeCreator")
+  deletedDescriptionBullets       Description_Bullet_Type[] @relation(name: "descriptionBulletTypeDeleter")
+  createdUnits                    Unit[]                    @relation(name: "unitCreator")
+  organizationsAsAdvisor          Organization[]            @relation(name: "advisor")
+  organizationsAsTreasurer        Organization[]            @relation(name: "treasurer")
+  createdFrequentlyAskedQuestions FrequentlyAskedQuestion[] @relation(name: "frequentlyAskedQuestionCreator")
+  deletedFrequentlyAskedQuestions FrequentlyAskedQuestion[] @relation(name: "frequentlyAskedQuestionDeleter")
+  createdMilestones               Milestone[]               @relation(name: "milestoneCreator")
+  deletedMilestones               Milestone[]               @relation(name: "milestoneDeleter")
+  createdGraphCollections         Graph_Collection[]        @relation(name: "graphCollectionsCreator")
+  deletedGraphCollections         Graph_Collection[]        @relation(name: "graphCollectionDeleter")
+  createdGraphs                   Graph[]                   @relation(name: "graphCreator")
+  deletedGraphs                   Graph[]                   @relation(name: "graphDeleter")
+  deletedTeamTypes                Team_Type[]               @relation(name: "teamTypeDeleter")
+  unreadAnnouncements             Announcement[]            @relation(name: "receivedAnnouncements")
+  unreadPopUps                    PopUp[]                   @relation(name: "userPopUps")
+  createdChecklists               Checklist[]               @relation(name: "checklistCreator")
+  deletedChecklists               Checklist[]               @relation(name: "checklistDeleter")
+  checkedChecklists               Checklist[]               @relation(name: "checkedChecklists")
+  contacts                        Contact[]
+  onboardingTeamTypes             Team_Type[]               @relation(name: "onboardingTeamTypes")
 }
 
 model Role {
-  roleId   String    @id @default(uuid())
-  roleType Role_Type
-
+  roleId         String       @id @default(uuid())
+  roleType       Role_Type
   userId         String
   user           User         @relation(fields: [userId], references: [userId])
   organizationId String
@@ -210,6 +268,7 @@ model Team {
   teamTypeId             String?
   organizationId         String
   organization           Organization               @relation(fields: [organizationId], references: [organizationId])
+  checklists             Checklist[]
 }
 
 model Session {
@@ -378,16 +437,18 @@ model WBS_Element {
 }
 
 model Project {
-  projectId    String         @id @default(uuid())
-  wbsElementId String         @unique
-  wbsElement   WBS_Element    @relation(fields: [wbsElementId], references: [wbsElementId])
-  budget       Int            @default(0)
-  summary      String
-  workPackages Work_Package[]
-  carId        String
-  car          Car            @relation(fields: [carId], references: [carId])
-  teams        Team[]         @relation(name: "assignedBy")
-  favoritedBy  User[]         @relation(name: "favoritedBy")
+  projectId                String         @id @default(uuid())
+  wbsElementId             String         @unique
+  wbsElement               WBS_Element    @relation(fields: [wbsElementId], references: [wbsElementId])
+  budget                   Int            @default(0)
+  summary                  String
+  workPackages             Work_Package[]
+  carId                    String
+  car                      Car            @relation(fields: [carId], references: [carId])
+  teams                    Team[]         @relation(name: "assignedBy")
+  favoritedBy              User[]         @relation(name: "favoritedBy")
+  featuredByOrganizationId String?
+  featuredByOrganization   Organization?  @relation(fields: [featuredByOrganizationId], references: [organizationId])
 }
 
 model Work_Package {
@@ -480,7 +541,7 @@ model Task {
   taskId          String        @id @default(uuid())
   title           String
   notes           String
-  deadline        DateTime
+  deadline        DateTime?
   assignees       User[]        @relation(name: "assignedTo")
   priority        Task_Priority
   status          Task_Status
@@ -701,13 +762,22 @@ model Manufacturer {
 }
 
 model Team_Type {
-  teamTypeId     String          @id @default(uuid())
-  name           String
-  iconName       String
-  designReviews  Design_Review[]
-  team           Team[]
-  organizationId String
-  organization   Organization    @relation(fields: [organizationId], references: [organizationId])
+  teamTypeId      String          @id @default(uuid())
+  name            String
+  iconName        String
+  designReviews   Design_Review[]
+  teams           Team[]
+  description     String          @default("")
+  imageFileId     String?
+  organizationId  String
+  organization    Organization    @relation(fields: [organizationId], references: [organizationId])
+  calendarId      String?
+  checklists      Checklist[]
+  usersOnboarding User[]          @relation(name: "onboardingTeamTypes")
+
+  dateDeleted DateTime?
+  deletedById String?
+  deletedBy   User?     @relation(name: "teamTypeDeleter", fields: [deletedById], references: [userId])
 
   @@unique([name, organizationId], name: "uniqueTeamType")
 }
@@ -740,6 +810,7 @@ model Design_Review {
   wbsElementId             String
   wbsElement               WBS_Element          @relation(fields: [wbsElementId], references: [wbsElementId])
   notificationSlackThreads Message_Info[]
+  calendarEventId          String?
 }
 
 model Availability {
@@ -848,38 +919,181 @@ model Car {
   projectProposedChanges Project_Proposed_Changes[]
   wbsElementId           String                     @unique
   wbsElement             WBS_Element                @relation(fields: [wbsElementId], references: [wbsElementId])
+  linkedGraphs           Graph[]                    @relation(name: "graphCars")
 }
 
 model Organization {
-  organizationId String    @id @default(uuid())
-  name           String
-  dateCreated    DateTime  @default(now())
-  userCreatedId  String
-  userCreated    User      @relation(fields: [userCreatedId], references: [userId], name: "organizationCreator")
-  dateDeleted    DateTime?
-  userDeletedId  String?
-  userDeleted    User?     @relation(fields: [userDeletedId], references: [userId], name: "organizationDeleter")
-  treasurerId    String?
-  treasurer      User?     @relation(name: "treasurer", fields: [treasurerId], references: [userId])
-  advisor        User?     @relation(name: "advisor", fields: [advisorId], references: [userId])
-  advisorId      String?
+  organizationId        String    @id @default(uuid())
+  name                  String
+  dateCreated           DateTime  @default(now())
+  userCreatedId         String
+  userCreated           User      @relation(fields: [userCreatedId], references: [userId], name: "organizationCreator")
+  dateDeleted           DateTime?
+  userDeletedId         String?
+  userDeleted           User?     @relation(fields: [userDeletedId], references: [userId], name: "organizationDeleter")
+  treasurerId           String?
+  treasurer             User?     @relation(name: "treasurer", fields: [treasurerId], references: [userId])
+  advisor               User?     @relation(name: "advisor", fields: [advisorId], references: [userId])
+  advisorId             String?
+  description           String    @default("")
+  applyInterestImageId  String?
+  exploreAsGuestImageId String?
+  logoImageId           String?
+  slackWorkspaceId      String?
+  applicationLink       String?
+  onboardingText        String?
 
   // Relation references
-  wbsElements            WBS_Element[]
-  users                  User[]                    @relation(name: "organizationMembers")
-  linkTypes              Link_Type[]
-  materialTypes          Material_Type[]
-  manufacturers          Manufacturer[]
-  teamTypes              Team_Type[]
-  teams                  Team[]
-  vendors                Vendor[]
-  expenseTypes           Account_Code[]
-  reimbursements         Reimbursement[]
-  units                  Unit[]
-  descriptionBulletTypes Description_Bullet_Type[]
-  workPackageTemplates   Work_Package_Template[]
-  roles                  Role[]
-  changeRequests         Change_Request[]
-  reimbursementReqeusts  Reimbursement_Request[]
-  usefulLinks            Link[]
+  wbsElements              WBS_Element[]
+  users                    User[]                    @relation(name: "organizationMembers")
+  linkTypes                Link_Type[]
+  materialTypes            Material_Type[]
+  manufacturers            Manufacturer[]
+  teamTypes                Team_Type[]
+  teams                    Team[]
+  vendors                  Vendor[]
+  expenseTypes             Account_Code[]
+  reimbursements           Reimbursement[]
+  units                    Unit[]
+  descriptionBulletTypes   Description_Bullet_Type[]
+  workPackageTemplates     Work_Package_Template[]
+  roles                    Role[]
+  changeRequests           Change_Request[]
+  reimbursementReqeusts    Reimbursement_Request[]
+  usefulLinks              Link[]
+  frequentlyAskedQuestions FrequentlyAskedQuestion[]
+  milestones               Milestone[]
+  graphCollections         Graph_Collection[]
+  graphs                   Graph[]
+  featuredProjects         Project[]
+  popUps                   PopUp[]
+  announcements            Announcement[]
+  checklists               Checklist[]
+  contacts                 Contact[]
+}
+
+model FrequentlyAskedQuestion {
+  faqId          String       @id @default(uuid())
+  question       String
+  answer         String
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "frequentlyAskedQuestionCreator")
+  userCreatedId  String
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "frequentlyAskedQuestionDeleter")
+  userDeletedId  String?
+  dateCreated    DateTime     @default(now())
+  dateDeleted    DateTime?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+}
+
+model Milestone {
+  milestoneId    String       @id @default(uuid())
+  name           String
+  dateOfEvent    DateTime
+  description    String
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "milestoneCreator")
+  userCreatedId  String
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "milestoneDeleter")
+  userDeletedId  String?
+  dateCreated    DateTime     @default(now())
+  dateDeleted    DateTime?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+}
+
+model Graph {
+  id                 String               @id @default(uuid())
+  startDate          DateTime?
+  endDate            DateTime?
+  title              String
+  graphType          Graph_Type
+  displayGraphType   Graph_Display_Type
+  measure            Measure
+  dateDeleted        DateTime?
+  dateCreated        DateTime             @default(now())
+  specialPermissions Special_Permission[]
+
+  graphCollectionId String?
+  graphCollection   Graph_Collection? @relation(fields: [graphCollectionId], references: [id])
+
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "graphCreator")
+  userCreatedId  String
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "graphDeleter")
+  userDeletedId  String?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  cars           Car[]        @relation(name: "graphCars")
+}
+
+model Graph_Collection {
+  id              String               @id @default(uuid())
+  title           String
+  dateDeleted     DateTime?
+  viewPermissions Special_Permission[]
+  graphs          Graph[]
+  dateCreated     DateTime             @default(now())
+
+  userCreatedId  String
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "graphCollectionsCreator")
+  userDeletedId  String?
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "graphCollectionDeleter")
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+}
+
+model Announcement {
+  announcementId   String       @id @default(uuid())
+  text             String
+  usersReceived    User[]       @relation("receivedAnnouncements")
+  dateMessageSent  DateTime     @default(now())
+  dateDeleted      DateTime?
+  senderName       String
+  slackEventId     String       @unique
+  slackChannelName String
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [organizationId])
+}
+
+model PopUp {
+  popUpId        String       @id @default(uuid())
+  text           String
+  iconName       String
+  usersReceived  User[]       @relation("userPopUps")
+  eventLink      String?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+}
+
+model Checklist {
+  checklistId       String       @id @default(uuid())
+  teamTypeId        String?
+  teamType          Team_Type?   @relation(fields: [teamTypeId], references: [teamTypeId])
+  teamId            String?
+  team              Team?        @relation(fields: [teamId], references: [teamId])
+  name              String
+  descriptions      String[]
+  isOptional        Boolean      @default(false)
+  subtasks          Checklist[]  @relation("subtasks")
+  parentChecklist   Checklist?   @relation("subtasks", fields: [parentChecklistId], references: [checklistId])
+  parentChecklistId String?
+  usersChecked      User[]       @relation(name: "checkedChecklists")
+  dateCreated       DateTime     @default(now())
+  dateDeleted       DateTime?
+  userCreated       User         @relation(fields: [userCreatedId], references: [userId], name: "checklistCreator")
+  userCreatedId     String
+  userDeleted       User?        @relation(fields: [userDeletedId], references: [userId], name: "checklistDeleter")
+  userDeletedId     String?
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [organizationId])
+}
+
+model Contact {
+  contactId      String       @id @default(uuid())
+  title          String
+  user           User         @relation(fields: [userId], references: [userId])
+  userId         String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  organizationId String
+
+  @@unique([organizationId, userId, title])
 }

@@ -7,12 +7,11 @@ import {
   usersToSlackPings
 } from '../utils/notifications.utils';
 import { sendMessage } from '../integrations/slack';
-import { daysBetween, wbsPipe } from 'shared';
+import { daysBetween, meetingStartTimePipe, startOfDay, wbsPipe } from 'shared';
 import { buildDueString } from '../utils/slack.utils';
 import WorkPackagesService from './work-packages.services';
 import { addWeeksToDate } from 'shared';
 import { HttpException } from '../utils/errors.utils';
-import { meetingStartTimePipe } from '../utils/design-reviews.utils';
 
 export default class NotificationsService {
   static async sendDailySlackNotifications() {
@@ -77,7 +76,8 @@ export default class NotificationsService {
     const promises = Array.from(teamTaskMap).map(async ([slackId, tasks]) => {
       const messageBlock = tasks
         .map((task) => {
-          const daysUntilDeadline = daysBetween(task.deadline, new Date());
+          // prisma call earlier allows the forced unwrap (deadline is guaranteed to be a non-null value)
+          const daysUntilDeadline = daysBetween(task.deadline!, new Date());
 
           return `${usersToSlackPings(task.assignees ?? [])} <https://finishlinebyner.com/projects/${wbsPipe(
             task.wbsElement
@@ -108,7 +108,7 @@ export default class NotificationsService {
       if (!admin) throw new HttpException(404, 'Admin user not found');
       const organizations = await prisma.organization.findMany();
       for (const organization of organizations) {
-        await WorkPackagesService.slackMessageUpcomingDeadlines(admin, nextWeek, organization.organizationId);
+        await WorkPackagesService.slackMessageUpcomingDeadlines(admin, nextWeek, organization);
       }
     }
   }
@@ -117,15 +117,14 @@ export default class NotificationsService {
    * Sends the design review slack notifications for all design reviews scheduled for today
    */
   static async sendDesignReviewSlackNotifications() {
-    const endOfDay = startOfDayTomorrow();
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
+    const endOfToday = startOfDayTomorrow();
+    const startOfToday = startOfDay(new Date());
 
     const designReviews = await prisma.design_Review.findMany({
       where: {
         dateScheduled: {
-          lt: endOfDay,
-          gte: startOfDay
+          lt: endOfToday,
+          gte: startOfToday
         },
         status: 'SCHEDULED',
         dateDeleted: null
@@ -148,7 +147,7 @@ export default class NotificationsService {
     designReviews.forEach((designReview) => {
       const teamSlackIds = designReview.wbsElement.project
         ? designReview.wbsElement.project.teams.map((team) => team.slackId)
-        : designReview.wbsElement.workPackage?.project.teams.map((team) => team.slackId) ?? [];
+        : (designReview.wbsElement.workPackage?.project.teams.map((team) => team.slackId) ?? []);
 
       teamSlackIds.forEach((teamSlackId) => {
         const currentTasks = designReviewTeamMap.get(teamSlackId);

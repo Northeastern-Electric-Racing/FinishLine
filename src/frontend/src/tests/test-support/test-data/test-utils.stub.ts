@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { AxiosResponse } from 'axios';
+import { AxiosHeaders, AxiosResponse } from 'axios';
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import { User } from 'shared';
 import { exampleAuthenticatedAdminUser } from './authenticated-user.stub';
@@ -25,9 +25,17 @@ export const mockContext = {
 };
 
 export const mockPromiseAxiosResponse = <Return>(data: Return) => {
-  return new Promise((res, _rej) => res({ status: 0, statusText: '', headers: {}, config: {}, data })) as Promise<
-    AxiosResponse<Return>
-  >;
+  return new Promise((res, _rej) =>
+    res({
+      status: 0,
+      statusText: '',
+      headers: {},
+      config: {
+        headers: new AxiosHeaders()
+      },
+      data
+    })
+  ) as Promise<AxiosResponse<Return>>;
 };
 
 export const mockUseQueryResult = <Return>(isLoading: boolean, isError: boolean, data?: Return, err?: Error) => {
@@ -88,6 +96,10 @@ export const mockAuth = (isLoading: boolean, user?: User) => {
     signout: () => {},
     isLoading
   } as Auth;
+};
+
+export const mockCurrentUser = () => {
+  return exampleAuthenticatedAdminUser;
 };
 
 export const mockUtils = {

@@ -43,8 +43,8 @@ export const changeBulletDetailText = (changeBullet: ChangeBullet): string | str
       Object.values<string>(WbsElementStatus).includes(detail)
       ? displayEnum(detail)
       : new Date(detail).toString() !== 'Invalid Date'
-      ? datePipe(new Date(detail))
-      : detail;
+        ? datePipe(new Date(detail))
+        : detail;
   } else if (typeof detail === 'number') {
     return label === 'budget' ? dollarsPipe(detail) : detail.toString();
   } else if ('firstName' in detail) {

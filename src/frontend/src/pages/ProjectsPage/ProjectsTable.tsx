@@ -7,7 +7,7 @@ import { Box, Link, useTheme } from '@mui/material';
 import { DataGrid, GridColDef, GridFilterModel, GridRow, GridRowProps } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Project, WbsElementStatus } from 'shared';
+import { Project, WbsElementStatus, WbsNumber, WorkPackage } from 'shared';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
@@ -42,7 +42,9 @@ const ProjectsTable: React.FC = () => {
     ...baseColDef,
     field: 'wbsNum',
     headerName: 'WBS #',
-    valueFormatter: (params) => wbsPipe(params.value),
+    valueFormatter: (params: { value?: WbsNumber }) => {
+      return params.value ? wbsPipe(params.value) : '';
+    },
     maxWidth: 100,
     filterable: false,
     sortComparator: (_v1, _v2, param1, param2) => {
@@ -68,7 +70,7 @@ const ProjectsTable: React.FC = () => {
     field: 'duration',
     headerName: 'Duration',
     type: 'number',
-    valueFormatter: (params) => weeksPipe(params.value),
+    valueFormatter: (params: { value: number }) => weeksPipe(params.value),
     maxWidth: 100
   };
 
@@ -77,7 +79,7 @@ const ProjectsTable: React.FC = () => {
     field: 'budget',
     headerName: 'Budget',
     type: 'number',
-    valueFormatter: (params) => dollars(params.value),
+    valueFormatter: (params: { value: number }) => dollars(params.value),
     maxWidth: 100
   };
 
@@ -122,7 +124,7 @@ const ProjectsTable: React.FC = () => {
       headerName: '# Work Packages',
       filterable: false,
       maxWidth: 150,
-      valueFormatter: (params) => params.value.length
+      valueFormatter: (params: { value: WorkPackage[] }) => params.value.length
     },
     statusColumn
   ];
@@ -165,7 +167,7 @@ const ProjectsTable: React.FC = () => {
         density="compact"
         pageSize={Number(pageSize)}
         rowsPerPageOptions={[15, 30, 60, 100]}
-        onPageSizeChange={(newPageSize) => {
+        onPageSizeChange={(newPageSize: number) => {
           localStorage.setItem('projectsTableRowCount', newPageSize.toString());
           setPageSize(newPageSize.toString());
         }}

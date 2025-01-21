@@ -5,12 +5,13 @@
 
 import { createContext, useMemo } from 'react';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { useProvideThemeToggle } from '../hooks/theme.hooks';
 import { darkThemeOptions, lightThemeOptions, nerThemeOptions } from '../utils/themes';
 import { useAuth } from '../hooks/auth.hooks';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
+import { de } from 'date-fns/locale/de';
 
 export const ThemeToggleContext = createContext({ activeTheme: 'light', toggleTheme: () => {} });
 
@@ -40,7 +41,9 @@ const AppContextSettings: React.FC = (props) => {
     <ThemeToggleContext.Provider value={theme}>
       <ThemeProvider theme={fullTheme}>
         <CssBaseline />
-        <LocalizationProvider dateAdapter={AdapterDateFns}>{props.children}</LocalizationProvider>
+        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={de}>
+          {props.children}
+        </LocalizationProvider>
       </ThemeProvider>
     </ThemeToggleContext.Provider>
   );

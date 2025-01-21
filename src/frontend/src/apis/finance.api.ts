@@ -7,7 +7,8 @@ import {
   EditReimbursementRequestPayload,
   EditVendorPayload,
   AccountCodePayload,
-  RefundPayload
+  RefundPayload,
+  MarkDeliveredRequestPayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -53,8 +54,8 @@ export const createReimbursementRequest = (formData: CreateReimbursementRequestP
  * @param id id of the reimbursement request being marked as delivered
  * @returns the updated reimbursement request
  */
-export const markReimbursementRequestAsDelivered = (id: string) => {
-  return axios.post(apiUrls.financeMarkAsDelivered(id));
+export const markReimbursementRequestAsDelivered = (id: string, formData: MarkDeliveredRequestPayload) => {
+  return axios.post(apiUrls.financeMarkAsDelivered(id), formData);
 };
 
 /**
@@ -196,7 +197,7 @@ export const denyReimbursementRequest = (id: string) => {
  * @param fileId the google id of the file to download
  * @returns the downloaded file as a Blob
  */
-export const downloadGoogleImage = async (fileId: string): Promise<Blob> => {
+export const downloadFinanceImage = async (fileId: string): Promise<Blob> => {
   const response = await axios.get(apiUrls.financeImageById(fileId), {
     responseType: 'arraybuffer' // Set the response type to 'arraybuffer' to receive the image as a Buffer
   });

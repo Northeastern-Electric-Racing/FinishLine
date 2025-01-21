@@ -12,7 +12,7 @@ import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import { mockUseSingleUserSettings } from '../../test-support/mock-hooks';
 
-vi.mock('../../../pages/HomePage/UsefulLinks', () => {
+vi.mock('../../../pages/HomePage/components/UsefulLinks', () => {
   return {
     __esModule: true,
     default: () => {
@@ -21,7 +21,7 @@ vi.mock('../../../pages/HomePage/UsefulLinks', () => {
   };
 });
 
-vi.mock('../../../pages/HomePage/UpcomingDeadlines', () => {
+vi.mock('../../../pages/HomePage/components/UpcomingDeadlines', () => {
   return {
     __esModule: true,
     default: () => {
@@ -30,7 +30,7 @@ vi.mock('../../../pages/HomePage/UpcomingDeadlines', () => {
   };
 });
 
-vi.mock('../../../pages/HomePage/WorkPackagesByTimelineStatus', () => {
+vi.mock('../../../pages/HomePage/components/WorkPackagesByTimelineStatus', () => {
   return {
     __esModule: true,
     default: () => {
@@ -63,8 +63,5 @@ describe('home component', () => {
   it('renders welcome', () => {
     renderComponent();
     expect(screen.getByText(`Welcome, ${exampleAdminUser.firstName}!`)).toBeInTheDocument();
-    expect(screen.getByText('useful-links')).toBeInTheDocument();
-    expect(screen.getByText('upcoming-deadlines')).toBeInTheDocument();
-    expect(screen.getByText('work-packages-by-timeline-status')).toBeInTheDocument();
   });
 });

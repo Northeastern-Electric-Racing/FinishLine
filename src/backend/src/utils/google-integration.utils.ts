@@ -4,7 +4,10 @@ import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { HttpException } from './errors.utils';
 import stream, { Readable } from 'stream';
 import concat from 'concat-stream';
-import { User } from '@prisma/client';
+import { User, WBS_Element } from '@prisma/client';
+import { transformDate } from './datetime.utils';
+import { transformStartTime } from './design-reviews.utils';
+import { getUsers } from './users.utils';
 
 const { OAuth2 } = google.auth;
 const {
@@ -13,7 +16,8 @@ const {
   GOOGLE_CLIENT_SECRET,
   EMAIL_REFRESH_TOKEN,
   USER_EMAIL,
-  DRIVE_REFRESH_TOKEN
+  DRIVE_REFRESH_TOKEN,
+  CALENDAR_REFRESH_TOKEN
 } = process.env;
 
 const oauth2Client = new OAuth2(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, 'https://developers.google.com/oauthplayground');
@@ -83,6 +87,11 @@ interface GoogleDriveError {
 export const uploadFile = async (fileObject: Express.Multer.File) => {
   const bufferStream = new stream.PassThrough();
   bufferStream.end(fileObject.buffer);
+  if (fileObject.filename?.length || fileObject.originalname.length > 20)
+    throw new HttpException(400, 'File name can only be at most 20 characters long');
+  //The regex /^[\w.]+$/ limits the file name to the set of alphanumeric characters (\w) and dots (for file type)
+  if (!/^[\w.]+$/.test(fileObject.filename || fileObject.originalname))
+    throw new HttpException(400, 'File name should only contain letters and numbers');
 
   oauth2Client.setCredentials({
     refresh_token: DRIVE_REFRESH_TOKEN
@@ -97,7 +106,7 @@ export const uploadFile = async (fileObject: Express.Multer.File) => {
       },
       requestBody: {
         name: fileObject.originalname,
-        parents: [GOOGLE_DRIVE_FOLDER_ID || '']
+        parents: GOOGLE_DRIVE_FOLDER_ID ? [GOOGLE_DRIVE_FOLDER_ID] : undefined
       },
       fields: 'id,name'
     });
@@ -118,15 +127,12 @@ export const uploadFile = async (fileObject: Express.Multer.File) => {
       const gError = error as GoogleDriveError;
       throw new HttpException(
         gError.code,
-        `Failed to Upload Receipt(s): ${gError.message}, ${gError.errors.reduce(
-          (acc: string, curr: GoogleDriveErrorListError) => {
-            return acc + ' ' + curr.message + ' ' + curr.reason;
-          },
-          ''
-        )}`
+        `Failed to Upload : ${gError.message}, ${gError.errors.reduce((acc: string, curr: GoogleDriveErrorListError) => {
+          return acc + ' ' + curr.message + ' ' + curr.reason;
+        }, '')}`
       );
     } else if (error instanceof Error) {
-      throw new HttpException(500, `Failed to Upload Receipt(s): ${error.message}`);
+      throw new HttpException(500, `Failed to Upload : ${error.message}`);
     }
     console.log('error' + error);
     throw error;
@@ -165,6 +171,171 @@ export const downloadImageFile = async (fileId: string) => {
     if (error instanceof Error) {
       throw new HttpException(500, `Failed to Download Image(${fileId}): ${error.message}`);
     }
+    throw error;
+  }
+};
+
+/**
+ * Creates a new google calendar on the NER google calendar
+ * @param name
+ * @returns the calendar id
+ */
+export const createCalendar = async (name: string) => {
+  if (process.env.NODE_ENV !== 'production') return;
+  try {
+    oauth2Client.setCredentials({
+      refresh_token: CALENDAR_REFRESH_TOKEN
+    });
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+    const createdCalendar = await calendar.calendars.insert({
+      requestBody: { summary: `${name} System Meetings` }
+    });
+
+    return createdCalendar.data.id;
+  } catch (error: unknown) {
+    throw error;
+  }
+};
+
+/**
+ * Creates A Google Calendar Event on the NER Google Calendar
+ * @param members required and optional members
+ * @param calendarId the id of the calendar to add the event
+ * @param dateScheduled
+ * @param isInPerson
+ * @param zoomLink
+ * @param location
+ * @param meetingTimes
+ * @param wbsElement
+ * @returns the id of the calendar event
+ */
+export const createCalendarEvent = async (
+  calendarId: string,
+  memberIds: string[],
+  dateScheduled: Date,
+  isInPerson: boolean,
+  zoomLink: string | null,
+  location: string | null,
+  meetingTimes: number[],
+  wbsElement: WBS_Element
+) => {
+  if (process.env.NODE_ENV !== 'production') return;
+  try {
+    oauth2Client.setCredentials({
+      refresh_token: CALENDAR_REFRESH_TOKEN
+    });
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+    const startTime = transformStartTime(meetingTimes);
+    const eventInput = {
+      location: isInPerson ? location : zoomLink,
+      summary: `Design Review - ${wbsElement.projectNumber} ${wbsElement.name}`,
+      start: {
+        dateTime: `${transformDate(new Date(dateScheduled))}T${startTime}:00:00-04:00`,
+        timeZone: 'America/New_York'
+      },
+      end: {
+        dateTime: `${transformDate(new Date(dateScheduled))}T${startTime + 1}:00:00-04:00`,
+        timeZone: 'America/New_York'
+      },
+      attendees: (await getUsers(memberIds)).map((user) => {
+        return { email: user.email };
+      }),
+      reminders: {
+        useDefault: false,
+        overrides: [
+          { method: 'email', minutes: 24 * 60 },
+          { method: 'popup', minutes: 10 }
+        ]
+      }
+    };
+
+    const calendarEvent = await calendar.events.insert({
+      calendarId,
+      requestBody: eventInput
+    });
+
+    return calendarEvent.data.id;
+  } catch (error: unknown) {
+    throw error;
+  }
+};
+
+/**
+ * Updates a Google Calendar Event
+ * @param calendarId Id of the calendar the event is on
+ * @param eventId Id of the calendar event
+ * @param members required and optional members
+ * @param designReview
+ * @returns the id of the updated calendar event
+ */
+export const updateCalendarEvent = async (
+  calendarId: string,
+  eventId: string,
+  memberIds: string[],
+  dateScheduled: Date,
+  isInPerson: boolean,
+  zoomLink: string | null,
+  location: string | null,
+  meetingTimes: number[],
+  wbsElement: WBS_Element
+) => {
+  try {
+    oauth2Client.setCredentials({
+      refresh_token: CALENDAR_REFRESH_TOKEN
+    });
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+    const startTime = transformStartTime(meetingTimes);
+    const eventInput = {
+      location: isInPerson ? location : zoomLink,
+      summary: `Design Review - ${wbsElement.projectNumber} ${wbsElement.name}`,
+      start: {
+        dateTime: `${transformDate(dateScheduled)}T${startTime}:00:00-04:00`,
+        timeZone: 'America/New_York'
+      },
+      end: {
+        dateTime: `${transformDate(dateScheduled)}T${startTime + 1}:00:00-04:00`,
+        timeZone: 'America/New_York'
+      },
+      attendees: (await getUsers(memberIds)).map((user) => {
+        return { email: user.email };
+      }),
+      reminders: {
+        useDefault: false,
+        overrides: [
+          { method: 'email', minutes: 24 * 60 },
+          { method: 'popup', minutes: 10 }
+        ]
+      }
+    };
+    const calendarEvent = await calendar.events.update({
+      calendarId,
+      eventId,
+      requestBody: eventInput
+    });
+    return calendarEvent.data.id;
+  } catch (error: unknown) {
+    throw error;
+  }
+};
+
+/**
+ * deletes a Google Calendar Event
+ * @param calendarId id of the calendar the event is on
+ * @param eventId the id of the calendar event
+ * @returns the deleted calendar event
+ */
+export const deleteCalendarEvent = async (calendarId: string, eventId: string) => {
+  try {
+    oauth2Client.setCredentials({
+      refresh_token: CALENDAR_REFRESH_TOKEN
+    });
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+    const calendarEvent = await calendar.events.delete({
+      calendarId,
+      eventId
+    });
+    return calendarEvent;
+  } catch (error: unknown) {
     throw error;
   }
 };

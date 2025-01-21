@@ -1,6 +1,6 @@
-import { DesignReview, DesignReviewStatus, TeamType, isAdmin } from 'shared';
+import { DesignReview, DesignReviewStatus, TeamType, isAdmin, wbsPipe } from 'shared';
 import NERModal from '../../components/NERModal';
-import { Box, Chip, IconButton, Typography } from '@mui/material';
+import { Box, Chip, IconButton, Link, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import { useState } from 'react';
 import DesignReviewSummaryModalDetails from './SummaryComponents/DesignReviewSummaryModalDetails';
@@ -22,9 +22,18 @@ interface DRCSummaryModalProps {
   onHide: () => void;
   designReview: DesignReview;
   teamTypes: TeamType[];
+  markedStatus?: DesignReviewStatus;
+  setMarkedStatus?: (_: DesignReviewStatus) => void;
 }
 
-const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designReview, teamTypes }) => {
+const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({
+  open,
+  onHide,
+  designReview,
+  teamTypes,
+  markedStatus = DesignReviewStatus.UNCONFIRMED,
+  setMarkedStatus = () => {}
+}: DRCSummaryModalProps) => {
   const user = useCurrentUser();
   const toast = useToast();
   const history = useHistory();
@@ -103,15 +112,21 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
 
         <Box>
           <Box display={'flex'} alignItems={'center'}>
-            <Typography flexGrow={1} variant="h4">
-              {`${designReview.wbsName}`}
-            </Typography>
+            <Link
+              component={RouterLink}
+              to={`${routes.PROJECTS}/${wbsPipe(designReview.wbsNum)}/overview`}
+              sx={{ display: 'flex', flexGrow: 1 }}
+            >
+              <Typography flexGrow={1} variant="h4">
+                {`${designReview.wbsName}`}
+              </Typography>
+            </Link>
             <Chip
               size="small"
-              label={designReviewStatusPipe(designReview.status)}
+              label={designReviewStatusPipe(markedStatus)}
               variant="filled"
               sx={{
-                backgroundColor: designReviewStatusColor(designReview.status),
+                backgroundColor: designReviewStatusColor(markedStatus),
                 fontSize: 14,
                 color: 'white',
                 width: 150,
@@ -119,7 +134,14 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
               }}
             />
           </Box>
-          {isScheduled && <DesignReviewSummaryModalDetails designReview={designReview} teamTypes={teamTypes} />}
+          {isScheduled && (
+            <DesignReviewSummaryModalDetails
+              designReview={designReview}
+              teamTypes={teamTypes}
+              markedStatus={markedStatus}
+              setMarkedStatus={setMarkedStatus}
+            />
+          )}
           {designReview.status === DesignReviewStatus.CONFIRMED && (
             <Box>
               <DesignReviewSummaryModalAttendees designReview={designReview} />

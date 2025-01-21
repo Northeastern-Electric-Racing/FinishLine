@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { getTeamQueryArgs } from './teams.query-args';
 
 export type AuthUserQueryArgs = ReturnType<typeof getAuthUserQueryArgs>;
 
@@ -9,13 +10,15 @@ export const getAuthUserQueryArgs = (organizationId: string) =>
       teamsAsHead: {
         where: {
           organizationId
-        }
+        },
+        ...getTeamQueryArgs(organizationId)
       },
       organizations: true,
       teamsAsLead: {
         where: {
           organizationId
-        }
+        },
+        ...getTeamQueryArgs(organizationId)
       },
       teamsAsMember: {
         where: {
@@ -39,6 +42,11 @@ export const getAuthUserQueryArgs = (organizationId: string) =>
           wbsElement: {
             organizationId
           }
+        }
+      },
+      onboardingTeamTypes: {
+        where: {
+          organizationId
         }
       }
     }

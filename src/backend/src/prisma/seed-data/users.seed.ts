@@ -875,6 +875,20 @@ const trang: Prisma.UserCreateInput = {
   email: 'trangPAK@hotmail.com'
 };
 
+const spongebob: Prisma.UserCreateInput = {
+  firstName: 'Spongebob',
+  lastName: 'Squarepants',
+  googleAuthId: 'spongebob',
+  email: 'goofygooober@gmail.com'
+};
+
+const patrick: Prisma.UserCreateInput = {
+  firstName: 'Patrick',
+  lastName: 'Star',
+  googleAuthId: 'patrick',
+  email: 'patrickstar@gmail.com'
+};
+
 export const dbSeedAllUsers = {
   thomasEmrax,
   joeShmoe,
@@ -988,7 +1002,9 @@ export const dbSeedAllUsers = {
   kevin,
   norbury,
   carr,
-  trang
+  trang,
+  spongebob,
+  patrick
 };
 
 export const createUser = async (user: Prisma.UserCreateInput, role: RoleEnum, organizationId: string) => {
