@@ -44,3 +44,11 @@ export const updateGraphCollection = (id: string, payload: GraphCollectionFormIn
     transformResponse: (data) => graphCollectionTransformer(JSON.parse(data))
   });
 };
+
+export const deleteGraphCollection = (id: string) => {
+  return axios.delete<{ message: string }>(apiUrls.deleteGraphCollection(id));
+};
+
+export const removeGraphFromCollection = (collectionId: string, graphId: string) => {
+  return axios.post<{ message: string }>(apiUrls.removeGraphFromGraphCollection(collectionId, graphId));
+};

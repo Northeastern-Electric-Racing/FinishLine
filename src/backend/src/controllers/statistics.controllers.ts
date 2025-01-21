@@ -139,4 +139,34 @@ export default class StatisticsController {
       next(error);
     }
   }
+
+  static async removeGraphFromGraphCollection(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { graphCollectionId, graphId } = req.params;
+      console.log('test');
+      const message: { message: string } = await StatisticsService.removeGraphFromCollection(
+        req.currentUser,
+        graphCollectionId,
+        graphId,
+        req.organization
+      );
+      res.status(200).json(message);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteGraphCollection(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { graphCollectionId } = req.params;
+      const message: { message: string } = await StatisticsService.deleteGraphCollection(
+        req.currentUser,
+        graphCollectionId,
+        req.organization
+      );
+      res.status(200).json(message);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

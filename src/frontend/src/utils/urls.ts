@@ -237,6 +237,9 @@ const createGraphCollection = () => `${graphCollections()}/create`;
 const getGraphById = (id: string) => `${statistics()}/graph/${id}`;
 const updateGraph = (id: string) => `${getGraphById(id)}/edit`;
 const updateGraphCollection = (id: string) => `${graphCollectionById(id)}/edit`;
+const removeGraphFromGraphCollection = (graphCollectionId: string, graphId: string) =>
+  `${graphCollectionById(graphCollectionId)}/remove/${graphId}`;
+const deleteGraphCollection = (id: string) => `${graphCollectionById(id)}/delete`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -425,6 +428,8 @@ export const apiUrls = {
   getGraphById,
   updateGraph,
   updateGraphCollection,
+  removeGraphFromGraphCollection,
+  deleteGraphCollection,
 
   onboarding,
   allChecklists,

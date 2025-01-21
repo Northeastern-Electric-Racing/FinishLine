@@ -74,4 +74,11 @@ statisticsRouter.post(
   StatisticsController.editGraphCollection
 );
 
+statisticsRouter.post(
+  '/graph-collections/:graphCollectionId/remove/:graphId',
+  StatisticsController.removeGraphFromGraphCollection
+);
+
+statisticsRouter.delete('/graph-collections/:graphCollectionId/delete', StatisticsController.deleteGraphCollection);
+
 export default statisticsRouter;

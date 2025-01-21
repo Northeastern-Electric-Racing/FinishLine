@@ -316,6 +316,15 @@ export default class StatisticsService {
     );
   }
 
+  /**
+   * Creates a graph collection in the database
+   *
+   * @param user The user who is creating the graph collection
+   * @param title The title of the graph collection that is being created
+   * @param specialPermissions Any special permissions related to the graph collection
+   * @param organization The organization the collection is in
+   * @returns The created graph collection
+   */
   static async createGraphCollection(
     user: User,
     title: string,
@@ -391,6 +400,16 @@ export default class StatisticsService {
     );
   }
 
+  /**
+   * Edits the given graph collection with the updated values
+   *
+   * @param user The user who is editing the graph collection
+   * @param graphCollectionId The id of the collection that is being edited
+   * @param title The new title of the collection
+   * @param specialPermission The new permissions of the collection
+   * @param organization The organization that the user is currently in
+   * @returns The updated Graph collection
+   */
   static async editGraphCollection(
     user: User,
     graphCollectionId: string,
@@ -441,5 +460,100 @@ export default class StatisticsService {
         })
       )
     );
+  }
+
+  /**
+   * Removes a graph from the given graph collection
+   *
+   * @param user The user who is removing the graph
+   * @param graphCollectionId The collection that the graph will be removed from
+   * @param graphId The graph that is being removed
+   * @param organization The organization the user is currently in
+   */
+  static async removeGraphFromCollection(
+    user: User,
+    graphCollectionId: string,
+    graphId: string,
+    organization: Organization
+  ): Promise<{ message: string }> {
+    if (!(await userHasPermissionNew(user.userId, organization.organizationId, [Permission.EDIT_GRAPH_COLLECTION]))) {
+      throw new AccessDeniedException('You do not have permission to edit graph collections');
+    }
+
+    const graph = await prisma.graph.findUnique({
+      where: { id: graphId, organizationId: organization.organizationId }
+    });
+
+    if (!graph) {
+      throw new NotFoundException('Graph', graphId);
+    }
+    if (graph.dateDeleted) {
+      throw new DeletedException('Graph', graphId);
+    }
+
+    const collection = await prisma.graph_Collection.findUnique({
+      where: { id: graphCollectionId, organizationId: organization.organizationId }
+    });
+
+    if (!collection) {
+      throw new NotFoundException('Graph Collection', graphCollectionId);
+    }
+    if (collection.dateDeleted) {
+      throw new DeletedException('Graph Collection', graphCollectionId);
+    }
+
+    console.log('test');
+
+    await prisma.graph.update({
+      where: { id: graphId },
+      data: {
+        graphCollectionId: null
+      },
+      ...getGraphQueryArgs(organization.organizationId)
+    });
+
+    return { message: 'Graph unlinked' };
+  }
+
+  /**
+   * Deletes a graph collection
+   *
+   * @param user The user who is deleting the graph collection
+   * @param graphCollectionId The collection to be deleted
+   * @param organization The organization the user is currently in
+   */
+  static async deleteGraphCollection(
+    user: User,
+    graphCollectionId: string,
+    organization: Organization
+  ): Promise<{ message: string }> {
+    if (!(await userHasPermissionNew(user.userId, organization.organizationId, [Permission.DELETE_GRAPH_COLLECTION]))) {
+      throw new AccessDeniedException('You do not have permission to edit graph collections');
+    }
+
+    const collection = await prisma.graph_Collection.findUnique({
+      where: { id: graphCollectionId, organizationId: organization.organizationId }
+    });
+
+    if (!collection) {
+      throw new NotFoundException('Graph Collection', graphCollectionId);
+    }
+    if (collection.dateDeleted) {
+      throw new DeletedException('Graph Collection', graphCollectionId);
+    }
+
+    await prisma.graph_Collection.update({
+      where: { id: graphCollectionId },
+      data: {
+        dateDeleted: new Date(),
+        userDeleted: {
+          connect: {
+            userId: user.userId
+          }
+        }
+      }
+    });
+
+    return { message: 'Graph Deleted' };
   }
 }
