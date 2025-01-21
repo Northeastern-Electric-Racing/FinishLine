@@ -26,6 +26,7 @@ const userScheduleSettings = (id: string) => `${usersById(id)}/schedule-settings
 const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
 const userTasks = (id: string) => `${usersById(id)}/tasks`;
 const manyUserTasks = () => `${users()}/tasks/get-many`;
+const currentUser = () => `${users()}/auth/current`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
@@ -259,6 +260,7 @@ export const apiUrls = {
   userScheduleSettingsSet,
   userTasks,
   manyUserTasks,
+  currentUser,
 
   projects,
   allProjects,

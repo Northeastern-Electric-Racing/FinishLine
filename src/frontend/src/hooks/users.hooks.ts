@@ -19,7 +19,8 @@ import {
   getUserScheduleSettings,
   updateUserScheduleSettings,
   getUserTasks,
-  getManyUserTasks
+  getManyUserTasks,
+  getCurrentUser
 } from '../apis/users.api';
 import {
   User,
@@ -76,6 +77,17 @@ export const useLogUserIn = () => {
     const { data } = await logUserIn(id_token);
     return data;
   });
+};
+
+export const useGetCurrentUser = () => {
+  return useQuery<AuthenticatedUser, Error>(
+    [],
+    async () => {
+      const { data } = await getCurrentUser();
+      return data;
+    },
+    { retry: false }
+  );
 };
 
 /**

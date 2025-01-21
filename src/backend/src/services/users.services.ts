@@ -74,6 +74,29 @@ export default class UsersService {
     return users.map(userWithScheduleSettingsTransformer);
   }
 
+  static async getCurrentUser(user: User): Promise<AuthenticatedUser> {
+    const userWithOrgs = await prisma.user.findUnique({ where: { userId: user.userId }, include: { organizations: true } });
+
+    if (!userWithOrgs) {
+      throw new NotFoundException('User', user.userId);
+    }
+
+    const [organization] = userWithOrgs.organizations;
+
+    if (!organization) throw new HttpException(500, 'User is not apart of any organizations');
+
+    const authUser = await prisma.user.findUnique({
+      where: { userId: user.userId },
+      ...getAuthUserQueryArgs(organization.organizationId)
+    });
+
+    if (!authUser) {
+      throw new NotFoundException('User', user.userId);
+    }
+
+    return authenticatedUserTransformer(authUser, organization.organizationId);
+  }
+
   /**
    * Gets the user with the specified id
    * @param userId the id of the user that's returned

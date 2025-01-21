@@ -24,11 +24,9 @@ interface LoginPageProps {
 const LoginPage: React.FC<LoginPageProps> = ({ devSetUser, devFormSubmit, prodSuccess, prodFailure }) => {
   const googleLogin = (
     <GoogleLogin
-      //jsSrc={'accounts.google.com/gsi/client.js'}
       onSuccess={prodSuccess}
       onError={prodFailure}
       text="signin"
-      auto_select
     />
   );
 

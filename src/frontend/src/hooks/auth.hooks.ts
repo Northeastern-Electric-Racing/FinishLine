@@ -3,10 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { AuthenticatedUser } from 'shared';
 import { AuthContext } from '../app/AppContextAuth';
-import { useLogUserIn, useLogUserInDev } from './users.hooks';
+import { useGetCurrentUser, useLogUserIn, useLogUserInDev } from './users.hooks';
 import { Auth } from '../utils/types';
 
 // Provider hook that creates auth object and handles state
@@ -14,6 +14,13 @@ export const useProvideAuth = () => {
   const { isLoading, mutateAsync } = useLogUserIn();
   const { isLoading: isLoadingDev, mutateAsync: mutateAsyncDev } = useLogUserInDev();
   const [user, setUser] = useState<AuthenticatedUser | undefined>(undefined);
+  const { data: authUser, isLoading: currentUserIsLoading } = useGetCurrentUser();
+
+  useEffect(() => {
+    if (authUser && !user) {
+      setUser(authUser);
+    }
+  }, [authUser, currentUserIsLoading, user]);
 
   const devSignin = async (userId: string) => {
     const user = await mutateAsyncDev(userId);
@@ -38,7 +45,8 @@ export const useProvideAuth = () => {
     devSignin,
     signin,
     signout,
-    isLoading: isLoading || isLoadingDev
+    setUser,
+    isLoading: isLoading || isLoadingDev || currentUserIsLoading
   } as Auth;
 };
 

@@ -10,6 +10,7 @@ export interface Auth {
   devSignin: (userId: string) => Promise<AuthenticatedUser>;
   signin: (token: string) => Promise<AuthenticatedUser>;
   signout: () => void;
+  setUser: (user: AuthenticatedUser) => Promise<AuthenticatedUser>;
   isLoading: boolean;
 }
 
