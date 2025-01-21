@@ -28,6 +28,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ devSetUser, devFormSubmit, prodSu
       onSuccess={prodSuccess}
       onError={prodFailure}
       text="signin"
+      useOneTap
     />
   );
 
