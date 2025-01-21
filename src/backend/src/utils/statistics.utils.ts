@@ -402,7 +402,7 @@ export const getGraphDataForReimbursementRequestsByProject = async (
     }
 
     return {
-      value,
+      value: value / 100,
       label: wbsNamePipe({ wbsNum: project.wbsElement, name: project.wbsElement.name })
     };
   });
@@ -456,7 +456,7 @@ export const getGraphDataForReimbursementRequestsByTeam = async (
     }
 
     return {
-      value,
+      value: value / 100,
       label: team.teamName
     };
   });
@@ -506,7 +506,7 @@ export const getGraphDataForReimbursementRequestsByDivision = async (
     }
 
     return {
-      value,
+      value: value / 100,
       label: division.name
     };
   });
