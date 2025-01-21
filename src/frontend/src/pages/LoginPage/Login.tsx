@@ -69,10 +69,11 @@ const Login = () => {
   };
 
   const verifyLogin = async (response: CredentialResponse) => {
-    if (!response.clientId) {
-      throw new Error('Failed to get client id');
+    console.log(response);
+    if (!response.credential) {
+      throw new Error('Failed to get credentials');
     }
-    const authedUser = await auth.signin(response.clientId);
+    const authedUser = await auth.signin(response.credential);
     if (authedUser.defaultTheme && authedUser.defaultTheme !== theme.activeTheme.toUpperCase()) {
       theme.toggleTheme();
     }
