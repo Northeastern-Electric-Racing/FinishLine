@@ -52,7 +52,7 @@ export interface ReviewPayload {
   crId: string;
   accepted: boolean;
   reviewNotes: string;
-  psId: string;
+  psId?: string;
 }
 
 /**

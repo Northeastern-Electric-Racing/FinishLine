@@ -42,7 +42,7 @@ export const reviewChangeRequest = (
   crId: string,
   accepted: boolean,
   reviewNotes: string,
-  psId: string
+  psId?: string
 ) => {
   return axios.post<{ message: string }>(apiUrls.changeRequestsReview(), {
     reviewerId,

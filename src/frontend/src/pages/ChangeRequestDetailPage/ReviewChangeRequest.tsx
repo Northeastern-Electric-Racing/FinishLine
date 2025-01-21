@@ -21,7 +21,7 @@ interface ReviewChangeRequestProps {
 export interface FormInput {
   reviewNotes: string;
   accepted: boolean;
-  psId: string;
+  psId?: string;
 }
 
 const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
