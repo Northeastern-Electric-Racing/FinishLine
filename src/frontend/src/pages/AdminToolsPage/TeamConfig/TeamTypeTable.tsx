@@ -81,7 +81,6 @@ const TeamTypeTable: React.FC = () => {
   };
 
   const teamTypesTableRows = teamTypes.map((teamType) => {
-    console.log('teamType', teamType);
     return (
       <TableRow>
         <TableCell onClick={() => setEditingTeamType(teamType)} sx={{ cursor: 'pointer', border: '2px solid black' }}>

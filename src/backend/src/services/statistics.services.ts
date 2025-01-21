@@ -502,8 +502,6 @@ export default class StatisticsService {
       throw new DeletedException('Graph Collection', graphCollectionId);
     }
 
-    console.log('test');
-
     await prisma.graph.update({
       where: { id: graphId },
       data: {

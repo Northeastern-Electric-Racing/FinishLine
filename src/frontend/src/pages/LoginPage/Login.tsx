@@ -69,7 +69,6 @@ const Login = () => {
   };
 
   const verifyLogin = async (response: CredentialResponse) => {
-    console.log(response);
     if (!response.credential) {
       throw new Error('Failed to get credentials');
     }

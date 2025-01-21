@@ -143,7 +143,6 @@ export default class StatisticsController {
   static async removeGraphFromGraphCollection(req: Request, res: Response, next: NextFunction) {
     try {
       const { graphCollectionId, graphId } = req.params;
-      console.log('test');
       const message: { message: string } = await StatisticsService.removeGraphFromCollection(
         req.currentUser,
         graphCollectionId,
