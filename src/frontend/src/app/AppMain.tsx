@@ -7,13 +7,16 @@ import { BrowserRouter } from 'react-router-dom';
 import AppContext from './AppContext';
 import AppPublic from './AppPublic';
 import { ToastProvider } from '../components/Toast/ToastProvider';
+import AppOAuthProvider from './AppOauthProvider';
 
 const AppMain: React.FC = () => {
   return (
     <AppContext>
       <ToastProvider>
         <BrowserRouter>
+          <AppOAuthProvider>
           <AppPublic />
+          </AppOAuthProvider>
         </BrowserRouter>
       </ToastProvider>
     </AppContext>

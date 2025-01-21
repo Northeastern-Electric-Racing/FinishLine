@@ -5,7 +5,6 @@
 
 import { useState } from 'react';
 import { Link as RouterLink, useHistory } from 'react-router-dom';
-import { GoogleLogout } from 'react-google-login';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -20,6 +19,7 @@ import { canAccessAdminTools } from '../../utils/users';
 import { Stack, useTheme } from '@mui/system';
 import { Typography } from '@mui/material';
 import { useHomePageContext } from '../../app/HomePageContext';
+import { googleLogout } from '@react-oauth/google';
 
 interface NavUserMenuProps {
   open?: boolean;
@@ -34,8 +34,6 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
 
-  const googleAuthClientId = import.meta.env.VITE_REACT_APP_GOOGLE_AUTH_CLIENT_ID;
-
   const logout = () => {
     if (!auth) return;
     auth.signout();
@@ -43,19 +41,12 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
   };
 
   const ProdLogout = () => (
-    <GoogleLogout
-      clientId={googleAuthClientId!}
-      //jsSrc={'accounts.google.com/gsi/client'}
-      onLogoutSuccess={logout}
-      render={(renderProps) => (
-        <MenuItem component="div" sx={{ py: 0 }} onClick={renderProps.onClick} disabled={renderProps.disabled}>
-          <ListItemIcon>
-            <LogoutIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Logout</ListItemText>
-        </MenuItem>
-      )}
-    />
+    <MenuItem component="div" sx={{ py: 0 }} onClick={googleLogout}>
+      <ListItemIcon>
+        <LogoutIcon fontSize="small" />
+      </ListItemIcon>
+      <ListItemText>Logout</ListItemText>
+    </MenuItem>
   );
 
   const DevLogout = () => (

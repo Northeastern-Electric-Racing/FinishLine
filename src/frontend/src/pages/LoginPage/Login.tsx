@@ -11,8 +11,8 @@ import { routes } from '../../utils/routes';
 import LoginPage from './LoginPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useQuery } from '../../hooks/utils.hooks';
-import { GoogleLoginResponse, GoogleLoginResponseOffline } from 'react-google-login';
 import { useOrganization } from '../../hooks/organizations.hooks';
+import { CredentialResponse } from '@react-oauth/google';
 
 /**
  * Page for unauthenticated users to do login.
@@ -68,13 +68,11 @@ const Login = () => {
     redirectAfterLogin();
   };
 
-  const verifyLogin = async (response: GoogleLoginResponse | GoogleLoginResponseOffline) => {
-    if (response.code) {
-      throw new Error('Invalid login object');
+  const verifyLogin = async (response: CredentialResponse) => {
+    if (!response.clientId) {
+      throw new Error('Failed to get client id');
     }
-    const { id_token } = (response as GoogleLoginResponse).getAuthResponse();
-    if (!id_token) throw new Error('Invalid login object');
-    const authedUser = await auth.signin(id_token);
+    const authedUser = await auth.signin(response.clientId);
     if (authedUser.defaultTheme && authedUser.defaultTheme !== theme.activeTheme.toUpperCase()) {
       theme.toggleTheme();
     }
@@ -85,8 +83,8 @@ const Login = () => {
     redirectAfterLogin();
   };
 
-  const handleFailure = (response: any) => {
-    console.log(response);
+  const handleFailure = () => {
+    console.log('Failed to login');
   };
 
   return (

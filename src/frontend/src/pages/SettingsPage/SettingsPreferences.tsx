@@ -5,7 +5,7 @@ import { useCurrentUser, useCurrentUserSecureSettings, useSingleUserSettings } f
 import ErrorPage from '../ErrorPage';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import { Grid, FormGroup, FormControlLabel, Switch, SwitchProps, styled, Alert, Typography } from '@mui/material';
-import { GoogleLogout } from 'react-google-login';
+import { googleLogout } from '@react-oauth/google';
 import { useState } from 'react';
 import UserSecureSettings from './UserSecureSettings/UserSecureSettings';
 import UserScheduleSettings from './UserScheduleSettings/UserScheduleSettings';
@@ -129,11 +129,7 @@ const SettingsPreferences: React.FC = () => {
                 import.meta.env.MODE === 'development' ? (
                   <NERSwitch id="trick-switch" sx={{ m: 1 }} onClick={logout} />
                 ) : (
-                  <GoogleLogout
-                    clientId={import.meta.env.VITE_REACT_APP_GOOGLE_CLIENT_ID || ''}
-                    onLogoutSuccess={logout}
-                    render={(renderProps) => <NERSwitch id="trick-switch" sx={{ m: 1 }} onClick={renderProps.onClick} />}
-                  />
+                  <NERSwitch id="trick-switch" sx={{ m: 1 }} onClick={googleLogout} />
                 )
               }
             />

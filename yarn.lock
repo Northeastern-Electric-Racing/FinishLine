@@ -3799,6 +3799,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-oauth/google@npm:^0.12.1":
+  version: 0.12.1
+  resolution: "@react-oauth/google@npm:0.12.1"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+  checksum: fff63a0fc0b367519b48422c39f6ebc73226e4442ae148d752d05083a185660e66d047fcc8d88b962de97980cfb71f726de0a96ff5f00af0d7e68f333560a7c3
+  languageName: node
+  linkType: hard
+
 "@rollup/plugin-babel@npm:^5.2.0":
   version: 5.3.1
   resolution: "@rollup/plugin-babel@npm:5.3.1"
@@ -10100,6 +10110,7 @@ __metadata:
     "@mui/system": ^6.4.0
     "@mui/x-data-grid": ^5.16.0
     "@mui/x-date-pickers": ^7.24.0
+    "@react-oauth/google": ^0.12.1
     "@testing-library/dom": ^10.4.0
     "@testing-library/jest-dom": ^6.6.3
     "@testing-library/react": ^16.2.0
@@ -10131,7 +10142,6 @@ __metadata:
     react-dom: ^19.0.0
     react-draggable: ^4.4.6
     react-google-charts: ^5.2.1
-    react-google-login: ^5.2.2
     react-helmet: ^6.1.0
     react-hook-form: ^7.34.0
     react-hook-form-persist: ^3.0.0
@@ -15805,7 +15815,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prop-types@npm:^15.6.0, prop-types@npm:^15.6.2, prop-types@npm:^15.7.2, prop-types@npm:^15.8.1":
+"prop-types@npm:^15.6.2, prop-types@npm:^15.7.2, prop-types@npm:^15.8.1":
   version: 15.8.1
   resolution: "prop-types@npm:15.8.1"
   dependencies:
@@ -16098,19 +16108,6 @@ __metadata:
     react: ">=16.3.0"
     react-dom: ">=16.3.0"
   checksum: 80a03fda3e9c828e9d22919fe8b2f9cdb40cb9c38b617d9de2afa1a288304ab652604149e818c9f5fe990ffc748290b5db74539c61c3720c7d85c8d7840482ce
-  languageName: node
-  linkType: hard
-
-"react-google-login@npm:^5.2.2":
-  version: 5.2.2
-  resolution: "react-google-login@npm:5.2.2"
-  dependencies:
-    "@types/react": "*"
-    prop-types: ^15.6.0
-  peerDependencies:
-    react: ^16 || ^17
-    react-dom: ^16 || ^17
-  checksum: 29199c7035c3c1070a82241dc4063628d693f35a1736d292e3db736e52da825e8a53f9287b0b12b08a50d676973ce1349a4d8243cd849ca25fed6a4284378880
   languageName: node
   linkType: hard
 
