@@ -151,6 +151,14 @@ enum Special_Permission {
   FINANCE_ONLY
 }
 
+enum Review_Status {
+  NA               @map("N/A")
+  READY_FOR_REVIEW @map("Ready for Review")
+  IN_REVIEW        @map("In Review")
+  REVIEWED         @map("Reviewed")
+  APPROVED         @map("Approved")
+}
+
 model User {
   userId                String                @id @default(uuid())
   firstName             String
@@ -1065,27 +1073,27 @@ model PopUp {
 }
 
 model Part {
-  id             String       @id @default(uuid())
+  id             String        @id @default(uuid())
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  organization   Organization  @relation(fields: [organizationId], references: [organizationId])
   index          Int
   commonName     String
-  description    String
-  status         String
+  description    String?
+  status         Review_Status @default(NA)
   tags           PartTag[]
   submissions    Submission[]
-  reviews        Review[]
-  project        Project      @relation(fields: [projectId], references: [projectId])
+  reviews        Review[] // I feel like Parts don't need reviews field since reviews are linked to submissions, thoughts?
+  project        Project       @relation(fields: [projectId], references: [projectId])
   projectId      String
-  assignees      User[]       @relation("PartAssignees")
-  reviewers      User[]       @relation("PartReviewers")
+  assignees      User[]        @relation("PartAssignees")
+  reviewers      User[]        @relation("PartReviewers")
   history        String[]
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
   userCreatedId  String
-  userCreated    User         @relation(name: "partCreator", fields: [userCreatedId], references: [userId])
-  userDeletedId  String
-  userDeleted    User         @relation(name: "partDeleter", fields: [userDeletedId], references: [userId])
+  userCreated    User          @relation(fields: [userCreatedId], references: [userId], name: "partCreator")
+  userDeletedId  String?
+  userDeleted    User?         @relation(fields: [userDeletedId], references: [userId], name: "partDeleter")
 }
 
 model PartTag {
@@ -1106,9 +1114,9 @@ model Submission {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   userCreatedId String
-  userCreated   User     @relation(name: "partsSubmissionCreator", fields: [userCreatedId], references: [userId])
-  userDeletedId String
-  userDeleted   User     @relation(name: "partsSubmissionDeleter", fields: [userDeletedId], references: [userId])
+  userCreated   User     @relation(fields: [userCreatedId], references: [userId], name: "partsSubmissionCreator")
+  userDeletedId String?
+  userDeleted   User?    @relation(fields: [userDeletedId], references: [userId], name: "partsSubmissionDeleter")
   Review        Review[]
 }
 
@@ -1118,16 +1126,16 @@ model Review {
   notes         String?
   submission    Submission          @relation(fields: [submissionId], references: [id])
   submissionId  String
-  part          Part                @relation(fields: [partId], references: [id])
+  part          Part                @relation(fields: [partId], references: [id]) // Also here, do reviews even need to be linked to a part since it's submissions that get reviewed?
   partId        String
   popUps        Part_Review_Popup[]
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
   userCreatedId String
-  userCreated   User                @relation(name: "partsReviewCreator", fields: [userCreatedId], references: [userId])
+  userCreated   User                @relation(fields: [userCreatedId], references: [userId], name: "partsReviewCreator")
   deletedAt     DateTime?
-  userDeletedId String
-  userDeleted   User                @relation(name: "partsReviewDeleter", fields: [userDeletedId], references: [userId])
+  userDeletedId String?
+  userDeleted   User?               @relation(fields: [userDeletedId], references: [userId], name: "partsReviewDeleter")
 }
 
 model Part_Review_Popup {
