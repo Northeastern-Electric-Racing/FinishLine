@@ -22,6 +22,8 @@ export const useProvideAuth = () => {
     }
   }, [authUser, currentUserIsLoading, user]);
 
+  console.log(authUser, currentUserIsLoading);
+
   const devSignin = async (userId: string) => {
     const user = await mutateAsyncDev(userId);
     setUser(user);

@@ -20,8 +20,13 @@ const AppPublic: React.FC = () => {
   const devUserId = localStorage.getItem('devUserId');
   const organization = useOrganization();
 
+  if (auth.isLoading) {
+    return <LoadingIndicator />;
+  }
+
   const render: ((props: RouteComponentProps) => React.ReactNode) | undefined = (e) => {
     // if logged in, go to authenticated app
+    console.log(auth.user);
     if (auth.user) {
       if (auth.user.defaultTheme && auth.user.defaultTheme.toLocaleLowerCase() !== theme.activeTheme) {
         theme.toggleTheme();
