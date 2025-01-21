@@ -197,7 +197,7 @@ export const denyReimbursementRequest = (id: string) => {
  * @param fileId the google id of the file to download
  * @returns the downloaded file as a Blob
  */
-export const downloadGoogleImage = async (fileId: string): Promise<Blob> => {
+export const downloadFinanceImage = async (fileId: string): Promise<Blob> => {
   const response = await axios.get(apiUrls.financeImageById(fileId), {
     responseType: 'arraybuffer' // Set the response type to 'arraybuffer' to receive the image as a Buffer
   });

@@ -1,6 +1,6 @@
 import { LinkCreateArgs } from 'shared';
 import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
-import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
+import { batmanAppAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import { createTestLinkType, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { testLink1 } from '../test-data/organizations.test-data';
@@ -123,8 +123,8 @@ describe('Organization Tests', () => {
 
       expect(organization).not.toBeNull();
       expect(organization!.usefulLinks.length).toBe(2);
-      expect(organization!.usefulLinks[0].url).toBe('link 1');
-      expect(organization!.usefulLinks[1].url).toBe('link 2');
+      expect(organization!.usefulLinks.some((link) => link.url === 'link 1')).toBeTruthy();
+      expect(organization!.usefulLinks.some((link) => link.url === 'link 2')).toBeTruthy();
 
       // ensuring previous links are deleted and only these ones remain
       const testLinks2: LinkCreateArgs[] = [
@@ -183,27 +183,81 @@ describe('Organization Tests', () => {
     });
   });
 
-  describe('Get Organization Images', () => {
-    it('Fails if an organization does not exist', async () => {
-      await expect(async () => await OrganizationsService.getOrganizationImages('1')).rejects.toThrow(
-        new NotFoundException('Organization', '1')
-      );
+  describe('Update Application Link', () => {
+    it('Fails if user is not admin', async () => {
+      await expect(
+        OrganizationsService.updateApplicationLink(
+          await createTestUser(wonderwomanGuest, orgId),
+          'new application link',
+          organization
+        )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('update application link'));
     });
 
-    it('Succeeds and gets all the images', async () => {
+    it('Succeeds and updates the application link', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
       await createTestLinkType(testBatman, orgId);
-      await OrganizationsService.setImages(
-        { originalname: 'image1.png' } as Express.Multer.File,
-        { originalname: 'image2.png' } as Express.Multer.File,
+      const updatedOrganization = await OrganizationsService.updateApplicationLink(
         testBatman,
+        'new application link',
         organization
       );
-      const images = await OrganizationsService.getOrganizationImages(orgId);
 
-      expect(images).not.toBeNull();
-      expect(images.applyInterestImage).toBe('uploaded-image1.png');
-      expect(images.exploreAsGuestImage).toBe('uploaded-image2.png');
+      expect(updatedOrganization).not.toBeNull();
+      expect(updatedOrganization.applicationLink).toBe('new application link');
+    });
+  });
+
+  describe('Update Onboarding Text', () => {
+    it('Fails if user is not admin', async () => {
+      await expect(
+        async () =>
+          await OrganizationsService.setOnboardingText(await createTestUser(wonderwomanGuest, orgId), organization, 'text')
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('update onboarding text'));
+    });
+
+    it('Succeeds and updates onboarding text', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+
+      const updatedOrganization = await OrganizationsService.setOnboardingText(testBatman, organization, 'Testing text');
+
+      expect(updatedOrganization).not.toBeNull();
+      expect(updatedOrganization.onboardingText).toBe('Testing text');
+    });
+  });
+
+  describe('Update Organization Contacts', () => {
+    it('Fails if user is not admin', async () => {
+      await expect(
+        async () =>
+          await OrganizationsService.updateOrganizationContacts(
+            await createTestUser(wonderwomanGuest, orgId),
+            organization,
+            [
+              { userId: '1', title: 'Title 1' },
+              { userId: '2', title: 'Title 2' }
+            ]
+          )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('update organiztion contacts'));
+    });
+    it('Succeeds and creates new contacts and updates organizations contacts', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const testSuperman = await createTestUser(supermanAdmin, orgId);
+
+      await OrganizationsService.updateOrganizationContacts(testBatman, organization, [
+        { userId: testBatman.userId, title: 'Chief Software Engineer' },
+        { userId: testSuperman.userId, title: 'Chief Mechanical Engineer' }
+      ]);
+
+      const allContacts = await prisma.contact.findMany({
+        where: {
+          organizationId: orgId
+        }
+      });
+
+      expect(allContacts.length).toBe(2);
+      expect(allContacts.some((contact) => contact.userId === testBatman.userId)).toBeTruthy();
+      expect(allContacts.some((contact) => contact.userId === testSuperman.userId)).toBeTruthy();
     });
   });
 });

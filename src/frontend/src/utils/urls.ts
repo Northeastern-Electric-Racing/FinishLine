@@ -83,6 +83,8 @@ const teamsById = (id: string) => `${teams()}/${id}`;
 const teamsDelete = (id: string) => `${teamsById(id)}/delete`;
 const teamsSetMembers = (id: string) => `${teamsById(id)}/set-members`;
 const teamsSetTeamType = (id: string) => `${teamsById(id)}/set-team-type`;
+const setOnboardingUser = (id: string) => `${teams()}/teamType/${id}/set-onboarding-user`;
+const completeOnboarding = () => `${teams()}/teamType/complete-onboarding`;
 const teamsSetHead = (id: string) => `${teamsById(id)}/set-head`;
 const teamsArchive = (id: string) => `${teamsById(id)}/archive`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
@@ -178,6 +180,10 @@ const organizations = () => `${API_URL}/organizations`;
 const currentOrganization = () => `${organizations()}/current`;
 const organizationsUsefulLinks = () => `${organizations()}/useful-links`;
 const organizationsSetUsefulLinks = () => `${organizationsUsefulLinks()}/set`;
+const organizationsSetImages = () => `${organizations()}/images/update`;
+const organizationsUpdateContacts = () => `${organizations()}/contacts/set`;
+const organizationsSetOnboardingText = () => `${organizations()}/onboardingText/set`;
+const organizationsUpdateApplicationLink = () => `${organizations()}/application-link/update`;
 const organizationsSetDescription = () => `${organizations()}/description/set`;
 const organizationsFeaturedProjects = () => `${organizations()}/featured-projects`;
 const organizationsLogoImage = () => `${organizations()}/logo`;
@@ -200,6 +206,18 @@ const faqCreate = () => `${recruitment()}/faq/create`;
 const faqEdit = (id: string) => `${recruitment()}/faq/${id}/edit`;
 const faqDelete = (id: string) => `${recruitment()}/faq/${id}/delete`;
 
+/************** Onboarding Endpoints ***************/
+const onboarding = () => `${API_URL}/onboarding`;
+const allChecklists = () => `${onboarding()}/checklists`;
+const generalChecklists = () => `${allChecklists()}/general`;
+const checkedChecklists = () => `${allChecklists()}/checked`;
+const toggleChecklist = (checklistId: string) => `${allChecklists()}/${checklistId}/toggle`;
+const usersChecklists = () => `${allChecklists()}/usersChecklists`;
+const createChecklist = () => `${onboarding()}/checklist/create`;
+const editChecklist = (checklistId: string) => `${onboarding()}/checklist/edit/${checklistId}`;
+const checklistDelete = (id: string) => `${onboarding()}/checklist/delete/${id}`;
+const imageById = (imageId: string) => `${onboarding()}/image/${imageId}`;
+
 /************** Pop Up Endpoints ***************/
 const popUps = () => `${API_URL}/pop-ups`;
 const popUpsCurrentUser = () => `${popUps()}/current-user`;
@@ -210,9 +228,6 @@ const announcements = () => `${API_URL}/announcements`;
 const announcementsCurrentUser = () => `${announcements()}/current-user`;
 const announcementsRemove = (id: string) => `${announcements()}/${id}/remove`;
 
-/************** Onboarding Endpoints ***************/
-const onboarding = () => `${API_URL}/onboarding`;
-const imageById = (imageId: string) => `${onboarding()}/image/${imageId}`;
 /************** Statistics Endpoints ***************/
 const statistics = () => `${API_URL}/statistics`;
 const createGraph = () => `${statistics()}/graph/create`;
@@ -292,6 +307,8 @@ export const apiUrls = {
   teamsSetLeads,
   allTeamTypes,
   teamsSetTeamType,
+  setOnboardingUser,
+  completeOnboarding,
   teamTypesCreate,
   teamTypeEdit,
   teamTypeSetImage,
@@ -367,6 +384,10 @@ export const apiUrls = {
   currentOrganization,
   organizationsUsefulLinks,
   organizationsSetUsefulLinks,
+  organizationsSetImages,
+  organizationsUpdateContacts,
+  organizationsSetOnboardingText,
+  organizationsUpdateApplicationLink,
   organizationsFeaturedProjects,
   organizationsSetDescription,
   organizationsLogoImage,
@@ -404,6 +425,16 @@ export const apiUrls = {
   getGraphById,
   updateGraph,
   updateGraphCollection,
+
+  onboarding,
+  allChecklists,
+  generalChecklists,
+  checkedChecklists,
+  toggleChecklist,
+  usersChecklists,
+  createChecklist,
+  editChecklist,
+  checklistDelete,
 
   version
 };

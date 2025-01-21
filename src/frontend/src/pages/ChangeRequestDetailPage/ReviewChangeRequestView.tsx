@@ -39,8 +39,9 @@ interface ReviewChangeRequestViewProps {
 }
 
 const schema = yup.object().shape({
-  reviewNotes: yup.string(),
-  accepted: yup.boolean().required()
+  reviewNotes: yup.string().required(),
+  accepted: yup.boolean().required(),
+  psId: yup.string().required()
 });
 
 const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({

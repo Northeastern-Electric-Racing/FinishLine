@@ -131,6 +131,8 @@ export const resetUsers = async () => {
   await prisma.wBS_Element.deleteMany();
   await prisma.milestone.deleteMany();
   await prisma.frequentlyAskedQuestion.deleteMany();
+  await prisma.checklist.deleteMany();
+  await prisma.contact.deleteMany();
   await prisma.graph.deleteMany();
   await prisma.graph_Collection.deleteMany();
   await prisma.announcement.deleteMany();
@@ -219,6 +221,7 @@ export const createTestOrganization = async () => {
     data: {
       name: 'Joe mama',
       description: 'Joe mama`s organization',
+      applicationLink: '',
       userCreated: {
         connect: {
           userId: user.userId
@@ -276,6 +279,36 @@ export const createTestMilestone = async (user: User, organizationId: string) =>
     }
   });
   return milestone;
+};
+
+export const createTestChecklist = async (
+  user: User,
+  organizationId: string,
+  name: string,
+  teamTypeId?: string,
+  teamId?: string,
+  parentChecklistId?: string
+) => {
+  if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
+  if (!organizationId) throw new Error('Failed to create checklist');
+
+  const checklist = await prisma.checklist.create({
+    data: {
+      name,
+      organizationId,
+      userCreatedId: user.userId,
+      teamTypeId,
+      teamId,
+      parentChecklistId
+    },
+    include: {
+      subtasks: true,
+      teamType: true,
+      usersChecked: true
+    }
+  });
+
+  return checklist;
 };
 
 export const createTestLinkType = async (user: User, organizationId?: string) => {
@@ -483,7 +516,7 @@ export const createTestDesignReview = async () => {
   return { dr, organization, orgId };
 };
 
-export const createTestTeamType = async (organizationId?: string) => {
+export const createTestTeamType = async (name: string = 'aTeam', organizationId?: string) => {
   let orgId = organizationId;
   if (!organizationId) {
     orgId = (await createTestOrganization()).organizationId;
@@ -491,7 +524,7 @@ export const createTestTeamType = async (organizationId?: string) => {
 
   return await prisma.team_Type.create({
     data: {
-      name: 'aTeam',
+      name,
       description: 'aDescription',
       iconName: 'gear',
       organizationId: orgId!

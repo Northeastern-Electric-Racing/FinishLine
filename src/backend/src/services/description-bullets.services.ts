@@ -3,7 +3,7 @@ import prisma from '../prisma/prisma';
 import { hasBulletCheckingPermissions } from '../utils/description-bullets.utils';
 import { AccessDeniedException, HttpException, NotFoundException, DeletedException } from '../utils/errors.utils';
 import descriptionBulletTransformer from '../transformers/description-bullets.transformer';
-import { DescriptionBullet, DescriptionBulletType, OrganizationPreview, isAdmin } from 'shared';
+import { DescriptionBullet, DescriptionBulletType, isAdmin } from 'shared';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
 import { userHasPermission } from '../utils/users.utils';
 
@@ -19,7 +19,7 @@ export default class DescriptionBulletsService {
   static async checkDescriptionBullet(
     user: User,
     descriptionId: string,
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<DescriptionBullet> {
     const originalDB = await prisma.description_Bullet.findUnique({
       where: { descriptionId },

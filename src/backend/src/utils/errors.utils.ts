@@ -139,6 +139,8 @@ export type ExceptionObjectNames =
   | 'Car'
   | 'Milestone'
   | 'Faq'
+  | 'Checklist'
+  | 'Checklist Item'
   | 'Pop Up'
   | 'Announcement'
   | 'Graph'

@@ -7,11 +7,13 @@ import {
 } from '../utils/reimbursement-requests.utils';
 import { Prisma } from '@prisma/client';
 import teamTransformer from './teams.transformer';
+import { organizationTransformer } from './organizationTransformer';
 
 const authenticatedUserTransformer = (
   user: Prisma.UserGetPayload<AuthUserQueryArgs>,
   organizationId?: String
 ): AuthenticatedUser => {
+  const currentOrganization = user.organizations.find((organization) => organization.organizationId === organizationId);
   return {
     userId: user.userId,
     firstName: user.firstName,
@@ -27,7 +29,8 @@ const authenticatedUserTransformer = (
     isAtLeastFinanceLead: isAuthUserAtLeastLeadForFinance(user),
     changeRequestsToReviewId: user.changeRequestsToReview.map((changeRequest) => changeRequest.crId),
     organizations: user.organizations.map((organization) => organization.organizationId),
-    currentOrganization: user.organizations.find((organization) => organization.organizationId === organizationId),
+    currentOrganization: currentOrganization ? organizationTransformer(currentOrganization) : undefined,
+    onboardingTeamTypeIds: user.onboardingTeamTypes.map((teamType) => teamType.teamTypeId),
     teamsAsHead: user.teamsAsHead.map(teamTransformer),
     teamsAsLead: user.teamsAsLead.map(teamTransformer),
     permissions: user.roles

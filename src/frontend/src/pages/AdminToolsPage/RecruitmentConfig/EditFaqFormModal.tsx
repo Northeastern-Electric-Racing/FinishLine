@@ -1,6 +1,6 @@
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { FrequentlyAskedQuestion } from 'shared/src/types/frequently-asked-questions-types';
+import { FrequentlyAskedQuestion } from 'shared';
 import { useEditFaq } from '../../../hooks/recruitment.hooks';
 import FaqFormModal from './FaqFormModal';
 

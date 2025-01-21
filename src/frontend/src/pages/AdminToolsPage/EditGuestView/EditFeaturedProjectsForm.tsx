@@ -9,7 +9,7 @@ import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 
 const schema = yup.object().shape({
-  description: yup.array().of(yup.string())
+  featuredProjects: yup.array().of(yup.mixed<Project>().required()).required()
 });
 
 export interface EditFeaturedProjectsFormInput {
@@ -29,7 +29,7 @@ const EditFeaturedProjectsForm: React.FC<EditFeaturedProjectsFormProps> = ({
   onHide,
   isEditMode
 }) => {
-  const { handleSubmit, control, reset } = useForm({
+  const { handleSubmit, control, reset } = useForm<EditFeaturedProjectsFormInput>({
     resolver: yupResolver(schema),
     defaultValues: {
       featuredProjects: featuredProjects ?? []

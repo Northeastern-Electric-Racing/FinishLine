@@ -5,7 +5,6 @@
 
 import { NavLink } from 'react-router-dom';
 import { LinkItem } from '../../utils/types';
-import { routes } from '../../utils/routes';
 import { Typography, useTheme } from '@mui/material';
 
 export interface NavPageLinkItemProps extends LinkItem {
@@ -18,7 +17,6 @@ const NavPageLink: React.FC<NavPageLinkItemProps> = ({ name, route, icon }) => {
     <NavLink
       key={name}
       to={route}
-      exact={route === routes.HOME}
       style={(isActive) => {
         return {
           textDecoration: 'none',

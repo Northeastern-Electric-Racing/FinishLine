@@ -1,42 +1,85 @@
 import { Typography, Box } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { AuthenticatedUser } from 'shared';
 import ImageWithButton from './components/ImageWithButton';
-import emitter from '../../app/EventBus';
+import { useHistory } from 'react-router-dom';
+import { routes } from '../../utils/routes';
+import { useCurrentUser } from '../../hooks/users.hooks';
+import { useEffect } from 'react';
+import { useHomePageContext } from '../../app/HomePageContext';
+import { useCurrentOrganization } from '../../hooks/organizations.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
+import { useGetImageUrl } from '../../hooks/onboarding.hook';
 
-interface IntroGuestHomePageProps {
-  user: AuthenticatedUser;
-  setOnMemberHomePage: (e: boolean) => void;
-}
+const IntroGuestHomePage = () => {
+  const user = useCurrentUser();
+  const history = useHistory();
+  const {
+    data: organization,
+    isLoading: organizationIsLoading,
+    isError: organizationIsError,
+    error: organizationError
+  } = useCurrentOrganization();
+  const { setCurrentHomePage } = useHomePageContext();
 
-const IntroGuestHomePage = ({ user, setOnMemberHomePage }: IntroGuestHomePageProps) => {
-  const handleClick = () => {
-    emitter.emit('memberHomePage', true);
-    setOnMemberHomePage(true);
-  };
+  const {
+    data: applyInterestImageUrl,
+    isLoading: applyImageLoading,
+    isError: applyImageIsError,
+    error: applyImageError
+  } = useGetImageUrl(organization?.applyInterestImageId ?? null);
+  const {
+    data: exploreGuestImageUrl,
+    isLoading: exploreImageLoading,
+    isError: exploreImageIsError,
+    error: exploreImageError
+  } = useGetImageUrl(organization?.exploreAsGuestImageId ?? null);
+
+  useEffect(() => {
+    setCurrentHomePage('guest');
+  }, [setCurrentHomePage]);
+
+  if (organizationIsError) {
+    return <ErrorPage message={organizationError.message} />;
+  }
+  if (applyImageIsError) return <ErrorPage message={applyImageError.message} />;
+  if (exploreImageIsError) return <ErrorPage message={exploreImageError.message} />;
+
+  if (!organization || organizationIsLoading || applyImageLoading || exploreImageLoading) return <LoadingIndicator />;
+  if (!applyInterestImageUrl || !exploreGuestImageUrl) return <LoadingIndicator />;
 
   return (
     <PageLayout title="Home" hidePageTitle>
       <Typography variant="h3" textAlign="center" sx={{ mt: 2, pt: 3 }}>
         {user ? `Welcome, ${user.firstName}!` : 'Welcome, Guest!'}
       </Typography>
-      <Box sx={{ display: 'flex', mt: 4 }}>
-        <Box sx={{ display: 'flex', padding: '50px', gap: 5 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          flexDirection: { xs: 'column', md: 'row' },
+          mt: 4,
+          padding: '20px'
+        }}
+      >
+        <Box sx={{ display: 'flex', gap: 5 }}>
           <ImageWithButton
             title="Interested in applying"
-            imageSrc={`/Apply.png`}
+            imageSrc={applyInterestImageUrl}
             buttonText="Learn More"
-            onClick={() => {}}
+            onClick={() => history.push(routes.HOME_PNM)}
           />
           <ImageWithButton
             title="Explore Our Work as a Guest"
-            imageSrc={`/Guest.png`}
+            imageSrc={exploreGuestImageUrl}
             buttonText="FinishLine"
-            onClick={handleClick}
+            onClick={() => history.push(routes.HOME_MEMBER)}
           />
         </Box>
       </Box>
     </PageLayout>
   );
 };
+
 export default IntroGuestHomePage;

@@ -50,6 +50,7 @@ import StatisticsService from '../services/statistics.services';
 import { seedGraph } from './seed-data/statistics.seed';
 import { graphCollectionTransformer } from '../transformers/statistics-graphCollection.transformer';
 import AnnouncementService from '../services/announcement.service';
+import OnboardingServices from '../services/onboarding.services';
 
 const prisma = new PrismaClient();
 
@@ -61,10 +62,14 @@ const performSeed: () => Promise<void> = async () => {
 
   const ner = await prisma.organization.create({
     data: {
-      name: 'NER',
+      name: 'Northeastern Electric Racing',
       userCreatedId: thomasEmrax.userId,
       description:
-        'Northeastern Electric Racing is a student-run organization at Northeastern University building all-electric formula-style race cars from scratch to compete in Forumla Hybrid + Electric Formula SAE (FSAE).'
+        'Northeastern Electric Racing is a student-run organization at Northeastern University building all-electric formula-style race cars from scratch to compete in Forumla Hybrid + Electric Formula SAE (FSAE).',
+      applyInterestImageId: '1_iak6ord4JP9TcR1sOYopyEs6EjTKQpw',
+      exploreAsGuestImageId: '1wRes7V_bMm9W7_3JCIDXYkMUiy6B3wRI',
+      applicationLink:
+        'https://docs.google.com/forms/d/e/1FAIpQLSeCvG7GqmZm_gmSZiahbVTW9ZFpEWG0YfGQbkSB_whhHzxXpA/closedform'
     }
   });
 
@@ -198,7 +203,8 @@ const performSeed: () => Promise<void> = async () => {
   const carr = await createUser(dbSeedAllUsers.carr, RoleEnum.MEMBER, organizationId);
   const trang = await createUser(dbSeedAllUsers.trang, RoleEnum.MEMBER, organizationId);
   const regina = await createUser(dbSeedAllUsers.regina, RoleEnum.MEMBER, organizationId);
-  await createUser(dbSeedAllUsers.spongebob, RoleEnum.GUEST, organizationId);
+  const patrick = await createUser(dbSeedAllUsers.patrick, RoleEnum.MEMBER, organizationId);
+  const spongebob = await createUser(dbSeedAllUsers.spongebob, RoleEnum.GUEST, organizationId);
 
   await UsersService.updateUserRole(cyborg.userId, thomasEmrax, 'APP_ADMIN', ner);
 
@@ -274,19 +280,37 @@ const performSeed: () => Promise<void> = async () => {
    * TEAMS
    */
   /** Creating Team Types */
-  const teamType1 = await TeamsService.createTeamType(batman, 'Mechanical', 'YouTubeIcon', '', ner);
-  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'Software', 'InstagramIcon', '', ner);
-  const teamType3 = await TeamsService.createTeamType(cyborg, 'Electrical', 'SettingsIcon', '', ner);
+  const mechanical = await TeamsService.createTeamType(
+    batman,
+    'Mechanical',
+    'YouTubeIcon',
+    'This is the mechanical team',
+    ner
+  );
+  const software = await TeamsService.createTeamType(
+    thomasEmrax,
+    'Software',
+    'InstagramIcon',
+    'This is the software team',
+    ner
+  );
+  const electrical = await TeamsService.createTeamType(
+    cyborg,
+    'Electrical',
+    'SettingsIcon',
+    'This is the electrical team',
+    ner
+  );
 
   /** Creating Teams */
   const justiceLeague: Team = await prisma.team.create(dbSeedAllTeams.justiceLeague(batman.userId, organizationId));
   const avatarBenders: Team = await prisma.team.create(
-    dbSeedAllTeams.avatarBenders(aang.userId, teamType2.teamTypeId, organizationId)
+    dbSeedAllTeams.avatarBenders(aang.userId, software.teamTypeId, organizationId)
   );
   const ravens: Team = await prisma.team.create(dbSeedAllTeams.ravens(johnHarbaugh.userId, organizationId));
   const orioles: Team = await prisma.team.create(dbSeedAllTeams.orioles(brandonHyde.userId, organizationId));
   const huskies: Team = await prisma.team.create(
-    dbSeedAllTeams.huskies(thomasEmrax.userId, teamType3.teamTypeId, organizationId)
+    dbSeedAllTeams.huskies(thomasEmrax.userId, electrical.teamTypeId, organizationId)
   );
   const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId, organizationId));
   const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId, organizationId));
@@ -337,7 +361,7 @@ const performSeed: () => Promise<void> = async () => {
   await TeamsService.setTeamMembers(
     aang,
     avatarBenders.teamId,
-    [katara, sokka, toph, zuko, iroh, azula, appa, momo, suki, yue, bumi].map((user) => user.userId),
+    [katara, sokka, toph, zuko, iroh, azula, appa, momo, suki, yue, bumi, patrick].map((user) => user.userId),
     ner
   );
   await TeamsService.setTeamMembers(
@@ -437,6 +461,10 @@ const performSeed: () => Promise<void> = async () => {
   const confluenceLinkType = await ProjectsService.createLinkType(batman, 'Confluence', 'description', true, ner);
 
   const bomLinkType = await ProjectsService.createLinkType(batman, 'Bill of Materials', 'bar_chart', true, ner);
+
+  const mainWebsiteLinkType = await ProjectsService.createLinkType(batman, 'NER Website', 'bar_chart', true, ner);
+
+  const instagramWebsiteLinkType = await ProjectsService.createLinkType(batman, 'NER Instagram', 'bar_chart', true, ner);
 
   await ProjectsService.createLinkType(batman, 'Google Drive', 'folder', true, ner);
 
@@ -1797,7 +1825,7 @@ const performSeed: () => Promise<void> = async () => {
   const designReview1 = await DesignReviewsService.createDesignReview(
     batman,
     nextDay.toDateString(),
-    teamType1.teamTypeId,
+    mechanical.teamTypeId,
     [thomasEmrax.userId, batman.userId],
     [superman.userId, wonderwoman.userId],
     {
@@ -1813,7 +1841,7 @@ const performSeed: () => Promise<void> = async () => {
     batman,
     designReview1.designReviewId,
     nextDay,
-    teamType1.teamTypeId,
+    mechanical.teamTypeId,
     [thomasEmrax.userId, batman.userId, superman.userId, wonderwoman.userId],
     [joeBlow.userId, joeShmoe.userId, aang.userId],
     false,
@@ -1940,17 +1968,38 @@ const performSeed: () => Promise<void> = async () => {
       linkId: '2',
       linkTypeName: 'Bill of Materials',
       url: 'https://docs.google.com'
+    },
+    {
+      linkId: '3',
+      linkTypeName: 'NER Website',
+      url: 'https://electricracing.northeastern.edu/'
+    },
+    {
+      linkId: '4',
+      linkTypeName: 'NER Instagram',
+      url: 'https://www.instagram.com/nuelectricracing/'
     }
   ]);
 
-  await RecruitmentServices.createMilestone(batman, 'Milestone 1', 'This is milestone 1', new Date('11/12/24'), ner);
-  await RecruitmentServices.createMilestone(batman, 'Milestone 2', 'This is milestone 2', new Date('11/13/24'), ner);
-  await RecruitmentServices.createMilestone(batman, 'Milestone 3', 'This is milestone 3', new Date('11/23/24'), ner);
+  await OrganizationsService.setOnboardingText(
+    batman,
+    ner,
+    'Thank you for applying to Northeastern Electric Racing! After reviewing your application, we are very excited to officially welcome you to our team.'
+  );
+
+  await OrganizationsService.updateOrganizationContacts(batman, ner, [
+    { userId: batman.userId, title: 'Chief Software Engineer' },
+    { userId: thomasEmrax.userId, title: 'Chief Mechanical Engineer' },
+    { userId: regina.userId, title: 'Chief Electrical Engineer' }
+  ]);
+
+  await RecruitmentServices.createMilestone(batman, 'Club fair!', 'Also meet us at:', new Date('9/3/24'), ner);
+  await RecruitmentServices.createMilestone(batman, 'Applications Open', '', new Date('11/13/24'), ner);
+  await RecruitmentServices.createMilestone(batman, 'Applications Close', '', new Date('11/27/24'), ner);
+  await RecruitmentServices.createMilestone(batman, 'Decision Day!', '', new Date('12/4/24'), ner);
 
   await RecruitmentServices.createFaq(batman, 'Who is the Chief Software Engineer?', 'Peyton McKee', ner);
-
   await RecruitmentServices.createFaq(batman, 'When was FinishLine created?', 'FinishLine was created in 2019', ner);
-
   await RecruitmentServices.createFaq(batman, 'How many developers are working on FinishLine?', '178 as of 2024', ner);
 
   await AnnouncementService.createAnnouncement(
@@ -1981,6 +2030,96 @@ const performSeed: () => Promise<void> = async () => {
     '3',
     'powertrain',
     ner.organizationId
+  );
+
+  const joinSlackChecklist = await OnboardingServices.createChecklist(
+    batman,
+    'Join Slack',
+    [
+      'Slack is our primary method of communication outside of meetings and the shop. To join, you must use your @northeastern.edu email (No personal emails!). We do not send email reminders for meetings, so you will need to stay in the loop via Slack and Google Calandar.'
+    ],
+    null,
+    null,
+    null,
+    ner,
+    false
+  );
+
+  await OnboardingServices.createChecklist(
+    batman,
+    'Put your name and pronouns',
+    [],
+    null,
+    null,
+    joinSlackChecklist.checklistId,
+    ner,
+    false
+  );
+
+  await OnboardingServices.createChecklist(
+    batman,
+    'Include your team and/or subteam',
+    [],
+    null,
+    null,
+    joinSlackChecklist.checklistId,
+    ner,
+    false
+  );
+
+  await OnboardingServices.createChecklist(
+    batman,
+    'Include your major and/or year',
+    [],
+    null,
+    null,
+    joinSlackChecklist.checklistId,
+    ner,
+    true
+  );
+
+  await OnboardingServices.createChecklist(
+    batman,
+    'Turn on notifications',
+    [],
+    null,
+    null,
+    joinSlackChecklist.checklistId,
+    ner,
+    false
+  );
+
+  const engageChecklist = await OnboardingServices.createChecklist(
+    batman,
+    'Engage',
+    ['Join NER on engage. This is what Northeastern uses to keep track of our roster'],
+    null,
+    null,
+    null,
+    ner,
+    false
+  );
+
+  const learnGitChecklist = await OnboardingServices.createChecklist(
+    batman,
+    'Learn how to use git',
+    ['Go online and learn how to use git'],
+    null,
+    software.teamTypeId,
+    null,
+    ner,
+    false
+  );
+
+  await OnboardingServices.createChecklist(
+    batman,
+    'Create your first project',
+    [],
+    null,
+    software.teamTypeId,
+    learnGitChecklist.checklistId,
+    ner,
+    false
   );
 };
 

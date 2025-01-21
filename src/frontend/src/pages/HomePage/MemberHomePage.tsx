@@ -10,8 +10,8 @@ import ErrorPage from '../ErrorPage';
 import PageLayout, { PAGE_GRID_HEIGHT } from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
 import MyTasks from './components/MyTasks';
-import TeamWorkPackageDisplay from './components/TeamWorkPackageDisplay';
 import GeneralAnnouncements from './components/GeneralAnnouncements';
+import TeamWorkPackageDisplay from './components/TeamWorkPackageDisplay';
 
 interface MemberHomePageProps {
   user: AuthenticatedUser;

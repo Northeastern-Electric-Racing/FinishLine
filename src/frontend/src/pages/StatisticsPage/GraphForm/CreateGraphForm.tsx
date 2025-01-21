@@ -8,7 +8,7 @@ const defaultValues: GraphFormInput = {
   startTime: undefined,
   endTime: undefined,
   title: '',
-  graphType: null,
+  graphType: undefined,
   graphDisplayType: GraphDisplayType.BAR,
   carIds: [],
   specialPermissions: []

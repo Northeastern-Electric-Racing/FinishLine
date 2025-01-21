@@ -38,9 +38,9 @@ export default class TeamsController {
   static async setTeamMembers(req: Request, res: Response, next: NextFunction) {
     try {
       const { userIds } = req.body;
-
+      const { teamId } = req.params;
       // update the team with the input fields
-      const updateTeam = await TeamsService.setTeamMembers(req.currentUser, req.params.teamId, userIds, req.organization);
+      const updateTeam = await TeamsService.setTeamMembers(req.currentUser, teamId, userIds, req.organization);
 
       //  the updated team
       res.status(200).json(updateTeam);
@@ -133,6 +133,28 @@ export default class TeamsController {
       const updatedTeam = await TeamsService.setTeamType(req.currentUser, teamId, teamTypeId, req.organization);
 
       res.status(200).json(updatedTeam);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async setOnboardingUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamTypeId } = req.params;
+
+      const updatedTeamType = await TeamsService.setOnboardingUser(req.currentUser, teamTypeId, req.organization);
+
+      res.status(200).json(updatedTeamType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async completeOnboarding(req: Request, res: Response, next: NextFunction) {
+    try {
+      await TeamsService.completeOnboarding(req.currentUser, req.organization);
+
+      res.status(200).json({ message: 'Successfully completed onboarding' });
     } catch (error: unknown) {
       next(error);
     }

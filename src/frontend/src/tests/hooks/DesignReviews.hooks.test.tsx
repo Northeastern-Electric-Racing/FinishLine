@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook, waitFor } from '@testing-library/react';
 import { AxiosResponse } from 'axios';
 import { DesignReview } from 'shared';
 import wrapper from '../../app/AppContextQuery';
@@ -19,7 +19,7 @@ describe('design review hooks', () => {
     const mockedGetAllDesignReviews = getAllDesignReviews as jest.Mock<Promise<AxiosResponse<DesignReview[]>>>;
     mockedGetAllDesignReviews.mockReturnValue(mockPromiseAxiosResponse<DesignReview[]>(exampleAllDesignReviews));
 
-    const { result, waitFor } = renderHook(() => useAllDesignReviews(), { wrapper });
+    const { result } = renderHook(() => useAllDesignReviews(), { wrapper });
     await waitFor(() => result.current.isSuccess);
     expect(result.current.data).toEqual(exampleAllDesignReviews);
   });
@@ -28,7 +28,7 @@ describe('design review hooks', () => {
     const mockedGetSingleDesignReview = getSingleDesignReview as jest.Mock<Promise<AxiosResponse<DesignReview>>>;
     mockedGetSingleDesignReview.mockReturnValue(mockPromiseAxiosResponse<DesignReview>(exampleDesignReview1));
 
-    const { result, waitFor } = renderHook(() => useSingleDesignReview('1'), { wrapper });
+    const { result } = renderHook(() => useSingleDesignReview('1'), { wrapper });
     await waitFor(() => result.current.isSuccess);
     expect(result.current.data).toEqual(exampleDesignReview1);
   });

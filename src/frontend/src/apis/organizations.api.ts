@@ -1,6 +1,7 @@
 import axios from '../utils/axios';
 import { Organization, Project } from 'shared';
 import { apiUrls } from '../utils/urls';
+import { ApplicationLinkPayload, OnboardingTextPayload, UpdateContactsPayload } from '../hooks/organizations.hooks';
 
 /**
  * Create a design review
@@ -61,4 +62,43 @@ export const downloadGoogleImage = async (fileId: string): Promise<Blob> => {
   const imageBuffer = new Uint8Array(response.data);
   const imageBlob = new Blob([imageBuffer], { type: response.headers['content-type'] });
   return imageBlob;
+};
+
+export const setOrganizationImages = (images: File[]) => {
+  const formData = new FormData();
+
+  formData.append('applyInterestImage', images[0]);
+  formData.append('exploreAsGuestImage', images[1]);
+
+  return axios.post<{ message: string }>(apiUrls.organizationsSetImages(), formData, {});
+};
+
+/**
+ * Sets the contacts for an organization
+ * @param contacts all the contact information that is being set
+ */
+export const updateOrganizationContacts = async (payload: UpdateContactsPayload) => {
+  return axios.post<Organization>(apiUrls.organizationsUpdateContacts(), {
+    ...payload
+  });
+};
+
+/**
+ * Sets onboarding text field
+ * @param payload all info needed to set the onboardingText
+ */
+export const setOnboardingText = (payload: OnboardingTextPayload) => {
+  return axios.post(apiUrls.organizationsSetOnboardingText(), {
+    ...payload
+  });
+};
+
+/**
+ *
+ * @param payload all info needed to update the applicationLink
+ */
+export const updateApplicationLink = (payload: ApplicationLinkPayload) => {
+  return axios.post(apiUrls.organizationsUpdateApplicationLink(), {
+    ...payload
+  });
 };

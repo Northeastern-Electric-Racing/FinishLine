@@ -259,7 +259,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     .map(accountCodesToAutocomplete);
 
                   const onClear = () => {
-                    setValue('account', undefined);
+                    setValue('account', ClubAccount.BUDGET);
                     onChange('');
                   };
 

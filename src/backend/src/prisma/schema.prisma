@@ -230,12 +230,16 @@ model User {
   deletedTeamTypes                Team_Type[]               @relation(name: "teamTypeDeleter")
   unreadAnnouncements             Announcement[]            @relation(name: "receivedAnnouncements")
   unreadPopUps                    PopUp[]                   @relation(name: "userPopUps")
+  createdChecklists               Checklist[]               @relation(name: "checklistCreator")
+  deletedChecklists               Checklist[]               @relation(name: "checklistDeleter")
+  checkedChecklists               Checklist[]               @relation(name: "checkedChecklists")
+  contacts                        Contact[]
+  onboardingTeamTypes             Team_Type[]               @relation(name: "onboardingTeamTypes")
 }
 
 model Role {
-  roleId   String    @id @default(uuid())
-  roleType Role_Type
-
+  roleId         String       @id @default(uuid())
+  roleType       Role_Type
   userId         String
   user           User         @relation(fields: [userId], references: [userId])
   organizationId String
@@ -264,6 +268,7 @@ model Team {
   teamTypeId             String?
   organizationId         String
   organization           Organization               @relation(fields: [organizationId], references: [organizationId])
+  checklists             Checklist[]
 }
 
 model Session {
@@ -757,16 +762,18 @@ model Manufacturer {
 }
 
 model Team_Type {
-  teamTypeId     String          @id @default(uuid())
-  name           String
-  iconName       String
-  designReviews  Design_Review[]
-  teams          Team[]
-  description    String
-  imageFileId    String?
-  organizationId String
-  organization   Organization    @relation(fields: [organizationId], references: [organizationId])
-  calendarId     String?
+  teamTypeId      String          @id @default(uuid())
+  name            String
+  iconName        String
+  designReviews   Design_Review[]
+  teams           Team[]
+  description     String          @default("")
+  imageFileId     String?
+  organizationId  String
+  organization    Organization    @relation(fields: [organizationId], references: [organizationId])
+  calendarId      String?
+  checklists      Checklist[]
+  usersOnboarding User[]          @relation(name: "onboardingTeamTypes")
 
   dateDeleted DateTime?
   deletedById String?
@@ -928,11 +935,13 @@ model Organization {
   treasurer             User?     @relation(name: "treasurer", fields: [treasurerId], references: [userId])
   advisor               User?     @relation(name: "advisor", fields: [advisorId], references: [userId])
   advisorId             String?
-  description           String
-  applyInterestImageId  String?   @unique
-  exploreAsGuestImageId String?   @unique
+  description           String    @default("")
+  applyInterestImageId  String?
+  exploreAsGuestImageId String?
   logoImageId           String?
   slackWorkspaceId      String?
+  applicationLink       String?
+  onboardingText        String?
 
   // Relation references
   wbsElements              WBS_Element[]
@@ -959,6 +968,8 @@ model Organization {
   featuredProjects         Project[]
   popUps                   PopUp[]
   announcements            Announcement[]
+  checklists               Checklist[]
+  contacts                 Contact[]
 }
 
 model FrequentlyAskedQuestion {
@@ -1051,4 +1062,38 @@ model PopUp {
   eventLink      String?
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [organizationId])
+}
+
+model Checklist {
+  checklistId       String       @id @default(uuid())
+  teamTypeId        String?
+  teamType          Team_Type?   @relation(fields: [teamTypeId], references: [teamTypeId])
+  teamId            String?
+  team              Team?        @relation(fields: [teamId], references: [teamId])
+  name              String
+  descriptions      String[]
+  isOptional        Boolean      @default(false)
+  subtasks          Checklist[]  @relation("subtasks")
+  parentChecklist   Checklist?   @relation("subtasks", fields: [parentChecklistId], references: [checklistId])
+  parentChecklistId String?
+  usersChecked      User[]       @relation(name: "checkedChecklists")
+  dateCreated       DateTime     @default(now())
+  dateDeleted       DateTime?
+  userCreated       User         @relation(fields: [userCreatedId], references: [userId], name: "checklistCreator")
+  userCreatedId     String
+  userDeleted       User?        @relation(fields: [userDeletedId], references: [userId], name: "checklistDeleter")
+  userDeletedId     String?
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [organizationId])
+}
+
+model Contact {
+  contactId      String       @id @default(uuid())
+  title          String
+  user           User         @relation(fields: [userId], references: [userId])
+  userId         String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  organizationId String
+
+  @@unique([organizationId, userId, title])
 }

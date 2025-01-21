@@ -21,8 +21,8 @@ const NERDeleteModal = ({ open, onHide, dataType, onFormSubmit }: NERDeleteModal
       onFormSubmit={onFormSubmit}
       handleUseFormSubmit={handleSubmit}
       reset={reset}
-      formId="delete-cr-form"
-      title={dataType}
+      formId="delete-form"
+      title={`Delete ${dataType}`}
     >
       <Typography sx={{ marginBottom: '1rem' }}>Are you sure you want to delete this {dataType}?</Typography>
       <Typography sx={{ fontWeight: 'bold' }}>This action cannot be undone!</Typography>

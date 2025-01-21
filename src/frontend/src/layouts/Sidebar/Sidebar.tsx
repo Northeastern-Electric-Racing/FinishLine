@@ -6,7 +6,7 @@
 import { routes } from '../../utils/routes';
 import { LinkItem } from '../../utils/types';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
-import { Typography, Box, IconButton, Divider } from '@mui/material';
+import { Typography, Box, IconButton, Divider, useTheme } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
 import FolderIcon from '@mui/icons-material/Folder';
@@ -15,22 +15,34 @@ import GroupIcon from '@mui/icons-material/Group';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import ArticleIcon from '@mui/icons-material/Article';
 import NavPageLink from './NavPageLink';
 import NERDrawer from '../../components/NERDrawer';
 import NavUserMenu from '../PageTitle/NavUserMenu';
 import DrawerHeader from '../../components/DrawerHeader';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
+import { useHomePageContext } from '../../app/HomePageContext';
+import SidebarButton from './SidebarButton';
+import { isGuest, Organization } from 'shared';
+import { useHistory } from 'react-router-dom';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import { useCurrentUser } from '../../hooks/users.hooks';
 
 interface SidebarProps {
   drawerOpen: boolean;
   setDrawerOpen: (open: boolean) => void;
   moveContent: boolean;
   setMoveContent: (move: boolean) => void;
+  organization?: Organization;
 }
 
-const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: SidebarProps) => {
-  const linkItems: LinkItem[] = [
+const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organization }: SidebarProps) => {
+  const { onPNMHomePage, onOnboardingHomePage } = useHomePageContext();
+  const theme = useTheme();
+  const history = useHistory();
+  const user = useCurrentUser();
+
+  const memberLinkItems: LinkItem[] = [
     {
       name: 'Home',
       icon: <HomeIcon />,
@@ -52,11 +64,6 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       route: routes.CHANGE_REQUESTS
     },
     {
-      name: 'Finance',
-      icon: <AttachMoneyIcon />,
-      route: routes.FINANCE
-    },
-    {
       name: 'Teams',
       icon: <GroupIcon />,
       route: routes.TEAMS
@@ -67,16 +74,43 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       route: routes.CALENDAR
     },
     {
-      name: 'Statistics',
-      icon: <BarChartIcon />,
-      route: routes.STATISTICS
-    },
-    {
       name: 'Info',
       icon: <QuestionMarkIcon />,
       route: routes.INFO
     }
   ];
+
+  if (!isGuest(user.role)) {
+    memberLinkItems.splice(
+      6,
+      0,
+      {
+        name: 'Finance',
+        icon: <AttachMoneyIcon />,
+        route: routes.FINANCE
+      },
+      {
+        name: 'Statistics',
+        icon: <BarChartIcon />,
+        route: routes.STATISTICS
+      }
+    );
+  }
+
+  const onboardingLinkItems: LinkItem[] = [
+    {
+      name: 'Home',
+      icon: <HomeIcon />,
+      route: routes.HOME
+    },
+    {
+      name: 'Teams',
+      icon: <GroupIcon />,
+      route: routes.TEAMS
+    }
+  ];
+
+  const linkItems = onPNMHomePage || onOnboardingHomePage ? onboardingLinkItems : memberLinkItems;
 
   const handleMoveContent = () => {
     if (moveContent) {
@@ -109,7 +143,18 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
           {linkItems.map((linkItem) => (
             <NavPageLink {...linkItem} />
           ))}
-          {<NavUserMenu open={drawerOpen} />}
+          {onPNMHomePage && (
+            // Apply button
+            <SidebarButton
+              onClick={() => {
+                history.push(routes.HOME_SELECT_SUBTEAM);
+                window.open(organization?.applicationLink);
+              }}
+              label={'Apply'}
+              icon={<ArticleIcon sx={{ fontSize: 27 }} style={{ color: theme.palette.text.primary }} />}
+            />
+          )}
+          <NavUserMenu open={drawerOpen} />
         </Box>
         <Box justifyContent={drawerOpen ? 'flex-start' : 'center'}>
           <Box marginLeft={1.1}>

@@ -4,7 +4,15 @@
  */
 
 import { useQueryClient, useMutation, useQuery } from 'react-query';
-import { createTeamType, editTeamType, getAllTeamTypes, setTeamType, setTeamTypeImage } from '../apis/team-types.api';
+import {
+  createTeamType,
+  editTeamType,
+  getAllTeamTypes,
+  setOnboardingUser,
+  setTeamType,
+  setTeamTypeImage,
+  completeOnboarding
+} from '../apis/team-types.api';
 import { TeamType } from 'shared';
 
 export interface CreateTeamTypePayload {
@@ -38,6 +46,43 @@ export const useSetTeamType = (teamId: string) => {
     ['team types', 'edit'],
     async (teamTypeId: string) => {
       const { data } = await setTeamType(teamId, teamTypeId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['team types']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom react hook to set the onboarding team type
+ * @param teamTypeId id of the team type to set as onboarding team type
+ * @returns the updated team type
+ */
+export const useSetOnboardingUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation<TeamType, Error, string>(
+    ['team types', 'edit'],
+    async (teamTypeId: string) => {
+      const { data } = await setOnboardingUser(teamTypeId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['team types']);
+      }
+    }
+  );
+};
+
+export const useCompleteOnboarding = () => {
+  const queryClient = useQueryClient();
+  return useMutation<TeamType, Error>(
+    ['team types', 'edit'],
+    async () => {
+      const { data } = await completeOnboarding();
       return data;
     },
     {

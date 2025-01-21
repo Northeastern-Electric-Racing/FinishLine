@@ -19,7 +19,28 @@ organizationRouter.post(
   OrganizationsController.setImages
 );
 
-organizationRouter.get('/images', OrganizationsController.getOrganizationImages);
+organizationRouter.post(
+  '/application-link/update',
+  nonEmptyString(body('applicationLink')),
+  validateInputs,
+  OrganizationsController.updateApplicationLink
+);
+organizationRouter.post(
+  '/onboardingText/set',
+  nonEmptyString(body('onboardingText')),
+  validateInputs,
+  OrganizationsController.setOnboardingText
+);
+
+organizationRouter.post(
+  '/contacts/set',
+  body('contacts').isArray(),
+  nonEmptyString(body('contacts.*.userId')),
+  nonEmptyString(body('contacts.*.title')),
+  validateInputs,
+  OrganizationsController.updateOrganizationContacts
+);
+
 organizationRouter.post(
   '/featured-projects/set',
   body('projectIds').isArray(),

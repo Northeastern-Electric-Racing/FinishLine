@@ -43,7 +43,7 @@ export type ThemeName = 'DARK' | 'LIGHT';
 
 export type OrganizationPreview = Pick<
   Organization,
-  'organizationId' | 'name' | 'dateCreated' | 'dateDeleted' | 'description'
+  'organizationId' | 'name' | 'dateCreated' | 'dateDeleted' | 'description' | 'applicationLink'
 >;
 
 export interface Organization {
@@ -56,6 +56,11 @@ export interface Organization {
   treasurer?: UserPreview;
   advisor?: UserPreview;
   description: string;
+  applyInterestImageId?: string;
+  exploreAsGuestImageId?: string;
+  applicationLink?: string;
+  onboardingText?: string;
+  contacts: Contact[];
   slackWorkspaceId?: string;
 }
 
@@ -78,6 +83,7 @@ export interface AuthenticatedUser {
   isAtLeastFinanceLead?: boolean;
   organizations: string[];
   currentOrganization?: OrganizationPreview;
+  onboardingTeamTypeIds: string[];
   teamsAsHead?: Team[];
   teamsAsLead?: Team[];
   permissions: Permission[];
@@ -121,11 +127,16 @@ export interface UserWithScheduleSettings extends User {
 }
 
 export interface SetUserScheduleSettingsArgs {
-  personalGmail: string;
-  personalZoomLink: string;
+  personalGmail?: string;
+  personalZoomLink?: string;
   availability: AvailabilityCreateArgs[];
 }
 
 export interface SetUserScheduleSettingsPayload extends SetUserScheduleSettingsArgs {
   drScheduleSettingsId: string;
+}
+
+export interface Contact {
+  user: User;
+  title: string;
 }

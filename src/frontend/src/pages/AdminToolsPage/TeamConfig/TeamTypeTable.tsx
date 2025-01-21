@@ -7,10 +7,10 @@ import CreateTeamTypeFormModal from './CreateTeamTypeFormModal';
 import { TeamType } from 'shared';
 import EditTeamTypeFormModal from './EditTeamTypeFormModal';
 import { useAllTeamTypes, useSetTeamTypeImage } from '../../../hooks/team-types.hooks';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import NERUploadButton from '../../../components/NERUploadButton';
-import { downloadGoogleImage } from '../../../apis/finance.api';
+import { useGetImageUrls } from '../../../hooks/onboarding.hook';
 
 const TeamTypeTable: React.FC = () => {
   const {
@@ -24,35 +24,46 @@ const TeamTypeTable: React.FC = () => {
   const [editingTeamType, setEditingTeamType] = useState<TeamType | undefined>(undefined);
   const [addedImages, setAddedImages] = useState<{ [key: string]: File | undefined }>({});
   const toast = useToast();
-  const [imageUrls, setImageUrls] = useState<{ [key: string]: string | undefined }>({});
 
-  useEffect(() => {
-    try {
-      teamTypes?.forEach(async (teamType) => {
-        const imageBlob = await downloadGoogleImage(teamType.imageFileId ?? '');
-        const url = URL.createObjectURL(imageBlob);
-        setImageUrls((prev) => ({ ...prev, [teamType.teamTypeId]: url }));
-      });
-    } catch (error) {
-      console.error('Error fetching image urls', error);
-    }
-  }, [teamTypes]);
+  const teamTypeImageList =
+    teamTypes?.map((teamType) => {
+      return { objectId: teamType.teamTypeId, imageFileId: teamType.imageFileId };
+    }) ?? [];
 
-  const { mutateAsync: setTeamTypeImage } = useSetTeamTypeImage();
+  const { data: imageUrlsList, isLoading, isError, error } = useGetImageUrls(teamTypeImageList);
+  const { mutateAsync: setTeamTypeImage, isLoading: setTeamTypeIsLoading } = useSetTeamTypeImage();
 
-  if (!teamTypes || teamTypesIsLoading) {
-    return <LoadingIndicator />;
-  }
   if (teamTypesIsError) {
     return <ErrorPage message={teamTypesError?.message} />;
   }
 
+  if (isError) {
+    return <ErrorPage message={error?.message} />;
+  }
+
+  if (!teamTypes || teamTypesIsLoading || setTeamTypeIsLoading || !imageUrlsList || isLoading) {
+    return <LoadingIndicator />;
+  }
+
+  const imageUrlsMap: { [key: string]: string | undefined } = {};
+  imageUrlsList.forEach((item) => {
+    imageUrlsMap[item.id] = item.url;
+  });
+
   const onSubmitTeamTypeImage = async (teamTypeId: string) => {
     const addedImage = addedImages[teamTypeId];
     if (addedImage) {
-      await setTeamTypeImage({ file: addedImage, id: teamTypeId });
-      toast.success('Image uploaded successfully!', 5000);
-      setAddedImages((prev) => ({ ...prev, [teamTypeId]: undefined }));
+      try {
+        await setTeamTypeImage({ file: addedImage, id: teamTypeId });
+        toast.success('Image uploaded successfully!', 5000);
+        setAddedImages((prev) => ({ ...prev, [teamTypeId]: undefined }));
+      } catch (error) {
+        if (error instanceof Error) {
+          toast.error('Failed to set team image: ' + error.message);
+        } else {
+          toast.error('Failed to set team image');
+        }
+      }
     } else {
       toast.error('No image selected for upload.', 5000);
     }
@@ -70,6 +81,7 @@ const TeamTypeTable: React.FC = () => {
   };
 
   const teamTypesTableRows = teamTypes.map((teamType) => {
+    console.log('teamType', teamType);
     return (
       <TableRow>
         <TableCell onClick={() => setEditingTeamType(teamType)} sx={{ cursor: 'pointer', border: '2px solid black' }}>
@@ -88,7 +100,12 @@ const TeamTypeTable: React.FC = () => {
         </TableCell>
         <TableCell
           onClick={() => setEditingTeamType(teamType)}
-          sx={{ cursor: 'pointer', border: '2px solid black', verticalAlign: 'middle' }}
+          sx={{
+            cursor: 'pointer',
+            border: '2px solid black',
+            verticalAlign: 'middle',
+            maxWidth: '15vw'
+          }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Typography variant="body1" sx={{ marginLeft: 1 }}>
@@ -101,7 +118,7 @@ const TeamTypeTable: React.FC = () => {
             {teamType.imageFileId && !addedImages[teamType.teamTypeId] && (
               <Box
                 component="img"
-                src={imageUrls[teamType.teamTypeId]}
+                src={imageUrlsMap[teamType.teamTypeId]}
                 alt="Image Preview"
                 sx={{ maxWidth: '100px', mt: 1, mb: 1 }}
               />
