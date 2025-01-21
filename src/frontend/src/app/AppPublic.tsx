@@ -20,6 +20,7 @@ const AppPublic: React.FC = () => {
   const devUserId = localStorage.getItem('devUserId');
   const organization = useOrganization();
 
+  console.log(auth.isLoading);
   if (auth.isLoading) {
     return <LoadingIndicator />;
   }
