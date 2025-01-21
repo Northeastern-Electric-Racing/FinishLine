@@ -152,11 +152,11 @@ enum Special_Permission {
 }
 
 enum Review_Status {
-  NA               @map("N/A")
-  READY_FOR_REVIEW @map("Ready for Review")
-  IN_REVIEW        @map("In Review")
-  REVIEWED         @map("Reviewed")
-  APPROVED         @map("Approved")
+  NA
+  READY_FOR_REVIEW
+  IN_REVIEW
+  REVIEWED
+  APPROVED
 }
 
 model User {
