@@ -114,9 +114,6 @@ const OnboardingHomePage = () => {
             />
           </Box>
         </Box>
-        <Box display={'flex'} justifyContent={'center'}>
-          <Typography sx={{ fontSize: '2em', mt: 4, ml: 2 }}>Progress Bar</Typography>
-        </Box>
         <Grid container display={'flex'}>
           <Grid
             item
