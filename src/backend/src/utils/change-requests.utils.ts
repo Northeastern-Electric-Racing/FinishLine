@@ -50,7 +50,7 @@ export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequest
     MAINTENANCE: ChangeRequestReason.Maintenance,
     OTHER_PROJECT: ChangeRequestReason.OtherProject,
     OTHER: ChangeRequestReason.Other
-  }[whyType]);
+  })[whyType];
 
 /**
  * This function updates the start date of all the blockings (and nested blockings) of the initial given work package.

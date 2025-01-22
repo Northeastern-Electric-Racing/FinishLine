@@ -77,7 +77,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     watch,
     formState: { errors },
     setValue
-  } = useForm({
+  } = useForm<WorkPackageFormViewPayload>({
     resolver: yupResolver(schema),
     defaultValues: {
       name: defaultValues?.name ?? '',

@@ -28,6 +28,10 @@ export const weeksPipe = (weeks: number) => {
   return `${weeks} week${weeks === 1 ? '' : 's'}`;
 };
 
+export const blobPipe = (blob: Blob, fileName: string) => {
+  return new File([blob], fileName, { type: blob.type });
+};
+
 /** Display number as "$535" */
 export const dollarsPipe = (dollars: number) => {
   return `$${dollars}`;

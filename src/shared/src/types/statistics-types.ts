@@ -76,9 +76,9 @@ export interface CreateGraphArgs {
 }
 
 export interface GraphFormInput {
-  title: string;
+  title?: string;
   measure: Measure;
-  graphType: GraphType | null;
+  graphType?: GraphType;
   startTime?: Date;
   endTime?: Date;
   graphDisplayType: GraphDisplayType;

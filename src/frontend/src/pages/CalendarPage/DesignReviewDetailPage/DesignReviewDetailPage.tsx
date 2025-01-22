@@ -213,7 +213,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
             value={startTime}
             onChange={(event: SelectChangeEvent<number>) => setStateTime(Number(event.target.value))}
             size={'small'}
-            placeholder={'Start Time'}
+            label={'Start Time'}
             sx={EditableFieldStyle}
           >
             {HOURS.map((hour) => {
@@ -235,7 +235,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
             disabled={true}
             onChange={(event: SelectChangeEvent<number>) => setEndTime(Number(event.target.value))}
             size={'small'}
-            placeholder={'End Time'}
+            label={'End Time'}
             sx={EditableFieldStyle}
           >
             {HOURS.map((hour) => {

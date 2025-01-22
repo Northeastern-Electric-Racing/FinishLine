@@ -38,12 +38,9 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({
   const toast = useToast();
 
   const onFormSubmit = (data: ScheduleSettingsFormInput) => {
-    if (data.personalZoomLink !== '') {
+    if (data.personalZoomLink && data.personalZoomLink !== '') {
       if (!data.personalZoomLink.startsWith('https://')) {
         toast.error('Invalid Zoom Link Format. Link must start with "https://".');
-        return;
-      } else if (!data.personalZoomLink.includes('zoom.us/j/')) {
-        toast.error('Invalid Zoom Link Format. Link must contain "zoom.us/j/".');
         return;
       }
     }

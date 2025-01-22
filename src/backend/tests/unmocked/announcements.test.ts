@@ -75,8 +75,8 @@ describe('Announcemnts Tests', () => {
       );
 
       expect(announcements).toHaveLength(2);
-      expect(announcements[0].text).toBe('test1');
-      expect(announcements[1].text).toBe('test2');
+      expect(announcements.some((announcement) => announcement.text === 'test1')).toBe(true);
+      expect(announcements.some((announcement) => announcement.text === 'test2')).toBe(true);
 
       const updatedAnnouncements = await AnnouncementService.removeUserAnnouncement(
         testBatman.userId,

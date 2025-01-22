@@ -75,10 +75,13 @@ export type RequestEventChange = {
 };
 
 export const getProjectStartDate = (project: ProjectPreview): Date => {
-  return project.workPackages.reduce((acc, current) => {
-    if (current.startDate < acc) return current.startDate;
-    return acc;
-  }, new Date(3000, 0, 1)); // Set Date to Year 3000, an arbitrary date in the future
+  return project.workPackages.reduce(
+    (acc, current) => {
+      if (current.startDate < acc) return current.startDate;
+      return acc;
+    },
+    new Date(3000, 0, 1)
+  ); // Set Date to Year 3000, an arbitrary date in the future
 };
 
 export const getProjectEndDate = (project: ProjectPreview): Date => {

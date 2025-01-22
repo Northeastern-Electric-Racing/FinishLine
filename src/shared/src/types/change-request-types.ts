@@ -112,6 +112,10 @@ export interface ProposedSolutionCreateArgs {
   timelineImpact: number;
 }
 
+export interface ProposedSolutionFormInput extends ProposedSolutionCreateArgs {
+  id: string;
+}
+
 export interface DescriptionBulletPreview {
   id: string;
   detail: string;

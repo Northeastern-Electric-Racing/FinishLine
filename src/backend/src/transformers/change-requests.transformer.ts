@@ -113,7 +113,7 @@ const changeRequestTransformer = (
     budgetImpact: changeRequest.scopeChangeRequest?.budgetImpact ?? undefined,
     timelineImpact: changeRequest.scopeChangeRequest?.timelineImpact ?? undefined,
     proposedSolutions: changeRequest.scopeChangeRequest
-      ? changeRequest.scopeChangeRequest?.proposedSolutions.map(proposedSolutionTransformer) ?? []
+      ? (changeRequest.scopeChangeRequest?.proposedSolutions.map(proposedSolutionTransformer) ?? [])
       : undefined,
     originalProjectData: changeRequest.scopeChangeRequest?.wbsOriginalData?.projectProposedChanges
       ? projectProposedChangesTransformer(changeRequest.scopeChangeRequest.wbsOriginalData)

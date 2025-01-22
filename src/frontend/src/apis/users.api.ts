@@ -58,6 +58,17 @@ export const logUserIn = (id_token: string) => {
 };
 
 /**
+ * Attempts to get the current logged in user
+ *
+ * @returns The authenticated user
+ */
+export const getCurrentUser = () => {
+  return axios.get<AuthenticatedUser>(apiUrls.currentUser(), {
+    transformResponse: (data) => authUserTransformer(JSON.parse(data))
+  });
+};
+
+/**
  * Log in a dev user.
  *
  * @param userId The userId to log in.

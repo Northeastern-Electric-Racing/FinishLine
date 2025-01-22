@@ -8,7 +8,7 @@ import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 
 const schema = yup.object().shape({
-  description: yup.string()
+  description: yup.string().required()
 });
 
 export interface EditDescriptionInput {
@@ -23,7 +23,7 @@ interface EditDescriptionFormProps {
 }
 
 const EditDescriptionForm: React.FC<EditDescriptionFormProps> = ({ organization, onSubmit, onHide, isEditMode }) => {
-  const { handleSubmit, control, reset } = useForm({
+  const { handleSubmit, control, reset } = useForm<EditDescriptionInput>({
     resolver: yupResolver(schema),
     defaultValues: {
       description: organization.description ?? ''

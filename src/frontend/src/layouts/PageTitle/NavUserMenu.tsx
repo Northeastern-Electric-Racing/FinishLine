@@ -5,7 +5,6 @@
 
 import { useState } from 'react';
 import { Link as RouterLink, useHistory } from 'react-router-dom';
-import { GoogleLogout } from 'react-google-login';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -19,6 +18,8 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import { canAccessAdminTools } from '../../utils/users';
 import { Stack, useTheme } from '@mui/system';
 import { Typography } from '@mui/material';
+import { useHomePageContext } from '../../app/HomePageContext';
+import { googleLogout } from '@react-oauth/google';
 
 interface NavUserMenuProps {
   open?: boolean;
@@ -28,11 +29,10 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const history = useHistory();
   const auth = useAuth();
+  const { onPNMHomePage } = useHomePageContext();
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
-
-  const googleAuthClientId = import.meta.env.VITE_REACT_APP_GOOGLE_AUTH_CLIENT_ID;
 
   const logout = () => {
     if (!auth) return;
@@ -41,19 +41,12 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
   };
 
   const ProdLogout = () => (
-    <GoogleLogout
-      clientId={googleAuthClientId!}
-      //jsSrc={'accounts.google.com/gsi/client'}
-      onLogoutSuccess={logout}
-      render={(renderProps) => (
-        <MenuItem component="div" sx={{ py: 0 }} onClick={renderProps.onClick} disabled={renderProps.disabled}>
-          <ListItemIcon>
-            <LogoutIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Logout</ListItemText>
-        </MenuItem>
-      )}
-    />
+    <MenuItem component="div" sx={{ py: 0 }} onClick={googleLogout}>
+      <ListItemIcon>
+        <LogoutIcon fontSize="small" />
+      </ListItemIcon>
+      <ListItemText>Logout</ListItemText>
+    </MenuItem>
   );
 
   const DevLogout = () => (
@@ -130,12 +123,14 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
         >
           {auth.user?.email}
         </MenuItem>
-        <MenuItem component={RouterLink} to={routes.SETTINGS} onClick={handleClose} sx={{ py: 0 }}>
-          <ListItemIcon>
-            <SettingsIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Settings</ListItemText>
-        </MenuItem>
+        {!onPNMHomePage && (
+          <MenuItem component={RouterLink} to={routes.SETTINGS} onClick={handleClose} sx={{ py: 0 }}>
+            <ListItemIcon>
+              <SettingsIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Settings</ListItemText>
+          </MenuItem>
+        )}
         {canAccessAdminTools(auth.user) && <AdminTools />}
         {import.meta.env.MODE === 'development' ? <DevLogout /> : <ProdLogout />}
       </Menu>

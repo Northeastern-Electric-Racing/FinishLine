@@ -13,6 +13,8 @@ import MemberEncouragement from './components/MemberEncouragement';
 import GuestOrganizationInfo from './components/GuestOrganizationInfo';
 import FeaturedProjects from './components/FeaturedProjects';
 import OrganizationLogo from './components/OrganizationLogo';
+import NERModal from '../../components/NERModal';
+import { useEffect, useState } from 'react';
 
 interface GuestHomePageProps {
   user: AuthenticatedUser;
@@ -20,6 +22,16 @@ interface GuestHomePageProps {
 
 const GuestHomePage = ({ user }: GuestHomePageProps) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId);
+  const [showModal, setShowModal] = useState(false);
+
+  // shows modal only once per session
+  useEffect(() => {
+    const hasSeenModal = sessionStorage.getItem('hasSeenModal');
+    if (!hasSeenModal) {
+      setShowModal(true);
+      sessionStorage.setItem('hasSeenModal', 'true');
+    }
+  }, []);
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
@@ -57,6 +69,15 @@ const GuestHomePage = ({ user }: GuestHomePageProps) => {
           <FeaturedProjects />
         </Box>
       </Box>
+      <NERModal
+        open={showModal}
+        title={'Want to become a member?'}
+        onHide={() => setShowModal(false)}
+        showCloseButton
+        hideFormButtons
+      >
+        Ask your head to upgrade you to a member to gain full access
+      </NERModal>
     </PageLayout>
   );
 };

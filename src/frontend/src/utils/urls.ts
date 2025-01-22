@@ -26,6 +26,7 @@ const userScheduleSettings = (id: string) => `${usersById(id)}/schedule-settings
 const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
 const userTasks = (id: string) => `${usersById(id)}/tasks`;
 const manyUserTasks = () => `${users()}/tasks/get-many`;
+const currentUser = () => `${users()}/auth/current`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
@@ -83,6 +84,8 @@ const teamsById = (id: string) => `${teams()}/${id}`;
 const teamsDelete = (id: string) => `${teamsById(id)}/delete`;
 const teamsSetMembers = (id: string) => `${teamsById(id)}/set-members`;
 const teamsSetTeamType = (id: string) => `${teamsById(id)}/set-team-type`;
+const setOnboardingUser = (id: string) => `${teams()}/teamType/${id}/set-onboarding-user`;
+const completeOnboarding = () => `${teams()}/teamType/complete-onboarding`;
 const teamsSetHead = (id: string) => `${teamsById(id)}/set-head`;
 const teamsArchive = (id: string) => `${teamsById(id)}/archive`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
@@ -178,6 +181,10 @@ const organizations = () => `${API_URL}/organizations`;
 const currentOrganization = () => `${organizations()}/current`;
 const organizationsUsefulLinks = () => `${organizations()}/useful-links`;
 const organizationsSetUsefulLinks = () => `${organizationsUsefulLinks()}/set`;
+const organizationsSetImages = () => `${organizations()}/images/update`;
+const organizationsUpdateContacts = () => `${organizations()}/contacts/set`;
+const organizationsSetOnboardingText = () => `${organizations()}/onboardingText/set`;
+const organizationsUpdateApplicationLink = () => `${organizations()}/application-link/update`;
 const organizationsSetDescription = () => `${organizations()}/description/set`;
 const organizationsFeaturedProjects = () => `${organizations()}/featured-projects`;
 const organizationsLogoImage = () => `${organizations()}/logo`;
@@ -200,6 +207,18 @@ const faqCreate = () => `${recruitment()}/faq/create`;
 const faqEdit = (id: string) => `${recruitment()}/faq/${id}/edit`;
 const faqDelete = (id: string) => `${recruitment()}/faq/${id}/delete`;
 
+/************** Onboarding Endpoints ***************/
+const onboarding = () => `${API_URL}/onboarding`;
+const allChecklists = () => `${onboarding()}/checklists`;
+const generalChecklists = () => `${allChecklists()}/general`;
+const checkedChecklists = () => `${allChecklists()}/checked`;
+const toggleChecklist = (checklistId: string) => `${allChecklists()}/${checklistId}/toggle`;
+const usersChecklists = () => `${allChecklists()}/usersChecklists`;
+const createChecklist = () => `${onboarding()}/checklist/create`;
+const editChecklist = (checklistId: string) => `${onboarding()}/checklist/edit/${checklistId}`;
+const checklistDelete = (id: string) => `${onboarding()}/checklist/delete/${id}`;
+const imageById = (imageId: string) => `${onboarding()}/image/${imageId}`;
+
 /************** Pop Up Endpoints ***************/
 const popUps = () => `${API_URL}/pop-ups`;
 const popUpsCurrentUser = () => `${popUps()}/current-user`;
@@ -210,9 +229,6 @@ const announcements = () => `${API_URL}/announcements`;
 const announcementsCurrentUser = () => `${announcements()}/current-user`;
 const announcementsRemove = (id: string) => `${announcements()}/${id}/remove`;
 
-/************** Onboarding Endpoints ***************/
-const onboarding = () => `${API_URL}/onboarding`;
-const imageById = (imageId: string) => `${onboarding()}/image/${imageId}`;
 /************** Statistics Endpoints ***************/
 const statistics = () => `${API_URL}/statistics`;
 const createGraph = () => `${statistics()}/graph/create`;
@@ -222,6 +238,9 @@ const createGraphCollection = () => `${graphCollections()}/create`;
 const getGraphById = (id: string) => `${statistics()}/graph/${id}`;
 const updateGraph = (id: string) => `${getGraphById(id)}/edit`;
 const updateGraphCollection = (id: string) => `${graphCollectionById(id)}/edit`;
+const removeGraphFromGraphCollection = (graphCollectionId: string, graphId: string) =>
+  `${graphCollectionById(graphCollectionId)}/remove/${graphId}`;
+const deleteGraphCollection = (id: string) => `${graphCollectionById(id)}/delete`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -241,6 +260,7 @@ export const apiUrls = {
   userScheduleSettingsSet,
   userTasks,
   manyUserTasks,
+  currentUser,
 
   projects,
   allProjects,
@@ -292,6 +312,8 @@ export const apiUrls = {
   teamsSetLeads,
   allTeamTypes,
   teamsSetTeamType,
+  setOnboardingUser,
+  completeOnboarding,
   teamTypesCreate,
   teamTypeEdit,
   teamTypeSetImage,
@@ -367,6 +389,10 @@ export const apiUrls = {
   currentOrganization,
   organizationsUsefulLinks,
   organizationsSetUsefulLinks,
+  organizationsSetImages,
+  organizationsUpdateContacts,
+  organizationsSetOnboardingText,
+  organizationsUpdateApplicationLink,
   organizationsFeaturedProjects,
   organizationsSetDescription,
   organizationsLogoImage,
@@ -404,6 +430,18 @@ export const apiUrls = {
   getGraphById,
   updateGraph,
   updateGraphCollection,
+  removeGraphFromGraphCollection,
+  deleteGraphCollection,
+
+  onboarding,
+  allChecklists,
+  generalChecklists,
+  checkedChecklists,
+  toggleChecklist,
+  usersChecklists,
+  createChecklist,
+  editChecklist,
+  checklistDelete,
 
   version
 };

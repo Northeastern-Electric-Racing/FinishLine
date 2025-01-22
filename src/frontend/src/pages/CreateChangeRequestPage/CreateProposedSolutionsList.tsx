@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { isGuest, ProposedSolution } from 'shared';
+import { isGuest, ProposedSolution, ProposedSolutionFormInput } from 'shared';
 import ProposedSolutionForm from '../ChangeRequestDetailPage/ProposedSolutionForm';
 import { useEffect, useState } from 'react';
 import ProposedSolutionView from '../ChangeRequestDetailPage/ProposedSolutionView';
@@ -12,8 +12,8 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import { Box } from '@mui/system';
 
 interface CreateProposedSolutionsListProps {
-  proposedSolutions: ProposedSolution[];
-  setProposedSolutions: (ps: ProposedSolution[]) => void;
+  proposedSolutions: ProposedSolutionFormInput[];
+  setProposedSolutions: (ps: ProposedSolutionFormInput[]) => void;
 }
 
 const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = ({
@@ -29,12 +29,12 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
     setShowEditForm(!!editingProposedSolution);
   }, [editingProposedSolution]);
 
-  const addProposedSolution = (data: ProposedSolution) => {
+  const addProposedSolution = (data: ProposedSolutionFormInput) => {
     setProposedSolutions([...proposedSolutions, data]);
     setShowCreateForm(false);
   };
 
-  const editProposedSolution = (data: ProposedSolution) => {
+  const editProposedSolution = (data: ProposedSolutionFormInput) => {
     setProposedSolutions(
       proposedSolutions.map((proposedSolution) => (proposedSolution.id === data.id ? data : proposedSolution))
     );
@@ -61,7 +61,7 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
         {proposedSolutions.map((proposedSolution, i) => (
           <ProposedSolutionView
             key={i}
-            proposedSolution={proposedSolution}
+            proposedSolution={proposedSolution as ProposedSolution} // The typing here is screwed, fix it in the future at some point (probably never)
             onDelete={removeProposedSolution}
             showDeleteButton
             onEdit={(proposedSolution) => {
