@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext } from 'react';
 import { AuthenticatedUser } from 'shared';
 import { AuthContext } from '../app/AppContextAuth';
 import { useGetCurrentUser, useLogUserIn, useLogUserInDev } from './users.hooks';
@@ -14,15 +14,19 @@ export const useProvideAuth = () => {
   const { isLoading, mutateAsync } = useLogUserIn();
   const { isLoading: isLoadingDev, mutateAsync: mutateAsyncDev } = useLogUserInDev();
   const [user, setUser] = useState<AuthenticatedUser | undefined>(undefined);
-  const { data: authUser, isLoading: currentUserIsLoading } = useGetCurrentUser();
+  const { mutateAsync: getCurrentUser, isLoading: currentUserIsLoading } = useGetCurrentUser();
+  const [triedCurrent, setTriedCurrent] = useState(false);
 
-  useEffect(() => {
-    if (authUser && !user) {
-      setUser(authUser);
+  const signInCurrent = async () => {
+    try {
+      const user = await getCurrentUser();
+      setUser(user);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setTriedCurrent(true);
     }
-  }, [authUser, currentUserIsLoading, user]);
-
-  console.log(authUser, currentUserIsLoading);
+  };
 
   const devSignin = async (userId: string) => {
     const user = await mutateAsyncDev(userId);
@@ -47,7 +51,8 @@ export const useProvideAuth = () => {
     devSignin,
     signin,
     signout,
-    setUser,
+    signInCurrent,
+    triedCurrent,
     isLoading: isLoading || isLoadingDev || currentUserIsLoading
   } as Auth;
 };

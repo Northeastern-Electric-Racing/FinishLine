@@ -10,8 +10,9 @@ export interface Auth {
   devSignin: (userId: string) => Promise<AuthenticatedUser>;
   signin: (token: string) => Promise<AuthenticatedUser>;
   signout: () => void;
-  setUser: (user: AuthenticatedUser) => Promise<AuthenticatedUser>;
+  signInCurrent: () => Promise<void>;
   isLoading: boolean;
+  triedCurrent: boolean;
 }
 
 export const themeChoices = ['DARK', 'LIGHT'];

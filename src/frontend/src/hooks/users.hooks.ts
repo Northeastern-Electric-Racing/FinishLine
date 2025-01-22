@@ -80,8 +80,8 @@ export const useLogUserIn = () => {
 };
 
 export const useGetCurrentUser = () => {
-  return useQuery<AuthenticatedUser, Error>(
-    [],
+  return useMutation<AuthenticatedUser, Error>(
+    ['users', 'login'],
     async () => {
       const { data } = await getCurrentUser();
       return data;

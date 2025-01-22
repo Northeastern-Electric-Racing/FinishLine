@@ -20,14 +20,8 @@ const AppPublic: React.FC = () => {
   const devUserId = localStorage.getItem('devUserId');
   const organization = useOrganization();
 
-  console.log(auth.isLoading);
-  if (auth.isLoading) {
-    return <LoadingIndicator />;
-  }
-
   const render: ((props: RouteComponentProps) => React.ReactNode) | undefined = (e) => {
     // if logged in, go to authenticated app
-    console.log(auth.user);
     if (auth.user) {
       if (auth.user.defaultTheme && auth.user.defaultTheme.toLocaleLowerCase() !== theme.activeTheme) {
         theme.toggleTheme();
@@ -42,6 +36,11 @@ const AppPublic: React.FC = () => {
       }
 
       return <AppAuthenticated userId={auth.user.userId} userRole={auth.user.role} />;
+    }
+
+    if (!auth.user && !auth.triedCurrent) {
+      auth.signInCurrent();
+      return <LoadingIndicator />;
     }
 
     // if we're on development and the userId is stored in localStorage,

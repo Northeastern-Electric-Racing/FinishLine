@@ -22,13 +22,7 @@ interface LoginPageProps {
  * Page for unauthenticated users to do login.
  */
 const LoginPage: React.FC<LoginPageProps> = ({ devSetUser, devFormSubmit, prodSuccess, prodFailure }) => {
-  const googleLogin = (
-    <GoogleLogin
-      onSuccess={prodSuccess}
-      onError={prodFailure}
-      text="signin"
-    />
-  );
+  const googleLogin = <GoogleLogin onSuccess={prodSuccess} onError={prodFailure} text="signin" />;
 
   const loginDev = <LoginDev devSetUser={devSetUser} devFormSubmit={devFormSubmit} />;
 
