@@ -39,7 +39,7 @@ const LeadHomePage = ({ user }: LeadHomePageProps) => {
         }}
       >
         <Box height={'40%'}>
-          <ChangeRequestsToReview user={user} />
+          <ChangeRequestsToReview />
         </Box>
         <Grid container height={'60%'} spacing={2}>
           <Grid item xs={4} md={4} height={'100%'}>

@@ -25,7 +25,10 @@ import { HttpException, NotFoundException } from './errors.utils';
 import { ChangeRequestStatus } from 'shared';
 import { buildChangeDetail, createChange } from './changes.utils';
 import { WorkPackageQueryArgs, getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
-import { ChangeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
+import {
+  ChangeRequestQueryArgs,
+  ChangeRequestWithProjectAndWorkPackageQueryArgs
+} from '../prisma-query-args/change-requests.query-args';
 import {
   ProjectProposedChangesQueryArgs,
   WbsProposedChangeQueryArgs,
@@ -454,7 +457,7 @@ export const applyWorkPackageProposedChanges = async (
  */
 export const reviewProposedSolution = async (
   psId: string,
-  foundCR: Prisma.Change_RequestGetPayload<ChangeRequestQueryArgs>,
+  foundCR: Prisma.Change_RequestGetPayload<ChangeRequestWithProjectAndWorkPackageQueryArgs>,
   reviewer: User,
   organizationId: string
 ) => {

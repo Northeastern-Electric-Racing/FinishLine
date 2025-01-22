@@ -7,7 +7,8 @@ import {
   ProjectProposedChanges,
   WbsElementStatus,
   WorkPackageProposedChanges,
-  WorkPackageStage
+  WorkPackageStage,
+  ChangeRequestStatus
 } from 'shared';
 import { wbsNumOf } from '../utils/utils';
 import { calculateChangeRequestStatus, convertCRScopeWhyType } from '../utils/change-requests.utils';
@@ -22,7 +23,7 @@ import {
   WorkPackageProposedChangesQueryArgs
 } from '../prisma-query-args/scope-change-requests.query-args';
 import { HttpException } from '../utils/errors.utils';
-import { ChangeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
+import { ChangeRequestManyQueryArgs, ChangeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
 
 const projectProposedChangesTransformer = (
   wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<WbsProposedChangeQueryArgs>
@@ -66,6 +67,52 @@ const workPackageProposedChangesTransformer = (
     descriptionBullets:
       workPackageProposedChanges.wbsProposedChanges.proposedDescriptionBulletChanges.map(descBulletConverter),
     stage: (workPackageProposedChanges.stage as WorkPackageStage) || undefined
+  };
+};
+
+export const changeRequestManyTransformer = (
+  changeRequest: Prisma.Change_RequestGetPayload<ChangeRequestManyQueryArgs>
+): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest => {
+  return {
+    // all cr fields
+    crId: changeRequest.crId,
+    identifier: changeRequest.identifier,
+    wbsNum: wbsNumOf(changeRequest.wbsElement),
+    wbsName: changeRequest.wbsElement.name,
+    submitter: userTransformer(changeRequest.submitter),
+    dateSubmitted: changeRequest.dateSubmitted,
+    type: changeRequest.type,
+    reviewer: changeRequest.reviewer ? userTransformer(changeRequest.reviewer) : undefined,
+    dateReviewed: changeRequest.dateReviewed ?? undefined,
+    accepted: changeRequest.accepted ?? undefined,
+    reviewNotes: changeRequest.reviewNotes ?? undefined,
+    dateImplemented: undefined,
+    implementedChanges: [],
+    status: ChangeRequestStatus.Open,
+    // scope cr fields
+    projectProposedChanges: undefined,
+    workPackageProposedChanges: undefined,
+    what: undefined,
+    why: undefined,
+    scopeImpact: undefined,
+    budgetImpact: undefined,
+    timelineImpact: undefined,
+    proposedSolutions: undefined,
+    originalProjectData: undefined,
+    originalWorkPackageData: undefined,
+    // activation cr fields
+    lead: changeRequest.activationChangeRequest?.lead
+      ? userTransformer(changeRequest.activationChangeRequest.lead)
+      : undefined,
+    manager: changeRequest.activationChangeRequest?.manager
+      ? userTransformer(changeRequest.activationChangeRequest.manager)
+      : undefined,
+    startDate: changeRequest.activationChangeRequest?.startDate ?? undefined,
+    confirmDetails: changeRequest.activationChangeRequest?.confirmDetails ?? undefined,
+    // stage gate cr fields
+    leftoverBudget: changeRequest.stageGateChangeRequest?.leftoverBudget ?? undefined,
+    confirmDone: changeRequest.stageGateChangeRequest?.confirmDone ?? undefined,
+    requestedReviewers: changeRequest.requestedReviewers.map(userTransformer) ?? []
   };
 };
 
