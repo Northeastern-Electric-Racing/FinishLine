@@ -81,14 +81,10 @@ export default class ChangeRequestsService {
    * @returns All of the change requests
    */
   static async getAllChangeRequests(organization: Organization): Promise<ChangeRequest[]> {
-    const beginDate = new Date();
-    console.log('query start');
     const changeRequests = await prisma.change_Request.findMany({
       where: { dateDeleted: null, organizationId: organization.organizationId },
       ...getManyChangeRequestQueryArgs(organization.organizationId)
     });
-
-    console.log('query complete time took: ', new Date().getTime() - beginDate.getTime());
 
     return changeRequests.map(changeRequestManyTransformer);
   }
@@ -101,9 +97,6 @@ export default class ChangeRequestsService {
    * @returns The user's change requests for them to review
    */
   static async getToReviewChangeRequests(user: User, organization: Organization): Promise<ChangeRequest[]> {
-    const beginDate = new Date();
-    console.log('query start');
-
     const wbsOr: Prisma.WBS_ElementWhereInput[] = [{ managerId: user.userId }, { leadId: user.userId }];
 
     if (await userHasPermission(user.userId, organization.organizationId, isLeadership)) {
@@ -146,7 +139,6 @@ export default class ChangeRequestsService {
       },
       ...getManyChangeRequestQueryArgs(organization.organizationId)
     });
-    console.log('query complete time took: ', new Date().getTime() - beginDate.getTime());
 
     return changeRequests.map(changeRequestManyTransformer);
   }
