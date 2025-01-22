@@ -167,12 +167,6 @@ CREATE TABLE "_onboardingTeamTypes" (
 );
 
 -- CreateTable
-CREATE TABLE "_onboardedTeamTypes" (
-    "A" TEXT NOT NULL,
-    "B" TEXT NOT NULL
-);
-
--- CreateTable
 CREATE TABLE "_graphCars" (
     "A" TEXT NOT NULL,
     "B" TEXT NOT NULL
@@ -207,12 +201,6 @@ CREATE UNIQUE INDEX "_onboardingTeamTypes_AB_unique" ON "_onboardingTeamTypes"("
 
 -- CreateIndex
 CREATE INDEX "_onboardingTeamTypes_B_index" ON "_onboardingTeamTypes"("B");
-
--- CreateIndex
-CREATE UNIQUE INDEX "_onboardedTeamTypes_AB_unique" ON "_onboardedTeamTypes"("A", "B");
-
--- CreateIndex
-CREATE INDEX "_onboardedTeamTypes_B_index" ON "_onboardedTeamTypes"("B");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_graphCars_AB_unique" ON "_graphCars"("A", "B");
@@ -318,12 +306,6 @@ ALTER TABLE "_onboardingTeamTypes" ADD CONSTRAINT "_onboardingTeamTypes_A_fkey" 
 
 -- AddForeignKey
 ALTER TABLE "_onboardingTeamTypes" ADD CONSTRAINT "_onboardingTeamTypes_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("userId") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_onboardedTeamTypes" ADD CONSTRAINT "_onboardedTeamTypes_A_fkey" FOREIGN KEY ("A") REFERENCES "Team_Type"("teamTypeId") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_onboardedTeamTypes" ADD CONSTRAINT "_onboardedTeamTypes_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("userId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_graphCars" ADD CONSTRAINT "_graphCars_A_fkey" FOREIGN KEY ("A") REFERENCES "Car"("carId") ON DELETE CASCADE ON UPDATE CASCADE;
