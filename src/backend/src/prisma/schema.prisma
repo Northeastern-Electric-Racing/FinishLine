@@ -464,7 +464,7 @@ model Project {
   favoritedBy              User[]         @relation(name: "favoritedBy")
   featuredByOrganizationId String?
   featuredByOrganization   Organization?  @relation(fields: [featuredByOrganizationId], references: [organizationId])
-  abbreviation             String
+  abbreviation             String?
   parts                    Part[]
 }
 
