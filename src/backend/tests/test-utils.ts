@@ -393,7 +393,27 @@ export const createTestReimbursementRequest = async () => {
 
   const project = await createTestProject(user, organization.organizationId);
 
-  const vendor = await ReimbursementRequestService.createVendor(user, 'Tesla', organization);
+  const vendor = await ReimbursementRequestService.createVendor(
+    user,
+    'Tesla',
+    organization,
+    'nershipping@gmail.com',
+    'racecar228!',
+    'SAVE50!',
+    'Alex L.',
+    'Tax exemption status?',
+    user.userId,
+    'ACTIVE',
+    'Jeni Hankon',
+    'BRONZE',
+    550,
+    new Date('2023-11-23T00:00:00-04:00'),
+    3,
+    true,
+    new Date('2024-11-23T00:00:00-04:00'),
+    new Date('2024-01-23T00:00:00-04:00'),
+    user.userId
+  );
 
   const accountCode = await ReimbursementRequestService.createAccountCode(
     user,

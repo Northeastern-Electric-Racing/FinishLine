@@ -200,8 +200,46 @@ export default class ReimbursementRequestsController {
 
   static async createVendor(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name } = req.body;
-      const createdVendor = await ReimbursementRequestService.createVendor(req.currentUser, name, req.organization);
+      const {
+        name,
+        username,
+        password,
+        discountCode,
+        twoFactorContact,
+        notes,
+        addedByUserId,
+        status,
+        contacts,
+        tier,
+        value,
+        joinDate,
+        activeYears,
+        taxExempt,
+        dueDate,
+        notifyDate,
+        assignToUserId
+      } = req.body;
+      const createdVendor = await ReimbursementRequestService.createVendor(
+        req.currentUser,
+        name,
+        req.organization,
+        username,
+        password,
+        discountCode,
+        twoFactorContact,
+        notes,
+        addedByUserId,
+        status,
+        contacts,
+        tier,
+        value,
+        joinDate,
+        activeYears,
+        taxExempt,
+        dueDate,
+        notifyDate,
+        assignToUserId
+      );
       res.status(200).json(createdVendor);
     } catch (error: unknown) {
       next(error);

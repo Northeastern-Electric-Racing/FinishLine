@@ -151,6 +151,17 @@ enum Special_Permission {
   FINANCE_ONLY
 }
 
+enum Sponsor_Status {
+  ACTIVE
+  INACTIVE
+}
+
+enum Sponsor_Tier {
+  GOLD
+  SILVER
+  BRONZE
+}
+
 model User {
   userId                String                @id @default(uuid())
   firstName             String
@@ -230,6 +241,8 @@ model User {
   deletedTeamTypes                Team_Type[]               @relation(name: "teamTypeDeleter")
   unreadAnnouncements             Announcement[]            @relation(name: "receivedAnnouncements")
   unreadPopUps                    PopUp[]                   @relation(name: "userPopUps")
+  vendorsAdded                    Vendor[]                  @relation(name: "vendorsCreator")
+  vendorsAssigned                 Vendor[]                  @relation(name: "assignedVendors")
 }
 
 model Role {
@@ -432,18 +445,19 @@ model WBS_Element {
 }
 
 model Project {
-  projectId                String         @id @default(uuid())
-  wbsElementId             String         @unique
-  wbsElement               WBS_Element    @relation(fields: [wbsElementId], references: [wbsElementId])
-  budget                   Int            @default(0)
+  projectId                String                  @id @default(uuid())
+  wbsElementId             String                  @unique
+  wbsElement               WBS_Element             @relation(fields: [wbsElementId], references: [wbsElementId])
+  budget                   Int                     @default(0)
   summary                  String
   workPackages             Work_Package[]
   carId                    String
-  car                      Car            @relation(fields: [carId], references: [carId])
-  teams                    Team[]         @relation(name: "assignedBy")
-  favoritedBy              User[]         @relation(name: "favoritedBy")
+  car                      Car                     @relation(fields: [carId], references: [carId])
+  teams                    Team[]                  @relation(name: "assignedBy")
+  favoritedBy              User[]                  @relation(name: "favoritedBy")
   featuredByOrganizationId String?
-  featuredByOrganization   Organization?  @relation(fields: [featuredByOrganizationId], references: [organizationId])
+  featuredByOrganization   Organization?           @relation(fields: [featuredByOrganizationId], references: [organizationId])
+  reimbursementRequests    Reimbursement_Request[]
 }
 
 model Work_Package {
@@ -596,6 +610,8 @@ model Reimbursement_Request {
   organizationId           String
   organization             Organization            @relation(fields: [organizationId], references: [organizationId])
   notificationSlackThreads Message_Info[]
+  materials                Material[]
+  projects                 Project[]
 
   @@unique([identifier, organizationId], name: "uniqueReimbursementRequest")
 }
@@ -622,13 +638,31 @@ model Reimbursement_Product {
 }
 
 model Vendor {
-  vendorId       String                  @id @default(uuid())
-  dateCreated    DateTime                @default(now())
-  dateDeleted    DateTime?
-  name           String
-  requests       Reimbursement_Request[]
-  organizationId String
-  organization   Organization            @relation(fields: [organizationId], references: [organizationId])
+  vendorId         String                  @id @default(uuid())
+  dateCreated      DateTime                @default(now())
+  dateDeleted      DateTime?
+  name             String
+  requests         Reimbursement_Request[]
+  organizationId   String
+  organization     Organization            @relation(fields: [organizationId], references: [organizationId])
+  username         String
+  password         String
+  discountCode     String
+  twoFactorContact String
+  notes            String
+  addedBy          User                    @relation(fields: [addedByUserId], references: [userId], name: "vendorsCreator")
+  addedByUserId    String
+  status           Sponsor_Status
+  contacts         String
+  tier             Sponsor_Tier
+  value            Int
+  joinDate         DateTime
+  activeYears      Int
+  taxExempt        Boolean
+  dueDate          DateTime
+  notifyDate       DateTime
+  assignTo         User                    @relation(fields: [assignToUserId], references: [userId], name: "assignedVendors")
+  assignToUserId   String
 
   @@unique([name, organizationId], name: "uniqueVendor")
 }
@@ -700,32 +734,34 @@ model Assembly {
 }
 
 model Material {
-  materialId             String          @id @default(uuid())
-  assembly               Assembly?       @relation(fields: [assemblyId], references: [assemblyId])
+  materialId             String                @id @default(uuid())
+  assembly               Assembly?             @relation(fields: [assemblyId], references: [assemblyId])
   assemblyId             String?
   name                   String
-  wbsElement             WBS_Element     @relation(fields: [wbsElementId], references: [wbsElementId])
+  wbsElement             WBS_Element           @relation(fields: [wbsElementId], references: [wbsElementId])
   wbsElementId           String
   dateDeleted            DateTime?
-  userDeleted            User?           @relation(fields: [userDeletedId], references: [userId], name: "materialDeleter")
+  userDeleted            User?                 @relation(fields: [userDeletedId], references: [userId], name: "materialDeleter")
   userDeletedId          String?
   dateCreated            DateTime
-  userCreated            User            @relation(fields: [userCreatedId], references: [userId], name: "materialCreator")
+  userCreated            User                  @relation(fields: [userCreatedId], references: [userId], name: "materialCreator")
   userCreatedId          String
   status                 Material_Status
-  materialType           Material_Type   @relation(fields: [materialTypeId], references: [id])
+  materialType           Material_Type         @relation(fields: [materialTypeId], references: [id])
   materialTypeId         String
-  manufacturer           Manufacturer    @relation(fields: [manufacturerId], references: [id])
+  manufacturer           Manufacturer          @relation(fields: [manufacturerId], references: [id])
   manufacturerId         String
   manufacturerPartNumber String
   pdmFileName            String?
   quantity               Decimal
-  unit                   Unit?           @relation(fields: [unitId], references: [id])
+  unit                   Unit?                 @relation(fields: [unitId], references: [id])
   unitId                 String?
   price                  Int
   subtotal               Int
   linkUrl                String
   notes                  String?
+  reimbursementRequest   Reimbursement_Request @relation(fields: [reimbursementNumber], references: [reimbursementRequestId])
+  reimbursementNumber    String
 }
 
 model Material_Type {

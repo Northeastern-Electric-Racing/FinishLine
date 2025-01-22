@@ -1676,9 +1676,69 @@ const performSeed: () => Promise<void> = async () => {
    * Reimbursements
    */
 
-  const vendor = await ReimbursementRequestService.createVendor(thomasEmrax, 'Tesla', ner);
-  await ReimbursementRequestService.createVendor(thomasEmrax, 'Amazon', ner);
-  await ReimbursementRequestService.createVendor(thomasEmrax, 'Google', ner);
+  const vendor = await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Tesla',
+    ner,
+    'nershipping@gmail.com',
+    'racecar228!',
+    'SAVE50!',
+    'Alex L.',
+    'Tax exemption status?',
+    thomasEmrax.userId,
+    'ACTIVE',
+    'Jeni Hankon',
+    'BRONZE',
+    550,
+    new Date('2023-11-23T00:00:00-04:00'),
+    3,
+    true,
+    new Date('2024-11-23T00:00:00-04:00'),
+    new Date('2024-01-15T00:00:00-04:00'),
+    regina.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Amazon',
+    ner,
+    'amazon@gmail.com',
+    'racecare228!',
+    'SAVE20!',
+    'Richard F.',
+    'They want updates on work',
+    thomasEmrax.userId,
+    'INACTIVE',
+    'Rob',
+    'SILVER',
+    1500,
+    new Date('2023-11-23T00:00:00-04:00'),
+    5,
+    true,
+    new Date('2024-11-23T00:00:00-04:00'),
+    new Date('2024-01-23T00:00:00-04:00'),
+    thomasEmrax.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Google',
+    ner,
+    'google@gmail.com',
+    'racecar228!',
+    'SAVE50!',
+    'Peyton',
+    'Tax exemption ID NUMBER',
+    thomasEmrax.userId,
+    'ACTIVE',
+    'Boris P.',
+    'GOLD',
+    30000,
+    new Date('2021-11-25T00:00:00-04:00'),
+    2,
+    true,
+    new Date('2022-11-25T00:00:00-04:00'),
+    new Date('2023-01-25T00:00:00-04:00'),
+    thomasEmrax.userId
+  );
 
   const accountCode = await ReimbursementRequestService.createAccountCode(
     thomasEmrax,
@@ -1689,7 +1749,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await ReimbursementRequestService.createReimbursementRequest(
+  const reimbursement1 = await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
     vendor.vendorId,
     ClubAccount.CASH,
@@ -1710,7 +1770,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await ReimbursementRequestService.createReimbursementRequest(
+  const reimbursement2 = await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
     vendor.vendorId,
     ClubAccount.BUDGET,
@@ -1766,6 +1826,7 @@ const performSeed: () => Promise<void> = async () => {
       workPackageNumber: 0
     },
     ner,
+    reimbursement1.reimbursementRequestId,
     'Here are some notes'
   );
 
@@ -1786,8 +1847,8 @@ const performSeed: () => Promise<void> = async () => {
       workPackageNumber: 0
     },
     ner,
-    'Here are some more notes',
-    assembly1.assemblyId
+    reimbursement2.reimbursementRequestId,
+    'Here are some more notes'
   );
 
   // Need to do this because the design review cannot be scheduled for a past day

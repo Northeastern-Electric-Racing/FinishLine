@@ -4,7 +4,15 @@
  */
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Club_Accounts, Reimbursement_Request, Reimbursement_Status_Type, User, Organization } from '@prisma/client';
+import {
+  Club_Accounts,
+  Reimbursement_Request,
+  Reimbursement_Status_Type,
+  User,
+  Organization,
+  Sponsor_Status,
+  Sponsor_Tier
+} from '@prisma/client';
 import {
   ClubAccount,
   Reimbursement,
@@ -558,7 +566,27 @@ export default class ReimbursementRequestService {
    * @param organizationId the organization the user is currently in
    * @returns the created vendor
    */
-  static async createVendor(submitter: User, name: string, organization: Organization) {
+  static async createVendor(
+    submitter: User,
+    name: string,
+    organization: Organization,
+    username: string,
+    password: string,
+    discountCode: string,
+    twoFactorContact: string,
+    notes: string,
+    addedByUserId: string,
+    status: Sponsor_Status,
+    contacts: string,
+    tier: Sponsor_Tier,
+    value: number,
+    joinDate: Date,
+    activeYears: number,
+    taxExempt: boolean,
+    dueDate: Date,
+    notifyDate: Date,
+    assignToUserId: string
+  ) {
     const isAuthorized =
       (await userHasPermission(submitter.userId, organization.organizationId, isAdmin)) ||
       (await isUserLeadOrHeadOfFinanceTeam(submitter, organization.organizationId));
@@ -579,7 +607,23 @@ export default class ReimbursementRequestService {
     const vendor = await prisma.vendor.create({
       data: {
         name,
-        organizationId: organization.organizationId
+        organizationId: organization.organizationId,
+        username,
+        password,
+        discountCode,
+        twoFactorContact,
+        notes,
+        addedByUserId,
+        status,
+        contacts,
+        tier,
+        value,
+        joinDate,
+        activeYears,
+        taxExempt,
+        dueDate,
+        notifyDate,
+        assignToUserId
       }
     });
 

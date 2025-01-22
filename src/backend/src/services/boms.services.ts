@@ -65,6 +65,7 @@ export default class BillOfMaterialsService {
     linkUrl: string,
     wbsNumber: WbsNumber,
     organization: Organization,
+    reimbursementNumber: string,
     notes?: string,
     assemblyId?: string,
     pdmFileName?: string,
@@ -122,7 +123,8 @@ export default class BillOfMaterialsService {
         linkUrl,
         notes,
         dateCreated: new Date(),
-        wbsElementId: project.wbsElementId
+        wbsElementId: project.wbsElementId,
+        reimbursementNumber
       }
     });
 
