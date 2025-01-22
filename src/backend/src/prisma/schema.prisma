@@ -246,6 +246,10 @@ model User {
   deletedPartReviews              Review[]                  @relation(name: "partsReviewDeleter")
   partsToReview                   Part[]                    @relation(name: "PartReviewers")
   assignedParts                   Part[]                    @relation(name: "PartAssignees")
+  createdPartReviewFAQ            PartReviewFAQ[]           @relation(name: "partReviewFaqCreator")
+  deletedPartReviewFAQ            PartReviewFAQ[]           @relation(name: "partReviewFaqDeleter")
+  createdCommonMistakes           CommonMistake[]           @relation(name: "commonMistakeCreator")
+  deletedCommonMistakes           CommonMistake[]           @relation(name: "commonMistakeDeleter")
 }
 
 model Role {
@@ -978,6 +982,7 @@ model Organization {
   popUps                   PopUp[]
   announcements            Announcement[]
   parts                    Part[]
+  Part_Review_Admin_Tools  Part_Review_Admin_Tools?  @relation(name: "partsReviewAdminTools")
 }
 
 model FrequentlyAskedQuestion {
@@ -1082,7 +1087,6 @@ model Part {
   status         Review_Status @default(NA)
   tags           PartTag[]
   submissions    Submission[]
-  reviews        Review[] // I feel like Parts don't need reviews field since reviews are linked to submissions, thoughts?
   project        Project       @relation(fields: [projectId], references: [projectId])
   projectId      String
   assignees      User[]        @relation("PartAssignees")
@@ -1090,6 +1094,7 @@ model Part {
   history        String[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+  dateDeleted    DateTime?
   userCreatedId  String
   userCreated    User          @relation(fields: [userCreatedId], references: [userId], name: "partCreator")
   userDeletedId  String?
@@ -1101,22 +1106,25 @@ model PartTag {
   name  String
   color String
 
-  parts Part[]
+  parts                   Part[]
+  Part_Review_Admin_Tools Part_Review_Admin_Tools? @relation(fields: [organizationId], references: [organizationId])
+  organizationId          String
 }
 
 model Submission {
-  id            String   @id @default(uuid())
-  files         String[] // how do we represent files in the database?
+  id            String    @id @default(uuid())
+  files         String[]
   name          String
   notes         String?
-  part          Part     @relation(fields: [partId], references: [id])
+  part          Part      @relation(fields: [partId], references: [id])
   partId        String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  dateDeleted   DateTime?
   userCreatedId String
-  userCreated   User     @relation(fields: [userCreatedId], references: [userId], name: "partsSubmissionCreator")
+  userCreated   User      @relation(fields: [userCreatedId], references: [userId], name: "partsSubmissionCreator")
   userDeletedId String?
-  userDeleted   User?    @relation(fields: [userDeletedId], references: [userId], name: "partsSubmissionDeleter")
+  userDeleted   User?     @relation(fields: [userDeletedId], references: [userId], name: "partsSubmissionDeleter")
   Review        Review[]
 }
 
@@ -1126,11 +1134,10 @@ model Review {
   notes         String?
   submission    Submission          @relation(fields: [submissionId], references: [id])
   submissionId  String
-  part          Part                @relation(fields: [partId], references: [id]) // Also here, do reviews even need to be linked to a part since it's submissions that get reviewed?
-  partId        String
   popUps        Part_Review_Popup[]
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
+  dateDeleted   DateTime?
   userCreatedId String
   userCreated   User                @relation(fields: [userCreatedId], references: [userId], name: "partsReviewCreator")
   deletedAt     DateTime?
@@ -1148,4 +1155,43 @@ model Part_Review_Popup {
   review      Review   @relation(fields: [reviewId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model PartReviewFAQ {
+  faqId                                 String                   @id @default(uuid())
+  question                              String
+  answer                                String
+  userCreated                           User                     @relation(fields: [userCreatedId], references: [userId], name: "partReviewFaqCreator")
+  userCreatedId                         String
+  userDeleted                           User?                    @relation(fields: [userDeletedId], references: [userId], name: "partReviewFaqDeleter")
+  userDeletedId                         String?
+  dateCreated                           DateTime                 @default(now())
+  dateDeleted                           DateTime?
+  Part_Review_Admin_Tools               Part_Review_Admin_Tools? @relation(fields: [part_Review_Admin_ToolsOrganizationId], references: [organizationId])
+  part_Review_Admin_ToolsOrganizationId String?
+}
+
+model CommonMistake {
+  id                                    String                   @id @default(uuid())
+  title                                 String
+  description                           String
+  starred                               Boolean
+  userCreated                           User                     @relation(fields: [userCreatedId], references: [userId], name: "commonMistakeCreator")
+  userCreatedId                         String
+  userDeleted                           User?                    @relation(fields: [userDeletedId], references: [userId], name: "commonMistakeDeleter")
+  userDeletedId                         String?
+  dateCreated                           DateTime                 @default(now())
+  dateDeleted                           DateTime?
+  Part_Review_Admin_Tools               Part_Review_Admin_Tools? @relation(fields: [part_Review_Admin_ToolsOrganizationId], references: [organizationId])
+  part_Review_Admin_ToolsOrganizationId String?
+}
+
+model Part_Review_Admin_Tools {
+  organizationId             String          @id
+  organization               Organization    @relation(name: "partsReviewAdminTools", fields: [organizationId], references: [organizationId])
+  sampleDrawingLink          String
+  faq                        PartReviewFAQ[]
+  confluenceDrawingGuideLink String
+  CommonMistakes             CommonMistake[]
+  partTags                   PartTag[]
 }
