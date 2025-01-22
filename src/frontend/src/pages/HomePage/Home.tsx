@@ -25,7 +25,9 @@ const Home: React.FC = () => {
         [routes.HOME_GUEST, routes.HOME_PNM, routes.HOME_ONBOARDING, routes.HOME_ACCEPT].map((path) => (
           <Redirect exact path={path} to={routes.HOME} />
         ))}
-      {!onOnboarding && !completedOnboarding && !isGuest(user.role) && <Redirect exact path={routes.HOME} to={routes.HOME_GUEST} />}
+      {!onOnboarding && !completedOnboarding && !isGuest(user.role) && (
+        <Redirect exact path={routes.HOME} to={routes.HOME_GUEST} />
+      )}
       {onOnboarding && <Redirect exact path={routes.HOME} to={routes.HOME_PNM} />}
       <Route exact path={routes.HOME_SELECT_SUBTEAM} component={SelectSubteamPage} />
       <Route exact path={routes.HOME_ACCEPT} component={AcceptedPage} />
