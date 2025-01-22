@@ -15,7 +15,7 @@ const AppMain: React.FC = () => {
       <ToastProvider>
         <BrowserRouter>
           <AppOAuthProvider>
-          <AppPublic />
+            <AppPublic />
           </AppOAuthProvider>
         </BrowserRouter>
       </ToastProvider>
