@@ -152,7 +152,7 @@ export default class TeamsController {
 
   static async completeOnboarding(req: Request, res: Response, next: NextFunction) {
     try {
-      await TeamsService.completeOnboarding(req.currentUser, req.organization);
+      await TeamsService.completeOnboarding(req.currentUser);
 
       res.status(200).json({ message: 'Successfully completed onboarding' });
     } catch (error: unknown) {
