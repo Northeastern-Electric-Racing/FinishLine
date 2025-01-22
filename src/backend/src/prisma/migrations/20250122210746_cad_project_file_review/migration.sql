@@ -11,6 +11,7 @@ CREATE TABLE "Part" (
     "index" INTEGER NOT NULL,
     "commonName" TEXT NOT NULL,
     "description" TEXT,
+    "previewImageLink" TEXT,
     "status" "Review_Status" NOT NULL DEFAULT 'NA',
     "projectId" TEXT NOT NULL,
     "history" TEXT[],

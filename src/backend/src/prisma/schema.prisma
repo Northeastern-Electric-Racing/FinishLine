@@ -1125,27 +1125,28 @@ model Contact {
 }
 
 model Part {
-  id             String        @id @default(uuid())
-  organizationId String
-  organization   Organization  @relation(fields: [organizationId], references: [organizationId])
-  index          Int
-  commonName     String
-  description    String?
-  status         Review_Status @default(NA)
-  tags           PartTag[]
-  submissions    Submission[]
-  project        Project       @relation(fields: [projectId], references: [projectId])
-  projectId      String
-  assignees      User[]        @relation("PartAssignees")
-  reviewers      User[]        @relation("PartReviewers")
-  history        String[]
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  dateDeleted    DateTime?
-  userCreatedId  String
-  userCreated    User          @relation(fields: [userCreatedId], references: [userId], name: "partCreator")
-  userDeletedId  String?
-  userDeleted    User?         @relation(fields: [userDeletedId], references: [userId], name: "partDeleter")
+  id               String        @id @default(uuid())
+  organizationId   String
+  organization     Organization  @relation(fields: [organizationId], references: [organizationId])
+  index            Int
+  commonName       String
+  description      String?
+  previewImageLink String?
+  status           Review_Status @default(NA)
+  tags             PartTag[]
+  submissions      Submission[]
+  project          Project       @relation(fields: [projectId], references: [projectId])
+  projectId        String
+  assignees        User[]        @relation("PartAssignees")
+  reviewers        User[]        @relation("PartReviewers")
+  history          String[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  dateDeleted      DateTime?
+  userCreatedId    String
+  userCreated      User          @relation(fields: [userCreatedId], references: [userId], name: "partCreator")
+  userDeletedId    String?
+  userDeleted      User?         @relation(fields: [userDeletedId], references: [userId], name: "partDeleter")
 }
 
 model PartTag {
