@@ -65,6 +65,7 @@ const UserScheduleSettings = ({ user }: { user: User }) => {
 
   const handleConfirm = async (payload: SetUserScheduleSettingsArgs) => {
     setEdit(false);
+    console.log(payload);
 
     try {
       await updateUserScheduleSettings({

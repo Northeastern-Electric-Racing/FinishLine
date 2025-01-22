@@ -145,37 +145,36 @@ export const updateUserAvailability = async (
   userSettings: Prisma.Schedule_SettingsGetPayload<UserScheduleSettingsQueryArgs>,
   submitter: User
 ) => {
-  await Promise.all(
-    availabilities.map(async (availability) => {
-      if (availability.availability.some((time) => time < 0 || time > 11)) {
-        throw new HttpException(400, 'Availability times have to be in range 0-11');
-      }
+  console.log(availabilities);
+  for (const availability of availabilities) {
+    if (availability.availability.some((time) => time < 0 || time > 11)) {
+      throw new HttpException(400, 'Availability times have to be in range 0-11');
+    }
 
-      const availabilityAlreadyExists = userSettings.availabilities.filter((existingAvailability) =>
-        isSameDay(existingAvailability.dateSet, availability.dateSet)
-      );
+    const [availabilityAlreadyExists] = userSettings.availabilities.filter((existingAvailability) =>
+      isSameDay(existingAvailability.dateSet, availability.dateSet)
+    );
 
-      if (availabilityAlreadyExists.length > 0) {
-        await prisma.availability.update({
-          where: { availabilityId: availabilityAlreadyExists[0].availabilityId },
-          data: {
-            availability: availability.availability,
-            dateSet: availability.dateSet
-          }
-        });
-      } else {
-        await prisma.availability.create({
-          data: {
-            availability: availability.availability,
-            dateSet: availability.dateSet,
-            scheduleSettings: {
-              connect: {
-                userId: submitter.userId
-              }
+    if (availabilityAlreadyExists) {
+      await prisma.availability.update({
+        where: { availabilityId: availabilityAlreadyExists.availabilityId },
+        data: {
+          availability: availability.availability,
+          dateSet: availability.dateSet
+        }
+      });
+    } else {
+      await prisma.availability.create({
+        data: {
+          availability: availability.availability,
+          dateSet: availability.dateSet,
+          scheduleSettings: {
+            connect: {
+              userId: submitter.userId
             }
           }
-        });
-      }
-    })
-  );
+        }
+      });
+    }
+  }
 };
