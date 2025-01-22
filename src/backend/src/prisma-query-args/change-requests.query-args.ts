@@ -45,6 +45,7 @@ export const getManyChangeRequestQueryArgs = (organizationId: string) =>
       wbsElement: true,
       reviewer: getUserQueryArgs(organizationId),
       stageGateChangeRequest: true,
+      changes: true,
       activationChangeRequest: {
         include: { lead: getUserQueryArgs(organizationId), manager: getUserQueryArgs(organizationId) }
       },

@@ -11,7 +11,6 @@ import {
   ChangeRequest,
   ChangeRequestStatus,
   ChangeRequestType,
-  StandardChangeRequest,
   wbsPipe
 } from 'shared';
 import { routes } from '../utils/routes';
@@ -56,7 +55,7 @@ const CRCardDescription = ({ cr }: { cr: ChangeRequest }) => {
         ) : isStageGate ? (
           'Stage Gate ' + wbsPipe(cr.wbsNum) + ' - ' + cr.wbsName
         ) : (
-          (cr as StandardChangeRequest).what
+          'Standard Change Request (Click To view more details)'
         )}
       </Typography>
     </Box>

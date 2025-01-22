@@ -7,8 +7,7 @@ import {
   ProjectProposedChanges,
   WbsElementStatus,
   WorkPackageProposedChanges,
-  WorkPackageStage,
-  ChangeRequestStatus
+  WorkPackageStage
 } from 'shared';
 import { wbsNumOf } from '../utils/utils';
 import { calculateChangeRequestStatus, convertCRScopeWhyType } from '../utils/change-requests.utils';
@@ -73,6 +72,8 @@ const workPackageProposedChangesTransformer = (
 export const changeRequestManyTransformer = (
   changeRequest: Prisma.Change_RequestGetPayload<ChangeRequestManyQueryArgs>
 ): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest => {
+  const status = calculateChangeRequestStatus(changeRequest);
+
   return {
     // all cr fields
     crId: changeRequest.crId,
@@ -86,9 +87,9 @@ export const changeRequestManyTransformer = (
     dateReviewed: changeRequest.dateReviewed ?? undefined,
     accepted: changeRequest.accepted ?? undefined,
     reviewNotes: changeRequest.reviewNotes ?? undefined,
-    dateImplemented: undefined,
+    dateImplemented: getDateImplemented(changeRequest),
     implementedChanges: [],
-    status: ChangeRequestStatus.Open,
+    status,
     // scope cr fields
     projectProposedChanges: undefined,
     workPackageProposedChanges: undefined,
