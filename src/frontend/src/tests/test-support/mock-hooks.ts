@@ -19,16 +19,23 @@ import { exampleAdminUser } from './test-data/users.stub';
 export const mockLogUserInReturnValue = mockUseMutationResult<AuthenticatedUser>(
   false,
   false,
-  exampleAdminUser as AuthenticatedUser,
+  exampleAdminUser,
   new Error()
 ) as UseMutationResult<AuthenticatedUser, Error, string, unknown>;
 
 export const mockLogUserInDevReturnValue = mockUseMutationResult<AuthenticatedUser>(
   false,
   false,
-  exampleAdminUser as AuthenticatedUser,
+  exampleAdminUser,
   new Error()
 ) as UseMutationResult<AuthenticatedUser, Error, string, unknown>;
+
+export const mockGetCurrentUserValue = mockUseMutationResult<AuthenticatedUser>(
+  false,
+  false,
+  exampleAdminUser,
+  new Error()
+) as UseMutationResult<AuthenticatedUser, Error, void, unknown>;
 
 export const mockUseAllUsersReturnValue = (users: User[]) => mockUseQueryResult<User[]>(false, false, users, new Error());
 

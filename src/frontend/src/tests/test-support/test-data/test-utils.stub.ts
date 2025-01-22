@@ -94,7 +94,9 @@ export const mockAuth = (isLoading: boolean, user?: User) => {
     devSignin: () => new Promise((res) => res(exampleAuthenticatedAdminUser)),
     signin: () => new Promise((res) => res(exampleAuthenticatedAdminUser)),
     signout: () => {},
-    isLoading
+    isLoading,
+    signInCurrent: () => new Promise((res) => res()),
+    triedCurrent: true
   } as Auth;
 };
 

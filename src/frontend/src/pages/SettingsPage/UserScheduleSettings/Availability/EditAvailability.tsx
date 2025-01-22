@@ -29,7 +29,6 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
 
   useEffect(() => {
     if (editedAvailabilities) {
-      
     }
   }, [editedAvailabilities, initialDate]);
 
