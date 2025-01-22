@@ -11,7 +11,7 @@ import { useProvideThemeToggle } from '../hooks/theme.hooks';
 import { darkThemeOptions, lightThemeOptions, nerThemeOptions } from '../utils/themes';
 import { useAuth } from '../hooks/auth.hooks';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
-import { de } from 'date-fns/locale/de';
+import { enUS } from 'date-fns/locale/en-US';
 
 export const ThemeToggleContext = createContext({ activeTheme: 'light', toggleTheme: () => {} });
 
@@ -41,7 +41,7 @@ const AppContextSettings: React.FC = (props) => {
     <ThemeToggleContext.Provider value={theme}>
       <ThemeProvider theme={fullTheme}>
         <CssBaseline />
-        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={de}>
+        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={enUS}>
           {props.children}
         </LocalizationProvider>
       </ThemeProvider>
