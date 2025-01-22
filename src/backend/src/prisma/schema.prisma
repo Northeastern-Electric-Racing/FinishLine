@@ -156,12 +156,6 @@ enum Sponsor_Status {
   INACTIVE
 }
 
-enum Sponsor_Tier {
-  GOLD
-  SILVER
-  BRONZE
-}
-
 model User {
   userId                String                @id @default(uuid())
   firstName             String
@@ -654,7 +648,8 @@ model Vendor {
   addedByUserId    String
   status           Sponsor_Status
   contacts         String
-  tier             Sponsor_Tier
+  tier             Sponsor_Tier            @relation(fields: [sponsor_TierId], references: [id])
+  sponsor_TierId   String
   value            Int
   joinDate         DateTime
   activeYears      Int
@@ -1087,4 +1082,10 @@ model PopUp {
   eventLink      String?
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [organizationId])
+}
+
+model Sponsor_Tier {
+  id      String   @id @default(uuid())
+  name    String
+  vendors Vendor[]
 }

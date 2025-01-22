@@ -1676,6 +1676,13 @@ const performSeed: () => Promise<void> = async () => {
    * Reimbursements
    */
 
+  const tier = await prisma.sponsor_Tier.create({
+    data: {
+      id: '0',
+      name: 'BRONZE'
+    }
+  });
+
   const vendor = await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Tesla',
@@ -1688,7 +1695,7 @@ const performSeed: () => Promise<void> = async () => {
     thomasEmrax.userId,
     'ACTIVE',
     'Jeni Hankon',
-    'BRONZE',
+    tier,
     550,
     new Date('2023-11-23T00:00:00-04:00'),
     3,
@@ -1709,7 +1716,7 @@ const performSeed: () => Promise<void> = async () => {
     thomasEmrax.userId,
     'INACTIVE',
     'Rob',
-    'SILVER',
+    tier,
     1500,
     new Date('2023-11-23T00:00:00-04:00'),
     5,
@@ -1730,7 +1737,7 @@ const performSeed: () => Promise<void> = async () => {
     thomasEmrax.userId,
     'ACTIVE',
     'Boris P.',
-    'GOLD',
+    tier,
     30000,
     new Date('2021-11-25T00:00:00-04:00'),
     2,

@@ -616,7 +616,7 @@ export default class ReimbursementRequestService {
         addedByUserId,
         status,
         contacts,
-        tier,
+        sponsor_TierId: tier.id,
         value,
         joinDate,
         activeYears,

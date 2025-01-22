@@ -393,6 +393,12 @@ export const createTestReimbursementRequest = async () => {
 
   const project = await createTestProject(user, organization.organizationId);
 
+  const tier = await prisma.sponsor_Tier.create({
+    data: {
+      name: 'GOLD'
+    }
+  });
+
   const vendor = await ReimbursementRequestService.createVendor(
     user,
     'Tesla',
@@ -405,7 +411,7 @@ export const createTestReimbursementRequest = async () => {
     user.userId,
     'ACTIVE',
     'Jeni Hankon',
-    'BRONZE',
+    tier,
     550,
     new Date('2023-11-23T00:00:00-04:00'),
     3,
