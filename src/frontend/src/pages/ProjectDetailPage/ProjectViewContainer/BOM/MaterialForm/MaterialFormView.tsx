@@ -279,7 +279,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
           </FormControl>
         </Grid>
         <Grid item xs={3} display="flex" alignItems="center" mt={2}>
-          <DetailDisplay label="Subtotal" content={'$' + subtotal.toString()} />
+          <DetailDisplay label="Subtotal" content={'$' + (subtotal ? subtotal.toString() : '0.00')} />
         </Grid>
         <Grid item xs={12}>
           <FormControl fullWidth>

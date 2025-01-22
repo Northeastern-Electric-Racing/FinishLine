@@ -34,17 +34,21 @@ export const materialTransformer = (material: Prisma.MaterialGetPayload<Material
     dateCreated: material.dateCreated,
     userCreated: userTransformer(material.userCreated),
     status: material.status as MaterialStatus,
-    materialTypeName: material.materialType.name,
-    manufacturerName: material.manufacturer.name,
-    manufacturerPartNumber: material.manufacturerPartNumber,
+    materialTypeName: material.materialType?.name || null,
+    manufacturerName: material.manufacturer?.name || null,
+    manufacturerPartNumber: material.manufacturerPartNumber || null,
     pdmFileName: material.pdmFileName ?? undefined,
-    price: material.price,
-    subtotal: material.subtotal,
-    quantity: material.quantity,
-    linkUrl: material.linkUrl,
+    price: material.price ?? 0,
+    subtotal: material.subtotal ?? 0,
+    quantity: material.quantity ?? new Prisma.Decimal(0),
+    linkUrl: material.linkUrl || null,
     unitName: material.unit?.name ?? undefined,
-    materialType: { ...material.materialType, dateDeleted: material.materialType.dateDeleted ?? undefined },
-    manufacturer: { ...material.manufacturer, dateDeleted: material.manufacturer.dateDeleted ?? undefined },
+    materialType: material.materialType
+      ? { ...material.materialType, dateDeleted: material.materialType.dateDeleted ?? undefined }
+      : undefined,
+    manufacturer: material.manufacturer
+      ? { ...material.manufacturer, dateDeleted: material.manufacturer.dateDeleted ?? undefined }
+      : undefined,
     notes: material.notes ?? undefined
   };
 };
@@ -60,7 +64,12 @@ export const materialPreviewTransformer = (
     pdmFileName: material.pdmFileName ?? undefined,
     status: material.status as MaterialStatus,
     unitName: material.unit?.name ?? undefined,
-    materialTypeName: material.materialType.name,
-    manufacturerName: material.manufacturer.name
+    materialTypeName: material.materialType?.name || null,
+    manufacturerName: material.manufacturer?.name || null,
+    manufacturerPartNumber: material.manufacturerPartNumber || null,
+    quantity: material.quantity ?? new Prisma.Decimal(0),
+    price: material.price ?? 0,
+    linkUrl: material.linkUrl || null,
+    subtotal: material.subtotal ?? 0
   };
 };

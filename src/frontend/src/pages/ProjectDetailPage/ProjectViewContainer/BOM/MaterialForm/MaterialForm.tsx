@@ -16,13 +16,57 @@ import { Decimal } from 'decimal.js';
 const schema = yup.object().shape({
   name: yup.string().required('Enter a name!'),
   status: yup.mixed<MaterialStatus>().oneOf(Object.values(MaterialStatus)).required('Select a status!'),
-  materialTypeName: yup.string().required('Select a Material Type!'),
-  manufacturerName: yup.string().required('Select a Manufacturer'),
-  manufacturerPartNumber: yup.string().required('Manufacturer Part Number is required!'),
-  quantity: yup.number().required('Enter a quantity!'),
-  price: yup.number().required('Price per Unit is required!'),
+
+  materialTypeName: yup
+    .string()
+    .nullable()
+    .when('status', {
+      is: MaterialStatus.NotReadyToOrder,
+      then: (schema) => schema.notRequired(),
+      otherwise: (schema) => schema.required('Select a Material Type!')
+    }),
+
+  manufacturerName: yup
+    .string()
+    .nullable()
+    .when('status', {
+      is: MaterialStatus.NotReadyToOrder,
+      then: (schema) => schema.notRequired(),
+      otherwise: (schema) => schema.required('Select a Manufacturer')
+    }),
+
+  manufacturerPartNumber: yup
+    .string()
+    .nullable()
+    .when('status', {
+      is: MaterialStatus.NotReadyToOrder,
+      then: (schema) => schema.notRequired(),
+      otherwise: (schema) => schema.required('Manufacturer Part Number is required!')
+    }),
+
+  quantity: yup.number().when('status', {
+    is: MaterialStatus.NotReadyToOrder,
+    then: (schema) => schema.notRequired(),
+    otherwise: (schema) => schema.required('Enter a quantity!')
+  }),
+
+  price: yup.number().when('status', {
+    is: MaterialStatus.NotReadyToOrder,
+    then: (schema) => schema.notRequired(),
+    otherwise: (schema) => schema.required('Price per Unit is required!')
+  }),
+
   unitName: yup.string().optional(),
-  linkUrl: yup.string().required('URL is required!').url('Invalid URL'),
+
+  linkUrl: yup
+    .string()
+    .nullable()
+    .when('status', {
+      is: MaterialStatus.NotReadyToOrder,
+      then: (schema) => schema.notRequired(),
+      otherwise: (schema) => schema.required('URL is required!').url('Invalid URL')
+    }),
+
   notes: yup.string().optional(),
   pdmFileName: yup.string().optional(),
   assemblyId: yup.string().optional()
@@ -31,14 +75,14 @@ const schema = yup.object().shape({
 export interface MaterialFormInput {
   name: string;
   status: MaterialStatus;
-  materialTypeName: string;
-  manufacturerName: string;
-  manufacturerPartNumber: string;
+  materialTypeName?: string | null;
+  manufacturerName?: string | null;
+  manufacturerPartNumber?: string | null;
   pdmFileName?: string;
-  price: number;
-  quantity: number;
+  price?: number;
+  quantity?: number;
   unitName?: string;
-  linkUrl: string;
+  linkUrl?: string | null;
   notes?: string;
   assemblyId?: string;
 }
@@ -46,14 +90,14 @@ export interface MaterialFormInput {
 export interface MaterialDataSubmission {
   name: string;
   status: MaterialStatus;
-  materialTypeName: string;
-  manufacturerName: string;
-  manufacturerPartNumber: string;
+  materialTypeName?: string | null;
+  manufacturerName?: string | null;
+  manufacturerPartNumber?: string | null;
   pdmFileName?: string;
   price: number;
   quantity: Decimal;
   unitName?: string;
-  linkUrl: string;
+  linkUrl?: string | null;
   notes?: string;
   assemblyId?: string;
   subtotal: number;
@@ -129,9 +173,23 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
   }
 
   const onSubmitWrapper = (data: MaterialFormInput): void => {
-    const price = Math.round(data.price * 100);
-    const subtotal = parseFloat((data.quantity * price).toFixed(2));
-    onSubmit({ ...data, subtotal, price, quantity: new Decimal(data.quantity) });
+    const safePrice = data.price ?? 0;
+    const safeQuantity = data.quantity ?? 0;
+    const priceInCents = Math.round(safePrice * 100);
+    const subtotal = parseFloat((safeQuantity * priceInCents).toFixed(2));
+
+    const sanitizedData = {
+      ...data,
+      materialTypeName: data.materialTypeName || null,
+      manufacturerName: data.manufacturerName || null,
+      manufacturerPartNumber: data.manufacturerPartNumber || null,
+      linkUrl: data.linkUrl || null,
+      price: priceInCents,
+      quantity: new Decimal(safeQuantity),
+      subtotal
+    };
+
+    onSubmit(sanitizedData);
   };
 
   const createManufacturerWrapper = async (manufacturerName: string): Promise<void> => {
