@@ -1,14 +1,8 @@
-/*
-  Warnings:
-
-  - Added the required column `abbreviation` to the `Project` table without a default value. This is not possible if the table is not empty.
-
-*/
 -- CreateEnum
 CREATE TYPE "Review_Status" AS ENUM ('NA', 'READY_FOR_REVIEW', 'IN_REVIEW', 'REVIEWED', 'APPROVED');
 
 -- AlterTable
-ALTER TABLE "Project" ADD COLUMN     "abbreviation" TEXT NOT NULL;
+ALTER TABLE "Project" ADD COLUMN     "abbreviation" TEXT;
 
 -- CreateTable
 CREATE TABLE "Part" (
