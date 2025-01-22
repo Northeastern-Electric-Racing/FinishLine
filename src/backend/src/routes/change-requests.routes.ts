@@ -14,6 +14,10 @@ const changeRequestsRouter = express.Router();
 
 changeRequestsRouter.get('/', ChangeRequestsController.getAllChangeRequests);
 
+changeRequestsRouter.get('/to-review', ChangeRequestsController.getToReviewChangeRequests);
+changeRequestsRouter.get('/unreviewed', ChangeRequestsController.getUnreviewedChangeRequests);
+changeRequestsRouter.get('/approved', ChangeRequestsController.getApprovedChangeRequests);
+
 changeRequestsRouter.get('/:crId', ChangeRequestsController.getChangeRequestByID);
 
 changeRequestsRouter.post(

@@ -68,6 +68,9 @@ const workPackagesMany = () => `${workPackages()}/get-many`;
 
 /**************** Change Requests Endpoints ****************/
 const changeRequests = () => `${API_URL}/change-requests`;
+const toReviewChangeRequests = () => `${API_URL}/change-requests/to-review`;
+const unreviewedChangeRequests = () => `${API_URL}/change-requests/unreviewed`;
+const approvedChangeRequests = () => `${API_URL}/change-requests/approved`;
 const changeRequestsById = (id: string) => `${changeRequests()}/${id}`;
 const changeRequestsReview = () => `${changeRequests()}/review`;
 const changeRequestDelete = (id: string) => changeRequestsById(id) + '/delete';
@@ -300,6 +303,9 @@ export const apiUrls = {
   changeRequestsCreateStandard,
   changeRequestCreateProposeSolution,
   changeRequestRequestReviewer,
+  toReviewChangeRequests,
+  unreviewedChangeRequests,
+  approvedChangeRequests,
 
   teams,
   teamsById,

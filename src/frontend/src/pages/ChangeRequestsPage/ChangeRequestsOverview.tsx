@@ -3,53 +3,73 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { isLeadership, isHead } from 'shared';
-import { useAllProjects } from '../../hooks/projects.hooks';
-import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import ChangeRequestRow from '../../components/ChangeRequestRow';
-import { getCRsApproved, getCRsToReview, getCRsUnreviewed } from '../../utils/change-request.utils';
+import {
+  useGetApprovedChangeRequests,
+  useGetToReviewChangeRequests,
+  useGetUnreviewedChangeRequests
+} from '../../hooks/change-requests.hooks';
 
 const ChangeRequestsOverview: React.FC = () => {
   const user = useCurrentUser();
 
-  const { data: changeRequests, isError: crIsError, isLoading: crIsLoading, error: crError } = useAllChangeRequests();
-  const { data: projects, isError: projectIsError, isLoading: projectLoading, error: projectError } = useAllProjects();
-  const { data: workPackages, isError: wpIsError, isLoading: wpLoading, error: wpError } = useAllWorkPackages();
+  const {
+    data: toReviewChangeRequests,
+    isError: toReviewIsError,
+    isLoading: toReviewIsLoading,
+    error: toReviewError
+  } = useGetToReviewChangeRequests();
+  const {
+    data: unreviewedChangeRequests,
+    isError: unreviewedIsError,
+    isLoading: unreviewedIsLoading,
+    error: unreviewedError
+  } = useGetUnreviewedChangeRequests();
+  const {
+    data: approvedChangeRequests,
+    isError: approvedIsError,
+    isLoading: approvedIsLoading,
+    error: approvedError
+  } = useGetApprovedChangeRequests();
 
   // whether to show To Review section
   const showToReview = isHead(user.role) || isLeadership(user.role);
 
-  if (crIsLoading || projectLoading || wpLoading || !changeRequests || !projects || !workPackages)
-    return <LoadingIndicator />;
-  if (crIsError) return <ErrorPage message={crError?.message} />;
-  if (projectIsError) return <ErrorPage message={projectError?.message} />;
-  if (wpIsError) return <ErrorPage message={wpError?.message} />;
+  if (toReviewIsError) return <ErrorPage message={toReviewError?.message} />;
+  if (unreviewedIsError) return <ErrorPage message={unreviewedError?.message} />;
+  if (approvedIsError) return <ErrorPage message={approvedError?.message} />;
 
-  const crToReview = getCRsToReview(projects, workPackages, user, changeRequests);
-  const crUnreviewed = getCRsUnreviewed(user, changeRequests);
-  const crApproved = getCRsApproved(user, changeRequests);
+  if (
+    toReviewIsLoading ||
+    unreviewedIsLoading ||
+    approvedIsLoading ||
+    !unreviewedChangeRequests ||
+    !approvedChangeRequests ||
+    !toReviewChangeRequests
+  )
+    return <LoadingIndicator />;
 
   return (
     <>
       {showToReview && (
         <ChangeRequestRow
           title="Change Requests To Review"
-          changeRequests={crToReview}
+          changeRequests={toReviewChangeRequests}
           noChangeRequestsMessage="No change requests to review"
         />
       )}
       <ChangeRequestRow
         title="My Un-reviewed Change Requests"
-        changeRequests={crUnreviewed}
+        changeRequests={unreviewedChangeRequests}
         noChangeRequestsMessage="No un-reviewed change requests"
       />
       <ChangeRequestRow
         title="My Approved Change Requests"
-        changeRequests={crApproved}
+        changeRequests={approvedChangeRequests}
         noChangeRequestsMessage="No approved change requests"
       />
     </>

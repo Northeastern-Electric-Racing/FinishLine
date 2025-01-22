@@ -25,7 +25,11 @@ import { HttpException, NotFoundException } from './errors.utils';
 import { ChangeRequestStatus } from 'shared';
 import { buildChangeDetail, createChange } from './changes.utils';
 import { WorkPackageQueryArgs, getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
-import { ChangeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
+import {
+  ChangeRequestManyQueryArgs,
+  ChangeRequestQueryArgs,
+  ChangeRequestWithProjectAndWorkPackageQueryArgs
+} from '../prisma-query-args/change-requests.query-args';
 import {
   ProjectProposedChangesQueryArgs,
   WbsProposedChangeQueryArgs,
@@ -153,7 +157,7 @@ export const validateChangeRequestAccepted = async (crId: string) => {
  * @returns The status of the change request. Can either be Open, Accepted, Denied, or Implemented
  */
 export const calculateChangeRequestStatus = (
-  changeRequest: Prisma.Change_RequestGetPayload<ChangeRequestQueryArgs>
+  changeRequest: Prisma.Change_RequestGetPayload<ChangeRequestManyQueryArgs>
 ): ChangeRequestStatus => {
   if (changeRequest.changes.length) {
     return ChangeRequestStatus.Implemented;
@@ -454,7 +458,7 @@ export const applyWorkPackageProposedChanges = async (
  */
 export const reviewProposedSolution = async (
   psId: string,
-  foundCR: Prisma.Change_RequestGetPayload<ChangeRequestQueryArgs>,
+  foundCR: Prisma.Change_RequestGetPayload<ChangeRequestWithProjectAndWorkPackageQueryArgs>,
   reviewer: User,
   organizationId: string
 ) => {

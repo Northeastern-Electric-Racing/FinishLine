@@ -22,6 +22,33 @@ export default class ChangeRequestsController {
     }
   }
 
+  static async getToReviewChangeRequests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const changeRequests = await ChangeRequestsService.getToReviewChangeRequests(req.currentUser, req.organization);
+      res.status(200).json(changeRequests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getUnreviewedChangeRequests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const changeRequests = await ChangeRequestsService.getUnreviewedChangeRequests(req.currentUser, req.organization);
+      res.status(200).json(changeRequests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getApprovedChangeRequests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const changeRequests = await ChangeRequestsService.getApprovedChangeRequests(req.currentUser, req.organization);
+      res.status(200).json(changeRequests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async reviewChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const { crId, reviewNotes, accepted, psId } = req.body;
