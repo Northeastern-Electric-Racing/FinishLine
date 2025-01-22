@@ -515,8 +515,6 @@ export default class UsersService {
     });
     if (!scheduleSettings) throw new HttpException(404, 'User Schedule Settings Not Found');
 
-    console.log('schedule: ', scheduleSettings);
-
     return userScheduleSettingsTransformer(scheduleSettings);
   }
 

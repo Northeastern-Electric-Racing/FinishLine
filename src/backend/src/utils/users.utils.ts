@@ -145,7 +145,6 @@ export const updateUserAvailability = async (
   userSettings: Prisma.Schedule_SettingsGetPayload<UserScheduleSettingsQueryArgs>,
   submitter: User
 ) => {
-  console.log(availabilities);
   for (const availability of availabilities) {
     if (availability.availability.some((time) => time < 0 || time > 11)) {
       throw new HttpException(400, 'Availability times have to be in range 0-11');

@@ -37,8 +37,6 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({
   const [availabilities, setAvailabilities] = useState<Map<number, Availability>>(new Map());
   const toast = useToast();
 
-  console.log('root', availabilities);
-
   const onFormSubmit = (data: ScheduleSettingsFormInput) => {
     if (data.personalZoomLink && data.personalZoomLink !== '') {
       if (!data.personalZoomLink.startsWith('https://')) {
@@ -76,7 +74,6 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({
   });
 
   const onAvailabilitySave = () => {
-    console.log('Saving', availabilities.values());
     onSubmit({
       availability: Array.from(availabilities.values()),
       personalGmail: watch('personalGmail'),
