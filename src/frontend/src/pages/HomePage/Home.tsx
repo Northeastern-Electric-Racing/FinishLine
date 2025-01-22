@@ -9,7 +9,6 @@ import OnboardingHomePage from './OnboardingHomePage';
 import SelectSubteamPage from './SelectSubteamPage';
 import AcceptedPage from '../AcceptedPage/AcceptedPage';
 import HomePage from './HomePage';
-import { isGuest } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import IntroGuestHomePage from './IntroGuestHomePage';
 
@@ -17,15 +16,15 @@ const Home: React.FC = () => {
   const user = useCurrentUser();
 
   const onOnboarding = user.onboardingTeamTypeIds.length > 0;
-  const userRole = user.role;
+  const completedOnboarding = user.onboardedTeamTypeIds.length > 0;
 
   return (
     <Switch>
-      {!isGuest(userRole) &&
+      {completedOnboarding &&
         [routes.HOME_GUEST, routes.HOME_PNM, routes.HOME_ONBOARDING, routes.HOME_ACCEPT].map((path) => (
           <Redirect exact path={path} to={routes.HOME} />
         ))}
-      {!onOnboarding && isGuest(userRole) && <Redirect exact path={routes.HOME} to={routes.HOME_GUEST} />}
+      {!onOnboarding && !completedOnboarding && <Redirect exact path={routes.HOME} to={routes.HOME_GUEST} />}
       {onOnboarding && <Redirect exact path={routes.HOME} to={routes.HOME_PNM} />}
       <Route exact path={routes.HOME_SELECT_SUBTEAM} component={SelectSubteamPage} />
       <Route exact path={routes.HOME_ACCEPT} component={AcceptedPage} />

@@ -1,4 +1,4 @@
-import { isAdmin, isHead, RoleEnum, Team, TeamType } from 'shared';
+import { isAdmin, isHead, Team, TeamType } from 'shared';
 import { Organization, User, WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import teamTransformer from '../transformers/teams.transformer';
@@ -609,30 +609,25 @@ export default class TeamsService {
     return teamTypeTransformer(updatedTeamType);
   }
 
-  static async completeOnboarding(submitter: User, organization: Organization) {
-    // remove the user from any onboardingTeamTypes they are a part of
-    const user = await prisma.user.update({
+  static async completeOnboarding(submitter: User) {
+    const onboardingTeamTypes = await prisma.team_Type.findMany({
+      where: { usersOnboarding: { some: { userId: submitter.userId } } }
+    });
+
+    const teamTypeIds = onboardingTeamTypes.map((teamType) => ({ teamTypeId: teamType.teamTypeId }));
+
+    // remove the user from any onboardingTeamTypes they are a part of and add them to the onboardedTeamTypes
+    await prisma.user.update({
       where: { userId: submitter.userId },
-      include: { roles: true },
       data: {
+        onboardedTeamTypes: {
+          set: teamTypeIds
+        },
         onboardingTeamTypes: {
           set: []
         }
       }
     });
-
-    // update the users role to member after they complete their onboarding
-    const currentRole = user.roles.find((role) => role.organizationId === organization.organizationId);
-    if (currentRole && currentRole.roleType !== RoleEnum.MEMBER) {
-      await prisma.role.update({
-        where: {
-          uniqueRole: { userId: user.userId, organizationId: organization.organizationId }
-        },
-        data: {
-          roleType: RoleEnum.MEMBER
-        }
-      });
-    }
   }
 
   static async setTeamTypeImage(

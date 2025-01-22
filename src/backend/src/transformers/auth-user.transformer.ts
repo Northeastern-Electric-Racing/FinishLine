@@ -31,6 +31,7 @@ const authenticatedUserTransformer = (
     organizations: user.organizations.map((organization) => organization.organizationId),
     currentOrganization: currentOrganization ? organizationTransformer(currentOrganization) : undefined,
     onboardingTeamTypeIds: user.onboardingTeamTypes.map((teamType) => teamType.teamTypeId),
+    onboardedTeamTypeIds: user.onboardedTeamTypes.map((teamType) => teamType.teamTypeId),
     teamsAsHead: user.teamsAsHead.map(teamTransformer),
     teamsAsLead: user.teamsAsLead.map(teamTransformer),
     permissions: user.roles

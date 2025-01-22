@@ -160,7 +160,12 @@ export const useGetImageUrls = (imageList: { objectId: string; imageFileId: stri
 export const useChecklistProgress = (parentChecklists: Checklist[], checkedChecklists: Checklist[]) => {
   const [progress, setProgress] = useState(0);
   useEffect(() => {
-    if (!checkedChecklists || parentChecklists.length === 0) return;
+    if (parentChecklists.length === 0) {
+      setProgress(100);
+      return;
+    }
+
+    if (!checkedChecklists) return;
 
     const totalChecklistsLength = parentChecklists.length;
 

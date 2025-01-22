@@ -26,6 +26,7 @@ export const exampleAdminUser: AuthenticatedUser = {
   changeRequestsToReviewId: [],
   organizations: ['yello'],
   onboardingTeamTypeIds: [],
+  onboardedTeamTypeIds: [],
   permissions: []
 };
 
@@ -40,6 +41,7 @@ export const exampleAdminUser2: AuthenticatedUser = {
   changeRequestsToReviewId: [],
   organizations: [],
   onboardingTeamTypeIds: [],
+  onboardedTeamTypeIds: [],
   permissions: []
 };
 
@@ -84,6 +86,7 @@ export const exampleMemberUser: AuthenticatedUser = {
   changeRequestsToReviewId: [],
   organizations: [],
   onboardingTeamTypeIds: [],
+  onboardedTeamTypeIds: [],
   permissions: []
 };
 
@@ -98,6 +101,7 @@ export const exampleGuestUser: AuthenticatedUser = {
   changeRequestsToReviewId: [],
   organizations: [],
   onboardingTeamTypeIds: [],
+  onboardedTeamTypeIds: [],
   permissions: []
 };
 
