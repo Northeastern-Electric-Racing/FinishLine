@@ -41,7 +41,14 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
   };
 
   const ProdLogout = () => (
-    <MenuItem component="div" sx={{ py: 0 }} onClick={googleLogout}>
+    <MenuItem
+      component="div"
+      sx={{ py: 0 }}
+      onClick={() => {
+        googleLogout();
+        history.push('/');
+      }}
+    >
       <ListItemIcon>
         <LogoutIcon fontSize="small" />
       </ListItemIcon>

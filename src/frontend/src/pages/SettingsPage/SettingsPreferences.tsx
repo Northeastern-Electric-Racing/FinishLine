@@ -10,6 +10,7 @@ import { useState } from 'react';
 import UserSecureSettings from './UserSecureSettings/UserSecureSettings';
 import UserScheduleSettings from './UserScheduleSettings/UserScheduleSettings';
 import { Box } from '@mui/system';
+import { useHistory } from 'react-router-dom';
 
 const NERSwitch = styled((props: SwitchProps) => (
   <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
@@ -62,6 +63,7 @@ const NERSwitch = styled((props: SwitchProps) => (
 const SettingsPreferences: React.FC = () => {
   const auth = useAuth();
   const user = useCurrentUser();
+  const history = useHistory();
   const [showAlert, setShowAlert] = useState(false);
   const {
     isLoading: settingsIsLoading,
@@ -129,7 +131,14 @@ const SettingsPreferences: React.FC = () => {
                 import.meta.env.MODE === 'development' ? (
                   <NERSwitch id="trick-switch" sx={{ m: 1 }} onClick={logout} />
                 ) : (
-                  <NERSwitch id="trick-switch" sx={{ m: 1 }} onClick={googleLogout} />
+                  <NERSwitch
+                    id="trick-switch"
+                    sx={{ m: 1 }}
+                    onClick={() => {
+                      googleLogout();
+                      history.push('/');
+                    }}
+                  />
                 )
               }
             />
