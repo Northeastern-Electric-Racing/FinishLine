@@ -61,8 +61,6 @@ const LoginDev: React.FC<LoginDevProps> = ({ devSetUser, devFormSubmit }) => {
           ))}
         </Select>
       </FormControl>
-      <label htmlFor="anId">label</label>
-      <input id="anId" type='date' value="2011-11-22"></input>
     </form>
   );
 };
