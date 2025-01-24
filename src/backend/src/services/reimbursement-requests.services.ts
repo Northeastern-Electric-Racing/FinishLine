@@ -4,14 +4,7 @@
  */
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import {
-  Club_Accounts,
-  Reimbursement_Request,
-  Reimbursement_Status_Type,
-  User,
-  Organization,
-  Sponsor_Tier
-} from '@prisma/client';
+import { Club_Accounts, Reimbursement_Request, Reimbursement_Status_Type, User, Organization } from '@prisma/client';
 import {
   ClubAccount,
   Reimbursement,

@@ -393,12 +393,6 @@ export const createTestReimbursementRequest = async () => {
 
   const project = await createTestProject(user, organization.organizationId);
 
-  const tier = await prisma.sponsor_Tier.create({
-    data: {
-      name: 'GOLD'
-    }
-  });
-
   const vendor = await ReimbursementRequestService.createVendor(
     user,
     'Tesla',

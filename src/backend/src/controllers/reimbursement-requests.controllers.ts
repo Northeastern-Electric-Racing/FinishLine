@@ -200,25 +200,7 @@ export default class ReimbursementRequestsController {
 
   static async createVendor(req: Request, res: Response, next: NextFunction) {
     try {
-      const {
-        name,
-        username,
-        password,
-        discountCode,
-        twoFactorContact,
-        notes,
-        addedByUserId,
-        status,
-        contacts,
-        tier,
-        value,
-        joinDate,
-        activeYears,
-        taxExempt,
-        dueDate,
-        notifyDate,
-        assignToUserId
-      } = req.body;
+      const { name, username, password, discountCode, twoFactorContact, notes, addedByUserId } = req.body;
       const createdVendor = await ReimbursementRequestService.createVendor(
         req.currentUser,
         name,
