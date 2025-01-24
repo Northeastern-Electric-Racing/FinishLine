@@ -1,4 +1,4 @@
-import { WbsNumber } from './types/project-types';
+import { ProjectPreview, WbsNumber } from './types/project-types';
 import { wbsPipe } from './validate-wbs';
 
 export const deeplyCopy = <T>(obj: T | T[], transformer: (obj: T) => T = (obj) => obj): T | T[] => {
@@ -29,4 +29,8 @@ export const meetingStartTimePipe = (times: number[]) => {
   const time = (times[0] % 12) + 10;
 
   return time <= 12 ? time + 'am' : time - 12 + 'pm';
+};
+
+export const getProjectPreviewTeamsName = (project: ProjectPreview) => {
+  return project.teams.join(', ');
 };

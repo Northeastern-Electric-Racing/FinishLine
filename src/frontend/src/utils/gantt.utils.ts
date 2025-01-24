@@ -5,6 +5,7 @@
 
 import {
   DesignReview,
+  DesignReviewPreview,
   DesignReviewStatus,
   isProject,
   isWorkPackage,
@@ -22,7 +23,7 @@ import {
 import { projectWbsPipe } from './pipes';
 import dayjs from 'dayjs';
 import { deepOrange, green, grey, indigo, orange, pink } from '@mui/material/colors';
-import { projectPreviewTranformer } from '../apis/transformers/projects.transformers';
+import { projectPreviewTransformer } from '../apis/transformers/projects.transformers';
 
 export const NO_TEAM = 'No Team';
 
@@ -40,7 +41,7 @@ export interface GanttTaskData {
   allWorkPackages: WorkPackage[];
   unblockedWorkPackages: WorkPackage[];
   blocking: WbsNumber[];
-  designReviews: DesignReview[];
+  designReviews: DesignReviewPreview[];
 
   // Optional Values
   styles?: {
@@ -74,7 +75,7 @@ export type RequestEventChange = {
   type: 'create-project' | 'create-work-package' | 'edit-work-package';
 };
 
-export const getProjectStartDate = (project: ProjectPreview): Date => {
+export const getProjectStartDate = (project: ProjectPreview | Project): Date => {
   return project.workPackages.reduce(
     (acc, current) => {
       if (current.startDate < acc) return current.startDate;
@@ -84,14 +85,14 @@ export const getProjectStartDate = (project: ProjectPreview): Date => {
   ); // Set Date to Year 3000, an arbitrary date in the future
 };
 
-export const getProjectEndDate = (project: ProjectPreview): Date => {
+export const getProjectEndDate = (project: ProjectPreview | Project): Date => {
   return project.workPackages.reduce((acc, current) => {
     if (current.endDate > acc) return current.endDate;
     return acc;
   }, new Date(0));
 };
 
-export const transformDesignReviewToGanttTask = (designReview: DesignReview): GanttTask => {
+export const transformDesignReviewToGanttTask = (designReview: DesignReviewPreview): GanttTask => {
   return {
     id: designReview.designReviewId,
     name: designReview.wbsName + ' - Design Review',
@@ -121,8 +122,6 @@ export const transformProjectPreviewToProject = (projectPreview: ProjectPreview,
     budget: 0,
     links: [],
     descriptionBullets: [],
-    materials: [],
-    assemblies: [],
     duration: 0,
     tasks: [],
     favoritedBy: [],
@@ -154,8 +153,6 @@ export const transformGanttTaskToWorkPackage = (task: GanttTask): WorkPackage =>
     status: WbsElementStatus.Active,
     stage: task.stage,
     links: [],
-    materials: [],
-    assemblies: [],
     teamTypes: [],
     changes: [],
     blocking: task.blocking,
@@ -289,7 +286,7 @@ export const filterGanttProjects = (
   searchText: string,
   team: Team
 ) => {
-  let deepCopy: ProjectPreview[] = JSON.parse(JSON.stringify(projects)).map(projectPreviewTranformer);
+  let deepCopy: ProjectPreview[] = JSON.parse(JSON.stringify(projects)).map(projectPreviewTransformer);
   // inclusive filters
   if (ganttFilters.showCars.length > 0)
     deepCopy = deepCopy.filter((project) => ganttFilters.showCars.some((car) => project.wbsNum.carNumber === car));

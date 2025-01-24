@@ -7,11 +7,12 @@ import {
   LinkCreateArgs,
   LinkType,
   Project,
+  ProjectPreview,
   WbsNumber,
   wbsPipe
 } from 'shared';
 import prisma from '../prisma/prisma';
-import projectTransformer from '../transformers/projects.transformer';
+import projectTransformer, { projectPreviewTransformer } from '../transformers/projects.transformer';
 import { validateChangeRequestAccepted } from '../utils/change-requests.utils';
 import {
   AccessDeniedAdminOnlyException,
@@ -27,7 +28,7 @@ import { wbsNumOf } from '../utils/utils';
 import WorkPackagesService from './work-packages.services';
 import { linkTypeTransformer } from '../transformers/links.transformer';
 import { userHasPermission } from '../utils/users.utils';
-import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
+import { getProjectManyQueryArgs, getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
 import { getLinkTypeQueryArgs } from '../prisma-query-args/link-types.query-args';
@@ -49,7 +50,60 @@ export default class ProjectsService {
           where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId } },
           ...getProjectQueryArgs(organization.organizationId)
         });
+
     return projects.map(projectTransformer);
+  }
+
+  static async getUsersLeadingProjects(user: User, organization: Organization): Promise<ProjectPreview[]> {
+    const beginDate = new Date();
+    console.log('queryBegin leading');
+    const projects = await prisma.project.findMany({
+      where: {
+        wbsElement: {
+          organizationId: organization.organizationId,
+          dateDeleted: null,
+          OR: [{ leadId: user.userId }, { managerId: user.userId }]
+        }
+      },
+      ...getProjectManyQueryArgs(organization.organizationId)
+    });
+
+    console.log('Finished query leading took time: ', new Date().getTime() - beginDate.getTime());
+
+    return projects.map(projectPreviewTransformer);
+  }
+
+  static async getUsersTeamsProjects(user: User, organization: Organization): Promise<ProjectPreview[]> {
+    const projects = await prisma.project.findMany({
+      where: {
+        wbsElement: {
+          organizationId: organization.organizationId,
+          dateDeleted: null
+        },
+        teams: {
+          some: {
+            OR: [
+              {
+                headId: user.userId,
+                leads: {
+                  some: {
+                    userId: user.userId
+                  }
+                },
+                members: {
+                  some: {
+                    userId: user.userId
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      ...getProjectManyQueryArgs(organization.organizationId)
+    });
+
+    return projects.map(projectPreviewTransformer);
   }
 
   /**
@@ -60,31 +114,7 @@ export default class ProjectsService {
    * @throws if the wbsNumber is invalid, the project is not found, or the project is deleted
    */
   static async getSingleProject(wbsNumber: WbsNumber, organization: Organization): Promise<Project> {
-    if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
-
-    const { carNumber, projectNumber, workPackageNumber } = wbsNumber;
-
-    const wbsElement = await prisma.wBS_Element.findUnique({
-      where: {
-        wbsNumber: {
-          carNumber,
-          projectNumber,
-          workPackageNumber,
-          organizationId: organization.organizationId
-        }
-      },
-      include: {
-        project: {
-          ...getProjectQueryArgs(organization.organizationId)
-        }
-      }
-    });
-
-    const project = wbsElement?.project;
-
-    if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
-    if (project.wbsElement.dateDeleted) throw new DeletedException('Project', project.projectId);
-    if (project.wbsElement.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Project');
+    const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNumber, organization);
 
     return projectTransformer(project);
   }

@@ -5,7 +5,7 @@
 
 import axios from '../utils/axios';
 import {
-  Project,
+  ProjectPreview,
   SetUserScheduleSettingsPayload,
   Task,
   User,
@@ -21,7 +21,7 @@ import {
   userWithScheduleSettingsTransformer
 } from './transformers/users.transformers';
 import { AuthenticatedUser, UserSettings } from 'shared';
-import { projectTransformer } from './transformers/projects.transformers';
+import { projectPreviewTransformer } from './transformers/projects.transformers';
 import { taskTransformer } from './transformers/tasks.transformers';
 
 /**
@@ -103,8 +103,8 @@ export const getCurrentUserSecureSettings = () => {
  * @param id User ID of the requested user's favorite projects.
  */
 export const getUsersFavoriteProjects = (id: string) => {
-  return axios.get<Project[]>(apiUrls.userFavoriteProjects(id), {
-    transformResponse: (data) => JSON.parse(data).map(projectTransformer)
+  return axios.get<ProjectPreview[]>(apiUrls.userFavoriteProjects(id), {
+    transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer)
   });
 };
 

@@ -7,12 +7,12 @@ import {
   WbsNumber,
   User,
   wbsPipe,
-  WbsElement,
   isProject,
-  WorkPackage,
   ClubAccount,
   AccountCode,
-  DesignReview
+  DesignReview,
+  WbsElementPreview,
+  WorkPackagePreview
 } from 'shared';
 
 /**
@@ -148,13 +148,14 @@ export const centsToDollar = (cents: number) => {
   return (cents / 100.0).toFixed(2);
 };
 
-export const projectNamePipe = (wbsElement: WbsElement) => {
-  return isProject(wbsElement.wbsNum) ? wbsElement.name : (wbsElement as WorkPackage).projectName;
+export const projectNamePipe = (wbsElement: WbsElementPreview) => {
+  return isProject(wbsElement.wbsNum) ? wbsElement.name : (wbsElement as WorkPackagePreview).projectName;
 };
 
-export const projectWbsNamePipe = (wbsElement: WbsElement) => {
+export const projectWbsNamePipe = (wbsElement: WbsElementPreview) => {
   return `${projectWbsPipe(wbsElement.wbsNum)} - ${projectNamePipe(wbsElement)}`;
 };
+
 /** Displays a refund source as a string "Code - Name" */
 export const codeAndRefundSourceName = (refundSource: ClubAccount) => {
   const CASH_ACCOUNT_CODE = 830667;
