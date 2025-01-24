@@ -55,8 +55,6 @@ export default class ProjectsService {
   }
 
   static async getUsersLeadingProjects(user: User, organization: Organization): Promise<ProjectPreview[]> {
-    const beginDate = new Date();
-    console.log('queryBegin leading');
     const projects = await prisma.project.findMany({
       where: {
         wbsElement: {
@@ -67,8 +65,6 @@ export default class ProjectsService {
       },
       ...getProjectManyQueryArgs(organization.organizationId)
     });
-
-    console.log('Finished query leading took time: ', new Date().getTime() - beginDate.getTime());
 
     return projects.map(projectPreviewTransformer);
   }
