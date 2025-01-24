@@ -984,7 +984,7 @@ model Organization {
   changeRequests           Change_Request[]
   reimbursementReqeusts    Reimbursement_Request[]
   usefulLinks              Link[]
-  frequentlyAskedQuestions FrequentlyAskedQuestion[] @relation(name: "regularFaq")
+  frequentlyAskedQuestions FrequentlyAskedQuestion[] @relation(name: "organizationFAQ")
   partReviewFAQ            FrequentlyAskedQuestion[]
   milestones               Milestone[]
   graphCollections         Graph_Collection[]
@@ -994,7 +994,6 @@ model Organization {
   announcements            Announcement[]
   checklists               Checklist[]
   contacts                 Contact[]
-  parts                    Part[]
   partReviewCommonMistakes PartReviewCommonMistake[]
   partTags                 PartTag[]
 }
@@ -1010,7 +1009,7 @@ model FrequentlyAskedQuestion {
   dateCreated        DateTime      @default(now())
   dateDeleted        DateTime?
   regularFaqOrgId    String?
-  regularFaqOrg      Organization? @relation(fields: [regularFaqOrgId], references: [organizationId], name: "regularFaq")
+  regularFaqOrg      Organization? @relation(fields: [regularFaqOrgId], references: [organizationId], name: "organizationFAQ")
   partReviewFaqOrgId String?
   partReviewFaqOrg   Organization? @relation(fields: [partReviewFaqOrgId], references: [organizationId])
 }
@@ -1129,8 +1128,6 @@ model Contact {
 
 model Part {
   partId           String           @id @default(uuid())
-  organizationId   String
-  organization     Organization     @relation(fields: [organizationId], references: [organizationId])
   index            Int
   commonName       String
   description      String?
@@ -1153,14 +1150,14 @@ model Part {
 }
 
 model PartTag {
-  id             String        @id @default(uuid())
+  partTagId      String        @id @default(uuid())
   name           String
-  color          String
+  colorHexCode   String
   dateCreated    DateTime
   dateDeleted    DateTime?
   parts          Part[]
-  Organization   Organization? @relation(fields: [OrganizationId], references: [organizationId])
-  OrganizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [organizationId])
+  organizationId String?
 }
 
 model PartSubmission {
@@ -1221,6 +1218,6 @@ model PartReviewCommonMistake {
   userDeletedId  String?
   dateCreated    DateTime      @default(now())
   dateDeleted    DateTime?
-  Organization   Organization? @relation(fields: [OrganizationId], references: [organizationId])
-  OrganizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [organizationId])
+  organizationId String?
 }

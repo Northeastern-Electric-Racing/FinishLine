@@ -104,7 +104,7 @@ export default class RecruitmentServices {
    * @param organizationId organization Id of the faq
    * @returns all the faqs from the given organization
    */
-  static async getAllFaqs(organization: Organization) {
+  static async getAllOrganizationFaqs(organization: Organization) {
     const allFaqs = await prisma.frequentlyAskedQuestion.findMany({
       where: { dateDeleted: null, regularFaqOrgId: organization.organizationId }
     });
@@ -142,7 +142,7 @@ export default class RecruitmentServices {
    * @param organizationId the organization Id of the FAQ
    * @returns A newly created FAQ
    */
-  static async createFaq(submitter: User, question: string, answer: string, organization: Organization) {
+  static async createOrganizationFaq(submitter: User, question: string, answer: string, organization: Organization) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create an faq');
 
