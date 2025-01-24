@@ -1,7 +1,7 @@
 import { useAuth } from '../../hooks/auth.hooks';
 import UserSettings from './UserSettings/UserSettings';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { useCurrentUser, useCurrentUserSecureSettings, useSingleUserSettings } from '../../hooks/users.hooks';
+import { useCurrentUser, useCurrentUserSecureSettings, useLogUserOut, useSingleUserSettings } from '../../hooks/users.hooks';
 import ErrorPage from '../ErrorPage';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import { Grid, FormGroup, FormControlLabel, Switch, SwitchProps, styled, Alert, Typography } from '@mui/material';
@@ -11,6 +11,8 @@ import UserSecureSettings from './UserSecureSettings/UserSecureSettings';
 import UserScheduleSettings from './UserScheduleSettings/UserScheduleSettings';
 import { Box } from '@mui/system';
 import { useHistory } from 'react-router-dom';
+import { useToast } from '../../hooks/toasts.hooks';
+import { routes } from '../../utils/routes';
 
 const NERSwitch = styled((props: SwitchProps) => (
   <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
@@ -78,6 +80,8 @@ const SettingsPreferences: React.FC = () => {
     data: userSecureSettings
   } = useCurrentUserSecureSettings();
   const { isLoading: allTeamsIsLoading, isError: allTeamsIsError, data: teams, error: allTeamsError } = useAllTeams();
+  const { mutateAsync: logUserOut } = useLogUserOut();
+  const toast = useToast();
 
   if (secureSettingsIsError) return <ErrorPage error={secureSettingsError} message={secureSettingsError.message} />;
   if (settingsIsError) return <ErrorPage error={settingsError} message={settingsError.message} />;
@@ -134,9 +138,16 @@ const SettingsPreferences: React.FC = () => {
                   <NERSwitch
                     id="trick-switch"
                     sx={{ m: 1 }}
-                    onClick={() => {
-                      googleLogout();
-                      history.push('/');
+                    onClick={async () => {
+                      try {
+                        googleLogout();
+                        await logUserOut();
+                        history.push(routes.HOME);
+                      } catch (error) {
+                        if (error instanceof Error) {
+                          toast.error('Failed to log user out' + error.message);
+                        }
+                      }
                     }}
                   />
                 )

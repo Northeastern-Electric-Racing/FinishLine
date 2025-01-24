@@ -20,6 +20,8 @@ import { Stack, useTheme } from '@mui/system';
 import { Typography } from '@mui/material';
 import { useHomePageContext } from '../../app/HomePageContext';
 import { googleLogout } from '@react-oauth/google';
+import { useLogUserOut } from '../../hooks/users.hooks';
+import { useToast } from '../../hooks/toasts.hooks';
 
 interface NavUserMenuProps {
   open?: boolean;
@@ -30,6 +32,8 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
   const history = useHistory();
   const auth = useAuth();
   const { onPNMHomePage } = useHomePageContext();
+  const { mutateAsync: logUserOut } = useLogUserOut();
+  const toast = useToast();
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -44,9 +48,16 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
     <MenuItem
       component="div"
       sx={{ py: 0 }}
-      onClick={() => {
-        googleLogout();
-        history.push('/');
+      onClick={async () => {
+        try {
+          googleLogout();
+          await logUserOut();
+          history.push(routes.HOME);
+        } catch (error) {
+          if (error instanceof Error) {
+            toast.error('Failed to log out' + error.message);
+          }
+        }
       }}
     >
       <ListItemIcon>

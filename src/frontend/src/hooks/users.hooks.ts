@@ -20,7 +20,8 @@ import {
   updateUserScheduleSettings,
   getUserTasks,
   getManyUserTasks,
-  getCurrentUser
+  getCurrentUser,
+  logUserOut
 } from '../apis/users.api';
 import {
   User,
@@ -269,6 +270,13 @@ export const useUserTasks = (userId: string) => {
 export const useManyUserTasks = (userIds: string[]) => {
   return useQuery<Task[], Error>(['users', userIds, 'tasks'], async () => {
     const { data } = await getManyUserTasks(userIds);
+    return data;
+  });
+};
+
+export const useLogUserOut = () => {
+  return useMutation<{ message: string }, Error, void>([], async () => {
+    const { data } = await logUserOut();
     return data;
   });
 };

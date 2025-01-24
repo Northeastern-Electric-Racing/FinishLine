@@ -30,8 +30,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project, hideColumn, 
   const [showEditMaterial, setShowEditMaterial] = useState(false);
   const [selectedMaterialId, setSelectedMaterialId] = useState('');
   const [modalShow, setModalShow] = useState(false);
-  const { mutateAsync: deleteMaterialMutateAsync, isLoading: deleteMaterialIsLoading } = useDeleteMaterial();
-  const { mutateAsync: deleteAssemblyMutateAsync, isLoading: deleteAssemblyIsLoading } = useDeleteAssembly();
+  const { mutateAsync: deleteMaterialMutateAsync, isLoading: deleteMaterialIsLoading } = useDeleteMaterial(project.wbsNum);
+  const { mutateAsync: deleteAssemblyMutateAsync, isLoading: deleteAssemblyIsLoading } = useDeleteAssembly(project.wbsNum);
   const { mutateAsync: assignMaterialToAssembly } = useAssignMaterialToAssembly();
 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -308,6 +308,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project, hideColumn, 
           onHide={() => setShowEditMaterial(false)}
           material={selectedMaterial!}
           assemblies={assemblies}
+          wbsNum={project.wbsNum}
         />
       )}
       {modalShow && (

@@ -38,7 +38,7 @@ const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPacka
     stage: (wpInput.stage as WorkPackageStage) || undefined,
     blocking: wpInput.wbsElement.blocking.map((wp) => wbsNumOf(wp.wbsElement)),
     designReviews: wpInput.wbsElement.designReviews.map((designReview) =>
-      designReviewPreviewTransformer(designReview, wpInput.wbsElement)
+      designReviewPreviewTransformer(designReview, `${wpInput.project.wbsElement.name} - ${wpInput.wbsElement.name}`)
     ),
     deleted: wpInput.wbsElement.dateDeleted !== null
   };

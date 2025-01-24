@@ -16,7 +16,13 @@ export const getDesignReviewQueryArgs = (organizationId: string) =>
       deniedMembers: getUserQueryArgs(organizationId),
       attendees: getUserQueryArgs(organizationId),
       userDeleted: getUserQueryArgs(organizationId),
-      wbsElement: true,
+      wbsElement: {
+        include: {
+          workPackage: {
+            select: { project: { select: { wbsElement: { select: { name: true } } } } }
+          }
+        }
+      },
       notificationSlackThreads: true
     }
   });

@@ -64,7 +64,8 @@ export const logUserIn = (id_token: string) => {
  */
 export const getCurrentUser = () => {
   return axios.get<AuthenticatedUser>(apiUrls.currentUser(), {
-    transformResponse: (data) => authUserTransformer(JSON.parse(data))
+    transformResponse: (data) => authUserTransformer(JSON.parse(data)),
+    timeout: 5000
   });
 };
 
@@ -169,4 +170,8 @@ export const getManyUserTasks = (userIds: string[]) => {
       transformResponse: (data) => JSON.parse(data).map(taskTransformer)
     }
   );
+};
+
+export const logUserOut = () => {
+  return axios.post<{ message: string }>(apiUrls.logUserOut());
 };

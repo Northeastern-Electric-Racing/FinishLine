@@ -1,4 +1,4 @@
-import { ProjectPreview, WbsNumber } from './types/project-types';
+import { WbsNumber } from './types/project-types';
 import { wbsPipe } from './validate-wbs';
 
 export const deeplyCopy = <T>(obj: T | T[], transformer: (obj: T) => T = (obj) => obj): T | T[] => {
@@ -17,8 +17,8 @@ const deeplyCopyObj = <T>(obj: T, transformer: (obj: T) => T = (obj) => obj): T 
 };
 
 /** Display WBS number as string "1.2.0 - Project Name" */
-export const wbsNamePipe = (wbsElement: { wbsNum: WbsNumber; name: string }) => {
-  return `${wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`;
+export const wbsNamePipe = (wbsElement: { wbsNum: WbsNumber; name: string; projectName?: string }) => {
+  return `${wbsPipe(wbsElement.wbsNum)} - ${wbsElement.projectName ? wbsElement.projectName + ' - ' : ''} ${wbsElement.name}`;
 };
 
 export const isSubset = (elements: string[], suppliedArray: string[]): boolean => {
@@ -29,8 +29,4 @@ export const meetingStartTimePipe = (times: number[]) => {
   const time = (times[0] % 12) + 10;
 
   return time <= 12 ? time + 'am' : time - 12 + 'pm';
-};
-
-export const getProjectPreviewTeamsName = (project: ProjectPreview) => {
-  return project.teams.join(', ');
 };

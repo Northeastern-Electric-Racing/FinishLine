@@ -419,6 +419,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       icon: <AttachMoneyIcon />,
       disabled:
         !user.isFinance ||
+        !isReimbursementRequestSaboSubmitted(reimbursementRequest) ||
         isReimbursementRequestReimbursed(reimbursementRequest) ||
         isReimbursementRequestDenied(reimbursementRequest)
     },

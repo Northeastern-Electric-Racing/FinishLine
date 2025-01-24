@@ -32,6 +32,7 @@ userRouter.post(
   UsersController.setUserSecureSettings
 );
 userRouter.get('/auth/current', UsersController.getCurrentUser);
+userRouter.post('/auth/logout', UsersController.logUserOut);
 
 userRouter.post(
   '/schedule-settings/set',

@@ -64,7 +64,7 @@ export default class ChangeRequestsService {
   static async getChangeRequestByID(crId: string, organization: Organization): Promise<ChangeRequest> {
     const changeRequest = await prisma.change_Request.findUnique({
       where: { crId },
-      ...getChangeRequestQueryArgs(organization.organizationId)
+      ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
     });
 
     if (!changeRequest) throw new NotFoundException('Change Request', crId);
@@ -1020,7 +1020,7 @@ export default class ChangeRequestsService {
 
     const finishedCR = await prisma.change_Request.findUnique({
       where: { crId: createdCR.crId },
-      ...getChangeRequestQueryArgs(organization.organizationId)
+      ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
     });
 
     if (!finishedCR) throw new NotFoundException('Change Request', createdCR.crId);
@@ -1155,7 +1155,7 @@ export default class ChangeRequestsService {
 
     const foundCR = await prisma.change_Request.findUnique({
       where: { crId },
-      ...getChangeRequestQueryArgs(organization.organizationId)
+      ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
     });
 
     if (!foundCR) throw new NotFoundException('Change Request', crId);

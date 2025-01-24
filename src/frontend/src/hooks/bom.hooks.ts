@@ -77,9 +77,10 @@ export const useDeleteUnit = () => {
 /**
  * Custom React hook to edit a material.
  * @param materialId The material to edit's id
+ * @param wbsNum The wbs element the material is apart of
  * @returns mutation function to edit a material
  */
-export const useEditMaterial = (materialId: string) => {
+export const useEditMaterial = (materialId: string, wbsNum: WbsNumber) => {
   const queryClient = useQueryClient();
   return useMutation<Material, Error, MaterialDataSubmission>(
     ['materials', 'edit'],
@@ -89,7 +90,7 @@ export const useEditMaterial = (materialId: string) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['materials', wbsPipe(wbsNum)]);
       }
     }
   );
@@ -110,7 +111,7 @@ export const useCreateMaterial = (wbsNum: WbsNumber) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['materials', wbsPipe(wbsNum)]);
       }
     }
   );
@@ -118,10 +119,11 @@ export const useCreateMaterial = (wbsNum: WbsNumber) => {
 
 /**
  * Custom React hook to delete a material.
+ * @param wbsNum The wbs element you are deleting the material from
  * @param materialId The material to delete's id
  * @returns mutation function to delete a material
  */
-export const useDeleteMaterial = () => {
+export const useDeleteMaterial = (wbsNum: WbsNumber) => {
   const queryClient = useQueryClient();
   return useMutation<any, Error, { materialId: string }>(
     ['materials', 'delete'],
@@ -131,7 +133,7 @@ export const useDeleteMaterial = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['materials', wbsPipe(wbsNum)]);
       }
     }
   );
@@ -139,10 +141,11 @@ export const useDeleteMaterial = () => {
 
 /**
  * Custom React hook to delete a assembly.
+ * @param wbsNum The wbs element you are deleting the assembly from
  * @param assemblyId The assembly to delete's id
  * @returns mutation function to delete a assembly
  */
-export const useDeleteAssembly = () => {
+export const useDeleteAssembly = (wbsNum: WbsNumber) => {
   const queryClient = useQueryClient();
   return useMutation<any, Error, { assemblyId: string }>(
     ['assembly', 'delete'],
@@ -152,7 +155,7 @@ export const useDeleteAssembly = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['assemblies', wbsPipe(wbsNum)]);
       }
     }
   );
@@ -173,7 +176,7 @@ export const useCreateAssembly = (wbsNum: WbsNumber) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['assemblies', wbsPipe(wbsNum)]);
       }
     }
   );
