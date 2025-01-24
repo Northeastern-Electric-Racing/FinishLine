@@ -113,8 +113,12 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
     setMoveContent(!moveContent);
   };
 
-  const handleSubmenuClick = (name: string) => {
-    setOpenSubmenu(openSubmenu === name ? null : name);
+  const handleOpenSubmenu = (name: string) => {
+    setOpenSubmenu(name);
+  };
+
+  const handleCloseSubmenu = () => {
+    setOpenSubmenu(null);
   };
 
   return (
@@ -142,7 +146,8 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
             <NavPageLink
               {...linkItem}
               isSubmenuOpen={openSubmenu === linkItem.name}
-              onSubmenuClick={() => handleSubmenuClick(linkItem.name)}
+              onSubmenuHover={() => handleOpenSubmenu(linkItem.name)}
+              onSubmenuCollapse={() => handleCloseSubmenu()}
             />
           ))}
           {<NavUserMenu open={drawerOpen} />}

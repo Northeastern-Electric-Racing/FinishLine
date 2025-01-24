@@ -10,7 +10,8 @@ import { Box, Typography, useTheme, Collapse } from '@mui/material';
 
 export interface NavPageLinkItemProps extends LinkItem {
   isSubmenuOpen?: boolean;
-  onSubmenuClick?: () => void;
+  onSubmenuHover?: () => void;
+  onSubmenuCollapse?: () => void;
   isSubItem?: boolean;
 }
 
@@ -20,7 +21,8 @@ const NavPageLink: React.FC<NavPageLinkItemProps> = ({
   icon,
   subItems,
   isSubmenuOpen,
-  onSubmenuClick,
+  onSubmenuHover,
+  onSubmenuCollapse,
   isSubItem = false
 }) => {
   const theme = useTheme();
@@ -42,7 +44,7 @@ const NavPageLink: React.FC<NavPageLinkItemProps> = ({
     if (subItems) {
       return (
         <Box
-          onClick={onSubmenuClick}
+          onMouseEnter={onSubmenuHover}
           sx={{
             textDecoration: 'none',
             color: theme.palette.text.primary,
@@ -66,6 +68,7 @@ const NavPageLink: React.FC<NavPageLinkItemProps> = ({
       <NavLink
         to={route}
         exact={route === routes.HOME}
+        onClick={onSubmenuCollapse}
         style={(isActive) => ({
           textDecoration: 'none',
           color: isActive ? '#ef4345' : theme.palette.text.primary,
