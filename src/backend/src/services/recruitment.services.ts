@@ -106,7 +106,7 @@ export default class RecruitmentServices {
    */
   static async getAllFaqs(organization: Organization) {
     const allFaqs = await prisma.frequentlyAskedQuestion.findMany({
-      where: { dateDeleted: null, organizationId: organization.organizationId }
+      where: { dateDeleted: null, regularFaqOrgId: organization.organizationId }
     });
 
     return allFaqs;
@@ -150,7 +150,7 @@ export default class RecruitmentServices {
       data: {
         question,
         answer,
-        organizationId: organization.organizationId,
+        regularFaqOrgId: organization.organizationId,
         userCreatedId: submitter.userId
       }
     });
