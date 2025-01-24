@@ -10,7 +10,6 @@ import {
   Reimbursement_Status_Type,
   User,
   Organization,
-  Sponsor_Status,
   Sponsor_Tier
 } from '@prisma/client';
 import {
@@ -573,19 +572,9 @@ export default class ReimbursementRequestService {
     username: string,
     password: string,
     discountCode: string,
-    twoFactorContact: string,
+    twoFactorContactId: string,
     notes: string,
-    addedByUserId: string,
-    status: Sponsor_Status,
-    contacts: string,
-    tier: Sponsor_Tier,
-    value: number,
-    joinDate: Date,
-    activeYears: number,
-    taxExempt: boolean,
-    dueDate: Date,
-    notifyDate: Date,
-    assignToUserId: string
+    addedByUserId: string
   ) {
     const isAuthorized =
       (await userHasPermission(submitter.userId, organization.organizationId, isAdmin)) ||
@@ -611,19 +600,9 @@ export default class ReimbursementRequestService {
         username,
         password,
         discountCode,
-        twoFactorContact,
+        twoFactorContactId,
         notes,
-        addedByUserId,
-        status,
-        contacts,
-        sponsor_TierId: tier.id,
-        value,
-        joinDate,
-        activeYears,
-        taxExempt,
-        dueDate,
-        notifyDate,
-        assignToUserId
+        addedByUserId
       }
     });
 

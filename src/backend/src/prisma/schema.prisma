@@ -151,11 +151,6 @@ enum Special_Permission {
   FINANCE_ONLY
 }
 
-enum Sponsor_Status {
-  ACTIVE
-  INACTIVE
-}
-
 model User {
   userId                String                @id @default(uuid())
   firstName             String
@@ -236,7 +231,8 @@ model User {
   unreadAnnouncements             Announcement[]            @relation(name: "receivedAnnouncements")
   unreadPopUps                    PopUp[]                   @relation(name: "userPopUps")
   vendorsAdded                    Vendor[]                  @relation(name: "vendorsCreator")
-  vendorsAssigned                 Vendor[]                  @relation(name: "assignedVendors")
+  sponsoringVendorsAssigned       Sponsoring_Vendor_Tasks[] @relation(name: "assignedSponsoringVendors")
+  vendorsTwoFactorContact         Vendor[]                  @relation(name: "twoFactorContactVendors")
 }
 
 model Role {
@@ -632,34 +628,55 @@ model Reimbursement_Product {
 }
 
 model Vendor {
-  vendorId         String                  @id @default(uuid())
-  dateCreated      DateTime                @default(now())
-  dateDeleted      DateTime?
-  name             String
-  requests         Reimbursement_Request[]
-  organizationId   String
-  organization     Organization            @relation(fields: [organizationId], references: [organizationId])
-  username         String
-  password         String
-  discountCode     String
-  twoFactorContact String
-  notes            String
-  addedBy          User                    @relation(fields: [addedByUserId], references: [userId], name: "vendorsCreator")
-  addedByUserId    String
-  status           Sponsor_Status
-  contacts         String
-  tier             Sponsor_Tier            @relation(fields: [sponsor_TierId], references: [id])
-  sponsor_TierId   String
-  value            Int
-  joinDate         DateTime
-  activeYears      Int
-  taxExempt        Boolean
-  dueDate          DateTime
-  notifyDate       DateTime
-  assignTo         User                    @relation(fields: [assignToUserId], references: [userId], name: "assignedVendors")
-  assignToUserId   String
+  vendorId              String                  @id @default(uuid())
+  dateCreated           DateTime                @default(now())
+  dateDeleted           DateTime?
+  name                  String
+  reimbursementRequests Reimbursement_Request[]
+  organizationId        String
+  organization          Organization            @relation(fields: [organizationId], references: [organizationId])
+  username              String
+  password              String
+  discountCode          String
+  twoFactorContact      User                    @relation(fields: [twoFactorContactId], references: [userId], name: "twoFactorContactVendors")
+  twoFactorContactId    String
+  notes                 String
+  addedBy               User                    @relation(fields: [addedByUserId], references: [userId], name: "vendorsCreator")
+  addedByUserId         String
 
   @@unique([name, organizationId], name: "uniqueVendor")
+}
+
+model Sponsoring_Vendor {
+  sponsoringVendorId String                    @id @default(uuid())
+  name               String
+  organizationId     String
+  organization       Organization              @relation(fields: [organizationId], references: [organizationId])
+  dateCreated        DateTime                  @default(now())
+  dateDeleted        DateTime?
+  activeStatus       Boolean
+  vendorContact      String
+  tier               Sponsor_Tier              @relation(fields: [sponsorTierId], references: [sponsorTierId])
+  sponsorTierId      String
+  sponsorValue       Int
+  joinDate           DateTime
+  discountCode       String
+  activeYears        Int[]
+  taxExempt          Boolean
+  vendorTasks        Sponsoring_Vendor_Tasks[]
+
+  @@unique([organizationId], name: "uniqueSponsoringVendor")
+}
+
+model Sponsoring_Vendor_Tasks {
+  sponsoringVendorTasksId String            @id @default(uuid())
+  dueDate                 DateTime
+  notifyDate              DateTime
+  assignTo                User              @relation(fields: [assignToUserId], references: [userId], name: "assignedSponsoringVendors")
+  assignToUserId          String
+  notes                   String
+  vendor                  Sponsoring_Vendor @relation(fields: [vendorId], references: [sponsoringVendorId])
+  vendorId                String
 }
 
 model Account_Code {
@@ -755,8 +772,8 @@ model Material {
   subtotal               Int
   linkUrl                String
   notes                  String?
-  reimbursementRequest   Reimbursement_Request @relation(fields: [reimbursementNumber], references: [reimbursementRequestId])
-  reimbursementNumber    String
+  reimbursementRequest   Reimbursement_Request @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
+  reimbursementRequestId String
 }
 
 model Material_Type {
@@ -990,6 +1007,7 @@ model Organization {
   featuredProjects         Project[]
   popUps                   PopUp[]
   announcements            Announcement[]
+  sponsoringVendors        Sponsoring_Vendor[]
 }
 
 model FrequentlyAskedQuestion {
@@ -1085,7 +1103,7 @@ model PopUp {
 }
 
 model Sponsor_Tier {
-  id      String   @id @default(uuid())
-  name    String
-  vendors Vendor[]
+  sponsorTierId    String              @id @default(uuid())
+  name             String
+  sponsoringVendor Sponsoring_Vendor[]
 }

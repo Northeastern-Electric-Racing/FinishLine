@@ -228,17 +228,7 @@ export default class ReimbursementRequestsController {
         discountCode,
         twoFactorContact,
         notes,
-        addedByUserId,
-        status,
-        contacts,
-        tier,
-        value,
-        joinDate,
-        activeYears,
-        taxExempt,
-        dueDate,
-        notifyDate,
-        assignToUserId
+        addedByUserId
       );
       res.status(200).json(createdVendor);
     } catch (error: unknown) {

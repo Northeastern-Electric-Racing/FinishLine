@@ -1678,7 +1678,6 @@ const performSeed: () => Promise<void> = async () => {
 
   const tier = await prisma.sponsor_Tier.create({
     data: {
-      id: '0',
       name: 'BRONZE'
     }
   });
@@ -1690,19 +1689,9 @@ const performSeed: () => Promise<void> = async () => {
     'nershipping@gmail.com',
     'racecar228!',
     'SAVE50!',
-    'Alex L.',
-    'Tax exemption status?',
     thomasEmrax.userId,
-    'ACTIVE',
-    'Jeni Hankon',
-    tier,
-    550,
-    new Date('2023-11-23T00:00:00-04:00'),
-    3,
-    true,
-    new Date('2024-11-23T00:00:00-04:00'),
-    new Date('2024-01-15T00:00:00-04:00'),
-    regina.userId
+    'Tax exemption status?',
+    thomasEmrax.userId
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1711,18 +1700,8 @@ const performSeed: () => Promise<void> = async () => {
     'amazon@gmail.com',
     'racecare228!',
     'SAVE20!',
-    'Richard F.',
-    'They want updates on work',
     thomasEmrax.userId,
-    'INACTIVE',
-    'Rob',
-    tier,
-    1500,
-    new Date('2023-11-23T00:00:00-04:00'),
-    5,
-    true,
-    new Date('2024-11-23T00:00:00-04:00'),
-    new Date('2024-01-23T00:00:00-04:00'),
+    'They want updates on work',
     thomasEmrax.userId
   );
   await ReimbursementRequestService.createVendor(
@@ -1732,18 +1711,8 @@ const performSeed: () => Promise<void> = async () => {
     'google@gmail.com',
     'racecar228!',
     'SAVE50!',
-    'Peyton',
-    'Tax exemption ID NUMBER',
     thomasEmrax.userId,
-    'ACTIVE',
-    'Boris P.',
-    tier,
-    30000,
-    new Date('2021-11-25T00:00:00-04:00'),
-    2,
-    true,
-    new Date('2022-11-25T00:00:00-04:00'),
-    new Date('2023-01-25T00:00:00-04:00'),
+    'Tax exemption ID NUMBER',
     thomasEmrax.userId
   );
 

@@ -406,18 +406,8 @@ export const createTestReimbursementRequest = async () => {
     'nershipping@gmail.com',
     'racecar228!',
     'SAVE50!',
-    'Alex L.',
-    'Tax exemption status?',
     user.userId,
-    'ACTIVE',
-    'Jeni Hankon',
-    tier,
-    550,
-    new Date('2023-11-23T00:00:00-04:00'),
-    3,
-    true,
-    new Date('2024-11-23T00:00:00-04:00'),
-    new Date('2024-01-23T00:00:00-04:00'),
+    'Tax exemption status?',
     user.userId
   );
 
