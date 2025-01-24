@@ -3,6 +3,8 @@ import { getUserQueryArgs, getUserWithSettingsQueryArgs } from './user.query-arg
 
 export type DesignReviewQueryArgs = ReturnType<typeof getDesignReviewQueryArgs>;
 
+export type DesignReviewPreviewQueryArgs = ReturnType<typeof getDesignReviewPreviewQueryArgs>;
+
 export const getDesignReviewQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Design_ReviewDefaultArgs>()({
     include: {
@@ -16,5 +18,12 @@ export const getDesignReviewQueryArgs = (organizationId: string) =>
       userDeleted: getUserQueryArgs(organizationId),
       wbsElement: true,
       notificationSlackThreads: true
+    }
+  });
+
+export const getDesignReviewPreviewQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Design_ReviewDefaultArgs>()({
+    include: {
+      userCreated: getUserWithSettingsQueryArgs(organizationId)
     }
   });

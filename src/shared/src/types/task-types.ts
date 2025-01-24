@@ -36,3 +36,5 @@ export interface Task {
 export interface TaskWithIndex extends Task {
   index: number;
 }
+
+export type TaskPreview = Pick<Task, 'taskId' | 'title' | 'notes' | 'dateCreated' | 'deadline' | 'priority' | 'status'>;

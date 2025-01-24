@@ -31,6 +31,8 @@ const currentUser = () => `${users()}/auth/current`;
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
 const allProjects = (includeDeleted: boolean) => `${projects()}/all/${includeDeleted ? 'true' : 'false'}`;
+const usersTeamsProjects = () => `${projects()}/users-teams`;
+const usersLeadingProjects = () => `${projects()}/leading`;
 const projectsByWbsNum = (wbsNum: string) => `${projects()}/${wbsNum}`;
 const projectsCreate = () => `${projects()}/create`;
 const projectsEdit = () => `${projects()}/edit`;
@@ -276,6 +278,8 @@ export const apiUrls = {
   projectsLinkTypes,
   projectsCreateLinkTypes,
   projectsEditLinkTypes,
+  usersLeadingProjects,
+  usersTeamsProjects,
 
   tasksCreate,
   tasks,

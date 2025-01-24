@@ -1,8 +1,8 @@
-import { Prisma } from '@prisma/client';
-import { DesignReview, DesignReviewStatus } from 'shared';
+import { Prisma, WBS_Element } from '@prisma/client';
+import { DesignReview, DesignReviewPreview, DesignReviewStatus } from 'shared';
 import { wbsNumOf } from '../utils/utils';
 import { userTransformer, userWithScheduleSettingsTransformer } from './user.transformer';
-import { DesignReviewQueryArgs } from '../prisma-query-args/design-reviews.query-args';
+import { DesignReviewPreviewQueryArgs, DesignReviewQueryArgs } from '../prisma-query-args/design-reviews.query-args';
 import { teamTypeTransformer } from './team-types.transformer';
 
 export const designReviewTransformer = (
@@ -32,5 +32,18 @@ export const designReviewTransformer = (
     wbsName: designReview.wbsElement.name,
     wbsNum: wbsNumOf(designReview.wbsElement),
     initialDate: designReview.initialDateScheduled
+  };
+};
+
+export const designReviewPreviewTransformer = (
+  designReview: Prisma.Design_ReviewGetPayload<DesignReviewPreviewQueryArgs>,
+  wbsElement: WBS_Element
+): DesignReviewPreview => {
+  return {
+    designReviewId: designReview.designReviewId,
+    dateScheduled: designReview.dateScheduled,
+    userCreated: userTransformer(designReview.userCreated),
+    status: designReview.status as DesignReviewStatus,
+    wbsName: wbsElement.name
   };
 };

@@ -2,6 +2,7 @@ import { UseMutationResult } from 'react-query';
 import {
   AuthenticatedUser,
   DescriptionBullet,
+  Material,
   Project,
   Task,
   TaskPriority,
@@ -136,3 +137,6 @@ export const mockUseAllProjectsReturnValue = (projects: Project[]) =>
 
 export const mockManyWorkPackages = (workPackages: WorkPackage[]) =>
   mockUseQueryResult<WorkPackage[]>(false, false, workPackages, new Error());
+
+export const mockManyMaterials = (materials: Material[]) =>
+  mockUseQueryResult<Material[]>(false, false, materials, new Error());
