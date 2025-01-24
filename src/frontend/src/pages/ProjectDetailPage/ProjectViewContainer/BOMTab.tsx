@@ -44,6 +44,7 @@ const BOMTab = ({ project }: { project: Project }) => {
 
   if (assembliesIsLoading || materialsIsLoading || !materials || !assemblies) return <LoadingIndicator />;
 
+  console.log(assemblies);
   const totalCost = materials.reduce(addMaterialCosts, 0);
 
   return (
@@ -55,7 +56,7 @@ const BOMTab = ({ project }: { project: Project }) => {
         assemblies={assemblies}
       />
       <CreateAssemblyModal open={showAddAssembly} onHide={() => setShowAddAssembly(false)} wbsElement={project} />
-      <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: 'calc(100vh - 220px)' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
         <BOMTableWrapper
           project={project}
           materials={materials}
@@ -64,7 +65,7 @@ const BOMTab = ({ project }: { project: Project }) => {
           setHideColumn={setHideColumn}
         />
         <Box justifyContent="space-between" display="flex" flexDirection="row">
-          <Box display="flex" gap="20px">
+          <Box display="flex" gap="20px" mb={1}>
             <NERSuccessButton
               variant="contained"
               onClick={() => setShowAddMaterial(true)}

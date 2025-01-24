@@ -144,7 +144,7 @@ const financeLeadershipApprove = (id: string) => `${financeEndpoints()}/${id}/le
 const bomEndpoints = () => `${API_URL}/projects/bom`;
 const materialEndpoints = () => `${bomEndpoints()}/material`;
 const assemblyEndpoints = () => `${bomEndpoints()}/assembly`;
-const bomGetMaterialsByWbsNum = (wbsNum: WbsNumber) => `${materialEndpoints}/${wbsPipe(wbsNum)}`;
+const bomGetMaterialsByWbsNum = (wbsNum: WbsNumber) => `${bomEndpoints()}/${wbsPipe(wbsNum)}/materials`;
 const bomGetAllUnits = () => `${bomEndpoints()}/units`;
 const bomGetAllMaterialTypes = () => `${bomEndpoints()}/material-type`;
 const bomGetAllManufacturers = () => `${bomEndpoints()}/manufacturer`;
