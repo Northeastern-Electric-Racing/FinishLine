@@ -142,7 +142,7 @@ const SettingsPreferences: React.FC = () => {
                       try {
                         googleLogout();
                         await logUserOut();
-                        history.push(routes.HOME);
+                        history.push(routes.LOGIN);
                       } catch (error) {
                         if (error instanceof Error) {
                           toast.error('Failed to log user out' + error.message);

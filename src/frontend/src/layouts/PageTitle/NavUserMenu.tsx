@@ -52,7 +52,7 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
         try {
           googleLogout();
           await logUserOut();
-          history.push(routes.HOME);
+          history.push(routes.LOGIN);
         } catch (error) {
           if (error instanceof Error) {
             toast.error('Failed to log out' + error.message);
