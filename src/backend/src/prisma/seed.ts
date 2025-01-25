@@ -8,7 +8,6 @@
 import {
   CR_Type,
   Club_Accounts,
-  Graph,
   Graph_Display_Type,
   Graph_Type,
   Measure,
@@ -46,9 +45,7 @@ import { writeFileSync } from 'fs';
 import WorkPackageTemplatesService from '../services/work-package-template.services';
 import RecruitmentServices from '../services/recruitment.services';
 import OrganizationsService from '../services/organizations.services';
-import StatisticsService from '../services/statistics.services';
 import { seedGraph } from './seed-data/statistics.seed';
-import { graphCollectionTransformer } from '../transformers/statistics-graphCollection.transformer';
 import AnnouncementService from '../services/announcement.service';
 
 const prisma = new PrismaClient();
@@ -1675,12 +1672,6 @@ const performSeed: () => Promise<void> = async () => {
   /**
    * Reimbursements
    */
-
-  const tier = await prisma.sponsor_Tier.create({
-    data: {
-      name: 'BRONZE'
-    }
-  });
 
   const vendor = await ReimbursementRequestService.createVendor(
     thomasEmrax,

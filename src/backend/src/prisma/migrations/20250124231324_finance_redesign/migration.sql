@@ -10,8 +10,8 @@ ADD COLUMN     "twoFactorContactId" TEXT NOT NULL DEFAULT '',
 ADD COLUMN     "username" TEXT NOT NULL DEFAULT '';
 
 -- CreateTable
-CREATE TABLE "Sponsoring_Vendor" (
-    "sponsoringVendorId" TEXT NOT NULL,
+CREATE TABLE "Sponsor" (
+    "sponsorId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "organizationId" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -25,25 +25,27 @@ CREATE TABLE "Sponsoring_Vendor" (
     "activeYears" INTEGER[],
     "taxExempt" BOOLEAN NOT NULL,
 
-    CONSTRAINT "Sponsoring_Vendor_pkey" PRIMARY KEY ("sponsoringVendorId")
+    CONSTRAINT "Sponsor_pkey" PRIMARY KEY ("sponsorId")
 );
 
 -- CreateTable
-CREATE TABLE "Sponsoring_Vendor_Tasks" (
-    "sponsoringVendorTasksId" TEXT NOT NULL,
+CREATE TABLE "Sponsor_Task" (
+    "sponsorTaskId" TEXT NOT NULL,
     "dueDate" TIMESTAMP(3) NOT NULL,
-    "notifyDate" TIMESTAMP(3) NOT NULL,
-    "assignToUserId" TEXT NOT NULL,
+    "notifyDate" TIMESTAMP(3),
+    "assignToUserId" TEXT,
     "notes" TEXT NOT NULL,
-    "vendorId" TEXT NOT NULL,
+    "sponsorId" TEXT NOT NULL,
 
-    CONSTRAINT "Sponsoring_Vendor_Tasks_pkey" PRIMARY KEY ("sponsoringVendorTasksId")
+    CONSTRAINT "Sponsor_Task_pkey" PRIMARY KEY ("sponsorTaskId")
 );
 
 -- CreateTable
 CREATE TABLE "Sponsor_Tier" (
     "sponsorTierId" TEXT NOT NULL,
+    "organizationId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "color" VARCHAR(7) NOT NULL,
 
     CONSTRAINT "Sponsor_Tier_pkey" PRIMARY KEY ("sponsorTierId")
 );
@@ -55,7 +57,7 @@ CREATE TABLE "_ProjectToReimbursement_Request" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Sponsoring_Vendor_organizationId_key" ON "Sponsoring_Vendor"("organizationId");
+CREATE UNIQUE INDEX "Sponsor_name_organizationId_key" ON "Sponsor"("name", "organizationId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_ProjectToReimbursement_Request_AB_unique" ON "_ProjectToReimbursement_Request"("A", "B");
@@ -70,19 +72,22 @@ ALTER TABLE "Vendor" ADD CONSTRAINT "Vendor_twoFactorContactId_fkey" FOREIGN KEY
 ALTER TABLE "Vendor" ADD CONSTRAINT "Vendor_addedByUserId_fkey" FOREIGN KEY ("addedByUserId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Sponsoring_Vendor" ADD CONSTRAINT "Sponsoring_Vendor_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Sponsor" ADD CONSTRAINT "Sponsor_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Sponsoring_Vendor" ADD CONSTRAINT "Sponsoring_Vendor_sponsorTierId_fkey" FOREIGN KEY ("sponsorTierId") REFERENCES "Sponsor_Tier"("sponsorTierId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Sponsor" ADD CONSTRAINT "Sponsor_sponsorTierId_fkey" FOREIGN KEY ("sponsorTierId") REFERENCES "Sponsor_Tier"("sponsorTierId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Sponsoring_Vendor_Tasks" ADD CONSTRAINT "Sponsoring_Vendor_Tasks_assignToUserId_fkey" FOREIGN KEY ("assignToUserId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Sponsor_Task" ADD CONSTRAINT "Sponsor_Task_assignToUserId_fkey" FOREIGN KEY ("assignToUserId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Sponsoring_Vendor_Tasks" ADD CONSTRAINT "Sponsoring_Vendor_Tasks_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "Sponsoring_Vendor"("sponsoringVendorId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Sponsor_Task" ADD CONSTRAINT "Sponsor_Task_sponsorId_fkey" FOREIGN KEY ("sponsorId") REFERENCES "Sponsor"("sponsorId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Material" ADD CONSTRAINT "Material_reimbursementRequestId_fkey" FOREIGN KEY ("reimbursementRequestId") REFERENCES "Reimbursement_Request"("reimbursementRequestId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Sponsor_Tier" ADD CONSTRAINT "Sponsor_Tier_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_ProjectToReimbursement_Request" ADD CONSTRAINT "_ProjectToReimbursement_Request_A_fkey" FOREIGN KEY ("A") REFERENCES "Project"("projectId") ON DELETE CASCADE ON UPDATE CASCADE;

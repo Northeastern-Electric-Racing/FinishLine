@@ -231,7 +231,7 @@ model User {
   unreadAnnouncements             Announcement[]            @relation(name: "receivedAnnouncements")
   unreadPopUps                    PopUp[]                   @relation(name: "userPopUps")
   vendorsAdded                    Vendor[]                  @relation(name: "vendorsCreator")
-  sponsoringVendorsAssigned       Sponsoring_Vendor_Tasks[] @relation(name: "assignedSponsoringVendors")
+  sponsorsAssigned                Sponsor_Task[]            @relation(name: "assignedSponsors")
   vendorsTwoFactorContact         Vendor[]                  @relation(name: "twoFactorContactVendors")
 }
 
@@ -647,36 +647,36 @@ model Vendor {
   @@unique([name, organizationId], name: "uniqueVendor")
 }
 
-model Sponsoring_Vendor {
-  sponsoringVendorId String                    @id @default(uuid())
-  name               String
-  organizationId     String
-  organization       Organization              @relation(fields: [organizationId], references: [organizationId])
-  dateCreated        DateTime                  @default(now())
-  dateDeleted        DateTime?
-  activeStatus       Boolean
-  vendorContact      String
-  tier               Sponsor_Tier              @relation(fields: [sponsorTierId], references: [sponsorTierId])
-  sponsorTierId      String
-  sponsorValue       Int
-  joinDate           DateTime
-  discountCode       String
-  activeYears        Int[]
-  taxExempt          Boolean
-  vendorTasks        Sponsoring_Vendor_Tasks[]
+model Sponsor {
+  sponsorId      String         @id @default(uuid())
+  name           String
+  organizationId String
+  organization   Organization   @relation(fields: [organizationId], references: [organizationId])
+  dateCreated    DateTime       @default(now())
+  dateDeleted    DateTime?
+  activeStatus   Boolean
+  vendorContact  String
+  tier           Sponsor_Tier   @relation(fields: [sponsorTierId], references: [sponsorTierId])
+  sponsorTierId  String
+  sponsorValue   Int
+  joinDate       DateTime
+  discountCode   String
+  activeYears    Int[]
+  taxExempt      Boolean
+  sponsorTasks   Sponsor_Task[]
 
-  @@unique([organizationId], name: "uniqueSponsoringVendor")
+  @@unique([name, organizationId], name: "uniqueSponsor")
 }
 
-model Sponsoring_Vendor_Tasks {
-  sponsoringVendorTasksId String            @id @default(uuid())
-  dueDate                 DateTime
-  notifyDate              DateTime
-  assignTo                User              @relation(fields: [assignToUserId], references: [userId], name: "assignedSponsoringVendors")
-  assignToUserId          String
-  notes                   String
-  vendor                  Sponsoring_Vendor @relation(fields: [vendorId], references: [sponsoringVendorId])
-  vendorId                String
+model Sponsor_Task {
+  sponsorTaskId  String    @id @default(uuid())
+  dueDate        DateTime
+  notifyDate     DateTime?
+  assignee       User?     @relation(fields: [assignToUserId], references: [userId], name: "assignedSponsors")
+  assignToUserId String?
+  notes          String
+  sponosor       Sponsor   @relation(fields: [sponsorId], references: [sponsorId])
+  sponsorId      String
 }
 
 model Account_Code {
@@ -1007,7 +1007,8 @@ model Organization {
   featuredProjects         Project[]
   popUps                   PopUp[]
   announcements            Announcement[]
-  sponsoringVendors        Sponsoring_Vendor[]
+  sponsors                 Sponsor[]
+  sponsorTiers             Sponsor_Tier[]
 }
 
 model FrequentlyAskedQuestion {
@@ -1103,7 +1104,10 @@ model PopUp {
 }
 
 model Sponsor_Tier {
-  sponsorTierId    String              @id @default(uuid())
-  name             String
-  sponsoringVendor Sponsoring_Vendor[]
+  sponsorTierId  String       @id @default(uuid())
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  organizationId String
+  name           String
+  color          String       @db.VarChar(7)
+  sponsors       Sponsor[]
 }
