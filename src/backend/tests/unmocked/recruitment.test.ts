@@ -39,19 +39,19 @@ describe('Recruitment Tests', () => {
 
   describe('Get All FAQs', () => {
     it('Succeeds and gets all the FAQs', async () => {
-      const faq1 = await RecruitmentServices.createFaq(
+      const faq1 = await RecruitmentServices.createOrganizationFaq(
         await createTestUser(batmanAppAdmin, orgId),
         'question',
         'answer',
         organization
       );
-      const faq2 = await RecruitmentServices.createFaq(
+      const faq2 = await RecruitmentServices.createOrganizationFaq(
         await createTestUser(supermanAdmin, orgId),
         'question2',
         'answer2',
         organization
       );
-      const result = await RecruitmentServices.getAllFaqs(organization);
+      const result = await RecruitmentServices.getAllOrganizationFaqs(organization);
       expect(result).toStrictEqual([faq1, faq2]);
     });
 
@@ -233,7 +233,12 @@ describe('Recruitment Tests', () => {
       it('Fails if user is not an admin', async () => {
         await expect(
           async () =>
-            await RecruitmentServices.createFaq(await createTestUser(member, orgId), 'question', 'answer', organization)
+            await RecruitmentServices.createOrganizationFaq(
+              await createTestUser(member, orgId),
+              'question',
+              'answer',
+              organization
+            )
         ).rejects.toThrow(new AccessDeniedAdminOnlyException('create an faq'));
       });
 
@@ -279,12 +284,17 @@ describe('Recruitment Tests', () => {
           it('Fails if user is not an admin', async () => {
             await expect(
               async () =>
-                await RecruitmentServices.createFaq(await createTestUser(member, orgId), 'question', 'answer', organization)
+                await RecruitmentServices.createOrganizationFaq(
+                  await createTestUser(member, orgId),
+                  'question',
+                  'answer',
+                  organization
+                )
             ).rejects.toThrow(new AccessDeniedAdminOnlyException('create an faq'));
           });
 
           it('Succeeds and creates an FAQ', async () => {
-            const result = await RecruitmentServices.createFaq(
+            const result = await RecruitmentServices.createOrganizationFaq(
               await createTestUser(batmanAppAdmin, orgId),
               'question',
               'answer',
