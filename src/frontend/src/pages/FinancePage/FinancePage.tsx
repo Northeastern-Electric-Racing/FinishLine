@@ -12,6 +12,7 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import Refunds from './RefundsSection';
+import BalanceSection from './BalanceSection';
 import ReimbursementRequestTable from './ReimbursementRequestsSection';
 import {
   useAllReimbursementRequests,
@@ -196,6 +197,17 @@ const FinancePage = () => {
               allReimbursementRequests={allReimbursementRequests}
             />
           </Box>
+        </Grid>
+        <Grid item xs={12} sm={12} md={4} sx={{ marginTop: '10px' }}>
+          {/* TODO: Make this take in actual data */}
+          <BalanceSection
+            totalBalance={24000}
+            pendingLeadership={10}
+            pendingFinance={10}
+            submittedToSABO={10}
+            reimbursed={10}
+            available={10}
+          ></BalanceSection>
         </Grid>
       </Grid>
     </PageLayout>
