@@ -231,8 +231,8 @@ model User {
   unreadAnnouncements             Announcement[]            @relation(name: "receivedAnnouncements")
   unreadPopUps                    PopUp[]                   @relation(name: "userPopUps")
   vendorsAdded                    Vendor[]                  @relation(name: "vendorsCreator")
-  sponsorsAssigned                Sponsor_Task[]            @relation(name: "assignedSponsors")
-  vendorsTwoFactorContact         Vendor[]                  @relation(name: "twoFactorContactVendors")
+  sponsorTasksAssigned            Sponsor_Task[]            @relation(name: "assignedSponsorTasks")
+  twoFactorContactVendors         Vendor[]                  @relation(name: "twoFactorContactVendors")
 }
 
 model Role {
@@ -637,12 +637,12 @@ model Vendor {
   organization          Organization            @relation(fields: [organizationId], references: [organizationId])
   username              String
   password              String
-  discountCode          String
-  twoFactorContact      User                    @relation(fields: [twoFactorContactId], references: [userId], name: "twoFactorContactVendors")
-  twoFactorContactId    String
-  notes                 String
-  addedBy               User                    @relation(fields: [addedByUserId], references: [userId], name: "vendorsCreator")
-  addedByUserId         String
+  discountCode          String?
+  twoFactorContact      User?                   @relation(fields: [twoFactorContactId], references: [userId], name: "twoFactorContactVendors")
+  twoFactorContactId    String?
+  notes                 String?
+  addedBy               User?                   @relation(fields: [addedByUserId], references: [userId], name: "vendorsCreator")
+  addedByUserId         String?
 
   @@unique([name, organizationId], name: "uniqueVendor")
 }
@@ -660,7 +660,7 @@ model Sponsor {
   sponsorTierId  String
   sponsorValue   Int
   joinDate       DateTime
-  discountCode   String
+  discountCode   String?
   activeYears    Int[]
   taxExempt      Boolean
   sponsorTasks   Sponsor_Task[]
@@ -672,8 +672,8 @@ model Sponsor_Task {
   sponsorTaskId  String    @id @default(uuid())
   dueDate        DateTime
   notifyDate     DateTime?
-  assignee       User?     @relation(fields: [assignToUserId], references: [userId], name: "assignedSponsors")
-  assignToUserId String?
+  assignee       User?     @relation(fields: [assigneeUserId], references: [userId], name: "assignedSponsorTasks")
+  assigneeUserId String?
   notes          String
   sponosor       Sponsor   @relation(fields: [sponsorId], references: [sponsorId])
   sponsorId      String
@@ -1108,6 +1108,6 @@ model Sponsor_Tier {
   organization   Organization @relation(fields: [organizationId], references: [organizationId])
   organizationId String
   name           String
-  color          String       @db.VarChar(7)
+  colorHexCode   String
   sponsors       Sponsor[]
 }
