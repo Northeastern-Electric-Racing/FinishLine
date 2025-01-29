@@ -298,14 +298,7 @@ export default class DesignReviewsService {
       throw new HttpException(400, 'location is required for in person design reviews');
     }
 
-    // Check if all the remaining required memebers are confirmed
-    const allRequiredMembersConfirmed = await areAllRequiredMembersConfirmed(requiredMembersIds);
-
-    if (allRequiredMembersConfirmed) {
-      status = Design_Review_Status.CONFIRMED;
-    }
-
-    // throws if meeting times are not: consecutive and between 0-11
+    // throws if meeting times are not: consecutive and between 0-11sd
     meetingTimes = validateMeetingTimes(meetingTimes);
 
     // docTemplateLink is required if the status is scheduled or done
@@ -345,6 +338,17 @@ export default class DesignReviewsService {
           meetingTimes,
           originaldesignReview.wbsElement
         )));
+
+    // if all required members are confirmed, set the status to confirmed
+    const ogDRRequiredMembersIds = originaldesignReview.requiredMembers.map((member) => member.userId);
+    const allRequiredMembersConfirmed = updatedRequiredMembers.every((member) => 
+      ogDRRequiredMembersIds.includes(member.userId)
+    );
+
+    if (status === Design_Review_Status.SCHEDULED && allRequiredMembersConfirmed) {
+      status = Design_Review_Status.CONFIRMED;
+    }
+
     // actually try to update the design review
     const updatedDesignReview = await prisma.design_Review.update({
       where: { designReviewId },

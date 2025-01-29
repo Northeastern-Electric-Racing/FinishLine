@@ -39,12 +39,3 @@ export const addHours = (date: Date, hours: number) => {
   date.setTime(date.getTime() + hoursToAdd);
   return date;
 };
-
-export const areAllRequiredMembersConfirmed = async (requiredMembersIds: string[]): Promise<boolean> => {
-  const requiredMembers = await prisma.user.findMany({
-    where: { userId: { in: requiredMembersIds } },
-    select: { userId: true, availabilityStatus: true }, 
-  });
-
-  return requiredMembers.every(member => member.availabilityStatus === 'confirmed');
-};
