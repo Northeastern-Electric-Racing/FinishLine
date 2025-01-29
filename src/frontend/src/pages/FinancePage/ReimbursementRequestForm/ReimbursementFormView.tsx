@@ -365,16 +365,15 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 Upload
                 <input
                   onChange={(e) => {
-                    console.log(e);
                     if (e.target.files) {
-                      [...e.target.files].forEach((file) => {
+                      [...e.target.files].forEach((file, index) => {
                         if (file.size >= 1000000) {
                           toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
                           document.getElementById('receipt-image')!.innerHTML = '';
                         } else {
                           receiptPrepend({
                             file,
-                            name: file.name,
+                            name: 'receipt' + (receiptFiles.length + index),
                             googleFileId: ''
                           });
                         }
