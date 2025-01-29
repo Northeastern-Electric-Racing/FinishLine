@@ -1,4 +1,4 @@
-import { Material, WbsElement } from 'shared';
+import { Assembly, Material, WbsNumber } from 'shared';
 import LoadingIndicator from '../../../../../components/LoadingIndicator';
 import { useEditMaterial } from '../../../../../hooks/bom.hooks';
 import { useToast } from '../../../../../hooks/toasts.hooks';
@@ -10,11 +10,12 @@ export interface EditMaterialModalProps {
   open: boolean;
   onHide: () => void;
   material: Material;
-  wbsElement: WbsElement;
+  assemblies: Assembly[];
+  wbsNum: WbsNumber;
 }
 
-const EditMaterialModal: React.FC<EditMaterialModalProps> = ({ open, onHide, material, wbsElement }) => {
-  const { mutateAsync: editMaterial, isLoading, isError, error } = useEditMaterial(material.materialId);
+const EditMaterialModal: React.FC<EditMaterialModalProps> = ({ open, onHide, material, assemblies, wbsNum }) => {
+  const { mutateAsync: editMaterial, isLoading, isError, error } = useEditMaterial(material.materialId, wbsNum);
   const toast = useToast();
 
   if (isLoading) return <LoadingIndicator />;
@@ -42,9 +43,9 @@ const EditMaterialModal: React.FC<EditMaterialModalProps> = ({ open, onHide, mat
         pdmFileName: material.pdmFileName,
         price: material.price / 100
       }}
-      wbsElement={wbsElement}
       onHide={onHide}
       open={open}
+      assemblies={assemblies}
     />
   );
 };

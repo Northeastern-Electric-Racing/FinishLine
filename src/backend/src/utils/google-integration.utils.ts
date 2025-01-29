@@ -183,6 +183,7 @@ export const downloadImageFile = async (fileId: string) => {
 export const createCalendar = async (name: string) => {
   if (process.env.NODE_ENV !== 'production') return;
   try {
+    console.log(CALENDAR_REFRESH_TOKEN);
     oauth2Client.setCredentials({
       refresh_token: CALENDAR_REFRESH_TOKEN
     });
