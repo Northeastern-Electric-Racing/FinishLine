@@ -1,7 +1,6 @@
 import { DesignReview } from 'shared';
 import { HttpException } from './errors.utils';
 import { User } from '@prisma/client';
-import prisma from '../prisma/prisma';
 
 /**
  * Validate meeting times

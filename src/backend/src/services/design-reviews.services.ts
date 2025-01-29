@@ -25,7 +25,7 @@ import {
   areUsersinList,
   updateUserAvailability
 } from '../utils/users.utils';
-import { isUserOnDesignReview, validateMeetingTimes,  } from '../utils/design-reviews.utils';
+import { isUserOnDesignReview, validateMeetingTimes } from '../utils/design-reviews.utils';
 import { designReviewTransformer } from '../transformers/design-reviews.transformer';
 import {
   sendDRConfirmationToThread,
@@ -341,7 +341,7 @@ export default class DesignReviewsService {
 
     // if all required members are confirmed, set the status to confirmed
     const ogDRRequiredMembersIds = originaldesignReview.requiredMembers.map((member) => member.userId);
-    const allRequiredMembersConfirmed = updatedRequiredMembers.every((member) => 
+    const allRequiredMembersConfirmed = updatedRequiredMembers.every((member) =>
       ogDRRequiredMembersIds.includes(member.userId)
     );
 
