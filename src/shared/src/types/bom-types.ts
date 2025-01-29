@@ -59,27 +59,22 @@ export interface Material {
   dateCreated: Date;
   userCreated: UserPreview;
   status: MaterialStatus;
-  materialTypeName: string | null;
-  materialType?: MaterialTypePreview;
-  manufacturerName: string | null;
-  manufacturer?: ManufacturerPreview;
-  manufacturerPartNumber: string | null;
+  materialTypeName: string;
+  materialType: MaterialTypePreview;
+  manufacturerName: string;
+  manufacturer: ManufacturerPreview;
+  manufacturerPartNumber: string;
   pdmFileName?: string;
   quantity: Decimal;
   unitName?: string;
   quantityUnit?: UnitPreview;
   price: number;
   subtotal: number;
-  linkUrl: string | null;
+  linkUrl: string;
   notes?: string;
 }
 
 export type MaterialPreview = Omit<
   Material,
   'quantityUnit' | 'manufacturer' | 'materialType' | 'userCreated' | 'userDeleted' | 'wbsElement'
-> & {
-  quantity: Decimal | null;
-  price: number | null;
-  linkUrl: string | null;
-  subtotal: number | null;
-};
+>;
