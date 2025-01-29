@@ -1,6 +1,7 @@
 import { DesignReview } from 'shared';
 import { HttpException } from './errors.utils';
 import { User } from '@prisma/client';
+import prisma from '../prisma/prisma';
 
 /**
  * Validate meeting times
@@ -37,4 +38,13 @@ export const addHours = (date: Date, hours: number) => {
   const hoursToAdd = hours * 60 * 60 * 1000;
   date.setTime(date.getTime() + hoursToAdd);
   return date;
+};
+
+export const areAllRequiredMembersConfirmed = async (requiredMembersIds: string[]): Promise<boolean> => {
+  const requiredMembers = await prisma.user.findMany({
+    where: { userId: { in: requiredMembersIds } },
+    select: { userId: true, availabilityStatus: true }, 
+  });
+
+  return requiredMembers.every(member => member.availabilityStatus === 'confirmed');
 };

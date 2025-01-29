@@ -25,7 +25,7 @@ import {
   areUsersinList,
   updateUserAvailability
 } from '../utils/users.utils';
-import { isUserOnDesignReview, validateMeetingTimes } from '../utils/design-reviews.utils';
+import { isUserOnDesignReview, validateMeetingTimes,  } from '../utils/design-reviews.utils';
 import { designReviewTransformer } from '../transformers/design-reviews.transformer';
 import {
   sendDRConfirmationToThread,
@@ -296,6 +296,13 @@ export default class DesignReviewsService {
     // make sure there is a location if the design review is in person
     if (isInPerson && location === null) {
       throw new HttpException(400, 'location is required for in person design reviews');
+    }
+
+    // Check if all the remaining required memebers are confirmed
+    const allRequiredMembersConfirmed = await areAllRequiredMembersConfirmed(requiredMembersIds);
+
+    if (allRequiredMembersConfirmed) {
+      status = Design_Review_Status.CONFIRMED;
     }
 
     // throws if meeting times are not: consecutive and between 0-11
