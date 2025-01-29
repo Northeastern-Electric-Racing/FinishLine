@@ -365,17 +365,11 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 Upload
                 <input
                   onChange={(e) => {
+                    console.log(e);
                     if (e.target.files) {
                       [...e.target.files].forEach((file) => {
-                        /* The regex /^[\w.]+$/ limits the file name to the set of alphanumeric characters (\w) and dots (for file type) */
                         if (file.size >= 1000000) {
                           toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
-                          document.getElementById('receipt-image')!.innerHTML = '';
-                        } else if (file.name.length > 20) {
-                          toast.error(`Error uploading ${file.name}; file name must be less than 20 characters`, 5000);
-                          document.getElementById('receipt-image')!.innerHTML = '';
-                        } else if (!/^[\w.]+$/.test(file.name)) {
-                          toast.error(`Error uploading ${file.name}; file name must only contain letter and numbers`, 5000);
                           document.getElementById('receipt-image')!.innerHTML = '';
                         } else {
                           receiptPrepend({

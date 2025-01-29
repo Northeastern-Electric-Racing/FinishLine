@@ -732,7 +732,7 @@ export default class ReimbursementRequestService {
       );
     }
 
-    file.filename = 'receipt ' + reimbursementRequest.receiptPictures.length;
+    file.filename = 'receipt' + reimbursementRequest.receiptPictures.length;
     const imageData = await uploadFile(file);
 
     if (!imageData?.name) {
