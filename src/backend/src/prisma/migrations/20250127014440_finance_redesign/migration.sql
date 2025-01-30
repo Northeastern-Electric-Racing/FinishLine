@@ -1,11 +1,11 @@
 -- AlterTable
-ALTER TABLE "Material" ADD COLUMN     "reimbursementRequestId" TEXT NOT NULL DEFAULT '';
+ALTER TABLE "Material" ADD COLUMN     "reimbursementRequestId" TEXT;
 
 -- AlterTable
 ALTER TABLE "Vendor" ADD COLUMN     "addedByUserId" TEXT,
 ADD COLUMN     "discountCode" TEXT,
 ADD COLUMN     "notes" TEXT,
-ADD COLUMN     "password" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "passwordHash" TEXT NOT NULL DEFAULT '',
 ADD COLUMN     "twoFactorContactId" TEXT,
 ADD COLUMN     "username" TEXT NOT NULL DEFAULT '';
 
