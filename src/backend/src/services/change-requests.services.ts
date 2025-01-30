@@ -23,7 +23,7 @@ import {
   DeletedException,
   InvalidOrganizationException
 } from '../utils/errors.utils';
-import changeRequestTransformer from '../transformers/change-requests.transformer';
+import changeRequestTransformer, { changeRequestManyTransformer } from '../transformers/change-requests.transformer';
 import {
   allChangeRequestsReviewed,
   validateProposedChangesFields,
@@ -43,7 +43,12 @@ import {
   sendSlackCRStatusToThread,
   sendSlackRequestedReviewNotification
 } from '../utils/slack.utils';
-import { ChangeRequestQueryArgs, getChangeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
+import {
+  ChangeRequestWithProjectAndWorkPackageQueryArgs,
+  getChangeRequestQueryArgs,
+  getChangeRequestWithProjectAndWorkPackageQueryArgs,
+  getManyChangeRequestQueryArgs
+} from '../prisma-query-args/change-requests.query-args';
 import proposedSolutionTransformer from '../transformers/proposed-solutions.transformer';
 import { getProposedSolutionQueryArgs } from '../prisma-query-args/proposed-solutions.query-args';
 import { sendCrRequestReviewPopUp, sendCrReviewedPopUp } from '../utils/pop-up.utils';
@@ -59,7 +64,7 @@ export default class ChangeRequestsService {
   static async getChangeRequestByID(crId: string, organization: Organization): Promise<ChangeRequest> {
     const changeRequest = await prisma.change_Request.findUnique({
       where: { crId },
-      ...getChangeRequestQueryArgs(organization.organizationId)
+      ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
     });
 
     if (!changeRequest) throw new NotFoundException('Change Request', crId);
@@ -77,11 +82,111 @@ export default class ChangeRequestsService {
    */
   static async getAllChangeRequests(organization: Organization): Promise<ChangeRequest[]> {
     const changeRequests = await prisma.change_Request.findMany({
-      where: { dateDeleted: null, wbsElement: { organizationId: organization.organizationId ?? null } },
-      ...getChangeRequestQueryArgs(organization.organizationId)
+      where: { dateDeleted: null, organizationId: organization.organizationId },
+      ...getManyChangeRequestQueryArgs(organization.organizationId)
     });
 
-    return changeRequests.map(changeRequestTransformer);
+    return changeRequests.map(changeRequestManyTransformer);
+  }
+
+  /**
+   * Gets a users change requests that they have been requested reviewer for or, if they are leadership, their teams change requests as well
+   *
+   * @param user The user to get their to review change requests for
+   * @param organization The organization the user is in
+   * @returns The user's change requests for them to review
+   */
+  static async getToReviewChangeRequests(user: User, organization: Organization): Promise<ChangeRequest[]> {
+    const wbsOr: Prisma.WBS_ElementWhereInput[] = [{ managerId: user.userId }, { leadId: user.userId }];
+
+    if (await userHasPermission(user.userId, organization.organizationId, isLeadership)) {
+      wbsOr.push({
+        project: {
+          teams: {
+            some: {
+              OR: [
+                { headId: user.userId },
+                { leads: { some: { userId: user.userId } } },
+                { members: { some: { userId: user.userId } } }
+              ]
+            }
+          }
+        }
+      });
+    }
+
+    const queryOr: Prisma.Change_RequestWhereInput[] = [
+      {
+        requestedReviewers: {
+          some: {
+            userId: user.userId
+          }
+        }
+      },
+      {
+        wbsElement: {
+          OR: wbsOr
+        }
+      }
+    ];
+
+    const changeRequests = await prisma.change_Request.findMany({
+      where: {
+        dateDeleted: null,
+        dateReviewed: null,
+        organizationId: organization.organizationId,
+        OR: queryOr
+      },
+      ...getManyChangeRequestQueryArgs(organization.organizationId)
+    });
+
+    return changeRequests.map(changeRequestManyTransformer);
+  }
+
+  /**
+   * Gets all the unreviewed change requests for the current user
+   *
+   * @param user The user to get the change requests for
+   * @param organization The organization the user is currently in
+   * @returns The users unreviewed change requests
+   */
+  static async getUnreviewedChangeRequests(user: User, organization: Organization): Promise<ChangeRequest[]> {
+    const changeRequests = await prisma.change_Request.findMany({
+      where: {
+        submitterId: user.userId,
+        organizationId: organization.organizationId,
+        dateReviewed: null,
+        dateDeleted: null
+      },
+      ...getManyChangeRequestQueryArgs(organization.organizationId)
+    });
+
+    return changeRequests.map(changeRequestManyTransformer);
+  }
+
+  /**
+   * Gets the users approved change requests from the last five days
+   *
+   * @param user The user to get their approved change requests for
+   * @param organization The organization the user is currently in
+   * @returns The users approved change requests
+   */
+  static async getApprovedChangeRequests(user: User, organization: Organization): Promise<ChangeRequest[]> {
+    const currentDate = new Date();
+
+    const changeRequests = await prisma.change_Request.findMany({
+      where: {
+        submitterId: user.userId,
+        organizationId: organization.organizationId,
+        dateReviewed: {
+          gte: new Date(currentDate.getTime() - 1000 * 60 * 60 * 24 * 5) // Change requests that were reviewed less than five days ago
+        },
+        dateDeleted: null
+      },
+      ...getManyChangeRequestQueryArgs(organization.organizationId)
+    });
+
+    return changeRequests.map(changeRequestManyTransformer);
   }
 
   /**
@@ -110,7 +215,7 @@ export default class ChangeRequestsService {
     // ensure existence of change request
     const foundCR = await prisma.change_Request.findUnique({
       where: { crId },
-      include: getChangeRequestQueryArgs(organization.organizationId).include
+      ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
     });
 
     if (!foundCR) throw new NotFoundException('Change Request', crId);
@@ -167,7 +272,7 @@ export default class ChangeRequestsService {
    * @param organization the organization the user is currently in
    */
   static async reviewScopeChangeRequest(
-    foundCR: Prisma.Change_RequestGetPayload<ChangeRequestQueryArgs>,
+    foundCR: Prisma.Change_RequestGetPayload<ChangeRequestWithProjectAndWorkPackageQueryArgs>,
     reviewer: User,
     psId: string | null,
     organization: Organization
@@ -285,7 +390,7 @@ export default class ChangeRequestsService {
    * @param reviewer the user reviewing the change request
    */
   static async reviewStageGateChangeRequest(
-    foundCR: Prisma.Change_RequestGetPayload<ChangeRequestQueryArgs>,
+    foundCR: Prisma.Change_RequestGetPayload<ChangeRequestWithProjectAndWorkPackageQueryArgs>,
     reviewer: User
   ): Promise<void> {
     if (!foundCR.wbsElement.workPackage) {
@@ -328,7 +433,7 @@ export default class ChangeRequestsService {
    * @param reviewer the user reviewing the change request
    */
   static async reviewActivationChangeRequest(
-    foundCR: Prisma.Change_RequestGetPayload<ChangeRequestQueryArgs>,
+    foundCR: Prisma.Change_RequestGetPayload<ChangeRequestWithProjectAndWorkPackageQueryArgs>,
     reviewer: User
   ): Promise<void> {
     const { activationChangeRequest } = foundCR;
@@ -915,7 +1020,7 @@ export default class ChangeRequestsService {
 
     const finishedCR = await prisma.change_Request.findUnique({
       where: { crId: createdCR.crId },
-      ...getChangeRequestQueryArgs(organization.organizationId)
+      ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
     });
 
     if (!finishedCR) throw new NotFoundException('Change Request', createdCR.crId);
@@ -1050,7 +1155,7 @@ export default class ChangeRequestsService {
 
     const foundCR = await prisma.change_Request.findUnique({
       where: { crId },
-      ...getChangeRequestQueryArgs(organization.organizationId)
+      ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
     });
 
     if (!foundCR) throw new NotFoundException('Change Request', crId);

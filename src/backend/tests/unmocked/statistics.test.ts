@@ -88,7 +88,7 @@ describe('Statistics Tests', () => {
     });
 
     it('Create graph works for getting total project budget by division', async () => {
-      const division = await createTestTeamType(orgId);
+      const division = await createTestTeamType(undefined, orgId);
       const team = await createTestTeam(user.userId, division.teamTypeId, orgId);
       const car = await createTestCar(orgId, user.userId);
       await createTestProject(user, orgId, team.teamId, car.carId);
@@ -107,7 +107,7 @@ describe('Statistics Tests', () => {
         new Date(new Date('12/12/2024').getTime() + 10000)
       );
 
-      expect(result).toContain({
+      expect(result).toMatchObject({
         ...expectedCreatedGraphBase,
         graphType: 'PROJECT_BUDGET_BY_DIVISION',
         graphDisplayType: 'BAR'
@@ -122,7 +122,7 @@ describe('Statistics Tests', () => {
     });
 
     it('Create graph works for getting average project budget by division and using Pie Chart', async () => {
-      const division = await createTestTeamType(orgId);
+      const division = await createTestTeamType(undefined, orgId);
       const team = await createTestTeam(user.userId, division.teamTypeId, orgId);
       const car = await createTestCar(orgId, user.userId);
       await createTestProject(user, orgId, team.teamId, car.carId);
@@ -141,7 +141,7 @@ describe('Statistics Tests', () => {
         new Date(new Date('12/12/2024').getTime() + 10000)
       );
 
-      expect(result).toContain({
+      expect(result).toMatchObject({
         ...expectedCreatedGraphBase,
         graphType: 'PROJECT_BUDGET_BY_DIVISION',
         graphDisplayType: 'PIE',
@@ -159,7 +159,7 @@ describe('Statistics Tests', () => {
     });
 
     it('Create graph works for getting average project budget by division neglecting deleted projects', async () => {
-      const division = await createTestTeamType(orgId);
+      const division = await createTestTeamType(undefined, orgId);
       const team = await createTestTeam(user.userId, division.teamTypeId, orgId);
       const car = await createTestCar(orgId, user.userId);
       await createTestProject(user, orgId, team.teamId, car.carId);
@@ -178,7 +178,7 @@ describe('Statistics Tests', () => {
         new Date(new Date().getTime() + 100000)
       );
 
-      expect(result).toContain({
+      expect(result).toMatchObject({
         ...expectedCreatedGraphBase,
         graphType: 'PROJECT_BUDGET_BY_DIVISION',
         graphDisplayType: 'BAR',
@@ -196,7 +196,7 @@ describe('Statistics Tests', () => {
     });
 
     it('Create graph works for undefined start and end times', async () => {
-      const division = await createTestTeamType(orgId);
+      const division = await createTestTeamType(undefined, orgId);
       const team = await createTestTeam(user.userId, division.teamTypeId, orgId);
       const car = await createTestCar(orgId, user.userId);
       await createTestProject(user, orgId, team.teamId, car.carId);
@@ -213,7 +213,7 @@ describe('Statistics Tests', () => {
         []
       );
 
-      expect(result).toContain({
+      expect(result).toMatchObject({
         ...expectedCreatedGraphBase,
         graphType: 'PROJECT_BUDGET_BY_DIVISION',
         graphDisplayType: 'BAR',
@@ -231,7 +231,7 @@ describe('Statistics Tests', () => {
     });
 
     it('Create graph works for filtering out times outside of date range', async () => {
-      const division = await createTestTeamType(orgId);
+      const division = await createTestTeamType(undefined, orgId);
       const team = await createTestTeam(user.userId, division.teamTypeId, orgId);
       const car = await createTestCar(orgId, user.userId);
       await createTestProject(user, orgId, team.teamId, car.carId);
@@ -250,7 +250,7 @@ describe('Statistics Tests', () => {
         new Date('12/12/1971')
       );
 
-      expect(result).toContain({
+      expect(result).toMatchObject({
         ...expectedCreatedGraphBase,
         graphType: 'PROJECT_BUDGET_BY_DIVISION',
         graphDisplayType: 'BAR',

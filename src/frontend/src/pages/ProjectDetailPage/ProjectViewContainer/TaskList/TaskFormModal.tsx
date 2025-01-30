@@ -9,11 +9,12 @@ import { getTaskAssigneeOptions, taskUserToAutocompleteOption } from '../../../.
 import NERFormModal from '../../../../components/NERFormModal';
 
 const schema = yup.object().shape({
-  notes: yup.string(),
+  notes: yup.string().required(),
   deadline: yup.date().optional(),
-  priority: yup.string().required(),
-  assignees: yup.array(),
-  title: yup.string().required()
+  priority: yup.mixed<TaskPriority>().oneOf(Object.values(TaskPriority)).required(),
+  assignees: yup.array().required(),
+  title: yup.string().required(),
+  taskId: yup.string().required()
 });
 
 export interface EditTaskFormInput {
@@ -44,7 +45,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
     control,
     formState: { errors },
     reset
-  } = useForm({
+  } = useForm<EditTaskFormInput>({
     resolver: yupResolver(schema),
     defaultValues: {
       title: task?.title ?? '',

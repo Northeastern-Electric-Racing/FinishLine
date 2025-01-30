@@ -1,7 +1,7 @@
 import { TableRow, TableCell, Box, Table as MuiTable, TableHead, TableBody, Typography, Button } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Milestone } from 'shared/src/types/milestone-types';
+import { Milestone } from 'shared';
 import CreateMilestoneFormModal from './CreateMilestoneFormModal';
 import EditMilestoneFormModal from './EditMilestoneFormModal';
 import LoadingIndicator from '../../../components/LoadingIndicator';

@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react';
 import { OrganizationContext } from '../app/AppOrganizationContext';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Organization, Project } from 'shared';
+import { Organization, ProjectPreview } from 'shared';
 import {
   getFeaturedProjects,
   getCurrentOrganization,
@@ -9,7 +9,11 @@ import {
   setOrganizationFeaturedProjects,
   setOrganizationWorkspaceId,
   setOrganizationLogo,
-  getOrganizationLogo
+  getOrganizationLogo,
+  updateApplicationLink,
+  setOnboardingText,
+  updateOrganizationContacts,
+  setOrganizationImages
 } from '../apis/organizations.api';
 import { downloadGoogleImage } from '../apis/organizations.api';
 
@@ -17,6 +21,25 @@ interface OrganizationProvider {
   organizationId: string;
   selectOrganization: (organizationId: string) => void;
 }
+
+export interface UpdateContactsPayload {
+  contacts: { userId: string; title: string }[];
+}
+
+export interface OnboardingTextPayload {
+  onboardingText: string;
+}
+
+export interface ApplicationLinkPayload {
+  applicationLink: string;
+}
+
+export const useCurrentOrganization = () => {
+  return useQuery<Organization, Error>(['organizations'], async () => {
+    const { data } = await getCurrentOrganization();
+    return data;
+  });
+};
 
 export const useProvideOrganization = (): OrganizationProvider => {
   const [organizationId, setOrganizationId] = useState<string>('');
@@ -32,15 +55,24 @@ export const useProvideOrganization = (): OrganizationProvider => {
   };
 };
 
-export const useCurrentOrganization = () => {
-  return useQuery<Organization, Error>(['organizations'], async () => {
-    const { data } = await getCurrentOrganization();
-    return data;
-  });
+export const useSetOrganizationImages = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<any, unknown, File[]>(
+    async (images: File[]) => {
+      const { data } = await setOrganizationImages(images);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['organizations']);
+      }
+    }
+  );
 };
 
 export const useFeaturedProjects = () => {
-  return useQuery<Project[], Error>(['organizations', 'featured-projects'], async () => {
+  return useQuery<ProjectPreview[], Error>(['organizations', 'featured-projects'], async () => {
     const { data } = await getFeaturedProjects();
     return data;
   });
@@ -51,6 +83,54 @@ export const useOrganization = () => {
   const context = useContext(OrganizationContext);
   if (context === undefined) throw Error('Organization must be used inside of an organizational context.');
   return context;
+};
+
+export const useUpdateOrganizationContacts = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Organization, Error, UpdateContactsPayload>(
+    ['organizations'],
+    async (payload: UpdateContactsPayload) => {
+      const { data } = await updateOrganizationContacts(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['organizations']);
+      }
+    }
+  );
+};
+
+export const useSetOnboardingText = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Organization, Error, OnboardingTextPayload>(
+    ['organizations', 'edit'],
+    async (payload) => {
+      const { data } = await setOnboardingText(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['organizations']);
+      }
+    }
+  );
+};
+
+export const useUpdateApplicationLink = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Organization, Error, ApplicationLinkPayload>(
+    ['organizations', 'edit'],
+    async (payload) => {
+      const { data } = await updateApplicationLink(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['organizations']);
+      }
+    }
+  );
 };
 
 /**
@@ -75,9 +155,9 @@ export const useSetOrganizationDescription = () => {
 
 export const useSetFeaturedProjects = () => {
   const queryClient = useQueryClient();
-  return useMutation<Organization, Error, Project[]>(
+  return useMutation<Organization, Error, ProjectPreview[]>(
     ['organizations', 'featured-projects'],
-    async (featuredProjects: Project[]) => {
+    async (featuredProjects: ProjectPreview[]) => {
       const { data } = await setOrganizationFeaturedProjects(featuredProjects.map((project) => project.id));
       return data;
     },

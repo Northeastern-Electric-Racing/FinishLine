@@ -713,7 +713,8 @@ export default class ReimbursementRequestService {
       throw new AccessDeniedGuestException('Guests cannot upload receipts');
 
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
-      where: { reimbursementRequestId }
+      where: { reimbursementRequestId },
+      include: { receiptPictures: true }
     });
 
     if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
@@ -731,6 +732,7 @@ export default class ReimbursementRequestService {
       );
     }
 
+    file.filename = 'receipt ' + reimbursementRequest.receiptPictures.length;
     const imageData = await uploadFile(file);
 
     if (!imageData?.name) {

@@ -18,6 +18,24 @@ export const getAllChangeRequests = () => {
   });
 };
 
+export const getToReviewChangeRequests = () => {
+  return axios.get<ChangeRequest[]>(apiUrls.toReviewChangeRequests(), {
+    transformResponse: (data) => JSON.parse(data).map(changeRequestTransformer)
+  });
+};
+
+export const getUnreviewedChangeRequests = () => {
+  return axios.get<ChangeRequest[]>(apiUrls.unreviewedChangeRequests(), {
+    transformResponse: (data) => JSON.parse(data).map(changeRequestTransformer)
+  });
+};
+
+export const getApprovedChangeRequests = () => {
+  return axios.get<ChangeRequest[]>(apiUrls.approvedChangeRequests(), {
+    transformResponse: (data) => JSON.parse(data).map(changeRequestTransformer)
+  });
+};
+
 /**
  * Fetches a single change request.
  *
@@ -42,7 +60,7 @@ export const reviewChangeRequest = (
   crId: string,
   accepted: boolean,
   reviewNotes: string,
-  psId: string
+  psId?: string
 ) => {
   return axios.post<{ message: string }>(apiUrls.changeRequestsReview(), {
     reviewerId,

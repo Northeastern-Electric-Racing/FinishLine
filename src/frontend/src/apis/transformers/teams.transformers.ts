@@ -1,5 +1,5 @@
 import { Team } from 'shared';
-import { projectPreviewTranformer } from './projects.transformers';
+import { projectPreviewTransformer } from './projects.transformers';
 
 /**
  * Transforms a team to ensure deep field transformation of date objects.
@@ -11,6 +11,6 @@ export const teamTransformer = (team: Team): Team => {
   return {
     ...team,
     dateArchived: team.dateArchived ? new Date(team.dateArchived) : undefined,
-    projects: team.projects.map(projectPreviewTranformer)
+    projects: team.projects.map(projectPreviewTransformer)
   };
 };

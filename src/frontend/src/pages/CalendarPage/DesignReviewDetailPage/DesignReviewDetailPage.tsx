@@ -115,6 +115,8 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
     for (let i = startTime; i < endTime; i++) {
       times.push(i % 12);
     }
+    date.setHours(12);
+
     try {
       const payload: EditDesignReviewPayload = {
         dateScheduled: date,
@@ -213,7 +215,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
             value={startTime}
             onChange={(event: SelectChangeEvent<number>) => setStateTime(Number(event.target.value))}
             size={'small'}
-            placeholder={'Start Time'}
+            label={'Start Time'}
             sx={EditableFieldStyle}
           >
             {HOURS.map((hour) => {
@@ -235,7 +237,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
             disabled={true}
             onChange={(event: SelectChangeEvent<number>) => setEndTime(Number(event.target.value))}
             size={'small'}
-            placeholder={'End Time'}
+            label={'End Time'}
             sx={EditableFieldStyle}
           >
             {HOURS.map((hour) => {
