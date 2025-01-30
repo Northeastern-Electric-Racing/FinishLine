@@ -53,7 +53,7 @@ export const useProvideAuth = () => {
     signout,
     signInCurrent,
     triedCurrent,
-    isLoading: isLoading || isLoadingDev || currentUserIsLoading
+    isLoading: isLoading || isLoadingDev || (currentUserIsLoading && !triedCurrent)
   } as Auth;
 };
 

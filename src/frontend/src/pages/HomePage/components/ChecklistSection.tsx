@@ -1,4 +1,4 @@
-import { Box, Grid } from '@mui/material';
+import { Box, Grid, Typography } from '@mui/material';
 import { groupChecklists } from '../../../utils/onboarding.utils';
 import Checklist from './Checklist';
 import { Checklist as ChecklistType } from 'shared';
@@ -20,6 +20,19 @@ const ChecklistSection: React.FC<ChecklistSectionProps> = ({ usersChecklists, ch
           </Grid>
         ))}
       </Grid>
+      {!usersChecklists.length && (
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100px',
+            marginTop: 6
+          }}
+        >
+          <Typography variant="h2">No checklists found</Typography>
+        </Box>
+      )}
     </Box>
   );
 };

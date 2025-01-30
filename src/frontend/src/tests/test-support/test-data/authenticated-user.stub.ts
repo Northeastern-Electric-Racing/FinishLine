@@ -16,5 +16,6 @@ export const exampleAuthenticatedAdminUser: AuthenticatedUser = {
   changeRequestsToReviewId: [],
   organizations: [],
   onboardingTeamTypeIds: [],
+  onboardedTeamTypeIds: [],
   permissions: []
 };

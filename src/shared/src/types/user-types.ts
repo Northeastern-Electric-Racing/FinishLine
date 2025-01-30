@@ -84,6 +84,7 @@ export interface AuthenticatedUser {
   organizations: string[];
   currentOrganization?: OrganizationPreview;
   onboardingTeamTypeIds: string[];
+  onboardedTeamTypeIds: string[];
   teamsAsHead?: Team[];
   teamsAsLead?: Team[];
   permissions: Permission[];

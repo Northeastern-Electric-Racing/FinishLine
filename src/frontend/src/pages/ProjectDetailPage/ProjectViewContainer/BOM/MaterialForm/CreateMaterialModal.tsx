@@ -1,4 +1,4 @@
-import { WbsElement } from 'shared';
+import { Assembly, WbsElement } from 'shared';
 import MaterialForm, { MaterialDataSubmission } from './MaterialForm';
 import LoadingIndicator from '../../../../../components/LoadingIndicator';
 import { useToast } from '../../../../../hooks/toasts.hooks';
@@ -9,9 +9,10 @@ export interface CreateMaterialModalProps {
   open: boolean;
   onHide: () => void;
   wbsElement: WbsElement;
+  assemblies: Assembly[];
 }
 
-const CreateMaterialModal: React.FC<CreateMaterialModalProps> = ({ open, onHide, wbsElement }) => {
+const CreateMaterialModal: React.FC<CreateMaterialModalProps> = ({ open, onHide, assemblies, wbsElement }) => {
   const { mutateAsync: createMaterial, isLoading, isError, error } = useCreateMaterial(wbsElement.wbsNum);
   const toast = useToast();
 
@@ -30,7 +31,7 @@ const CreateMaterialModal: React.FC<CreateMaterialModalProps> = ({ open, onHide,
     }
   };
 
-  return <MaterialForm submitText="Add" onSubmit={onSubmit} wbsElement={wbsElement} onHide={onHide} open={open} />;
+  return <MaterialForm submitText="Add" onSubmit={onSubmit} assemblies={assemblies} onHide={onHide} open={open} />;
 };
 
 export default CreateMaterialModal;

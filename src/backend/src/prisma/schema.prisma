@@ -7,7 +7,8 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["relationJoins"]
 }
 
 enum CR_Type {
@@ -235,6 +236,7 @@ model User {
   checkedChecklists               Checklist[]               @relation(name: "checkedChecklists")
   contacts                        Contact[]
   onboardingTeamTypes             Team_Type[]               @relation(name: "onboardingTeamTypes")
+  onboardedTeamTypes              Team_Type[]               @relation(name: "onboardedTeamTypes")
 }
 
 model Role {
@@ -774,6 +776,7 @@ model Team_Type {
   calendarId      String?
   checklists      Checklist[]
   usersOnboarding User[]          @relation(name: "onboardingTeamTypes")
+  usersOnboarded  User[]          @relation(name: "onboardedTeamTypes")
 
   dateDeleted DateTime?
   deletedById String?

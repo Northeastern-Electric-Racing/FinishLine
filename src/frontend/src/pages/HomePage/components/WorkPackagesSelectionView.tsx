@@ -1,4 +1,4 @@
-import { WorkPackage } from 'shared';
+import { WorkPackagePreview } from 'shared';
 import { Box, Card, CardContent, useTheme } from '@mui/material';
 import {
   getInProgressWorkPackages,
@@ -32,12 +32,12 @@ const WorkPackagesSelectionView: React.FC = () => {
 
   const relevantWPs = teamsAsLeadership.map((team) => team.projects.map((project) => project.workPackages)).flat(2);
 
-  const upcomingWPs: WorkPackage[] = getUpcomingWorkPackages(relevantWPs);
-  const inProgressWPs: WorkPackage[] = getInProgressWorkPackages(relevantWPs);
-  const overdueWPs: WorkPackage[] = getOverdueWorkPackages(relevantWPs);
+  const upcomingWPs: WorkPackagePreview[] = getUpcomingWorkPackages(relevantWPs);
+  const inProgressWPs: WorkPackagePreview[] = getInProgressWorkPackages(relevantWPs);
+  const overdueWPs: WorkPackagePreview[] = getOverdueWorkPackages(relevantWPs);
 
   // options for selection
-  const workPackageOptions: [string, WorkPackage[]][] = [
+  const workPackageOptions: [string, WorkPackagePreview[]][] = [
     [`Upcoming Work Packages (${upcomingWPs.length})`, upcomingWPs],
     [`In Progress Work Packages (${inProgressWPs.length})`, inProgressWPs],
     [`Overdue Work Packages (${overdueWPs.length})`, overdueWPs]
@@ -56,7 +56,7 @@ const WorkPackagesSelectionView: React.FC = () => {
   // destructuring tuple to get wps of selected option
   const [, currentWps] = workPackageOptions[currentDisplayedWPs];
 
-  const WorkPackagesDisplay = (workPackages: WorkPackage[]) => (
+  const WorkPackagesDisplay = (workPackages: WorkPackagePreview[]) => (
     <Box
       sx={{
         display: 'flex',

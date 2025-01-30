@@ -27,10 +27,13 @@ const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
 const userTasks = (id: string) => `${usersById(id)}/tasks`;
 const manyUserTasks = () => `${users()}/tasks/get-many`;
 const currentUser = () => `${users()}/auth/current`;
+const logUserOut = () => `${users()}/auth/log-out`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
 const allProjects = (includeDeleted: boolean) => `${projects()}/all/${includeDeleted ? 'true' : 'false'}`;
+const usersTeamsProjects = () => `${projects()}/users-teams`;
+const usersLeadingProjects = () => `${projects()}/leading`;
 const projectsByWbsNum = (wbsNum: string) => `${projects()}/${wbsNum}`;
 const projectsCreate = () => `${projects()}/create`;
 const projectsEdit = () => `${projects()}/edit`;
@@ -68,6 +71,9 @@ const workPackagesMany = () => `${workPackages()}/get-many`;
 
 /**************** Change Requests Endpoints ****************/
 const changeRequests = () => `${API_URL}/change-requests`;
+const toReviewChangeRequests = () => `${API_URL}/change-requests/to-review`;
+const unreviewedChangeRequests = () => `${API_URL}/change-requests/unreviewed`;
+const approvedChangeRequests = () => `${API_URL}/change-requests/approved`;
 const changeRequestsById = (id: string) => `${changeRequests()}/${id}`;
 const changeRequestsReview = () => `${changeRequests()}/review`;
 const changeRequestDelete = (id: string) => changeRequestsById(id) + '/delete';
@@ -139,7 +145,7 @@ const financeLeadershipApprove = (id: string) => `${financeEndpoints()}/${id}/le
 const bomEndpoints = () => `${API_URL}/projects/bom`;
 const materialEndpoints = () => `${bomEndpoints()}/material`;
 const assemblyEndpoints = () => `${bomEndpoints()}/assembly`;
-const bomGetMaterialsByWbsNum = (wbsNum: WbsNumber) => `${materialEndpoints}/${wbsPipe(wbsNum)}`;
+const bomGetMaterialsByWbsNum = (wbsNum: WbsNumber) => `${bomEndpoints()}/${wbsPipe(wbsNum)}/materials`;
 const bomGetAllUnits = () => `${bomEndpoints()}/units`;
 const bomGetAllMaterialTypes = () => `${bomEndpoints()}/material-type`;
 const bomGetAllManufacturers = () => `${bomEndpoints()}/manufacturer`;
@@ -261,6 +267,7 @@ export const apiUrls = {
   userTasks,
   manyUserTasks,
   currentUser,
+  logUserOut,
 
   projects,
   allProjects,
@@ -273,6 +280,8 @@ export const apiUrls = {
   projectsLinkTypes,
   projectsCreateLinkTypes,
   projectsEditLinkTypes,
+  usersLeadingProjects,
+  usersTeamsProjects,
 
   tasksCreate,
   tasks,
@@ -300,6 +309,9 @@ export const apiUrls = {
   changeRequestsCreateStandard,
   changeRequestCreateProposeSolution,
   changeRequestRequestReviewer,
+  toReviewChangeRequests,
+  unreviewedChangeRequests,
+  approvedChangeRequests,
 
   teams,
   teamsById,
