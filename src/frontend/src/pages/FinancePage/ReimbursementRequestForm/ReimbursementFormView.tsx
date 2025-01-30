@@ -44,6 +44,8 @@ import FileUploadIcon from '@mui/icons-material/FileUpload';
 import NERModal from '../../../components/NERModal';
 import CheckList from '../../../components/CheckList';
 
+import ReactHookTextField from '../../../components/ReactHookTextField';
+
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
   allAccountCodes: AccountCode[];
@@ -406,6 +408,21 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
             />
             <FormHelperText error>{errors.reimbursementProducts?.message}</FormHelperText>
           </FormControl>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Grid item lg={12} md={12} xs={12}>
+            <FormControl fullWidth>
+              <FormLabel>Reimbursement Summary</FormLabel>
+              <ReactHookTextField
+                name="summary"
+                control={control}
+                type="number"
+                placeholder="Describe the purchase"
+                multiline={true}
+                rows={5}
+              />
+            </FormControl>
+          </Grid>
         </Grid>
       </Grid>
       <Box

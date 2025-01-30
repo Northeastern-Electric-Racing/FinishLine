@@ -318,12 +318,20 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
           <Grid item sm={6} xs={12}>
             <VerticalDetailDisplay label="Expense Type" content={accountCodePipe(reimbursementRequest.accountCode)} />
           </Grid>
-          <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay
-              label="Date Item Delivered"
-              content={dateUndefinedPipe(reimbursementRequest.dateDelivered)}
-            />
+
+          <Grid
+            item
+            xs={12}
+            container
+            mt={1}
+            ml={1}
+            sx={{ backgroundColor: totalCostBackgroundColor, borderRadius: '10px', boxShadow: 1, alignItems: 'center' }}
+          >
+            <Grid item sm={12} textAlign={'center'}>
+              <VerticalDetailDisplay label="Description" content={''} fontSize={12} boxHeight={'10rem'} />
+            </Grid>
           </Grid>
+
           <Grid
             item
             xs={12}

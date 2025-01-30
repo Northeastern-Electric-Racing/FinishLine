@@ -11,9 +11,11 @@ interface VerticalDetailDisplayProps {
   label: string;
   content: string;
   boxStyle?: SxProps<Theme>;
+  fontSize?: number;
+  boxHeight?: string;
 }
 
-const VerticalDetailDisplay: React.FC<VerticalDetailDisplayProps> = ({ label, content, boxStyle }) => {
+const VerticalDetailDisplay: React.FC<VerticalDetailDisplayProps> = ({ label, content, boxStyle, fontSize = 50, boxHeight }) => {
   const theme = useTheme();
   const backgroundColor = theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200];
 
@@ -23,8 +25,10 @@ const VerticalDetailDisplay: React.FC<VerticalDetailDisplayProps> = ({ label, co
       whiteSpace={'nowrap'}
       bgcolor={backgroundColor}
       borderRadius={'10px'}
-      justifyContent={'center'}
       boxShadow={1}
+      display={'flex'}
+      flexDirection={'column'}
+      justifyContent={'space-between'}
       sx={{
         '&::-webkit-scrollbar': {
           height: '0.55rem' // Adjust the the thickness of the scrollbar
@@ -36,13 +40,14 @@ const VerticalDetailDisplay: React.FC<VerticalDetailDisplayProps> = ({ label, co
         '&::-webkit-scrollbar-thumb:hover': {
           backgroundColor: '#b0191a' // Change to a darker shade of red on hover
         },
+        height : boxHeight ? boxHeight : 'auto',
         ...boxStyle
       }}
     >
-      <Typography textOverflow={'ellipsis'} textAlign={'center'} fontSize={50}>
+      <Typography textOverflow={'ellipsis'} textAlign={'center'} fontSize={fontSize}>
         {content}
       </Typography>
-      <Typography textAlign={'center'} fontWeight={'bold'} marginBottom={'5px'}>
+      <Typography textAlign={'center'} fontWeight={'bold'} marginTop={'5px'}>
         {label}
       </Typography>
     </Box>

@@ -13,6 +13,8 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
+import { NERButton } from '../../components/NERButton';
+import { useState } from 'react';
 
 interface MemberHomePageProps {
   user: AuthenticatedUser;
@@ -20,7 +22,7 @@ interface MemberHomePageProps {
 
 const MemberHomePage = ({ user }: MemberHomePageProps) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId);
-
+  const [count, setCount] = useState(0);
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
@@ -29,6 +31,13 @@ const MemberHomePage = ({ user }: MemberHomePageProps) => {
       <Typography variant="h3" marginLeft="auto" sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0 }}>
         Welcome, {user.firstName}!
       </Typography>
+      <NERButton
+        onClick={() => {
+          setCount(count + 1);
+        }}
+      >
+        Click count: {count}
+      </NERButton>
       <OverdueWorkPackageAlerts />
       <UsefulLinks />
       <UpcomingDeadlines />
