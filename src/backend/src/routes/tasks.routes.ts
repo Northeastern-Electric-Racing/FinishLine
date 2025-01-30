@@ -1,14 +1,14 @@
 import express from 'express';
 import { body } from 'express-validator';
 import TasksController from '../controllers/tasks.controllers';
-import { nonEmptyString, isTaskPriority, isTaskStatus, validateInputs } from '../utils/validation.utils';
+import { nonEmptyString, isTaskPriority, isTaskStatus, validateInputs, isOptionalDate } from '../utils/validation.utils';
 
 const tasksRouter = express.Router();
 
 tasksRouter.post(
   '/:wbsNum',
   nonEmptyString(body('title')),
-  body('deadline').isDate(),
+  isOptionalDate(body('deadline')),
   body('notes').isString(),
   isTaskPriority(body('priority')),
   isTaskStatus(body('status')),
@@ -22,7 +22,7 @@ tasksRouter.post(
   '/:taskId/edit',
   nonEmptyString(body('title')),
   nonEmptyString(body('notes')),
-  body('deadline').isDate(),
+  isOptionalDate(body('deadline')),
   isTaskPriority(body('priority')),
   TasksController.editTask
 );

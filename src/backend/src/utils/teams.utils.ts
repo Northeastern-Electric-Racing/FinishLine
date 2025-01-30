@@ -1,7 +1,9 @@
-import { Prisma, User, Team } from '@prisma/client';
+import { Prisma, User, Team, Project } from '@prisma/client';
+import prisma from '../prisma/prisma';
 import { UserWithSettings } from './auth.utils';
+import { NotFoundException } from './errors.utils';
 
-const teamQueryArgsMembersOnly = Prisma.validator<Prisma.TeamArgs>()({
+const teamQueryArgsMembersOnly = Prisma.validator<Prisma.TeamDefaultArgs>()({
   include: {
     members: true,
     head: true,
@@ -87,4 +89,24 @@ export type UserWithId = {
 export const removeUsersFromList = (currentUsers: UserWithId[], usersToRemove: UserWithId[]): UserWithId[] => {
   const userIdsToRemove = usersToRemove.map((user) => user.userId);
   return currentUsers.filter((user) => !userIdsToRemove.includes(user.userId));
+};
+
+/**
+ * Given a team id, produces all of the projects assigned to that team
+ * @param teamId the id of the team
+ * @returns array of projects currently assigned to the given team (errors if no team is found)
+ */
+export const getTeamProjects = async (teamId: string): Promise<Project[]> => {
+  const team = await prisma.team.findUnique({
+    where: {
+      teamId
+    },
+    include: {
+      projects: true
+    }
+  });
+  if (!team) {
+    throw new NotFoundException('Team', teamId);
+  }
+  return team.projects;
 };

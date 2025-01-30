@@ -1,17 +1,9 @@
 import { Box, Grid } from '@mui/material';
-import {
-  Project,
-  ProjectProposedChangesPreview,
-  WbsNumber,
-  WorkPackage,
-  WorkPackageProposedChangesPreview,
-  calculateEndDate,
-  equalsWbsNumber
-} from 'shared';
-import { useAllProjects } from '../../../hooks/projects.hooks';
+import { ProjectProposedChangesPreview, WbsNumber, WorkPackageProposedChangesPreview, calculateEndDate } from 'shared';
+import { useSingleProject } from '../../../hooks/projects.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { useAllWorkPackages } from '../../../hooks/work-packages.hooks';
+import { useSingleWorkPackage } from '../../../hooks/work-packages.hooks';
 import {
   PotentialChangeType,
   ProposedChangeValue,
@@ -37,22 +29,23 @@ const DiffSectionEdit: React.FC<DiffSectionEditProps> = ({
   originalWorkPackageData,
   wbsNum
 }) => {
-  const { data: projects, isLoading: projectsIsLoading, isError: projectsIsError, error: projectsError } = useAllProjects();
   const {
-    data: workPackages,
-    isLoading: workPackagesIsLoading,
-    isError: workPackagesIsError,
-    error: workPackagesError
-  } = useAllWorkPackages();
+    data: project,
+    isLoading: projectIsLoading,
+    isError: projectIsError,
+    error: projectError
+  } = useSingleProject(wbsNum);
+  const {
+    data: workPackage,
+    isLoading: workPackageIsLoading,
+    isError: workPackageIsError,
+    error: workPackageError
+  } = useSingleWorkPackage(wbsNum);
 
   const theme = useTheme();
 
-  if (projectsIsLoading || workPackagesIsLoading || !projects || !workPackages) return <LoadingIndicator />;
-  if (projectsIsError) return <ErrorPage message={projectsError.message} />;
-  if (workPackagesIsError) return <ErrorPage message={workPackagesError.message} />;
-
-  const project = projects.find((project: Project) => equalsWbsNumber(project.wbsNum, wbsNum));
-  const workPackage = workPackages.find((workPackage: WorkPackage) => equalsWbsNumber(workPackage.wbsNum, wbsNum));
+  if (projectIsLoading || workPackageIsLoading) return <LoadingIndicator />;
+  if (projectIsError && workPackageIsError) return <ErrorPage message={projectError.message + workPackageError.message} />;
 
   const isOnProject = !!projectProposedChanges;
 

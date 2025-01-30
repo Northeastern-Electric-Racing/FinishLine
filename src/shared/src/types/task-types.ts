@@ -28,7 +28,7 @@ export interface Task {
   createdBy: UserPreview;
   deletedBy?: UserPreview;
   assignees: UserPreview[];
-  deadline: Date;
+  deadline?: Date;
   priority: TaskPriority;
   status: TaskStatus;
 }
@@ -36,3 +36,5 @@ export interface Task {
 export interface TaskWithIndex extends Task {
   index: number;
 }
+
+export type TaskPreview = Pick<Task, 'taskId' | 'title' | 'notes' | 'dateCreated' | 'deadline' | 'priority' | 'status'>;

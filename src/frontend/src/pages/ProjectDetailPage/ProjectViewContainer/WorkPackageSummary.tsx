@@ -66,7 +66,7 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
         <Typography>{wbsPipe(workPackage.wbsNum)}</Typography>
         <Box flexGrow={1} paddingLeft={2}>
           <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`}>
-            {workPackage.name}
+            <Typography variant="body1">{workPackage.name}</Typography>
           </Link>
         </Box>
         {workPackage.stage ? <WorkPackageStageChip stage={workPackage.stage} /> : null}

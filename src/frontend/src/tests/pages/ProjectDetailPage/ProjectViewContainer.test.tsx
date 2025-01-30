@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen, routerWrapperBuilder, fireEvent } from '../../test-support/test-utils';
+import { render, screen, routerWrapperBuilder, fireEvent, waitFor } from '../../test-support/test-utils';
 import { exampleProject1 } from '../../test-support/test-data/projects.stub';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data/users.stub';
@@ -12,7 +12,8 @@ import { WorkPackageStage } from 'shared/src/types/work-package-types';
 import * as userHooks from '../../../hooks/users.hooks';
 import * as authHooks from '../../../hooks/auth.hooks';
 import * as wpHooks from '../../../hooks/work-packages.hooks';
-import { mockManyWorkPackages, mockUseUsersFavoriteProjects } from '../../test-support/mock-hooks';
+import * as bomHooks from '../../../hooks/bom.hooks';
+import { mockManyMaterials, mockManyWorkPackages, mockUseUsersFavoriteProjects } from '../../test-support/mock-hooks';
 import { exampleAllWorkPackages } from '../../test-support/test-data/work-packages.stub';
 
 vi.mock('../../../utils/axios');
@@ -34,11 +35,12 @@ describe('Rendering Project View Container', () => {
     vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
     vi.spyOn(userHooks, 'useUsersFavoriteProjects').mockReturnValue(mockUseUsersFavoriteProjects());
     vi.spyOn(wpHooks, 'useGetManyWorkPackages').mockReturnValue(mockManyWorkPackages(exampleAllWorkPackages));
+    vi.spyOn(bomHooks, 'useGetMaterialsForWbsElement').mockReturnValue(mockManyMaterials([]));
   });
 
   it('renders the provided project', () => {
     renderComponent();
-    expect(screen.getAllByText('1.1.0 - Impact Attenuator').length).toEqual(1);
+    expect(screen.getAllByText('1.1.0 - Impact Attenuator').length).toEqual(2);
     expect(screen.getByText('Details')).toBeInTheDocument();
     expect(screen.getByText('Work Packages')).toBeInTheDocument();
     expect(screen.getByText('Bodywork Concept of Design')).toBeInTheDocument();
@@ -53,8 +55,11 @@ describe('Rendering Project View Container', () => {
     expect(screen.getByText('Request Change')).toHaveAttribute('aria-disabled', 'true');
   });
 
-  it('enables the buttons for admin users', () => {
+  it('enables the buttons for admin users', async () => {
     renderComponent();
+    await waitFor(() => {
+      return screen.getByText('Actions');
+    });
     fireEvent.click(screen.getByText('Actions'));
     expect(screen.getByText('Edit')).not.toHaveAttribute('aria-disabled', 'true');
     expect(screen.getByText('Request Change')).not.toHaveAttribute('aria-disabled', 'true');
@@ -64,8 +69,10 @@ describe('Rendering Project View Container', () => {
     it('renders the work package names', () => {
       renderComponent();
 
-      exampleProject1.workPackages.forEach((wp) => {
-        expect(screen.getByText(wp.name)).toBeInTheDocument();
+      exampleProject1.workPackages.forEach(async (wp) => {
+        await waitFor(() => {
+          return expect(screen.getByText(wp.name)).toBeInTheDocument();
+        });
       });
     });
 
@@ -81,9 +88,11 @@ describe('Rendering Project View Container', () => {
         [WorkPackageStage.Testing]: 'Testing'
       };
 
-      exampleProject1.workPackages.forEach((wp) => {
-        if (!wp.stage) return;
-        expect(screen.getByText(statusLabels[wp.stage])).toBeInTheDocument();
+      exampleProject1.workPackages.forEach(async (wp) => {
+        await waitFor(() => {
+          if (!wp.stage) return;
+          return expect(screen.getByText(statusLabels[wp.stage])).toBeInTheDocument();
+        });
       });
     });
   });

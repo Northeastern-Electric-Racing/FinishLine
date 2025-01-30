@@ -155,4 +155,79 @@ const generateSlackTextBlock = (message: string, link?: string, linkButtonText?:
       };
 };
 
+/**
+ * Given an id of a channel, produces the slack ids of all the users in that channel.
+ * @param channelId the id of the channel
+ * @returns an array of strings of all the slack ids of the users in the given channel
+ */
+export const getUsersInChannel = async (channelId: string) => {
+  let members: string[] = [];
+  let cursor: string | undefined;
+
+  try {
+    do {
+      const response = await slack.conversations.members({
+        channel: channelId,
+        cursor,
+        limit: 200
+      });
+
+      if (response.ok && response.members) {
+        members = members.concat(response.members);
+        cursor = response.response_metadata?.next_cursor;
+      } else {
+        throw new Error(`Failed to fetch members: ${response.error}`);
+      }
+    } while (cursor);
+
+    return members;
+  } catch (error) {
+    return members;
+  }
+};
+
+/**
+ * Given a slack channel id, produces the name of the channel
+ * @param channelId the id of the slack channel
+ * @returns the name of the channel or undefined if it cannot be found
+ */
+export const getChannelName = async (channelId: string) => {
+  try {
+    const channelRes = await slack.conversations.info({ channel: channelId });
+    return channelRes.channel?.name;
+  } catch (error) {
+    return undefined;
+  }
+};
+
+/**
+ * Given a slack user id, prood.uces the name of the channel
+ * @param userId the id of the slack user
+ * @returns the name of the user (real name if no display name), undefined if cannot be found
+ */
+export const getUserName = async (userId: string) => {
+  try {
+    const userRes = await slack.users.info({ user: userId });
+    return userRes.user?.profile?.display_name || userRes.user?.real_name;
+  } catch (error) {
+    return undefined;
+  }
+};
+
+/**
+ * Get the workspace id of the workspace this slack api is registered with
+ * @returns the id of the workspace
+ */
+export const getWorkspaceId = async () => {
+  try {
+    const response = await slack.auth.test();
+    if (response.ok) {
+      return response.team_id;
+    }
+    throw new Error(response.error);
+  } catch (error) {
+    throw new HttpException(500, 'Error getting slack workspace id: ' + (error as any).data.error);
+  }
+};
+
 export default slack;

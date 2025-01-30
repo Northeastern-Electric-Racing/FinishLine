@@ -22,7 +22,10 @@ import {
   reviewChangeRequest,
   addProposedSolution,
   deleteChangeRequest,
-  requestCRReview
+  requestCRReview,
+  getToReviewChangeRequests,
+  getUnreviewedChangeRequests,
+  getApprovedChangeRequests
 } from '../apis/change-requests.api';
 
 /**
@@ -31,6 +34,27 @@ import {
 export const useAllChangeRequests = () => {
   return useQuery<ChangeRequest[], Error>(['change requests'], async () => {
     const { data } = await getAllChangeRequests();
+    return data;
+  });
+};
+
+export const useGetToReviewChangeRequests = () => {
+  return useQuery<ChangeRequest[], Error>(['change requests', 'to-review'], async () => {
+    const { data } = await getToReviewChangeRequests();
+    return data;
+  });
+};
+
+export const useGetUnreviewedChangeRequests = () => {
+  return useQuery<ChangeRequest[], Error>(['change requests', 'unreviewed'], async () => {
+    const { data } = await getUnreviewedChangeRequests();
+    return data;
+  });
+};
+
+export const useGetApprovedChangeRequests = () => {
+  return useQuery<ChangeRequest[], Error>(['change requests', 'approved'], async () => {
+    const { data } = await getApprovedChangeRequests();
     return data;
   });
 };
@@ -52,7 +76,7 @@ export interface ReviewPayload {
   crId: string;
   accepted: boolean;
   reviewNotes: string;
-  psId: string;
+  psId?: string;
 }
 
 /**

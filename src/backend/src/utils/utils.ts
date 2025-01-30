@@ -12,4 +12,4 @@ export const convertStatus = (status: WBS_Element_Status): WbsElementStatus =>
     INACTIVE: WbsElementStatus.Inactive,
     ACTIVE: WbsElementStatus.Active,
     COMPLETE: WbsElementStatus.Complete
-  }[status]);
+  })[status];

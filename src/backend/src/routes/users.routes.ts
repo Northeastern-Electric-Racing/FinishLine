@@ -31,6 +31,8 @@ userRouter.post(
   nonEmptyString(body('phoneNumber')),
   UsersController.setUserSecureSettings
 );
+userRouter.get('/auth/current', UsersController.getCurrentUser);
+userRouter.post('/auth/log-out', UsersController.logUserOut);
 
 userRouter.post(
   '/schedule-settings/set',
@@ -46,5 +48,13 @@ userRouter.post(
 
 userRouter.get('/:userId/secure-settings', UsersController.getUserSecureSettings);
 userRouter.get('/:userId/schedule-settings', UsersController.getUserScheduleSettings);
+userRouter.get('/:userId/tasks', UsersController.getUserTasks);
+userRouter.post(
+  '/tasks/get-many',
+  body('userIds').isArray(),
+  nonEmptyString(body('userIds.*')),
+  validateInputs,
+  UsersController.getManyUserTasks
+);
 
 export default userRouter;

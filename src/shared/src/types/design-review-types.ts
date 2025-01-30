@@ -27,6 +27,11 @@ export interface DesignReview {
   initialDate: Date;
 }
 
+export type DesignReviewPreview = Pick<
+  DesignReview,
+  'designReviewId' | 'dateScheduled' | 'status' | 'userCreated' | 'wbsName'
+>;
+
 export enum DesignReviewStatus {
   UNCONFIRMED = 'UNCONFIRMED',
   CONFIRMED = 'CONFIRMED',
@@ -41,6 +46,8 @@ export interface TeamType {
   description: string;
   imageFileId: string | null;
   calendarId: string | null;
+  dateDeleted: Date | undefined;
+  deletedById: string | undefined;
 }
 
 export interface AvailabilityCreateArgs {

@@ -7,12 +7,11 @@ import {
   usersToSlackPings
 } from '../utils/notifications.utils';
 import { sendMessage } from '../integrations/slack';
-import { daysBetween, startOfDay, wbsPipe } from 'shared';
+import { daysBetween, meetingStartTimePipe, startOfDay, wbsPipe } from 'shared';
 import { buildDueString } from '../utils/slack.utils';
 import WorkPackagesService from './work-packages.services';
 import { addWeeksToDate } from 'shared';
 import { HttpException } from '../utils/errors.utils';
-import { meetingStartTimePipe } from '../utils/design-reviews.utils';
 
 export default class NotificationsService {
   static async sendDailySlackNotifications() {
@@ -77,7 +76,8 @@ export default class NotificationsService {
     const promises = Array.from(teamTaskMap).map(async ([slackId, tasks]) => {
       const messageBlock = tasks
         .map((task) => {
-          const daysUntilDeadline = daysBetween(task.deadline, new Date());
+          // prisma call earlier allows the forced unwrap (deadline is guaranteed to be a non-null value)
+          const daysUntilDeadline = daysBetween(task.deadline!, new Date());
 
           return `${usersToSlackPings(task.assignees ?? [])} <https://finishlinebyner.com/projects/${wbsPipe(
             task.wbsElement
@@ -147,7 +147,7 @@ export default class NotificationsService {
     designReviews.forEach((designReview) => {
       const teamSlackIds = designReview.wbsElement.project
         ? designReview.wbsElement.project.teams.map((team) => team.slackId)
-        : designReview.wbsElement.workPackage?.project.teams.map((team) => team.slackId) ?? [];
+        : (designReview.wbsElement.workPackage?.project.teams.map((team) => team.slackId) ?? []);
 
       teamSlackIds.forEach((teamSlackId) => {
         const currentTasks = designReviewTeamMap.get(teamSlackId);

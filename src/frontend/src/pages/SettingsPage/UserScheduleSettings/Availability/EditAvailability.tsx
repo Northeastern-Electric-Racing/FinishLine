@@ -1,5 +1,5 @@
 import { Grid } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { HeatmapColors, EnumToArray, REVIEW_TIMES, ExistingMeetingData } from '../../../../utils/design-review.utils';
 import TimeSlot from '../../../../components/TimeSlot';
 import { addDaysToDate, Availability, getDayOfWeek, getMostRecentAvailabilities } from 'shared';
@@ -18,6 +18,7 @@ interface EditAvailabilityProps {
 const EditAvailability: React.FC<EditAvailabilityProps> = ({
   editedAvailabilities,
   totalAvailabilities,
+  setEditedAvailabilities,
   existingMeetingData,
   initialDate,
   canChangeDateRange = true
@@ -25,15 +26,13 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
   const [currentlyDisplayedAvailabilities, setCurrentlyDisplayedAvailabilities] = useState(
     getMostRecentAvailabilities(Array.from(editedAvailabilities.values()), initialDate)
   );
+
   const [isDragging, setIsDragging] = useState(false);
 
   const handleMouseDown = (event: any, availability: Availability, selectedTime: number) => {
     event.preventDefault();
 
-    const isCurrentItemSelected = availability.availability.includes(selectedTime);
-    isCurrentItemSelected
-      ? availability.availability.splice(availability.availability.indexOf(selectedTime), 1)
-      : availability.availability.push(selectedTime);
+    toggleTimeSlot(availability, selectedTime);
 
     setIsDragging(true);
   };
@@ -77,14 +76,22 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     setIsDragging(false);
   };
 
+  useEffect(() => {
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
+
   const toggleTimeSlot = (availability: Availability, selectedTime: number) => {
     availability.availability.includes(selectedTime)
       ? availability.availability.splice(availability.availability.indexOf(selectedTime), 1)
       : availability.availability.push(selectedTime);
 
     editedAvailabilities.set(availability.dateSet.getTime(), availability);
+    setEditedAvailabilities(editedAvailabilities);
 
-    setCurrentlyDisplayedAvailabilities([...currentlyDisplayedAvailabilities]);
+    setCurrentlyDisplayedAvailabilities(getMostRecentAvailabilities(Array.from(editedAvailabilities.values()), initialDate));
   };
 
   return (

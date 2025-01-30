@@ -1,7 +1,15 @@
 import { Prisma, User, User_Settings } from '@prisma/client';
 import prisma from '../prisma/prisma';
-import { HttpException, NotFoundException } from './errors.utils';
-import { AvailabilityCreateArgs, isSameDay, PermissionCheck, Role, RoleEnum } from 'shared';
+import { HttpException, InvalidOrganizationException, NotFoundException } from './errors.utils';
+import {
+  AvailabilityCreateArgs,
+  getPermissionsForRoleType,
+  isSameDay,
+  isSubset,
+  PermissionCheck,
+  Role,
+  RoleEnum
+} from 'shared';
 import { UserWithId } from './teams.utils';
 import { UserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args';
 
@@ -91,6 +99,29 @@ const validateFoundUsers = (users: User[], userIds: string[]) => {
   }
 };
 
+const getUserWithPermissions = async (userId: string, organizationId: string): Promise<User & { permissions: string[] }> => {
+  const user = await prisma.user.findUnique({
+    where: { userId },
+    include: {
+      roles: {
+        where: {
+          organizationId
+        }
+      }
+    }
+  });
+  if (!user) throw new NotFoundException('User', userId);
+  if (user.roles.length === 0) throw new InvalidOrganizationException('User');
+
+  return { ...user, permissions: user.additionalPermissions.concat(getPermissionsForRoleType(user.roles[0].roleType)) };
+};
+
+export const userHasPermissionNew = async (userId: string, organizationId: string, permissionsToCheckFor: string[]) => {
+  const user = await getUserWithPermissions(userId, organizationId);
+
+  return isSubset(permissionsToCheckFor, user.permissions);
+};
+
 export const userHasPermission = async (
   userId: string,
   organizationId: string,
@@ -114,37 +145,35 @@ export const updateUserAvailability = async (
   userSettings: Prisma.Schedule_SettingsGetPayload<UserScheduleSettingsQueryArgs>,
   submitter: User
 ) => {
-  await Promise.all(
-    availabilities.map(async (availability) => {
-      if (availability.availability.some((time) => time < 0 || time > 11)) {
-        throw new HttpException(400, 'Availability times have to be in range 0-11');
-      }
+  for (const availability of availabilities) {
+    if (availability.availability.some((time) => time < 0 || time > 11)) {
+      throw new HttpException(400, 'Availability times have to be in range 0-11');
+    }
 
-      const availabilityAlreadyExists = userSettings.availabilities.filter((existingAvailability) =>
-        isSameDay(existingAvailability.dateSet, availability.dateSet)
-      );
+    const [availabilityAlreadyExists] = userSettings.availabilities.filter((existingAvailability) =>
+      isSameDay(existingAvailability.dateSet, availability.dateSet)
+    );
 
-      if (availabilityAlreadyExists.length > 0) {
-        await prisma.availability.update({
-          where: { availabilityId: availabilityAlreadyExists[0].availabilityId },
-          data: {
-            availability: availability.availability,
-            dateSet: availability.dateSet
-          }
-        });
-      } else {
-        await prisma.availability.create({
-          data: {
-            availability: availability.availability,
-            dateSet: availability.dateSet,
-            scheduleSettings: {
-              connect: {
-                userId: submitter.userId
-              }
+    if (availabilityAlreadyExists) {
+      await prisma.availability.update({
+        where: { availabilityId: availabilityAlreadyExists.availabilityId },
+        data: {
+          availability: availability.availability,
+          dateSet: availability.dateSet
+        }
+      });
+    } else {
+      await prisma.availability.create({
+        data: {
+          availability: availability.availability,
+          dateSet: availability.dateSet,
+          scheduleSettings: {
+            connect: {
+              userId: submitter.userId
             }
           }
-        });
-      }
-    })
-  );
+        }
+      });
+    }
+  }
 };

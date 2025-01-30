@@ -17,8 +17,7 @@ import {
 import { DatePicker } from '@mui/x-date-pickers';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useState } from 'react';
-import { wbsNamePipe } from '../../utils/pipes';
-import { TeamType, WbsNumber, WorkPackage, validateWBS, wbsNumComparator, wbsPipe } from 'shared';
+import { TeamType, WbsNumber, WorkPackage, validateWBS, wbsNamePipe, wbsNumComparator, wbsPipe } from 'shared';
 import { useCreateDesignReviews } from '../../hooks/design-reviews.hooks';
 import { useAllUsers } from '../../hooks/users.hooks';
 import ErrorPage from '../ErrorPage';
@@ -36,7 +35,9 @@ const schema = yup.object().shape({
     .number()
     .moreThan(yup.ref('startTime'), `End time must be after the start time`)
     .required('End time is required'),
-  wbsNum: yup.string().required('Work Package is required')
+  wbsNum: yup.string().required('Work Package is required'),
+  optionalMemberIds: yup.array().of(yup.string().required()).required(),
+  requiredMemberIds: yup.array().of(yup.string().required()).required()
 });
 
 interface CreateDesignReviewFormInput {
@@ -44,8 +45,8 @@ interface CreateDesignReviewFormInput {
   startTime: number;
   endTime: number;
   teamTypeId: string;
-  requiredMemberIds: number[];
-  optionalMemberIds: number[];
+  requiredMemberIds: string[];
+  optionalMemberIds: string[];
   wbsNum: string;
 }
 
@@ -105,14 +106,16 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
     reset,
     setValue,
     formState: { errors }
-  } = useForm({
+  } = useForm<CreateDesignReviewFormInput>({
     resolver: yupResolver(schema),
     defaultValues: {
       date: defaultDate,
       startTime: 0,
       endTime: 1,
       teamTypeId: '',
-      wbsNum: defaultWbsNum || query.get('wbsNum') || ''
+      wbsNum: defaultWbsNum ? wbsPipe(defaultWbsNum) : query.get('wbsNum') || '',
+      requiredMemberIds: [],
+      optionalMemberIds: []
     }
   });
 

@@ -3,18 +3,15 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Typography } from '@mui/material';
-import OverdueWorkPackageAlerts from './components/OverdueWorkPackageAlerts';
-import UsefulLinks from './components/UsefulLinks';
-import WorkPackagesByTimelineStatus from './components/WorkPackagesByTimelineStatus';
-import UpcomingDeadlines from './components/UpcomingDeadlines';
+import { Box, Grid, Typography } from '@mui/material';
 import { useSingleUserSettings } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import PageLayout from '../../components/PageLayout';
+import PageLayout, { PAGE_GRID_HEIGHT } from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
-import { NERButton } from '../../components/NERButton';
-import { useState } from 'react';
+import MyTasks from './components/MyTasks';
+import GeneralAnnouncements from './components/GeneralAnnouncements';
+import TeamWorkPackageDisplay from './components/TeamWorkPackageDisplay';
 
 interface MemberHomePageProps {
   user: AuthenticatedUser;
@@ -22,7 +19,7 @@ interface MemberHomePageProps {
 
 const MemberHomePage = ({ user }: MemberHomePageProps) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId);
-  const [count, setCount] = useState(0);
+
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
@@ -31,17 +28,28 @@ const MemberHomePage = ({ user }: MemberHomePageProps) => {
       <Typography variant="h3" marginLeft="auto" sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0 }}>
         Welcome, {user.firstName}!
       </Typography>
-      <NERButton
-        onClick={() => {
-          setCount(count + 1);
-        }}
-      >
-        Click count: {count}
-      </NERButton>
-      <OverdueWorkPackageAlerts />
-      <UsefulLinks />
-      <UpcomingDeadlines />
-      <WorkPackagesByTimelineStatus />
+      <Grid container height={`${PAGE_GRID_HEIGHT}vh`} mt={1} spacing={2}>
+        <Grid item xs={12} md={6} height={'100%'}>
+          <MyTasks />
+        </Grid>
+        <Grid item xs={12} md={6} height={'100%'}>
+          <Box
+            height={'100%'}
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2
+            }}
+          >
+            <Box height={'49%'}>
+              <GeneralAnnouncements />
+            </Box>
+            <Box height={'49%'}>
+              <TeamWorkPackageDisplay user={user} />
+            </Box>
+          </Box>
+        </Grid>
+      </Grid>
     </PageLayout>
   );
 };

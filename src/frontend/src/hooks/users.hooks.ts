@@ -17,18 +17,23 @@ import {
   getCurrentUserSecureSettings,
   getUserSecureSettings,
   getUserScheduleSettings,
-  updateUserScheduleSettings
+  updateUserScheduleSettings,
+  getUserTasks,
+  getManyUserTasks,
+  getCurrentUser,
+  logUserOut
 } from '../apis/users.api';
 import {
   User,
   AuthenticatedUser,
   UserSettings,
   UpdateUserRolePayload,
-  Project,
   UserSecureSettings,
   UserScheduleSettings,
   UserWithScheduleSettings,
-  SetUserScheduleSettingsPayload
+  SetUserScheduleSettingsPayload,
+  Task,
+  ProjectPreview
 } from 'shared';
 import { useAuth } from './auth.hooks';
 import { useContext } from 'react';
@@ -73,6 +78,17 @@ export const useLogUserIn = () => {
     const { data } = await logUserIn(id_token);
     return data;
   });
+};
+
+export const useGetCurrentUser = () => {
+  return useMutation<AuthenticatedUser, Error>(
+    ['users', 'login'],
+    async () => {
+      const { data } = await getCurrentUser();
+      return data;
+    },
+    { retry: false }
+  );
 };
 
 /**
@@ -147,7 +163,7 @@ export const useUserScheduleSettings = (id: string) => {
  * @param id User ID of the requested user's settings.
  */
 export const useUsersFavoriteProjects = (id: string) => {
-  return useQuery<Project[], Error>(['users', id, 'favorite projects'], async () => {
+  return useQuery<ProjectPreview[], Error>(['users', id, 'favorite projects'], async () => {
     const { data } = await getUsersFavoriteProjects(id);
     return data;
   });
@@ -232,4 +248,35 @@ export const useUpdateUserRole = () => {
       }
     }
   );
+};
+
+/**
+ * Custom React Hook to get the user's assigned tasks
+ * @param userId user to get assigned tasks of
+ * @returns user's assigned task
+ */
+export const useUserTasks = (userId: string) => {
+  return useQuery<Task[], Error>(['users', userId, 'tasks'], async () => {
+    const { data } = await getUserTasks(userId);
+    return data;
+  });
+};
+
+/**
+ * Custom react hook to get the assigned tasks of all users in the list
+ * @param userIds ids of users to get assigned tasks from
+ * @returns tasks assigned to all users in list
+ */
+export const useManyUserTasks = (userIds: string[]) => {
+  return useQuery<Task[], Error>(['users', userIds, 'tasks'], async () => {
+    const { data } = await getManyUserTasks(userIds);
+    return data;
+  });
+};
+
+export const useLogUserOut = () => {
+  return useMutation<{ message: string }, Error, void>([], async () => {
+    const { data } = await logUserOut();
+    return data;
+  });
 };
