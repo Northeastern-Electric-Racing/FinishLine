@@ -32,9 +32,6 @@ const AddSABONumberModal = ({ modalShow, onHide, reimbursementRequestId }: AddSA
     reset
   } = useForm<{ saboNumber: number }>({
     resolver: yupResolver(schema),
-    defaultValues: {
-      saboNumber: 0
-    },
     mode: 'onChange'
   });
 
@@ -67,7 +64,6 @@ const AddSABONumberModal = ({ modalShow, onHide, reimbursementRequestId }: AddSA
           errorMessage={errors.saboNumber}
           placeholder="12345"
           sx={{ width: 1 }}
-          type="number"
         />
       </FormControl>
     </NERFormModal>
