@@ -17,7 +17,16 @@ import {
 import { DatePicker } from '@mui/x-date-pickers';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useState } from 'react';
-import { TeamType, WbsElementStatus, WbsNumber, WorkPackage, validateWBS, wbsNamePipe, wbsNumComparator, wbsPipe } from 'shared';
+import {
+  TeamType,
+  WbsElementStatus,
+  WbsNumber,
+  WorkPackage,
+  validateWBS,
+  wbsNamePipe,
+  wbsNumComparator,
+  wbsPipe
+} from 'shared';
 import { useCreateDesignReviews } from '../../hooks/design-reviews.hooks';
 import { useAllUsers } from '../../hooks/users.hooks';
 import ErrorPage from '../ErrorPage';
@@ -128,7 +137,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
   const wbsDropdownOptions: { label: string; id: string }[] = [];
 
   allWorkPackages.forEach((workPackage: WorkPackage) => {
-    if (workPackage.status == WbsElementStatus.Active) {
+    if (workPackage.status === WbsElementStatus.Active) {
       wbsDropdownOptions.push({
         label: `${wbsNamePipe(workPackage)}`,
         id: wbsPipe(workPackage.wbsNum)
