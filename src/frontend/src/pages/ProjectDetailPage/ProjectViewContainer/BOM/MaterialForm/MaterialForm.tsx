@@ -16,13 +16,37 @@ import { Decimal } from 'decimal.js';
 const schema = yup.object().shape({
   name: yup.string().required('Enter a name!'),
   status: yup.mixed<MaterialStatus>().oneOf(Object.values(MaterialStatus)).required('Select a status!'),
-  materialTypeName: yup.string().required('Select a Material Type!'),
-  manufacturerName: yup.string().required('Select a Manufacturer'),
-  manufacturerPartNumber: yup.string().required('Manufacturer Part Number is required!'),
-  quantity: yup.number().required('Enter a quantity!'),
-  price: yup.number().required('Price per Unit is required!'),
+  materialTypeName: yup.string().when('status', {
+    is: MaterialStatus.NotReadyToOrder,
+    then: (schema) => schema.optional(),
+    otherwise: (schema) => schema.required('Select a Material Type!')
+  }),
+  manufacturerName: yup.string().when('status', {
+    is: MaterialStatus.NotReadyToOrder,
+    then: (schema) => schema.optional(),
+    otherwise: (schema) => schema.required('Select a Manufacturer')
+  }),
+  manufacturerPartNumber: yup.string().when('status', {
+    is: MaterialStatus.NotReadyToOrder,
+    then: (schema) => schema.optional(),
+    otherwise: (schema) => schema.required('Manufacturer Part Number is required!')
+  }),
+  quantity: yup.number().when('status', {
+    is: MaterialStatus.NotReadyToOrder,
+    then: (schema) => schema.required('Enter a quantity!'),
+    otherwise: (schema) => schema.optional()
+  }),
+  price: yup.number().when('status', {
+    is: MaterialStatus.NotReadyToOrder,
+    then: (schema) => schema.required('Price per Unit is required!'),
+    otherwise: (schema) => schema.optional()
+  }),
   unitName: yup.string().optional(),
-  linkUrl: yup.string().required('URL is required!').url('Invalid URL'),
+  linkUrl: yup.string().when('status', {
+    is: MaterialStatus.NotReadyToOrder,
+    then: (schema) => schema.required('URL is required!').url('Invalid URL'),
+    otherwise: (schema) => schema.optional()
+  }),
   notes: yup.string().optional(),
   pdmFileName: yup.string().optional(),
   assemblyId: yup.string().optional()
@@ -77,16 +101,16 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, assemblies, onS
     setValue
   } = useForm<MaterialFormInput>({
     defaultValues: {
-      name: defaultValues?.name ?? '',
+      name: defaultValues?.name,
       status: defaultValues?.status ?? MaterialStatus.NotReadyToOrder,
-      materialTypeName: defaultValues?.materialTypeName ?? '',
-      manufacturerPartNumber: defaultValues?.manufacturerPartNumber ?? '',
+      materialTypeName: defaultValues?.materialTypeName,
+      manufacturerPartNumber: defaultValues?.manufacturerPartNumber,
       quantity: defaultValues?.quantity ?? 0,
-      manufacturerName: defaultValues?.manufacturerName ?? '',
+      manufacturerName: defaultValues?.manufacturerName,
       pdmFileName: defaultValues?.pdmFileName,
       price: defaultValues?.price ?? 0,
       unitName: defaultValues?.unitName,
-      linkUrl: defaultValues?.linkUrl ?? '',
+      linkUrl: defaultValues?.linkUrl,
       notes: defaultValues?.notes,
       assemblyId: defaultValues?.assemblyId
     },

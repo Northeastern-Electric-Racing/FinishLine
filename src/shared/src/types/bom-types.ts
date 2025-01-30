@@ -59,18 +59,18 @@ export interface Material {
   dateCreated: Date;
   userCreated: UserPreview;
   status: MaterialStatus;
-  materialTypeName: string;
-  materialType: MaterialTypePreview;
-  manufacturerName: string;
-  manufacturer: ManufacturerPreview;
-  manufacturerPartNumber: string;
+  materialTypeName?: string;
+  materialType?: MaterialTypePreview;
+  manufacturerName?: string;
+  manufacturer?: ManufacturerPreview;
+  manufacturerPartNumber?: string;
   pdmFileName?: string;
-  quantity: Decimal;
+  quantity?: Decimal;
   unitName?: string;
   quantityUnit?: UnitPreview;
-  price: number;
-  subtotal: number;
-  linkUrl: string;
+  price?: number;
+  subtotal?: number;
+  linkUrl?: string;
   notes?: string;
 }
 
