@@ -558,7 +558,17 @@ export default class ReimbursementRequestService {
    * @param organizationId the organization the user is currently in
    * @returns the created vendor
    */
-  static async createVendor(submitter: User, name: string, organization: Organization) {
+  static async createVendor(
+    submitter: User,
+    name: string,
+    organization: Organization,
+    username: string,
+    passwordHash: string,
+    discountCode: string,
+    twoFactorContactId: string,
+    notes: string,
+    addedByUserId: string
+  ) {
     const isAuthorized =
       (await userHasPermission(submitter.userId, organization.organizationId, isAdmin)) ||
       (await isUserLeadOrHeadOfFinanceTeam(submitter, organization.organizationId));
@@ -579,7 +589,13 @@ export default class ReimbursementRequestService {
     const vendor = await prisma.vendor.create({
       data: {
         name,
-        organizationId: organization.organizationId
+        organizationId: organization.organizationId,
+        username,
+        passwordHash,
+        discountCode,
+        twoFactorContactId,
+        notes,
+        addedByUserId
       }
     });
 

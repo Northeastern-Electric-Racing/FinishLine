@@ -135,6 +135,7 @@ export const resetUsers = async () => {
   await prisma.graph_Collection.deleteMany();
   await prisma.announcement.deleteMany();
   await prisma.popUp.deleteMany();
+  await prisma.sponsor_Tier.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
 };
@@ -393,7 +394,17 @@ export const createTestReimbursementRequest = async () => {
 
   const project = await createTestProject(user, organization.organizationId);
 
-  const vendor = await ReimbursementRequestService.createVendor(user, 'Tesla', organization);
+  const vendor = await ReimbursementRequestService.createVendor(
+    user,
+    'Tesla',
+    organization,
+    'nershipping@gmail.com',
+    'racecar228!',
+    'SAVE50!',
+    user.userId,
+    'Tax exemption status?',
+    user.userId
+  );
 
   const accountCode = await ReimbursementRequestService.createAccountCode(
     user,
