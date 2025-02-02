@@ -63,7 +63,7 @@ const AddSABONumberModal = ({ modalShow, onHide, reimbursementRequestId }: AddSA
           name="saboNumber"
           errorMessage={errors.saboNumber}
           placeholder="12345"
-          sx={{ width: 1 }}
+          sx={{ width: '280px', height: '80px' }}
         />
       </FormControl>
     </NERFormModal>
