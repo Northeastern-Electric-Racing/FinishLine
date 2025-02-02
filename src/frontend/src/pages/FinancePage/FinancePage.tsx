@@ -1,7 +1,3 @@
-/*
- * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
- * See the LICENSE file in the repository root folder for details.
- */
 import { useState } from 'react';
 import { Box, Grid, ListItemIcon, Menu, MenuItem } from '@mui/material';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
@@ -43,18 +39,21 @@ const FinancePage = () => {
     isError: userReimbursementRequestIsError,
     error: userReimbursementRequestError
   } = useCurrentUserReimbursementRequests();
+
   const {
     data: allReimbursementRequests,
     isLoading: allReimbursementRequestsIsLoading,
     isError: allReimbursementRequestsIsError,
     error: allReimbursementRequestsError
   } = useAllReimbursementRequests();
+
   const {
     data: allPendingAdvisorList,
     isLoading: allPendingAdvisorListIsLoading,
     isError: allPendingAdvisorListIsError,
     error: allPendingAdvisorListError
   } = useGetPendingAdvisorList();
+
   const { mutateAsync: downloadCSVFileOfReimbursementRequests } = useDownloadCSVFileOfReimbursementRequests();
   const toast = useToast();
 
@@ -76,8 +75,6 @@ const FinancePage = () => {
     (isFinance && !allPendingAdvisorList)
   )
     return <LoadingIndicator />;
-
-  if (isFinance && (!allPendingAdvisorList || allPendingAdvisorListIsLoading)) return <LoadingIndicator />;
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
