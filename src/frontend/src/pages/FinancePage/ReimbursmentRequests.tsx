@@ -1,4 +1,4 @@
-import { Box, Typography, IconButton, Divider } from '@mui/material';
+import { Box, Typography, IconButton } from '@mui/material';
 import { SearchBar } from '../../components/SearchBar';
 import { useState } from 'react';
 import FilterListIcon from '@mui/icons-material/FilterList';
