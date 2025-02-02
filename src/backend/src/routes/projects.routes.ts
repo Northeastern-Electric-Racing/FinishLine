@@ -92,15 +92,50 @@ projectRouter.post(
   nonEmptyString(body('name')),
   nonEmptyString(body('assemblyId').optional()),
   isMaterialStatus(body('status')),
-  nonEmptyString(body('materialTypeName')),
-  nonEmptyString(body('manufacturerName')),
-  nonEmptyString(body('manufacturerPartNumber')),
+  body('materialTypeName').custom((value, { req }) => {
+    if (req.body.status !== 'NOT_READY_TO_ORDER' && !value) {
+      throw new Error('Material Type is required unless status is NOT_READY_TO_ORDER');
+    }
+    return true;
+  }),
+  body('manufacturerName').custom((value, { req }) => {
+    if (req.body.status !== 'NOT_READY_TO_ORDER' && !value) {
+      throw new Error('Manufacturer is required unless status is NOT_READY_TO_ORDER');
+    }
+    return true;
+  }),
+  body('manufacturerPartNumber').custom((value, { req }) => {
+    if (req.body.status !== 'NOT_READY_TO_ORDER' && !value) {
+      throw new Error('Manufacturer Part Number is required unless status is NOT_READY_TO_ORDER');
+    }
+    return true;
+  }),
   nonEmptyString(body('pdmFileName').optional()),
-  decimalMinZero(body('quantity')),
+  body('quantity').custom((value, { req }) => {
+    if (req.body.status !== 'NOT_READY_TO_ORDER' && !value) {
+      throw new Error('Quantity is required unless status is NOT_READY_TO_ORDER');
+    }
+    return true;
+  }),
   nonEmptyString(body('unitName')).optional(),
-  intMinZero(body('price')), // in cents
-  intMinZero(body('subtotal')), // in cents
-  nonEmptyString(body('linkUrl').isURL()),
+  body('price').custom((value, { req }) => {
+    if (req.body.status !== 'NOT_READY_TO_ORDER' && !value) {
+      throw new Error('Price is required unless status is NOT_READY_TO_ORDER');
+    }
+    return true;
+  }),
+  body('subtotal').custom((value, { req }) => {
+    if (req.body.status !== 'NOT_READY_TO_ORDER' && !value) {
+      throw new Error('Subtotal is required unless status is NOT_READY_TO_ORDER');
+    }
+    return true;
+  }),
+  body('linkUrl').custom((value, { req }) => {
+    if (req.body.status !== 'NOT_READY_TO_ORDER' && !value) {
+      throw new Error('URL is required unless status is NOT_READY_TO_ORDER');
+    }
+    return true;
+  }),
   body('notes').isString().optional(),
   validateInputs,
   ProjectsController.createMaterial

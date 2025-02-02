@@ -84,17 +84,22 @@ export default class BillOfMaterialsService {
       if (assembly.dateDeleted) throw new DeletedException('Assembly', assemblyId);
     }
 
-    const materialType = await prisma.material_Type.findUnique({
-      where: { uniqueMaterialType: { name: materialTypeName, organizationId: organization.organizationId } }
-    });
-    if (!materialType) throw new NotFoundException('Material Type', materialTypeName);
-    if (materialType.dateDeleted) throw new DeletedException('Material Type', materialTypeName);
+    let materialType = null;
+    let manufacturer = null;
 
-    const manufacturer = await prisma.manufacturer.findUnique({
-      where: { uniqueManufacturer: { name: manufacturerName, organizationId: organization.organizationId } }
-    });
-    if (!manufacturer) throw new NotFoundException('Manufacturer', manufacturerName);
-    if (manufacturer.dateDeleted) throw new DeletedException('Manufacturer', manufacturerName);
+    if (status !== Material_Status.NOT_READY_TO_ORDER) {
+      materialType = await prisma.material_Type.findUnique({
+        where: { uniqueMaterialType: { name: materialTypeName, organizationId: organization.organizationId } }
+      });
+      if (!materialType) throw new NotFoundException('Material Type', materialTypeName);
+      if (materialType.dateDeleted) throw new DeletedException('Material Type', materialTypeName);
+
+      manufacturer = await prisma.manufacturer.findUnique({
+        where: { uniqueManufacturer: { name: manufacturerName, organizationId: organization.organizationId } }
+      });
+      if (!manufacturer) throw new NotFoundException('Manufacturer', manufacturerName);
+      if (manufacturer.dateDeleted) throw new DeletedException('Manufacturer', manufacturerName);
+    }
 
     let unit = null;
     if (unitName) {
@@ -110,25 +115,35 @@ export default class BillOfMaterialsService {
 
     if (!perms) throw new AccessDeniedException('create materials');
 
+    const data: any = {
+      userCreatedId: creator.userId,
+      name,
+      assemblyId,
+      status,
+      materialTypeId: materialType?.id,
+      manufacturerId: manufacturer?.id,
+      pdmFileName,
+      unitId: unit ? unit.id : null,
+      notes,
+      dateCreated: new Date(),
+      wbsElementId: project.wbsElementId,
+      manufacturerPartNumber: null,
+      quantity: null,
+      price: null,
+      subtotal: null,
+      linkUrl: null
+    };
+
+    if (status !== Material_Status.NOT_READY_TO_ORDER) {
+      data.manufacturerPartNumber = manufacturerPartNumber;
+      data.quantity = quantity;
+      data.price = price;
+      data.subtotal = subtotal;
+      data.linkUrl = linkUrl;
+    }
+
     const createdMaterial = await prisma.material.create({
-      data: {
-        userCreatedId: creator.userId,
-        name,
-        assemblyId,
-        status,
-        materialTypeId: materialType.id,
-        manufacturerId: manufacturer.id,
-        manufacturerPartNumber,
-        pdmFileName,
-        quantity,
-        unitId: unit ? unit.id : null,
-        price,
-        subtotal,
-        linkUrl,
-        notes,
-        dateCreated: new Date(),
-        wbsElementId: project.wbsElementId
-      },
+      data,
       ...getMaterialQueryArgs(organization.organizationId)
     });
 
@@ -573,7 +588,13 @@ export default class BillOfMaterialsService {
       if (assembly.wbsElementId !== project.wbsElementId) throw new HttpException(400, 'Assembly not found on this project');
     }
 
-    const materialType = await BillOfMaterialsService.getSingleMaterialTypeWithQueryArgs(materialTypeName, organization);
+    let materialType = null;
+    let manufacturer = null;
+
+    if (status !== Material_Status.NOT_READY_TO_ORDER) {
+      materialType = await BillOfMaterialsService.getSingleMaterialTypeWithQueryArgs(materialTypeName, organization);
+      manufacturer = await BillOfMaterialsService.getSingleManufacturerWithQueryArgs(manufacturerName, organization);
+    }
 
     let unit = null;
     if (unitName) {
@@ -583,26 +604,34 @@ export default class BillOfMaterialsService {
       if (!unit) throw new NotFoundException('Unit', unitName);
     }
 
-    const manufacturer = await BillOfMaterialsService.getSingleManufacturerWithQueryArgs(manufacturerName, organization);
+    const data: any = {
+      name,
+      status,
+      materialTypeId: materialType?.id,
+      manufacturerId: manufacturer?.id,
+      wbsElementId: project.wbsElementId,
+      assemblyId,
+      pdmFileName,
+      unitId: unit ? unit.id : null,
+      notes,
+      manufacturerPartNumber: null,
+      quantity: null,
+      price: null,
+      subtotal: null,
+      linkUrl: null
+    };
+
+    if (status !== Material_Status.NOT_READY_TO_ORDER) {
+      data.manufacturerPartNumber = manufacturerPartNumber;
+      data.quantity = quantity;
+      data.price = price;
+      data.subtotal = subtotal;
+      data.linkUrl = linkUrl;
+    }
 
     const updatedMaterial = await prisma.material.update({
       where: { materialId },
-      data: {
-        name,
-        status,
-        materialTypeId: materialType.id,
-        manufacturerId: manufacturer.id,
-        manufacturerPartNumber,
-        quantity,
-        unitId: unit ? unit.id : null,
-        price,
-        subtotal,
-        linkUrl,
-        notes,
-        wbsElementId: project.wbsElementId,
-        assemblyId,
-        pdmFileName
-      },
+      data,
       ...getMaterialQueryArgs(organization.organizationId)
     });
 

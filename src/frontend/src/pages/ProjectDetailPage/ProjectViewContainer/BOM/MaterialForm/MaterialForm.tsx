@@ -33,19 +33,19 @@ const schema = yup.object().shape({
   }),
   quantity: yup.number().when('status', {
     is: MaterialStatus.NotReadyToOrder,
-    then: (schema) => schema.required('Enter a quantity!'),
-    otherwise: (schema) => schema.optional()
+    then: (schema) => schema.optional(),
+    otherwise: (schema) => schema.required('Enter a quantity!')
   }),
   price: yup.number().when('status', {
     is: MaterialStatus.NotReadyToOrder,
-    then: (schema) => schema.required('Price per Unit is required!'),
-    otherwise: (schema) => schema.optional()
+    then: (schema) => schema.optional(),
+    otherwise: (schema) => schema.required('Price per Unit is required!')
   }),
   unitName: yup.string().optional(),
   linkUrl: yup.string().when('status', {
     is: MaterialStatus.NotReadyToOrder,
-    then: (schema) => schema.required('URL is required!').url('Invalid URL'),
-    otherwise: (schema) => schema.optional()
+    then: (schema) => schema.optional(),
+    otherwise: (schema) => schema.required('URL is required!').url('Invalid URL')
   }),
   notes: yup.string().optional(),
   pdmFileName: yup.string().optional(),
