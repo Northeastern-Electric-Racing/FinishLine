@@ -67,7 +67,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
   // drag and drop mechanics
   const [draggedMaterial, setDraggedMaterial] = useState<Material | null>(null);
 
-  const handleDragStart = (event: React.DragEvent, materialId: string) => {
+  const handleDragStart = (materialId: string) => {
     const material = materials.find((m) => m.materialId === materialId);
     if (material) {
       setDraggedMaterial(material);
@@ -133,7 +133,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
                 event.preventDefault();
               }
               const materialId = event.currentTarget.className.split('material-id:')[1]?.split(' ')[0] || '';
-              handleDragStart(event, materialId);
+              handleDragStart(materialId);
             },
             onDrop: (event: React.DragEvent) => {
               if (event.currentTarget.className.includes('super-app-theme--material')) return;

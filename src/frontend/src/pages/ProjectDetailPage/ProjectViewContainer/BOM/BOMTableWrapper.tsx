@@ -17,7 +17,6 @@ import NERModal from '../../../../components/NERModal';
 import { renderStatusBOM } from './BOMTableCustomCells';
 import LinkIcon from '@mui/icons-material/Link';
 import NotesIcon from '@mui/icons-material/Notes';
-import { QueryObserverResult } from 'react-query';
 
 interface BOMTableWrapperProps {
   project: Project;
