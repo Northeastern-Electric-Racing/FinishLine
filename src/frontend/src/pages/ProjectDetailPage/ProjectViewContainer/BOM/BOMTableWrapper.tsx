@@ -17,6 +17,7 @@ import NERModal from '../../../../components/NERModal';
 import { renderStatusBOM } from './BOMTableCustomCells';
 import LinkIcon from '@mui/icons-material/Link';
 import NotesIcon from '@mui/icons-material/Notes';
+import { QueryObserverResult } from 'react-query';
 
 interface BOMTableWrapperProps {
   project: Project;
@@ -24,9 +25,17 @@ interface BOMTableWrapperProps {
   setHideColumn: React.Dispatch<React.SetStateAction<boolean[]>>;
   assemblies: Assembly[];
   materials: Material[];
+  refetch: () => void;
 }
 
-const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project, hideColumn, setHideColumn, assemblies, materials }) => {
+const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
+  project,
+  hideColumn,
+  setHideColumn,
+  assemblies,
+  materials,
+  refetch
+}) => {
   const [showEditMaterial, setShowEditMaterial] = useState(false);
   const [selectedMaterialId, setSelectedMaterialId] = useState('');
   const [modalShow, setModalShow] = useState(false);
@@ -73,6 +82,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project, hideColumn, 
       if (e instanceof Error) {
         toast.error(e.message, 6000);
       }
+    } finally {
+      refetch();
     }
   };
 
@@ -325,7 +336,13 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project, hideColumn, 
         </NERModal>
       )}
 
-      <BOMTable setHideColumn={setHideColumn} columns={columns} assemblies={assemblies} materials={materials} />
+      <BOMTable
+        setHideColumn={setHideColumn}
+        assignMaterial={assignMaterial}
+        columns={columns}
+        assemblies={assemblies}
+        materials={materials}
+      />
     </Box>
   );
 };

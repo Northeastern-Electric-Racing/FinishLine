@@ -9,16 +9,17 @@ import { useState } from 'react';
 
 interface BOMTableProps {
   setHideColumn: React.Dispatch<React.SetStateAction<boolean[]>>;
+  assignMaterial: (materialId: string, assemblyId?: string) => () => Promise<void>;
   columns: GridColumns<BomRow>;
   materials: Material[];
   assemblies: Assembly[];
 }
 
-const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, columns, materials, assemblies }) => {
+const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, columns, materials, assemblies }) => {
   const [openRows, setOpenRows] = useState<String[]>([]);
 
   const arrowSymbol = (rowId: string) => {
-    return openRows.includes(rowId) ? '▼' : '▶';
+    return openRows.includes(rowId) ? '⮝' : '⮟';
   };
 
   const noAssemblyMaterials = materials.filter((material) => !material.assembly);
@@ -49,7 +50,9 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, columns, materials, 
       type: '',
       name: '',
       manufacturer: '',
-      manufacturerPN: `Assembly - ${assembly.name}: $${centsToDollar(assembly.materials.reduce(addMaterialCosts, 0))} ${arrowSymbol(assembly.assemblyId)}`,
+      manufacturerPN: `Assembly - ${assembly.name}: $${centsToDollar(
+        assembly.materials.reduce(addMaterialCosts, 0)
+      )}  ${arrowSymbol(assembly.assemblyId)}`,
       pdmFileName: '',
       quantity: '',
       price: '',
@@ -61,10 +64,32 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, columns, materials, 
     assemblyMaterials.forEach((material, indx) => materialsWithAssemblies.push(materialToRow(material, indx)));
   });
 
+  // drag and drop mechanics
+  const [draggedMaterial, setDraggedMaterial] = useState<Material | null>(null);
+
+  const handleDragStart = (event: React.DragEvent, materialId: string) => {
+    const material = materials.find((m) => m.materialId === materialId);
+    if (material) {
+      setDraggedMaterial(material);
+    }
+  };
+
+  const handleDragOver = (event: React.DragEvent) => {
+    event.preventDefault();
+  };
+
+  const handleDrop = (event: React.DragEvent, targetAssemblyId?: string) => {
+    event.preventDefault();
+    if (!draggedMaterial) return;
+    assignMaterial(draggedMaterial.materialId, targetAssemblyId)().finally(() => {
+      setDraggedMaterial(null);
+    });
+  };
+
   return (
     <Box
       sx={{
-        height: 'calc(100vh - 200px)',
+        height: 'calc(100vh - 180px)',
         width: '100%',
         '& .super-app-theme--header': {
           backgroundColor: '#ef4345'
@@ -93,13 +118,31 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, columns, materials, 
         columns={columns as GridColumns<GridValidRowModel>}
         rows={rows.concat(materialsWithAssemblies.filter(isAssemblyOpen))}
         getRowClassName={(params) =>
-          `super-app-theme--${String(params.row.id).includes('assembly') ? 'assembly' : 'material'}`
+          `super-app-theme--${String(params.row.id).includes('assembly') ? `assembly assembly-id:${params.row.assemblyId}` : `material material-id:${params.row.materialId}`}`
         }
         rowsPerPageOptions={[100]}
         sx={bomTableStyles.datagrid}
         disableSelectionOnClick
         autoHeight={false}
         onRowClick={openAssembly}
+        componentsProps={{
+          row: {
+            draggable: true,
+            onDragStart: (event: React.DragEvent) => {
+              if (event.currentTarget.className.includes('super-app-theme--assembly')) {
+                event.preventDefault();
+              }
+              const materialId = event.currentTarget.className.split('material-id:')[1]?.split(' ')[0] || '';
+              handleDragStart(event, materialId);
+            },
+            onDrop: (event: React.DragEvent) => {
+              if (event.currentTarget.className.includes('super-app-theme--material')) return;
+              const assemblyId = event.currentTarget.className.split('assembly-id:')[1]?.split(' ')[0] || '';
+              handleDrop(event, assemblyId);
+            },
+            onDragOver: (event: React.DragEvent) => handleDragOver(event)
+          }
+        }}
       />
     </Box>
   );
