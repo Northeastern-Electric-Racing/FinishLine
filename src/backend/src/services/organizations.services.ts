@@ -407,4 +407,26 @@ export default class OrganizationsService {
 
     return updatedOrg;
   }
+
+  /**
+   * Uses the given organizationID to and returns an array of part tags
+   * @param organizationId the organization to get the parts for
+   * @returns an array of part tags
+   */
+  static async getAllPartTags(organizationId: string) {
+    return prisma.partTag.findMany({
+      where: { organizationId },
+      select: {
+        partTagId: true,
+        name: true,
+        dateCreated: true,
+        dateDeleted: false,
+        parts: {
+          select: {
+            partId: true
+          }
+        }
+      }
+    });
+  }
 }
