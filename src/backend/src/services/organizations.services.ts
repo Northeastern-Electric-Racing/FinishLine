@@ -407,4 +407,17 @@ export default class OrganizationsService {
 
     return updatedOrg;
   }
+
+  /**
+   * Gets all part review FAQs for the given organization Id
+   * @param organizationId organization Id of the FAQ
+   * @returns all the part review faqs from the given organization
+   */
+  static async getAllPartReviewFAQs(organizationId: string) {
+    const partReviewFAQs = await prisma.frequentlyAskedQuestion.findMany({
+      where: { dateDeleted: null, partReviewFaqOrgId: organizationId }
+    });
+
+    return partReviewFAQs;
+  }
 }

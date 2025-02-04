@@ -330,4 +330,10 @@ describe('Organization Tests', () => {
       expect(updatedOrganization.slackWorkspaceId).toBe('1234');
     });
   });
+
+  describe('Get all part FAQS', () => {
+    it('Succeeds and gets all part review FAQs in the organization', async () => {
+      // add when createPartFAQ is done
+    });
+  });
 });
