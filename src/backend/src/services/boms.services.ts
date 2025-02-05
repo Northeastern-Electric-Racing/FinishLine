@@ -50,7 +50,7 @@ export default class BillOfMaterialsService {
    * @param assemblyId the id of the Assembly for the material
    * @param pdmFileName the name of the pdm file for the material
    * @param unitName the name of the Quantity Unit the quantity is measured in
-   * @param reimbursementRequestId the id of the Reimbursement Request the material is linked to
+   * @param reimbursementRequestId the id of the Reimbursement Request for the material
    * @returns the created material
    */
   static async createMaterial(
