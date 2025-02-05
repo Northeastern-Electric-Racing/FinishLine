@@ -21,15 +21,18 @@ export enum WorkPackageStage {
   Testing = 'TESTING'
 }
 
+export interface WbsElementTemplate {
+  templateName: string;
+  templateNotes: string;
+}
+
 export type WorkPackageTemplatePreview = Pick<
   WorkPackageTemplate,
   'workPackageTemplateId' | 'templateName' | 'stage' | 'templateNotes'
 >;
 
-export interface WorkPackageTemplate {
+export interface WorkPackageTemplate extends WbsElementTemplate {
   workPackageTemplateId: string;
-  templateName: string;
-  templateNotes: string;
   workPackageName?: string;
   stage?: WorkPackageStage;
   duration?: number;
@@ -39,4 +42,10 @@ export interface WorkPackageTemplate {
   userCreated: User;
   dateDeleted?: Date;
   userDeleted?: User;
+}
+
+export interface ProjectTemplate extends WbsElementTemplate {
+  projectTemplateId: string;
+  projectName?: string;
+  workPackageTemplates: WorkPackageTemplate[];
 }

@@ -4,11 +4,10 @@
  */
 
 import axios from '../utils/axios';
-import { DescriptionBulletPreview, WbsNumber, WorkPackage, WorkPackageStage, WorkPackageTemplate } from 'shared';
+import { DescriptionBulletPreview, WbsNumber, WorkPackage, WorkPackageStage } from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import { workPackageTransformer } from './transformers/work-packages.transformers';
-import { workPackageTemplateTransformer } from './transformers/work-package-templates.transformer';
 
 export interface WorkPackageApiInputs {
   name: string;
@@ -18,16 +17,6 @@ export interface WorkPackageApiInputs {
   stage?: WorkPackageStage;
   blockedBy: WbsNumber[];
   descriptionBullets: DescriptionBulletPreview[];
-}
-
-export interface WorkPackageTemplateApiInputs {
-  templateName: string;
-  templateNotes: string;
-  duration: number | undefined;
-  stage?: WorkPackageStage;
-  blockedBy: string[];
-  descriptionBullets: DescriptionBulletPreview[];
-  workPackageName?: string;
 }
 
 /**
@@ -74,18 +63,6 @@ export const editWorkPackage = (payload: WorkPackageApiInputs) => {
 };
 
 /**
- * Edit a work package template.
- *
- * @param payload Object containing required key-value pairs for backend function to edit work package
- * @returns Promise that will resolve to either a success status code or a fail status code.
- */
-export const editWorkPackageTemplate = (workPackageTempateId: string, payload: WorkPackageTemplateApiInputs) => {
-  return axios.post<{ message: string }>(apiUrls.workPackageTemplatesEdit(workPackageTempateId), {
-    ...payload
-  });
-};
-
-/**
  * Delete a work package.
  *
  * @param wbsNum The WBS Number of the work package being deleted.
@@ -124,45 +101,5 @@ export const getManyWorkPackages = (wbsNums: WbsNumber[]) => {
 export const slackUpcomingDeadlines = (deadline: Date) => {
   return axios.post<{ message: string }>(apiUrls.workPackagesSlackUpcomingDeadlines(), {
     deadline
-  });
-};
-
-/**
- * Gets all the workpackage templates from the database
- * @returns gets all the workpackage templates
- */
-export const getAllWorkPackageTemplates = () => {
-  return axios.get<WorkPackageTemplate[]>(apiUrls.workPackageTemplates(), {
-    transformResponse: (data) => JSON.parse(data).map(workPackageTemplateTransformer)
-  });
-};
-
-/**
- * Delete a work package template.
- *
- * @param workPackageTemplateId The work package template id to be deleted.
- */
-export const deleteWorkPackageTemplate = (workPackageTemplateId: string) => {
-  return axios.delete<{ message: string }>(apiUrls.workPackageTemplateDelete(workPackageTemplateId));
-};
-
-/*
- * Gets a single work package template from the database
- * @returns a single work package template
- */
-export const getSingleWorkPackageTemplate = (workPackageTemplateId: string) => {
-  return axios.get<WorkPackageTemplate>(apiUrls.workPackageTemplatesById(workPackageTemplateId), {
-    transformResponse: (data) => workPackageTemplateTransformer(JSON.parse(data))
-  });
-};
-
-/**
- * Create a single work package template.
- *
- * @param payload Payload containing all the necessary data to create a work package template.
- */
-export const createSingleWorkPackageTemplate = (payload: WorkPackageTemplateApiInputs) => {
-  return axios.post<{ message: string }>(apiUrls.workPackageTemplatesCreate(), {
-    ...payload
   });
 };

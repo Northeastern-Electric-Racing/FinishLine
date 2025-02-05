@@ -536,7 +536,7 @@ model Description_Bullet {
   proposedChangeId     String?
   proposedChange       Wbs_Proposed_Changes? @relation(fields: [proposedChangeId], references: [wbsProposedChangesId], name: "proposedDescriptionBulletChanges")
   wbsElementTemplate   WBS_Element_Template? @relation(fields: [wbsElementTemplateId], references: [wbsElementTemplateId])
-  wbsElementTemplateId String
+  wbsElementTemplateId String?
 }
 
 model Task {
@@ -925,7 +925,7 @@ model Work_Package_Template {
   blockedBy            Work_Package_Template[] @relation("blocking")
   blocking             Work_Package_Template[] @relation("blocking")
   projectTemplate      Project_Template?       @relation(fields: [projectTemplateId], references: [wbsElementTemplateId])
-  projectTemplateId    String
+  projectTemplateId    String?
 }
 
 model Car {
