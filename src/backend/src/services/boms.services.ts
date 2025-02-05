@@ -50,6 +50,7 @@ export default class BillOfMaterialsService {
    * @param assemblyId the id of the Assembly for the material
    * @param pdmFileName the name of the pdm file for the material
    * @param unitName the name of the Quantity Unit the quantity is measured in
+   * @param reimbursementRequestId the id of the Reimbursement Request the material is linked to
    * @returns the created material
    */
   static async createMaterial(
@@ -65,11 +66,11 @@ export default class BillOfMaterialsService {
     linkUrl: string,
     wbsNumber: WbsNumber,
     organization: Organization,
-    reimbursementRequestId: string,
     notes?: string,
     assemblyId?: string,
     pdmFileName?: string,
-    unitName?: string
+    unitName?: string,
+    reimbursementRequestId?: string
   ): Promise<Material> {
     const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNumber, organization);
 
