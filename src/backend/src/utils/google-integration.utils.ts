@@ -87,7 +87,11 @@ interface GoogleDriveError {
 export const uploadFile = async (fileObject: Express.Multer.File) => {
   const bufferStream = new stream.PassThrough();
   bufferStream.end(fileObject.buffer);
-  if (fileObject.filename?.length || fileObject.originalname.length > 20)
+  console.log(fileObject.filename);
+  if (
+    (fileObject.filename && fileObject.filename?.length > 20) ||
+    (!fileObject.filename && fileObject.originalname.length > 20)
+  )
     throw new HttpException(400, 'File name can only be at most 20 characters long');
   //The regex /^[\w.]+$/ limits the file name to the set of alphanumeric characters (\w) and dots (for file type)
   if (!/^[\w.]+$/.test(fileObject.filename || fileObject.originalname))
@@ -105,7 +109,7 @@ export const uploadFile = async (fileObject: Express.Multer.File) => {
         body: bufferStream
       },
       requestBody: {
-        name: fileObject.originalname,
+        name: fileObject.filename ?? fileObject.originalname,
         parents: GOOGLE_DRIVE_FOLDER_ID ? [GOOGLE_DRIVE_FOLDER_ID] : undefined
       },
       fields: 'id,name'
@@ -183,6 +187,7 @@ export const downloadImageFile = async (fileId: string) => {
 export const createCalendar = async (name: string) => {
   if (process.env.NODE_ENV !== 'production') return;
   try {
+    console.log(CALENDAR_REFRESH_TOKEN);
     oauth2Client.setCredentials({
       refresh_token: CALENDAR_REFRESH_TOKEN
     });

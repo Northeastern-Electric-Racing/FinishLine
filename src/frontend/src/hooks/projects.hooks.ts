@@ -4,7 +4,16 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Link, LinkCreateArgs, LinkType, LinkTypeCreatePayload, Project, WbsNumber, WorkPackageTemplate } from 'shared';
+import {
+  Link,
+  LinkCreateArgs,
+  LinkType,
+  LinkTypeCreatePayload,
+  Project,
+  ProjectPreview,
+  WbsNumber,
+  WorkPackageTemplate
+} from 'shared';
 import {
   editSingleProject,
   createSingleProject,
@@ -18,7 +27,9 @@ import {
   getAllWorkPackageTemplates,
   editLinkType,
   getAllUsefulLinks,
-  setUsefulLinks
+  setUsefulLinks,
+  getUsersTeamsProjects,
+  getUsersLeadingProjects
 } from '../apis/projects.api';
 import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 import { useCurrentUser } from './users.hooks';
@@ -29,6 +40,20 @@ import { useCurrentUser } from './users.hooks';
 export const useAllProjects = (includeDeleted: boolean = false) => {
   return useQuery<Project[], Error>(['projects'], async () => {
     const { data } = await getAllProjects(includeDeleted);
+    return data;
+  });
+};
+
+export const useGetUsersTeamsProjects = () => {
+  return useQuery<ProjectPreview[], Error>(['projects', 'teams'], async () => {
+    const { data } = await getUsersTeamsProjects();
+    return data;
+  });
+};
+
+export const useGetUsersLeadingProjects = () => {
+  return useQuery<ProjectPreview[], Error>(['projects', 'leading'], async () => {
+    const { data } = await getUsersLeadingProjects();
     return data;
   });
 };
