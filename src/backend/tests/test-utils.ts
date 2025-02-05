@@ -14,8 +14,11 @@ import TeamsService from '../src/services/teams.services';
 import ReimbursementRequestService from '../src/services/reimbursement-requests.services';
 import { ClubAccount, RoleEnum } from 'shared';
 import { batmanAppAdmin, batmanScheduleSettings, batmanSecureSettings, batmanSettings } from './test-data/users.test-data';
-import { getWorkPackageTemplateQueryArgs } from '../src/prisma-query-args/work-package-template.query-args';
 import DesignReviewsService from '../src/services/design-reviews.services';
+import {
+  getProjectTemplateQueryArgs,
+  getWorkPackageTemplateQueryArgs
+} from '../src/prisma-query-args/wbs-element-template.query-args';
 
 export interface CreateTestUserParams {
   firstName: string;
@@ -106,6 +109,8 @@ export const resetUsers = async () => {
   await prisma.link.deleteMany();
   await prisma.link_Type.deleteMany();
   await prisma.work_Package_Template.deleteMany();
+  await prisma.project_Template.deleteMany();
+  await prisma.wBS_Element_Template.deleteMany();
   await prisma.user_Settings.deleteMany();
   await prisma.session.deleteMany();
   await prisma.user_Secure_Settings.deleteMany();
@@ -205,17 +210,42 @@ export const createTestWorkPackageTemplate = async (user: User, organizationId?:
 
   const workPackageTemplate = await prisma.work_Package_Template.create({
     data: {
-      workPackageName: 'Work Package 1',
-      templateName: 'Template 1',
-      templateNotes: 'This is a new work package template',
-      dateCreated: new Date('03/25/2024'),
-      userCreatedId: user.userId,
-      organizationId
+      wbsElementTemplate: {
+        create: {
+          templateName: 'Template 1',
+          templateNotes: 'This is a new work package template',
+          organization: { connect: { organizationId } },
+          userCreated: { connect: { userId: user.userId } },
+          wbsElementName: 'Work Package 1',
+          dateCreated: new Date('03/25/2024')
+        }
+      }
     },
     ...getWorkPackageTemplateQueryArgs(organizationId)
   });
 
   return workPackageTemplate;
+};
+
+export const createTestProjectTemplate = async (user: User, organizationId?: string) => {
+  if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
+  if (!organizationId) throw new Error('Failed to create organization');
+
+  const projectTemplate = await prisma.project_Template.create({
+    data: {
+      wbsElementTemplate: {
+        create: {
+          templateName: 'Template 1',
+          templateNotes: 'This is a new project template',
+          organization: { connect: { organizationId } },
+          userCreated: { connect: { userId: user.userId } }
+        }
+      }
+    },
+    ...getProjectTemplateQueryArgs(organizationId)
+  });
+
+  return projectTemplate;
 };
 
 export const createTestFaq = async (user: User, organizationId: string) => {

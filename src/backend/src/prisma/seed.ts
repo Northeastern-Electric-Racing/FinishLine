@@ -30,7 +30,7 @@ import BillOfMaterialsService from '../services/boms.services';
 import UsersService from '../services/users.services';
 import { transformDate } from '../utils/datetime.utils';
 import { writeFileSync } from 'fs';
-import WorkPackageTemplatesService from '../services/work-package-template.services';
+import WbsElementTemplatesService from '../services/wbs-element-templates.services';
 import RecruitmentServices from '../services/recruitment.services';
 import OrganizationsService from '../services/organizations.services';
 
@@ -1833,7 +1833,7 @@ const performSeed: () => Promise<void> = async () => {
     }
   );
 
-  await WorkPackageTemplatesService.createWorkPackageTemplate(
+  await WbsElementTemplatesService.createWorkPackageTemplate(
     batman,
     'Batmobile Config 1',
     'This is the first Batmobile configuration',
@@ -1845,7 +1845,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  const schematicWpTemplate = await WorkPackageTemplatesService.createWorkPackageTemplate(
+  const schematicWpTemplate = await WbsElementTemplatesService.createWorkPackageTemplate(
     batman,
     'Schematic',
     'This is the schematic template',
@@ -1857,7 +1857,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await WorkPackageTemplatesService.createWorkPackageTemplate(
+  await WbsElementTemplatesService.createWorkPackageTemplate(
     batman,
     'Layout ',
     'This is the Layout  template',
@@ -1867,6 +1867,15 @@ const performSeed: () => Promise<void> = async () => {
     [],
     [schematicWpTemplate.workPackageTemplateId],
     ner
+  );
+
+  await WbsElementTemplatesService.createProjectTemplate(
+    batman,
+    'Project Template 1',
+    'This is the first project template',
+    [],
+    ner,
+    []
   );
 
   await OrganizationsService.setUsefulLinks(batman, organizationId, [

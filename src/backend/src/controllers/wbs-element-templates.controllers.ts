@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
-import { WorkPackageTemplate } from 'shared';
-import WorkPackageTemplatesService from '../services/work-package-template.services';
+import { ProjectTemplate, WorkPackageTemplate } from 'shared';
+import WbsElementTemplatesService from '../services/wbs-element-templates.services';
 
 /** Controller for operations involving work packages templates. */
-export default class WorkPackageTemplatesController {
+export default class WbsElementTemplatesController {
   // Create a work package template with the given details
   static async createWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
     try {
@@ -14,7 +14,7 @@ export default class WorkPackageTemplatesController {
         stage = null;
       }
 
-      const workPackageTemplate: WorkPackageTemplate = await WorkPackageTemplatesService.createWorkPackageTemplate(
+      const workPackageTemplate: WorkPackageTemplate = await WbsElementTemplatesService.createWorkPackageTemplate(
         req.currentUser,
         templateName,
         templateNotes,
@@ -37,7 +37,7 @@ export default class WorkPackageTemplatesController {
     try {
       const { workPackageTemplateId } = req.params;
 
-      const workPackageTemplate: WorkPackageTemplate = await WorkPackageTemplatesService.getSingleWorkPackageTemplate(
+      const workPackageTemplate: WorkPackageTemplate = await WbsElementTemplatesService.getSingleWorkPackageTemplate(
         req.currentUser,
         workPackageTemplateId,
         req.organization
@@ -51,7 +51,7 @@ export default class WorkPackageTemplatesController {
   // Get all work package templates
   static async getAllWorkPackageTemplates(req: Request, res: Response, next: NextFunction) {
     try {
-      const workPackageTemplates: WorkPackageTemplate[] = await WorkPackageTemplatesService.getAllWorkPackageTemplates(
+      const workPackageTemplates: WorkPackageTemplate[] = await WbsElementTemplatesService.getAllWorkPackageTemplates(
         req.currentUser,
         req.organization
       );
@@ -71,7 +71,7 @@ export default class WorkPackageTemplatesController {
         stage = null;
       }
 
-      const updatedWorkPackageTemplate = await WorkPackageTemplatesService.editWorkPackageTemplate(
+      const updatedWorkPackageTemplate = await WbsElementTemplatesService.editWorkPackageTemplate(
         req.currentUser,
         workpackageTemplateId,
         templateName,
@@ -95,10 +95,65 @@ export default class WorkPackageTemplatesController {
     try {
       const { workPackageTemplateId } = req.params;
 
-      await WorkPackageTemplatesService.deleteWorkPackageTemplate(req.currentUser, workPackageTemplateId, req.organization);
+      await WbsElementTemplatesService.deleteWorkPackageTemplate(req.currentUser, workPackageTemplateId, req.organization);
       return res
         .status(200)
         .json({ message: `Successfully deleted work package template #${req.params.workPackageTemplateId}` });
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
+  static async getAllProjectTemplates(req: Request, res: Response, next: NextFunction) {
+    try {
+      const projectTemplates = await WbsElementTemplatesService.getAllProjectTemplates(req.currentUser, req.organization);
+      return res.status(200).json(projectTemplates);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
+  static async deleteProjectTemplate(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { projectTemplateId } = req.params;
+      await WbsElementTemplatesService.deleteProjectTemplate(req.currentUser, projectTemplateId, req.organization);
+      return res.status(200).json({ message: `Successfully deleted project template ${projectTemplateId}` });
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
+  static async createProjectTemplate(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { templateName, templateNotes, descriptionBullets, workPackageTemplates, projectName } = req.body;
+
+      const projectTemplate: ProjectTemplate = await WbsElementTemplatesService.createProjectTemplate(
+        req.currentUser,
+        templateName,
+        templateNotes,
+        descriptionBullets,
+        req.organization,
+        workPackageTemplates,
+        projectName
+      );
+
+      return res.status(200).json(projectTemplate);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
+  static async getSingleProjectTemplate(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { projectTemplateId } = req.params;
+
+      const projectTemplate: ProjectTemplate = await WbsElementTemplatesService.getSingleProjectTemplate(
+        req.currentUser,
+        projectTemplateId,
+        req.organization
+      );
+
+      return res.status(200).json(projectTemplate);
     } catch (error: unknown) {
       return next(error);
     }

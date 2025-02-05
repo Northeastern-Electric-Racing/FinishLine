@@ -161,15 +161,18 @@ const designReviewDelete = (id: string) => `${designReviewById(id)}/delete`;
 const designReviewMarkUserConfirmed = (id: string) => `${designReviewById(id)}/confirm-schedule`;
 const designReviewSetStatus = (id: string) => `${designReviewById(id)}/set-status`;
 
-/******************* Work Package Template Endpoints ********************/
+/******************* WBS Element Template Endpoints ********************/
 
 const workPackageTemplates = () => `${API_URL}/templates`;
 const workPackageTemplatesById = (workPackageTemplateId: string) => `${workPackageTemplates()}/${workPackageTemplateId}`;
+const projectTemplatesById = (projectTemplateId: string) => `${workPackageTemplates()}/project/${projectTemplateId}`;
 const workPackageTemplatesEdit = (workPackageTemplateId: string) =>
   `${workPackageTemplatesById(workPackageTemplateId)}/edit`;
 const workPackageTemplatesCreate = () => `${workPackageTemplates()}/create`;
 const workPackageTemplateDelete = (workPackageTemplateId: string) =>
   `${workPackageTemplatesById(workPackageTemplateId)}/delete`;
+const projectTemplates = () => `${API_URL}/templates/project`;
+const projectTemplateDelete = (projectTemplateId: string) => `${projectTemplatesById(projectTemplateId)}/delete`;
 
 /******************* Organizations Endpoints ********************/
 const organizations = () => `${API_URL}/organizations`;
@@ -330,6 +333,9 @@ export const apiUrls = {
   workPackageTemplatesEdit,
   workPackageTemplatesCreate,
   workPackageTemplateDelete,
+  projectTemplates,
+  projectTemplatesById,
+  projectTemplateDelete,
 
   currentOrganization,
   organizationsUsefulLinks,

@@ -1,52 +1,48 @@
-import { TableRow, TableCell, Box, IconButton, Typography } from '@mui/material';
-import AdminToolTable from '../AdminToolTable';
-import { NERButton } from '../../../components/NERButton';
-import { isAdmin } from 'shared/src/permission-utils';
+import { useHistory } from 'react-router-dom';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { WorkPackageTemplate } from 'shared';
-import { routes } from '../../../utils/routes';
-import { Delete } from '@mui/icons-material';
-import { useHistory } from 'react-router-dom';
-import { useState } from 'react';
+import { IconButton, TableCell, TableRow, Typography } from '@mui/material';
+import { Box } from '@mui/system';
+import { isAdmin, ProjectTemplate } from 'shared';
+import { NERButton } from '../../../components/NERButton';
 import NERModal from '../../../components/NERModal';
-import { useAllWorkPackageTemplates } from '../../../hooks/projects.hooks';
-import { useDeleteWorkPackageTemplate } from '../../../hooks/wbs-templates.hooks';
+import { routes } from '../../../utils/routes';
+import AdminToolTable from '../AdminToolTable';
+import { useState } from 'react';
+import { Delete } from '@mui/icons-material';
+import { useAllProjectTemplates, useDeleteProjectTemplate } from '../../../hooks/wbs-templates.hooks';
 
-const WorkPackageTemplateTable = () => {
+const ProjectTemplateTable: React.FC = () => {
   const currentUser = useCurrentUser();
   const history = useHistory();
+  const { data: projectTemplates, isLoading, isError, error } = useAllProjectTemplates();
+  const [templateToDelete, setTemplateToDelete] = useState<ProjectTemplate>();
+  const { mutateAsync } = useDeleteProjectTemplate();
 
-  const {
-    data: workPackageTemplates,
-    isLoading: workPackageTemplatesIsLoading,
-    isError: workPackageTemplatesIsError,
-    error: workPackageTemplatesError
-  } = useAllWorkPackageTemplates();
+  if (isLoading || !projectTemplates) {
+    return <LoadingIndicator />;
+  }
 
-  const [templateToDelete, setTemplateToDelete] = useState<WorkPackageTemplate>();
+  if (isError) {
+    <ErrorPage message={error?.message} />;
+  }
 
-  const { mutateAsync } = useDeleteWorkPackageTemplate();
-
-  if (!workPackageTemplates || workPackageTemplatesIsLoading) return <LoadingIndicator />;
-  if (workPackageTemplatesIsError) return <ErrorPage message={workPackageTemplatesError.message} />;
-
-  const workPackageTemplateRows = workPackageTemplates.map((workPackageTemplate) => (
+  const projectTemplateRows = projectTemplates.map((template) => (
     <TableRow
-      key={workPackageTemplate.workPackageTemplateId}
-      onClick={() => history.push(`${routes.WORK_PACKAGE_TEMPLATE_EDIT}?id=${workPackageTemplate.workPackageTemplateId}`)}
+      key={template.projectTemplateId}
+      onClick={() => history.push(`${routes.WORK_PACKAGE_TEMPLATE_EDIT}?id=${template.projectTemplateId}`)}
       sx={{ cursor: 'pointer' }}
     >
       <TableCell align="left" sx={{ border: '2px solid black' }}>
-        {workPackageTemplate.templateName}
+        {template.templateName}
       </TableCell>
-      <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>{workPackageTemplate.templateNotes}</TableCell>
+      <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>{template.templateNotes}</TableCell>
       <TableCell align="center" sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
         <IconButton
           onClick={(event) => {
             event.stopPropagation();
-            setTemplateToDelete(workPackageTemplate);
+            setTemplateToDelete(template);
           }}
         >
           <Delete />
@@ -57,7 +53,7 @@ const WorkPackageTemplateTable = () => {
 
   return (
     <Box>
-      <AdminToolTable columns={[{ name: 'Name' }, { name: 'Description' }]} rows={workPackageTemplateRows} />
+      <AdminToolTable columns={[{ name: 'Name' }, { name: 'Description' }]} rows={projectTemplateRows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         {isAdmin(currentUser.role) && (
           <NERButton variant="contained" size="small" onClick={() => history.push(routes.WORK_PACKAGE_TEMPLATE_NEW)}>
@@ -71,7 +67,7 @@ const WorkPackageTemplateTable = () => {
         onHide={() => setTemplateToDelete(undefined)}
         submitText="Delete"
         onSubmit={() => {
-          mutateAsync(templateToDelete!.workPackageTemplateId);
+          mutateAsync(templateToDelete!.projectTemplateId);
           setTemplateToDelete(undefined);
         }}
       >
@@ -88,4 +84,4 @@ const WorkPackageTemplateTable = () => {
   );
 };
 
-export default WorkPackageTemplateTable;
+export default ProjectTemplateTable;
