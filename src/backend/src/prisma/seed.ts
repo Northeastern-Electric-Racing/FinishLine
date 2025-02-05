@@ -1793,7 +1793,6 @@ const performSeed: () => Promise<void> = async () => {
       workPackageNumber: 0
     },
     ner,
-    reimbursement1.reimbursementRequestId,
     'Here are some notes'
   );
 
@@ -1814,7 +1813,6 @@ const performSeed: () => Promise<void> = async () => {
       workPackageNumber: 0
     },
     ner,
-    reimbursement2.reimbursementRequestId,
     'Here are some more notes'
   );
 
