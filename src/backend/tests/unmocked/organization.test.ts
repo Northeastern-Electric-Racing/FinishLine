@@ -260,4 +260,37 @@ describe('Organization Tests', () => {
       expect(allContacts.some((contact) => contact.userId === testSuperman.userId)).toBeTruthy();
     });
   });
+
+  describe('Get all part FAQS', () => {
+    beforeEach(async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      expect(testBatman.userId).not.toBeUndefined();
+      if (!testBatman.userId) {
+        throw new HttpException(400, "");
+      }
+      const faq1 = prisma.frequentlyAskedQuestion.create({
+        data: {
+          faqId: '1',
+          question: 'question',
+          answer: 'answer',
+          userCreated: { connect: { userId: testBatman.userId } },
+          userCreatedId: testBatman.userId,
+          userDeletedId: null,
+          dateCreated: new Date(),
+          partReviewFaqOrgId: orgId,
+          partReviewFaqOrg: { connect: { organizationId: orgId } },
+        }
+      });
+    });
+    it('Succeeds and gets all part review FAQS in the organization'){
+
+    }
+    it('Retrieves empty list of part review FAQS in the organization'){
+      
+    }
+    it('Does not retrieve regular FAQS in the organization'){
+      
+    }
+  });
+
 });
