@@ -10757,6 +10757,7 @@ __metadata:
     eslint-config-react-app: ^7.0.1
     eslint-plugin-cypress: latest
     eslint-plugin-prettier: ^4.2.1
+    lucide-react: ^0.474.0
     mitt: ^3.0.1
     prettier: ^2.0.5
     react-hook-form-persist: ^3.0.0
@@ -14444,6 +14445,15 @@ __metadata:
   dependencies:
     yallist: ^4.0.0
   checksum: f97f499f898f23e4585742138a22f22526254fdba6d75d41a1c2526b3b6cc5747ef59c5612ba7375f42aca4f8461950e925ba08c991ead0651b4918b7c978297
+  languageName: node
+  linkType: hard
+
+"lucide-react@npm:^0.474.0":
+  version: 0.474.0
+  resolution: "lucide-react@npm:0.474.0"
+  peerDependencies:
+    react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: a18062825dc636edc2df83f09365d83bd9e1d2e707a2a3b45edfa352b520f4d34c3298811d32c2c8174a0fa532d17a1c41ea49c637ea95bd7d231510ac3a080d
   languageName: node
   linkType: hard
 

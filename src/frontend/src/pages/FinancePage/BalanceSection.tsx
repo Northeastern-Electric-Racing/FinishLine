@@ -22,7 +22,15 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({
   const theme = useTheme();
 
   return (
-    <Box sx={{ bgcolor: theme.palette.background.paper, width: '100%', borderRadius: '8px 8px 8px 8px', boxShadow: 1 }}>
+    <Box
+      sx={{
+        bgcolor: '#2c2c2c',
+        width: '100%',
+        borderRadius: '8px 8px 8px 8px',
+        boxShadow: 1
+      }}
+    >
+      <h1 style={{ marginLeft: '25px', paddingTop: '18px', fontSize: '26px' }}>Balance</h1>
       <FinancePieChart
         totalBalance={totalBalance}
         pendingLeadership={pendingLeadership}
@@ -31,16 +39,6 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({
         reimbursed={reimbursed}
         available={available}
       />
-      <Box
-        sx={{
-          backgroundColor: theme.palette.background.paper,
-          width: '100%',
-          padding: '30px',
-          borderRadius: '0 0 8px 8px',
-          display: 'flex',
-          justifyContent: 'space-between'
-        }}
-      ></Box>
     </Box>
   );
 };
