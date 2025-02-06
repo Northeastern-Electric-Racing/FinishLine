@@ -260,4 +260,63 @@ describe('Organization Tests', () => {
       expect(allContacts.some((contact) => contact.userId === testSuperman.userId)).toBeTruthy();
     });
   });
+  
+  describe('Get all part FAQS', () => {
+    it('Succeeds and gets all part review FAQS in the organization', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const faq1 = prisma.frequentlyAskedQuestion.create({
+        data: {
+          faqId: '1',
+          question: 'question',
+          answer: 'answer',
+          userCreated: { connect: { userId: testBatman.userId } },
+          dateCreated: new Date(),
+          partReviewFaqOrg: { connect: { organizationId: orgId } }
+        }
+      });
+      const faq2 = prisma.frequentlyAskedQuestion.create({
+        data: {
+          faqId: '2',
+          question: 'question',
+          answer: 'answer',
+          userCreated: { connect: { userId: testBatman.userId } },
+          dateCreated: new Date(),
+          partReviewFaqOrg: { connect: { organizationId: orgId } }
+        }
+      });
+      const partReviews = await OrganizationsService.getAllPartReviewFAQs(orgId);
+      expect(partReviews).toStrictEqual([faq1, faq2]);
+    });
+
+    it('Retrieves empty list of part review FAQS in the organization', async () => {
+      const partReviews = await OrganizationsService.getAllPartReviewFAQs(orgId);
+      expect(partReviews).toStrictEqual([]);
+    });
+
+    it('Does not retrieve regular FAQS in the organization', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const partFaq = prisma.frequentlyAskedQuestion.create({
+        data: {
+          faqId: '1',
+          question: 'question',
+          answer: 'answer',
+          userCreated: { connect: { userId: testBatman.userId } },
+          dateCreated: new Date(),
+          partReviewFaqOrg: { connect: { organizationId: orgId } }
+        }
+      });
+      const regularFaq = prisma.frequentlyAskedQuestion.create({
+        data: {
+          faqId: '2',
+          question: 'question',
+          answer: 'answer',
+          userCreated: { connect: { userId: testBatman.userId } },
+          dateCreated: new Date(),
+          regularFaqOrg: { connect: { organizationId: orgId } }
+        }
+      });
+      const partReviews = await OrganizationsService.getAllPartReviewFAQs(orgId);
+      expect(partReviews).toStrictEqual([partFaq]);
+    });
+  });
 });
