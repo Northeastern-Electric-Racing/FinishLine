@@ -2,6 +2,8 @@
 import {
   Club_Accounts,
   Organization,
+  PartSubmission,
+  Part_Review_Popup,
   Project,
   Schedule_Settings,
   Task_Priority,
@@ -670,4 +672,45 @@ export const createSlackMessageEvent = (
       }
     ]
   };
+};
+
+export const createTestPartReview = async (
+  partReviewId: string,
+  fileIds: string[],
+  notes: string,
+  submission: PartSubmission,
+  submissionId: string,
+  popUps: Part_Review_Popup[],
+  createdAt: DateTime,
+  updatedAt: DateTime,
+  dateDeleted: DateTime,
+  userCreatedId: string,
+  userCreated: User,             
+  deletedAt: DateTime,
+  userDeletedId: string,
+  userDeleted: User
+) => {
+  const partReview = await prisma.partReview.create({
+    data: {
+      partReviewId,
+      fileIds,
+      notes,
+      submission,
+      submissionId,
+      popUps,
+      createdAt,
+      updatedAt,
+      dateDeleted,
+      userCreatedId,
+      userCreated,
+      deletedAt,
+      userDeletedId,
+      userDeleted
+    }})
+};
+
+export const createTestPartSubmission = async (
+
+) => {
+  
 };
