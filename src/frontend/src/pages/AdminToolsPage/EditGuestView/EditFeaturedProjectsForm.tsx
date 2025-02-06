@@ -4,20 +4,20 @@ import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import EditFeaturedProjectsDropdown from './EditFeaturedProjectsDropdown';
 import { Box, FormControl } from '@mui/material';
-import { ProjectPreview } from 'shared';
+import { Project } from 'shared';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 
 const schema = yup.object().shape({
-  featuredProjects: yup.array().of(yup.mixed<ProjectPreview>().required()).required()
+  featuredProjects: yup.array().of(yup.mixed<Project>().required()).required()
 });
 
 export interface EditFeaturedProjectsFormInput {
-  featuredProjects: ProjectPreview[];
+  featuredProjects: Project[];
 }
 
 interface EditFeaturedProjectsFormProps {
-  featuredProjects: ProjectPreview[];
+  featuredProjects: Project[];
   onSubmit: (formInput: EditFeaturedProjectsFormInput) => Promise<void>;
   onHide: () => void;
   isEditMode: boolean;

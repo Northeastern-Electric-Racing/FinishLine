@@ -3,7 +3,7 @@ import prisma from '../prisma/prisma';
 import { UserWithSettings } from './auth.utils';
 import { NotFoundException } from './errors.utils';
 
-const teamQueryArgsMembersOnly = Prisma.validator<Prisma.TeamDefaultArgs>()({
+const teamQueryArgsMembersOnly = Prisma.validator<Prisma.TeamArgs>()({
   include: {
     members: true,
     head: true,

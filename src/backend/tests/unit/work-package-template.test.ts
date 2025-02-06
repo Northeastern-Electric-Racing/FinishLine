@@ -2,8 +2,7 @@ import {
   AccessDeniedGuestException,
   AccessDeniedAdminOnlyException,
   DeletedException,
-  HttpException,
-  NotFoundException
+  HttpException
 } from '../../src/utils/errors.utils';
 import { createTestOrganization, createTestUser, createTestWorkPackageTemplate, resetUsers } from '../test-utils';
 import { batmanAppAdmin, supermanAdmin, theVisitorGuest } from '../test-data/users.test-data';
@@ -81,7 +80,7 @@ describe('Work Package Template Tests', () => {
             'id1',
             organization
           )
-      ).rejects.toThrow(new NotFoundException('Work Package Template', 'id1'));
+      ).rejects.toThrow(new HttpException(400, `Work Package Template with id: id1 not found!`));
     });
 
     it('fails is the work package template has already been deleted', async () => {

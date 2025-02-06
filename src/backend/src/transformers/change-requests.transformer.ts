@@ -7,8 +7,7 @@ import {
   ProjectProposedChanges,
   WbsElementStatus,
   WorkPackageProposedChanges,
-  WorkPackageStage,
-  isProject
+  WorkPackageStage
 } from 'shared';
 import { wbsNumOf } from '../utils/utils';
 import { calculateChangeRequestStatus, convertCRScopeWhyType } from '../utils/change-requests.utils';
@@ -23,10 +22,7 @@ import {
   WorkPackageProposedChangesQueryArgs
 } from '../prisma-query-args/scope-change-requests.query-args';
 import { HttpException } from '../utils/errors.utils';
-import {
-  ChangeRequestManyQueryArgs,
-  ChangeRequestWithProjectAndWorkPackageQueryArgs
-} from '../prisma-query-args/change-requests.query-args';
+import { ChangeRequestManyQueryArgs, ChangeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
 
 const projectProposedChangesTransformer = (
   wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<WbsProposedChangeQueryArgs>
@@ -122,20 +118,16 @@ export const changeRequestManyTransformer = (
 };
 
 const changeRequestTransformer = (
-  changeRequest: Prisma.Change_RequestGetPayload<ChangeRequestWithProjectAndWorkPackageQueryArgs>
+  changeRequest: Prisma.Change_RequestGetPayload<ChangeRequestQueryArgs>
 ): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest => {
   const status = calculateChangeRequestStatus(changeRequest);
-
-  const wbsName = isProject(changeRequest.wbsElement)
-    ? changeRequest.wbsElement.name
-    : `${changeRequest.wbsElement.workPackage?.project.wbsElement.name} - ${changeRequest.wbsElement.name}`;
 
   return {
     // all cr fields
     crId: changeRequest.crId,
     identifier: changeRequest.identifier,
     wbsNum: wbsNumOf(changeRequest.wbsElement),
-    wbsName,
+    wbsName: changeRequest.wbsElement.name,
     submitter: userTransformer(changeRequest.submitter),
     dateSubmitted: changeRequest.dateSubmitted,
     type: changeRequest.type,

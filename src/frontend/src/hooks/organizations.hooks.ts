@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react';
 import { OrganizationContext } from '../app/AppOrganizationContext';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Organization, ProjectPreview } from 'shared';
+import { Organization, Project } from 'shared';
 import {
   getFeaturedProjects,
   getCurrentOrganization,
@@ -72,7 +72,7 @@ export const useSetOrganizationImages = () => {
 };
 
 export const useFeaturedProjects = () => {
-  return useQuery<ProjectPreview[], Error>(['organizations', 'featured-projects'], async () => {
+  return useQuery<Project[], Error>(['organizations', 'featured-projects'], async () => {
     const { data } = await getFeaturedProjects();
     return data;
   });
@@ -155,9 +155,9 @@ export const useSetOrganizationDescription = () => {
 
 export const useSetFeaturedProjects = () => {
   const queryClient = useQueryClient();
-  return useMutation<Organization, Error, ProjectPreview[]>(
+  return useMutation<Organization, Error, Project[]>(
     ['organizations', 'featured-projects'],
-    async (featuredProjects: ProjectPreview[]) => {
+    async (featuredProjects: Project[]) => {
       const { data } = await setOrganizationFeaturedProjects(featuredProjects.map((project) => project.id));
       return data;
     },

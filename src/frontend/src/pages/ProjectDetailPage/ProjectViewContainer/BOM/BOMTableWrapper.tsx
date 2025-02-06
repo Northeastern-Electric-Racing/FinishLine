@@ -1,7 +1,7 @@
 import { Box } from '@mui/system';
 import { GridActionsCellItem, GridColumns, GridRowParams } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
-import { Assembly, Material, Project, isLeadership } from 'shared';
+import { Project, isLeadership } from 'shared';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
@@ -22,18 +22,15 @@ interface BOMTableWrapperProps {
   project: Project;
   hideColumn: boolean[];
   setHideColumn: React.Dispatch<React.SetStateAction<boolean[]>>;
-  assemblies: Assembly[];
-  materials: Material[];
 }
 
-const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project, hideColumn, setHideColumn, assemblies, materials }) => {
+const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project, hideColumn, setHideColumn }) => {
   const [showEditMaterial, setShowEditMaterial] = useState(false);
   const [selectedMaterialId, setSelectedMaterialId] = useState('');
   const [modalShow, setModalShow] = useState(false);
-  const { mutateAsync: deleteMaterialMutateAsync, isLoading: deleteMaterialIsLoading } = useDeleteMaterial(project.wbsNum);
-  const { mutateAsync: deleteAssemblyMutateAsync, isLoading: deleteAssemblyIsLoading } = useDeleteAssembly(project.wbsNum);
+  const { mutateAsync: deleteMaterialMutateAsync, isLoading } = useDeleteMaterial();
+  const { mutateAsync: deleteAssemblyMutateAsync } = useDeleteAssembly();
   const { mutateAsync: assignMaterialToAssembly } = useAssignMaterialToAssembly();
-
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   useEffect(() => {
@@ -62,7 +59,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project, hideColumn, 
     }
   }, [setHideColumn]);
 
-  if (deleteMaterialIsLoading || deleteAssemblyIsLoading) return <LoadingIndicator />;
+  if (isLoading) return <LoadingIndicator />;
 
   const assignMaterial = (materialId: string, assemblyId?: string) => async () => {
     try {
@@ -101,6 +98,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project, hideColumn, 
     project.teams.some((team) => team.head.userId === user.userId) ||
     project.teams.some((team) => team.leads.map((lead) => lead.userId).includes(user.userId)) ||
     project.teams.some((team) => team.members.map((member) => member.userId).includes(user.userId));
+
+  const { assemblies, materials } = project;
 
   const selectedMaterial = materials.find((material) => material.materialId === selectedMaterialId);
 
@@ -307,8 +306,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project, hideColumn, 
           open={showEditMaterial}
           onHide={() => setShowEditMaterial(false)}
           material={selectedMaterial!}
-          assemblies={assemblies}
-          wbsNum={project.wbsNum}
+          wbsElement={project}
         />
       )}
       {modalShow && (
@@ -325,7 +323,12 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project, hideColumn, 
         </NERModal>
       )}
 
-      <BOMTable setHideColumn={setHideColumn} columns={columns} assemblies={assemblies} materials={materials} />
+      <BOMTable
+        setHideColumn={setHideColumn}
+        columns={columns}
+        assemblies={project.assemblies}
+        materials={project.materials}
+      />
     </Box>
   );
 };

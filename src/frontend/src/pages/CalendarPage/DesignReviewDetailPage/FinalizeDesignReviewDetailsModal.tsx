@@ -107,20 +107,20 @@ const FinalizeDesignReviewDetailsModal = ({
         <ReactHookTextField
           name="docTemplateLink"
           control={control}
-          sx={{ width: 0.48 }}
+          sx={{ width: 0.5 }}
           errorMessage={errors.docTemplateLink}
         />
       </Box>
       {meetingType.includes('virtual') && (
-        <Box style={{ display: 'flex', marginBottom: 20, alignItems: 'center' }}>
-          <Typography style={{ fontSize: '1.2em', marginRight: 118 }}>Zoom Link:</Typography>
-          <ReactHookTextField name="zoomLink" control={control} sx={{ width: 0.48 }} errorMessage={errors.zoomLink} />
+        <Box style={{ display: 'flex', marginBottom: 20 }}>
+          <Typography style={{ fontSize: '1.2em', marginRight: 120 }}>Zoom Link:</Typography>
+          <ReactHookTextField name="zoomLink" control={control} sx={{ width: 0.5 }} errorMessage={errors.zoomLink} />
         </Box>
       )}
       {meetingType.includes('inPerson') && (
         <Box style={{ display: 'flex', alignItems: 'center', marginBottom: 50 }}>
           <Typography style={{ fontSize: '1.2em', marginRight: 132 }}>Location:</Typography>
-          <ReactHookTextField name="location" control={control} sx={{ width: 0.48 }} errorMessage={errors.location} />
+          <ReactHookTextField name="location" control={control} sx={{ width: 0.49 }} errorMessage={errors.location} />
         </Box>
       )}
       <Grid container justifyContent="center" style={{ alignItems: 'center' }}>

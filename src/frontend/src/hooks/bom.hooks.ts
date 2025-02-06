@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Assembly, Manufacturer, Material, MaterialType, Unit, WbsNumber, wbsPipe } from 'shared';
+import { Assembly, Manufacturer, Material, MaterialType, Unit, WbsNumber } from 'shared';
 import {
   assignMaterialToAssembly,
   createAssembly,
@@ -14,9 +14,7 @@ import {
   editMaterial,
   getAllManufacturers,
   getAllMaterialTypes,
-  getAllUnits,
-  getMaterialsForWbsElement,
-  getAssembliesForWbsElement
+  getAllUnits
 } from '../apis/bom.api';
 import { MaterialDataSubmission } from '../pages/ProjectDetailPage/ProjectViewContainer/BOM/MaterialForm/MaterialForm';
 import { AssemblyFormInput } from '../pages/ProjectDetailPage/ProjectViewContainer/BOM/AssemblyForm/AssemblyForm';
@@ -77,10 +75,9 @@ export const useDeleteUnit = () => {
 /**
  * Custom React hook to edit a material.
  * @param materialId The material to edit's id
- * @param wbsNum The wbs element the material is apart of
  * @returns mutation function to edit a material
  */
-export const useEditMaterial = (materialId: string, wbsNum: WbsNumber) => {
+export const useEditMaterial = (materialId: string) => {
   const queryClient = useQueryClient();
   return useMutation<Material, Error, MaterialDataSubmission>(
     ['materials', 'edit'],
@@ -90,7 +87,7 @@ export const useEditMaterial = (materialId: string, wbsNum: WbsNumber) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['materials', wbsPipe(wbsNum)]);
+        queryClient.invalidateQueries(['projects']);
       }
     }
   );
@@ -111,7 +108,7 @@ export const useCreateMaterial = (wbsNum: WbsNumber) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['materials', wbsPipe(wbsNum)]);
+        queryClient.invalidateQueries(['projects']);
       }
     }
   );
@@ -119,11 +116,10 @@ export const useCreateMaterial = (wbsNum: WbsNumber) => {
 
 /**
  * Custom React hook to delete a material.
- * @param wbsNum The wbs element you are deleting the material from
  * @param materialId The material to delete's id
  * @returns mutation function to delete a material
  */
-export const useDeleteMaterial = (wbsNum: WbsNumber) => {
+export const useDeleteMaterial = () => {
   const queryClient = useQueryClient();
   return useMutation<any, Error, { materialId: string }>(
     ['materials', 'delete'],
@@ -133,7 +129,7 @@ export const useDeleteMaterial = (wbsNum: WbsNumber) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['materials', wbsPipe(wbsNum)]);
+        queryClient.invalidateQueries(['projects']);
       }
     }
   );
@@ -141,11 +137,10 @@ export const useDeleteMaterial = (wbsNum: WbsNumber) => {
 
 /**
  * Custom React hook to delete a assembly.
- * @param wbsNum The wbs element you are deleting the assembly from
  * @param assemblyId The assembly to delete's id
  * @returns mutation function to delete a assembly
  */
-export const useDeleteAssembly = (wbsNum: WbsNumber) => {
+export const useDeleteAssembly = () => {
   const queryClient = useQueryClient();
   return useMutation<any, Error, { assemblyId: string }>(
     ['assembly', 'delete'],
@@ -155,7 +150,7 @@ export const useDeleteAssembly = (wbsNum: WbsNumber) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['assemblies', wbsPipe(wbsNum)]);
+        queryClient.invalidateQueries(['projects']);
       }
     }
   );
@@ -176,7 +171,7 @@ export const useCreateAssembly = (wbsNum: WbsNumber) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['assemblies', wbsPipe(wbsNum)]);
+        queryClient.invalidateQueries(['projects']);
       }
     }
   );
@@ -283,18 +278,4 @@ export const useCreateMaterialType = () => {
       }
     }
   );
-};
-
-export const useGetAssembliesForWbsElement = (wbsNum: WbsNumber) => {
-  return useQuery<Assembly[], Error>(['assemblies', wbsPipe(wbsNum)], async () => {
-    const { data } = await getAssembliesForWbsElement(wbsNum);
-    return data;
-  });
-};
-
-export const useGetMaterialsForWbsElement = (wbsNum: WbsNumber) => {
-  return useQuery<Material[], Error>(['materials', wbsPipe(wbsNum)], async () => {
-    const { data } = await getMaterialsForWbsElement(wbsNum);
-    return data;
-  });
 };

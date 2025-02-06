@@ -2,7 +2,7 @@ import WorkPackageCard from './WorkPackageCard';
 import ScrollablePageBlock from './ScrollablePageBlock';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
-import { AuthenticatedUser, WbsElementStatus, WorkPackagePreview } from 'shared';
+import { AuthenticatedUser, WbsElementStatus, WorkPackage } from 'shared';
 import { useAllTeams } from '../../../hooks/teams.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -40,7 +40,7 @@ const TeamWorkPackageDisplay: React.FC<TeamWorkPackageDisplayProps> = ({ user })
     //flatten into 1 dimensional list of work packages
     .flat(2)
     //remove duplicate work packages
-    .reduce((acc: WorkPackagePreview[], wp: WorkPackagePreview) => {
+    .reduce((acc: WorkPackage[], wp: WorkPackage) => {
       if (acc.filter((addedWp) => addedWp.id === wp.id).length === 0) {
         acc.push(wp);
       }

@@ -27,12 +27,20 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     getMostRecentAvailabilities(Array.from(editedAvailabilities.values()), initialDate)
   );
 
+  useEffect(() => {
+    if (editedAvailabilities) {
+    }
+  }, [editedAvailabilities, initialDate]);
+
   const [isDragging, setIsDragging] = useState(false);
 
   const handleMouseDown = (event: any, availability: Availability, selectedTime: number) => {
     event.preventDefault();
 
-    toggleTimeSlot(availability, selectedTime);
+    const isCurrentItemSelected = availability.availability.includes(selectedTime);
+    isCurrentItemSelected
+      ? availability.availability.splice(availability.availability.indexOf(selectedTime), 1)
+      : availability.availability.push(selectedTime);
 
     setIsDragging(true);
   };
@@ -75,13 +83,6 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
   const handleMouseUp = () => {
     setIsDragging(false);
   };
-
-  useEffect(() => {
-    window.addEventListener('mouseup', handleMouseUp);
-    return () => {
-      window.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, []);
 
   const toggleTimeSlot = (availability: Availability, selectedTime: number) => {
     availability.availability.includes(selectedTime)

@@ -1,4 +1,4 @@
-import { Material_Status, Material_Type, Organization, User } from '@prisma/client';
+import { Material, Material_Status, Material_Type, Organization, User } from '@prisma/client';
 import Decimal from 'decimal.js';
 import {
   Manufacturer,
@@ -10,7 +10,6 @@ import {
   wbsPipe,
   isHead,
   MaterialType,
-  Material,
   Unit
 } from 'shared';
 import prisma from '../prisma/prisma';
@@ -25,14 +24,10 @@ import {
 import { userHasPermission } from '../utils/users.utils';
 import { isUserPartOfTeams } from '../utils/teams.utils';
 import ProjectsService from './projects.services';
-import { assemblyTransformer, materialPreviewTransformer, materialTransformer } from '../transformers/material.transformer';
+import { assemblyTransformer, materialPreviewTransformer } from '../transformers/material.transformer';
 import manufacturerTransformer from '../transformers/manufacturer.transformer';
 import { materialTypeTransformer } from '../transformers/material-type.transformer';
-import {
-  getAssemblyQueryArgs,
-  getMaterialPreviewQueryArgs,
-  getMaterialQueryArgs
-} from '../prisma-query-args/bom.query-args';
+import { getAssemblyQueryArgs, getMaterialPreviewQueryArgs } from '../prisma-query-args/bom.query-args';
 import { getManufacturerQueryArgs } from '../prisma-query-args/manufacturers.query-args';
 import { getMaterialTypeQueryArgs } from '../prisma-query-args/material-type.query-args';
 
@@ -128,11 +123,10 @@ export default class BillOfMaterialsService {
         notes,
         dateCreated: new Date(),
         wbsElementId: project.wbsElementId
-      },
-      ...getMaterialQueryArgs(organization.organizationId)
+      }
     });
 
-    return materialTransformer(createdMaterial);
+    return createdMaterial;
   }
 
   /**
@@ -509,11 +503,10 @@ export default class BillOfMaterialsService {
 
     const deletedMaterial = await prisma.material.update({
       where: { materialId: material.materialId },
-      data: { dateDeleted: new Date(), userDeletedId: currentUser.userId },
-      ...getMaterialQueryArgs(organization.organizationId)
+      data: { dateDeleted: new Date(), userDeletedId: currentUser.userId }
     });
 
-    return materialTransformer(deletedMaterial);
+    return deletedMaterial;
   }
 
   /**
@@ -602,11 +595,10 @@ export default class BillOfMaterialsService {
         wbsElementId: project.wbsElementId,
         assemblyId,
         pdmFileName
-      },
-      ...getMaterialQueryArgs(organization.organizationId)
+      }
     });
 
-    return materialTransformer(updatedMaterial);
+    return updatedMaterial;
   }
 
   /**
@@ -771,61 +763,5 @@ export default class BillOfMaterialsService {
     if (material.dateDeleted) throw new DeletedException('Material', materialId);
 
     return material;
-  }
-
-  static async getAssembliesForWbsElement(wbsNum: WbsNumber, organization: Organization): Promise<Assembly[]> {
-    const wbsElement = await prisma.wBS_Element.findUnique({
-      where: {
-        wbsNumber: {
-          ...wbsNum,
-          organizationId: organization.organizationId
-        }
-      },
-      include: {
-        assemblies: {
-          where: {
-            dateDeleted: null
-          },
-          ...getAssemblyQueryArgs(organization.organizationId)
-        }
-      }
-    });
-
-    if (!wbsElement) {
-      throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
-    }
-    if (wbsElement.dateDeleted) {
-      throw new DeletedException('WBS Element', wbsPipe(wbsNum));
-    }
-
-    return wbsElement.assemblies.map(assemblyTransformer);
-  }
-
-  static async getMaterialsForWbsElement(wbsNum: WbsNumber, organization: Organization): Promise<Material[]> {
-    const wbsElement = await prisma.wBS_Element.findUnique({
-      where: {
-        wbsNumber: {
-          ...wbsNum,
-          organizationId: organization.organizationId
-        }
-      },
-      include: {
-        materials: {
-          where: {
-            dateDeleted: null
-          },
-          ...getMaterialQueryArgs(organization.organizationId)
-        }
-      }
-    });
-
-    if (!wbsElement) {
-      throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
-    }
-    if (wbsElement.dateDeleted) {
-      throw new DeletedException('WBS Element', wbsPipe(wbsNum));
-    }
-
-    return wbsElement.materials.map(materialTransformer);
   }
 }

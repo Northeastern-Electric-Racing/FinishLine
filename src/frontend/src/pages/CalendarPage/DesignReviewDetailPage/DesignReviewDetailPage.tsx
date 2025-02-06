@@ -115,8 +115,6 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
     for (let i = startTime; i < endTime; i++) {
       times.push(i % 12);
     }
-    date.setHours(12);
-
     try {
       const payload: EditDesignReviewPayload = {
         dateScheduled: date,

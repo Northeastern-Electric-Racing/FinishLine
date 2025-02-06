@@ -1,4 +1,4 @@
-import { Manufacturer, MaterialType, Project, ProjectPreview, validateWBS, WbsNumber, wbsPipe } from 'shared';
+import { Manufacturer, MaterialType, Project, validateWBS, WbsNumber, wbsPipe } from 'shared';
 import { NextFunction, Request, Response } from 'express';
 import ProjectsService from '../services/projects.services';
 import BillOfMaterialsService from '../services/boms.services';
@@ -7,25 +7,7 @@ export default class ProjectsController {
   static async getAllProjects(req: Request, res: Response, next: NextFunction) {
     try {
       const includeDeleted = req.params.deleted === 'true';
-      const projects: ProjectPreview[] = await ProjectsService.getAllProjects(req.organization, includeDeleted);
-      res.status(200).json(projects);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async getUsersTeamsProjects(req: Request, res: Response, next: NextFunction) {
-    try {
-      const projects: ProjectPreview[] = await ProjectsService.getUsersTeamsProjects(req.currentUser, req.organization);
-      res.status(200).json(projects);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async getUsersLeadingProjects(req: Request, res: Response, next: NextFunction) {
-    try {
-      const projects: ProjectPreview[] = await ProjectsService.getUsersLeadingProjects(req.currentUser, req.organization);
+      const projects: Project[] = await ProjectsService.getAllProjects(req.organization, includeDeleted);
       res.status(200).json(projects);
     } catch (error: unknown) {
       next(error);
@@ -414,28 +396,6 @@ export default class ProjectsController {
         req.organization
       );
       res.status(200).json(linkTypeUpdated);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async getAssembliesForWbsElement(req: Request, res: Response, next: NextFunction) {
-    try {
-      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
-
-      const assemblies = await BillOfMaterialsService.getAssembliesForWbsElement(wbsNumber, req.organization);
-      res.status(200).json(assemblies);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async getMaterialsForWbsElement(req: Request, res: Response, next: NextFunction) {
-    try {
-      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
-
-      const assemblies = await BillOfMaterialsService.getMaterialsForWbsElement(wbsNumber, req.organization);
-      res.status(200).json(assemblies);
     } catch (error: unknown) {
       next(error);
     }

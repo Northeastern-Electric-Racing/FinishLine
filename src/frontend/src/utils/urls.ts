@@ -27,13 +27,10 @@ const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
 const userTasks = (id: string) => `${usersById(id)}/tasks`;
 const manyUserTasks = () => `${users()}/tasks/get-many`;
 const currentUser = () => `${users()}/auth/current`;
-const logUserOut = () => `${users()}/auth/log-out`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
 const allProjects = (includeDeleted: boolean) => `${projects()}/all/${includeDeleted ? 'true' : 'false'}`;
-const usersTeamsProjects = () => `${projects()}/users-teams`;
-const usersLeadingProjects = () => `${projects()}/leading`;
 const projectsByWbsNum = (wbsNum: string) => `${projects()}/${wbsNum}`;
 const projectsCreate = () => `${projects()}/create`;
 const projectsEdit = () => `${projects()}/edit`;
@@ -145,7 +142,7 @@ const financeLeadershipApprove = (id: string) => `${financeEndpoints()}/${id}/le
 const bomEndpoints = () => `${API_URL}/projects/bom`;
 const materialEndpoints = () => `${bomEndpoints()}/material`;
 const assemblyEndpoints = () => `${bomEndpoints()}/assembly`;
-const bomGetMaterialsByWbsNum = (wbsNum: WbsNumber) => `${bomEndpoints()}/${wbsPipe(wbsNum)}/materials`;
+const bomGetMaterialsByWbsNum = (wbsNum: WbsNumber) => `${materialEndpoints}/${wbsPipe(wbsNum)}`;
 const bomGetAllUnits = () => `${bomEndpoints()}/units`;
 const bomGetAllMaterialTypes = () => `${bomEndpoints()}/material-type`;
 const bomGetAllManufacturers = () => `${bomEndpoints()}/manufacturer`;
@@ -267,7 +264,6 @@ export const apiUrls = {
   userTasks,
   manyUserTasks,
   currentUser,
-  logUserOut,
 
   projects,
   allProjects,
@@ -280,8 +276,6 @@ export const apiUrls = {
   projectsLinkTypes,
   projectsCreateLinkTypes,
   projectsEditLinkTypes,
-  usersLeadingProjects,
-  usersTeamsProjects,
 
   tasksCreate,
   tasks,

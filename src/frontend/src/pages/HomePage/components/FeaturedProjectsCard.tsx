@@ -1,12 +1,12 @@
 import { Construction, Work } from '@mui/icons-material';
 import { Box, Card, CardContent, Chip, Link, Stack, Typography, useTheme } from '@mui/material';
-import { wbsPipe, ProjectPreview, wbsNamePipe } from 'shared';
-import { datePipe, fullNamePipe } from '../../../utils/pipes';
+import { wbsPipe, Project } from 'shared';
+import { datePipe, fullNamePipe, projectWbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
 
 interface ProjectCardProps {
-  project: ProjectPreview;
+  project: Project;
 }
 
 const FeaturedProjectsCard: React.FC<ProjectCardProps> = ({ project }) => {
@@ -25,8 +25,12 @@ const FeaturedProjectsCard: React.FC<ProjectCardProps> = ({ project }) => {
         <Stack direction="row" justifyContent="space-between">
           <Box>
             <Typography fontWeight={'regular'} variant="subtitle2" noWrap>
-              <Link color={'text.primary'} component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(project.wbsNum)}`}>
-                {wbsPipe(project.wbsNum)} - {wbsNamePipe(project)}
+              <Link
+                color={'text.primary'}
+                component={RouterLink}
+                to={`${routes.PROJECTS}/${projectWbsPipe(project.wbsNum)}`}
+              >
+                {projectWbsPipe(project.wbsNum)} - {project.teams.map((project) => project.teamName)}
               </Link>
             </Typography>
             <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(project.wbsNum)}`} noWrap>

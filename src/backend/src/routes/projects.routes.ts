@@ -13,8 +13,6 @@ import ProjectsController from '../controllers/projects.controllers';
 const projectRouter = express.Router();
 
 projectRouter.get('/all/:deleted', ProjectsController.getAllProjects);
-projectRouter.get('/users-teams', ProjectsController.getUsersTeamsProjects);
-projectRouter.get('/leading', ProjectsController.getUsersLeadingProjects);
 
 /* Link Types */
 projectRouter.get('/link-types', ProjectsController.getAllLinkTypes);
@@ -119,7 +117,7 @@ projectRouter.post(
   intMinZero(body('price')), // in cents
   intMinZero(body('subtotal')), // in cents
   nonEmptyString(body('linkUrl').isURL()),
-  body('notes').isString().optional(),
+  body('notes').isString(),
   validateInputs,
   ProjectsController.editMaterial
 );
@@ -141,7 +139,5 @@ projectRouter.post('/bom/units/create', nonEmptyString(body('name')), validateIn
 projectRouter.get('/bom/units', ProjectsController.getAllUnits);
 
 projectRouter.delete('/bom/units/:unitId/delete', ProjectsController.deleteUnit);
-projectRouter.get('/bom/:wbsNum/assemblies', ProjectsController.getAssembliesForWbsElement);
-projectRouter.get('/bom/:wbsNum/materials', ProjectsController.getMaterialsForWbsElement);
 
 export default projectRouter;

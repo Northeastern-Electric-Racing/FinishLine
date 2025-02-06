@@ -11,7 +11,7 @@ import { routes } from '../../utils/routes';
 import PageLayout from '../../components/PageLayout';
 import { NERButton } from '../../components/NERButton';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { isAdmin, isGuest, WbsElementStatus } from 'shared';
+import { isAdmin, isGuest } from 'shared';
 import React, { useState } from 'react';
 import DeleteTeamModal from './DeleteTeamModal';
 import SetTeamTypeModal from './SetTeamTypeModal';
@@ -142,21 +142,12 @@ const TeamSpecificPage: React.FC = () => {
           <PageBlock title={'Active Projects'}>
             <Grid container spacing={2}>
               {data.projects
-                .filter((project) => project.status === WbsElementStatus.Active)
+                .filter((project) => project.status === 'ACTIVE')
                 .map((project) => (
                   <Grid item key={project.id}>
                     <ActiveProjectCardView project={project} />
                   </Grid>
                 ))}
-            </Grid>
-          </PageBlock>
-          <PageBlock title={'All Projects'}>
-            <Grid container spacing={2}>
-              {data.projects.map((project) => (
-                <Grid item key={project.id}>
-                  <ActiveProjectCardView project={project} />
-                </Grid>
-              ))}
             </Grid>
           </PageBlock>
           <DescriptionPageBlock team={data} />

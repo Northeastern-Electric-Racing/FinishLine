@@ -1,4 +1,4 @@
-import { DesignReview, DesignReviewPreview } from 'shared';
+import { DesignReview } from 'shared';
 
 export const designReviewTransformer = (designReview: DesignReview): DesignReview => {
   const anyDesignReview = designReview as any;
@@ -10,13 +10,5 @@ export const designReviewTransformer = (designReview: DesignReview): DesignRevie
       : undefined,
     dateScheduled: new Date(anyDesignReview.dateScheduled.split('T')[0] + 'T04:00:00.000Z'),
     initialDate: new Date(anyDesignReview.initialDate.split('T')[0] + 'T04:00:00.000Z')
-  };
-};
-
-export const designReviewPreviewTransformer = (designReview: DesignReviewPreview): DesignReviewPreview => {
-  const anyDesignReview = designReview as any;
-  return {
-    ...designReview,
-    dateScheduled: new Date(anyDesignReview.dateScheduled.split('T')[0] + 'T04:00:00.000Z')
   };
 };

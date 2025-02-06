@@ -415,7 +415,7 @@ describe('Onboarding tests', () => {
       await expect(
         async () =>
           await OnboardingServices.deleteChecklist(await createTestUser(batmanAppAdmin, orgId), 'id1', organization)
-      ).rejects.toThrow(new NotFoundException('Checklist', 'id1'));
+      ).rejects.toThrow(new HttpException(400, 'Checklist with id: id1 not found!'));
     });
 
     it('Fails if user is not admin', async () => {

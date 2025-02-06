@@ -121,7 +121,7 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({
             <FormLabel sx={{ display: 'flex' }}>
               <Typography sx={{ whiteSpace: 'nowrap' }}>Personal Zoom Link</Typography>
               <ExternalLink
-                link="https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0066271"
+                link="https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0065760#:~:text=Sign%20in%20to%20the%20Zoom,Click%20Copy%20Invitation."
                 description="(Find your Personal Zoom Link)"
               />
             </FormLabel>

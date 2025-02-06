@@ -200,13 +200,4 @@ export default class UsersController {
       next(error);
     }
   }
-
-  static async logUserOut(_req: Request, res: Response, next: NextFunction) {
-    try {
-      res.clearCookie('token');
-      res.status(200).json({ message: 'successfully logged out' });
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
 }

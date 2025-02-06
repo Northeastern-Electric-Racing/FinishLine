@@ -20,20 +20,19 @@ import {
   updateUserScheduleSettings,
   getUserTasks,
   getManyUserTasks,
-  getCurrentUser,
-  logUserOut
+  getCurrentUser
 } from '../apis/users.api';
 import {
   User,
   AuthenticatedUser,
   UserSettings,
   UpdateUserRolePayload,
+  Project,
   UserSecureSettings,
   UserScheduleSettings,
   UserWithScheduleSettings,
   SetUserScheduleSettingsPayload,
-  Task,
-  ProjectPreview
+  Task
 } from 'shared';
 import { useAuth } from './auth.hooks';
 import { useContext } from 'react';
@@ -163,7 +162,7 @@ export const useUserScheduleSettings = (id: string) => {
  * @param id User ID of the requested user's settings.
  */
 export const useUsersFavoriteProjects = (id: string) => {
-  return useQuery<ProjectPreview[], Error>(['users', id, 'favorite projects'], async () => {
+  return useQuery<Project[], Error>(['users', id, 'favorite projects'], async () => {
     const { data } = await getUsersFavoriteProjects(id);
     return data;
   });
@@ -270,13 +269,6 @@ export const useUserTasks = (userId: string) => {
 export const useManyUserTasks = (userIds: string[]) => {
   return useQuery<Task[], Error>(['users', userIds, 'tasks'], async () => {
     const { data } = await getManyUserTasks(userIds);
-    return data;
-  });
-};
-
-export const useLogUserOut = () => {
-  return useMutation<{ message: string }, Error, void>([], async () => {
-    const { data } = await logUserOut();
     return data;
   });
 };

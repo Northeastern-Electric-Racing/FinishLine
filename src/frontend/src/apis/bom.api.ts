@@ -142,15 +142,3 @@ export const deleteSingleAssembly = async (assemblyId: string) => {
 export const assignMaterialToAssembly = async (materialId: string, payload: { assemblyId?: string }) => {
   return axios.post(apiUrls.bomAssignAssembly(materialId), payload);
 };
-
-export const getAssembliesForWbsElement = async (wbsNum: WbsNumber) => {
-  return axios.get<Assembly[]>(apiUrls.bomGetAssembliesByWbsNum(wbsNum), {
-    transformResponse: (data) => JSON.parse(data)
-  });
-};
-
-export const getMaterialsForWbsElement = async (wbsNum: WbsNumber) => {
-  return axios.get<Material[]>(apiUrls.bomGetMaterialsByWbsNum(wbsNum), {
-    transformResponse: (data) => JSON.parse(data)
-  });
-};

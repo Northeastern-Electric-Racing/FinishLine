@@ -15,7 +15,7 @@ import { Project, ProjectPreview, Team, WbsElement, WbsElementStatus, wbsPipe, W
 import { projectWbsPipe } from '../../utils/pipes';
 import { GanttRequestChangeModal } from './GanttChartComponents/GanttChangeModals/GanttRequestChangeModal';
 import AddGanttProjectModal from './GanttChartComponents/AddGanttProjectModal';
-import { projectPreviewTransformer } from '../../apis/transformers/projects.transformers';
+import { projectPreviewTranformer } from '../../apis/transformers/projects.transformers';
 
 interface GanttChartTeamSectionProps {
   startDate: Date;
@@ -46,7 +46,7 @@ const GanttChartTeamSection = ({
   removeAddedProjects,
   removeAddedWorkPackages
 }: GanttChartTeamSectionProps) => {
-  const deeplyCopiedProjects: ProjectPreview[] = JSON.parse(JSON.stringify(filteredProjects)).map(projectPreviewTransformer);
+  const deeplyCopiedProjects: ProjectPreview[] = JSON.parse(JSON.stringify(filteredProjects)).map(projectPreviewTranformer);
   const theme = useTheme();
   const [ganttChanges, setGanttChanges] = useState<GanttChange[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -100,7 +100,7 @@ const GanttChartTeamSection = ({
     removeAddedWorkPackages([...addedWorkPackages]);
     setAddedProjects([]);
     setAddedWorkPackages([]);
-    const deepCopy: ProjectPreview[] = JSON.parse(JSON.stringify(filteredProjects)).map(projectPreviewTransformer);
+    const deepCopy: ProjectPreview[] = JSON.parse(JSON.stringify(filteredProjects)).map(projectPreviewTranformer);
     setProjectsState([...deepCopy]);
   };
 
@@ -166,7 +166,7 @@ const GanttChartTeamSection = ({
       removeAddedWorkPackages([...addedWorkPackages]);
       setAddedProjects([]);
       setAddedWorkPackages([]);
-      const deepCopy = JSON.parse(JSON.stringify(filteredProjects)).map(projectPreviewTransformer);
+      const deepCopy = JSON.parse(JSON.stringify(filteredProjects)).map(projectPreviewTranformer);
       setProjectsState([...deepCopy]);
     }
   };
@@ -187,14 +187,7 @@ const GanttChartTeamSection = ({
             },
             status: WbsElementStatus.Inactive,
             workPackages: [],
-            deleted: false,
-            tasks: [],
-            budget: 0,
-            teams: [team],
-            duration: 1,
-            wbsElementId: '',
-            dateCreated: new Date(),
-            links: []
+            deleted: false
           };
 
           addNewProjectHandler(newProject);

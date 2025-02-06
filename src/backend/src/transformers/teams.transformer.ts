@@ -1,9 +1,11 @@
 import { Prisma } from '@prisma/client';
-import { Team, TeamPreview } from 'shared';
-import { TeamPreviewQueryArgs, TeamQueryArgs } from '../prisma-query-args/teams.query-args';
+import { Team } from 'shared';
+import { TeamQueryArgs } from '../prisma-query-args/teams.query-args';
+import { calculateProjectStatus } from '../utils/projects.utils';
+import { wbsNumOf } from '../utils/utils';
 import { userTransformer } from './user.transformer';
+import workPackageTransformer from './work-packages.transformer';
 import { teamTypeTransformer } from './team-types.transformer';
-import { projectPreviewTransformer } from './projects.transformer';
 
 const teamTransformer = (team: Prisma.TeamGetPayload<TeamQueryArgs>): Team => {
   return {
@@ -13,20 +15,18 @@ const teamTransformer = (team: Prisma.TeamGetPayload<TeamQueryArgs>): Team => {
     description: team.description,
     head: userTransformer(team.head),
     members: team.members.map(userTransformer),
-    projects: team.projects.map(projectPreviewTransformer),
+    projects: team.projects.map((project) => ({
+      id: project.projectId,
+      wbsNum: wbsNumOf(project.wbsElement),
+      name: project.wbsElement.name,
+      status: calculateProjectStatus(project),
+      workPackages: project.workPackages.map(workPackageTransformer),
+      deleted: project.wbsElement.dateDeleted !== null
+    })),
     leads: team.leads.map(userTransformer),
     userArchived: team.userArchived ? userTransformer(team.userArchived) : undefined,
     dateArchived: team.dateArchived ?? undefined,
     teamType: team.teamType ? teamTypeTransformer(team.teamType) : undefined
-  };
-};
-
-export const teamPreviewTransformer = (team: Prisma.TeamGetPayload<TeamPreviewQueryArgs>): TeamPreview => {
-  return {
-    ...team,
-    leads: team.leads.map(userTransformer),
-    members: team.members.map(userTransformer),
-    head: userTransformer(team.head)
   };
 };
 

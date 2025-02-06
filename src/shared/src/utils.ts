@@ -17,8 +17,8 @@ const deeplyCopyObj = <T>(obj: T, transformer: (obj: T) => T = (obj) => obj): T 
 };
 
 /** Display WBS number as string "1.2.0 - Project Name" */
-export const wbsNamePipe = (wbsElement: { wbsNum: WbsNumber; name: string; projectName?: string }) => {
-  return `${wbsPipe(wbsElement.wbsNum)} - ${wbsElement.projectName ? wbsElement.projectName + ' - ' : ''} ${wbsElement.name}`;
+export const wbsNamePipe = (wbsElement: { wbsNum: WbsNumber; name: string }) => {
+  return `${wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`;
 };
 
 export const isSubset = (elements: string[], suppliedArray: string[]): boolean => {

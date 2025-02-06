@@ -4,19 +4,10 @@
  */
 
 import axios from '../utils/axios';
-import {
-  Link,
-  LinkType,
-  LinkCreateArgs,
-  LinkTypeCreatePayload,
-  Project,
-  WbsNumber,
-  WorkPackageTemplate,
-  ProjectPreview
-} from 'shared';
+import { Link, LinkType, LinkCreateArgs, LinkTypeCreatePayload, Project, WbsNumber, WorkPackageTemplate } from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
-import { linkTypeTransformer, projectPreviewTransformer, projectTransformer } from './transformers/projects.transformers';
+import { linkTypeTransformer, projectTransformer } from './transformers/projects.transformers';
 import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 
 /**
@@ -28,23 +19,6 @@ export const getAllProjects = (includeDeleted: boolean) => {
   });
 };
 
-/**
- * Fetches all the projects that are on the users teams
- */
-export const getUsersTeamsProjects = () => {
-  return axios.get<ProjectPreview[]>(apiUrls.usersTeamsProjects(), {
-    transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer)
-  });
-};
-
-/**
- * Fetches all projects that the user is the manager or lead of.
- */
-export const getUsersLeadingProjects = () => {
-  return axios.get<ProjectPreview[]>(apiUrls.usersLeadingProjects(), {
-    transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer)
-  });
-};
 /**
  * Fetches a single project.
  *

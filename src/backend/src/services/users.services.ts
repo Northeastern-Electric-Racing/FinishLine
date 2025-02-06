@@ -5,14 +5,14 @@ import {
   ThemeName,
   rankUserRole,
   User as SharedUser,
+  Project,
   RoleEnum,
   isHead,
   UserSecureSettings,
   UserScheduleSettings,
   UserWithScheduleSettings,
   AuthenticatedUser,
-  AvailabilityCreateArgs,
-  ProjectPreview
+  AvailabilityCreateArgs
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -22,8 +22,8 @@ import {
   NotFoundException
 } from '../utils/errors.utils';
 import { generateAccessToken } from '../utils/auth.utils';
-import { projectPreviewTransformer } from '../transformers/projects.transformer';
-import { getProjectManyQueryArgs } from '../prisma-query-args/projects.query-args';
+import projectTransformer from '../transformers/projects.transformer';
+import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
 import userSecureSettingsTransformer from '../transformers/user-secure-settings.transformer';
 import { validateUserIsPartOfFinanceTeamOrAdmin } from '../utils/reimbursement-requests.utils';
 import userScheduleSettingsTransformer from '../transformers/user-schedule-settings.transformer';
@@ -155,7 +155,7 @@ export default class UsersService {
    * @param organizationId the id of the organization the user is in
    * @returns the user's favorite projects
    */
-  static async getUsersFavoriteProjects(userId: string, organization: Organization): Promise<ProjectPreview[]> {
+  static async getUsersFavoriteProjects(userId: string, organization: Organization): Promise<Project[]> {
     const requestedUser = await prisma.user.findUnique({ where: { userId } });
     if (!requestedUser) throw new NotFoundException('User', userId);
 
@@ -170,10 +170,10 @@ export default class UsersService {
           organizationId: organization.organizationId
         }
       },
-      ...getProjectManyQueryArgs(organization.organizationId)
+      ...getProjectQueryArgs(organization.organizationId)
     });
 
-    return projects.map(projectPreviewTransformer);
+    return projects.map(projectTransformer);
   }
 
   /**

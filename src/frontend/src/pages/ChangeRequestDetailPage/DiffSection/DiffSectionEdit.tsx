@@ -1,9 +1,17 @@
 import { Box, Grid } from '@mui/material';
-import { ProjectProposedChangesPreview, WbsNumber, WorkPackageProposedChangesPreview, calculateEndDate } from 'shared';
-import { useSingleProject } from '../../../hooks/projects.hooks';
+import {
+  Project,
+  ProjectProposedChangesPreview,
+  WbsNumber,
+  WorkPackage,
+  WorkPackageProposedChangesPreview,
+  calculateEndDate,
+  equalsWbsNumber
+} from 'shared';
+import { useAllProjects } from '../../../hooks/projects.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { useSingleWorkPackage } from '../../../hooks/work-packages.hooks';
+import { useAllWorkPackages } from '../../../hooks/work-packages.hooks';
 import {
   PotentialChangeType,
   ProposedChangeValue,
@@ -29,23 +37,22 @@ const DiffSectionEdit: React.FC<DiffSectionEditProps> = ({
   originalWorkPackageData,
   wbsNum
 }) => {
+  const { data: projects, isLoading: projectsIsLoading, isError: projectsIsError, error: projectsError } = useAllProjects();
   const {
-    data: project,
-    isLoading: projectIsLoading,
-    isError: projectIsError,
-    error: projectError
-  } = useSingleProject(wbsNum);
-  const {
-    data: workPackage,
-    isLoading: workPackageIsLoading,
-    isError: workPackageIsError,
-    error: workPackageError
-  } = useSingleWorkPackage(wbsNum);
+    data: workPackages,
+    isLoading: workPackagesIsLoading,
+    isError: workPackagesIsError,
+    error: workPackagesError
+  } = useAllWorkPackages();
 
   const theme = useTheme();
 
-  if (projectIsLoading || workPackageIsLoading) return <LoadingIndicator />;
-  if (projectIsError && workPackageIsError) return <ErrorPage message={projectError.message + workPackageError.message} />;
+  if (projectsIsLoading || workPackagesIsLoading || !projects || !workPackages) return <LoadingIndicator />;
+  if (projectsIsError) return <ErrorPage message={projectsError.message} />;
+  if (workPackagesIsError) return <ErrorPage message={workPackagesError.message} />;
+
+  const project = projects.find((project: Project) => equalsWbsNumber(project.wbsNum, wbsNum));
+  const workPackage = workPackages.find((workPackage: WorkPackage) => equalsWbsNumber(workPackage.wbsNum, wbsNum));
 
   const isOnProject = !!projectProposedChanges;
 

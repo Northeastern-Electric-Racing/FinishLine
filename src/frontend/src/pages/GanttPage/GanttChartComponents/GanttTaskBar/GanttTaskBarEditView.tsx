@@ -113,6 +113,8 @@ export const GanttTaskBarEditView = ({
       manager: undefined,
       teamTypes: [],
       changes: [],
+      materials: [],
+      assemblies: [],
       designReviews: [],
       deleted: false
     };

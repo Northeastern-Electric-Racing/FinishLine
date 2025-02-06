@@ -18,7 +18,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, columns, materials, 
   const [openRows, setOpenRows] = useState<String[]>([]);
 
   const arrowSymbol = (rowId: string) => {
-    return openRows.includes(rowId) ? '▼' : '▶';
+    return openRows.includes(rowId) ? '⮝' : '⮟';
   };
 
   const noAssemblyMaterials = materials.filter((material) => !material.assembly);
@@ -49,7 +49,9 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, columns, materials, 
       type: '',
       name: '',
       manufacturer: '',
-      manufacturerPN: `Assembly - ${assembly.name}: $${centsToDollar(assembly.materials.reduce(addMaterialCosts, 0))} ${arrowSymbol(assembly.assemblyId)}`,
+      manufacturerPN: `Assembly - ${assembly.name}: $${centsToDollar(
+        assembly.materials.reduce(addMaterialCosts, 0)
+      )}  ${arrowSymbol(assembly.assemblyId)}`,
       pdmFileName: '',
       quantity: '',
       price: '',
@@ -64,7 +66,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, columns, materials, 
   return (
     <Box
       sx={{
-        height: 'calc(100vh - 200px)',
+        height: 'calc(100vh - 180px)',
         width: '100%',
         '& .super-app-theme--header': {
           backgroundColor: '#ef4345'

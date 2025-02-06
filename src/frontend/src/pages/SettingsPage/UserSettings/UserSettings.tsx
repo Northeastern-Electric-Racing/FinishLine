@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { ThemeName, UserSettings as UserSettingsType } from 'shared';
 import { useUpdateUserSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
 import UserSettingsEdit from './UserSettingsEdit';
 import UserSettingsView from './UserSettingsView';
 import NERSuccessButton from '../../../components/NERSuccessButton';
@@ -26,10 +27,16 @@ export interface SettingsFormInput {
 
 const UserSettings: React.FC<UserSettingsProps> = ({ currentSettings }) => {
   const [edit, setEdit] = useState(false);
-  const { mutateAsync: updateUserSettings, isLoading: updateUserSettingsIsLoading } = useUpdateUserSettings();
+  const {
+    mutateAsync: updateUserSettings,
+    isLoading: updateUserSettingsIsLoading,
+    isError: updateUserSettingsIsError,
+    error: updateUserSettingsError
+  } = useUpdateUserSettings();
   const toast = useToast();
 
   if (updateUserSettingsIsLoading) return <LoadingIndicator />;
+  if (updateUserSettingsIsError) return <ErrorPage error={updateUserSettingsError!} />;
 
   const handleConfirm = async ({ defaultTheme, slackId }: SettingsFormInput) => {
     setEdit(false);

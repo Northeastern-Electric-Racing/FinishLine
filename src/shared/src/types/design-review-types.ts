@@ -27,11 +27,6 @@ export interface DesignReview {
   initialDate: Date;
 }
 
-export type DesignReviewPreview = Pick<
-  DesignReview,
-  'designReviewId' | 'dateScheduled' | 'status' | 'userCreated' | 'wbsName'
->;
-
 export enum DesignReviewStatus {
   UNCONFIRMED = 'UNCONFIRMED',
   CONFIRMED = 'CONFIRMED',
