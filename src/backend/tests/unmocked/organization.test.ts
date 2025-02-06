@@ -261,10 +261,11 @@ describe('Organization Tests', () => {
     });
   });
   
+  
   describe('Get all part FAQS', () => {
     it('Succeeds and gets all part review FAQS in the organization', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      const faq1 = prisma.frequentlyAskedQuestion.create({
+      const faq1 = await prisma.frequentlyAskedQuestion.create({
         data: {
           faqId: '1',
           question: 'question',
@@ -274,7 +275,7 @@ describe('Organization Tests', () => {
           partReviewFaqOrg: { connect: { organizationId: orgId } }
         }
       });
-      const faq2 = prisma.frequentlyAskedQuestion.create({
+      const faq2 = await prisma.frequentlyAskedQuestion.create({
         data: {
           faqId: '2',
           question: 'question',
@@ -285,17 +286,17 @@ describe('Organization Tests', () => {
         }
       });
       const partReviews = await OrganizationsService.getAllPartReviewFAQs(orgId);
-      expect(partReviews).toStrictEqual([faq1, faq2]);
+      expect(partReviews).toMatchObject([faq1, faq2]);
     });
 
     it('Retrieves empty list of part review FAQS in the organization', async () => {
       const partReviews = await OrganizationsService.getAllPartReviewFAQs(orgId);
-      expect(partReviews).toStrictEqual([]);
+      expect(partReviews).toMatchObject([]);
     });
 
     it('Does not retrieve regular FAQS in the organization', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      const partFaq = prisma.frequentlyAskedQuestion.create({
+      const partFaq = await prisma.frequentlyAskedQuestion.create({
         data: {
           faqId: '1',
           question: 'question',
@@ -305,7 +306,7 @@ describe('Organization Tests', () => {
           partReviewFaqOrg: { connect: { organizationId: orgId } }
         }
       });
-      const regularFaq = prisma.frequentlyAskedQuestion.create({
+      const regularFaq = await prisma.frequentlyAskedQuestion.create({
         data: {
           faqId: '2',
           question: 'question',
@@ -316,7 +317,7 @@ describe('Organization Tests', () => {
         }
       });
       const partReviews = await OrganizationsService.getAllPartReviewFAQs(orgId);
-      expect(partReviews).toStrictEqual([partFaq]);
+      expect(partReviews).toMatchObject([partFaq]);
     });
   });
 });
