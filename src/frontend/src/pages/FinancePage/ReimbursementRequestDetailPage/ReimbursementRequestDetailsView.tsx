@@ -328,7 +328,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             sx={{ backgroundColor: totalCostBackgroundColor, borderRadius: '10px', boxShadow: 1, alignItems: 'center' }}
           >
             <Grid item sm={12} textAlign={'center'}>
-              <VerticalDetailDisplay label="Description" content={''} fontSize={12} boxHeight={'10rem'} />
+              <VerticalDetailDisplay label="Description" content={reimbursementRequest.description} fontSize={12} boxHeight={'10rem'} />
             </Grid>
           </Grid>
 
