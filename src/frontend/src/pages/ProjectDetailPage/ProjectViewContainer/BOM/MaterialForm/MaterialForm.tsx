@@ -13,58 +13,74 @@ import ErrorPage from '../../../../ErrorPage';
 import MaterialFormView from './MaterialFormView';
 import { Decimal } from 'decimal.js';
 
-const schema = yup.object().shape({
+const schema = yup.object({
   name: yup.string().required('Enter a name!'),
   status: yup.mixed<MaterialStatus>().oneOf(Object.values(MaterialStatus)).required('Select a status!'),
-  materialTypeName: yup.string().when('status', {
-    is: MaterialStatus.NotReadyToOrder,
-    then: (schema) => schema.optional(),
-    otherwise: (schema) => schema.required('Select a Material Type!')
-  }),
-  manufacturerName: yup.string().when('status', {
-    is: MaterialStatus.NotReadyToOrder,
-    then: (schema) => schema.optional(),
-    otherwise: (schema) => schema.required('Select a Manufacturer')
-  }),
-  manufacturerPartNumber: yup.string().when('status', {
-    is: MaterialStatus.NotReadyToOrder,
-    then: (schema) => schema.optional(),
-    otherwise: (schema) => schema.required('Manufacturer Part Number is required!')
-  }),
-  quantity: yup.number().when('status', {
-    is: MaterialStatus.NotReadyToOrder,
-    then: (schema) => schema.optional(),
-    otherwise: (schema) => schema.required('Enter a quantity!')
-  }),
-  price: yup.number().when('status', {
-    is: MaterialStatus.NotReadyToOrder,
-    then: (schema) => schema.optional(),
-    otherwise: (schema) => schema.required('Price per Unit is required!')
-  }),
-  unitName: yup.string().optional(),
+  materialTypeName: yup
+    .string()
+    .transform((value) => value || null)
+    .nullable()
+    .when('status', {
+      is: MaterialStatus.NotReadyToOrder,
+      then: (schema) => schema.nullable(),
+      otherwise: (schema) => schema.required('Select a Material Type!')
+    }),
+  manufacturerName: yup
+    .string()
+    .transform((value) => value || null)
+    .nullable()
+    .when('status', {
+      is: MaterialStatus.NotReadyToOrder,
+      then: (schema) => schema.nullable(),
+      otherwise: (schema) => schema.required('Select a Manufacturer')
+    }),
+  manufacturerPartNumber: yup
+    .string()
+    .transform((value) => value || null)
+    .nullable()
+    .when('status', {
+      is: MaterialStatus.NotReadyToOrder,
+      then: (schema) => schema.nullable(),
+      otherwise: (schema) => schema.required('Manufacturer Part Number is required!')
+    }),
+  quantity: yup.number().required(),
+  price: yup.number().required(),
+  unitName: yup
+    .string()
+    .transform((value) => value || null)
+    .nullable(),
   linkUrl: yup.string().when('status', {
     is: MaterialStatus.NotReadyToOrder,
     then: (schema) => schema.optional(),
     otherwise: (schema) => schema.required('URL is required!').url('Invalid URL')
   }),
-  notes: yup.string().optional(),
-  pdmFileName: yup.string().optional(),
-  assemblyId: yup.string().optional()
-});
+  notes: yup
+    .string()
+    .transform((value) => value || null)
+    .nullable(),
+  pdmFileName: yup
+    .string()
+    .transform((value) => value || null)
+    .nullable(),
+  assemblyId: yup
+    .string()
+    .transform((value) => value || null)
+    .nullable()
+}) as yup.ObjectSchema<MaterialFormInput>;
 
 export interface MaterialFormInput {
   name: string;
   status: MaterialStatus;
-  materialTypeName: string;
-  manufacturerName: string;
-  manufacturerPartNumber: string;
-  pdmFileName?: string;
-  price: number;
+  materialTypeName: string | null;
+  manufacturerName: string | null;
+  manufacturerPartNumber: string | null;
+  pdmFileName: string | null;
   quantity: number;
-  unitName?: string;
+  price: number;
+  unitName: string | null;
   linkUrl: string;
-  notes?: string;
-  assemblyId?: string;
+  notes: string | null;
+  assemblyId: string | null;
 }
 
 export interface MaterialDataSubmission {
@@ -153,7 +169,24 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, assemblies, onS
   const onSubmitWrapper = (data: MaterialFormInput): void => {
     const price = Math.round(data.price * 100);
     const subtotal = parseFloat((data.quantity * price).toFixed(2));
-    onSubmit({ ...data, subtotal, price, quantity: new Decimal(data.quantity) });
+
+    const submission: MaterialDataSubmission = {
+      name: data.name,
+      status: data.status,
+      materialTypeName: data.materialTypeName || '',
+      manufacturerName: data.manufacturerName || '',
+      manufacturerPartNumber: data.manufacturerPartNumber || '',
+      pdmFileName: data.pdmFileName || undefined,
+      unitName: data.unitName || undefined,
+      notes: data.notes || undefined,
+      assemblyId: data.assemblyId || undefined,
+      linkUrl: data.linkUrl,
+      subtotal,
+      price,
+      quantity: new Decimal(data.quantity)
+    };
+
+    onSubmit(submission);
   };
 
   const createManufacturerWrapper = async (manufacturerName: string): Promise<void> => {

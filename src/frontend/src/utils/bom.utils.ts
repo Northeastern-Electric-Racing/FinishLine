@@ -1,4 +1,4 @@
-import { Material } from 'shared';
+import { Material, MaterialStatus } from 'shared';
 import { GridColDefStyle } from './tables';
 import { centsToDollar } from './pipes';
 import { DataGrid, GridValidRowModel } from '@mui/x-data-grid';
@@ -26,15 +26,15 @@ export const materialToRow = (material: Material, idx: number): BomRow => {
     id: idx + (material.assemblyId ?? ''),
     materialId: material.materialId,
     status: material.status,
-    type: material.materialTypeName,
+    type: material.materialTypeName ?? '',
     name: material.name,
-    manufacturer: material.manufacturerName,
-    manufacturerPN: material.manufacturerPartNumber,
+    manufacturer: material.manufacturerName ?? '',
+    manufacturerPN: material.manufacturerPartNumber ?? '',
     pdmFileName: material.pdmFileName ?? 'None',
     quantity: material.quantity + (material.unitName ? ' ' + material.unitName : ''),
-    price: `$${centsToDollar(material.price)}`,
-    subtotal: `$${centsToDollar(material.subtotal)}`,
-    link: material.linkUrl,
+    price: `$${centsToDollar(material.price ?? 0)}`,
+    subtotal: `$${centsToDollar(material.subtotal ?? 0)}`,
+    link: material.linkUrl ?? '',
     notes: material.notes,
     assemblyId: material.assemblyId ?? 'assembly-misc'
   };
@@ -107,4 +107,67 @@ export const bomBaseColDef: GridColDefStyle = {
   align: 'center',
   headerAlign: 'center',
   headerClassName: 'super-app-theme--header'
+};
+
+export const getMaterialCost = (material: Material): number => {
+  if (!material.price || !material.quantity) return 0;
+  return material.price * material.quantity.toNumber();
+};
+
+export const getMaterialsSubtotal = (materials: Material[]): number => {
+  return materials.reduce((acc, material) => acc + getMaterialCost(material), 0);
+};
+
+export const getMaterialsCount = (materials: Material[]): number => {
+  return materials.length;
+};
+
+export const getMaterialsOrderedCount = (materials: Material[]): number => {
+  return materials.filter((material) => material.status === MaterialStatus.Ordered).length;
+};
+
+export const getMaterialsReceivedCount = (materials: Material[]): number => {
+  return materials.filter((material) => material.status === MaterialStatus.Received).length;
+};
+
+export const getMaterialsShippedCount = (materials: Material[]): number => {
+  return materials.filter((material) => material.status === MaterialStatus.Shipped).length;
+};
+
+export const getMaterialsNotReadyToOrderCount = (materials: Material[]): number => {
+  return materials.filter((material) => material.status === MaterialStatus.NotReadyToOrder).length;
+};
+
+export const getMaterialsReadyToOrderCount = (materials: Material[]): number => {
+  return materials.filter((material) => material.status === MaterialStatus.ReadyToOrder).length;
+};
+
+export const getMaterialsOrderedSubtotal = (materials: Material[]): number => {
+  return materials
+    .filter((material) => material.status === MaterialStatus.Ordered)
+    .reduce((acc, material) => acc + getMaterialCost(material), 0);
+};
+
+export const getMaterialsReceivedSubtotal = (materials: Material[]): number => {
+  return materials
+    .filter((material) => material.status === MaterialStatus.Received)
+    .reduce((acc, material) => acc + getMaterialCost(material), 0);
+};
+
+export const getMaterialsShippedSubtotal = (materials: Material[]): number => {
+  return materials
+    .filter((material) => material.status === MaterialStatus.Shipped)
+    .reduce((acc, material) => acc + getMaterialCost(material), 0);
+};
+
+export const getMaterialsNotReadyToOrderSubtotal = (materials: Material[]): number => {
+  return materials
+    .filter((material) => material.status === MaterialStatus.NotReadyToOrder)
+    .reduce((acc, material) => acc + getMaterialCost(material), 0);
+};
+
+export const getMaterialsReadyToOrderSubtotal = (materials: Material[]): number => {
+  return materials
+    .filter((material) => material.status === MaterialStatus.ReadyToOrder)
+    .reduce((acc, material) => acc + getMaterialCost(material), 0);
 };

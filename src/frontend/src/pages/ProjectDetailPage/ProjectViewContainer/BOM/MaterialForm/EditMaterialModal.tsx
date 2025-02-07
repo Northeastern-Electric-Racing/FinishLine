@@ -33,16 +33,26 @@ const EditMaterialModal: React.FC<EditMaterialModalProps> = ({ open, onHide, mat
     }
   };
 
+  const defaultValues = {
+    name: material.name,
+    status: material.status,
+    materialTypeName: material.materialTypeName || null,
+    manufacturerName: material.manufacturerName || null,
+    manufacturerPartNumber: material.manufacturerPartNumber || null,
+    pdmFileName: material.pdmFileName || null,
+    quantity: material.quantity?.toNumber() ?? 0,
+    price: material.price ?? 0,
+    unitName: material.unitName || null,
+    linkUrl: material.linkUrl || '',
+    notes: material.notes || null,
+    assemblyId: material.assemblyId || null
+  };
+
   return (
     <MaterialForm
       submitText="Edit"
       onSubmit={onSubmit}
-      defaultValues={{
-        ...material,
-        quantity: Number(material.quantity),
-        pdmFileName: material.pdmFileName,
-        price: material.price / 100
-      }}
+      defaultValues={defaultValues}
       onHide={onHide}
       open={open}
       assemblies={assemblies}
