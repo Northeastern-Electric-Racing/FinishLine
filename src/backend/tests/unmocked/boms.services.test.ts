@@ -1,7 +1,7 @@
 import { Material_Status, Organization, User } from '@prisma/client';
 import { Decimal } from 'decimal.js';
 import BillOfMaterialsService from '../../src/services/boms.services';
-import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
+import { createTestOrganization, createTestProject, createTestUser, resetUsers } from '../test-utils';
 import { batmanAppAdmin } from '../test-data/users.test-data';
 import { HttpException } from '../../src/utils/errors.utils';
 
@@ -13,6 +13,10 @@ describe('BOM Service', () => {
   beforeEach(async () => {
     organization = await createTestOrganization();
     user = await createTestUser(batmanAppAdmin, organization.organizationId);
+    // Project creation is required to set up the WBS element and team structure
+    // that the BOM service depends on, even though we don't directly use the project variable
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const project = await createTestProject(user, organization.organizationId);
     wbsNum = { carNumber: 0, projectNumber: 1, workPackageNumber: 0 };
   });
 
