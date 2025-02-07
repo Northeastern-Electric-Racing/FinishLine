@@ -414,9 +414,8 @@ export default class OrganizationsService {
    * @returns an array of part tags
    */
   static async getAllPartTags(organizationId: string) {
-
     const organization = await prisma.organization.findUnique({
-      where: { organizationId },
+      where: { organizationId }
     });
 
     if (!organization) {
