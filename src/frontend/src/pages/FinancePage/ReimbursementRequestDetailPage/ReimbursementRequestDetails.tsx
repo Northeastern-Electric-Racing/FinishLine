@@ -12,8 +12,8 @@ const ReimbursementRequestDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { data: reimbursementRequest, isError, error, isLoading } = useSingleReimbursementRequest(id);
 
-  if (!reimbursementRequest || isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} />;
+  if (!reimbursementRequest || isLoading) return <LoadingIndicator />;
 
   return <ReimbursementRequestDetailsView reimbursementRequest={reimbursementRequest} />;
 };
