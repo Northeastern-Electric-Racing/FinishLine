@@ -6,7 +6,7 @@ export interface PartTagReviewType {
     colorHexCode: string;
     dateCreated: Date;
     dateDeleted?: Date;
-    parts: [];
+    parts: String[];
     organization?: Organization;
     organizationId: string;
 }

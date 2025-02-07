@@ -414,13 +414,19 @@ export default class OrganizationsService {
    * @returns an array of part tags
    */
   static async getAllPartTags(organizationId: string) {
+
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId },
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+
     return prisma.partTag.findMany({
       where: { organizationId },
       select: {
         partTagId: true,
-        name: true,
-        dateCreated: true,
-        dateDeleted: false,
         parts: {
           select: {
             partId: true
