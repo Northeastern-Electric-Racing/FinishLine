@@ -39,9 +39,14 @@ export interface CreateTestUserParams {
   permissions?: string[];
 }
 
-export const createTestUser = async (userData: Partial<User>, organizationId: string) => {
-  const uniqueId = Math.random().toString(36).substring(2, 15);
-  return prisma.user.create({
+export const createTestUser = async (
+  { firstName, lastName, email, emailId, googleAuthId, role, permissions }: CreateTestUserParams,
+  organizationId: string,
+  userSettings?: User_Settings,
+  userSecureSettings?: User_Secure_Settings,
+  scheduleSettings?: Schedule_Settings
+): Promise<User> => {
+  const createdUser = await prisma.user.create({
     data: {
       firstName,
       lastName,
