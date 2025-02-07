@@ -130,14 +130,14 @@ export default class BillOfMaterialsService {
       manufacturerId: manufacturer?.id ?? null,
       pdmFileName: pdmFileName || 'N/A',
       unitId: unit ? unit.id : null,
-      notes: notes || 'N/A',
+      notes,
       dateCreated: new Date(),
       wbsElementId: project.wbsElementId,
       manufacturerPartNumber: manufacturerPartNumber || 'N/A',
       quantity: quantity || 0,
       price: price || 0,
       subtotal: subtotal || 0,
-      linkUrl: linkUrl || 'N/A'
+      linkUrl
     };
 
     if (status === Material_Status.NOT_READY_TO_ORDER) {
@@ -632,12 +632,12 @@ export default class BillOfMaterialsService {
       assemblyId,
       pdmFileName: pdmFileName || 'N/A',
       unitId: unit ? unit.id : null,
-      notes: notes || 'N/A',
+      notes,
       manufacturerPartNumber: manufacturerPartNumber || 'N/A',
       quantity: quantity || 0,
       price: price || 0,
       subtotal: subtotal || 0,
-      linkUrl: linkUrl || 'N/A'
+      linkUrl
     };
 
     if (status === Material_Status.NOT_READY_TO_ORDER) {
