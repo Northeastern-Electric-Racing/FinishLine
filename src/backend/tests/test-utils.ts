@@ -2,6 +2,8 @@
 import {
   Club_Accounts,
   Organization,
+  Part,
+  PartReview,
   PartSubmission,
   Part_Review_Popup,
   Project,
@@ -707,10 +709,41 @@ export const createTestPartReview = async (
       userDeletedId,
       userDeleted
     }})
+    return partReview;
 };
 
 export const createTestPartSubmission = async (
-
+  id: string,
+  fileIds: string[],
+  name: string,
+  notes: string,
+  part: Part,
+  partId: string,
+  createdAt: DateTime,
+  updatedAt: DateTime,
+  dateDeleted: DateTime,
+  userCreatedId: string,
+  userCreated: User,             
+  userDeletedId: string,
+  userDeleted: User,
+  reviews: PartReview[]
 ) => {
-  
+  const partSubmission = await prisma.partSubmission.create({
+    data: {
+      id,
+      fileIds,
+      name,
+      notes,
+      part,
+      partId,
+      createdAt,
+      updatedAt,
+      dateDeleted,
+      userCreatedId,
+      userCreated,
+      userDeletedId,
+      userDeleted,
+      reviews
+    }})
+    return partSubmission;
 };
