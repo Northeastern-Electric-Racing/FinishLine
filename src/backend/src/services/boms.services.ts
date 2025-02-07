@@ -128,26 +128,24 @@ export default class BillOfMaterialsService {
       status,
       materialTypeId: materialType?.id ?? null,
       manufacturerId: manufacturer?.id ?? null,
-      pdmFileName,
+      pdmFileName: pdmFileName || 'N/A',
       unitId: unit ? unit.id : null,
-      notes,
+      notes: notes || 'N/A',
       dateCreated: new Date(),
       wbsElementId: project.wbsElementId,
-      manufacturerPartNumber,
-      quantity,
-      price,
-      subtotal,
-      linkUrl
+      manufacturerPartNumber: manufacturerPartNumber || 'N/A',
+      quantity: quantity || 0,
+      price: price || 0,
+      subtotal: subtotal || 0,
+      linkUrl: linkUrl || 'N/A'
     };
 
     if (status === Material_Status.NOT_READY_TO_ORDER) {
       if (!materialTypeName) data.materialTypeId = null;
       if (!manufacturerName) data.manufacturerId = null;
-      if (manufacturerPartNumber === '') data.manufacturerPartNumber = null;
-      if (!quantity || (quantity instanceof Decimal && quantity.isZero())) data.quantity = null;
-      if (price === undefined || price === 0) data.price = null;
-      if (subtotal === undefined || subtotal === 0) data.subtotal = null;
-      if (linkUrl === '') data.linkUrl = null;
+      if (!quantity || (quantity instanceof Decimal && quantity.isZero())) data.quantity = 0;
+      if (price === undefined || price === 0) data.price = 0;
+      if (subtotal === undefined || subtotal === 0) data.subtotal = 0;
     }
 
     const createdMaterial = await prisma.material.create({
@@ -632,24 +630,22 @@ export default class BillOfMaterialsService {
       manufacturerId: manufacturer?.id ?? null,
       wbsElementId: project.wbsElementId,
       assemblyId,
-      pdmFileName,
+      pdmFileName: pdmFileName || 'N/A',
       unitId: unit ? unit.id : null,
-      notes,
-      manufacturerPartNumber,
-      quantity,
-      price,
-      subtotal,
-      linkUrl
+      notes: notes || 'N/A',
+      manufacturerPartNumber: manufacturerPartNumber || 'N/A',
+      quantity: quantity || 0,
+      price: price || 0,
+      subtotal: subtotal || 0,
+      linkUrl: linkUrl || 'N/A'
     };
 
     if (status === Material_Status.NOT_READY_TO_ORDER) {
       if (!materialTypeName) data.materialTypeId = null;
       if (!manufacturerName) data.manufacturerId = null;
-      if (manufacturerPartNumber === '') data.manufacturerPartNumber = null;
-      if (!quantity || (quantity instanceof Decimal && quantity.isZero())) data.quantity = null;
-      if (price === undefined || price === 0) data.price = null;
-      if (subtotal === undefined || subtotal === 0) data.subtotal = null;
-      if (linkUrl === '') data.linkUrl = null;
+      if (!quantity || (quantity instanceof Decimal && quantity.isZero())) data.quantity = 0;
+      if (price === undefined || price === 0) data.price = 0;
+      if (subtotal === undefined || subtotal === 0) data.subtotal = 0;
     }
 
     const updatedMaterial = await prisma.material.update({
