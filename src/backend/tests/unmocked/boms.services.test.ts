@@ -1,7 +1,7 @@
 import { Material_Status, Organization, User } from '@prisma/client';
 import { Decimal } from 'decimal.js';
 import BillOfMaterialsService from '../../src/services/boms.services';
-import { createTestOrganization, createTestProject, createTestUser, resetUsers } from '../test-utils';
+import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import { batmanAppAdmin } from '../test-data/users.test-data';
 import { HttpException } from '../../src/utils/errors.utils';
 
@@ -13,7 +13,6 @@ describe('BOM Service', () => {
   beforeEach(async () => {
     organization = await createTestOrganization();
     user = await createTestUser(batmanAppAdmin, organization.organizationId);
-    const project = await createTestProject(user, organization.organizationId);
     wbsNum = { carNumber: 0, projectNumber: 1, workPackageNumber: 0 };
   });
 
