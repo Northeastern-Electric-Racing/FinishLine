@@ -1,4 +1,4 @@
-import { Box, Typography, IconButton } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import { SearchBar } from '../../components/SearchBar';
 import { useState } from 'react';
 import FilterListIcon from '@mui/icons-material/FilterList';
@@ -11,13 +11,13 @@ const ReimbursementRequests: React.FC = () => {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h3">Reimbursement Requests</Typography>
         <Box sx={{ flexGrow: 1 }} />
-        <Box sx={{ width: '300px' }}>
+        <Box sx={{ width: '250px' }}>
           <SearchBar placeholder="Search" searchText={searchText} setSearchText={setSearchText} />
         </Box>
-        <IconButton color="primary" aria-label="filter">
+        <Button color="primary" aria-label="filter">
           <FilterListIcon />
           <Typography variant="button">Filters</Typography>
-        </IconButton>
+        </Button>
       </Box>
       <ReimbursementRequestTable userReimbursementRequests={[]} allReimbursementRequests={[]} />
     </Box>
