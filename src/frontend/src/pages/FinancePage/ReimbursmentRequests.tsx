@@ -8,17 +8,30 @@ const ReimbursementRequests: React.FC = () => {
   const [searchText, setSearchText] = useState<string>('');
   return (
     <Box sx={{ padding: '5px', display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h3">Reimbursement Requests</Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 2
+        }}
+      >
+        <Typography variant="h3" sx={{ fontSize: { xs: '1.4rem', sm: '1.75rem', md: '3rem' } }}>
+          Reimbursement Requests
+        </Typography>
         <Box sx={{ flexGrow: 1 }} />
-        <Box sx={{ width: '250px' }}>
+
+        <Box sx={{ width: { xs: '150px', sm: '200px', md: '250px' } }}>
           <SearchBar placeholder="Search" searchText={searchText} setSearchText={setSearchText} />
         </Box>
         <Button color="primary" aria-label="filter">
-          <FilterListIcon />
-          <Typography variant="button">Filters</Typography>
+          <FilterListIcon sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }} />
+          <Typography variant="button" sx={{ fontSize: { xs: '0.5rem', sm: '0.875rem' } }}>
+            Filters
+          </Typography>
         </Button>
       </Box>
+
       <ReimbursementRequestTable userReimbursementRequests={[]} allReimbursementRequests={[]} />
     </Box>
   );
