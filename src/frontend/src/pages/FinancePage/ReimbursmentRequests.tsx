@@ -19,8 +19,6 @@ const ReimbursementRequests: React.FC = () => {
         <Typography variant="h3" sx={{ fontSize: { xs: '1.4rem', sm: '1.75rem', md: '3rem' } }}>
           Reimbursement Requests
         </Typography>
-        <Box sx={{ flexGrow: 1 }} />
-
         <Box sx={{ width: { xs: '150px', sm: '200px', md: '250px' } }}>
           <SearchBar placeholder="Search" searchText={searchText} setSearchText={setSearchText} />
         </Box>
@@ -31,7 +29,6 @@ const ReimbursementRequests: React.FC = () => {
           </Typography>
         </Button>
       </Box>
-
       <ReimbursementRequestTable userReimbursementRequests={[]} allReimbursementRequests={[]} />
     </Box>
   );
