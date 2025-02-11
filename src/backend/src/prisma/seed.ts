@@ -8,7 +8,6 @@
 import {
   CR_Type,
   Club_Accounts,
-  Graph,
   Graph_Display_Type,
   Graph_Type,
   Measure,
@@ -46,9 +45,7 @@ import { writeFileSync } from 'fs';
 import WorkPackageTemplatesService from '../services/work-package-template.services';
 import RecruitmentServices from '../services/recruitment.services';
 import OrganizationsService from '../services/organizations.services';
-import StatisticsService from '../services/statistics.services';
 import { seedGraph } from './seed-data/statistics.seed';
-import { graphCollectionTransformer } from '../transformers/statistics-graphCollection.transformer';
 import AnnouncementService from '../services/announcement.service';
 
 const prisma = new PrismaClient();
@@ -1676,9 +1673,39 @@ const performSeed: () => Promise<void> = async () => {
    * Reimbursements
    */
 
-  const vendor = await ReimbursementRequestService.createVendor(thomasEmrax, 'Tesla', ner);
-  await ReimbursementRequestService.createVendor(thomasEmrax, 'Amazon', ner);
-  await ReimbursementRequestService.createVendor(thomasEmrax, 'Google', ner);
+  const vendor = await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Tesla',
+    ner,
+    'nershipping@gmail.com',
+    'racecar228!',
+    'SAVE50!',
+    thomasEmrax.userId,
+    'Tax exemption status?',
+    thomasEmrax.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Amazon',
+    ner,
+    'amazon@gmail.com',
+    'racecare228!',
+    'SAVE20!',
+    thomasEmrax.userId,
+    'They want updates on work',
+    thomasEmrax.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Google',
+    ner,
+    'google@gmail.com',
+    'racecar228!',
+    'SAVE50!',
+    thomasEmrax.userId,
+    'Tax exemption ID NUMBER',
+    thomasEmrax.userId
+  );
 
   const accountCode = await ReimbursementRequestService.createAccountCode(
     thomasEmrax,
@@ -1689,7 +1716,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await ReimbursementRequestService.createReimbursementRequest(
+  const reimbursement1 = await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
     vendor.vendorId,
     ClubAccount.CASH,
@@ -1710,7 +1737,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await ReimbursementRequestService.createReimbursementRequest(
+  const reimbursement2 = await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
     vendor.vendorId,
     ClubAccount.BUDGET,
@@ -1786,8 +1813,7 @@ const performSeed: () => Promise<void> = async () => {
       workPackageNumber: 0
     },
     ner,
-    'Here are some more notes',
-    assembly1.assemblyId
+    'Here are some more notes'
   );
 
   // Need to do this because the design review cannot be scheduled for a past day

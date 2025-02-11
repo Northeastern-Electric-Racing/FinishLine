@@ -8,6 +8,9 @@ import FinancePage from './FinancePage';
 import CreateReimbursementRequestPage from './CreateReimbursementRequest';
 import EditReimbursementRequestPage from './EditReimbursementRequest/EditReimbursementRequest';
 import ReimbursementRequestDetails from './ReimbursementRequestDetailPage/ReimbursementRequestDetails';
+import FinanceDashboard from './FinanceDashboard';
+import ReimbursmentRequests from './ReimbursmentRequests';
+import CompaniesAndSponsors from './CompaniesAndSponsors';
 
 const Finance: React.FC = () => {
   return (
@@ -15,6 +18,9 @@ const Finance: React.FC = () => {
       <Route path={routes.REIMBURSEMENT_REQUEST_EDIT} component={EditReimbursementRequestPage} />
       <Route path={routes.NEW_REIMBURSEMENT_REQUEST} component={CreateReimbursementRequestPage} />
       <Route path={routes.REIMBURSEMENT_REQUEST_BY_ID} component={ReimbursementRequestDetails} />
+      <Route path={routes.FINANCE_DASHBOARD} component={FinanceDashboard} />
+      <Route path={routes.REIMBURSEMENT_REQUESTS} component={ReimbursmentRequests} />
+      <Route path={routes.COMPANIES_SPONSORS} component={CompaniesAndSponsors} />
       <Route path={routes.FINANCE} component={FinancePage} />
     </Switch>
   );
