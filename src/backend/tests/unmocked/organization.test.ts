@@ -260,8 +260,7 @@ describe('Organization Tests', () => {
       expect(allContacts.some((contact) => contact.userId === testSuperman.userId)).toBeTruthy();
     });
   });
-  
-  
+
   describe('Get all part FAQS', () => {
     it('Succeeds and gets all part review FAQS in the organization', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
@@ -318,6 +317,7 @@ describe('Organization Tests', () => {
       });
       const partReviews = await OrganizationsService.getAllPartReviewFAQs(orgId);
       expect(partReviews).toMatchObject([partFaq]);
+      expect(partReviews).not.toMatchObject([regularFaq]);
     });
   });
 });
