@@ -44,9 +44,35 @@ describe('Get All Part Tags', () => {
       ]
     });
 
+
+  // Create a partTag belonging to a different organization
+  const organization2 = await createTestOrganization();
+  await prisma.partTag.create({
+    data: {
+      partTagId: '973',
+      name: 'Nut',
+      colorHexCode: '#920323',
+      dateCreated: new Date(),
+      organizationId: organization2.organizationId
+    }
+  });
+
+  // Create a deleted partTag for the same organization
+  await prisma.partTag.create({
+    data: {
+      partTagId: '345',
+      name: 'Washer',
+      colorHexCode: '#983434',
+      dateCreated: new Date(),
+      organizationId: organizationID,
+      dateDeleted: new Date(), // Marked as deleted
+    }
+  });
+
     const partTags = await OrganizationsService.getAllPartTags(organizationID);
     expect(partTags.length).toEqual(2);
-    expect(partTags.some((tag) => tag.partTagId === '123')).toBeTruthy();
-    expect(partTags.some((tag) => tag.partTagId === '456')).toBeTruthy();
+    expect(partTags.every(tag => tag.hasOwnProperty('parts'))).toBeTruthy();
+    expect(partTags.some((tag) => tag.parts.some(part => part.partId === '973'))).toBeFalsy();
+    expect(partTags.some((tag) => tag.parts.some(part => part.partId === '345'))).toBeFalsy();
   });
 });
