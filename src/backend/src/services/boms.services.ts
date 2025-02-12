@@ -121,17 +121,6 @@ export default class BillOfMaterialsService {
 
     if (!perms) throw new AccessDeniedException('create materials');
 
-    if (status !== Material_Status.NOT_READY_TO_ORDER) {
-      if (!materialTypeName) throw new HttpException(400, 'Material Type is required when status is not NOT_READY_TO_ORDER');
-      if (!manufacturerName) throw new HttpException(400, 'Manufacturer is required when status is not NOT_READY_TO_ORDER');
-      if (!manufacturerPartNumber)
-        throw new HttpException(400, 'Manufacturer Part Number is required when status is not NOT_READY_TO_ORDER');
-      if (!quantity || quantity.isZero())
-        throw new HttpException(400, 'Quantity is required when status is not NOT_READY_TO_ORDER');
-      if (!price) throw new HttpException(400, 'Price is required when status is not NOT_READY_TO_ORDER');
-      if (!linkUrl) throw new HttpException(400, 'Link URL is required when status is not NOT_READY_TO_ORDER');
-    }
-
     const data: any = {
       userCreatedId: creator.userId,
       name,
@@ -596,17 +585,6 @@ export default class BillOfMaterialsService {
       isUserPartOfTeams(project.teams, submitter);
 
     if (!perms) throw new AccessDeniedException('update material');
-
-    if (status !== Material_Status.NOT_READY_TO_ORDER) {
-      if (!materialTypeName) throw new HttpException(400, 'Material Type is required when status is not NOT_READY_TO_ORDER');
-      if (!manufacturerName) throw new HttpException(400, 'Manufacturer is required when status is not NOT_READY_TO_ORDER');
-      if (!manufacturerPartNumber)
-        throw new HttpException(400, 'Manufacturer Part Number is required when status is not NOT_READY_TO_ORDER');
-      if (!quantity || quantity.isZero())
-        throw new HttpException(400, 'Quantity is required when status is not NOT_READY_TO_ORDER');
-      if (!price) throw new HttpException(400, 'Price is required when status is not NOT_READY_TO_ORDER');
-      if (!linkUrl) throw new HttpException(400, 'Link URL is required when status is not NOT_READY_TO_ORDER');
-    }
 
     if (assemblyId) {
       const assembly = await BillOfMaterialsService.getSingleAssemblyWithQueryArgs(
