@@ -19,27 +19,38 @@ export const TaskListContent = ({ project }: TaskListProps) => {
   const toast = useToast();
 
   const onDeleteTask = (taskId: string) => {
-    for (const status of statuses) {
-      const index = tasksByStatus[status].findIndex((task) => task?.taskId === taskId);
-      if (index !== -1) {
-        tasksByStatus[status].splice(index, 1);
-        break;
+    setTasksByStatus((prev) => {
+      const newTasksByStatus = { ...prev };
+      for (const status of statuses) {
+        const index = newTasksByStatus[status].findIndex((task) => task?.taskId === taskId);
+        if (index !== -1) {
+          newTasksByStatus[status].splice(index, 1);
+          break;
+        }
       }
-    }
+      return newTasksByStatus;
+    });
   };
 
   const onEditTask = (task: Task) => {
-    for (const status of statuses) {
-      const index = tasksByStatus[status].findIndex((t) => t?.taskId === task.taskId);
-      if (index !== -1) {
-        tasksByStatus[status][index] = { ...task, index };
-        break;
+    setTasksByStatus((prev) => {
+      const newTasksByStatus = { ...prev };
+      for (const status of statuses) {
+        const index = newTasksByStatus[status].findIndex((t) => t?.taskId === task.taskId);
+        if (index !== -1) {
+          newTasksByStatus[status][index] = { ...task, index };
+          break;
+        }
       }
-    }
+      return newTasksByStatus;
+    });
   };
 
-  const onAddTask = async (task: Task) => {
-    tasksByStatus[task.status].push({ ...task, index: tasksByStatus[task.status].length });
+  const onAddTask = (task: Task) => {
+    setTasksByStatus((prev) => ({
+      ...prev,
+      [task.status]: [...prev[task.status], { ...task, index: prev[task.status].length }]
+    }));
   };
 
   const onDragEnd: OnDragEndResponder = async (result) => {
