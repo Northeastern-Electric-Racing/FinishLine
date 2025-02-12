@@ -1,6 +1,6 @@
 import { DragDropContext, OnDragEndResponder } from '@hello-pangea/dnd';
 import { Box } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Project, Task, TaskWithIndex } from 'shared';
 import { getTasksByStatus, statuses, TasksByStatus } from '.';
 import { useSetTaskStatus } from '../../../../../hooks/tasks.hooks';
@@ -19,39 +19,27 @@ export const TaskListContent = ({ project }: TaskListProps) => {
   const toast = useToast();
 
   const onDeleteTask = (taskId: string) => {
-    setTasksByStatus((prev) => {
-      const newTasksByStatus = { ...prev };
-      for (const status of statuses) {
-        const index = newTasksByStatus[status].findIndex((task) => task?.taskId === taskId);
-        if (index !== -1) {
-          newTasksByStatus[status].splice(index, 1);
-          break;
-        }
+    for (const status of statuses) {
+      const index = tasksByStatus[status].findIndex((task) => task?.taskId === taskId);
+      if (index !== -1) {
+        tasksByStatus[status].splice(index, 1);
+        break;
       }
-      return newTasksByStatus;
-    });
+    }
   };
 
   const onEditTask = (task: Task) => {
-    setTasksByStatus((prev) => {
-      const newTasksByStatus = { ...prev };
-      for (const status of statuses) {
-        const index = newTasksByStatus[status].findIndex((t) => t?.taskId === task.taskId);
-        if (index !== -1) {
-          newTasksByStatus[status][index] = { ...task, index };
-          break;
-        }
+    for (const status of statuses) {
+      const index = tasksByStatus[status].findIndex((t) => t?.taskId === task.taskId);
+      if (index !== -1) {
+        tasksByStatus[status][index] = { ...task, index };
+        break;
       }
-      return newTasksByStatus;
-    });
+    }
   };
 
-  const onAddTask = (task: Task) => {
-    setTasksByStatus((prev) => {
-      const newTasksByStatus = { ...prev };
-      newTasksByStatus[task.status].push({ ...task, index: newTasksByStatus[task.status].length });
-      return newTasksByStatus;
-    });
+  const onAddTask = async (task: Task) => {
+    tasksByStatus[task.status].push({ ...task, index: tasksByStatus[task.status].length });
   };
 
   const onDragEnd: OnDragEndResponder = async (result) => {

@@ -22,7 +22,7 @@ const schema = yup.object().shape({
   quantity: yup.number().required('Enter a quantity!'),
   price: yup.number().required('Price per Unit is required!'),
   unitName: yup.string().optional(),
-  linkUrl: yup.string().required('URL is required!').url('Invalid URL'),
+  linkUrl: yup.string().required('URL is required!'),
   notes: yup.string().optional(),
   pdmFileName: yup.string().optional(),
   assemblyId: yup.string().optional()

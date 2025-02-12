@@ -9,7 +9,7 @@ import { getTaskAssigneeOptions, taskUserToAutocompleteOption } from '../../../.
 import NERFormModal from '../../../../components/NERFormModal';
 
 const schema = yup.object().shape({
-  notes: yup.string().required(),
+  notes: yup.string().optional(),
   deadline: yup.date().optional(),
   priority: yup.mixed<TaskPriority>().oneOf(Object.values(TaskPriority)).required(),
   assignees: yup.array().required(),
@@ -20,7 +20,7 @@ const schema = yup.object().shape({
 export interface EditTaskFormInput {
   taskId: string;
   title: string;
-  notes: string;
+  notes?: string;
   assignees: string[];
   deadline?: Date;
   priority: TaskPriority;
@@ -182,10 +182,10 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
                     multiline
                     rows={5}
                     inputProps={{
-                      maxLength: isUnderWordCount(value, 250) ? null : 0
+                      maxLength: isUnderWordCount(value ?? '', 250) ? null : 0
                     }}
-                    helperText={`${countWords(value)}/250 words`}
-                    error={!isUnderWordCount(value, 250)}
+                    helperText={`${countWords(value ?? '')}/250 words`}
+                    error={!isUnderWordCount(value ?? '', 250)}
                   />
                 )}
               />
