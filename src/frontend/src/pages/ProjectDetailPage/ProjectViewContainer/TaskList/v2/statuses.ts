@@ -21,7 +21,6 @@ const compareTaskPriorities = (priorityA: TaskPriority, priorityB: TaskPriority)
 };
 
 export const getTasksByStatus = (unorderedTasks: Task[]) => {
-  console.log('test', unorderedTasks);
   const postsByStatus: TasksByStatus = unorderedTasks.reduce(
     (acc, task) => {
       acc[task.status].push({ ...task, index: acc[task.status].length });

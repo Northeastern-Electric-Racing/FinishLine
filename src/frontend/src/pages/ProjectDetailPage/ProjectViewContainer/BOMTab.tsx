@@ -44,7 +44,6 @@ const BOMTab = ({ project }: { project: Project }) => {
 
   if (assembliesIsLoading || materialsIsLoading || !materials || !assemblies) return <LoadingIndicator />;
 
-  console.log(assemblies);
   const totalCost = materials.reduce(addMaterialCosts, 0);
 
   return (
