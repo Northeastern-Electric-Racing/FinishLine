@@ -70,14 +70,6 @@ const CalendarPage = () => {
     return day < week - 7 || day < 1 || day > week + 7;
   };
 
-  const isDayInPreviousMonth = (day: number, week: number) => {
-    return day < week - 7;
-  };
-
-  const isDayInNextMonth = (day: number, week: number) => {
-    return day > week + 7;
-  };
-
   const designReviewButtons = (designReviews: DesignReview[]) => {
     return designReviews.map((designReview) => {
       return {
@@ -165,40 +157,18 @@ const CalendarPage = () => {
             {startOfEachWeek.map((week) => (
               <Grid container>
                 {daysThisMonth.slice(week, week + 7).map((day) => {
-                  const cardDate = new Date();
-                  if (isDayInPreviousMonth(day, week)) {
-                    cardDate.setFullYear(displayMonthYear.getFullYear(), displayMonthYear.getMonth() + 1, day);
-                  } else if (isDayInNextMonth(day, week)) {
-                    cardDate.setFullYear(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, day);
-                  } else {
-                    cardDate.setFullYear(displayMonthYear.getFullYear(), displayMonthYear.getMonth(), day);
-                  }
-                  //const cardDate = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth(), day);
+                  const cardDate = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth(), day);
                   return (
                     <Grid item xs={12 / 7}>
                       <Box marginTop={2} sx={{ justifyContent: 'center', display: 'flex' }}>
-                        {isDayInDifferentMonth(day, week) ? (
-                          // <FillerCalendarDayCard day={day} />
-                          <CalendarDayCard
-                            cardDate={cardDate}
-                            events={
-                              eventDict.get(
-                                datePipe(new Date(cardDate.getTime() - cardDate.getTimezoneOffset() * -60000))
-                              ) ?? []
-                            }
-                            teamTypes={allTeamTypes}
-                          />
-                        ) : (
-                          <CalendarDayCard
-                            cardDate={cardDate}
-                            events={
-                              eventDict.get(
-                                datePipe(new Date(cardDate.getTime() - cardDate.getTimezoneOffset() * -60000))
-                              ) ?? []
-                            }
-                            teamTypes={allTeamTypes}
-                          />
-                        )}
+                        <CalendarDayCard
+                          cardDate={cardDate}
+                          events={
+                            eventDict.get(datePipe(new Date(cardDate.getTime() - cardDate.getTimezoneOffset() * -60000))) ??
+                            []
+                          }
+                          teamTypes={allTeamTypes}
+                        />
                       </Box>
                     </Grid>
                   );

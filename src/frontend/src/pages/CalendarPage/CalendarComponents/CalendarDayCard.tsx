@@ -34,7 +34,13 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
   const DayCardTitle = () => (
     <Grid container alignItems="center" margin={0} padding={0}>
       <Grid item>
-        <IconButton onClick={() => setIsCreateModalOpen(true)} disabled={cardDate.getTime() < new Date().getTime()}>
+        <IconButton
+          onClick={() => {
+            setIsCreateModalOpen(true);
+            console.log(cardDate);
+          }}
+          disabled={cardDate.getTime() < new Date().getTime()}
+        >
           <AddCircleOutlineIcon fontSize="small" />
         </IconButton>
       </Grid>
