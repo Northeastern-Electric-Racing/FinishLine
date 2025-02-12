@@ -22,7 +22,7 @@ export const getProjectQueryArgs = (organizationId: string) =>
           links: { where: { dateDeleted: null }, ...getLinkQueryArgs(organizationId) },
           changes: {
             where: { changeRequest: { dateDeleted: null } },
-            include: { implementer: getUserQueryArgs(organizationId) }
+            include: { implementer: getUserQueryArgs(organizationId), changeRequest: true }
           },
           organization: true
         }

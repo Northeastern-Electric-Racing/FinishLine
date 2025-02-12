@@ -188,7 +188,6 @@ export const linkValidators = [
 ];
 
 export const projectValidators = [
-  nonEmptyString(body('crId')),
   nonEmptyString(body('name')),
   nonEmptyString(body('summary')),
   ...descriptionBulletsValidators,
