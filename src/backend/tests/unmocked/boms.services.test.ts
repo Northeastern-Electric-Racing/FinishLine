@@ -3,7 +3,6 @@ import { Decimal } from 'decimal.js';
 import BillOfMaterialsService from '../../src/services/boms.services';
 import { createTestOrganization, createTestProject, createTestUser, resetUsers } from '../test-utils';
 import { batmanAppAdmin } from '../test-data/users.test-data';
-import { HttpException } from '../../src/utils/errors.utils';
 
 describe('BOM Service', () => {
   let organization: Organization;
