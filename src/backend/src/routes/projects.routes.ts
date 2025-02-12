@@ -86,18 +86,8 @@ projectRouter.post(
   validateInputs,
   ProjectsController.assignMaterialAssembly
 );
-projectRouter.post(
-  '/bom/material/:wbsNum/create',
-  ...materialValidators,
-  validateInputs,
-  ProjectsController.createMaterial
-);
-projectRouter.post(
-  '/bom/material/:materialId/edit',
-  ...materialValidators,
-  validateInputs,
-  ProjectsController.editMaterial
-);
+projectRouter.post('/bom/material/:wbsNum/create', ...materialValidators, validateInputs, ProjectsController.createMaterial);
+projectRouter.post('/bom/material/:materialId/edit', ...materialValidators, validateInputs, ProjectsController.editMaterial);
 
 projectRouter.post(
   '/bom/assembly/:assemblyId/edit',

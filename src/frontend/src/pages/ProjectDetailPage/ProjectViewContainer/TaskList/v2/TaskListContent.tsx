@@ -1,6 +1,6 @@
 import { DragDropContext, OnDragEndResponder } from '@hello-pangea/dnd';
 import { Box } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Project, Task, TaskWithIndex } from 'shared';
 import { getTasksByStatus, statuses, TasksByStatus } from '.';
 import { useSetTaskStatus } from '../../../../../hooks/tasks.hooks';
