@@ -75,6 +75,27 @@ export default class BillOfMaterialsService {
     pdmFileName?: string,
     unitName?: string
   ): Promise<Material> {
+    if (status !== Material_Status.NOT_READY_TO_ORDER) {
+      if (!materialTypeName) {
+        throw new HttpException(400, 'Select a Material Type!');
+      }
+      if (!manufacturerName) {
+        throw new HttpException(400, 'Select a Manufacturer!');
+      }
+      if (!manufacturerPartNumber) {
+        throw new HttpException(400, 'Select a Manufacturer Part Number!');
+      }
+      if (!quantity || quantity.isZero()) {
+        throw new HttpException(400, 'Enter a Quantity!');
+      }
+      if (!price) {
+        throw new HttpException(400, 'Enter a Price!');
+      }
+      if (!linkUrl) {
+        throw new HttpException(400, 'Enter a URL!');
+      }
+    }
+
     const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNumber, organization);
 
     if (assemblyId) {
@@ -91,20 +112,16 @@ export default class BillOfMaterialsService {
       materialType = await prisma.material_Type.findUnique({
         where: { uniqueMaterialType: { name: materialTypeName, organizationId: organization.organizationId } }
       });
-      if (status !== Material_Status.NOT_READY_TO_ORDER) {
-        if (!materialType) throw new NotFoundException('Material Type', materialTypeName);
-        if (materialType.dateDeleted) throw new DeletedException('Material Type', materialTypeName);
-      }
+      if (!materialType) throw new NotFoundException('Material Type', materialTypeName);
+      if (materialType.dateDeleted) throw new DeletedException('Material Type', materialTypeName);
     }
 
     if (manufacturerName) {
       manufacturer = await prisma.manufacturer.findUnique({
         where: { uniqueManufacturer: { name: manufacturerName, organizationId: organization.organizationId } }
       });
-      if (status !== Material_Status.NOT_READY_TO_ORDER) {
-        if (!manufacturer) throw new NotFoundException('Manufacturer', manufacturerName);
-        if (manufacturer.dateDeleted) throw new DeletedException('Manufacturer', manufacturerName);
-      }
+      if (!manufacturer) throw new NotFoundException('Manufacturer', manufacturerName);
+      if (manufacturer.dateDeleted) throw new DeletedException('Manufacturer', manufacturerName);
     }
 
     let unit = null;
@@ -576,23 +593,40 @@ export default class BillOfMaterialsService {
     assemblyId?: string,
     pdmFileName?: string
   ): Promise<Material> {
-    const material = await BillOfMaterialsService.getSingleMaterialWithQueryArgs(materialId, organization);
-
-    const project = await ProjectsService.getSingleProjectWithQueryArgs(material.wbsElement, organization);
-
-    const perms =
-      (await userHasPermission(submitter.userId, project.wbsElement.organizationId, isLeadership)) ||
-      isUserPartOfTeams(project.teams, submitter);
-
-    if (!perms) throw new AccessDeniedException('update material');
-
-    if (assemblyId) {
-      const assembly = await BillOfMaterialsService.getSingleAssemblyWithQueryArgs(
-        assemblyId,
-        project.wbsElement.organization
-      );
-      if (assembly.wbsElementId !== project.wbsElementId) throw new HttpException(400, 'Assembly not found on this project');
+    if (status !== Material_Status.NOT_READY_TO_ORDER) {
+      if (!materialTypeName) {
+        throw new HttpException(400, 'Select a Material Type!');
+      }
+      if (!manufacturerName) {
+        throw new HttpException(400, 'Select a Manufacturer!');
+      }
+      if (!manufacturerPartNumber) {
+        throw new HttpException(400, 'Select a Manufacturer Part Number!');
+      }
+      if (!quantity || quantity.isZero()) {
+        throw new HttpException(400, 'Enter a Quantity!');
+      }
+      if (!price) {
+        throw new HttpException(400, 'Enter a Price!');
+      }
+      if (!linkUrl) {
+        throw new HttpException(400, 'Enter a URL!');
+      }
     }
+
+    const material = await prisma.material.findUnique({
+      where: { materialId },
+      include: {
+        assembly: true,
+        materialType: true,
+        manufacturer: true,
+        wbsElement: true,
+        unit: true
+      }
+    });
+
+    if (!material) throw new NotFoundException('Material', materialId);
+    if (material.dateDeleted) throw new DeletedException('Material', materialId);
 
     let materialType = null;
     let manufacturer = null;
@@ -618,9 +652,25 @@ export default class BillOfMaterialsService {
     let unit = null;
     if (unitName) {
       unit = await prisma.unit.findUnique({
-        where: { uniqueUnit: { name: unitName, organizationId: project.wbsElement.organizationId } }
+        where: { uniqueUnit: { name: unitName, organizationId: material.wbsElement.organizationId } }
       });
       if (!unit) throw new NotFoundException('Unit', unitName);
+    }
+
+    const project = await ProjectsService.getSingleProjectWithQueryArgs(material.wbsElement, organization);
+
+    const perms =
+      (await userHasPermission(submitter.userId, project.wbsElement.organizationId, isLeadership)) ||
+      isUserPartOfTeams(project.teams, submitter);
+
+    if (!perms) throw new AccessDeniedException('update material');
+
+    if (assemblyId) {
+      const assembly = await BillOfMaterialsService.getSingleAssemblyWithQueryArgs(
+        assemblyId,
+        project.wbsElement.organization
+      );
+      if (assembly.wbsElementId !== project.wbsElementId) throw new HttpException(400, 'Assembly not found on this project');
     }
 
     const data: any = {

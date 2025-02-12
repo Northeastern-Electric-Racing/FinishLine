@@ -98,7 +98,7 @@ describe('BOM Service', () => {
           wbsNum,
           organization
         )
-      ).rejects.toThrow(new HttpException(400, 'Material Type is required when status is not NOT_READY_TO_ORDER'));
+      ).rejects.toThrow('Select a Material Type!');
     });
   });
 
@@ -212,7 +212,6 @@ describe('BOM Service', () => {
         organization
       );
 
-      // change to ORDERED without required fields
       await expect(
         BillOfMaterialsService.editMaterial(
           user,
@@ -228,7 +227,7 @@ describe('BOM Service', () => {
           '',
           organization
         )
-      ).rejects.toThrow('Material Type');
+      ).rejects.toThrow('Select a Material Type!');
     });
   });
 });
