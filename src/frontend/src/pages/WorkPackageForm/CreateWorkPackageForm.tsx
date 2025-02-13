@@ -11,6 +11,7 @@ import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hook
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useSingleProject } from '../../hooks/projects.hooks';
+import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 
 const CreateWorkPackageForm: React.FC = () => {
   const query = useQuery();
@@ -35,6 +36,9 @@ const CreateWorkPackageForm: React.FC = () => {
       .test('start-date-valid', 'Start Date Must be a Monday', startDateTester),
     duration: yup.number().required()
   });
+
+  const createWorkPackageWrapper = (workPackageInput: WorkPackageApiInputs) =>
+    createWorkPackage({ ...workPackageInput, projectWbsNum: wbsElement.wbsNum });
 
   const breadcrumbs =
     crId && crId !== 'null'
@@ -61,7 +65,7 @@ const CreateWorkPackageForm: React.FC = () => {
   return (
     <WorkPackageForm
       wbsNum={validateWBS(wbsNum)}
-      workPackageMutateAsync={createWorkPackage}
+      workPackageMutateAsync={createWorkPackageWrapper}
       createWorkPackageScopeCR={createWorkPackageScopeCR}
       exitActiveMode={() => history.push(`${routes.PROJECTS}/${projectWbsPipe(validateWBS(wbsNum))}`)}
       crId={crId ?? undefined}

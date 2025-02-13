@@ -1,11 +1,11 @@
-import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
-import { ChangeRequestReason, ChangeRequestType, WorkPackage } from 'shared';
-import { useState } from 'react';
+import { Box, Typography } from '@mui/material';
+import { WorkPackage } from 'shared';
 import dayjs from 'dayjs';
-import { useCreateStandardChangeRequest } from '../../../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { useToast } from '../../../../hooks/toasts.hooks';
 import { NERDraggableFormModal } from '../../../../components/NERDraggableFormModal';
+import { useCreateSingleWorkPackage } from '../../../../hooks/work-packages.hooks';
+import { WorkPackageCreateArgs } from '../../../../apis/work-packages.api';
 
 interface GanttWorkPackageCreateModalProps {
   workPackage: WorkPackage;
@@ -15,19 +15,9 @@ interface GanttWorkPackageCreateModalProps {
 
 export const GanttWorkPackageCreateModal = ({ workPackage, handleClose, open }: GanttWorkPackageCreateModalProps) => {
   const toast = useToast();
-  const [reasonForChange, setReasonForChange] = useState<ChangeRequestReason>(ChangeRequestReason.Initialization);
-  const [explanationForChange, setExplanationForChange] = useState('');
-  const { isLoading, mutateAsync } = useCreateStandardChangeRequest();
+  const { isLoading, mutateAsync } = useCreateSingleWorkPackage();
 
   if (isLoading) return <LoadingIndicator />;
-
-  const handleReasonChange = (event: SelectChangeEvent<ChangeRequestReason>) => {
-    setReasonForChange(event.target.value as ChangeRequestReason);
-  };
-
-  const handleExplanationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setExplanationForChange(event.target.value);
-  };
 
   const changeInTimeline = (startDate: Date, endDate: Date) => {
     return `${dayjs(startDate).format('MMMM D, YYYY')} - ${dayjs(endDate).format('MMMM D, YYYY')}`;
@@ -36,40 +26,18 @@ export const GanttWorkPackageCreateModal = ({ workPackage, handleClose, open }: 
   const duration = dayjs(workPackage.endDate).diff(dayjs(workPackage.startDate), 'week');
 
   const handleSubmit = async () => {
-    if (!reasonForChange) {
-      return;
-    }
-
-    const payload = {
-      wbsNum: {
-        carNumber: workPackage.wbsNum.carNumber,
-        projectNumber: workPackage.wbsNum.projectNumber,
-        workPackageNumber: 0
-      },
-      type: ChangeRequestType.Issue,
-      what: `Create New Work Package with timeline of: ${changeInTimeline(workPackage.startDate, workPackage.endDate)}`,
-      why: [
-        {
-          explain: explanationForChange,
-          type: reasonForChange
-        }
-      ],
-      proposedSolutions: [],
-      workPackageProposedChanges: {
-        name: workPackage.name,
-        stage: workPackage.stage,
-        duration,
-        startDate: workPackage.startDate.toLocaleDateString(),
-        blockedBy: [],
-        descriptionBullets: [],
-        leadId: undefined,
-        managerId: undefined,
-        links: []
-      }
+    const payload: WorkPackageCreateArgs = {
+      name: workPackage.name,
+      stage: workPackage.stage ?? 'NONE',
+      duration,
+      startDate: workPackage.startDate.toLocaleDateString(),
+      blockedBy: [],
+      descriptionBullets: [],
+      projectWbsNum: { ...workPackage.wbsNum, workPackageNumber: 0 }
     };
     try {
       await mutateAsync(payload);
-      toast.success('Change Request Created Successfully!');
+      toast.success('Work Package Created Successfully!');
       handleClose();
     } catch (e) {
       if (e instanceof Error) {
@@ -82,7 +50,6 @@ export const GanttWorkPackageCreateModal = ({ workPackage, handleClose, open }: 
     <NERDraggableFormModal
       open={open}
       title={'New Workpackage: ' + workPackage.name}
-      disableSuccessButton={!reasonForChange || !explanationForChange}
       handleSubmit={handleSubmit}
       onHide={handleClose}
     >
@@ -91,24 +58,7 @@ export const GanttWorkPackageCreateModal = ({ workPackage, handleClose, open }: 
           workPackage.startDate,
           workPackage.endDate
         )}`}</Typography>
-        <Box sx={{ mt: 2 }}>
-          <FormControl fullWidth>
-            <InputLabel>Reason for Initialization</InputLabel>
-            <Select value={reasonForChange} label="Reason for Initialization" onChange={handleReasonChange}>
-              {Object.entries(ChangeRequestReason).map(([key, value]) => (
-                <MenuItem value={value}>{key}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <TextField
-            fullWidth
-            label="Explanation for Initialization"
-            sx={{ mt: 2 }}
-            value={explanationForChange}
-            onChange={handleExplanationChange}
-            multiline
-          />
-        </Box>
+       <Typography>Are you sure you want to create this work package with this timeline? Changing this will require a change request.</Typography>
       </Box>
     </NERDraggableFormModal>
   );
