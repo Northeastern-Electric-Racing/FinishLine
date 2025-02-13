@@ -27,7 +27,7 @@ import HelpIcon from '@mui/icons-material/Help';
 import { NERButton } from '../../components/NERButton';
 import dayjs from 'dayjs';
 import DescriptionBulletsEditView from '../../components/DescriptionBulletEditView';
-import { useAllWorkPackageTemplates } from '../../hooks/work-packages.hooks';
+import { useAllWorkPackageTemplates } from '../../hooks/wbs-templates.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { WorkPackageTemplateSection } from './WorkPackageTemplateSection';

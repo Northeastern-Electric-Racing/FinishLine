@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WorkPackageTemplate } from 'shared';
+import { ProjectTemplate, WorkPackageTemplate } from 'shared';
 import { descriptionBulletTransformer } from './projects.transformers';
 
 /**
@@ -20,3 +20,10 @@ export const workPackageTemplateTransformer = (workPackageTemplate: WorkPackageT
     descriptionBullets: workPackageTemplate.descriptionBullets.map(descriptionBulletTransformer)
   };
 };
+
+export const projectTemplateTransformer = (projectTemplate: ProjectTemplate): ProjectTemplate => {
+  return {
+    ...projectTemplate,
+    workPackageTemplates: projectTemplate.workPackageTemplates.map(workPackageTemplateTransformer)
+  }
+}

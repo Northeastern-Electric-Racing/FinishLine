@@ -1,6 +1,5 @@
-import { useSingleProjectTemplate } from '../../hooks/wbs-templates.hooks';
+import { useEditProjectTemplate, useSingleProjectTemplate } from '../../hooks/wbs-templates.hooks';
 import { useQuery } from '../../hooks/utils.hooks';
-import { WorkPackageTemplateFormViewPayload as WorkPackageTemplateFormInputs } from './WorkPackageTemplateFormView';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import ProjectTemplateForm from './ProjectTemplateForm';
@@ -18,6 +17,8 @@ const EditProjectTemplate: React.FC = () => {
   if (!projectTemplate || isLoading) return <LoadingIndicator />;
 
   if (isError) return <ErrorPage message={error.message} />;
+
+  projectTemplate.workPackageTemplates = projectTemplate.workPackageTemplates ?? [];
 
   const defaultValues: ProjectTemplateApiInputs = {
     ...projectTemplate,

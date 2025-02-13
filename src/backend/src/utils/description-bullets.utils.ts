@@ -181,7 +181,7 @@ export enum DescriptionBulletDestination {
   WBS_ELEMENT,
   WORK_PACKAGE_TEMPLATE,
   PROJECT_TEMPLATE,
-  PROPOSED_CHANGES
+  PROPOSED_CHANGES,
 }
 
 export const addRawDescriptionBullets = async (
@@ -207,6 +207,16 @@ export const addRawDescriptionBullets = async (
       case DescriptionBulletDestination.WORK_PACKAGE_TEMPLATE:
         promises.concat(
           addDescriptionBulletsToWorkPackageTemplate(
+            bullets.map((bullet) => bullet.detail),
+            destinationId,
+            type,
+            organizationId
+          )
+        );
+        break;
+      case DescriptionBulletDestination.PROJECT_TEMPLATE:
+        promises.concat(
+          addDescriptionBulletsToProjectTemplate(
             bullets.map((bullet) => bullet.detail),
             destinationId,
             type,

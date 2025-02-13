@@ -1,7 +1,7 @@
-import axios from 'axios';
+import axios from '../utils/axios';
 import { WorkPackageStage, DescriptionBulletPreview, ProjectTemplate, WorkPackageTemplate } from 'shared';
 import { apiUrls } from '../utils/urls';
-import { workPackageTemplateTransformer } from './transformers/work-package-templates.transformer';
+import { projectTemplateTransformer, workPackageTemplateTransformer } from './transformers/work-package-templates.transformer';
 
 export interface WorkPackageTemplateApiInputs {
   templateName: string;
@@ -76,7 +76,10 @@ export const createSingleWorkPackageTemplate = (payload: WorkPackageTemplateApiI
  * Get all project templates
  */
 export const getAllProjectTemplates = () => {
-  return axios.get<ProjectTemplate[]>(apiUrls.projectTemplates(), {});
+  return axios.get<ProjectTemplate[]>(apiUrls.projectTemplates(), {
+    transformResponse: (data) => {
+      return JSON.parse(data).map(projectTemplateTransformer)}
+  });
 };
 
 /**
@@ -96,3 +99,9 @@ export const deleteProjectTemplate = (projectTemplateId: string) => {
 export const getSingleProjectTemplate = (projectTemplateId: string) => {
   return axios.get<ProjectTemplate>(apiUrls.projectTemplatesById(projectTemplateId), {});
 };
+
+export const editProjectTemplate = (projectTemplateId: string, payload: ProjectTemplateApiInputs) => {
+  return axios.post<{ message: string }>(apiUrls.projectTemplatesEdit(projectTemplateId), {
+    ...payload
+  });
+}

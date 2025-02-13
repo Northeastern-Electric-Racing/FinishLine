@@ -15,7 +15,7 @@ const ProjectTemplateForm: React.FC<ProjectTemplateFormProps> = ({ projectTempla
   const schema = yup.object().shape({
     projectName: yup.string().optional(),
     templateName: yup.string().required('Template Name is required'),
-    templateNotes: yup.string(),
+    templateNotes: yup.string().required('Template Notes are required'),
     workPackageTemplates: yup.array().of(workPackageTemplateSchema)
   });
 

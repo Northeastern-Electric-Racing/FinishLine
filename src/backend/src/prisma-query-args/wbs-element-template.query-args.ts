@@ -35,6 +35,6 @@ export const getProjectTemplateQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Project_TemplateDefaultArgs>()({
     include: {
       wbsElementTemplate: getWbsElementTemplateQueryArgs(organizationId),
-      workPackageTemplates: getWorkPackageTemplateQueryArgs(organizationId)
+      workPackageTemplates: {where: {wbsElementTemplate: {dateDeleted: null}}, ...getWorkPackageTemplateQueryArgs(organizationId)}
     }
   });
