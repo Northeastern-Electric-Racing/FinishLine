@@ -17,6 +17,7 @@ interface BOMTableProps {
 
 const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, columns, materials, assemblies }) => {
   const [openRows, setOpenRows] = useState<String[]>([]);
+  const [draggedMaterial, setDraggedMaterial] = useState<Material | null>(null);
 
   const arrowSymbol = (rowId: string) => {
     return openRows.includes(rowId) ? '⮝' : '⮟';
@@ -65,7 +66,6 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
   });
 
   // drag and drop mechanics
-  const [draggedMaterial, setDraggedMaterial] = useState<Material | null>(null);
 
   const handleDragStart = (materialId: string) => {
     const material = materials.find((m) => m.materialId === materialId);
@@ -118,7 +118,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
         columns={columns as GridColumns<GridValidRowModel>}
         rows={rows.concat(materialsWithAssemblies.filter(isAssemblyOpen))}
         getRowClassName={(params) =>
-          `super-app-theme--${String(params.row.id).includes('assembly') ? `assembly assembly-id:${params.row.assemblyId}` : `material material-id:${params.row.materialId}`}`
+          `super-app-theme--${String(params.row.id).includes('assembly') ? 'assembly' : 'material'}`
         }
         rowsPerPageOptions={[100]}
         sx={bomTableStyles.datagrid}
@@ -132,12 +132,16 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
               if (event.currentTarget.className.includes('super-app-theme--assembly')) {
                 event.preventDefault();
               }
-              const materialId = event.currentTarget.className.split('material-id:')[1]?.split(' ')[0] || '';
+              const rowIndex = parseInt(event.currentTarget.getAttribute('data-rowindex') || '0');
+              const materials = rows.concat(materialsWithAssemblies.filter(isAssemblyOpen));
+              const { materialId } = materials[rowIndex];
               handleDragStart(materialId);
             },
             onDrop: (event: React.DragEvent) => {
               if (event.currentTarget.className.includes('super-app-theme--material')) return;
-              const assemblyId = event.currentTarget.className.split('assembly-id:')[1]?.split(' ')[0] || '';
+              const rowIndex = parseInt(event.currentTarget.getAttribute('data-rowindex') || '0');
+              const materials = rows.concat(materialsWithAssemblies.filter(isAssemblyOpen));
+              const { assemblyId } = materials[rowIndex];
               handleDrop(event, assemblyId);
             },
             onDragOver: (event: React.DragEvent) => handleDragOver(event)
