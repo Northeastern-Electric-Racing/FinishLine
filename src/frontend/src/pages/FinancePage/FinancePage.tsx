@@ -31,6 +31,8 @@ import WorkIcon from '@mui/icons-material/Work';
 import TotalAmountSpentModal from './FinanceComponents/TotalAmountSpentModal';
 import { useToast } from '../../hooks/toasts.hooks';
 import ReportRefundModal from './FinanceComponents/ReportRefundModal';
+import SpendingBar from './SpendingBar';
+import { color } from '@mui/system';
 
 const FinancePage = () => {
   const user = useCurrentUser();
@@ -160,6 +162,40 @@ const FinancePage = () => {
     </>
   );
 
+  const testData = [
+    [
+      { name: 'Segments', value: 5000 },
+      { name: 'Shepherd', value: 2500 },
+      { name: 'Flex Therm PCBs', value: 0 }
+    ],
+    [
+      { name: 'A', value: 1 },
+      { name: 'B', value: 2 },
+      { name: 'C', value: 3 }
+    ],
+    [
+      { name: 'A', value: 1 },
+      { name: 'B', value: 10 },
+      { name: 'C', value: 100 }
+    ],
+    [
+      { name: 'A', value: 1, color: 'red' },
+      { name: 'B', value: 1, color: 'green' },
+      { name: 'C', value: 1, color: 'blue' }
+    ],
+    [
+      { name: '1', value: 1 },
+      { name: '2', value: 2 },
+      { name: '3', value: 3 },
+      { name: '4', value: 4 },
+      { name: '5', value: 5 },
+      { name: '6', value: 6 },
+      { name: '7', value: 7 },
+      { name: '8', value: 8 },
+      { name: '9', value: 9 },
+    ]
+  ];
+
   return (
     <PageLayout title="Finance" headerRight={financeActionsDropdown}>
       {isFinance && (
@@ -183,7 +219,7 @@ const FinancePage = () => {
         allReimbursementRequests={allReimbursementRequests}
       />
       <Grid container>
-        <Grid item xs={12} sm={12} md={4}>
+        {/* <Grid item xs={12} sm={12} md={4}>
           <Refunds
             userReimbursementRequests={userReimbursementRequests}
             allReimbursementRequests={allReimbursementRequests}
@@ -195,6 +231,13 @@ const FinancePage = () => {
               userReimbursementRequests={userReimbursementRequests}
               allReimbursementRequests={allReimbursementRequests}
             />
+          </Box>
+        </Grid> */}
+        <Grid item xs={12}>
+          <Box gap={2} display="flex" flexDirection="column">
+            {testData.map((items) => {
+              return <SpendingBar items={items} />;
+            })}
           </Box>
         </Grid>
       </Grid>
