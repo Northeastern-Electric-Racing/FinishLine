@@ -1,4 +1,4 @@
-import { Box, Color, useTheme } from '@mui/material';
+import { Box, useTheme } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 
 interface SpendingItem {
@@ -91,7 +91,7 @@ const SpendingBar: React.FC<SpendingBarProps> = ({ items }) => {
 
   const HiddenDiv = () => {
     return (
-      <Box ref={hiddenRef} style={{ position: 'absolute', visibility: 'hidden' }}>
+      <Box ref={hiddenRef} position="absolute" visibility="hidden">
         {items.map((item) => (
           <Box key={item.name} display="inline-block" p={2}>
             {item.name}
@@ -101,19 +101,19 @@ const SpendingBar: React.FC<SpendingBarProps> = ({ items }) => {
     );
   };
 
-  const DebugDiv = () => {
-    return (
-      <div>
-        minWidth: {minWidth}
-        <br />
-        containerWidth: {containerWidth}
-        <br />
-        minItemWidthPercentages: {minItemWidthPercentages.map((x) => x.toFixed(2)).join(' | ')}
-        <br />
-        itemWidthPercentages: {itemWidthPercentages.map((itemWidth) => itemWidth.toFixed(2)).join(' | ')}
-      </div>
-    );
-  };
+  // const DebugDiv = () => {
+  //   return (
+  //     <div>
+  //       minWidth: {minWidth}
+  //       <br />
+  //       containerWidth: {containerWidth}
+  //       <br />
+  //       minItemWidthPercentages: {minItemWidthPercentages.map((x) => x.toFixed(2)).join(' | ')}
+  //       <br />
+  //       itemWidthPercentages: {itemWidthPercentages.map((itemWidth) => itemWidth.toFixed(2)).join(' | ')}
+  //     </div>
+  //   );
+  // };
 
   const theme = useTheme();
 

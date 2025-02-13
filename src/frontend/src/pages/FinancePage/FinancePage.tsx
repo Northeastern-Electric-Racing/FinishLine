@@ -2,37 +2,34 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { useState } from 'react';
-import { Box, Grid, ListItemIcon, Menu, MenuItem } from '@mui/material';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { NERButton } from '../../components/NERButton';
-import { useCurrentUser } from '../../hooks/users.hooks';
-import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ListAltIcon from '@mui/icons-material/ListAlt';
+import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import ReceiptIcon from '@mui/icons-material/Receipt';
-import Refunds from './RefundsSection';
-import ReimbursementRequestTable from './ReimbursementRequestsSection';
+import WorkIcon from '@mui/icons-material/Work';
+import { Box, Grid, ListItemIcon, Menu, MenuItem } from '@mui/material';
+import { useState } from 'react';
+import { useHistory } from 'react-router-dom';
+import { isAdmin, isGuest } from 'shared';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import { NERButton } from '../../components/NERButton';
+import PageLayout from '../../components/PageLayout';
 import {
   useAllReimbursementRequests,
   useCurrentUserReimbursementRequests,
   useDownloadCSVFileOfReimbursementRequests,
   useGetPendingAdvisorList
 } from '../../hooks/finance.hooks';
-import ErrorPage from '../ErrorPage';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import PageLayout from '../../components/PageLayout';
-import { useHistory } from 'react-router-dom';
+import { useToast } from '../../hooks/toasts.hooks';
+import { useCurrentUser } from '../../hooks/users.hooks';
 import { routes } from '../../utils/routes';
+import ErrorPage from '../ErrorPage';
 import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
 import PendingAdvisorModal from './FinanceComponents/PendingAdvisorListModal';
-import { isAdmin, isGuest } from 'shared';
-import WorkIcon from '@mui/icons-material/Work';
-import TotalAmountSpentModal from './FinanceComponents/TotalAmountSpentModal';
-import { useToast } from '../../hooks/toasts.hooks';
 import ReportRefundModal from './FinanceComponents/ReportRefundModal';
+import TotalAmountSpentModal from './FinanceComponents/TotalAmountSpentModal';
 import SpendingBar from './SpendingBar';
-import { color } from '@mui/system';
 
 const FinancePage = () => {
   const user = useCurrentUser();
@@ -193,6 +190,8 @@ const FinancePage = () => {
       { name: '7', value: 7 },
       { name: '8', value: 8 },
       { name: '9', value: 9 },
+      { name: '10', value: 10 },
+      { name: '11', value: 11 }
     ]
   ];
 
