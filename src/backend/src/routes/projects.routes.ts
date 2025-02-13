@@ -2,11 +2,10 @@ import express from 'express';
 import { body } from 'express-validator';
 import {
   intMinZero,
-  decimalMinZero,
-  isMaterialStatus,
   nonEmptyString,
   projectValidators,
-  validateInputs
+  validateInputs,
+  materialValidators
 } from '../utils/validation.utils';
 import ProjectsController from '../controllers/projects.controllers';
 
@@ -87,42 +86,8 @@ projectRouter.post(
   validateInputs,
   ProjectsController.assignMaterialAssembly
 );
-projectRouter.post(
-  '/bom/material/:wbsNum/create',
-  nonEmptyString(body('name')),
-  nonEmptyString(body('assemblyId').optional()),
-  isMaterialStatus(body('status')),
-  nonEmptyString(body('materialTypeName')),
-  nonEmptyString(body('manufacturerName')),
-  nonEmptyString(body('manufacturerPartNumber')),
-  nonEmptyString(body('pdmFileName').optional()),
-  decimalMinZero(body('quantity')),
-  nonEmptyString(body('unitName')).optional(),
-  intMinZero(body('price')), // in cents
-  intMinZero(body('subtotal')), // in cents
-  nonEmptyString(body('linkUrl').isURL()),
-  body('notes').isString().optional(),
-  validateInputs,
-  ProjectsController.createMaterial
-);
-projectRouter.post(
-  '/bom/material/:materialId/edit',
-  nonEmptyString(body('name')),
-  nonEmptyString(body('assemblyId').optional()),
-  isMaterialStatus(body('status')),
-  nonEmptyString(body('materialTypeName')),
-  nonEmptyString(body('manufacturerName')),
-  nonEmptyString(body('manufacturerPartNumber')),
-  nonEmptyString(body('pdmFileName').optional()),
-  decimalMinZero(body('quantity')),
-  body('unitName').optional(),
-  intMinZero(body('price')), // in cents
-  intMinZero(body('subtotal')), // in cents
-  nonEmptyString(body('linkUrl').isURL()),
-  body('notes').isString().optional(),
-  validateInputs,
-  ProjectsController.editMaterial
-);
+projectRouter.post('/bom/material/:wbsNum/create', ...materialValidators, validateInputs, ProjectsController.createMaterial);
+projectRouter.post('/bom/material/:materialId/edit', ...materialValidators, validateInputs, ProjectsController.editMaterial);
 
 projectRouter.post(
   '/bom/assembly/:assemblyId/edit',
