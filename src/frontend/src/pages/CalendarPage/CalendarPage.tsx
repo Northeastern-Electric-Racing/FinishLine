@@ -66,8 +66,16 @@ const CalendarPage = () => {
 
   const startOfEachWeek = [0, 7, 14, 21, 28, 35];
 
-  const isDayInDifferentMonth = (day: number, week: number) => {
-    return day < week - 7 || day < 1 || day > week + 7;
+  // const isDayInDifferentMonth = (day: number, week: number) => {
+  //   return day < week - 7 || day < 1 || day > week + 7;
+  // };
+
+  const isDayInPrevMonth = (day: number, week: number) => {
+    return day < week - 7;
+  };
+
+  const isDayInNextMonth = (day: number, week: number) => {
+    return day > week + 7;
   };
 
   const designReviewButtons = (designReviews: DesignReview[]) => {
@@ -158,6 +166,12 @@ const CalendarPage = () => {
               <Grid container>
                 {daysThisMonth.slice(week, week + 7).map((day) => {
                   const cardDate = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth(), day);
+                  if (isDayInPrevMonth(day, week)) {
+                    cardDate.setMonth(cardDate.getMonth() + 1);
+                  }
+                  if (isDayInNextMonth(day, week)) {
+                    cardDate.setMonth(cardDate.getMonth() - 1);
+                  }
                   return (
                     <Grid item xs={12 / 7}>
                       <Box marginTop={2} sx={{ justifyContent: 'center', display: 'flex' }}>
