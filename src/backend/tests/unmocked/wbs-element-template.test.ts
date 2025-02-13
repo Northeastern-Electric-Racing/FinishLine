@@ -369,9 +369,78 @@ describe('Project Template Tests', () => {
             'template name',
             'template notes',
             [],
+            [],
             organization
           )
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit project template'));
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit a project template'));
+    });
+    it('fails if the project template ID is not found', async () => {
+      await expect(
+        async () =>
+          await WbsElementTemplatesService.editProjectTemplate(
+            await createTestUser(supermanAdmin, orgId),
+            'id1',
+            'template name',
+            'template notes',
+            [],
+            [],
+            organization,
+            'project name'
+          )
+      ).rejects.toThrow(new HttpException(400, `Project Template with id: id1 not found!`));
+    });
+
+    it('succeeds', async () => {
+      const testSuperman = await createTestUser(supermanAdmin, orgId);
+      const testProjectTemplate = await createTestProjectTemplate(testSuperman, orgId);
+      const testWorkPackageTemplate = await createTestWorkPackageTemplate(testSuperman, orgId);
+
+      let updatedProjectTemplate = await WbsElementTemplatesService.editProjectTemplate(
+        testSuperman,
+        testProjectTemplate.wbsElementTemplateId,
+        'new template name',
+        'new template notes',
+        [{...testWorkPackageTemplate, workPackageTemplateId: testWorkPackageTemplate.wbsElementTemplateId, templateName: testWorkPackageTemplate.wbsElementTemplate.templateName, templateNotes: testWorkPackageTemplate.wbsElementTemplate.templateNotes, descriptionBullets: [], duration: testWorkPackageTemplate.duration ?? undefined, stage: undefined, blockedBy: testWorkPackageTemplate.blockedBy.map((bb) => bb.wbsElementTemplateId)}],
+        [],
+        organization,
+        'project name'
+      );
+
+      expect(updatedProjectTemplate.templateName).toBe('new template name');
+      expect(updatedProjectTemplate.templateNotes).toBe('new template notes');
+      expect(updatedProjectTemplate.workPackageTemplates).toHaveLength(1);
+      expect(updatedProjectTemplate.workPackageTemplates[0]).toStrictEqual(workPackageTemplateTransformer(testWorkPackageTemplate));
+
+      updatedProjectTemplate = await WbsElementTemplatesService.editProjectTemplate(
+        testSuperman,
+        testProjectTemplate.wbsElementTemplateId,
+        'new new template name',
+        'new new template notes',
+        [{...testWorkPackageTemplate, workPackageTemplateId: testWorkPackageTemplate.wbsElementTemplateId, templateName: 'changed name', templateNotes: testWorkPackageTemplate.wbsElementTemplate.templateNotes, descriptionBullets: [], duration: testWorkPackageTemplate.duration ?? undefined, stage: undefined, blockedBy: testWorkPackageTemplate.blockedBy.map((bb) => bb.wbsElementTemplateId)}],
+        [],
+        organization
+      );
+
+      testWorkPackageTemplate.wbsElementTemplate.templateName = 'changed name';
+
+      expect(updatedProjectTemplate.templateName).toBe('new new template name');
+      expect(updatedProjectTemplate.templateNotes).toBe('new new template notes');
+      expect(updatedProjectTemplate.workPackageTemplates).toHaveLength(1);
+      expect(updatedProjectTemplate.workPackageTemplates[0]).toStrictEqual(workPackageTemplateTransformer(testWorkPackageTemplate));
+
+      updatedProjectTemplate = await WbsElementTemplatesService.editProjectTemplate(
+        testSuperman,
+        testProjectTemplate.wbsElementTemplateId,
+        'new new new template name',
+        'new new new template notes',
+        [],
+        [],
+        organization
+      );
+
+      expect(updatedProjectTemplate.templateName).toBe('new new new template name');
+      expect(updatedProjectTemplate.templateNotes).toBe('new new new template notes');
+      expect(updatedProjectTemplate.workPackageTemplates).toHaveLength(0);
     });
   });
 });

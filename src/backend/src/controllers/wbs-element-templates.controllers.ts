@@ -158,4 +158,26 @@ export default class WbsElementTemplatesController {
       return next(error);
     }
   }
+
+  static async editProjectTemplate(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { projectTemplateId } = req.params;
+      const { templateName, templateNotes, descriptionBullets, workPackageTemplates, projectName } = req.body;
+
+      const updatedProjectTemplate = await WbsElementTemplatesService.editProjectTemplate(
+        req.currentUser,
+        projectTemplateId,
+        templateName,
+        templateNotes,
+        workPackageTemplates,
+        descriptionBullets,
+        req.organization,
+        projectName
+      );
+
+      return res.status(200).json(updatedProjectTemplate);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
 }

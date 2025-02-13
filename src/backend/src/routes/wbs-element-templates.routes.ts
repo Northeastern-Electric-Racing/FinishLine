@@ -62,4 +62,6 @@ wbsElementTemplatesRouter.post(
 
 wbsElementTemplatesRouter.get('/project/:projectTemplateId', WbsElementTemplatesController.getSingleProjectTemplate);
 
+wbsElementTemplatesRouter.post('/project/:projectTemplateId/edit', WbsElementTemplatesController.editProjectTemplate);
+
 export default wbsElementTemplatesRouter;

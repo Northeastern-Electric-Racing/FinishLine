@@ -16,11 +16,11 @@ import { useAllProjectTemplates, useDeleteProjectTemplate } from '../../../hooks
 const ProjectTemplateTable: React.FC = () => {
   const currentUser = useCurrentUser();
   const history = useHistory();
-  const { data: projectTemplates, isLoading, isError, error } = useAllProjectTemplates();
+  const { data, isLoading, isError, error } = useAllProjectTemplates();
   const [templateToDelete, setTemplateToDelete] = useState<ProjectTemplate>();
   const { mutateAsync } = useDeleteProjectTemplate();
 
-  if (isLoading || !projectTemplates) {
+  if (isLoading || !data) {
     return <LoadingIndicator />;
   }
 
@@ -28,10 +28,18 @@ const ProjectTemplateTable: React.FC = () => {
     <ErrorPage message={error?.message} />;
   }
 
+  let projectTemplates = data;
+
+  // for God knows what reason, the API returns an object instead of an array when there's only one project template
+  // under certain circumstances
+  if (!Array.isArray(data)) {
+    projectTemplates = [data];
+  }
+
   const projectTemplateRows = projectTemplates.map((template) => (
     <TableRow
       key={template.projectTemplateId}
-      onClick={() => history.push(`${routes.WORK_PACKAGE_TEMPLATE_EDIT}?id=${template.projectTemplateId}`)}
+      onClick={() => history.push(`${routes.PROJECT_TEMPLATE_EDIT}?id=${template.projectTemplateId}`)}
       sx={{ cursor: 'pointer' }}
     >
       <TableCell align="left" sx={{ border: '2px solid black' }}>
@@ -56,8 +64,8 @@ const ProjectTemplateTable: React.FC = () => {
       <AdminToolTable columns={[{ name: 'Name' }, { name: 'Description' }]} rows={projectTemplateRows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         {isAdmin(currentUser.role) && (
-          <NERButton variant="contained" size="small" onClick={() => history.push(routes.WORK_PACKAGE_TEMPLATE_NEW)}>
-            New Work Package Template
+          <NERButton variant="contained" size="small" onClick={() => history.push(routes.PROJECT_TEMPLATE_NEW)}>
+            New Project Template
           </NERButton>
         )}
       </Box>

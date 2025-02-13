@@ -336,7 +336,7 @@ export default class WbsElementTemplatesService {
     }
 
     const projectTemplates = await prisma.project_Template.findMany({
-      where: { wbsElementTemplate: { dateDeleted: null, organizationId: organization.organizationId } },
+      // where: { wbsElementTemplate: { dateDeleted: null, organizationId: organization.organizationId } },
       ...getProjectTemplateQueryArgs(organization.organizationId)
     });
 
@@ -415,7 +415,7 @@ export default class WbsElementTemplatesService {
     }
 
     const projectTemplate = await prisma.project_Template.findUnique({
-      where: { wbsElementTemplateId: projectTemplateId },
+      where: { wbsElementTemplateId: projectTemplateId, wbsElementTemplate: {dateDeleted: null, organizationId: organization.organizationId} },
       ...getProjectTemplateQueryArgs(organization.organizationId)
     });
 
@@ -500,7 +500,7 @@ export default class WbsElementTemplatesService {
 
     await addRawDescriptionBullets(
       descriptionBullets,
-      DescriptionBulletDestination.WORK_PACKAGE_TEMPLATE,
+      DescriptionBulletDestination.PROJECT_TEMPLATE,
       createdProjectTemplate.wbsElementTemplateId,
       organization.organizationId
     );
@@ -508,20 +508,41 @@ export default class WbsElementTemplatesService {
     return projectTemplateTransformer(createdProjectTemplate);
   }
 
+  /**
+   * Edit a project template
+   * @param submitter the editor of the project template
+   * @param projectTemplateId the id of the project template to edit
+   * @param templateName the new name
+   * @param templateNotes the new notes
+   * @param workPackageTemplates the new work package templates
+   * @param organization the organization to edit the project template in
+   * @returns the updated project template
+   */
   static async editProjectTemplate(
     submitter: User,
     projectTemplateId: string,
     templateName: string,
     templateNotes: string,
     workPackageTemplates: WorkPackageTemplateApiInputs[],
-    organization: Organization
+    descriptionBullets: DescriptionBulletPreview[],
+    organization: Organization,
+    projectName?: string
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('edit a project template');
     }
 
+    const foundProjectTemplate = await prisma.project_Template.findUnique({
+      where: { wbsElementTemplateId: projectTemplateId, wbsElementTemplate: {dateDeleted: null, organizationId: organization.organizationId} },
+      ...getProjectTemplateQueryArgs(organization.organizationId)
+    });
+
+    if (!foundProjectTemplate || foundProjectTemplate.wbsElementTemplate.dateDeleted || foundProjectTemplate.wbsElementTemplate.organizationId !== organization.organizationId) {
+      throw new NotFoundException('Project Template', projectTemplateId);
+    }
+
     const existingWorkPackageTemplates = await prisma.work_Package_Template.findMany({
-      where: { projectTemplateId }
+      where: { projectTemplateId, wbsElementTemplate: {dateDeleted: null} }
     });
 
     const existingWorkPackageTemplateIds = existingWorkPackageTemplates.map((template) => template.wbsElementTemplateId);
@@ -574,19 +595,18 @@ export default class WbsElementTemplatesService {
         wbsElementTemplate: {
           update: {
             templateName,
-            templateNotes
-          }
+            templateNotes,
+            wbsElementName: projectName
+          },
         },
         workPackageTemplates: {
           connect: workPackageTemplateIds.map((id) => ({ wbsElementTemplateId: id }))
-        }
+        },
       },
       ...getProjectTemplateQueryArgs(organization.organizationId)
     });
 
-    if (!updatedProjectTemplate) {
-      throw new NotFoundException('Project Template', projectTemplateId);
-    }
+    await editDescriptionBullets(descriptionBullets, organization.organizationId);
 
     return projectTemplateTransformer(updatedProjectTemplate);
   }

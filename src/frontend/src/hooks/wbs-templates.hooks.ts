@@ -8,7 +8,9 @@ import {
   createSingleWorkPackageTemplate,
   getAllProjectTemplates,
   getSingleProjectTemplate,
-  WorkPackageTemplateApiInputs
+  WorkPackageTemplateApiInputs,
+  ProjectTemplateApiInputs,
+  editProjectTemplate
 } from '../apis/wbs-templates.api';
 
 /**
@@ -121,4 +123,20 @@ export const useSingleProjectTemplate = (projectTemplateId: string) => {
     const { data } = await getSingleProjectTemplate(projectTemplateId);
     return data;
   });
+};
+
+export const useEditProjectTemplate = (projectTemplateId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, ProjectTemplateApiInputs>(
+    ['project templates', 'edit'],
+    async (payload: ProjectTemplateApiInputs) => {
+      const { data } = await editProjectTemplate(projectTemplateId, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['project templates']);
+      }
+    }
+  );
 };
