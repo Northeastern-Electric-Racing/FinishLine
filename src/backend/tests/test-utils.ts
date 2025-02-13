@@ -2,6 +2,7 @@
 import {
   Club_Accounts,
   Organization,
+  Part,
   Project,
   Schedule_Settings,
   Task_Priority,
@@ -670,4 +671,52 @@ export const createSlackMessageEvent = (
       }
     ]
   };
+};
+
+export const CreatePartTag = async (part: Part[], organizationId: string, name: string, colorHexCode: string) => {
+  return await prisma.partTag.create({
+    data: {
+      name,
+      organizationId,
+      colorHexCode,
+      parts: {
+        connect: part.map((p) => ({ partId: p.partId }))
+      },
+      dateCreated: new Date(),
+    }
+  });
+};
+
+export const CreateCommonMistake = async (
+  title: string,
+  description: string,
+  starred: boolean,
+  user: User,
+  organizationId: string
+) => {
+  return await prisma.partReviewCommonMistake.create({
+    data: {
+      title,
+      description,
+      starred,
+      dateCreated: new Date(),
+      organizationId,
+      userCreated: {
+        connect: { userId: user.userId }
+      },
+    }
+  });
+};
+
+export const CreatePartReviewFAQ = async (question: string, answer: string, organizationId: string, user: User) => {
+  return await prisma.frequentlyAskedQuestion.create({
+    data: {
+      question,
+      answer,
+      partReviewFaqOrgId: organizationId,
+      userCreated: {
+        connect: { userId: user.userId }
+      },
+    }
+  });
 };
