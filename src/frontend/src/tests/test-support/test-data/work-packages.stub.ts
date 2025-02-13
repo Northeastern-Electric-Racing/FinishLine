@@ -77,7 +77,7 @@ export const exampleDesignWorkPackage: WorkPackage = {
   changes: [
     {
       changeId: '2',
-      changeRequestId: '1',
+      changeRequestId: 'some id',
       changeRequestIdentifier: 1,
       wbsNum: exampleWbsWorkPackage3,
       implementer: exampleAppAdminUser,
@@ -87,8 +87,8 @@ export const exampleDesignWorkPackage: WorkPackage = {
 
     {
       changeId: '13',
-      changeRequestId: '54',
-      changeRequestIdentifier: 1,
+      changeRequestId: 'another id',
+      changeRequestIdentifier: 54,
       wbsNum: exampleWbsWorkPackage1,
       implementer: exampleLeadUser,
       detail: 'Added "jet fuel burns hot" bullet.',
