@@ -58,7 +58,9 @@ export const GanttWorkPackageCreateModal = ({ workPackage, handleClose, open }: 
           workPackage.startDate,
           workPackage.endDate
         )}`}</Typography>
-       <Typography>Are you sure you want to create this work package with this timeline? Changing this will require a change request.</Typography>
+        <Typography>
+          Are you sure you want to create this work package with this timeline? Changing this will require a change request.
+        </Typography>
       </Box>
     </NERDraggableFormModal>
   );
