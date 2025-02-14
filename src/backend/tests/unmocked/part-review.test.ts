@@ -1,4 +1,3 @@
-import { NotFoundException } from '../../src/utils/errors.utils';
 import OrganizationsService from '../../src/services/organizations.services';
 import { createTestOrganization, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
@@ -89,15 +88,16 @@ describe('Get All Part Tags', () => {
       }
     });
 
-  const partTags = await OrganizationsService.getAllPartTags(organizationID);  
-  expect(partTags.length).toEqual(2);
-  expect(partTags).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({ partTagId: '123', name: 'Screw', colorHexCode: '#191010' }),
-      expect.objectContaining({ partTagId: '456', name: 'Bolt', colorHexCode: '#093121' })
-    ])
-  );
+    const partTags = await OrganizationsService.getAllPartTags(organizationID);
+    expect(partTags.length).toEqual(2);
+    expect(partTags).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ partTagId: '123', name: 'Screw', colorHexCode: '#191010' }),
+        expect.objectContaining({ partTagId: '456', name: 'Bolt', colorHexCode: '#093121' })
+      ])
+    );
 
-  expect(partTags.some((tag) => tag.partTagId === '345')).toBeFalsy();
-  expect(partTags.some((tag) => tag.partTagId === '973')).toBeFalsy();
-})});
+    expect(partTags.some((tag) => tag.partTagId === '345')).toBeFalsy();
+    expect(partTags.some((tag) => tag.partTagId === '973')).toBeFalsy();
+  });
+});
