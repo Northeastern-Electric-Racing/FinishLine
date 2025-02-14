@@ -415,16 +415,9 @@ export default class OrganizationsService {
    */
   static async getAllPartTags(organizationId: string) {
     return prisma.partTag.findMany({
-      where: { 
+      where: {
         organizationId,
-        dateDeleted: null,
-       },
-      select: {
-        parts: {
-          select: {
-            partId: true,
-          }
-        }
+        dateDeleted: null
       }
     });
   }

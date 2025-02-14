@@ -51,6 +51,7 @@ import { seedGraph } from './seed-data/statistics.seed';
 import { graphCollectionTransformer } from '../transformers/statistics-graphCollection.transformer';
 import AnnouncementService from '../services/announcement.service';
 import OnboardingServices from '../services/onboarding.services';
+import { getPartTags } from './seed-data/parts.seed';
 
 const prisma = new PrismaClient();
 
@@ -2131,6 +2132,16 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     false
   );
+
+  // Add part tags
+  await prisma.partTag
+    .createMany({
+      data: getPartTags(organizationId),
+      skipDuplicates: true
+    })
+    .catch((error) => {
+      console.error('Error seeding PartTags:', error);
+    });
 };
 
 performSeed()
