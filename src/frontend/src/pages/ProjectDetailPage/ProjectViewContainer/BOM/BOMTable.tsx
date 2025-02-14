@@ -89,7 +89,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
   return (
     <Box
       sx={{
-        height: 'calc(100vh - 180px)',
+        height: 'calc(100vh - 200px)',
         width: '100%',
         '& .super-app-theme--header': {
           backgroundColor: '#ef4345'
@@ -144,7 +144,12 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
               const { assemblyId } = materials[rowIndex];
               handleDrop(event, assemblyId);
             },
-            onDragOver: (event: React.DragEvent) => handleDragOver(event)
+            onDragOver: (event: React.DragEvent) => handleDragOver(event),
+            onDragEnd: (event: React.DragEvent) => {
+              if (draggedMaterial != null) {
+                handleDrop(event);
+              }
+            }
           }
         }}
       />
