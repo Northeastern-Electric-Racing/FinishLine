@@ -267,6 +267,7 @@ export const IsProjectPreviewsEqual = (x: ProjectPreview[], y: ProjectPreview[])
 
   for (let i = 0; i < x.length; i++) {
     if (wbsPipe(x[i].wbsNum) !== wbsPipe(y[i].wbsNum)) return false;
+    if (x[i].workPackages.length < y[i].workPackages.length) return false;
   }
 
   return true;

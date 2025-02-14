@@ -24,7 +24,7 @@ export const getWorkPackageQueryArgs = (organizationId: string) =>
           manager: getUserQueryArgs(organizationId),
           changes: {
             where: { changeRequest: { dateDeleted: null } },
-            include: { implementer: getUserQueryArgs(organizationId) },
+            include: { implementer: getUserQueryArgs(organizationId), changeRequest: true },
             orderBy: { dateImplemented: 'asc' }
           },
           blocking: { where: { wbsElement: { dateDeleted: null } }, include: { wbsElement: true } },
