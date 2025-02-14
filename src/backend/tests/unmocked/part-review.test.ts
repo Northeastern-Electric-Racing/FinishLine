@@ -89,10 +89,15 @@ describe('Get All Part Tags', () => {
       }
     });
 
-    const partTags = await OrganizationsService.getAllPartTags(organizationID);
-    expect(partTags.length).toEqual(2);
-    expect(partTags.every((tag) => tag.hasOwnProperty('parts'))).toBeTruthy();
-    expect(partTags.some((tag) => tag.parts.some((part) => part.partId === '973'))).toBeFalsy();
-    expect(partTags.some((tag) => tag.parts.some((part) => part.partId === '345'))).toBeFalsy();
-  });
-});
+  const partTags = await OrganizationsService.getAllPartTags(organizationID);  
+  expect(partTags.length).toEqual(2);
+  expect(partTags).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ partTagId: '123', name: 'Screw', colorHexCode: '#191010' }),
+      expect.objectContaining({ partTagId: '456', name: 'Bolt', colorHexCode: '#093121' })
+    ])
+  );
+
+  expect(partTags.some((tag) => tag.partTagId === '345')).toBeFalsy();
+  expect(partTags.some((tag) => tag.partTagId === '973')).toBeFalsy();
+})});
