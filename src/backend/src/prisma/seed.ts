@@ -16,7 +16,8 @@ import {
   Scope_CR_Why_Type,
   Task_Priority,
   Task_Status,
-  Team
+  Team,
+  PartTag
 } from '@prisma/client';
 import { createUser, dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
@@ -51,7 +52,7 @@ import { seedGraph } from './seed-data/statistics.seed';
 import { graphCollectionTransformer } from '../transformers/statistics-graphCollection.transformer';
 import AnnouncementService from '../services/announcement.service';
 import OnboardingServices from '../services/onboarding.services';
-import { getPartTags } from './seed-data/parts.seed';
+import { dbSeedAllPartTags } from './seed-data/parts.seed';
 
 const prisma = new PrismaClient();
 
@@ -2134,14 +2135,9 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   // Add part tags
-  await prisma.partTag
-    .createMany({
-      data: getPartTags(organizationId),
-      skipDuplicates: true
-    })
-    .catch((error) => {
-      console.error('Error seeding PartTags:', error);
-    });
+  const mechanicalPartTag: PartTag = await prisma.partTag.create(dbSeedAllPartTags.MechanicalPartTag(organizationId));
+  const electricalPartTag: PartTag = await prisma.partTag.create(dbSeedAllPartTags.ElectricalPartTag(organizationId));
+  const structuralPartTag: PartTag = await prisma.partTag.create(dbSeedAllPartTags.StructuralPartTag(organizationId));
 };
 
 performSeed()
