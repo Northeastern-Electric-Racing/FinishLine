@@ -104,7 +104,7 @@ export const accountCodeTransformer = (accountCode: Prisma.Account_CodeGetPayloa
 export const vendorTransformer = (vendor: Prisma.VendorGetPayload<VendorQueryArgs>): Vendor => {
   return {
     vendorId: vendor.vendorId,
-    dateCreated: vendor.dateCreated,git a
+    dateCreated: vendor.dateCreated,
     dateDeleted: vendor.dateDeleted ?? undefined,
     name: vendor.name,
     username: vendor.username,
