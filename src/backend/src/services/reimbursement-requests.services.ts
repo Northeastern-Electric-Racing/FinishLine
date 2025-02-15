@@ -63,6 +63,7 @@ import { userHasPermission } from '../utils/users.utils';
 import { getReimbursementRequestQueryArgs } from '../prisma-query-args/reimbursement-requests.query-args';
 import { getReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
 import { getReimbursementStatusQueryArgs } from '../prisma-query-args/reimbursement-statuses.query-args';
+import { getVendorQueryArgs } from '../prisma-query-args/vendor.query-args';
 
 export default class ReimbursementRequestService {
   /**
@@ -118,7 +119,8 @@ export default class ReimbursementRequestService {
    */
   static async getAllVendors(organization: Organization): Promise<Vendor[]> {
     const vendors = await prisma.vendor.findMany({
-      where: { dateDeleted: null, organizationId: organization.organizationId }
+      where: { dateDeleted: null, organizationId: organization.organizationId },
+      ...getVendorQueryArgs(organization.organizationId)
     });
     return vendors.map(vendorTransformer);
   }
@@ -1121,7 +1123,8 @@ export default class ReimbursementRequestService {
 
     const vendor = await prisma.vendor.update({
       where: { vendorId },
-      data: { name }
+      data: { name },
+      ...getVendorQueryArgs(organization.organizationId)
     });
 
     return vendorTransformer(vendor);
@@ -1142,7 +1145,8 @@ export default class ReimbursementRequestService {
 
     const deletedVendor = await prisma.vendor.update({
       where: { vendorId: vendor.vendorId },
-      data: { dateDeleted: new Date() }
+      data: { dateDeleted: new Date() },
+      ...getVendorQueryArgs(organization.organizationId)
     });
 
     return vendorTransformer(deletedVendor);
@@ -1156,7 +1160,8 @@ export default class ReimbursementRequestService {
    */
   static async getSingleVendor(vendorId: string, organization: Organization): Promise<Vendor> {
     const vendor = await prisma.vendor.findUnique({
-      where: { vendorId }
+      where: { vendorId },
+      ...getVendorQueryArgs(organization.organizationId)
     });
 
     if (!vendor) throw new NotFoundException('Vendor', vendorId);

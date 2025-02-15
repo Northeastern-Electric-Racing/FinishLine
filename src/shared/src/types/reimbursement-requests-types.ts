@@ -86,6 +86,12 @@ export interface Vendor {
   dateCreated: Date;
   dateDeleted?: Date;
   name: string;
+  username: string;
+  passwordHash: string;
+  discountCode?: string;
+  twoFactorContact?: User;
+  notes?: string;
+  addedBy?: User;
 }
 
 export interface AccountCode {
