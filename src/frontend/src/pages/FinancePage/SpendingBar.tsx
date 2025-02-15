@@ -12,88 +12,43 @@ interface SpendingBarProps {
 }
 
 const SpendingBar: React.FC<SpendingBarProps> = ({ items }) => {
-  console.log('Rendering');
-
   const containerRef = useRef<HTMLDivElement>(null);
   const hiddenRef = useRef<HTMLDivElement>(null);
-  const [minWidth, setMinWidth] = useState<number>(0);
+  const [minItemWidths, setMinItemWidths] = useState<number[]>([]);
   const [containerWidth, setContainerWidth] = useState<number>(0);
+  const theme = useTheme();
+  const enableDebug = false;
 
-  // Runs on mount and when `items` changes
+  // This will run after setting `hiddenRef`
   useEffect(() => {
-    setMinWidth(hiddenRef.current!.offsetWidth);
+    setMinItemWidths(Array.from(hiddenRef.current!.children).map((child) => child.getBoundingClientRect().width));
   }, [items]);
 
-  // Runs only when the component mounts
   useEffect(() => {
     const updateWidth = () => {
       setContainerWidth(containerRef.current!.offsetWidth);
     };
-
-    updateWidth(); // Initial measurement
-    window.addEventListener('resize', updateWidth); // Handle resizes
-
-    // Cleanup function runs before unmounting
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
     return () => window.removeEventListener('resize', updateWidth);
   }, []);
 
   const sum = (nums: number[]) => nums.reduce((sum, num) => num + sum, 0);
-  const normalize = (nums: number[]) => nums.map((num) => num / sum(nums));
 
-  // Normalizes `nums`, but ensures every element is at least `minPercentages`
-  const normalizeWithMin = (nums: number[], minPercentage: number) => {
-    const percentages = normalize(nums);
-    const adjustedPercentages = percentages.map((percentage) => (percentage < minPercentage ? minPercentage : percentage));
-    const excess = sum(adjustedPercentages) - 1;
-    if (excess > 0) {
-      const indicesToRescale = percentages
-        .map((percentage, index) => (percentage >= minPercentage ? index : -1))
-        .filter((index) => index !== -1);
-
-      const rescaleTotal = sum(indicesToRescale.map((index) => percentages[index]));
-      if (rescaleTotal > 0) {
-        indicesToRescale.forEach((i) => {
-          adjustedPercentages[i] -= (percentages[i] / rescaleTotal) * excess;
-        });
-      }
-    }
-    console.assert(sum(adjustedPercentages) === 1, sum(adjustedPercentages));
-    return adjustedPercentages;
-  };
-
-  // Set up variables to compute `minItemWidthPercentages`
-  const canvas = document.createElement('canvas');
-  const context = canvas.getContext('2d')!;
-  context.font = '16px Arial'; // Font and size can be arbitrary since we normalize
-
-  const minItemWidthPercentages = normalize(
-    items.map((item) => {
-      const textParts = [...item.name.split(' '), `$${item.value}`];
-      const maxWidth = Math.max(...textParts.map((textPart) => context.measureText(textPart).width));
-      return maxWidth;
-    })
-  );
-
-  const itemWidths = items.map((item, index) => {
-    const minItemWidthPercentage = minItemWidthPercentages[index];
-    const minItemWidth = minItemWidthPercentage * minWidth;
-
-    const valueSum = sum(items.map((item) => item.value));
-    const remainingSpace = containerWidth - minWidth;
-    const extraWidth = (item.value / valueSum) * remainingSpace;
-
-    return minItemWidth + extraWidth;
-  });
-  // Text is sometimes illegible when components take up less than 10% of the horizontal space
-  // This is because
-  const minItemWidthPercentage = 0.1;
-  const itemWidthPercentages = normalizeWithMin(itemWidths, minItemWidthPercentage);
-
-  const HiddenDiv = () => {
+  // `Hidden` will render spending items using the minimum possible space (while still adding padding)
+  // and then our useEffect will measure each spending item's width.
+  // This let's us know the minimum space each spending item needs.
+  const Hidden = () => {
     return (
-      <Box ref={hiddenRef} position="absolute" visibility="hidden">
+      <Box
+        ref={hiddenRef}
+        display="flex"
+        gap={0.35}
+        visibility={enableDebug ? 'visible' : 'hidden'}
+        position={enableDebug ? 'relative' : 'absolute'}
+      >
         {items.map((item) => (
-          <Box key={item.name} display="inline-block" p={2}>
+          <Box key={item.name} p={2} bgcolor={theme.palette.grey[600]}>
             {item.name}
           </Box>
         ))}
@@ -101,47 +56,78 @@ const SpendingBar: React.FC<SpendingBarProps> = ({ items }) => {
     );
   };
 
-  // const DebugDiv = () => {
-  //   return (
-  //     <div>
-  //       minWidth: {minWidth}
-  //       <br />
-  //       containerWidth: {containerWidth}
-  //       <br />
-  //       minItemWidthPercentages: {minItemWidthPercentages.map((x) => x.toFixed(2)).join(' | ')}
-  //       <br />
-  //       itemWidthPercentages: {itemWidthPercentages.map((itemWidth) => itemWidth.toFixed(2)).join(' | ')}
-  //     </div>
-  //   );
-  // };
+  const Debug = () => {
+    return (
+      <Box visibility={enableDebug ? 'visible' : 'hidden'} position={enableDebug ? 'relative' : 'absolute'}>
+        minWidth: {sum(minItemWidths).toFixed(2)}
+        <br />
+        containerWidth: {containerWidth}
+        <br />
+        minItemWidths: {minItemWidths.map((width) => width.toFixed(2)).join(' | ')}
+        <br />
+      </Box>
+    );
+  };
 
-  const theme = useTheme();
+  if (containerRef.current && hiddenRef.current) {
+    if (sum(minItemWidths) > containerWidth) {
+      return (
+        <Box>
+          <Hidden />
+          <Debug />
+          <Box ref={containerRef}>Cannot fit items in spending bar</Box>
+        </Box>
+      );
+    }
 
+    // Allocate remaining space in the container to the element proportional to their values
+    const valueSum = sum(items.map((item) => item.value));
+    const minWidth = sum(minItemWidths);
+    const remainingSpace = containerWidth - minWidth;
+    const itemWidths = items.map((item, index) => {
+      const minItemWidth = minItemWidths[index];
+      const extraWidth = (item.value / valueSum) * remainingSpace;
+      return minItemWidth + extraWidth;
+    });
+    // We want to make sure that the sum of the widths of the items equals the width of the container
+    console.assert(
+      sum(itemWidths) === containerRef.current?.offsetWidth,
+      `sum(itemWidths) [${sum(itemWidths)}] !== containerRef.current.offset [${containerRef.current.offsetWidth}]`
+    );
+
+    return (
+      <Box>
+        <Hidden />
+        <Debug />
+        <Box ref={containerRef} width="100%" display="flex" gap={0.35}>
+          {items.map((item, index) => (
+            <Box
+              key={item.name}
+              bgcolor={item.color ? item.color : item.value === 0 ? theme.palette.grey[600] : theme.palette.grey[800]}
+              borderRadius={index === 0 ? '8px 0 0 8px' : index === items.length - 1 ? '0 8px 8px 0' : '0'}
+              boxShadow={1}
+              justifyContent="center"
+              alignContent="center"
+              width={itemWidths[index]}
+              p={2}
+              textAlign="center"
+            >
+              {item.name}
+              <br />${item.value}
+            </Box>
+          ))}
+        </Box>
+      </Box>
+    );
+  }
+
+  // When either `containerRef` or `hiddenRef` is null (i.e. on the first render),
+  // return this component so that the necessary fields get set
   return (
     <Box>
-      <HiddenDiv />
-      {/* <DebugDiv /> */}
-      <Box ref={containerRef} width="100%" display="flex" gap={0.35}>
-        {items.map((item, index) => (
-          <Box
-            key={item.name}
-            id={`spending-item-${item.name}`}
-            sx={{
-              bgcolor: item.color ? item.color : item.value === 0 ? theme.palette.grey[600] : theme.palette.grey[800],
-              boxShadow: 1,
-              borderRadius: index === 0 ? '8px 0 0 8px' : index === items.length - 1 ? '0 8px 8px 0' : '0'
-            }}
-            justifyContent="center"
-            alignContent="center"
-            width={itemWidthPercentages[index]}
-            p={2}
-            textAlign="center"
-          >
-            {item.name}
-            <br />${item.value}
-          </Box>
-        ))}
-      </Box>
+      <Hidden />
+      <Debug />
+      <Box ref={containerRef} width="100%" display="flex" gap={0.35} />
     </Box>
   );
 };
