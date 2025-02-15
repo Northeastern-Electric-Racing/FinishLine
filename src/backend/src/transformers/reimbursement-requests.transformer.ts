@@ -28,6 +28,7 @@ import {
   ReimbursementProductReasonQueryArgs
 } from '../prisma-query-args/reimbursement-products.query-args';
 import { ReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
+import { VendorQueryArgs } from '../prisma-query-args/vendor.query-args';
 
 export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<ReceiptQueryArgs>): Receipt => {
   return {
@@ -100,12 +101,18 @@ export const accountCodeTransformer = (accountCode: Prisma.Account_CodeGetPayloa
   };
 };
 
-export const vendorTransformer = (vendor: Prisma.VendorGetPayload<null>): Vendor => {
+export const vendorTransformer = (vendor: Prisma.VendorGetPayload<VendorQueryArgs>): Vendor => {
   return {
     vendorId: vendor.vendorId,
-    dateCreated: vendor.dateCreated,
+    dateCreated: vendor.dateCreated,git a
     dateDeleted: vendor.dateDeleted ?? undefined,
-    name: vendor.name
+    name: vendor.name,
+    username: vendor.username,
+    passwordHash: vendor.passwordHash,
+    discountCode: vendor.discountCode ?? undefined,
+    twoFactorContact: vendor.twoFactorContact ? userTransformer(vendor.twoFactorContact) : undefined,
+    notes: vendor.notes ?? undefined,
+    addedBy: vendor.addedBy ? userTransformer(vendor.addedBy) : undefined
   };
 };
 
