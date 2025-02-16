@@ -138,21 +138,18 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
               handleDragStart(materialId);
             },
             onDrop: (event: React.DragEvent) => {
+              if (event.currentTarget.className.includes('super-app-theme--material')) return;
               const rowIndex = parseInt(event.currentTarget.getAttribute('data-rowindex') || '0');
-              const tableRect = event.currentTarget.getBoundingClientRect();
-              const dropY = event.clientY - tableRect.top;
-              const assemblies = rows.concat(materialsWithAssemblies.filter(isAssemblyOpen));
-              const notInAnyAssmbliesRows = rows.filter((element) => element.assemblyId === 'assembly-misc');
-              const rowHeight = tableRect.height / assemblies.length;
-              const dropBound = rowHeight * Math.max(1, notInAnyAssmbliesRows.length);
-              if (dropY < dropBound) {
-                handleDrop(event);
-              } else {
-                const { assemblyId } = assemblies[rowIndex];
-                handleDrop(event, assemblyId);
-              }
+              const materials = rows.concat(materialsWithAssemblies.filter(isAssemblyOpen));
+              const { assemblyId } = materials[rowIndex];
+              handleDrop(event, assemblyId);
             },
-            onDragOver: (event: React.DragEvent) => handleDragOver(event)
+            onDragOver: (event: React.DragEvent) => handleDragOver(event),
+            onDragEnd: (event: React.DragEvent) => {
+              if (draggedMaterial != null && event.clientY < window.innerHeight * 0.2) {
+                handleDrop(event);
+              }
+            }
           }
         }}
       />
