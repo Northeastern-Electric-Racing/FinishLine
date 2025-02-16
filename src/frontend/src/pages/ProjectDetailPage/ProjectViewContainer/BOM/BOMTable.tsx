@@ -146,7 +146,11 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
             },
             onDragOver: (event: React.DragEvent) => handleDragOver(event),
             onDragEnd: (event: React.DragEvent) => {
-              if (draggedMaterial != null && event.clientY < window.innerHeight * 0.2) {
+              if (!event.currentTarget.parentElement) {
+                return;
+              }
+              const tableRect = event.currentTarget.parentElement.getBoundingClientRect();
+              if (event.clientY < tableRect.top) {
                 handleDrop(event);
               }
             }
