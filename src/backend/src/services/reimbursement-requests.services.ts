@@ -1015,12 +1015,10 @@ export default class ReimbursementRequestService {
    *
    * @param reimbursementRequestId the id of the reimbursement request to deny
    * @param submitter the user who is denying the reimbursement request
-   * @param organizationId the organization the user is currently in
+   * @param organization the organization the user is currently in
    * @returns the created reimbursment status
    */
   static async denyReimbursementRequest(reimbursementRequestId: string, submitter: User, organization: Organization) {
-    await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organization.organizationId);
-
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
       include: {
@@ -1040,6 +1038,10 @@ export default class ReimbursementRequestService {
 
     if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.REIMBURSED)) {
       throw new HttpException(400, 'This reimbursement request has already been reimbursed');
+    }
+
+    if (submitter.userId !== reimbursementRequest.recipientId) {
+      await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organization.organizationId);
     }
 
     const reimbursementStatus = await prisma.reimbursement_Status.create({

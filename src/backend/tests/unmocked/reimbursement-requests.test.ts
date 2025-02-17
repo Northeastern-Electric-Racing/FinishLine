@@ -1,12 +1,25 @@
-import { alfred } from '../test-data/users.test-data';
+import { alfred, batmanAppAdmin, batmanSecureSettings, batmanSettings, financeMember } from '../test-data/users.test-data';
 import ReimbursementRequestService from '../../src/services/reimbursement-requests.services';
 import { AccessDeniedException, HttpException } from '../../src/utils/errors.utils';
 import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { assert } from 'console';
-import { addDaysToDate, ClubAccount, ReimbursementRequest } from 'shared';
-import { Account_Code, Organization, Vendor } from '@prisma/client';
-import { UserWithSecureSettings } from '../../src/utils/auth.utils';
+import { addDaysToDate, ClubAccount, ReimbursementRequest, ReimbursementStatusType, RoleEnum } from 'shared';
+import {
+  Account_Code,
+  Organization,
+  Reimbursement_Status_Type,
+  Role,
+  Role_Type,
+  Theme,
+  User,
+  User_Secure_Settings,
+  User_Settings,
+  Vendor
+} from '@prisma/client';
+import { UserWithSecureSettings, UserWithSettings } from '../../src/utils/auth.utils';
+import { createUser } from '../../src/prisma/seed-data/users.seed';
+import { updateEnumMember } from 'typescript';
 
 describe('Reimbursement Requests', () => {
   let org: Organization;
@@ -227,6 +240,130 @@ describe('Reimbursement Requests', () => {
       );
 
       expect(updatedRR.dateDelivered).toEqual(dateToSetAsDelivered);
+    });
+  });
+
+  describe('Denying reimbursement request', () => {
+    test('Valid deny reimbursement request', async () => {
+      const rr = await ReimbursementRequestService.createReimbursementRequest(
+        createdUser,
+        reimbursementRequest.vendor.vendorId,
+        reimbursementRequest.account,
+        [],
+        [
+          {
+            name: 'GLUE',
+            reason: {
+              carNumber: 0,
+              projectNumber: 0,
+              workPackageNumber: 0
+            },
+            cost: 200000
+          }
+        ],
+        reimbursementRequest.accountCode.accountCodeId,
+        reimbursementRequest.totalCost,
+        org
+      );
+      const status = await ReimbursementRequestService.denyReimbursementRequest(rr.reimbursementRequestId, createdUser, org);
+      expect(status.type).toEqual(ReimbursementStatusType.DENIED);
+    });
+    test('Creator of reimbursement request can deny their own', async () => {
+      const member: User = await prisma.user.create({
+        data: {
+          firstName: 'Johnny',
+          lastName: 'Bravo',
+          googleAuthId: '25',
+          email: 'jbravo@gmail.com',
+          emailId: 'jbravo'
+        }
+      });
+
+      const memberSettings: User_Settings = await prisma.user_Settings.create({
+        data: {
+          user: {
+            connect: {
+              userId: member.userId
+            }
+          },
+          defaultTheme: Theme.DARK,
+          slackId: 'slackID'
+        }
+      });
+
+      const memberSecureSettings: User_Secure_Settings = await prisma.user_Secure_Settings.create({
+        data: {
+          userSecureSettingsId: 'member',
+          user: {
+            connect: {
+              userId: member.userId
+            }
+          },
+          nuid: '0012345632323',
+          phoneNumber: '23232323',
+          street: '123 Gotham St.',
+          city: 'Gotham',
+          state: 'NY',
+          zipcode: '12345'
+        }
+      });
+
+      const memberRole: Role = await prisma.role.create({
+        data: {
+          user: {
+            connect: {
+              userId: member.userId
+            }
+          },
+          roleType: Role_Type.MEMBER,
+          organization: {
+            connect: {
+              organizationId: org.organizationId
+            }
+          }
+        }
+      });
+
+      const recipient = await prisma.user.findUnique({
+        where: { userId: member.userId },
+        include: {
+          userSettings: true,
+          userSecureSettings: true,
+          roles: true
+        }
+      });
+
+      if (!recipient) {
+        throw new Error('No recipient found');
+      }
+
+      const reimbReq = await ReimbursementRequestService.createReimbursementRequest(
+        recipient,
+        createdVendor.vendorId,
+        ClubAccount.CASH,
+        [],
+        [
+          {
+            name: 'GLUE',
+            reason: {
+              carNumber: 0,
+              projectNumber: 0,
+              workPackageNumber: 0
+            },
+            cost: 200000
+          }
+        ],
+        createdAccountCode.accountCodeId,
+        100,
+        org
+      );
+
+      const status = await ReimbursementRequestService.denyReimbursementRequest(
+        reimbReq.reimbursementRequestId,
+        recipient,
+        org
+      );
+      expect(status.type).toEqual(ReimbursementStatusType.DENIED);
     });
   });
 });
