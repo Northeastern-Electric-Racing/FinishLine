@@ -1,25 +1,12 @@
-import { alfred, batmanAppAdmin, batmanSecureSettings, batmanSettings, financeMember } from '../test-data/users.test-data';
+import { alfred } from '../test-data/users.test-data';
 import ReimbursementRequestService from '../../src/services/reimbursement-requests.services';
 import { AccessDeniedException, HttpException } from '../../src/utils/errors.utils';
 import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { assert } from 'console';
-import { addDaysToDate, ClubAccount, ReimbursementRequest, ReimbursementStatusType, RoleEnum } from 'shared';
-import {
-  Account_Code,
-  Organization,
-  Reimbursement_Status_Type,
-  Role,
-  Role_Type,
-  Theme,
-  User,
-  User_Secure_Settings,
-  User_Settings,
-  Vendor
-} from '@prisma/client';
-import { UserWithSecureSettings, UserWithSettings } from '../../src/utils/auth.utils';
-import { createUser } from '../../src/prisma/seed-data/users.seed';
-import { updateEnumMember } from 'typescript';
+import { addDaysToDate, ClubAccount, ReimbursementRequest, ReimbursementStatusType } from 'shared';
+import { Account_Code, Organization, Role_Type, Theme, User, Vendor } from '@prisma/client';
+import { UserWithSecureSettings } from '../../src/utils/auth.utils';
 
 describe('Reimbursement Requests', () => {
   let org: Organization;
@@ -279,7 +266,7 @@ describe('Reimbursement Requests', () => {
         }
       });
 
-      const memberSettings: User_Settings = await prisma.user_Settings.create({
+      await prisma.user_Settings.create({
         data: {
           user: {
             connect: {
@@ -291,7 +278,7 @@ describe('Reimbursement Requests', () => {
         }
       });
 
-      const memberSecureSettings: User_Secure_Settings = await prisma.user_Secure_Settings.create({
+      await prisma.user_Secure_Settings.create({
         data: {
           userSecureSettingsId: 'member',
           user: {
@@ -308,7 +295,7 @@ describe('Reimbursement Requests', () => {
         }
       });
 
-      const memberRole: Role = await prisma.role.create({
+      await prisma.role.create({
         data: {
           user: {
             connect: {
