@@ -51,6 +51,7 @@ import { seedGraph } from './seed-data/statistics.seed';
 import { graphCollectionTransformer } from '../transformers/statistics-graphCollection.transformer';
 import AnnouncementService from '../services/announcement.service';
 import OnboardingServices from '../services/onboarding.services';
+import { CreatePartTag, CreateCommonMistake, CreatePartReviewFAQ } from '../../tests/test-utils';
 
 const prisma = new PrismaClient();
 
@@ -2131,6 +2132,18 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     false
   );
+
+  await CreatePartTag([], organizationId, 'This is a part tag', '#202025');
+
+  await CreatePartTag([], organizationId, 'This is a part tag pt 2', '#142099');
+
+  await CreateCommonMistake('Stubbing Toes in the Bay', 'This is a common mistake', false, batman, organizationId);
+
+  await CreateCommonMistake('Not wearing PPE', 'This is another common mistake', true, superman, organizationId);
+
+  await CreatePartReviewFAQ('What is a part review?', 'This is a part review faq', organizationId, batman);
+
+  await CreatePartReviewFAQ('What is a part review?', 'This is another part review faq', organizationId, superman);
 };
 
 performSeed()

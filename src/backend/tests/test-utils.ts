@@ -677,12 +677,14 @@ export const CreatePartTag = async (part: Part[], organizationId: string, name: 
   return await prisma.partTag.create({
     data: {
       name,
-      organizationId,
+      organization: {
+        connect: { organizationId }
+      },
       colorHexCode,
       parts: {
         connect: part.map((p) => ({ partId: p.partId }))
       },
-      dateCreated: new Date(),
+      dateCreated: new Date()
     }
   });
 };
@@ -700,10 +702,12 @@ export const CreateCommonMistake = async (
       description,
       starred,
       dateCreated: new Date(),
-      organizationId,
+      organization: {
+        connect: { organizationId }
+      },
       userCreated: {
         connect: { userId: user.userId }
-      },
+      }
     }
   });
 };
@@ -713,10 +717,12 @@ export const CreatePartReviewFAQ = async (question: string, answer: string, orga
     data: {
       question,
       answer,
-      partReviewFaqOrgId: organizationId,
+      partReviewFaqOrg: {
+        connect: { organizationId }
+      },
       userCreated: {
         connect: { userId: user.userId }
-      },
+      }
     }
   });
 };
