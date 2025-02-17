@@ -210,20 +210,22 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           </Box>
         }
       >
-        <ProjectTemplateSection
-          selectedProjectTemplate={selectedProjectTemplate}
-          setSelectedProjectTemplate={(template) => {
-            setValue('name', template?.projectName || '');
-            setValue('budget', template?.budget || 0);
-            setValue('summary', template?.summary || '');
-            setValue('descriptionBullets', template?.descriptionBullets || []);
-            setValue(
-              'teamIds',
-              (template?.teams || []).map((t) => t.teamId)
-            );
-            setSelectedProjectTemplate(template);
-          }}
-        />
+        {!project && (
+          <ProjectTemplateSection
+            selectedProjectTemplate={selectedProjectTemplate}
+            setSelectedProjectTemplate={(template) => {
+              setValue('name', template?.projectName || '');
+              setValue('budget', template?.budget || 0);
+              setValue('summary', template?.summary || '');
+              setValue('descriptionBullets', template?.descriptionBullets || []);
+              setValue(
+                'teamIds',
+                (template?.teams || []).map((t) => t.teamId)
+              );
+              setSelectedProjectTemplate(template);
+            }}
+          />
+        )}
         <ProjectFormDetails
           users={users}
           control={control}
