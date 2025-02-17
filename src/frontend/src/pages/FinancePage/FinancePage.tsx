@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useState } from 'react';
-import { Box, Grid, ListItemIcon, Menu, MenuItem } from '@mui/material';
+import { Box, Grid, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { NERButton } from '../../components/NERButton';
 import { useCurrentUser } from '../../hooks/users.hooks';
@@ -220,7 +220,16 @@ const FinancePage = () => {
       >
         Open Side Page
       </NERButton>
-      <SidePage showPage={showSidePage} handleClose={closeSidePage} Title={sidePageTitle} />
+      <SidePage
+        showPage={showSidePage}
+        handleClose={closeSidePage}
+        title={sidePageTitle}
+        component={
+          <Typography variant="body1" sx={{ color: 'white' }}>
+            This is some text inside the side page.
+          </Typography>
+        }
+      />
     </PageLayout>
   );
 };
