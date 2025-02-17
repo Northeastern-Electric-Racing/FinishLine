@@ -14,7 +14,8 @@ import {
   getSingleWorkPackage,
   slackUpcomingDeadlines,
   getManyWorkPackages,
-  WorkPackageApiInputs
+  WorkPackageCreateArgs,
+  WorkPackageEditArgs
 } from '../apis/work-packages.api';
 
 /**
@@ -45,11 +46,18 @@ export const useSingleWorkPackage = (wbsNum: WbsNumber) => {
  * @param wpPayload Payload containing all information needed to create a work package.
  */
 export const useCreateSingleWorkPackage = () => {
-  return useMutation<{ message: string }, Error, WorkPackageApiInputs>(
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, WorkPackageCreateArgs>(
     ['work packages', 'create'],
-    async (wpPayload: WorkPackageApiInputs) => {
+    async (wpPayload: WorkPackageCreateArgs) => {
       const { data } = await createSingleWorkPackage(wpPayload);
       return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['teams', false]); //invalidations for gantt chart
+        queryClient.invalidateQueries(['projects']);
+      }
     }
   );
 };
@@ -61,9 +69,9 @@ export const useCreateSingleWorkPackage = () => {
  */
 export const useEditWorkPackage = (_wbsNum: WbsNumber) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, WorkPackageApiInputs>(
+  return useMutation<{ message: string }, Error, WorkPackageEditArgs>(
     ['work packages', 'edit'],
-    async (wpPayload: WorkPackageApiInputs) => {
+    async (wpPayload: WorkPackageEditArgs) => {
       const { data } = await editWorkPackage(wpPayload);
       return data;
     },

@@ -3,7 +3,7 @@ import NERFailButton from './NERFailButton';
 import NERSuccessButton from './NERSuccessButton';
 import Draggable from 'react-draggable';
 import CloseIcon from '@mui/icons-material/Close';
-import { ReactNode } from 'react';
+import { ReactNode, useRef } from 'react';
 import { CancelText, SubmitText } from '../utils/teams.utils';
 
 interface NERDraggableFormModalModalProps {
@@ -34,12 +34,14 @@ export const NERDraggableFormModal = ({
   onHide
 }: NERDraggableFormModalModalProps) => {
   const theme = useTheme();
+  const nodeRef = useRef(null);
 
   return (
     <>
       {open && (
-        <Draggable handle=".draggable-handle">
+        <Draggable handle=".draggable-handle" nodeRef={nodeRef}>
           <Box
+            ref={nodeRef}
             sx={{
               position: 'fixed',
               top: '50%',
@@ -47,7 +49,7 @@ export const NERDraggableFormModal = ({
               backgroundColor: theme.palette.background.paper,
               boxShadow: 24,
               zIndex: 6,
-              width: '30%',
+              width: '40%',
               borderRadius: '8px'
             }}
           >

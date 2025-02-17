@@ -52,32 +52,24 @@ const ChangeRequestDropdown = ({ control, name, crIdDisabled }: ChangeRequestDro
 
   return (
     <Box>
-      <Tooltip
-        title={
-          crIdDisabled ? 'Creating a project with a legacy change request is not supported using project templates' : ''
-        }
-      >
-        <FormControl fullWidth>
-          <FormLabel sx={{ alignSelf: 'start' }}>Change Request ID</FormLabel>
-          <Controller
-            control={control}
-            name={name}
-            disabled={crIdDisabled}
-            render={({ field: { onChange, value } }) => (
-              <NERAutocomplete
-                disabled={crIdDisabled}
-                sx={{ width: '100%' }}
-                id="change-request-id-autocomplete"
-                onChange={(_event, newValue) => onChange(newValue ? newValue.id : '')}
-                options={approvedChangeRequestOptions}
-                size="small"
-                placeholder="Change Request ID"
-                value={approvedChangeRequestOptions.find((cr) => cr.id === value) || { id: '', label: '' }}
-              />
-            )}
-          />
-        </FormControl>
-      </Tooltip>
+      <FormControl fullWidth>
+        <FormLabel sx={{ alignSelf: 'start' }}>Change Request ID</FormLabel>
+        <Controller
+          control={control}
+          name={name}
+          render={({ field: { onChange, value } }) => (
+            <NERAutocomplete
+              sx={{ width: '100%' }}
+              id="change-request-id-autocomplete"
+              onChange={(_event, newValue) => onChange(newValue ? newValue.id : undefined)}
+              options={approvedChangeRequestOptions}
+              size="small"
+              placeholder="Change Request ID"
+              value={approvedChangeRequestOptions.find((cr) => cr.id === value) || undefined}
+            />
+          )}
+        />
+      </FormControl>
     </Box>
   );
 };

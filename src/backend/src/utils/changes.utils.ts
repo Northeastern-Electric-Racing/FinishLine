@@ -53,10 +53,11 @@ export const createChange = (
   nameOfField: string,
   oldValue: string | number | null,
   newValue: string | number | null,
-  crId: string,
+  crId: string | null,
   implementerId: string,
   wbsElementId: string
 ): ChangeCreateArgs | undefined => {
+  if (!crId) return undefined;
   if (oldValue == null && newValue !== null) {
     return {
       changeRequestId: crId,
@@ -96,7 +97,7 @@ export const createListChanges = <T>(
   nameOfField: string,
   oldArray: ChangeListValue<T>[],
   newArray: ChangeListValue<T>[],
-  crId: string,
+  crId: string | null,
   implementerId: string,
   wbsElementId: string
 ): {
@@ -138,17 +139,19 @@ export const createListChanges = <T>(
     editedElements: changes
       .filter((change) => change.type === ChangeType.EDITED)
       .map((edited) => edited.changeListValue.element),
-    changes: changes.map((change) => {
-      const detail =
-        change.type === ChangeType.EDITED
-          ? buildChangeDetail(
-              nameOfField,
-              seenOld.get(change.changeListValue.comparator) || 'null',
-              seenNew.get(change.changeListValue.comparator) || 'null'
-            )
-          : `${change.type} ${nameOfField} "${change.changeListValue.displayValue}"`;
-      return { changeRequestId: crId, implementerId, wbsElementId, detail };
-    })
+    changes: crId
+      ? changes.map((change) => {
+          const detail =
+            change.type === ChangeType.EDITED
+              ? buildChangeDetail(
+                  nameOfField,
+                  seenOld.get(change.changeListValue.comparator) || 'null',
+                  seenNew.get(change.changeListValue.comparator) || 'null'
+                )
+              : `${change.type} ${nameOfField} "${change.changeListValue.displayValue}"`;
+          return { changeRequestId: crId, implementerId, wbsElementId, detail };
+        })
+      : [] // if no crId dont create the changes
   };
 };
 
@@ -169,7 +172,7 @@ export const getWorkPackageChanges = async (
   newManagerId: string | null,
   oldDescriptionBullets: DescriptionBulletWithType[],
   newDescriptionBullets: DescriptionBulletPreview[],
-  crId: string,
+  crId: string | null,
   wbsElementId: string,
   submitterId: string
 ) => {
@@ -245,7 +248,7 @@ export const getWorkPackageChanges = async (
 export const getDescriptionBulletChanges = async (
   oldDescriptionBullets: DescriptionBulletWithType[],
   newDescriptionBullets: DescriptionBulletPreview[],
-  crId: string,
+  crId: string | null,
   wbsElementId: string,
   submitterId: string
 ) => {

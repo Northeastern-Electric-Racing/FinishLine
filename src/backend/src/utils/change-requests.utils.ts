@@ -347,7 +347,7 @@ export const applyProjectProposedChanges = async (
       descriptionBulletToDescriptionBulletPreview
     );
 
-    let projectWbsElmeId: string | null = null;
+    let projectWbsNum: WbsNumber | null = null;
     if (!associatedProject) {
       const proj = await ProjectsService.createProject(
         reviewer,
@@ -364,7 +364,7 @@ export const applyProjectProposedChanges = async (
         organization
       );
 
-      projectWbsElmeId = proj.wbsElementId;
+      projectWbsNum = proj.wbsNum;
     } else if (associatedProject) {
       const proj = await ProjectsService.editProject(
         reviewer,
@@ -380,14 +380,14 @@ export const applyProjectProposedChanges = async (
         organization
       );
 
-      projectWbsElmeId = proj.wbsElementId;
+      projectWbsNum = proj.wbsNum;
     }
 
     for (const proposedChange of projectProposedChanges.workPackageProposedChanges) {
       await applyWorkPackageProposedChanges(
         wbsProposedChanges,
         proposedChange,
-        projectWbsElmeId,
+        projectWbsNum,
         null,
         reviewer,
         crId,
@@ -410,13 +410,13 @@ export const applyProjectProposedChanges = async (
 export const applyWorkPackageProposedChanges = async (
   wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<WbsProposedChangeQueryArgs>,
   workPackageProposedChanges: Prisma.Work_Package_Proposed_ChangesGetPayload<WorkPackageProposedChangesQueryArgs>,
-  existingWbsElementId: string | null,
+  existingWbsNum: WbsNumber | null,
   associatedWorkPackage: Work_Package | null,
   reviewer: User,
   crId: string,
   organization: Organization
 ) => {
-  if (existingWbsElementId) {
+  if (existingWbsNum) {
     await WorkPackagesService.createWorkPackage(
       reviewer,
       workPackageProposedChanges.wbsProposedChanges.name,
@@ -428,8 +428,8 @@ export const applyWorkPackageProposedChanges = async (
       workPackageProposedChanges.wbsProposedChanges.proposedDescriptionBulletChanges.map(
         descriptionBulletToDescriptionBulletPreview
       ),
-      organization,
-      existingWbsElementId
+      existingWbsNum,
+      organization
     );
   } else if (associatedWorkPackage) {
     await WorkPackagesService.editWorkPackage(

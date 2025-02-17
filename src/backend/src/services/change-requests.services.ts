@@ -286,7 +286,16 @@ export default class ChangeRequestsService {
       // reviews a proposed solution applying certain changes based on the content of the proposed solution
       await reviewProposedSolution(psId, foundCR, reviewer, organization.organizationId);
     } else if (foundCR.scopeChangeRequest?.wbsProposedChanges && !psId) {
-      const associatedProject = foundCR.wbsElement.project;
+      const associatedProject = foundCR.wbsElement.project
+        ? {
+            ...foundCR.wbsElement.project,
+            wbsNum: {
+              carNumber: foundCR.wbsElement.carNumber,
+              projectNumber: foundCR.wbsElement.projectNumber,
+              workPackageNumber: foundCR.wbsElement.workPackageNumber
+            }
+          }
+        : null;
       const associatedWorkPackage = foundCR.wbsElement.workPackage;
       const { wbsProposedChanges } = foundCR.scopeChangeRequest;
       const { workPackageProposedChanges } = wbsProposedChanges;
@@ -364,7 +373,7 @@ export default class ChangeRequestsService {
         await applyWorkPackageProposedChanges(
           wbsProposedChanges,
           workPackageProposedChanges,
-          associatedProject?.wbsElementId ?? null,
+          associatedProject?.wbsNum ?? null,
           associatedWorkPackage,
           reviewer,
           foundCR.crId,
@@ -584,17 +593,7 @@ export default class ChangeRequestsService {
         organization: { connect: { organizationId: organization.organizationId } },
         identifier: numChanges + 1
       },
-      include: {
-        wbsElement: {
-          include: {
-            workPackage: {
-              include: {
-                project: { include: { teams: true, wbsElement: true } }
-              }
-            }
-          }
-        }
-      }
+      ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
     });
 
     const teams = createdCR.wbsElement.workPackage?.project.teams;
@@ -610,6 +609,8 @@ export default class ChangeRequestsService {
       // save the slack references to the change request
       await addSlackThreadsToChangeRequest(createdCR.crId, notifications);
     }
+
+    await ChangeRequestsService.reviewActivationChangeRequest(createdCR, submitter); // automatically accept activation change requests for convenience
 
     return createdCR.crId;
   }
@@ -691,17 +692,7 @@ export default class ChangeRequestsService {
         organization: { connect: { organizationId: organization.organizationId } },
         identifier: numChangeRequests + 1
       },
-      include: {
-        wbsElement: {
-          include: {
-            workPackage: {
-              include: {
-                project: { include: { teams: true, wbsElement: true } }
-              }
-            }
-          }
-        }
-      }
+      ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
     });
 
     const teams = createdChangeRequest.wbsElement.workPackage?.project.teams;
@@ -717,6 +708,8 @@ export default class ChangeRequestsService {
       // save the slack references to the change request
       await addSlackThreadsToChangeRequest(createdChangeRequest.crId, notifications);
     }
+
+    await ChangeRequestsService.reviewStageGateChangeRequest(createdChangeRequest, submitter); // automatically accept stage gate change requests for convenience
 
     return createdChangeRequest.crId;
   }

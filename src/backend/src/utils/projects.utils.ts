@@ -1,7 +1,7 @@
 import { Project, WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { DescriptionBulletPreview, LinkCreateArgs, WbsElementStatus } from 'shared';
-import { DeletedException, HttpException, NotFoundException } from './errors.utils';
+import { DeletedException, HttpException, InvalidOrganizationException, NotFoundException } from './errors.utils';
 import { ChangeCreateArgs, createChange, createListChanges, getDescriptionBulletChanges } from './changes.utils';
 import { DescriptionBulletDestination, addRawDescriptionBullets, editDescriptionBullets } from './description-bullets.utils';
 import { linkToChangeListValue, updateLinks } from './links.utils';
@@ -47,7 +47,7 @@ export const getUserFullName = async (userId: string | null): Promise<string | n
 // Update a project and create changes together
 export const updateProjectAndCreateChanges = async (
   projectId: string,
-  crId: string,
+  crId: string | null,
   implementerId: string,
   name: string,
   budget: number | null,
@@ -77,6 +77,7 @@ export const updateProjectAndCreateChanges = async (
   // if it doesn't exist we error
   if (!originalProject) throw new NotFoundException('Project', projectId);
   if (originalProject.wbsElement.dateDeleted) throw new DeletedException('Project', projectId);
+  if (originalProject.wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('Project');
 
   const { wbsElementId } = originalProject;
 
