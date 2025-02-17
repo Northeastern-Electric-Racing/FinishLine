@@ -47,11 +47,10 @@ export const TaskListContent = ({ project }: TaskListProps) => {
   };
 
   const onAddTask = (task: Task) => {
-    setTasksByStatus((prev) => {
-      const newTasksByStatus = { ...prev };
-      newTasksByStatus[task.status].push({ ...task, index: newTasksByStatus[task.status].length });
-      return newTasksByStatus;
-    });
+    setTasksByStatus((prev) => ({
+      ...prev,
+      [task.status]: [...prev[task.status], { ...task, index: prev[task.status].length }]
+    }));
   };
 
   const onDragEnd: OnDragEndResponder = async (result) => {

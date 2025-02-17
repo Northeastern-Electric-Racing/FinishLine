@@ -30,7 +30,7 @@ export interface ProjectFormInput {
   budget: number;
   summary: string;
   links: LinkCreateArgs[];
-  crId: string;
+  crId?: string;
   carNumber: number | undefined;
   teamIds: string[];
   descriptionBullets: DescriptionBulletPreview[];
@@ -100,7 +100,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   }
 
   const crWatch = watch('crId');
-  const changeRequestInputExists = crWatch !== 'null' && crWatch !== '';
+  const changeRequestInputExists = !!crWatch && crWatch !== 'null' && crWatch !== '';
 
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
 
@@ -158,7 +158,12 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
             <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
               Cancel
             </NERFailButton>
-            <NERSuccessButton disabled={!changeRequestInputExists} variant="contained" type="submit" sx={{ mx: 1 }}>
+            <NERSuccessButton
+              disabled={!changeRequestInputExists && !!project}
+              variant="contained"
+              type="submit"
+              sx={{ mx: 1 }}
+            >
               Submit
             </NERSuccessButton>
           </Box>
