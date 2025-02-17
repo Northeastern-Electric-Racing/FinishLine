@@ -3,6 +3,7 @@ import { getReimbursementStatusQueryArgs } from './reimbursement-statuses.query-
 import { getUserQueryArgs } from './user.query-args';
 import { getReceiptQueryArgs } from './receipt-query.args';
 import { getReimbursementProductQueryArgs } from './reimbursement-products.query-args';
+import { getProjectQueryArgs } from './projects.query-args';
 
 export type ReimbursementRequestQueryArgs = ReturnType<typeof getReimbursementRequestQueryArgs>;
 
@@ -20,6 +21,7 @@ export const getReimbursementRequestQueryArgs = (organizationId: string) =>
         },
         ...getReimbursementProductQueryArgs(organizationId)
       },
-      notificationSlackThreads: true
+      notificationSlackThreads: true,
+      projects: getProjectQueryArgs(organizationId)
     }
   });

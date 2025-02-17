@@ -1,4 +1,4 @@
-import { WbsNumber } from './project-types';
+import { Project, WbsNumber } from './project-types';
 import { User } from './user-types';
 
 export enum ClubAccount {
@@ -60,6 +60,7 @@ export interface ReimbursementRequest {
   reimbursementProducts: ReimbursementProduct[];
   dateDelivered?: Date;
   accountCode: AccountCode;
+  projects: Project[];
 }
 
 export enum OtherProductReason {

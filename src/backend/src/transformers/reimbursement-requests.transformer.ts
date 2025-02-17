@@ -28,6 +28,7 @@ import {
   ReimbursementProductReasonQueryArgs
 } from '../prisma-query-args/reimbursement-products.query-args';
 import { ReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
+import projectTransformer from './projects.transformer';
 
 export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<ReceiptQueryArgs>): Receipt => {
   return {
@@ -57,7 +58,8 @@ export const reimbursementRequestTransformer = (
     receiptPictures: reimbursementRequest.receiptPictures.filter((receipt) => !receipt.dateDeleted).map(receiptTransformer),
     reimbursementProducts: reimbursementRequest.reimbursementProducts.map(reimbursementProductTransformer),
     dateDelivered: reimbursementRequest.dateDelivered ?? undefined,
-    accountCode: accountCodeTransformer(reimbursementRequest.accountCode)
+    accountCode: accountCodeTransformer(reimbursementRequest.accountCode),
+    projects: reimbursementRequest.projects.map(projectTransformer)
   };
 };
 

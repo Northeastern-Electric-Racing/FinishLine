@@ -47,6 +47,7 @@ reimbursementRequestsRouter.post(
   isAccount(body('account')),
   nonEmptyString(body('accountCodeId')),
   intMinZero(body('totalCost')),
+  body('projectIds').isArray(),
   validateReimbursementProducts(),
   validateInputs,
   ReimbursementRequestController.createReimbursementRequest

@@ -133,6 +133,7 @@ export default class ReimbursementRequestService {
    * @param accountCodeId the id of the account code the user made
    * @param totalCost the total cost of the reimbursement with tax
    * @param organizationId the organization the user is currently in
+   * @param projectIds the project ids assciated with this reimbursment request
    * @returns the created reimbursement request
    */
   static async createReimbursementRequest(
@@ -144,6 +145,7 @@ export default class ReimbursementRequestService {
     acccountCodeId: string,
     totalCost: number,
     organization: Organization,
+    projectIds: string[],
     dateOfExpense?: Date
   ): Promise<ReimbursementRequest> {
     if (await userHasPermission(recipient.userId, organization.organizationId, isGuest))
@@ -184,7 +186,8 @@ export default class ReimbursementRequestService {
           }
         },
         identifier: numReimbursementRequests + 1,
-        organization: { connect: { organizationId: organization.organizationId } }
+        organization: { connect: { organizationId: organization.organizationId } },
+        projects: { connect: projectIds.map((projectId) => ({ projectId })) }
       }
     });
 
