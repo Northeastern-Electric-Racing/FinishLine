@@ -7,6 +7,7 @@ import {
 } from '../prisma-query-args/wbs-element-template.query-args';
 import descriptionBulletTransformer from './description-bullets.transformer';
 import { userTransformer } from './user.transformer';
+import teamTransformer from './teams.transformer';
 
 export const workPackageTemplateTransformer = (
   wptInput: Prisma.Work_Package_TemplateGetPayload<WorkPackageTemplateQueryArgs>
@@ -48,6 +49,10 @@ export const projectTemplateTransformer = (
     templateNotes: projectTemplate.wbsElementTemplate.templateNotes,
     projectTemplateId: projectTemplate.wbsElementTemplateId,
     projectName: projectTemplate.wbsElementTemplate.wbsElementName ?? undefined,
-    workPackageTemplates: projectTemplate.workPackageTemplates.map(workPackageTemplateTransformer)
+    workPackageTemplates: projectTemplate.workPackageTemplates.map(workPackageTemplateTransformer),
+    descriptionBullets: projectTemplate.wbsElementTemplate.descriptionBullets.map(descriptionBulletTransformer),
+    budget: projectTemplate.budget ?? undefined,
+    teams: projectTemplate.teams.map(teamTransformer),
+    summary: projectTemplate.summary ?? undefined
   };
 };

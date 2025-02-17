@@ -10,7 +10,9 @@ import {
   getSingleProjectTemplate,
   WorkPackageTemplateApiInputs,
   ProjectTemplateApiInputs,
-  editProjectTemplate
+  editProjectTemplate,
+  createProjectTemplate,
+  deleteProjectTemplate
 } from '../apis/wbs-templates.api';
 
 /**
@@ -104,7 +106,7 @@ export const useDeleteProjectTemplate = () => {
   return useMutation<{ message: string }, Error, string>(
     ['project templates', 'delete'],
     async (projectTemplateId) => {
-      const { data } = await deleteWorkPackageTemplate(projectTemplateId);
+      const { data } = await deleteProjectTemplate(projectTemplateId);
       return data;
     },
     {
@@ -119,7 +121,7 @@ export const useDeleteProjectTemplate = () => {
  * Custom React Hook to get a single project template
  */
 export const useSingleProjectTemplate = (projectTemplateId: string) => {
-  return useQuery<ProjectTemplate, Error>(['project templates'], async () => {
+  return useQuery<ProjectTemplate, Error>(['project templates', projectTemplateId], async () => {
     const { data } = await getSingleProjectTemplate(projectTemplateId);
     return data;
   });
@@ -127,7 +129,7 @@ export const useSingleProjectTemplate = (projectTemplateId: string) => {
 
 export const useEditProjectTemplate = (projectTemplateId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, ProjectTemplateApiInputs>(
+  return useMutation<ProjectTemplate, Error, ProjectTemplateApiInputs>(
     ['project templates', 'edit'],
     async (payload: ProjectTemplateApiInputs) => {
       const { data } = await editProjectTemplate(projectTemplateId, payload);
@@ -137,6 +139,19 @@ export const useEditProjectTemplate = (projectTemplateId: string) => {
       onSuccess: () => {
         queryClient.invalidateQueries(['project templates']);
       }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to create a project template
+ */
+export const useCreateProjectTemplate = () => {
+  return useMutation<ProjectTemplate, Error, ProjectTemplateApiInputs>(
+    ['project templates', 'create'],
+    async (payload: ProjectTemplateApiInputs) => {
+      const { data } = await createProjectTemplate(payload);
+      return data;
     }
   );
 };

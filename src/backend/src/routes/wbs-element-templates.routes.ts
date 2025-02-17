@@ -53,15 +53,31 @@ wbsElementTemplatesRouter.post(
   nonEmptyString(body('templateName')),
   nonEmptyString(body('templateNotes')),
   body('workPackageTemplates').isArray(),
-  nonEmptyString(body('workPackageTemplates.*')),
   ...descriptionBulletsValidators,
   nonEmptyString(body('projectName')).optional(),
+  body('budget').isNumeric().optional(),
+  body('teams').isArray(),
+  nonEmptyString(body('teams.*')),
+  nonEmptyString(body('summary')).optional(),
   validateInputs,
   WbsElementTemplatesController.createProjectTemplate
 );
 
 wbsElementTemplatesRouter.get('/project/:projectTemplateId', WbsElementTemplatesController.getSingleProjectTemplate);
 
-wbsElementTemplatesRouter.post('/project/:projectTemplateId/edit', WbsElementTemplatesController.editProjectTemplate);
+wbsElementTemplatesRouter.post(
+  '/project/:projectTemplateId/edit',
+  nonEmptyString(body('templateName')),
+  nonEmptyString(body('templateNotes')),
+  body('workPackageTemplates').isArray(),
+  ...descriptionBulletsValidators,
+  nonEmptyString(body('projectName')).optional(),
+  body('budget').isNumeric().optional(),
+  body('teams').isArray(),
+  nonEmptyString(body('teams.*')),
+  nonEmptyString(body('summary')).optional(),
+  validateInputs,
+  WbsElementTemplatesController.editProjectTemplate
+);
 
 export default wbsElementTemplatesRouter;

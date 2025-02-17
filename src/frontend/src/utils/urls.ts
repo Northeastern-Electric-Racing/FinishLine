@@ -185,6 +185,7 @@ const workPackageTemplateDelete = (workPackageTemplateId: string) =>
 const projectTemplates = () => `${API_URL}/templates/project`;
 const projectTemplateDelete = (projectTemplateId: string) => `${projectTemplatesById(projectTemplateId)}/delete`;
 const projectTemplatesEdit = (projectTemplateId: string) => `${projectTemplatesById(projectTemplateId)}/edit`;
+const projectTemplatesCreate = () => `${projectTemplates()}/create`;
 
 /******************* Organizations Endpoints ********************/
 const organizations = () => `${API_URL}/organizations`;
@@ -405,6 +406,7 @@ export const apiUrls = {
   projectTemplatesById,
   projectTemplateDelete,
   projectTemplatesEdit,
+  projectTemplatesCreate,
 
   currentOrganization,
   organizationsUsefulLinks,

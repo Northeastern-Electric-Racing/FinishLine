@@ -80,12 +80,9 @@ const ProjectTemplateTable: React.FC = () => {
         }}
       >
         <Typography gutterBottom>
-          Are you sure you want to delete the work package template <i>{templateToDelete?.templateName}</i>?
+          Are you sure you want to delete the project template <i>{templateToDelete?.templateName}</i>?
         </Typography>
-        <Typography gutterBottom>
-          This will also delete all templates blocked by this one. If you would like to delete this template only, first
-          remove all references to it from all other templates' "Blocked By" sections.
-        </Typography>
+        <Typography gutterBottom>This will also delete all the work package templates within it.</Typography>
         <Typography fontWeight="bold">This action cannot be undone!</Typography>
       </NERModal>
     </Box>

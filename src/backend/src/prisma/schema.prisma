@@ -271,6 +271,7 @@ model Team {
   organizationId         String
   organization           Organization               @relation(fields: [organizationId], references: [organizationId])
   checklists             Checklist[]
+  projectTemplates       Project_Template[]
 }
 
 model Session {
@@ -913,8 +914,11 @@ model WBS_Element_Template {
 
 model Project_Template {
   wbsElementTemplate   WBS_Element_Template    @relation(fields: [wbsElementTemplateId], references: [wbsElementTemplateId])
-  wbsElementTemplateId String                  @unique
+  wbsElementTemplateId String                  @id
   workPackageTemplates Work_Package_Template[]
+  budget               Int?
+  teams                Team[]
+  summary              String?
 }
 
 model Work_Package_Template {

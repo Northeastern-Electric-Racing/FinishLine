@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { DescriptionBulletPreview, LinkCreateArgs, Project } from 'shared';
+import { DescriptionBulletPreview, LinkCreateArgs, Project, ProjectTemplate } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useFieldArray, useForm } from 'react-hook-form';
@@ -19,11 +19,12 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import CreateChangeRequestModal from '../../CreateChangeRequestPage/CreateChangeRequestModal';
 import { ProjectCreateChangeRequestFormInput } from './ProjectEditContainer';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequest';
 import { NERButton } from '../../../components/NERButton';
 import HelpIcon from '@mui/icons-material/Help';
 import DescriptionBulletsEditView from '../../../components/DescriptionBulletEditView';
+import ProjectTemplateSection from './ProjectTemplateSection';
 
 export interface ProjectFormInput {
   name: string;
@@ -71,7 +72,8 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
     handleSubmit,
     control,
     watch,
-    formState: { errors }
+    formState: { errors },
+    setValue
   } = useForm<ProjectFormInput>({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -93,6 +95,50 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   } = useFieldArray({ control, name: 'descriptionBullets' });
 
   const { fields: links, append: appendLink, remove: removeLink } = useFieldArray({ control, name: 'links' });
+
+  const [selectedProjectTemplate, setSelectedProjectTemplate] = useState<ProjectTemplate>();
+  const [crIdDisabled, setCrIdDisabled] = useState<boolean>(false);
+
+  const watchedName = watch('name');
+  const watchedTeams = watch('teamIds');
+  const watchedBudget = watch('budget');
+  const watchedSummary = watch('summary');
+  const watchedDescriptionBullets = watch('descriptionBullets');
+
+  useEffect(() => {
+    if (selectedProjectTemplate) {
+      setValue('crId', '');
+      setCrIdDisabled(true);
+
+      let { projectName, teams, budget, descriptionBullets, summary } = selectedProjectTemplate;
+
+      projectName = projectName || '';
+      budget = budget || 0;
+      teams = teams || [];
+      descriptionBullets = descriptionBullets || [];
+      summary = summary || '';
+
+      if (
+        watchedName !== projectName ||
+        watchedBudget !== budget ||
+        JSON.stringify(watchedTeams) !== JSON.stringify(teams.map((t) => t.teamId)) ||
+        watchedSummary !== summary ||
+        JSON.stringify(watchedDescriptionBullets) !== JSON.stringify(descriptionBullets)
+      ) {
+        setSelectedProjectTemplate(undefined);
+      }
+    } else {
+      setCrIdDisabled(false);
+    }
+  }, [
+    selectedProjectTemplate,
+    watchedName,
+    watchedBudget,
+    watchedTeams,
+    watchedDescriptionBullets,
+    watchedSummary,
+    setValue
+  ]);
 
   if (allUsers.isLoading || !allUsers.data) return <LoadingIndicator />;
   if (allUsers.isError) {
@@ -164,6 +210,20 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           </Box>
         }
       >
+        <ProjectTemplateSection
+          selectedProjectTemplate={selectedProjectTemplate}
+          setSelectedProjectTemplate={(template) => {
+            setValue('name', template?.projectName || '');
+            setValue('budget', template?.budget || 0);
+            setValue('summary', template?.summary || '');
+            setValue('descriptionBullets', template?.descriptionBullets || []);
+            setValue(
+              'teamIds',
+              (template?.teams || []).map((t) => t.teamId)
+            );
+            setSelectedProjectTemplate(template);
+          }}
+        />
         <ProjectFormDetails
           users={users}
           control={control}
@@ -173,6 +233,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           leadId={leadId}
           managerId={managerId}
           project={project}
+          crIdDisabled={crIdDisabled}
         />
         <Stack spacing={4}>
           <Box>

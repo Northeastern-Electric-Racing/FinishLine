@@ -1,4 +1,4 @@
-import { Box, FormControl, FormLabel } from '@mui/material';
+import { Box, FormControl, FormLabel, Tooltip } from '@mui/material';
 import { isWithinInterval, subDays } from 'date-fns';
 import { Control, Controller } from 'react-hook-form';
 import { AuthenticatedUser, ChangeRequest, wbsPipe } from 'shared';
@@ -35,9 +35,10 @@ const getFilteredChangeRequests = (changeRequests: ChangeRequest[], user: Authen
 interface ChangeRequestDropdownProps {
   control: Control<any, any>;
   name: string;
+  crIdDisabled: boolean;
 }
 
-const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) => {
+const ChangeRequestDropdown = ({ control, name, crIdDisabled }: ChangeRequestDropdownProps) => {
   const user = useCurrentUser();
   const { isLoading, data: changeRequests } = useAllChangeRequests();
   if (isLoading || !changeRequests) return <LoadingIndicator />;
@@ -51,24 +52,32 @@ const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) =>
 
   return (
     <Box>
-      <FormControl fullWidth>
-        <FormLabel sx={{ alignSelf: 'start' }}>Change Request ID</FormLabel>
-        <Controller
-          control={control}
-          name={name}
-          render={({ field: { onChange, value } }) => (
-            <NERAutocomplete
-              sx={{ width: '100%' }}
-              id="change-request-id-autocomplete"
-              onChange={(_event, newValue) => onChange(newValue ? newValue.id : '')}
-              options={approvedChangeRequestOptions}
-              size="small"
-              placeholder="Change Request ID"
-              value={approvedChangeRequestOptions.find((cr) => cr.id === value) || { id: '', label: '' }}
-            />
-          )}
-        />
-      </FormControl>
+      <Tooltip
+        title={
+          crIdDisabled ? 'Creating a project with a legacy change request is not supported using project templates' : ''
+        }
+      >
+        <FormControl fullWidth>
+          <FormLabel sx={{ alignSelf: 'start' }}>Change Request ID</FormLabel>
+          <Controller
+            control={control}
+            name={name}
+            disabled={crIdDisabled}
+            render={({ field: { onChange, value } }) => (
+              <NERAutocomplete
+                disabled={crIdDisabled}
+                sx={{ width: '100%' }}
+                id="change-request-id-autocomplete"
+                onChange={(_event, newValue) => onChange(newValue ? newValue.id : '')}
+                options={approvedChangeRequestOptions}
+                size="small"
+                placeholder="Change Request ID"
+                value={approvedChangeRequestOptions.find((cr) => cr.id === value) || { id: '', label: '' }}
+              />
+            )}
+          />
+        </FormControl>
+      </Tooltip>
     </Box>
   );
 };

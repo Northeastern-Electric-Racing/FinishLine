@@ -69,11 +69,24 @@ CREATE TABLE "WBS_Element_Template" (
 
 -- CreateTable
 CREATE TABLE "Project_Template" (
-    "wbsElementTemplateId" TEXT NOT NULL
+    "wbsElementTemplateId" TEXT NOT NULL,
+    "budget" INTEGER,
+    "summary" TEXT,
+
+    CONSTRAINT "Project_Template_pkey" PRIMARY KEY ("wbsElementTemplateId")
+);
+
+-- CreateTable
+CREATE TABLE "_Project_TemplateToTeam" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Project_Template_wbsElementTemplateId_key" ON "Project_Template"("wbsElementTemplateId");
+CREATE UNIQUE INDEX "_Project_TemplateToTeam_AB_unique" ON "_Project_TemplateToTeam"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_Project_TemplateToTeam_B_index" ON "_Project_TemplateToTeam"("B");
 
 -- AddForeignKey
 ALTER TABLE "Description_Bullet" ADD CONSTRAINT "Description_Bullet_wbsElementTemplateId_fkey" FOREIGN KEY ("wbsElementTemplateId") REFERENCES "WBS_Element_Template"("wbsElementTemplateId") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -95,6 +108,12 @@ ALTER TABLE "Work_Package_Template" ADD CONSTRAINT "Work_Package_Template_wbsEle
 
 -- AddForeignKey
 ALTER TABLE "Work_Package_Template" ADD CONSTRAINT "Work_Package_Template_projectTemplateId_fkey" FOREIGN KEY ("projectTemplateId") REFERENCES "Project_Template"("wbsElementTemplateId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_Project_TemplateToTeam" ADD CONSTRAINT "_Project_TemplateToTeam_A_fkey" FOREIGN KEY ("A") REFERENCES "Project_Template"("wbsElementTemplateId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_Project_TemplateToTeam" ADD CONSTRAINT "_Project_TemplateToTeam_B_fkey" FOREIGN KEY ("B") REFERENCES "Team"("teamId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_blocking" ADD CONSTRAINT "_blocking_A_fkey" FOREIGN KEY ("A") REFERENCES "Work_Package_Template"("wbsElementTemplateId") ON DELETE CASCADE ON UPDATE CASCADE;

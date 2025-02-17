@@ -1964,7 +1964,8 @@ const performSeed: () => Promise<void> = async () => {
     'This is the first project template',
     [],
     ner,
-    []
+    [],
+    'Awesome Project'
   );
 
   await OrganizationsService.setUsefulLinks(batman, organizationId, [

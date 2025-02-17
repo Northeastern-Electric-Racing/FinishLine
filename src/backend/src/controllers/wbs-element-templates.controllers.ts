@@ -124,7 +124,8 @@ export default class WbsElementTemplatesController {
 
   static async createProjectTemplate(req: Request, res: Response, next: NextFunction) {
     try {
-      const { templateName, templateNotes, descriptionBullets, workPackageTemplates, projectName } = req.body;
+      const { templateName, templateNotes, descriptionBullets, workPackageTemplates, projectName, teams, budget, summary } =
+        req.body;
 
       const projectTemplate: ProjectTemplate = await WbsElementTemplatesService.createProjectTemplate(
         req.currentUser,
@@ -133,6 +134,9 @@ export default class WbsElementTemplatesController {
         descriptionBullets,
         req.organization,
         workPackageTemplates,
+        teams,
+        budget,
+        summary,
         projectName
       );
 
@@ -161,7 +165,8 @@ export default class WbsElementTemplatesController {
   static async editProjectTemplate(req: Request, res: Response, next: NextFunction) {
     try {
       const { projectTemplateId } = req.params;
-      const { templateName, templateNotes, descriptionBullets, workPackageTemplates, projectName } = req.body;
+      const { templateName, templateNotes, descriptionBullets, workPackageTemplates, projectName, budget, teams, summary } =
+        req.body;
 
       const updatedProjectTemplate = await WbsElementTemplatesService.editProjectTemplate(
         req.currentUser,
@@ -171,7 +176,10 @@ export default class WbsElementTemplatesController {
         workPackageTemplates,
         descriptionBullets,
         req.organization,
-        projectName
+        teams,
+        projectName,
+        budget,
+        summary
       );
 
       return res.status(200).json(updatedProjectTemplate);
