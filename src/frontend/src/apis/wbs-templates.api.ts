@@ -1,7 +1,10 @@
 import axios from '../utils/axios';
 import { WorkPackageStage, DescriptionBulletPreview, ProjectTemplate, WorkPackageTemplate } from 'shared';
 import { apiUrls } from '../utils/urls';
-import { projectTemplateTransformer, workPackageTemplateTransformer } from './transformers/work-package-templates.transformer';
+import {
+  projectTemplateTransformer,
+  workPackageTemplateTransformer
+} from './transformers/work-package-templates.transformer';
 
 export interface WorkPackageTemplateApiInputs {
   templateName: string;
@@ -18,6 +21,10 @@ export interface ProjectTemplateApiInputs {
   templateNotes: string;
   workPackageTemplates: WorkPackageTemplateApiInputs[];
   projectName?: string;
+  descriptionBullets: DescriptionBulletPreview[];
+  budget?: number;
+  teams: string[];
+  summary?: string;
 }
 
 /**
@@ -78,7 +85,8 @@ export const createSingleWorkPackageTemplate = (payload: WorkPackageTemplateApiI
 export const getAllProjectTemplates = () => {
   return axios.get<ProjectTemplate[]>(apiUrls.projectTemplates(), {
     transformResponse: (data) => {
-      return JSON.parse(data).map(projectTemplateTransformer)}
+      return JSON.parse(data).map(projectTemplateTransformer);
+    }
   });
 };
 
@@ -100,8 +108,25 @@ export const getSingleProjectTemplate = (projectTemplateId: string) => {
   return axios.get<ProjectTemplate>(apiUrls.projectTemplatesById(projectTemplateId), {});
 };
 
+/**
+ * Edit a project template.
+ *
+ * @param projectTemplateId The project template id to be edited.
+ * @param payload Payload containing all the necessary data to edit a project template.
+ */
 export const editProjectTemplate = (projectTemplateId: string, payload: ProjectTemplateApiInputs) => {
-  return axios.post<{ message: string }>(apiUrls.projectTemplatesEdit(projectTemplateId), {
+  return axios.post<ProjectTemplate>(apiUrls.projectTemplatesEdit(projectTemplateId), {
     ...payload
   });
-}
+};
+
+/**
+ * Create a project template.
+ *
+ * @param payload Payload containing all the necessary data to create a project template.
+ */
+export const createProjectTemplate = (payload: ProjectTemplateApiInputs) => {
+  return axios.post<ProjectTemplate>(apiUrls.projectTemplatesCreate(), {
+    ...payload
+  });
+};

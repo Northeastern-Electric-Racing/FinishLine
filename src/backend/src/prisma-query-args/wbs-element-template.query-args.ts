@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { getDescriptionBulletQueryArgs } from './description-bullets.query-args';
 import { getUserQueryArgs } from './user.query-args';
+import { getTeamQueryArgs } from './teams.query-args';
 
 export type WorkPackageTemplateQueryArgs = ReturnType<typeof getWorkPackageTemplateQueryArgs>;
 export type ProjectTemplateQueryArgs = ReturnType<typeof getProjectTemplateQueryArgs>;
@@ -35,6 +36,13 @@ export const getProjectTemplateQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Project_TemplateDefaultArgs>()({
     include: {
       wbsElementTemplate: getWbsElementTemplateQueryArgs(organizationId),
-      workPackageTemplates: {where: {wbsElementTemplate: {dateDeleted: null}}, ...getWorkPackageTemplateQueryArgs(organizationId)}
+      workPackageTemplates: {
+        where: { wbsElementTemplate: { dateDeleted: null } },
+        orderBy: { wbsElementTemplate: { dateCreated: 'asc' } },
+        ...getWorkPackageTemplateQueryArgs(organizationId)
+      },
+      teams: {
+        ...getTeamQueryArgs(organizationId)
+      }
     }
   });

@@ -77,7 +77,10 @@ export default class WbsElementTemplatesService {
     }
 
     const workPackageTemplates = await prisma.work_Package_Template.findMany({
-      where: { wbsElementTemplate: { dateDeleted: null, organizationId: organization.organizationId } },
+      where: {
+        wbsElementTemplate: { dateDeleted: null, organizationId: organization.organizationId },
+        projectTemplateId: null
+      }, // only get the work package templates that are not associated with a project template
       ...getWorkPackageTemplateQueryArgs(organization.organizationId)
     });
 
@@ -97,6 +100,7 @@ export default class WbsElementTemplatesService {
    * @param deliverables the expected deliverables descriptions for this WPT
    * @param blockedByIds the WBS elements that need to be completed before this WPT
    * @param organizationId the id of the organization that the user is currently in
+   * @param workPackageTemplateId the id of the work package template
    * @returns the created work package template
    * @throws if the work package template could not be created
    */
@@ -109,7 +113,8 @@ export default class WbsElementTemplatesService {
     duration: number | null,
     descriptionBullets: DescriptionBulletPreview[],
     blockedByIds: string[],
-    organization: Organization
+    organization: Organization,
+    workPackageTemplateId?: string
   ): Promise<WorkPackageTemplate> {
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create work package templates');
@@ -136,6 +141,7 @@ export default class WbsElementTemplatesService {
       data: {
         wbsElementTemplate: {
           create: {
+            wbsElementTemplateId: workPackageTemplateId,
             templateName,
             templateNotes,
             wbsElementName: workPackageName,
@@ -336,7 +342,7 @@ export default class WbsElementTemplatesService {
     }
 
     const projectTemplates = await prisma.project_Template.findMany({
-      // where: { wbsElementTemplate: { dateDeleted: null, organizationId: organization.organizationId } },
+      where: { wbsElementTemplate: { dateDeleted: null, organizationId: organization.organizationId } },
       ...getProjectTemplateQueryArgs(organization.organizationId)
     });
 
@@ -415,7 +421,10 @@ export default class WbsElementTemplatesService {
     }
 
     const projectTemplate = await prisma.project_Template.findUnique({
-      where: { wbsElementTemplateId: projectTemplateId, wbsElementTemplate: {dateDeleted: null, organizationId: organization.organizationId} },
+      where: {
+        wbsElementTemplateId: projectTemplateId,
+        wbsElementTemplate: { dateDeleted: null, organizationId: organization.organizationId }
+      },
       ...getProjectTemplateQueryArgs(organization.organizationId)
     });
 
@@ -442,6 +451,9 @@ export default class WbsElementTemplatesService {
    * @param descriptionBullets description bullets for the project
    * @param organization the organization to create the project template in
    * @param workPackageTemplates inputs to create work package templates under the project template
+   * @param teamIds the ids of the teams to connect to the project template
+   * @param summary summary of the project
+   * @param budget budget of the project
    * @param projectName name for the project
    * @returns the created project template
    */
@@ -452,6 +464,9 @@ export default class WbsElementTemplatesService {
     descriptionBullets: DescriptionBulletPreview[],
     organization: Organization,
     workPackageTemplates: WorkPackageTemplateApiInputs[],
+    teamIds: string[],
+    summary?: string,
+    budget?: number,
     projectName?: string
   ) {
     if (!(await userHasPermission(creator.userId, organization.organizationId, isAdmin))) {
@@ -466,11 +481,16 @@ export default class WbsElementTemplatesService {
           create: {
             templateName,
             templateNotes,
-            wbsElementName: projectName,
+            wbsElementName: projectName ? projectName : undefined,
             userCreated: { connect: { userId: creator.userId } },
             organization: { connect: { organizationId: organization.organizationId } }
           }
-        }
+        },
+        budget: budget ?? undefined,
+        teams: {
+          connect: teamIds.map((id) => ({ teamId: id }))
+        },
+        summary: summary ?? undefined
       },
       ...getProjectTemplateQueryArgs(organization.organizationId)
     });
@@ -480,7 +500,7 @@ export default class WbsElementTemplatesService {
         creator,
         workPackageTemplate.templateName,
         workPackageTemplate.templateNotes,
-        workPackageTemplate.workPackageName ?? null,
+        workPackageTemplate.workPackageName ? workPackageTemplate.workPackageName : null,
         workPackageTemplate.stage ?? null,
         workPackageTemplate.duration ?? null,
         workPackageTemplate.descriptionBullets,
@@ -516,6 +536,10 @@ export default class WbsElementTemplatesService {
    * @param templateNotes the new notes
    * @param workPackageTemplates the new work package templates
    * @param organization the organization to edit the project template in
+   * @param teamIds the ids of the teams to connect to the project template
+   * @param projectName the new name of the project
+   * @param budget the new budget
+   * @param summary the new summary
    * @returns the updated project template
    */
   static async editProjectTemplate(
@@ -526,23 +550,33 @@ export default class WbsElementTemplatesService {
     workPackageTemplates: WorkPackageTemplateApiInputs[],
     descriptionBullets: DescriptionBulletPreview[],
     organization: Organization,
-    projectName?: string
+    teamIds: string[],
+    projectName?: string,
+    budget?: number,
+    summary?: string
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('edit a project template');
     }
 
     const foundProjectTemplate = await prisma.project_Template.findUnique({
-      where: { wbsElementTemplateId: projectTemplateId, wbsElementTemplate: {dateDeleted: null, organizationId: organization.organizationId} },
+      where: {
+        wbsElementTemplateId: projectTemplateId,
+        wbsElementTemplate: { dateDeleted: null, organizationId: organization.organizationId }
+      },
       ...getProjectTemplateQueryArgs(organization.organizationId)
     });
 
-    if (!foundProjectTemplate || foundProjectTemplate.wbsElementTemplate.dateDeleted || foundProjectTemplate.wbsElementTemplate.organizationId !== organization.organizationId) {
+    if (
+      !foundProjectTemplate ||
+      foundProjectTemplate.wbsElementTemplate.dateDeleted ||
+      foundProjectTemplate.wbsElementTemplate.organizationId !== organization.organizationId
+    ) {
       throw new NotFoundException('Project Template', projectTemplateId);
     }
 
     const existingWorkPackageTemplates = await prisma.work_Package_Template.findMany({
-      where: { projectTemplateId, wbsElementTemplate: {dateDeleted: null} }
+      where: { projectTemplateId, wbsElementTemplate: { dateDeleted: null } }
     });
 
     const existingWorkPackageTemplateIds = existingWorkPackageTemplates.map((template) => template.wbsElementTemplateId);
@@ -561,12 +595,13 @@ export default class WbsElementTemplatesService {
         submitter,
         template.templateName,
         template.templateNotes,
-        template.workPackageName ?? null,
+        template.workPackageName ? template.workPackageName : null,
         template.stage ?? null,
         template.duration ?? null,
         template.descriptionBullets,
         template.blockedBy,
-        organization
+        organization,
+        template.workPackageTemplateId
       );
     }
 
@@ -580,7 +615,7 @@ export default class WbsElementTemplatesService {
         template.stage,
         template.blockedBy,
         template.descriptionBullets,
-        template.workPackageName,
+        template.workPackageName ? template.workPackageName : undefined,
         organization
       );
     }
@@ -596,12 +631,17 @@ export default class WbsElementTemplatesService {
           update: {
             templateName,
             templateNotes,
-            wbsElementName: projectName
-          },
+            wbsElementName: projectName ? projectName : undefined
+          }
         },
         workPackageTemplates: {
           connect: workPackageTemplateIds.map((id) => ({ wbsElementTemplateId: id }))
         },
+        budget: budget ?? undefined,
+        teams: {
+          connect: teamIds.map((id) => ({ teamId: id }))
+        },
+        summary: summary ?? undefined
       },
       ...getProjectTemplateQueryArgs(organization.organizationId)
     });

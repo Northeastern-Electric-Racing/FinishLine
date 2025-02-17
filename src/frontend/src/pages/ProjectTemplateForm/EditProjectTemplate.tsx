@@ -26,7 +26,8 @@ const EditProjectTemplate: React.FC = () => {
       ...template,
       duration: template.duration ?? undefined,
       blockedBy: template.blockedBy.map((blockedBy) => blockedBy.workPackageTemplateId)
-    }))
+    })),
+    teams: projectTemplate.teams.map((team) => team.teamId)
   };
 
   return <ProjectTemplateForm projectTemplateMutateAsync={editProjectTemplate} defaultValues={defaultValues} />;

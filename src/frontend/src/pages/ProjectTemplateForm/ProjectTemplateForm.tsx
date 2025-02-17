@@ -16,7 +16,10 @@ const ProjectTemplateForm: React.FC<ProjectTemplateFormProps> = ({ projectTempla
     projectName: yup.string().optional(),
     templateName: yup.string().required('Template Name is required'),
     templateNotes: yup.string().required('Template Notes are required'),
-    workPackageTemplates: yup.array().of(workPackageTemplateSchema)
+    workPackageTemplates: yup.array().of(workPackageTemplateSchema),
+    budget: yup.number().optional(),
+    teams: yup.array().of(yup.string()).optional(),
+    summary: yup.string().optional()
   });
 
   return (
