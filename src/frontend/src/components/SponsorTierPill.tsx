@@ -4,48 +4,18 @@
  */
 
 import Chip from '@mui/material/Chip';
-import { brown, grey, yellow, lightBlue, blue, green, pink } from '@mui/material/colors';
-import { displayEnum } from '../utils/pipes';
+import { Sponsor_Tier } from '@prisma/client';
 
-export enum SponsorTier {
-  BRONZE = 'BRONZE',
-  SILVER = 'SILVER',
-  GOLD = 'GOLD',
-  PLATINUM = 'PLATINUM',
-  DIAMOND = 'DIAMOND',
-  SUPER_DIAMOND = 'SUPER_DIAMOND'
-}
-
-const determineTierPillColor = (tier: SponsorTier) => {
-  switch (tier) {
-    case SponsorTier.BRONZE:
-      return brown[700];
-    case SponsorTier.SILVER:
-      return grey[600];
-    case SponsorTier.GOLD:
-      return yellow[600];
-    case SponsorTier.PLATINUM:
-      return lightBlue[600];
-    case SponsorTier.DIAMOND:
-      return blue[600];
-    case SponsorTier.SUPER_DIAMOND:
-      return green[600];
-    default:
-      return pink[600];
-  }
-};
-
-const SponsorTierPill = ({ tier }: { tier: SponsorTier }) => {
-  const tierColor = determineTierPillColor(tier);
+const SponsorTierPill = ({ tier }: { tier: Sponsor_Tier }) => {
   return (
     <Chip
       size="small"
-      label={displayEnum(tier)}
+      label={tier.name}
       variant="filled"
       sx={{
         fontSize: 12,
         color: 'white',
-        backgroundColor: tierColor,
+        backgroundColor: tier.colorHexCode,
         width: 125
       }}
     />

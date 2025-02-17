@@ -25,8 +25,6 @@ import { ReimbursementRequestRow } from 'shared/src/types/reimbursement-requests
 // import TableSortLabel from '@mui/material/TableSortLabel';
 import ColumnHeader from './FinanceComponents/ColumnHeader';
 
-import SponsorTierPill, { SponsorTier } from '../../components/SponsorTierPill';
-
 interface ReimbursementRequestTableProps {
   userReimbursementRequests: ReimbursementRequest[];
   allReimbursementRequests?: ReimbursementRequest[];
@@ -48,7 +46,6 @@ const ReimbursementRequestTable = ({
   const [tabValue, setTabValue] = useState(0);
   const user = useCurrentUser();
   const canViewAllReimbursementRequests = user.isFinance || isHead(user.role);
-
   const displayedReimbursementRequests =
     tabValue === 1 && allReimbursementRequests ? allReimbursementRequests : userReimbursementRequests;
 
@@ -152,9 +149,6 @@ const ReimbursementRequestTable = ({
                 <TableCell align="center">{centsToDollar(row.amount)}</TableCell>
                 <TableCell align="center">{datePipe(row.dateSubmitted)}</TableCell>
                 <TableCell align="center">{dateUndefinedPipe(row.dateSubmittedToSabo)}</TableCell>
-
-                <TableCell align="center">{<SponsorTierPill tier={SponsorTier.BRONZE} />}</TableCell>
-
                 <TableCell align="center">{row.vendor.name}</TableCell>
                 {tabValue === 1 && <TableCell align="center">{codeAndRefundSourceName(row.refundSource)}</TableCell>}
                 <TableCell align="center">{cleanReimbursementRequestStatus(row.status)}</TableCell>
