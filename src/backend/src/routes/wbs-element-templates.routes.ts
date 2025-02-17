@@ -12,7 +12,6 @@ import WbsElementTemplatesController from '../controllers/wbs-element-templates.
 const wbsElementTemplatesRouter = express.Router();
 
 wbsElementTemplatesRouter.get('/project', WbsElementTemplatesController.getAllProjectTemplates);
-
 wbsElementTemplatesRouter.get('/', WbsElementTemplatesController.getAllWorkPackageTemplates);
 wbsElementTemplatesRouter.get('/:workPackageTemplateId', WbsElementTemplatesController.getSingleWorkPackageTemplate);
 

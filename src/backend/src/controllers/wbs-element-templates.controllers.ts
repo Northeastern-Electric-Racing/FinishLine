@@ -95,9 +95,7 @@ export default class WbsElementTemplatesController {
     try {
       const { workPackageTemplateId } = req.params;
       await WbsElementTemplatesService.deleteWorkPackageTemplate(req.currentUser, workPackageTemplateId, req.organization);
-      return res
-        .status(200)
-        .json({ message: `Successfully deleted work package template #${req.params.workPackageTemplateId}` });
+      res.status(200).json({ message: `Successfully deleted work package template #${req.params.workPackageTemplateId}` });
     } catch (error: unknown) {
       next(error);
     }
@@ -106,9 +104,9 @@ export default class WbsElementTemplatesController {
   static async getAllProjectTemplates(req: Request, res: Response, next: NextFunction) {
     try {
       const projectTemplates = await WbsElementTemplatesService.getAllProjectTemplates(req.currentUser, req.organization);
-      return res.status(200).json(projectTemplates);
+      res.status(200).json(projectTemplates);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -116,9 +114,9 @@ export default class WbsElementTemplatesController {
     try {
       const { projectTemplateId } = req.params;
       await WbsElementTemplatesService.deleteProjectTemplate(req.currentUser, projectTemplateId, req.organization);
-      return res.status(200).json({ message: `Successfully deleted project template ${projectTemplateId}` });
+      res.status(200).json({ message: `Successfully deleted project template ${projectTemplateId}` });
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -140,9 +138,9 @@ export default class WbsElementTemplatesController {
         projectName
       );
 
-      return res.status(200).json(projectTemplate);
+      res.status(200).json(projectTemplate);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -156,9 +154,9 @@ export default class WbsElementTemplatesController {
         req.organization
       );
 
-      return res.status(200).json(projectTemplate);
+      res.status(200).json(projectTemplate);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -182,9 +180,9 @@ export default class WbsElementTemplatesController {
         summary
       );
 
-      return res.status(200).json(updatedProjectTemplate);
+      res.status(200).json(updatedProjectTemplate);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 }

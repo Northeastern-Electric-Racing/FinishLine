@@ -1965,6 +1965,9 @@ const performSeed: () => Promise<void> = async () => {
     [],
     ner,
     [],
+    [],
+    'This project is very cool',
+    undefined,
     'Awesome Project'
   );
 
