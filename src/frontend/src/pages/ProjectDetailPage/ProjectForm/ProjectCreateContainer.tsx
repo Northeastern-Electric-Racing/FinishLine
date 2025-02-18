@@ -124,7 +124,7 @@ const ProjectCreateContainer: React.FC = () => {
 
     try {
       const payload: CreateSingleProjectPayload = {
-        crId,
+        crId: crId || undefined,
         name,
         carNumber,
         summary,
