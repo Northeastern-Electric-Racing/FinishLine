@@ -1,6 +1,6 @@
 import { alfred } from '../test-data/users.test-data';
 import ReimbursementRequestService from '../../src/services/reimbursement-requests.services';
-import { AccessDeniedException, HttpException } from '../../src/utils/errors.utils';
+import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
 import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { assert } from 'console';
@@ -227,6 +227,79 @@ describe('Reimbursement Requests', () => {
       );
 
       expect(updatedRR.dateDelivered).toEqual(dateToSetAsDelivered);
+    });
+  });
+
+  describe('Testing get all vendors', () => {
+    test('gets all vendors, after adding vendor', async () => {
+      const vendors = await ReimbursementRequestService.getAllVendors(org);
+      expect(vendors.length).toEqual(1);
+      expect(vendors[0].name).toEqual('Tesla');
+      expect(vendors[0].username).toEqual('nershipping@gmail.com');
+      expect(vendors[0].passwordHash).toEqual('racecar228!');
+      expect(vendors[0].discountCode).toEqual('SAVE50!');
+      expect(vendors[0].notes).toEqual('Tax exemption status?');
+      await ReimbursementRequestService.createVendor(
+        createdUser,
+        'Nasa',
+        org,
+        'nershipping@gmail.com',
+        'rar',
+        '50!',
+        createdUser.userId,
+        'Tax exemption status?',
+        createdUser.userId
+      );
+      const vendorsAfterAddition = await ReimbursementRequestService.getAllVendors(org);
+      expect(vendorsAfterAddition.length).toEqual(2);
+    });
+
+    test('get all vendors, after deleted vendor', async () => {
+      const vendors = await ReimbursementRequestService.getAllVendors(org);
+      await ReimbursementRequestService.deleteVendor(vendors[0].vendorId, createdUser, org);
+      const vendorsAfterDeletion = await ReimbursementRequestService.getAllVendors(org);
+      expect(vendorsAfterDeletion.length).toEqual(0);
+    });
+  });
+
+  describe('Testing get single vendor', () => {
+    test('gets a single vendors that exists', async () => {
+      const singleVendor = await ReimbursementRequestService.getSingleVendor(createdVendor.vendorId, org);
+      expect(singleVendor.name).toEqual('Tesla');
+      expect(singleVendor.username).toEqual('nershipping@gmail.com');
+      expect(singleVendor.passwordHash).toEqual('racecar228!');
+      expect(singleVendor.discountCode).toEqual('SAVE50!');
+      expect(singleVendor.notes).toEqual('Tax exemption status?');
+    });
+
+    test('throws when vendor does not exists', async () => {
+      await expect(async () => ReimbursementRequestService.getSingleVendor('invalidId', org)).rejects.toThrow(
+        new NotFoundException('Vendor', 'invalidId')
+      );
+    });
+
+    test('throws when vendor has been deleted', async () => {
+      await ReimbursementRequestService.deleteVendor(createdVendor.vendorId, createdUser, org);
+      await expect(async () => ReimbursementRequestService.getSingleVendor(createdVendor.vendorId, org)).rejects.toThrow(
+        new DeletedException('Vendor', createdVendor.vendorId)
+      );
+    });
+
+    test('throws when user does not have acess to this vendor', async () => {
+      const newOrg = await prisma.organization.create({
+        data: {
+          name: 'Test',
+          description: 'Test`s organization',
+          userCreated: {
+            connect: {
+              userId: createdUser.userId
+            }
+          }
+        }
+      });
+      await expect(async () => ReimbursementRequestService.getSingleVendor(createdVendor.vendorId, newOrg)).rejects.toThrow(
+        new AccessDeniedException('You do not have access to this vendor')
+      );
     });
   });
 });
