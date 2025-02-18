@@ -1,5 +1,5 @@
 import React from 'react';
-import { Drawer, Box, Typography } from '@mui/material';
+import { Drawer, Box, Typography, useTheme } from '@mui/material';
 
 interface SidePageProps {
   showPage: boolean;
@@ -9,19 +9,10 @@ interface SidePageProps {
 }
 
 const SidePage: React.FC<SidePageProps> = ({ showPage, handleClose, title, component }) => {
+  const theme = useTheme();
+
   return (
-    <Drawer
-      anchor="left"
-      open={showPage}
-      onClose={handleClose}
-      sx={{
-        '& .MuiDrawer-paper': {
-          backgroundColor: 'black', // Change drawer background color
-          color: 'white', // Change text color
-          width: '50vw'
-        }
-      }}
-    >
+    <Drawer anchor="left" open={showPage} onClose={handleClose}>
       <Box
         sx={{
           width: '50vw',
@@ -29,15 +20,13 @@ const SidePage: React.FC<SidePageProps> = ({ showPage, handleClose, title, compo
           display: 'flex',
           flexDirection: 'column',
           height: '100vh',
-          backgroundColor: 'black', // Ensure content background is black
-          color: 'white' // Ensure text remains white
+          backgroundColor: theme.palette.background.default,
+          color: theme.palette.primary.light
         }}
       >
-        {/* Side Page Content */}
         <Typography variant="h6" gutterBottom>
           {title}
         </Typography>
-        {/* Render Passed Component */}
         <Box sx={{ flexGrow: 1, width: '100%', overflow: 'auto' }}>{component}</Box>
       </Box>
     </Drawer>
