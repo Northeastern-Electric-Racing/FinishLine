@@ -2149,8 +2149,7 @@ const performSeed: () => Promise<void> = async () => {
 
   await CreateCommonMistake(
     'Not wearing PPE',
-    'This is another common mistake. Ensuring that you have proper PPE coverage is essential when doing any work in the bay. ' +
-      'If you are unsure about any PPE requirements, dont hesitate to reach out to a team lead. ',
+    'This is another common mistake. Ensuring that you have proper PPE coverage is essential when doing any work in the bay. If you are unsure about any PPE requirements, dont hesitate to reach out to a team lead. ',
     true,
     superman,
     organizationId
@@ -2165,8 +2164,7 @@ const performSeed: () => Promise<void> = async () => {
 
   await CreatePartReviewFAQ(
     'How do I upload for a part review?',
-    'First, click the button to upload your file. After uploading your file it is important to make sure that you tag it correctly,'
-    +' and that all fields are filled out in a way that makes sense to your part. After that, click submit and let your team lead know!',
+    'First, click the button to upload your file. After uploading your file it is important to make sure that you tag it correctly, and that all fields are filled out in a way that makes sense to your part. After that, click submit and let your team lead know!',
     organizationId,
     superman
   );
