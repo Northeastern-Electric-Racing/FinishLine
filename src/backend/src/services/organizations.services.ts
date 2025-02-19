@@ -10,6 +10,7 @@ import { uploadFile } from '../utils/google-integration.utils';
 import { getProjects } from '../utils/projects.utils';
 import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
 import projectTransformer from '../transformers/projects.transformer';
+import { faqTransformer } from '../transformers/faq.transformer';
 
 export default class OrganizationsService {
   /**
@@ -418,6 +419,6 @@ export default class OrganizationsService {
       where: { dateDeleted: null, partReviewFaqOrgId: organizationId }
     });
 
-    return partReviewFAQs;
+    return partReviewFAQs.map(faqTransformer);
   }
 }

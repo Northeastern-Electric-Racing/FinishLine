@@ -1,8 +1,9 @@
-import { User, Organization } from '@prisma/client';
+import { User, Organization, FrequentlyAskedQuestion } from '@prisma/client';
 import { isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
+import faqTransformer from '../transformers/faq.transformer';
 
 export default class RecruitmentServices {
   /**
@@ -105,11 +106,11 @@ export default class RecruitmentServices {
    * @returns all the faqs from the given organization
    */
   static async getAllOrganizationFaqs(organization: Organization) {
-    const allFaqs = await prisma.frequentlyAskedQuestion.findMany({
-      where: { dateDeleted: null, regularFaqOrgId: organization.organizationId }
+    const allFaqs: FrequentlyAskedQuestion[] = await prisma.frequentlyAskedQuestion.findMany({
+      where: { dateDeleted: null, regularFaqOrgId: organization.organizationId },
     });
 
-    return allFaqs;
+    return allFaqs.map(faqTransformer);
   }
 
   /*
