@@ -681,33 +681,29 @@ export const createTestPartReview = async (
   fileIds: string[],
   notes: string,
   submission: PartSubmission,
-  submissionId: string,
   popUps: Part_Review_Popup[],
-  createdAt: DateTime,
-  updatedAt: DateTime,
-  dateDeleted: DateTime,
   userCreatedId: string,
-  userCreated: User,             
-  deletedAt: DateTime,
   userDeletedId: string,
-  userDeleted: User
 ) => {
   const partReview = await prisma.partReview.create({
     data: {
       partReviewId,
       fileIds,
       notes,
-      submission,
-      submissionId,
+      submission: {
+        connect: {
+          id: submission.id
+        }
+      },
       popUps,
-      createdAt,
-      updatedAt,
-      dateDeleted,
-      userCreatedId,
-      userCreated,
-      deletedAt,
-      userDeletedId,
-      userDeleted
+      createdAt: new Date(2/18/2025),
+      updatedAt: new Date(2/18/2025),
+      userCreated: {
+        connect: { userId: userCreatedId }
+      },
+      userDeleted: {
+        connect: { userId: userDeletedId }
+      }
     }})
     return partReview;
 };
@@ -717,15 +713,9 @@ export const createTestPartSubmission = async (
   fileIds: string[],
   name: string,
   notes: string,
-  part: Part,
   partId: string,
-  createdAt: DateTime,
-  updatedAt: DateTime,
-  dateDeleted: DateTime,
   userCreatedId: string,
-  userCreated: User,             
   userDeletedId: string,
-  userDeleted: User,
   reviews: PartReview[]
 ) => {
   const partSubmission = await prisma.partSubmission.create({
@@ -734,15 +724,17 @@ export const createTestPartSubmission = async (
       fileIds,
       name,
       notes,
-      part,
-      partId,
-      createdAt,
-      updatedAt,
-      dateDeleted,
-      userCreatedId,
-      userCreated,
-      userDeletedId,
-      userDeleted,
+      part: {
+        connect: { partId: partId }
+      },
+      createdAt: new Date(2/18/2025),
+      updatedAt: new Date(2/18/2025),
+      userCreated: {
+        connect: { userId: userCreatedId }
+      },
+      userDeleted: {
+        connect: { userId: userDeletedId }
+      },
       reviews
     }})
     return partSubmission;
