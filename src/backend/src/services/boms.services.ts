@@ -46,12 +46,15 @@ const validateMaterialFields = (
   linkUrl?: string
 ) => {
   if (status !== Material_Status.NOT_READY_TO_ORDER) {
-    if (!materialTypeName) throw new Error('Select a Material Type!');
-    if (!manufacturerName) throw new Error('Select a Manufacturer!');
-    if (!manufacturerPartNumber) throw new Error('Enter a Manufacturer Part Number!');
+    if (!materialTypeName?.trim()) throw new Error('Select a Material Type!');
+    if (!manufacturerName?.trim()) throw new Error('Select a Manufacturer!');
+    if (!manufacturerPartNumber?.trim()) throw new Error('Enter a Manufacturer Part Number!');
     if (!quantity || quantity.isZero()) throw new Error('Enter a Quantity!');
     if (!price || price === 0) throw new Error('Enter a Price!');
-    if (!linkUrl) throw new Error('Enter a URL!');
+    if (!linkUrl?.trim()) throw new Error('Enter a URL!');
+  } else {
+    if (quantity && quantity.isZero()) throw new Error('Quantity cannot be zero if provided!');
+    if (price && price === 0) throw new Error('Price cannot be zero if provided!');
   }
 };
 

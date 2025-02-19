@@ -86,14 +86,14 @@ export interface MaterialFormInput {
 export interface MaterialDataSubmission {
   name: string;
   status: MaterialStatus;
-  materialTypeName: string;
-  manufacturerName: string;
-  manufacturerPartNumber: string;
+  materialTypeName?: string;
+  manufacturerName?: string;
+  manufacturerPartNumber?: string;
   pdmFileName?: string;
   price: number;
   quantity: Decimal;
   unitName?: string;
-  linkUrl: string;
+  linkUrl?: string;
   notes?: string;
   assemblyId?: string;
   subtotal: number;
@@ -173,18 +173,22 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, assemblies, onS
     const submission: MaterialDataSubmission = {
       name: data.name,
       status: data.status,
-      materialTypeName: data.materialTypeName || '',
-      manufacturerName: data.manufacturerName || '',
-      manufacturerPartNumber: data.manufacturerPartNumber || '',
-      pdmFileName: data.pdmFileName || undefined,
-      unitName: data.unitName || undefined,
-      notes: data.notes || undefined,
-      assemblyId: data.assemblyId || undefined,
-      linkUrl: data.linkUrl,
-      subtotal,
+      quantity: new Decimal(data.quantity),
       price,
-      quantity: new Decimal(data.quantity)
+      subtotal
     };
+
+    if (data.status !== MaterialStatus.NotReadyToOrder) {
+      submission.materialTypeName = data.materialTypeName || '';
+      submission.manufacturerName = data.manufacturerName || '';
+      submission.manufacturerPartNumber = data.manufacturerPartNumber || '';
+      submission.linkUrl = data.linkUrl;
+    }
+
+    if (data.pdmFileName) submission.pdmFileName = data.pdmFileName;
+    if (data.unitName) submission.unitName = data.unitName;
+    if (data.notes) submission.notes = data.notes;
+    if (data.assemblyId) submission.assemblyId = data.assemblyId;
 
     onSubmit(submission);
   };
