@@ -716,7 +716,7 @@ model Material {
   dateDeleted            DateTime?
   userDeleted            User?           @relation(fields: [userDeletedId], references: [userId], name: "materialDeleter")
   userDeletedId          String?
-  dateCreated            DateTime
+  dateCreated            DateTime        @default(now())
   userCreated            User            @relation(fields: [userCreatedId], references: [userId], name: "materialCreator")
   userCreatedId          String
   status                 Material_Status

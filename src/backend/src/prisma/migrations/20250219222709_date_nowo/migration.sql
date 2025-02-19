@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Material" ALTER COLUMN "dateCreated" SET DEFAULT CURRENT_TIMESTAMP;
