@@ -17,7 +17,7 @@ const schema = yup.object().shape({
   name: yup.string().required('Enter a name!'),
   status: yup.mixed<MaterialStatus>().oneOf(Object.values(MaterialStatus)).required('Select a status!'),
   materialTypeName: yup.string().required('Select a Material Type!'),
-  manufacturerName: yup.string().required('Select a Manufacturer'),
+  manufacturerName: yup.string().required('Select a Manufacturer!'),
   manufacturerPartNumber: yup.string().required('Manufacturer Part Number is required!'),
   quantity: yup.number().required('Enter a quantity!'),
   price: yup.number().required('Price per Unit is required!'),
