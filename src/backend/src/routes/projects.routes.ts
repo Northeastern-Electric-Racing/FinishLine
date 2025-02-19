@@ -9,6 +9,7 @@ import {
   validateInputs
 } from '../utils/validation.utils';
 import ProjectsController from '../controllers/projects.controllers';
+import { Material_Status } from '@prisma/client';
 
 const projectRouter = express.Router();
 
@@ -92,50 +93,15 @@ projectRouter.post(
   nonEmptyString(body('name')),
   nonEmptyString(body('assemblyId').optional()),
   isMaterialStatus(body('status')),
-  body('materialTypeName').custom((value, { req }) => {
-    if (req.body.status !== 'NOT_READY_TO_ORDER' && !value) {
-      throw new Error('Material Type is required unless status is NOT_READY_TO_ORDER');
-    }
-    return true;
-  }),
-  body('manufacturerName').custom((value, { req }) => {
-    if (req.body.status !== 'NOT_READY_TO_ORDER' && !value) {
-      throw new Error('Manufacturer is required unless status is NOT_READY_TO_ORDER');
-    }
-    return true;
-  }),
-  body('manufacturerPartNumber').custom((value, { req }) => {
-    if (req.body.status !== 'NOT_READY_TO_ORDER' && !value) {
-      throw new Error('Manufacturer Part Number is required unless status is NOT_READY_TO_ORDER');
-    }
-    return true;
-  }),
+  nonEmptyString(body('materialTypeName').optional()),
+  nonEmptyString(body('manufacturerName').optional()),
+  nonEmptyString(body('manufacturerPartNumber').optional()),
   nonEmptyString(body('pdmFileName').optional()),
-  body('quantity').custom((value, { req }) => {
-    if (req.body.status !== 'NOT_READY_TO_ORDER' && !value) {
-      throw new Error('Quantity is required unless status is NOT_READY_TO_ORDER');
-    }
-    return true;
-  }),
+  decimalMinZero(body('quantity').optional()),
   nonEmptyString(body('unitName')).optional(),
-  body('price').custom((value, { req }) => {
-    if (req.body.status !== 'NOT_READY_TO_ORDER' && !value) {
-      throw new Error('Price is required unless status is NOT_READY_TO_ORDER');
-    }
-    return true;
-  }),
-  body('subtotal').custom((value, { req }) => {
-    if (req.body.status !== 'NOT_READY_TO_ORDER' && !value) {
-      throw new Error('Subtotal is required unless status is NOT_READY_TO_ORDER');
-    }
-    return true;
-  }),
-  body('linkUrl').custom((value, { req }) => {
-    if (req.body.status !== 'NOT_READY_TO_ORDER' && !value) {
-      throw new Error('URL is required unless status is NOT_READY_TO_ORDER');
-    }
-    return true;
-  }),
+  intMinZero(body('price').optional()),
+  intMinZero(body('subtotal').optional()),
+  nonEmptyString(body('linkUrl').optional()),
   body('notes').isString().optional(),
   validateInputs,
   ProjectsController.createMaterial
@@ -145,15 +111,15 @@ projectRouter.post(
   nonEmptyString(body('name')),
   nonEmptyString(body('assemblyId').optional()),
   isMaterialStatus(body('status')),
-  nonEmptyString(body('materialTypeName')),
-  nonEmptyString(body('manufacturerName')),
-  nonEmptyString(body('manufacturerPartNumber')),
+  nonEmptyString(body('materialTypeName').optional()),
+  nonEmptyString(body('manufacturerName').optional()),
+  nonEmptyString(body('manufacturerPartNumber').optional()),
   nonEmptyString(body('pdmFileName').optional()),
-  decimalMinZero(body('quantity')),
+  decimalMinZero(body('quantity').optional()),
   body('unitName').optional(),
-  intMinZero(body('price')), // in cents
-  intMinZero(body('subtotal')), // in cents
-  nonEmptyString(body('linkUrl').isURL()),
+  intMinZero(body('price').optional()),
+  intMinZero(body('subtotal').optional()),
+  nonEmptyString(body('linkUrl').optional()),
   body('notes').isString().optional(),
   validateInputs,
   ProjectsController.editMaterial
