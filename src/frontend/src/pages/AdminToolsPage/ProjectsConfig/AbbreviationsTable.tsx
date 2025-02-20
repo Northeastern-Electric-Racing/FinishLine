@@ -2,16 +2,18 @@ import { Box, Typography } from '@mui/material';
 import AdminToolTable from '../AdminToolTable';
 import { NERButton } from '../../../components/NERButton';
 import { useState } from 'react';
-import CreateCarModal from './CreateCarFormModal';
 import { useAllProjects } from '../../../hooks/projects.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 
 const AbbreviationsTable: React.FC = () => {
-  const { data: projects, isLoading: projectsIsLoading, isError: projectsIsError, error: projectsError } = useAllProjects();
+  const { data: projects, isLoading: projectsIsLoading } = useAllProjects();
   const [openModal, setCreateModalShow] = useState(false);
 
   if (!projects || projectsIsLoading) {
     return <LoadingIndicator />;
+  }
+
+  if (openModal) {
   }
 
   return (
