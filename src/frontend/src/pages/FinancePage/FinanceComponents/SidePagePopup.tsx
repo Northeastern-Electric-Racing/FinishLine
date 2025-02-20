@@ -24,10 +24,14 @@ const SidePage: React.FC<SidePageProps> = ({ showPage, handleClose, title, compo
           color: theme.palette.primary.light
         }}
       >
-        <Typography variant="h6" gutterBottom>
+        <Typography
+          variant="h6"
+          gutterBottom
+          sx={{ fontWeight: theme.typography.fontWeightLight, fontSize: '32px', ml: 1, mb: 2, mt: 1 }}
+        >
           {title}
         </Typography>
-        <Box sx={{ flexGrow: 1, width: '100%', overflow: 'auto' }}>{component}</Box>
+        <Box sx={{ ml: 1, flexGrow: 1, width: '100%', overflow: 'auto' }}>{component}</Box>
       </Box>
     </Drawer>
   );
