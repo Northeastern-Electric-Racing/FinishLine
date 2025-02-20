@@ -6,6 +6,7 @@ export type FaqQueryArgs = ReturnType<typeof getFaqQueryArgs>;
 export const getFaqQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.FrequentlyAskedQuestionDefaultArgs>()({
     include: {
-      userCreated: getUserQueryArgs(organizationId)
+      userCreated: getUserQueryArgs(organizationId),
+      userDeleted: getUserQueryArgs(organizationId)
     }
   });
