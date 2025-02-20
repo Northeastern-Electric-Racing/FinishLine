@@ -12,6 +12,7 @@ import AddIcon from '@mui/icons-material/Add';
 import HelpIcon from '@mui/icons-material/Help';
 import { displayEnum } from '../../../../../utils/pipes';
 import { MaterialStatus } from 'shared';
+import { createUnit } from '../../../../../apis/bom.api';
 
 export interface MaterialFormViewProps {
   submitText: 'Add' | 'Edit';
@@ -27,6 +28,8 @@ export interface MaterialFormViewProps {
   open: boolean;
   watch: UseFormWatch<MaterialFormInput>;
   createManufacturer: (name: string) => void;
+  createType: (name: string) => void;
+  createUnit: (name: string) => void;
   setValue: UseFormSetValue<MaterialFormInput>;
 }
 
@@ -48,6 +51,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   open,
   watch,
   createManufacturer,
+  createType,
   setValue
 }) => {
   const quantity = watch('quantity');
@@ -81,7 +85,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           <FormControl fullWidth>
             <FormLabel>Status</FormLabel>
             <Controller
@@ -130,6 +134,20 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
               )}
             />
           </FormControl>
+        </Grid>
+        <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
+          <NERButton
+            sx={{ width: '100%', height: '56px' }}
+            variant="contained"
+            onClick={() => {
+              const newTypeName = prompt('Enter New Type Name');
+              if (newTypeName !== null) {
+                createType(newTypeName);
+              }
+            }}
+          >
+            Add New Type <AddIcon sx={{ paddingLeft: '7px' }}></AddIcon>
+          </NERButton>
         </Grid>
         <Grid item xs={6}>
           <FormControl fullWidth>
@@ -252,6 +270,20 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
               />
             </FormControl>
           </Box>
+        </Grid>
+        <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
+          <NERButton
+            sx={{ width: '110%', height: '56px' }}
+            variant="contained"
+            onClick={() => {
+              const newUnitName = prompt('Enter New Unit Name');
+              if (newUnitName !== null) {
+                createUnit(newUnitName);
+              }
+            }}
+          >
+            Add Unit <AddIcon sx={{ paddingLeft: '5px' }}></AddIcon>
+          </NERButton>
         </Grid>
         <Grid item xs={3}>
           <FormControl fullWidth>

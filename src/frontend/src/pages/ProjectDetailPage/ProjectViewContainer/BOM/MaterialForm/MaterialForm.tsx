@@ -5,6 +5,8 @@ import * as yup from 'yup';
 import LoadingIndicator from '../../../../../components/LoadingIndicator';
 import {
   useCreateManufacturer,
+  useCreateMaterialType,
+  useCreateUnit,
   useGetAllManufacturers,
   useGetAllMaterialTypes,
   useGetAllUnits
@@ -95,6 +97,10 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, assemblies, onS
 
   const { mutateAsync: createManufacturer, isLoading: isLoadingCreateManufacturer } = useCreateManufacturer();
 
+  const { mutateAsync: createType, isLoading: isLoadingCreateType } = useCreateMaterialType();
+
+  const { mutateAsync: createUnit, isLoading: isLoadingCreateUnit } = useCreateUnit();
+
   const {
     data: materialTypes,
     isLoading: isLoadingMaterialTypes,
@@ -121,7 +127,9 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, assemblies, onS
     !materialTypes ||
     !units ||
     !manufactuers ||
-    isLoadingCreateManufacturer
+    isLoadingCreateManufacturer ||
+    isLoadingCreateType ||
+    isLoadingCreateUnit
   ) {
     return <LoadingIndicator />;
   }
@@ -136,6 +144,28 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, assemblies, onS
     try {
       const createdManufacturer = await createManufacturer({ name: manufacturerName });
       setValue('manufacturerName', createdManufacturer.name);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error(error.message);
+      }
+    }
+  };
+
+  const createTypeWrapper = async (typeName: string): Promise<void> => {
+    try {
+      const createdType = await createType({ name: typeName });
+      setValue('materialTypeName', createdType.name);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error(error.message);
+      }
+    }
+  };
+
+  const createUnitWrapper = async (unitName: string): Promise<void> => {
+    try {
+      const createdUnit = await createUnit({ name: unitName });
+      setValue('unitName', createdUnit.name);
     } catch (error: unknown) {
       if (error instanceof Error) {
         console.error(error.message);
@@ -158,6 +188,8 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, assemblies, onS
       open={open}
       watch={watch}
       createManufacturer={createManufacturerWrapper}
+      createType={createTypeWrapper}
+      createUnit={createUnitWrapper}
       setValue={setValue}
     />
   );
