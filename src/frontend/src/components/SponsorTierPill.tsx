@@ -4,9 +4,9 @@
  */
 
 import Chip from '@mui/material/Chip';
-import { Sponsor_Tier } from '@prisma/client';
+import { SponsorTier } from 'shared/src/types/finance-types';
 
-const SponsorTierPill = ({ tier }: { tier: Sponsor_Tier }) => {
+const SponsorTierPill = ({ tier }: { tier: SponsorTier }) => {
   return (
     <Chip
       size="small"
