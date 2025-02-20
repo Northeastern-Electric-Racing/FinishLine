@@ -7,8 +7,8 @@ export const faqTransformer = (faq: Prisma.FrequentlyAskedQuestionGetPayload<Faq
   faqId: faq.faqId,
   question: faq.question,
   answer: faq.answer,
-  userCreated: faq.userCreated,
-  userDeleted: faq.userDeleted ?? undefined,
+  userCreated: userTransformer(faq.userCreated),
+  userDeleted: faq.userDeleted ? userTransformer(faq.userDeleted) : undefined,
   dateCreated: faq.dateCreated,
   dateDeleted: faq.dateDeleted ?? undefined
 });

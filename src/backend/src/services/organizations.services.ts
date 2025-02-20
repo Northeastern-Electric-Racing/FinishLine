@@ -11,6 +11,7 @@ import { getProjects } from '../utils/projects.utils';
 import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
 import projectTransformer from '../transformers/projects.transformer';
 import { faqTransformer } from '../transformers/faq.transformer';
+import { getFaqQueryArgs } from '../prisma-query-args/faq.query.args';
 
 export default class OrganizationsService {
   /**
@@ -416,7 +417,8 @@ export default class OrganizationsService {
    */
   static async getAllPartReviewFAQs(organizationId: string) {
     const partReviewFAQs = await prisma.frequentlyAskedQuestion.findMany({
-      where: { dateDeleted: null, partReviewFaqOrgId: organizationId }
+      where: { dateDeleted: null, partReviewFaqOrgId: organizationId },
+      ...getFaqQueryArgs(organizationId)
     });
 
     return partReviewFAQs.map(faqTransformer);
