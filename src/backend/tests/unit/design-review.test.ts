@@ -22,6 +22,42 @@ describe('Design Reviews', () => {
     await resetUsers();
   });
 
+  test('Marks design review as confirmed when all required members have confirmed', async () => {
+    const user = await createTestUser(supermanAdmin, organizationId);
+
+    // Assume all required members have confirmed their availability
+    const requiredMembers = (await prisma.design_Review.findUnique({
+      where: { designReviewId: designReview.designReviewId },
+      include: { requiredMembers: true }
+    }))?.requiredMembers.map((member) => member.userId) || [];
+
+    // Call the editDesignReview function
+    await DesignReviewsService.editDesignReview(
+      user,
+      designReview.designReviewId,
+      designReview.dateScheduled,
+      designReview.teamTypeId,
+      requiredMembers,
+      [], 
+      designReview.isOnline,
+      designReview.isInPerson,
+      designReview.zoomLink,
+      designReview.location,
+      designReview.docTemplateLink,
+      DesignReviewStatus.SCHEDULED,
+      requiredMembers, // Attendees are all required members, meaning they have confirmed
+      designReview.meetingTimes,
+      organization
+    );
+
+    const updatedDR = await prisma.design_Review.findUnique({
+      where: { designReviewId: designReview.designReviewId }
+    });
+
+    // Expect the design review status to be updated to CONFIRMED
+    expect(updatedDR?.status).toBe(DesignReviewStatus.CONFIRMED);
+  });
+
   // change with admin who is not creator
   test('Set status works when an admin who is not the creator sets', async () => {
     const user = await createTestUser(supermanAdmin, organizationId);
@@ -66,4 +102,5 @@ describe('Design Reviews', () => {
       )
     ).rejects.toThrow(new AccessDeniedAdminOnlyException('set the status of a design review'));
   });
+  
 });
