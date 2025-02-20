@@ -40,10 +40,10 @@ describe('Finance Tests', () => {
             [2024, 2025],
             sponsorTierId,
             true,
-            'googlecode',
             'Bill Gates',
             [],
-            organization
+            organization,
+            'googlecode'
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create a sponsor'));
     });
@@ -58,10 +58,10 @@ describe('Finance Tests', () => {
         [2024, 2025],
         sponsorTierId,
         true,
-        'googlecode',
         'Bill Gates',
         [],
-        organization
+        organization,
+        'googlecode'
       );
 
       expect(result.name).toEqual('Google');

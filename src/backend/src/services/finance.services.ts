@@ -34,10 +34,10 @@ export default class FinanceServices {
     activeYears: number[],
     sponsorTierId: string,
     taxExempt: boolean,
-    discountCode: string,
     vendorContact: string,
     sponsorTasks: Sponsor_Task[],
-    organization: Organization
+    organization: Organization,
+    discountCode?: string
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedAdminOnlyException('create a sponsor');
@@ -55,7 +55,6 @@ export default class FinanceServices {
         vendorContact,
         sponsorTasks: {
           create: sponsorTasks.map((task) => ({
-            sponsorTaskId: task.sponsorTaskId,
             dueDate: task.dueDate,
             notifyDate: task.notifyDate,
             assigneeUserId: task.assigneeUserId,

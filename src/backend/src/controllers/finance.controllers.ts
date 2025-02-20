@@ -12,9 +12,9 @@ export default class FinanceController {
         activeYears,
         sponsorTierId,
         taxExempt,
-        discountCode,
         vendorContact,
-        sponsorTasks
+        sponsorTasks,
+        discountCode
       } = req.body;
 
       const sponsor = await FinanceServices.createSponsor(
@@ -26,10 +26,10 @@ export default class FinanceController {
         activeYears,
         sponsorTierId,
         taxExempt,
-        discountCode,
         vendorContact,
         sponsorTasks,
-        req.organization
+        req.organization,
+        discountCode
       );
       res.status(200).json(sponsor);
     } catch (error: unknown) {

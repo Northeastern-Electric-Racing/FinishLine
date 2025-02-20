@@ -8,15 +8,15 @@ const financeRouter = express.Router();
 financeRouter.post(
   '/finance/sponsor/create',
   nonEmptyString(body('name')),
-  body('status').isBoolean(),
+  body('activeStatus').isBoolean(),
   body('sponsorValue').isInt(),
   isDate(body('joinDate')),
   body('activeYears').isArray(),
-  nonEmptyString(body('sponsorTier')),
+  nonEmptyString(body('sponsorTierId')),
   body('taxExempt').isBoolean(),
-  nonEmptyString(body('discountCode')),
   nonEmptyString(body('vendorContact')),
   body('sponsorTasks').isArray(),
+  nonEmptyString(body('discountCode')),
   validateInputs,
   FinanceController.createSponsor
 );

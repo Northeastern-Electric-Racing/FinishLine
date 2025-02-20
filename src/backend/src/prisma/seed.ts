@@ -2019,10 +2019,10 @@ const performSeed: () => Promise<void> = async () => {
     [2024, 2025],
     'gold',
     true,
-    'googlecode',
     'Bill Gates',
     [],
-    ner
+    ner,
+    'googlecode'
   );
 };
 
