@@ -16,6 +16,7 @@ export * from './src/types/milestone-types';
 export * from './src/types/checklist-types';
 export * from './src/types/pop-up-types';
 export * from './src/types/announcements.types';
+export * from './src/types/parts-review.types';
 
 export * from './src/validate-wbs';
 export * from './src/date-utils';
