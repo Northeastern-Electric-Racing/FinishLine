@@ -125,7 +125,7 @@ export const sendReimbursementRequestCreatedNotificationAndCreateMessageInfo = a
 ): Promise<void> => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
 
-  const msg = `${await getUserFullName(submitterId)} created a reimbursement request 💲`;
+  const msg = `${await getUserFullName(submitterId)} created a reimbursement request: ${requestId} 💲`;
   const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
   const linkButtonText = 'View Reimbursement Request';
 
