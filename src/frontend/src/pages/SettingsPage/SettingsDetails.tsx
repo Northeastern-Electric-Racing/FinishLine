@@ -6,6 +6,7 @@ import { useCurrentUser, useCurrentUserSecureSettings, useSingleUserSettings } f
 import ErrorPage from '../ErrorPage';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import { displayEnum } from '../../utils/pipes';
+import { isUserOnTeam } from '../../utils/teams.utils';
 
 const SettingsDetails: React.FC = () => {
   const auth = useAuth();
@@ -39,12 +40,7 @@ const SettingsDetails: React.FC = () => {
   )
     return <LoadingIndicator />;
 
-  const userTeams = teams.filter(
-    (team) =>
-      team.members.some((member) => member.userId === user.userId) ||
-      team.head.userId === user.userId ||
-      team.leads.some((lead) => lead.userId === user.userId)
-  );
+  const userTeams = teams.filter((team) => isUserOnTeam(team, user));
 
   return (
     <Box>
