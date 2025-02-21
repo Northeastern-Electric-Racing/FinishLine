@@ -462,7 +462,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       onClick: () => setShowDenyModal(true),
       icon: <CloseIcon />,
       disabled:
-        (!user.isFinance && user.userId !== reimbursementRequest.recipient.userId) ||
+        (!isAdmin(user.role) && !user.isFinance && user.userId !== reimbursementRequest.recipient.userId) ||
         isReimbursementRequestReimbursed(reimbursementRequest) ||
         isReimbursementRequestDenied(reimbursementRequest)
     }
