@@ -40,7 +40,6 @@ export interface Receipt {
   receiptId: string;
   googleFileId: string;
   name: string;
-  dateDeleted?: Date;
   deletedBy?: User;
 }
 
@@ -49,7 +48,6 @@ export interface ReimbursementRequest {
   identifier: number;
   saboId?: number;
   dateCreated: Date;
-  dateDeleted?: Date;
   dateOfExpense?: Date;
   reimbursementStatuses: ReimbursementStatus[];
   recipient: User;
@@ -76,7 +74,6 @@ export type ReimbursementProductReason = WBSElementData | OtherProductReason;
 export interface ReimbursementProduct {
   reimbursementProductId: string;
   name: string;
-  dateDeleted?: Date;
   cost: number;
   reimbursementProductReason: ReimbursementProductReason;
 }
@@ -84,7 +81,6 @@ export interface ReimbursementProduct {
 export interface Vendor {
   vendorId: string;
   dateCreated: Date;
-  dateDeleted?: Date;
   name: string;
   username: string;
   passwordHash: string;
@@ -100,7 +96,6 @@ export interface AccountCode {
   code: number;
   allowed: boolean;
   allowedRefundSources: ClubAccount[];
-  dateDeleted?: Date;
 }
 
 export interface ReimbursementProductCreateArgs {
