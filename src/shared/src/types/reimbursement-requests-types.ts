@@ -83,7 +83,7 @@ export interface Vendor {
   dateCreated: Date;
   name: string;
   username: string;
-  passwordHash: string;
+  password: string;
   discountCode?: string;
   twoFactorContact?: User;
   notes?: string;
