@@ -340,9 +340,8 @@ export default class DesignReviewsService {
         )));
 
     // if all required members are confirmed, set the status to confirmed
-    const ogDRRequiredMembersIds = originaldesignReview.requiredMembers.map((member) => member.userId);
     const allRequiredMembersConfirmed = updatedRequiredMembers.every((member) =>
-      ogDRRequiredMembersIds.includes(member.userId)
+      originaldesignReview.confirmedMembers.map((user) => user.userId).includes(member.userId)
     );
 
     if (status === Design_Review_Status.SCHEDULED && allRequiredMembersConfirmed) {

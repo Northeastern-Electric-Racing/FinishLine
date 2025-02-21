@@ -22,40 +22,52 @@ describe('Design Reviews', () => {
     await resetUsers();
   });
 
-  test('Marks design review as confirmed when all required members have confirmed', async () => {
+  test('Marks design review as confirmed if updated list of required members have confirmed', async () => {
     const user = await createTestUser(supermanAdmin, organizationId);
 
-    // Assume all required members have confirmed their availability
-    const requiredMembers = (await prisma.design_Review.findUnique({
+    const origonalDesignreview = await prisma.design_Review.update({
       where: { designReviewId: designReview.designReviewId },
-      include: { requiredMembers: true }
-    }))?.requiredMembers.map((member) => member.userId) || [];
+      data: {
+        requiredMembers: {
+          connect: [{ userId: user.userId }]
+        },
+        confirmedMembers: {
+          connect: [{ userId: designReview.userCreatedId }]
+        }
+      },
+      include: {
+        requiredMembers: true,
+        confirmedMembers: true
+      }
+    });
 
-    // Call the editDesignReview function
-    await DesignReviewsService.editDesignReview(
+    const requiredMembers = origonalDesignreview.requiredMembers.map((member) => member.userId) || [];
+    const confirmedMembers = origonalDesignreview.confirmedMembers.map((member) => member.userId) || [];
+
+    expect(requiredMembers.length).toBe(2);
+    expect(confirmedMembers.length).toBe(1);
+
+    await DesignReviewsService.setStatus(user, designReview.designReviewId, DesignReviewStatus.SCHEDULED, organization);
+
+    const updatedDesignReview = await DesignReviewsService.editDesignReview(
       user,
       designReview.designReviewId,
-      designReview.dateScheduled,
-      designReview.teamTypeId,
-      requiredMembers,
-      [], 
-      designReview.isOnline,
-      designReview.isInPerson,
-      designReview.zoomLink,
-      designReview.location,
-      designReview.docTemplateLink,
+      new Date(),
+      origonalDesignreview.teamTypeId,
+      [designReview.userCreatedId],
+      [],
+      false,
+      false,
+      null,
+      null,
+      '',
       DesignReviewStatus.SCHEDULED,
-      requiredMembers, // Attendees are all required members, meaning they have confirmed
-      designReview.meetingTimes,
+      [],
+      [0, 1],
       organization
     );
 
-    const updatedDR = await prisma.design_Review.findUnique({
-      where: { designReviewId: designReview.designReviewId }
-    });
-
-    // Expect the design review status to be updated to CONFIRMED
-    expect(updatedDR?.status).toBe(DesignReviewStatus.CONFIRMED);
+    expect(updatedDesignReview.status).toBe(DesignReviewStatus.CONFIRMED);
   });
 
   // change with admin who is not creator
@@ -102,5 +114,4 @@ describe('Design Reviews', () => {
       )
     ).rejects.toThrow(new AccessDeniedAdminOnlyException('set the status of a design review'));
   });
-  
 });
