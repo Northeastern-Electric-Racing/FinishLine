@@ -111,7 +111,7 @@ const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose
         <Box style={{ display: 'flex', verticalAlign: 'middle', alignItems: 'center' }}>
           <FormLabel>Description</FormLabel>
         </Box>
-        <ReactHookTextField name="description" control={control} />
+        <ReactHookTextField name="description" control={control} multiline rows={8} />
         <FormHelperText error>{errors.description?.message}</FormHelperText>
       </FormControl>
     </NERFormModal>
