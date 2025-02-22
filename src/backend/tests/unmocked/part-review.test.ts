@@ -1,19 +1,22 @@
 import { Organization, User } from '@prisma/client';
-import { createTestChecklist, createTestOrganization, createTestTeamType, createTestUser, resetUsers } from '../test-utils';
+import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import PartReviewService from '../../src/services/part-review.service.ts';
-import { batmanAppAdmin, supermanAdmin } from '../test-data/users.test-data.ts';
+import { batmanAppAdmin, supermanAdmin, aquamanLeadership } from '../test-data/users.test-data.ts';
 import prisma from '../../src/prisma/prisma.ts';
+import { AccessDeniedAdminOnlyException, DeletedException } from '../../src/utils/errors.utils.ts';
 
 describe('part review common mistakes create update and delete', () => {
   let orgId: string;
   let organization: Organization;
   let batman: User;
   let superman: User;
+  let nonAdmin: User;
   beforeEach(async () => {
     organization = await createTestOrganization();
     orgId = organization.organizationId;
     batman = await createTestUser(batmanAppAdmin, orgId);
     superman = await createTestUser(supermanAdmin, orgId);
+    nonAdmin = await createTestUser(aquamanLeadership, orgId);
   });
 
   afterEach(async () => {
@@ -74,10 +77,64 @@ describe('part review common mistakes create update and delete', () => {
     expect(deletedCommonMistake?.starred).toBe(true);
 
     const prismaDeletedMistake = await prisma.partReviewCommonMistake.findUnique({
-        where: {
-          id: commonMistake.id
-        }
-      });
-      expect(prismaDeletedMistake?.dateDeleted).toBeTruthy();
+      where: {
+        id: commonMistake.id
+      }
+    });
+    expect(prismaDeletedMistake?.dateDeleted).toBeTruthy();
+  });
+
+  it('does not let non-admins create, edit, or delete common mistakes', async () => {
+    await expect(
+      async () => await PartReviewService.createCommonMistake('some title', 'some description', false, nonAdmin, orgId)
+    ).rejects.toThrow(new AccessDeniedAdminOnlyException('create common mistake'));
+
+    const commonMistake = await PartReviewService.createCommonMistake(
+      'some title',
+      'some description',
+      false,
+      batman,
+      orgId
+    );
+
+    await expect(
+      async () =>
+        await PartReviewService.updateCommonMistake(
+          commonMistake.id,
+          'some title2',
+          'some description2',
+          true,
+          nonAdmin,
+          orgId
+        )
+    ).rejects.toThrow(new AccessDeniedAdminOnlyException('update common mistake'));
+
+    await expect(async () => await PartReviewService.deleteCommonMistake(commonMistake.id, nonAdmin, orgId)).rejects.toThrow(
+      new AccessDeniedAdminOnlyException('delete common mistake')
+    );
+  });
+
+  it('does not allow updating deleted common mistake', async () => {
+    const commonMistake = await PartReviewService.createCommonMistake(
+      'some title',
+      'some description',
+      false,
+      batman,
+      orgId
+    );
+
+    await PartReviewService.deleteCommonMistake(commonMistake.id, superman, orgId);
+
+    await expect(
+      async () =>
+        await PartReviewService.updateCommonMistake(
+          commonMistake.id,
+          'some title2',
+          'some description2',
+          true,
+          batman,
+          orgId
+        )
+    ).rejects.toThrow(new DeletedException('common mistake', commonMistake.id));
   });
 });
