@@ -2146,15 +2146,17 @@ const performSeed: () => Promise<void> = async () => {
     false
   );
 
-  const partOnlyIdExample = await prisma.part.create({
+  const partExample = await prisma.part.create({
     data: {
       partId: '001',
       index: 0,
       commonName: 'tire',
-      project: undefined,
-      projectId: 'n/a',
-      userCreated: undefined,
-      userCreatedId: 'n/a'
+      project: {
+        connect: { projectId: project1Id }
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      }
     }
   });
 
@@ -2167,7 +2169,7 @@ const performSeed: () => Promise<void> = async () => {
       name: 'tire',
       notes: 'black, round',
       part: {
-        connect: { partId: partOnlyIdExample.partId }
+        connect: { partId: partExample.partId }
       },
       userCreated: {
         connect: { userId: batman.userId }
