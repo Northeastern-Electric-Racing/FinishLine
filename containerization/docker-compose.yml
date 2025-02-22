@@ -30,6 +30,8 @@ services:
     volumes:
       - ../src/backend:/base/src/backend
       - ../src/shared:/base/src/shared
+      - /base/src/backend/node_modules
+      - /base/src/backend/.prisma
     ports:
       - "3001:3001"
     depends_on:
