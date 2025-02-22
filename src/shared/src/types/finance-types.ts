@@ -11,7 +11,7 @@ export interface Sponsor {
   discountCode?: string;
   activeYears: number[];
   taxExempt: boolean;
-  sponsorTasks: Sponsor_Task[];
+  sponsorTasks: SponsorTask[];
 }
 
 export interface SponsorTier {
@@ -21,7 +21,7 @@ export interface SponsorTier {
   sponsors: Sponsor[];
 }
 
-export interface Sponsor_Task {
+export interface SponsorTask {
   sponsorTaskId: string;
   dueDate: Date;
   notifyDate?: Date;
