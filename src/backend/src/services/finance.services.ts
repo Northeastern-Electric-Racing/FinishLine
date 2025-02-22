@@ -70,4 +70,13 @@ export default class FinanceServices {
 
     return sponsor;
   }
+
+  static async getAllSponsors(organization: Organization) {
+    const allSponsors = await prisma.sponsor.findMany({
+      where: { organizationId: organization.organizationId, dateDeleted: null },
+      include: { sponsorTasks: true }
+    });
+
+    return allSponsors;
+  }
 }

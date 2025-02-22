@@ -1,7 +1,7 @@
 import { Organization } from '@prisma/client';
 import FinanceServices from '../../src/services/finance.services';
 import { AccessDeniedAdminOnlyException } from '../../src/utils/errors.utils';
-import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
+import { batmanAppAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 
@@ -75,6 +75,41 @@ describe('Finance Tests', () => {
       expect(result.vendorContact).toEqual('Bill Gates');
       expect(result.sponsorTasks).toEqual([]);
       expect(result.organizationId).toEqual(orgId);
+    });
+  });
+
+  describe('Get All Sponsors', () => {
+    it('Succeeds and gets all the sponsors', async () => {
+      const spon1 = await FinanceServices.createSponsor(
+        await createTestUser(batmanAppAdmin, orgId),
+        'Google',
+        true,
+        5000,
+        new Date(12, 1, 24),
+        [2024, 2025],
+        sponsorTierId,
+        true,
+        'Bill Gates',
+        [],
+        organization,
+        'googlecode'
+      );
+      const spon2 = await FinanceServices.createSponsor(
+        await createTestUser(supermanAdmin, orgId),
+        'Apple',
+        true,
+        2000,
+        new Date(11, 23, 24),
+        [2024, 2025],
+        sponsorTierId,
+        true,
+        'Tim Cook',
+        [],
+        organization,
+        'applecode'
+      );
+      const result = await FinanceServices.getAllSponsors(organization);
+      expect(result).toStrictEqual([spon1, spon2]);
     });
   });
 });

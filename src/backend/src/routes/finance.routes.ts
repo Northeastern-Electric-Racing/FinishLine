@@ -20,3 +20,5 @@ financeRouter.post(
   validateInputs,
   FinanceController.createSponsor
 );
+
+financeRouter.get('/finance/sponsor', FinanceController.getAllSponsors);
