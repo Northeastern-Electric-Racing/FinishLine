@@ -12,6 +12,8 @@ import {
   Graph_Display_Type,
   Graph_Type,
   Measure,
+  PartReview,
+  Part_Review_Popup,
   PrismaClient,
   Scope_CR_Why_Type,
   Task_Priority,
@@ -51,6 +53,7 @@ import { seedGraph } from './seed-data/statistics.seed';
 import { graphCollectionTransformer } from '../transformers/statistics-graphCollection.transformer';
 import AnnouncementService from '../services/announcement.service';
 import OnboardingServices from '../services/onboarding.services';
+import { createTestPartReview, createTestPartSubmission } from '../../tests/test-utils';
 
 const prisma = new PrismaClient();
 
@@ -2142,6 +2145,58 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     false
   );
+
+  const partOnlyIdExample = await prisma.part.create({
+    data: {
+      partId: '001',
+      index: 0,
+      commonName: 'tire',
+      project: undefined,
+      projectId: 'n/a',
+      userCreated: undefined,
+      userCreatedId: 'n/a'
+    }
+  });
+
+  var emptyReviews: PartReview[] = []
+
+  const partSubmissionExample = await prisma.partSubmission.create({
+    data: {
+      id: 'submissionId001',
+      fileIds: ['file1', 'file2'],
+      name: 'tire',
+      notes: 'black, round',
+      part: {
+        connect: { partId: partOnlyIdExample.partId }
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      },
+      reviews: {
+        connect: emptyReviews.map((review) => ({ partReviewId: review.partReviewId }))
+      }
+    }});
+
+  var emptyPopups: Part_Review_Popup[] = []
+
+  const partReviewExample = await prisma.partReview.create({
+    data: {
+      partReviewId: 'reviewId001',
+      fileIds: ['file1', 'file2'],
+      notes: 'this part submission sucks!!',
+      submission: {
+        connect: {
+          id: partSubmissionExample.id
+        }
+      },
+      popUps: {
+        connect: emptyPopups.map((popup) => ({ partReviewPopupId: popup.partReviewPopupId }))
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      }
+    }});
+
 };
 
 performSeed()

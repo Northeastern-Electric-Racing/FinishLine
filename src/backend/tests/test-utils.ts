@@ -2,7 +2,6 @@
 import {
   Club_Accounts,
   Organization,
-  Part,
   PartReview,
   PartSubmission,
   Part_Review_Popup,
@@ -683,7 +682,6 @@ export const createTestPartReview = async (
   submission: PartSubmission,
   popUps: Part_Review_Popup[],
   userCreatedId: string,
-  userDeletedId: string,
 ) => {
   const partReview = await prisma.partReview.create({
     data: {
@@ -695,14 +693,11 @@ export const createTestPartReview = async (
           id: submission.id
         }
       },
-      popUps,
-      createdAt: new Date(2/18/2025),
-      updatedAt: new Date(2/18/2025),
+      popUps: {
+        connect: popUps.map((popup) => ({ partReviewPopupId: popup.partReviewPopupId }))
+      },
       userCreated: {
         connect: { userId: userCreatedId }
-      },
-      userDeleted: {
-        connect: { userId: userDeletedId }
       }
     }})
     return partReview;
@@ -715,7 +710,6 @@ export const createTestPartSubmission = async (
   notes: string,
   partId: string,
   userCreatedId: string,
-  userDeletedId: string,
   reviews: PartReview[]
 ) => {
   const partSubmission = await prisma.partSubmission.create({
@@ -727,15 +721,12 @@ export const createTestPartSubmission = async (
       part: {
         connect: { partId: partId }
       },
-      createdAt: new Date(2/18/2025),
-      updatedAt: new Date(2/18/2025),
       userCreated: {
         connect: { userId: userCreatedId }
       },
-      userDeleted: {
-        connect: { userId: userDeletedId }
-      },
-      reviews
+      reviews: {
+        connect: reviews.map((review) => ({ partReviewId: review.partReviewId }))
+      }
     }})
     return partSubmission;
 };
