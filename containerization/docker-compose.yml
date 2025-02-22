@@ -17,16 +17,10 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ../src/frontend:/src/frontend
+      - ../src/frontend:/base/src/frontend
+      - ../src/shared:/base/src/shared
     depends_on:
       - backend
-    develop:
-      watch:
-      - action: sync
-        path: ../src/frontend ../src/shared
-        target: /src/frontend /src/shared
-      - action: rebuild
-        path: /src/frontend /src/shared
 
   backend:
     container_name: backend
@@ -34,18 +28,12 @@ services:
       context: ../
       dockerfile: src/backend/Dockerfile
     volumes:
-      - ../src/backend:/src/backend
+      - ../src/backend:/base/src/backend
+      - ../src/shared:/base/src/shared
     ports:
       - "3001:3001"
     depends_on:
       - database
-    develop:
-      watch:
-      - action: sync
-        path: ../src/backend ../src/shared
-        target: /src/backend /src/shared
-      - action: rebuild
-        path: /src/backend /src/shared
 
 volumes:
   pgdata:
