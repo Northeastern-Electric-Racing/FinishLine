@@ -1,9 +1,9 @@
 import { Organization, User } from '@prisma/client';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
-import PartReviewService from '../../src/services/part-review.service.ts';
-import { batmanAppAdmin, supermanAdmin, aquamanLeadership } from '../test-data/users.test-data.ts';
-import prisma from '../../src/prisma/prisma.ts';
-import { AccessDeniedAdminOnlyException, DeletedException } from '../../src/utils/errors.utils.ts';
+import PartReviewService from '../../src/services/part-review.service';
+import { batmanAppAdmin, supermanAdmin, aquamanLeadership } from '../test-data/users.test-data';
+import prisma from '../../src/prisma/prisma';
+import { AccessDeniedAdminOnlyException, DeletedException } from '../../src/utils/errors.utils';
 
 describe('part review common mistakes create update and delete', () => {
   let orgId: string;
