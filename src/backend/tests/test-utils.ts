@@ -681,7 +681,7 @@ export const createTestPartReview = async (
   notes: string,
   submission: PartSubmission,
   popUps: Part_Review_Popup[],
-  userCreatedId: string,
+  userCreatedId: string
 ) => {
   const partReview = await prisma.partReview.create({
     data: {
@@ -699,8 +699,9 @@ export const createTestPartReview = async (
       userCreated: {
         connect: { userId: userCreatedId }
       }
-    }})
-    return partReview;
+    }
+  });
+  return partReview;
 };
 
 export const createTestPartSubmission = async (
@@ -719,7 +720,7 @@ export const createTestPartSubmission = async (
       name,
       notes,
       part: {
-        connect: { partId: partId }
+        connect: { partId }
       },
       userCreated: {
         connect: { userId: userCreatedId }
@@ -727,6 +728,7 @@ export const createTestPartSubmission = async (
       reviews: {
         connect: reviews.map((review) => ({ partReviewId: review.partReviewId }))
       }
-    }})
-    return partSubmission;
+    }
+  });
+  return partSubmission;
 };

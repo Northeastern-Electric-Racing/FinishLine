@@ -2158,7 +2158,7 @@ const performSeed: () => Promise<void> = async () => {
     }
   });
 
-  var emptyReviews: PartReview[] = []
+  const emptyReviews: PartReview[] = [];
 
   const partSubmissionExample = await prisma.partSubmission.create({
     data: {
@@ -2175,9 +2175,10 @@ const performSeed: () => Promise<void> = async () => {
       reviews: {
         connect: emptyReviews.map((review) => ({ partReviewId: review.partReviewId }))
       }
-    }});
+    }
+  });
 
-  var emptyPopups: Part_Review_Popup[] = []
+  const emptyPopups: Part_Review_Popup[] = [];
 
   const partReviewExample = await prisma.partReview.create({
     data: {
@@ -2195,8 +2196,8 @@ const performSeed: () => Promise<void> = async () => {
       userCreated: {
         connect: { userId: batman.userId }
       }
-    }});
-
+    }
+  });
 };
 
 performSeed()
