@@ -138,7 +138,6 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
               handleDragStart(materialId);
             },
             onDrop: (event: React.DragEvent) => {
-              if (event.currentTarget.className.includes('super-app-theme--material')) return;
               const rowIndex = parseInt(event.currentTarget.getAttribute('data-rowindex') || '0');
               const materials = rows.concat(materialsWithAssemblies.filter(isAssemblyOpen));
               const { assemblyId } = materials[rowIndex];
