@@ -8,7 +8,6 @@ import ErrorPage from '../../ErrorPage';
 
 const AbbreviationsTable: React.FC = () => {
   const { data: projects, isLoading: projectsIsLoading, isError: projectsIsError, error: projectsError } = useAllProjects();
-  const [, setCreateModalShow] = useState(false);
 
   if (!projects || projectsIsLoading) {
     return <LoadingIndicator />;
