@@ -3,9 +3,18 @@ import { userHasPermission } from '../utils/users.utils';
 import { FrequentlyAskedQuestion, isAdmin } from 'shared';
 import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
-import { partReviewFaqTransformer } from '../transformers/part-review.transformer';
+import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
+import { faqTransformer } from '../transformers/faq.transformer';
 
 export default class PartReviewService {
+  /**
+   * Creates an faq
+   * @param question the question
+   * @param answer the answer
+   * @param creator user creating -- must be admin
+   * @param organizationId the organization
+   * @returns the faq
+   */
   static async createFaq(
     question: string,
     answer: string,
@@ -30,12 +39,22 @@ export default class PartReviewService {
             organizationId
           }
         }
-      }
+      },
+      ...getFaqQueryArgs(organizationId)
     });
 
-    return partReviewFaqTransformer(faq);
+    return faqTransformer(faq);
   }
 
+  /**
+   * updates an faq
+   * @param faqId the faq to update
+   * @param question the question
+   * @param answer the answer
+   * @param updater the user updating -- must be an admin
+   * @param organizationId the organization
+   * @returns the updated faq
+   */
   static async updateFaq(
     faqId: string,
     question: string,
@@ -68,21 +87,26 @@ export default class PartReviewService {
       data: {
         question,
         answer
-      }
+      },
+      ...getFaqQueryArgs(organizationId)
     });
 
-    return partReviewFaqTransformer(updatedFaq);
+    return faqTransformer(updatedFaq);
   }
 
-  static async deleteFaq(
-    faqId: string,
-    deleter: User,
-    organizationId: string
-  ): Promise<FrequentlyAskedQuestion> {
+  /**
+   * Deletes an faq
+   * @param faqId the faq to delete
+   * @param deleter the user deleting -- must be admin
+   * @param organizationId the organization
+   * @returns the deleted faq
+   */
+  static async deleteFaq(faqId: string, deleter: User, organizationId: string): Promise<FrequentlyAskedQuestion> {
     const faq = await prisma.frequentlyAskedQuestion.findUnique({
       where: {
         faqId
-      }
+      },
+      ...getFaqQueryArgs
     });
 
     if (!faq) {
@@ -104,9 +128,10 @@ export default class PartReviewService {
           }
         },
         dateDeleted: new Date()
-      }
+      },
+      ...getFaqQueryArgs(organizationId)
     });
 
-    return partReviewFaqTransformer(deletedFaq);
+    return faqTransformer(deletedFaq);
   }
 }
