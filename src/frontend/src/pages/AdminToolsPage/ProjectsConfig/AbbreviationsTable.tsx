@@ -4,24 +4,25 @@ import { NERButton } from '../../../components/NERButton';
 import { useState } from 'react';
 import { useAllProjects } from '../../../hooks/projects.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
 
 const AbbreviationsTable: React.FC = () => {
-  const { data: projects, isLoading: projectsIsLoading } = useAllProjects();
-  const [openModal, setCreateModalShow] = useState(false);
+  const { data: projects, isLoading: projectsIsLoading, isError: projectsIsError, error: projectsError } = useAllProjects();
+  const [, setCreateModalShow] = useState(false);
 
   if (!projects || projectsIsLoading) {
     return <LoadingIndicator />;
   }
-
-  if (openModal) {
+  if (projectsIsError) {
+    return <ErrorPage message={projectsError?.message} />;
   }
 
   return (
     <Box>
       <Typography variant="subtitle1">Project Name Abbreviations</Typography>
-      <AdminToolTable columns={[{ name: 'Project Name' }, { name: 'Abbreviation' }, { name: ' ' }]} rows={[]} />
+      <AdminToolTable columns={[{ name: 'Project Name' }, { name: 'Abbreviation' }]} rows={[]} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
-        <NERButton variant="contained" onClick={() => setCreateModalShow(true)}>
+        <NERButton variant="contained" onClick={() => {}}>
           New Abbreviation
         </NERButton>
       </Box>
