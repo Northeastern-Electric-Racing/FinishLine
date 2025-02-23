@@ -258,6 +258,13 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
               errors={errors}
             />
           </Box>
+          {!project && (
+            <Box>
+              <Typography variant="h5" sx={{ mb: 2 }}>
+                Work Packages
+              </Typography>
+            </Box>
+          )}
           <Box>
             <DescriptionBulletsEditView
               type="project"
