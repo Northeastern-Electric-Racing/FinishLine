@@ -3,10 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Prisma } from '@prisma/client';
+import { Index_Code, Prisma } from '@prisma/client';
 import {
   AccountCode,
-  ClubAccount,
+  IndexCode,
   OtherProductReason,
   Receipt,
   Reimbursement,
@@ -28,6 +28,7 @@ import {
   ReimbursementProductReasonQueryArgs
 } from '../prisma-query-args/reimbursement-products.query-args';
 import { ReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
+import { AccountCodeQueryArgs } from '../prisma-query-args/account-code.query.args';
 
 export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<ReceiptQueryArgs>): Receipt => {
   return {
@@ -52,7 +53,7 @@ export const reimbursementRequestTransformer = (
     reimbursementStatuses: reimbursementRequest.reimbursementStatuses.map(reimbursementStatusTransformer),
     recipient: userTransformer(reimbursementRequest.recipient),
     vendor: vendorTransformer(reimbursementRequest.vendor),
-    account: reimbursementRequest.account as ClubAccount,
+    account: indexCodeTransformer(reimbursementRequest.account as Index_Code),
     totalCost: reimbursementRequest.totalCost,
     receiptPictures: reimbursementRequest.receiptPictures.filter((receipt) => !receipt.dateDeleted).map(receiptTransformer),
     reimbursementProducts: reimbursementRequest.reimbursementProducts.map(reimbursementProductTransformer),
@@ -89,13 +90,13 @@ const reimbursementProductReasonTransformer = (
 ): ReimbursementProductReason => {
   return reason.wbsElement
     ? { wbsName: reason.wbsElement?.name, wbsNum: wbsNumOf(reason.wbsElement) }
-    : (reason.otherReason! as OtherProductReason);
+    : (otherProductReasonTransformer(reason.otherReason!) as OtherProductReason);
 };
 
-export const accountCodeTransformer = (accountCode: Prisma.Account_CodeGetPayload<null>): AccountCode => {
+export const accountCodeTransformer = (accountCode: Prisma.Account_CodeGetPayload<AccountCodeQueryArgs>): AccountCode => {
   return {
     ...accountCode,
-    allowedRefundSources: accountCode.allowedRefundSources as ClubAccount[],
+    allowedRefundSources: accountCode.allowedRefundSources.map(indexCodeTransformer) as IndexCode[],
     dateDeleted: accountCode.dateDeleted ?? undefined
   };
 };
@@ -119,3 +120,7 @@ export const reimbursementTransformer = (
     userSubmitted: userTransformer(reimbursement.userSubmitted)
   };
 };
+
+function indexCodeTransformer(arg0: { indexCodeId: string; name: string; dateCreated: Date; dateDeleted: Date | null; userCreatedId: string; userDeletedId: string | null; }): IndexCode {
+  throw new Error('Function not implemented.');
+}

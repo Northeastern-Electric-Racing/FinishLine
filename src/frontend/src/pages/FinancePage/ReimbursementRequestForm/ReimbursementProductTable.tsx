@@ -28,11 +28,11 @@ import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useTheme } from '@mui/system';
 
 const otherCategoryOptions = [
-  { label: 'Competition', id: 'COMPETITION' },
-  { label: 'Consumeables', id: 'CONSUMABLES' },
-  { label: 'General Stock', id: 'GENERAL_STOCK' },
-  { label: 'Subscriptions and Memberships', id: 'SUBSCRIPTIONS_AND_MEMBERSHIPS' },
-  { label: 'Tools and Equipment', id: 'TOOLS_AND_EQUIPMENT' }
+  { label: 'Competition', id: 'Competition' },
+  { label: 'Consumeables', id: 'Consumeables' },
+  { label: 'General Stock', id: 'General Stock' },
+  { label: 'Subscriptions and Memberships', id: 'Subscriptions and Memberships' },
+  { label: 'Tools and Equipment', id: 'Tools and Equipment' }
 ];
 
 interface ReimbursementProductTableProps {
@@ -71,7 +71,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   >();
   reimbursementProducts.forEach((product, index) => {
     const hasWbsNum = (product.reason as WbsNumber).carNumber !== undefined;
-    const productReason = hasWbsNum ? wbsPipe(product.reason as WbsNumber) : (product.reason as string);
+    const productReason = hasWbsNum ? wbsPipe(product.reason as WbsNumber) : (product.reason as OtherProductReason).name;
     if (uniqueWbsElementsWithProducts.has(productReason)) {
       const products = uniqueWbsElementsWithProducts.get(productReason);
       products?.push({ ...product, index });

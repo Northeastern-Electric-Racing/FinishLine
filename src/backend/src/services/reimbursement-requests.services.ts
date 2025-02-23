@@ -4,9 +4,9 @@
  */
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Club_Accounts, Reimbursement_Request, Reimbursement_Status_Type, User, Organization } from '@prisma/client';
+import { Index_Code, Reimbursement_Request, Reimbursement_Status_Type, User, Organization } from '@prisma/client';
 import {
-  ClubAccount,
+  IndexCode,
   Reimbursement,
   ReimbursementReceiptCreateArgs,
   ReimbursementRequest,
@@ -138,7 +138,7 @@ export default class ReimbursementRequestService {
   static async createReimbursementRequest(
     recipient: UserWithSecureSettings,
     vendorId: string,
-    account: ClubAccount,
+    account: IndexCode,
     otherReimbursementProducts: OtherReimbursementProductCreateArgs[],
     wbsReimbursementProducts: WbsReimbursementProductCreateArgs[],
     acccountCodeId: string,
@@ -174,7 +174,7 @@ export default class ReimbursementRequestService {
         recipient: { connect: { userId: recipient.userId } },
         dateOfExpense: dateOfExpense ?? null,
         vendor: { connect: { vendorId: vendor.vendorId } },
-        account,
+        account: { connect: { indexCodeId: account.indexCodeId } },
         accountCode: { connect: { accountCodeId: accountCode.accountCodeId } },
         totalCost,
         reimbursementStatuses: {
@@ -270,7 +270,7 @@ export default class ReimbursementRequestService {
   static async editReimbursementRequest(
     requestId: string,
     vendorId: string,
-    account: ClubAccount,
+    account: IndexCode,
     accountCodeId: string,
     totalCost: number,
     otherReimbursementProducts: OtherReimbursementProductCreateArgs[],
@@ -317,7 +317,7 @@ export default class ReimbursementRequestService {
       where: { reimbursementRequestId: oldReimbursementRequest.reimbursementRequestId },
       data: {
         dateOfExpense: dateOfExpense ?? null,
-        account,
+        account: { connect: { indexCodeId: account.indexCodeId } },
         totalCost,
         accountCodeId: accountCode.accountCodeId,
         vendorId: vendor.vendorId
@@ -567,7 +567,8 @@ export default class ReimbursementRequestService {
     discountCode: string,
     twoFactorContactId: string,
     notes: string,
-    addedByUserId: string
+    addedByUserId: string,
+    taxExempt: boolean
   ) {
     const isAuthorized =
       (await userHasPermission(submitter.userId, organization.organizationId, isAdmin)) ||
@@ -595,7 +596,8 @@ export default class ReimbursementRequestService {
         discountCode,
         twoFactorContactId,
         notes,
-        addedByUserId
+        addedByUserId,
+        taxExempt
       }
     });
 
@@ -617,7 +619,7 @@ export default class ReimbursementRequestService {
     name: string,
     code: number,
     allowed: boolean,
-    allowedRefundSources: Club_Accounts[],
+    allowedRefundSources: IndexCode[],
     organization: Organization
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
@@ -640,7 +642,7 @@ export default class ReimbursementRequestService {
         name,
         allowed,
         code,
-        allowedRefundSources,
+        allowedRefundSources: { connect: allowedRefundSources.map((indexCode) => ({ indexCodeId: indexCode.indexCodeId })) },
         organizationId: organization.organizationId
       }
     });
@@ -665,7 +667,7 @@ export default class ReimbursementRequestService {
     name: string,
     allowed: boolean,
     submitter: User,
-    allowedRefundSources: Club_Accounts[],
+    allowedRefundSources: Index_Code[],
     organization: Organization
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
@@ -679,7 +681,7 @@ export default class ReimbursementRequestService {
         name,
         code,
         allowed,
-        allowedRefundSources
+        allowedRefundSources: { connect: allowedRefundSources.map((indexCode) => ({ indexCodeId: indexCode.indexCodeId })) }
       }
     });
 
@@ -704,7 +706,7 @@ export default class ReimbursementRequestService {
     }
 
     const deletedAccountCode = await prisma.account_Code.update({
-      where: { accountCodeId: accountCode.accountCodeId },
+      where: { accountCodeId: accountCode.accountCodeId},
       data: { dateDeleted: new Date() }
     });
 

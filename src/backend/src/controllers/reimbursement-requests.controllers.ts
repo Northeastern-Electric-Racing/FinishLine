@@ -210,7 +210,8 @@ export default class ReimbursementRequestsController {
         discountCode,
         twoFactorContact,
         notes,
-        addedByUserId
+        addedByUserId,
+        true
       );
       res.status(200).json(createdVendor);
     } catch (error: unknown) {
