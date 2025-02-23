@@ -25,11 +25,7 @@ describe('part review tests', () => {
 
   it('creates a faq, edits it, and deletes it', async () => {
     const faq = await PartReviewService.createFaq('some question', 'some answer', batman, orgId);
-    const prismaFaq = await prisma.frequentlyAskedQuestion.findUnique({
-      where: {
-        faqId: faq.faqId
-      }
-    });
+    const prismaFaq = await prisma.frequentlyAskedQuestion.findUnique({ where: { faqId: faq.faqId } });
 
     expect(prismaFaq?.question).toBe('some question');
     expect(prismaFaq?.answer).toBe('some answer');
@@ -47,11 +43,7 @@ describe('part review tests', () => {
       orgId
     );
 
-    const prismaFaq2 = await prisma.frequentlyAskedQuestion.findUnique({
-      where: {
-        faqId: faq.faqId
-      }
-    });
+    const prismaFaq2 = await prisma.frequentlyAskedQuestion.findUnique({ where: { faqId: faq.faqId } });
 
     expect(prismaFaq2?.question).toBe('some other question');
     expect(prismaFaq2?.answer).toBe('some other answer');
@@ -65,11 +57,7 @@ describe('part review tests', () => {
     expect(deletedFaq?.question).toBe('some other question');
     expect(deletedFaq?.answer).toBe('some other answer');
 
-    const prismaDeletedFaq = await prisma.frequentlyAskedQuestion.findUnique({
-      where: {
-        faqId: faq.faqId
-      }
-    });
+    const prismaDeletedFaq = await prisma.frequentlyAskedQuestion.findUnique({ where: { faqId: faq.faqId } });
     expect(prismaDeletedFaq?.dateDeleted).toBeTruthy();
   });
 
@@ -89,7 +77,7 @@ describe('part review tests', () => {
     );
   });
 
-  it('does not allow updating deleted common mistake', async () => {
+  it('does not allow updating deleted faqs', async () => {
     const faq = await PartReviewService.createFaq('some q', 'some a', batman, orgId);
 
     await PartReviewService.deleteFaq(faq.faqId, superman, orgId);
