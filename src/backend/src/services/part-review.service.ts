@@ -6,15 +6,15 @@ import { User } from '@prisma/client';
 import { partsReviewCommonMistakeTransformer } from '../transformers/part-review.transformer';
 
 export default class PartReviewService {
-    /**
-     * Creates a common mistake
-     * @param title the title
-     * @param description the description
-     * @param starred whether or not it is starred
-     * @param creator the use creating -- must be an admin
-     * @param organizationId the organization
-     * @returns the created common mistake
-     */
+  /**
+   * Creates a common mistake
+   * @param title the title
+   * @param description the description
+   * @param starred whether or not it is starred
+   * @param creator the use creating -- must be an admin
+   * @param organizationId the organization
+   * @returns the created common mistake
+   */
   static async createCommonMistake(
     title: string,
     description: string,
