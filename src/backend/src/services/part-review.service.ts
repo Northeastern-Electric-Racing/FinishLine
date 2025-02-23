@@ -6,6 +6,15 @@ import { User } from '@prisma/client';
 import { partsReviewCommonMistakeTransformer } from '../transformers/part-review.transformer';
 
 export default class PartReviewService {
+    /**
+     * Creates a common mistake
+     * @param title the title
+     * @param description the description
+     * @param starred whether or not it is starred
+     * @param creator the use creating -- must be an admin
+     * @param organizationId the organization
+     * @returns the created common mistake
+     */
   static async createCommonMistake(
     title: string,
     description: string,
@@ -38,6 +47,16 @@ export default class PartReviewService {
     return partsReviewCommonMistakeTransformer(commonMistake);
   }
 
+  /**
+   * Updates a common mistake
+   * @param commonMistakeId the id of the common mistake to be updated
+   * @param title the title
+   * @param description the description
+   * @param starred whether or not it is starred
+   * @param updater the user makign the update -- must be admin
+   * @param organizationId the organization
+   * @returns the updated common mistake
+   */
   static async updateCommonMistake(
     commonMistakeId: string,
     title: string,
@@ -78,6 +97,13 @@ export default class PartReviewService {
     return partsReviewCommonMistakeTransformer(updatedCommonMistake);
   }
 
+  /**
+   * Deletes a common mistake
+   * @param commonMistakeId the id of the common mistake to delete
+   * @param deleter the user deleting -- must be admin
+   * @param organizationId the orgainization
+   * @returns the deleted common mistake
+   */
   static async deleteCommonMistake(
     commonMistakeId: string,
     deleter: User,
