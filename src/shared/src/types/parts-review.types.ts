@@ -1,7 +1,5 @@
-export interface PartTagReviewType {
+export interface PartTagReview {
   partTagId: string;
   name: string;
   colorHexCode: string;
-  dateCreated: Date;
-  parts: String[];
 }
