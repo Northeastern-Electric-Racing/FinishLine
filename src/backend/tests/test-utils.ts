@@ -673,17 +673,15 @@ export const createSlackMessageEvent = (
   };
 };
 
-export const CreatePartTag = async (part: Part[], organizationId: string, name: string, colorHexCode: string) => {
+export const CreatePartTag = async (organizationId: string, name: string, colorHexCode: string) => {
   return await prisma.partTag.create({
     data: {
       name,
       organization: {
         connect: { organizationId }
       },
+      parts: { create: [] },
       colorHexCode,
-      parts: {
-        connect: part.map((p) => ({ partId: p.partId }))
-      },
       dateCreated: new Date()
     }
   });

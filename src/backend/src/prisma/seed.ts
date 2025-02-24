@@ -2133,11 +2133,11 @@ const performSeed: () => Promise<void> = async () => {
     false
   );
 
-  await CreatePartTag([], organizationId, 'Practice', '#202025');
+  await CreatePartTag(organizationId, 'Practice', '#202025');
 
-  await CreatePartTag([], organizationId, 'Complex', '#142099');
+  await CreatePartTag(organizationId, 'Complex', '#142099');
 
-  await CreatePartTag([], organizationId, 'Expensive', '#FF0000');
+  await CreatePartTag(organizationId, 'Expensive', '#FF0000');
 
   await CreateCommonMistake(
     'Stubbing Toes in the Bay',
