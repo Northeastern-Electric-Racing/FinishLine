@@ -701,10 +701,6 @@ export default class ReimbursementRequestService {
 
     const accountCode = await ReimbursementRequestService.getSingleAccountCode(accountCodeId, organization);
 
-    if (accountCode.dateDeleted) {
-      throw new DeletedException('Account Code', accountCodeId);
-    }
-
     const deletedAccountCode = await prisma.account_Code.update({
       where: { accountCodeId: accountCode.accountCodeId },
       data: { dateDeleted: new Date() }
