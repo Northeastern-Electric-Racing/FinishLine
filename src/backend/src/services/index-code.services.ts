@@ -6,8 +6,8 @@ export default class IndexCodeService {
   static async createIndexCode(name: string, user: User) {
     const indexCode = await prisma.index_Code.create({
       data: {
-        name,
-        userCreated: { connect: { userId: user.userId } }
+        userCreated: { connect: { userId: user.userId } },
+        name
       }
     });
     return indexCodeTransformer(indexCode);

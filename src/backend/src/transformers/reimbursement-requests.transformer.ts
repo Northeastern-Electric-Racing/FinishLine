@@ -97,7 +97,7 @@ export const accountCodeTransformer = (accountCode: Prisma.Account_CodeGetPayloa
   return {
     ...accountCode,
     allowedRefundSources: accountCode.allowedRefundSources.map(indexCodeTransformer) as IndexCode[],
-    dateDeleted: accountCode.dateDeleted ?? undefined
+    //dateDeleted: accountCode.dateDeleted ?? undefined
   };
 };
 
@@ -122,5 +122,9 @@ export const reimbursementTransformer = (
 };
 
 function indexCodeTransformer(arg0: { indexCodeId: string; name: string; dateCreated: Date; dateDeleted: Date | null; userCreatedId: string; userDeletedId: string | null; }): IndexCode {
+  throw new Error('Function not implemented.');
+}
+
+function otherProductReasonTransformer(arg0: { dateDeleted: Date | null; dateCreated: Date; name: string; budget: number; indexCodeId: string; accountCodeId: string; userCreatedId: string; userDeletedId: string | null; otherReimbursementProductReasonId: string; }): OtherProductReason {
   throw new Error('Function not implemented.');
 }
