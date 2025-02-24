@@ -35,7 +35,6 @@ export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<ReceiptQuer
     receiptId: receipt.receiptId,
     googleFileId: receipt.googleFileId,
     name: receipt.name,
-    dateDeleted: receipt.dateDeleted ?? undefined,
     deletedBy: receipt.deletedBy ? userTransformer(receipt.deletedBy) : undefined
   };
 };
@@ -48,7 +47,6 @@ export const reimbursementRequestTransformer = (
     identifier: reimbursementRequest.identifier,
     saboId: reimbursementRequest.saboId ?? undefined,
     dateCreated: reimbursementRequest.dateCreated,
-    dateDeleted: reimbursementRequest.dateDeleted ?? undefined,
     dateOfExpense: reimbursementRequest.dateOfExpense ?? undefined,
     reimbursementStatuses: reimbursementRequest.reimbursementStatuses.map(reimbursementStatusTransformer),
     recipient: userTransformer(reimbursementRequest.recipient),
@@ -79,7 +77,6 @@ export const reimbursementProductTransformer = (
   return {
     reimbursementProductId: reimbursementProduct.reimbursementProductId,
     name: reimbursementProduct.name,
-    dateDeleted: reimbursementProduct.dateDeleted ?? undefined,
     cost: reimbursementProduct.cost,
     reimbursementProductReason: reimbursementProductReasonTransformer(reimbursementProduct.reimbursementProductReason)
   };
@@ -96,8 +93,7 @@ const reimbursementProductReasonTransformer = (
 export const accountCodeTransformer = (accountCode: Prisma.Account_CodeGetPayload<null>): AccountCode => {
   return {
     ...accountCode,
-    allowedRefundSources: accountCode.allowedRefundSources as ClubAccount[],
-    dateDeleted: accountCode.dateDeleted ?? undefined
+    allowedRefundSources: accountCode.allowedRefundSources as ClubAccount[]
   };
 };
 
@@ -105,10 +101,9 @@ export const vendorTransformer = (vendor: Prisma.VendorGetPayload<VendorQueryArg
   return {
     vendorId: vendor.vendorId,
     dateCreated: vendor.dateCreated,
-    dateDeleted: vendor.dateDeleted ?? undefined,
     name: vendor.name,
     username: vendor.username,
-    passwordHash: vendor.passwordHash,
+    password: vendor.passwordHash,
     discountCode: vendor.discountCode ?? undefined,
     twoFactorContact: vendor.twoFactorContact ? userTransformer(vendor.twoFactorContact) : undefined,
     notes: vendor.notes ?? undefined,
