@@ -105,7 +105,7 @@ describe('Reimbursement Requests', () => {
         org
       );
 
-      expect(rr.accountCode).toStrictEqual({ ...createdAccountCode, dateDeleted: undefined });
+      expect(rr.accountCode).toStrictEqual({ ...createdAccountCode, dateDeleted: null });
       expect(rr.account).toEqual(ClubAccount.CASH);
       expect(rr.vendor.vendorId).toEqual(createdVendor.vendorId);
       expect(rr.recipient.userId).toEqual(createdUser.userId);
@@ -147,7 +147,7 @@ describe('Reimbursement Requests', () => {
         new Date('12-29-2023')
       );
 
-      expect(rr.accountCode).toStrictEqual({ ...createdAccountCode, dateDeleted: undefined });
+      expect(rr.accountCode).toStrictEqual({ ...createdAccountCode, dateDeleted: null });
       expect(rr.account).toEqual(ClubAccount.CASH);
       expect(rr.vendor.vendorId).toEqual(createdVendor.vendorId);
       expect(rr.recipient.userId).toEqual(createdUser.userId);
@@ -236,7 +236,7 @@ describe('Reimbursement Requests', () => {
       expect(vendors.length).toEqual(1);
       expect(vendors[0].name).toEqual('Tesla');
       expect(vendors[0].username).toEqual('nershipping@gmail.com');
-      expect(vendors[0].passwordHash).toEqual('racecar228!');
+      expect(vendors[0].password).toEqual('racecar228!');
       expect(vendors[0].discountCode).toEqual('SAVE50!');
       expect(vendors[0].notes).toEqual('Tax exemption status?');
       await ReimbursementRequestService.createVendor(
@@ -267,7 +267,7 @@ describe('Reimbursement Requests', () => {
       const singleVendor = await ReimbursementRequestService.getSingleVendor(createdVendor.vendorId, org);
       expect(singleVendor.name).toEqual('Tesla');
       expect(singleVendor.username).toEqual('nershipping@gmail.com');
-      expect(singleVendor.passwordHash).toEqual('racecar228!');
+      expect(singleVendor.password).toEqual('racecar228!');
       expect(singleVendor.discountCode).toEqual('SAVE50!');
       expect(singleVendor.notes).toEqual('Tax exemption status?');
     });
