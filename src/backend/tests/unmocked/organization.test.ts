@@ -323,6 +323,8 @@ describe('Organization Tests', () => {
       expect(partReviews).toHaveLength(1);
       expect(partReviews[0].question).toEqual(partFaq.question);
       expect(partReviews[0].answer).toEqual(partFaq.answer);
+      expect(partReviews[0].question).not.toEqual(regularFaq.question);
+      expect(partReviews[0].answer).not.toEqual(regularFaq.answer);
     });
   });
 });

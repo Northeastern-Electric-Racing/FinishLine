@@ -54,7 +54,7 @@ describe('Recruitment Tests', () => {
       const result = await RecruitmentServices.getAllOrganizationFaqs(organization);
       expect(result).toHaveLength(2);
       expect(result[0].question).toEqual(faq1.question);
-      expect(result[0].question).toEqual(faq1.answer);
+      expect(result[0].answer).toEqual(faq1.answer);
       expect(result[1].question).toEqual(faq2.question);
       expect(result[1].answer).toEqual(faq2.answer);
     });
