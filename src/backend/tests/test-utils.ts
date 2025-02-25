@@ -2,7 +2,9 @@
 import {
   Club_Accounts,
   Organization,
+  PartTag,
   Project,
+  Review_Status,
   Schedule_Settings,
   Task_Priority,
   Task_Status,
@@ -602,6 +604,41 @@ export const createTestTask = async (
     }
   });
   return task;
+};
+
+export const createTestPart = async (
+  index: number,
+  userCreated: User,
+  commonName: string,
+  status: Review_Status,
+  tags: PartTag[],
+  project: Project,
+  assignees: User[],
+  reviewers: User[],
+  history: string[],
+  createdAt: Date,
+  description?: string,
+  previewImageLink?: string,
+) => {
+  return await prisma.part.create({
+    data: {
+      index,
+      commonName,
+      description,
+      previewImageLink,
+      status,
+      tags: { connect: tags.map((tag) => ({ partTagId: tag.partTagId })) },
+      submissions: { create: [] },
+      project: { connect: { projectId: project.projectId } },
+      assignees: { connect: assignees.map((user) => ({ userId: user.userId })) },
+      reviewers: { connect: reviewers.map((user) => ({ userId: user.userId })) },
+      history,
+      createdAt,
+      userCreated: {
+        connect: { userId: userCreated.userId }
+      }
+    }
+  });
 };
 
 export const createTestTaskWithOrganization = async (user: User, organization?: Organization) => {
