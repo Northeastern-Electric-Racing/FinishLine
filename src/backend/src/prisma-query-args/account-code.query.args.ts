@@ -5,6 +5,15 @@ export type AccountCodeQueryArgs = ReturnType<typeof getAccountCodeQueryArgs>;
 export const getAccountCodeQueryArgs = () =>
   Prisma.validator<Prisma.Account_CodeDefaultArgs>()({
     include: {
-      allowedRefundSources: true
+      allowedRefundSources: {
+        include: {
+          userCreated: {
+            include: {
+              organizations: true,
+              roles: true
+            }
+          }
+        }
+      }
     }
   });

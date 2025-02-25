@@ -3,6 +3,8 @@ import { getReimbursementStatusQueryArgs } from './reimbursement-statuses.query-
 import { getUserQueryArgs } from './user.query-args';
 import { getReceiptQueryArgs } from './receipt-query.args';
 import { getReimbursementProductQueryArgs } from './reimbursement-products.query-args';
+import { getIndexCodeQueryArgs } from './index-code.query-args';
+import { getAccountCodeQueryArgs } from './account-code.query.args';
 
 export type ReimbursementRequestQueryArgs = ReturnType<typeof getReimbursementRequestQueryArgs>;
 
@@ -11,8 +13,8 @@ export const getReimbursementRequestQueryArgs = (organizationId: string) =>
     include: {
       recipient: getUserQueryArgs(organizationId),
       vendor: true,
-      account: true,
-      accountCode: true,
+      account: getIndexCodeQueryArgs(),
+      accountCode: getAccountCodeQueryArgs(),
       receiptPictures: getReceiptQueryArgs(organizationId),
       reimbursementStatuses: getReimbursementStatusQueryArgs(organizationId),
       reimbursementProducts: {
