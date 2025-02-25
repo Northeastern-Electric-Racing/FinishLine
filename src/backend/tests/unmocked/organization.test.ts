@@ -302,8 +302,8 @@ describe('Organization Tests', () => {
       const partFaq = await prisma.frequentlyAskedQuestion.create({
         data: {
           faqId: '1',
-          question: 'question',
-          answer: 'answer',
+          question: 'faq question',
+          answer: 'faq answer',
           userCreated: { connect: { userId: testBatman.userId } },
           dateCreated: new Date(),
           partReviewFaqOrg: { connect: { organizationId: orgId } }
@@ -312,8 +312,8 @@ describe('Organization Tests', () => {
       const regularFaq = await prisma.frequentlyAskedQuestion.create({
         data: {
           faqId: '2',
-          question: 'question',
-          answer: 'answer',
+          question: 'regular question',
+          answer: 'regular answer',
           userCreated: { connect: { userId: testBatman.userId } },
           dateCreated: new Date(),
           regularFaqOrg: { connect: { organizationId: orgId } }
