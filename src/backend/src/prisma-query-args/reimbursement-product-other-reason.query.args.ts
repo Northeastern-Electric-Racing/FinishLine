@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import { getAccountCodeQueryArgs } from './account-code.query.args';
 import { getUserQueryArgs } from './user.query-args';
 import { getIndexCodeQueryArgs } from './index-code.query-args';
+import { getReimbursementProductQueryArgs } from './reimbursement-products.query-args';
 
 export type ReimbursementProductOtherReasonQueryArgs = ReturnType<typeof getReimbursementProductOtherReasonQueryArgs>;
 
@@ -13,10 +14,10 @@ export const getReimbursementProductOtherReasonQueryArgs = (organizationId: stri
         include: {
           wbsElement: true,
           otherReason: true,
-          reimbursementProduct: true
+          reimbursementProduct: getReimbursementProductQueryArgs(organizationId)
         }
       },
-      indexCode: getIndexCodeQueryArgs(),
-      accountCode: getAccountCodeQueryArgs()
+      indexCode: getIndexCodeQueryArgs(organizationId),
+      accountCode: getAccountCodeQueryArgs(organizationId)
     }
   });

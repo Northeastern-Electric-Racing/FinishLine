@@ -4,15 +4,15 @@ import { AccessDeniedException, HttpException } from '../../src/utils/errors.uti
 import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { assert } from 'console';
-import { addDaysToDate, ReimbursementRequest } from 'shared';
-import { Account_Code, Organization, Vendor, Index_Code } from '@prisma/client';
+import { addDaysToDate, ReimbursementRequest, IndexCode } from 'shared';
+import { Account_Code, Organization, Vendor } from '@prisma/client';
 import { UserWithSecureSettings } from '../../src/utils/auth.utils';
 
 describe('Reimbursement Requests', () => {
   let org: Organization;
   let reimbursementRequest: ReimbursementRequest;
   let createdVendor: Vendor;
-  let createdIndexCode: Index_Code;
+  let createdIndexCode: IndexCode;
   let createdAccountCode: Account_Code;
   let createdUser: UserWithSecureSettings;
 

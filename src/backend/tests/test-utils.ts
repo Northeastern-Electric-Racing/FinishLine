@@ -408,8 +408,9 @@ export const createTestReimbursementRequest = async () => {
   );
 
   const indexCode = await IndexCodeService.createIndexCode(
+    'Cash',
     user,
-    'Cash'
+    organization
   )
 
   const accountCode = await ReimbursementRequestService.createAccountCode(
