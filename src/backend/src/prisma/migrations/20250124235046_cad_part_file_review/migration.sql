@@ -32,7 +32,6 @@ CREATE TABLE "Part" (
     "previewImageLink" TEXT,
     "status" "Review_Status" NOT NULL DEFAULT 'IN_PROGRESS',
     "projectId" TEXT NOT NULL,
-    "history" TEXT[],
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "dateDeleted" TIMESTAMP(3),

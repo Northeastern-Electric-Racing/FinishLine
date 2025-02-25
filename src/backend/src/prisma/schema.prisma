@@ -1141,7 +1141,6 @@ model Part {
   projectId        String
   assignees        User[]           @relation("partAssignees")
   reviewers        User[]           @relation("partReviewers")
-  history          String[]
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
   dateDeleted      DateTime?
