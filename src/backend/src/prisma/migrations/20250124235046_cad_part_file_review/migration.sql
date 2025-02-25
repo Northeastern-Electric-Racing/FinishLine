@@ -197,9 +197,6 @@ ALTER TABLE "PartReviewRequest" ADD CONSTRAINT "PartReviewRequest_reviewerId_fke
 ALTER TABLE "PartReview" ADD CONSTRAINT "PartReview_submissionId_fkey" FOREIGN KEY ("submissionId") REFERENCES "PartSubmission"("partSubmissionId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PartReview" ADD CONSTRAINT "PartReview_submissionId_fkey" FOREIGN KEY ("submissionId") REFERENCES "PartSubmission"("partSubmissionId") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "PartReview" ADD CONSTRAINT "PartReview_userCreatedId_fkey" FOREIGN KEY ("userCreatedId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
