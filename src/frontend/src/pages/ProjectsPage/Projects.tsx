@@ -18,9 +18,9 @@ const Projects: React.FC = () => {
       <Route path={routes.PROJECTS_ALL} component={ProjectsPage} />
       <Route path={routes.WORK_PACKAGE_NEW} component={CreateWorkPackageForm} />
       <Route path={routes.PROJECTS_NEW} component={ProjectCreateContainer} />
+      <Route path={routes.PROJECT_PART} component={PartPage} />
       <Route path={routes.PROJECTS_BY_WBS} component={WBSDetails} />
       <Route path={routes.PROJECTS} component={ProjectsPage} />
-      <Route path={routes.PROJECT_PART} component={PartPage} />
     </Switch>
   );
 };
