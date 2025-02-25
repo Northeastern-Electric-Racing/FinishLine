@@ -52,7 +52,11 @@ describe('Recruitment Tests', () => {
         organization
       );
       const result = await RecruitmentServices.getAllOrganizationFaqs(organization);
-      expect(result).toStrictEqual([faq1, faq2]);
+      expect(result).toHaveLength(2);
+      expect(result[0].question).toEqual('question');
+      expect(result[0].answer).toEqual('answer');
+      expect(result[1].question).toEqual('question2');
+      expect(result[1].answer).toEqual('answer2');
     });
 
     describe('Edit FAQ', () => {

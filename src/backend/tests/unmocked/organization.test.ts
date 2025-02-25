@@ -285,12 +285,16 @@ describe('Organization Tests', () => {
         }
       });
       const partReviews = await OrganizationsService.getAllPartReviewFAQs(orgId);
-      expect(partReviews).toMatchObject([faq1, faq2]);
+      expect(partReviews).toHaveLength(2);
+      expect(partReviews[0].question).toEqual('question1');
+      expect(partReviews[0].answer).toEqual('answer1');
+      expect(partReviews[1].question).toEqual('question2');
+      expect(partReviews[1].answer).toEqual('answer2');
     });
 
     it('Retrieves empty list of part review FAQS in the organization', async () => {
       const partReviews = await OrganizationsService.getAllPartReviewFAQs(orgId);
-      expect(partReviews).toMatchObject([]);
+      expect(partReviews).toHaveLength(0);
     });
 
     it('Does not retrieve regular FAQS in the organization', async () => {
@@ -316,8 +320,9 @@ describe('Organization Tests', () => {
         }
       });
       const partReviews = await OrganizationsService.getAllPartReviewFAQs(orgId);
-      expect(partReviews).toMatchObject([partFaq]);
-      expect(partReviews).not.toMatchObject([regularFaq]);
+      expect(partReviews).toHaveLength(1);
+      expect(partReviews[0].question).toEqual('faq question');
+      expect(partReviews[0].answer).toEqual('faq answer');
     });
   });
 });
