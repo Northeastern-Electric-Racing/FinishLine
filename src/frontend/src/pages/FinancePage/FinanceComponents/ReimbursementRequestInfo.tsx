@@ -54,30 +54,27 @@ const ReimbursementRequestInfo = ({
       if (!isAscendingOrder) {
         localStorage.setItem('ascendingOrder', 'descending');
         return vendorDescendingComparator(a.vendor, b.vendor);
-      } else {
-        localStorage.setItem('ascendingOrder', 'ascending');
-        return -vendorDescendingComparator(a.vendor, b.vendor);
       }
+      localStorage.setItem('ascendingOrder', 'ascending');
+      return -vendorDescendingComparator(a.vendor, b.vendor);
     }
     if (orderBy === 'status') {
       localStorage.setItem('orderBy', 'status');
       if (!isAscendingOrder) {
         localStorage.setItem('ascendingOrder', 'descending');
         return statusDescendingComparator(a.status, b.status);
-      } else {
-        localStorage.setItem('ascendingOrder', 'ascending');
-        return -statusDescendingComparator(a.status, b.status);
       }
+      localStorage.setItem('ascendingOrder', 'ascending');
+      return -statusDescendingComparator(a.status, b.status);
     }
     if (orderBy === 'submitter') {
       localStorage.setItem('orderBy', 'submitter');
       if (!isAscendingOrder) {
         localStorage.setItem('ascendingOrder', 'descending');
         return submitterDescendingComparator(a.submitter, b.submitter);
-      } else {
-        localStorage.setItem('ascendingOrder', 'ascending');
-        return -submitterDescendingComparator(a.submitter, b.submitter);
       }
+      localStorage.setItem('ascendingOrder', 'ascending');
+      return -submitterDescendingComparator(a.submitter, b.submitter);
     }
     if (orderBy === 'identifier') {
       localStorage.setItem('orderBy', 'identifier');
