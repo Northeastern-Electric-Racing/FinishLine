@@ -38,27 +38,49 @@ const ReimbursementRequestInfo = ({
   allReimbursementRequests,
   canViewAllReimbursementRequests = false
 }: ReimbursementRequestInfoProps) => {
-  const [isAscendingOrder, setAscendingOrder] = useState(true);
-  const [orderBy, setOrderBy] = useState<keyof ReimbursementRequestRow>('dateSubmittedToSabo');
+  if (!localStorage.getItem('orderBy')) localStorage.setItem('orderBy', 'identifier');
+  if (!localStorage.getItem('ascendingOrder')) localStorage.setItem('ascendingOrder', 'descending');
+  const [isAscendingOrder, setAscendingOrder] = useState(localStorage.getItem('ascendingOrder') === 'ascending');
+  const [orderBy, setOrderBy] = useState<keyof ReimbursementRequestRow>(
+    localStorage.getItem('orderBy') as keyof ReimbursementRequestRow
+  );
 
   const displayedReimbursementRequests =
     canViewAllReimbursementRequests && allReimbursementRequests ? allReimbursementRequests : userReimbursementRequests;
 
   const rows = displayedReimbursementRequests.map(createReimbursementRequestRowData).sort((a, b) => {
     if (orderBy === 'vendor') {
-      return !isAscendingOrder
-        ? vendorDescendingComparator(a.vendor, b.vendor)
-        : -vendorDescendingComparator(a.vendor, b.vendor);
+      localStorage.setItem('orderBy', 'vendor');
+      if (!isAscendingOrder) {
+        localStorage.setItem('ascendingOrder', 'descending');
+        return vendorDescendingComparator(a.vendor, b.vendor);
+      } else {
+        localStorage.setItem('ascendingOrder', 'ascending');
+        return -vendorDescendingComparator(a.vendor, b.vendor);
+      }
     }
     if (orderBy === 'status') {
-      return !isAscendingOrder
-        ? statusDescendingComparator(a.status, b.status)
-        : -statusDescendingComparator(a.status, b.status);
+      localStorage.setItem('orderBy', 'status');
+      if (!isAscendingOrder) {
+        localStorage.setItem('ascendingOrder', 'descending');
+        return statusDescendingComparator(a.status, b.status);
+      } else {
+        localStorage.setItem('ascendingOrder', 'ascending');
+        return -statusDescendingComparator(a.status, b.status);
+      }
     }
     if (orderBy === 'submitter') {
-      return !isAscendingOrder
-        ? submitterDescendingComparator(a.submitter, b.submitter)
-        : -submitterDescendingComparator(a.submitter, b.submitter);
+      localStorage.setItem('orderBy', 'submitter');
+      if (!isAscendingOrder) {
+        localStorage.setItem('ascendingOrder', 'descending');
+        return submitterDescendingComparator(a.submitter, b.submitter);
+      } else {
+        localStorage.setItem('ascendingOrder', 'ascending');
+        return -submitterDescendingComparator(a.submitter, b.submitter);
+      }
+    }
+    if (orderBy === 'identifier') {
+      localStorage.setItem('orderBy', 'identifier');
     }
     if (b[orderBy] === undefined) {
       return -1;
