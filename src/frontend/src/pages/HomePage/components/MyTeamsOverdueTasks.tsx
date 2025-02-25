@@ -37,7 +37,7 @@ const MyTeamsOverdueTasks: React.FC<MyTeamsOverdueTasksProps> = ({ user }) => {
   const overdueTasks = getOverdueTasks(tasks);
 
   return (
-    <ScrollablePageBlock title={`My Team's Overdue Tasks (${overdueTasks.length})`}>
+    <ScrollablePageBlock title={`My Team's Overdue Tasks (${overdueTasks.length})` }>
       {overdueTasks.length === 0 ? (
         <NoOverdueTeamTaskDisplay />
       ) : (

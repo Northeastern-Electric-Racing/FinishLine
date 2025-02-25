@@ -38,17 +38,52 @@ const LeadHomePage = ({ user }: LeadHomePageProps) => {
           gap: 2
         }}
       >
-        <Box height={'40%'}>
+        <Box height={'min-content'}>
           <ChangeRequestsToReview />
         </Box>
-        <Grid container height={'60%'} spacing={2}>
-          <Grid item xs={4} md={4} height={'100%'}>
+        <Grid
+          container
+          maxHeight={'60%'}
+          spacing={2}
+          style={{
+            flexGrow: 1,
+            display: 'flex'
+          }}
+        >
+          <Grid
+            item
+            xs={12}
+            md={4}
+            maxHeight={'100%'}
+            style={{
+              minWidth: 'min-content',
+              overflow: 'hidden'
+            }}
+          >
             <GeneralAnnouncements />
           </Grid>
-          <Grid item xs={4} md={4} height={'100%'}>
+          <Grid
+            item
+            xs={12}
+            md={4}
+            maxHeight={'100%'}
+            style={{
+              minWidth: 'min-content',
+              overflow: 'hidden'
+            }}
+          >
             <MyTeamsOverdueTasks user={user} />
           </Grid>
-          <Grid item xs={4} md={4} height={'100%'}>
+          <Grid
+            item
+            xs={12}
+            md={4}
+            maxHeight={'100%'}
+            style={{
+              minWidth: 'min-content',
+              overflow: 'hidden'
+            }}
+          >
             <UpcomingDesignReviews user={user} />
           </Grid>
         </Grid>
