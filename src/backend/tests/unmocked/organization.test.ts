@@ -267,8 +267,8 @@ describe('Organization Tests', () => {
       const faq1 = await prisma.frequentlyAskedQuestion.create({
         data: {
           faqId: '1',
-          question: 'question',
-          answer: 'answer',
+          question: 'question1',
+          answer: 'answer1',
           userCreated: { connect: { userId: testBatman.userId } },
           dateCreated: new Date(),
           partReviewFaqOrg: { connect: { organizationId: orgId } }
@@ -277,8 +277,8 @@ describe('Organization Tests', () => {
       const faq2 = await prisma.frequentlyAskedQuestion.create({
         data: {
           faqId: '2',
-          question: 'question',
-          answer: 'answer',
+          question: 'question2',
+          answer: 'answer2',
           userCreated: { connect: { userId: testBatman.userId } },
           dateCreated: new Date(),
           partReviewFaqOrg: { connect: { organizationId: orgId } }
@@ -286,10 +286,10 @@ describe('Organization Tests', () => {
       });
       const partReviews = await OrganizationsService.getAllPartReviewFAQs(orgId);
       expect(partReviews).toHaveLength(2);
-      expect(partReviews[0].question).toEqual('question1');
-      expect(partReviews[0].answer).toEqual('answer1');
-      expect(partReviews[1].question).toEqual('question2');
-      expect(partReviews[1].answer).toEqual('answer2');
+      expect(partReviews[0].question).toEqual(faq1.question);
+      expect(partReviews[0].answer).toEqual(faq1.answer);
+      expect(partReviews[1].question).toEqual(faq2.question);
+      expect(partReviews[1].answer).toEqual(faq2.answer);
     });
 
     it('Retrieves empty list of part review FAQS in the organization', async () => {
@@ -321,8 +321,8 @@ describe('Organization Tests', () => {
       });
       const partReviews = await OrganizationsService.getAllPartReviewFAQs(orgId);
       expect(partReviews).toHaveLength(1);
-      expect(partReviews[0].question).toEqual('faq question');
-      expect(partReviews[0].answer).toEqual('faq answer');
+      expect(partReviews[0].question).toEqual(partFaq.question);
+      expect(partReviews[0].answer).toEqual(partFaq.answer);
     });
   });
 });
