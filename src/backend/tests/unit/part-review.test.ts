@@ -17,6 +17,7 @@ describe('part review tests', () => {
     batman = await createTestUser(batmanAppAdmin, orgId);
     superman = await createTestUser(supermanAdmin, orgId);
     nonAdmin = await createTestUser(aquamanLeadership, orgId);
+  });
 
   afterEach(async () => {
     await resetUsers();
