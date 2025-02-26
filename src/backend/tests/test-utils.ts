@@ -679,7 +679,6 @@ export const CreatePartTag = async (organizationId: string, name: string, colorH
       organization: {
         connect: { organizationId }
       },
-      parts: { create: [] },
       colorHexCode,
       dateCreated: new Date()
     }
