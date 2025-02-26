@@ -1153,11 +1153,11 @@ model PartTag {
   partTagId      String        @id @default(uuid())
   name           String
   colorHexCode   String
-  dateCreated    DateTime
+  dateCreated    DateTime      @default(now())
   dateDeleted    DateTime?
   parts          Part[]
-  organization   Organization? @relation(fields: [organizationId], references: [organizationId])
-  organizationId String?
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  organizationId String
 }
 
 model PartSubmission {
@@ -1218,6 +1218,6 @@ model PartReviewCommonMistake {
   userDeletedId  String?
   dateCreated    DateTime      @default(now())
   dateDeleted    DateTime?
-  organization   Organization? @relation(fields: [organizationId], references: [organizationId])
-  organizationId String?
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  organizationId String
 }
