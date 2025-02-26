@@ -470,14 +470,6 @@ export default class UsersService {
     zipcode: string,
     phoneNumber: string
   ): Promise<string> {
-    const existingUser = await prisma.user_Secure_Settings.findFirst({
-      where: { phoneNumber, userId: { not: user.userId } } // excludes the current user from check
-    });
-
-    if (existingUser) {
-      throw new HttpException(400, 'Phone number already in use');
-    }
-
     const newUserSecureSettings = await prisma.user_Secure_Settings.upsert({
       where: { userId: user.userId },
       update: {
