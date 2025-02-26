@@ -1,23 +1,88 @@
-import { Box, useTheme } from '@mui/material';
+import { Box } from '@mui/material';
+import { grey } from '@mui/material/colors';
 import { useEffect, useRef, useState } from 'react';
+import { Project } from 'shared';
+
+interface HoverableComponentProps {
+  defaultComponent: JSX.Element;
+  onHoverComponent: JSX.Element;
+}
+
+const HoverableComponent: React.FC<HoverableComponentProps> = ({ defaultComponent, onHoverComponent }) => {
+  const [isHovered, setIsHovered] = useState<boolean>(false);
+  const boxRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleMouseEnter = () => setIsHovered(true);
+    const handleMouseLeave = () => setIsHovered(false);
+
+    const boxElement = boxRef.current;
+    if (boxElement) {
+      boxElement.addEventListener('mouseenter', handleMouseEnter);
+      boxElement.addEventListener('mouseleave', handleMouseLeave);
+    }
+
+    return () => {
+      if (boxElement) {
+        boxElement.removeEventListener('mouseenter', handleMouseEnter);
+        boxElement.removeEventListener('mouseleave', handleMouseLeave);
+      }
+    };
+  }, []);
+
+  return <Box ref={boxRef}>{isHovered ? onHoverComponent : defaultComponent}</Box>;
+};
 
 interface SpendingItem {
   name: string;
   value: number;
   color?: string;
+  onHoverComponent?: JSX.Element;
 }
 
 interface SpendingBarProps {
   items: SpendingItem[];
+  enableDebug?: boolean;
 }
 
-const SpendingBar: React.FC<SpendingBarProps> = ({ items }) => {
+interface SpendingItemComponentProps {
+  item: SpendingItem;
+}
+
+/**
+ * A component to display a spending item in a spending bar.
+ */
+const SpendingItemTextComponent: React.FC<SpendingItemComponentProps> = ({ item }) => {
+  return (
+    <Box /* p={2} */ justifyContent="center" alignContent="center" textAlign="center">
+      {item.name} <br /> ${item.value}
+    </Box>
+  );
+};
+
+/**
+ * A component to display a spending item in a spending bar.
+ * When this component is hovered and the spending item has an onHoverComponent property,
+ * this component is rendered as the spending item's onHoverComponent property.
+ * Otherwise, this component is rendered as a spending item text component.
+ */
+const SpendingItemHoverableComponent: React.FC<SpendingItemComponentProps> = ({ item }) => {
+  return (
+    <HoverableComponent
+      onHoverComponent={item.onHoverComponent!}
+      defaultComponent={<SpendingItemTextComponent item={item} />}
+    />
+  );
+};
+
+/**
+ * A component to display spending items
+ */
+const SpendingBar: React.FC<SpendingBarProps> = ({ items, enableDebug = false }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const hiddenRef = useRef<HTMLDivElement>(null);
   const [minItemWidths, setMinItemWidths] = useState<number[]>([]);
   const [containerWidth, setContainerWidth] = useState<number>(0);
-  const theme = useTheme();
-  const enableDebug = false;
 
   // This will run after setting `hiddenRef`
   useEffect(() => {
@@ -43,14 +108,13 @@ const SpendingBar: React.FC<SpendingBarProps> = ({ items }) => {
       <Box
         ref={hiddenRef}
         display="flex"
-        gap={0.35}
         visibility={enableDebug ? 'visible' : 'hidden'}
         position={enableDebug ? 'relative' : 'absolute'}
+        flexWrap="wrap"
+        gap={0.2}
       >
         {items.map((item) => (
-          <Box key={item.name} p={2} bgcolor={theme.palette.grey[600]}>
-            {item.name}
-          </Box>
+          <SpendingItemTextComponent item={item} key={item.name} />
         ))}
       </Box>
     );
@@ -69,65 +133,66 @@ const SpendingBar: React.FC<SpendingBarProps> = ({ items }) => {
     );
   };
 
-  if (containerRef.current && hiddenRef.current) {
-    if (sum(minItemWidths) > containerWidth) {
-      return (
-        <Box>
-          <Hidden />
-          <Debug />
-          <Box ref={containerRef}>Cannot fit items in spending bar</Box>
-        </Box>
-      );
-    }
-
-    // Allocate remaining space in the container to the element proportional to their values
-    const valueSum = sum(items.map((item) => item.value));
-    const minWidth = sum(minItemWidths);
-    const remainingSpace = containerWidth - minWidth;
-    const itemWidths = items.map((item, index) => {
-      const minItemWidth = minItemWidths[index];
-      const extraWidth = (item.value / valueSum) * remainingSpace;
-      return minItemWidth + extraWidth;
-    });
-    // We want to make sure that the sum of the widths of the items equals the width of the container
-    console.assert(
-      sum(itemWidths) === containerRef.current?.offsetWidth,
-      `sum(itemWidths) [${sum(itemWidths)}] !== containerRef.current.offset [${containerRef.current.offsetWidth}]`
-    );
-
+  // When either `containerRef` or `hiddenRef` is null (i.e. on the first render),
+  // return this component so that the necessary fields get set
+  if (!containerRef.current || !hiddenRef.current) {
     return (
       <Box>
         <Hidden />
         <Debug />
-        <Box ref={containerRef} width="100%" display="flex" gap={0.35}>
-          {items.map((item, index) => (
-            <Box
-              key={item.name}
-              bgcolor={item.color ? item.color : item.value === 0 ? theme.palette.grey[600] : theme.palette.grey[800]}
-              borderRadius={index === 0 ? '8px 0 0 8px' : index === items.length - 1 ? '0 8px 8px 0' : '0'}
-              boxShadow={1}
-              justifyContent="center"
-              alignContent="center"
-              width={itemWidths[index]}
-              p={2}
-              textAlign="center"
-            >
-              {item.name}
-              <br />${item.value}
-            </Box>
-          ))}
-        </Box>
+        <Box ref={containerRef} width="100%" display="flex" />
       </Box>
     );
   }
 
-  // When either `containerRef` or `hiddenRef` is null (i.e. on the first render),
-  // return this component so that the necessary fields get set
+  if (sum(minItemWidths) > containerWidth) {
+    return (
+      <Box>
+        <Hidden />
+        <Debug />
+        <Box ref={containerRef}>Cannot fit items in spending bar</Box>
+      </Box>
+    );
+  }
+
+  // Allocate remaining space in the container to the element proportional to their values
+  const valueSum = sum(items.map((item) => item.value));
+  const minWidth = sum(minItemWidths);
+  const remainingSpace = containerWidth - minWidth;
+  const itemWidths = items.map((item, index) => {
+    const minItemWidth = minItemWidths[index];
+    const extraWidth = (item.value / valueSum) * remainingSpace;
+    return minItemWidth + extraWidth;
+  });
+  // We want to make sure that the sum of the widths of the items equals the width of the container
+  console.assert(
+    sum(itemWidths) === containerRef.current?.offsetWidth,
+    `sum(itemWidths) [${sum(itemWidths)}] !== containerRef.current.offset [${containerRef.current.offsetWidth}]`
+  );
+
   return (
     <Box>
       <Hidden />
       <Debug />
-      <Box ref={containerRef} width="100%" display="flex" gap={0.35} />
+      <Box ref={containerRef} width="100%" display="flex" gap={0.2} alignItems="stretch" height="100%">
+        {items.map((item, index) => (
+          <Box
+            key={item.name}
+            bgcolor={item.color ? item.color : item.value === 0 ? grey[600] : grey[800]}
+            borderRadius={index === 0 ? '8px 0 0 8px' : index === items.length - 1 ? '0 8px 8px 0' : '0'}
+            justifyContent="center"
+            alignContent="center"
+            textAlign="center"
+            width={itemWidths[index]}
+          >
+            {item.onHoverComponent ? (
+              <SpendingItemHoverableComponent item={item} />
+            ) : (
+              <SpendingItemTextComponent item={item} />
+            )}
+          </Box>
+        ))}
+      </Box>
     </Box>
   );
 };

@@ -30,6 +30,7 @@ import PendingAdvisorModal from './FinanceComponents/PendingAdvisorListModal';
 import ReportRefundModal from './FinanceComponents/ReportRefundModal';
 import TotalAmountSpentModal from './FinanceComponents/TotalAmountSpentModal';
 import SpendingBar from './SpendingBar';
+import { grey, red } from '@mui/material/colors';
 
 const FinancePage = () => {
   const user = useCurrentUser();
@@ -159,9 +160,17 @@ const FinancePage = () => {
     </>
   );
 
+  const segmentsSpendingItems = [
+    { name: 'Pending Leadership', value: 3000, color: red[900] },
+    { name: 'Pending Finance', value: 500, color: red[700] },
+    { name: 'Submitted to SABO', value: 500, color: red[500] },
+    { name: 'Reimbursed', value: 500, color: grey[700] },
+    { name: 'Available', value: 1500, color: grey[500] }
+  ];
+
   const testData = [
     [
-      { name: 'Segments', value: 5000 },
+      { name: 'Segments', value: 5000, onHoverComponent: <SpendingBar items={segmentsSpendingItems} /> },
       { name: 'Shepherd', value: 2500 },
       { name: 'Flex Therm PCBs', value: 0 }
     ],
@@ -190,36 +199,35 @@ const FinancePage = () => {
       { name: '7', value: 7 },
       { name: '8', value: 8 },
       { name: '9', value: 9 },
-      { name: '10', value: 10 },
-      { name: '11', value: 11 }
+      { name: '10', value: 10 }
     ],
     [
-      { name: 'really long name a', value: 1000 },
-      { name: 'really long name b', value: 1000 },
-      { name: 'really long name c', value: 1000 },
-      { name: 'really long name d', value: 1000 },
-      { name: 'really long name e', value: 1000 },
-      { name: 'really long name f', value: 1000 },
-      { name: 'really long name g', value: 1000 },
-      { name: 'really long name h', value: 1000 },
-      { name: 'really long name i', value: 1000 },
-      { name: 'really long name j', value: 1000 },
-      { name: 'really long name k', value: 1000 },
-      { name: 'really long name l', value: 1000 },
-      { name: 'really long name m', value: 1000 },
-      { name: 'really long name n', value: 1000 },
-      { name: 'really long name o', value: 1000 },
-      { name: 'really long name p', value: 1000 },
-      { name: 'really long name q', value: 1000 },
-      { name: 'really long name r', value: 1000 },
-      { name: 'really long name s', value: 1000 },
-      { name: 'really long name t', value: 1000 },
-      { name: 'really long name u', value: 1000 },
-      { name: 'really long name v', value: 1000 },
-      { name: 'really long name w', value: 1000 },
-      { name: 'really long name x', value: 1000 },
-      { name: 'really long name y', value: 1000 },
-      { name: 'really long name z', value: 1000 }
+      { name: 'Really Long Name A', value: 1 },
+      { name: 'Really Long Name B', value: 1 },
+      { name: 'Really Long Name C', value: 1 },
+      { name: 'Really Long Name D', value: 1 },
+      { name: 'Really Long Name E', value: 1 },
+      { name: 'Really Long Name F', value: 1 },
+      { name: 'Really Long Name G', value: 1 },
+      { name: 'Really Long Name H', value: 1 },
+      { name: 'Really Long Name I', value: 1 },
+      { name: 'Really Long Name J', value: 1 },
+      { name: 'Really Long Name K', value: 1 },
+      { name: 'Really Long Name L', value: 1 },
+      { name: 'Really Long Name M', value: 1 },
+      { name: 'Really Long Name N', value: 1 },
+      { name: 'Really Long Name O', value: 1 },
+      { name: 'Really Long Name P', value: 1 },
+      { name: 'Really Long Name Q', value: 1 },
+      { name: 'Really Long Name R', value: 1 },
+      { name: 'Really Long Name S', value: 1 },
+      { name: 'Really Long Name T', value: 1 },
+      { name: 'Really Long Name U', value: 1 },
+      { name: 'Really Long Name V', value: 1 },
+      { name: 'Really Long Name W', value: 1 },
+      { name: 'Really Long Name X', value: 1 },
+      { name: 'Really Long Name Y', value: 1 },
+      { name: 'Really Long Name Z', value: 1 }
     ]
   ];
 
@@ -263,7 +271,7 @@ const FinancePage = () => {
         <Grid item xs={12}>
           <Box gap={2} display="flex" flexDirection="column">
             {testData.map((items) => {
-              return <SpendingBar items={items} />;
+              return <SpendingBar items={items} enableDebug={false} />;
             })}
           </Box>
         </Grid>
