@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import PartReviewService from '../services/part-review.service';
 
-export default class PartsReviewController {
+export default class PartReviewController {
   static async createCommonMistake(req: Request, res: Response, next: NextFunction) {
     try {
       const { title, description, starred } = req.body;
