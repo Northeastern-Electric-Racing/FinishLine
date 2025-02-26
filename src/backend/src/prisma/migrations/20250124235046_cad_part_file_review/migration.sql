@@ -10,6 +10,7 @@ CREATE TYPE "Review_Status" AS ENUM ('IN_PROGRESS', 'READY_FOR_REVIEW', 'IN_REVI
 -- DropForeignKey
 ALTER TABLE "FrequentlyAskedQuestion" DROP CONSTRAINT "FrequentlyAskedQuestion_organizationId_fkey";
 ALTER TABLE "FrequentlyAskedQuestion" RENAME COLUMN "organizationId" TO "regularFaqOrgId";
+ALTER TABLE "FrequentlyAskedQuestion" ALTER "regularFaqOrgId" DROP NOT NULL;
 ALTER TABLE "FrequentlyAskedQuestion" ADD COLUMN     "partReviewFaqOrgId" TEXT;
 ALTER TABLE "FrequentlyAskedQuestion" ADD CONSTRAINT "FrequentlyAskedQuestion_regularFaqOrgId_fkey" FOREIGN KEY ("regularFaqOrgId") REFERENCES "Organization"("organizationId") ON DELETE SET NULL ON UPDATE CASCADE;
 ALTER TABLE "FrequentlyAskedQuestion" ADD CONSTRAINT "FrequentlyAskedQuestion_partReviewFaqOrgId_fkey" FOREIGN KEY ("partReviewFaqOrgId") REFERENCES "Organization"("organizationId") ON DELETE SET NULL ON UPDATE CASCADE;
