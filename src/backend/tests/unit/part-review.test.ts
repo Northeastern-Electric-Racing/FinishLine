@@ -22,7 +22,7 @@ describe('part review common mistakes create update and delete', () => {
   afterEach(async () => {
     await resetUsers();
   });
-
+  
   it('creates a common mistake, edits it, and deletes it', async () => {
     const commonMistake = await PartReviewService.createCommonMistake(
       'some title',
@@ -136,5 +136,4 @@ describe('part review common mistakes create update and delete', () => {
           orgId
         )
     ).rejects.toThrow(new DeletedException('common mistake', commonMistake.id));
-  });
 });
