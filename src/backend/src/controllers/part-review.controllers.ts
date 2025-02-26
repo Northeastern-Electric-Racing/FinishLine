@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import PartReviewService from '../services/part-review.service';
+import PartReviewService from '../services/part-review.services';
 
 export default class PartReviewController {
   static async createFaq(req: Request, res: Response, next: NextFunction) {
