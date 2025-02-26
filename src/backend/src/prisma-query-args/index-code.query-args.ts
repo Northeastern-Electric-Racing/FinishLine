@@ -7,8 +7,8 @@ export const getIndexCodeQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Index_CodeDefaultArgs>()({
     include: {
       userCreated: {
+        ...getUserQueryArgs(organizationId),
         include: {
-          ...getUserQueryArgs(organizationId),
           roles: true,
           organizations: true
         }

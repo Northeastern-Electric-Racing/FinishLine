@@ -147,16 +147,19 @@ export default class ReimbursementRequestService {
     organization: Organization,
     dateOfExpense?: Date
   ): Promise<ReimbursementRequest> {
+    console.log('Account received in createReimbursementRequest:', account);
     if (await userHasPermission(recipient.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('Guests cannot create a reimbursement request');
 
     if (!recipient.userSecureSettings) throw new HttpException(500, 'User does not have their finance settings set up');
 
+    if (!account || !account.indexCodeId) throw new HttpException(400, 'Invalid index code.');
+
     const vendor = await ReimbursementRequestService.getSingleVendor(vendorId, organization);
     const accountCode = await ReimbursementRequestService.getSingleAccountCode(acccountCodeId, organization);
 
     if (!accountCode.allowed) throw new HttpException(400, `The Account Code ${accountCode.name} is not allowed!`);
-    if (!accountCode.allowedRefundSources.includes(account)) {
+    if (!accountCode.allowedRefundSources.some((refundSource) => refundSource.indexCodeId === account.indexCodeId)) {
       throw new HttpException(400, 'The submitted refund source is not allowed to be used with the submitted Account Code');
     }
 
