@@ -1,6 +1,6 @@
 import { Organization, User } from '@prisma/client';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
-import PartReviewService from '../../src/services/part-review.service';
+import PartReviewService from '../../src/services/part-review.services';
 import { batmanAppAdmin, supermanAdmin, aquamanLeadership } from '../test-data/users.test-data';
 import prisma from '../../src/prisma/prisma';
 import { AccessDeniedAdminOnlyException, DeletedException } from '../../src/utils/errors.utils';
