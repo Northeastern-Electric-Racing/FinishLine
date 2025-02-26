@@ -46,7 +46,6 @@ const ReimbursementRequestTable = ({
   const [tabValue, setTabValue] = useState(0);
   const user = useCurrentUser();
   const canViewAllReimbursementRequests = user.isFinance || isHead(user.role);
-
   const displayedReimbursementRequests =
     tabValue === 1 && allReimbursementRequests ? allReimbursementRequests : userReimbursementRequests;
 
