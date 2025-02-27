@@ -103,7 +103,7 @@ export const vendorTransformer = (vendor: Prisma.VendorGetPayload<VendorQueryArg
     dateCreated: vendor.dateCreated,
     name: vendor.name,
     username: vendor.username,
-    password: vendor.passwordHash,
+    password: vendor.password, // to be decrypted? either decrypted here or in the hook itself
     discountCode: vendor.discountCode ?? undefined,
     twoFactorContact: vendor.twoFactorContact ? userTransformer(vendor.twoFactorContact) : undefined,
     notes: vendor.notes ?? undefined,
