@@ -276,7 +276,7 @@ const partCurrentDate = (projectId: string, userCreatedId: string): Prisma.PartC
 const partPastDate = (projectId: string, userCreatedId: string): Prisma.PartCreateArgs => {
   return {
     data: {
-      index: 13,
+      index: 14,
       commonName: 'Part with past date',
       description: 'This part is old.',
       previewImageLink: 'https://NER.com/testimage.jpg',
@@ -297,7 +297,7 @@ const partPastDate = (projectId: string, userCreatedId: string): Prisma.PartCrea
 const partUnixEpochDate = (projectId: string, userCreatedId: string): Prisma.PartCreateArgs => {
   return {
     data: {
-      index: 13,
+      index: 15,
       commonName: 'Part with date of Unix Epoch',
       description: 'This part is was made at the unix epoch.',
       previewImageLink: 'https://NER.com/testimage.jpg',
@@ -318,7 +318,7 @@ const partUnixEpochDate = (projectId: string, userCreatedId: string): Prisma.Par
 const partFutureDate = (projectId: string, userCreatedId: string): Prisma.PartCreateArgs => {
   return {
     data: {
-      index: 13,
+      index: 16,
       commonName: 'Part with date of future',
       description: 'This part is was made in the future.',
       previewImageLink: 'https://NER.com/testimage.jpg',
@@ -339,7 +339,7 @@ const partFutureDate = (projectId: string, userCreatedId: string): Prisma.PartCr
 const partLeapYearDate = (projectId: string, userCreatedId: string): Prisma.PartCreateArgs => {
   return {
     data: {
-      index: 13,
+      index: 17,
       commonName: 'Part with date with a leap year',
       description: 'This part is was during a leap year.',
       previewImageLink: 'https://NER.com/testimage.jpg',
