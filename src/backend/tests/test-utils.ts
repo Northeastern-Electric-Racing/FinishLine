@@ -2,7 +2,6 @@
 import {
   Club_Accounts,
   Organization,
-  PartTag,
   Project,
   Review_Status,
   Schedule_Settings,
