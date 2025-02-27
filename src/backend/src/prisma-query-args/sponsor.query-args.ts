@@ -5,6 +5,10 @@ export type SponsorQueryArgs = ReturnType<typeof getSponsorQueryArgs>;
 export const getSponsorQueryArgs = () =>
   Prisma.validator<Prisma.SponsorDefaultArgs>()({
     include: {
-      sponsorTasks: true
+      sponsorTasks: {
+        include: {
+          sponsor: true
+        }
+      }
     }
   });

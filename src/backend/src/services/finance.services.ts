@@ -79,6 +79,6 @@ export default class FinanceServices {
       ...getSponsorQueryArgs()
     });
 
-    return allSponsors;
+    return allSponsors.map(sponsorTransformer);
   }
 }
