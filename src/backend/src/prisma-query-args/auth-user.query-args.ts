@@ -48,6 +48,11 @@ export const getAuthUserQueryArgs = (organizationId: string) =>
         where: {
           organizationId
         }
+      },
+      onboardedTeamTypes: {
+        where: {
+          organizationId
+        }
       }
     }
   });

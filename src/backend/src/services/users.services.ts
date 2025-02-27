@@ -303,7 +303,8 @@ export default class UsersService {
         teamsAsLead: [],
         teamsAsMember: [],
         roles: [],
-        onboardingTeamTypes: []
+        onboardingTeamTypes: [],
+        onboardedTeamTypes: []
       }),
       token
     };
@@ -356,7 +357,8 @@ export default class UsersService {
       teamsAsLead: [],
       teamsAsMember: [],
       roles: [],
-      onboardingTeamTypes: []
+      onboardingTeamTypes: [],
+      onboardedTeamTypes: []
     });
   }
 

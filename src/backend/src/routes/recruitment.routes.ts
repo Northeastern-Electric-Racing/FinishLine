@@ -30,14 +30,14 @@ recruitmentRouter.delete('/milestone/:milestoneId/delete', RecruitmentController
 
 /* FAQ Section */
 
-recruitmentRouter.get('/faqs', RecruitmentController.getAllFaqs);
+recruitmentRouter.get('/faqs', RecruitmentController.getAllOrganizationFaqs);
 
 recruitmentRouter.post(
   '/faq/create',
   nonEmptyString(body('question')),
   nonEmptyString(body('answer')),
   validateInputs,
-  RecruitmentController.createFaq
+  RecruitmentController.createOrganizationFaq
 );
 
 recruitmentRouter.post(

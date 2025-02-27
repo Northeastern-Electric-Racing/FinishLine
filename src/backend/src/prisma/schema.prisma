@@ -151,6 +151,14 @@ enum Special_Permission {
   FINANCE_ONLY
 }
 
+enum Review_Status {
+  IN_PROGRESS
+  READY_FOR_REVIEW
+  IN_REVIEW
+  REVIEWED
+  APPROVED
+}
+
 model User {
   userId                String                @id @default(uuid())
   firstName             String
@@ -235,6 +243,17 @@ model User {
   checkedChecklists               Checklist[]               @relation(name: "checkedChecklists")
   contacts                        Contact[]
   onboardingTeamTypes             Team_Type[]               @relation(name: "onboardingTeamTypes")
+  onboardedTeamTypes              Team_Type[]               @relation(name: "onboardedTeamTypes")
+  createdParts                    Part[]                    @relation(name: "partCreator")
+  deletedParts                    Part[]                    @relation(name: "partDeleter")
+  createdPartSubmissions          PartSubmission[]          @relation(name: "partsSubmissionCreator")
+  deletedPartSubmissions          PartSubmission[]          @relation(name: "partsSubmissionDeleter")
+  createdPartReviews              PartReview[]              @relation(name: "partsReviewCreator")
+  deletedPartReviews              PartReview[]              @relation(name: "partsReviewDeleter")
+  partsToReview                   Part[]                    @relation(name: "partReviewers")
+  assignedParts                   Part[]                    @relation(name: "partAssignees")
+  createdCommonMistakes           PartReviewCommonMistake[] @relation(name: "commonMistakeCreator")
+  deletedCommonMistakes           PartReviewCommonMistake[] @relation(name: "commonMistakeDeleter")
 }
 
 model Role {
@@ -449,6 +468,8 @@ model Project {
   favoritedBy              User[]         @relation(name: "favoritedBy")
   featuredByOrganizationId String?
   featuredByOrganization   Organization?  @relation(fields: [featuredByOrganizationId], references: [organizationId])
+  abbreviation             String?
+  parts                    Part[]
 }
 
 model Work_Package {
@@ -774,6 +795,7 @@ model Team_Type {
   calendarId      String?
   checklists      Checklist[]
   usersOnboarding User[]          @relation(name: "onboardingTeamTypes")
+  usersOnboarded  User[]          @relation(name: "onboardedTeamTypes")
 
   dateDeleted DateTime?
   deletedById String?
@@ -923,25 +945,26 @@ model Car {
 }
 
 model Organization {
-  organizationId        String    @id @default(uuid())
-  name                  String
-  dateCreated           DateTime  @default(now())
-  userCreatedId         String
-  userCreated           User      @relation(fields: [userCreatedId], references: [userId], name: "organizationCreator")
-  dateDeleted           DateTime?
-  userDeletedId         String?
-  userDeleted           User?     @relation(fields: [userDeletedId], references: [userId], name: "organizationDeleter")
-  treasurerId           String?
-  treasurer             User?     @relation(name: "treasurer", fields: [treasurerId], references: [userId])
-  advisor               User?     @relation(name: "advisor", fields: [advisorId], references: [userId])
-  advisorId             String?
-  description           String    @default("")
-  applyInterestImageId  String?
-  exploreAsGuestImageId String?
-  logoImageId           String?
-  slackWorkspaceId      String?
-  applicationLink       String?
-  onboardingText        String?
+  organizationId          String    @id @default(uuid())
+  name                    String
+  dateCreated             DateTime  @default(now())
+  userCreatedId           String
+  userCreated             User      @relation(fields: [userCreatedId], references: [userId], name: "organizationCreator")
+  dateDeleted             DateTime?
+  userDeletedId           String?
+  userDeleted             User?     @relation(fields: [userDeletedId], references: [userId], name: "organizationDeleter")
+  treasurerId             String?
+  treasurer               User?     @relation(name: "treasurer", fields: [treasurerId], references: [userId])
+  advisor                 User?     @relation(name: "advisor", fields: [advisorId], references: [userId])
+  advisorId               String?
+  description             String    @default("")
+  applyInterestImageId    String?
+  exploreAsGuestImageId   String?
+  logoImageId             String?
+  slackWorkspaceId        String?
+  applicationLink         String?
+  onboardingText          String?
+  partReviewSampleImageId String?
 
   // Relation references
   wbsElements              WBS_Element[]
@@ -961,7 +984,8 @@ model Organization {
   changeRequests           Change_Request[]
   reimbursementReqeusts    Reimbursement_Request[]
   usefulLinks              Link[]
-  frequentlyAskedQuestions FrequentlyAskedQuestion[]
+  frequentlyAskedQuestions FrequentlyAskedQuestion[] @relation(name: "organizationFAQ")
+  partReviewFAQ            FrequentlyAskedQuestion[]
   milestones               Milestone[]
   graphCollections         Graph_Collection[]
   graphs                   Graph[]
@@ -970,20 +994,24 @@ model Organization {
   announcements            Announcement[]
   checklists               Checklist[]
   contacts                 Contact[]
+  partReviewCommonMistakes PartReviewCommonMistake[]
+  partTags                 PartTag[]
 }
 
 model FrequentlyAskedQuestion {
-  faqId          String       @id @default(uuid())
-  question       String
-  answer         String
-  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "frequentlyAskedQuestionCreator")
-  userCreatedId  String
-  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "frequentlyAskedQuestionDeleter")
-  userDeletedId  String?
-  dateCreated    DateTime     @default(now())
-  dateDeleted    DateTime?
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  faqId              String        @id @default(uuid())
+  question           String
+  answer             String
+  userCreated        User          @relation(fields: [userCreatedId], references: [userId], name: "frequentlyAskedQuestionCreator")
+  userCreatedId      String
+  userDeleted        User?         @relation(fields: [userDeletedId], references: [userId], name: "frequentlyAskedQuestionDeleter")
+  userDeletedId      String?
+  dateCreated        DateTime      @default(now())
+  dateDeleted        DateTime?
+  regularFaqOrgId    String?
+  regularFaqOrg      Organization? @relation(fields: [regularFaqOrgId], references: [organizationId], name: "organizationFAQ")
+  partReviewFaqOrgId String?
+  partReviewFaqOrg   Organization? @relation(fields: [partReviewFaqOrgId], references: [organizationId])
 }
 
 model Milestone {
@@ -1096,4 +1124,100 @@ model Contact {
   organizationId String
 
   @@unique([organizationId, userId, title])
+}
+
+model Part {
+  partId           String           @id @default(uuid())
+  index            Int
+  commonName       String
+  description      String?
+  previewImageLink String?
+  status           Review_Status    @default(IN_PROGRESS)
+  tags             PartTag[]
+  submissions      PartSubmission[]
+  project          Project          @relation(fields: [projectId], references: [projectId])
+  projectId        String
+  assignees        User[]           @relation("partAssignees")
+  reviewers        User[]           @relation("partReviewers")
+  history          String[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  dateDeleted      DateTime?
+  userCreatedId    String
+  userCreated      User             @relation(fields: [userCreatedId], references: [userId], name: "partCreator")
+  userDeletedId    String?
+  userDeleted      User?            @relation(fields: [userDeletedId], references: [userId], name: "partDeleter")
+}
+
+model PartTag {
+  partTagId      String        @id @default(uuid())
+  name           String
+  colorHexCode   String
+  dateCreated    DateTime
+  dateDeleted    DateTime?
+  parts          Part[]
+  organization   Organization? @relation(fields: [organizationId], references: [organizationId])
+  organizationId String?
+}
+
+model PartSubmission {
+  id            String       @id @default(uuid())
+  fileIds       String[]
+  name          String
+  notes         String?
+  part          Part         @relation(fields: [partId], references: [partId])
+  partId        String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  dateDeleted   DateTime?
+  userCreatedId String
+  userCreated   User         @relation(fields: [userCreatedId], references: [userId], name: "partsSubmissionCreator")
+  userDeletedId String?
+  userDeleted   User?        @relation(fields: [userDeletedId], references: [userId], name: "partsSubmissionDeleter")
+  reviews       PartReview[]
+}
+
+model PartReview {
+  partReviewId  String              @id @default(uuid())
+  fileIds       String[]
+  notes         String?
+  submission    PartSubmission      @relation(fields: [submissionId], references: [id])
+  submissionId  String
+  popUps        Part_Review_Popup[]
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  dateDeleted   DateTime?
+  userCreatedId String
+  userCreated   User                @relation(fields: [userCreatedId], references: [userId], name: "partsReviewCreator")
+  deletedAt     DateTime?
+  userDeletedId String?
+  userDeleted   User?               @relation(fields: [userDeletedId], references: [userId], name: "partsReviewDeleter")
+}
+
+model Part_Review_Popup {
+  partReviewPopupId String     @id @default(uuid())
+  xCoord            Float
+  yCoord            Float
+  title             String
+  description       String
+  reviewId          String
+  review            PartReview @relation(fields: [reviewId], references: [partReviewId])
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  deletedAd         DateTime?
+}
+
+model PartReviewCommonMistake {
+  id             String        @id @default(uuid())
+  title          String
+  description    String
+  starred        Boolean
+  userCreated    User          @relation(fields: [userCreatedId], references: [userId], name: "commonMistakeCreator")
+  userCreatedId  String
+  userDeleted    User?         @relation(fields: [userDeletedId], references: [userId], name: "commonMistakeDeleter")
+  userDeletedId  String?
+  dateCreated    DateTime      @default(now())
+  dateDeleted    DateTime?
+  organization   Organization? @relation(fields: [organizationId], references: [organizationId])
+  organizationId String?
 }

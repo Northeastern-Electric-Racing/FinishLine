@@ -10,6 +10,9 @@ const AdminToolsProjectsConfig: React.FC = () => {
   return (
     <Box>
       <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
+        Parts Review Config
+      </Typography>
+      <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
         Cars Config
       </Typography>
       <PartTagsTable />

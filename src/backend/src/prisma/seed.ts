@@ -1998,9 +1998,30 @@ const performSeed: () => Promise<void> = async () => {
   await RecruitmentServices.createMilestone(batman, 'Applications Close', '', new Date('11/27/24'), ner);
   await RecruitmentServices.createMilestone(batman, 'Decision Day!', '', new Date('12/4/24'), ner);
 
-  await RecruitmentServices.createFaq(batman, 'Who is the Chief Software Engineer?', 'Peyton McKee', ner);
-  await RecruitmentServices.createFaq(batman, 'When was FinishLine created?', 'FinishLine was created in 2019', ner);
-  await RecruitmentServices.createFaq(batman, 'How many developers are working on FinishLine?', '178 as of 2024', ner);
+  await RecruitmentServices.createOrganizationFaq(batman, 'Who is the Chief Software Engineer?', 'Peyton McKee', ner);
+  await RecruitmentServices.createOrganizationFaq(
+    batman,
+    'When was FinishLine created?',
+    'FinishLine was created in 2019',
+    ner
+  );
+  await RecruitmentServices.createOrganizationFaq(
+    batman,
+    'How many developers are working on FinishLine?',
+    '178 as of 2024',
+    ner
+  );
+
+  await prisma.frequentlyAskedQuestion.create({
+    data: {
+      faqId: '1',
+      question: 'question',
+      answer: 'answer',
+      userCreated: { connect: { userId: batman.userId } },
+      dateCreated: new Date(),
+      partReviewFaqOrg: { connect: { organizationId: ner.organizationId } }
+    }
+  });
 
   await AnnouncementService.createAnnouncement(
     'Welcome to Finishline!',
