@@ -3,12 +3,8 @@ import { Prisma } from '@prisma/client';
 export type SponsorQueryArgs = ReturnType<typeof getSponsorQueryArgs>;
 
 export const getSponsorQueryArgs = () =>
-  Prisma.validator<Prisma.SponsorDefaultArgs>()({
+  Prisma.validator<Prisma.SponsorFindManyArgs>()({
     include: {
-      sponsorTasks: {
-        include: {
-          sponsor: true
-        }
-      }
+      sponsorTasks: true
     }
   });

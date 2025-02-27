@@ -65,12 +65,10 @@ export default class FinanceServices {
         },
         organizationId: organization.organizationId
       },
-      include: {
-        sponsorTasks: true
-      }
+      ...getSponsorQueryArgs()
     });
 
-    return sponsor;
+    return sponsorTransformer(sponsor);
   }
 
   static async getAllSponsors(organization: Organization) {

@@ -52,7 +52,7 @@ import FinanceServices from '../services/finance.services';
 const prisma = new PrismaClient();
 
 const performSeed: () => Promise<void> = async () => {
-  const thomasEmrax = await prisma.user.yarncreate({
+  const thomasEmrax = await prisma.user.create({
     data: dbSeedAllUsers.thomasEmrax,
     include: { userSettings: true, userSecureSettings: true }
   });

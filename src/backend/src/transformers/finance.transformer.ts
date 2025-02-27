@@ -1,10 +1,9 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, Sponsor, Sponsor_Task } from '@prisma/client';
 import { SponsorQueryArgs } from '../prisma-query-args/sponsor.query-args';
-import { TransformedSponsor } from './types'; // Import the custom type
 
-const sponsorTransformer = (
-  sponsor: Prisma.SponsorGetPayload<SponsorQueryArgs> // Sponsor with included relations
-): TransformedSponsor => {
+export const sponsorTransformer = (
+  sponsor: Prisma.SponsorGetPayload<SponsorQueryArgs>
+): Sponsor & { sponsorTasks: Sponsor_Task[] } => {
   return {
     sponsorId: sponsor.sponsorId,
     name: sponsor.name,
@@ -19,7 +18,7 @@ const sponsorTransformer = (
     discountCode: sponsor.discountCode ?? null,
     activeYears: sponsor.activeYears,
     taxExempt: sponsor.taxExempt,
-    sponsorTasks: sponsor.sponsorTasks // Include `sponsorTasks` in the return object
+    sponsorTasks: sponsor.sponsorTasks ?? [] // Ensure it’s included
   };
 };
 
