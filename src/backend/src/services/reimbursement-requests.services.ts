@@ -555,21 +555,27 @@ export default class ReimbursementRequestService {
 
   /**
    * Function to create a vendor in our database
-   * @param submitter the user who is creating the vendor
-   * @param name the name of the vendor
-   * @param organizationId the organization the user is currently in
-   * @returns the created vendor
+   * @param submitter user creating the vendor
+   * @param name vendor name
+   * @param organization current organziation
+   * @param username vendor username
+   * @param password vendor password *to be encrypted*
+   * @param notes vendor notes
+   * @param addedByUserId userId that added the vendor
+   * @param twoFactorContactId two-factor contact id
+   * @param discountCode vendor discount code
+   * @returns
    */
   static async createVendor(
     submitter: User,
     name: string,
     organization: Organization,
     username: string,
-    passwordHash: string,
-    discountCode: string,
-    twoFactorContactId: string,
-    notes: string,
-    addedByUserId: string
+    password: string,
+    discountCode?: string,
+    twoFactorContactId?: string,
+    notes?: string,
+    addedByUserId?: string
   ) {
     const isAuthorized =
       (await userHasPermission(submitter.userId, organization.organizationId, isAdmin)) ||
@@ -593,7 +599,7 @@ export default class ReimbursementRequestService {
         name,
         organizationId: organization.organizationId,
         username,
-        passwordHash,
+        password, // to be encrypted
         discountCode,
         twoFactorContactId,
         notes,

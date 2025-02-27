@@ -91,6 +91,12 @@ reimbursementRequestsRouter.post(
 reimbursementRequestsRouter.post(
   '/vendors/create',
   nonEmptyString(body('name')),
+  nonEmptyString(body('username')),
+  nonEmptyString(body('password')),
+  nonEmptyString(body('discountCode')).optional(),
+  nonEmptyString(body('twoFactorContactId')).optional(),
+  nonEmptyString(body('note')).optional(),
+  nonEmptyString(body('addedByUserId')).optional(),
   validateInputs,
   ReimbursementRequestController.createVendor
 );
