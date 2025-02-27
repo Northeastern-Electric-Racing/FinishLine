@@ -1,7 +1,7 @@
 import { FormControl, FormHelperText, FormLabel, Grid, InputAdornment, MenuItem, TextField, Tooltip } from '@mui/material';
 import { Box } from '@mui/system';
 import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
-import { Assembly, Manufacturer, MaterialType, Unit } from 'shared';
+import { Assembly, isGuest, isMember, Manufacturer, MaterialType, Unit } from 'shared';
 import ReactHookTextField from '../../../../../components/ReactHookTextField';
 import { MaterialFormInput } from './MaterialForm';
 import NERFormModal from '../../../../../components/NERFormModal';
@@ -13,6 +13,7 @@ import HelpIcon from '@mui/icons-material/Help';
 import { displayEnum } from '../../../../../utils/pipes';
 import { MaterialStatus } from 'shared';
 import { createUnit } from '../../../../../apis/bom.api';
+import { useCurrentUser } from '../../../../../hooks/users.hooks';
 
 export interface MaterialFormViewProps {
   submitText: 'Add' | 'Edit';
@@ -57,7 +58,8 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   const quantity = watch('quantity');
   const price = watch('price');
   const subtotal = quantity && price && parseFloat((quantity * price).toFixed(2));
-
+  const user = useCurrentUser();
+  const disableEdit = isGuest(user.role) || isMember(user.role);
   const onCostBlurHandler = (value: number) => {
     setValue(`price`, parseFloat(value.toFixed(2)));
   };
@@ -110,7 +112,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={disableEdit ? 12 : 6}>
           <FormControl fullWidth>
             <FormLabel>Type</FormLabel>
             <Controller
@@ -135,21 +137,23 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
-          <NERButton
-            sx={{ width: '100%', height: '56px' }}
-            variant="contained"
-            onClick={() => {
-              const newTypeName = prompt('Enter New Type Name');
-              if (newTypeName !== null) {
-                createType(newTypeName);
-              }
-            }}
-          >
-            Add New Type <AddIcon sx={{ paddingLeft: '7px' }}></AddIcon>
-          </NERButton>
-        </Grid>
-        <Grid item xs={6}>
+        {!disableEdit && (
+          <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
+            <NERButton
+              sx={{ width: '100%', height: '56px' }}
+              variant="contained"
+              onClick={() => {
+                const newTypeName = prompt('Enter New Type Name');
+                if (newTypeName !== null) {
+                  createType(newTypeName);
+                }
+              }}
+            >
+              Add New Type <AddIcon sx={{ paddingLeft: '7px' }}></AddIcon>
+            </NERButton>
+          </Grid>
+        )}
+        <Grid item xs={disableEdit ? 12 : 6}>
           <FormControl fullWidth>
             <FormLabel>
               Manufacturer
@@ -191,20 +195,22 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
-          <NERButton
-            sx={{ width: '100%', height: '56px' }}
-            variant="contained"
-            onClick={() => {
-              const newManufacturerName = prompt('Enter New Manufacturer Name');
-              if (newManufacturerName !== null) {
-                createManufacturer(newManufacturerName);
-              }
-            }}
-          >
-            Add New Manufacturer <AddIcon sx={{ paddingLeft: '7px' }}></AddIcon>
-          </NERButton>
-        </Grid>
+        {!disableEdit && (
+          <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
+            <NERButton
+              sx={{ width: '100%', height: '56px' }}
+              variant="contained"
+              onClick={() => {
+                const newManufacturerName = prompt('Enter New Manufacturer Name');
+                if (newManufacturerName !== null) {
+                  createManufacturer(newManufacturerName);
+                }
+              }}
+            >
+              Add New Manufacturer <AddIcon sx={{ paddingLeft: '7px' }}></AddIcon>
+            </NERButton>
+          </Grid>
+        )}
         <Grid item xs={6}>
           <FormControl fullWidth>
             <FormLabel>
@@ -233,7 +239,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid xs={6}>
+        <Grid xs={disableEdit ? 12 : 6}>
           <Box display={'flex'} alignItems={'center'} mt={2} ml={2}>
             <FormControl fullWidth>
               <FormLabel>Quantity</FormLabel>
@@ -271,20 +277,22 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             </FormControl>
           </Box>
         </Grid>
-        <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
-          <NERButton
-            sx={{ width: '110%', height: '56px' }}
-            variant="contained"
-            onClick={() => {
-              const newUnitName = prompt('Enter New Unit Name');
-              if (newUnitName !== null) {
-                createUnit(newUnitName);
-              }
-            }}
-          >
-            Add Unit <AddIcon sx={{ paddingLeft: '5px' }}></AddIcon>
-          </NERButton>
-        </Grid>
+        {!disableEdit && (
+          <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
+            <NERButton
+              sx={{ width: '110%', height: '56px' }}
+              variant="contained"
+              onClick={() => {
+                const newUnitName = prompt('Enter New Unit Name');
+                if (newUnitName !== null) {
+                  createUnit(newUnitName);
+                }
+              }}
+            >
+              Add Unit <AddIcon sx={{ paddingLeft: '5px' }}></AddIcon>
+            </NERButton>
+          </Grid>
+        )}
         <Grid item xs={3}>
           <FormControl fullWidth>
             <FormLabel style={{ whiteSpace: 'normal' }}>Price per Unit</FormLabel>
