@@ -171,8 +171,8 @@ const FinancePage = () => {
   const testData = [
     [
       { name: 'Segments', value: 5000, onHoverComponent: <SpendingBar items={segmentsSpendingItems} /> },
-      { name: 'Shepherd', value: 2500 },
-      { name: 'Flex Therm PCBs', value: 0 }
+      { name: 'Shepherd', value: 2500, onHoverComponent: <SpendingBar items={segmentsSpendingItems} /> },
+      { name: 'Flex Therm PCBs', value: 0, onHoverComponent: <SpendingBar items={segmentsSpendingItems} /> }
     ],
     [
       { name: 'A', value: 1 },

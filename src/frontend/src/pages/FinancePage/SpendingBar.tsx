@@ -1,7 +1,6 @@
 import { Box } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { useEffect, useRef, useState } from 'react';
-import { Project } from 'shared';
 
 interface HoverableComponentProps {
   defaultComponent: JSX.Element;
@@ -30,7 +29,11 @@ const HoverableComponent: React.FC<HoverableComponentProps> = ({ defaultComponen
     };
   }, []);
 
-  return <Box ref={boxRef}>{isHovered ? onHoverComponent : defaultComponent}</Box>;
+  return (
+    <Box ref={boxRef} height="100%" justifyContent="center" alignContent="center">
+      {isHovered ? onHoverComponent : defaultComponent}
+    </Box>
+  );
 };
 
 interface SpendingItem {
@@ -54,7 +57,7 @@ interface SpendingItemComponentProps {
  */
 const SpendingItemTextComponent: React.FC<SpendingItemComponentProps> = ({ item }) => {
   return (
-    <Box /* p={2} */ justifyContent="center" alignContent="center" textAlign="center">
+    <Box p={0.5} justifyContent="center" alignContent="center" textAlign="center" height="100%">
       {item.name} <br /> ${item.value}
     </Box>
   );
@@ -171,7 +174,7 @@ const SpendingBar: React.FC<SpendingBarProps> = ({ items, enableDebug = false })
   );
 
   return (
-    <Box>
+    <Box height="100%">
       <Hidden />
       <Debug />
       <Box ref={containerRef} width="100%" display="flex" gap={0.2} alignItems="stretch" height="100%">
@@ -184,6 +187,7 @@ const SpendingBar: React.FC<SpendingBarProps> = ({ items, enableDebug = false })
             alignContent="center"
             textAlign="center"
             width={itemWidths[index]}
+            alignSelf="stretch"
           >
             {item.onHoverComponent ? (
               <SpendingItemHoverableComponent item={item} />
