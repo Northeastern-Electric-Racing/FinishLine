@@ -4,6 +4,7 @@ import WorkPackageTemplateTable from './ProjectsConfig/WorkPackageTemplateTable'
 import LinkTypeTable from './ProjectsConfig/LinkTypes/LinkTypeTable';
 import DescriptionBulletTypeTable from './ProjectsConfig/DescriptionBulletTypes/DescriptionBulletTypeTable';
 import CarsTable from './ProjectsConfig/CarsTable';
+import PartTagsTable from './ProjectsConfig/PartTagsTable';
 
 const AdminToolsProjectsConfig: React.FC = () => {
   return (
@@ -11,6 +12,7 @@ const AdminToolsProjectsConfig: React.FC = () => {
       <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
         Cars Config
       </Typography>
+      <PartTagsTable />
       <CarsTable />
       <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
         Links Config
