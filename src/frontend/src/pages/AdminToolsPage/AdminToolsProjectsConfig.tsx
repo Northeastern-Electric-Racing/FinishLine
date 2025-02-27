@@ -12,10 +12,10 @@ const AdminToolsProjectsConfig: React.FC = () => {
       <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
         Parts Review Config
       </Typography>
+      <PartTagsTable />
       <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
         Cars Config
       </Typography>
-      <PartTagsTable />
       <CarsTable />
       <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
         Links Config
