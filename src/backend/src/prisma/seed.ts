@@ -2146,7 +2146,8 @@ const performSeed: () => Promise<void> = async () => {
     false
   );
 
-  const partExample = await prisma.part.create({
+  // example part for a tire
+  const part1Example = await prisma.part.create({
     data: {
       partId: '001',
       index: 0,
@@ -2160,9 +2161,22 @@ const performSeed: () => Promise<void> = async () => {
     }
   });
 
-  const emptyReviews: PartReview[] = [];
+  // example part for an engine
+  const partExample = await prisma.part.create({
+    data: {
+      partId: '002',
+      index: 0,
+      commonName: 'engine',
+      project: {
+        connect: { projectId: project1Id }
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      }
+    }
+  });
 
-  const partSubmissionExample = await prisma.partSubmission.create({
+  const partSubmissionExample1 = await prisma.partSubmission.create({
     data: {
       id: 'submissionId001',
       fileIds: ['file1', 'file2'],
@@ -2174,26 +2188,49 @@ const performSeed: () => Promise<void> = async () => {
       userCreated: {
         connect: { userId: batman.userId }
       },
-      reviews: {
-        connect: emptyReviews.map((review) => ({ partReviewId: review.partReviewId }))
-      }
     }
   });
 
-  const emptyPopups: Part_Review_Popup[] = [];
+  const partSubmissionExample2 = await prisma.partSubmission.create({
+    data: {
+      id: 'submissionId002',
+      fileIds: ['file3'],
+      name: 'engine',
+      notes: 'this is the car engine',
+      part: {
+        connect: { partId: partExample.partId }
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      },
+    }
+  });
 
-  const partReviewExample = await prisma.partReview.create({
+  const partSubmissionExample3 = await prisma.partSubmission.create({
+    data: {
+      id: 'submissionId003',
+      fileIds: ['file4', 'file5', 'file6'],
+      name: 'tire',
+      notes: 'black, round',
+      part: {
+        connect: { partId: partExample.partId }
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      },
+    }
+  });
+
+
+  const partReviewExample1 = await prisma.partReview.create({
     data: {
       partReviewId: 'reviewId001',
       fileIds: ['file1', 'file2'],
       notes: 'this part submission sucks!!',
       submission: {
         connect: {
-          id: partSubmissionExample.id
+          id: partSubmissionExample1.id
         }
-      },
-      popUps: {
-        connect: emptyPopups.map((popup) => ({ partReviewPopupId: popup.partReviewPopupId }))
       },
       userCreated: {
         connect: { userId: batman.userId }
