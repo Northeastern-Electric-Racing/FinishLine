@@ -51,6 +51,7 @@ import { seedGraph } from './seed-data/statistics.seed';
 import { graphCollectionTransformer } from '../transformers/statistics-graphCollection.transformer';
 import AnnouncementService from '../services/announcement.service';
 import OnboardingServices from '../services/onboarding.services';
+import { dbSeedAllParts } from './seed-data/parts.seed';
 
 const prisma = new PrismaClient();
 
@@ -2131,6 +2132,21 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     false
   );
+
+  /**
+   * PARTS
+   */
+  for (const createPart of Object.values(dbSeedAllParts)) {
+    const partArgs = createPart(project2Id, batman.userId);
+    await prisma.part.create({
+      data: {
+        ...partArgs.data,
+        assignees: { connect: [{ userId: hawkMan.userId }] },
+        reviewers: { connect: [{ userId: cyborg.userId }] },
+      },
+    });
+  }
+  
 };
 
 performSeed()

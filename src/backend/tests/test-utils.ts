@@ -608,11 +608,10 @@ export const createTestTask = async (
 
 export const createTestPart = async (
   index: number,
-  userCreated: User,
+  userCreatedId: string,
   commonName: string,
   status: Review_Status,
-  tags: PartTag[],
-  project: Project,
+  projectId: string,
   assignees: User[],
   reviewers: User[],
   history: string[],
@@ -627,16 +626,13 @@ export const createTestPart = async (
       description,
       previewImageLink,
       status,
-      tags: { connect: tags.map((tag) => ({ partTagId: tag.partTagId })) },
       submissions: { create: [] },
-      project: { connect: { projectId: project.projectId } },
+      project: { connect: { projectId } },
       assignees: { connect: assignees.map((user) => ({ userId: user.userId })) },
       reviewers: { connect: reviewers.map((user) => ({ userId: user.userId })) },
       history,
       createdAt,
-      userCreated: {
-        connect: { userId: userCreated.userId }
-      }
+      userCreated: { connect: { userId: userCreatedId } }
     }
   });
 };
