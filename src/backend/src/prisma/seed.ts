@@ -2142,11 +2142,10 @@ const performSeed: () => Promise<void> = async () => {
       data: {
         ...partArgs.data,
         assignees: { connect: [{ userId: hawkMan.userId }] },
-        reviewers: { connect: [{ userId: cyborg.userId }] },
-      },
+        reviewers: { connect: [{ userId: cyborg.userId }] }
+      }
     });
   }
-  
 };
 
 performSeed()

@@ -617,7 +617,7 @@ export const createTestPart = async (
   history: string[],
   createdAt: Date,
   description?: string,
-  previewImageLink?: string,
+  previewImageLink?: string
 ) => {
   return await prisma.part.create({
     data: {
