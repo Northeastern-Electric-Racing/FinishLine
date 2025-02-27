@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import { getUserAndOrganization, prodHeaders, requireJwtDev, requireJwtProd } from './src/utils/auth.utils';
 import { errorHandler } from './src/utils/errors.utils';
 import userRouter from './src/routes/users.routes';
+import financeRouter from './src/routes/finance.routes';
 import projectRouter from './src/routes/projects.routes';
 import teamsRouter from './src/routes/teams.routes';
 import workPackagesRouter from './src/routes/work-packages.routes';
@@ -81,6 +82,7 @@ app.use('/pop-ups', popUpsRouter);
 app.use('/announcements', announcementsRouter);
 app.use('/onboarding', onboardingRouter);
 app.use('/statistics', statisticsRouter);
+app.use('/finance', financeRouter);
 app.use('/', (_req, res) => {
   res.status(200).json('Welcome to FinishLine');
 });

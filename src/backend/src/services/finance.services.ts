@@ -3,6 +3,8 @@ import { User, Organization, Sponsor_Task } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
 import { AccessDeniedAdminOnlyException } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
+import { getSponsorQueryArgs } from '../prisma-query-args/sponsor.query-args';
+import sponsorTransformer from '../transformers/finance.transformer';
 
 export default class FinanceServices {
   /**
@@ -74,7 +76,7 @@ export default class FinanceServices {
   static async getAllSponsors(organization: Organization) {
     const allSponsors = await prisma.sponsor.findMany({
       where: { organizationId: organization.organizationId, dateDeleted: null },
-      include: { sponsorTasks: true }
+      ...getSponsorQueryArgs()
     });
 
     return allSponsors;

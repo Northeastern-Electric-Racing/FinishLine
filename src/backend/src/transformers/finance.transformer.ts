@@ -1,7 +1,8 @@
 import { Prisma } from '@prisma/client';
 import { Sponsor } from '@prisma/client';
+import { SponsorQueryArgs } from '../prisma-query-args/sponsor.query-args';
 
-const sponsorTransformer = (sponsor: Prisma.SponsorGetPayload<null>): Sponsor => {
+const sponsorTransformer = (sponsor: Prisma.SponsorGetPayload<SponsorQueryArgs>): Sponsor => {
   return {
     sponsorId: sponsor.sponsorId,
     name: sponsor.name,
