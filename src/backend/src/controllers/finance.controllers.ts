@@ -36,4 +36,13 @@ export default class FinanceController {
       next(error);
     }
   }
+
+  static async getSponsorTasks(req: Request, res: Response, next: NextFunction) {
+    try {
+      const sponsorTasks = await FinanceServices.getSponsorTasks(req.organization.organizationId);
+      res.status(200).json(sponsorTasks);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
