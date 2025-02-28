@@ -59,7 +59,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   const price = watch('price');
   const subtotal = quantity && price && parseFloat((quantity * price).toFixed(2));
   const user = useCurrentUser();
-  const disableEdit = isGuest(user.role) || isMember(user.role);
+  const disableEdit = isGuest(user.role);
   const onCostBlurHandler = (value: number) => {
     setValue(`price`, parseFloat(value.toFixed(2)));
   };
