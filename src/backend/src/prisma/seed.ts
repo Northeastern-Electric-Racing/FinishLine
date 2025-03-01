@@ -53,7 +53,7 @@ import { graphCollectionTransformer } from '../transformers/statistics-graphColl
 import AnnouncementService from '../services/announcement.service';
 import OnboardingServices from '../services/onboarding.services';
 import { dbSeedAllPartTags } from './seed-data/parts.seed';
-
+import { CreatePartTag, CreateCommonMistake, CreatePartReviewFAQ } from '../../tests/test-utils';
 const prisma = new PrismaClient();
 
 const performSeed: () => Promise<void> = async () => {
@@ -2149,6 +2149,42 @@ const performSeed: () => Promise<void> = async () => {
   const mechanicalPartTag: PartTag = await prisma.partTag.create(dbSeedAllPartTags.MechanicalPartTag(organizationId));
   const electricalPartTag: PartTag = await prisma.partTag.create(dbSeedAllPartTags.ElectricalPartTag(organizationId));
   const structuralPartTag: PartTag = await prisma.partTag.create(dbSeedAllPartTags.StructuralPartTag(organizationId));
+
+  await CreatePartTag(organizationId, 'Practice', '#202025');
+
+  await CreatePartTag(organizationId, 'Complex', '#142099');
+
+  await CreatePartTag(organizationId, 'Expensive', '#FF0000');
+
+  await CreateCommonMistake(
+    'Stubbing Toes in the Bay',
+    'This is a common mistake. In order to prevent this, it is important to wear closed toed shoes and make sure all parts handled with care.',
+    false,
+    batman,
+    organizationId
+  );
+
+  await CreateCommonMistake(
+    'Not wearing PPE',
+    'This is another common mistake. Ensuring that you have proper PPE coverage is essential when doing any work in the bay. If you are unsure about any PPE requirements, dont hesitate to reach out to a team lead. ',
+    true,
+    superman,
+    organizationId
+  );
+
+  await CreatePartReviewFAQ(
+    'What is a part review?',
+    'A Part review allows for your team lead to ensure that your part is designed correctly and meets your specified restrictions.',
+    organizationId,
+    batman
+  );
+
+  await CreatePartReviewFAQ(
+    'How do I upload for a part review?',
+    'First, click the button to upload your file. After uploading your file it is important to make sure that you tag it correctly, and that all fields are filled out in a way that makes sense to your part. After that, click submit and let your team lead know!',
+    organizationId,
+    superman
+  );
 };
 
 performSeed()
