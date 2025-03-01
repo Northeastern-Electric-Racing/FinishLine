@@ -34,6 +34,7 @@ import BOMTab, { addMaterialCosts } from './BOMTab';
 import SavingsIcon from '@mui/icons-material/Savings';
 import ChangeRequestTab from './ChangeRequestTab';
 import { TaskList } from './TaskList/v2';
+import PartsReviewPage from './PartReview/PartsReviewPage';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -226,7 +227,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
             { tabUrlValue: 'scope', tabName: 'Scope' },
             { tabUrlValue: 'changes', tabName: 'Changes' },
             { tabUrlValue: 'gantt', tabName: 'Gantt' },
-            { tabUrlValue: 'change-requests', tabName: 'Change Requests' }
+            { tabUrlValue: 'change-requests', tabName: 'Change Requests' },
+            { tabUrlValue: 'parts-review', tabName: 'Parts Review' }
           ]}
           baseUrl={`${routes.PROJECTS}/${wbsNum}`}
           defaultTab="overview"
@@ -247,8 +249,10 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         <ChangesList changes={project.changes} />
       ) : tab === 5 ? (
         <ProjectGantt workPackages={project.workPackages} />
-      ) : (
+      ) : tab === 6 ? (
         <ChangeRequestTab project={project} />
+      ) : (
+        <PartsReviewPage />
       )}
       {deleteModalShow && (
         <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={project.wbsNum} />

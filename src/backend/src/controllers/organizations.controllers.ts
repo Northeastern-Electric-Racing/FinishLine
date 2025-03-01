@@ -184,6 +184,11 @@ export default class OrganizationsController {
     try {
       const tags = await OrganizationsService.getAllPartTags(req.organization.organizationId);
       res.status(200).json(tags);
+
+  static async getAllPartReviewFAQS(req: Request, res: Response, next: NextFunction) {
+    try {
+      const partReviewFAQS = await OrganizationsService.getAllPartReviewFAQs(req.organization.organizationId);
+      res.status(200).json(partReviewFAQS);
     } catch (error: unknown) {
       next(error);
     }

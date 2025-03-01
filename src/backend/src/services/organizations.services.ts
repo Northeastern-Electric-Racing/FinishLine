@@ -10,6 +10,8 @@ import { uploadFile } from '../utils/google-integration.utils';
 import { getProjects } from '../utils/projects.utils';
 import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
 import projectTransformer from '../transformers/projects.transformer';
+import { faqTransformer } from '../transformers/faq.transformer';
+import { getFaqQueryArgs } from '../prisma-query-args/faq.query.args';
 
 export default class OrganizationsService {
   /**
@@ -420,5 +422,18 @@ export default class OrganizationsService {
         dateDeleted: null
       }
     });
+  
+  /**
+   * Gets all part review FAQs for the given organization Id
+   * @param organizationId organization Id of the FAQ
+   * @returns all the part review faqs from the given organization
+   */
+  static async getAllPartReviewFAQs(organizationId: string) {
+    const partReviewFAQs = await prisma.frequentlyAskedQuestion.findMany({
+      where: { dateDeleted: null, partReviewFaqOrgId: organizationId },
+      ...getFaqQueryArgs(organizationId)
+    });
+
+    return partReviewFAQs.map(faqTransformer);
   }
 }
