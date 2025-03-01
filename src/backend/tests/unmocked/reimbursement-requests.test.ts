@@ -105,7 +105,7 @@ describe('Reimbursement Requests', () => {
         org
       );
 
-      expect(rr.accountCode).toStrictEqual({ ...createdAccountCode, dateDeleted: undefined });
+      expect(rr.accountCode).toStrictEqual({ ...createdAccountCode, dateDeleted: null });
       expect(rr.account).toEqual(ClubAccount.CASH);
       expect(rr.vendor.vendorId).toEqual(createdVendor.vendorId);
       expect(rr.recipient.userId).toEqual(createdUser.userId);
@@ -147,7 +147,7 @@ describe('Reimbursement Requests', () => {
         new Date('12-29-2023')
       );
 
-      expect(rr.accountCode).toStrictEqual({ ...createdAccountCode, dateDeleted: undefined });
+      expect(rr.accountCode).toStrictEqual({ ...createdAccountCode, dateDeleted: null });
       expect(rr.account).toEqual(ClubAccount.CASH);
       expect(rr.vendor.vendorId).toEqual(createdVendor.vendorId);
       expect(rr.recipient.userId).toEqual(createdUser.userId);
