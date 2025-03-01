@@ -422,7 +422,8 @@ export default class OrganizationsService {
         dateDeleted: null
       }
     });
-  
+  }
+
   /**
    * Gets all part review FAQs for the given organization Id
    * @param organizationId organization Id of the FAQ
