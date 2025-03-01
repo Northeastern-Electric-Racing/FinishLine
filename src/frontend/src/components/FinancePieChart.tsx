@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { PieChart, Pie, Tooltip, Legend, ResponsiveContainer, Label, Cell } from 'recharts';
-import { ChevronRight } from 'lucide-react';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import ArrowDropUp from '@mui/icons-material/ArrowDropUp';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
 interface FinancePieChartProps {
   totalBalance: number;
@@ -19,6 +21,9 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
   reimbursed,
   available
 }) => {
+  const [isLegendOpen, setIsLegendOpen] = useState(true);
+  const [expandedItems, setExpandedItems] = useState<number[]>([]);
+
   const data = [
     { name: 'Pending Leadership', value: pendingLeadership },
     { name: 'Pending Finance', value: pendingFinance },
@@ -27,45 +32,117 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
     { name: 'Available', value: available }
   ];
 
-  const sectionColors = ['#562016', '#8e3c2d', '#cd5b52', '#797a7a', '#afafaf'];
+  const sectionColors = ['#562016', '#8e3c2d', '#dd514c', '#797a7a', '#afafaf'];
+
+  const buttonStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '192px',
+    padding: '8px 16px',
+    marginBottom: '24px',
+    fontSize: '18px',
+    color: 'white',
+    backgroundColor: '#dd514c',
+    border: 'none',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    transition: 'background-color 0.3s ease'
+  };
+
+  const legendContainerStyle = {
+    position: 'absolute' as const,
+    right: '50px',
+    top: '-155px',
+    display: 'flex',
+    flexDirection: 'column' as const
+  };
+
+  const legendListStyle = {
+    listStyle: 'none',
+    padding: 0,
+    margin: 0,
+    maxHeight: isLegendOpen ? '500px' : '0',
+    overflow: 'hidden',
+    transition: 'max-height 0.3s ease-in-out'
+  };
+
+  const toggleItemExpand = (index: number) => {
+    setExpandedItems((prev) => {
+      if (prev.includes(index)) {
+        return prev.filter((i) => i !== index);
+      }
+      return [...prev, index];
+    });
+  };
 
   const CustomLegend = (props: any) => {
     const { payload } = props;
+
     return (
-      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-        {payload.map((entry: any, index: number) => (
-          <li
-            key={`item-${index}`}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              marginBottom: '18px',
-              color: 'white',
-              fontSize: '18px',
-              fontWeight: 'bold'
-            }}
-          >
-            <span
-              style={{
-                display: 'inline-block',
-                width: '20px',
-                height: '20px',
-                backgroundColor: entry.color,
-                marginRight: '8px'
-              }}
-            />
-            <ChevronRight size={13} style={{ marginRight: '4px', marginLeft: '-4px', marginBottom: '-2px' }} />
-            <span>{entry.value}</span>
-          </li>
-        ))}
-      </ul>
+      <div style={legendContainerStyle}>
+        <button style={buttonStyle} onClick={() => setIsLegendOpen(!isLegendOpen)}>
+          <span>Total Balance</span>
+          {isLegendOpen ? <ArrowDropUp /> : <ArrowDropDownIcon />}
+        </button>
+        <ul style={legendListStyle}>
+          {payload.map((entry: any, index: number) => {
+            const isExpanded = expandedItems.includes(index);
+            return (
+              <div key={`item-${index}`}>
+                <li
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    marginBottom: '16px',
+                    color: 'white',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => toggleItemExpand(index)}
+                >
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      width: '18px',
+                      height: '18px',
+                      backgroundColor: entry.color,
+                      marginRight: '2px'
+                    }}
+                  />
+                  {isExpanded ? (
+                    <ArrowDropDownIcon sx={{ fontSize: 16, marginRight: 0.5, marginLeft: 0.4 }} />
+                  ) : (
+                    <PlayArrowIcon sx={{ fontSize: 11, marginRight: 0.5, marginLeft: 0.4 }} />
+                  )}
+                  <span>{entry.value}</span>
+                </li>
+                {isExpanded && (
+                  <div
+                    style={{
+                      marginLeft: '60px',
+                      marginBottom: '5px',
+                      marginTop: '-8px',
+                      color: 'white',
+                      fontSize: '16px'
+                    }}
+                  >
+                    ${data[index].value.toLocaleString()}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </ul>
+      </div>
     );
   };
 
   return (
     <div style={{ background: 'transparent', padding: '10px' }}>
       <ResponsiveContainer width="100%" height={400} style={{ background: 'transparent' }}>
-        <PieChart margin={{ top: 0, right: 0, bottom: 40, left: 0 }} style={{ background: 'transparent' }}>
+        <PieChart margin={{ top: -30, right: 0, bottom: 60, left: -140 }} style={{ background: 'transparent' }}>
           <Pie
             data={data}
             dataKey="value"
@@ -86,8 +163,7 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
               style={{
                 fontSize: 24,
                 fontWeight: 'bold',
-                textAnchor: 'middle',
-                dominantBaseline: 'middle'
+                textAnchor: 'middle'
               }}
             />
           </Pie>

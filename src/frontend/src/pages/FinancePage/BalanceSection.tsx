@@ -19,8 +19,6 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({
   reimbursed,
   available
 }) => {
-  const theme = useTheme();
-
   return (
     <Box
       sx={{
