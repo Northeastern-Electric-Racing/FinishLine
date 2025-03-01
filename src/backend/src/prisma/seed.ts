@@ -2013,6 +2013,17 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
+  await prisma.frequentlyAskedQuestion.create({
+    data: {
+      faqId: '1',
+      question: 'question',
+      answer: 'answer',
+      userCreated: { connect: { userId: batman.userId } },
+      dateCreated: new Date(),
+      partReviewFaqOrg: { connect: { organizationId: ner.organizationId } }
+    }
+  });
+
   await AnnouncementService.createAnnouncement(
     'Welcome to Finishline!',
     [regina.userId],
