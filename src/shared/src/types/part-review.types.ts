@@ -2,6 +2,6 @@ export interface PartReviewCommonMistake {
   id: string;
   title: string;
   description: string;
-  starred: Boolean;
+  starred: boolean;
   userCreatedId: string;
 }
