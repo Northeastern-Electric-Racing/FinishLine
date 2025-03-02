@@ -197,7 +197,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                     startIcon={<Add />}
                     onClick={(e) => {
                       appendProduct({
-                        reason: key.includes('.') ? validateWBS(key) : (key as OtherProductReason),
+                        reason: key.includes('.') ? validateWBS(key) : ({ name: key } as OtherProductReason),
                         name: '',
                         cost: 0
                       });
@@ -239,7 +239,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                   onChange={(_event, value) => {
                     if (value) {
                       appendProduct({
-                        reason: value.id as OtherProductReason,
+                        reason: { name: value.id } as OtherProductReason,
                         name: '',
                         cost: 0
                       });

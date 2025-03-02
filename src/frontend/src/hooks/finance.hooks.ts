@@ -32,7 +32,8 @@ import {
   editRefund,
   leadershipApproveReimbursementRequest,
   requestReimbursementRequestChanges,
-  markPendingFinance
+  markPendingFinance,
+  getAllIndexCodes
 } from '../apis/finance.api';
 import {
   IndexCode,
@@ -87,6 +88,10 @@ export interface RefundPayload {
 
 export interface MarkDeliveredRequestPayload {
   dateDelivered: Date;
+}
+
+export interface IndexCodes {
+  name: string;
 }
 
 /**
@@ -587,4 +592,16 @@ export const useRequestReimbursementRequestChanges = (id: string) => {
       }
     }
   );
+};
+
+/**
+ * Custom React Hook to get all IndexCodes
+ *
+ * @returns all the IndexCodes
+ */
+export const useGetAllIndexCodes = () => {
+  return useQuery<IndexCode[], Error>(['index-codes'], async () => {
+    const { data } = await getAllIndexCodes();
+    return data;
+  });
 };
