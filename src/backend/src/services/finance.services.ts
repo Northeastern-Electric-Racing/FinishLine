@@ -4,6 +4,7 @@ import { userHasPermission } from '../utils/users.utils';
 import { AccessDeniedAdminOnlyException, NotFoundException } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
 import sponsorTransformer from '../transformers/sponsor.transformer';
+import sponsorTaskTransformer from '../transformers/sponsor-task.transformer';
 
 export default class FinanceServices {
   /**
@@ -77,15 +78,15 @@ export default class FinanceServices {
    * @param sponsorId the organization to get the projects for
    * @returns all the sponsor tasks for the sponsor
    */
-  static async getSponsorTasks(organizationId: string) {
+  static async getSponsorTasks(organization: Organization) {
     const sponsor = await prisma.sponsor.findUnique({
-      where: { organizationId }
+      where: { organizationId: organization.organizationId }
     });
 
     if (!sponsor) {
-      throw new NotFoundException('Sponsor', organizationId);
+      throw new NotFoundException('Sponsor', organization.organizationId);
     }
 
-    return sponsor.sponsorTasks.map(sponsorTransformer);
+    return sponsor.sponsorTasks.map(sponsorTaskTransformer);
   }
 }

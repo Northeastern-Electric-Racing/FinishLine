@@ -5,10 +5,12 @@ import { SponsorTaskQueryArgs } from '../prisma-query-args/sponsor-task.query.ar
 
 export const sponsorTaskTransformer = (sponsorTask: Prisma.Sponsor_TaskGetPayload<SponsorTaskQueryArgs>): SponsorTask => {
   return {
-    ...sponsorTask,
-    sponsor: sponsorTask.sponsor,
+    sponsorTaskId: sponsorTask.sponsorTaskId,
+    dueDate: sponsorTask.dueDate,
+    notifyDate: sponsorTask.notifyDate ?? undefined,
     assignee: sponsorTask.assignee ? userTransformer(sponsorTask.assignee) : undefined,
-    notifyDate: sponsorTask.notifyDate ?? undefined
+    notes: sponsorTask.notes
+    sponsor: sponsorTask.sponsor
   };
 };
 
