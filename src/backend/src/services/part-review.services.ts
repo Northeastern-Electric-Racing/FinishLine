@@ -1,7 +1,7 @@
 import { User } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
 import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
-import { isAdmin, PartReviewTag } from 'shared';
+import { isAdmin, PartTag } from 'shared';
 import prisma from '../prisma/prisma';
 
 export default class PartReviewService {
@@ -13,12 +13,7 @@ export default class PartReviewService {
    * @param organizationId the organization id
    * @returns the created part tag
    */
-  static async createPartTag(
-    name: string,
-    colorHexCode: string,
-    creator: User,
-    organizationId: string
-  ): Promise<PartReviewTag> {
+  static async createPartTag(name: string, colorHexCode: string, creator: User, organizationId: string): Promise<PartTag> {
     if (!(await userHasPermission(creator.userId, organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create part review tag');
     }
@@ -53,7 +48,7 @@ export default class PartReviewService {
     colorHexCode: string,
     updater: User,
     organizationId: string
-  ): Promise<PartReviewTag> {
+  ): Promise<PartTag> {
     if (!(await userHasPermission(updater.userId, organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('update part review tag');
     }
@@ -93,7 +88,7 @@ export default class PartReviewService {
    * @returns the delted part tag
    * @throws if there are existing parts with this tag
    */
-  static async deletePartTag(partTagId: string, deleter: User, organizationId: string): Promise<PartReviewTag> {
+  static async deletePartTag(partTagId: string, deleter: User, organizationId: string): Promise<PartTag> {
     if (!(await userHasPermission(deleter.userId, organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('delete part review tag');
     }
