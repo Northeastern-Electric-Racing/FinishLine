@@ -23,4 +23,42 @@ partsRouter.post(
 
 partsRouter.post('partTag/:partTagId/delete', PartReviewController.deletePartTag);
 
+partsRouter.post(
+  '/faq/create',
+  nonEmptyString(body('question')),
+  nonEmptyString(body('answer')),
+  validateInputs,
+  PartReviewController.createFaq
+);
+
+partsRouter.post(
+  '/faq/:faqId/update',
+  nonEmptyString(body('question')),
+  nonEmptyString(body('answer')),
+  validateInputs,
+  PartReviewController.updateFaq
+);
+
+partsRouter.post('/faq/:faqId/delete', PartReviewController.deleteFaq);
+
+partsRouter.post(
+  '/common-mistake/create',
+  nonEmptyString(body('title')),
+  nonEmptyString(body('description')),
+  body('starred').isBoolean(),
+  validateInputs,
+  PartReviewController.createCommonMistake
+);
+
+partsRouter.post(
+  '/common-mistake/:commonMistakeId/update',
+  nonEmptyString(body('title')),
+  nonEmptyString(body('description')),
+  body('starred').isBoolean(),
+  validateInputs,
+  PartReviewController.updateCommonMistake
+);
+
+partsRouter.post('/common-mistake/:commonMistakeId/delete', PartReviewController.deleteCommonMistake);
+
 export default partsRouter;

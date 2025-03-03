@@ -51,6 +51,7 @@ import { seedGraph } from './seed-data/statistics.seed';
 import { graphCollectionTransformer } from '../transformers/statistics-graphCollection.transformer';
 import AnnouncementService from '../services/announcement.service';
 import OnboardingServices from '../services/onboarding.services';
+import { CreatePartTag, CreateCommonMistake, CreatePartReviewFAQ } from '../../tests/test-utils';
 
 const prisma = new PrismaClient();
 
@@ -2012,6 +2013,17 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
+  await prisma.frequentlyAskedQuestion.create({
+    data: {
+      faqId: '1',
+      question: 'question',
+      answer: 'answer',
+      userCreated: { connect: { userId: batman.userId } },
+      dateCreated: new Date(),
+      partReviewFaqOrg: { connect: { organizationId: ner.organizationId } }
+    }
+  });
+
   await AnnouncementService.createAnnouncement(
     'Welcome to Finishline!',
     [regina.userId],
@@ -2130,6 +2142,42 @@ const performSeed: () => Promise<void> = async () => {
     learnGitChecklist.checklistId,
     ner,
     false
+  );
+
+  await CreatePartTag(organizationId, 'Practice', '#202025');
+
+  await CreatePartTag(organizationId, 'Complex', '#142099');
+
+  await CreatePartTag(organizationId, 'Expensive', '#FF0000');
+
+  await CreateCommonMistake(
+    'Stubbing Toes in the Bay',
+    'This is a common mistake. In order to prevent this, it is important to wear closed toed shoes and make sure all parts handled with care.',
+    false,
+    batman,
+    organizationId
+  );
+
+  await CreateCommonMistake(
+    'Not wearing PPE',
+    'This is another common mistake. Ensuring that you have proper PPE coverage is essential when doing any work in the bay. If you are unsure about any PPE requirements, dont hesitate to reach out to a team lead. ',
+    true,
+    superman,
+    organizationId
+  );
+
+  await CreatePartReviewFAQ(
+    'What is a part review?',
+    'A Part review allows for your team lead to ensure that your part is designed correctly and meets your specified restrictions.',
+    organizationId,
+    batman
+  );
+
+  await CreatePartReviewFAQ(
+    'How do I upload for a part review?',
+    'First, click the button to upload your file. After uploading your file it is important to make sure that you tag it correctly, and that all fields are filled out in a way that makes sense to your part. After that, click submit and let your team lead know!',
+    organizationId,
+    superman
   );
 };
 

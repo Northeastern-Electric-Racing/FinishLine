@@ -3,6 +3,8 @@ import { isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
+import { faqTransformer } from '../transformers/faq.transformer';
+import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
 
 export default class RecruitmentServices {
   /**
@@ -106,10 +108,11 @@ export default class RecruitmentServices {
    */
   static async getAllOrganizationFaqs(organization: Organization) {
     const allFaqs = await prisma.frequentlyAskedQuestion.findMany({
-      where: { dateDeleted: null, regularFaqOrgId: organization.organizationId }
+      where: { dateDeleted: null, regularFaqOrgId: organization.organizationId },
+      ...getFaqQueryArgs(organization.organizationId)
     });
 
-    return allFaqs;
+    return allFaqs.map(faqTransformer);
   }
 
   /*
