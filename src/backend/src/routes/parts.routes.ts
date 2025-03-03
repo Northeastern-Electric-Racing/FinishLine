@@ -23,4 +23,24 @@ partsRouter.post(
 
 partsRouter.post('/faq/:faqId/delete', PartsReviewController.deleteFaq);
 
+partsRouter.post(
+  '/common-mistake/create',
+  nonEmptyString(body('title')),
+  nonEmptyString(body('description')),
+  body('starred').isBoolean(),
+  validateInputs,
+  PartsReviewController.createCommonMistake
+);
+
+partsRouter.post(
+  '/common-mistake/:commonMistakeId/update',
+  nonEmptyString(body('title')),
+  nonEmptyString(body('description')),
+  body('starred').isBoolean(),
+  validateInputs,
+  PartsReviewController.updateCommonMistake
+);
+
+partsRouter.post('/common-mistake/:commonMistakeId/delete', PartsReviewController.deleteCommonMistake);
+
 export default partsRouter;
