@@ -225,7 +225,7 @@ describe('part review tests', () => {
       }
     });
     await PartReviewService.createCommonMistake('mistake', 'desc', false, batman, orgId);
-    await PartReviewService.createCommonMistake('mistake2', 'desc2', false, batman, org2.organizationId);
+    await PartReviewService.createCommonMistake('mistake2', 'desc2', false, org2Creator, org2.organizationId);
     await PartReviewService.createCommonMistake('mistake3', 'desc3', true, batman, orgId);
     await PartReviewService.createCommonMistake('mistake4', 'desc4', false, batman, orgId);
 
