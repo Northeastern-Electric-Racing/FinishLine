@@ -179,22 +179,4 @@ export default class OrganizationsController {
       next(error);
     }
   }
-
-  static async getAllPartTags(req: Request, res: Response, next: NextFunction) {
-    try {
-      const tags = await OrganizationsService.getAllPartTags(req.organization.organizationId);
-      res.status(200).json(tags);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async getAllPartReviewFAQS(req: Request, res: Response, next: NextFunction) {
-    try {
-      const partReviewFAQS = await OrganizationsService.getAllPartReviewFAQs(req.organization.organizationId);
-      res.status(200).json(partReviewFAQS);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
 }

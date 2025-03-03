@@ -62,7 +62,5 @@ organizationRouter.post(
   nonEmptyString(body('workspaceId')),
   OrganizationsController.setSlackWorkspaceId
 );
-organizationRouter.get('/getAllPartTags', OrganizationsController.getAllPartTags);
-organizationRouter.get('/getAllPartReviewFAQs', OrganizationsController.getAllPartReviewFAQS);
 
 export default organizationRouter;
