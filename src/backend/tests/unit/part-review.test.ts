@@ -231,7 +231,7 @@ describe('part review tests', () => {
     await PartReviewService.createCommonMistake('mistake3', 'desc3', true, batman, orgId);
     await PartReviewService.createCommonMistake('mistake4', 'desc4', false, batman, orgId);
 
-    const commonMistakes = PartReviewService.getAllCommonMistakes(orgId);
+    const commonMistakes = await PartReviewService.getAllCommonMistakes(orgId);
     expect(commonMistakes).toHaveLength(3);
     expect(commonMistakes[0].title).toBe('mistake');
     expect(commonMistakes[1].title).toBe('mistake3');
