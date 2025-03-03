@@ -1,7 +1,7 @@
 import { Organization, User } from '@prisma/client';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import PartReviewService from '../../src/services/part-review.services';
-import { batmanAppAdmin, supermanAdmin, aquamanLeadership } from '../test-data/users.test-data';
+import { batmanAppAdmin, supermanAdmin, aquamanLeadership, flashAdmin } from '../test-data/users.test-data';
 import prisma from '../../src/prisma/prisma';
 import { AccessDeniedAdminOnlyException, DeletedException } from '../../src/utils/errors.utils';
 
@@ -224,8 +224,10 @@ describe('part review tests', () => {
         }
       }
     });
+
+    const flash = await createTestUser(flashAdmin, org2.organizationId);
     await PartReviewService.createCommonMistake('mistake', 'desc', false, batman, orgId);
-    await PartReviewService.createCommonMistake('mistake2', 'desc2', false, org2Creator, org2.organizationId);
+    await PartReviewService.createCommonMistake('mistake2', 'desc2', false, flash, org2.organizationId);
     await PartReviewService.createCommonMistake('mistake3', 'desc3', true, batman, orgId);
     await PartReviewService.createCommonMistake('mistake4', 'desc4', false, batman, orgId);
 
