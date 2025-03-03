@@ -288,13 +288,12 @@ describe('part review tests', () => {
 
   describe('Get all part FAQS', () => {
     it('Succeeds and gets all part review FAQS in the organization', async () => {
-      const testBatman = await createTestUser(batmanAppAdmin, orgId);
       const faq1 = await prisma.frequentlyAskedQuestion.create({
         data: {
           faqId: '1',
           question: 'question1',
           answer: 'answer1',
-          userCreated: { connect: { userId: testBatman.userId } },
+          userCreated: { connect: { userId: batman.userId } },
           dateCreated: new Date(),
           partReviewFaqOrg: { connect: { organizationId: orgId } }
         }
@@ -304,7 +303,7 @@ describe('part review tests', () => {
           faqId: '2',
           question: 'question2',
           answer: 'answer2',
-          userCreated: { connect: { userId: testBatman.userId } },
+          userCreated: { connect: { userId: batman.userId } },
           dateCreated: new Date(),
           partReviewFaqOrg: { connect: { organizationId: orgId } }
         }
@@ -323,13 +322,12 @@ describe('part review tests', () => {
     });
 
     it('Does not retrieve regular FAQS in the organization', async () => {
-      const testBatman = await createTestUser(batmanAppAdmin, orgId);
       const partFaq = await prisma.frequentlyAskedQuestion.create({
         data: {
           faqId: '1',
           question: 'faq question',
           answer: 'faq answer',
-          userCreated: { connect: { userId: testBatman.userId } },
+          userCreated: { connect: { userId: batman.userId } },
           dateCreated: new Date(),
           partReviewFaqOrg: { connect: { organizationId: orgId } }
         }
@@ -339,7 +337,7 @@ describe('part review tests', () => {
           faqId: '2',
           question: 'regular question',
           answer: 'regular answer',
-          userCreated: { connect: { userId: testBatman.userId } },
+          userCreated: { connect: { userId: batman.userId } },
           dateCreated: new Date(),
           regularFaqOrg: { connect: { organizationId: orgId } }
         }
