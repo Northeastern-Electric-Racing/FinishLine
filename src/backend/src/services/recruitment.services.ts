@@ -4,7 +4,7 @@ import prisma from '../prisma/prisma';
 import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { faqTransformer } from '../transformers/faq.transformer';
-import { getFaqQueryArgs } from '../prisma-query-args/faq.query.args';
+import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
 
 export default class RecruitmentServices {
   /**
