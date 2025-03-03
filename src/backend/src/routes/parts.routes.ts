@@ -23,6 +23,8 @@ partsRouter.post(
 
 partsRouter.post('/faq/:faqId/delete', PartsReviewController.deleteFaq);
 
+partsRouter.get('/common-mistakes', PartsReviewController.getAllCommonMistakes);
+
 partsRouter.post(
   '/common-mistake/create',
   nonEmptyString(body('title')),

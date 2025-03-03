@@ -201,4 +201,44 @@ describe('part review tests', () => {
         )
     ).rejects.toThrow(new DeletedException('common mistake', commonMistake.id));
   });
+
+  it('gets all common mistakes', async () => {
+    const org2Creator = await prisma.user.create({
+      data: {
+        firstName: 'Admin2',
+        lastName: 'User2',
+        email: 'admin2@gmail.com',
+        googleAuthId: 'organizationCreator2'
+      }
+    });
+
+    const org2 = await prisma.organization.create({
+      data: {
+        name: 'Joe mama2',
+        description: 'Joe mama2`s organization',
+        applicationLink: '',
+        userCreated: {
+          connect: {
+            userId: org2Creator.userId
+          }
+        }
+      }
+    });
+    await PartReviewService.createCommonMistake('mistake', 'desc', false, batman, orgId);
+    await PartReviewService.createCommonMistake('mistake2', 'desc2', false, batman, org2.organizationId);
+    await PartReviewService.createCommonMistake('mistake3', 'desc3', true, batman, orgId);
+    await PartReviewService.createCommonMistake('mistake4', 'desc4', false, batman, orgId);
+
+    const commonMistakes = PartReviewService.getAllCommonMistakes(orgId);
+    expect(commonMistakes).toHaveLength(3);
+    expect(commonMistakes[0].title).toBe('mistake');
+    expect(commonMistakes[1].title).toBe('mistake3');
+    expect(commonMistakes[2].title).toBe('mistake4');
+    expect(commonMistakes[0].description).toBe('desc');
+    expect(commonMistakes[1].description).toBe('desc3');
+    expect(commonMistakes[2].description).toBe('desc4');
+    expect(commonMistakes[0].starred).toBe(false);
+    expect(commonMistakes[1].starred).toBe(true);
+    expect(commonMistakes[2].starred).toBe(false);
+  });
 });

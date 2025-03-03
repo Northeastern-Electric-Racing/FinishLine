@@ -137,6 +137,23 @@ export default class PartReviewService {
   }
 
   /**
+   * Gets all of the common mistakes associated with part reviews in the given organization
+   * @param organizationId the organization
+   * @returns an array of common mistakes
+   */
+  static async getAllCommonMistakes(organizationId: string): Promise<PartReviewCommonMistake[]> {
+    const commonMistakes = await prisma.partReviewCommonMistake.findMany({
+      where: {
+        dateDeleted: null,
+        organizationId
+      },
+      ...getFaqQueryArgs(organizationId)
+    });
+
+    return commonMistakes.map(partsReviewCommonMistakeTransformer);
+  }
+
+  /**
    * Creates a common mistake
    * @param title the title
    * @param description the description
