@@ -11,7 +11,7 @@ import { getProjects } from '../utils/projects.utils';
 import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
 import projectTransformer from '../transformers/projects.transformer';
 import { faqTransformer } from '../transformers/faq.transformer';
-import { getFaqQueryArgs } from '../prisma-query-args/faq.query.args';
+import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
 
 export default class OrganizationsService {
   /**
