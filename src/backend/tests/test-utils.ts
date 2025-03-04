@@ -140,6 +140,12 @@ export const resetUsers = async () => {
   await prisma.graph_Collection.deleteMany();
   await prisma.announcement.deleteMany();
   await prisma.popUp.deleteMany();
+  await prisma.partReviewCommonMistake.deleteMany();
+  await prisma.partTag.deleteMany();
+  await prisma.part_Review_Popup.deleteMany();
+  await prisma.partReview.deleteMany();
+  await prisma.partSubmission.deleteMany();
+  await prisma.part.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
 };
@@ -673,6 +679,57 @@ export const createSlackMessageEvent = (
       }
     ]
   };
+};
+
+export const CreatePartTag = async (organizationId: string, name: string, colorHexCode: string) => {
+  return await prisma.partTag.create({
+    data: {
+      name,
+      organization: {
+        connect: { organizationId }
+      },
+      colorHexCode,
+      dateCreated: new Date()
+    }
+  });
+};
+
+export const CreateCommonMistake = async (
+  title: string,
+  description: string,
+  starred: boolean,
+  user: User,
+  organizationId: string
+) => {
+  return await prisma.partReviewCommonMistake.create({
+    data: {
+      title,
+      description,
+      starred,
+      dateCreated: new Date(),
+      organization: {
+        connect: { organizationId }
+      },
+      userCreated: {
+        connect: { userId: user.userId }
+      }
+    }
+  });
+};
+
+export const CreatePartReviewFAQ = async (question: string, answer: string, organizationId: string, user: User) => {
+  return await prisma.frequentlyAskedQuestion.create({
+    data: {
+      question,
+      answer,
+      partReviewFaqOrg: {
+        connect: { organizationId }
+      },
+      userCreated: {
+        connect: { userId: user.userId }
+      }
+    }
+  });
 };
 
 export const createTestPartReview = async (
