@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Prisma } from '@prisma/client';
+import { Index_Code, Prisma } from '@prisma/client';
 import {
   AccountCode,
   IndexCode,
@@ -29,8 +29,6 @@ import {
 } from '../prisma-query-args/reimbursement-products.query-args';
 import { ReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
 import { AccountCodeQueryArgs } from '../prisma-query-args/account-code.query.args';
-import { IndexCodeQueryArgs } from '../prisma-query-args/index-code.query-args';
-import { ReimbursementProductOtherReasonQueryArgs } from '../prisma-query-args/reimbursement-product-other-reason.query.args';
 
 export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<ReceiptQueryArgs>): Receipt => {
   return {
@@ -55,7 +53,7 @@ export const reimbursementRequestTransformer = (
     reimbursementStatuses: reimbursementRequest.reimbursementStatuses.map(reimbursementStatusTransformer),
     recipient: userTransformer(reimbursementRequest.recipient),
     vendor: vendorTransformer(reimbursementRequest.vendor),
-    account: indexCodeTransformer(reimbursementRequest.account),
+    account: indexCodeTransformer(reimbursementRequest.account as Index_Code),
     totalCost: reimbursementRequest.totalCost,
     receiptPictures: reimbursementRequest.receiptPictures.filter((receipt) => !receipt.dateDeleted).map(receiptTransformer),
     reimbursementProducts: reimbursementRequest.reimbursementProducts.map(reimbursementProductTransformer),
@@ -92,13 +90,14 @@ const reimbursementProductReasonTransformer = (
 ): ReimbursementProductReason => {
   return reason.wbsElement
     ? { wbsName: reason.wbsElement?.name, wbsNum: wbsNumOf(reason.wbsElement) }
-    : otherProductReasonTransformer(reason.otherReason);
+    : (otherProductReasonTransformer(reason.otherReason!) as OtherProductReason);
 };
 
 export const accountCodeTransformer = (accountCode: Prisma.Account_CodeGetPayload<AccountCodeQueryArgs>): AccountCode => {
   return {
     ...accountCode,
-    allowedRefundSources: accountCode.allowedRefundSources.map(indexCodeTransformer)
+    allowedRefundSources: accountCode.allowedRefundSources.map(indexCodeTransformer) as IndexCode[],
+    //dateDeleted: accountCode.dateDeleted ?? undefined
   };
 };
 
@@ -122,24 +121,10 @@ export const reimbursementTransformer = (
   };
 };
 
-export const indexCodeTransformer = (indexCode: Prisma.Index_CodeGetPayload<IndexCodeQueryArgs>): IndexCode => {
-  return {
-    indexCodeId: indexCode.indexCodeId,
-    name: indexCode.name,
-    userCreated: userTransformer(indexCode.userCreated)
-  };
-};
+function indexCodeTransformer(arg0: { indexCodeId: string; name: string; dateCreated: Date; dateDeleted: Date | null; userCreatedId: string; userDeletedId: string | null; }): IndexCode {
+  throw new Error('Function not implemented.');
+}
 
-export const otherProductReasonTransformer = (
-  otherProductReason: Prisma.Reimbursement_Product_Other_ReasonGetPayload<ReimbursementProductOtherReasonQueryArgs>
-): OtherProductReason => {
-  return {
-    otherProductReasonId: otherProductReason.otherReimbursementProductReasonId,
-    name: otherProductReason.name,
-    userCreated: userTransformer(otherProductReason.userCreated),
-    budget: otherProductReason.budget,
-    reimbursementProductReasons: otherProductReason.reimbursementProductReasons.map(reimbursementProductTransformer),
-    indexCode: indexCodeTransformer(otherProductReason.indexCode),
-    accountCode: accountCodeTransformer(otherProductReason.accountCode)
-  };
-};
+function otherProductReasonTransformer(arg0: { dateDeleted: Date | null; dateCreated: Date; name: string; budget: number; indexCodeId: string; accountCodeId: string; userCreatedId: string; userDeletedId: string | null; otherReimbursementProductReasonId: string; }): OtherProductReason {
+  throw new Error('Function not implemented.');
+}

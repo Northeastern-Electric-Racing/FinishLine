@@ -6,6 +6,7 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Index_Code, Reimbursement_Request, Reimbursement_Status_Type, User, Organization } from '@prisma/client';
 import {
+  IndexCode,
   Reimbursement,
   ReimbursementReceiptCreateArgs,
   ReimbursementRequest,
@@ -18,8 +19,7 @@ import {
   OtherReimbursementProductCreateArgs,
   AccountCode,
   ReimbursementStatus,
-  startOfDay,
-  IndexCode
+  startOfDay
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -63,7 +63,6 @@ import { userHasPermission } from '../utils/users.utils';
 import { getReimbursementRequestQueryArgs } from '../prisma-query-args/reimbursement-requests.query-args';
 import { getReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
 import { getReimbursementStatusQueryArgs } from '../prisma-query-args/reimbursement-statuses.query-args';
-import { getAccountCodeQueryArgs } from '../prisma-query-args/account-code.query.args';
 
 export default class ReimbursementRequestService {
   /**
@@ -318,7 +317,7 @@ export default class ReimbursementRequestService {
       where: { reimbursementRequestId: oldReimbursementRequest.reimbursementRequestId },
       data: {
         dateOfExpense: dateOfExpense ?? null,
-        indexCodeId: account.indexCodeId,
+        account: { connect: { indexCodeId: account.indexCodeId } },
         totalCost,
         accountCodeId: accountCode.accountCodeId,
         vendorId: vendor.vendorId
@@ -702,10 +701,13 @@ export default class ReimbursementRequestService {
 
     const accountCode = await ReimbursementRequestService.getSingleAccountCode(accountCodeId, organization);
 
+    if (accountCode.dateDeleted) {
+      throw new DeletedException('Account Code', accountCodeId);
+    }
+
     const deletedAccountCode = await prisma.account_Code.update({
-      where: { accountCodeId: accountCode.accountCodeId },
-      data: { dateDeleted: new Date() },
-      ...getAccountCodeQueryArgs()
+      where: { accountCodeId: accountCode.accountCodeId},
+      data: { dateDeleted: new Date() }
     });
 
     return accountCodeTransformer(deletedAccountCode);
@@ -775,8 +777,7 @@ export default class ReimbursementRequestService {
       where: {
         dateDeleted: null,
         organizationId: organization.organizationId
-      },
-      ...getAccountCodeQueryArgs()
+      }
     });
 
     return accountCodes.map(accountCodeTransformer);
@@ -1176,8 +1177,7 @@ export default class ReimbursementRequestService {
    */
   static async getSingleAccountCode(accountCodeId: string, organization: Organization): Promise<AccountCode> {
     const accountCode = await prisma.account_Code.findUnique({
-      where: { accountCodeId },
-      ...getAccountCodeQueryArgs()
+      where: { accountCodeId }
     });
 
     if (!accountCode) throw new NotFoundException('Account Code', accountCodeId);
