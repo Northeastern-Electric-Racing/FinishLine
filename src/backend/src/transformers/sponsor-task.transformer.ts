@@ -9,7 +9,7 @@ export const sponsorTaskTransformer = (sponsorTask: Prisma.Sponsor_TaskGetPayloa
     dueDate: sponsorTask.dueDate,
     notifyDate: sponsorTask.notifyDate ?? undefined,
     assignee: sponsorTask.assignee ? userTransformer(sponsorTask.assignee) : undefined,
-    notes: sponsorTask.notes
+    notes: sponsorTask.notes,
     sponsor: sponsorTask.sponsor
   };
 };
