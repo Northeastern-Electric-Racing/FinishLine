@@ -4,7 +4,10 @@ import { User } from './user-types';
 export interface IndexCode {
   indexCodeId: string;
   name: string;
-  userCreated: User;
+  userCreated: string;
+  //reimbursementRequests: ReimbursementRequest[];
+  //accountCodes: AccountCode[];
+  //otherReasons: OtherProductReason[];
 }
 
 export interface ReimbursementRequestRow {

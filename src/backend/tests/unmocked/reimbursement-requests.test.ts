@@ -4,7 +4,7 @@ import { AccessDeniedException, HttpException } from '../../src/utils/errors.uti
 import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { assert } from 'console';
-import { addDaysToDate, ReimbursementRequest } from 'shared';
+import { addDaysToDate, IndexCode, ReimbursementRequest } from 'shared';
 import { Account_Code, Organization, Vendor, Index_Code } from '@prisma/client';
 import { UserWithSecureSettings } from '../../src/utils/auth.utils';
 
