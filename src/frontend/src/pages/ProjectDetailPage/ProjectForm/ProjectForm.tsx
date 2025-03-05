@@ -25,6 +25,8 @@ import { NERButton } from '../../../components/NERButton';
 import HelpIcon from '@mui/icons-material/Help';
 import DescriptionBulletsEditView from '../../../components/DescriptionBulletEditView';
 import ProjectTemplateSection from './ProjectTemplateSection';
+import { WorkPackageFormViewPayload } from '../../WorkPackageForm/WorkPackageFormView';
+import ProjectFormWorkPackageSection from './ProjectFormWorkPackageSection';
 
 export interface ProjectFormInput {
   name: string;
@@ -35,6 +37,7 @@ export interface ProjectFormInput {
   carNumber: number | undefined;
   teamIds: string[];
   descriptionBullets: DescriptionBulletPreview[];
+  workPackages: WorkPackageFormViewPayload[];
 }
 
 interface ProjectFormContainerProps {
@@ -96,6 +99,12 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
 
   const { fields: links, append: appendLink, remove: removeLink } = useFieldArray({ control, name: 'links' });
 
+  const {
+    fields: workPackages,
+    append: appendWorkPackage,
+    remove: removeWorkPackage
+  } = useFieldArray({ control, name: 'workPackages' });
+
   const [selectedProjectTemplate, setSelectedProjectTemplate] = useState<ProjectTemplate>();
   const [crIdDisabled, setCrIdDisabled] = useState<boolean>(false);
 
@@ -152,10 +161,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
 
   const handleCreateChangeRequest = async (data: ProjectFormInput) => {
     if (onSubmitChangeRequest && changeRequestFormInput) {
-      onSubmitChangeRequest({
-        ...changeRequestFormInput,
-        ...data
-      });
+      onSubmitChangeRequest({ ...changeRequestFormInput, ...data });
     }
   };
 
@@ -258,13 +264,6 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
               errors={errors}
             />
           </Box>
-          {!project && (
-            <Box>
-              <Typography variant="h5" sx={{ mb: 2 }}>
-                Work Packages
-              </Typography>
-            </Box>
-          )}
           <Box>
             <DescriptionBulletsEditView
               type="project"
@@ -273,6 +272,17 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
               register={register}
               append={appendDescriptionBullet}
               remove={removeDescriptionBullet}
+            />
+          </Box>
+          <Box>
+            <ProjectFormWorkPackageSection
+              workPackages={workPackages}
+              watch={watch}
+              register={register}
+              append={appendWorkPackage}
+              remove={removeWorkPackage}
+              control={control}
+              errors={errors}
             />
           </Box>
         </Stack>

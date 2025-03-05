@@ -68,12 +68,8 @@ const ProjectCreateContainer: React.FC = () => {
     links: yup
       .array()
       .optional()
-      .of(
-        yup.object().shape({
-          linkTypeName: yup.string(),
-          url: yup.string().url('Invalid URL')
-        })
-      )
+      .of(yup.object().shape({ linkTypeName: yup.string(), url: yup.string().url('Invalid URL') })),
+    workPackages: yup.array()
   });
 
   const onSubmitChangeRequest = async (data: ProjectCreateChangeRequestFormInput) => {
@@ -96,11 +92,7 @@ const ProjectCreateContainer: React.FC = () => {
         workPackageProposedChanges: []
       };
       const changeRequestPayload: CreateStandardChangeRequestPayload = {
-        wbsNum: {
-          carNumber,
-          projectNumber: 0,
-          workPackageNumber: 0
-        },
+        wbsNum: { carNumber, projectNumber: 0, workPackageNumber: 0 },
         type,
         what,
         why,
