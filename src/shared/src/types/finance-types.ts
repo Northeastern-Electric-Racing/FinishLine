@@ -27,4 +27,3 @@ export interface SponsorTier {
     name: string;
     colorHexCode: string;
 }
-  
