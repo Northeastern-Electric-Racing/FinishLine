@@ -2010,6 +2010,21 @@ const performSeed: () => Promise<void> = async () => {
     ner.organizationId
   );
 
+  // await FinanceServices.createSponsor(
+  //   thomasEmrax,
+  //   'Google',
+  //   true,
+  //   5000,
+  //   new Date(12, 1, 24),
+  //   [2024, 2025],
+  //   'gold',
+  //   true,
+  //   'Bill Gates',
+  //   [],
+  //   ner,
+  //   'googlecode'
+  // );
+
   await FinanceServices.createSponsor(
     thomasEmrax,
     'Google',
@@ -2017,7 +2032,15 @@ const performSeed: () => Promise<void> = async () => {
     5000,
     new Date(12, 1, 24),
     [2024, 2025],
-    'gold',
+    (
+      await prisma.sponsor_Tier.create({
+        data: {
+          organizationId: ner.organizationId,
+          name: 'tier1',
+          colorHexCode: '#FF0000'
+        }
+      })
+    ).sponsorTierId,
     true,
     'Bill Gates',
     [],

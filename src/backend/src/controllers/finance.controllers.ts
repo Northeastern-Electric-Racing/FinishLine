@@ -39,8 +39,8 @@ export default class FinanceController {
 
   static async deleteSponsor(req: Request, res: Response, next: NextFunction) {
     try {
-      const { requestId } = req.params;
-      const deletedSponsor = await FinanceServices.deleteSponsor(requestId, req.currentUser, req.organization);
+      const { sponsorId } = req.params;
+      const deletedSponsor = await FinanceServices.deleteSponsor(sponsorId, req.currentUser, req.organization);
       res.status(200).json(deletedSponsor);
     } catch (error: unknown) {
       next(error);
