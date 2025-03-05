@@ -1,4 +1,4 @@
-import { Design_Review_Status, Graph_Display_Type, Graph_Type, Measure, Special_Permission, Sponsor_Tier } from '@prisma/client';
+import { Design_Review_Status, Graph_Display_Type, Graph_Type, Measure, Special_Permission } from '@prisma/client';
 import { Request, Response } from 'express';
 import { body, ValidationChain, validationResult } from 'express-validator';
 import { ClubAccount, MaterialStatus, TaskPriority, TaskStatus, WorkPackageStage, RoleEnum, WbsElementStatus } from 'shared';
@@ -204,12 +204,4 @@ export const validateInputs = (req: Request, res: Response, next: Function): voi
   } else {
     next();
   }
-};
-
-export const validateSponsorTier = () => {
-  return [
-    nonEmptyString(body('sponsorTierId')),
-    nonEmptyString(body('name')),
-    nonEmptyString(body('colorHexCode'))
-  ];
 };

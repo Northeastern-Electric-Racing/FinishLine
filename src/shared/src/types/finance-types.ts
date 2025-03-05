@@ -1,4 +1,4 @@
-import { User } from "./user-types";
+import { User } from './user-types';
 
 export interface Sponsor {
   sponsorId: string;
@@ -15,15 +15,15 @@ export interface Sponsor {
 }
 
 export interface SponsorTask {
-    sponsorTaskId: string;
-    dueDate: Date;
-    notifyDate?: Date;
-    assignee?: User;
-    notes: string;
+  sponsorTaskId: string;
+  dueDate: Date;
+  notifyDate?: Date;
+  assignee?: User;
+  notes: string;
 }
 
 export interface SponsorTier {
-    sponsorTierId: string;
-    name: string;
-    colorHexCode: string;
+  sponsorTierId: string;
+  name: string;
+  colorHexCode: string;
 }

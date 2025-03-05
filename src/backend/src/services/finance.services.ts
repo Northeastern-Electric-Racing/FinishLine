@@ -1,5 +1,5 @@
 import { isHead } from 'shared';
-import { User, Organization, Sponsor_Task, Sponsor_Tier } from '@prisma/client';
+import { User, Organization, Sponsor_Task } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
 import { AccessDeniedAdminOnlyException } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
@@ -16,7 +16,7 @@ export default class FinanceServices {
    * @param sponsorValue The financial value associated with the sponsor.
    * @param joinDate The date when the sponsor joins.
    * @param activeYears An array of years indicating the sponsor's active period.
-   * @param sponsorTier The sponsor's tier.
+   * @param sponsorTierId The ID of the sponsor's tier.
    * @param taxExempt Boolean indicating if the sponsor is tax-exempt.
    * @param discountCode The discount code associated with the sponsor.
    * @param vendorContact The contact information for the sponsor's vendor.

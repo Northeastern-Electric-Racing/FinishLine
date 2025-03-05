@@ -1,5 +1,5 @@
 import express from 'express';
-import { nonEmptyString, validateInputs, isDate, validateSponsorTier } from '../utils/validation.utils';
+import { nonEmptyString, validateInputs, isDate } from '../utils/validation.utils';
 import { body } from 'express-validator';
 import FinanceController from '../controllers/finance.controllers';
 
@@ -12,7 +12,7 @@ financeRouter.post(
   body('sponsorValue').isInt(),
   isDate(body('joinDate')),
   body('activeYears').isArray(),
-  validateSponsorTier(),
+  nonEmptyString(body('sponsorTierId')),
   body('taxExempt').isBoolean(),
   nonEmptyString(body('vendorContact')),
   body('sponsorTasks').isArray(),
