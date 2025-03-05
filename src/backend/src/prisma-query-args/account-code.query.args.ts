@@ -9,8 +9,8 @@ export const getAccountCodeQueryArgs = (organizationId: string) =>
       allowedRefundSources: {
         include: {
           userCreated: {
-            ...getUserQueryArgs(organizationId),
             include: {
+              ...getUserQueryArgs(organizationId),
               organizations: true,
               roles: true
             }

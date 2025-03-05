@@ -13,8 +13,8 @@ export const getReimbursementRequestQueryArgs = (organizationId: string) =>
     include: {
       recipient: getUserQueryArgs(organizationId),
       vendor: true,
-      account: getIndexCodeQueryArgs(organizationId),
-      accountCode: getAccountCodeQueryArgs(organizationId),
+      account: getIndexCodeQueryArgs(),
+      accountCode: getAccountCodeQueryArgs(),
       receiptPictures: getReceiptQueryArgs(organizationId),
       reimbursementStatuses: getReimbursementStatusQueryArgs(organizationId),
       reimbursementProducts: {
