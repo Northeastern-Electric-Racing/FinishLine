@@ -2,6 +2,9 @@
 import {
   Club_Accounts,
   Organization,
+  PartReview,
+  PartSubmission,
+  Part_Review_Popup,
   Project,
   Schedule_Settings,
   Task_Priority,
@@ -727,4 +730,62 @@ export const CreatePartReviewFAQ = async (question: string, answer: string, orga
       }
     }
   });
+};
+
+export const createTestPartReview = async (
+  partReviewId: string,
+  fileIds: string[],
+  notes: string,
+  submission: PartSubmission,
+  popUps: Part_Review_Popup[],
+  userCreatedId: string
+) => {
+  const partReview = await prisma.partReview.create({
+    data: {
+      partReviewId,
+      fileIds,
+      notes,
+      submission: {
+        connect: {
+          id: submission.id
+        }
+      },
+      popUps: {
+        connect: popUps.map((popup) => ({ partReviewPopupId: popup.partReviewPopupId }))
+      },
+      userCreated: {
+        connect: { userId: userCreatedId }
+      }
+    }
+  });
+  return partReview;
+};
+
+export const createTestPartSubmission = async (
+  id: string,
+  fileIds: string[],
+  name: string,
+  notes: string,
+  partId: string,
+  userCreatedId: string,
+  reviews: PartReview[]
+) => {
+  const partSubmission = await prisma.partSubmission.create({
+    data: {
+      id,
+      fileIds,
+      name,
+      notes,
+      part: {
+        connect: { partId }
+      },
+      userCreated: {
+        connect: { userId: userCreatedId }
+      },
+      reviews: {
+        connect: reviews.map((review) => ({ partReviewId: review.partReviewId }))
+      }
+    }
+  });
+  return partSubmission;
 };
