@@ -3,9 +3,7 @@ import { Sponsor, SponsorTask } from 'shared';
 import { SponsorQueryArgs, SponsorTaskQueryArgs } from '../prisma-query-args/sponsor.query-args';
 import { userTransformer } from './user.transformer';
 
-export const sponsorTransformer = (
-  sponsor: Prisma.SponsorGetPayload<SponsorQueryArgs>
-): Sponsor => {
+export const sponsorTransformer = (sponsor: Prisma.SponsorGetPayload<SponsorQueryArgs>): Sponsor => {
   return {
     sponsorId: sponsor.sponsorId,
     name: sponsor.name,
@@ -21,14 +19,12 @@ export const sponsorTransformer = (
   };
 };
 
-export const sponsorTaskTranformer = (
-  sponsorTask: Prisma.Sponsor_TaskGetPayload<SponsorTaskQueryArgs>
-): SponsorTask => {
+export const sponsorTaskTranformer = (sponsorTask: Prisma.Sponsor_TaskGetPayload<SponsorTaskQueryArgs>): SponsorTask => {
   return {
     sponsorTaskId: sponsorTask.sponsorTaskId,
     dueDate: sponsorTask.dueDate,
     notifyDate: sponsorTask.notifyDate ?? undefined,
     assignee: sponsorTask.assignee ? userTransformer(sponsorTask.assignee) : undefined,
     notes: sponsorTask.notes
-  }
-}
+  };
+};

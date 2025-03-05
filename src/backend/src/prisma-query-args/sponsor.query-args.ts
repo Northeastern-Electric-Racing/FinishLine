@@ -12,9 +12,9 @@ export const getSponsorQueryArgs = (organizationId: string) =>
     }
   });
 
-  export const getSponsorTaskQueryArgs = (organizationId: string) =>
-    Prisma.validator<Prisma.Sponsor_TaskDefaultArgs>()({
-      include: {
-        assignee: getUserQueryArgs(organizationId)
-      }
-    });
+export const getSponsorTaskQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Sponsor_TaskDefaultArgs>()({
+    include: {
+      assignee: getUserQueryArgs(organizationId)
+    }
+  });
