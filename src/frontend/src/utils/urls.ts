@@ -131,7 +131,6 @@ const financeCreateAccountCode = () => `${getAllAccountCodes()}/create`;
 const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
 const financeEditVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/edit`;
 const financeLeadershipApprove = (id: string) => `${financeEndpoints()}/${id}/leadership-approve`;
-const getAllIndexCodes = () => `${financeEndpoints()}/index-codes`;
 
 /**************** Bill of Material Endpoints **************************/
 const bomEndpoints = () => `${API_URL}/projects/bom`;
@@ -331,7 +330,6 @@ export const apiUrls = {
   financeCreateVendor,
   financeEditVendor,
   financeLeadershipApprove,
-  getAllIndexCodes,
 
   bomEndpoints,
   bomGetMaterialsByWbsNum,
