@@ -1,10 +1,10 @@
 import { isHead } from 'shared';
-import { User, Organization, Sponsor_Task } from '@prisma/client';
+import { User, Organization, Sponsor_Task, Sponsor_Tier } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
 import { AccessDeniedAdminOnlyException } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
 import { getSponsorQueryArgs } from '../prisma-query-args/sponsor.query-args';
-import sponsorTransformer from '../transformers/finance.transformer';
+import { sponsorTransformer } from '../transformers/finance.transformer';
 
 export default class FinanceServices {
   /**
@@ -16,7 +16,7 @@ export default class FinanceServices {
    * @param sponsorValue The financial value associated with the sponsor.
    * @param joinDate The date when the sponsor joins.
    * @param activeYears An array of years indicating the sponsor's active period.
-   * @param sponsorTierId The ID of the sponsor's tier.
+   * @param sponsorTier The sponsor's tier.
    * @param taxExempt Boolean indicating if the sponsor is tax-exempt.
    * @param discountCode The discount code associated with the sponsor.
    * @param vendorContact The contact information for the sponsor's vendor.
@@ -65,16 +65,21 @@ export default class FinanceServices {
         },
         organizationId: organization.organizationId
       },
-      ...getSponsorQueryArgs()
+      ...getSponsorQueryArgs(organization.organizationId)
     });
 
     return sponsorTransformer(sponsor);
   }
 
+  /**
+   * Returns all the sponsors in the database
+   * @param organization The organization the user is currently in
+   * @returns All the sponsors in the database
+   */
   static async getAllSponsors(organization: Organization) {
     const allSponsors = await prisma.sponsor.findMany({
       where: { organizationId: organization.organizationId, dateDeleted: null },
-      ...getSponsorQueryArgs()
+      ...getSponsorQueryArgs(organization.organizationId)
     });
 
     return allSponsors.map(sponsorTransformer);
