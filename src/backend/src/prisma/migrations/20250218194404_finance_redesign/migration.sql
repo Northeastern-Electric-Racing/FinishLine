@@ -144,7 +144,7 @@ ALTER TABLE "Material" ADD COLUMN     "reimbursementRequestId" TEXT;
 ALTER TABLE "Vendor" ADD COLUMN     "addedByUserId" TEXT,
 ADD COLUMN     "discountCode" TEXT,
 ADD COLUMN     "notes" TEXT,
-ADD COLUMN     "passwordHash" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "password" TEXT NOT NULL DEFAULT '',
 ADD COLUMN     "taxExempt" BOOLEAN NOT NULL DEFAULT TRUE,
 ADD COLUMN     "twoFactorContactId" TEXT,
 ADD COLUMN     "username" TEXT NOT NULL DEFAULT '';
