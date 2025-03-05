@@ -9,6 +9,34 @@ import { partsReviewCommonMistakeTransformer } from '../transformers/part-review
 
 export default class PartReviewService {
   /**
+   * Uses the given organizationID to and returns an array of part tags
+   * @param organizationId the organization to get the parts for
+   * @returns an array of part tags
+   */
+  static async getAllPartTags(organizationId: string) {
+    return prisma.partTag.findMany({
+      where: {
+        organizationId,
+        dateDeleted: null
+      }
+    });
+  }
+
+  /**
+   * Gets all part review FAQs for the given organization Id
+   * @param organizationId organization Id of the FAQ
+   * @returns all the part review faqs from the given organization
+   */
+  static async getAllPartReviewFAQs(organizationId: string) {
+    const partReviewFAQs = await prisma.frequentlyAskedQuestion.findMany({
+      where: { dateDeleted: null, partReviewFaqOrgId: organizationId },
+      ...getFaqQueryArgs(organizationId)
+    });
+
+    return partReviewFAQs.map(faqTransformer);
+  }
+
+  /**
    * Creates an faq
    * @param question the question
    * @param answer the answer

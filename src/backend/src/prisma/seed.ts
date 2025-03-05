@@ -15,7 +15,8 @@ import {
   Scope_CR_Why_Type,
   Task_Priority,
   Task_Status,
-  Team
+  Team,
+  PartTag
 } from '@prisma/client';
 import { createUser, dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
@@ -48,8 +49,8 @@ import OrganizationsService from '../services/organizations.services';
 import { seedGraph } from './seed-data/statistics.seed';
 import AnnouncementService from '../services/announcement.service';
 import OnboardingServices from '../services/onboarding.services';
+import { dbSeedAllPartTags } from './seed-data/parts.seed';
 import { CreatePartTag, CreateCommonMistake, CreatePartReviewFAQ } from '../../tests/test-utils';
-
 const prisma = new PrismaClient();
 
 const performSeed: () => Promise<void> = async () => {
@@ -2140,6 +2141,11 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     false
   );
+
+  // Add part tags
+  const mechanicalPartTag: PartTag = await prisma.partTag.create(dbSeedAllPartTags.MechanicalPartTag(organizationId));
+  const electricalPartTag: PartTag = await prisma.partTag.create(dbSeedAllPartTags.ElectricalPartTag(organizationId));
+  const structuralPartTag: PartTag = await prisma.partTag.create(dbSeedAllPartTags.StructuralPartTag(organizationId));
 
   await CreatePartTag(organizationId, 'Practice', '#202025');
 

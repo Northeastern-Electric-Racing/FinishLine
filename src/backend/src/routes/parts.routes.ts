@@ -5,6 +5,9 @@ import PartsReviewController from '../controllers/part-review.controllers';
 
 const partsRouter = express.Router();
 
+partsRouter.get('/tags', PartsReviewController.getAllPartTags);
+partsRouter.get('/faqs', PartsReviewController.getAllPartReviewFAQS);
+
 partsRouter.post(
   '/faq/create',
   nonEmptyString(body('question')),

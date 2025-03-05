@@ -2,6 +2,24 @@ import { NextFunction, Request, Response } from 'express';
 import PartReviewService from '../services/part-review.services';
 
 export default class PartReviewController {
+  static async getAllPartTags(req: Request, res: Response, next: NextFunction) {
+    try {
+      const tags = await PartReviewService.getAllPartTags(req.organization.organizationId);
+      res.status(200).json(tags);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllPartReviewFAQS(req: Request, res: Response, next: NextFunction) {
+    try {
+      const partReviewFAQS = await PartReviewService.getAllPartReviewFAQs(req.organization.organizationId);
+      res.status(200).json(partReviewFAQS);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createFaq(req: Request, res: Response, next: NextFunction) {
     try {
       const { question, answer } = req.body;
