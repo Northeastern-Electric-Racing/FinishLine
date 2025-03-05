@@ -64,7 +64,6 @@ import { getReimbursementRequestQueryArgs } from '../prisma-query-args/reimburse
 import { getReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
 import { getReimbursementStatusQueryArgs } from '../prisma-query-args/reimbursement-statuses.query-args';
 import { getAccountCodeQueryArgs } from '../prisma-query-args/account-code.query.args';
-import { getVendorQueryArgs } from '../prisma-query-args/vendor.query-args';
 
 export default class ReimbursementRequestService {
   /**
@@ -120,8 +119,7 @@ export default class ReimbursementRequestService {
    */
   static async getAllVendors(organization: Organization): Promise<Vendor[]> {
     const vendors = await prisma.vendor.findMany({
-      where: { dateDeleted: null, organizationId: organization.organizationId },
-      ...getVendorQueryArgs(organization.organizationId)
+      where: { dateDeleted: null, organizationId: organization.organizationId }
     });
     return vendors.map(vendorTransformer);
   }
@@ -559,29 +557,22 @@ export default class ReimbursementRequestService {
 
   /**
    * Function to create a vendor in our database
-   * @param submitter user creating the vendor
-   * @param name vendor name
-   * @param organization current organziation
-   * @param username vendor username
-   * @param password vendor password *to be encrypted*
-   * @param taxExempt whether the vendor is tax exempt
-   * @param notes vendor notes
-   * @param addedByUserId userId that added the vendor
-   * @param twoFactorContactId two-factor contact id
-   * @param discountCode vendor discount code
-   * @returns
+   * @param submitter the user who is creating the vendor
+   * @param name the name of the vendor
+   * @param organizationId the organization the user is currently in
+   * @returns the created vendor
    */
   static async createVendor(
     submitter: User,
     name: string,
     organization: Organization,
     username: string,
-    password: string,
-    taxExempt: boolean,
-    discountCode?: string,
-    twoFactorContactId?: string,
-    notes?: string,
-    addedByUserId?: string,
+    passwordHash: string,
+    discountCode: string,
+    twoFactorContactId: string,
+    notes: string,
+    addedByUserId: string,
+    taxExempt: boolean
   ) {
     const isAuthorized =
       (await userHasPermission(submitter.userId, organization.organizationId, isAdmin)) ||
@@ -605,12 +596,12 @@ export default class ReimbursementRequestService {
         name,
         organizationId: organization.organizationId,
         username,
-        password, // to be encrypted
-        taxExempt,
+        passwordHash,
         discountCode,
         twoFactorContactId,
         notes,
-        addedByUserId
+        addedByUserId,
+        taxExempt
       }
     });
 
@@ -1134,8 +1125,7 @@ export default class ReimbursementRequestService {
 
     const vendor = await prisma.vendor.update({
       where: { vendorId },
-      data: { name },
-      ...getVendorQueryArgs(organization.organizationId)
+      data: { name }
     });
 
     return vendorTransformer(vendor);
@@ -1156,8 +1146,7 @@ export default class ReimbursementRequestService {
 
     const deletedVendor = await prisma.vendor.update({
       where: { vendorId: vendor.vendorId },
-      data: { dateDeleted: new Date() },
-      ...getVendorQueryArgs(organization.organizationId)
+      data: { dateDeleted: new Date() }
     });
 
     return vendorTransformer(deletedVendor);
@@ -1171,8 +1160,7 @@ export default class ReimbursementRequestService {
    */
   static async getSingleVendor(vendorId: string, organization: Organization): Promise<Vendor> {
     const vendor = await prisma.vendor.findUnique({
-      where: { vendorId },
-      ...getVendorQueryArgs(organization.organizationId)
+      where: { vendorId }
     });
 
     if (!vendor) throw new NotFoundException('Vendor', vendorId);

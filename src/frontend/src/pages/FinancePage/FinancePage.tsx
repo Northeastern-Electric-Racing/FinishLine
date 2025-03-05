@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useState } from 'react';
-import { Box, Grid, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
+import { Box, Grid, ListItemIcon, Menu, MenuItem } from '@mui/material';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { NERButton } from '../../components/NERButton';
 import { useCurrentUser } from '../../hooks/users.hooks';
@@ -31,7 +31,6 @@ import WorkIcon from '@mui/icons-material/Work';
 import TotalAmountSpentModal from './FinanceComponents/TotalAmountSpentModal';
 import { useToast } from '../../hooks/toasts.hooks';
 import ReportRefundModal from './FinanceComponents/ReportRefundModal';
-import SidePage from './FinanceComponents/SidePagePopup';
 
 const FinancePage = () => {
   const user = useCurrentUser();
@@ -66,10 +65,6 @@ const FinancePage = () => {
   const [showPendingAdvisorListModal, setShowPendingAdvisorListModal] = useState(false);
   const [accountCreditModalShow, setAccountCreditModalShow] = useState<boolean>(false);
   const [showTotalAmountSpent, setShowTotalAmountSpent] = useState(false);
-
-  // SidePage State
-  const [showSidePage, setShowSidePage] = useState(false);
-  const [sidePageTitle, setSidePageTitle] = useState('');
 
   if (isFinance && allReimbursementRequestsIsError) return <ErrorPage message={allReimbursementRequestsError?.message} />;
   if (userReimbursementRequestIsError) return <ErrorPage message={userReimbursementRequestError?.message} />;
@@ -165,15 +160,6 @@ const FinancePage = () => {
     </>
   );
 
-  const openSidePage = (title: string) => {
-    setSidePageTitle(title);
-    setShowSidePage(true);
-  };
-
-  const closeSidePage = () => {
-    setShowSidePage(false);
-  };
-
   return (
     <PageLayout title="Finance" headerRight={financeActionsDropdown}>
       {isFinance && (
@@ -212,24 +198,6 @@ const FinancePage = () => {
           </Box>
         </Grid>
       </Grid>
-      <NERButton
-        variant="contained"
-        color="primary"
-        onClick={() => openSidePage('Title')} // Opens SidePage
-        sx={{ marginBottom: 2 }} // Adds spacing
-      >
-        Open Side Page
-      </NERButton>
-      <SidePage
-        showPage={showSidePage}
-        handleClose={closeSidePage}
-        title={sidePageTitle}
-        component={
-          <Typography variant="body1" sx={{ color: 'white' }}>
-            This is some text inside the side page.
-          </Typography>
-        }
-      />
     </PageLayout>
   );
 };

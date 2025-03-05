@@ -1,6 +1,5 @@
 import { Prisma } from '@prisma/client';
 import { getReimbursementStatusQueryArgs } from './reimbursement-statuses.query-args';
-import { getVendorQueryArgs } from './vendor.query-args';
 import { getUserQueryArgs } from './user.query-args';
 import { getReceiptQueryArgs } from './receipt-query.args';
 import { getReimbursementProductQueryArgs } from './reimbursement-products.query-args';
@@ -13,7 +12,7 @@ export const getReimbursementRequestQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Reimbursement_RequestDefaultArgs>()({
     include: {
       recipient: getUserQueryArgs(organizationId),
-      vendor: getVendorQueryArgs(organizationId),
+      vendor: true,
       account: getIndexCodeQueryArgs(organizationId),
       accountCode: getAccountCodeQueryArgs(organizationId),
       receiptPictures: getReceiptQueryArgs(organizationId),

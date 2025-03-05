@@ -21,13 +21,15 @@ export const vendorTransformer = (vendor: Vendor): Vendor => {
 
 const receiptTransformer = (receipt: Receipt): Receipt => {
   return {
-    ...receipt
+    ...receipt,
+    dateDeleted: receipt.dateDeleted ? new Date(receipt.dateDeleted) : undefined
   };
 };
 
 const reimbursementProductTransformer = (product: ReimbursementProduct): ReimbursementProduct => {
   return {
-    ...product
+    ...product,
+    dateDeleted: product.dateDeleted ? new Date(product.dateDeleted) : undefined
   };
 };
 
@@ -35,6 +37,7 @@ export const reimbursementRequestTransformer = (request: ReimbursementRequest): 
   return {
     ...request,
     dateCreated: new Date(request.dateCreated),
+    dateDeleted: request.dateDeleted ? new Date(request.dateDeleted) : undefined,
     dateOfExpense: request.dateOfExpense ? new Date(request.dateOfExpense) : undefined,
     reimbursementStatuses: request.reimbursementStatuses.map(reimbursementStatusTransformer),
     vendor: vendorTransformer(request.vendor),

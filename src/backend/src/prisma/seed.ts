@@ -46,7 +46,6 @@ import OrganizationsService from '../services/organizations.services';
 import { seedGraph } from './seed-data/statistics.seed';
 import AnnouncementService from '../services/announcement.service';
 import IndexCodeService from '../services/index-code.services';
-import FinanceServices from '../services/finance.services';
 
 const prisma = new PrismaClient();
 
@@ -1679,24 +1678,23 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'nershipping@gmail.com',
     'racecar228!',
-    true,
     'SAVE50!',
     thomasEmrax.userId,
     'Tax exemption status?',
-    thomasEmrax.userId
+    thomasEmrax.userId,
+    true
   );
-  
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Amazon',
     ner,
     'amazon@gmail.com',
     'racecare228!',
-    true,
     'SAVE20!',
     thomasEmrax.userId,
     'They want updates on work',
-    thomasEmrax.userId
+    thomasEmrax.userId,
+    true
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1704,11 +1702,11 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'google@gmail.com',
     'racecar228!',
-    true,
     'SAVE50!',
     thomasEmrax.userId,
     'Tax exemption ID NUMBER',
-    thomasEmrax.userId
+    thomasEmrax.userId,
+    false
   );
 
   const indexCode = await IndexCodeService.createIndexCode('Cash', thomasEmrax, ner);
@@ -2013,21 +2011,6 @@ const performSeed: () => Promise<void> = async () => {
     '3',
     'powertrain',
     ner.organizationId
-  );
-
-  await FinanceServices.createSponsor(
-    thomasEmrax,
-    'Google',
-    true,
-    5000,
-    new Date(12, 1, 24),
-    [2024, 2025],
-    'gold',
-    true,
-    'Bill Gates',
-    [],
-    ner,
-    'googlecode'
   );
 };
 

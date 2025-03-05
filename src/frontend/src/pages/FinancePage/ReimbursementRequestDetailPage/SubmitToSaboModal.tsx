@@ -31,6 +31,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
   const filteredProductsNames = reimbursementProducts
+    .filter((product) => !product.dateDeleted)
     .map((product) =>
       !!(product.reimbursementProductReason as WBSElementData).wbsNum
         ? wbsPipe((product.reimbursementProductReason as WBSElementData).wbsNum) +
