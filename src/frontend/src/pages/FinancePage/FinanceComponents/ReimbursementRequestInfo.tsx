@@ -49,40 +49,24 @@ const ReimbursementRequestInfo = ({
     canViewAllReimbursementRequests && allReimbursementRequests ? allReimbursementRequests : userReimbursementRequests;
 
   const rows = displayedReimbursementRequests.map(createReimbursementRequestRowData).sort((a, b) => {
-    if (orderBy === 'vendor') {
-      localStorage.setItem('orderBy', 'vendor');
-      if (!isAscendingOrder) {
-        localStorage.setItem('ascendingOrder', 'descending');
-        return vendorDescendingComparator(a.vendor, b.vendor);
-      }
-      localStorage.setItem('ascendingOrder', 'ascending');
-      return -vendorDescendingComparator(a.vendor, b.vendor);
+    const comparators: { [key: string]: (a: any, b: any) => number } = {
+      vendor: vendorDescendingComparator,
+      status: statusDescendingComparator,
+      submitter: submitterDescendingComparator
+    };
+
+    localStorage.setItem('orderBy', orderBy);
+    localStorage.setItem('ascendingOrder', isAscendingOrder ? 'ascending' : 'descending');
+
+    if (orderBy in comparators) {
+      return isAscendingOrder ? -comparators[orderBy](a[orderBy], b[orderBy]) : comparators[orderBy](a[orderBy], b[orderBy]);
     }
-    if (orderBy === 'status') {
-      localStorage.setItem('orderBy', 'status');
-      if (!isAscendingOrder) {
-        localStorage.setItem('ascendingOrder', 'descending');
-        return statusDescendingComparator(a.status, b.status);
-      }
-      localStorage.setItem('ascendingOrder', 'ascending');
-      return -statusDescendingComparator(a.status, b.status);
-    }
-    if (orderBy === 'submitter') {
-      localStorage.setItem('orderBy', 'submitter');
-      if (!isAscendingOrder) {
-        localStorage.setItem('ascendingOrder', 'descending');
-        return submitterDescendingComparator(a.submitter, b.submitter);
-      }
-      localStorage.setItem('ascendingOrder', 'ascending');
-      return -submitterDescendingComparator(a.submitter, b.submitter);
-    }
-    if (orderBy === 'identifier') {
-      localStorage.setItem('orderBy', 'identifier');
-    }
+
     if (b[orderBy] === undefined) {
       return -1;
     }
-    return !isAscendingOrder ? descendingComparator(a, b, orderBy) : -descendingComparator(a, b, orderBy);
+
+    return isAscendingOrder ? -descendingComparator(a, b, orderBy) : descendingComparator(a, b, orderBy);
   });
 
   const headCells: readonly ReimbursementTableHeadCell[] = [
