@@ -1,4 +1,4 @@
-import { IndexCode, AccountCode } from 'shared';
+import { ClubAccount, AccountCode } from 'shared';
 import { AccountCodePayload } from '../../../hooks/finance.hooks';
 import { Controller, useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
@@ -77,12 +77,12 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
             <Select
               multiple
               value={formValue}
-              onChange={(e) => onChange(e.target.value as IndexCode[])}
+              onChange={(e) => onChange(e.target.value as ClubAccount[])}
               input={<OutlinedInput />}
             >
-              {Object.values(IndexCode).map((refundSource) => (
+              {Object.values(ClubAccount).map((refundSource) => (
                 <MenuItem key={refundSource} value={refundSource}>
-                  {codeAndRefundSourceName(refundSource.name)}
+                  {codeAndRefundSourceName(refundSource)}
                 </MenuItem>
               ))}
             </Select>

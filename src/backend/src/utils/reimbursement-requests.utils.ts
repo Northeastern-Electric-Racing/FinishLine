@@ -247,7 +247,7 @@ export const createReimbursementProducts = async (
   const otherReimbursementProductPromises = validatedOtherReimbursementProducts.map(async (product) => {
     const reimbursementProductReason = await prisma.reimbursement_Product_Reason.create({
       data: {
-        otherReason: { connect: { otherReimbursementProductReasonId: product.reason.otherProductReasonId} }
+        otherReason: product.reason
       }
     });
 

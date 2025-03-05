@@ -1,5 +1,6 @@
 /* eslint-disable prefer-destructuring */
 import {
+  Club_Accounts,
   Organization,
   Project,
   Schedule_Settings,
@@ -14,7 +15,7 @@ import prisma from '../src/prisma/prisma';
 import { dbSeedAllUsers } from '../src/prisma/seed-data/users.seed';
 import TeamsService from '../src/services/teams.services';
 import ReimbursementRequestService from '../src/services/reimbursement-requests.services';
-import { Permission, RoleEnum, TaskPriority, TaskStatus } from 'shared';
+import { ClubAccount, Permission, RoleEnum, TaskPriority, TaskStatus } from 'shared';
 import {
   batmanAppAdmin,
   batmanScheduleSettings,
@@ -27,7 +28,6 @@ import DesignReviewsService from '../src/services/design-reviews.services';
 import TasksService from '../src/services/tasks.services';
 import ProjectsService from '../src/services/projects.services';
 import { SlackMessage } from '../src/services/slack.services';
-import IndexCodeService from '../src/services/index-code.services';
 
 export interface CreateTestUserParams {
   firstName: string;
@@ -403,28 +403,22 @@ export const createTestReimbursementRequest = async () => {
     'SAVE50!',
     user.userId,
     'Tax exemption status?',
-    user.userId,
-    true
+    user.userId
   );
-
-  const indexCode = await IndexCodeService.createIndexCode(
-    'Cash',
-    user
-  )
 
   const accountCode = await ReimbursementRequestService.createAccountCode(
     user,
     'Equipment',
     123,
     true,
-    [indexCode],
+    [Club_Accounts.CASH, Club_Accounts.BUDGET],
     organization
   );
 
   const rr = await ReimbursementRequestService.createReimbursementRequest(
     user,
     vendor.vendorId,
-    indexCode,
+    ClubAccount.CASH,
     [],
     [
       {
@@ -445,7 +439,7 @@ export const createTestReimbursementRequest = async () => {
 
   if (!rr) throw new Error('Failed to create reimbursement request');
 
-  return { rr, organization, vendor, indexCode, accountCode, project, user };
+  return { rr, organization, vendor, accountCode, project, user };
 };
 
 // Always creates a new design review

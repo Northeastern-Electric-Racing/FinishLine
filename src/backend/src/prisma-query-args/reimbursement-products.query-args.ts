@@ -7,8 +7,7 @@ export type ReimbursementProductReasonQueryArgs = ReturnType<typeof getReimburse
 export const getReimbursementProductReasonQueryArgs = (_organizationId: string) =>
   Prisma.validator<Prisma.Reimbursement_Product_ReasonDefaultArgs>()({
     include: {
-      wbsElement: true,
-      otherReason: true
+      wbsElement: true
     }
   });
 

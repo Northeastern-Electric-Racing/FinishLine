@@ -1,5 +1,4 @@
 import {
-  OtherProductReason,
   Project,
   Reimbursement,
   ReimbursementProduct,
@@ -23,7 +22,7 @@ export const getUniqueWbsElementsWithProductsFromReimbursementRequest = (
       ? `${wbsPipe((product.reimbursementProductReason as WBSElementData).wbsNum)} - ${
           (product.reimbursementProductReason as WBSElementData).wbsName
         }`
-      : (product.reimbursementProductReason as OtherProductReason).name;
+      : (product.reimbursementProductReason as string);
     if (uniqueWbsElementsWithProducts.has(wbs)) {
       const products = uniqueWbsElementsWithProducts.get(wbs);
       products?.push(product);

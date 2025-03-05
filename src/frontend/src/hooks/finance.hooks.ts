@@ -35,7 +35,7 @@ import {
   markPendingFinance
 } from '../apis/finance.api';
 import {
-  IndexCode,
+  ClubAccount,
   AccountCode,
   Reimbursement,
   ReimbursementReceiptCreateArgs,
@@ -55,7 +55,7 @@ export interface CreateReimbursementRequestPayload {
   otherReimbursementProducts: OtherReimbursementProductCreateArgs[];
   wbsReimbursementProducts: WbsReimbursementProductCreateArgs[];
   totalCost: number;
-  account: IndexCode;
+  account: ClubAccount;
 }
 
 export interface EditReimbursementRequestPayload extends CreateReimbursementRequestPayload {
@@ -73,7 +73,7 @@ export interface AccountCodePayload {
   code: number;
   name: string;
   allowed: boolean;
-  allowedRefundSources: IndexCode[];
+  allowedRefundSources: ClubAccount[];
 }
 
 export interface EditVendorPayload {
