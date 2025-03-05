@@ -1,7 +1,7 @@
 import prisma from '../prisma/prisma';
+import indexCodeTransformer from '../transformers/index-code.transformer';
 import { getIndexCodeQueryArgs } from '../prisma-query-args/index-code.query-args';
-import { Organization, User } from '@prisma/client';
-import { indexCodeTransformer } from '../transformers/reimbursement-requests.transformer';
+import { User } from '@prisma/client';
 
 export default class IndexCodeService {
   /**
@@ -10,13 +10,13 @@ export default class IndexCodeService {
    * @param user the user creating the index code
    * @returns transformed created index code
    */
-  static async createIndexCode(name: string, user: User, organization: Organization) {
+  static async createIndexCode(name: string, user: User) {
     const indexCode = await prisma.index_Code.create({
       data: {
         userCreated: { connect: { userId: user.userId } },
         name
       },
-      ...getIndexCodeQueryArgs(organization.organizationId)
+      ...getIndexCodeQueryArgs()
     });
     return indexCodeTransformer(indexCode);
   }

@@ -5,8 +5,6 @@ export interface IndexCode {
   indexCodeId: string;
   name: string;
   userCreated: User;
-  dateCreated: Date;
-  dateDeleted?: Date;
 }
 
 export interface ReimbursementRequestRow {
@@ -69,9 +67,8 @@ export interface OtherProductReason {
   otherProductReasonId: string;
   name: string;
   userCreated: User;
-  dateCreated: Date;
-  dateDeleted?: Date;
   budget: number;
+  reimbursementProductReasons: ReimbursementProduct[];
   indexCode: IndexCode;
   accountCode: AccountCode;
 }

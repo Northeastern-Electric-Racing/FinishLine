@@ -705,7 +705,7 @@ export default class ReimbursementRequestService {
     const deletedAccountCode = await prisma.account_Code.update({
       where: { accountCodeId: accountCode.accountCodeId },
       data: { dateDeleted: new Date() },
-      ...getAccountCodeQueryArgs(organization.organizationId)
+      ...getAccountCodeQueryArgs()
     });
 
     return accountCodeTransformer(deletedAccountCode);
@@ -767,7 +767,7 @@ export default class ReimbursementRequestService {
 
   /**
    * Gets all the account codes for the given organization
-   * @param organization The organization the user is currently in
+   * @param organizationId The organization the user is currently in
    * @returns The account codes for the given organization
    */
   static async getAllAccountCodes(organization: Organization): Promise<AccountCode[]> {
@@ -776,7 +776,7 @@ export default class ReimbursementRequestService {
         dateDeleted: null,
         organizationId: organization.organizationId
       },
-      ...getAccountCodeQueryArgs(organization.organizationId)
+      ...getAccountCodeQueryArgs()
     });
 
     return accountCodes.map(accountCodeTransformer);
@@ -1177,7 +1177,7 @@ export default class ReimbursementRequestService {
   static async getSingleAccountCode(accountCodeId: string, organization: Organization): Promise<AccountCode> {
     const accountCode = await prisma.account_Code.findUnique({
       where: { accountCodeId },
-      ...getAccountCodeQueryArgs(organization.organizationId)
+      ...getAccountCodeQueryArgs()
     });
 
     if (!accountCode) throw new NotFoundException('Account Code', accountCodeId);

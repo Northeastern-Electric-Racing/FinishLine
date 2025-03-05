@@ -91,16 +91,8 @@ const reimbursementProductReasonTransformer = (
   reason: Prisma.Reimbursement_Product_ReasonGetPayload<ReimbursementProductReasonQueryArgs>
 ): ReimbursementProductReason => {
   return reason.wbsElement
-    ? { wbsName: reason.wbsElement.name, wbsNum: wbsNumOf(reason.wbsElement) }
-    : { otherProductReasonId: reason.otherReason!.otherReimbursementProductReasonId,
-      name: reason.otherReason!.name,
-      userCreated: userTransformer(reason.otherReason!.userCreated),
-      dateCreated: reason.otherReason!.dateCreated,
-      dateDeleted: reason.otherReason?.dateDeleted ?? undefined,
-      budget: reason.otherReason!.budget,
-      indexCode: indexCodeTransformer(reason.otherReason!.indexCode), 
-      accountCode: accountCodeTransformer(reason.otherReason!.accountCode)
-    };
+    ? { wbsName: reason.wbsElement?.name, wbsNum: wbsNumOf(reason.wbsElement) }
+    : otherProductReasonTransformer(reason.otherReason);
 };
 
 export const accountCodeTransformer = (accountCode: Prisma.Account_CodeGetPayload<AccountCodeQueryArgs>): AccountCode => {
@@ -134,9 +126,7 @@ export const indexCodeTransformer = (indexCode: Prisma.Index_CodeGetPayload<Inde
   return {
     indexCodeId: indexCode.indexCodeId,
     name: indexCode.name,
-    userCreated: userTransformer(indexCode.userCreated),
-    dateCreated: indexCode.dateCreated,
-    dateDeleted: indexCode.dateDeleted ?? undefined,
+    userCreated: userTransformer(indexCode.userCreated)
   };
 };
 
@@ -147,9 +137,8 @@ export const otherProductReasonTransformer = (
     otherProductReasonId: otherProductReason.otherReimbursementProductReasonId,
     name: otherProductReason.name,
     userCreated: userTransformer(otherProductReason.userCreated),
-    dateCreated: otherProductReason.dateCreated,
-    dateDeleted: otherProductReason.dateDeleted ?? undefined,
     budget: otherProductReason.budget,
+    reimbursementProductReasons: otherProductReason.reimbursementProductReasons.map(reimbursementProductTransformer),
     indexCode: indexCodeTransformer(otherProductReason.indexCode),
     accountCode: accountCodeTransformer(otherProductReason.accountCode)
   };

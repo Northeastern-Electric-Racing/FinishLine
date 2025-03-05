@@ -1674,8 +1674,7 @@ const performSeed: () => Promise<void> = async () => {
 
   const indexCode = await IndexCodeService.createIndexCode(
     'Cash',
-    thomasEmrax,
-    ner
+    thomasEmrax
   )
 
   const vendor = await ReimbursementRequestService.createVendor(
