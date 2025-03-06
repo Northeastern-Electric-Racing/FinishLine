@@ -248,7 +248,7 @@ const deleteGraphCollection = (id: string) => `${graphCollectionById(id)}/delete
 /************** Part Tag Endpoints ***************/
 const partTags = () => `${API_URL}/tags`;
 const partTagCreate = () => `${partTags()}/create`;
-const partTagDelete = (id: string) => `${partTags()}/faq/${id}/delete`;
+const partTagDelete = (id: string) => `${partTags()}/tag/${id}/delete`; // may need to add this route?
 
 
 /**************** Other Endpoints ****************/

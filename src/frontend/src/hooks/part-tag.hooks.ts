@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { createPartTag, getAllPartTags } from '../apis/part-tags.api';
+import { createPartTag, deletePartTag, getAllPartTags } from '../apis/part-tags.api';
 import { PartTag } from 'shared';
 
 export interface PartTagPayload {
@@ -13,7 +13,7 @@ export const useGetAllPartTags = () => {
   });
 };
 
-export const useCreatePartTags = () => {
+export const useCreatePartTag = () => {
   const queryClient = useQueryClient();
   return useMutation<PartTag, Error, PartTagPayload>(
     ['partTags', 'create'],
@@ -24,6 +24,26 @@ export const useCreatePartTags = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['partTags']);
+      }
+    }
+  );
+};
+
+export interface DeletePartTagPayload {
+  partTagId: string;
+}
+
+export const useDeletePartTag = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, DeletePartTagPayload>(
+    ['part tag', 'delete'],
+    async (deleteTagPayload: DeletePartTagPayload) => {
+      const { data } = await deletePartTag(deleteTagPayload.partTagId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['part tag']);
       }
     }
   );
