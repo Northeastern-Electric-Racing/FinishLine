@@ -4,7 +4,7 @@
  */
 
 import prisma from './prisma';
-import { Index_Code, Reimbursement_Status_Type, WBS_Element_Status } from '@prisma/client';
+import { Reimbursement_Status_Type, WBS_Element_Status } from '@prisma/client';
 import { calculateEndDate } from 'shared';
 import { writeFileSync } from 'fs';
 import { getUserFullName } from '../utils/users.utils';

@@ -29,13 +29,15 @@ import {
 } from '../prisma-query-args/reimbursement-products.query-args';
 import { ReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
 import { AccountCodeQueryArgs } from '../prisma-query-args/account-code.query.args';
+import { IndexCodeQueryArgs } from '../prisma-query-args/index-code.query-args';
+import { ReimbursementProductOtherReasonQueryArgs } from '../prisma-query-args/reimbursement-product-other-reason.query.args';
+import { VendorQueryArgs } from '../prisma-query-args/vendor.query-args';
 
 export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<ReceiptQueryArgs>): Receipt => {
   return {
     receiptId: receipt.receiptId,
     googleFileId: receipt.googleFileId,
     name: receipt.name,
-    dateDeleted: receipt.dateDeleted ?? undefined,
     deletedBy: receipt.deletedBy ? userTransformer(receipt.deletedBy) : undefined
   };
 };
@@ -48,12 +50,11 @@ export const reimbursementRequestTransformer = (
     identifier: reimbursementRequest.identifier,
     saboId: reimbursementRequest.saboId ?? undefined,
     dateCreated: reimbursementRequest.dateCreated,
-    dateDeleted: reimbursementRequest.dateDeleted ?? undefined,
     dateOfExpense: reimbursementRequest.dateOfExpense ?? undefined,
     reimbursementStatuses: reimbursementRequest.reimbursementStatuses.map(reimbursementStatusTransformer),
     recipient: userTransformer(reimbursementRequest.recipient),
     vendor: vendorTransformer(reimbursementRequest.vendor),
-    account: indexCodeTransformer(reimbursementRequest.account as Index_Code),
+    account: indexCodeTransformer(reimbursementRequest.account),
     totalCost: reimbursementRequest.totalCost,
     receiptPictures: reimbursementRequest.receiptPictures.filter((receipt) => !receipt.dateDeleted).map(receiptTransformer),
     reimbursementProducts: reimbursementRequest.reimbursementProducts.map(reimbursementProductTransformer),
@@ -79,7 +80,6 @@ export const reimbursementProductTransformer = (
   return {
     reimbursementProductId: reimbursementProduct.reimbursementProductId,
     name: reimbursementProduct.name,
-    dateDeleted: reimbursementProduct.dateDeleted ?? undefined,
     cost: reimbursementProduct.cost,
     reimbursementProductReason: reimbursementProductReasonTransformer(reimbursementProduct.reimbursementProductReason)
   };
@@ -90,23 +90,38 @@ const reimbursementProductReasonTransformer = (
 ): ReimbursementProductReason => {
   return reason.wbsElement
     ? { wbsName: reason.wbsElement?.name, wbsNum: wbsNumOf(reason.wbsElement) }
-    : (otherProductReasonTransformer(reason.otherReason!) as OtherProductReason);
+    : {
+        otherProductReasonId: reason.otherReason!.otherReimbursementProductReasonId,
+        name: reason.otherReason!.name,
+        userCreated: userTransformer(reason.otherReason!.userCreated),
+        budget: reason.otherReason!.budget,
+        indexCode: indexCodeTransformer(reason.otherReason!.indexCode),
+        accountCode: accountCodeTransformer(reason.otherReason!.accountCode)
+      };
 };
 
 export const accountCodeTransformer = (accountCode: Prisma.Account_CodeGetPayload<AccountCodeQueryArgs>): AccountCode => {
   return {
-    ...accountCode,
-    allowedRefundSources: accountCode.allowedRefundSources.map(indexCodeTransformer) as IndexCode[],
-    dateDeleted: accountCode.dateDeleted ?? undefined
+    accountCodeId: accountCode.accountCodeId,
+    name: accountCode.name,
+    code: accountCode.code,
+    allowed: accountCode.allowed,
+    dateDeleted: accountCode.dateDeleted,
+    allowedRefundSources: accountCode.allowedRefundSources.map(indexCodeTransformer)
   };
 };
 
-export const vendorTransformer = (vendor: Prisma.VendorGetPayload<null>): Vendor => {
+export const vendorTransformer = (vendor: Prisma.VendorGetPayload<VendorQueryArgs>): Vendor => {
   return {
     vendorId: vendor.vendorId,
     dateCreated: vendor.dateCreated,
-    dateDeleted: vendor.dateDeleted ?? undefined,
-    name: vendor.name
+    name: vendor.name,
+    username: vendor.username,
+    password: vendor.password, // to be decrypted? either decrypted here or in the hook itself
+    discountCode: vendor.discountCode ?? undefined,
+    twoFactorContact: vendor.twoFactorContact ? userTransformer(vendor.twoFactorContact) : undefined,
+    notes: vendor.notes ?? undefined,
+    addedBy: vendor.addedBy ? userTransformer(vendor.addedBy) : undefined
   };
 };
 
@@ -121,6 +136,24 @@ export const reimbursementTransformer = (
   };
 };
 
-function indexCodeTransformer(arg0: { indexCodeId: string; name: string; dateCreated: Date; dateDeleted: Date | null; userCreatedId: string; userDeletedId: string | null; }): IndexCode {
-  throw new Error('Function not implemented.');
-}
+export const indexCodeTransformer = (indexCode: Prisma.Index_CodeGetPayload<IndexCodeQueryArgs>): IndexCode => {
+  return {
+    indexCodeId: indexCode.indexCodeId,
+    name: indexCode.name,
+    userCreated: userTransformer(indexCode.userCreated),
+    dateCreated: indexCode.dateCreated
+  };
+};
+
+export const otherProductReasonTransformer = (
+  otherProductReason: Prisma.Reimbursement_Product_Other_ReasonGetPayload<ReimbursementProductOtherReasonQueryArgs>
+): OtherProductReason => {
+  return {
+    otherProductReasonId: otherProductReason.otherReimbursementProductReasonId,
+    name: otherProductReason.name,
+    userCreated: userTransformer(otherProductReason.userCreated),
+    budget: otherProductReason.budget,
+    indexCode: indexCodeTransformer(otherProductReason.indexCode),
+    accountCode: accountCodeTransformer(otherProductReason.accountCode)
+  };
+};

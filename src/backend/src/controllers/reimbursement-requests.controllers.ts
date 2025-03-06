@@ -200,18 +200,18 @@ export default class ReimbursementRequestsController {
 
   static async createVendor(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, username, password, discountCode, twoFactorContact, notes, addedByUserId } = req.body;
+      const { name, username, password, taxExempt, discountCode, twoFactorContact, notes, addedByUserId } = req.body;
       const createdVendor = await ReimbursementRequestService.createVendor(
         req.currentUser,
         name,
         req.organization,
         username,
         password,
+        taxExempt,
         discountCode,
         twoFactorContact,
         notes,
-        addedByUserId,
-        true
+        addedByUserId
       );
       res.status(200).json(createdVendor);
     } catch (error: unknown) {

@@ -4,10 +4,8 @@ import { User } from './user-types';
 export interface IndexCode {
   indexCodeId: string;
   name: string;
-  userCreated: string;
-  //reimbursementRequests: ReimbursementRequest[];
-  //accountCodes: AccountCode[];
-  //otherReasons: OtherProductReason[];
+  userCreated: User;
+  dateCreated: Date;
 }
 
 export interface ReimbursementRequestRow {
@@ -44,7 +42,6 @@ export interface Receipt {
   receiptId: string;
   googleFileId: string;
   name: string;
-  dateDeleted?: Date;
   deletedBy?: User;
 }
 
@@ -53,7 +50,6 @@ export interface ReimbursementRequest {
   identifier: number;
   saboId?: number;
   dateCreated: Date;
-  dateDeleted?: Date;
   dateOfExpense?: Date;
   reimbursementStatuses: ReimbursementStatus[];
   recipient: User;
@@ -71,7 +67,6 @@ export interface OtherProductReason {
   name: string;
   userCreated: User;
   budget: number;
-  reimbursementProductReasons: ReimbursementProduct[];
   indexCode: IndexCode;
   accountCode: AccountCode;
 }
@@ -82,7 +77,6 @@ export type ReimbursementProductReason = WBSElementData | OtherProductReason;
 export interface ReimbursementProduct {
   reimbursementProductId: string;
   name: string;
-  dateDeleted?: Date;
   cost: number;
   reimbursementProductReason: ReimbursementProductReason;
 }
@@ -90,11 +84,17 @@ export interface ReimbursementProduct {
 export interface Vendor {
   vendorId: string;
   dateCreated: Date;
-  dateDeleted?: Date;
   name: string;
+  username: string;
+  password: string;
+  discountCode?: string;
+  twoFactorContact?: User;
+  notes?: string;
+  addedBy?: User;
 }
 
 export interface AccountCode {
+  dateDeleted: any;
   accountCodeId: string;
   name: string;
   code: number;

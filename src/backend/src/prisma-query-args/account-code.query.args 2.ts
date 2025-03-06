@@ -1,6 +1,5 @@
 import { Prisma } from '@prisma/client';
 import { getUserQueryArgs } from './user.query-args';
-import { getIndexCodeQueryArgs } from './index-code.query-args';
 
 export type AccountCodeQueryArgs = ReturnType<typeof getAccountCodeQueryArgs>;
 
@@ -8,7 +7,6 @@ export const getAccountCodeQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Account_CodeDefaultArgs>()({
     include: {
       allowedRefundSources: {
-        ...getIndexCodeQueryArgs(organizationId),
         include: {
           userCreated: {
             ...getUserQueryArgs(organizationId),

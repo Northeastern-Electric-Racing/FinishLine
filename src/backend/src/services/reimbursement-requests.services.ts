@@ -4,7 +4,7 @@
  */
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Index_Code, Reimbursement_Request, Reimbursement_Status_Type, User, Organization } from '@prisma/client';
+import { Reimbursement_Request, Reimbursement_Status_Type, User, Organization } from '@prisma/client';
 import {
   IndexCode,
   Reimbursement,
@@ -63,6 +63,8 @@ import { userHasPermission } from '../utils/users.utils';
 import { getReimbursementRequestQueryArgs } from '../prisma-query-args/reimbursement-requests.query-args';
 import { getReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
 import { getReimbursementStatusQueryArgs } from '../prisma-query-args/reimbursement-statuses.query-args';
+import { getVendorQueryArgs } from '../prisma-query-args/vendor.query-args';
+import { getAccountCodeQueryArgs } from '../prisma-query-args/account-code.query.args';
 
 export default class ReimbursementRequestService {
   /**
@@ -118,7 +120,8 @@ export default class ReimbursementRequestService {
    */
   static async getAllVendors(organization: Organization): Promise<Vendor[]> {
     const vendors = await prisma.vendor.findMany({
-      where: { dateDeleted: null, organizationId: organization.organizationId }
+      where: { dateDeleted: null, organizationId: organization.organizationId },
+      ...getVendorQueryArgs(organization.organizationId)
     });
     return vendors.map(vendorTransformer);
   }
@@ -150,12 +153,13 @@ export default class ReimbursementRequestService {
       throw new AccessDeniedGuestException('Guests cannot create a reimbursement request');
 
     if (!recipient.userSecureSettings) throw new HttpException(500, 'User does not have their finance settings set up');
+    if (!account || !account.indexCodeId) throw new HttpException(400, 'Invalid index code.');
 
     const vendor = await ReimbursementRequestService.getSingleVendor(vendorId, organization);
     const accountCode = await ReimbursementRequestService.getSingleAccountCode(acccountCodeId, organization);
 
     if (!accountCode.allowed) throw new HttpException(400, `The Account Code ${accountCode.name} is not allowed!`);
-    if (!accountCode.allowedRefundSources.includes(account)) {
+    if (!accountCode.allowedRefundSources.some((refundSource) => refundSource.indexCodeId === account.indexCodeId)) {
       throw new HttpException(400, 'The submitted refund source is not allowed to be used with the submitted Account Code');
     }
 
@@ -317,7 +321,7 @@ export default class ReimbursementRequestService {
       where: { reimbursementRequestId: oldReimbursementRequest.reimbursementRequestId },
       data: {
         dateOfExpense: dateOfExpense ?? null,
-        account: { connect: { indexCodeId: account.indexCodeId } },
+        indexCodeId: account.indexCodeId,
         totalCost,
         accountCodeId: accountCode.accountCodeId,
         vendorId: vendor.vendorId
@@ -553,22 +557,29 @@ export default class ReimbursementRequestService {
 
   /**
    * Function to create a vendor in our database
-   * @param submitter the user who is creating the vendor
-   * @param name the name of the vendor
-   * @param organizationId the organization the user is currently in
-   * @returns the created vendor
+   * @param submitter user creating the vendor
+   * @param name vendor name
+   * @param organization current organziation
+   * @param username vendor username
+   * @param password vendor password *to be encrypted*
+   * @param taxExempt whether the vendor is tax exempt
+   * @param notes vendor notes
+   * @param addedByUserId userId that added the vendor
+   * @param twoFactorContactId two-factor contact id
+   * @param discountCode vendor discount code
+   * @returns
    */
   static async createVendor(
     submitter: User,
     name: string,
     organization: Organization,
     username: string,
-    passwordHash: string,
-    discountCode: string,
-    twoFactorContactId: string,
-    notes: string,
-    addedByUserId: string,
-    taxExempt: boolean
+    password: string,
+    taxExempt: boolean,
+    discountCode?: string,
+    twoFactorContactId?: string,
+    notes?: string,
+    addedByUserId?: string
   ) {
     const isAuthorized =
       (await userHasPermission(submitter.userId, organization.organizationId, isAdmin)) ||
@@ -592,12 +603,12 @@ export default class ReimbursementRequestService {
         name,
         organizationId: organization.organizationId,
         username,
-        passwordHash,
+        password, // to be encrypted,
+        taxExempt,
         discountCode,
         twoFactorContactId,
         notes,
-        addedByUserId,
-        taxExempt
+        addedByUserId
       }
     });
 
@@ -610,7 +621,7 @@ export default class ReimbursementRequestService {
    * @param name The name of the Account Code
    * @param code the Account Code's SABO code
    * @param allowed whether or not this Account Code is allowed
-   * @param allowedRefundSources an array of Club_Accounts representing allowed refund sources
+   * @param allowedRefundSources an array of IndexCode representing allowed refund sources
    * @param organizationId the organization the user is currently in
    * @returns the created Account Code
    */
@@ -642,8 +653,15 @@ export default class ReimbursementRequestService {
         name,
         allowed,
         code,
-        allowedRefundSources: { connect: allowedRefundSources.map((indexCode) => ({ indexCodeId: indexCode.indexCodeId })) },
+        allowedRefundSources: {
+          connect: allowedRefundSources.map((indexCode) => ({
+            indexCodeId: indexCode.indexCodeId
+          }))
+        },
         organizationId: organization.organizationId
+      },
+      include: {
+        allowedRefundSources: true
       }
     });
 
@@ -667,7 +685,7 @@ export default class ReimbursementRequestService {
     name: string,
     allowed: boolean,
     submitter: User,
-    allowedRefundSources: Index_Code[],
+    allowedRefundSources: IndexCode[],
     organization: Organization
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
@@ -681,7 +699,11 @@ export default class ReimbursementRequestService {
         name,
         code,
         allowed,
-        allowedRefundSources: { connect: allowedRefundSources.map((indexCode) => ({ indexCodeId: indexCode.indexCodeId })) }
+        allowedRefundSources: {
+          connect: allowedRefundSources.map((indexCode) => ({
+            indexCodeId: indexCode.indexCodeId
+          }))
+        }
       }
     });
 
@@ -706,8 +728,9 @@ export default class ReimbursementRequestService {
     }
 
     const deletedAccountCode = await prisma.account_Code.update({
-      where: { accountCodeId: accountCode.accountCodeId},
-      data: { dateDeleted: new Date() }
+      where: { accountCodeId: accountCode.accountCodeId },
+      data: { dateDeleted: new Date() },
+      ...getAccountCodeQueryArgs(organization.organizationId)
     });
 
     return accountCodeTransformer(deletedAccountCode);
@@ -777,7 +800,8 @@ export default class ReimbursementRequestService {
       where: {
         dateDeleted: null,
         organizationId: organization.organizationId
-      }
+      },
+      ...getAccountCodeQueryArgs(organization.organizationId)
     });
 
     return accountCodes.map(accountCodeTransformer);
@@ -1123,7 +1147,8 @@ export default class ReimbursementRequestService {
 
     const vendor = await prisma.vendor.update({
       where: { vendorId },
-      data: { name }
+      data: { name },
+      ...getVendorQueryArgs(organization.organizationId)
     });
 
     return vendorTransformer(vendor);
@@ -1144,7 +1169,8 @@ export default class ReimbursementRequestService {
 
     const deletedVendor = await prisma.vendor.update({
       where: { vendorId: vendor.vendorId },
-      data: { dateDeleted: new Date() }
+      data: { dateDeleted: new Date() },
+      ...getVendorQueryArgs(organization.organizationId)
     });
 
     return vendorTransformer(deletedVendor);
@@ -1158,7 +1184,8 @@ export default class ReimbursementRequestService {
    */
   static async getSingleVendor(vendorId: string, organization: Organization): Promise<Vendor> {
     const vendor = await prisma.vendor.findUnique({
-      where: { vendorId }
+      where: { vendorId },
+      ...getVendorQueryArgs(organization.organizationId)
     });
 
     if (!vendor) throw new NotFoundException('Vendor', vendorId);
@@ -1177,7 +1204,8 @@ export default class ReimbursementRequestService {
    */
   static async getSingleAccountCode(accountCodeId: string, organization: Organization): Promise<AccountCode> {
     const accountCode = await prisma.account_Code.findUnique({
-      where: { accountCodeId }
+      where: { accountCodeId },
+      ...getAccountCodeQueryArgs(organization.organizationId)
     });
 
     if (!accountCode) throw new NotFoundException('Account Code', accountCodeId);

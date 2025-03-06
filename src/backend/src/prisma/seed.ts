@@ -46,6 +46,7 @@ import OrganizationsService from '../services/organizations.services';
 import { seedGraph } from './seed-data/statistics.seed';
 import AnnouncementService from '../services/announcement.service';
 import IndexCodeService from '../services/index-code.services';
+import FinanceServices from '../services/finance.services';
 
 const prisma = new PrismaClient();
 
@@ -1672,22 +1673,17 @@ const performSeed: () => Promise<void> = async () => {
    * Reimbursements
    */
 
-  const indexCode = await IndexCodeService.createIndexCode(
-    'Cash',
-    thomasEmrax
-  )
-
   const vendor = await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Tesla',
     ner,
     'nershipping@gmail.com',
     'racecar228!',
+    true,
     'SAVE50!',
     thomasEmrax.userId,
     'Tax exemption status?',
-    thomasEmrax.userId,
-    true
+    thomasEmrax.userId
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1695,11 +1691,11 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'amazon@gmail.com',
     'racecare228!',
+    true,
     'SAVE20!',
     thomasEmrax.userId,
     'They want updates on work',
-    thomasEmrax.userId,
-    true
+    thomasEmrax.userId
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1707,12 +1703,14 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'google@gmail.com',
     'racecar228!',
+    false,
     'SAVE50!',
     thomasEmrax.userId,
     'Tax exemption ID NUMBER',
-    thomasEmrax.userId,
-    false
+    thomasEmrax.userId
   );
+
+  const indexCode = await IndexCodeService.createIndexCode('Cash', thomasEmrax, ner);
 
   const accountCode = await ReimbursementRequestService.createAccountCode(
     thomasEmrax,
@@ -2014,6 +2012,21 @@ const performSeed: () => Promise<void> = async () => {
     '3',
     'powertrain',
     ner.organizationId
+  );
+
+  await FinanceServices.createSponsor(
+    thomasEmrax,
+    'Google',
+    true,
+    5000,
+    new Date(12, 1, 24),
+    [2024, 2025],
+    'gold',
+    true,
+    'Bill Gates',
+    [],
+    ner,
+    'googlecode'
   );
 };
 
