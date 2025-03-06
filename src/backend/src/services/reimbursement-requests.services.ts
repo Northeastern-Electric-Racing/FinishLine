@@ -4,9 +4,8 @@
  */
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Club_Accounts, Reimbursement_Request, Reimbursement_Status_Type, User, Organization } from '@prisma/client';
+import { Reimbursement_Request, Reimbursement_Status_Type, User, Organization } from '@prisma/client';
 import {
-  ClubAccount,
   Reimbursement,
   ReimbursementReceiptCreateArgs,
   ReimbursementRequest,
@@ -19,7 +18,8 @@ import {
   OtherReimbursementProductCreateArgs,
   AccountCode,
   ReimbursementStatus,
-  startOfDay
+  startOfDay,
+  IndexCode
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -64,6 +64,8 @@ import { getReimbursementRequestQueryArgs } from '../prisma-query-args/reimburse
 import { getReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
 import { getReimbursementStatusQueryArgs } from '../prisma-query-args/reimbursement-statuses.query-args';
 import { getVendorQueryArgs } from '../prisma-query-args/vendor.query-args';
+import { getAccountCodeQueryArgs } from '../prisma-query-args/account-code.query-args';
+import IndexCodeService from './index-code.services';
 
 export default class ReimbursementRequestService {
   /**
@@ -130,7 +132,7 @@ export default class ReimbursementRequestService {
    * @param recipient the user who is creating the reimbursement request
    * @param dateOfExpense the date that the expense occured
    * @param vendorId the id of the vendor that the expense was made for
-   * @param account the account to be reimbursed from
+   * @param indexCodeId the id of the index code to be reimbursed from
    * @param reimbursementProducts the products that the user bought
    * @param accountCodeId the id of the account code the user made
    * @param totalCost the total cost of the reimbursement with tax
@@ -140,7 +142,7 @@ export default class ReimbursementRequestService {
   static async createReimbursementRequest(
     recipient: UserWithSecureSettings,
     vendorId: string,
-    account: ClubAccount,
+    indexCodeId: string,
     otherReimbursementProducts: OtherReimbursementProductCreateArgs[],
     wbsReimbursementProducts: WbsReimbursementProductCreateArgs[],
     acccountCodeId: string,
@@ -154,10 +156,11 @@ export default class ReimbursementRequestService {
     if (!recipient.userSecureSettings) throw new HttpException(500, 'User does not have their finance settings set up');
 
     const vendor = await ReimbursementRequestService.getSingleVendor(vendorId, organization);
+    const account = await IndexCodeService.getSingleIndexCode(indexCodeId, organization);
     const accountCode = await ReimbursementRequestService.getSingleAccountCode(acccountCodeId, organization);
 
     if (!accountCode.allowed) throw new HttpException(400, `The Account Code ${accountCode.name} is not allowed!`);
-    if (!accountCode.allowedRefundSources.includes(account)) {
+    if (!accountCode.allowedRefundSources.some((refundSource) => refundSource.indexCodeId === indexCodeId)) {
       throw new HttpException(400, 'The submitted refund source is not allowed to be used with the submitted Account Code');
     }
 
@@ -176,7 +179,7 @@ export default class ReimbursementRequestService {
         recipient: { connect: { userId: recipient.userId } },
         dateOfExpense: dateOfExpense ?? null,
         vendor: { connect: { vendorId: vendor.vendorId } },
-        account,
+        account: { connect: { indexCodeId: account.indexCodeId } },
         accountCode: { connect: { accountCodeId: accountCode.accountCodeId } },
         totalCost,
         reimbursementStatuses: {
@@ -272,7 +275,7 @@ export default class ReimbursementRequestService {
   static async editReimbursementRequest(
     requestId: string,
     vendorId: string,
-    account: ClubAccount,
+    account: IndexCode,
     accountCodeId: string,
     totalCost: number,
     otherReimbursementProducts: OtherReimbursementProductCreateArgs[],
@@ -319,7 +322,7 @@ export default class ReimbursementRequestService {
       where: { reimbursementRequestId: oldReimbursementRequest.reimbursementRequestId },
       data: {
         dateOfExpense: dateOfExpense ?? null,
-        account,
+        indexCodeId: account.indexCodeId,
         totalCost,
         accountCodeId: accountCode.accountCodeId,
         vendorId: vendor.vendorId
@@ -572,6 +575,7 @@ export default class ReimbursementRequestService {
     organization: Organization,
     username: string,
     password: string,
+    taxExempt: boolean,
     discountCode?: string,
     twoFactorContactId?: string,
     notes?: string,
@@ -600,6 +604,7 @@ export default class ReimbursementRequestService {
         organizationId: organization.organizationId,
         username,
         password, // to be encrypted
+        taxExempt,
         discountCode,
         twoFactorContactId,
         notes,
@@ -625,7 +630,7 @@ export default class ReimbursementRequestService {
     name: string,
     code: number,
     allowed: boolean,
-    allowedRefundSources: Club_Accounts[],
+    allowedRefundSources: IndexCode[],
     organization: Organization
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
@@ -648,7 +653,7 @@ export default class ReimbursementRequestService {
         name,
         allowed,
         code,
-        allowedRefundSources,
+        allowedRefundSources: { connect: allowedRefundSources.map((indexCode) => ({ indexCodeId: indexCode.indexCodeId })) },
         organizationId: organization.organizationId
       }
     });
@@ -673,7 +678,7 @@ export default class ReimbursementRequestService {
     name: string,
     allowed: boolean,
     submitter: User,
-    allowedRefundSources: Club_Accounts[],
+    allowedRefundSources: IndexCode[],
     organization: Organization
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
@@ -687,7 +692,7 @@ export default class ReimbursementRequestService {
         name,
         code,
         allowed,
-        allowedRefundSources
+        allowedRefundSources: { connect: allowedRefundSources.map((indexCode) => ({ indexCodeId: indexCode.indexCodeId })) }
       }
     });
 
@@ -709,7 +714,8 @@ export default class ReimbursementRequestService {
 
     const deletedAccountCode = await prisma.account_Code.update({
       where: { accountCodeId: accountCode.accountCodeId },
-      data: { dateDeleted: new Date() }
+      data: { dateDeleted: new Date() },
+      ...getAccountCodeQueryArgs(organization.organizationId)
     });
 
     return accountCodeTransformer(deletedAccountCode);
@@ -779,7 +785,8 @@ export default class ReimbursementRequestService {
       where: {
         dateDeleted: null,
         organizationId: organization.organizationId
-      }
+      },
+      ...getAccountCodeQueryArgs(organization.organizationId)
     });
 
     return accountCodes.map(accountCodeTransformer);
@@ -1182,7 +1189,8 @@ export default class ReimbursementRequestService {
    */
   static async getSingleAccountCode(accountCodeId: string, organization: Organization): Promise<AccountCode> {
     const accountCode = await prisma.account_Code.findUnique({
-      where: { accountCodeId }
+      where: { accountCodeId },
+      ...getAccountCodeQueryArgs(organization.organizationId)
     });
 
     if (!accountCode) throw new NotFoundException('Account Code', accountCodeId);

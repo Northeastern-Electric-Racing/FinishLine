@@ -32,10 +32,11 @@ import {
   editRefund,
   leadershipApproveReimbursementRequest,
   requestReimbursementRequestChanges,
-  markPendingFinance
+  markPendingFinance,
+  getAllIndexCodes
 } from '../apis/finance.api';
 import {
-  ClubAccount,
+  IndexCode,
   AccountCode,
   Reimbursement,
   ReimbursementReceiptCreateArgs,
@@ -55,7 +56,7 @@ export interface CreateReimbursementRequestPayload {
   otherReimbursementProducts: OtherReimbursementProductCreateArgs[];
   wbsReimbursementProducts: WbsReimbursementProductCreateArgs[];
   totalCost: number;
-  account: ClubAccount;
+  account: IndexCode;
 }
 
 export interface EditReimbursementRequestPayload extends CreateReimbursementRequestPayload {
@@ -73,7 +74,7 @@ export interface AccountCodePayload {
   code: number;
   name: string;
   allowed: boolean;
-  allowedRefundSources: ClubAccount[];
+  allowedRefundSources: IndexCode[];
 }
 
 export interface EditVendorPayload {
@@ -87,6 +88,10 @@ export interface RefundPayload {
 
 export interface MarkDeliveredRequestPayload {
   dateDelivered: Date;
+}
+
+export interface IndexCodes {
+  name: string;
 }
 
 /**
@@ -587,4 +592,16 @@ export const useRequestReimbursementRequestChanges = (id: string) => {
       }
     }
   );
+};
+
+/**
+ * Custom React Hook to get all IndexCodes
+ *
+ * @returns all the IndexCodes
+ */
+export const useGetAllIndexCodes = () => {
+  return useQuery<IndexCode[], Error>(['index-codes'], async () => {
+    const { data } = await getAllIndexCodes();
+    return data;
+  });
 };

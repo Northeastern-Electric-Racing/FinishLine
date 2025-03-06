@@ -7,7 +7,6 @@
 
 import {
   CR_Type,
-  Club_Accounts,
   Graph_Display_Type,
   Graph_Type,
   Measure,
@@ -22,7 +21,6 @@ import { dbSeedAllTeams } from './seed-data/teams.seed';
 import ChangeRequestsService from '../services/change-requests.services';
 import TeamsService from '../services/teams.services';
 import {
-  ClubAccount,
   DesignReviewStatus,
   MaterialStatus,
   RoleEnum,
@@ -47,6 +45,7 @@ import RecruitmentServices from '../services/recruitment.services';
 import OrganizationsService from '../services/organizations.services';
 import { seedGraph } from './seed-data/statistics.seed';
 import AnnouncementService from '../services/announcement.service';
+import IndexCodeService from '../services/index-code.services';
 
 const prisma = new PrismaClient();
 
@@ -1679,6 +1678,7 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'nershipping@gmail.com',
     'racecar228!',
+    false,
     'SAVE50!',
     thomasEmrax.userId,
     'Tax exemption status?',
@@ -1690,6 +1690,7 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'amazon@gmail.com',
     'racecare228!',
+    true,
     'SAVE20!',
     thomasEmrax.userId,
     'They want updates on work',
@@ -1701,25 +1702,29 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'google@gmail.com',
     'racecar228!',
+    false,
     'SAVE50!',
     thomasEmrax.userId,
     'Tax exemption ID NUMBER',
     thomasEmrax.userId
   );
 
+  const indexCodeCash = await IndexCodeService.createIndexCode('Cash', thomasEmrax, ner);
+  const indexCodeBudget = await IndexCodeService.createIndexCode('Budget', thomasEmrax, ner);
+
   const accountCode = await ReimbursementRequestService.createAccountCode(
     thomasEmrax,
     'Equipment',
     123,
     true,
-    [Club_Accounts.CASH, Club_Accounts.BUDGET],
+    [indexCodeCash, indexCodeBudget],
     ner
   );
-
+/*
   const reimbursement1 = await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
     vendor.vendorId,
-    ClubAccount.CASH,
+    indexCodeCash.indexCodeId,
     [],
     [
       {
@@ -1740,7 +1745,7 @@ const performSeed: () => Promise<void> = async () => {
   const reimbursement2 = await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
     vendor.vendorId,
-    ClubAccount.BUDGET,
+    indexCodeBudget.indexCodeId,
     [],
     [
       {
@@ -1758,6 +1763,7 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     new Date()
   );
+  */
 
   /**
    * Bill of Materials

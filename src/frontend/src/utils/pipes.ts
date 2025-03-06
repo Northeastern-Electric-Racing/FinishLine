@@ -10,7 +10,7 @@ import {
   WbsElement,
   isProject,
   WorkPackage,
-  ClubAccount,
+  IndexCode,
   AccountCode,
   DesignReview
 } from 'shared';
@@ -152,16 +152,11 @@ export const projectWbsNamePipe = (wbsElement: WbsElement) => {
   return `${projectWbsPipe(wbsElement.wbsNum)} - ${projectNamePipe(wbsElement)}`;
 };
 /** Displays a refund source as a string "Code - Name" */
-export const codeAndRefundSourceName = (refundSource: ClubAccount) => {
+export const codeAndRefundSourceName = (refundSource: IndexCode) => {
   const CASH_ACCOUNT_CODE = 830667;
   const BUDGET_ACCOUNT_CODE = 800462;
 
-  switch (refundSource) {
-    case ClubAccount.CASH:
-      return `${CASH_ACCOUNT_CODE} - ${refundSource}`;
-    case ClubAccount.BUDGET:
-      return `${BUDGET_ACCOUNT_CODE} - ${refundSource}`;
-  }
+  return `${refundSource.indexCodeId} - ${refundSource}`;
 };
 
 // Takes in an enum string to capitalize first letter of each word and gets rid of underscore
