@@ -1,10 +1,10 @@
 import { PartReviewCommonMistake, Prisma } from '@prisma/client';
 import {
   PartReviewCommonMistake as SharedCommonMistake,
-  Part as SharedPart,
+  Part,
   Review_Status,
-  PartSubmission as sharedSubmission,
-  PartReviewRequest as sharedReviewRequest,
+  PartSubmission,
+  PartReviewRequest,
   PartReview,
   PartPreview
 } from 'shared';
@@ -20,10 +20,10 @@ export const partsReviewCommonMistakeTransformer = (commonMistake: PartReviewCom
   return commonMistake;
 };
 
-export const partTransformer = (part: Prisma.PartGetPayload<PartQueryArgs>): SharedPart => {
+export const partTransformer = (part: Prisma.PartGetPayload<PartQueryArgs>): Part => {
   return {
     ...partPreviewTransformer(part),
-    submissions: part.submissions.map(submissionTransformer)
+    submissions: part.submissions.map(partSubmissionTransformer)
   };
 };
 
@@ -52,9 +52,9 @@ export const partPreviewTransformer = (part: Prisma.PartGetPayload<PartQueryArgs
   };
 };
 
-export const submissionTransformer = (
+export const partSubmissionTransformer = (
   submission: Prisma.PartSubmissionGetPayload<PartSubmissionQueryArgs>
-): sharedSubmission => {
+): PartSubmission => {
   return {
     partSubmissionId: submission.partSubmissionId,
     fileIds: submission.fileIds,
@@ -69,7 +69,7 @@ export const submissionTransformer = (
 
 export const partReviewRequestTransformer = (
   reviewRequest: Prisma.PartReviewRequestGetPayload<PartReviewRequestQueryArgs>
-): sharedReviewRequest => {
+): PartReviewRequest => {
   return {
     partReviewRequestId: reviewRequest.partReviewRequestId,
     submissionId: reviewRequest.submissionId,
