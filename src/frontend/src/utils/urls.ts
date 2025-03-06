@@ -245,6 +245,12 @@ const removeGraphFromGraphCollection = (graphCollectionId: string, graphId: stri
   `${graphCollectionById(graphCollectionId)}/remove/${graphId}`;
 const deleteGraphCollection = (id: string) => `${graphCollectionById(id)}/delete`;
 
+/************** Part Tag Endpoints ***************/
+const partTags = () => `${API_URL}/tags`;
+const partTagCreate = () => `${partTags()}/create`;
+const partTagDelete = (id: string) => `${partTags()}/faq/${id}/delete`;
+
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -449,5 +455,9 @@ export const apiUrls = {
   editChecklist,
   checklistDelete,
 
-  version
+  version,
+
+  partTags,
+  partTagCreate,
+  partTagDelete
 };

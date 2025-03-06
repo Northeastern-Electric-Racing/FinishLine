@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { createPartTag, getAllPartTags } from '../apis/part-tags.api';
+import { PartTag } from 'shared';
 
-export interface CreatePartTagPayload {
+export interface PartTagPayload {
   name: string;
 }
 
@@ -14,7 +15,7 @@ export const useGetAllPartTags = () => {
 
 export const useCreatePartTags = () => {
   const queryClient = useQueryClient();
-  return useMutation<PartTag, Error, CreatePartTagPayload>(
+  return useMutation<PartTag, Error, PartTagPayload>(
     ['partTags', 'create'],
     async (payload) => {
       const { data } = await createPartTag(payload);

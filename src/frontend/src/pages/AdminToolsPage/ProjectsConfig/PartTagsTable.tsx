@@ -4,10 +4,16 @@ import AdminToolTable from '../AdminToolTable';
 import { useState } from 'react';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { datePipe } from '../../../utils/pipes';
+import { useGetAllPartTags } from '../../../hooks/part-tag.hooks';
+import CreatePartTagModal from './CreatePartTagModal';
 
 const PartTagsTable: React.FC = () => {
-  const { data: partTags, isLoading: partTagsIsLoading, isError: partTagsIsError, error: partTagsError } = useGetAllPartTags();
+  const {
+    data: partTags,
+    isLoading: partTagsIsLoading,
+    isError: partTagsIsError,
+    error: partTagsError
+  } = useGetAllPartTags();
   const [openModal, setOpenModal] = useState(false);
 
   if (!partTags || partTagsIsLoading) {
@@ -19,10 +25,10 @@ const PartTagsTable: React.FC = () => {
 
   const carsTableRows = partTags.map((partTag) => (
     <TableRow>
-      <TableCell sx={{ border: '2px solid black' }}>{partTag.wbsNum.carNumber}</TableCell>
+      <TableCell sx={{ border: '2px solid black' }}>{partTag.partTagId}</TableCell>
       <TableCell sx={{ border: '2px solid black' }}>{partTag.name}</TableCell>
       <TableCell align="left" sx={{ border: '2px solid black' }}>
-        {datePipe(partTag.dateCreated)}
+        {partTag.colorHexCode}
       </TableCell>
     </TableRow>
   ));
