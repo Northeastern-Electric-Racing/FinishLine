@@ -1,10 +1,35 @@
-import { Box, Typography } from '@mui/material';
+import { Box, TableCell, TableRow, Typography } from '@mui/material';
 import { NERButton } from '../../../components/NERButton';
 import AdminToolTable from '../AdminToolTable';
+import { useState } from 'react';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
+import { datePipe } from '../../../utils/pipes';
 
 const PartTagsTable: React.FC = () => {
+  const { data: partTags, isLoading: partTagsIsLoading, isError: partTagsIsError, error: partTagsError } = useGetAllPartTags();
+  const [openModal, setOpenModal] = useState(false);
+
+  if (!partTags || partTagsIsLoading) {
+    return <LoadingIndicator />;
+  }
+  if (partTagsIsError) {
+    return <ErrorPage message={partTagsError?.message} />;
+  }
+
+  const carsTableRows = partTags.map((partTag) => (
+    <TableRow>
+      <TableCell sx={{ border: '2px solid black' }}>{partTag.wbsNum.carNumber}</TableCell>
+      <TableCell sx={{ border: '2px solid black' }}>{partTag.name}</TableCell>
+      <TableCell align="left" sx={{ border: '2px solid black' }}>
+        {datePipe(partTag.dateCreated)}
+      </TableCell>
+    </TableRow>
+  ));
+
   return (
     <Box>
+      <CreatePartTagModal showModal={openModal} handleClose={() => setOpenModal(false)} />
       <Typography variant="subtitle1">Part Tags</Typography>
       <AdminToolTable columns={[{ name: 'Tag Name' }]} rows={[]} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
