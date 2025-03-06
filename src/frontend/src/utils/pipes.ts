@@ -3,17 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import {
-  WbsNumber,
-  User,
-  wbsPipe,
-  WbsElement,
-  isProject,
-  WorkPackage,
-  IndexCode,
-  AccountCode,
-  DesignReview
-} from 'shared';
+import { WbsNumber, User, wbsPipe, WbsElement, isProject, WorkPackage, IndexCode, AccountCode, DesignReview } from 'shared';
 
 /**
  * Pipes:
@@ -153,10 +143,7 @@ export const projectWbsNamePipe = (wbsElement: WbsElement) => {
 };
 /** Displays a refund source as a string "Code - Name" */
 export const codeAndRefundSourceName = (refundSource: IndexCode) => {
-  const CASH_ACCOUNT_CODE = 830667;
-  const BUDGET_ACCOUNT_CODE = 800462;
-
-  return `${refundSource.indexCodeId} - ${refundSource}`;
+  return `${refundSource.indexCodeId} - ${refundSource.name}`;
 };
 
 // Takes in an enum string to capitalize first letter of each word and gets rid of underscore

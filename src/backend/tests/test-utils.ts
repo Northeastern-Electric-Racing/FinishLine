@@ -410,11 +410,7 @@ export const createTestReimbursementRequest = async () => {
     user.userId
   );
 
-  const indexCode = await IndexCodeService.createIndexCode(
-    'Cash',
-    user,
-    organization
-  )
+  const indexCode = await IndexCodeService.createIndexCode('Cash', user, organization);
 
   const accountCode = await ReimbursementRequestService.createAccountCode(
     user,

@@ -1,9 +1,9 @@
 import prisma from '../prisma/prisma';
 import { getIndexCodeQueryArgs } from '../prisma-query-args/index-code.query-args';
-import { $Enums, Organization, User } from '@prisma/client';
+import { Organization, User } from '@prisma/client';
 import { indexCodeTransformer } from '../transformers/reimbursement-requests.transformer';
 import { IndexCode } from 'shared';
-import { AccessDeniedException, DeletedException, NotFoundException } from '../utils/errors.utils';
+import { DeletedException, NotFoundException } from '../utils/errors.utils';
 
 export default class IndexCodeService {
   /**

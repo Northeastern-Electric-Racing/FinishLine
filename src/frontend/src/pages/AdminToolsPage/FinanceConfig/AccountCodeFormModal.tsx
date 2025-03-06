@@ -52,7 +52,7 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
     handleClose();
   };
 
-  const { data: indexCodes = [], isLoading, error } = useGetAllIndexCodes();
+  const { data: indexCodes = [] } = useGetAllIndexCodes();
 
   return (
     <NERFormModal

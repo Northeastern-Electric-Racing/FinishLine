@@ -390,6 +390,6 @@ export const requestReimbursementRequestChanges = async (id: string) => {
  */
 export const getAllIndexCodes = () => {
   return axios.get(apiUrls.getAllIndexCodes(), {
-    transformResponse: (data) => JSON.parse(data) as IndexCode[],
+    transformResponse: (data) => JSON.parse(data) as IndexCode[]
   });
 };
