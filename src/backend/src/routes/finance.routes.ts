@@ -6,7 +6,7 @@ import FinanceController from '../controllers/finance.controllers';
 const financeRouter = express.Router();
 
 financeRouter.post(
-  '/finance/sponsor/create',
+  '/sponsor/create',
   nonEmptyString(body('name')),
   body('activeStatus').isBoolean(),
   body('sponsorValue').isInt(),
@@ -20,3 +20,7 @@ financeRouter.post(
   validateInputs,
   FinanceController.createSponsor
 );
+
+financeRouter.get('/sponsors', FinanceController.getAllSponsors);
+
+export default financeRouter;

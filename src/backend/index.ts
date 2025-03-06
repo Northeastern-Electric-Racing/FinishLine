@@ -9,6 +9,7 @@ import teamsRouter from './src/routes/teams.routes';
 import workPackagesRouter from './src/routes/work-packages.routes';
 import changeRequestsRouter from './src/routes/change-requests.routes';
 import descriptionBulletsRouter from './src/routes/description-bullets.routes';
+import financeRouter from './src/routes/finance.routes';
 import tasksRouter from './src/routes/tasks.routes';
 import reimbursementRequestsRouter from './src/routes/reimbursement-requests.routes';
 import notificationsRouter from './src/routes/notifications.routes';
@@ -81,6 +82,7 @@ app.use('/pop-ups', popUpsRouter);
 app.use('/announcements', announcementsRouter);
 app.use('/onboarding', onboardingRouter);
 app.use('/statistics', statisticsRouter);
+app.use('/finacne', financeRouter);
 app.use('/', (_req, res) => {
   res.status(200).json('Welcome to FinishLine');
 });
