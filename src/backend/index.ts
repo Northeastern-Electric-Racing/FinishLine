@@ -82,7 +82,7 @@ app.use('/pop-ups', popUpsRouter);
 app.use('/announcements', announcementsRouter);
 app.use('/onboarding', onboardingRouter);
 app.use('/statistics', statisticsRouter);
-app.use('/finacne', financeRouter);
+app.use('/finance', financeRouter);
 app.use('/', (_req, res) => {
   res.status(200).json('Welcome to FinishLine');
 });
