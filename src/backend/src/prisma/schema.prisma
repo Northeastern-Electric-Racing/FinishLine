@@ -250,7 +250,6 @@ model User {
   deletedPartSubmissions          PartSubmission[]          @relation(name: "partsSubmissionDeleter")
   createdPartReviews              PartReview[]              @relation(name: "partsReviewCreator")
   deletedPartReviews              PartReview[]              @relation(name: "partsReviewDeleter")
-  partsToReview                   Part[]                    @relation(name: "partReviewers")
   assignedParts                   Part[]                    @relation(name: "partAssignees")
   createdCommonMistakes           PartReviewCommonMistake[] @relation(name: "commonMistakeCreator")
   deletedCommonMistakes           PartReviewCommonMistake[] @relation(name: "commonMistakeDeleter")
@@ -1140,7 +1139,6 @@ model Part {
   project          Project          @relation(fields: [projectId], references: [projectId])
   projectId        String
   assignees        User[]           @relation("partAssignees")
-  reviewers        User[]           @relation("partReviewers")
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
   dateDeleted      DateTime?
@@ -1188,7 +1186,6 @@ model PartReviewRequest {
   reviewerId          String
   reviewerRequested   User           @relation(fields: [reviewerId], references: [userId], name: "PartReviewRequested")
   createdAt           DateTime       @default(now())
-  reviewBeganAt       DateTime?
 }
 
 model PartReview {
@@ -1198,6 +1195,7 @@ model PartReview {
   submission    PartSubmission      @relation(fields: [submissionId], references: [partSubmissionId])
   submissionId  String
   popUps        Part_Review_Popup[]
+  completedAt   DateTime?
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
   dateDeleted   DateTime?
