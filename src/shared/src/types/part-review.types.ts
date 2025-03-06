@@ -1,5 +1,5 @@
 export interface PartReviewCommonMistake {
-  id: string;
+  partReviewCommonMistakeId: string;
   title: string;
   description: string;
   starred: boolean;

@@ -225,7 +225,7 @@ export default class PartReviewService {
   ): Promise<PartReviewCommonMistake> {
     const commonMistake = await prisma.partReviewCommonMistake.findUnique({
       where: {
-        id: commonMistakeId
+        partReviewCommonMistakeId: commonMistakeId
       }
     });
 
@@ -243,7 +243,7 @@ export default class PartReviewService {
 
     const updatedCommonMistake = await prisma.partReviewCommonMistake.update({
       where: {
-        id: commonMistakeId
+        partReviewCommonMistakeId: commonMistakeId
       },
       data: {
         title,
@@ -269,7 +269,7 @@ export default class PartReviewService {
   ): Promise<PartReviewCommonMistake> {
     const commonMistake = await prisma.partReviewCommonMistake.findUnique({
       where: {
-        id: commonMistakeId
+        partReviewCommonMistakeId: commonMistakeId
       }
     });
 
@@ -283,7 +283,7 @@ export default class PartReviewService {
 
     const deletedCommonMistake = await prisma.partReviewCommonMistake.update({
       where: {
-        id: commonMistakeId
+        partReviewCommonMistakeId: commonMistakeId
       },
       data: {
         userDeleted: {
