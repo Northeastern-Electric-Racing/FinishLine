@@ -747,7 +747,7 @@ export const createTestPartReview = async (
       notes,
       submission: {
         connect: {
-          id: submission.id
+          partSubmissionId: submission.partSubmissionId
         }
       },
       popUps: {
@@ -772,7 +772,7 @@ export const createTestPartSubmission = async (
 ) => {
   const partSubmission = await prisma.partSubmission.create({
     data: {
-      id,
+      partSubmissionId: id,
       fileIds,
       name,
       notes,

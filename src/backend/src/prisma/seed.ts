@@ -2230,7 +2230,7 @@ const performSeed: () => Promise<void> = async () => {
 
   const partSubmissionExample1 = await prisma.partSubmission.create({
     data: {
-      id: 'submissionId001',
+      partSubmissionId: 'submissionId001',
       fileIds: ['file1', 'file2'],
       name: 'tire',
       notes: 'black, round',
@@ -2245,7 +2245,7 @@ const performSeed: () => Promise<void> = async () => {
 
   const partSubmissionExample2 = await prisma.partSubmission.create({
     data: {
-      id: 'submissionId002',
+      partSubmissionId: 'submissionId002',
       fileIds: ['file3'],
       name: 'engine',
       notes: 'this is the car engine',
@@ -2260,7 +2260,7 @@ const performSeed: () => Promise<void> = async () => {
 
   const partSubmissionExample3 = await prisma.partSubmission.create({
     data: {
-      id: 'submissionId003',
+      partSubmissionId: 'submissionId003',
       fileIds: ['file4', 'file5', 'file6'],
       name: 'door',
       notes: 'car door',
@@ -2280,7 +2280,7 @@ const performSeed: () => Promise<void> = async () => {
       notes: 'this part submission sucks!!',
       submission: {
         connect: {
-          id: partSubmissionExample1.id
+          partSubmissionId: partSubmissionExample1.partSubmissionId
         }
       },
       userCreated: {
@@ -2296,7 +2296,7 @@ const performSeed: () => Promise<void> = async () => {
       notes: 'this part submission rocks!!',
       submission: {
         connect: {
-          id: partSubmissionExample2.id
+          partSubmissionId: partSubmissionExample2.partSubmissionId
         }
       },
       userCreated: {
@@ -2312,7 +2312,7 @@ const performSeed: () => Promise<void> = async () => {
       notes: 'this part submission is decent!!',
       submission: {
         connect: {
-          id: partSubmissionExample3.id
+          partSubmissionId: partSubmissionExample3.partSubmissionId
         }
       },
       userCreated: {

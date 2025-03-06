@@ -100,7 +100,7 @@ describe('part review tests', () => {
       );
       const prismaCommonMistake = await prisma.partReviewCommonMistake.findUnique({
         where: {
-          id: commonMistake.id
+          partReviewCommonMistakeId: commonMistake.partReviewCommonMistakeId
         }
       });
 
@@ -114,7 +114,7 @@ describe('part review tests', () => {
       expect(commonMistake?.starred).toBe(false);
 
       const updatedCommonMistake = await PartReviewService.updateCommonMistake(
-        commonMistake.id,
+        commonMistake.partReviewCommonMistakeId,
         'some title2',
         'some description2',
         true,
@@ -124,7 +124,7 @@ describe('part review tests', () => {
 
       const prismaCommonMistake2 = await prisma.partReviewCommonMistake.findUnique({
         where: {
-          id: commonMistake.id
+          partReviewCommonMistakeId: commonMistake.partReviewCommonMistakeId
         }
       });
 
@@ -138,14 +138,14 @@ describe('part review tests', () => {
       expect(updatedCommonMistake?.description).toBe('some description2');
       expect(updatedCommonMistake?.starred).toBe(true);
 
-      const deletedCommonMistake = await PartReviewService.deleteCommonMistake(commonMistake.id, superman, orgId);
+      const deletedCommonMistake = await PartReviewService.deleteCommonMistake(commonMistake.partReviewCommonMistakeId, superman, orgId);
       expect(deletedCommonMistake?.title).toBe('some title2');
       expect(deletedCommonMistake?.description).toBe('some description2');
       expect(deletedCommonMistake?.starred).toBe(true);
 
       const prismaDeletedMistake = await prisma.partReviewCommonMistake.findUnique({
         where: {
-          id: commonMistake.id
+          partReviewCommonMistakeId: commonMistake.partReviewCommonMistakeId
         }
       });
       expect(prismaDeletedMistake?.dateDeleted).toBeTruthy();
@@ -167,7 +167,7 @@ describe('part review tests', () => {
       await expect(
         async () =>
           await PartReviewService.updateCommonMistake(
-            commonMistake.id,
+            commonMistake.partReviewCommonMistakeId,
             'some title2',
             'some description2',
             true,
@@ -177,7 +177,7 @@ describe('part review tests', () => {
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('update common mistake'));
 
       await expect(
-        async () => await PartReviewService.deleteCommonMistake(commonMistake.id, nonAdmin, orgId)
+        async () => await PartReviewService.deleteCommonMistake(commonMistake.partReviewCommonMistakeId, nonAdmin, orgId)
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete common mistake'));
     });
 
@@ -190,19 +190,19 @@ describe('part review tests', () => {
         orgId
       );
 
-      await PartReviewService.deleteCommonMistake(commonMistake.id, superman, orgId);
+      await PartReviewService.deleteCommonMistake(commonMistake.partReviewCommonMistakeId, superman, orgId);
 
       await expect(
         async () =>
           await PartReviewService.updateCommonMistake(
-            commonMistake.id,
+            commonMistake.partReviewCommonMistakeId,
             'some title2',
             'some description2',
             true,
             batman,
             orgId
           )
-      ).rejects.toThrow(new DeletedException('common mistake', commonMistake.id));
+      ).rejects.toThrow(new DeletedException('common mistake', commonMistake.partReviewCommonMistakeId));
     });
   });
 
