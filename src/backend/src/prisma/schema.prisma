@@ -636,7 +636,8 @@ model Vendor {
   organizationId        String
   organization          Organization            @relation(fields: [organizationId], references: [organizationId])
   username              String
-  passwordHash          String
+  // password will be encrypted 
+  password              String
   discountCode          String?
   twoFactorContact      User?                   @relation(fields: [twoFactorContactId], references: [userId], name: "twoFactorContactVendors")
   twoFactorContactId    String?
