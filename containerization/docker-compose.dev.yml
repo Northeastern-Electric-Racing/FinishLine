@@ -21,9 +21,6 @@ services:
       - ../src/backend:/base/src/backend
       - ../src/frontend:/base/src/frontend
       - ../src/shared:/base/src/shared
-      - /base/frontend/node_modules
-      - /base/src/backend/node_modules
-      - /base/src/backend/.prisma
     depends_on:
       - database
     environment:
