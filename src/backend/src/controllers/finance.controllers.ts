@@ -38,10 +38,10 @@ export default class FinanceController {
   }
 
   static async getSponsorTasks(req: Request, res: Response, next: NextFunction) {
-    const { sponsorId } = req.body;
-    const { organizationId } = req.organization;
-
     try {
+      const { sponsorId } = req.body;
+      const { organizationId } = req.organization;
+
       const sponsorTasks = await FinanceServices.getSponsorTasks(sponsorId, organizationId);
       res.status(200).json(sponsorTasks);
     } catch (error: unknown) {

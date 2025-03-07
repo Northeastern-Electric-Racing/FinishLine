@@ -4,7 +4,7 @@ import { userHasPermission } from '../utils/users.utils';
 import { AccessDeniedAdminOnlyException, NotFoundException } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
 import sponsorTaskTransformer from '../transformers/sponsor-task.transformer';
-import { getSponsorTaskQueryArgs } from '../prisma-query-args/sponsor-task.query.args';
+import { getSponsorQueryArgs, getSponsorTaskQueryArgs } from '../prisma-query-args/sponsor.query.args';
 
 export default class FinanceServices {
   /**
@@ -81,7 +81,7 @@ export default class FinanceServices {
   static async getSponsorTasks(sponsorId: string, orgainzationId: string) {
     const sponsor = await prisma.sponsor.findUnique({
       where: { sponsorId: sponsorId },
-      include: { sponsorTasks: getSponsorTaskQueryArgs(orgainzationId) }
+      ...getSponsorQueryArgs(orgainzationId)
     });
 
     if (!sponsor) {

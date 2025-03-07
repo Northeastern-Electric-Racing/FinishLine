@@ -5,20 +5,13 @@ export interface Sponsor {
   name: string;
   activeStatus: boolean;
   vendorContact: string;
-  tier: SponsorTier;
+  tierId: string;
   sponsorValue: number;
   joinDate: Date;
-  discountCode?: string;
   activeYears: number[];
   taxExempt: boolean;
+  discountCode?: string;
   sponsorTasks: SponsorTask[];
-}
-
-export interface SponsorTier {
-  sponsorTierId: string;
-  name: string;
-  colorHexCode: string;
-  sponsors: Sponsor[];
 }
 
 export interface SponsorTask {
@@ -27,5 +20,10 @@ export interface SponsorTask {
   notifyDate?: Date;
   assignee?: User;
   notes: string;
-  sponsor: Sponsor;
+}
+
+export interface SponsorTier {
+  sponsorTierId: string;
+  name: string;
+  colorHexCode: string;
 }
