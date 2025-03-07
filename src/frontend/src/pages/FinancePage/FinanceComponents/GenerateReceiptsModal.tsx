@@ -48,11 +48,7 @@ const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: Gene
       .filter(
         (val: ReimbursementRequest) => new Date(val.dateCreated.toDateString()) <= new Date(data.endDate.toDateString())
       )
-      .filter((val: ReimbursementRequest) => !val.dateDeleted)
-      .filter(
-        (val: ReimbursementRequest) =>
-          !val.dateDeleted && (data.refundSource === 'BOTH' || val.account === data.refundSource)
-      );
+      .filter((val: ReimbursementRequest) => data.refundSource === 'BOTH' || val.account === data.refundSource);
 
     const receipts = filteredRequests?.flatMap((request: ReimbursementRequest) => request.receiptPictures);
 
