@@ -4,7 +4,7 @@ import { userHasPermission } from '../utils/users.utils';
 import { AccessDeniedAdminOnlyException, NotFoundException } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
 import sponsorTaskTransformer from '../transformers/sponsor-task.transformer';
-import { getSponsorQueryArgs, getSponsorTaskQueryArgs } from '../prisma-query-args/sponsor.query.args';
+import { getSponsorQueryArgs } from '../prisma-query-args/sponsor.query.args';
 
 export default class FinanceServices {
   /**
@@ -75,13 +75,14 @@ export default class FinanceServices {
 
   /**
    * Gets the sponsor tasks for the given sponsor Id
-   * @param sponsorId the organization to get the projects for
+   * @param sponsorId the id of the sponsor these tasks are tied to
+   * @param organizationId the organization the user is in
    * @returns all the sponsor tasks for the sponsor
    */
-  static async getSponsorTasks(sponsorId: string, orgainzationId: string) {
+  static async getSponsorTasks(sponsorId: string, organizationId: string) {
     const sponsor = await prisma.sponsor.findUnique({
-      where: { sponsorId: sponsorId },
-      ...getSponsorQueryArgs(orgainzationId)
+      where: { sponsorId },
+      ...getSponsorQueryArgs(organizationId)
     });
 
     if (!sponsor) {
