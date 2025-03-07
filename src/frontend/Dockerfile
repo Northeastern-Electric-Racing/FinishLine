@@ -7,6 +7,7 @@ COPY package.json .yarn tsconfig.build.json ./
 COPY ./src/frontend src/frontend
 COPY ./src/shared src/shared
 
+RUN rm -rf /base/src/frontend/src/tests
 RUN yarn install;
 
 RUN yarn build:shared

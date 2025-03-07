@@ -30,6 +30,7 @@ const ChangeRequestsToReview: React.FC<ChangeRequestsToReviewProps> = () => {
   if (crIsError) return <ErrorPage message={crError.message} />;
 
   if (crIsLoading || !changeRequests) return <LoadingIndicator />;
+
   return (
     <ScrollablePageBlock title={`Change Requests To Review (${changeRequests.length})`} horizontal>
       {changeRequests.length === 0 ? (

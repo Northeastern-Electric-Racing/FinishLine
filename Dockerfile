@@ -5,6 +5,7 @@ COPY package.json tsconfig.build.json ./
 COPY ./src/backend ./src/backend
 COPY ./src/shared ./src/shared
 
+RUN rm -rf /base/src/backend/src/tests
 # Install dependencies
 RUN yarn install --prod;
 
