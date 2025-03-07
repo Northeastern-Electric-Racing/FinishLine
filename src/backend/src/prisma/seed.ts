@@ -47,7 +47,6 @@ import RecruitmentServices from '../services/recruitment.services';
 import OrganizationsService from '../services/organizations.services';
 import { seedGraph } from './seed-data/statistics.seed';
 import AnnouncementService from '../services/announcement.service';
-import FinanceServices from '../services/finance.services';
 
 const prisma = new PrismaClient();
 
@@ -2010,36 +2009,12 @@ const performSeed: () => Promise<void> = async () => {
     ner.organizationId
   );
 
-  // to be replaced with createSponsorTier
-  const sponsorTier = await prisma.sponsor_Tier.create({
-    data: {
-      name: 'Gold Tier',
-      colorHexCode: '#FFFFFF',
-      organizationId: ner.organizationId
-    }
-  });
-
-  await FinanceServices.createSponsor(
-    thomasEmrax,
-    'Google',
-    true,
-    5000,
-    new Date(12, 1, 24),
-    [2024, 2025],
-    sponsorTier.sponsorTierId,
-    true,
-    'Bill Gates',
-    [],
-    ner,
-    'googlecode'
-  );
+  performSeed()
+    .catch((e) => {
+      console.error(e);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
 };
-
-performSeed()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });

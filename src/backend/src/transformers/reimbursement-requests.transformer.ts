@@ -28,13 +28,13 @@ import {
   ReimbursementProductReasonQueryArgs
 } from '../prisma-query-args/reimbursement-products.query-args';
 import { ReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
+import { VendorQueryArgs } from '../prisma-query-args/vendor.query-args';
 
 export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<ReceiptQueryArgs>): Receipt => {
   return {
     receiptId: receipt.receiptId,
     googleFileId: receipt.googleFileId,
     name: receipt.name,
-    dateDeleted: receipt.dateDeleted ?? undefined,
     deletedBy: receipt.deletedBy ? userTransformer(receipt.deletedBy) : undefined
   };
 };
@@ -47,7 +47,6 @@ export const reimbursementRequestTransformer = (
     identifier: reimbursementRequest.identifier,
     saboId: reimbursementRequest.saboId ?? undefined,
     dateCreated: reimbursementRequest.dateCreated,
-    dateDeleted: reimbursementRequest.dateDeleted ?? undefined,
     dateOfExpense: reimbursementRequest.dateOfExpense ?? undefined,
     reimbursementStatuses: reimbursementRequest.reimbursementStatuses.map(reimbursementStatusTransformer),
     recipient: userTransformer(reimbursementRequest.recipient),
@@ -78,7 +77,6 @@ export const reimbursementProductTransformer = (
   return {
     reimbursementProductId: reimbursementProduct.reimbursementProductId,
     name: reimbursementProduct.name,
-    dateDeleted: reimbursementProduct.dateDeleted ?? undefined,
     cost: reimbursementProduct.cost,
     reimbursementProductReason: reimbursementProductReasonTransformer(reimbursementProduct.reimbursementProductReason)
   };
@@ -95,17 +93,21 @@ const reimbursementProductReasonTransformer = (
 export const accountCodeTransformer = (accountCode: Prisma.Account_CodeGetPayload<null>): AccountCode => {
   return {
     ...accountCode,
-    allowedRefundSources: accountCode.allowedRefundSources as ClubAccount[],
-    dateDeleted: accountCode.dateDeleted ?? undefined
+    allowedRefundSources: accountCode.allowedRefundSources as ClubAccount[]
   };
 };
 
-export const vendorTransformer = (vendor: Prisma.VendorGetPayload<null>): Vendor => {
+export const vendorTransformer = (vendor: Prisma.VendorGetPayload<VendorQueryArgs>): Vendor => {
   return {
     vendorId: vendor.vendorId,
     dateCreated: vendor.dateCreated,
-    dateDeleted: vendor.dateDeleted ?? undefined,
-    name: vendor.name
+    name: vendor.name,
+    username: vendor.username,
+    password: vendor.password, // to be decrypted? either decrypted here or in the hook itself
+    discountCode: vendor.discountCode ?? undefined,
+    twoFactorContact: vendor.twoFactorContact ? userTransformer(vendor.twoFactorContact) : undefined,
+    notes: vendor.notes ?? undefined,
+    addedBy: vendor.addedBy ? userTransformer(vendor.addedBy) : undefined
   };
 };
 
