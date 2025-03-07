@@ -27,6 +27,7 @@ import DescriptionBulletsEditView from '../../../components/DescriptionBulletEdi
 import ProjectTemplateSection from './ProjectTemplateSection';
 import { WorkPackageFormViewPayload } from '../../WorkPackageForm/WorkPackageFormView';
 import ProjectFormWorkPackageSection from './ProjectFormWorkPackageSection';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 export interface ProjectFormInput {
   name: string;
@@ -68,6 +69,8 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
 }) => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   let changeRequestFormInput: ChangeRequestFormInput | undefined = undefined;
+
+  const toast = useToast();
 
   const allUsers = useAllUsers();
   const {
@@ -165,6 +168,35 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
     }
   };
 
+  const detectCycle = (workPackages: WorkPackageFormViewPayload[]): boolean => {
+    const visited = new Set<string>();
+    const stack = new Set<string>();
+
+    const hasCycle = (wpId: string): boolean => {
+      if (stack.has(wpId)) return true;
+      if (visited.has(wpId)) return false;
+
+      visited.add(wpId);
+      stack.add(wpId);
+
+      const workPackage = workPackages.find((wp) => wp.workPackageId === wpId);
+      if (workPackage) {
+        for (const blockedById of workPackage.blockedBy) {
+          if (hasCycle(blockedById)) return true;
+        }
+      }
+
+      stack.delete(wpId);
+      return false;
+    };
+
+    for (const wp of workPackages) {
+      if (hasCycle(wp.workPackageId)) return true;
+    }
+
+    return false;
+  };
+
   return (
     <form
       noValidate
@@ -172,6 +204,11 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
+        if (detectCycle(watch('workPackages'))) {
+          console.error('Error: Circular blocker relationship detected in work package templates');
+          toast.error('Error: Circular blocker relationship detected in work package templates');
+          return;
+        }
         handleSubmit(onSubmit)(e);
       }}
       onKeyPress={(e) => {
@@ -276,7 +313,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           </Box>
           <Box>
             <ProjectFormWorkPackageSection
-              workPackages={workPackages}
+              workPackages={workPackages ?? []}
               watch={watch}
               register={register}
               append={appendWorkPackage}
