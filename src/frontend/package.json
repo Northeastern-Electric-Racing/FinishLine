@@ -66,7 +66,7 @@
     "typed-scss-modules": "^8.1.1"
   },
   "scripts": {
-    "start": "vite --force --host 0.0.0.0",
+    "start": "vite --force",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "test": "vitest"

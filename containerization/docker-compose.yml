@@ -6,9 +6,6 @@ services:
       POSTGRES_PASSWORD: docker
     ports:
       - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data 
- 
   frontend:
     container_name: frontend
     build:
@@ -16,9 +13,6 @@ services:
       dockerfile: src/frontend/Dockerfile
     ports:
       - "3000:3000"
-    volumes:
-      - ../src/frontend:/base/src/frontend
-      - ../src/shared:/base/src/shared
     depends_on:
       - backend
 
@@ -27,15 +21,7 @@ services:
     build:
       context: ../
       dockerfile: src/backend/Dockerfile
-    volumes:
-      - ../src/backend:/base/src/backend
-      - ../src/shared:/base/src/shared
-      - /base/src/backend/node_modules
-      - /base/src/backend/.prisma
     ports:
       - "3001:3001"
     depends_on:
       - database
-
-volumes:
-  pgdata:

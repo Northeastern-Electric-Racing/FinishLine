@@ -1,0 +1,33 @@
+services:
+  database:
+    container_name: database
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: docker
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    container_name: finishline-app
+    build:
+      context: ../
+      dockerfile: Dockerfile.dev
+    ports:
+      - '3000:3000'
+      - '3001:3001'
+    volumes:
+      - ../src/backend:/base/src/backend
+      - ../src/frontend:/base/src/frontend
+      - ../src/shared:/base/src/shared
+      - /base/frontend/node_modules
+      - /base/src/backend/node_modules
+      - /base/src/backend/.prisma
+    depends_on:
+      - database
+    environment:
+      DATABASE_URL: 'postgresql://postgres:docker@database:5432/your_database_name'
+
+volumes:
+  pgdata:

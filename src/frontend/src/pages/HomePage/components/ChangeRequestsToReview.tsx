@@ -31,7 +31,7 @@ const ChangeRequestsToReview: React.FC<ChangeRequestsToReviewProps> = () => {
 
   if (crIsLoading || !changeRequests) return <LoadingIndicator />;
   return (
-    <ScrollablePageBlock title={`Ch4n Review (${changeRequests.length})`} horizontal>
+    <ScrollablePageBlock title={`Change Requests To Review (${changeRequests.length})`} horizontal>
       {changeRequests.length === 0 ? (
         <NoChangeRequestsToReview />
       ) : (
