@@ -47,6 +47,7 @@ import RecruitmentServices from '../services/recruitment.services';
 import OrganizationsService from '../services/organizations.services';
 import { seedGraph } from './seed-data/statistics.seed';
 import AnnouncementService from '../services/announcement.service';
+import FinanceServices from '../services/finance.services';
 
 const prisma = new PrismaClient();
 
@@ -2008,7 +2009,7 @@ const performSeed: () => Promise<void> = async () => {
     'powertrain',
     ner.organizationId
   );
-  
+
   await FinanceServices.createSponsor(
     thomasEmrax,
     'Google',
