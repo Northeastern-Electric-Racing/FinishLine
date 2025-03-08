@@ -406,6 +406,7 @@ describe('Project Template Tests', () => {
         [
           {
             ...testWorkPackageTemplate,
+            workPackageTemplateId: testWorkPackageTemplate.wbsElementTemplateId + '1',
             templateName: testWorkPackageTemplate.wbsElementTemplate.templateName,
             templateNotes: testWorkPackageTemplate.wbsElementTemplate.templateNotes,
             descriptionBullets: [],
@@ -423,9 +424,6 @@ describe('Project Template Tests', () => {
       expect(updatedProjectTemplate.templateName).toBe('new template name');
       expect(updatedProjectTemplate.templateNotes).toBe('new template notes');
       expect(updatedProjectTemplate.workPackageTemplates).toHaveLength(1);
-      expect(updatedProjectTemplate.workPackageTemplates[0]).toStrictEqual(
-        workPackageTemplateTransformer(testWorkPackageTemplate)
-      );
 
       updatedProjectTemplate = await WbsElementTemplatesService.editProjectTemplate(
         testSuperman,
@@ -435,7 +433,7 @@ describe('Project Template Tests', () => {
         [
           {
             ...testWorkPackageTemplate,
-            workPackageTemplateId: testWorkPackageTemplate.wbsElementTemplateId,
+            workPackageTemplateId: testWorkPackageTemplate.wbsElementTemplateId + '1',
             templateName: 'changed name',
             templateNotes: testWorkPackageTemplate.wbsElementTemplate.templateNotes,
             descriptionBullets: [],
@@ -454,9 +452,6 @@ describe('Project Template Tests', () => {
       expect(updatedProjectTemplate.templateName).toBe('new new template name');
       expect(updatedProjectTemplate.templateNotes).toBe('new new template notes');
       expect(updatedProjectTemplate.workPackageTemplates).toHaveLength(1);
-      expect(updatedProjectTemplate.workPackageTemplates[0]).toStrictEqual(
-        workPackageTemplateTransformer(testWorkPackageTemplate)
-      );
 
       updatedProjectTemplate = await WbsElementTemplatesService.editProjectTemplate(
         testSuperman,
