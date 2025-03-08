@@ -2,7 +2,8 @@ import {
   AccessDeniedGuestException,
   AccessDeniedAdminOnlyException,
   DeletedException,
-  HttpException
+  HttpException,
+  NotFoundException
 } from '../../src/utils/errors.utils';
 import {
   createTestOrganization,
@@ -93,7 +94,7 @@ describe('Work Package Template Tests', () => {
             'id1',
             organization
           )
-      ).rejects.toThrow(new HttpException(400, `Work Package Template with id: id1 not found!`));
+      ).rejects.toThrow(new NotFoundException('Work Package Template', 'id1'));
     });
 
     it('fails is the work package template has already been deleted', async () => {
@@ -232,7 +233,7 @@ describe('Project Template Tests', () => {
             'id1',
             organization
           )
-      ).rejects.toThrow(new HttpException(400, `Project Template with id: id1 not found!`));
+      ).rejects.toThrow(new NotFoundException('Project Template', 'id1'));
     });
 
     it('fails is the project template has already been deleted', async () => {
@@ -342,7 +343,7 @@ describe('Project Template Tests', () => {
             'id1',
             organization
           )
-      ).rejects.toThrow(new HttpException(400, `Project Template with id: id1 not found!`));
+      ).rejects.toThrow(new NotFoundException('Project Template', 'id1'));
     });
 
     it('succeeds', async () => {
@@ -370,7 +371,8 @@ describe('Project Template Tests', () => {
             'template notes',
             [],
             [],
-            organization
+            organization,
+            []
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit a project template'));
     });
@@ -385,9 +387,10 @@ describe('Project Template Tests', () => {
             [],
             [],
             organization,
+            [],
             'project name'
           )
-      ).rejects.toThrow(new HttpException(400, `Project Template with id: id1 not found!`));
+      ).rejects.toThrow(new NotFoundException('Project Template', 'id1'));
     });
 
     it('succeeds', async () => {
@@ -400,25 +403,51 @@ describe('Project Template Tests', () => {
         testProjectTemplate.wbsElementTemplateId,
         'new template name',
         'new template notes',
-        [{...testWorkPackageTemplate, workPackageTemplateId: testWorkPackageTemplate.wbsElementTemplateId, templateName: testWorkPackageTemplate.wbsElementTemplate.templateName, templateNotes: testWorkPackageTemplate.wbsElementTemplate.templateNotes, descriptionBullets: [], duration: testWorkPackageTemplate.duration ?? undefined, stage: undefined, blockedBy: testWorkPackageTemplate.blockedBy.map((bb) => bb.wbsElementTemplateId)}],
+        [
+          {
+            ...testWorkPackageTemplate,
+            workPackageTemplateId: testWorkPackageTemplate.wbsElementTemplateId,
+            templateName: testWorkPackageTemplate.wbsElementTemplate.templateName,
+            templateNotes: testWorkPackageTemplate.wbsElementTemplate.templateNotes,
+            descriptionBullets: [],
+            duration: testWorkPackageTemplate.duration ?? undefined,
+            stage: undefined,
+            blockedBy: testWorkPackageTemplate.blockedBy.map((bb) => bb.wbsElementTemplateId)
+          }
+        ],
         [],
         organization,
+        [],
         'project name'
       );
 
       expect(updatedProjectTemplate.templateName).toBe('new template name');
       expect(updatedProjectTemplate.templateNotes).toBe('new template notes');
       expect(updatedProjectTemplate.workPackageTemplates).toHaveLength(1);
-      expect(updatedProjectTemplate.workPackageTemplates[0]).toStrictEqual(workPackageTemplateTransformer(testWorkPackageTemplate));
+      expect(updatedProjectTemplate.workPackageTemplates[0]).toStrictEqual(
+        workPackageTemplateTransformer(testWorkPackageTemplate)
+      );
 
       updatedProjectTemplate = await WbsElementTemplatesService.editProjectTemplate(
         testSuperman,
         testProjectTemplate.wbsElementTemplateId,
         'new new template name',
         'new new template notes',
-        [{...testWorkPackageTemplate, workPackageTemplateId: testWorkPackageTemplate.wbsElementTemplateId, templateName: 'changed name', templateNotes: testWorkPackageTemplate.wbsElementTemplate.templateNotes, descriptionBullets: [], duration: testWorkPackageTemplate.duration ?? undefined, stage: undefined, blockedBy: testWorkPackageTemplate.blockedBy.map((bb) => bb.wbsElementTemplateId)}],
+        [
+          {
+            ...testWorkPackageTemplate,
+            workPackageTemplateId: testWorkPackageTemplate.wbsElementTemplateId,
+            templateName: 'changed name',
+            templateNotes: testWorkPackageTemplate.wbsElementTemplate.templateNotes,
+            descriptionBullets: [],
+            duration: testWorkPackageTemplate.duration ?? undefined,
+            stage: undefined,
+            blockedBy: testWorkPackageTemplate.blockedBy.map((bb) => bb.wbsElementTemplateId)
+          }
+        ],
         [],
-        organization
+        organization,
+        []
       );
 
       testWorkPackageTemplate.wbsElementTemplate.templateName = 'changed name';
@@ -426,7 +455,9 @@ describe('Project Template Tests', () => {
       expect(updatedProjectTemplate.templateName).toBe('new new template name');
       expect(updatedProjectTemplate.templateNotes).toBe('new new template notes');
       expect(updatedProjectTemplate.workPackageTemplates).toHaveLength(1);
-      expect(updatedProjectTemplate.workPackageTemplates[0]).toStrictEqual(workPackageTemplateTransformer(testWorkPackageTemplate));
+      expect(updatedProjectTemplate.workPackageTemplates[0]).toStrictEqual(
+        workPackageTemplateTransformer(testWorkPackageTemplate)
+      );
 
       updatedProjectTemplate = await WbsElementTemplatesService.editProjectTemplate(
         testSuperman,
@@ -435,7 +466,8 @@ describe('Project Template Tests', () => {
         'new new new template notes',
         [],
         [],
-        organization
+        organization,
+        []
       );
 
       expect(updatedProjectTemplate.templateName).toBe('new new new template name');

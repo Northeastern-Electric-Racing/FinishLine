@@ -1,4 +1,4 @@
-import { Box, FormControl, FormLabel, Tooltip } from '@mui/material';
+import { Box, FormControl, FormLabel } from '@mui/material';
 import { isWithinInterval, subDays } from 'date-fns';
 import { Control, Controller } from 'react-hook-form';
 import { AuthenticatedUser, ChangeRequest, wbsPipe } from 'shared';
@@ -35,10 +35,9 @@ const getFilteredChangeRequests = (changeRequests: ChangeRequest[], user: Authen
 interface ChangeRequestDropdownProps {
   control: Control<any, any>;
   name: string;
-  crIdDisabled: boolean;
 }
 
-const ChangeRequestDropdown = ({ control, name, crIdDisabled }: ChangeRequestDropdownProps) => {
+const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) => {
   const user = useCurrentUser();
   const { isLoading, data: changeRequests } = useAllChangeRequests();
   if (isLoading || !changeRequests) return <LoadingIndicator />;

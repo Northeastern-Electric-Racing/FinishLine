@@ -1,4 +1,4 @@
-import { Organization, Prisma, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
+import { Organization, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
 import {
   calculateEndDate,
   DescriptionBulletPreview,
@@ -21,7 +21,7 @@ import {
   DeletedException,
   InvalidOrganizationException
 } from '../utils/errors.utils';
-import { WorkPackageQueryArgs, getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
+import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
 import workPackageTransformer from '../transformers/work-packages.transformer';
 import { updateBlocking, validateChangeRequestAccepted } from '../utils/change-requests.utils';
 import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils';

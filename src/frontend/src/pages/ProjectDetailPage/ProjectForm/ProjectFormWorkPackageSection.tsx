@@ -9,8 +9,7 @@ import {
   Tooltip,
   Typography
 } from '@mui/material';
-import { Box, display, Stack } from '@mui/system';
-import { WorkPackageApiInputs } from '../../../apis/work-packages.api';
+import { Stack } from '@mui/system';
 import { WorkPackageFormViewPayload } from '../../WorkPackageForm/WorkPackageFormView';
 import {
   Control,
@@ -26,10 +25,9 @@ import { NERButton } from '../../../components/NERButton';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import React, { useCallback, useEffect, useReducer, useState } from 'react';
 import { generateUUID } from '../../../utils/form';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { DatePicker, DatePickerToolbar } from '@mui/x-date-pickers';
+import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-import { max, set } from 'date-fns';
+import { max } from 'date-fns';
 import { getMonday } from '../../../utils/datetime.utils';
 import { WorkPackageStage } from 'shared';
 import { displayEnum } from '../../../utils/pipes';
@@ -48,7 +46,6 @@ interface ProjectFormWorkPackageSectionProps {
 const ProjectFormWorkPackageSection: React.FC<ProjectFormWorkPackageSectionProps> = ({
   watch,
   control,
-  register,
   append,
   remove,
   errors
@@ -56,7 +53,7 @@ const ProjectFormWorkPackageSection: React.FC<ProjectFormWorkPackageSectionProps
   const workPackages = watch('workPackages');
 
   const [startDatesUpdatedAt, setStartDatesUpdatedAt] = useState(new Date());
-  const [_, forceUpdate] = useReducer((x) => x + 1, 0);
+  const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
   const shouldDisableDate = (day: Date, index: number) => {
     const { blockedBy } = workPackages[index];
