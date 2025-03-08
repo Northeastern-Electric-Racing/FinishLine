@@ -159,7 +159,7 @@ export default class WorkPackagesService {
     descriptionBullets: DescriptionBulletPreview[],
     projectWbsNum: WbsNumber,
     organization: Organization
-  ): Promise<Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>> {
+  ): Promise<WorkPackage> {
     if (await userHasPermission(user.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('create work packages');
 
@@ -253,7 +253,7 @@ export default class WorkPackagesService {
 
     await prisma.change.createMany({ data: changes.changes });
 
-    return created;
+    return workPackageTransformer(created);
   }
 
   /**

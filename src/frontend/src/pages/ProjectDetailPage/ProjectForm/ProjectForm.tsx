@@ -28,6 +28,8 @@ import ProjectTemplateSection from './ProjectTemplateSection';
 import { WorkPackageFormViewPayload } from '../../WorkPackageForm/WorkPackageFormView';
 import ProjectFormWorkPackageSection from './ProjectFormWorkPackageSection';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { generateUUID } from '../../../utils/form';
+import { getMonday } from '../../../utils/datetime.utils';
 
 export interface ProjectFormInput {
   name: string;
@@ -205,8 +207,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
         e.preventDefault();
         e.stopPropagation();
         if (detectCycle(watch('workPackages'))) {
-          console.error('Error: Circular blocker relationship detected in work package templates');
-          toast.error('Error: Circular blocker relationship detected in work package templates');
+          toast.error('Error: Circular blocker relationship detected in work packages');
           return;
         }
         handleSubmit(onSubmit)(e);
@@ -270,6 +271,27 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
                 'teamIds',
                 (template?.teams || []).map((t) => t.teamId)
               );
+
+              const templateToIdMap = new Map<string, string>();
+              template?.workPackageTemplates?.forEach((wp) => {
+                const id = generateUUID();
+                templateToIdMap.set(wp.workPackageTemplateId, id);
+              });
+
+              const workPackages = (template?.workPackageTemplates || []).map((wp) => {
+                return {
+                  ...wp,
+                  name: wp.workPackageName ?? '',
+                  stage: wp.stage ?? 'NONE',
+                  startDate: getMonday(new Date()),
+                  workPackageId: templateToIdMap.get(wp.workPackageTemplateId)!,
+                  duration: wp.duration ?? 0,
+                  blockedBy: wp.blockedBy.map((blocker) => templateToIdMap.get(blocker.workPackageTemplateId)!)
+                };
+              });
+
+              setValue('workPackages', workPackages);
+
               setSelectedProjectTemplate(template);
             }}
           />
@@ -311,17 +333,19 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
               remove={removeDescriptionBullet}
             />
           </Box>
-          <Box>
-            <ProjectFormWorkPackageSection
-              workPackages={workPackages ?? []}
-              watch={watch}
-              register={register}
-              append={appendWorkPackage}
-              remove={removeWorkPackage}
-              control={control}
-              errors={errors}
-            />
-          </Box>
+          {!project && (
+            <Box>
+              <ProjectFormWorkPackageSection
+                workPackages={workPackages ?? []}
+                watch={watch}
+                register={register}
+                append={appendWorkPackage}
+                remove={removeWorkPackage}
+                control={control}
+                errors={errors}
+              />
+            </Box>
+          )}
         </Stack>
       </PageLayout>
       {onSubmitChangeRequest && (

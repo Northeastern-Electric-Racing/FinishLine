@@ -47,7 +47,7 @@ export const useSingleWorkPackage = (wbsNum: WbsNumber) => {
  */
 export const useCreateSingleWorkPackage = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, WorkPackageCreateArgs>(
+  return useMutation<WorkPackage, Error, WorkPackageCreateArgs>(
     ['work packages', 'create'],
     async (wpPayload: WorkPackageCreateArgs) => {
       const { data } = await createSingleWorkPackage(wpPayload);
