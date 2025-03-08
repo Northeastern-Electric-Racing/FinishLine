@@ -2,6 +2,6 @@
   "extends": "../../tsconfig.build.json",
   "compilerOptions": {
     "types": ["vite/client", "vitest/globals"],
-    "module": "ESNext"
+    "module": "esnext"
   }
 }
