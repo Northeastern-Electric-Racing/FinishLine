@@ -189,8 +189,6 @@ const ProjectCreateContainer: React.FC = () => {
           descriptionBullets: wp.descriptionBullets
         });
 
-        console.log(created);
-
         idToWbs.set(wp.workPackageId, created.wbsNum);
       }
 

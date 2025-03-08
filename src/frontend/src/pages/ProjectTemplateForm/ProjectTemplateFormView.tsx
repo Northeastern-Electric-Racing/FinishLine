@@ -127,8 +127,6 @@ const ProjectTemplateFormView: React.FC<ProjectTemplateFormViewProps> = ({
     }
   };
 
-  console.log(defaultValues?.workPackageTemplates);
-
   return (
     <form
       id="work-package-template-edit-form"
