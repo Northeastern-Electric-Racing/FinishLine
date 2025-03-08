@@ -473,7 +473,12 @@ const performSeed: () => Promise<void> = async () => {
    */
 
   /** Project 1 */
-  const { projectWbsNumber: project1WbsNumber, projectId: project1Id } = await seedProject(
+  const {
+    projectWbsNumber: project1WbsNumber,
+    projectId: project1Id,
+    leadId: project1LeadId,
+    managerId: project1ManagerId
+  } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
     fergus.wbsElement.carNumber,
@@ -585,7 +590,11 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Project 5 */
-  const { projectWbsNumber: project5WbsNumber } = await seedProject(
+  const {
+    projectWbsNumber: project5WbsNumber,
+    leadId: project5LeadId,
+    managerId: project5ManagerId
+  } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
     fergus.wbsElement.carNumber,
@@ -1055,12 +1064,12 @@ const performSeed: () => Promise<void> = async () => {
 
   const workPackage1ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
     thomasEmrax,
-    workPackage1.wbsElement.carNumber,
-    workPackage1.wbsElement.projectNumber,
-    workPackage1.wbsElement.workPackageNumber,
+    workPackage1.wbsNum.carNumber,
+    workPackage1.wbsNum.projectNumber,
+    workPackage1.wbsNum.workPackageNumber,
     'ACTIVATION',
-    workPackage1.project.wbsElement.leadId!,
-    workPackage1.project.wbsElement.managerId!,
+    thomasEmrax.userId,
+    joeShmoe.userId,
     new Date('2024-03-25T04:00:00.000Z'),
     true,
     ner
@@ -1123,8 +1132,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage3WbsNumber.projectNumber,
     workPackage3WbsNumber.workPackageNumber,
     CR_Type.ACTIVATION,
-    workPackage3.project.wbsElement.leadId!,
-    workPackage3.project.wbsElement.managerId!,
+    regina.userId,
+    janis.userId,
     new Date('2023-08-21T04:00:00.000Z'),
     true,
     ner
@@ -1156,8 +1165,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage4WbsNumber.projectNumber,
     workPackage4WbsNumber.workPackageNumber,
     CR_Type.ACTIVATION,
-    workPackage4.project.wbsElement.leadId!,
-    workPackage4.project.wbsElement.managerId!,
+    joeShmoe.userId,
+    thomasEmrax.userId,
     new Date('2023-10-02T04:00:00.000Z'),
     true,
     ner
@@ -1189,8 +1198,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage5WbsNumber.projectNumber,
     workPackage5WbsNumber.workPackageNumber,
     CR_Type.ACTIVATION,
-    workPackage5.project.wbsElement.leadId!,
-    workPackage5.project.wbsElement.managerId!,
+    katara.userId,
+    aang.userId,
     new Date('2023-05-08T04:00:00.000Z'),
     true,
     ner
@@ -1222,8 +1231,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage6WbsNumber.projectNumber,
     workPackage6WbsNumber.workPackageNumber,
     CR_Type.ACTIVATION,
-    workPackage6.project.wbsElement.leadId!,
-    workPackage6.project.wbsElement.managerId!,
+    katara.userId,
+    aang.userId,
     new Date('2023-07-31T04:00:00.000Z'),
     true,
     ner
@@ -1255,8 +1264,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage7WbsNumber.projectNumber,
     workPackage7WbsNumber.workPackageNumber,
     CR_Type.ACTIVATION,
-    workPackage7.project.wbsElement.leadId!,
-    workPackage7.project.wbsElement.managerId!,
+    katara.userId,
+    aang.userId,
     new Date('2023-10-09T04:00:00.000Z'),
     true,
     ner
@@ -1285,12 +1294,12 @@ const performSeed: () => Promise<void> = async () => {
 
   const project3WP1ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
     lexLuther,
-    project3WP1.wbsElement.carNumber,
-    project3WP1.wbsElement.projectNumber,
-    project3WP1.wbsElement.workPackageNumber,
+    project3WP1.wbsNum.carNumber,
+    project3WP1.wbsNum.projectNumber,
+    project3WP1.wbsNum.workPackageNumber,
     CR_Type.ACTIVATION,
-    project3WP1.project.wbsElement.leadId!,
-    project3WP1.project.wbsElement.managerId!,
+    zatanna.userId,
+    lexLuther.userId,
     new Date('2024-03-25T04:00:00.000Z'),
     true,
     ner
@@ -1355,12 +1364,12 @@ const performSeed: () => Promise<void> = async () => {
 
   const project4WP1ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
     ryanGiggs,
-    project4WP1.wbsElement.carNumber,
-    project4WP1.wbsElement.projectNumber,
-    project4WP1.wbsElement.workPackageNumber,
+    project4WP1.wbsNum.carNumber,
+    project4WP1.wbsNum.projectNumber,
+    project4WP1.wbsNum.workPackageNumber,
     CR_Type.ACTIVATION,
-    project4WP1.project.wbsElement.leadId!,
-    project4WP1.project.wbsElement.managerId!,
+    mikeMacdonald.userId,
+    ryanGiggs.userId,
     new Date('2023-08-21T04:00:00.000Z'),
     true,
     ner
