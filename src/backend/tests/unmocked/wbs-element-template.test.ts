@@ -406,7 +406,6 @@ describe('Project Template Tests', () => {
         [
           {
             ...testWorkPackageTemplate,
-            workPackageTemplateId: testWorkPackageTemplate.wbsElementTemplateId,
             templateName: testWorkPackageTemplate.wbsElementTemplate.templateName,
             templateNotes: testWorkPackageTemplate.wbsElementTemplate.templateNotes,
             descriptionBullets: [],
