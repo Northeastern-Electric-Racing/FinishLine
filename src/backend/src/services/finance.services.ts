@@ -81,7 +81,7 @@ export default class FinanceServices {
    */
   static async getSponsorTasks(sponsorId: string, organizationId: string) {
     const sponsor = await prisma.sponsor.findUnique({
-      where: { sponsorId },
+      where: { dateDeleted: null, sponsorId },
       ...getSponsorQueryArgs(organizationId)
     });
 

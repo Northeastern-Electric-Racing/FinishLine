@@ -39,7 +39,7 @@ export default class FinanceController {
 
   static async getSponsorTasks(req: Request, res: Response, next: NextFunction) {
     try {
-      const { sponsorId } = req.body;
+      const { sponsorId } = req.params;
       const { organizationId } = req.organization;
 
       const sponsorTasks = await FinanceServices.getSponsorTasks(sponsorId, organizationId);

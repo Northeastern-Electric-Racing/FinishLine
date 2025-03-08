@@ -21,4 +21,4 @@ financeRouter.post(
   FinanceController.createSponsor
 );
 
-financeRouter.get('/sponsor-tasks', FinanceController.getSponsorTasks);
+financeRouter.get('/:sponsorId/sponsor-tasks', FinanceController.getSponsorTasks);
