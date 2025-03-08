@@ -181,7 +181,7 @@ export enum DescriptionBulletDestination {
   WBS_ELEMENT,
   WORK_PACKAGE_TEMPLATE,
   PROJECT_TEMPLATE,
-  PROPOSED_CHANGES,
+  PROPOSED_CHANGES
 }
 
 export const addRawDescriptionBullets = async (

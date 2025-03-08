@@ -25,5 +25,5 @@ export const projectTemplateTransformer = (projectTemplate: ProjectTemplate): Pr
   return {
     ...projectTemplate,
     workPackageTemplates: projectTemplate.workPackageTemplates.map(workPackageTemplateTransformer)
-  }
-}
+  };
+};
