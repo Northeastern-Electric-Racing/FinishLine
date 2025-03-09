@@ -2,6 +2,8 @@ import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { Box } from '@mui/system';
 import { Grid, FormGroup, FormControlLabel, Switch, SwitchProps, styled, Typography } from '@mui/material';
 import { useState } from 'react';
+import { useCurrentUser } from '../../../../hooks/users.hooks';
+import { rankUserRole } from 'shared';
 
 const NERSwitch = styled((props: SwitchProps) => (
   <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
@@ -52,7 +54,12 @@ const NERSwitch = styled((props: SwitchProps) => (
 }));
 
 const PartsReviewPage = () => {
-  const [showSubmissionGuide, setShowSubmissionGuide] = useState(false);
+  const currentUser = useCurrentUser();
+  const [showSubmissionGuide, setShowSubmissionGuide] = useState(() => {
+    if (!currentUser) return false;
+    const userRole = currentUser.role;
+    return rankUserRole(userRole) < rankUserRole('LEADERSHIP');
+  });
 
   return (
     <Box>
@@ -72,6 +79,8 @@ const PartsReviewPage = () => {
           </FormGroup>
         </Grid>
         <Grid item xs={12}>
+          {/* The guide should be toggled off by default for admins, heads, and leads and toggled on for all other roles */}
+
           {showSubmissionGuide ? (
             <Grid container spacing={3}>
               <Grid item xs={12}>
