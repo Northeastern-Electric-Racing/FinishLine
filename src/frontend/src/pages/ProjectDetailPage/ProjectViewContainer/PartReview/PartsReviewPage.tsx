@@ -77,11 +77,12 @@ const PartsReviewPage = () => {
               <Grid item xs={12}>
                 <Typography variant="h4">Submission Guide</Typography>
                 {/* Submission Guide components will go here */}
-                <LoadingIndicator />\{/* This will be replaced by a grid of all the part cards */}
+                <LoadingIndicator />
+                {/* Loading indicator will be replaced by a grid of all the part cards */}
               </Grid>
             </Grid>
           ) : (
-            <LoadingIndicator /> /* This will be replaced by a grid of all the part cards */
+            <LoadingIndicator /> /* Loading indicator will be replaced by a grid of all the part cards */
           )}
         </Grid>
       </Grid>
