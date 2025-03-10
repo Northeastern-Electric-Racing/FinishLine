@@ -138,7 +138,11 @@ describe('part review tests', () => {
       expect(updatedCommonMistake?.description).toBe('some description2');
       expect(updatedCommonMistake?.starred).toBe(true);
 
-      const deletedCommonMistake = await PartReviewService.deleteCommonMistake(commonMistake.partReviewCommonMistakeId, superman, orgId);
+      const deletedCommonMistake = await PartReviewService.deleteCommonMistake(
+        commonMistake.partReviewCommonMistakeId,
+        superman,
+        orgId
+      );
       expect(deletedCommonMistake?.title).toBe('some title2');
       expect(deletedCommonMistake?.description).toBe('some description2');
       expect(deletedCommonMistake?.starred).toBe(true);
