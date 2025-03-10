@@ -12,7 +12,8 @@ import {
   UserWithScheduleSettings,
   AuthenticatedUser,
   AvailabilityCreateArgs,
-  ProjectPreview
+  ProjectPreview,
+  isLeadership
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -393,8 +394,12 @@ export default class UsersService {
     const userRankedRole = rankUserRole(userRole);
     const targetUserRankedRole = rankUserRole(targetUserRole);
 
-    if (!isHead(userRole)) {
-      throw new AccessDeniedException('Guests, members, and leadership cannot update user roles!');
+    if (userRole === RoleEnum.LEADERSHIP && targetUserRole !== RoleEnum.GUEST) {
+      throw new AccessDeniedException('Leadership can only update guest to members');
+    }
+
+    if (!isLeadership(userRole) && !isHead(userRole)) {
+      throw new AccessDeniedException('Guests and members cannot update user roles!');
     }
 
     if (targetUserRankedRole >= userRankedRole) {
