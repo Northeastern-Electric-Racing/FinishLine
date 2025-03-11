@@ -48,4 +48,14 @@ export default class FinanceController {
       next(error);
     }
   }
+
+  static async deleteSponsor(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { sponsorId } = req.params;
+      const deletedSponsor = await FinanceServices.deleteSponsor(sponsorId, req.currentUser, req.organization);
+      res.status(200).json(deletedSponsor);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
