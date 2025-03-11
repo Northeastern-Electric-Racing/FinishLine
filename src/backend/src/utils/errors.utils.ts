@@ -144,3 +144,4 @@ export type ExceptionObjectNames =
   | 'Graph'
   | 'Graph Collection'
   | 'Index Code';
+  | 'Sponsor';
