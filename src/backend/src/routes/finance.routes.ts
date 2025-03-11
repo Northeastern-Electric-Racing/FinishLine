@@ -20,3 +20,7 @@ financeRouter.post(
   validateInputs,
   FinanceController.createSponsor
 );
+
+financeRouter.delete('/sponsor/:sponsorId/delete', FinanceController.deleteSponsor);
+
+export default financeRouter;

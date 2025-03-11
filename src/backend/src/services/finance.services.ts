@@ -1,7 +1,13 @@
 import { isHead } from 'shared';
-import { User, Organization, Sponsor_Task } from '@prisma/client';
+import { User, Organization, Sponsor_Task, Sponsor } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
-import { AccessDeniedAdminOnlyException } from '../utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedException,
+  DeletedException,
+  InvalidOrganizationException,
+  NotFoundException
+} from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
 
 export default class FinanceServices {
@@ -69,5 +75,35 @@ export default class FinanceServices {
     });
 
     return sponsor;
+  }
+
+  /**
+   * Soft deletes a given sponsor
+   * @param sponsorId the id of the sponsor that is getting deleted
+   * @param deleter the person deleting the sponsor
+   * @param organization the organization the person deleting belongs to
+   * @returns
+   */
+  static async deleteSponsor(sponsorId: string, deleter: User, organization: Organization): Promise<Sponsor> {
+    const sponsor = await prisma.sponsor.findUnique({
+      where: {
+        sponsorId
+      }
+    });
+
+    if (!(await userHasPermission(deleter.userId, organization.organizationId, isHead))) {
+      throw new AccessDeniedException('Only heads can delete sponsors.');
+    }
+
+    if (!sponsor) throw new NotFoundException('Sponsor', sponsorId);
+    if (sponsor.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Sponsor');
+    if (sponsor.dateDeleted) throw new DeletedException('Sponsor', sponsorId);
+
+    const deletedSponsor = await prisma.sponsor.update({
+      where: { sponsorId },
+      data: { dateDeleted: new Date() }
+    });
+
+    return deletedSponsor;
   }
 }
