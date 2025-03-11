@@ -2008,13 +2008,13 @@ const performSeed: () => Promise<void> = async () => {
     'powertrain',
     ner.organizationId
   );
-
-  performSeed()
-    .catch((e) => {
-      console.error(e);
-      process.exit(1);
-    })
-    .finally(async () => {
-      await prisma.$disconnect();
-    });
 };
+
+performSeed()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
