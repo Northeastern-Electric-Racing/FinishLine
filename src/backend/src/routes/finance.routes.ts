@@ -26,4 +26,3 @@ financeRouter.get('/finance/sponsors/:sponsorId/sponsor-tasks', FinanceControlle
 financeRouter.delete('/sponsor/:sponsorId/delete', FinanceController.deleteSponsor);
 
 export default financeRouter;
-
