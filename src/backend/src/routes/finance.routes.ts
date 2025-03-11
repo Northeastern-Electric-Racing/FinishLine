@@ -21,7 +21,7 @@ financeRouter.post(
   FinanceController.createSponsor
 );
 
-financeRouter.get('/finance/sponsors/:sponsorId/sponsor-tasks', FinanceController.getSponsorTasks);
+financeRouter.get('/sponsor/:sponsorId/sponsor-tasks', FinanceController.getSponsorTasks);
 
 financeRouter.delete('/sponsor/:sponsorId/delete', FinanceController.deleteSponsor);
 
