@@ -8,7 +8,6 @@
 import {
   CR_Type,
   Club_Accounts,
-  Graph,
   Graph_Display_Type,
   Graph_Type,
   Measure,
@@ -16,7 +15,8 @@ import {
   Scope_CR_Why_Type,
   Task_Priority,
   Task_Status,
-  Team
+  Team,
+  PartTag
 } from '@prisma/client';
 import { createUser, dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
@@ -46,13 +46,11 @@ import { writeFileSync } from 'fs';
 import WorkPackageTemplatesService from '../services/work-package-template.services';
 import RecruitmentServices from '../services/recruitment.services';
 import OrganizationsService from '../services/organizations.services';
-import StatisticsService from '../services/statistics.services';
 import { seedGraph } from './seed-data/statistics.seed';
-import { graphCollectionTransformer } from '../transformers/statistics-graphCollection.transformer';
 import AnnouncementService from '../services/announcement.service';
 import OnboardingServices from '../services/onboarding.services';
+import { dbSeedAllPartTags } from './seed-data/parts.seed';
 import { CreatePartTag, CreateCommonMistake, CreatePartReviewFAQ } from '../../tests/test-utils';
-
 const prisma = new PrismaClient();
 
 const performSeed: () => Promise<void> = async () => {
@@ -2144,6 +2142,11 @@ const performSeed: () => Promise<void> = async () => {
     false
   );
 
+  // Add part tags
+  const mechanicalPartTag: PartTag = await prisma.partTag.create(dbSeedAllPartTags.MechanicalPartTag(organizationId));
+  const electricalPartTag: PartTag = await prisma.partTag.create(dbSeedAllPartTags.ElectricalPartTag(organizationId));
+  const structuralPartTag: PartTag = await prisma.partTag.create(dbSeedAllPartTags.StructuralPartTag(organizationId));
+
   await CreatePartTag(organizationId, 'Practice', '#202025');
 
   await CreatePartTag(organizationId, 'Complex', '#142099');
@@ -2179,6 +2182,144 @@ const performSeed: () => Promise<void> = async () => {
     organizationId,
     superman
   );
+
+  // example part for a tire
+  const part1Example = await prisma.part.create({
+    data: {
+      partId: '001',
+      index: 0,
+      commonName: 'tire',
+      project: {
+        connect: { projectId: project1Id }
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      }
+    }
+  });
+
+  // example part for an engine
+  const part2Example = await prisma.part.create({
+    data: {
+      partId: '002',
+      index: 0,
+      commonName: 'engine',
+      project: {
+        connect: { projectId: project2Id }
+      },
+      userCreated: {
+        connect: { userId: flash.userId }
+      }
+    }
+  });
+
+  // example part for a door
+  const part3Example = await prisma.part.create({
+    data: {
+      partId: '003',
+      index: 0,
+      commonName: 'door',
+      project: {
+        connect: { projectId: project3Id }
+      },
+      userCreated: {
+        connect: { userId: zuko.userId }
+      }
+    }
+  });
+
+  const partSubmissionExample1 = await prisma.partSubmission.create({
+    data: {
+      partSubmissionId: 'submissionId001',
+      fileIds: ['file1', 'file2'],
+      name: 'tire',
+      notes: 'black, round',
+      part: {
+        connect: { partId: part1Example.partId }
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      }
+    }
+  });
+
+  const partSubmissionExample2 = await prisma.partSubmission.create({
+    data: {
+      partSubmissionId: 'submissionId002',
+      fileIds: ['file3'],
+      name: 'engine',
+      notes: 'this is the car engine',
+      part: {
+        connect: { partId: part2Example.partId }
+      },
+      userCreated: {
+        connect: { userId: flash.userId }
+      }
+    }
+  });
+
+  const partSubmissionExample3 = await prisma.partSubmission.create({
+    data: {
+      partSubmissionId: 'submissionId003',
+      fileIds: ['file4', 'file5', 'file6'],
+      name: 'door',
+      notes: 'car door',
+      part: {
+        connect: { partId: part3Example.partId }
+      },
+      userCreated: {
+        connect: { userId: zuko.userId }
+      }
+    }
+  });
+
+  const partReviewExample1 = await prisma.partReview.create({
+    data: {
+      partReviewId: 'reviewId001',
+      fileIds: ['file1', 'file2'],
+      notes: 'this part submission sucks!!',
+      submission: {
+        connect: {
+          partSubmissionId: partSubmissionExample1.partSubmissionId
+        }
+      },
+      userCreated: {
+        connect: { userId: appa.userId }
+      }
+    }
+  });
+
+  const partReviewExample2 = await prisma.partReview.create({
+    data: {
+      partReviewId: 'reviewId002',
+      fileIds: ['file3'],
+      notes: 'this part submission rocks!!',
+      submission: {
+        connect: {
+          partSubmissionId: partSubmissionExample2.partSubmissionId
+        }
+      },
+      userCreated: {
+        connect: { userId: joeShmoe.userId }
+      }
+    }
+  });
+
+  const partReviewExample3 = await prisma.partReview.create({
+    data: {
+      partReviewId: 'reviewId003',
+      fileIds: ['file5', 'file6'],
+      notes: 'this part submission is decent!!',
+      submission: {
+        connect: {
+          partSubmissionId: partSubmissionExample3.partSubmissionId
+        }
+      },
+      userCreated: {
+        connect: { userId: lamarJackson.userId }
+      }
+    }
+  });
 };
 
 performSeed()

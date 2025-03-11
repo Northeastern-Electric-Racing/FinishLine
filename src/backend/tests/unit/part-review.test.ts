@@ -144,118 +144,269 @@ describe('part review tests', () => {
     ).rejects.toThrow(new DeletedException('Faq', faq.faqId));
   });
 
-  it('creates a common mistake, edits it, and deletes it', async () => {
-    const commonMistake = await PartReviewService.createCommonMistake(
-      'some title',
-      'some description',
-      false,
-      batman,
-      orgId
-    );
-    const prismaCommonMistake = await prisma.partReviewCommonMistake.findUnique({
-      where: {
-        id: commonMistake.id
-      }
+  describe('common mistake endpoints', () => {
+    it('creates a common mistake, edits it, and deletes it', async () => {
+      const commonMistake = await PartReviewService.createCommonMistake(
+        'some title',
+        'some description',
+        false,
+        batman,
+        orgId
+      );
+      const prismaCommonMistake = await prisma.partReviewCommonMistake.findUnique({
+        where: {
+          partReviewCommonMistakeId: commonMistake.partReviewCommonMistakeId
+        }
+      });
+
+      expect(prismaCommonMistake?.title).toBe('some title');
+      expect(prismaCommonMistake?.description).toBe('some description');
+      expect(prismaCommonMistake?.starred).toBe(false);
+      expect(prismaCommonMistake?.userCreatedId).toBe(batman.userId);
+      expect(prismaCommonMistake?.organizationId).toBe(orgId);
+      expect(commonMistake?.title).toBe('some title');
+      expect(commonMistake?.description).toBe('some description');
+      expect(commonMistake?.starred).toBe(false);
+
+      const updatedCommonMistake = await PartReviewService.updateCommonMistake(
+        commonMistake.partReviewCommonMistakeId,
+        'some title2',
+        'some description2',
+        true,
+        superman,
+        orgId
+      );
+
+      const prismaCommonMistake2 = await prisma.partReviewCommonMistake.findUnique({
+        where: {
+          partReviewCommonMistakeId: commonMistake.partReviewCommonMistakeId
+        }
+      });
+
+      expect(prismaCommonMistake2?.title).toBe('some title2');
+      expect(prismaCommonMistake2?.description).toBe('some description2');
+      expect(prismaCommonMistake2?.starred).toBe(true);
+      expect(prismaCommonMistake2?.userCreatedId).toBe(batman.userId);
+      expect(prismaCommonMistake2?.organizationId).toBe(orgId);
+      expect(prismaCommonMistake2?.dateDeleted).toBeFalsy();
+      expect(updatedCommonMistake?.title).toBe('some title2');
+      expect(updatedCommonMistake?.description).toBe('some description2');
+      expect(updatedCommonMistake?.starred).toBe(true);
+
+      const deletedCommonMistake = await PartReviewService.deleteCommonMistake(
+        commonMistake.partReviewCommonMistakeId,
+        superman,
+        orgId
+      );
+      expect(deletedCommonMistake?.title).toBe('some title2');
+      expect(deletedCommonMistake?.description).toBe('some description2');
+      expect(deletedCommonMistake?.starred).toBe(true);
+
+      const prismaDeletedMistake = await prisma.partReviewCommonMistake.findUnique({
+        where: {
+          partReviewCommonMistakeId: commonMistake.partReviewCommonMistakeId
+        }
+      });
+      expect(prismaDeletedMistake?.dateDeleted).toBeTruthy();
     });
 
-    expect(prismaCommonMistake?.title).toBe('some title');
-    expect(prismaCommonMistake?.description).toBe('some description');
-    expect(prismaCommonMistake?.starred).toBe(false);
-    expect(prismaCommonMistake?.userCreatedId).toBe(batman.userId);
-    expect(prismaCommonMistake?.organizationId).toBe(orgId);
-    expect(commonMistake?.title).toBe('some title');
-    expect(commonMistake?.description).toBe('some description');
-    expect(commonMistake?.starred).toBe(false);
+    it('does not let non-admins create, edit, or delete common mistakes', async () => {
+      await expect(
+        async () => await PartReviewService.createCommonMistake('some title', 'some description', false, nonAdmin, orgId)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('create common mistake'));
 
-    const updatedCommonMistake = await PartReviewService.updateCommonMistake(
-      commonMistake.id,
-      'some title2',
-      'some description2',
-      true,
-      superman,
-      orgId
-    );
+      const commonMistake = await PartReviewService.createCommonMistake(
+        'some title',
+        'some description',
+        false,
+        batman,
+        orgId
+      );
 
-    const prismaCommonMistake2 = await prisma.partReviewCommonMistake.findUnique({
-      where: {
-        id: commonMistake.id
-      }
+      await expect(
+        async () =>
+          await PartReviewService.updateCommonMistake(
+            commonMistake.partReviewCommonMistakeId,
+            'some title2',
+            'some description2',
+            true,
+            nonAdmin,
+            orgId
+          )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('update common mistake'));
+
+      await expect(
+        async () => await PartReviewService.deleteCommonMistake(commonMistake.partReviewCommonMistakeId, nonAdmin, orgId)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete common mistake'));
     });
 
-    expect(prismaCommonMistake2?.title).toBe('some title2');
-    expect(prismaCommonMistake2?.description).toBe('some description2');
-    expect(prismaCommonMistake2?.starred).toBe(true);
-    expect(prismaCommonMistake2?.userCreatedId).toBe(batman.userId);
-    expect(prismaCommonMistake2?.organizationId).toBe(orgId);
-    expect(prismaCommonMistake2?.dateDeleted).toBeFalsy();
-    expect(updatedCommonMistake?.title).toBe('some title2');
-    expect(updatedCommonMistake?.description).toBe('some description2');
-    expect(updatedCommonMistake?.starred).toBe(true);
+    it('does not allow updating deleted common mistake', async () => {
+      const commonMistake = await PartReviewService.createCommonMistake(
+        'some title',
+        'some description',
+        false,
+        batman,
+        orgId
+      );
 
-    const deletedCommonMistake = await PartReviewService.deleteCommonMistake(commonMistake.id, superman, orgId);
-    expect(deletedCommonMistake?.title).toBe('some title2');
-    expect(deletedCommonMistake?.description).toBe('some description2');
-    expect(deletedCommonMistake?.starred).toBe(true);
+      await PartReviewService.deleteCommonMistake(commonMistake.partReviewCommonMistakeId, superman, orgId);
 
-    const prismaDeletedMistake = await prisma.partReviewCommonMistake.findUnique({
-      where: {
-        id: commonMistake.id
-      }
+      await expect(
+        async () =>
+          await PartReviewService.updateCommonMistake(
+            commonMistake.partReviewCommonMistakeId,
+            'some title2',
+            'some description2',
+            true,
+            batman,
+            orgId
+          )
+      ).rejects.toThrow(new DeletedException('common mistake', commonMistake.partReviewCommonMistakeId));
     });
-    expect(prismaDeletedMistake?.dateDeleted).toBeTruthy();
   });
 
-  it('does not let non-admins create, edit, or delete common mistakes', async () => {
-    await expect(
-      async () => await PartReviewService.createCommonMistake('some title', 'some description', false, nonAdmin, orgId)
-    ).rejects.toThrow(new AccessDeniedAdminOnlyException('create common mistake'));
+  describe('Get all part tags', () => {
+    it('Get all part tags succeeds and returns empty array', async () => {
+      const partTags = await PartReviewService.getAllPartTags(orgId);
+      expect(partTags).toBeInstanceOf(Array);
+      expect(partTags.length).toEqual(0);
+    });
 
-    const commonMistake = await PartReviewService.createCommonMistake(
-      'some title',
-      'some description',
-      false,
-      batman,
-      orgId
-    );
+    it('Get all part tags succeeds and returns part tags', async () => {
+      const org2Creator = await prisma.user.create({
+        data: {
+          firstName: 'Admin2',
+          lastName: 'User2',
+          email: 'admin2@gmail.com',
+          googleAuthId: 'organizationCreator2'
+        }
+      });
 
-    await expect(
-      async () =>
-        await PartReviewService.updateCommonMistake(
-          commonMistake.id,
-          'some title2',
-          'some description2',
-          true,
-          nonAdmin,
-          orgId
-        )
-    ).rejects.toThrow(new AccessDeniedAdminOnlyException('update common mistake'));
+      const org2 = await prisma.organization.create({
+        data: {
+          name: 'Joe mama2',
+          description: 'Joe mama2`s organization',
+          applicationLink: '',
+          userCreated: {
+            connect: {
+              userId: org2Creator.userId
+            }
+          }
+        }
+      });
 
-    await expect(async () => await PartReviewService.deleteCommonMistake(commonMistake.id, nonAdmin, orgId)).rejects.toThrow(
-      new AccessDeniedAdminOnlyException('delete common mistake')
-    );
+      await prisma.partTag.createMany({
+        data: [
+          {
+            partTagId: '123',
+            name: 'Screw',
+            colorHexCode: '#191010',
+            dateCreated: new Date(),
+            organizationId: orgId
+          },
+          { partTagId: '456', name: 'Bolt', colorHexCode: '#093121', dateCreated: new Date(), organizationId: orgId }
+        ]
+      });
+
+      // Create a partTag belonging to a different organization
+      await prisma.partTag.create({
+        data: {
+          partTagId: '973',
+          name: 'Nut',
+          colorHexCode: '#920323',
+          dateCreated: new Date(),
+          organizationId: org2.organizationId
+        }
+      });
+
+      // Create a deleted partTag for the same organization
+      await prisma.partTag.create({
+        data: {
+          partTagId: '345',
+          name: 'Washer',
+          colorHexCode: '#983434',
+          dateCreated: new Date(),
+          organizationId: orgId,
+          dateDeleted: new Date() // Marked as deleted
+        }
+      });
+
+      const partTags = await PartReviewService.getAllPartTags(orgId);
+      expect(partTags.length).toEqual(2);
+      expect(partTags).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ partTagId: '123', name: 'Screw', colorHexCode: '#191010' }),
+          expect.objectContaining({ partTagId: '456', name: 'Bolt', colorHexCode: '#093121' })
+        ])
+      );
+
+      expect(partTags.some((tag) => tag.partTagId === '345')).toBeFalsy();
+      expect(partTags.some((tag) => tag.partTagId === '973')).toBeFalsy();
+    });
   });
 
-  it('does not allow updating deleted common mistake', async () => {
-    const commonMistake = await PartReviewService.createCommonMistake(
-      'some title',
-      'some description',
-      false,
-      batman,
-      orgId
-    );
+  describe('Get all part FAQS', () => {
+    it('Succeeds and gets all part review FAQS in the organization', async () => {
+      const faq1 = await prisma.frequentlyAskedQuestion.create({
+        data: {
+          faqId: '1',
+          question: 'question1',
+          answer: 'answer1',
+          userCreated: { connect: { userId: batman.userId } },
+          dateCreated: new Date(),
+          partReviewFaqOrg: { connect: { organizationId: orgId } }
+        }
+      });
+      const faq2 = await prisma.frequentlyAskedQuestion.create({
+        data: {
+          faqId: '2',
+          question: 'question2',
+          answer: 'answer2',
+          userCreated: { connect: { userId: batman.userId } },
+          dateCreated: new Date(),
+          partReviewFaqOrg: { connect: { organizationId: orgId } }
+        }
+      });
+      const partReviews = await PartReviewService.getAllPartReviewFAQs(orgId);
+      expect(partReviews).toHaveLength(2);
+      expect(partReviews[0].question).toEqual(faq1.question);
+      expect(partReviews[0].answer).toEqual(faq1.answer);
+      expect(partReviews[1].question).toEqual(faq2.question);
+      expect(partReviews[1].answer).toEqual(faq2.answer);
+    });
 
-    await PartReviewService.deleteCommonMistake(commonMistake.id, superman, orgId);
+    it('Retrieves empty list of part review FAQS in the organization', async () => {
+      const partReviews = await PartReviewService.getAllPartReviewFAQs(orgId);
+      expect(partReviews).toHaveLength(0);
+    });
 
-    await expect(
-      async () =>
-        await PartReviewService.updateCommonMistake(
-          commonMistake.id,
-          'some title2',
-          'some description2',
-          true,
-          batman,
-          orgId
-        )
-    ).rejects.toThrow(new DeletedException('common mistake', commonMistake.id));
+    it('Does not retrieve regular FAQS in the organization', async () => {
+      const partFaq = await prisma.frequentlyAskedQuestion.create({
+        data: {
+          faqId: '1',
+          question: 'faq question',
+          answer: 'faq answer',
+          userCreated: { connect: { userId: batman.userId } },
+          dateCreated: new Date(),
+          partReviewFaqOrg: { connect: { organizationId: orgId } }
+        }
+      });
+      const regularFaq = await prisma.frequentlyAskedQuestion.create({
+        data: {
+          faqId: '2',
+          question: 'regular question',
+          answer: 'regular answer',
+          userCreated: { connect: { userId: batman.userId } },
+          dateCreated: new Date(),
+          regularFaqOrg: { connect: { organizationId: orgId } }
+        }
+      });
+      const partReviews = await PartReviewService.getAllPartReviewFAQs(orgId);
+      expect(partReviews).toHaveLength(1);
+      expect(partReviews[0].question).toEqual(partFaq.question);
+      expect(partReviews[0].answer).toEqual(partFaq.answer);
+      expect(partReviews[0].question).not.toEqual(regularFaq.question);
+      expect(partReviews[0].answer).not.toEqual(regularFaq.answer);
+    });
   });
 });

@@ -9,6 +9,34 @@ import { partsReviewCommonMistakeTransformer } from '../transformers/part-review
 
 export default class PartReviewService {
   /**
+   * Uses the given organizationID to and returns an array of part tags
+   * @param organizationId the organization to get the parts for
+   * @returns an array of part tags
+   */
+  static async getAllPartTags(organizationId: string) {
+    return prisma.partTag.findMany({
+      where: {
+        organizationId,
+        dateDeleted: null
+      }
+    });
+  }
+
+  /**
+   * Gets all part review FAQs for the given organization Id
+   * @param organizationId organization Id of the FAQ
+   * @returns all the part review faqs from the given organization
+   */
+  static async getAllPartReviewFAQs(organizationId: string) {
+    const partReviewFAQs = await prisma.frequentlyAskedQuestion.findMany({
+      where: { dateDeleted: null, partReviewFaqOrgId: organizationId },
+      ...getFaqQueryArgs(organizationId)
+    });
+
+    return partReviewFAQs.map(faqTransformer);
+  }
+
+  /**
    * creates a new part tag with no ascociated parts
    * @param name the name of the tag
    * @param colorHexCode the color of the tag
@@ -316,7 +344,7 @@ export default class PartReviewService {
   ): Promise<PartReviewCommonMistake> {
     const commonMistake = await prisma.partReviewCommonMistake.findUnique({
       where: {
-        id: commonMistakeId
+        partReviewCommonMistakeId: commonMistakeId
       }
     });
 
@@ -334,7 +362,7 @@ export default class PartReviewService {
 
     const updatedCommonMistake = await prisma.partReviewCommonMistake.update({
       where: {
-        id: commonMistakeId
+        partReviewCommonMistakeId: commonMistakeId
       },
       data: {
         title,
@@ -360,7 +388,7 @@ export default class PartReviewService {
   ): Promise<PartReviewCommonMistake> {
     const commonMistake = await prisma.partReviewCommonMistake.findUnique({
       where: {
-        id: commonMistakeId
+        partReviewCommonMistakeId: commonMistakeId
       }
     });
 
@@ -374,7 +402,7 @@ export default class PartReviewService {
 
     const deletedCommonMistake = await prisma.partReviewCommonMistake.update({
       where: {
-        id: commonMistakeId
+        partReviewCommonMistakeId: commonMistakeId
       },
       data: {
         userDeleted: {
