@@ -37,7 +37,8 @@ export default class PartReviewController {
 
   static async updatePartTag(req: Request, res: Response, next: NextFunction) {
     try {
-      const { partTagId, name, colorHexCode } = req.body;
+      const { partTagId } = req.params;
+      const { name, colorHexCode } = req.body;
       const updatedPartTag = await PartReviewService.updatePartTag(
         partTagId,
         name,
@@ -53,7 +54,7 @@ export default class PartReviewController {
 
   static async deletePartTag(req: Request, res: Response, next: NextFunction) {
     try {
-      const { partTagId } = req.body;
+      const { partTagId } = req.params;
       const deletedPartTag = await PartReviewService.deletePartTag(
         partTagId,
         req.currentUser,

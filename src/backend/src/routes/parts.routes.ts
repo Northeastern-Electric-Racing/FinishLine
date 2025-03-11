@@ -24,7 +24,7 @@ partsRouter.post(
   PartReviewController.updatePartTag
 );
 
-partsRouter.post('partTag/:partTagId/delete', PartReviewController.deletePartTag);
+partsRouter.post('/partTag/:partTagId/delete', PartReviewController.deletePartTag);
 
 partsRouter.post(
   '/faq/create',
