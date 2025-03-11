@@ -62,4 +62,5 @@ organizationRouter.post(
   nonEmptyString(body('workspaceId')),
   OrganizationsController.setSlackWorkspaceId
 );
+
 export default organizationRouter;
