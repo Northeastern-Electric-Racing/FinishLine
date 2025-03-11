@@ -38,8 +38,11 @@ const ReimbursementRequestInfo = ({
   allReimbursementRequests,
   canViewAllReimbursementRequests = false
 }: ReimbursementRequestInfoProps) => {
+  // set default values for orderBy and sortBy
   if (!localStorage.getItem('orderBy')) localStorage.setItem('orderBy', 'identifier');
-  if (!localStorage.getItem('ascendingOrder')) localStorage.setItem('ascendingOrder', 'descending');
+  if (!localStorage.getItem('sortBy')) localStorage.setItem('sortBy', 'descending');
+
+  // set orderBy and sortBy from local storage
   const [isAscendingOrder, setAscendingOrder] = useState(localStorage.getItem('ascendingOrder') === 'ascending');
   const [orderBy, setOrderBy] = useState<keyof ReimbursementRequestRow>(
     localStorage.getItem('orderBy') as keyof ReimbursementRequestRow
@@ -49,15 +52,18 @@ const ReimbursementRequestInfo = ({
     canViewAllReimbursementRequests && allReimbursementRequests ? allReimbursementRequests : userReimbursementRequests;
 
   const rows = displayedReimbursementRequests.map(createReimbursementRequestRowData).sort((a, b) => {
+    // create a map of comparators
     const comparators: { [key: string]: (a: any, b: any) => number } = {
       vendor: vendorDescendingComparator,
       status: statusDescendingComparator,
       submitter: submitterDescendingComparator
     };
 
+    // set orderBy and sortBy in local storage
     localStorage.setItem('orderBy', orderBy);
-    localStorage.setItem('ascendingOrder', isAscendingOrder ? 'ascending' : 'descending');
+    localStorage.setItem('sortBy', isAscendingOrder ? 'ascending' : 'descending');
 
+    // if orderBy is in comparators, use that comparator
     if (orderBy in comparators) {
       return isAscendingOrder ? -comparators[orderBy](a[orderBy], b[orderBy]) : comparators[orderBy](a[orderBy], b[orderBy]);
     }
@@ -66,6 +72,7 @@ const ReimbursementRequestInfo = ({
       return -1;
     }
 
+    // else use default descending comparator
     return isAscendingOrder ? -descendingComparator(a, b, orderBy) : descendingComparator(a, b, orderBy);
   });
 
