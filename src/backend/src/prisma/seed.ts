@@ -2136,15 +2136,13 @@ const performSeed: () => Promise<void> = async () => {
   /**
    * PARTS
    */
+  let i = 0;
   for (const createPart of Object.values(dbSeedAllParts)) {
-    const partArgs = createPart(project2Id, batman.userId);
-    await prisma.part.create({
-      data: {
-        ...partArgs.data,
-        assignees: { connect: [{ userId: hawkMan.userId }] },
-        reviewers: { connect: [{ userId: cyborg.userId }] }
-      }
-    });
+    const requester = i % 2 === 0 ? batman.userId : thomasEmrax.userId;
+    const reviewer = i % 2 === 0 ? thomasEmrax.userId : cyborg.userId;
+    const partArgs = createPart(project2Id, requester, [hawkMan.userId], [reviewer]);
+    await prisma.part.create({ data: partArgs.data });
+    i++;
   }
 };
 

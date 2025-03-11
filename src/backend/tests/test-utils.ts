@@ -605,37 +605,6 @@ export const createTestTask = async (
   return task;
 };
 
-export const createTestPart = async (
-  index: number,
-  userCreatedId: string,
-  commonName: string,
-  status: Review_Status,
-  projectId: string,
-  assignees: User[],
-  reviewers: User[],
-  history: string[],
-  createdAt: Date,
-  description?: string,
-  previewImageLink?: string
-) => {
-  return await prisma.part.create({
-    data: {
-      index,
-      commonName,
-      description,
-      previewImageLink,
-      status,
-      submissions: { create: [] },
-      project: { connect: { projectId } },
-      assignees: { connect: assignees.map((user) => ({ userId: user.userId })) },
-      reviewers: { connect: reviewers.map((user) => ({ userId: user.userId })) },
-      history,
-      createdAt,
-      userCreated: { connect: { userId: userCreatedId } }
-    }
-  });
-};
-
 export const createTestTaskWithOrganization = async (user: User, organization?: Organization) => {
   if (!organization) organization = await createTestOrganization();
   const orgId = organization.organizationId;

@@ -1,6 +1,6 @@
 import type { Prisma } from '@prisma/client';
 
-const basicPart = (projectId: string, userCreatedId: string): Prisma.PartCreateArgs => {
+const basicPart = (projectId: string, userCreatedId: string, assigneeIds: string[], reviewerIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 1,
@@ -10,19 +10,23 @@ const basicPart = (projectId: string, userCreatedId: string): Prisma.PartCreateA
       status: 'IN_PROGRESS',
       createdAt: new Date('2025-01-01T10:00:00Z'),
       history: ['Created part', 'Updated specs', 'Assigned to review', 'Reviewed part'],
-      projectId,
-      userCreatedId,
+      project: {
+        connect: { projectId }
+      },
+      userCreated: {
+        connect: { userId: userCreatedId }
+      },
       assignees: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: assigneeIds.map(userId => ({ userId })),
       },
       reviewers: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: reviewerIds.map(userId => ({ userId })),
       }
     }
   };
 };
 
-const partWithoutDescription = (projectId: string, userCreatedId: string): Prisma.PartCreateArgs => {
+const partWithoutDescription = (projectId: string, userCreatedId: string, assigneeIds: string[], reviewerIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 2,
@@ -31,19 +35,23 @@ const partWithoutDescription = (projectId: string, userCreatedId: string): Prism
       status: 'IN_PROGRESS',
       createdAt: new Date('2025-01-01T10:00:00Z'),
       history: ['Created part'],
-      projectId,
-      userCreatedId,
+      project: {
+        connect: { projectId }
+      },
+      userCreated: {
+        connect: { userId: userCreatedId }
+      },
       assignees: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: assigneeIds.map(userId => ({ userId })),
       },
       reviewers: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: reviewerIds.map(userId => ({ userId })),
       }
     }
   };
 };
 
-const partWithoutImage = (projectId: string, userCreatedId: string): Prisma.PartCreateArgs => {
+const partWithoutImage = (projectId: string, userCreatedId: string, assigneeIds: string[], reviewerIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 3,
@@ -52,18 +60,22 @@ const partWithoutImage = (projectId: string, userCreatedId: string): Prisma.Part
       status: 'IN_PROGRESS',
       createdAt: new Date('2025-01-01T10:00:00Z'),
       history: ['Created part'],
-      projectId,
-      userCreatedId,
+      project: {
+        connect: { projectId }
+      },
+      userCreated: {
+        connect: { userId: userCreatedId }
+      },
       assignees: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: assigneeIds.map(userId => ({ userId })),
       },
       reviewers: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: reviewerIds.map(userId => ({ userId })),
       }
     }
   };
 };
-const partWithEmptyHistory = (projectId: string, userCreatedId: string): Prisma.PartCreateArgs => {
+const partWithEmptyHistory = (projectId: string, userCreatedId: string, assigneeIds: string[], reviewerIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 4,
@@ -73,18 +85,22 @@ const partWithEmptyHistory = (projectId: string, userCreatedId: string): Prisma.
       status: 'IN_PROGRESS',
       createdAt: new Date('2025-01-01T10:00:00Z'),
       history: [],
-      projectId,
-      userCreatedId,
+      project: {
+        connect: { projectId }
+      },
+      userCreated: {
+        connect: { userId: userCreatedId }
+      },
       assignees: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: assigneeIds.map(userId => ({ userId })),
       },
       reviewers: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: reviewerIds.map(userId => ({ userId })),
       }
     }
   };
 };
-const partWithLongName = (projectId: string, userCreatedId: string): Prisma.PartCreateArgs => {
+const partWithLongName = (projectId: string, userCreatedId: string, assigneeIds: string[], reviewerIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 5,
@@ -94,18 +110,22 @@ const partWithLongName = (projectId: string, userCreatedId: string): Prisma.Part
       status: 'IN_PROGRESS',
       createdAt: new Date('2025-01-01T10:00:00Z'),
       history: ['Created part'],
-      projectId,
-      userCreatedId,
+      project: {
+        connect: { projectId }
+      },
+      userCreated: {
+        connect: { userId: userCreatedId }
+      },
       assignees: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: assigneeIds.map(userId => ({ userId })),
       },
       reviewers: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: reviewerIds.map(userId => ({ userId })),
       }
     }
   };
 };
-const partIndexNegative = (projectId: string, userCreatedId: string): Prisma.PartCreateArgs => {
+const partIndexNegative = (projectId: string, userCreatedId: string, assigneeIds: string[], reviewerIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: -1,
@@ -115,18 +135,22 @@ const partIndexNegative = (projectId: string, userCreatedId: string): Prisma.Par
       status: 'IN_PROGRESS',
       createdAt: new Date('2025-01-01T10:00:00Z'),
       history: ['Created part'],
-      projectId,
-      userCreatedId,
+      project: {
+        connect: { projectId }
+      },
+      userCreated: {
+        connect: { userId: userCreatedId }
+      },
       assignees: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: assigneeIds.map(userId => ({ userId })),
       },
       reviewers: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: reviewerIds.map(userId => ({ userId })),
       }
     }
   };
 };
-const partIndexZero = (projectId: string, userCreatedId: string): Prisma.PartCreateArgs => {
+const partIndexZero = (projectId: string, userCreatedId: string, assigneeIds: string[], reviewerIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 0,
@@ -136,18 +160,22 @@ const partIndexZero = (projectId: string, userCreatedId: string): Prisma.PartCre
       status: 'IN_PROGRESS',
       createdAt: new Date('2025-01-01T10:00:00Z'),
       history: ['Created part'],
-      projectId,
-      userCreatedId,
+      project: {
+        connect: { projectId }
+      },
+      userCreated: {
+        connect: { userId: userCreatedId }
+      },
       assignees: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: assigneeIds.map(userId => ({ userId })),
       },
       reviewers: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: reviewerIds.map(userId => ({ userId })),
       }
     }
   };
 };
-const partIndexLarge = (projectId: string, userCreatedId: string): Prisma.PartCreateArgs => {
+const partIndexLarge = (projectId: string, userCreatedId: string, assigneeIds: string[], reviewerIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 99999999,
@@ -157,18 +185,22 @@ const partIndexLarge = (projectId: string, userCreatedId: string): Prisma.PartCr
       status: 'IN_PROGRESS',
       createdAt: new Date('2025-01-01T10:00:00Z'),
       history: ['Created part'],
-      projectId,
-      userCreatedId,
+      project: {
+        connect: { projectId }
+      },
+      userCreated: {
+        connect: { userId: userCreatedId }
+      },
       assignees: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: assigneeIds.map(userId => ({ userId })),
       },
       reviewers: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: reviewerIds.map(userId => ({ userId })),
       }
     }
   };
 };
-const partReadyForReview = (projectId: string, userCreatedId: string): Prisma.PartCreateArgs => {
+const partReadyForReview = (projectId: string, userCreatedId: string, assigneeIds: string[], reviewerIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 9,
@@ -178,18 +210,22 @@ const partReadyForReview = (projectId: string, userCreatedId: string): Prisma.Pa
       status: 'READY_FOR_REVIEW',
       createdAt: new Date('2025-01-01T10:00:00Z'),
       history: ['Created part', 'Ready for Review'],
-      projectId,
-      userCreatedId,
+      project: {
+        connect: { projectId }
+      },
+      userCreated: {
+        connect: { userId: userCreatedId }
+      },
       assignees: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: assigneeIds.map(userId => ({ userId })),
       },
       reviewers: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: reviewerIds.map(userId => ({ userId })),
       }
     }
   };
 };
-const partInReview = (projectId: string, userCreatedId: string): Prisma.PartCreateArgs => {
+const partInReview = (projectId: string, userCreatedId: string, assigneeIds: string[], reviewerIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 10,
@@ -199,18 +235,22 @@ const partInReview = (projectId: string, userCreatedId: string): Prisma.PartCrea
       status: 'IN_REVIEW',
       createdAt: new Date('2025-01-01T10:00:00Z'),
       history: ['Created part', 'Assigned for Review', 'In Review'],
-      projectId,
-      userCreatedId,
+      project: {
+        connect: { projectId }
+      },
+      userCreated: {
+        connect: { userId: userCreatedId }
+      },
       assignees: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: assigneeIds.map(userId => ({ userId })),
       },
       reviewers: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: reviewerIds.map(userId => ({ userId })),
       }
     }
   };
 };
-const partReviewed = (projectId: string, userCreatedId: string): Prisma.PartCreateArgs => {
+const partReviewed = (projectId: string, userCreatedId: string, assigneeIds: string[], reviewerIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 11,
@@ -220,18 +260,22 @@ const partReviewed = (projectId: string, userCreatedId: string): Prisma.PartCrea
       status: 'REVIEWED',
       createdAt: new Date('2025-01-01T10:00:00Z'),
       history: ['Created part', 'Assigned for Review', 'In Review', 'Finished Reviewing'],
-      projectId,
-      userCreatedId,
+      project: {
+        connect: { projectId }
+      },
+      userCreated: {
+        connect: { userId: userCreatedId }
+      },
       assignees: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: assigneeIds.map(userId => ({ userId })),
       },
       reviewers: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: reviewerIds.map(userId => ({ userId })),
       }
     }
   };
 };
-const partApproved = (projectId: string, userCreatedId: string): Prisma.PartCreateArgs => {
+const partApproved = (projectId: string, userCreatedId: string, assigneeIds: string[], reviewerIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 12,
@@ -241,18 +285,22 @@ const partApproved = (projectId: string, userCreatedId: string): Prisma.PartCrea
       status: 'APPROVED',
       createdAt: new Date('2025-01-01T10:00:00Z'),
       history: ['Created part', 'Assigned for Review', 'In Review', 'Finished Reviewing', 'Approved'],
-      projectId,
-      userCreatedId,
+      project: {
+        connect: { projectId }
+      },
+      userCreated: {
+        connect: { userId: userCreatedId }
+      },
       assignees: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: assigneeIds.map(userId => ({ userId })),
       },
       reviewers: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: reviewerIds.map(userId => ({ userId })),
       }
     }
   };
 };
-const partCurrentDate = (projectId: string, userCreatedId: string): Prisma.PartCreateArgs => {
+const partCurrentDate = (projectId: string, userCreatedId: string, assigneeIds: string[], reviewerIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 13,
@@ -262,18 +310,22 @@ const partCurrentDate = (projectId: string, userCreatedId: string): Prisma.PartC
       status: 'APPROVED',
       createdAt: new Date(),
       history: ['Created part', 'Assigned for Review', 'In Review', 'Finished Reviewing', 'Approved'],
-      projectId,
-      userCreatedId,
+      project: {
+        connect: { projectId }
+      },
+      userCreated: {
+        connect: { userId: userCreatedId }
+      },
       assignees: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: assigneeIds.map(userId => ({ userId })),
       },
       reviewers: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: reviewerIds.map(userId => ({ userId })),
       }
     }
   };
 };
-const partPastDate = (projectId: string, userCreatedId: string): Prisma.PartCreateArgs => {
+const partPastDate = (projectId: string, userCreatedId: string, assigneeIds: string[], reviewerIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 14,
@@ -283,18 +335,22 @@ const partPastDate = (projectId: string, userCreatedId: string): Prisma.PartCrea
       status: 'APPROVED',
       createdAt: new Date('2000-01-01T00:00:00Z'),
       history: ['Created part', 'Assigned for Review', 'In Review', 'Finished Reviewing', 'Approved'],
-      projectId,
-      userCreatedId,
+      project: {
+        connect: { projectId }
+      },
+      userCreated: {
+        connect: { userId: userCreatedId }
+      },
       assignees: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: assigneeIds.map(userId => ({ userId })),
       },
       reviewers: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: reviewerIds.map(userId => ({ userId })),
       }
     }
   };
 };
-const partUnixEpochDate = (projectId: string, userCreatedId: string): Prisma.PartCreateArgs => {
+const partUnixEpochDate = (projectId: string, userCreatedId: string, assigneeIds: string[], reviewerIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 15,
@@ -304,18 +360,22 @@ const partUnixEpochDate = (projectId: string, userCreatedId: string): Prisma.Par
       status: 'APPROVED',
       createdAt: new Date('1970-01-01T00:00:00Z'),
       history: ['Created part', 'Assigned for Review', 'In Review', 'Finished Reviewing', 'Approved'],
-      projectId,
-      userCreatedId,
+      project: {
+        connect: { projectId }
+      },
+      userCreated: {
+        connect: { userId: userCreatedId }
+      },
       assignees: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: assigneeIds.map(userId => ({ userId })),
       },
       reviewers: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: reviewerIds.map(userId => ({ userId })),
       }
     }
   };
 };
-const partFutureDate = (projectId: string, userCreatedId: string): Prisma.PartCreateArgs => {
+const partFutureDate = (projectId: string, userCreatedId: string, assigneeIds: string[], reviewerIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 16,
@@ -325,18 +385,22 @@ const partFutureDate = (projectId: string, userCreatedId: string): Prisma.PartCr
       status: 'APPROVED',
       createdAt: new Date('2100-12-31T23:59:59Z'),
       history: ['Created part', 'Assigned for Review', 'In Review', 'Finished Reviewing', 'Approved'],
-      projectId,
-      userCreatedId,
+      project: {
+        connect: { projectId }
+      },
+      userCreated: {
+        connect: { userId: userCreatedId }
+      },
       assignees: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: assigneeIds.map(userId => ({ userId })),
       },
       reviewers: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: reviewerIds.map(userId => ({ userId })),
       }
     }
   };
 };
-const partLeapYearDate = (projectId: string, userCreatedId: string): Prisma.PartCreateArgs => {
+const partLeapYearDate = (projectId: string, userCreatedId: string, assigneeIds: string[], reviewerIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 17,
@@ -346,13 +410,17 @@ const partLeapYearDate = (projectId: string, userCreatedId: string): Prisma.Part
       status: 'APPROVED',
       createdAt: new Date('2024-02-29T12:00:00Z'),
       history: ['Created part', 'Assigned for Review', 'In Review', 'Finished Reviewing', 'Approved'],
-      projectId,
-      userCreatedId,
+      project: {
+        connect: { projectId }
+      },
+      userCreated: {
+        connect: { userId: userCreatedId }
+      },
       assignees: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: assigneeIds.map(userId => ({ userId })),
       },
       reviewers: {
-        connect: [{ userId: 'REPLACE_WITH_USER_ID' }] // to be replaced in seed.ts
+        connect: reviewerIds.map(userId => ({ userId })),
       }
     }
   };
