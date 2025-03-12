@@ -19,7 +19,7 @@ interface ReviewChangeRequestProps {
 }
 
 export interface FormInput {
-  reviewNotes: string;
+  reviewNotes?: string;
   accepted: boolean;
   psId?: string;
 }
