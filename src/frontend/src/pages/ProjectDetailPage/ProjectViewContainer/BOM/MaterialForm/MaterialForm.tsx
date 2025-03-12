@@ -68,6 +68,7 @@ const schema = yup.object({
     .nullable()
 }) as yup.ObjectSchema<MaterialFormInput>;
 
+
 export interface MaterialFormInput {
   name: string;
   status: MaterialStatus;

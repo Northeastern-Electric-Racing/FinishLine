@@ -46,26 +46,27 @@ const GuestHomePage = ({ user }: GuestHomePageProps) => {
           display: 'flex',
           flexDirection: 'column',
           gap: 1.5,
-          height: `${PAGE_GRID_HEIGHT}vh`,
-          mt: 2
+          minHeight: `${PAGE_GRID_HEIGHT}vh`,
+          mt: 2,
+          overflow: 'auto' // Ensures content remains accessible on zoom
         }}
       >
-        <Grid container height={'60%'} spacing={2}>
-          <Grid item height={'100%'} xs={8.5}>
-            <Stack height={'100%'} spacing={1.5}>
-              <Box height={'70%'}>
+        <Grid container sx={{ flexGrow: 1 }} spacing={2}>
+          <Grid item xs={8.5} sx={{ display: 'flex', flexDirection: 'column' }}>
+            <Stack sx={{ flexGrow: 1, gap: 1.5 }}>
+              <Box sx={{ flexGrow: 1, minHeight: 0, overflow: 'auto' }}>
                 <GuestOrganizationInfo />
               </Box>
-              <Box height={'30%'}>
+              <Box sx={{ flexGrow: 1, minHeight: 0, overflow: 'auto' }}>
                 <MemberEncouragement />
               </Box>
             </Stack>
           </Grid>
-          <Grid item height={'100%'} xs={3.5}>
+          <Grid item xs={3.5} sx={{ display: 'flex', alignItems: 'center' }}>
             <OrganizationLogo />
           </Grid>
         </Grid>
-        <Box height={'40%'}>
+        <Box sx={{ flexShrink: 0, overflow: 'auto' }}>
           <FeaturedProjects />
         </Box>
       </Box>

@@ -637,7 +637,7 @@ export default class BillOfMaterialsService {
 
     if (unitName) {
       unit = await prisma.unit.findUnique({
-        where: { uniqueUnit: { name: unitName, organizationId: organization.organizationId } }
+        where: { uniqueUnit: { name: unitName, organizationId: material.wbsElement.organizationId } }
       });
       if (!unit) throw new NotFoundException('Unit', unitName);
     }

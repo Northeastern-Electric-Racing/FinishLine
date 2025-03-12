@@ -62,7 +62,7 @@ export const getSingleProject = (wbsNum: WbsNumber) => {
  * @param payload Payload containing all information needed to create a project.
  */
 export const createSingleProject = (payload: CreateSingleProjectPayload) => {
-  return axios.post<{ message: string }>(apiUrls.projectsCreate(), {
+  return axios.post<Project>(apiUrls.projectsCreate(), {
     ...payload
   });
 };

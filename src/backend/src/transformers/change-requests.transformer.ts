@@ -147,6 +147,7 @@ const changeRequestTransformer = (
     implementedChanges: changeRequest.changes.map((change) => ({
       wbsNum: wbsNumOf(change.wbsElement),
       changeId: change.changeId,
+      changeRequestIdentifier: changeRequest.identifier,
       changeRequestId: change.changeRequestId,
       implementer: userTransformer(change.implementer),
       detail: change.detail,

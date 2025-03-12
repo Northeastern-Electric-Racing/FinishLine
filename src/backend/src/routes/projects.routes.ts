@@ -2,11 +2,10 @@ import express from 'express';
 import { body } from 'express-validator';
 import {
   intMinZero,
-  decimalMinZero,
-  isMaterialStatus,
   nonEmptyString,
   projectValidators,
-  validateInputs
+  validateInputs,
+  materialValidators
 } from '../utils/validation.utils';
 import ProjectsController from '../controllers/projects.controllers';
 import { Material_Status } from '@prisma/client';
@@ -41,6 +40,7 @@ projectRouter.post(
   body('teamIds').isArray(),
   nonEmptyString(body('teamIds.*')),
   body('budget').optional().isInt({ min: 0 }).default(0),
+  nonEmptyString(body('crId').optional()),
   ...projectValidators,
   validateInputs,
   ProjectsController.createProject
@@ -49,6 +49,7 @@ projectRouter.post(
   '/edit',
   nonEmptyString(body('projectId')),
   intMinZero(body('budget')),
+  nonEmptyString(body('crId')),
   ...projectValidators,
   validateInputs,
   ProjectsController.editProject
@@ -88,42 +89,10 @@ projectRouter.post(
   validateInputs,
   ProjectsController.assignMaterialAssembly
 );
-projectRouter.post(
-  '/bom/material/:wbsNum/create',
-  nonEmptyString(body('name')),
-  nonEmptyString(body('assemblyId').optional()),
-  isMaterialStatus(body('status')),
-  nonEmptyString(body('materialTypeName').optional()),
-  nonEmptyString(body('manufacturerName').optional()),
-  nonEmptyString(body('manufacturerPartNumber').optional()),
-  nonEmptyString(body('pdmFileName').optional()),
-  decimalMinZero(body('quantity').optional()),
-  nonEmptyString(body('unitName')).optional(),
-  intMinZero(body('price').optional()),
-  intMinZero(body('subtotal').optional()),
-  nonEmptyString(body('linkUrl').optional()),
-  body('notes').isString().optional(),
-  validateInputs,
-  ProjectsController.createMaterial
-);
-projectRouter.post(
-  '/bom/material/:materialId/edit',
-  nonEmptyString(body('name')),
-  nonEmptyString(body('assemblyId').optional()),
-  isMaterialStatus(body('status')),
-  nonEmptyString(body('materialTypeName').optional()),
-  nonEmptyString(body('manufacturerName').optional()),
-  nonEmptyString(body('manufacturerPartNumber').optional()),
-  nonEmptyString(body('pdmFileName').optional()),
-  decimalMinZero(body('quantity').optional()),
-  body('unitName').optional(),
-  intMinZero(body('price').optional()),
-  intMinZero(body('subtotal').optional()),
-  nonEmptyString(body('linkUrl').optional()),
-  body('notes').isString().optional(),
-  validateInputs,
-  ProjectsController.editMaterial
-);
+
+projectRouter.post('/bom/material/:wbsNum/create', ...materialValidators, validateInputs, ProjectsController.createMaterial);
+projectRouter.post('/bom/material/:materialId/edit', ...materialValidators, validateInputs, ProjectsController.editMaterial);
+
 
 projectRouter.post(
   '/bom/assembly/:assemblyId/edit',
