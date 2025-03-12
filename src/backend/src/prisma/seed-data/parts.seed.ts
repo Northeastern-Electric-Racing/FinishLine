@@ -1,11 +1,10 @@
+/* This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
 import type { Prisma } from '@prisma/client';
 
-const basicPart = (
-  projectId: string,
-  userCreatedId: string,
-  assigneeIds: string[],
-  reviewerIds: string[]
-): Prisma.PartCreateArgs => {
+const basicPart = (projectId: string, userCreatedId: string, assigneeIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 1,
@@ -14,7 +13,6 @@ const basicPart = (
       previewImageLink: 'https://NER.com/basicpart.jpg',
       status: 'IN_PROGRESS',
       createdAt: new Date('2025-01-01T10:00:00Z'),
-      history: ['Created part', 'Updated specs', 'Assigned to review', 'Reviewed part'],
       project: {
         connect: { projectId }
       },
@@ -23,20 +21,12 @@ const basicPart = (
       },
       assignees: {
         connect: assigneeIds.map((userId) => ({ userId }))
-      },
-      reviewers: {
-        connect: reviewerIds.map((userId) => ({ userId }))
       }
     }
   };
 };
 
-const partWithoutDescription = (
-  projectId: string,
-  userCreatedId: string,
-  assigneeIds: string[],
-  reviewerIds: string[]
-): Prisma.PartCreateArgs => {
+const partWithoutDescription = (projectId: string, userCreatedId: string, assigneeIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 2,
@@ -44,7 +34,6 @@ const partWithoutDescription = (
       previewImageLink: 'https://NER.com/partwithoutdes.jpg',
       status: 'IN_PROGRESS',
       createdAt: new Date('2025-01-01T10:00:00Z'),
-      history: ['Created part'],
       project: {
         connect: { projectId }
       },
@@ -53,20 +42,12 @@ const partWithoutDescription = (
       },
       assignees: {
         connect: assigneeIds.map((userId) => ({ userId }))
-      },
-      reviewers: {
-        connect: reviewerIds.map((userId) => ({ userId }))
       }
     }
   };
 };
 
-const partWithoutImage = (
-  projectId: string,
-  userCreatedId: string,
-  assigneeIds: string[],
-  reviewerIds: string[]
-): Prisma.PartCreateArgs => {
+const partWithoutImage = (projectId: string, userCreatedId: string, assigneeIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 3,
@@ -74,7 +55,6 @@ const partWithoutImage = (
       description: 'Part without image but with everything else',
       status: 'IN_PROGRESS',
       createdAt: new Date('2025-01-01T10:00:00Z'),
-      history: ['Created part'],
       project: {
         connect: { projectId }
       },
@@ -83,19 +63,11 @@ const partWithoutImage = (
       },
       assignees: {
         connect: assigneeIds.map((userId) => ({ userId }))
-      },
-      reviewers: {
-        connect: reviewerIds.map((userId) => ({ userId }))
       }
     }
   };
 };
-const partWithEmptyHistory = (
-  projectId: string,
-  userCreatedId: string,
-  assigneeIds: string[],
-  reviewerIds: string[]
-): Prisma.PartCreateArgs => {
+const partWithEmptyHistory = (projectId: string, userCreatedId: string, assigneeIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 4,
@@ -104,7 +76,6 @@ const partWithEmptyHistory = (
       previewImageLink: 'https://NER.com/partemptyhistory.jpg',
       status: 'IN_PROGRESS',
       createdAt: new Date('2025-01-01T10:00:00Z'),
-      history: [],
       project: {
         connect: { projectId }
       },
@@ -113,19 +84,11 @@ const partWithEmptyHistory = (
       },
       assignees: {
         connect: assigneeIds.map((userId) => ({ userId }))
-      },
-      reviewers: {
-        connect: reviewerIds.map((userId) => ({ userId }))
       }
     }
   };
 };
-const partWithLongName = (
-  projectId: string,
-  userCreatedId: string,
-  assigneeIds: string[],
-  reviewerIds: string[]
-): Prisma.PartCreateArgs => {
+const partWithLongName = (projectId: string, userCreatedId: string, assigneeIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 5,
@@ -134,7 +97,6 @@ const partWithLongName = (
       previewImageLink: 'https://NER.com/partwithlongname.jpg',
       status: 'IN_PROGRESS',
       createdAt: new Date('2025-01-01T10:00:00Z'),
-      history: ['Created part'],
       project: {
         connect: { projectId }
       },
@@ -143,19 +105,11 @@ const partWithLongName = (
       },
       assignees: {
         connect: assigneeIds.map((userId) => ({ userId }))
-      },
-      reviewers: {
-        connect: reviewerIds.map((userId) => ({ userId }))
       }
     }
   };
 };
-const partIndexNegative = (
-  projectId: string,
-  userCreatedId: string,
-  assigneeIds: string[],
-  reviewerIds: string[]
-): Prisma.PartCreateArgs => {
+const partIndexNegative = (projectId: string, userCreatedId: string, assigneeIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: -1,
@@ -164,7 +118,6 @@ const partIndexNegative = (
       previewImageLink: 'https://NER.com/negativeindexpart.jpg',
       status: 'IN_PROGRESS',
       createdAt: new Date('2025-01-01T10:00:00Z'),
-      history: ['Created part'],
       project: {
         connect: { projectId }
       },
@@ -173,19 +126,11 @@ const partIndexNegative = (
       },
       assignees: {
         connect: assigneeIds.map((userId) => ({ userId }))
-      },
-      reviewers: {
-        connect: reviewerIds.map((userId) => ({ userId }))
       }
     }
   };
 };
-const partIndexZero = (
-  projectId: string,
-  userCreatedId: string,
-  assigneeIds: string[],
-  reviewerIds: string[]
-): Prisma.PartCreateArgs => {
+const partIndexZero = (projectId: string, userCreatedId: string, assigneeIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 0,
@@ -194,7 +139,6 @@ const partIndexZero = (
       previewImageLink: 'https://NER.com/zeroindexpart.jpg',
       status: 'IN_PROGRESS',
       createdAt: new Date('2025-01-01T10:00:00Z'),
-      history: ['Created part'],
       project: {
         connect: { projectId }
       },
@@ -203,19 +147,11 @@ const partIndexZero = (
       },
       assignees: {
         connect: assigneeIds.map((userId) => ({ userId }))
-      },
-      reviewers: {
-        connect: reviewerIds.map((userId) => ({ userId }))
       }
     }
   };
 };
-const partIndexLarge = (
-  projectId: string,
-  userCreatedId: string,
-  assigneeIds: string[],
-  reviewerIds: string[]
-): Prisma.PartCreateArgs => {
+const partIndexLarge = (projectId: string, userCreatedId: string, assigneeIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 99999999,
@@ -224,7 +160,6 @@ const partIndexLarge = (
       previewImageLink: 'https://NER.com/largeindexpart.jpg',
       status: 'IN_PROGRESS',
       createdAt: new Date('2025-01-01T10:00:00Z'),
-      history: ['Created part'],
       project: {
         connect: { projectId }
       },
@@ -233,19 +168,11 @@ const partIndexLarge = (
       },
       assignees: {
         connect: assigneeIds.map((userId) => ({ userId }))
-      },
-      reviewers: {
-        connect: reviewerIds.map((userId) => ({ userId }))
       }
     }
   };
 };
-const partReadyForReview = (
-  projectId: string,
-  userCreatedId: string,
-  assigneeIds: string[],
-  reviewerIds: string[]
-): Prisma.PartCreateArgs => {
+const partReadyForReview = (projectId: string, userCreatedId: string, assigneeIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 9,
@@ -254,7 +181,6 @@ const partReadyForReview = (
       previewImageLink: 'https://NER.com/testimage.jpg',
       status: 'READY_FOR_REVIEW',
       createdAt: new Date('2025-01-01T10:00:00Z'),
-      history: ['Created part', 'Ready for Review'],
       project: {
         connect: { projectId }
       },
@@ -263,19 +189,11 @@ const partReadyForReview = (
       },
       assignees: {
         connect: assigneeIds.map((userId) => ({ userId }))
-      },
-      reviewers: {
-        connect: reviewerIds.map((userId) => ({ userId }))
       }
     }
   };
 };
-const partInReview = (
-  projectId: string,
-  userCreatedId: string,
-  assigneeIds: string[],
-  reviewerIds: string[]
-): Prisma.PartCreateArgs => {
+const partInReview = (projectId: string, userCreatedId: string, assigneeIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 10,
@@ -284,7 +202,6 @@ const partInReview = (
       previewImageLink: 'https://NER.com/testimage.jpg',
       status: 'IN_REVIEW',
       createdAt: new Date('2025-01-01T10:00:00Z'),
-      history: ['Created part', 'Assigned for Review', 'In Review'],
       project: {
         connect: { projectId }
       },
@@ -293,19 +210,11 @@ const partInReview = (
       },
       assignees: {
         connect: assigneeIds.map((userId) => ({ userId }))
-      },
-      reviewers: {
-        connect: reviewerIds.map((userId) => ({ userId }))
       }
     }
   };
 };
-const partReviewed = (
-  projectId: string,
-  userCreatedId: string,
-  assigneeIds: string[],
-  reviewerIds: string[]
-): Prisma.PartCreateArgs => {
+const partReviewed = (projectId: string, userCreatedId: string, assigneeIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 11,
@@ -314,7 +223,6 @@ const partReviewed = (
       previewImageLink: 'https://NER.com/testimage.jpg',
       status: 'REVIEWED',
       createdAt: new Date('2025-01-01T10:00:00Z'),
-      history: ['Created part', 'Assigned for Review', 'In Review', 'Finished Reviewing'],
       project: {
         connect: { projectId }
       },
@@ -323,19 +231,11 @@ const partReviewed = (
       },
       assignees: {
         connect: assigneeIds.map((userId) => ({ userId }))
-      },
-      reviewers: {
-        connect: reviewerIds.map((userId) => ({ userId }))
       }
     }
   };
 };
-const partApproved = (
-  projectId: string,
-  userCreatedId: string,
-  assigneeIds: string[],
-  reviewerIds: string[]
-): Prisma.PartCreateArgs => {
+const partApproved = (projectId: string, userCreatedId: string, assigneeIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 12,
@@ -344,7 +244,6 @@ const partApproved = (
       previewImageLink: 'https://NER.com/testimage.jpg',
       status: 'APPROVED',
       createdAt: new Date('2025-01-01T10:00:00Z'),
-      history: ['Created part', 'Assigned for Review', 'In Review', 'Finished Reviewing', 'Approved'],
       project: {
         connect: { projectId }
       },
@@ -353,19 +252,11 @@ const partApproved = (
       },
       assignees: {
         connect: assigneeIds.map((userId) => ({ userId }))
-      },
-      reviewers: {
-        connect: reviewerIds.map((userId) => ({ userId }))
       }
     }
   };
 };
-const partCurrentDate = (
-  projectId: string,
-  userCreatedId: string,
-  assigneeIds: string[],
-  reviewerIds: string[]
-): Prisma.PartCreateArgs => {
+const partCurrentDate = (projectId: string, userCreatedId: string, assigneeIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 13,
@@ -374,7 +265,6 @@ const partCurrentDate = (
       previewImageLink: 'https://NER.com/testimage.jpg',
       status: 'APPROVED',
       createdAt: new Date(),
-      history: ['Created part', 'Assigned for Review', 'In Review', 'Finished Reviewing', 'Approved'],
       project: {
         connect: { projectId }
       },
@@ -383,19 +273,11 @@ const partCurrentDate = (
       },
       assignees: {
         connect: assigneeIds.map((userId) => ({ userId }))
-      },
-      reviewers: {
-        connect: reviewerIds.map((userId) => ({ userId }))
       }
     }
   };
 };
-const partPastDate = (
-  projectId: string,
-  userCreatedId: string,
-  assigneeIds: string[],
-  reviewerIds: string[]
-): Prisma.PartCreateArgs => {
+const partPastDate = (projectId: string, userCreatedId: string, assigneeIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 14,
@@ -404,7 +286,6 @@ const partPastDate = (
       previewImageLink: 'https://NER.com/testimage.jpg',
       status: 'APPROVED',
       createdAt: new Date('2000-01-01T00:00:00Z'),
-      history: ['Created part', 'Assigned for Review', 'In Review', 'Finished Reviewing', 'Approved'],
       project: {
         connect: { projectId }
       },
@@ -413,19 +294,11 @@ const partPastDate = (
       },
       assignees: {
         connect: assigneeIds.map((userId) => ({ userId }))
-      },
-      reviewers: {
-        connect: reviewerIds.map((userId) => ({ userId }))
       }
     }
   };
 };
-const partUnixEpochDate = (
-  projectId: string,
-  userCreatedId: string,
-  assigneeIds: string[],
-  reviewerIds: string[]
-): Prisma.PartCreateArgs => {
+const partUnixEpochDate = (projectId: string, userCreatedId: string, assigneeIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 15,
@@ -434,7 +307,6 @@ const partUnixEpochDate = (
       previewImageLink: 'https://NER.com/testimage.jpg',
       status: 'APPROVED',
       createdAt: new Date('1970-01-01T00:00:00Z'),
-      history: ['Created part', 'Assigned for Review', 'In Review', 'Finished Reviewing', 'Approved'],
       project: {
         connect: { projectId }
       },
@@ -443,19 +315,11 @@ const partUnixEpochDate = (
       },
       assignees: {
         connect: assigneeIds.map((userId) => ({ userId }))
-      },
-      reviewers: {
-        connect: reviewerIds.map((userId) => ({ userId }))
       }
     }
   };
 };
-const partFutureDate = (
-  projectId: string,
-  userCreatedId: string,
-  assigneeIds: string[],
-  reviewerIds: string[]
-): Prisma.PartCreateArgs => {
+const partFutureDate = (projectId: string, userCreatedId: string, assigneeIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 16,
@@ -464,7 +328,6 @@ const partFutureDate = (
       previewImageLink: 'https://NER.com/testimage.jpg',
       status: 'APPROVED',
       createdAt: new Date('2100-12-31T23:59:59Z'),
-      history: ['Created part', 'Assigned for Review', 'In Review', 'Finished Reviewing', 'Approved'],
       project: {
         connect: { projectId }
       },
@@ -473,19 +336,11 @@ const partFutureDate = (
       },
       assignees: {
         connect: assigneeIds.map((userId) => ({ userId }))
-      },
-      reviewers: {
-        connect: reviewerIds.map((userId) => ({ userId }))
       }
     }
   };
 };
-const partLeapYearDate = (
-  projectId: string,
-  userCreatedId: string,
-  assigneeIds: string[],
-  reviewerIds: string[]
-): Prisma.PartCreateArgs => {
+const partLeapYearDate = (projectId: string, userCreatedId: string, assigneeIds: string[]): Prisma.PartCreateArgs => {
   return {
     data: {
       index: 17,
@@ -494,7 +349,6 @@ const partLeapYearDate = (
       previewImageLink: 'https://NER.com/testimage.jpg',
       status: 'APPROVED',
       createdAt: new Date('2024-02-29T12:00:00Z'),
-      history: ['Created part', 'Assigned for Review', 'In Review', 'Finished Reviewing', 'Approved'],
       project: {
         connect: { projectId }
       },
@@ -503,9 +357,6 @@ const partLeapYearDate = (
       },
       assignees: {
         connect: assigneeIds.map((userId) => ({ userId }))
-      },
-      reviewers: {
-        connect: reviewerIds.map((userId) => ({ userId }))
       }
     }
   };
@@ -530,12 +381,6 @@ export const dbSeedAllParts = {
   partFutureDate,
   partLeapYearDate
 };
-/*
- * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
- * See the LICENSE file in the repository root folder for details.
- */
-
-import { Prisma } from '@prisma/client';
 
 export const MechanicalPartTag = (organizationId: string): Prisma.PartTagCreateArgs => {
   return {
