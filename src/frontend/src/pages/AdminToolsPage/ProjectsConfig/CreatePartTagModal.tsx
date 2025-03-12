@@ -1,27 +1,29 @@
 import { FormControl, FormHelperText, FormLabel } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import ErrorPage from '../../ErrorPage';
+import { useForm } from 'react-hook-form';
+import { useToast } from '../../../hooks/toasts.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { PartTagPayload, useCreatePartTag } from '../../../hooks/part-tag.hooks';
+import { useCreatePartTag } from '../../../hooks/part-tag.hooks';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { PartTag } from 'shared';
 import NERFormModal from '../../../components/NERFormModal';
 
 const schema = yup.object().shape({
-  question: yup.string().required('Id is Required'),
-  answer: yup.string().required('Name is Required')
+  partTagId: yup.string().required('Id is Required'),
+  name: yup.string().required('Name is Required')
 });
 
 interface CreatePartTagProps {
   showModal: boolean;
   handleClose: () => void;
   defaultValues?: PartTag;
-  onSubmit: (data: PartTagPayload) => Promise<PartTag>;
 }
 
-const CreatePartTagModal: React.FC<CreatePartTagProps> = ({ showModal, handleClose }) => {
+const CreatePartTagModal: React.FC<CreatePartTagProps> = ({ showModal, handleClose, defaultValues }) => {
   const { isLoading, isError, error, mutateAsync } = useCreatePartTag();
+  const toast = useToast();
 
   const onSubmit = async (data: { name: string }) => {
     try {
@@ -42,7 +44,8 @@ const CreatePartTagModal: React.FC<CreatePartTagProps> = ({ showModal, handleClo
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      name: ''
+      partTagId: defaultValues?.partTagId ?? '',
+      name: defaultValues?.name ?? ''
     }
   });
 
@@ -51,18 +54,18 @@ const CreatePartTagModal: React.FC<CreatePartTagProps> = ({ showModal, handleClo
 
   return (
     <NERFormModal
-      showModal={showModal}
-      handleClose={handleClose}
+      open={showModal}
+      onHide={handleClose}
       title="New Tag"
-      reset={() => reset({ name: '' })}
+      reset={() => reset({ partTagId: '' })}
       handleUseFormSubmit={handleSubmit}
-      onSubmit={onsubmit}
+      onFormSubmit={onSubmit}
       formId="new-part-tag-form"
       showCloseButton
     >
       <FormControl>
-        <FormLabel>Car</FormLabel>
-        <ReactHookTextField name="name" control={control} sx={{ width: 1 }} />
+        <FormLabel>Part Tag</FormLabel>
+        <ReactHookTextField name="Tag Name" control={control} sx={{ width: 1 }} />
         <FormHelperText error>{errors.name?.message}</FormHelperText>
       </FormControl>
     </NERFormModal>

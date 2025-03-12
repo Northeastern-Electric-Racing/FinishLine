@@ -23,7 +23,7 @@ const PartTagsTable: React.FC = () => {
     return <ErrorPage message={partTagsError?.message} />;
   }
 
-  const carsTableRows = partTags.map((partTag) => (
+  const partTagTableRows = partTags.map((partTag) => (
     <TableRow>
       <TableCell sx={{ border: '2px solid black' }}>{partTag.partTagId}</TableCell>
       <TableCell sx={{ border: '2px solid black' }}>{partTag.name}</TableCell>
@@ -36,10 +36,9 @@ const PartTagsTable: React.FC = () => {
   return (
     <Box>
       <CreatePartTagModal showModal={openModal} handleClose={() => setOpenModal(false)} />
-      <Typography variant="subtitle1">Part Tags</Typography>
-      <AdminToolTable columns={[{ name: 'Tag Name' }]} rows={[]} />
+      <AdminToolTable columns={[{ name: 'Tag Name' }]} rows={partTagTableRows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
-        <NERButton variant="contained" onClick={() => {}}>
+        <NERButton variant="contained" onClick={() => setOpenModal(true)}>
           New Tag
         </NERButton>
       </Box>
