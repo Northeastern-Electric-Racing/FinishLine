@@ -177,7 +177,7 @@ describe('Finance Tests', () => {
           dueDate: new Date(12, 1, 24),
           notifyDate: null,
           assigneeUserId: null,
-          notes: 'uhh nothing'
+          notes: 'uhh nothing',
         },
         {
           sponsorId: '11',
@@ -185,11 +185,11 @@ describe('Finance Tests', () => {
           dueDate: new Date(12, 1, 24),
           notifyDate: null,
           assigneeUserId: null,
-          notes: 'probably nothing again'
+          notes: 'probably nothing again',
         }],
         organization,
         'googlecode'
-        );
+      );
 
       const sponsorTasks = await FinanceServices.getSponsorTasks(sponsor.sponsorId, organization.organizationId);
 
