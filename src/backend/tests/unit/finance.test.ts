@@ -158,7 +158,6 @@ describe('Finance Tests', () => {
     });
   });
 
-
   describe('Get Sponsor Tasks', () => {
     it('Succeeds and gets the sponsor tasks from a sponsor', async () => {
       const sponsor = await FinanceServices.createSponsor(
@@ -171,22 +170,24 @@ describe('Finance Tests', () => {
         sponsorTierId,
         true,
         'Bill Gates',
-        [{
-          sponsorId: '1',
-          sponsorTaskId: '2',
-          dueDate: new Date(12, 1, 24),
-          notifyDate: null,
-          assigneeUserId: null,
-          notes: 'uhh nothing',
-        },
-        {
-          sponsorId: '11',
-          sponsorTaskId: '22',
-          dueDate: new Date(12, 1, 24),
-          notifyDate: null,
-          assigneeUserId: null,
-          notes: 'probably nothing again',
-        }],
+        [
+          {
+            sponsorId: '1',
+            sponsorTaskId: '2',
+            dueDate: new Date(12, 1, 24),
+            notifyDate: null,
+            assigneeUserId: null,
+            notes: 'uhh nothing'
+          },
+          {
+            sponsorId: '11',
+            sponsorTaskId: '22',
+            dueDate: new Date(12, 1, 24),
+            notifyDate: null,
+            assigneeUserId: null,
+            notes: 'probably nothing again'
+          }
+        ],
         organization,
         'googlecode'
       );
