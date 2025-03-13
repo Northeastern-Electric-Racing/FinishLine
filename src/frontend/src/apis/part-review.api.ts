@@ -1,4 +1,12 @@
-import { PartPayload, PartPreview, PartSubmissionPayload, Part, PartReviewRequestPayload, PartReviewPayload } from 'shared';
+import {
+  PartPayload,
+  PartPreview,
+  PartSubmissionPayload,
+  Part,
+  PartReviewRequestPayload,
+  PartReviewPayload,
+  Review_Status
+} from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import { partPreviewTransformer, partTransformer } from './transformers/part-review.transformers';
@@ -8,8 +16,8 @@ import { partPreviewTransformer, partTransformer } from './transformers/part-rev
  *
  * @param projectId the id of the project
  */
-export const getPartsFromProject = (projectId: string): Promise<{ data: PartPreview[] }> => {
-  return new Promise((resolve) => {
+export const getPartsFromProject = (/*projectId: string*/): { data: PartPreview[] } => {
+  return {
     data: [
       {
         partId: '1',
@@ -17,7 +25,7 @@ export const getPartsFromProject = (projectId: string): Promise<{ data: PartPrev
         commonName: 'wheels',
         description: 'we need wheels for the car to go, because no wheels means no rolly means no car go',
         previewImageLink: 'jqoi34ghpwadjkog5qh3',
-        status: 'IN_PROGRESS',
+        status: 'IN_PROGRESS' as Review_Status,
         tags: [],
         projectId: '1',
         assignees: [],
@@ -39,7 +47,7 @@ export const getPartsFromProject = (projectId: string): Promise<{ data: PartPrev
         commonName: 'Test Part 2',
         description: 'Test Description 2',
         previewImageLink: 'qogi43tbiohrj3q2jntfpi',
-        status: 'READY_FOR_REVIEW',
+        status: 'READY_FOR_REVIEW' as Review_Status,
         tags: [],
         projectId: '1',
         assignees: [],
@@ -55,12 +63,12 @@ export const getPartsFromProject = (projectId: string): Promise<{ data: PartPrev
           permissions: []
         }
       }
-    ];
-  });
+    ]
+  };
 
-  return axios.get<PartPreview[]>(apiUrls.partsByProject(projectId), {
-    transformResponse: (data) => data.map(partPreviewTransformer)
-  });
+  //   return axios.get<PartPreview[]>(apiUrls.partsByProject(projectId), {
+  //     transformResponse: (data) => data.map(partPreviewTransformer)
+  //   });
 };
 
 /**
@@ -68,15 +76,15 @@ export const getPartsFromProject = (projectId: string): Promise<{ data: PartPrev
  *
  * @param partId the id of the part
  */
-export const getSinglePart = (partId: string): Promise<{ data: Part }> => {
-  return new Promise((resolve) => ({
+export const getSinglePart = (/*partId: string*/): { data: Part } => {
+  return {
     data: {
       partId: '1',
       index: 1,
       commonName: 'Suspension',
       description: 'Test description for a suspension part, which could be a fairly lon sentence',
       previewImageLink: 'qogi43tbiohrj3q2jntfpi',
-      status: 'IN_REVIEW',
+      status: 'IN_REVIEW' as Review_Status,
       tags: [],
       projectId: '1',
       assignees: [],
@@ -165,10 +173,10 @@ export const getSinglePart = (partId: string): Promise<{ data: Part }> => {
         }
       ]
     }
-  }));
-  return axios.get<Part>(apiUrls.partById(partId), {
-    transformResponse: (data) => partTransformer(JSON.parse(data))
-  });
+  };
+  //   return axios.get<Part>(apiUrls.partById(partId), {
+  //     transformResponse: (data) => partTransformer(JSON.parse(data))
+  //   });
 };
 
 /**

@@ -21,7 +21,7 @@ import {
  */
 export const usePartsFromProject = (projectId: string) => {
   return useQuery<PartPreview[], Error>(['parts', 'byProject'], async () => {
-    const { data } = await getPartsFromProject(projectId);
+    const { data } = await getPartsFromProject(/*projectId*/);
     return data;
   });
 };
@@ -33,7 +33,7 @@ export const usePartsFromProject = (projectId: string) => {
  */
 export const useSinglePart = (partId: string) => {
   return useQuery<Part, Error>(['parts', 'byId', partId], async () => {
-    const { data } = await getSinglePart(partId);
+    const { data } = await getSinglePart(/*partId*/);
     return data;
   });
 };

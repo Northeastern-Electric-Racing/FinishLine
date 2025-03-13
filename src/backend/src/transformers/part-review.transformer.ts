@@ -63,7 +63,8 @@ export const partSubmissionTransformer = (
     partId: submission.partId,
     userCreated: userTransformer(submission.userCreated),
     reviewRequests: submission.reviewRequests.map(partReviewRequestTransformer),
-    reviews: submission.reviews.map(partReviewTransformer)
+    reviews: submission.reviews.map(partReviewTransformer),
+    createdAt: submission.createdAt
   };
 };
 
