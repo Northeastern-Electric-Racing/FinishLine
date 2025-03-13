@@ -247,9 +247,8 @@ const deleteGraphCollection = (id: string) => `${graphCollectionById(id)}/delete
 
 /************** Part Tag Endpoints ***************/
 const partTags = () => `${API_URL}/tags`;
-const partTagCreate = () => `${partTags()}/create`;
+const partTagCreate = () => `${partTags()}/tags/create`;
 const partTagDelete = (id: string) => `${partTags()}/tag/${id}/delete`; // may need to add this route?
-
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;

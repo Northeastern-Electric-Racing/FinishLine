@@ -1,12 +1,11 @@
 import { PartTag } from 'shared/src/types/part-review.types';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { PartTagPayload } from '../hooks/part-tag.hooks';
+import { PartTagPayload } from '../hooks/part-review.hooks';
 
 export const getAllPartTags = async () => {
   return await axios.get<PartTag[]>(apiUrls.partTags());
 };
-
 
 export const createPartTag = async (payload: PartTagPayload) => {
   return await axios.post<PartTag>(apiUrls.partTagCreate(), payload);

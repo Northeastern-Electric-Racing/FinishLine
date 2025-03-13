@@ -4,7 +4,7 @@ import ErrorPage from '../../ErrorPage';
 import { useForm } from 'react-hook-form';
 import { useToast } from '../../../hooks/toasts.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useCreatePartTag } from '../../../hooks/part-tag.hooks';
+import { useCreatePartTag } from '../../../hooks/part-review.hooks';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { PartTag } from 'shared';

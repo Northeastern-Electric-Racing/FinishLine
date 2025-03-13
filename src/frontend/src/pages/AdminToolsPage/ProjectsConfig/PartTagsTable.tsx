@@ -4,7 +4,7 @@ import AdminToolTable from '../AdminToolTable';
 import { useState } from 'react';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { useGetAllPartTags } from '../../../hooks/part-tag.hooks';
+import { useGetAllPartTags } from '../../../hooks/part-review.hooks';
 import CreatePartTagModal from './CreatePartTagModal';
 
 const PartTagsTable: React.FC = () => {
@@ -14,6 +14,7 @@ const PartTagsTable: React.FC = () => {
     isError: partTagsIsError,
     error: partTagsError
   } = useGetAllPartTags();
+
   const [openModal, setOpenModal] = useState(false);
 
   if (!partTags || partTagsIsLoading) {
@@ -36,7 +37,7 @@ const PartTagsTable: React.FC = () => {
   return (
     <Box>
       <CreatePartTagModal showModal={openModal} handleClose={() => setOpenModal(false)} />
-      <AdminToolTable columns={[{ name: 'Tag Name' }]} rows={partTagTableRows} />
+      <AdminToolTable columns={[{ name: 'Tag Id' }, { name: 'Tag Name' }, { name: 'color' }]} rows={partTagTableRows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         <NERButton variant="contained" onClick={() => setOpenModal(true)}>
           New Tag

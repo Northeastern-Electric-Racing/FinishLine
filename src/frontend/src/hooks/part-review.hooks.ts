@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { createPartTag, deletePartTag, getAllPartTags } from '../apis/part-tags.api';
+import { createPartTag, deletePartTag, getAllPartTags } from '../apis/part-review.api';
 import { PartTag } from 'shared';
 
 export interface PartTagPayload {
