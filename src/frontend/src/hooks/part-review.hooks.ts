@@ -32,7 +32,7 @@ export const usePartsFromProject = (/*projectId: string*/) => {
  * @param partId the id of the part
  */
 export const useSinglePart = (/*partId: string*/) => {
-  return useQuery<Part, Error>(['parts', 'byId', /*partId*/], async () => {
+  return useQuery<Part, Error>(['parts', 'byId' /*partId*/], async () => {
     const { data } = await getSinglePart(/*partId*/);
     return data;
   });
