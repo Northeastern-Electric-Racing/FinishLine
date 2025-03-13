@@ -44,6 +44,36 @@ partsRouter.post(
   PartsReviewController.updateCommonMistake
 );
 
+partsRouter.post(
+  '/popup/:reviewid/create',
+  nonEmptyString(body('title')),
+  nonEmptyString(body('description')),
+  body('starred').isBoolean(),
+  validateInputs,
+  PartsReviewController.createPartReviewPopup
+)
+
+partsRouter.post(
+  '/popup/:reviewid/update',
+  nonEmptyString(body('title')),
+  nonEmptyString(body('description')),
+  body('starred').isBoolean(),
+  validateInputs,
+  PartsReviewController.updatePartReviewPopup
+)
+
+partsRouter.post(
+  '/popup/:reviewid/delete',
+  nonEmptyString(body('title')),
+  nonEmptyString(body('description')),
+  body('starred').isBoolean(),
+  validateInputs,
+  PartsReviewController.deletePartReviewPopup
+)
+
+
+
 partsRouter.post('/common-mistake/:commonMistakeId/delete', PartsReviewController.deleteCommonMistake);
+partsRouter.post('/popup/:reviewId/create', PartsReviewController.createPartReviewPopup);
 
 export default partsRouter;

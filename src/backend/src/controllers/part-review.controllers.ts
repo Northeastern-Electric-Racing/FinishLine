@@ -1,5 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import PartReviewService from '../services/part-review.services';
+import { getCurrentUser } from '../utils/auth.utils';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export default class PartReviewController {
   static async getAllPartTags(req: Request, res: Response, next: NextFunction) {
@@ -104,4 +108,99 @@ export default class PartReviewController {
       next(error);
     }
   }
+
+  static async createPartReviewPopup(req: Request, res: Response, next: NextFunction): Promise<void> {
+      try {
+          const user = await getCurrentUser(res);
+          const { reviewId, xCoord, yCoord, title, description } = req.body;
+
+          const review = await prisma.partReview.findUnique({
+              where: { partReviewId: reviewId },
+              select: { userCreatedId: true }
+          });
+
+          if (!review) {
+              res.status(404).json({ error: 'Review not found' });
+              return;
+          }
+
+          const isAdmin = user.additionalPermissions?.includes('ADMIN') || false;
+
+          if (review.userCreatedId !== user.userId && !isAdmin) {
+              res.status(403).json({ error: 'Unauthorized' });
+              return;
+          }
+
+          const newPopup = await prisma.part_Review_Popup.create({
+              data: { reviewId, xCoord, yCoord, title, description}
+          });
+          res.status(201).json(newPopup);
+      } catch (error) {
+          next(error);
+      }
+  };
+
+  static async updatePartReviewPopup(req: Request, res: Response, next: NextFunction): Promise<void> {
+      try {
+          const user = await getCurrentUser(res);
+          const { popupId } = req.params;
+          const { xCoord, yCoord, title, description } = req.body;
+
+          const popup = await prisma.part_Review_Popup.findUnique({
+              where: { partReviewPopupId: popupId },
+              include: { review: { select: { userCreatedId: true } } }
+          });
+
+          if (!popup) {
+              res.status(404).json({ error: 'Popup not found' });
+              return;
+          }
+
+          const isAdmin = user.additionalPermissions?.includes('ADMIN') || false;
+
+          if (popup.review.userCreatedId !== user.userId && !isAdmin) {
+              res.status(403).json({ error: 'Unauthorized' });
+              return;
+          }
+
+          const updatedPopup = await prisma.part_Review_Popup.update({
+              where: { partReviewPopupId: popupId },
+              data: { xCoord, yCoord, title, description }
+          });
+          res.json(updatedPopup);
+      } catch (error) {
+          next(error);
+      }
+  };
+
+  static async deletePartReviewPopup(req: Request, res: Response, next: NextFunction): Promise<void> {
+      try {
+          const user = await getCurrentUser(res);
+          const { popupId } = req.params;
+
+          const popup = await prisma.part_Review_Popup.findUnique({
+              where: { partReviewPopupId: popupId },
+              include: { review: { select: { userCreatedId: true } } }
+          });
+
+          if (!popup) {
+              res.status(404).json({ error: 'Popup not found' });
+              return;
+          }
+
+          const isAdmin = user.additionalPermissions?.includes('ADMIN') || false;
+
+          if (popup.review.userCreatedId !== user.userId && !isAdmin) {
+              res.status(403).json({ error: 'Unauthorized' });
+              return;
+          }
+
+          await prisma.part_Review_Popup.delete({
+              where: { partReviewPopupId: popupId }
+          });
+          res.json({ message: 'Popup deleted successfully' });
+      } catch (error) {
+          next(error);
+      }
+    }
 }

@@ -1216,7 +1216,7 @@ model Part_Review_Popup {
   review            PartReview @relation(fields: [reviewId], references: [partReviewId])
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
-  deletedAd         DateTime?
+  deletedAt         DateTime?
 }
 
 model PartReviewCommonMistake {
