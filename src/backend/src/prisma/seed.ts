@@ -2018,7 +2018,7 @@ const performSeed: () => Promise<void> = async () => {
       organizationId: ner.organizationId
     }
   });
-
+  
   await FinanceServices.createSponsor(
     thomasEmrax,
     'Google',
