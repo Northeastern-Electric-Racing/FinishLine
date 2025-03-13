@@ -19,7 +19,7 @@ import {
  *
  * @param projectId the id of the project
  */
-export const usePartsFromProject = (projectId: string) => {
+export const usePartsFromProject = (/*projectId: string*/) => {
   return useQuery<PartPreview[], Error>(['parts', 'byProject'], async () => {
     const { data } = await getPartsFromProject(/*projectId*/);
     return data;
@@ -31,8 +31,8 @@ export const usePartsFromProject = (projectId: string) => {
  *
  * @param partId the id of the part
  */
-export const useSinglePart = (partId: string) => {
-  return useQuery<Part, Error>(['parts', 'byId', partId], async () => {
+export const useSinglePart = (/*partId: string*/) => {
+  return useQuery<Part, Error>(['parts', 'byId', /*partId*/], async () => {
     const { data } = await getSinglePart(/*partId*/);
     return data;
   });

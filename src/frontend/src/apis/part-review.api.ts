@@ -9,7 +9,6 @@ import {
 } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { partPreviewTransformer, partTransformer } from './transformers/part-review.transformers';
 
 /**
  * Fetches all parts acosiated with the given project as part previews
