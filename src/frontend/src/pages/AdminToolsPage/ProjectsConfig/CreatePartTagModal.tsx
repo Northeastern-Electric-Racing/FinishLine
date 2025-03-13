@@ -57,14 +57,17 @@ const CreatePartTagModal: React.FC<CreatePartTagProps> = ({ showModal, handleClo
       open={showModal}
       onHide={handleClose}
       title="New Tag"
-      reset={() => reset({ partTagId: '' })}
+      reset={() => reset({ name: '' })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
       formId="new-part-tag-form"
       showCloseButton
     >
       <FormControl>
-        <FormLabel>Part Tag</FormLabel>
+        <FormLabel>Tag Id</FormLabel>
+        <ReactHookTextField name="Tag Id" control={control} sx={{ width: 1 }} />
+        <FormHelperText error>{errors.partTagId?.message}</FormHelperText>
+        <FormLabel>Tag Name</FormLabel>
         <ReactHookTextField name="Tag Name" control={control} sx={{ width: 1 }} />
         <FormHelperText error>{errors.name?.message}</FormHelperText>
       </FormControl>

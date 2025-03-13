@@ -1,4 +1,4 @@
-import { Box, TableCell, TableRow, Typography } from '@mui/material';
+import { Box, TableCell, TableRow } from '@mui/material';
 import { NERButton } from '../../../components/NERButton';
 import AdminToolTable from '../AdminToolTable';
 import { useState } from 'react';
@@ -26,10 +26,21 @@ const PartTagsTable: React.FC = () => {
 
   const partTagTableRows = partTags.map((partTag) => (
     <TableRow>
-      <TableCell sx={{ border: '2px solid black' }}>{partTag.partTagId}</TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>{partTag.name}</TableCell>
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
-        {partTag.colorHexCode}
+      <TableCell sx={{ border: '2px solid black', width: '40%' }}>{partTag.partTagId}</TableCell>
+      <TableCell sx={{ border: '2px solid black', width: '40%' }}>{partTag.name}</TableCell>
+      <TableCell align="left" sx={{ border: '2px solid black', width: '20%' }}>
+        <Box
+          sx={{
+            display: 'inline-block',
+            padding: '4px 8px',
+            alignItems: 'center',
+            height: '100%',
+            background: partTag.colorHexCode,
+            borderRadius: '8px'
+          }}
+        >
+          {partTag.colorHexCode}
+        </Box>
       </TableCell>
     </TableRow>
   ));
