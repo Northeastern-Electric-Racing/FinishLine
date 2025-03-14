@@ -9,6 +9,12 @@ In the project directory, you can run:
 Runs the app in the development mode.<br />
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
+Additionally, you can run the entire application in development mode on docker containers using:
+
+### `yarn docker:dev`
+
+If you choose to run your application on docker, commands such as `yarn prisma:reset` must be run inside the backend container. You can access a /bin/sh terminal in the backend container with `yarn docker:exec`
+
 The page will reload if you make edits.<br />
 You will also see any lint errors in the console.
 
