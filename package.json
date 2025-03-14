@@ -45,7 +45,7 @@
     "reset": "rimraf yarn.lock; rimraf src/frontend/node_modules; rimraf src/backend/node_modules; rimraf src/shared/node_modules; rimraf ./node_modules; ",
     "install:hard": "yarn reset; yarn install; yarn prisma:generate",
     "tsc-check": "tsc --noEmit --project src/backend/tsconfig.json && tsc --noEmit --project src/frontend/tsconfig.json",
-    "docker:dev": "cd containerization; docker compose -f docker-compose.dev.yml down && docker compose -f docker-compose.dev.yml build && docker compose -f docker-compose.dev.yml up --watch",
+    "docker:dev": "cd devContainerization; docker compose -f docker-compose.dev.yml down && docker compose -f docker-compose.dev.yml build && docker compose -f docker-compose.dev.yml up --watch",
     "docker:exec": "docker exec -it finishline-app /bin/sh"
   },
   "resolutions": {
