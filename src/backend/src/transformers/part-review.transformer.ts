@@ -54,7 +54,8 @@ export const partSubmissionTransformer = (
     notes: submission.notes ?? undefined,
     partId: submission.partId,
     userCreated: userTransformer(submission.userCreated),
-    reviews: submission.reviews.map(partReviewTransformer)
+    reviews: submission.reviews.map(partReviewTransformer),
+    createdAt: submission.createdAt
   };
 };
 

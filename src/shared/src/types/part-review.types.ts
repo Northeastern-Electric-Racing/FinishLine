@@ -35,6 +35,7 @@ export interface PartSubmission {
   partId: string;
   userCreated: User;
   reviews: PartReview[];
+  createdAt: Date;
 }
 
 export interface PartReviewRequest {
