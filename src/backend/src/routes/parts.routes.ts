@@ -7,6 +7,8 @@ const partsRouter = express.Router();
 
 partsRouter.get('/tags', PartsReviewController.getAllPartTags);
 partsRouter.get('/faqs', PartsReviewController.getAllPartReviewFAQS);
+partsRouter.get('/:partId', PartsReviewController.getPart);
+partsRouter.get('/projectId/parts', PartsReviewController.getPartPreviews);
 
 partsRouter.post(
   '/faq/create',

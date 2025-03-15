@@ -5,9 +5,46 @@ import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } f
 import prisma from '../prisma/prisma';
 import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
 import { faqTransformer } from '../transformers/faq.transformer';
-import { partsReviewCommonMistakeTransformer } from '../transformers/part-review.transformer';
+import { partsReviewCommonMistakeTransformer, partTransformer } from '../transformers/part-review.transformer';
 
 export default class PartReviewService {
+  /**
+   * Uses the given partId to get the specific part and all of its constituent data
+   * @param partId the id of the part
+   * @returns a single Part
+   */
+  static async getPart(partId: string) {
+    const part = await prisma.part.findUnique({
+      where: { partId: partId, dateDeleted: null },
+      include: {
+        tags: true,
+        submissions: true,
+        assignees: true,
+        userCreated: true
+      }
+    });
+    return partTransformer(part);
+  }
+
+  /**
+   * Uses the given project ID to fetch the respective part preview
+   * @param projectId the id of the project
+   * @returns a part preview
+   */
+  static async getPartPreviews(projectId: string) {
+    const part = await prisma.part.findUnique({
+      where: { projectId: projectId, dateDeleted: null },
+      include: {
+        tags: true,
+        submissions: true,
+        assignees: true,
+        userCreated: true
+      }
+    })
+
+    part.
+  }
+
   /**
    * Uses the given organizationID to and returns an array of part tags
    * @param organizationId the organization to get the parts for

@@ -34,6 +34,7 @@ export interface PartSubmission {
   notes?: string;
   partId: string;
   userCreated: User;
+  createdAt: Date;
   reviewRequests: PartReviewRequest[];
   reviews: PartReview[];
 }
