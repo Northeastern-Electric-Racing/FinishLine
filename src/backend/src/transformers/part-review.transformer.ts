@@ -38,15 +38,7 @@ export const partPreviewTransformer = (part: Prisma.PartGetPayload<PartQueryArgs
     tags: part.tags,
     projectId: part.projectId,
     assignees: part.assignees.map(userTransformer),
-    reviewers: part.submissions
-      .map((submission) =>
-        submission.reviewRequests
-          .map((reviewReq) => reviewReq.reviewerRequested)
-          .flat()
-          .concat(submission.reviews.map((review) => review.userCreated).flat())
-      )
-      .flat()
-      .map(userTransformer),
+    reviewRequests: part.reviewRequests.map(partReviewRequestTransformer),
     userCreated: userTransformer(part.userCreated),
     createdAt: part.createdAt
   };
@@ -62,7 +54,6 @@ export const partSubmissionTransformer = (
     notes: submission.notes ?? undefined,
     partId: submission.partId,
     userCreated: userTransformer(submission.userCreated),
-    reviewRequests: submission.reviewRequests.map(partReviewRequestTransformer),
     reviews: submission.reviews.map(partReviewTransformer)
   };
 };
@@ -72,7 +63,7 @@ export const partReviewRequestTransformer = (
 ): PartReviewRequest => {
   return {
     partReviewRequestId: reviewRequest.partReviewRequestId,
-    submissionId: reviewRequest.submissionId,
+    partId: reviewRequest.partId,
     requester: userTransformer(reviewRequest.requester),
     reviewerRequested: userTransformer(reviewRequest.reviewerRequested),
     createdAt: reviewRequest.createdAt
