@@ -262,7 +262,21 @@ const CreditsPage: React.FC = () => {
     { name: 'Sarah Taylor', color: '#278f4b' },
     { name: 'Shrey Agarwal', color: '#800080' },
     { name: 'Amber Friar', color: '#F5A9B8' },
-    { name: 'Kaung Mo', color: '#9a1115' }
+    { name: 'Kaung Mo', color: '#9a1115' },
+    {
+      name: 'Joshua Goldberg',
+      color: 'transparent',
+      sx: {
+        background: 'linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet, red)',
+        '-webkit-background-clip': 'text',
+        backgroundSize: '400% 400%',
+        animation: 'rainbowGradient 12s infinite linear',
+        '@keyframes rainbowGradient': {
+          '0%': { backgroundPosition: '400% 200%' },
+          '100%': { backgroundPosition: '0% 200%' }
+        }
+      }
+    }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
