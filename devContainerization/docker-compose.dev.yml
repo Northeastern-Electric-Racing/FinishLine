@@ -3,7 +3,9 @@ services:
     container_name: database
     image: postgres
     environment:
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: docker
+      POSTGRES_DB: finishline_database
     ports:
       - '5432:5432'
     volumes:
@@ -24,7 +26,7 @@ services:
     depends_on:
       - database
     environment:
-      DATABASE_URL: 'postgresql://postgres:docker@database:5432/your_database_name'
+      DATABASE_URL: 'postgresql://postgres:docker@database:5432/finishline_database'
 
 volumes:
   pgdata:
