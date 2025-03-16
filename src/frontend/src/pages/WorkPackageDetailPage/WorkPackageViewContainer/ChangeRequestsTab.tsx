@@ -1,8 +1,7 @@
-import { ChangeRequest, WorkPackage } from 'shared';
+import { ChangeRequest, WorkPackage, wbsPipe } from 'shared';
 import { useAllChangeRequests } from '../../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { projectWbsPipe } from '../../../utils/pipes';
 import ChangeRequestRow from '../../../components/ChangeRequestRow';
 
 interface ChangeRequestsTabProps {
@@ -16,11 +15,11 @@ const ChangeRequestsTab: React.FC<ChangeRequestsTabProps> = ({ workPackage }) =>
   if (crIsError) return <ErrorPage message={crError?.message} />;
 
   const unReviewedChangeRequests = changeRequests
-    .filter((cr: ChangeRequest) => !cr.dateReviewed && projectWbsPipe(cr.wbsNum) === projectWbsPipe(workPackage.wbsNum))
+    .filter((cr: ChangeRequest) => !cr.dateReviewed && wbsPipe(cr.wbsNum) === wbsPipe(workPackage.wbsNum))
     .sort((a, b) => b.dateSubmitted.getTime() - a.dateSubmitted.getTime());
 
   const approvedChangeRequests = changeRequests
-    .filter((cr: ChangeRequest) => cr.accepted && projectWbsPipe(cr.wbsNum) === projectWbsPipe(workPackage.wbsNum))
+    .filter((cr: ChangeRequest) => cr.accepted && wbsPipe(cr.wbsNum) === wbsPipe(workPackage.wbsNum))
     .sort((a, b) => (a.dateReviewed && b.dateReviewed ? b.dateReviewed.getTime() - a.dateReviewed.getTime() : 0));
 
   return (
