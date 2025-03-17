@@ -9,6 +9,7 @@ import {
   NotFoundException
 } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
+import { get } from 'http';
 
 export default class FinanceServices {
   /**
@@ -105,5 +106,18 @@ export default class FinanceServices {
     });
 
     return deletedSponsor;
+  }
+
+  static async getSingleSponsierTier(_submitter: User, sponsorId: string, organization: Organization): Promise<Sponsor> {
+    const sponsor = await prisma.sponsor.findUnique({
+      where: {
+        sponsorId
+      }
+    });
+
+    if (!sponsor) throw new NotFoundException('Sponsor', sponsorId);
+    if (sponsor.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Sponsor');
+
+    return sponsor;
   }
 }
