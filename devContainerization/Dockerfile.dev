@@ -14,7 +14,7 @@ COPY ./src/backend src/backend
 COPY ./src/shared src/shared
 
 # Run all build and preparation steps in a single RUN command
-RUN yarn prisma:generate && yarn build:backend && yarn build:shared && yarn build:frontend:dev
+RUN yarn prisma:generate && cd src/backend; npx prisma migrate reset; cd .. && yarn build:backend && yarn build:shared && yarn build:frontend:dev
 
 EXPOSE 3001
 EXPOSE 3000

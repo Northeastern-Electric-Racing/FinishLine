@@ -25,6 +25,8 @@ services:
       - ../src/shared:/base/src/shared
     depends_on:
       - database
+    env_file:
+      - ../src/backend/.env
     environment:
       DATABASE_URL: 'postgresql://postgres:docker@database:5432/finishline_database'
 
