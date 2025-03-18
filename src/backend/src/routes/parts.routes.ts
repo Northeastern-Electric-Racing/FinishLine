@@ -1,19 +1,37 @@
 import express from 'express';
 import { nonEmptyString, validateInputs } from '../utils/validation.utils';
 import { body } from 'express-validator';
-import PartsReviewController from '../controllers/part-review.controllers';
+import PartReviewController from '../controllers/part-review.controllers';
 
 const partsRouter = express.Router();
 
-partsRouter.get('/tags', PartsReviewController.getAllPartTags);
-partsRouter.get('/faqs', PartsReviewController.getAllPartReviewFAQS);
+partsRouter.get('/tags', PartReviewController.getAllPartTags);
+partsRouter.get('/faqs', PartReviewController.getAllPartReviewFAQS);
+
+partsRouter.post(
+  '/partTag/create',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('colorHexCode')),
+  validateInputs,
+  PartReviewController.createPartTag
+);
+
+partsRouter.post(
+  '/partTag/:partTagId/update',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('colorHexCode')),
+  validateInputs,
+  PartReviewController.updatePartTag
+);
+
+partsRouter.post('/partTag/:partTagId/delete', PartReviewController.deletePartTag);
 
 partsRouter.post(
   '/faq/create',
   nonEmptyString(body('question')),
   nonEmptyString(body('answer')),
   validateInputs,
-  PartsReviewController.createFaq
+  PartReviewController.createFaq
 );
 
 partsRouter.post(
@@ -21,10 +39,12 @@ partsRouter.post(
   nonEmptyString(body('question')),
   nonEmptyString(body('answer')),
   validateInputs,
-  PartsReviewController.updateFaq
+  PartReviewController.updateFaq
 );
 
-partsRouter.post('/faq/:faqId/delete', PartsReviewController.deleteFaq);
+partsRouter.post('/faq/:faqId/delete', PartReviewController.deleteFaq);
+
+partsRouter.get('/common-mistakes', PartReviewController.getAllCommonMistakes);
 
 partsRouter.post(
   '/common-mistake/create',
@@ -32,7 +52,7 @@ partsRouter.post(
   nonEmptyString(body('description')),
   body('starred').isBoolean(),
   validateInputs,
-  PartsReviewController.createCommonMistake
+  PartReviewController.createCommonMistake
 );
 
 partsRouter.post(
@@ -41,9 +61,9 @@ partsRouter.post(
   nonEmptyString(body('description')),
   body('starred').isBoolean(),
   validateInputs,
-  PartsReviewController.updateCommonMistake
+  PartReviewController.updateCommonMistake
 );
 
-partsRouter.post('/common-mistake/:commonMistakeId/delete', PartsReviewController.deleteCommonMistake);
+partsRouter.post('/common-mistake/:commonMistakeId/delete', PartReviewController.deleteCommonMistake);
 
 export default partsRouter;

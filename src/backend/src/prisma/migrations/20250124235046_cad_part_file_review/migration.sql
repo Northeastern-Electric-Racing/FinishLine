@@ -1,9 +1,3 @@
-/*
-  Warnings:
-
-  - You are about to drop the column `organizationId` on the `FrequentlyAskedQuestion` table. All the data in the column will be lost.
-
-*/
 -- CreateEnum
 CREATE TYPE "Review_Status" AS ENUM ('IN_PROGRESS', 'READY_FOR_REVIEW', 'IN_REVIEW', 'REVIEWED', 'APPROVED');
 
@@ -47,9 +41,9 @@ CREATE TABLE "PartTag" (
     "partTagId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "colorHexCode" TEXT NOT NULL,
-    "dateCreated" TIMESTAMP(3) NOT NULL,
+    "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "dateDeleted" TIMESTAMP(3),
-    "organizationId" TEXT,
+    "organizationId" TEXT NOT NULL,
 
     CONSTRAINT "PartTag_pkey" PRIMARY KEY ("partTagId")
 );
@@ -73,7 +67,7 @@ CREATE TABLE "PartSubmission" (
 -- CreateTable
 CREATE TABLE "PartReviewRequest" (
     "partReviewRequestId" TEXT NOT NULL,
-    "submissionId" TEXT NOT NULL,
+    "partId" TEXT NOT NULL,
     "requesterId" TEXT NOT NULL,
     "reviewerId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -108,7 +102,7 @@ CREATE TABLE "Part_Review_Popup" (
     "reviewId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "deletedAd" TIMESTAMP(3),
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "Part_Review_Popup_pkey" PRIMARY KEY ("partReviewPopupId")
 );
@@ -123,7 +117,7 @@ CREATE TABLE "PartReviewCommonMistake" (
     "userDeletedId" TEXT,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "dateDeleted" TIMESTAMP(3),
-    "organizationId" TEXT,
+    "organizationId" TEXT NOT NULL,
 
     CONSTRAINT "PartReviewCommonMistake_pkey" PRIMARY KEY ("partReviewCommonMistakeId")
 );
@@ -162,7 +156,7 @@ ALTER TABLE "Part" ADD CONSTRAINT "Part_userCreatedId_fkey" FOREIGN KEY ("userCr
 ALTER TABLE "Part" ADD CONSTRAINT "Part_userDeletedId_fkey" FOREIGN KEY ("userDeletedId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PartTag" ADD CONSTRAINT "PartTag_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "PartTag" ADD CONSTRAINT "PartTag_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "PartSubmission" ADD CONSTRAINT "PartSubmission_partId_fkey" FOREIGN KEY ("partId") REFERENCES "Part"("partId") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -174,7 +168,7 @@ ALTER TABLE "PartSubmission" ADD CONSTRAINT "PartSubmission_userCreatedId_fkey" 
 ALTER TABLE "PartSubmission" ADD CONSTRAINT "PartSubmission_userDeletedId_fkey" FOREIGN KEY ("userDeletedId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PartReviewRequest" ADD CONSTRAINT "PartReviewRequest_submissionId_fkey" FOREIGN KEY ("submissionId") REFERENCES "PartSubmission"("partSubmissionId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "PartReviewRequest" ADD CONSTRAINT "PartReviewRequest_partId_fkey" FOREIGN KEY ("partId") REFERENCES "Part"("partId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "PartReviewRequest" ADD CONSTRAINT "PartReviewRequest_requesterId_fkey" FOREIGN KEY ("requesterId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -201,7 +195,7 @@ ALTER TABLE "PartReviewCommonMistake" ADD CONSTRAINT "PartReviewCommonMistake_us
 ALTER TABLE "PartReviewCommonMistake" ADD CONSTRAINT "PartReviewCommonMistake_userDeletedId_fkey" FOREIGN KEY ("userDeletedId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PartReviewCommonMistake" ADD CONSTRAINT "PartReviewCommonMistake_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "PartReviewCommonMistake" ADD CONSTRAINT "PartReviewCommonMistake_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_PartToPartTag" ADD CONSTRAINT "_PartToPartTag_A_fkey" FOREIGN KEY ("A") REFERENCES "Part"("partId") ON DELETE CASCADE ON UPDATE CASCADE;
