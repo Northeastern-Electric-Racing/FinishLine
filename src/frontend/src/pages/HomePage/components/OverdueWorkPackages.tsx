@@ -1,5 +1,5 @@
 import React from 'react';
-import { AuthenticatedUser, isAdmin, Team } from 'shared';
+import { AuthenticatedUser, isAdmin, Team, WbsElementStatus } from 'shared';
 import { useAllWorkPackages, useGetManyWorkPackages } from '../../../hooks/work-packages.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -33,7 +33,7 @@ const OverdueWorkPackages: React.FC<OverdueWorkPackagesProps> = ({ user }) => {
   if (isErrorTeamWps) return <ErrorPage message={errorTeamWps.message} />;
 
   const displayedWps = isAdmin(user.role) ? allWps : teamWps;
-  const overdueWps = displayedWps.filter((wp) => daysOverdue(wp.endDate) > 0);
+  const overdueWps = displayedWps.filter((wp) => daysOverdue(wp.endDate) > 0 && wp.status !== WbsElementStatus.Complete);
 
   return <OverdueWorkPackagesView workPackages={overdueWps} />;
 };
