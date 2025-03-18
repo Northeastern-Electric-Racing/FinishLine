@@ -1,3 +1,4 @@
+name: finishline-development
 services:
   database:
     container_name: database
@@ -11,17 +12,15 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
-  app:
-    container_name: finishline-app
+  backend:
+    container_name: backend
     build:
       context: ../
-      dockerfile: devContainerization/Dockerfile.dev
+      dockerfile: devContainerization/Dockerfile.backend.dev
     ports:
-      - '3000:3000'
       - '3001:3001'
     volumes:
       - ../src/backend:/base/src/backend
-      - ../src/frontend:/base/src/frontend
       - ../src/shared:/base/src/shared
     depends_on:
       - database
@@ -29,6 +28,19 @@ services:
       - ../src/backend/.env
     environment:
       DATABASE_URL: 'postgresql://postgres:docker@database:5432/finishline_database'
+
+  frontend:
+    container_name: frontend
+    build:
+      context: ../
+      dockerfile: devContainerization/Dockerfile.frontend.dev
+    ports:
+      - '3000:3000'
+    volumes:
+      - ../src/frontend:/base/src/frontend
+      - ../src/shared:/base/src/shared
+    depends_on:
+      - backend
 
 volumes:
   pgdata:

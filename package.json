@@ -46,7 +46,8 @@
     "install:hard": "yarn reset; yarn install; yarn prisma:generate",
     "tsc-check": "tsc --noEmit --project src/backend/tsconfig.json && tsc --noEmit --project src/frontend/tsconfig.json",
     "docker:dev": "docker stop finishline; cd devContainerization; docker compose -f docker-compose.dev.yml down && docker compose -f docker-compose.dev.yml build && docker compose -f docker-compose.dev.yml up --watch",
-    "docker:exec": "docker exec -it finishline-app /bin/sh"
+    "exec:frontend": "docker exec -it frontend /bin/sh",
+    "exec:backend": "docker exec -it backend /bin/sh"
   },
   "resolutions": {
     "@types/react": "17.0.1",
