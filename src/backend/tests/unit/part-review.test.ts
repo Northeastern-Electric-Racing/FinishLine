@@ -354,4 +354,64 @@ describe('part review tests', () => {
       expect(partReviews[0].answer).not.toEqual(regularFaq.answer);
     });
   });
+
+  describe('part review popup service tests', () => {
+    let orgId: string;
+    let batman: User;
+    let popupId: string;
+
+    beforeEach(async () => {
+        const organization = await createTestOrganization();
+        orgId = organization.organizationId;
+        batman = await createTestUser(batmanAppAdmin, orgId);
+    });
+
+    afterEach(async () => {
+        await resetUsers();
+    });
+
+    it('creates a popup', async () => {
+        const popup = await PartReviewService.createPartReviewPopup(
+            'some-review-id',
+            10,
+            20,
+            'Test Popup',
+            'Popup description',
+            batman
+        );
+
+        const prismaPopup = await prisma.part_Review_Popup.findUnique({ where: { partReviewPopupId: popup.partReviewPopupId } });
+
+        expect(prismaPopup).toBeDefined();
+        expect(prismaPopup?.title).toBe('Test Popup');
+        expect(prismaPopup?.description).toBe('Popup description');
+        popupId = popup.partReviewPopupId;
+    });
+
+    it('updates a popup', async () => {
+        const updatedPopup = await PartReviewService.updatePartReviewPopup(
+            popupId,
+            15,
+            25,
+            'Updated Popup',
+            'Updated description',
+            batman
+        );
+
+        expect(updatedPopup).toBeDefined();
+        expect(updatedPopup?.title).toBe('Updated Popup');
+        expect(updatedPopup?.description).toBe('Updated description');
+    });
+
+    it('deletes a popup', async () => {
+        const deletedPopup = await PartReviewService.deletePartReviewPopup(popupId, batman);
+
+        expect(deletedPopup).toBeDefined();
+        expect(deletedPopup.message).toBe('Popup deleted successfully');
+
+        const prismaPopup = await prisma.part_Review_Popup.findUnique({ where: { partReviewPopupId: popupId } });
+
+        expect(prismaPopup).toBeNull();
+    });
+  });
 });

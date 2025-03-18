@@ -5,8 +5,7 @@
     "target": "ES2019",
     "outDir": "./dist",
     "noEmit": false,
-    "esModuleInterop": true,
-    "types": ["jest"]
+    "esModuleInterop": true
   },
   "ts-node": {
     "files": true

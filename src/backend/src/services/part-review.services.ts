@@ -297,4 +297,118 @@ export default class PartReviewService {
 
     return partsReviewCommonMistakeTransformer(deletedCommonMistake);
   }
+
+      /**
+     * Finds a review by ID
+     * @param reviewId ID of the review
+     * @returns The review or null if not found
+     */
+      static async findReviewById(reviewId: string) {
+        return prisma.partReview.findUnique({
+            where: { partReviewId: reviewId },
+            select: { userCreatedId: true }
+        });
+    }
+
+    /**
+     * Creates a part review popup
+     * @param reviewId ID of the review
+     * @param xCoord X coordinate of the popup
+     * @param yCoord Y coordinate of the popup
+     * @param title Title of the popup
+     * @param description Description of the popup
+     * @param creator The user creating the popup
+     * @returns The newly created popup
+     */
+    static async createPartReviewPopup(
+        reviewId: string,
+        xCoord: number,
+        yCoord: number,
+        title: string,
+        description: string,
+        creator: User
+    ) {
+        const review = await this.findReviewById(reviewId);
+        if (!review) {
+            throw new NotFoundException('Review', reviewId);
+        }
+
+        const isAdminUser = creator.additionalPermissions?.includes('ADMIN') || false;
+
+        if (review.userCreatedId !== creator.userId && !isAdminUser) {
+            throw new AccessDeniedAdminOnlyException('create part review popup');
+        }
+
+        return prisma.part_Review_Popup.create({
+            data: { reviewId, xCoord, yCoord, title, description }
+        });
+    }
+
+    /**
+     * Updates a part review popup
+     * @param popupId ID of the popup to update
+     * @param xCoord New X coordinate
+     * @param yCoord New Y coordinate
+     * @param title New title
+     * @param description New description
+     * @param updater The user updating the popup
+     * @returns The updated popup
+     */
+    static async updatePartReviewPopup(
+        popupId: string,
+        xCoord: number,
+        yCoord: number,
+        title: string,
+        description: string,
+        updater: User
+    ) {
+        const popup = await prisma.part_Review_Popup.findUnique({
+            where: { partReviewPopupId: popupId },
+            include: { review: { select: { userCreatedId: true } } }
+        });
+
+        if (!popup) {
+            throw new NotFoundException('Pop Up', popupId);
+        }
+
+        const isAdminUser = updater.additionalPermissions?.includes('ADMIN') || false;
+
+        if (popup.review.userCreatedId !== updater.userId && !isAdminUser) {
+            throw new AccessDeniedAdminOnlyException('update part review popup');
+        }
+
+        return prisma.part_Review_Popup.update({
+            where: { partReviewPopupId: popupId },
+            data: { xCoord, yCoord, title, description }
+        });
+    }
+
+    /**
+     * Deletes a part review popup
+     * @param popupId ID of the popup to delete
+     * @param deleter The user deleting the popup
+     * @returns Confirmation message
+     */
+    static async deletePartReviewPopup(popupId: string, deleter: User) {
+        const popup = await prisma.part_Review_Popup.findUnique({
+            where: { partReviewPopupId: popupId },
+            include: { review: { select: { userCreatedId: true } } }
+        });
+
+        if (!popup) {
+            throw new NotFoundException('Pop Up', popupId);
+        }
+
+        const isAdminUser = deleter.additionalPermissions?.includes('ADMIN') || false;
+
+        if (popup.review.userCreatedId !== deleter.userId && !isAdminUser) {
+            throw new AccessDeniedAdminOnlyException('delete part review popup');
+        }
+
+        await prisma.part_Review_Popup.delete({
+            where: { partReviewPopupId: popupId }
+        });
+
+        return { message: 'Popup deleted successfully' };
+    }
 }

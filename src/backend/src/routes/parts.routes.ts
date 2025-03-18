@@ -74,6 +74,5 @@ partsRouter.post(
 
 
 partsRouter.post('/common-mistake/:commonMistakeId/delete', PartsReviewController.deleteCommonMistake);
-partsRouter.post('/popup/:reviewId/create', PartsReviewController.createPartReviewPopup);
 
 export default partsRouter;
