@@ -67,7 +67,7 @@ CREATE TABLE "PartSubmission" (
 -- CreateTable
 CREATE TABLE "PartReviewRequest" (
     "partReviewRequestId" TEXT NOT NULL,
-    "submissionId" TEXT NOT NULL,
+    "partId" TEXT NOT NULL,
     "requesterId" TEXT NOT NULL,
     "reviewerId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -102,7 +102,7 @@ CREATE TABLE "Part_Review_Popup" (
     "reviewId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "deletedAd" TIMESTAMP(3),
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "Part_Review_Popup_pkey" PRIMARY KEY ("partReviewPopupId")
 );
@@ -168,7 +168,7 @@ ALTER TABLE "PartSubmission" ADD CONSTRAINT "PartSubmission_userCreatedId_fkey" 
 ALTER TABLE "PartSubmission" ADD CONSTRAINT "PartSubmission_userDeletedId_fkey" FOREIGN KEY ("userDeletedId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PartReviewRequest" ADD CONSTRAINT "PartReviewRequest_submissionId_fkey" FOREIGN KEY ("submissionId") REFERENCES "PartSubmission"("partSubmissionId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "PartReviewRequest" ADD CONSTRAINT "PartReviewRequest_partId_fkey" FOREIGN KEY ("partId") REFERENCES "Part"("partId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "PartReviewRequest" ADD CONSTRAINT "PartReviewRequest_requesterId_fkey" FOREIGN KEY ("requesterId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;

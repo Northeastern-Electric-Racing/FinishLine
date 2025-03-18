@@ -18,7 +18,7 @@ export interface PartPreview {
   tags: PartTag[];
   projectId: string;
   assignees: User[];
-  reviewers: User[];
+  reviewRequests: PartReviewRequest[];
   createdAt: Date;
   userCreated: User;
 }
@@ -34,13 +34,13 @@ export interface PartSubmission {
   notes?: string;
   partId: string;
   userCreated: User;
-  reviewRequests: PartReviewRequest[];
   reviews: PartReview[];
+  createdAt: Date;
 }
 
 export interface PartReviewRequest {
   partReviewRequestId: string;
-  submissionId: string;
+  partId: string;
   requester: User;
   reviewerRequested: User;
   createdAt: Date;
