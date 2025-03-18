@@ -4,7 +4,7 @@ import ErrorPage from '../../ErrorPage';
 import { useForm } from 'react-hook-form';
 import { useToast } from '../../../hooks/toasts.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useCreatePartTag } from '../../../hooks/part-review.hooks';
+import { PartTagPayload, useCreatePartTag } from '../../../hooks/part-review.hooks';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { PartTag } from 'shared';
@@ -25,7 +25,7 @@ const CreatePartTagModal: React.FC<CreatePartTagProps> = ({ showModal, handleClo
   const { isLoading, isError, error, mutateAsync } = useCreatePartTag();
   const toast = useToast();
 
-  const onSubmit = async (data: { name: string }) => {
+  const onSubmit = async (data: PartTagPayload) => {
     try {
       await mutateAsync(data);
     } catch (error: unknown) {
@@ -45,7 +45,7 @@ const CreatePartTagModal: React.FC<CreatePartTagProps> = ({ showModal, handleClo
     resolver: yupResolver(schema),
     defaultValues: {
       partTagId: defaultValues?.partTagId ?? '',
-      name: defaultValues?.name ?? ''
+      name: defaultValues?.name ?? '',
     }
   });
 
@@ -57,7 +57,7 @@ const CreatePartTagModal: React.FC<CreatePartTagProps> = ({ showModal, handleClo
       open={showModal}
       onHide={handleClose}
       title="New Tag"
-      reset={() => reset({ name: '' })}
+      reset={() => reset({ partTagId: '', name: '' })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
       formId="new-part-tag-form"
@@ -65,10 +65,10 @@ const CreatePartTagModal: React.FC<CreatePartTagProps> = ({ showModal, handleClo
     >
       <FormControl>
         <FormLabel>Tag Id</FormLabel>
-        <ReactHookTextField name="Tag Id" control={control} sx={{ width: 1 }} />
+        <ReactHookTextField name="partTagId" control={control} sx={{ width: 1 }} />
         <FormHelperText error>{errors.partTagId?.message}</FormHelperText>
         <FormLabel>Tag Name</FormLabel>
-        <ReactHookTextField name="Tag Name" control={control} sx={{ width: 1 }} />
+        <ReactHookTextField name="name" control={control} sx={{ width: 1 }} />
         <FormHelperText error>{errors.name?.message}</FormHelperText>
       </FormControl>
     </NERFormModal>
