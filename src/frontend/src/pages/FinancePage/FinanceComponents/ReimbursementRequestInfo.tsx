@@ -42,7 +42,7 @@ const ReimbursementRequestInfo = ({
   if (!localStorage.getItem('orderBy')) localStorage.setItem('orderBy', 'identifier');
   if (!localStorage.getItem('RRsortDirection')) localStorage.setItem('RRsortDirection', 'descending');
 
-  // set orderBy and sortBy from local storage
+  // get orderBy and RRsortDirection from local storage
   const [isAscendingOrder, setAscendingOrder] = useState(localStorage.getItem('RRsortDirection') === 'ascending');
   const [orderBy, setOrderBy] = useState<keyof ReimbursementRequestRow>(
     localStorage.getItem('orderBy') as keyof ReimbursementRequestRow
@@ -51,7 +51,7 @@ const ReimbursementRequestInfo = ({
   const displayedReimbursementRequests =
     canViewAllReimbursementRequests && allReimbursementRequests ? allReimbursementRequests : userReimbursementRequests;
 
-  // set orderBy and sortBy in local storage
+  // set orderBy and RRsortDirection in local storage
   localStorage.setItem('orderBy', orderBy);
   localStorage.setItem('RRsortDirection', isAscendingOrder ? 'ascending' : 'descending');
 
@@ -62,6 +62,11 @@ const ReimbursementRequestInfo = ({
       status: statusDescendingComparator,
       submitter: submitterDescendingComparator
     };
+
+    // if user is in the 'My Requests' tab and the orderBy was set to 'submitter' or 'refundSource', sort by 'identifier'
+    if (!canViewAllReimbursementRequests && (orderBy === 'submitter' || orderBy === 'refundSource')) {
+      return descendingComparator(a, b, 'identifier');
+    }
 
     // if orderBy is in comparators, use that comparator
     if (orderBy in comparators) {
