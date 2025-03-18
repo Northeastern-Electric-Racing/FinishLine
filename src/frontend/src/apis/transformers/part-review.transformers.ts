@@ -6,7 +6,7 @@ export const partPreviewTransformer = (partPreview: PartPreview): PartPreview =>
     ...partPreview,
     tags: partPreview.tags.map(partTagTransformer),
     assignees: partPreview.assignees.map(userTransformer),
-    reviewers: partPreview.reviewers.map(userTransformer),
+    reviewRequests: partPreview.reviewRequests.map(partReviewRequestTransformer),
     userCreated: userTransformer(partPreview.userCreated),
     createdAt: new Date(partPreview.createdAt)
   };
@@ -23,7 +23,6 @@ export const partSubmissionTransformer = (partSubmission: PartSubmission): PartS
   return {
     ...partSubmission,
     userCreated: userTransformer(partSubmission.userCreated),
-    reviewRequests: partSubmission.reviewRequests.map(partReviewRequestTransformer),
     reviews: partSubmission.reviews.map(partReviewTransformer),
     createdAt: new Date(partSubmission.createdAt)
   };
