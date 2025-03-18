@@ -57,7 +57,6 @@ export default class FinanceController {
       next(error);
     }
   }
-
   static async createSponsorTask(req: Request, res: Response, next: NextFunction) {
     try {
       const { dueDate, notes, sponsorId, notifyDate, assigneeId } = req.body;
