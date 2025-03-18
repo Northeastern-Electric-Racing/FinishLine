@@ -71,7 +71,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
       index: number;
     }[]
   >();
-  // console.log(uniqueWbsElementsWithProducts);
   reimbursementProducts.forEach((product, index) => {
     const hasWbsNum = (product.reason as WbsNumber).carNumber !== undefined;
     const productReason = hasWbsNum ? wbsPipe(product.reason as WbsNumber) : (product.reason as string);
@@ -82,7 +81,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
       uniqueWbsElementsWithProducts.set(productReason, [{ ...product, index }]);
     }
   });
-  // console.log(uniqueWbsElementsWithProducts);
 
   const onCostBlurHandler = (value: number, index: number) => {
     setValue(`reimbursementProducts.${index}.cost`, parseFloat(value.toFixed(2)));
@@ -90,7 +88,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
 
   const userTheme = useTheme();
   const hoverColor = userTheme.palette.action.hover;
-  console.log(reimbursementProducts);
 
   return (
     <TableContainer>
@@ -165,10 +162,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                 backgroundColor: hoverColor
                               }
                             }}
-                            onClick={() => {
-                              console.log(product.index);
-                              removeProduct(product.index);
-                            }}
+                            onClick={() => removeProduct(product.index)}
                           >
                             <Delete />
                           </IconButton>
