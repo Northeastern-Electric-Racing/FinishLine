@@ -39,7 +39,7 @@ const ReimbursementRequestInfo = ({
   canViewAllReimbursementRequests = false
 }: ReimbursementRequestInfoProps) => {
   const [isAscendingOrder, setAscendingOrder] = useState(true);
-  const [orderBy, setOrderBy] = useState<keyof ReimbursementRequestRow>('dateSubmittedToSabo');
+  const [orderBy, setOrderBy] = useState<keyof ReimbursementRequestRow>('id');
 
   const displayedReimbursementRequests =
     canViewAllReimbursementRequests && allReimbursementRequests ? allReimbursementRequests : userReimbursementRequests;
