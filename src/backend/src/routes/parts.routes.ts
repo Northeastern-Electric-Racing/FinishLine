@@ -44,6 +44,8 @@ partsRouter.post(
 
 partsRouter.post('/faq/:faqId/delete', PartReviewController.deleteFaq);
 
+partsRouter.get('/common-mistakes', PartsReviewController.getAllCommonMistakes);
+
 partsRouter.post(
   '/common-mistake/create',
   nonEmptyString(body('title')),

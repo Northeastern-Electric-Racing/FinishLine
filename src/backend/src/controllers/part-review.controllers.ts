@@ -103,6 +103,15 @@ export default class PartReviewController {
     }
   }
 
+  static async getAllCommonMistakes(req: Request, res: Response, next: NextFunction) {
+    try {
+      const commonMistakes = await PartReviewService.getAllCommonMistakes(req.organization.organizationId);
+      res.status(200).json(commonMistakes);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createCommonMistake(req: Request, res: Response, next: NextFunction) {
     try {
       const { title, description, starred } = req.body;

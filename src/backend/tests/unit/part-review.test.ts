@@ -1,7 +1,7 @@
 import { Organization, User } from '@prisma/client';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import PartReviewService from '../../src/services/part-review.services';
-import { batmanAppAdmin, supermanAdmin, aquamanLeadership } from '../test-data/users.test-data';
+import { batmanAppAdmin, supermanAdmin, aquamanLeadership, flashAdmin } from '../test-data/users.test-data';
 import prisma from '../../src/prisma/prisma';
 import { AccessDeniedAdminOnlyException, DeletedException } from '../../src/utils/errors.utils';
 
@@ -408,5 +408,47 @@ describe('part review tests', () => {
       expect(partReviews[0].question).not.toEqual(regularFaq.question);
       expect(partReviews[0].answer).not.toEqual(regularFaq.answer);
     });
+  });
+
+  it('gets all common mistakes', async () => {
+    const org2Creator = await prisma.user.create({
+      data: {
+        firstName: 'Admin2',
+        lastName: 'User2',
+        email: 'admin2@gmail.com',
+        googleAuthId: 'organizationCreator2'
+      }
+    });
+
+    const org2 = await prisma.organization.create({
+      data: {
+        name: 'Joe mama2',
+        description: 'Joe mama2`s organization',
+        applicationLink: '',
+        userCreated: {
+          connect: {
+            userId: org2Creator.userId
+          }
+        }
+      }
+    });
+
+    const flash = await createTestUser(flashAdmin, org2.organizationId);
+    await PartReviewService.createCommonMistake('mistake', 'desc', false, batman, orgId);
+    await PartReviewService.createCommonMistake('mistake2', 'desc2', false, flash, org2.organizationId);
+    await PartReviewService.createCommonMistake('mistake3', 'desc3', true, batman, orgId);
+    await PartReviewService.createCommonMistake('mistake4', 'desc4', false, batman, orgId);
+
+    const commonMistakes = await PartReviewService.getAllCommonMistakes(orgId);
+    expect(commonMistakes).toHaveLength(3);
+    expect(commonMistakes[0].title).toBe('mistake');
+    expect(commonMistakes[1].title).toBe('mistake3');
+    expect(commonMistakes[2].title).toBe('mistake4');
+    expect(commonMistakes[0].description).toBe('desc');
+    expect(commonMistakes[1].description).toBe('desc3');
+    expect(commonMistakes[2].description).toBe('desc4');
+    expect(commonMistakes[0].starred).toBe(false);
+    expect(commonMistakes[1].starred).toBe(true);
+    expect(commonMistakes[2].starred).toBe(false);
   });
 });
