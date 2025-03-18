@@ -46,4 +46,24 @@ export default class FinanceController {
       next(error);
     }
   }
+
+  static async createSponsorTier(req: Request, res: Response, next: NextFunction) {
+    try {
+      const {
+        name,
+        colorHexCode,
+      } = req.body;
+
+      const sponsor = await FinanceServices.createSponsorTier(
+        req.currentUser,
+        name,
+        req.organization,
+        colorHexCode
+      );
+      res.status(200).json(sponsor);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
 }

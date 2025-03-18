@@ -157,4 +157,31 @@ describe('Finance Tests', () => {
       );
     });
   });
+
+  describe('Create a sponsor tier', () => {
+    it('Fails if user is not a head', async () => {
+      await expect(
+        async () =>
+          await FinanceServices.createSponsorTier(
+            await createTestUser(wonderwomanGuest, orgId),
+            'Silver',
+            organization,
+            'C0C0C0'
+          )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('create a sponsor tier'));
+    });
+
+    it('Succeeds and creates a sponsor tier', async () => {
+      const result = await FinanceServices.createSponsorTier(
+        await createTestUser(batmanAppAdmin, orgId),
+        'Silver',
+        organization,
+        'C0C0C0'
+      );
+
+      expect(result.name).toEqual('Silver');
+      expect(result.colorHexCode).toEqual('C0C0C0');
+      expect(result.organizationId).toEqual(orgId);
+    });
+  });
 });
