@@ -1,7 +1,7 @@
 import { Organization, User } from '@prisma/client';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import PartReviewService from '../../src/services/part-review.services';
-import { batmanAppAdmin, supermanAdmin, aquamanLeadership } from '../test-data/users.test-data';
+import { batmanAppAdmin, supermanAdmin, aquamanLeadership, flashAdmin } from '../test-data/users.test-data';
 import prisma from '../../src/prisma/prisma';
 import { AccessDeniedAdminOnlyException, DeletedException } from '../../src/utils/errors.utils';
 
@@ -23,70 +23,125 @@ describe('part review tests', () => {
     await resetUsers();
   });
 
-  describe('part review faq endpoints', () => {
-    it('creates a faq, edits it, and deletes it', async () => {
-      const faq = await PartReviewService.createFaq('some question', 'some answer', batman, orgId);
-      const prismaFaq = await prisma.frequentlyAskedQuestion.findUnique({ where: { faqId: faq.faqId } });
+  it('creates a part tag, edits it, and deletes it', async () => {
+    const partTag = await PartReviewService.createPartTag('practice', '#ad6454', batman, orgId);
 
-      expect(prismaFaq?.question).toBe('some question');
-      expect(prismaFaq?.answer).toBe('some answer');
-      expect(prismaFaq?.userCreatedId).toBe(batman.userId);
-      expect(prismaFaq?.partReviewFaqOrgId).toBe(orgId);
-      expect(prismaFaq?.regularFaqOrgId).toBeFalsy();
-      expect(faq?.question).toBe('some question');
-      expect(faq?.answer).toBe('some answer');
-
-      const updatedFaq = await PartReviewService.updateFaq(
-        faq.faqId,
-        'some other question',
-        'some other answer',
-        superman,
-        orgId
-      );
-
-      const prismaFaq2 = await prisma.frequentlyAskedQuestion.findUnique({ where: { faqId: faq.faqId } });
-
-      expect(prismaFaq2?.question).toBe('some other question');
-      expect(prismaFaq2?.answer).toBe('some other answer');
-      expect(prismaFaq2?.userCreatedId).toBe(batman.userId);
-      expect(prismaFaq2?.partReviewFaqOrgId).toBe(orgId);
-      expect(prismaFaq2?.dateDeleted).toBeFalsy();
-      expect(updatedFaq?.question).toBe('some other question');
-      expect(updatedFaq?.answer).toBe('some other answer');
-
-      const deletedFaq = await PartReviewService.deleteFaq(faq.faqId, superman, orgId);
-      expect(deletedFaq?.question).toBe('some other question');
-      expect(deletedFaq?.answer).toBe('some other answer');
-
-      const prismaDeletedFaq = await prisma.frequentlyAskedQuestion.findUnique({ where: { faqId: faq.faqId } });
-      expect(prismaDeletedFaq?.dateDeleted).toBeTruthy();
+    const prismaTag = await prisma.partTag.findUnique({
+      where: { partTagId: partTag.partTagId }
     });
 
-    it('does not let non-admins create, edit, or delete faqs', async () => {
-      await expect(
-        async () => await PartReviewService.createFaq('some question', 'some answer', nonAdmin, orgId)
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('create part review faq'));
+    expect(partTag.name).toBe('practice');
+    expect(partTag.colorHexCode).toBe('#ad6454');
+    expect(prismaTag?.name).toBe('practice');
+    expect(prismaTag?.colorHexCode).toBe('#ad6454');
 
-      const faq = await PartReviewService.createFaq('some question', 'some answer', batman, orgId);
+    const updatedPartTag = await PartReviewService.updatePartTag(partTag.partTagId, 'important', '#000000', superman, orgId);
 
-      await expect(
-        async () => await PartReviewService.updateFaq(faq.faqId, 'some title2', 'some description2', nonAdmin, orgId)
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('update faq'));
-
-      await expect(async () => await PartReviewService.deleteFaq(faq.faqId, nonAdmin, orgId)).rejects.toThrow(
-        new AccessDeniedAdminOnlyException('delete faq')
-      );
+    const updatedPrismaTag = await prisma.partTag.findUnique({
+      where: { partTagId: partTag.partTagId }
     });
 
-    it('does not allow updating deleted faqs', async () => {
-      const faq = await PartReviewService.createFaq('some q', 'some a', batman, orgId);
+    expect(updatedPartTag.name).toBe('important');
+    expect(updatedPartTag.colorHexCode).toBe('#000000');
+    expect(updatedPrismaTag?.name).toBe('important');
+    expect(updatedPrismaTag?.colorHexCode).toBe('#000000');
 
-      await PartReviewService.deleteFaq(faq.faqId, superman, orgId);
-
-      await expect(
-        async () => await PartReviewService.updateFaq(faq.faqId, 'some q2', 'some a2', batman, orgId)
-      ).rejects.toThrow(new DeletedException('Faq', faq.faqId));
+    await PartReviewService.deletePartTag(partTag.partTagId, batman, orgId);
+    const deletedPrismaTag = await prisma.partTag.findUnique({
+      where: { partTagId: partTag.partTagId }
     });
+
+    expect(deletedPrismaTag?.dateDeleted).toBeTruthy();
+  });
+
+  it('does not let non-admins create, edit, or delete part tags', async () => {
+    await expect(async () => await PartReviewService.createPartTag('name', '#000000', nonAdmin, orgId)).rejects.toThrow(
+      new AccessDeniedAdminOnlyException('create part review tag')
+    );
+
+    const partTag = await PartReviewService.createPartTag('practice', '#ad6454', batman, orgId);
+
+    await expect(
+      async () => await PartReviewService.updatePartTag(partTag.partTagId, 'some thing', 'some thing', nonAdmin, orgId)
+    ).rejects.toThrow(new AccessDeniedAdminOnlyException('update part review tag'));
+
+    await expect(async () => await PartReviewService.deletePartTag(partTag.partTagId, nonAdmin, orgId)).rejects.toThrow(
+      new AccessDeniedAdminOnlyException('delete part review tag')
+    );
+  });
+
+  it('does not allow updating deleted part tags', async () => {
+    const partTag = await PartReviewService.createPartTag('practice', '#ad6454', batman, orgId);
+
+    await PartReviewService.deletePartTag(partTag.partTagId, superman, orgId);
+
+    await expect(
+      async () => await PartReviewService.updatePartTag(partTag.partTagId, 'asdf', 'asdf', batman, orgId)
+    ).rejects.toThrow(new DeletedException('Part Tag', partTag.partTagId));
+  });
+
+  it('creates a faq, edits it, and deletes it', async () => {
+    const faq = await PartReviewService.createFaq('some question', 'some answer', batman, orgId);
+    const prismaFaq = await prisma.frequentlyAskedQuestion.findUnique({ where: { faqId: faq.faqId } });
+
+    expect(prismaFaq?.question).toBe('some question');
+    expect(prismaFaq?.answer).toBe('some answer');
+    expect(prismaFaq?.userCreatedId).toBe(batman.userId);
+    expect(prismaFaq?.partReviewFaqOrgId).toBe(orgId);
+    expect(prismaFaq?.regularFaqOrgId).toBeFalsy();
+    expect(faq?.question).toBe('some question');
+    expect(faq?.answer).toBe('some answer');
+
+    const updatedFaq = await PartReviewService.updateFaq(
+      faq.faqId,
+      'some other question',
+      'some other answer',
+      superman,
+      orgId
+    );
+
+    const prismaFaq2 = await prisma.frequentlyAskedQuestion.findUnique({ where: { faqId: faq.faqId } });
+
+    expect(prismaFaq2?.question).toBe('some other question');
+    expect(prismaFaq2?.answer).toBe('some other answer');
+    expect(prismaFaq2?.userCreatedId).toBe(batman.userId);
+    expect(prismaFaq2?.partReviewFaqOrgId).toBe(orgId);
+    expect(prismaFaq2?.dateDeleted).toBeFalsy();
+    expect(updatedFaq?.question).toBe('some other question');
+    expect(updatedFaq?.answer).toBe('some other answer');
+
+    const deletedFaq = await PartReviewService.deleteFaq(faq.faqId, superman, orgId);
+    expect(deletedFaq?.question).toBe('some other question');
+    expect(deletedFaq?.answer).toBe('some other answer');
+
+    const prismaDeletedFaq = await prisma.frequentlyAskedQuestion.findUnique({ where: { faqId: faq.faqId } });
+    expect(prismaDeletedFaq?.dateDeleted).toBeTruthy();
+  });
+
+  it('does not let non-admins create, edit, or delete faqs', async () => {
+    await expect(
+      async () => await PartReviewService.createFaq('some question', 'some answer', nonAdmin, orgId)
+    ).rejects.toThrow(new AccessDeniedAdminOnlyException('create part review faq'));
+
+    const faq = await PartReviewService.createFaq('some question', 'some answer', batman, orgId);
+
+    await expect(
+      async () => await PartReviewService.updateFaq(faq.faqId, 'some title2', 'some description2', nonAdmin, orgId)
+    ).rejects.toThrow(new AccessDeniedAdminOnlyException('update faq'));
+
+    await expect(async () => await PartReviewService.deleteFaq(faq.faqId, nonAdmin, orgId)).rejects.toThrow(
+      new AccessDeniedAdminOnlyException('delete faq')
+    );
+  });
+
+  it('does not allow updating deleted faqs', async () => {
+    const faq = await PartReviewService.createFaq('some q', 'some a', batman, orgId);
+
+    await PartReviewService.deleteFaq(faq.faqId, superman, orgId);
+
+    await expect(
+      async () => await PartReviewService.updateFaq(faq.faqId, 'some q2', 'some a2', batman, orgId)
+    ).rejects.toThrow(new DeletedException('Faq', faq.faqId));
   });
 
   describe('common mistake endpoints', () => {
@@ -353,5 +408,47 @@ describe('part review tests', () => {
       expect(partReviews[0].question).not.toEqual(regularFaq.question);
       expect(partReviews[0].answer).not.toEqual(regularFaq.answer);
     });
+  });
+
+  it('gets all common mistakes', async () => {
+    const org2Creator = await prisma.user.create({
+      data: {
+        firstName: 'Admin2',
+        lastName: 'User2',
+        email: 'admin2@gmail.com',
+        googleAuthId: 'organizationCreator2'
+      }
+    });
+
+    const org2 = await prisma.organization.create({
+      data: {
+        name: 'Joe mama2',
+        description: 'Joe mama2`s organization',
+        applicationLink: '',
+        userCreated: {
+          connect: {
+            userId: org2Creator.userId
+          }
+        }
+      }
+    });
+
+    const flash = await createTestUser(flashAdmin, org2.organizationId);
+    await PartReviewService.createCommonMistake('mistake', 'desc', false, batman, orgId);
+    await PartReviewService.createCommonMistake('mistake2', 'desc2', false, flash, org2.organizationId);
+    await PartReviewService.createCommonMistake('mistake3', 'desc3', true, batman, orgId);
+    await PartReviewService.createCommonMistake('mistake4', 'desc4', false, batman, orgId);
+
+    const commonMistakes = await PartReviewService.getAllCommonMistakes(orgId);
+    expect(commonMistakes).toHaveLength(3);
+    expect(commonMistakes[0].title).toBe('mistake');
+    expect(commonMistakes[1].title).toBe('mistake3');
+    expect(commonMistakes[2].title).toBe('mistake4');
+    expect(commonMistakes[0].description).toBe('desc');
+    expect(commonMistakes[1].description).toBe('desc3');
+    expect(commonMistakes[2].description).toBe('desc4');
+    expect(commonMistakes[0].starred).toBe(false);
+    expect(commonMistakes[1].starred).toBe(true);
+    expect(commonMistakes[2].starred).toBe(false);
   });
 });

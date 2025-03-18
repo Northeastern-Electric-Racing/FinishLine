@@ -18,7 +18,7 @@ export interface PartPreview {
   tags: PartTag[];
   projectId: string;
   assignees: User[];
-  reviewers: User[];
+  reviewRequests: PartReviewRequest[];
   createdAt: Date;
   userCreated: User;
 }
@@ -34,14 +34,13 @@ export interface PartSubmission {
   notes?: string;
   partId: string;
   userCreated: User;
-  reviewRequests: PartReviewRequest[];
   reviews: PartReview[];
   createdAt: Date;
 }
 
 export interface PartReviewRequest {
   partReviewRequestId: string;
-  submissionId: string;
+  partId: string;
   requester: User;
   reviewerRequested: User;
   createdAt: Date;
@@ -67,44 +66,16 @@ export interface Part_Review_Popup {
   reviewId: string;
 }
 
-export interface PartReviewCommonMistake {
-  partReviewCommonMistakeId: string;
-  title: string;
-  description: string;
-  starred: boolean;
-  userCreatedId: string;
-}
-
 export interface PartTag {
   partTagId: string;
   name: string;
   colorHexCode: string;
 }
 
-export interface PartPayload {
-  index: number;
-  commonName: string;
-  description?: string;
-  previewImageLink?: string;
-  reviewStatus: Review_Status;
-  tagIds: string[];
-  projectId: string;
-  assigneeIds: string[];
-}
-
-export interface PartSubmissionPayload {
-  fileIds: string[];
-  name: string;
-  notes?: string;
-}
-
-export interface PartReviewRequestPayload {
-  requesterId: string;
-  reviewRequestedId: string;
-}
-
-export interface PartReviewPayload {
-  fileIds: string[];
-  notes?: string;
-  commonMistakeIds: string[];
+export interface PartReviewCommonMistake {
+  partReviewCommonMistakeId: string;
+  title: string;
+  description: string;
+  starred: boolean;
+  userCreatedId: string;
 }
