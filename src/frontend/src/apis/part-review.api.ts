@@ -1,12 +1,5 @@
-import {
-  PartPayload,
-  PartPreview,
-  PartSubmissionPayload,
-  Part,
-  PartReviewRequestPayload,
-  PartReviewPayload,
-  Review_Status
-} from 'shared';
+import { PartPayload, PartSubmissionPayload, PartReviewRequestPayload, PartReviewPayload } from '../hooks/part-review.hooks';
+import { PartPreview, Review_Status, Part, PartSubmission, PartReviewRequest, PartReview } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 
@@ -28,7 +21,31 @@ export const getPartsFromProject = (/*projectId: string*/): { data: PartPreview[
         tags: [],
         projectId: '1',
         assignees: [],
-        reviewers: [],
+        reviewRequests: [
+          {
+            partReviewRequestId: '1',
+            partId: '1',
+            requester: {
+              userId: '1',
+              firstName: 'fred',
+              lastName: 'bellinger',
+              email: 'test@test.com',
+              role: 'ADMIN',
+              emailId: 'test@test.com',
+              permissions: []
+            },
+            reviewerRequested: {
+              userId: '2',
+              firstName: 'albert',
+              lastName: 'stetson',
+              email: 'reviewer@test.com',
+              role: 'ADMIN',
+              emailId: 'reviewer@test.com',
+              permissions: []
+            },
+            createdAt: new Date()
+          }
+        ],
         createdAt: new Date(),
         userCreated: {
           userId: '1',
@@ -50,7 +67,7 @@ export const getPartsFromProject = (/*projectId: string*/): { data: PartPreview[
         tags: [],
         projectId: '1',
         assignees: [],
-        reviewers: [],
+        reviewRequests: [],
         createdAt: new Date(),
         userCreated: {
           userId: '1',
@@ -87,7 +104,31 @@ export const getSinglePart = (/*partId: string*/): { data: Part } => {
       tags: [],
       projectId: '1',
       assignees: [],
-      reviewers: [],
+      reviewRequests: [
+        {
+          partReviewRequestId: '1',
+          partId: '1',
+          requester: {
+            userId: '1',
+            firstName: 'fred',
+            lastName: 'bellinger',
+            email: 'test@test.com',
+            role: 'ADMIN',
+            emailId: 'test@test.com',
+            permissions: []
+          },
+          reviewerRequested: {
+            userId: '2',
+            firstName: 'albert',
+            lastName: 'stetson',
+            email: 'reviewer@test.com',
+            role: 'ADMIN',
+            emailId: 'reviewer@test.com',
+            permissions: []
+          },
+          createdAt: new Date()
+        }
+      ],
       createdAt: new Date(),
       userCreated: {
         userId: '1',
@@ -114,31 +155,6 @@ export const getSinglePart = (/*partId: string*/): { data: Part } => {
             emailId: 'test@test.com',
             permissions: []
           },
-          reviewRequests: [
-            {
-              partReviewRequestId: '1',
-              submissionId: '1',
-              requester: {
-                userId: '1',
-                firstName: 'fred',
-                lastName: 'bellinger',
-                email: 'test@test.com',
-                role: 'ADMIN',
-                emailId: 'test@test.com',
-                permissions: []
-              },
-              reviewerRequested: {
-                userId: '2',
-                firstName: 'albert',
-                lastName: 'stetson',
-                email: 'reviewer@test.com',
-                role: 'ADMIN',
-                emailId: 'reviewer@test.com',
-                permissions: []
-              },
-              createdAt: new Date()
-            }
-          ],
           reviews: [
             {
               partReviewId: '1',
@@ -184,7 +200,7 @@ export const getSinglePart = (/*partId: string*/): { data: Part } => {
  * @param payload the payload of the part
  */
 export const createPart = (payload: PartPayload) => {
-  return axios.post<{ message: string }>(apiUrls.partsCreate(), {
+  return axios.post<Part>(apiUrls.partsCreate(), {
     ...payload
   });
 };
@@ -196,7 +212,7 @@ export const createPart = (payload: PartPayload) => {
  * @param payload the payload of the part
  */
 export const editPart = (partId: string, payload: PartPayload) => {
-  return axios.post<{ message: string }>(apiUrls.partsEdit(partId), {
+  return axios.post<Part>(apiUrls.partsEdit(partId), {
     ...payload
   });
 };
@@ -207,7 +223,7 @@ export const editPart = (partId: string, payload: PartPayload) => {
  * @param partId the id of the part to delete
  */
 export const deletePart = (partId: string) => {
-  return axios.post<{ message: string }>(apiUrls.partsDelete(partId));
+  return axios.post<Part>(apiUrls.partsDelete(partId));
 };
 
 /**
@@ -217,7 +233,7 @@ export const deletePart = (partId: string) => {
  * @param payload the payload of the part submission
  */
 export const createPartSubmission = (partId: string, payload: PartSubmissionPayload) => {
-  return axios.post<{ message: string }>(apiUrls.partsCreateSubmission(partId), {
+  return axios.post<PartSubmission>(apiUrls.partsCreateSubmission(partId), {
     ...payload
   });
 };
@@ -229,7 +245,7 @@ export const createPartSubmission = (partId: string, payload: PartSubmissionPayl
  * @param payload the payload of the part submission
  */
 export const editPartSubmission = (partSubmissionId: string, payload: PartSubmissionPayload) => {
-  return axios.post<{ message: string }>(apiUrls.partsEditSubmission(partSubmissionId), {
+  return axios.post<PartSubmission>(apiUrls.partsEditSubmission(partSubmissionId), {
     ...payload
   });
 };
@@ -241,7 +257,7 @@ export const editPartSubmission = (partSubmissionId: string, payload: PartSubmis
  * @param payload the payload of the part review request
  */
 export const createPartReviewRequest = (submissionId: string, payload: PartReviewRequestPayload) => {
-  return axios.post<{ message: string }>(apiUrls.partsCreateReviewRequest(submissionId), {
+  return axios.post<PartReviewRequest>(apiUrls.partsCreateReviewRequest(submissionId), {
     ...payload
   });
 };
@@ -252,7 +268,7 @@ export const createPartReviewRequest = (submissionId: string, payload: PartRevie
  * @param partReviewRequestId the id of the part review request to delete
  */
 export const deletePartReviewRequest = (partReviewRequestId: string) => {
-  return axios.post<{ message: string }>(apiUrls.partsDeleteReviewRequest(partReviewRequestId));
+  return axios.post<PartReviewRequest>(apiUrls.partsDeleteReviewRequest(partReviewRequestId));
 };
 
 /**
@@ -262,7 +278,7 @@ export const deletePartReviewRequest = (partReviewRequestId: string) => {
  * @param payload the payload of the part review
  */
 export const createPartReview = (submissionId: string, payload: PartReviewPayload) => {
-  return axios.post<{ message: string }>(apiUrls.partsCreateReview(submissionId), {
+  return axios.post<PartReview>(apiUrls.partsCreateReview(submissionId), {
     ...payload
   });
 };
@@ -274,7 +290,7 @@ export const createPartReview = (submissionId: string, payload: PartReviewPayloa
  * @param payload the payload of the part review
  */
 export const editPartReview = (partReviewId: string, payload: PartReviewPayload) => {
-  return axios.post<{ message: string }>(apiUrls.partsEditReview(partReviewId), {
+  return axios.post<PartReview>(apiUrls.partsEditReview(partReviewId), {
     ...payload
   });
 };

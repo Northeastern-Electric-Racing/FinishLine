@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Part, PartPayload, PartSubmissionPayload, PartReviewRequestPayload, PartReviewPayload, PartPreview } from 'shared';
+import { Part, PartPreview, PartReview, PartReviewRequest, PartSubmission, Review_Status } from 'shared';
 import {
   createPart,
   createPartReview,
@@ -13,6 +13,34 @@ import {
   getPartsFromProject,
   getSinglePart
 } from '../apis/part-review.api';
+
+export interface PartPayload {
+  index: number;
+  commonName: string;
+  description?: string;
+  previewImageLink?: string;
+  reviewStatus: Review_Status;
+  tagIds: string[];
+  projectId: string;
+  assigneeIds: string[];
+}
+
+export interface PartSubmissionPayload {
+  fileIds: string[];
+  name: string;
+  notes?: string;
+}
+
+export interface PartReviewRequestPayload {
+  requesterId: string;
+  reviewRequestedId: string;
+}
+
+export interface PartReviewPayload {
+  fileIds: string[];
+  notes?: string;
+  commonMistakeIds: string[];
+}
 
 /**
  * Custom React Hook to fetch all parts associated with the given project as part previews
@@ -43,7 +71,7 @@ export const useSinglePart = (/*partId: string*/) => {
  */
 export const useCreatePart = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, PartPayload>(
+  return useMutation<Part, Error, PartPayload>(
     ['parts', 'create'],
     async (part: PartPayload) => {
       const { data } = await createPart(part);
@@ -64,7 +92,7 @@ export const useCreatePart = () => {
  */
 export const useEditPart = (partId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, PartPayload>(
+  return useMutation<Part, Error, PartPayload>(
     ['parts', 'edit'],
     async (part: PartPayload) => {
       const { data } = await editPart(partId, part);
@@ -86,7 +114,7 @@ export const useEditPart = (partId: string) => {
  */
 export const useDeletePart = (partId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<Part, Error, any>(
     ['parts', 'delete'],
     async () => {
       const { data } = await deletePart(partId);
@@ -108,7 +136,7 @@ export const useDeletePart = (partId: string) => {
  */
 export const useCreatePartSubmission = (partId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, PartSubmissionPayload>(
+  return useMutation<PartSubmission, Error, PartSubmissionPayload>(
     ['parts', 'createSubmission'],
     async (submission: PartSubmissionPayload) => {
       const { data } = await createPartSubmission(partId, submission);
@@ -130,7 +158,7 @@ export const useCreatePartSubmission = (partId: string) => {
  */
 export const useEditPartSubmission = (submissionId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, PartSubmissionPayload>(
+  return useMutation<PartSubmission, Error, PartSubmissionPayload>(
     ['parts', 'editSubmission'],
     async (submission: PartSubmissionPayload) => {
       const { data } = await editPartSubmission(submissionId, submission);
@@ -151,7 +179,7 @@ export const useEditPartSubmission = (submissionId: string) => {
  */
 export const useCreatePartReviewRequest = (submissionId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, PartReviewRequestPayload>(
+  return useMutation<PartReviewRequest, Error, PartReviewRequestPayload>(
     ['parts', 'createReviewRequest'],
     async (reviewRequest: PartReviewRequestPayload) => {
       const { data } = await createPartReviewRequest(submissionId, reviewRequest);
@@ -172,7 +200,7 @@ export const useCreatePartReviewRequest = (submissionId: string) => {
  */
 export const useDeletePartReviewRequest = (reviewRequestId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<PartReviewRequest, Error, any>(
     ['parts', 'deleteReviewRequest'],
     async () => {
       const { data } = await deletePartReviewRequest(reviewRequestId);
@@ -193,7 +221,7 @@ export const useDeletePartReviewRequest = (reviewRequestId: string) => {
  */
 export const useCreatePartReview = (submissionId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, PartReviewPayload>(
+  return useMutation<PartReview, Error, PartReviewPayload>(
     ['parts', 'createReview'],
     async (review: PartReviewPayload) => {
       const { data } = await createPartReview(submissionId, review);
@@ -214,7 +242,7 @@ export const useCreatePartReview = (submissionId: string) => {
  */
 export const useEditPartReview = (reviewId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, PartReviewPayload>(
+  return useMutation<PartReview, Error, PartReviewPayload>(
     ['parts', 'editReview'],
     async (partReview: PartReviewPayload) => {
       const { data } = await editPartReview(reviewId, partReview);
