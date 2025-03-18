@@ -6,7 +6,7 @@ import FinanceController from '../controllers/finance.controllers';
 const financeRouter = express.Router();
 
 financeRouter.post(
-  '/finance/sponsor/create',
+  '/sponsor/create',
   nonEmptyString(body('name')),
   body('activeStatus').isBoolean(),
   body('sponsorValue').isInt(),
@@ -22,6 +22,14 @@ financeRouter.post(
 );
 
 financeRouter.delete('/sponsor/:sponsorId/delete', FinanceController.deleteSponsor);
+
+financeRouter.post(
+  '/sponsortier/create',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('colorHexCode')),
+  validateInputs,
+  FinanceController.createSponsorTier
+);
 
 financeRouter.post(
   '/sponsorTask/create',

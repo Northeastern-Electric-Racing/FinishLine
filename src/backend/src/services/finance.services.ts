@@ -107,6 +107,24 @@ export default class FinanceServices {
     return deletedSponsor;
   }
 
+  static async createSponsorTier(submitter: User, name: string, organization: Organization, colorHexCode: string) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
+      throw new AccessDeniedAdminOnlyException('create a sponsor tier');
+
+    const sponsor = await prisma.sponsor_Tier.create({
+      data: {
+        name,
+        organizationId: organization.organizationId,
+        colorHexCode
+      },
+      include: {
+        organization: true
+      }
+    });
+
+    return sponsor;
+  }
+
   /**
    * Creates a sponsor task for the given sponsorId.
    * @param submitter current user creating the sponsor task
