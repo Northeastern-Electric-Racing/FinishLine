@@ -12,7 +12,7 @@ import NERFormModal from '../../../components/NERFormModal';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is Required'),
-  colorHexCode: yup.string().required('')
+  colorHexCode: yup.string().default('#FF0000')
 });
 
 interface CreatePartTagProps {
@@ -45,7 +45,7 @@ const CreatePartTagModal: React.FC<CreatePartTagProps> = ({ showModal, handleClo
     resolver: yupResolver(schema),
     defaultValues: {
       name: defaultValues?.partTagId ?? '',
-      colorHexCode: defaultValues?.name ?? ''
+      colorHexCode: defaultValues?.colorHexCode ?? ''
     }
   });
 
@@ -65,10 +65,11 @@ const CreatePartTagModal: React.FC<CreatePartTagProps> = ({ showModal, handleClo
     >
       <FormControl>
         <FormLabel>Tag Name</FormLabel>
-        <ReactHookTextField name="partTagId" control={control} sx={{ width: 1 }} />
+        <ReactHookTextField name="name" control={control} sx={{ width: 1 }} />
         <FormHelperText error>{errors.name?.message}</FormHelperText>
         <FormLabel>Color</FormLabel>
         <ReactHookTextField name="colorHexCode" control={control} sx={{ width: 1 }} placeholder="#FF0000" />
+        <FormHelperText error>{errors.colorHexCode?.message}</FormHelperText>
       </FormControl>
     </NERFormModal>
   );
