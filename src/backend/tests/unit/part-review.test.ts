@@ -358,12 +358,21 @@ describe('part review tests', () => {
   describe('part review popup service tests', () => {
     let orgId: string;
     let batman: User;
-    let popupId: string;
+    let popupId: string | undefined;
 
     beforeEach(async () => {
         const organization = await createTestOrganization();
         orgId = organization.organizationId;
         batman = await createTestUser(batmanAppAdmin, orgId);
+        await prisma.part_Review_Popup.deleteMany({});
+        popupId = (await PartReviewService.createPartReviewPopup(
+          'some-review-id',
+          10,
+          20,
+          'Test Popup',
+          'Popup description',
+          batman
+      )).partReviewPopupId;
     });
 
     afterEach(async () => {
@@ -371,24 +380,16 @@ describe('part review tests', () => {
     });
 
     it('creates a popup', async () => {
-        const popup = await PartReviewService.createPartReviewPopup(
-            'some-review-id',
-            10,
-            20,
-            'Test Popup',
-            'Popup description',
-            batman
-        );
 
-        const prismaPopup = await prisma.part_Review_Popup.findUnique({ where: { partReviewPopupId: popup.partReviewPopupId } });
+        const prismaPopup = await prisma.part_Review_Popup.findUnique({ where: { partReviewPopupId: popupId } });
 
         expect(prismaPopup).toBeDefined();
         expect(prismaPopup?.title).toBe('Test Popup');
         expect(prismaPopup?.description).toBe('Popup description');
-        popupId = popup.partReviewPopupId;
     });
 
     it('updates a popup', async () => {
+        if (!popupId) throw new Error('popupId is undefined');
         const updatedPopup = await PartReviewService.updatePartReviewPopup(
             popupId,
             15,
@@ -404,6 +405,7 @@ describe('part review tests', () => {
     });
 
     it('deletes a popup', async () => {
+        if (!popupId) throw new Error('popupId is undefined');
         const deletedPopup = await PartReviewService.deletePartReviewPopup(popupId, batman);
 
         expect(deletedPopup).toBeDefined();

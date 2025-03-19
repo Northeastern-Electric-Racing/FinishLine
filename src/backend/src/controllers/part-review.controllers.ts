@@ -108,7 +108,8 @@ export default class PartReviewController {
   static async createPartReviewPopup(req: Request, res: Response, next: NextFunction) {
     try {
         const user = req.currentUser;
-        const { reviewId, xCoord, yCoord, title, description } = req.body;
+        const { reviewId } = req.params;
+        const { xCoord, yCoord, title, description } = req.body;
         const newPopup = await PartReviewService.createPartReviewPopup(reviewId, xCoord, yCoord, title, description, user);
         res.status(201).json(newPopup);
     } catch (error) {
