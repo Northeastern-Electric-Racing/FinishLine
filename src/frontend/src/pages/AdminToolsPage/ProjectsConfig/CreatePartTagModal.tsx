@@ -11,8 +11,8 @@ import { PartTag } from 'shared';
 import NERFormModal from '../../../components/NERFormModal';
 
 const schema = yup.object().shape({
-  partTagId: yup.string().required('Id is Required'),
-  name: yup.string().required('Name is Required')
+  name: yup.string().required('Name is Required'),
+  colorHexCode: yup.string().required('')
 });
 
 interface CreatePartTagProps {
@@ -44,8 +44,8 @@ const CreatePartTagModal: React.FC<CreatePartTagProps> = ({ showModal, handleClo
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      partTagId: defaultValues?.partTagId ?? '',
-      name: defaultValues?.name ?? '',
+      name: defaultValues?.partTagId ?? '',
+      colorHexCode: defaultValues?.name ?? ''
     }
   });
 
@@ -57,19 +57,18 @@ const CreatePartTagModal: React.FC<CreatePartTagProps> = ({ showModal, handleClo
       open={showModal}
       onHide={handleClose}
       title="New Tag"
-      reset={() => reset({ partTagId: '', name: '' })}
+      reset={() => reset({ name: '', colorHexCode: '' })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
       formId="new-part-tag-form"
       showCloseButton
     >
       <FormControl>
-        <FormLabel>Tag Id</FormLabel>
-        <ReactHookTextField name="partTagId" control={control} sx={{ width: 1 }} />
-        <FormHelperText error>{errors.partTagId?.message}</FormHelperText>
         <FormLabel>Tag Name</FormLabel>
-        <ReactHookTextField name="name" control={control} sx={{ width: 1 }} />
+        <ReactHookTextField name="partTagId" control={control} sx={{ width: 1 }} />
         <FormHelperText error>{errors.name?.message}</FormHelperText>
+        <FormLabel>Color</FormLabel>
+        <ReactHookTextField name="colorHexCode" control={control} sx={{ width: 1 }} placeholder="#FF0000" />
       </FormControl>
     </NERFormModal>
   );

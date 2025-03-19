@@ -12,6 +12,7 @@ import { useToast } from '../../../hooks/toasts.hooks';
 
 interface PartTagDeleteButtonProps {
   name: string;
+  colorHexCode: string;
   onDelete: (name: string) => void;
 }
 
@@ -43,7 +44,7 @@ const PartTagsTable: React.FC = () => {
     }
   };
 
-  const PartTagDeleteButton: React.FC<PartTagDeleteButtonProps> = ({ name, onDelete }) => {
+  const PartTagDeleteButton: React.FC<PartTagDeleteButtonProps> = ({ name, colorHexCode, onDelete }) => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const handleDeleteSubmit = () => {
@@ -62,7 +63,12 @@ const PartTagsTable: React.FC = () => {
           <Delete />
         </IconButton>
         {showDeleteModal && (
-          <PartTagDeleteModal name={name} onDelete={handleDeleteSubmit} onHide={() => setShowDeleteModal(false)} />
+          <PartTagDeleteModal
+            name={name}
+            colorHexCode={colorHexCode}
+            onDelete={handleDeleteSubmit}
+            onHide={() => setShowDeleteModal(false)}
+          />
         )}
       </>
     );
@@ -87,7 +93,7 @@ const PartTagsTable: React.FC = () => {
         </Box>
       </TableCell>
       <TableCell align="center" sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
-        <PartTagDeleteButton name={partTag.name} onDelete={handleDeletePartTag} />
+        <PartTagDeleteButton name={partTag.name} colorHexCode={partTag.colorHexCode} onDelete={handleDeletePartTag} />
       </TableCell>
     </TableRow>
   ));
@@ -95,7 +101,10 @@ const PartTagsTable: React.FC = () => {
   return (
     <Box>
       <CreatePartTagModal showModal={openModal} handleClose={() => setOpenModal(false)} />
-      <AdminToolTable columns={[{ name: 'Tag Id' }, { name: 'Tag Name' }, { name: 'Color' }]} rows={partTagTableRows} />
+      <AdminToolTable
+        columns={[{ name: 'Tag Id' }, { name: 'Tag Name' }, { name: 'Color' }, { name: ' ' }]}
+        rows={partTagTableRows}
+      />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         <NERButton variant="contained" onClick={() => setOpenModal(true)}>
           New Tag

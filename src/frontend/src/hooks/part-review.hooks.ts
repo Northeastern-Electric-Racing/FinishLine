@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Part, PartPreview, PartReview, PartReviewRequest, PartSubmission, Review_Status } from 'shared';
+import { createPartTag, deletePartTag, getAllPartTags } from '../apis/part-review.api';
+import { PartTag } from 'shared';
 import {
   createPart,
   createPartReview,
@@ -255,12 +257,10 @@ export const useEditPartReview = (reviewId: string) => {
     }
   );
 };
-import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { createPartTag, deletePartTag, getAllPartTags } from '../apis/part-review.api';
-import { PartTag } from 'shared';
 
 export interface PartTagPayload {
   name: string;
+  colorHexCode: string;
 }
 
 export const useGetAllPartTags = () => {
