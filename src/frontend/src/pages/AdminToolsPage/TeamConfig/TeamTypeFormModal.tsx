@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
-import { FormControl, FormLabel, FormHelperText, Tooltip, Typography, Link } from '@mui/material';
+import { FormControl, FormLabel, FormHelperText, Tooltip, Typography, Link, TextField } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -111,7 +111,16 @@ const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose
         <Box style={{ display: 'flex', verticalAlign: 'middle', alignItems: 'center' }}>
           <FormLabel>Description</FormLabel>
         </Box>
-        <ReactHookTextField name="description" control={control} />
+        <Box sx={{ minWidth: '650px' }}>
+          <TextField
+            fullWidth
+            multiline
+            minRows={8}
+            label="Application Link"
+            placeholder="Enter application link"
+            margin="normal"
+          />
+        </Box>
         <FormHelperText error>{errors.description?.message}</FormHelperText>
       </FormControl>
     </NERFormModal>

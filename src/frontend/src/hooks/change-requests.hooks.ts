@@ -45,16 +45,16 @@ export const useGetToReviewChangeRequests = () => {
   });
 };
 
-export const useGetUnreviewedChangeRequests = () => {
+export const useGetUnreviewedChangeRequests = (wbsNum?: WbsNumber) => {
   return useQuery<ChangeRequest[], Error>(['change requests', 'unreviewed'], async () => {
-    const { data } = await getUnreviewedChangeRequests();
+    const { data } = await getUnreviewedChangeRequests(wbsNum);
     return data;
   });
 };
 
-export const useGetApprovedChangeRequests = () => {
+export const useGetApprovedChangeRequests = (wbsNum?: WbsNumber) => {
   return useQuery<ChangeRequest[], Error>(['change requests', 'approved'], async () => {
-    const { data } = await getApprovedChangeRequests();
+    const { data } = await getApprovedChangeRequests(wbsNum);
     return data;
   });
 };

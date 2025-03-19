@@ -28,7 +28,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import ScopeTab from './ScopeTab';
 import FullPageTabs from '../../../components/FullPageTabs';
-import ChangeRequestsTab from './ChangeRequestsTab';
+import ChangeRequestTab from '../../../components/ChangeRequestTab';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -187,7 +187,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
       ) : tabValue === 2 ? (
         <ChangesList changes={workPackage.changes} />
       ) : (
-        <ChangeRequestsTab workPackage={workPackage} />
+        <ChangeRequestTab wbsElement={workPackage} />
       )}
       {showActivateModal && (
         <ActivateWorkPackageModalContainer

@@ -22,6 +22,54 @@ describe('Design Reviews', () => {
     await resetUsers();
   });
 
+  test('Marks design review as confirmed if updated list of required members have confirmed', async () => {
+    const user = await createTestUser(supermanAdmin, organizationId);
+
+    const origonalDesignreview = await prisma.design_Review.update({
+      where: { designReviewId: designReview.designReviewId },
+      data: {
+        requiredMembers: {
+          connect: [{ userId: user.userId }]
+        },
+        confirmedMembers: {
+          connect: [{ userId: designReview.userCreatedId }]
+        }
+      },
+      include: {
+        requiredMembers: true,
+        confirmedMembers: true
+      }
+    });
+
+    const requiredMembers = origonalDesignreview.requiredMembers.map((member) => member.userId) || [];
+    const confirmedMembers = origonalDesignreview.confirmedMembers.map((member) => member.userId) || [];
+
+    expect(requiredMembers.length).toBe(2);
+    expect(confirmedMembers.length).toBe(1);
+
+    await DesignReviewsService.setStatus(user, designReview.designReviewId, DesignReviewStatus.SCHEDULED, organization);
+
+    const updatedDesignReview = await DesignReviewsService.editDesignReview(
+      user,
+      designReview.designReviewId,
+      new Date(),
+      origonalDesignreview.teamTypeId,
+      [designReview.userCreatedId],
+      [],
+      false,
+      false,
+      null,
+      null,
+      '',
+      DesignReviewStatus.SCHEDULED,
+      [],
+      [0, 1],
+      organization
+    );
+
+    expect(updatedDesignReview.status).toBe(DesignReviewStatus.CONFIRMED);
+  });
+
   // change with admin who is not creator
   test('Set status works when an admin who is not the creator sets', async () => {
     const user = await createTestUser(supermanAdmin, organizationId);
