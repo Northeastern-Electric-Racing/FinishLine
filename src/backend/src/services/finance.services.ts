@@ -9,7 +9,6 @@ import {
   NotFoundException
 } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
-import { get } from 'http';
 
 export default class FinanceServices {
   /**
