@@ -399,7 +399,7 @@ export default class UsersService {
     }
 
     if (!isLeadership(userRole) && !isHead(userRole)) {
-      throw new AccessDeniedException('Guests and members cannot update user roles!');
+      throw new AccessDeniedException('Only Leadership and Head can update user roles!');
     }
 
     if (targetUserRankedRole >= userRankedRole) {
