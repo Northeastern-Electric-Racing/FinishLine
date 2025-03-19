@@ -146,4 +146,5 @@ export type ExceptionObjectNames =
   | 'Graph'
   | 'Graph Collection'
   | 'Part Review'
+  | 'Part Tag'
   | 'common mistake';

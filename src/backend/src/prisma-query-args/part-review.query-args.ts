@@ -11,6 +11,7 @@ export const partQueryArgs = (organizationId: string) =>
     include: {
       tags: true,
       submissions: partSubmissionQueryArgs(organizationId),
+      reviewRequests: partReviewRequestQueryArgs(organizationId),
       assignees: getUserQueryArgs(organizationId),
       userCreated: getUserQueryArgs(organizationId)
     }
@@ -20,7 +21,6 @@ export const partSubmissionQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.PartSubmissionDefaultArgs>()({
     include: {
       userCreated: getUserQueryArgs(organizationId),
-      reviewRequests: partReviewRequestQueryArgs(organizationId),
       reviews: partReviewQueryArgs(organizationId)
     }
   });

@@ -1128,64 +1128,64 @@ model Contact {
 }
 
 model Part {
-  partId           String           @id @default(uuid())
+  partId           String              @id @default(uuid())
   index            Int
   commonName       String
   description      String?
   previewImageLink String?
-  status           Review_Status    @default(IN_PROGRESS)
+  status           Review_Status       @default(IN_PROGRESS)
   tags             PartTag[]
   submissions      PartSubmission[]
-  project          Project          @relation(fields: [projectId], references: [projectId])
+  reviewRequests   PartReviewRequest[]
+  project          Project             @relation(fields: [projectId], references: [projectId])
   projectId        String
-  assignees        User[]           @relation("partAssignees")
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  assignees        User[]              @relation("partAssignees")
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
   dateDeleted      DateTime?
   userCreatedId    String
-  userCreated      User             @relation(fields: [userCreatedId], references: [userId], name: "partCreator")
+  userCreated      User                @relation(fields: [userCreatedId], references: [userId], name: "partCreator")
   userDeletedId    String?
-  userDeleted      User?            @relation(fields: [userDeletedId], references: [userId], name: "partDeleter")
+  userDeleted      User?               @relation(fields: [userDeletedId], references: [userId], name: "partDeleter")
 }
 
 model PartTag {
   partTagId      String        @id @default(uuid())
   name           String
   colorHexCode   String
-  dateCreated    DateTime
+  dateCreated    DateTime      @default(now())
   dateDeleted    DateTime?
   parts          Part[]
-  organization   Organization? @relation(fields: [organizationId], references: [organizationId])
-  organizationId String?
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  organizationId String
 }
 
 model PartSubmission {
-  partSubmissionId String              @id @default(uuid())
+  partSubmissionId String       @id @default(uuid())
   fileIds          String[]
   name             String
   notes            String?
-  part             Part                @relation(fields: [partId], references: [partId])
+  part             Part         @relation(fields: [partId], references: [partId])
   partId           String
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
   dateDeleted      DateTime?
   userCreatedId    String
-  userCreated      User                @relation(fields: [userCreatedId], references: [userId], name: "partsSubmissionCreator")
+  userCreated      User         @relation(fields: [userCreatedId], references: [userId], name: "partsSubmissionCreator")
   userDeletedId    String?
-  userDeleted      User?               @relation(fields: [userDeletedId], references: [userId], name: "partsSubmissionDeleter")
-  reviewRequests   PartReviewRequest[]
+  userDeleted      User?        @relation(fields: [userDeletedId], references: [userId], name: "partsSubmissionDeleter")
   reviews          PartReview[]
 }
 
 model PartReviewRequest {
-  partReviewRequestId String         @id @default(uuid())
-  submissionId        String
-  submission          PartSubmission @relation(fields: [submissionId], references: [partSubmissionId])
+  partReviewRequestId String   @id @default(uuid())
+  partId              String
+  part                Part     @relation(fields: [partId], references: [partId])
   requesterId         String
-  requester           User           @relation(fields: [requesterId], references: [userId], name: "PartReviewRequestor")
+  requester           User     @relation(fields: [requesterId], references: [userId], name: "PartReviewRequestor")
   reviewerId          String
-  reviewerRequested   User           @relation(fields: [reviewerId], references: [userId], name: "PartReviewRequested")
-  createdAt           DateTime       @default(now())
+  reviewerRequested   User     @relation(fields: [reviewerId], references: [userId], name: "PartReviewRequested")
+  createdAt           DateTime @default(now())
 }
 
 model PartReview {
