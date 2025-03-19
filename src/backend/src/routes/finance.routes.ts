@@ -24,7 +24,7 @@ financeRouter.post(
 financeRouter.delete('/sponsor/:sponsorId/delete', FinanceController.deleteSponsor);
 
 financeRouter.post(
-  '/sponsortier/create',
+  '/sponsorTier/create',
   nonEmptyString(body('name')),
   nonEmptyString(body('colorHexCode')),
   validateInputs,
