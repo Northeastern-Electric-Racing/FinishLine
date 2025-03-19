@@ -13,7 +13,7 @@ Additionally, you can run the entire application in development mode on docker c
 
 ### `yarn docker:dev`
 
-If you choose to run your application on docker, commands such as `yarn prisma:reset` must be run inside the backend container. You can access a /bin/sh terminal in the backend container with `yarn docker:exec`
+If you choose to run your application on docker, commands such as `yarn test:backend` / `yarn test:frontend` must be run inside the backend / frontend container. You can access a /bin/sh terminal in the containers with `yarn exec:backend` and `yarn exec:frontend`.
 
 The page will reload if you make edits.<br />
 You will also see any lint errors in the console.
