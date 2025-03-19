@@ -2,6 +2,24 @@ import { NextFunction, Request, Response } from 'express';
 import FinanceServices from '../services/finance.services';
 
 export default class FinanceController {
+  static async createSponsorTask(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { dueDate, notes, sponsorId, notifyDate, assigneeUserId } = req.body;
+
+      const sponsorTask = await FinanceServices.createSponsorTask(
+        req.currentUser,
+        dueDate,
+        notes,
+        sponsorId,
+        req.organization,
+        notifyDate,
+        assigneeUserId
+      );
+      res.status(200).json(sponsorTask);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
   static async createSponsor(req: Request, res: Response, next: NextFunction) {
     try {
       const {

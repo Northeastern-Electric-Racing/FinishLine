@@ -22,5 +22,12 @@ financeRouter.post(
 );
 
 financeRouter.delete('/sponsor/:sponsorId/delete', FinanceController.deleteSponsor);
+financeRouter.post(
+  '/sponsorTask/create',
+  isDate(body('dueDate')),
+  body('notes').isString(),
+  nonEmptyString(body('sponsorId')),
+  FinanceController.createSponsorTask
+);
 
 export default financeRouter;
