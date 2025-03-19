@@ -164,8 +164,9 @@ export default class PartReviewController {
     try {
         const user = req.currentUser;
         const { reviewId } = req.params;
+        const organizationID = req.organization.organizationId;
         const { xCoord, yCoord, title, description } = req.body;
-        const newPopup = await PartReviewService.createPartReviewPopup(reviewId, xCoord, yCoord, title, description, user);
+        const newPopup = await PartReviewService.createPartReviewPopup(organizationID, reviewId, xCoord, yCoord, title, description, user);
         res.status(201).json(newPopup);
     } catch (error) {
         next(error);

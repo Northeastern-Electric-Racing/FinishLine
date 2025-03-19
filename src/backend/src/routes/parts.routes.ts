@@ -64,39 +64,35 @@ partsRouter.post(
   PartReviewController.updateCommonMistake
 );
 
-<<<<<<< HEAD
 partsRouter.post(
-  '/popup/:reviewid/create',
+  '/popup/:reviewId/create',
   nonEmptyString(body('title')),
   nonEmptyString(body('description')),
   body('starred').isBoolean(),
   validateInputs,
-  PartsReviewController.createPartReviewPopup
+  PartReviewController.createPartReviewPopup
 )
 
 partsRouter.post(
-  '/popup/:reviewid/update',
+  '/popup/:reviewId/update',
   nonEmptyString(body('title')),
   nonEmptyString(body('description')),
   body('starred').isBoolean(),
   validateInputs,
-  PartsReviewController.updatePartReviewPopup
+  PartReviewController.updatePartReviewPopup
 )
 
 partsRouter.post(
-  '/popup/:reviewid/delete',
+  '/popup/:reviewId/delete',
   nonEmptyString(body('title')),
   nonEmptyString(body('description')),
   body('starred').isBoolean(),
   validateInputs,
-  PartsReviewController.deletePartReviewPopup
+  PartReviewController.deletePartReviewPopup
 )
 
 
 
-partsRouter.post('/common-mistake/:commonMistakeId/delete', PartsReviewController.deleteCommonMistake);
-=======
 partsRouter.post('/common-mistake/:commonMistakeId/delete', PartReviewController.deleteCommonMistake);
->>>>>>> origin/feature/cad-project-file-review
 
 export default partsRouter;

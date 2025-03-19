@@ -437,7 +437,8 @@ export default class PartReviewService {
   }
 
     /**
-     * Creates a part review popup
+     * Creates a part review popu
+     * @param organizationID ID of the organization
      * @param reviewId ID of the review
      * @param xCoord X coordinate of the popup
      * @param yCoord Y coordinate of the popup
@@ -447,6 +448,7 @@ export default class PartReviewService {
      * @returns The newly created popup
      */
     static async createPartReviewPopup(
+        organizationID: string,
         reviewId: string,
         xCoord: number,
         yCoord: number,
@@ -462,7 +464,7 @@ export default class PartReviewService {
             throw new NotFoundException('Part Review', reviewId);
         }
 
-        const isAdminUser = await userHasPermission(creator.userId, review.partReviewId, isAdmin);
+        const isAdminUser = await userHasPermission(creator.userId, organizationID, isAdmin);
 
         if (review.userCreatedId !== creator.userId && !isAdminUser) {
             throw new AccessDeniedAdminOnlyException('create part review popup');
