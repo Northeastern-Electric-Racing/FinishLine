@@ -1,4 +1,4 @@
-import { Organization } from '@prisma/client';
+import { Organization, Sponsor } from '@prisma/client';
 import FinanceServices from '../../src/services/finance.services';
 import {
   AccessDeniedAdminOnlyException,
@@ -14,6 +14,7 @@ describe('Finance Tests', () => {
   let orgId: string;
   let organization: Organization;
   let sponsorTierId: string;
+  let sponsor: Sponsor;
 
   beforeEach(async () => {
     organization = await createTestOrganization();
@@ -26,6 +27,20 @@ describe('Finance Tests', () => {
       }
     });
     ({ sponsorTierId } = sponsorTier);
+    sponsor = await FinanceServices.createSponsor(
+      await createTestUser(batmanAppAdmin, orgId),
+      'Google',
+      true,
+      5000,
+      new Date(12, 1, 24),
+      [2024, 2025],
+      sponsorTierId,
+      true,
+      'Bill Gates',
+      [],
+      organization,
+      'googlecode'
+    );
   });
 
   afterEach(async () => {
@@ -159,20 +174,6 @@ describe('Finance Tests', () => {
   });
   describe('Create a sponsor task', () => {
     it('Succeeds and creates a sponsor task', async () => {
-      const sponsor = await FinanceServices.createSponsor(
-        await createTestUser(batmanAppAdmin, orgId),
-        'Google',
-        true,
-        5000,
-        new Date(12, 1, 24),
-        [2024, 2025],
-        sponsorTierId,
-        true,
-        'Bill Gates',
-        [],
-        organization,
-        'googlecode'
-      );
       const assigneeUserId = (await createTestUser(wonderwomanGuest, orgId)).userId;
       const sponsorTask = await FinanceServices.createSponsorTask(
         await createTestUser(batmanAppAdmin, orgId),
@@ -189,7 +190,46 @@ describe('Finance Tests', () => {
       expect(sponsorTask.notifyDate).toEqual(new Date(2025, 3, 18));
       expect(sponsorTask.assigneeUserId).toEqual(assigneeUserId);
     });
-    it('Fails if user id is invalid', async () => {});
-    it('Fails if user is not a head or above', async () => {});
+    it('Fails if user id is invalid', async () => {
+      await expect(async () => {
+        await FinanceServices.createSponsorTask(
+          await createTestUser(batmanAppAdmin, orgId),
+          new Date(2025, 3, 19),
+          'notes',
+          sponsor.sponsorId,
+          organization,
+          new Date(2025, 3, 18),
+          'invalid user id'
+        );
+      }).rejects.toThrow(new AccessDeniedAdminOnlyException('create a sponsor'));
+    });
+    it('Fails if user is not a head or above', async () => {
+      await expect(async () => {
+        const assigneeUserId = (await createTestUser(wonderwomanGuest, orgId)).userId;
+        await FinanceServices.createSponsorTask(
+          await createTestUser(wonderwomanGuest, orgId),
+          new Date(2025, 3, 19),
+          'notes',
+          sponsor.sponsorId,
+          organization,
+          new Date(2025, 3, 18),
+          assigneeUserId
+        );
+      }).rejects.toThrow(new AccessDeniedAdminOnlyException('create a sponsor'));
+    });
+    it('Fails if sponsor id is invalid', async () => {
+      await expect(async () => {
+        const assigneeUserId = (await createTestUser(wonderwomanGuest, orgId)).userId;
+        await FinanceServices.createSponsorTask(
+          await createTestUser(batmanAppAdmin, orgId),
+          new Date(2025, 3, 19),
+          'notes',
+          'invalid sponsor id',
+          organization,
+          new Date(2025, 3, 18),
+          assigneeUserId
+        );
+      }).rejects.toThrow(new AccessDeniedAdminOnlyException('create a sponsor'));
+    });
   });
 });
