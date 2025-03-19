@@ -2010,7 +2010,7 @@ const performSeed: () => Promise<void> = async () => {
     ner.organizationId
   );
 
-  await FinanceServices.createSponsor(
+  const sponsor = await FinanceServices.createSponsor(
     thomasEmrax,
     'Google',
     true,
@@ -2032,6 +2032,14 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'googlecode'
   );
+
+  await prisma.sponsor_Task.create({
+    data: {
+      dueDate: new Date(12, 1, 24),
+      notes: 'abc',
+      sponsorId: sponsor.sponsorId
+    }
+  });
 };
 
 performSeed()

@@ -106,4 +106,50 @@ export default class FinanceServices {
 
     return deletedSponsor;
   }
+
+  /**
+   * Edits a sponsor task
+   * @param sponsorTaskId the id of the sponsor task we are updating
+   * @param dueDate the updated dueDate
+   * @param notifyDate the updated notify date
+   * @param assignee the updated assignee
+   * @param notes the updated notes
+   */
+
+  static async editSponsorTask(
+    sponsorTaskId: string,
+    dueDate: Date,
+    notes: string,
+    notifyDate?: Date,
+    assigneeUserId?: string
+  ): Promise<Sponsor_Task> {
+    const oldSponsorTask = await prisma.sponsor_Task.findUnique({
+      where: { sponsorTaskId }
+    });
+
+    if (!oldSponsorTask) throw new NotFoundException('SponsorTask', sponsorTaskId);
+
+    if (
+      assigneeUserId &&
+      !(await prisma.user.findUnique({
+        where: {
+          userId: assigneeUserId
+        }
+      }))
+    ) {
+      throw new NotFoundException('User', assigneeUserId);
+    }
+
+    const updatedSponsorTask = await prisma.sponsor_Task.update({
+      where: { sponsorTaskId: oldSponsorTask.sponsorTaskId },
+      data: {
+        notifyDate: notifyDate ?? null,
+        assigneeUserId: assigneeUserId ?? null,
+        dueDate,
+        notes
+      }
+    });
+
+    return updatedSponsorTask;
+  }
 }
