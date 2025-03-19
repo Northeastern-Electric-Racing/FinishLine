@@ -1,4 +1,4 @@
-import { AppBar, Tab, Tabs as MUITabs, Box } from '@mui/material';
+import { AppBar, Tab, Tabs as MUITabs, Box, useTheme } from '@mui/material';
 import React from 'react';
 
 export interface TabData {
@@ -21,6 +21,8 @@ const Tabs = ({
     setTabValue(newValue);
   };
 
+  const theme = useTheme();
+
   return (
     <>
       <AppBar
@@ -37,7 +39,7 @@ const Tabs = ({
           onChange={handleTabChange}
           variant="fullWidth"
           indicatorColor={greyscale ? 'secondary' : 'primary'}
-          textColor={greyscale ? 'inherit' : 'primary'}
+          textColor={greyscale ? 'secondary' : 'primary'}
         >
           {tabs.map((tab: TabData, index: number) => (
             <Tab
@@ -47,7 +49,8 @@ const Tabs = ({
               sx={{
                 fontWeight: 700,
                 pointerEvents: tabs.length === 1 ? 'none' : 'auto',
-                borderRadius: greyscale ? '8px 8px 0 0' : 0
+                borderRadius: greyscale ? '8px 8px 0 0' : 0,
+                color: greyscale ? theme.palette.text.primary : undefined
               }}
             />
           ))}
