@@ -1,6 +1,7 @@
 import { isHead } from 'shared';
 import { User, Organization, Sponsor_Task, Sponsor } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
+import { getSponsorQueryArgs } from '../prisma-query-args/sponsor.query.args';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
@@ -9,6 +10,7 @@ import {
   NotFoundException
 } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
+import { sponsorTransformer } from '../transformers/finance.transformer';
 
 export default class FinanceServices {
   /**
@@ -69,12 +71,24 @@ export default class FinanceServices {
         },
         organizationId: organization.organizationId
       },
-      include: {
-        sponsorTasks: true
-      }
+      ...getSponsorQueryArgs(organization.organizationId)
     });
 
-    return sponsor;
+    return sponsorTransformer(sponsor);
+  }
+
+  /**
+   * Returns all the sponsors in the database
+   * @param organization The organization the user is currently in
+   * @returns All the sponsors in the database
+   */
+  static async getAllSponsors(organization: Organization) {
+    const allSponsors = await prisma.sponsor.findMany({
+      where: { organizationId: organization.organizationId, dateDeleted: null },
+      ...getSponsorQueryArgs(organization.organizationId)
+    });
+
+    return allSponsors.map(sponsorTransformer);
   }
 
   /**
