@@ -106,4 +106,31 @@ export default class FinanceServices {
 
     return deletedSponsor;
   }
+
+  static async createSponsorTask(
+    submitter: User,
+    dueDate: Date,
+    notes: string,
+    sponsorId: string,
+    organization: Organization,
+    notifyDate?: Date,
+    assigneeUserId?: string
+  ) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
+      throw new AccessDeniedAdminOnlyException('create a sponsor');
+    }
+    return prisma.sponsor_Task.create({
+      data: {
+        dueDate,
+        notifyDate: notifyDate ?? null,
+        assigneeUserId: assigneeUserId ?? null,
+        notes,
+        sponsorId
+      },
+      include: {
+        assignee: true,
+        sponsor: true
+      }
+    });
+  }
 }
