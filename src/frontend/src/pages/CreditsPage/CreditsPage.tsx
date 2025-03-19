@@ -276,6 +276,13 @@ const CreditsPage: React.FC = () => {
           '100%': { backgroundPosition: '0% 200%' }
         }
       }
+    },
+    {
+      name: 'Christopher DiCono',
+      color: '#00FF00',
+      sx: {
+        textShadow: '0 0 5px #00FF00, 0 0 10px #00FF00, 0 0 20px #00FF00'
+      }
     }
   ];
 
