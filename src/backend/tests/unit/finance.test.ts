@@ -74,12 +74,46 @@ describe('Finance Tests', () => {
       expect(result.sponsorValue).toBe(5000);
       expect(result.joinDate).toEqual(new Date(12, 1, 24));
       expect(result.activeYears).toEqual([2024, 2025]);
-      expect(result.sponsorTierId).toEqual(sponsorTierId);
+      expect(result.tierId).toEqual(sponsorTierId);
       expect(result.taxExempt).toBe(true);
       expect(result.discountCode).toEqual('googlecode');
       expect(result.vendorContact).toEqual('Bill Gates');
       expect(result.sponsorTasks).toEqual([]);
-      expect(result.organizationId).toEqual(orgId);
+    });
+  });
+
+  describe('Get All Sponsors', () => {
+    it('Succeeds and gets all the sponsors', async () => {
+      const spon1 = await FinanceServices.createSponsor(
+        await createTestUser(batmanAppAdmin, orgId),
+        'Google',
+        true,
+        5000,
+        new Date(12, 1, 24),
+        [2024, 2025],
+        sponsorTierId,
+        true,
+        'Bill Gates',
+        [],
+        organization,
+        'googlecode'
+      );
+      const spon2 = await FinanceServices.createSponsor(
+        await createTestUser(supermanAdmin, orgId),
+        'Apple',
+        true,
+        2000,
+        new Date(11, 23, 24),
+        [2024, 2025],
+        sponsorTierId,
+        true,
+        'Tim Cook',
+        [],
+        organization,
+        'applecode'
+      );
+      const result = await FinanceServices.getAllSponsors(organization);
+      expect(result).toStrictEqual([spon1, spon2]);
     });
   });
   describe('Delete a sponsor works', () => {
@@ -157,7 +191,6 @@ describe('Finance Tests', () => {
       );
     });
   });
-
   describe('Edit a sponsor task works', () => {
     it('Successful edit', async () => {
       const sponsor = await FinanceServices.createSponsor(
@@ -237,6 +270,32 @@ describe('Finance Tests', () => {
             'bad user id'
           )
       ).rejects.toThrow(new NotFoundException('User', 'bad user id'));
+    });
+  });
+  describe('Create a sponsor tier', () => {
+    it('Fails if user is not a head', async () => {
+      await expect(
+        async () =>
+          await FinanceServices.createSponsorTier(
+            await createTestUser(wonderwomanGuest, orgId),
+            'Silver',
+            organization,
+            'C0C0C0'
+          )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('create a sponsor tier'));
+    });
+
+    it('Succeeds and creates a sponsor tier', async () => {
+      const result = await FinanceServices.createSponsorTier(
+        await createTestUser(batmanAppAdmin, orgId),
+        'Silver',
+        organization,
+        'C0C0C0'
+      );
+
+      expect(result.name).toEqual('Silver');
+      expect(result.colorHexCode).toEqual('C0C0C0');
+      expect(result.organizationId).toEqual(orgId);
     });
   });
 });
