@@ -12,6 +12,7 @@ const PartTagErrorModal: React.FC<PartTagErrorModalProps> = ({ name, parts, onHi
   return (
     <NERModal open={true} onHide={onHide} title="Warning!" cancelText="Exit">
       <Typography>You cannot delete {name} because it is still in use by ..... </Typography>
+      <Typography> {parts} </Typography>
     </NERModal>
   );
 };

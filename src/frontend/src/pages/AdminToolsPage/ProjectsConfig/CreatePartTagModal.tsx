@@ -58,7 +58,6 @@ const CreatePartTagModal: React.FC<CreatePartTagProps> = ({ showModal, handleClo
       onHide={handleClose}
       title="New Tag"
       reset={() => reset({ name: '', colorHexCode: '' })}
-      reset={() => reset({ name: '', colorHexCode: '' })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
       formId="new-part-tag-form"

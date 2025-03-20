@@ -13,10 +13,11 @@ import PartTagErrorModal from './PartTagErrorModal';
 import { Part } from 'shared';
 
 interface PartTagDeleteButtonProps {
+  partTagId: string;
   name: string;
   colorHexCode: string;
   parts: Part[];
-  onDelete: (name: string) => void;
+  onDelete: (partTagId: string, name: string, parts: Part[]) => void;
 }
 
 const PartTagsTable: React.FC = () => {
@@ -36,27 +37,27 @@ const PartTagsTable: React.FC = () => {
   if (partTagsIsError) {
     return <ErrorPage message={partTagsError?.message} />;
   }
-  const handleDeletePartTag = async (partTagId: string) => {
-    try {
-      await mutateAsync({ partTagId });
-      toast.success(`Manufacturer: ${partTagId} Deleted Successfully!`);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error.message);
+  const handleDeletePartTag = async (partTagId: string, name: string, parts: Part[]) => {
+    if (!parts || parts.length != 0) {
+      try {
+        await mutateAsync({ partTagId });
+        toast.success(`Part Tag: ${name} Deleted Successfully!`);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          toast.error(error.message);
+        }
       }
+    } else {
+      <PartTagErrorModal name={name} parts={parts} onHide={() => {}} />;
     }
   };
 
-  const PartTagDeleteButton: React.FC<PartTagDeleteButtonProps> = ({ name, colorHexCode, parts, onDelete }) => {
+  const PartTagDeleteButton: React.FC<PartTagDeleteButtonProps> = ({ partTagId, name, colorHexCode, parts, onDelete }) => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const handleDeleteSubmit = () => {
-      if (parts.length == 0 || !parts) {
-        onDelete(name);
-        setShowDeleteModal(false);
-      } else {
-        <PartTagErrorModal name={name} parts={parts} onHide={() => setShowDeleteModal(false)} />;
-      }
+      onDelete(partTagId, name, parts);
+      setShowDeleteModal(false);
     };
     return (
       <>
@@ -70,12 +71,6 @@ const PartTagsTable: React.FC = () => {
           <Delete />
         </IconButton>
         {showDeleteModal && (
-          <PartTagDeleteModal
-            name={name}
-            colorHexCode={colorHexCode}
-            onDelete={handleDeleteSubmit}
-            onHide={() => setShowDeleteModal(false)}
-          />
           <PartTagDeleteModal
             name={name}
             colorHexCode={colorHexCode}
@@ -107,6 +102,7 @@ const PartTagsTable: React.FC = () => {
       </TableCell>
       <TableCell align="center" sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
         <PartTagDeleteButton
+          partTagId={partTag.partTagId}
           name={partTag.name}
           colorHexCode={partTag.colorHexCode}
           parts={partTag.parts}
@@ -119,10 +115,6 @@ const PartTagsTable: React.FC = () => {
   return (
     <Box>
       <CreatePartTagModal showModal={openModal} handleClose={() => setOpenModal(false)} />
-      <AdminToolTable
-        columns={[{ name: 'Tag Id' }, { name: 'Tag Name' }, { name: 'Color' }, { name: ' ' }]}
-        rows={partTagTableRows}
-      />
       <AdminToolTable
         columns={[{ name: 'Tag Id' }, { name: 'Tag Name' }, { name: 'Color' }, { name: ' ' }]}
         rows={partTagTableRows}

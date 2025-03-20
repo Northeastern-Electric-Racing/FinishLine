@@ -1,22 +1,14 @@
 import { FormControl, Typography } from '@mui/material';
 import NERModal from '../../../components/NERModal';
 import { Box } from '@mui/system';
-import { Box } from '@mui/system';
 
 interface PartTagDeleteModalProps {
   name: string;
-  colorHexCode: string;
   colorHexCode: string;
   onDelete: () => void;
   onHide: () => void;
 }
 
-const PartTagDeleteModal: React.FC<PartTagDeleteModalProps> = ({
-  name,
-  colorHexCode,
-  onDelete,
-  onHide
-}: PartTagDeleteModalProps) => {
 const PartTagDeleteModal: React.FC<PartTagDeleteModalProps> = ({
   name,
   colorHexCode,

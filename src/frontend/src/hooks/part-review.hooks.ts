@@ -261,7 +261,6 @@ export const useEditPartReview = (reviewId: string) => {
 export interface PartTagPayload {
   name: string;
   colorHexCode: string;
-  colorHexCode: string
 }
 
 export const useGetAllPartTags = () => {
