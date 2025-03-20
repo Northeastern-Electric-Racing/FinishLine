@@ -283,6 +283,14 @@ const CreditsPage: React.FC = () => {
       sx: {
         textShadow: '0 0 5px #00FF00, 0 0 10px #00FF00, 0 0 20px #00FF00'
       }
+    },
+    {
+      name: 'Edison Kwok',
+      color: 'transparent',
+      sx: {
+        background: 'linear-gradient(45deg,rgb(115, 255, 232) 0%,rgb(45, 94, 255) 11%,rgb(211, 89, 255) 80%)',
+        '-webkit-background-clip': 'text'
+      }
     }
   ];
 
