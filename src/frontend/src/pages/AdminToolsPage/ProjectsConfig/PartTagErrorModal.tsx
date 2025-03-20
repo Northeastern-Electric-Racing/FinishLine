@@ -4,15 +4,15 @@ import { Part } from 'shared';
 
 interface PartTagErrorModalProps {
   name: string;
-  parts: Part[];
+  partCount: number;
   onHide: () => void;
 }
 
-const PartTagErrorModal: React.FC<PartTagErrorModalProps> = ({ name, parts, onHide }: PartTagErrorModalProps) => {
+const PartTagErrorModal: React.FC<PartTagErrorModalProps> = ({ name, partCount, onHide }: PartTagErrorModalProps) => {
   return (
     <NERModal open={true} onHide={onHide} title="Warning!" cancelText="Exit">
       <Typography>You cannot delete {name} because it is still in use by ..... </Typography>
-      <Typography> {parts} </Typography>
+      <Typography> {partCount} </Typography>
     </NERModal>
   );
 };

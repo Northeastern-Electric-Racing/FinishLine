@@ -56,7 +56,7 @@ const partsCreateReview = (submissionId: string) => `${parts()}/review/${submiss
 const partsEditReview = (reviewId: string) => `${parts()}/review/${reviewId}/update`;
 const partTags = () => `${parts()}/tags`;
 const partTagCreate = () => `${parts()}/partTag/create`;
-const partTagDelete = (id: string) => `${parts()}/partTag/${id}/delete`;
+const partTagDelete = (partTagId: string) => `${parts()}/partTag/${partTagId}/delete`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
