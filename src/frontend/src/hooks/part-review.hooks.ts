@@ -261,6 +261,7 @@ export const useEditPartReview = (reviewId: string) => {
 export interface PartTagPayload {
   name: string;
   colorHexCode: string;
+  colorHexCode: string
 }
 
 export const useGetAllPartTags = () => {
@@ -274,7 +275,7 @@ export const useCreatePartTag = () => {
   const queryClient = useQueryClient();
   return useMutation<PartTag, Error, PartTagPayload>(
     ['partTags', 'create'],
-    async (payload) => {
+    async (payload: PartTagPayload) => {
       const { data } = await createPartTag(payload);
       return data;
     },
@@ -293,14 +294,14 @@ export interface DeletePartTagPayload {
 export const useDeletePartTag = () => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, DeletePartTagPayload>(
-    ['part tag', 'delete'],
+    ['partTags', 'delete'],
     async (deleteTagPayload: DeletePartTagPayload) => {
       const { data } = await deletePartTag(deleteTagPayload.partTagId);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['part tag']);
+        queryClient.invalidateQueries(['partTags']);
       }
     }
   );

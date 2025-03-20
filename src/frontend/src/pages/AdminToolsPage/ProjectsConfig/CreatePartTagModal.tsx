@@ -22,8 +22,8 @@ interface CreatePartTagProps {
 }
 
 const CreatePartTagModal: React.FC<CreatePartTagProps> = ({ showModal, handleClose, defaultValues }) => {
-  const { isLoading, isError, error, mutateAsync } = useCreatePartTag();
   const toast = useToast();
+  const { isLoading, isError, error, mutateAsync } = useCreatePartTag();
 
   const onSubmit = async (data: PartTagPayload) => {
     try {
@@ -44,8 +44,8 @@ const CreatePartTagModal: React.FC<CreatePartTagProps> = ({ showModal, handleClo
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      name: defaultValues?.partTagId ?? '',
-      colorHexCode: defaultValues?.colorHexCode ?? ''
+      name: defaultValues?.name ?? '',
+      colorHexCode: defaultValues?.colorHexCode ?? '#FF0000'
     }
   });
 
@@ -57,6 +57,7 @@ const CreatePartTagModal: React.FC<CreatePartTagProps> = ({ showModal, handleClo
       open={showModal}
       onHide={handleClose}
       title="New Tag"
+      reset={() => reset({ name: '', colorHexCode: '' })}
       reset={() => reset({ name: '', colorHexCode: '' })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}

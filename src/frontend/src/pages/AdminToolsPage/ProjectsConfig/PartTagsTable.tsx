@@ -76,6 +76,12 @@ const PartTagsTable: React.FC = () => {
             onDelete={handleDeleteSubmit}
             onHide={() => setShowDeleteModal(false)}
           />
+          <PartTagDeleteModal
+            name={name}
+            colorHexCode={colorHexCode}
+            onDelete={handleDeleteSubmit}
+            onHide={() => setShowDeleteModal(false)}
+          />
         )}
       </>
     );
@@ -113,6 +119,10 @@ const PartTagsTable: React.FC = () => {
   return (
     <Box>
       <CreatePartTagModal showModal={openModal} handleClose={() => setOpenModal(false)} />
+      <AdminToolTable
+        columns={[{ name: 'Tag Id' }, { name: 'Tag Name' }, { name: 'Color' }, { name: ' ' }]}
+        rows={partTagTableRows}
+      />
       <AdminToolTable
         columns={[{ name: 'Tag Id' }, { name: 'Tag Name' }, { name: 'Color' }, { name: ' ' }]}
         rows={partTagTableRows}
