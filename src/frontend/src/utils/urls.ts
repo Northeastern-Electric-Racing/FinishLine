@@ -54,6 +54,9 @@ const partsCreateReviewRequest = (submissionId: string) => `${parts()}/reviewReq
 const partsDeleteReviewRequest = (reviewRequestId: string) => `${parts()}/reviewRequest/${reviewRequestId}/delete`;
 const partsCreateReview = (submissionId: string) => `${parts()}/review/${submissionId}/create`;
 const partsEditReview = (reviewId: string) => `${parts()}/review/${reviewId}/update`;
+const partTags = () => `${parts()}/tags`;
+const partTagCreate = () => `${parts()}/partTag/create`;
+const partTagDelete = (id: string) => `${parts()}/partTag/${id}/delete`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
@@ -257,11 +260,6 @@ const updateGraphCollection = (id: string) => `${graphCollectionById(id)}/edit`;
 const removeGraphFromGraphCollection = (graphCollectionId: string, graphId: string) =>
   `${graphCollectionById(graphCollectionId)}/remove/${graphId}`;
 const deleteGraphCollection = (id: string) => `${graphCollectionById(id)}/delete`;
-
-/************** Part Tag Endpoints ***************/
-const partTags = () => `${API_URL}/parts/tags`;
-const partTagCreate = () => `${partTags()}/partTag/create`;
-const partTagDelete = (id: string) => `${partTags()}/partTag/${id}/delete`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
