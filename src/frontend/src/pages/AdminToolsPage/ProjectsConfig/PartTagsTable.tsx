@@ -9,10 +9,13 @@ import CreatePartTagModal from './CreatePartTagModal';
 import { Delete } from '@mui/icons-material';
 import PartTagDeleteModal from './PartTagDeleteModal';
 import { useToast } from '../../../hooks/toasts.hooks';
+import PartTagErrorModal from './PartTagErrorModal';
+import { Part } from 'shared';
 
 interface PartTagDeleteButtonProps {
   name: string;
   colorHexCode: string;
+  parts: Part[];
   onDelete: (name: string) => void;
 }
 
@@ -44,12 +47,16 @@ const PartTagsTable: React.FC = () => {
     }
   };
 
-  const PartTagDeleteButton: React.FC<PartTagDeleteButtonProps> = ({ name, colorHexCode, onDelete }) => {
+  const PartTagDeleteButton: React.FC<PartTagDeleteButtonProps> = ({ name, colorHexCode, parts, onDelete }) => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const handleDeleteSubmit = () => {
-      onDelete(name);
-      setShowDeleteModal(false);
+      if (parts.length == 0 || !parts) {
+        onDelete(name);
+        setShowDeleteModal(false);
+      } else {
+        <PartTagErrorModal name={name} parts={parts} onHide={() => setShowDeleteModal(false)} />;
+      }
     };
     return (
       <>
@@ -93,7 +100,12 @@ const PartTagsTable: React.FC = () => {
         </Box>
       </TableCell>
       <TableCell align="center" sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
-        <PartTagDeleteButton name={partTag.name} colorHexCode={partTag.colorHexCode} onDelete={handleDeletePartTag} />
+        <PartTagDeleteButton
+          name={partTag.name}
+          colorHexCode={partTag.colorHexCode}
+          parts={partTag.parts}
+          onDelete={handleDeletePartTag}
+        />
       </TableCell>
     </TableRow>
   ));
