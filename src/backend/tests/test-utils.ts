@@ -98,9 +98,15 @@ export const createTestUser = async (
 };
 
 export const resetUsers = async () => {
-  await prisma.frequentlyAskedQuestion.deleteMany();
+  await prisma.part_Review_Popup.deleteMany();
+  await prisma.partReview.deleteMany();
+  await prisma.partSubmission.deleteMany();
+  await prisma.partReviewCommonMistake.deleteMany();
+  await prisma.partTag.deleteMany();
+  await prisma.part.deleteMany();
   await prisma.work_Package.deleteMany();
   await prisma.project.deleteMany();
+  await prisma.frequentlyAskedQuestion.deleteMany();
   await prisma.material.deleteMany();
   await prisma.manufacturer.deleteMany();
   await prisma.material_Type.deleteMany();
@@ -133,19 +139,12 @@ export const resetUsers = async () => {
   await prisma.team_Type.deleteMany();
   await prisma.wBS_Element.deleteMany();
   await prisma.milestone.deleteMany();
-  await prisma.frequentlyAskedQuestion.deleteMany();
   await prisma.checklist.deleteMany();
   await prisma.contact.deleteMany();
   await prisma.graph.deleteMany();
   await prisma.graph_Collection.deleteMany();
   await prisma.announcement.deleteMany();
   await prisma.popUp.deleteMany();
-  await prisma.partReviewCommonMistake.deleteMany();
-  await prisma.partTag.deleteMany();
-  await prisma.part_Review_Popup.deleteMany();
-  await prisma.partReview.deleteMany();
-  await prisma.partSubmission.deleteMany();
-  await prisma.part.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
 };

@@ -468,10 +468,6 @@ describe('Part Review Popups', () => {
   });
 
   afterEach(async () => {
-    await prisma.part_Review_Popup.deleteMany();
-    await prisma.partReview.deleteMany();
-    await prisma.partSubmission.deleteMany();
-    await prisma.part.deleteMany();
     await resetUsers();
   });
 
