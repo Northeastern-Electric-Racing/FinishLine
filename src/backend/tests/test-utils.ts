@@ -791,10 +791,7 @@ export const createTestPartSubmission = async (
   return partSubmission;
 };
 
-export const createMinimalPartReview = async (
-  user: User,
-  orgId: string
-): Promise<PartReview> => {
+export const createMinimalPartReview = async (user: User, orgId: string): Promise<PartReview> => {
   const car = await createTestCar(orgId, user.userId);
   const project = await createTestProject(user, orgId, undefined, car.carId);
 
@@ -818,22 +815,12 @@ export const createMinimalPartReview = async (
     []
   );
 
-  const review = await createTestPartReview(
-    'review-id',
-    [],
-    'Review notes',
-    submission,
-    [],
-    user.userId
-  );
+  const review = await createTestPartReview('review-id', [], 'Review notes', submission, [], user.userId);
 
   return review;
 };
 
-export const wrapSeedUser = (
-  user: Prisma.UserCreateInput,
-  role: RoleEnum
-): CreateTestUserParams => ({
+export const wrapSeedUser = (user: Prisma.UserCreateInput, role: RoleEnum): CreateTestUserParams => ({
   firstName: user.firstName,
   lastName: user.lastName,
   email: user.email,
@@ -842,5 +829,3 @@ export const wrapSeedUser = (
   role,
   permissions: user.additionalPermissions as string[]
 });
-
-

@@ -162,39 +162,55 @@ export default class PartReviewController {
 
   static async createPartReviewPopup(req: Request, res: Response, next: NextFunction) {
     try {
-        const user = req.currentUser;
-        const { reviewId } = req.params;
-        const organizationID = req.organization.organizationId;
-        const { xCoord, yCoord, title, description } = req.body;
-        const newPopup = await PartReviewService.createPartReviewPopup(organizationID, reviewId, xCoord, yCoord, title, description, user);
-        res.status(201).json(newPopup);
+      const user = req.currentUser;
+      const { reviewId } = req.params;
+      const organizationID = req.organization.organizationId;
+      const { xCoord, yCoord, title, description } = req.body;
+      const newPopup = await PartReviewService.createPartReviewPopup(
+        organizationID,
+        reviewId,
+        xCoord,
+        yCoord,
+        title,
+        description,
+        user
+      );
+      res.status(201).json(newPopup);
     } catch (error) {
-        next(error);
+      next(error);
     }
   }
 
   static async updatePartReviewPopup(req: Request, res: Response, next: NextFunction) {
-      try {
-          const user = req.currentUser;
-          const { popupId } = req.params;
-          const organizationID = req.organization.organizationId;
-          const { xCoord, yCoord, title, description } = req.body;
-          const updatedPopup = await PartReviewService.updatePartReviewPopup(organizationID, popupId, xCoord, yCoord, title, description, user);
-          res.json(updatedPopup);
-      } catch (error) {
-          next(error);
-      }
+    try {
+      const user = req.currentUser;
+      const { popupId } = req.params;
+      const organizationID = req.organization.organizationId;
+      const { xCoord, yCoord, title, description } = req.body;
+      const updatedPopup = await PartReviewService.updatePartReviewPopup(
+        organizationID,
+        popupId,
+        xCoord,
+        yCoord,
+        title,
+        description,
+        user
+      );
+      res.json(updatedPopup);
+    } catch (error) {
+      next(error);
+    }
   }
 
   static async deletePartReviewPopup(req: Request, res: Response, next: NextFunction) {
-      try {
-          const user = req.currentUser;
-          const { popupId } = req.params;
-          const organizationID = req.organization.organizationId
-          const message = await PartReviewService.deletePartReviewPopup(popupId, user, organizationID);
-          res.json(message);
-      } catch (error) {
-          next(error);
-      }
+    try {
+      const user = req.currentUser;
+      const { popupId } = req.params;
+      const organizationID = req.organization.organizationId;
+      const message = await PartReviewService.deletePartReviewPopup(popupId, user, organizationID);
+      res.json(message);
+    } catch (error) {
+      next(error);
+    }
   }
 }
