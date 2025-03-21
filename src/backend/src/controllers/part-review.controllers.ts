@@ -175,7 +175,7 @@ export default class PartReviewController {
         description,
         user
       );
-      res.status(201).json(newPopup);
+      res.status(200).json(newPopup);
     } catch (error) {
       next(error);
     }
@@ -196,7 +196,7 @@ export default class PartReviewController {
         description,
         user
       );
-      res.json(updatedPopup);
+      res.status(200).json(updatedPopup);
     } catch (error) {
       next(error);
     }
@@ -208,7 +208,7 @@ export default class PartReviewController {
       const { popupId } = req.params;
       const organizationID = req.organization.organizationId;
       const message = await PartReviewService.deletePartReviewPopup(popupId, user, organizationID);
-      res.json(message);
+      res.status(200).json(message);
     } catch (error) {
       next(error);
     }

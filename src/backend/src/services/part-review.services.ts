@@ -563,7 +563,14 @@ export default class PartReviewService {
 
     await prisma.part_Review_Popup.update({
       where: { partReviewPopupId: popupId },
-      data: { review: { connect: { partReviewId: popup.reviewId } }, deletedAt: new Date() },
+      data: {
+        review: {
+          connect: {
+            partReviewId: popup.reviewId
+          }
+        },
+        deletedAt: new Date()
+      },
       ...partReviewQueryArgs
     });
 

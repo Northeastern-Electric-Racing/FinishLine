@@ -5,7 +5,6 @@ import {
   PartReview,
   PartSubmission,
   Part_Review_Popup,
-  Prisma,
   Project,
   Schedule_Settings,
   Task_Priority,
@@ -819,13 +818,3 @@ export const createMinimalPartReview = async (user: User, orgId: string): Promis
 
   return review;
 };
-
-export const wrapSeedUser = (user: Prisma.UserCreateInput, role: RoleEnum): CreateTestUserParams => ({
-  firstName: user.firstName,
-  lastName: user.lastName,
-  email: user.email,
-  emailId: user.emailId ?? null,
-  googleAuthId: user.googleAuthId,
-  role,
-  permissions: user.additionalPermissions as string[]
-});

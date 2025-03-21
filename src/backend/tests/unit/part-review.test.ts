@@ -1,11 +1,9 @@
 import { Organization, User } from '@prisma/client';
-import { createMinimalPartReview, createTestOrganization, createTestUser, resetUsers, wrapSeedUser } from '../test-utils';
+import { createMinimalPartReview, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import PartReviewService from '../../src/services/part-review.services';
 import { batmanAppAdmin, supermanAdmin, aquamanLeadership, flashAdmin } from '../test-data/users.test-data';
 import prisma from '../../src/prisma/prisma';
 import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../../src/utils/errors.utils';
-import { dbSeedAllUsers } from '../../src/prisma/seed-data/users.seed';
-import { RoleEnum } from 'shared';
 
 describe('part review tests', () => {
   let orgId: string;
@@ -466,19 +464,14 @@ describe('Part Review Popups', () => {
     orgId = organization.organizationId;
     batman = await createTestUser(batmanAppAdmin, orgId);
     superman = await createTestUser(supermanAdmin, orgId);
-    nonAdmin = await createTestUser(wrapSeedUser(dbSeedAllUsers.johnBoddy, RoleEnum.MEMBER), orgId);
+    nonAdmin = await createTestUser(aquamanLeadership, orgId);
   });
 
   afterEach(async () => {
-    await prisma.frequentlyAskedQuestion.deleteMany();
-    await prisma.partReviewCommonMistake.deleteMany();
-    await prisma.partTag.deleteMany();
     await prisma.part_Review_Popup.deleteMany();
     await prisma.partReview.deleteMany();
     await prisma.partSubmission.deleteMany();
     await prisma.part.deleteMany();
-    await prisma.work_Package.deleteMany();
-    await prisma.project.deleteMany();
     await resetUsers();
   });
 
