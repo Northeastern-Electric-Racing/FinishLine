@@ -62,6 +62,8 @@ export default class FinanceController {
       const { dueDate, notes, notifyDate, assigneeUserId } = req.body;
 
       const updatedSponsorTask = await FinanceServices.editSponsorTask(
+        req.currentUser,
+        req.organization,
         sponsorTaskId,
         dueDate,
         notes,

@@ -141,20 +141,28 @@ export default class FinanceServices {
 
   /**
    * Edits a sponsor task
+   * @param submitter the user submitting
+   * @param org the org of the submitter
    * @param sponsorTaskId the id of the sponsor task we are updating
    * @param dueDate the updated dueDate
    * @param notifyDate the updated notify date
    * @param assignee the updated assignee
    * @param notes the updated notes
+   * @returns the updated sponsorTask
    */
 
   static async editSponsorTask(
+    submitter: User,
+    org: Organization,
     sponsorTaskId: string,
     dueDate: Date,
     notes: string,
     notifyDate?: Date,
     assigneeUserId?: string
   ): Promise<Sponsor_Task> {
+    if (!(await userHasPermission(submitter.userId, org.organizationId, isHead)))
+      throw new AccessDeniedAdminOnlyException('edit sponsor task');
+
     const oldSponsorTask = await prisma.sponsor_Task.findUnique({
       where: { sponsorTaskId }
     });

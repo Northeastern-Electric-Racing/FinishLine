@@ -25,13 +25,13 @@ financeRouter.get('/sponsors', FinanceController.getAllSponsors);
 
 financeRouter.delete('/sponsor/:sponsorId/delete', FinanceController.deleteSponsor);
 
-financeRouter.post('/sponsorTask/:sponsorTaskId/edit', validateInputs, FinanceController.editSponsorTask);
 financeRouter.post(
-  '/sponsorTier/create',
-  nonEmptyString(body('name')),
-  nonEmptyString(body('colorHexCode')),
+  '/sponsorTask/:sponsorTaskId/edit',
+  isDate(body('dueDate')),
+  isDate(body('notifyDate')).optional(),
+  nonEmptyString(body('assigneeUserId')).optional(),
   validateInputs,
-  FinanceController.createSponsorTier
+  FinanceController.editSponsorTask
 );
 
 export default financeRouter;

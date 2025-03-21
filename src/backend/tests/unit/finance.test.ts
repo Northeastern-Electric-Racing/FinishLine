@@ -219,6 +219,8 @@ describe('Finance Tests', () => {
       const user = await createTestUser(wonderwomanGuest, orgId);
 
       const newSponsorTask = await FinanceServices.editSponsorTask(
+        await await createTestUser(batmanAppAdmin, orgId),
+        organization,
         oldSponsorTask.sponsorTaskId,
         new Date(12, 10, 24),
         'newNotes',
@@ -231,9 +233,45 @@ describe('Finance Tests', () => {
       expect(newSponsorTask.notifyDate).toEqual(new Date(12, 20, 24));
       expect(newSponsorTask.assigneeUserId).toEqual(user.userId);
     });
+    it('Edit fails with non head user trying to edit', async () => {
+      const sponsor = await FinanceServices.createSponsor(
+        await createTestUser(supermanAdmin, orgId),
+        'Google',
+        true,
+        5000,
+        new Date(12, 1, 24),
+        [2024, 2025],
+        sponsorTierId,
+        true,
+        'Bill Gates',
+        [],
+        organization,
+        'googlecode'
+      );
+
+      await expect(
+        async () =>
+          await FinanceServices.editSponsorTask(
+            await createTestUser(wonderwomanGuest, orgId),
+            organization,
+            sponsor.sponsorId,
+            new Date(12, 10, 24),
+            'newNotes',
+            new Date(12, 20, 24)
+          )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit sponsor task'));
+    });
     it('Edit fails if sponsor task does not exist', async () => {
       await expect(
-        async () => await FinanceServices.editSponsorTask('bad id', new Date(12, 10, 24), 'newNotes', new Date(12, 20, 24))
+        async () =>
+          await FinanceServices.editSponsorTask(
+            await await createTestUser(batmanAppAdmin, orgId),
+            organization,
+            'bad id',
+            new Date(12, 10, 24),
+            'newNotes',
+            new Date(12, 20, 24)
+          )
       ).rejects.toThrow(new NotFoundException('SponsorTask', 'bad id'));
     });
     it('Edit fails if nonexistent assignee id is given', async () => {
@@ -263,6 +301,8 @@ describe('Finance Tests', () => {
       await expect(
         async () =>
           await FinanceServices.editSponsorTask(
+            await createTestUser(batmanAppAdmin, orgId),
+            organization,
             oldSponsorTask.sponsorTaskId,
             new Date(12, 10, 24),
             'newNotes',
