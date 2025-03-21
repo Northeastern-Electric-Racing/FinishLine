@@ -452,6 +452,7 @@ describe('part review tests', () => {
     expect(commonMistakes[2].starred).toBe(false);
   });
 });
+
 describe('part review popup service tests', () => {
   let orgId: string;
   let batman: User;
@@ -462,15 +463,17 @@ describe('part review popup service tests', () => {
       orgId = organization.organizationId;
       batman = await createTestUser(batmanAppAdmin, orgId);
       await prisma.part_Review_Popup.deleteMany({});
-      popupId = (await PartReviewService.createPartReviewPopup(
-        'some-orginization-id',
-        'some-review-id',
-        10,
-        20,
-        'Test Popup',
-        'Popup description',
-        batman
-    )).partReviewPopupId;
+      await prisma.partReview.deleteMany({});
+      const createdPopup = await PartReviewService.createPartReviewPopup(
+          orgId,
+          'reviewId001',
+          10,
+          20,
+          'Test Popup',
+          'Popup description',
+          batman
+      );
+      popupId = createdPopup.partReviewPopupId;
   });
 
   afterEach(async () => {
@@ -478,9 +481,10 @@ describe('part review popup service tests', () => {
   });
 
   it('creates a popup', async () => {
-
-      const prismaPopup = await prisma.part_Review_Popup.findUnique({ where: { partReviewPopupId: popupId } });
-
+      if (!popupId) throw new Error('popupId is undefined');
+      const prismaPopup = await prisma.part_Review_Popup.findUnique({
+          where: { partReviewPopupId: popupId }
+      });
       expect(prismaPopup).toBeDefined();
       expect(prismaPopup?.title).toBe('Test Popup');
       expect(prismaPopup?.description).toBe('Popup description');
@@ -489,6 +493,7 @@ describe('part review popup service tests', () => {
   it('updates a popup', async () => {
       if (!popupId) throw new Error('popupId is undefined');
       const updatedPopup = await PartReviewService.updatePartReviewPopup(
+          orgId,
           popupId,
           15,
           25,
@@ -500,17 +505,22 @@ describe('part review popup service tests', () => {
       expect(updatedPopup).toBeDefined();
       expect(updatedPopup?.title).toBe('Updated Popup');
       expect(updatedPopup?.description).toBe('Updated description');
+      const prismaPopup = await prisma.part_Review_Popup.findUnique({
+          where: { partReviewPopupId: popupId }
+      });
+      expect(prismaPopup).toBeDefined();
+      expect(prismaPopup?.title).toBe('Updated Popup');
+      expect(prismaPopup?.description).toBe('Updated description');
   });
 
   it('deletes a popup', async () => {
       if (!popupId) throw new Error('popupId is undefined');
-      const deletedPopup = await PartReviewService.deletePartReviewPopup(popupId, batman);
-
+      const deletedPopup = await PartReviewService.deletePartReviewPopup(popupId, batman, orgId);
       expect(deletedPopup).toBeDefined();
       expect(deletedPopup.message).toBe('Popup deleted successfully');
-
-      const prismaPopup = await prisma.part_Review_Popup.findUnique({ where: { partReviewPopupId: popupId } });
-
+      const prismaPopup = await prisma.part_Review_Popup.findUnique({
+          where: { partReviewPopupId: popupId }
+      });
       expect(prismaPopup).toBeNull();
   });
-})
+});

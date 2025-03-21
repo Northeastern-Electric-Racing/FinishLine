@@ -74,7 +74,7 @@ partsRouter.post(
 )
 
 partsRouter.post(
-  '/popup/:reviewId/update',
+  '/popup/:popupId/update',
   nonEmptyString(body('title')),
   nonEmptyString(body('description')),
   body('starred').isBoolean(),
@@ -82,17 +82,10 @@ partsRouter.post(
   PartReviewController.updatePartReviewPopup
 )
 
-partsRouter.post(
-  '/popup/:reviewId/delete',
-  nonEmptyString(body('title')),
-  nonEmptyString(body('description')),
-  body('starred').isBoolean(),
-  validateInputs,
-  PartReviewController.deletePartReviewPopup
-)
-
 
 
 partsRouter.post('/common-mistake/:commonMistakeId/delete', PartReviewController.deleteCommonMistake);
+partsRouter.post('/popup/:popupId/delete', PartReviewController.deletePartReviewPopup);
+
 
 export default partsRouter;

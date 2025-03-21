@@ -437,8 +437,8 @@ export default class PartReviewService {
   }
 
     /**
-     * Creates a part review popu
-     * @param organizationID ID of the organization
+     * Creates a part review popup
+     * @param organizationId Id of the organization
      * @param reviewId ID of the review
      * @param xCoord X coordinate of the popup
      * @param yCoord Y coordinate of the popup
@@ -448,7 +448,7 @@ export default class PartReviewService {
      * @returns The newly created popup
      */
     static async createPartReviewPopup(
-        organizationID: string,
+        organizationId: string,
         reviewId: string,
         xCoord: number,
         yCoord: number,
@@ -457,21 +457,33 @@ export default class PartReviewService {
         creator: User
     ) {
         const review = await prisma.partReview.findUnique({
-            where: { partReviewId: reviewId },
+            where: {
+              partReviewId: reviewId
+            }
         });
 
         if (!review || review.deletedAt !== null) {
             throw new NotFoundException('Part Review', reviewId);
         }
 
-        const isAdminUser = await userHasPermission(creator.userId, organizationID, isAdmin);
+        const isAdminUser = await userHasPermission(creator.userId, organizationId, isAdmin);
 
         if (review.userCreatedId !== creator.userId && !isAdminUser) {
             throw new AccessDeniedAdminOnlyException('create part review popup');
         }
 
         const newPopup = await prisma.part_Review_Popup.create({
-          data: { review: { connect: { partReviewId: reviewId }}, xCoord, yCoord, title, description },
+          data: {
+            review: {
+                connect: {
+                    partReviewId: reviewId
+                }
+            },
+            xCoord,
+            yCoord,
+            title,
+            description
+        },
           ...partReviewQueryArgs
       });
       return newPopup;
@@ -479,6 +491,7 @@ export default class PartReviewService {
 
     /**
      * Updates a part review popup
+     * @param organizationId id of the organization
      * @param popupId ID of the popup to update
      * @param xCoord New X coordinate
      * @param yCoord New Y coordinate
@@ -488,6 +501,7 @@ export default class PartReviewService {
      * @returns The updated popup
      */
     static async updatePartReviewPopup(
+        organizationId: string,
         popupId: string,
         xCoord: number,
         yCoord: number,
@@ -496,23 +510,32 @@ export default class PartReviewService {
         updater: User
     ) {
         const popup = await prisma.part_Review_Popup.findUnique({
-            where: { partReviewPopupId: popupId },
-            include: { review: { select: { userCreatedId: true, partReviewId: true } } }
+            where: {
+              partReviewPopupId: popupId
+            },
         });
 
         if (!popup || popup.deletedAt !== null) {
             throw new NotFoundException('Pop Up', popupId);
         }
 
-        const isAdminUser = await userHasPermission(updater.userId, popup.review.partReviewId, isAdmin);
+        const isAdminUser = await userHasPermission(updater.userId, organizationId, isAdmin);
 
-        if (popup.review.userCreatedId !== updater.userId && !isAdminUser) {
+        if (!isAdminUser) {
             throw new AccessDeniedAdminOnlyException('update part review popup');
         }
 
         return prisma.part_Review_Popup.update({
-            where: { partReviewPopupId: popupId },
-            data: { review: { connect: { partReviewId: popup.reviewId }}, xCoord, yCoord, title, description },
+            where: {
+               partReviewPopupId: popupId
+              },
+            data: {
+              xCoord,
+              yCoord,
+              title,
+              description,
+              updatedAt: new Date()
+          },
             ...partReviewQueryArgs
         });
     }
@@ -523,19 +546,23 @@ export default class PartReviewService {
      * @param deleter The user deleting the popup
      * @returns Confirmation message
      */
-    static async deletePartReviewPopup(popupId: string, deleter: User) {
+    static async deletePartReviewPopup(
+      popupId: string,
+      deleter: User,
+      organizationId: string
+      ) {
         const popup = await prisma.part_Review_Popup.findUnique({
             where: { partReviewPopupId: popupId },
             include: { review: { select: { userCreatedId: true, partReviewId: true } } }
         });
 
-        if (!popup || popup.deletedAt !== null) {
+        if (!popup) {
             throw new NotFoundException('Pop Up', popupId);
         }
 
-        const isAdminUser = await userHasPermission(deleter.userId, popup.review.partReviewId, isAdmin);
+        const isAdminUser = await userHasPermission(deleter.userId, organizationId, isAdmin);
 
-        if (popup.review.userCreatedId !== deleter.userId && !isAdminUser) {
+        if (!isAdminUser) {
             throw new AccessDeniedAdminOnlyException('delete part review popup');
         }
 

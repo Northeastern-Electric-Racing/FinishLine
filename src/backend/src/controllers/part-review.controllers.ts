@@ -177,8 +177,9 @@ export default class PartReviewController {
       try {
           const user = req.currentUser;
           const { popupId } = req.params;
+          const organizationID = req.organization.organizationId;
           const { xCoord, yCoord, title, description } = req.body;
-          const updatedPopup = await PartReviewService.updatePartReviewPopup(popupId, xCoord, yCoord, title, description, user);
+          const updatedPopup = await PartReviewService.updatePartReviewPopup(organizationID, popupId, xCoord, yCoord, title, description, user);
           res.json(updatedPopup);
       } catch (error) {
           next(error);
@@ -189,7 +190,8 @@ export default class PartReviewController {
       try {
           const user = req.currentUser;
           const { popupId } = req.params;
-          const message = await PartReviewService.deletePartReviewPopup(popupId, user);
+          const organizationID = req.organization.organizationId
+          const message = await PartReviewService.deletePartReviewPopup(popupId, user, organizationID);
           res.json(message);
       } catch (error) {
           next(error);
