@@ -5,6 +5,7 @@ import {
   PartReview,
   PartSubmission,
   Part_Review_Popup,
+  Prisma,
   Project,
   Schedule_Settings,
   Task_Priority,
@@ -789,3 +790,57 @@ export const createTestPartSubmission = async (
   });
   return partSubmission;
 };
+
+export const createMinimalPartReview = async (
+  user: User,
+  orgId: string
+): Promise<PartReview> => {
+  const car = await createTestCar(orgId, user.userId);
+  const project = await createTestProject(user, orgId, undefined, car.carId);
+
+  const part = await prisma.part.create({
+    data: {
+      index: 1,
+      commonName: 'Test Part',
+      description: 'For testing popups',
+      projectId: project.projectId,
+      userCreatedId: user.userId
+    }
+  });
+
+  const submission = await createTestPartSubmission(
+    'sub-id',
+    [],
+    'Submission Name',
+    'Some notes',
+    part.partId,
+    user.userId,
+    []
+  );
+
+  const review = await createTestPartReview(
+    'review-id',
+    [],
+    'Review notes',
+    submission,
+    [],
+    user.userId
+  );
+
+  return review;
+};
+
+export const wrapSeedUser = (
+  user: Prisma.UserCreateInput,
+  role: RoleEnum
+): CreateTestUserParams => ({
+  firstName: user.firstName,
+  lastName: user.lastName,
+  email: user.email,
+  emailId: user.emailId ?? null,
+  googleAuthId: user.googleAuthId,
+  role,
+  permissions: user.additionalPermissions as string[]
+});
+
+
