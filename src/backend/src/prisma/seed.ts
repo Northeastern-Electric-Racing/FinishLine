@@ -1710,8 +1710,8 @@ const performSeed: () => Promise<void> = async () => {
     thomasEmrax.userId
   );
 
-  const indexCodeCash = await IndexCodeService.createIndexCode('Cash', thomasEmrax, ner);
-  const indexCodeBudget = await IndexCodeService.createIndexCode('Budget', thomasEmrax, ner);
+  const indexCodeCash = await IndexCodeService.createIndexCode('CASH', thomasEmrax, ner);
+  const indexCodeBudget = await IndexCodeService.createIndexCode('BUDGET', thomasEmrax, ner);
 
   const accountCode = await ReimbursementRequestService.createAccountCode(
     thomasEmrax,
@@ -1721,7 +1721,7 @@ const performSeed: () => Promise<void> = async () => {
     [indexCodeCash, indexCodeBudget],
     ner
   );
-  /*
+  
   const reimbursement1 = await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
     vendor.vendorId,
@@ -1764,7 +1764,7 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     new Date()
   );
-  */
+  
 
   /**
    * Bill of Materials
