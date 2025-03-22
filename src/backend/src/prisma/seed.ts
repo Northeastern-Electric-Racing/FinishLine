@@ -1721,7 +1721,7 @@ const performSeed: () => Promise<void> = async () => {
     [indexCodeCash, indexCodeBudget],
     ner
   );
-  
+
   const reimbursement1 = await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
     vendor.vendorId,
@@ -1764,7 +1764,6 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     new Date()
   );
-  
 
   /**
    * Bill of Materials
