@@ -561,7 +561,7 @@ export default class PartReviewService {
       throw new AccessDeniedAdminOnlyException('delete part review popup');
     }
 
-    await prisma.part_Review_Popup.update({
+    const deletedPopup = await prisma.part_Review_Popup.update({
       where: { partReviewPopupId: popupId },
       data: {
         review: {
@@ -574,6 +574,6 @@ export default class PartReviewService {
       ...partReviewQueryArgs
     });
 
-    return { message: 'Popup deleted successfully' };
+    return deletedPopup;
   }
 }

@@ -506,7 +506,8 @@ describe('Part Review Popups', () => {
 
     const deleted = await PartReviewService.deletePartReviewPopup(popup.partReviewPopupId, superman, orgId);
 
-    expect(deleted.message).toBe('Popup deleted successfully');
+    expect(deleted.partReviewPopupId).toBe(popup.partReviewPopupId);
+    expect(deleted.deletedAt).toBeTruthy();
 
     const prismaDeleted = await prisma.part_Review_Popup.findUnique({
       where: { partReviewPopupId: popup.partReviewPopupId }
