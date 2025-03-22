@@ -75,6 +75,7 @@ export default class FinanceController {
       next(error);
     }
   }
+
   static async createSponsorTier(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, colorHexCode } = req.body;

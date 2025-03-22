@@ -2020,6 +2020,7 @@ const performSeed: () => Promise<void> = async () => {
   });
 
   const sponsor = await FinanceServices.createSponsor(
+
     thomasEmrax,
     'Google',
     true,
@@ -2041,6 +2042,7 @@ const performSeed: () => Promise<void> = async () => {
       sponsorId: sponsor.sponsorId
     }
   });
+
   await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, 'C0C0C0');
 };
 

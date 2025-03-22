@@ -191,6 +191,7 @@ describe('Finance Tests', () => {
       );
     });
   });
+
   describe('Edit a sponsor task works', () => {
     it('Successful edit', async () => {
       const sponsor = await FinanceServices.createSponsor(
@@ -312,6 +313,7 @@ describe('Finance Tests', () => {
       ).rejects.toThrow(new NotFoundException('User', 'bad user id'));
     });
   });
+  
   describe('Create a sponsor tier', () => {
     it('Fails if user is not a head', async () => {
       await expect(
