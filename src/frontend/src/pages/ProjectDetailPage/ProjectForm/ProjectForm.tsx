@@ -111,7 +111,6 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   } = useFieldArray({ control, name: 'workPackages' });
 
   const [selectedProjectTemplate, setSelectedProjectTemplate] = useState<ProjectTemplate>();
-  const [crIdDisabled, setCrIdDisabled] = useState<boolean>(false);
 
   const watchedName = watch('name');
   const watchedTeams = watch('teamIds');
@@ -122,7 +121,6 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   useEffect(() => {
     if (selectedProjectTemplate) {
       setValue('crId', '');
-      setCrIdDisabled(true);
 
       let { projectName, teams, budget, descriptionBullets, summary } = selectedProjectTemplate;
 
@@ -141,8 +139,6 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
       ) {
         setSelectedProjectTemplate(undefined);
       }
-    } else {
-      setCrIdDisabled(false);
     }
   }, [
     selectedProjectTemplate,
@@ -305,7 +301,6 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           leadId={leadId}
           managerId={managerId}
           project={project}
-          crIdDisabled={crIdDisabled}
         />
         <Stack spacing={4}>
           <Box>
