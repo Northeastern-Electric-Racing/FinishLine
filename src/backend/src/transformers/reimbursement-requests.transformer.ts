@@ -54,7 +54,7 @@ export const reimbursementRequestTransformer = (
     reimbursementStatuses: reimbursementRequest.reimbursementStatuses.map(reimbursementStatusTransformer),
     recipient: userTransformer(reimbursementRequest.recipient),
     vendor: vendorTransformer(reimbursementRequest.vendor),
-    account: indexCodeTransformer(reimbursementRequest.account),
+    account: indexCodeTransformer(reimbursementRequest.indexCode),
     totalCost: reimbursementRequest.totalCost,
     receiptPictures: reimbursementRequest.receiptPictures.filter((receipt) => !receipt.dateDeleted).map(receiptTransformer),
     reimbursementProducts: reimbursementRequest.reimbursementProducts.map(reimbursementProductTransformer),
@@ -98,7 +98,7 @@ const reimbursementProductReasonTransformer = (
         dateDeleted: reason.otherReason?.dateDeleted ?? undefined,
         budget: reason.otherReason!.budget,
         indexCode: indexCodeTransformer(reason.otherReason!.indexCode),
-        accountCode: accountCodeTransformer(reason.otherReason!.accountCode)
+        accountCodes: reason.otherReason!.accountCodes.map(accountCodeTransformer)
       };
 };
 
@@ -155,6 +155,6 @@ export const otherProductReasonTransformer = (
     dateDeleted: otherProductReason.dateDeleted ?? undefined,
     budget: otherProductReason.budget,
     indexCode: indexCodeTransformer(otherProductReason.indexCode),
-    accountCode: accountCodeTransformer(otherProductReason.accountCode)
+    accountCodes: otherProductReason.accountCodes.map(accountCodeTransformer)
   };
 };

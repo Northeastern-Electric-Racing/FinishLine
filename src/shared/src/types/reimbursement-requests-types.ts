@@ -71,7 +71,7 @@ export interface OtherProductReason {
   dateDeleted?: Date;
   budget: number;
   indexCode: IndexCode;
-  accountCode: AccountCode;
+  accountCodes: AccountCode[];
 }
 
 export type WBSElementData = { wbsNum: WbsNumber; wbsName: string };

@@ -580,7 +580,7 @@ model Reimbursement_Request {
   recipient                User                    @relation(name: "reimbursementRequestRecipient", fields: [recipientId], references: [userId])
   vendorId                 String
   vendor                   Vendor                  @relation(fields: [vendorId], references: [vendorId])
-  account                  Index_Code              @relation(fields: [indexCodeId], references: [indexCodeId])
+  indexCode                Index_Code              @relation(fields: [indexCodeId], references: [indexCodeId])
   indexCodeId              String
   totalCost                Int
   receiptPictures          Receipt[]
@@ -1133,6 +1133,5 @@ model Reimbursement_Product_Other_Reason {
   reimbursementProductReasons       Reimbursement_Product_Reason[]
   indexCode                         Index_Code                     @relation(fields: [indexCodeId], references: [indexCodeId])
   indexCodeId                       String
-  accountCode                       Account_Code                   @relation(fields: [accountCodeId], references: [accountCodeId])
-  accountCodeId                     String
+  accountCodes                      Account_Code[]
 }

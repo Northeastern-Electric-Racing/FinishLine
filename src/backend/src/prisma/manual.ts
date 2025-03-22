@@ -164,14 +164,14 @@ const downloadReimbursementRequests = async () => {
     where: {
       dateDeleted: null
     },
-    include: { reimbursementStatuses: true, vendor: true, account: true }
+    include: { reimbursementStatuses: true, vendor: true, indexCode: true }
   });
 
   const promises = rrs.map(
     async (rr) =>
       await `${rr.saboId},${await getUserFullName(rr.recipientId)},${rr.totalCost},${
         rr.reimbursementStatuses[rr.reimbursementStatuses.length - 1].type
-      },${rr.account},${rr.dateCreated},${rr.dateDelivered ?? ''},${
+      },${rr.indexCode},${rr.dateCreated},${rr.dateDelivered ?? ''},${
         rr.reimbursementStatuses.find((rs) => rs.type === Reimbursement_Status_Type.SABO_SUBMITTED)?.dateCreated ?? ''
       },${rr.vendor.name}`
   );
@@ -189,7 +189,7 @@ const getTotalAmountOwedForCashAndBudgetForSubmittedToSaboAndPendingFinanceTeam 
     },
     include: {
       reimbursementStatuses: true,
-      account: true
+      indexCode: true
     }
   });
 
@@ -202,27 +202,27 @@ const getTotalAmountOwedForCashAndBudgetForSubmittedToSaboAndPendingFinanceTeam 
   );
 
   const totalAmountOwedForCashSabo = submittedToSabo.reduce((acc, curr) => {
-    if (curr.account.name === 'CASH') {
+    if (curr.indexCode.name === 'CASH') {
       return acc + curr.totalCost / 100;
     }
     return 0;
   }, 0);
   const totalAmountOwedForBudgetSabo = submittedToSabo.reduce((acc, curr) => {
-    if (curr.account.name === 'Budget') {
+    if (curr.indexCode.name === 'Budget') {
       return acc + curr.totalCost / 100;
     }
     return acc + 0;
   }, 0);
 
   const totalAmountOwedForCashFinance = pendingFinance.reduce((acc, curr) => {
-    if (curr.account.name === 'Cash') {
+    if (curr.indexCode.name === 'Cash') {
       return acc + curr.totalCost / 100;
     }
     return acc + 0;
   }, 0);
 
   const totalAmountOwedForBudgetFinance = pendingFinance.reduce((acc, curr) => {
-    if (curr.account.name === 'Budget') {
+    if (curr.indexCode.name === 'Budget') {
       return acc + curr.totalCost / 100;
     }
     return acc + 0;

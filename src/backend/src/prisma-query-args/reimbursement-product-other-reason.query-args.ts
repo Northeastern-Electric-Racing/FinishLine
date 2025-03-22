@@ -18,6 +18,6 @@ export const getReimbursementProductOtherReasonQueryArgs = (organizationId: stri
         }
       },
       indexCode: getIndexCodeQueryArgs(organizationId),
-      accountCode: getAccountCodeQueryArgs(organizationId)
+      accountCodes: getAccountCodeQueryArgs(organizationId)
     }
   });

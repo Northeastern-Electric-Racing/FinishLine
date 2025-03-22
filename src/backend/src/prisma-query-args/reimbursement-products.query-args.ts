@@ -15,7 +15,7 @@ export const getReimbursementProductReasonQueryArgs = (organizationId: string) =
         include: {
           userCreated: getUserQueryArgs(organizationId),
           indexCode: getIndexCodeQueryArgs(organizationId),
-          accountCode: getAccountCodeQueryArgs(organizationId)
+          accountCodes: getAccountCodeQueryArgs(organizationId)
         }
       }
     }

@@ -137,6 +137,7 @@ export const resetUsers = async () => {
   await prisma.popUp.deleteMany();
   await prisma.sponsor.deleteMany();
   await prisma.sponsor_Tier.deleteMany();
+  await prisma.reimbursement_Product_Other_Reason.deleteMany();
   await prisma.account_Code.deleteMany();
   await prisma.index_Code.deleteMany();
   await prisma.organization.deleteMany();
@@ -410,7 +411,7 @@ export const createTestReimbursementRequest = async () => {
     user.userId
   );
 
-  const indexCode = await IndexCodeService.createIndexCode('Cash', user, organization);
+  const indexCode = await IndexCodeService.createIndexCode('CASH', user, organization);
 
   const accountCode = await ReimbursementRequestService.createAccountCode(
     user,

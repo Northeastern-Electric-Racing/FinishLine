@@ -179,7 +179,7 @@ export default class ReimbursementRequestService {
         recipient: { connect: { userId: recipient.userId } },
         dateOfExpense: dateOfExpense ?? null,
         vendor: { connect: { vendorId: vendor.vendorId } },
-        account: { connect: { indexCodeId: account.indexCodeId } },
+        indexCode: { connect: { indexCodeId: account.indexCodeId } },
         accountCode: { connect: { accountCodeId: accountCode.accountCodeId } },
         totalCost,
         reimbursementStatuses: {
@@ -621,7 +621,7 @@ export default class ReimbursementRequestService {
    * @param name The name of the Account Code
    * @param code the Account Code's SABO code
    * @param allowed whether or not this Account Code is allowed
-   * @param allowedRefundSources an array of Club_Accounts representing allowed refund sources
+   * @param allowedRefundSources an array of Index_Code representing allowed refund sources
    * @param organizationId the organization the user is currently in
    * @returns the created Account Code
    */
@@ -632,7 +632,7 @@ export default class ReimbursementRequestService {
     allowed: boolean,
     allowedRefundSources: IndexCode[],
     organization: Organization
-  ) {
+  ): Promise<AccountCode> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create Account Codes');
 
@@ -641,11 +641,12 @@ export default class ReimbursementRequestService {
     });
 
     if (existingAccount && existingAccount.dateDeleted) {
-      await prisma.account_Code.update({
+      const updatedExistingAccount = await prisma.account_Code.update({
         where: { accountCodeId: existingAccount.accountCodeId },
-        data: { dateDeleted: null }
+        data: { dateDeleted: null },
+        ...getAccountCodeQueryArgs(organization.organizationId)
       });
-      return existingAccount;
+      return accountCodeTransformer(updatedExistingAccount);
     } else if (existingAccount) throw new HttpException(400, 'This Account Code already exists');
 
     const expense = await prisma.account_Code.create({
@@ -655,10 +656,11 @@ export default class ReimbursementRequestService {
         code,
         allowedRefundSources: { connect: allowedRefundSources.map((indexCode) => ({ indexCodeId: indexCode.indexCodeId })) },
         organizationId: organization.organizationId
-      }
+      },
+      ...getAccountCodeQueryArgs(organization.organizationId)
     });
 
-    return expense;
+    return accountCodeTransformer(expense);
   }
 
   /**

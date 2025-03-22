@@ -4,8 +4,8 @@ import { AccessDeniedException, DeletedException, HttpException, NotFoundExcepti
 import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { assert } from 'console';
-import { addDaysToDate, IndexCode, ReimbursementRequest } from 'shared';
-import { Account_Code, Organization, Vendor } from '@prisma/client';
+import { addDaysToDate, IndexCode, ReimbursementRequest, AccountCode } from 'shared';
+import { Organization, Vendor } from '@prisma/client';
 import { UserWithSecureSettings } from '../../src/utils/auth.utils';
 
 describe('Reimbursement Requests', () => {
@@ -13,7 +13,7 @@ describe('Reimbursement Requests', () => {
   let reimbursementRequest: ReimbursementRequest;
   let createdVendor: Vendor;
   let createdIndexCode: IndexCode;
-  let createdAccountCode: Account_Code;
+  let createdAccountCode: AccountCode;
   let createdUser: UserWithSecureSettings;
 
   beforeEach(async () => {
@@ -108,7 +108,7 @@ describe('Reimbursement Requests', () => {
       );
 
       expect(rr.accountCode).toStrictEqual({ ...createdAccountCode, dateDeleted: null });
-      expect(rr.account.name).toEqual('Cash');
+      expect(rr.account.name).toEqual('CASH');
       expect(rr.vendor.vendorId).toEqual(createdVendor.vendorId);
       expect(rr.recipient.userId).toEqual(createdUser.userId);
       expect(rr.dateOfExpense).toEqual(undefined);
@@ -150,7 +150,7 @@ describe('Reimbursement Requests', () => {
       );
 
       expect(rr.accountCode).toStrictEqual({ ...createdAccountCode, dateDeleted: null });
-      expect(rr.account.name).toEqual('Cash');
+      expect(rr.account.name).toEqual('CASH');
       expect(rr.vendor.vendorId).toEqual(createdVendor.vendorId);
       expect(rr.recipient.userId).toEqual(createdUser.userId);
       expect(rr.dateOfExpense).toEqual(new Date('12-29-2023'));

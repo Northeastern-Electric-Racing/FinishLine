@@ -1,13 +1,18 @@
 /*
   Warnings:
+
   - You are about to drop the column `allowedRefundSources` on the `Account_Code` table. All the data in the column will be lost.
   - You are about to drop the column `otherReason` on the `Reimbursement_Product_Reason` table. All the data in the column will be lost.
   - You are about to drop the column `account` on the `Reimbursement_Request` table. All the data in the column will be lost.
   - Added the required column `indexCodeId` to the `Reimbursement_Request` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `passwordHash` to the `Vendor` table without a default value. This is not possible if the table is not empty.
+  - Added the required column `password` to the `Vendor` table without a default value. This is not possible if the table is not empty.
   - Added the required column `taxExempt` to the `Vendor` table without a default value. This is not possible if the table is not empty.
   - Added the required column `username` to the `Vendor` table without a default value. This is not possible if the table is not empty.
+
 */
+-- AlterTable
+ALTER TABLE "Reimbursement_Request" RENAME COLUMN "account" TO "indexCode";
+
 -- CreateTable
 CREATE TABLE "Index_Code" (
     "indexCodeId" TEXT NOT NULL,
@@ -30,122 +35,64 @@ CREATE TABLE "Reimbursement_Product_Other_Reason" (
     "userDeletedId" TEXT,
     "budget" INTEGER NOT NULL,
     "indexCodeId" TEXT NOT NULL,
-    "accountCodeId" TEXT NOT NULL,
 
     CONSTRAINT "Reimbursement_Product_Other_Reason_pkey" PRIMARY KEY ("otherReimbursementProductReasonId")
 );
--- AlterTable
-ALTER TABLE "Reimbursement_Request" ADD COLUMN     "indexCodeId" TEXT NOT NULL;
-
-UPDATE "Reimbursement_Request" AS rr
-SET "indexCodeId" = (
-    SELECT "indexCodeId"  
-    FROM "Index_Code" AS ic
-    WHERE ic."indexCodeId" = rr."indexCodeId"
-)
-WHERE rr."indexCodeId" IS NOT NULL;
 
 -- AlterTable
-ALTER TABLE "Reimbursement_Product_Reason" ADD COLUMN     "otherReasonId" TEXT;
-
-INSERT INTO "Index_Code" ("indexCodeId", "name", "dateCreated", "userCreatedId")
-SELECT gen_random_uuid(), "Account_Code"."name", NOW(), 'default-user-id'
-FROM "Reimbursement_Request"
-JOIN "Account_Code" ON "Account_Code"."accountCodeId" = "Reimbursement_Request"."indexCodeId";
-
-INSERT INTO "Reimbursement_Product_Other_Reason" ("otherReimbursementProductReasonId", "name", "dateCreated", "userCreatedId", "budget", "indexCodeId", "accountCodeId")
-SELECT gen_random_uuid(), "otherReason", NOW(), 'default-user-id', 0, 'default-index-id', 'default-account-id' 
-FROM "Reimbursement_Product_Reason"
-WHERE "otherReason" IS NOT NULL
-GROUP BY "otherReason"; 
-
-CREATE TABLE "Account_To_Index_Code_Mapping" (
-    "oldClubAccount" TEXT NOT NULL,  
-    "indexCodeName" TEXT NOT NULL   
-);
-
-INSERT INTO "Account_To_Index_Code_Mapping" ("oldClubAccount", "indexCodeName")
-VALUES
-    ('CASH', 'Cash'),
-    ('BUDGET', 'Budget');
-
-ALTER TABLE "Reimbursement_Request" ALTER COLUMN "account" SET DATA TYPE TEXT USING "account"::TEXT;
-
-UPDATE "Reimbursement_Request" AS rr
-SET "indexCodeId" = (
-    SELECT ic."indexCodeId"
-    FROM "Index_Code" AS ic
-    JOIN "Account_To_Index_Code_Mapping" AS mapping
-    ON ic."name" = mapping."indexCodeName"
-    WHERE mapping."oldClubAccount" = rr."account"::text 
-)
-WHERE rr."account" IS NOT NULL;
-
-ALTER TABLE "Account_Code" ADD COLUMN "allowedRefundSources_temp" TEXT[]; 
-
-UPDATE "Account_Code" AS ac
-SET "allowedRefundSources_temp" = (
-  SELECT ARRAY(
-    SELECT ic."indexCodeId"
-    FROM "Account_To_Index_Code_Mapping" AS mapping
-    JOIN "Index_Code" AS ic
-      ON ic."name" = mapping."indexCodeName"
-    WHERE mapping."oldClubAccount" = ANY(ac."allowedRefundSources"::text[])  
-  )
-)
-WHERE ac."allowedRefundSources" IS NOT NULL;
-
-ALTER TABLE "Account_Code" DROP COLUMN "allowedRefundSources";
-ALTER TABLE "Account_Code" ADD COLUMN "allowedRefundSources" TEXT[];
-UPDATE "Account_Code" SET "allowedRefundSources" = "allowedRefundSources_temp";
-ALTER TABLE "Account_Code" DROP COLUMN "allowedRefundSources_temp";
-
-DROP TABLE "Account_To_Index_Code_Mapping";
-
-CREATE TABLE "Other_Reason_Enum_To_Model" (
-    "oldOtherReason" TEXT NOT NULL,  
-    "otherReasonName" TEXT NOT NULL   
-);
-
-INSERT INTO "Other_Reason_Enum_To_Model" ("oldOtherReason", "otherReasonName")
-VALUES
-    ('TOOLS_AND_EQUIPMENT', 'Tools and Equipment'),
-    ('COMPETITION', 'Competition'),
-    ('CONSUMABLES', 'Consumables'),
-    ('GENERAL_STOCK', 'General Stock'),
-    ('SUBSCRIPTIONS_AND_MEMBERSHIPS', 'Subscriptions and Memberships');
-
-ALTER TABLE "Reimbursement_Product_Reason" ALTER COLUMN "otherReason" SET DATA TYPE TEXT USING "otherReason"::TEXT;
-
-UPDATE "Reimbursement_Product_Reason" AS rr
-SET "otherReasonId" = (
-    SELECT rpor."otherReimbursementProductReasonId"
-    FROM "Reimbursement_Product_Other_Reason" AS rpor
-    JOIN "Other_Reason_Enum_To_Model" AS mapping
-    ON rpor."name" = mapping."otherReasonName"
-    WHERE mapping."oldOtherReason" = rr."otherReason"::text  -- Ensure explicit cast
-)
-WHERE rr."otherReason" IS NOT NULL;
-
-DROP TABLE "Other_Reason_Enum_To_Model";
-
-DROP TYPE "Club_Accounts";
-DROP TYPE "Other_Reimbursement_Product_Reason";
+ALTER TABLE "Reimbursement_Product_Reason" ADD COLUMN "otherReasonId" TEXT;
 
 -- AlterTable
-ALTER TABLE "Account_Code" DROP COLUMN "allowedRefundSources";
+ALTER TABLE "Reimbursement_Request" ADD COLUMN "indexCodeId" TEXT NOT NULL;
+
+-- CreateAdminUser
+INSERT INTO "User" ("userId", "firstName", "lastName", "googleAuthId", "email") VALUES ('0', 'Admin', 'User', 'admin', 'admin@gmail.com');
+
+WITH inserted AS (
+    -- Insert Cash and Budget into Index_Code table and capture the indexCodeId
+    INSERT INTO "Index_Code" ("indexCodeId", "name", "userCreatedId")
+    VALUES 
+        (gen_random_uuid(), 'CASH', '0'),
+        (gen_random_uuid(), 'BUDGET', '0')
+    RETURNING "indexCodeId", "name"
+)
+
+-- Insert into Reimbursement_Product_Other_Reason using the captured indexCodeId values
+INSERT INTO "Reimbursement_Product_Other_Reason" ("otherReimbursementProductReasonId", "name", "userCreatedId", "budget", "indexCodeId")
+VALUES 
+    (gen_random_uuid(), 'TOOLS_AND_EQUIPMENT', '0', 0, (SELECT "indexCodeId" FROM inserted WHERE "name" = 'CASH')),
+    (gen_random_uuid(), 'COMPETITION', '0', 0, (SELECT "indexCodeId" FROM inserted WHERE "name" = 'BUDGET')),
+    (gen_random_uuid(), 'CONSUMABLES', '0', 0, (SELECT "indexCodeId" FROM inserted WHERE "name" = 'CASH')),
+    (gen_random_uuid(), 'GENERAL_STOCK', '0', 0, (SELECT "indexCodeId" FROM inserted WHERE "name" = 'BUDGET')),
+    (gen_random_uuid(), 'SUBSCRIPTIONS_AND_MEMBERSHIPS', '0', 0, (SELECT "indexCodeId" FROM inserted WHERE "name" = 'CASH'));
+
+UPDATE "Reimbursement_Request" rr
+SET "indexCodeId" = ic."indexCodeId"
+FROM "Index_Code" ic
+WHERE rr."indexCode"::TEXT = ic."name";
+
+UPDATE "Reimbursement_Product_Reason" rpr 
+SET "otherReasonId" = orpr."otherReimbursementProductReasonId"
+FROM "Reimbursement_Product_Other_Reason" orpr 
+WHERE rpr."otherReason"::TEXT = orpr."name";
+
+-- Alter Table 
+ALTER TABLE "Reimbursement_Request" DROP COLUMN "indexCode";
+
+-- Alter Table
+ALTER TABLE "Reimbursement_Product_Reason" DROP COLUMN "otherReason";
 
 -- AlterTable
-ALTER TABLE "Material" ADD COLUMN     "reimbursementRequestId" TEXT;
+ALTER TABLE "Material" ADD COLUMN "reimbursementRequestId" TEXT;
 
 -- AlterTable
 ALTER TABLE "Vendor" ADD COLUMN     "addedByUserId" TEXT,
 ADD COLUMN     "discountCode" TEXT,
 ADD COLUMN     "notes" TEXT,
-ADD COLUMN     "password" TEXT NOT NULL DEFAULT '',
-ADD COLUMN     "taxExempt" BOOLEAN NOT NULL DEFAULT TRUE,
+ADD COLUMN     "password" TEXT NOT NULL,
+ADD COLUMN     "taxExempt" BOOLEAN NOT NULL,
 ADD COLUMN     "twoFactorContactId" TEXT,
-ADD COLUMN     "username" TEXT NOT NULL DEFAULT '';
+ADD COLUMN     "username" TEXT NOT NULL;
 
 -- CreateTable
 CREATE TABLE "Sponsor" (
@@ -194,6 +141,24 @@ CREATE TABLE "_Account_CodeToIndex_Code" (
     "B" TEXT NOT NULL
 );
 
+-- CreateTable
+CREATE TABLE "_Account_CodeToReimbursement_Product_Other_Reason" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "_Account_CodeToReimbursement_Product_Other_Reason_AB_unique" ON "_Account_CodeToReimbursement_Product_Other_Reason"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_Account_CodeToReimbursement_Product_Other_Reason_B_index" ON "_Account_CodeToReimbursement_Product_Other_Reason"("B");
+
+-- AddForeignKey
+ALTER TABLE "_Account_CodeToReimbursement_Product_Other_Reason" ADD CONSTRAINT "_Account_CodeToReimbursement_Product_Other_Reason_A_fkey" FOREIGN KEY ("A") REFERENCES "Account_Code"("accountCodeId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_Account_CodeToReimbursement_Product_Other_Reason" ADD CONSTRAINT "_Account_CodeToReimbursement_Product_Other_Reason_B_fkey" FOREIGN KEY ("B") REFERENCES "Reimbursement_Product_Other_Reason"("otherReimbursementProductReasonId") ON DELETE CASCADE ON UPDATE CASCADE;
+
 -- CreateIndex
 CREATE UNIQUE INDEX "Sponsor_name_organizationId_key" ON "Sponsor"("name", "organizationId");
 
@@ -202,6 +167,22 @@ CREATE UNIQUE INDEX "_Account_CodeToIndex_Code_AB_unique" ON "_Account_CodeToInd
 
 -- CreateIndex
 CREATE INDEX "_Account_CodeToIndex_Code_B_index" ON "_Account_CodeToIndex_Code"("B");
+
+-- Inserting new index code values into Account Code allowedRefundSource array
+INSERT INTO "_Account_CodeToIndex_Code" ("A", "B")
+SELECT ac."accountCodeId", ic."indexCodeId"
+FROM "Account_Code" ac
+CROSS JOIN LATERAL unnest(ac."allowedRefundSources") AS refSource
+JOIN "Index_Code" ic ON ic."name" = refSource::TEXT;
+
+-- AlterTable
+ALTER TABLE "Account_Code" DROP COLUMN "allowedRefundSources";
+
+-- DropEnum
+DROP TYPE "Club_Accounts";
+
+-- DropEnum
+DROP TYPE "Other_Reimbursement_Product_Reason";
 
 -- AddForeignKey
 ALTER TABLE "Reimbursement_Request" ADD CONSTRAINT "Reimbursement_Request_indexCodeId_fkey" FOREIGN KEY ("indexCodeId") REFERENCES "Index_Code"("indexCodeId") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -247,9 +228,6 @@ ALTER TABLE "Reimbursement_Product_Other_Reason" ADD CONSTRAINT "Reimbursement_P
 
 -- AddForeignKey
 ALTER TABLE "Reimbursement_Product_Other_Reason" ADD CONSTRAINT "Reimbursement_Product_Other_Reason_indexCodeId_fkey" FOREIGN KEY ("indexCodeId") REFERENCES "Index_Code"("indexCodeId") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Reimbursement_Product_Other_Reason" ADD CONSTRAINT "Reimbursement_Product_Other_Reason_accountCodeId_fkey" FOREIGN KEY ("accountCodeId") REFERENCES "Account_Code"("accountCodeId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_Account_CodeToIndex_Code" ADD CONSTRAINT "_Account_CodeToIndex_Code_A_fkey" FOREIGN KEY ("A") REFERENCES "Account_Code"("accountCodeId") ON DELETE CASCADE ON UPDATE CASCADE;
