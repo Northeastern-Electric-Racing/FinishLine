@@ -313,7 +313,7 @@ describe('Finance Tests', () => {
       ).rejects.toThrow(new NotFoundException('User', 'bad user id'));
     });
   });
-  
+
   describe('Create a sponsor tier', () => {
     it('Fails if user is not a head', async () => {
       await expect(
