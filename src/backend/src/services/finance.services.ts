@@ -183,8 +183,8 @@ export default class FinanceServices {
     const updatedSponsorTask = await prisma.sponsor_Task.update({
       where: { sponsorTaskId: oldSponsorTask.sponsorTaskId },
       data: {
-        notifyDate: notifyDate ?? null,
-        assigneeUserId: assigneeUserId ?? null,
+        notifyDate,
+        assigneeUserId,
         dueDate,
         notes
       }
