@@ -161,7 +161,8 @@ export default class ProjectsController {
         price,
         subtotal,
         linkUrl,
-        notes
+        notes,
+        reimbursementRequestId
       } = req.body;
       const wbsNum = validateWBS(req.params.wbsNum);
       const material = await BillOfMaterialsService.createMaterial(
@@ -180,7 +181,8 @@ export default class ProjectsController {
         notes,
         assemblyId,
         pdmFileName,
-        unitName
+        unitName,
+        reimbursementRequestId
       );
       res.status(200).json(material);
     } catch (error: unknown) {
