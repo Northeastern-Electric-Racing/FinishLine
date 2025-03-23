@@ -12,7 +12,6 @@ import {
 import prisma from '../prisma/prisma';
 import { sponsorTransformer } from '../transformers/finance.transformer';
 import sponsorTaskTransformer from '../transformers/sponsor-task.transformer';
-import { getSponsorQueryArgs } from '../prisma-query-args/sponsor.query.args';
 
 export default class FinanceServices {
   /**
