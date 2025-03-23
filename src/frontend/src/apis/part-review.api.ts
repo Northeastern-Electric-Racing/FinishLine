@@ -199,10 +199,21 @@ export const getSinglePart = (/*partId: string*/): { data: Part } => {
  *
  * @param payload the payload of the part
  */
-export const createPart = (payload: PartPayload) => {
-  return axios.post<Part>(apiUrls.partsCreate(), {
+export const createPart = (projectId: string, payload: PartPayload) => {
+  return axios.post<Part>(apiUrls.partsCreate(projectId), {
     ...payload
   });
+};
+
+/**
+ * Uploads a preview image for a given part
+ * @param file the preview image
+ * @param partId the id of the part that will display this image
+ */
+export const useUploadPreviewImage = (file: File, partId: string) => {
+  const formData = new FormData();
+  formData.append('image', file);
+  return axios.post(apiUrls.partsUploadPreviewImage(partId), formData);
 };
 
 /**

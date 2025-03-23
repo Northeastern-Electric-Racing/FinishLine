@@ -1,13 +1,204 @@
 import { User } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
-import { FrequentlyAskedQuestion, isAdmin, PartReviewCommonMistake, PartTag } from 'shared';
-import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
+import {
+  FrequentlyAskedQuestion,
+  isAdmin,
+  isLeadership,
+  Organization,
+  PartReviewCommonMistake,
+  PartTag,
+  Review_Status
+} from 'shared';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedException,
+  DeletedException,
+  HttpException,
+  NotFoundException
+} from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
 import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
 import { faqTransformer } from '../transformers/faq.transformer';
-import { partsReviewCommonMistakeTransformer } from '../transformers/part-review.transformer';
+import { partsReviewCommonMistakeTransformer, partTransformer } from '../transformers/part-review.transformer';
+import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
+import { isUserPartOfTeams } from '../utils/teams.utils';
+import { getPartQueryArgs } from '../prisma-query-args/part-review.query-args';
+import { uploadFile } from '../utils/google-integration.utils';
 
 export default class PartReviewService {
+  /**
+   * Creates a part on the given project id,
+   * with no submissions and no review requests
+   * @param organization the organization
+   * @param projectId project that the part will be added too
+   * @param creator the user creating the part
+   * @param index the index of the part
+   * @param commonName the name of the part
+   * @param description the description of the part
+   * @param previewImageLink
+   * @param reviewStatus
+   * @param tagIds
+   * @param assigneeIds
+   * @returns
+   */
+  static async createPart(
+    organizationId: string,
+    projectId: string,
+    creator: User,
+    index: number,
+    commonName: string,
+    description: string,
+    reviewStatus: Review_Status,
+    tagIds: string[],
+    assigneeIds: string[]
+  ) {
+    const project = await prisma.project.findUnique({
+      where: {
+        projectId
+      },
+      ...getProjectQueryArgs(organizationId)
+    });
+
+    if (!project) throw new NotFoundException('Project', projectId);
+
+    const perms =
+      (await userHasPermission(creator.userId, organizationId, isLeadership)) || isUserPartOfTeams(project.teams, creator);
+
+    if (!perms) throw new AccessDeniedException('create materials');
+
+    const part = await prisma.part.create({
+      data: {
+        index,
+        commonName,
+        description,
+        status: reviewStatus,
+        tags: {
+          connect: tagIds.map((partTagId) => ({ partTagId }))
+        },
+        project: { connect: { projectId } },
+        assignees: {
+          connect: assigneeIds.map((userId) => ({ userId }))
+        },
+        userCreated: { connect: { userId: creator.userId } }
+      },
+      ...getPartQueryArgs(organizationId)
+    });
+
+    return partTransformer(part);
+  }
+
+  /**
+   * Uploads an image to g drive and sets the parts preview image id to that image
+   * @param previewImage the image to upload
+   * @param partId the id of the part for which the preview image is being updated
+   * @param submitter the user making the update
+   * @param organization the organization
+   */
+  static async uploadPreview(
+    previewImage: Express.Multer.File,
+    partId: string,
+    submitter: User,
+    organization: Organization
+  ) {
+    const part = await prisma.part.findUnique({
+      where: {
+        partId
+      },
+      ...getPartQueryArgs(organization.organizationId)
+    });
+    if (!part) throw new NotFoundException('Part', partId);
+
+    if (part.dateDeleted) throw new DeletedException('Part', partId);
+
+    const hasPermission =
+      (await userHasPermission(submitter.userId, organization.organizationId, isLeadership)) ||
+      submitter.userId === part.userCreated.userId;
+    if (!hasPermission) throw new AccessDeniedException('Only leadership and part creators can add a preview image');
+
+    const previewImageData = await uploadFile(previewImage);
+
+    const updatedPart = await prisma.part.update({
+      where: { partId },
+      data: {
+        previewImageLink: previewImageData.id
+      },
+      ...getPartQueryArgs(organization.organizationId)
+    });
+
+    return partTransformer(updatedPart);
+  }
+
+  static async updatePart(
+    organizationId: string,
+    partId: string,
+    updater: User,
+    index: number,
+    commonName: string,
+    description: string,
+    reviewStatus: Review_Status,
+    tagIds: string[],
+    assigneeIds: string[]
+  ) {
+    const part = await prisma.part.findUnique({
+      where: { partId },
+      ...getPartQueryArgs(organizationId)
+    });
+
+    if (!part) throw new NotFoundException('Part', partId);
+
+    if (part.dateDeleted) throw new DeletedException('Part', partId);
+
+    const hasPermission =
+      (await userHasPermission(updater.userId, organizationId, isLeadership)) || updater.userId === part.userCreated.userId;
+
+    if (!hasPermission) throw new AccessDeniedException('Only leadership and the part creator can update part data');
+
+    const updatedPart = await prisma.part.update({
+      where: { partId },
+      data: {
+        index,
+        commonName,
+        description,
+        status: reviewStatus,
+        tags: {
+          connect: tagIds.map((partTagId) => ({ partTagId }))
+        },
+        assignees: {
+          connect: assigneeIds.map((userId) => ({ userId }))
+        }
+      },
+      ...getPartQueryArgs(organizationId)
+    });
+
+    return partTransformer(updatedPart);
+  }
+
+  static async deletePart(partId: string, deleter: User, organizationId: string) {
+    const part = await prisma.part.findUnique({
+      where: { partId },
+      ...getPartQueryArgs(organizationId)
+    });
+
+    if (!part) throw new NotFoundException('Part', partId);
+
+    if (part.dateDeleted) throw new DeletedException('Part', partId);
+
+    const hasPermission =
+      (await userHasPermission(deleter.userId, organizationId, isLeadership)) || deleter.userId === part.userCreated.userId;
+
+    if (!hasPermission) throw new AccessDeniedException('Only leadership and the part creator can delete a part');
+
+    const deletedPart = await prisma.part.update({
+      where: { partId },
+      data: {
+        dateDeleted: new Date()
+      },
+      ...getPartQueryArgs(organizationId)
+    });
+
+    return partTransformer(deletedPart);
+  }
+
   /**
    * Uses the given organizationID to and returns an array of part tags
    * @param organizationId the organization to get the parts for

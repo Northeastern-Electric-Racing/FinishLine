@@ -13,15 +13,14 @@ import {
   getPartsFromProject,
   getSinglePart
 } from '../apis/part-review.api';
+import { apiUrls } from '../utils/urls';
 
 export interface PartPayload {
   index: number;
   commonName: string;
   description?: string;
-  previewImageLink?: string;
   reviewStatus: Review_Status;
   tagIds: string[];
-  projectId: string;
   assigneeIds: string[];
 }
 
@@ -69,12 +68,12 @@ export const useSinglePart = (/*partId: string*/) => {
 /**
  * Custom React Hook to create a new part
  */
-export const useCreatePart = () => {
+export const useCreatePart = (projectId: string) => {
   const queryClient = useQueryClient();
   return useMutation<Part, Error, PartPayload>(
     ['parts', 'create'],
     async (part: PartPayload) => {
-      const { data } = await createPart(part);
+      const { data } = await createPart(projectId, part);
       return data;
     },
     {
@@ -84,6 +83,7 @@ export const useCreatePart = () => {
     }
   );
 };
+
 
 /**
  * Custom React Hook to edit a part
