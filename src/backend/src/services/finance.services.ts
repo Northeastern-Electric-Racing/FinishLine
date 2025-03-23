@@ -1,6 +1,7 @@
 import { isHead } from 'shared';
 import { User, Organization, Sponsor_Task, Sponsor } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
+import { getSponsorQueryArgs } from '../prisma-query-args/sponsor.query.args';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
@@ -9,6 +10,7 @@ import {
   NotFoundException
 } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
+import { sponsorTransformer } from '../transformers/finance.transformer';
 import sponsorTaskTransformer from '../transformers/sponsor-task.transformer';
 import { getSponsorQueryArgs } from '../prisma-query-args/sponsor.query.args';
 
@@ -71,12 +73,24 @@ export default class FinanceServices {
         },
         organizationId: organization.organizationId
       },
-      include: {
-        sponsorTasks: true
-      }
+      ...getSponsorQueryArgs(organization.organizationId)
     });
 
-    return sponsor;
+    return sponsorTransformer(sponsor);
+  }
+
+  /**
+   * Returns all the sponsors in the database
+   * @param organization The organization the user is currently in
+   * @returns All the sponsors in the database
+   */
+  static async getAllSponsors(organization: Organization) {
+    const allSponsors = await prisma.sponsor.findMany({
+      where: { organizationId: organization.organizationId, dateDeleted: null },
+      ...getSponsorQueryArgs(organization.organizationId)
+    });
+
+    return allSponsors.map(sponsorTransformer);
   }
 
   /**
@@ -107,6 +121,24 @@ export default class FinanceServices {
     });
 
     return deletedSponsor;
+  }
+
+  static async createSponsorTier(submitter: User, name: string, organization: Organization, colorHexCode: string) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
+      throw new AccessDeniedAdminOnlyException('create a sponsor tier');
+
+    const sponsor = await prisma.sponsor_Tier.create({
+      data: {
+        name,
+        organizationId: organization.organizationId,
+        colorHexCode
+      },
+      include: {
+        organization: true
+      }
+    });
+
+    return sponsor;
   }
 
   /**
