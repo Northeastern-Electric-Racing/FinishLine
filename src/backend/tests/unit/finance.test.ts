@@ -198,6 +198,10 @@ describe('Finance Tests', () => {
       expect(sponsorTasks[0].notes).toBe('uhh nothing');
       expect(sponsorTasks[1].notes).toBe('probably nothing again');
 
+      await expect(async () => FinanceServices.getSponsorTasks('21', organization.organizationId)).rejects.toThrow(
+        new NotFoundException('Sponsor', sponsor.sponsorId)
+      );
+
       await prisma.sponsor_Task.deleteMany();
     });
   });
