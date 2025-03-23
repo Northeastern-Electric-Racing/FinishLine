@@ -4,7 +4,6 @@ import {
   FrequentlyAskedQuestion,
   isAdmin,
   isLeadership,
-  Organization,
   PartReviewCommonMistake,
   PartTag,
   Review_Status
@@ -94,24 +93,19 @@ export default class PartReviewService {
    * @param submitter the user making the update
    * @param organization the organization
    */
-  static async uploadPreview(
-    previewImage: Express.Multer.File,
-    partId: string,
-    submitter: User,
-    organization: Organization
-  ) {
+  static async uploadPreview(previewImage: Express.Multer.File, partId: string, submitter: User, organizationId: string) {
     const part = await prisma.part.findUnique({
       where: {
         partId
       },
-      ...getPartQueryArgs(organization.organizationId)
+      ...getPartQueryArgs(organizationId)
     });
     if (!part) throw new NotFoundException('Part', partId);
 
     if (part.dateDeleted) throw new DeletedException('Part', partId);
 
     const hasPermission =
-      (await userHasPermission(submitter.userId, organization.organizationId, isLeadership)) ||
+      (await userHasPermission(submitter.userId, organizationId, isLeadership)) ||
       submitter.userId === part.userCreated.userId;
     if (!hasPermission) throw new AccessDeniedException('Only leadership and part creators can add a preview image');
 
@@ -122,7 +116,7 @@ export default class PartReviewService {
       data: {
         previewImageLink: previewImageData.id
       },
-      ...getPartQueryArgs(organization.organizationId)
+      ...getPartQueryArgs(organizationId)
     });
 
     return partTransformer(updatedPart);

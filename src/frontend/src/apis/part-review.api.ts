@@ -210,7 +210,7 @@ export const createPart = (projectId: string, payload: PartPayload) => {
  * @param file the preview image
  * @param partId the id of the part that will display this image
  */
-export const useUploadPreviewImage = (file: File, partId: string) => {
+export const uploadPreviewImage = (file: File, partId: string) => {
   const formData = new FormData();
   formData.append('image', file);
   return axios.post(apiUrls.partsUploadPreviewImage(partId), formData);

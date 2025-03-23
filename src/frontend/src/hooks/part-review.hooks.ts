@@ -11,9 +11,9 @@ import {
   editPartReview,
   editPartSubmission,
   getPartsFromProject,
-  getSinglePart
+  getSinglePart,
+  uploadPreviewImage
 } from '../apis/part-review.api';
-import { apiUrls } from '../utils/urls';
 
 export interface PartPayload {
   index: number;
@@ -84,7 +84,6 @@ export const useCreatePart = (projectId: string) => {
   );
 };
 
-
 /**
  * Custom React Hook to edit a part
  *
@@ -96,6 +95,22 @@ export const useEditPart = (partId: string) => {
     ['parts', 'edit'],
     async (part: PartPayload) => {
       const { data } = await editPart(partId, part);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['parts', 'byProject']);
+        queryClient.invalidateQueries(['parts', 'byId', partId]);
+      }
+    }
+  );
+};
+
+export const useUploadPreviewImage = (partId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<any, unknown, File>(
+    async (image: File) => {
+      const { data } = await uploadPreviewImage(image, partId);
       return data;
     },
     {
