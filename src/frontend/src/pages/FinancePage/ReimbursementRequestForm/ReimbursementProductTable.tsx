@@ -26,14 +26,10 @@ import { Add, Delete } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormSetValue } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useTheme } from '@mui/system';
-
-const otherCategoryOptions = [
-  { label: 'Competition', id: 'Competition' },
-  { label: 'Consumeables', id: 'Consumeables' },
-  { label: 'General Stock', id: 'General Stock' },
-  { label: 'Subscriptions and Memberships', id: 'Subscriptions and Memberships' },
-  { label: 'Tools and Equipment', id: 'Tools and Equipment' }
-];
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
+import { useGetAllOtherProductReason } from '../../../hooks/finance.hooks';
+import { formatReasonName } from '../../../utils/reimbursement-request.utils';
 
 interface ReimbursementProductTableProps {
   reimbursementProducts: ReimbursementProductFormArgs[];
@@ -87,6 +83,20 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   const userTheme = useTheme();
   const hoverColor = userTheme.palette.action.hover;
 
+  const {
+    data: otherReasons,
+    isLoading: otherReasonsIsLoading,
+    isError: otherReasonIsError,
+    error: otherReasonError
+  } = useGetAllOtherProductReason();
+
+  if (!otherReasons || otherReasonsIsLoading) {
+    return <LoadingIndicator />;
+  }
+  if (otherReasonIsError) {
+    return <ErrorPage message={otherReasonError.message} />;
+  }
+
   return (
     <TableContainer>
       <Table>
@@ -106,7 +116,11 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
               <TableRow key={key}>
                 <TableCell>
                   <Typography>
-                    {wbsElementAutocompleteOptions.concat(otherCategoryOptions).find((value) => value.id === key)?.label}
+                    {
+                      wbsElementAutocompleteOptions
+                        .concat(otherReasons.map((reason) => ({ id: reason.otherProductReasonId, label: formatReasonName(reason.name) })))
+                        .find((value) => value.id === key)?.label
+                    }
                   </Typography>
                 </TableCell>
                 <TableCell>
@@ -235,7 +249,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                 <Autocomplete
                   fullWidth
                   sx={{ my: 1 }}
-                  options={otherCategoryOptions}
+                  options={otherReasons.map((reason) => ({ id: reason.otherProductReasonId, label: formatReasonName(reason.name) }))}
                   onChange={(_event, value) => {
                     if (value) {
                       appendProduct({

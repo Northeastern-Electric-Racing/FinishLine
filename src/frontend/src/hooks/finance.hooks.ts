@@ -33,7 +33,8 @@ import {
   leadershipApproveReimbursementRequest,
   requestReimbursementRequestChanges,
   markPendingFinance,
-  getAllIndexCodes
+  getAllIndexCodes,
+  getAllOtherProductReason
 } from '../apis/finance.api';
 import {
   IndexCode,
@@ -45,7 +46,8 @@ import {
   ReimbursementStatus,
   OtherReimbursementProductCreateArgs,
   WbsReimbursementProductCreateArgs,
-  ReimbursementStatusType
+  ReimbursementStatusType,
+  OtherProductReason
 } from 'shared';
 import { fullNamePipe } from '../utils/pipes';
 
@@ -602,6 +604,18 @@ export const useRequestReimbursementRequestChanges = (id: string) => {
 export const useGetAllIndexCodes = () => {
   return useQuery<IndexCode[], Error>(['index-codes'], async () => {
     const { data } = await getAllIndexCodes();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get all Other Product Reasons
+ *
+ * @returns all the other product reasons
+ */
+export const useGetAllOtherProductReason = () => {
+  return useQuery<OtherProductReason[], Error>(['/other-reimbursement-product-reasons'], async () => {
+    const { data } = await getAllOtherProductReason();
     return data;
   });
 };

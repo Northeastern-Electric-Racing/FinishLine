@@ -9,6 +9,8 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { codeAndRefundSourceName } from '../../../utils/pipes';
 import { useTheme } from '@mui/material/styles';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
 
 const schema = yup.object().shape({
   code: yup.number().typeError('Account Code must be a number').required('Account Code is Required'),
@@ -52,7 +54,19 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
     handleClose();
   };
 
-  const { data: indexCodes = [] } = useGetAllIndexCodes();
+  const {
+    data: indexCodes,
+    isLoading: indexCodesIsLoading,
+    isError: indexCodeIsError,
+    error: indexCodeError
+  } = useGetAllIndexCodes();
+
+  if (!indexCodes || indexCodesIsLoading) {
+    return <LoadingIndicator />;
+  }
+  if (indexCodeIsError) {
+    return <ErrorPage message={indexCodeError.message} />;
+  }
 
   return (
     <NERFormModal

@@ -27,7 +27,6 @@ import DesignReviewsService from '../src/services/design-reviews.services';
 import TasksService from '../src/services/tasks.services';
 import ProjectsService from '../src/services/projects.services';
 import { SlackMessage } from '../src/services/slack.services';
-import IndexCodeService from '../src/services/index-code.services';
 
 export interface CreateTestUserParams {
   firstName: string;
@@ -411,7 +410,7 @@ export const createTestReimbursementRequest = async () => {
     user.userId
   );
 
-  const indexCode = await IndexCodeService.createIndexCode('CASH', user, organization);
+  const indexCode = await ReimbursementRequestService.createIndexCode('CASH', user, organization);
 
   const accountCode = await ReimbursementRequestService.createAccountCode(
     user,

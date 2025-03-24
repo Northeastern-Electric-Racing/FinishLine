@@ -45,7 +45,6 @@ import RecruitmentServices from '../services/recruitment.services';
 import OrganizationsService from '../services/organizations.services';
 import { seedGraph } from './seed-data/statistics.seed';
 import AnnouncementService from '../services/announcement.service';
-import IndexCodeService from '../services/index-code.services';
 import FinanceServices from '../services/finance.services';
 
 const prisma = new PrismaClient();
@@ -1710,8 +1709,8 @@ const performSeed: () => Promise<void> = async () => {
     thomasEmrax.userId
   );
 
-  const indexCodeCash = await IndexCodeService.createIndexCode('CASH', thomasEmrax, ner);
-  const indexCodeBudget = await IndexCodeService.createIndexCode('BUDGET', thomasEmrax, ner);
+  const indexCodeCash = await ReimbursementRequestService.createIndexCode('CASH', thomasEmrax, ner);
+  const indexCodeBudget = await ReimbursementRequestService.createIndexCode('BUDGET', thomasEmrax, ner);
 
   const accountCode = await ReimbursementRequestService.createAccountCode(
     thomasEmrax,
@@ -1764,6 +1763,14 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     new Date()
   );
+
+  const otherProductReason = await ReimbursementRequestService.createOtherReimbursementProductReason(
+    "CONSUMABLES",
+    10,
+    indexCodeCash.indexCodeId,
+    thomasEmrax,
+    ner
+  )
 
   /**
    * Bill of Materials

@@ -19,7 +19,7 @@ import {
 } from './transformers/reimbursement-requests.transformer';
 import { saveAs } from 'file-saver';
 import { PDFDocument, PDFImage } from 'pdf-lib';
-import { IndexCode, AccountCode, ReimbursementRequest } from 'shared';
+import { IndexCode, AccountCode, ReimbursementRequest, OtherProductReason } from 'shared';
 
 enum AllowedFileType {
   JPEG = 'image/jpeg',
@@ -390,6 +390,21 @@ export const requestReimbursementRequestChanges = async (id: string) => {
  */
 export const getAllIndexCodes = () => {
   return axios.get(apiUrls.getAllIndexCodes(), {
-    transformResponse: (data) => JSON.parse(data) as IndexCode[]
+    transformResponse: (data) => {
+      return JSON.parse(data) as IndexCode[];
+    }
+  });
+};
+
+/**
+ * API call to get the list of all Other Product Reason
+ *
+ * @returns The list of OtherProductReasons
+ */
+export const getAllOtherProductReason = () => {
+  return axios.get(apiUrls.getAllOtherProductReasons(), {
+    transformResponse: (data) => {
+      return JSON.parse(data) as OtherProductReason[];
+    }
   });
 };

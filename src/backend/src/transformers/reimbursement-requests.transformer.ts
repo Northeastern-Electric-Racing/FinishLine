@@ -95,10 +95,8 @@ const reimbursementProductReasonTransformer = (
         name: reason.otherReason!.name,
         userCreated: userTransformer(reason.otherReason!.userCreated),
         dateCreated: reason.otherReason!.dateCreated,
-        dateDeleted: reason.otherReason?.dateDeleted ?? undefined,
         budget: reason.otherReason!.budget,
-        indexCode: indexCodeTransformer(reason.otherReason!.indexCode),
-        accountCodes: reason.otherReason!.accountCodes.map(accountCodeTransformer)
+        indexCode: indexCodeTransformer(reason.otherReason!.indexCode)
       };
 };
 
@@ -152,9 +150,7 @@ export const otherProductReasonTransformer = (
     name: otherProductReason.name,
     userCreated: userTransformer(otherProductReason.userCreated),
     dateCreated: otherProductReason.dateCreated,
-    dateDeleted: otherProductReason.dateDeleted ?? undefined,
     budget: otherProductReason.budget,
-    indexCode: indexCodeTransformer(otherProductReason.indexCode),
-    accountCodes: otherProductReason.accountCodes.map(accountCodeTransformer)
+    indexCode: indexCodeTransformer(otherProductReason.indexCode)
   };
 };

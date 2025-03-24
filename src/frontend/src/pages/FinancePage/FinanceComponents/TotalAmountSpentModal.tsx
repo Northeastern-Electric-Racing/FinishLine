@@ -14,7 +14,7 @@ const TotalAmountSpentModal: React.FC<TotalAmountSpentModalProps> = ({ open, all
   const unDeniedReimbursementRequests = allReimbursementRequests.filter((request) => !isReimbursementRequestDenied(request));
   const cashAccountSpent = centsToDollar(
     unDeniedReimbursementRequests
-      .filter((request) => request.account.name === 'Cash')
+      .filter((request) => request.account.name === 'CASH')
       .reduce((acc, curr) => {
         return acc + curr.totalCost;
       }, 0)
@@ -22,7 +22,7 @@ const TotalAmountSpentModal: React.FC<TotalAmountSpentModalProps> = ({ open, all
 
   const budgetAccountSpent = centsToDollar(
     unDeniedReimbursementRequests
-      .filter((request) => request.account.name === 'Budget')
+      .filter((request) => request.account.name === 'BUDGET')
       .reduce((acc, curr) => {
         return acc + curr.totalCost;
       }, 0)

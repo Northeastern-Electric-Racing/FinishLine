@@ -25,6 +25,43 @@ reimbursementRequestsRouter.get('/vendors', ReimbursementRequestController.getAl
 
 reimbursementRequestsRouter.get('/account-codes', ReimbursementRequestController.getAllAccountCodes);
 
+reimbursementRequestsRouter.post(
+  '/index-code/create',
+  nonEmptyString(body('name')),
+  validateInputs,
+  ReimbursementRequestController.createIndexCode
+);
+
+reimbursementRequestsRouter.get('/index-code/:indexCodeId', ReimbursementRequestController.getSingleIndexCode);
+
+reimbursementRequestsRouter.get('/index-codes', ReimbursementRequestController.getAllIndexCodes);
+
+reimbursementRequestsRouter.delete('/index-code/:indexCodeId/delete', ReimbursementRequestController.deleteIndexCode);
+
+reimbursementRequestsRouter.post(
+  '/other-reimbursement-product-reason/create',
+  nonEmptyString(body('name')),
+  intMinZero(body('budget')),
+  nonEmptyString(body('indexCodeId')),
+  validateInputs,
+  ReimbursementRequestController.createOtherReimbursementProductReason
+);
+
+reimbursementRequestsRouter.get(
+  '/other-reimbursement-product-reasons',
+  ReimbursementRequestController.getAllOtherReimbursementProductReasons
+);
+
+reimbursementRequestsRouter.get(
+  '/other-reimbursement-product-reason/:otherReimbursementProductReasonId',
+  ReimbursementRequestController.getSingleOtherReimbursementProductReason
+);
+
+reimbursementRequestsRouter.delete(
+  '/other-reimbursement-product-reason/:otherReimbursementProductReasonId/delete',
+  ReimbursementRequestController.deleteOtherReimbursementProductReason
+);
+
 reimbursementRequestsRouter.get('/current-user', ReimbursementRequestController.getCurrentUserReimbursementRequests);
 
 reimbursementRequestsRouter.get('/reimbursements/current-user', ReimbursementRequestController.getCurrentUserReimbursements);
