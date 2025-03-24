@@ -66,7 +66,6 @@ export interface OtherProductReason {
   name: string;
   userCreated: User;
   dateCreated: Date;
-  dateDeleted?: Date;
   budget: number;
   indexCode: IndexCode;
 }
