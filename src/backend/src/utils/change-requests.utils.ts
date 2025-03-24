@@ -185,7 +185,7 @@ export const getDateImplemented = (changeRequest: Change_Request & { changes: Ch
  * @returns true if all the change requests have been reviewed, and false otherwise
  */
 export const allChangeRequestsReviewed = (changeRequests: (Change_Request & { changes: Change[] })[]) => {
-  return changeRequests.every((changeRequest) => changeRequest.dateReviewed && getDateImplemented(changeRequest));
+  return changeRequests.every((changeRequest) => changeRequest.dateReviewed || getDateImplemented(changeRequest));
 };
 
 export interface ProposedChangedValidationResult<T> {
