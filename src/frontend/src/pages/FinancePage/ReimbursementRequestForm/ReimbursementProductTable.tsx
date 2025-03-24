@@ -118,7 +118,12 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                   <Typography>
                     {
                       wbsElementAutocompleteOptions
-                        .concat(otherReasons.map((reason) => ({ id: reason.otherProductReasonId, label: formatReasonName(reason.name) })))
+                        .concat(
+                          otherReasons.map((reason) => ({
+                            id: reason.otherProductReasonId,
+                            label: formatReasonName(reason.name)
+                          }))
+                        )
                         .find((value) => value.id === key)?.label
                     }
                   </Typography>
@@ -249,7 +254,10 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                 <Autocomplete
                   fullWidth
                   sx={{ my: 1 }}
-                  options={otherReasons.map((reason) => ({ id: reason.otherProductReasonId, label: formatReasonName(reason.name) }))}
+                  options={otherReasons.map((reason) => ({
+                    id: reason.otherProductReasonId,
+                    label: formatReasonName(reason.name)
+                  }))}
                   onChange={(_event, value) => {
                     if (value) {
                       appendProduct({

@@ -1765,12 +1765,12 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   const otherProductReason = await ReimbursementRequestService.createOtherReimbursementProductReason(
-    "CONSUMABLES",
+    'CONSUMABLES',
     10,
     indexCodeCash.indexCodeId,
     thomasEmrax,
     ner
-  )
+  );
 
   /**
    * Bill of Materials
