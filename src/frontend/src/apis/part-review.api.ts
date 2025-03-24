@@ -1,5 +1,19 @@
-import { PartPayload, PartSubmissionPayload, PartReviewRequestPayload, PartReviewPayload } from '../hooks/part-review.hooks';
-import { PartPreview, Review_Status, Part, PartSubmission, PartReviewRequest, PartReview } from 'shared';
+import {
+  PartPayload,
+  PartSubmissionPayload,
+  PartReviewRequestPayload,
+  PartReviewPayload,
+  PartReviewCommonMistakePayload
+} from '../hooks/part-review.hooks';
+import {
+  PartPreview,
+  Review_Status,
+  Part,
+  PartSubmission,
+  PartReviewRequest,
+  PartReview,
+  PartReviewCommonMistake
+} from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 
@@ -293,4 +307,36 @@ export const editPartReview = (partReviewId: string, payload: PartReviewPayload)
   return axios.post<PartReview>(apiUrls.partsEditReview(partReviewId), {
     ...payload
   });
+};
+
+/**
+ * Creates a new common mistake
+ *
+ * @param payload the payload of the common mistake
+ */
+export const createPartReviewCommonMistake = (payload: PartReviewCommonMistakePayload) => {
+  return axios.post<PartReviewCommonMistake>(apiUrls.partsCreateCommonMistake(), {
+    ...payload
+  });
+};
+
+/**
+ * Edits a common mistake
+ *
+ * @param commonMistakeId the id of the common mistake to edit
+ * @param payload the payload of the common mistake
+ */
+export const editPartReviewCommonMistake = (commonMistakeId: string, payload: PartReviewCommonMistakePayload) => {
+  return axios.post<PartReviewCommonMistake>(apiUrls.partsEditCommonMistake(commonMistakeId), {
+    ...payload
+  });
+};
+
+/**
+ * Deletes a common mistake
+ *
+ * @param commonMistakeId the id of the common mistake to delete
+ */
+export const deletePartReviewCommonMistake = (commonMistakeId: string) => {
+  return axios.post<PartReviewCommonMistake>(apiUrls.partsDeleteCommonMistake(commonMistakeId));
 };

@@ -1,14 +1,25 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Part, PartPreview, PartReview, PartReviewRequest, PartSubmission, Review_Status } from 'shared';
+import {
+  Part,
+  PartPreview,
+  PartReview,
+  PartReviewRequest,
+  PartSubmission,
+  Review_Status,
+  PartReviewCommonMistake
+} from 'shared';
 import {
   createPart,
   createPartReview,
+  createPartReviewCommonMistake,
   createPartReviewRequest,
   createPartSubmission,
   deletePart,
+  deletePartReviewCommonMistake,
   deletePartReviewRequest,
   editPart,
   editPartReview,
+  editPartReviewCommonMistake,
   editPartSubmission,
   getPartsFromProject,
   getSinglePart
@@ -40,6 +51,13 @@ export interface PartReviewPayload {
   fileIds: string[];
   notes?: string;
   commonMistakeIds: string[];
+}
+
+export interface PartReviewCommonMistakePayload {
+  partReviewCommonMistakeId: string;
+  title: string;
+  description: string;
+  starred: boolean;
 }
 
 /**
@@ -246,6 +264,67 @@ export const useEditPartReview = (reviewId: string) => {
     ['parts', 'editReview'],
     async (partReview: PartReviewPayload) => {
       const { data } = await editPartReview(reviewId, partReview);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['parts']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to edit a common mistake
+ *
+ * @param partReviewCommonMistakeId the id of the common mistake to edit
+ */
+export const useEditPartReviewCommonMistakes = (partReviewCommonMistakeId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<PartReviewCommonMistake, Error, PartReviewCommonMistakePayload>(
+    ['parts', 'editCommonMistake'],
+    async (mistake: PartReviewCommonMistakePayload) => {
+      const { data } = await editPartReviewCommonMistake(partReviewCommonMistakeId, mistake);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['parts']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to create a new common mistake
+ */
+export const useCreatePartReviewCommonMistake = () => {
+  const queryClient = useQueryClient();
+  return useMutation<PartReviewCommonMistake, Error, PartReviewCommonMistakePayload>(
+    ['parts', 'createCommonMistake'],
+    async (mistake: PartReviewCommonMistakePayload) => {
+      const { data } = await createPartReviewCommonMistake(mistake);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['parts']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to delete a common mistake
+ *
+ * @param partReviewCommonMistakeId the id of the common mistake to delete
+ */
+export const useDeletePartReviewCommonMistake = (commonMistakeId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<PartReviewCommonMistake, Error, any>(
+    ['parts', 'deleteCommonMistake'],
+    async () => {
+      const { data } = await deletePartReviewCommonMistake(commonMistakeId);
       return data;
     },
     {
