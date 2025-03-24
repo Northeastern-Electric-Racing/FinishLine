@@ -294,3 +294,7 @@ export const editPartReview = (partReviewId: string, payload: PartReviewPayload)
     ...payload
   });
 };
+
+export const getAllCommonMistakes = () => {
+  return axios.get(apiUrls.getAllPartCommonMistakes());
+};

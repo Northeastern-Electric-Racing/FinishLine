@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
 import { rankUserRole } from 'shared';
 import NERSwitch from '../../../../components/NERSwitch';
+import CommonMistakes from '../../../../components/CommonMistakes';
 
 const PartsReviewPage = () => {
   const currentUser = useCurrentUser();
@@ -37,6 +38,7 @@ const PartsReviewPage = () => {
             <Grid container spacing={3}>
               <Grid item xs={12}>
                 <Typography variant="h4">Submission Guide</Typography>
+                <CommonMistakes />
                 {/* Submission Guide components will go here */}
                 <LoadingIndicator />
                 {/* Loading indicator will be replaced by a grid of all the part cards */}

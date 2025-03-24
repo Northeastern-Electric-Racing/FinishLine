@@ -1,4 +1,13 @@
-import { Part, Part_Review_Popup, PartPreview, PartReview, PartReviewRequest, PartSubmission, PartTag } from 'shared';
+import {
+  Part,
+  Part_Review_Popup,
+  PartPreview,
+  PartReview,
+  PartReviewRequest,
+  PartSubmission,
+  PartTag,
+  PartReviewCommonMistake
+} from 'shared';
 import { userTransformer } from './users.transformers';
 
 export const partPreviewTransformer = (partPreview: PartPreview): PartPreview => {
@@ -56,5 +65,13 @@ export const partReviewPopupTransformer = (partReviewPopup: Part_Review_Popup): 
 export const partTagTransformer = (partTag: PartTag): PartTag => {
   return {
     ...partTag
+  };
+};
+
+export const partReviewCommonMistakeTransformer = (
+  partReviewCommonMistake: PartReviewCommonMistake
+): PartReviewCommonMistake => {
+  return {
+    ...partReviewCommonMistake
   };
 };
