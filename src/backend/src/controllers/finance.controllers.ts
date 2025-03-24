@@ -37,6 +37,15 @@ export default class FinanceController {
     }
   }
 
+  static async getAllSponsors(req: Request, res: Response, next: NextFunction) {
+    try {
+      const allSponsors = await FinanceServices.getAllSponsors(req.organization);
+      res.status(200).json(allSponsors);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async deleteSponsor(req: Request, res: Response, next: NextFunction) {
     try {
       const { sponsorId } = req.params;
@@ -52,6 +61,17 @@ export default class FinanceController {
       const stId: string = req.params.sponsorId;
       const SponsorTier = await FinanceServices.getSingleSponsierTier(req.currentUser, stId, req.organization);
       res.status(200).json(SponsorTier);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createSponsorTier(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, colorHexCode } = req.body;
+
+      const sponsor = await FinanceServices.createSponsorTier(req.currentUser, name, req.organization, colorHexCode);
+      res.status(200).json(sponsor);
     } catch (error: unknown) {
       next(error);
     }
