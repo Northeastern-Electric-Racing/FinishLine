@@ -49,7 +49,7 @@ import OrganizationsService from '../services/organizations.services';
 import { seedGraph } from './seed-data/statistics.seed';
 import AnnouncementService from '../services/announcement.service';
 import OnboardingServices from '../services/onboarding.services';
-import { dbSeedAllPartTags } from './seed-data/parts.seed';
+import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
 import { CreatePartTag, CreateCommonMistake, CreatePartReviewFAQ } from '../../tests/test-utils';
 const prisma = new PrismaClient();
 
@@ -2141,6 +2141,17 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     false
   );
+
+  /**
+   * PARTS
+   */
+  let i = 0;
+  for (const testPart of Object.values(dbSeedAllParts)) {
+    const requester = i % 2 === 0 ? batman.userId : thomasEmrax.userId;
+    const partArgs = testPart(project2Id, requester, [hawkMan.userId]);
+    await prisma.part.create({ data: partArgs.data });
+    i++;
+  }
 
   // Add part tags
   const mechanicalPartTag: PartTag = await prisma.partTag.create(dbSeedAllPartTags.MechanicalPartTag(organizationId));
