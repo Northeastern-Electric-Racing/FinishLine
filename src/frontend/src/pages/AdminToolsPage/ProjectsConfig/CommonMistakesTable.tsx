@@ -1,51 +1,82 @@
-import { TableRow, TableCell, Box } from '@mui/material';
+import { Box, IconButton, Typography, Paper } from '@mui/material';
+import { Star, StarBorder, Edit } from '@mui/icons-material';
 import { NERButton } from '../../../components/NERButton';
-import AdminToolTable from '../AdminToolTable';
 import CreateCommonMistakesModal from './CreateCommonMistakeModal';
+import EditCommonMistakeModal from './EditCommonMistakeModal';
 import { useState } from 'react';
-
-const fakeData = [
-    {
-        "id":"1",
-        "title":"Test1",
-        "description":"Description1",
-        "starred":"true"
-    },
-    {
-        "id":"2",
-        "title":"Test2",
-        "description":"Description2",
-        "starred":"false"
-    },
-    {
-        "id":"3",
-        "title":"Test3",
-        "description":"Description3",
-        "starred":"false"
-    }
-]
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
+import type { PartReviewCommonMistake } from 'shared';
 
 const CommonMistakesTable: React.FC = () => {
-  const [openModal, setOpenModal] = useState(false);
+  const [openCreateModal, setOpenCreateModal] = useState(false);
+  const [editingMistake, setEditingMistake] = useState<PartReviewCommonMistake | null>(null);
 
+  const { data, isLoading, isError, error } = usePartReviewCommonMistakes(); // replace with get later
 
-  const carsTableRows = fakeData.map((data) => (
-    <TableRow>
-      <TableCell sx={{ border: '2px solid black' }}>{data.title}</TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>{data.description}</TableCell>
-      <TableCell align="left" sx={{ border: '2px solid black' }}>{data.starred}</TableCell>
-    </TableRow>
-  ));
+  const handleEdit = (mistake: PartReviewCommonMistake) => {
+    setEditingMistake(mistake);
+  };
+
+  const handleCreate = () => {
+    setEditingMistake(null);
+    setOpenCreateModal(true);
+  };
+
+  if (isError) return <ErrorPage message={error?.message} />;
+  if (isLoading || !data) return <LoadingIndicator />;
 
   return (
-    <Box>
-      <CreateCommonMistakesModal showModal={openModal} handleClose={() => setOpenModal(false)} />
-      <AdminToolTable
-        columns={[{ name: 'Title' }, { name: 'Description' }, { name: 'Starred' }]}
-        rows={carsTableRows}
-      />
-      <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
-        <NERButton variant="contained" onClick={() => setOpenModal(true)}>
+    <Box sx={{ padding: 2 }}>
+      <CreateCommonMistakesModal showModal={openCreateModal} handleClose={() => setOpenCreateModal(false)} />
+
+      {editingMistake && (
+        <EditCommonMistakeModal
+          showModal={!!editingMistake}
+          handleClose={() => setEditingMistake(null)}
+          mistake={editingMistake}
+        />
+      )}
+
+      <Typography variant="h6" sx={{ marginBottom: 2, color: 'black' }}>
+        Common Mistakes
+      </Typography>
+
+      {data.map((mistake) => (
+        <Paper
+          key={mistake.id}
+          elevation={2}
+          sx={{
+            backgroundColor: '#1e1e1e',
+            display: 'flex',
+            alignItems: 'center',
+            padding: 2,
+            marginBottom: 1,
+            borderRadius: 2,
+            color: 'white'
+          }}
+        >
+          <Box sx={{ marginRight: 2 }}>
+            {mistake.starred ? <Star sx={{ color: '#fbc02d' }} /> : <StarBorder sx={{ color: 'gray' }} />}
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="subtitle1" fontWeight="bold">
+              {mistake.title}
+            </Typography>
+            <Typography variant="body2" color="gray">
+              {mistake.description}
+            </Typography>
+          </Box>
+          <Box>
+            <IconButton sx={{ color: 'white' }} onClick={() => handleEdit(mistake)}>
+              <Edit />
+            </IconButton>
+          </Box>
+        </Paper>
+      ))}
+
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: 2 }}>
+        <NERButton variant="contained" onClick={handleCreate}>
           New Common Mistake
         </NERButton>
       </Box>

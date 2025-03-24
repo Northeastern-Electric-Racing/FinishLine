@@ -7,7 +7,8 @@ import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useCreatePartReviewCommonMistake } from '../../../hooks/part-review.hooks';
+import { useEditPartReviewCommonMistakes } from '../../../hooks/part-review.hooks';
+import type { PartReviewCommonMistake } from 'shared';
 
 const schema = yup.object().shape({
   title: yup.string().required('Title is Required!'),
@@ -15,25 +16,15 @@ const schema = yup.object().shape({
   starred: yup.boolean().required('Starred is Required!')
 });
 
-interface CreateCommonMistakesModalProps {
+interface EditCommonMistakeModalProps {
   showModal: boolean;
   handleClose: () => void;
+  mistake: PartReviewCommonMistake;
 }
 
-const CreateCommonMistakesModal: React.FC<CreateCommonMistakesModalProps> = ({ showModal, handleClose }) => {
+const EditCommonMistakeModal: React.FC<EditCommonMistakeModalProps> = ({ showModal, handleClose, mistake }) => {
   const toast = useToast();
-  const { isLoading, isError, error, mutateAsync } = useCreatePartReviewCommonMistake();
-
-  const onSubmit = async (data: { title: string; description: string; starred: boolean }) => {
-    try {
-      await mutateAsync(data);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      }
-    }
-    handleClose();
-  };
+  const { isLoading, isError, error, mutateAsync } = useEditPartReviewCommonMistakes(mistake.id);
 
   const {
     handleSubmit,
@@ -43,11 +34,23 @@ const CreateCommonMistakesModal: React.FC<CreateCommonMistakesModalProps> = ({ s
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      title: '',
-      description: '',
-      starred: false
+      title: mistake.title,
+      description: mistake.description,
+      starred: mistake.starred
     }
   });
+
+  const onSubmit = async (data: { title: string; description: string; starred: boolean }) => {
+    try {
+      await mutateAsync(data);
+      toast.success('Common Mistake updated');
+      handleClose();
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      }
+    }
+  };
 
   if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading) return <LoadingIndicator />;
@@ -56,11 +59,11 @@ const CreateCommonMistakesModal: React.FC<CreateCommonMistakesModalProps> = ({ s
     <NERFormModal
       open={showModal}
       onHide={handleClose}
-      title="New Common Mistake"
-      reset={() => reset({ title: '', description: '', starred: false })}
+      title="Edit Common Mistake"
+      reset={() => reset(mistake)}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
-      formId="new-common-mistake-form"
+      formId="edit-common-mistake-form"
       showCloseButton
     >
       <FormControl>
@@ -79,4 +82,4 @@ const CreateCommonMistakesModal: React.FC<CreateCommonMistakesModalProps> = ({ s
   );
 };
 
-export default CreateCommonMistakesModal;
+export default EditCommonMistakeModal;
