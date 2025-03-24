@@ -260,7 +260,7 @@ describe('Finance Tests', () => {
       expect(sponsorTasks[1].notes).toBe('probably nothing again');
 
       await expect(async () => FinanceServices.getSponsorTasks('21', organization.organizationId)).rejects.toThrow(
-        new NotFoundException('Sponsor', sponsor.sponsorId)
+        new NotFoundException('Sponsor', '21')
       );
 
       await prisma.sponsor_Task.deleteMany();
