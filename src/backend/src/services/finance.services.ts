@@ -120,7 +120,7 @@ export default class FinanceServices {
 
     return deletedSponsor;
   }
-  
+
   static async getSingleSponsierTier(_submitter: User, sponsorId: string, organization: Organization): Promise<Sponsor> {
     const sponsor = await prisma.sponsor.findUnique({
       where: {
@@ -130,10 +130,10 @@ export default class FinanceServices {
 
     if (!sponsor) throw new NotFoundException('Sponsor', sponsorId);
     if (sponsor.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Sponsor');
-    
+
     return sponsor;
   }
-  
+
   static async createSponsorTier(submitter: User, name: string, organization: Organization, colorHexCode: string) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedAdminOnlyException('create a sponsor tier');
@@ -148,5 +148,7 @@ export default class FinanceServices {
         organization: true
       }
     });
+
+    return sponsor;
   }
 }
