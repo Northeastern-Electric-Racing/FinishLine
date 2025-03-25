@@ -438,7 +438,7 @@ export default class PartReviewService {
 
     /**
    * creates a new part review associated to a part submission
-   * @param submission part submission being reviewed
+   * @param submissionId id of part submission being reviewed
    * @param creator the user creating the review -- must be admin or head or lead or assigned reviewer
    * @param organizationId the organization id
    * @returns the created part review
