@@ -65,7 +65,7 @@ partsRouter.post(
 );
 
 partsRouter.post(
-  '/popup/:reviewId/create',
+  '/reviews/:reviewId/popup/create',
   nonEmptyString(body('title')),
   nonEmptyString(body('description')),
   body('starred').isBoolean(),

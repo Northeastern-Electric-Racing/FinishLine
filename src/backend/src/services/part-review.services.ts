@@ -551,7 +551,7 @@ export default class PartReviewService {
       include: { review: { select: { userCreatedId: true, partReviewId: true } } }
     });
 
-    if (!popup) {
+    if (!popup || popup.deletedAt) {
       throw new NotFoundException('Pop Up', popupId);
     }
 
@@ -564,11 +564,6 @@ export default class PartReviewService {
     const deletedPopup = await prisma.part_Review_Popup.update({
       where: { partReviewPopupId: popupId },
       data: {
-        review: {
-          connect: {
-            partReviewId: popup.reviewId
-          }
-        },
         deletedAt: new Date()
       },
       ...partReviewQueryArgs
