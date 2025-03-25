@@ -1,11 +1,12 @@
 import { User } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
-import { FrequentlyAskedQuestion, isAdmin, PartReviewCommonMistake, PartTag } from 'shared';
-import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
+import { FrequentlyAskedQuestion, isAdmin, isHead, isLead, Part_Review_Popup, PartReview, PartReviewCommonMistake, PartSubmission, PartTag } from 'shared';
+import { AccessDeniedAdminOnlyException, AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
 import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
 import { faqTransformer } from '../transformers/faq.transformer';
-import { partsReviewCommonMistakeTransformer } from '../transformers/part-review.transformer';
+import { partReviewTransformer, partsReviewCommonMistakeTransformer } from '../transformers/part-review.transformer';
+import { partReviewQueryArgs } from '../prisma-query-args/part-review.query-args';
 
 export default class PartReviewService {
   /**
@@ -433,4 +434,39 @@ export default class PartReviewService {
 
     return partsReviewCommonMistakeTransformer(deletedCommonMistake);
   }
+
+
+    /**
+   * creates a new part review associated to a part submission
+   * @param submission part submission being reviewed
+   * @param creator the user creating the review -- must be admin or head or lead or assigned reviewer
+   * @param organizationId the organization id
+   * @returns the created part review
+   */
+    static async createPartReview(
+      submission: PartSubmission,
+      creator: User,
+      organizationId: string
+      ): Promise<PartReview> {
+      if (!(await userHasPermission(creator.userId, organizationId, isAdmin))
+        || !(await userHasPermission(creator.userId, organizationId, isHead))
+        || !(await userHasPermission(creator.userId, organizationId, isLead))) { // also need to check if assigned reviewer?
+        throw new AccessDeniedException('create part review');
+      }
+  
+      const partReview = await prisma.partReview.create({
+        data: {
+          submission: {
+            connect: {
+              partSubmissionId: submission.partSubmissionId
+            }
+          },
+          userCreated: {
+            connect: { userId: creator.userId }
+          }
+        },
+        ...partReviewQueryArgs(organizationId)
+      });
+      return partReviewTransformer(partReview);
+    }
 }
