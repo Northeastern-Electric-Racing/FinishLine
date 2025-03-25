@@ -444,7 +444,7 @@ export default class PartReviewService {
    * @returns the created part review
    */
     static async createPartReview(
-      submission: PartSubmission,
+      submissionId: string,
       creator: User,
       organizationId: string
       ): Promise<PartReview> {
@@ -458,7 +458,7 @@ export default class PartReviewService {
         data: {
           submission: {
             connect: {
-              partSubmissionId: submission.partSubmissionId
+              partSubmissionId: submissionId
             }
           },
           userCreated: {

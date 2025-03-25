@@ -66,4 +66,11 @@ partsRouter.post(
 
 partsRouter.post('/common-mistake/:commonMistakeId/delete', PartReviewController.deleteCommonMistake);
 
+partsRouter.post(
+  '/review/:submissionId/create',
+  nonEmptyString(body('submissionId')),
+  validateInputs,
+  PartReviewController.createPartReview
+);
+
 export default partsRouter;
