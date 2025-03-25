@@ -9,9 +9,6 @@ import CreatePartTagModal from './CreatePartTagModal';
 import { Delete } from '@mui/icons-material';
 import PartTagDeleteModal from './PartTagDeleteModal';
 import { useToast } from '../../../hooks/toasts.hooks';
-import PartTagErrorModal from './PartTagErrorModal';
-import { Part } from 'shared';
-import prisma from '../../../../../backend/src/prisma/prisma';
 
 interface PartTagDeleteButtonProps {
   partTagId: string;
@@ -39,30 +36,26 @@ const PartTagsTable: React.FC = () => {
   }
   const handleDeletePartTag = async (partTagId: string, name: string) => {
     try {
-      // Check for parts with the given partTagId
-      const partsUsingTag = await prisma.part.count({
-        where: {
-          tags: { some: { partTagId: partTagId } }
-        }
-      });
-
-      if (partsUsingTag > 0) {
-        <PartTagErrorModal name={name} partCount={partsUsingTag} onHide={() => {}} />;
-      } else {
-        try {
-          await mutateAsync({ partTagId });
-          toast.success(`Part Tag: ${name} Deleted Successfully!`);
-        } catch (error: unknown) {
-          if (error instanceof Error) {
-            toast.error(error.message);
-          }
-        }
-      }
+      await mutateAsync(partTagId);
+      toast.success(`Part Tag: ${name} Deleted Successfully!`);
     } catch (error: unknown) {
       if (error instanceof Error) {
-        toast.error('Error fetching parts.');
+        toast.error(error.message);
       }
     }
+    // const [showErrorModal, setShowErrorModal] = useState(false);
+    // try {
+    //   await mutateAsync(partTagId);
+    //   toast.success(`Part Tag: ${name} Deleted Successfully!`);
+    // } catch (error: unknown) {
+    //   if (axios.isAxiosError(error) && error.response?.status === 409) {
+    //     {
+    //       showErrorModal && <PartTagErrorModal name={name} onHide={() => setShowErrorModal(false)} />;
+    //     }
+    //   } else if (error instanceof Error) {
+    //     toast.error(error.message);
+    //   }
+    // }
   };
 
   const PartTagDeleteButton: React.FC<PartTagDeleteButtonProps> = ({ partTagId, name, colorHexCode, onDelete }) => {
@@ -79,7 +72,10 @@ const PartTagsTable: React.FC = () => {
           sx={{
             mx: 1
           }}
-          onClick={() => setShowDeleteModal(true)}
+          onClick={() => {
+            setShowDeleteModal(true);
+            console.log(`Delete button clicked for ${name}`);
+          }}
         >
           <Delete />
         </IconButton>

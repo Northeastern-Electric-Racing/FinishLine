@@ -286,21 +286,18 @@ export const useCreatePartTag = () => {
   );
 };
 
-export interface DeletePartTagPayload {
-  partTagId: string;
-}
-
 export const useDeletePartTag = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, DeletePartTagPayload>(
+  return useMutation<{ message: string }, Error, string>(
     ['partTags', 'delete'],
-    async (deleteTagPayload: DeletePartTagPayload) => {
-      const { data } = await deletePartTag(deleteTagPayload.partTagId);
+    async (partTagId: string) => {
+      const { data } = await deletePartTag(partTagId);
+      console.log(`part-review.hook called for ${partTagId}`);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['partTags']);
+        queryClient.invalidateQueries(['part Tags']);
       }
     }
   );

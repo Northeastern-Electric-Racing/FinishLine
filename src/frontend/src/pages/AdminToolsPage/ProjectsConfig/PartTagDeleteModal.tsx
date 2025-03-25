@@ -24,7 +24,6 @@ const PartTagDeleteModal: React.FC<PartTagDeleteModalProps> = ({
       submitText="Delete"
       onSubmit={onDelete}
       formId="part-tag-delete"
-      showCloseButton
     >
       <Typography>Are you sure you want to delete this part tag?</Typography>
       <FormControl sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'flex-start' }}>
