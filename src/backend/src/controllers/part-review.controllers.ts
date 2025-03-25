@@ -163,7 +163,23 @@ export default class PartReviewController {
   static async createPartReview(req: Request, res: Response, next: NextFunction) {
     try {
       const { submissionId } = req.body;
-      const review = await PartReviewService.createPartReview(submissionId, req.currentUser, req.organization.organizationId);
+      const review = await PartReviewService.createPartReview(
+        submissionId,
+        req.currentUser,
+        req.organization.organizationId);
+      res.status(200).json(review);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async updatePartReview(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { reviewId } = req.body;
+      const review = await PartReviewService.updatePartReview(
+        reviewId,
+        req.currentUser,
+        req.organization.organizationId);
       res.status(200).json(review);
     } catch (error: unknown) {
       next(error);

@@ -73,4 +73,11 @@ partsRouter.post(
   PartReviewController.createPartReview
 );
 
+partsRouter.post(
+  '/review/:reviewId/update',
+  nonEmptyString(body('reviewId')),
+  validateInputs,
+  PartReviewController.updatePartReview
+);
+
 export default partsRouter;

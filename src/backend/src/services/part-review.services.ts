@@ -469,4 +469,51 @@ export default class PartReviewService {
       });
       return partReviewTransformer(partReview);
     }
+
+  /**
+   * updates a part review
+   * @param reviewId id of part review being updated
+   * @param updater the user updating the review -- must be admin or head or lead or assigned reviewer
+   * @param organizationId the organization id
+   * @returns the updated part review
+   */
+    static async updatePartReview(
+      reviewId: string,
+      updater: User,
+      organizationId: string
+      ): Promise<PartReview> {
+
+      const partReview = await prisma.partReview.findUnique({
+        where: {
+          partReviewId: reviewId
+        }
+      });
+  
+      if (!partReview) {
+        throw new NotFoundException('Part Review', reviewId);
+      }
+  
+      if (partReview.dateDeleted) {
+        throw new DeletedException('Part Review', reviewId);
+      }
+      
+      if (!(await userHasPermission(updater.userId, organizationId, isAdmin))
+        || !(await userHasPermission(updater.userId, organizationId, isHead))
+        || !(await userHasPermission(updater.userId, organizationId, isLead))) { // also need to check if assigned reviewer?
+        throw new AccessDeniedException('create part review');
+      }
+
+      const updatedPartReview = await prisma.partReview.update({
+        where: {
+          partReviewId: reviewId
+        },
+        data: {
+          userCreated: {
+            connect: { userId: updater.userId }
+          }
+        },
+        ...partReviewQueryArgs(organizationId)
+      });
+      return partReviewTransformer(updatedPartReview);
+    }
 }
