@@ -1,6 +1,5 @@
 import { Typography } from '@mui/material';
 import NERModal from '../../../components/NERModal';
-import { Part } from 'shared';
 
 interface PartTagErrorModalProps {
   name: string;

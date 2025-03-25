@@ -292,12 +292,11 @@ export const useDeletePartTag = () => {
     ['partTags', 'delete'],
     async (partTagId: string) => {
       const { data } = await deletePartTag(partTagId);
-      console.log(`part-review.hook called for ${partTagId}`);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['part Tags']);
+        queryClient.invalidateQueries(['partTags']);
       }
     }
   );

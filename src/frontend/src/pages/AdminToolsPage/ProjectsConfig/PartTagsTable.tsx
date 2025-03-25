@@ -9,6 +9,8 @@ import CreatePartTagModal from './CreatePartTagModal';
 import { Delete } from '@mui/icons-material';
 import PartTagDeleteModal from './PartTagDeleteModal';
 import { useToast } from '../../../hooks/toasts.hooks';
+import axios from 'axios';
+import PartTagErrorModal from './PartTagErrorModal';
 
 interface PartTagDeleteButtonProps {
   partTagId: string;
@@ -27,6 +29,7 @@ const PartTagsTable: React.FC = () => {
   const toast = useToast();
   const { mutateAsync } = useDeletePartTag();
   const [openModal, setOpenModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
 
   if (!partTags || partTagsIsLoading) {
     return <LoadingIndicator />;
@@ -39,23 +42,12 @@ const PartTagsTable: React.FC = () => {
       await mutateAsync(partTagId);
       toast.success(`Part Tag: ${name} Deleted Successfully!`);
     } catch (error: unknown) {
-      if (error instanceof Error) {
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
+        showErrorModal && <PartTagErrorModal name={name} onHide={() => setShowErrorModal(false)} />;
+      } else if (error instanceof Error) {
         toast.error(error.message);
       }
     }
-    // const [showErrorModal, setShowErrorModal] = useState(false);
-    // try {
-    //   await mutateAsync(partTagId);
-    //   toast.success(`Part Tag: ${name} Deleted Successfully!`);
-    // } catch (error: unknown) {
-    //   if (axios.isAxiosError(error) && error.response?.status === 409) {
-    //     {
-    //       showErrorModal && <PartTagErrorModal name={name} onHide={() => setShowErrorModal(false)} />;
-    //     }
-    //   } else if (error instanceof Error) {
-    //     toast.error(error.message);
-    //   }
-    // }
   };
 
   const PartTagDeleteButton: React.FC<PartTagDeleteButtonProps> = ({ partTagId, name, colorHexCode, onDelete }) => {

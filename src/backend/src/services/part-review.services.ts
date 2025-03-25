@@ -120,7 +120,6 @@ export default class PartReviewService {
    * @throws if there are existing parts with this tag
    */
   static async deletePartTag(partTagId: string, deleter: User, organizationId: string): Promise<PartTag> {
-    console.log(`part-review.service called for ${partTagId}`);
     if (!(await userHasPermission(deleter.userId, organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('delete part review tag');
     }
