@@ -41,4 +41,16 @@ export const StructuralPartTag = (organizationId: string): Prisma.PartTagCreateA
   };
 };
 
-export const dbSeedAllPartTags = { MechanicalPartTag, ElectricalPartTag, StructuralPartTag };
+export const PracticePartTag = (organizationId: string): Prisma.PartTagCreateArgs => {
+  return {
+    data: {
+      partTagId: '004',
+      name: 'Practice',
+      colorHexCode: '#CC33FF',
+      dateCreated: new Date(),
+      organizationId
+    }
+  };
+};
+
+export const dbSeedAllPartTags = { MechanicalPartTag, ElectricalPartTag, StructuralPartTag, PracticePartTag };

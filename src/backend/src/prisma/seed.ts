@@ -2146,8 +2146,7 @@ const performSeed: () => Promise<void> = async () => {
   const mechanicalPartTag: PartTag = await prisma.partTag.create(dbSeedAllPartTags.MechanicalPartTag(organizationId));
   const electricalPartTag: PartTag = await prisma.partTag.create(dbSeedAllPartTags.ElectricalPartTag(organizationId));
   const structuralPartTag: PartTag = await prisma.partTag.create(dbSeedAllPartTags.StructuralPartTag(organizationId));
-
-  await CreatePartTag(organizationId, 'Practice', '#202025');
+  const practicePartTag: PartTag = await prisma.partTag.create(dbSeedAllPartTags.PracticePartTag(organizationId));
 
   await CreatePartTag(organizationId, 'Complex', '#142099');
 
@@ -2189,6 +2188,9 @@ const performSeed: () => Promise<void> = async () => {
       partId: '001',
       index: 0,
       commonName: 'tire',
+      tags: {
+        connect: { partTagId: practicePartTag.partTagId }
+      },
       project: {
         connect: { projectId: project1Id }
       },

@@ -10,7 +10,6 @@ import { Delete } from '@mui/icons-material';
 import PartTagDeleteModal from './PartTagDeleteModal';
 import { useToast } from '../../../hooks/toasts.hooks';
 import axios from 'axios';
-import PartTagErrorModal from './PartTagErrorModal';
 
 interface PartTagDeleteButtonProps {
   partTagId: string;
@@ -42,8 +41,9 @@ const PartTagsTable: React.FC = () => {
       await mutateAsync(partTagId);
       toast.success(`Part Tag: ${name} Deleted Successfully!`);
     } catch (error: unknown) {
-      if (axios.isAxiosError(error) && error.response?.status === 409) {
-        showErrorModal && <PartTagErrorModal name={name} onHide={() => setShowErrorModal(false)} />;
+      if (axios.isAxiosError(error) && error.response?.status == 409) {
+        //showErrorModal && <PartTagErrorModal name={name} onHide={() => setShowErrorModal(false)} />;
+        toast.error(`Part Tag: ${name} cannot be deleted because it is still in use by a Part.`);
       } else if (error instanceof Error) {
         toast.error(error.message);
       }
