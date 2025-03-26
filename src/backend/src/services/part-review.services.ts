@@ -1,6 +1,6 @@
 import { User } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
-import { FrequentlyAskedQuestion, isAdmin, PartReviewCommonMistake, PartTag, Project } from 'shared';
+import { FrequentlyAskedQuestion, isAdmin, PartReviewCommonMistake, PartTag } from 'shared';
 import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
 import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
