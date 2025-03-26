@@ -293,7 +293,8 @@ const CreditsPage: React.FC = () => {
         background: 'linear-gradient(45deg,rgb(115, 255, 232) 0%,rgb(45, 94, 255) 11%,rgb(211, 89, 255) 80%)',
         '-webkit-background-clip': 'text'
       }
-    }
+    },
+    { name: 'Gauri Rajesh', color: '#94C973' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
