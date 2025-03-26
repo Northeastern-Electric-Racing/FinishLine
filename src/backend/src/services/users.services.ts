@@ -394,8 +394,8 @@ export default class UsersService {
     const userRankedRole = rankUserRole(userRole);
     const targetUserRankedRole = rankUserRole(targetUserRole);
 
-    if (userRole === RoleEnum.LEADERSHIP && targetUserRole !== RoleEnum.GUEST) {
-      throw new AccessDeniedException('Leadership can only update guest to members');
+    if (userRole === RoleEnum.LEADERSHIP && targetUserRankedRole > 2) {
+      throw new AccessDeniedException('Leadership can only update guests and members');
     }
 
     if (!isLeadership(userRole) && !isHead(userRole)) {

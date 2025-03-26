@@ -65,7 +65,7 @@ describe('User Tests', () => {
       const testGuest: User = await createTestUser(wonderwomanGuest, orgId);
       await expect(
         async () => await UsersService.updateUserRole(testGuest.userId, testAquaman, RoleEnum.LEADERSHIP, organization)
-      ).rejects.toThrow(new AccessDeniedException('Leadership can only update guest to members'));
+      ).rejects.toThrow(new AccessDeniedException('Only Leadership and Head can update user roles!'));
     });
   });
 });
