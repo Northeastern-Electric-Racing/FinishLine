@@ -56,6 +56,7 @@ export interface CreateReimbursementRequestPayload {
   wbsReimbursementProducts: WbsReimbursementProductCreateArgs[];
   totalCost: number;
   account: ClubAccount;
+  summary: string;
 }
 
 export interface EditReimbursementRequestPayload extends CreateReimbursementRequestPayload {

@@ -419,14 +419,20 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         <Grid item xs={12} md={6}>
           <Grid item lg={12} md={12} xs={12}>
             <FormControl fullWidth>
-              <FormLabel>Reimbursement Summary</FormLabel>
-              <ReactHookTextField
+              <FormLabel>Summary</FormLabel>
+              <Controller
                 name="summary"
                 control={control}
-                type="number"
-                placeholder="Describe the purchase"
-                multiline={true}
-                rows={5}
+                render={({ field }) => (
+                  <ReactHookTextField
+                    {...field}
+                    control={control}
+                    multiline
+                    rows={4}
+                    placeholder="Enter a brief summary of the reimbursement request"
+                    errorMessage={errors.summary}
+                  />
+                )}
               />
             </FormControl>
           </Grid>

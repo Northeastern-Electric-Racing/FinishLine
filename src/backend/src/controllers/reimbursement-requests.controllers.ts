@@ -59,7 +59,8 @@ export default class ReimbursementRequestsController {
         otherReimbursementProducts,
         wbsReimbursementProducts,
         accountCodeId,
-        totalCost
+        totalCost,
+        summary
       } = req.body;
       const user = await getCurrentUserWithUserSettings(res);
 
@@ -72,6 +73,7 @@ export default class ReimbursementRequestsController {
         accountCodeId,
         totalCost,
         req.organization,
+        summary,
         dateOfExpense
       );
       res.status(200).json(createdReimbursementRequest);

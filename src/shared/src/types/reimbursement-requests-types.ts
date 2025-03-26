@@ -60,6 +60,7 @@ export interface ReimbursementRequest {
   reimbursementProducts: ReimbursementProduct[];
   dateDelivered?: Date;
   accountCode: AccountCode;
+  summary: string;
 }
 
 export enum OtherProductReason {

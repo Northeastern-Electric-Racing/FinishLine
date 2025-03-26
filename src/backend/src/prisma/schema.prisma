@@ -597,7 +597,7 @@ model Reimbursement_Request {
   totalCost                Int
   receiptPictures          Receipt[]
   reimbursementProducts    Reimbursement_Product[]
-  summary                  String
+  summary                  String                  @default("")
   dateDelivered            DateTime?
   accountCodeId            String
   accountCode              Account_Code            @relation(fields: [accountCodeId], references: [accountCodeId])

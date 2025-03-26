@@ -1735,7 +1735,8 @@ const performSeed: () => Promise<void> = async () => {
     ],
     accountCode.accountCodeId,
     100,
-    ner
+    ner,
+    ''
   );
 
   await ReimbursementRequestService.createReimbursementRequest(
@@ -1757,6 +1758,7 @@ const performSeed: () => Promise<void> = async () => {
     accountCode.accountCodeId,
     200,
     ner,
+    '',
     new Date()
   );
 

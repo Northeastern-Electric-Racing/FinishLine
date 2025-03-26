@@ -30,6 +30,7 @@ export interface ReimbursementRequestInformation {
   accountCodeId: string;
   receiptFiles: ReimbursementReceiptUploadArgs[];
   account: ClubAccount;
+  summary: string;
 }
 export interface ReimbursementRequestFormInput extends ReimbursementRequestInformation {
   reimbursementProducts: ReimbursementProductFormArgs[];

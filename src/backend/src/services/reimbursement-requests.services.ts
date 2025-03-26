@@ -144,6 +144,7 @@ export default class ReimbursementRequestService {
     acccountCodeId: string,
     totalCost: number,
     organization: Organization,
+    summary: string,
     dateOfExpense?: Date
   ): Promise<ReimbursementRequest> {
     if (await userHasPermission(recipient.userId, organization.organizationId, isGuest))
@@ -184,7 +185,8 @@ export default class ReimbursementRequestService {
           }
         },
         identifier: numReimbursementRequests + 1,
-        organization: { connect: { organizationId: organization.organizationId } }
+        organization: { connect: { organizationId: organization.organizationId } },
+        summary
       }
     });
 
