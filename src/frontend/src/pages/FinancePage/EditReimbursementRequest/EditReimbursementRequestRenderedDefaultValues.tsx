@@ -44,7 +44,8 @@ const EditReimbursementRequestRenderedDefaultValues: React.FC<{
           receiptFiles: reimbursementRequest.receiptPictures.map((receipt) => ({
             name: receipt.name,
             googleFileId: receipt.googleFileId
-          }))
+          })),
+          summary: reimbursementRequest.summary
         }}
         previousPage={previousPage}
       />

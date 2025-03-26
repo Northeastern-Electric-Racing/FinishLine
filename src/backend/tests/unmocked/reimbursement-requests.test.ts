@@ -102,7 +102,8 @@ describe('Reimbursement Requests', () => {
         ],
         createdAccountCode.accountCodeId,
         100,
-        org
+        org,
+        ''
       );
 
       expect(rr.accountCode).toStrictEqual({ ...createdAccountCode, dateDeleted: undefined });
@@ -144,6 +145,7 @@ describe('Reimbursement Requests', () => {
         createdAccountCode.accountCodeId,
         100,
         org,
+        '',
         new Date('12-29-2023')
       );
 
@@ -214,6 +216,7 @@ describe('Reimbursement Requests', () => {
         reimbursementRequest.accountCode.accountCodeId,
         reimbursementRequest.totalCost,
         org,
+        '',
         new Date('2022-11-22T00:00:01')
       );
 
@@ -250,7 +253,8 @@ describe('Reimbursement Requests', () => {
         ],
         reimbursementRequest.accountCode.accountCodeId,
         reimbursementRequest.totalCost,
-        org
+        org,
+        ''
       );
       const status = await ReimbursementRequestService.denyReimbursementRequest(rr.reimbursementRequestId, createdUser, org);
       expect(status.type).toEqual(ReimbursementStatusType.DENIED);
@@ -342,7 +346,8 @@ describe('Reimbursement Requests', () => {
         ],
         createdAccountCode.accountCodeId,
         100,
-        org
+        org,
+        ''
       );
 
       const status = await ReimbursementRequestService.denyReimbursementRequest(
