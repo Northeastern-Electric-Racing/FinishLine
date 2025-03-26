@@ -193,7 +193,8 @@ export default class FinanceServices {
     });
 
     return updatedSponsorTask;
-    }
+  }
+  /*
    * Gets the sponsor tasks for the given sponsor Id
    * @param sponsorId the id of the sponsor these tasks are tied to
    * @param organizationId the organization the user is in
