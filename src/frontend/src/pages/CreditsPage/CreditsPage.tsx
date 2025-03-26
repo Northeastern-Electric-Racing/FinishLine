@@ -285,6 +285,8 @@ const CreditsPage: React.FC = () => {
         textShadow: '0 0 5px #00FF00, 0 0 10px #00FF00, 0 0 20px #00FF00'
       }
     },
+    { name: 'Ricardo Landeros', color: '##3221ed' },
+    { name: 'Mihika Chalasani', color: '#a2d2ff' },
     {
       name: 'Edison Kwok',
       color: 'transparent',
@@ -293,7 +295,8 @@ const CreditsPage: React.FC = () => {
         '-webkit-background-clip': 'text'
       }
     },
-    { name: 'Maddy Nenninger', color: '#70d489' }
+    { name: 'Maddy Nenninger', color: '#70d489' },
+    { name: 'Gauri Rajesh', color: '#94C973' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
