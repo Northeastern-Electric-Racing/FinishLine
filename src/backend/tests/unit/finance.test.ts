@@ -260,7 +260,7 @@ describe('Finance Tests', () => {
             'newNotes',
             new Date(12, 20, 24)
           )
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit sponsor task'));
+      ).rejects.toThrow(new AccessDeniedException('Only heads can edit sponsor tasks.'));
     });
     it('Edit fails if sponsor task does not exist', async () => {
       await expect(

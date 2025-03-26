@@ -161,7 +161,7 @@ export default class FinanceServices {
     assigneeUserId?: string
   ): Promise<Sponsor_Task> {
     if (!(await userHasPermission(submitter.userId, org.organizationId, isHead)))
-      throw new AccessDeniedAdminOnlyException('edit sponsor task');
+      throw new AccessDeniedException('Only heads can edit sponsor tasks.');
 
     const oldSponsorTask = await prisma.sponsor_Task.findUnique({
       where: { sponsorTaskId }
@@ -169,15 +169,16 @@ export default class FinanceServices {
 
     if (!oldSponsorTask) throw new NotFoundException('SponsorTask', sponsorTaskId);
 
-    if (
-      assigneeUserId &&
-      !(await prisma.user.findUnique({
+    if (assigneeUserId) {
+      const assignee = await prisma.user.findUnique({
         where: {
           userId: assigneeUserId
         }
-      }))
-    ) {
-      throw new NotFoundException('User', assigneeUserId);
+      });
+
+      if (!assignee) {
+        throw new NotFoundException('User', assigneeUserId);
+      }
     }
 
     const updatedSponsorTask = await prisma.sponsor_Task.update({
