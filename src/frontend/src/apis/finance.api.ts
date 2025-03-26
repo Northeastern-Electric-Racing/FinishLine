@@ -389,10 +389,8 @@ export const requestReimbursementRequestChanges = async (id: string) => {
  * @returns The list of IndexCodes
  */
 export const getAllIndexCodes = () => {
-  return axios.get(apiUrls.getAllIndexCodes(), {
-    transformResponse: (data) => {
-      return JSON.parse(data) as IndexCode[];
-    }
+  return axios.get<IndexCode[]>(apiUrls.getAllIndexCodes(), {
+    transformResponse: (data) => JSON.parse(data) as IndexCode[]
   });
 };
 
@@ -402,9 +400,7 @@ export const getAllIndexCodes = () => {
  * @returns The list of OtherProductReasons
  */
 export const getAllOtherProductReason = () => {
-  return axios.get(apiUrls.getAllOtherProductReasons(), {
-    transformResponse: (data) => {
-      return JSON.parse(data) as OtherProductReason[];
-    }
+  return axios.get<OtherProductReason[]>(apiUrls.getAllOtherProductReasons(), {
+    transformResponse: (data) => JSON.parse(data) as OtherProductReason[]
   });
 };

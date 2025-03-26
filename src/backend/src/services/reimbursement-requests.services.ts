@@ -1363,8 +1363,7 @@ export default class ReimbursementRequestService {
    * @param organizationId the organization id of the current user
    * @returns All of the index codes
    */
-  static async getAllIndexCodes(user: User, organization: Organization): Promise<IndexCode[]> {
-    await isUserAdminOrOnFinance(user, organization.organizationId);
+  static async getAllIndexCodes(organization: Organization): Promise<IndexCode[]> {
     const indexCodes = await prisma.index_Code.findMany({
       where: { dateDeleted: null },
       ...getIndexCodeQueryArgs(organization.organizationId)
@@ -1418,9 +1417,6 @@ export default class ReimbursementRequestService {
     const indexCode = await ReimbursementRequestService.getSingleIndexCode(indexCodeId, organization);
 
     if (!indexCode) throw new NotFoundException('Index Code', indexCodeId);
-    if (indexCode.dateDeleted) {
-      throw new DeletedException('Index Code', indexCodeId);
-    }
 
     const otherReimbursementProductReason = await prisma.reimbursement_Product_Other_Reason.create({
       data: {
@@ -1440,7 +1436,7 @@ export default class ReimbursementRequestService {
    * @param organizationId The organization the user is currently in
    * @returns The other reimursement product reason with the given id
    */
-  static async getSingleOtherRimbursementProductReason(
+  static async getSingleOtherReimbursementProductReason(
     otherReimbursementProductReasonId: string,
     organization: Organization
   ): Promise<OtherProductReason> {
@@ -1462,12 +1458,7 @@ export default class ReimbursementRequestService {
    * @param organizationId the organization id of the current user
    * @returns All of the other reimbursement product reasons
    */
-  static async getAllOtherReimbursementProductReasons(
-    user: User,
-    organization: Organization
-  ): Promise<OtherProductReason[]> {
-    await isUserAdminOrOnFinance(user, organization.organizationId);
-
+  static async getAllOtherReimbursementProductReasons(organization: Organization): Promise<OtherProductReason[]> {
     const otherReimbursementProductReasons = await prisma.reimbursement_Product_Other_Reason.findMany({
       where: { dateDeleted: null },
       ...getReimbursementProductOtherReasonQueryArgs(organization.organizationId)
@@ -1488,7 +1479,7 @@ export default class ReimbursementRequestService {
     user: User,
     organization: Organization
   ): Promise<OtherProductReason> {
-    const otherProductReason = await ReimbursementRequestService.getSingleOtherRimbursementProductReason(
+    const otherProductReason = await ReimbursementRequestService.getSingleOtherReimbursementProductReason(
       otherProductReasonId,
       organization
     );

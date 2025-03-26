@@ -336,11 +336,11 @@ describe('Reimbursement Requests', () => {
 
   describe('Testing get all index codes', () => {
     test('gets all index codes, after adding index code', async () => {
-      const indexCodes = await ReimbursementRequestService.getAllIndexCodes(createdUser, org);
+      const indexCodes = await ReimbursementRequestService.getAllIndexCodes(org);
       expect(indexCodes.length).toEqual(1);
       expect(indexCodes[0].name).toEqual('CASH');
       await ReimbursementRequestService.createIndexCode('BUDGET', createdUser, org);
-      const indexCodesAfterAddition = await ReimbursementRequestService.getAllIndexCodes(createdUser, org);
+      const indexCodesAfterAddition = await ReimbursementRequestService.getAllIndexCodes(org);
       expect(indexCodesAfterAddition.length).toEqual(2);
       expect(indexCodesAfterAddition[1].name).toEqual('BUDGET');
     });
@@ -402,7 +402,7 @@ describe('Reimbursement Requests', () => {
 
   describe('Testing get single other product reason', () => {
     test('gets a single other product reason that exists', async () => {
-      const singleOtherProductReason = await ReimbursementRequestService.getSingleOtherRimbursementProductReason(
+      const singleOtherProductReason = await ReimbursementRequestService.getSingleOtherReimbursementProductReason(
         createdOtherProductReason.otherProductReasonId,
         org
       );
@@ -419,7 +419,7 @@ describe('Reimbursement Requests', () => {
         org
       );
       await expect(async () =>
-        ReimbursementRequestService.getSingleOtherRimbursementProductReason(
+        ReimbursementRequestService.getSingleOtherReimbursementProductReason(
           createdOtherProductReason.otherProductReasonId,
           org
         )
@@ -430,14 +430,14 @@ describe('Reimbursement Requests', () => {
 
     test('throws when other product reason does not exists', async () => {
       await expect(async () =>
-        ReimbursementRequestService.getSingleOtherRimbursementProductReason('invalidId', org)
+        ReimbursementRequestService.getSingleOtherReimbursementProductReason('invalidId', org)
       ).rejects.toThrow(new NotFoundException('Reimbursement Product Other Reason', 'invalidId'));
     });
   });
 
   describe('Testing get all other product reasons', () => {
     test('gets all other product reasons, after adding other product reason', async () => {
-      const otherProductReasons = await ReimbursementRequestService.getAllOtherReimbursementProductReasons(createdUser, org);
+      const otherProductReasons = await ReimbursementRequestService.getAllOtherReimbursementProductReasons(org);
       expect(otherProductReasons.length).toEqual(1);
       expect(otherProductReasons[0].name).toEqual('GENERAL STOCK');
       expect(otherProductReasons[0].budget).toEqual(10);
@@ -450,10 +450,7 @@ describe('Reimbursement Requests', () => {
         createdUser,
         org
       );
-      const otherProductReasonsAfterAddition = await ReimbursementRequestService.getAllOtherReimbursementProductReasons(
-        createdUser,
-        org
-      );
+      const otherProductReasonsAfterAddition = await ReimbursementRequestService.getAllOtherReimbursementProductReasons(org);
       expect(otherProductReasonsAfterAddition.length).toEqual(2);
       expect(otherProductReasonsAfterAddition[1].name).toEqual('CONSUMABLES');
       expect(otherProductReasonsAfterAddition[1].budget).toEqual(100);

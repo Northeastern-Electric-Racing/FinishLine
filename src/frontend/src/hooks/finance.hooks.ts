@@ -92,7 +92,7 @@ export interface MarkDeliveredRequestPayload {
   dateDelivered: Date;
 }
 
-export interface IndexCodes {
+export interface IndexCodePayload {
   name: string;
 }
 
@@ -614,7 +614,7 @@ export const useGetAllIndexCodes = () => {
  * @returns all the other product reasons
  */
 export const useGetAllOtherProductReason = () => {
-  return useQuery<OtherProductReason[], Error>(['/other-reimbursement-product-reasons'], async () => {
+  return useQuery<OtherProductReason[], Error>(['other-reimbursement-product-reasons'], async () => {
     const { data } = await getAllOtherProductReason();
     return data;
   });

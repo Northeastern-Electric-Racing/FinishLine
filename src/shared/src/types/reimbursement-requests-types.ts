@@ -6,7 +6,6 @@ export interface IndexCode {
   name: string;
   userCreated: User;
   dateCreated: Date;
-  dateDeleted?: Date;
 }
 
 export interface ReimbursementRequestRow {

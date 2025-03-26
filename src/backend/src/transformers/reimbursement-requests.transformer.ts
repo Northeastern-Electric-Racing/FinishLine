@@ -137,8 +137,7 @@ export const indexCodeTransformer = (indexCode: Prisma.Index_CodeGetPayload<Inde
     indexCodeId: indexCode.indexCodeId,
     name: indexCode.name,
     userCreated: userTransformer(indexCode.userCreated),
-    dateCreated: indexCode.dateCreated,
-    dateDeleted: indexCode.dateDeleted ?? undefined
+    dateCreated: indexCode.dateCreated
   };
 };
 

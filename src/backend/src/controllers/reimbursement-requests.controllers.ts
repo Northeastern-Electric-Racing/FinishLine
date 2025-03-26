@@ -493,7 +493,7 @@ export default class ReimbursementRequestsController {
 
   static async getAllIndexCodes(req: Request, res: Response, next: NextFunction) {
     try {
-      const indexCodes = await ReimbursementRequestService.getAllIndexCodes(req.currentUser, req.organization);
+      const indexCodes = await ReimbursementRequestService.getAllIndexCodes(req.organization);
       res.status(200).json(indexCodes);
     } catch (error: unknown) {
       next(error);
@@ -534,7 +534,6 @@ export default class ReimbursementRequestsController {
   static async getAllOtherReimbursementProductReasons(req: Request, res: Response, next: NextFunction) {
     try {
       const otherReimbursementProductReasons = await ReimbursementRequestService.getAllOtherReimbursementProductReasons(
-        req.currentUser,
         req.organization
       );
       res.status(200).json(otherReimbursementProductReasons);
@@ -546,7 +545,7 @@ export default class ReimbursementRequestsController {
   static async getSingleOtherReimbursementProductReason(req: Request, res: Response, next: NextFunction) {
     try {
       const { otherReimbursementProductReasonId } = req.params;
-      const otherProductReason = await ReimbursementRequestService.getSingleOtherRimbursementProductReason(
+      const otherProductReason = await ReimbursementRequestService.getSingleOtherReimbursementProductReason(
         otherReimbursementProductReasonId,
         req.organization
       );
