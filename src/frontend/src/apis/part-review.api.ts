@@ -1,7 +1,16 @@
 import { PartPayload, PartSubmissionPayload, PartReviewRequestPayload, PartReviewPayload } from '../hooks/part-review.hooks';
-import { PartPreview, Review_Status, Part, PartSubmission, PartReviewRequest, PartReview } from 'shared';
+import {
+  PartPreview,
+  Review_Status,
+  Part,
+  PartSubmission,
+  PartReviewRequest,
+  PartReview,
+  PartReviewCommonMistake
+} from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
+import { partReviewCommonMistakeTransformer } from './transformers/part-review.transformers';
 
 /**
  * Fetches all parts acosiated with the given project as part previews
@@ -295,6 +304,11 @@ export const editPartReview = (partReviewId: string, payload: PartReviewPayload)
   });
 };
 
+/**
+ * Gets all of the common mistakes associated with part reviews
+ *
+ * @returns an array of common mistakes
+ */
 export const getAllCommonMistakes = () => {
-  return axios.get(apiUrls.getAllPartCommonMistakes());
+  return axios.get<PartReviewCommonMistake[]>(apiUrls.getAllPartCommonMistakes());
 };

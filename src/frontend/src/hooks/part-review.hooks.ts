@@ -271,8 +271,17 @@ export const useEditPartReview = (reviewId: string) => {
  * @returns a list of all common mistakes
  */
 export const useAllCommonMistakes = () => {
-  return useQuery<PartReviewCommonMistake[], Error>(['common mistakes'], async () => {
-    const { data } = await getAllCommonMistakes();
-    return data;
-  });
+  const queryClient = useQueryClient();
+  return useQuery<PartReviewCommonMistake[], Error>(
+    ['common mistakes'],
+    async () => {
+      const { data } = await getAllCommonMistakes();
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['common mistakes']);
+      }
+    }
+  );
 };

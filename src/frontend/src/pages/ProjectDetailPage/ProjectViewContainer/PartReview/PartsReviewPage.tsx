@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
 import { rankUserRole } from 'shared';
 import NERSwitch from '../../../../components/NERSwitch';
-import CommonMistakes from '../../../../components/CommonMistakes';
+import CommonMistakes from './CommonMistakes';
 
 const PartsReviewPage = () => {
   const currentUser = useCurrentUser();
