@@ -46,7 +46,7 @@ export default class FinanceServices {
     discountCode?: string
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
-      throw new AccessDeniedAdminOnlyException('create a sponsor');
+      throw new AccessDeniedAdminOnlyException('Only heads can create a sponsor');
 
     const sponsor = await prisma.sponsor.create({
       data: {
@@ -107,23 +107,47 @@ export default class FinanceServices {
     return deletedSponsor;
   }
 
+  /**
+   * Creates a sponsor task for the given sponsorId.
+   * @param submitter current user creating the sponsor task
+   * @param organization current organization of the user
+   * @param dueDate sponsor task's due date
+   * @param notes notes for the sponsor task
+   * @param sponsorId the sponsor associated with this sponsor task
+   * @param notifyDate notification date for this sponsor tasks
+   * @param assigneeUserId assignee of this sponsor task
+   * @returns newly created sponsor task
+   * @throws AccessDeniedAdminOnlyException if the user lacks permissions.
+   * @throws NotFoundException if the sponsor or assignee is not found.
+   * @throws DeletedException if the sponsor is marked as deleted.
+   */
   static async createSponsorTask(
     submitter: User,
+    organization: Organization,
     dueDate: Date,
     notes: string,
     sponsorId: string,
-    organization: Organization,
     notifyDate?: Date,
     assigneeUserId?: string
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
-      throw new AccessDeniedAdminOnlyException('create a sponsor');
+      throw new AccessDeniedAdminOnlyException('Only heads can create a sponsor task');
     }
-    return prisma.sponsor_Task.create({
+
+    const sponsor = await prisma.sponsor.findUnique({ where: { sponsorId } });
+    if (!sponsor) throw new NotFoundException('Sponsor', sponsorId);
+    if (sponsor.dateCreated) throw new DeletedException('Sponsor', sponsorId);
+
+    if (assigneeUserId) {
+      const assignee = await prisma.user.findUnique({ where: { userId: assigneeUserId } });
+      if (!assignee) throw new NotFoundException('User', assigneeUserId);
+    }
+
+    const createdSponsorTask = await prisma.sponsor_Task.create({
       data: {
         dueDate,
-        notifyDate: notifyDate ?? null,
-        assigneeUserId: assigneeUserId ?? null,
+        notifyDate,
+        assigneeUserId,
         notes,
         sponsorId
       },
@@ -132,5 +156,7 @@ export default class FinanceServices {
         sponsor: true
       }
     });
+
+    return createdSponsorTask;
   }
 }
