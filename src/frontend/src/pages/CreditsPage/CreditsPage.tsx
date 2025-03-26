@@ -295,6 +295,7 @@ const CreditsPage: React.FC = () => {
         '-webkit-background-clip': 'text'
       }
     },
+    { name: 'Maddy Nenninger', color: '#70d489' },
     { name: 'Gauri Rajesh', color: '#94C973' }
   ];
 
