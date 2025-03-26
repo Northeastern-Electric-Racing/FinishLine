@@ -1,5 +1,5 @@
 import express from 'express';
-import { nonEmptyString, validateInputs, isDate } from '../utils/validation.utils';
+import { nonEmptyString, validateInputs, isDate, isOptionalDate } from '../utils/validation.utils';
 import { body } from 'express-validator';
 import FinanceController from '../controllers/finance.controllers';
 
@@ -33,6 +33,17 @@ financeRouter.post(
   nonEmptyString(body('colorHexCode')),
   validateInputs,
   FinanceController.createSponsorTier
+);
+
+financeRouter.post(
+  '/sponsorTask/create',
+  isDate(body('dueDate')),
+  nonEmptyString(body('notes')),
+  nonEmptyString(body('notes')),
+  nonEmptyString(body('sponsorId')),
+  isOptionalDate(body('notifyDate')),
+  nonEmptyString(body('assigneeId')).optional(),
+  FinanceController.createSponsorTask
 );
 
 export default financeRouter;
