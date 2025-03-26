@@ -1,7 +1,13 @@
 import { User } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
-import { FrequentlyAskedQuestion, isAdmin, isHead, isLead, isLeadership, Part_Review_Popup, PartReview, PartReviewCommonMistake, PartSubmission, PartTag } from 'shared';
-import { AccessDeniedAdminOnlyException, AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
+import { FrequentlyAskedQuestion, isAdmin, isLeadership, PartReview, PartReviewCommonMistake, PartTag } from 'shared';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedException,
+  DeletedException,
+  HttpException,
+  NotFoundException
+} from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
 import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
 import { faqTransformer } from '../transformers/faq.transformer';
@@ -435,48 +441,44 @@ export default class PartReviewService {
     return partsReviewCommonMistakeTransformer(deletedCommonMistake);
   }
 
-
-    /**
+  /**
    * creates a new part review associated to a part submission
    * @param submissionId id of part submission being reviewed
    * @param creator the user creating the review -- must be admin or head or lead or assigned reviewer
    * @param organizationId the organization id
    * @returns the created part review
    */
-    static async createPartReview(
-      submissionId: string,
-      creator: User,
-      organizationId: string
-      ): Promise<PartReview> {
-      if (!(await userHasPermission(creator.userId, organizationId, isLeadership))) { // also need to check if assigned reviewer?
-        throw new AccessDeniedException('create part review');
-      }
+  static async createPartReview(submissionId: string, creator: User, organizationId: string): Promise<PartReview> {
+    if (!(await userHasPermission(creator.userId, organizationId, isLeadership))) {
+      // also need to check if assigned reviewer?
+      throw new AccessDeniedException('create part review');
+    }
 
-      const submission = await prisma.partSubmission.findUnique({
-        where: {
-          partSubmissionId: submissionId
-        }
-      });
-  
-      if (!submission) {
-        throw new NotFoundException('Part Submission', submissionId);
+    const submission = await prisma.partSubmission.findUnique({
+      where: {
+        partSubmissionId: submissionId
       }
-  
-      const partReview = await prisma.partReview.create({
-        data: {
-          submission: {
-            connect: {
-              partSubmissionId: submissionId
-            }
-          },
-          userCreated: {
-            connect: { userId: creator.userId }
+    });
+
+    if (!submission) {
+      throw new NotFoundException('Part Submission', submissionId);
+    }
+
+    const partReview = await prisma.partReview.create({
+      data: {
+        submission: {
+          connect: {
+            partSubmissionId: submissionId
           }
         },
-        ...partReviewQueryArgs(organizationId)
-      });
-      return partReviewTransformer(partReview);
-    }
+        userCreated: {
+          connect: { userId: creator.userId }
+        }
+      },
+      ...partReviewQueryArgs(organizationId)
+    });
+    return partReviewTransformer(partReview);
+  }
 
   /**
    * updates a part review
@@ -485,41 +487,37 @@ export default class PartReviewService {
    * @param organizationId the organization id
    * @returns the updated part review
    */
-    static async updatePartReview(
-      reviewId: string,
-      updater: User,
-      organizationId: string
-      ): Promise<PartReview> {
+  static async updatePartReview(reviewId: string, updater: User, organizationId: string): Promise<PartReview> {
+    const partReview = await prisma.partReview.findUnique({
+      where: {
+        partReviewId: reviewId
+      }
+    });
 
-      const partReview = await prisma.partReview.findUnique({
-        where: {
-          partReviewId: reviewId
-        }
-      });
-  
-      if (!partReview) {
-        throw new NotFoundException('Part Review', reviewId);
-      }
-  
-      if (partReview.dateDeleted) {
-        throw new DeletedException('Part Review', reviewId);
-      }
-      
-      if (!(await userHasPermission(updater.userId, organizationId, isLeadership))) { // also need to check if assigned reviewer?
-        throw new AccessDeniedException('update part review');
-      }
-
-      const updatedPartReview = await prisma.partReview.update({
-        where: {
-          partReviewId: reviewId
-        },
-        data: {
-          userCreated: {
-            connect: { userId: updater.userId }
-          }
-        },
-        ...partReviewQueryArgs(organizationId)
-      });
-      return partReviewTransformer(updatedPartReview);
+    if (!partReview) {
+      throw new NotFoundException('Part Review', reviewId);
     }
+
+    if (partReview.dateDeleted) {
+      throw new DeletedException('Part Review', reviewId);
+    }
+
+    if (!(await userHasPermission(updater.userId, organizationId, isLeadership))) {
+      // also need to check if assigned reviewer?
+      throw new AccessDeniedException('update part review');
+    }
+
+    const updatedPartReview = await prisma.partReview.update({
+      where: {
+        partReviewId: reviewId
+      },
+      data: {
+        userCreated: {
+          connect: { userId: updater.userId }
+        }
+      },
+      ...partReviewQueryArgs(organizationId)
+    });
+    return partReviewTransformer(updatedPartReview);
+  }
 }
