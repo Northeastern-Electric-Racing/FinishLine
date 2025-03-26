@@ -37,6 +37,15 @@ export default class FinanceController {
     }
   }
 
+  static async getAllSponsors(req: Request, res: Response, next: NextFunction) {
+    try {
+      const allSponsors = await FinanceServices.getAllSponsors(req.organization);
+      res.status(200).json(allSponsors);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async deleteSponsor(req: Request, res: Response, next: NextFunction) {
     try {
       const { sponsorId } = req.params;
