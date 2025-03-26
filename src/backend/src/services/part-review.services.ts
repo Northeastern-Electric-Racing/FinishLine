@@ -1,6 +1,6 @@
 import { User } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
-import { FrequentlyAskedQuestion, isAdmin, isHead, isLead, Part_Review_Popup, PartReview, PartReviewCommonMistake, PartSubmission, PartTag } from 'shared';
+import { FrequentlyAskedQuestion, isAdmin, isHead, isLead, isLeadership, Part_Review_Popup, PartReview, PartReviewCommonMistake, PartSubmission, PartTag } from 'shared';
 import { AccessDeniedAdminOnlyException, AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
 import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
@@ -448,10 +448,18 @@ export default class PartReviewService {
       creator: User,
       organizationId: string
       ): Promise<PartReview> {
-      if (!(await userHasPermission(creator.userId, organizationId, isAdmin))
-        || !(await userHasPermission(creator.userId, organizationId, isHead))
-        || !(await userHasPermission(creator.userId, organizationId, isLead))) { // also need to check if assigned reviewer?
+      if (!(await userHasPermission(creator.userId, organizationId, isLeadership))) { // also need to check if assigned reviewer?
         throw new AccessDeniedException('create part review');
+      }
+
+      const submission = await prisma.partSubmission.findUnique({
+        where: {
+          partSubmissionId: submissionId
+        }
+      });
+  
+      if (!submission) {
+        throw new NotFoundException('Part Submission', submissionId);
       }
   
       const partReview = await prisma.partReview.create({
@@ -497,10 +505,8 @@ export default class PartReviewService {
         throw new DeletedException('Part Review', reviewId);
       }
       
-      if (!(await userHasPermission(updater.userId, organizationId, isAdmin))
-        || !(await userHasPermission(updater.userId, organizationId, isHead))
-        || !(await userHasPermission(updater.userId, organizationId, isLead))) { // also need to check if assigned reviewer?
-        throw new AccessDeniedException('create part review');
+      if (!(await userHasPermission(updater.userId, organizationId, isLeadership))) { // also need to check if assigned reviewer?
+        throw new AccessDeniedException('update part review');
       }
 
       const updatedPartReview = await prisma.partReview.update({
