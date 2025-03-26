@@ -40,7 +40,7 @@ financeRouter.post(
   isDate(body('dueDate')),
   nonEmptyString(body('notes')),
   nonEmptyString(body('sponsorId')),
-  isOptionalDate(body('notifyDate')),
+  isOptionalDate(body('notifyDate')).optional(),
   nonEmptyString(body('assigneeId')).optional(),
   FinanceController.createSponsorTask
 );
