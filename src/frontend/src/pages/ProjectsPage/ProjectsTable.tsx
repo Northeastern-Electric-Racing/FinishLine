@@ -56,6 +56,11 @@ const ProjectsTable: React.FC = () => {
         return param1.value.workPackageNumber - param2.value.workPackageNumber;
       }
       return 0;
+    },
+    getApplyQuickFilterFn: (filterValue: string) => {
+      return (cellValue) => {
+        return wbsPipe(cellValue.value).includes(filterValue);
+      };
     }
   };
 

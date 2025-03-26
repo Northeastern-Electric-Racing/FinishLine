@@ -30,13 +30,15 @@ const BOMTab = ({ project }: { project: Project }) => {
     data: assemblies,
     isLoading: assembliesIsLoading,
     isError: assembliesIsError,
-    error: assembliesError
+    error: assembliesError,
+    refetch: refetchAssemblies
   } = useGetAssembliesForWbsElement(project.wbsNum);
   const {
     data: materials,
     isLoading: materialsIsLoading,
     isError: materialsIsError,
-    error: materialsError
+    error: materialsError,
+    refetch: refetchMaterials
   } = useGetMaterialsForWbsElement(project.wbsNum);
 
   if (assembliesIsError) return <ErrorPage message={assembliesError.message} />;
@@ -62,6 +64,10 @@ const BOMTab = ({ project }: { project: Project }) => {
           assemblies={assemblies}
           hideColumn={hideColumn}
           setHideColumn={setHideColumn}
+          refetch={() => {
+            refetchMaterials();
+            refetchAssemblies();
+          }}
         />
         <Box justifyContent="space-between" display="flex" flexDirection="row">
           <Box display="flex" gap="20px" mb={1}>
