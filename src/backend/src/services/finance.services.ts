@@ -11,6 +11,7 @@ import {
 } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
 import { sponsorTransformer } from '../transformers/finance.transformer';
+import sponsorTaskTransformer from '../transformers/sponsor-task.transformer';
 
 export default class FinanceServices {
   /**
@@ -192,5 +193,22 @@ export default class FinanceServices {
     });
 
     return updatedSponsorTask;
+    }
+   * Gets the sponsor tasks for the given sponsor Id
+   * @param sponsorId the id of the sponsor these tasks are tied to
+   * @param organizationId the organization the user is in
+   * @returns all the sponsor tasks for the sponsor
+   */
+  static async getSponsorTasks(sponsorId: string, organizationId: string) {
+    const sponsor = await prisma.sponsor.findUnique({
+      where: { dateDeleted: null, sponsorId },
+      ...getSponsorQueryArgs(organizationId)
+    });
+
+    if (!sponsor) {
+      throw new NotFoundException('Sponsor', sponsorId);
+    }
+
+    return sponsor.sponsorTasks.map(sponsorTaskTransformer);
   }
 }

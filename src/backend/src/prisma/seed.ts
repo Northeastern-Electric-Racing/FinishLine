@@ -1817,6 +1817,30 @@ const performSeed: () => Promise<void> = async () => {
     'Here are some more notes'
   );
 
+  await BillOfMaterialsService.createMaterial(
+    thomasEmrax,
+    '100k Resistor',
+    MaterialStatus.ReadyToOrder,
+    'Resistor',
+    'Digikey',
+    'lalsd',
+    new Decimal(5),
+    10,
+    50,
+    'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    {
+      carNumber: 0,
+      projectNumber: 1,
+      workPackageNumber: 0
+    },
+    ner,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    reimbursement1.reimbursementRequestId
+  );
+
   // Need to do this because the design review cannot be scheduled for a past day
   const nextDay = new Date();
   nextDay.setDate(nextDay.getDate() + 1);
