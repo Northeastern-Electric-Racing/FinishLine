@@ -250,10 +250,11 @@ model User {
   deletedPartSubmissions          PartSubmission[]          @relation(name: "partsSubmissionDeleter")
   createdPartReviews              PartReview[]              @relation(name: "partsReviewCreator")
   deletedPartReviews              PartReview[]              @relation(name: "partsReviewDeleter")
-  partsToReview                   Part[]                    @relation(name: "partReviewers")
   assignedParts                   Part[]                    @relation(name: "partAssignees")
   createdCommonMistakes           PartReviewCommonMistake[] @relation(name: "commonMistakeCreator")
   deletedCommonMistakes           PartReviewCommonMistake[] @relation(name: "commonMistakeDeleter")
+  partReviewRequests              PartReviewRequest[]       @relation(name: "PartReviewRequestor")
+  partReviewRequested             PartReviewRequest[]       @relation(name: "PartReviewRequested")
 }
 
 model Role {
@@ -1127,63 +1128,74 @@ model Contact {
 }
 
 model Part {
-  partId           String           @id @default(uuid())
+  partId           String              @id @default(uuid())
   index            Int
   commonName       String
   description      String?
   previewImageLink String?
-  status           Review_Status    @default(IN_PROGRESS)
+  status           Review_Status       @default(IN_PROGRESS)
   tags             PartTag[]
   submissions      PartSubmission[]
-  project          Project          @relation(fields: [projectId], references: [projectId])
+  reviewRequests   PartReviewRequest[]
+  project          Project             @relation(fields: [projectId], references: [projectId])
   projectId        String
-  assignees        User[]           @relation("partAssignees")
-  reviewers        User[]           @relation("partReviewers")
-  history          String[]
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  assignees        User[]              @relation("partAssignees")
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
   dateDeleted      DateTime?
   userCreatedId    String
-  userCreated      User             @relation(fields: [userCreatedId], references: [userId], name: "partCreator")
+  userCreated      User                @relation(fields: [userCreatedId], references: [userId], name: "partCreator")
   userDeletedId    String?
-  userDeleted      User?            @relation(fields: [userDeletedId], references: [userId], name: "partDeleter")
+  userDeleted      User?               @relation(fields: [userDeletedId], references: [userId], name: "partDeleter")
 }
 
 model PartTag {
   partTagId      String        @id @default(uuid())
   name           String
   colorHexCode   String
-  dateCreated    DateTime
+  dateCreated    DateTime      @default(now())
   dateDeleted    DateTime?
   parts          Part[]
-  organization   Organization? @relation(fields: [organizationId], references: [organizationId])
-  organizationId String?
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  organizationId String
 }
 
 model PartSubmission {
-  id            String       @id @default(uuid())
-  fileIds       String[]
-  name          String
-  notes         String?
-  part          Part         @relation(fields: [partId], references: [partId])
-  partId        String
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  dateDeleted   DateTime?
-  userCreatedId String
-  userCreated   User         @relation(fields: [userCreatedId], references: [userId], name: "partsSubmissionCreator")
-  userDeletedId String?
-  userDeleted   User?        @relation(fields: [userDeletedId], references: [userId], name: "partsSubmissionDeleter")
-  reviews       PartReview[]
+  partSubmissionId String       @id @default(uuid())
+  fileIds          String[]
+  name             String
+  notes            String?
+  part             Part         @relation(fields: [partId], references: [partId])
+  partId           String
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  dateDeleted      DateTime?
+  userCreatedId    String
+  userCreated      User         @relation(fields: [userCreatedId], references: [userId], name: "partsSubmissionCreator")
+  userDeletedId    String?
+  userDeleted      User?        @relation(fields: [userDeletedId], references: [userId], name: "partsSubmissionDeleter")
+  reviews          PartReview[]
+}
+
+model PartReviewRequest {
+  partReviewRequestId String   @id @default(uuid())
+  partId              String
+  part                Part     @relation(fields: [partId], references: [partId])
+  requesterId         String
+  requester           User     @relation(fields: [requesterId], references: [userId], name: "PartReviewRequestor")
+  reviewerId          String
+  reviewerRequested   User     @relation(fields: [reviewerId], references: [userId], name: "PartReviewRequested")
+  createdAt           DateTime @default(now())
 }
 
 model PartReview {
   partReviewId  String              @id @default(uuid())
   fileIds       String[]
   notes         String?
-  submission    PartSubmission      @relation(fields: [submissionId], references: [id])
+  submission    PartSubmission      @relation(fields: [submissionId], references: [partSubmissionId])
   submissionId  String
   popUps        Part_Review_Popup[]
+  completedAt   DateTime?
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
   dateDeleted   DateTime?
@@ -1204,20 +1216,20 @@ model Part_Review_Popup {
   review            PartReview @relation(fields: [reviewId], references: [partReviewId])
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
-  deletedAd         DateTime?
+  deletedAt         DateTime?
 }
 
 model PartReviewCommonMistake {
-  id             String        @id @default(uuid())
-  title          String
-  description    String
-  starred        Boolean
-  userCreated    User          @relation(fields: [userCreatedId], references: [userId], name: "commonMistakeCreator")
-  userCreatedId  String
-  userDeleted    User?         @relation(fields: [userDeletedId], references: [userId], name: "commonMistakeDeleter")
-  userDeletedId  String?
-  dateCreated    DateTime      @default(now())
-  dateDeleted    DateTime?
-  organization   Organization? @relation(fields: [organizationId], references: [organizationId])
-  organizationId String?
+  partReviewCommonMistakeId String        @id @default(uuid())
+  title                     String
+  description               String
+  starred                   Boolean
+  userCreated               User          @relation(fields: [userCreatedId], references: [userId], name: "commonMistakeCreator")
+  userCreatedId             String
+  userDeleted               User?         @relation(fields: [userDeletedId], references: [userId], name: "commonMistakeDeleter")
+  userDeletedId             String?
+  dateCreated               DateTime      @default(now())
+  dateDeleted               DateTime?
+  organization              Organization? @relation(fields: [organizationId], references: [organizationId])
+  organizationId            String?
 }

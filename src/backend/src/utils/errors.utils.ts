@@ -144,4 +144,6 @@ export type ExceptionObjectNames =
   | 'Pop Up'
   | 'Announcement'
   | 'Graph'
-  | 'Graph Collection';
+  | 'Graph Collection'
+  | 'Part Tag'
+  | 'common mistake';
