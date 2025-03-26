@@ -50,7 +50,7 @@ describe('Finance Tests', () => {
             organization,
             'googlecode'
           )
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('create a sponsor'));
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('Only heads can create a sponsor'));
     });
 
     it('Succeeds and creates a sponsor', async () => {
@@ -202,7 +202,7 @@ describe('Finance Tests', () => {
             organization,
             'C0C0C0'
           )
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('create a sponsor tier'));
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('Only heads can create a sponsor tier'));
     });
 
     it('Succeeds and creates a sponsor tier', async () => {
@@ -264,6 +264,91 @@ describe('Finance Tests', () => {
       );
 
       await prisma.sponsor_Task.deleteMany();
+    });
+  });
+
+  describe('Create Sponsor Tasks', () => {
+    it('Fails when user is not a head or above', async () => {
+      const user = await createTestUser(wonderwomanGuest, orgId);
+      await expect(
+        FinanceServices.createSponsorTask(user, organization, new Date(1, 1, 25), 'notes', 'sponsorId')
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('Only heads can create a sponsor task'));
+    });
+
+    it('Fails when assigned user is not found', async () => {
+      const user = await createTestUser(supermanAdmin, orgId);
+      const newSponsor = await FinanceServices.createSponsor(
+        user,
+        'Telsa',
+        true,
+        5000,
+        new Date(12, 1, 24),
+        [2024],
+        sponsorTierId,
+        true,
+        'Bill Gates',
+        [],
+        organization,
+        'telsaCode'
+      );
+
+      await expect(
+        FinanceServices.createSponsorTask(
+          user,
+          organization,
+          new Date(1, 2, 3),
+          'hello notes',
+          newSponsor.sponsorId,
+          new Date(1, 2, 3),
+          'USERID'
+        )
+      ).rejects.toThrow(new NotFoundException('User', 'USERID'));
+    });
+
+    it('Fails when associated sponsor is not found', async () => {
+      const user = await createTestUser(supermanAdmin, orgId);
+
+      await expect(
+        FinanceServices.createSponsorTask(user, organization, new Date(1, 2, 3), 'hello notes', 'NOT FOUND')
+      ).rejects.toThrow(new NotFoundException('Sponsor', 'NOT FOUND'));
+    });
+
+    it('Succeeds in creating a sponsor task', async () => {
+      const user = await createTestUser(supermanAdmin, orgId);
+      const sponsor = await FinanceServices.createSponsor(
+        user,
+        'Telsa',
+        true,
+        5000,
+        new Date(12, 1, 24),
+        [2024],
+        sponsorTierId,
+        true,
+        'Bill Gates',
+        [],
+        organization,
+        'telsaCode'
+      );
+
+      // sponsor has no sponsor tasks pre createSponsorTask call
+      expect(sponsor.sponsorTasks.length).toEqual(0);
+
+      const result = await FinanceServices.createSponsorTask(
+        user,
+        organization,
+        new Date(1, 2, 3),
+        'hello notes',
+        sponsor.sponsorId,
+        new Date(1, 2, 3),
+        user.userId
+      );
+
+      expect(result.assignee?.userId).toEqual(user.userId);
+      expect(result.notes).toEqual('hello notes');
+      expect(result.dueDate).toEqual(new Date(1, 2, 3));
+
+      // sponsor has one sponsor tasks pre createSponsorTask call
+      expect(result.updatedSponsor?.sponsorTasks.length).toEqual(1);
     });
   });
 });

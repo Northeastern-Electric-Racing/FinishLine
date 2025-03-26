@@ -1,7 +1,7 @@
 import { isHead } from 'shared';
 import { User, Organization, Sponsor_Task, Sponsor } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
-import { getSponsorQueryArgs } from '../prisma-query-args/sponsor.query.args';
+import { getSponsorQueryArgs, getSponsorTaskQueryArgs } from '../prisma-query-args/sponsor.query.args';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
@@ -132,7 +132,7 @@ export default class FinanceServices {
    */
   static async createSponsorTier(submitter: User, name: string, organization: Organization, colorHexCode: string) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
-      throw new AccessDeniedAdminOnlyException('create a sponsor tier');
+      throw new AccessDeniedAdminOnlyException('Only heads can create a sponsor tier');
 
     const sponsorTier = await prisma.sponsor_Tier.create({
       data: {
@@ -176,7 +176,7 @@ export default class FinanceServices {
    * @param sponsorId the sponsor associated with this sponsor task
    * @param notifyDate notification date for this sponsor tasks
    * @param assigneeUserId assignee of this sponsor task
-   * @returns newly created sponsor task
+   * @returns newly created sponsor task, and the given sponsor updated with this sponsor task added
    * @throws AccessDeniedAdminOnlyException if the user lacks permissions.
    * @throws NotFoundException if the sponsor or assignee is not found.
    * @throws DeletedException if the sponsor is marked as deleted.
@@ -194,9 +194,9 @@ export default class FinanceServices {
       throw new AccessDeniedAdminOnlyException('Only heads can create a sponsor task');
     }
 
-    const sponsor = await prisma.sponsor.findUnique({ where: { sponsorId } });
+    const sponsor = await prisma.sponsor.findUnique({ where: { sponsorId }, include: { sponsorTasks: true } });
     if (!sponsor) throw new NotFoundException('Sponsor', sponsorId);
-    if (sponsor.dateCreated) throw new DeletedException('Sponsor', sponsorId);
+    if (sponsor.dateDeleted) throw new DeletedException('Sponsor', sponsorId);
 
     if (assigneeUserId) {
       const assignee = await prisma.user.findUnique({ where: { userId: assigneeUserId } });
@@ -207,21 +207,21 @@ export default class FinanceServices {
       data: {
         dueDate,
         notifyDate,
-        assignee: { connect: { userId: assigneeUserId } },
+        assignee: assigneeUserId ? { connect: { userId: assigneeUserId } } : undefined,
         notes,
         sponsor: { connect: { sponsorId } }
       },
-      include: {
-        assignee: {
-          include: {
-            organizations: true,
-            roles: true
-          }
-        },
-        sponsor: true
-      }
+      ...getSponsorTaskQueryArgs(organization.organizationId)
     });
 
-    return sponsorTaskTransformer(createdSponsorTask);
+    const updatedSponsor = await prisma.sponsor.findUnique({
+      where: { sponsorId },
+      include: { sponsorTasks: true }
+    });
+
+    return {
+      ...sponsorTaskTransformer(createdSponsorTask),
+      updatedSponsor
+    };
   }
 }
