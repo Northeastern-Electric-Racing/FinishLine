@@ -39,7 +39,6 @@ financeRouter.post(
   '/sponsorTask/create',
   isDate(body('dueDate')),
   nonEmptyString(body('notes')),
-  nonEmptyString(body('notes')),
   nonEmptyString(body('sponsorId')),
   isOptionalDate(body('notifyDate')),
   nonEmptyString(body('assigneeId')).optional(),
