@@ -136,8 +136,8 @@ export default class PartReviewService {
     }
 
     if (
-      !partTagWithParts.parts.every((part) => {
-        return !part.dateDeleted;
+      partTagWithParts.parts.some((part) => {
+        return part.dateDeleted === null;
       })
     ) {
       throw new HttpException(409, `Cannot delete part tag ${partTagId} because it has associated parts`);
