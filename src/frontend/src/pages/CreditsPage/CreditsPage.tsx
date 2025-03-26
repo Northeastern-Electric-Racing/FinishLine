@@ -255,6 +255,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Jason Kuo', color: '#a200ff' },
     { name: 'Wilson Wei', color: '#008000' },
     { name: 'Thanin Kongkiatsophon', color: '#15B392' },
+    { name: 'Abhinav Gonthina', color: '#6495ED' },
     { name: 'Aryan Gupta', color: '#5a4094' },
     { name: 'Lisa Wan', color: '#CCCCFF' },
     { name: 'Aidan Wong', color: '#4284f5' },
@@ -284,8 +285,15 @@ const CreditsPage: React.FC = () => {
         textShadow: '0 0 5px #00FF00, 0 0 10px #00FF00, 0 0 20px #00FF00'
       }
     },
-    { name: 'Mihika Chalasani', color: '#a2d2ff' }
-
+    { name: 'Mihika Chalasani', color: '#a2d2ff' },
+    {
+      name: 'Edison Kwok',
+      color: 'transparent',
+      sx: {
+        background: 'linear-gradient(45deg,rgb(115, 255, 232) 0%,rgb(45, 94, 255) 11%,rgb(211, 89, 255) 80%)',
+        '-webkit-background-clip': 'text'
+      }
+    }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
