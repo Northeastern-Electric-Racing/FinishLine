@@ -2,6 +2,7 @@
 import {
   Club_Accounts,
   Organization,
+  Part,
   PartReview,
   PartSubmission,
   Part_Review_Popup,
@@ -100,6 +101,7 @@ export const createTestUser = async (
 export const resetUsers = async () => {
   await prisma.frequentlyAskedQuestion.deleteMany();
   await prisma.work_Package.deleteMany();
+  await prisma.part.deleteMany();
   await prisma.project.deleteMany();
   await prisma.material.deleteMany();
   await prisma.manufacturer.deleteMany();
@@ -680,6 +682,35 @@ export const createSlackMessageEvent = (
     ]
   };
 };
+
+
+export const createTestPart = async (
+  user: User,
+  name: string,
+  partId: string,
+  index: number,
+  projectId?: string,
+  dateDeleted?: Date
+): Promise<Part> => {
+
+  const part = await prisma.part.create({
+    data: {
+      partId,
+      index,
+      commonName: name,
+      project: {
+        connect: { projectId }
+      },
+      userCreated: {
+        connect: { userId: user.userId }
+      },
+      dateDeleted: dateDeleted ?? null
+    }
+  });
+
+  return part;
+};
+
 
 export const CreatePartTag = async (organizationId: string, name: string, colorHexCode: string) => {
   return await prisma.partTag.create({
