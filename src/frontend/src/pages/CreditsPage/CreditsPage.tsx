@@ -285,6 +285,7 @@ const CreditsPage: React.FC = () => {
         textShadow: '0 0 5px #00FF00, 0 0 10px #00FF00, 0 0 20px #00FF00'
       }
     },
+    { name: 'Ricardo Landeros', color: '##3221ed' },
     { name: 'Mihika Chalasani', color: '#a2d2ff' },
     {
       name: 'Edison Kwok',
