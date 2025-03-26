@@ -50,7 +50,7 @@ export interface WorkPackageFormViewPayload {
   workPackageId: string;
   startDate: Date;
   duration: number;
-  crId: string;
+  crId?: string;
   stage: string;
   blockedBy: string[];
   descriptionBullets: DescriptionBulletPreview[];
@@ -84,7 +84,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
       workPackageId: defaultValues?.workPackageId ?? '',
       startDate: defaultValues?.startDate ?? getMonday(new Date()),
       duration: defaultValues?.duration ?? 0,
-      crId: crId ?? defaultValues?.crId ?? '',
+      crId: crId ?? defaultValues?.crId,
       blockedBy: defaultValues?.blockedBy ?? [],
       descriptionBullets: defaultValues?.descriptionBullets ?? [],
       stage: defaultValues?.stage ?? 'NONE'
@@ -151,7 +151,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         workPackageId: defaultValues?.workPackageId,
         userId,
         name,
-        crId,
+        crId: crId === 'null' ? undefined : crId,
         startDate: transformDate(startDate),
         duration,
         blockedBy: blockedByWbsNums,
@@ -170,7 +170,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         });
 
         history.push(routes.CHANGE_REQUESTS);
-      } else if (crId !== 'null' && crId !== '') {
+      } else {
         await workPackageMutateAsync(payload);
         exitActiveMode();
       }
@@ -183,7 +183,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   };
 
   const crWatch = watch('crId');
-  const changeRequestInputExists = crWatch !== 'null' && crWatch !== '';
+  const changeRequestInputExists = crWatch && crWatch !== 'null' && crWatch !== '';
   const startDate = watch('startDate');
   const duration = watch('duration');
 
@@ -202,6 +202,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
       onKeyPress={(e) => {
         e.key === 'Enter' && e.preventDefault();
       }}
+      noValidate
     >
       <Box mb={-1}>
         <PageBreadcrumbs currentPageTitle={pageTitle} previousPages={breadcrumbs} />
@@ -211,7 +212,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         title={pageTitle}
         headerRight={
           <Box display="inline-flex" alignItems="center" justifyContent={'end'}>
-            {!changeRequestInputExists && (
+            {
               <Box display="inline-flex" alignItems="center">
                 <Tooltip
                   title={
@@ -226,16 +227,26 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
                 >
                   <HelpIcon style={{ fontSize: '1.5em', color: 'lightgray' }} />
                 </Tooltip>
-                <NERButton variant="contained" onClick={() => setIsModalOpen(true)} sx={{ mx: 1 }}>
+                <NERButton
+                  disabled={!!changeRequestInputExists}
+                  variant="contained"
+                  onClick={() => setIsModalOpen(true)}
+                  sx={{ mx: 1 }}
+                >
                   Create Change Request
                 </NERButton>
               </Box>
-            )}
+            }
             <Box>
               <NERButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
                 Cancel
               </NERButton>
-              <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }} disabled={!changeRequestInputExists}>
+              <NERSuccessButton
+                variant="contained"
+                type="submit"
+                sx={{ mx: 1 }}
+                disabled={!changeRequestInputExists && !!defaultValues}
+              >
                 Submit
               </NERSuccessButton>
             </Box>

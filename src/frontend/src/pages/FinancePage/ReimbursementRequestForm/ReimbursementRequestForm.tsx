@@ -92,7 +92,8 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     control,
     formState: { errors },
     watch,
-    setValue
+    setValue,
+    register
   } = useForm<ReimbursementRequestFormInput>({
     resolver: yupResolver(schema as any), // Typing any because its difficult to get around the env variable for the reimbursement files
     defaultValues: {
@@ -234,6 +235,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       previousPage={previousPage}
       setValue={setValue}
       hasSecureSettingsSet={hasSecureSettingsSet}
+      register={register}
     />
   );
 };

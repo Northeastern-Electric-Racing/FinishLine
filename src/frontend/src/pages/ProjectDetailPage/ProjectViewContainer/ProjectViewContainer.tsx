@@ -32,9 +32,9 @@ import FullPageTabs from '../../../components/FullPageTabs';
 import ChangesList from '../../../components/ChangesList';
 import BOMTab, { addMaterialCosts } from './BOMTab';
 import SavingsIcon from '@mui/icons-material/Savings';
-import ChangeRequestTab from './ChangeRequestTab';
 import { TaskList } from './TaskList/v2';
 import { useGetMaterialsForWbsElement } from '../../../hooks/bom.hooks';
+import ChangeRequestTab from '../../../components/ChangeRequestTab';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -257,7 +257,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       ) : tab === 5 ? (
         <ProjectGantt workPackages={project.workPackages} />
       ) : (
-        <ChangeRequestTab project={project} />
+        <ChangeRequestTab wbsElement={project} />
       )}
       {deleteModalShow && (
         <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={project.wbsNum} />

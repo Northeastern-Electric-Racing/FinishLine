@@ -25,7 +25,7 @@ const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
               <div style={{ marginRight: '4px' }}>
                 [
                 <Link component={RouterLink} to={`${routes.CHANGE_REQUESTS}/${ic.changeRequestId}`}>
-                  #{ic.changeRequestId}
+                  #{ic.changeRequestIdentifier}
                 </Link>
                 ]
               </div>

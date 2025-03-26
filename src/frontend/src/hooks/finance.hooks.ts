@@ -112,8 +112,10 @@ export const useUploadManyReceipts = () => {
   return useMutation<{ googleFileId: string; name: string }[], Error, { files: File[]; id: string }>(
     ['reimbursement-requests', 'edit'],
     async (formData: { files: File[]; id: string }) => {
-      const promises = formData.files.map((file) => uploadSingleReceipt(file, formData.id));
-      const results = await Promise.all(promises);
+      const results = [];
+      for (const file of formData.files) {
+        results.push(await uploadSingleReceipt(file, formData.id));
+      }
       return results.map((result) => result.data);
     }
   );

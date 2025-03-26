@@ -9,6 +9,7 @@ import {
   ProposedSolution,
   ProposedSolutionCreateArgs,
   StandardChangeRequest,
+  WbsNumber,
   wbsPipe,
   WorkPackageProposedChangesCreateArgs
 } from 'shared';
@@ -31,7 +32,8 @@ import {
   applyWorkPackageProposedChanges,
   validateNoUnreviewedOpenCRs,
   reviewProposedSolution,
-  sendCRSubmitterReviewedNotification
+  sendCRSubmitterReviewedNotification,
+  validateWbsElement
 } from '../utils/change-requests.utils';
 import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type, Prisma, Organization } from '@prisma/client';
 import { getUserFullName, getUsersWithSettings, userHasPermission } from '../utils/users.utils';
@@ -133,7 +135,15 @@ export default class ChangeRequestsService {
     const changeRequests = await prisma.change_Request.findMany({
       where: {
         dateDeleted: null,
-        dateReviewed: null,
+        AND: [
+          // Check that its unreviewed and a scope change request, omit activation and stage gate
+          {
+            dateReviewed: null
+          },
+          {
+            NOT: { scopeChangeRequest: null }
+          }
+        ],
         organizationId: organization.organizationId,
         OR: queryOr
       },
@@ -147,15 +157,32 @@ export default class ChangeRequestsService {
    * Gets all the unreviewed change requests for the current user
    *
    * @param user The user to get the change requests for
+   * @param wbsnum Optional wbs number to filter the request for
    * @param organization The organization the user is currently in
    * @returns The users unreviewed change requests
    */
-  static async getUnreviewedChangeRequests(user: User, organization: Organization): Promise<ChangeRequest[]> {
+  static async getUnreviewedChangeRequests(
+    user: User,
+    wbsnum: WbsNumber | undefined,
+    organization: Organization
+  ): Promise<ChangeRequest[]> {
+    // Check that its unreviewed and a scope change request, omit activation and stage gate
+    const queryAnd: Prisma.Change_RequestWhereInput[] = [
+      {
+        dateReviewed: null
+      },
+      {
+        NOT: { scopeChangeRequest: null }
+      }
+    ];
+
+    if (wbsnum) queryAnd.push({ wbsElementId: (await validateWbsElement(wbsnum, organization)).wbsElementId });
+    else queryAnd.push({ submitterId: user.userId });
+
     const changeRequests = await prisma.change_Request.findMany({
       where: {
-        submitterId: user.userId,
         organizationId: organization.organizationId,
-        dateReviewed: null,
+        AND: queryAnd,
         dateDeleted: null
       },
       ...getManyChangeRequestQueryArgs(organization.organizationId)
@@ -168,20 +195,39 @@ export default class ChangeRequestsService {
    * Gets the users approved change requests from the last five days
    *
    * @param user The user to get their approved change requests for
+   * @param wbsnum Optional wbs number to filter the request for
    * @param organization The organization the user is currently in
    * @returns The users approved change requests
    */
-  static async getApprovedChangeRequests(user: User, organization: Organization): Promise<ChangeRequest[]> {
+  static async getApprovedChangeRequests(
+    user: User,
+    wbsnum: WbsNumber | undefined,
+    organization: Organization
+  ): Promise<ChangeRequest[]> {
     const currentDate = new Date();
+    const fiveDaysAgo = new Date(currentDate.getTime() - 1000 * 60 * 60 * 24 * 5); // Change requests that were reviewed less than five days ago
+    const queryAnd = wbsnum
+      ? [{ wbsElementId: (await validateWbsElement(wbsnum, organization)).wbsElementId }]
+      : [{ submitterId: user.userId }];
 
     const changeRequests = await prisma.change_Request.findMany({
       where: {
-        submitterId: user.userId,
         organizationId: organization.organizationId,
-        dateReviewed: {
-          gte: new Date(currentDate.getTime() - 1000 * 60 * 60 * 24 * 5) // Change requests that were reviewed less than five days ago
-        },
-        dateDeleted: null
+        OR: [
+          {
+            dateReviewed: {
+              gte: fiveDaysAgo
+            }
+          },
+          {
+            scopeChangeRequest: null,
+            dateSubmitted: {
+              gte: fiveDaysAgo
+            }
+          }
+        ],
+        dateDeleted: null,
+        AND: queryAnd
       },
       ...getManyChangeRequestQueryArgs(organization.organizationId)
     });
@@ -286,7 +332,16 @@ export default class ChangeRequestsService {
       // reviews a proposed solution applying certain changes based on the content of the proposed solution
       await reviewProposedSolution(psId, foundCR, reviewer, organization.organizationId);
     } else if (foundCR.scopeChangeRequest?.wbsProposedChanges && !psId) {
-      const associatedProject = foundCR.wbsElement.project;
+      const associatedProject = foundCR.wbsElement.project
+        ? {
+            ...foundCR.wbsElement.project,
+            wbsNum: {
+              carNumber: foundCR.wbsElement.carNumber,
+              projectNumber: foundCR.wbsElement.projectNumber,
+              workPackageNumber: foundCR.wbsElement.workPackageNumber
+            }
+          }
+        : null;
       const associatedWorkPackage = foundCR.wbsElement.workPackage;
       const { wbsProposedChanges } = foundCR.scopeChangeRequest;
       const { workPackageProposedChanges } = wbsProposedChanges;
@@ -364,7 +419,7 @@ export default class ChangeRequestsService {
         await applyWorkPackageProposedChanges(
           wbsProposedChanges,
           workPackageProposedChanges,
-          associatedProject?.wbsElementId ?? null,
+          associatedProject?.wbsNum ?? null,
           associatedWorkPackage,
           reviewer,
           foundCR.crId,
@@ -543,7 +598,11 @@ export default class ChangeRequestsService {
         }
       },
       include: {
-        changeRequests: true
+        changeRequests: {
+          include: {
+            changes: true
+          }
+        }
       }
     });
 
@@ -584,17 +643,7 @@ export default class ChangeRequestsService {
         organization: { connect: { organizationId: organization.organizationId } },
         identifier: numChanges + 1
       },
-      include: {
-        wbsElement: {
-          include: {
-            workPackage: {
-              include: {
-                project: { include: { teams: true, wbsElement: true } }
-              }
-            }
-          }
-        }
-      }
+      ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
     });
 
     const teams = createdCR.wbsElement.workPackage?.project.teams;
@@ -610,6 +659,8 @@ export default class ChangeRequestsService {
       // save the slack references to the change request
       await addSlackThreadsToChangeRequest(createdCR.crId, notifications);
     }
+
+    await ChangeRequestsService.reviewActivationChangeRequest(createdCR, submitter); // automatically accept activation change requests for convenience
 
     return createdCR.crId;
   }
@@ -649,7 +700,7 @@ export default class ChangeRequestsService {
           organizationId: organization.organizationId
         }
       },
-      include: { workPackage: true, descriptionBullets: true, changeRequests: true }
+      include: { workPackage: true, descriptionBullets: true, changeRequests: { include: { changes: true } } }
     });
 
     if (!wbsElement) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
@@ -691,17 +742,7 @@ export default class ChangeRequestsService {
         organization: { connect: { organizationId: organization.organizationId } },
         identifier: numChangeRequests + 1
       },
-      include: {
-        wbsElement: {
-          include: {
-            workPackage: {
-              include: {
-                project: { include: { teams: true, wbsElement: true } }
-              }
-            }
-          }
-        }
-      }
+      ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
     });
 
     const teams = createdChangeRequest.wbsElement.workPackage?.project.teams;
@@ -717,6 +758,8 @@ export default class ChangeRequestsService {
       // save the slack references to the change request
       await addSlackThreadsToChangeRequest(createdChangeRequest.crId, notifications);
     }
+
+    await ChangeRequestsService.reviewStageGateChangeRequest(createdChangeRequest, submitter); // automatically accept stage gate change requests for convenience
 
     return createdChangeRequest.crId;
   }

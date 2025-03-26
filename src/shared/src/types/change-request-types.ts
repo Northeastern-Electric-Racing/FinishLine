@@ -99,6 +99,7 @@ export enum ChangeRequestStatus {
 export interface ImplementedChange {
   changeId: string;
   changeRequestId: string;
+  changeRequestIdentifier: number;
   wbsNum: WbsNumber;
   implementer: User;
   detail: string;

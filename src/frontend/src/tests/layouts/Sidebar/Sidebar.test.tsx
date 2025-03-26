@@ -9,6 +9,11 @@ import * as miscHooks from '../../../hooks/misc.hooks';
 import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 import * as userHooks from '../../../hooks/users.hooks';
 import Sidebar from '../../../layouts/Sidebar/Sidebar';
+import { ToastContext, ToastInputs } from '../../../components/Toast/ToastProvider';
+
+const addToast = (message: ToastInputs) => {
+  console.log(message);
+};
 
 /**
  * Sets up the component under test with the desired values and renders it.
@@ -18,7 +23,9 @@ const renderComponent = () => {
 
   return render(
     <RouterWrapper>
-      <Sidebar drawerOpen={true} setDrawerOpen={() => {}} moveContent={true} setMoveContent={() => {}} />
+      <ToastContext.Provider value={{ addToast }}>
+        <Sidebar drawerOpen={true} setDrawerOpen={() => {}} moveContent={true} setMoveContent={() => {}} />
+      </ToastContext.Provider>
     </RouterWrapper>
   );
 };

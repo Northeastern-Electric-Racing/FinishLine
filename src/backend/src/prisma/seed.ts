@@ -1049,6 +1049,7 @@ const performSeed: () => Promise<void> = async () => {
     WbsElementStatus.Active,
     thomasEmrax.userId,
     thomasEmrax.userId,
+    project1WbsNumber,
     ner
   );
 
@@ -1094,6 +1095,7 @@ const performSeed: () => Promise<void> = async () => {
     WbsElementStatus.Inactive,
     joeShmoe.userId,
     thomasEmrax.userId,
+    project1WbsNumber,
     ner
   );
 
@@ -1111,6 +1113,7 @@ const performSeed: () => Promise<void> = async () => {
     WbsElementStatus.Active,
     joeShmoe.userId,
     thomasEmrax.userId,
+    project5WbsNumber,
     ner
   );
 
@@ -1143,6 +1146,7 @@ const performSeed: () => Promise<void> = async () => {
     WbsElementStatus.Active,
     joeShmoe.userId,
     thomasEmrax.userId,
+    project5WbsNumber,
     ner
   );
 
@@ -1175,6 +1179,7 @@ const performSeed: () => Promise<void> = async () => {
     WbsElementStatus.Complete,
     katara.userId,
     aang.userId,
+    project6WbsNumber,
     ner
   );
 
@@ -1207,6 +1212,7 @@ const performSeed: () => Promise<void> = async () => {
     WbsElementStatus.Active,
     katara.userId,
     aang.userId,
+    project6WbsNumber,
     ner
   );
 
@@ -1239,6 +1245,7 @@ const performSeed: () => Promise<void> = async () => {
     WbsElementStatus.Active,
     katara.userId,
     aang.userId,
+    project6WbsNumber,
     ner
   );
 
@@ -1272,6 +1279,7 @@ const performSeed: () => Promise<void> = async () => {
     WbsElementStatus.Active,
     zatanna.userId,
     lexLuther.userId,
+    project7WbsNumber,
     ner
   );
 
@@ -1304,6 +1312,7 @@ const performSeed: () => Promise<void> = async () => {
     WbsElementStatus.Active,
     zatanna.userId,
     lexLuther.userId,
+    project7WbsNumber,
     ner
   );
 
@@ -1321,6 +1330,7 @@ const performSeed: () => Promise<void> = async () => {
     WbsElementStatus.Active,
     zatanna.userId,
     lexLuther.userId,
+    project7WbsNumber,
     ner
   );
 
@@ -1339,6 +1349,7 @@ const performSeed: () => Promise<void> = async () => {
     WbsElementStatus.Active,
     mikeMacdonald.userId,
     ryanGiggs.userId,
+    project8WbsNumber,
     ner
   );
 
@@ -1371,6 +1382,7 @@ const performSeed: () => Promise<void> = async () => {
     WbsElementStatus.Active,
     mikeMacdonald.userId,
     ryanGiggs.userId,
+    project8WbsNumber,
     ner
   );
 
@@ -1388,6 +1400,7 @@ const performSeed: () => Promise<void> = async () => {
     WbsElementStatus.Active,
     mikeMacdonald.userId,
     ryanGiggs.userId,
+    project8WbsNumber,
     ner
   );
 
@@ -1895,6 +1908,7 @@ const performSeed: () => Promise<void> = async () => {
     WbsElementStatus.Inactive,
     joeShmoe.userId,
     thomasEmrax.userId,
+    project2WbsNumber,
     ner
   );
 

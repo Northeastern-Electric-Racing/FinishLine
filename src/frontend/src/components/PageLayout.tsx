@@ -12,6 +12,7 @@ import PageBreadcrumbs from '../layouts/PageTitle/PageBreadcrumbs';
 
 interface PageLayoutProps {
   children: ReactNode;
+  useTitleForHelmet?: boolean;
   title?: string;
   chips?: ReactNode;
   hidePageTitle?: boolean;
@@ -31,14 +32,17 @@ const PageLayout: React.FC<PageLayoutProps> = ({
   previousPages = [],
   headerRight,
   tabs,
-  stickyHeader
+  stickyHeader,
+  useTitleForHelmet = true
 }) => {
   return (
     <Box>
-      <Helmet>
-        <title>{`FinishLine ${title && `| ${title}`}`}</title>
-        <meta name="description" content="FinishLine Project Management Dashboard" />
-      </Helmet>
+      {useTitleForHelmet && (
+        <Helmet>
+          <title>{`FinishLine ${title && `| ${title}`}`}</title>
+          <meta name="description" content="FinishLine Project Management Dashboard" />
+        </Helmet>
+      )}
 
       {!hidePageTitle && title && (
         <>

@@ -1,4 +1,4 @@
-import { Organization, User } from '@prisma/client';
+import { Organization, Prisma, User } from '@prisma/client';
 import {
   DescriptionBulletPreview,
   isAdmin,
@@ -165,7 +165,7 @@ export default class ProjectsService {
    */
   static async createProject(
     user: User,
-    crId: string,
+    crId: string | null,
     carNumber: number,
     name: string,
     summary: string,
@@ -181,7 +181,9 @@ export default class ProjectsService {
     if (await userHasPermission(userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('create projects');
 
-    await validateChangeRequestAccepted(crId);
+    if (crId) {
+      await validateChangeRequestAccepted(crId);
+    }
 
     if (teamIds.length > 0) {
       for (const teamId of teamIds) {
@@ -201,6 +203,16 @@ export default class ProjectsService {
 
     const maxProjectNumber: number = await getHighestProjectNumber(carNumber);
 
+    const changes: Prisma.ChangeCreateManyWbsElementInput[] = crId
+      ? [
+          {
+            changeRequestId: crId,
+            implementerId: user.userId,
+            detail: 'New Project Created'
+          }
+        ]
+      : [];
+
     // create the wbs element and project as well as the associated change
     const createdWbsElement = await prisma.wBS_Element.create({
       data: {
@@ -217,13 +229,7 @@ export default class ProjectsService {
             carId: carWbs.car.carId
           }
         },
-        changes: {
-          create: {
-            changeRequestId: crId,
-            implementerId: user.userId,
-            detail: 'New Project Created'
-          }
-        },
+        changes: { createMany: { data: changes } },
         organizationId: carWbs.organizationId
       },
       include: {

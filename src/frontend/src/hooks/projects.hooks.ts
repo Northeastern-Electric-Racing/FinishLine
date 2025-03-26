@@ -75,11 +75,18 @@ export const useSingleProject = (wbsNum: WbsNumber) => {
  *
  */
 export const useCreateSingleProject = () => {
-  return useMutation<{ message: string }, Error, CreateSingleProjectPayload>(
+  const queryClient = useQueryClient();
+  return useMutation<Project, Error, CreateSingleProjectPayload>(
     ['projects', 'create'],
     async (projectPayload: CreateSingleProjectPayload) => {
       const { data } = await createSingleProject(projectPayload);
       return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['teams', false]); //invalidations for gantt chart
+        queryClient.invalidateQueries(['projects']);
+      }
     }
   );
 };

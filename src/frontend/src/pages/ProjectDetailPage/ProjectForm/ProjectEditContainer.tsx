@@ -134,10 +134,11 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   };
 
   const onSubmit = async (data: ProjectFormInput) => {
-    const { name, budget, summary, links, descriptionBullets } = data;
-    const { crId } = data;
+    const { name, budget, summary, links, descriptionBullets, crId } = data;
 
     try {
+      if (!crId) throw new Error('Change request id is required for editing project');
+
       const payload: EditSingleProjectPayload = {
         name,
         budget,
