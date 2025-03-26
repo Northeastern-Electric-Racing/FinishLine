@@ -28,7 +28,6 @@ const PartTagsTable: React.FC = () => {
   const toast = useToast();
   const { mutateAsync } = useDeletePartTag();
   const [openModal, setOpenModal] = useState(false);
-  //const [showErrorModal, setShowErrorModal] = useState(false);
 
   if (!partTags || partTagsIsLoading) {
     return <LoadingIndicator />;
@@ -36,13 +35,13 @@ const PartTagsTable: React.FC = () => {
   if (partTagsIsError) {
     return <ErrorPage message={partTagsError?.message} />;
   }
+
   const handleDeletePartTag = async (partTagId: string, name: string) => {
     try {
       await mutateAsync(partTagId);
       toast.success(`Part Tag: ${name} Deleted Successfully!`);
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response?.status === 409) {
-        //showErrorModal && <PartTagErrorModal name={name} onHide={() => setShowErrorModal(false)} />;
         toast.error(`Part Tag: ${name} cannot be deleted because it is still in use by a Part.`);
       } else if (error instanceof Error) {
         toast.error(error.message);
@@ -66,7 +65,6 @@ const PartTagsTable: React.FC = () => {
           }}
           onClick={() => {
             setShowDeleteModal(true);
-            console.log(`Delete button clicked for ${name}`);
           }}
         >
           <Delete />
