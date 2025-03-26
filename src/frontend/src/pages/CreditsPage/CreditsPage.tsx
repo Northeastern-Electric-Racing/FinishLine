@@ -283,7 +283,9 @@ const CreditsPage: React.FC = () => {
       sx: {
         textShadow: '0 0 5px #00FF00, 0 0 10px #00FF00, 0 0 20px #00FF00'
       }
-    }
+    },
+    { name: 'Mihika Chalasani', color: '#a2d2ff' }
+
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
