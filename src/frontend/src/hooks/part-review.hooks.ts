@@ -21,6 +21,7 @@ import {
   editPartReview,
   editPartReviewCommonMistake,
   editPartSubmission,
+  getPartReviewCommonMistakes,
   getPartsFromProject,
   getSinglePart
 } from '../apis/part-review.api';
@@ -333,4 +334,15 @@ export const useDeletePartReviewCommonMistake = (commonMistakeId: string) => {
       }
     }
   );
+};
+
+/**
+ * Custom React Hook to fetch all Common Mistakes
+ *
+ */
+export const useCommonMistakes = () => {
+  return useQuery<PartReviewCommonMistake[], Error>([], async () => {
+    const { data } = await getPartReviewCommonMistakes();
+    return data;
+  });
 };

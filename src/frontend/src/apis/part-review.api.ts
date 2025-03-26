@@ -340,3 +340,10 @@ export const editPartReviewCommonMistake = (commonMistakeId: string, payload: Pa
 export const deletePartReviewCommonMistake = (commonMistakeId: string) => {
   return axios.post<PartReviewCommonMistake>(apiUrls.partsDeleteCommonMistake(commonMistakeId));
 };
+
+/**
+ * Fetches all common mistakes
+ */
+export const getPartReviewCommonMistakes = () => {
+  return axios.get<PartReviewCommonMistake[]>(apiUrls.partsCommonMistake());
+};

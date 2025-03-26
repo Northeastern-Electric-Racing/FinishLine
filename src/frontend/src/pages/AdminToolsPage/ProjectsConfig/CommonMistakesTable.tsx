@@ -7,12 +7,13 @@ import { useState } from 'react';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import type { PartReviewCommonMistake } from 'shared';
+import { useCommonMistakes } from '../../../hooks/part-review.hooks';
 
 const CommonMistakesTable: React.FC = () => {
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [editingMistake, setEditingMistake] = useState<PartReviewCommonMistake | null>(null);
 
-  const { data, isLoading, isError, error } = usePartReviewCommonMistakes(); // replace with get later
+  const { data, isLoading, isError, error } = useCommonMistakes()
 
   const handleEdit = (mistake: PartReviewCommonMistake) => {
     setEditingMistake(mistake);
@@ -44,7 +45,7 @@ const CommonMistakesTable: React.FC = () => {
 
       {data.map((mistake) => (
         <Paper
-          key={mistake.id}
+          key={mistake.partReviewCommonMistakeId}
           elevation={2}
           sx={{
             backgroundColor: '#1e1e1e',

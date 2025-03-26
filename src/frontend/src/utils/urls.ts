@@ -57,7 +57,7 @@ const partsEditReview = (reviewId: string) => `${parts()}/review/${reviewId}/upd
 const partsCreateCommonMistake = () => `${parts()}/common-mistake/create`;
 const partsEditCommonMistake = (commonMistakeId: string) => `${parts()}/common-mistake/${commonMistakeId}/edit`;
 const partsDeleteCommonMistake = (commonMistakeId: string) => `${parts()}/common-mistake/${commonMistakeId}/delete`;
-
+const partsCommonMistake = () => `${parts()}/common-mistakes`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
@@ -310,6 +310,7 @@ export const apiUrls = {
   partsCreateCommonMistake,
   partsEditCommonMistake,
   partsDeleteCommonMistake,
+  partsCommonMistake,
 
   tasksCreate,
   tasks,
