@@ -3,7 +3,12 @@ import { createMinimalPartReview, createTestOrganization, createTestUser, resetU
 import PartReviewService from '../../src/services/part-review.services';
 import { batmanAppAdmin, supermanAdmin, aquamanLeadership, flashAdmin, financeMember } from '../test-data/users.test-data';
 import prisma from '../../src/prisma/prisma';
-import { AccessDeniedAdminOnlyException, AccessDeniedException, DeletedException } from '../../src/utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedException,
+  DeletedException,
+  NotFoundException
+} from '../../src/utils/errors.utils';
 
 describe('part review tests', () => {
   let orgId: string;
@@ -539,7 +544,7 @@ describe('part review tests', () => {
       const fakePartId = 'non-existent-part-id';
 
       await expect(PartReviewService.deletePartReviewRequest(fakePartId, batman, orgId)).rejects.toThrow(
-        new DeletedException('Review request', fakePartId)
+        new NotFoundException('Review request', fakePartId)
       );
     });
   });

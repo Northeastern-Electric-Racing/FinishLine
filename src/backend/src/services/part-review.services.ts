@@ -462,8 +462,12 @@ export default class PartReviewService {
       where: { partId }
     });
 
-    if (!part || part.dateDeleted) {
+    if (!part) {
       throw new DeletedException('Part', partId);
+    }
+
+    if (part.dateDeleted) {
+      throw new NotFoundException('Part', partId);
     }
 
     const role = await getUserRole(requester.userId, organizationId);
@@ -503,7 +507,11 @@ export default class PartReviewService {
       where: { partReviewRequestId: reviewRequestId }
     });
 
-    if (!reviewRequest || reviewRequest.dateDeleted) {
+    if (!reviewRequest) {
+      throw new NotFoundException('Review request', reviewRequestId);
+    }
+
+    if (reviewRequest.dateDeleted) {
       throw new DeletedException('Review request', reviewRequestId);
     }
 
