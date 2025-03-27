@@ -140,7 +140,7 @@ export default class PartReviewService {
         return part.dateDeleted === null;
       })
     ) {
-      throw new HttpException(409, `Cannot delete part tag ${partTagId} because it has associated parts`);
+      throw new HttpException(409, `Part Tag: ${partTagWithParts?.name} cannot be deleted because it has associated parts`);
     }
 
     const deletedPartTag = await prisma.partTag.update({

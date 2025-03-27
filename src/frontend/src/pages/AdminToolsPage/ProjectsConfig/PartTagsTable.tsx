@@ -9,7 +9,6 @@ import CreatePartTagModal from './CreatePartTagModal';
 import { Delete } from '@mui/icons-material';
 import PartTagDeleteModal from './PartTagDeleteModal';
 import { useToast } from '../../../hooks/toasts.hooks';
-import axios from 'axios';
 
 interface PartTagDeleteButtonProps {
   partTagId: string;
@@ -41,9 +40,7 @@ const PartTagsTable: React.FC = () => {
       await mutateAsync(partTagId);
       toast.success(`Part Tag: ${name} Deleted Successfully!`);
     } catch (error: unknown) {
-      if (axios.isAxiosError(error) && error.response?.status === 409) {
-        toast.error(`Part Tag: ${name} cannot be deleted because it has associated parts`);
-      } else if (error instanceof Error) {
+      if (error instanceof Error) {
         toast.error(error.message);
       }
     }
