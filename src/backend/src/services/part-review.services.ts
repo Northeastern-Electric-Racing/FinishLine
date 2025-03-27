@@ -1,11 +1,11 @@
 import { User } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
-import { FrequentlyAskedQuestion, isAdmin, PartReviewCommonMistake, PartTag } from 'shared';
+import { FrequentlyAskedQuestion, isAdmin, isLeadership, isMember, PartReviewCommonMistake, PartTag } from 'shared';
 import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
 import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
 import { faqTransformer } from '../transformers/faq.transformer';
-import { partsReviewCommonMistakeTransformer } from '../transformers/part-review.transformer';
+import { partReviewRequestTransformer, partsReviewCommonMistakeTransformer } from '../transformers/part-review.transformer';
 import { partReviewRequestQueryArgs } from '../prisma-query-args/part-review.query-args';
 
 export default class PartReviewService {
@@ -448,11 +448,14 @@ export default class PartReviewService {
       where: { partId }
     });
 
-    if (!part) {
+    if (!part || part.dateDeleted) {
       throw new NotFoundException('Part', partId);
     }
 
-    const hasAccess = await userHasPermission(requester.userId, organizationId, isAdmin);
+    const hasAccess =
+      (await userHasPermission(requester.userId, organizationId, isMember)) ||
+      (await userHasPermission(requester.userId, organizationId, isAdmin)) ||
+      (await userHasPermission(requester.userId, organizationId, isLeadership));
 
     if (!hasAccess) {
       throw new AccessDeniedAdminOnlyException('access part');
@@ -473,28 +476,30 @@ export default class PartReviewService {
       ...partReviewRequestQueryArgs(organizationId)
     });
 
-    return createdRequest;
+    return partReviewRequestTransformer(createdRequest);
   }
 
   /**
    * soft deletes an existing part review request if the requester, reviewer, or an admin initiates the request
-   * @param partId - the ID of the part whose review request should be deleted
+   * @param reviewRequestId - the ID of the part whose review request should be deleted
    * @param user - the user attempting to delete the review request
    * @param organizationId - the organization ID to validate permissions
    * @returns the soft-deleted and transformed PartReviewRequest
    */
-  static async deletePartReviewRequest(partId: string, user: User, organizationId: string) {
+  static async deletePartReviewRequest(reviewRequestId: string, user: User, organizationId: string) {
     const reviewRequest = await prisma.partReviewRequest.findFirst({
-      where: { partId }
+      where: { partReviewRequestId: reviewRequestId }
     });
 
-    if (!reviewRequest) {
-      throw new NotFoundException('Review request', partId);
+    if (!reviewRequest || reviewRequest.dateDeleted) {
+      throw new NotFoundException('Review request', reviewRequestId);
     }
 
     const isRequester = reviewRequest.requesterId === user.userId;
     const isReviewer = reviewRequest.reviewerId === user.userId;
-    const isLeader = await userHasPermission(user.userId, organizationId, isAdmin);
+    const isLeader =
+      (await userHasPermission(user.userId, organizationId, isLeadership)) ||
+      (await userHasPermission(user.userId, organizationId, isAdmin));
 
     if (!isRequester && !isReviewer && !isLeader) {
       throw new AccessDeniedAdminOnlyException('delete part review request');
@@ -509,6 +514,6 @@ export default class PartReviewService {
       },
       ...partReviewRequestQueryArgs(organizationId)
     });
-    return softDeletedRequest;
+    return partReviewRequestTransformer(softDeletedRequest);
   }
 }

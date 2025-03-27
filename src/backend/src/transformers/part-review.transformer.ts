@@ -67,7 +67,8 @@ export const partReviewRequestTransformer = (
     partId: reviewRequest.partId,
     requester: userTransformer(reviewRequest.requester),
     reviewerRequested: userTransformer(reviewRequest.reviewerRequested),
-    createdAt: reviewRequest.createdAt
+    createdAt: reviewRequest.createdAt,
+    dateDeleted: reviewRequest.dateDeleted
   };
 };
 

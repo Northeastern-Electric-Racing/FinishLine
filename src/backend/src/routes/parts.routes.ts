@@ -73,6 +73,6 @@ partsRouter.post(
   PartReviewController.createPartReviewRequest
 );
 
-partsRouter.post('/reviewRequest/:partId/delete', PartReviewController.deletePartReviewRequest);
+partsRouter.post('/reviewRequest/:reviewRequestId/delete', PartReviewController.deletePartReviewRequest);
 
 export default partsRouter;

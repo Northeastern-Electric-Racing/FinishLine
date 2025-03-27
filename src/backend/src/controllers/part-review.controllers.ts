@@ -180,10 +180,10 @@ export default class PartReviewController {
 
   static async deletePartReviewRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { partId } = req.params;
+      const { reviewRequestId } = req.params;
 
       const deleted = await PartReviewService.deletePartReviewRequest(
-        partId,
+        reviewRequestId,
         req.currentUser,
         req.organization.organizationId
       );

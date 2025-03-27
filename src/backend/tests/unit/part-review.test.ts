@@ -1,7 +1,7 @@
 import { Organization, User } from '@prisma/client';
 import { createMinimalPartReview, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import PartReviewService from '../../src/services/part-review.services';
-import { batmanAppAdmin, supermanAdmin, aquamanLeadership, flashAdmin } from '../test-data/users.test-data';
+import { batmanAppAdmin, supermanAdmin, aquamanLeadership, flashAdmin, financeMember } from '../test-data/users.test-data';
 import prisma from '../../src/prisma/prisma';
 import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../../src/utils/errors.utils';
 
@@ -489,55 +489,50 @@ describe('part review tests', () => {
     it('fails to create review request if part does not exist', async () => {
       const fakePartId = 'non-existent-part-id';
 
-      await expect(PartReviewService.createPartReviewRequest(fakePartId, batman, superman.userId, orgId)).rejects.toThrow(
+      await expect(PartReviewService.createPartReviewRequest(fakePartId, aquaman, superman.userId, orgId)).rejects.toThrow(
         new NotFoundException('Part', fakePartId)
       );
     });
 
-    it('fails to create review request without permission', async () => {
-      await expect(PartReviewService.createPartReviewRequest(partId, aquaman, batman.userId, orgId)).rejects.toThrow(
-        new AccessDeniedAdminOnlyException('access part')
-      );
-    });
-
     it('requester can delete their review request', async () => {
-      await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
-
-      const deleted = await PartReviewService.deletePartReviewRequest(partId, batman, orgId);
-
-      const prismaDeleted = await prisma.partReviewRequest.findFirst({ where: { partId } });
+      const request = await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
+      const deleted = await PartReviewService.deletePartReviewRequest(request.partReviewRequestId, batman, orgId);
+      const prismaDeleted = await prisma.partReviewRequest.findFirst({
+        where: { partReviewRequestId: request.partReviewRequestId }
+      });
       expect(deleted).toBeDefined();
       expect(prismaDeleted?.dateDeleted).toBeTruthy();
     });
 
     it('reviewer can delete the review request', async () => {
-      await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
-
-      const deleted = await PartReviewService.deletePartReviewRequest(partId, superman, orgId);
-
-      const prismaDeleted = await prisma.partReviewRequest.findFirst({ where: { partId } });
+      const request = await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
+      const deleted = await PartReviewService.deletePartReviewRequest(request.partReviewRequestId, superman, orgId);
+      const prismaDeleted = await prisma.partReviewRequest.findFirst({
+        where: { partReviewRequestId: request.partReviewRequestId }
+      });
       expect(deleted).toBeDefined();
       expect(prismaDeleted?.dateDeleted).toBeTruthy();
     });
 
     it('admin can delete the review request', async () => {
       const flash = await createTestUser(flashAdmin, orgId);
-
-      await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
-
-      const deleted = await PartReviewService.deletePartReviewRequest(partId, flash, orgId);
-
-      const prismaDeleted = await prisma.partReviewRequest.findFirst({ where: { partId } });
+      const request = await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
+      const deleted = await PartReviewService.deletePartReviewRequest(request.partReviewRequestId, flash, orgId);
+      const prismaDeleted = await prisma.partReviewRequest.findFirst({
+        where: { partReviewRequestId: request.partReviewRequestId }
+      });
       expect(deleted).toBeDefined();
       expect(prismaDeleted?.dateDeleted).toBeTruthy();
     });
 
     it('non-involved user cannot delete the review request', async () => {
-      await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
+      const request = await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
 
-      await expect(PartReviewService.deletePartReviewRequest(partId, aquaman, orgId)).rejects.toThrow(
-        new AccessDeniedAdminOnlyException('delete part review request')
-      );
+      const johnnyBravo = await createTestUser(financeMember, orgId);
+
+      await expect(
+        PartReviewService.deletePartReviewRequest(request.partReviewRequestId, johnnyBravo, orgId)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete part review request'));
     });
 
     it('fails to delete review request if it does not exist', async () => {
