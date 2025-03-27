@@ -143,4 +143,5 @@ export type ExceptionObjectNames =
   | 'Announcement'
   | 'Graph'
   | 'Graph Collection'
-  | 'Sponsor';
+  | 'Sponsor'
+  | 'Encrpytion Key';
