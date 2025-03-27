@@ -258,7 +258,7 @@ describe('Finance Tests', () => {
       const nonexistentTierId = 'nonexistingTierId';
       await expect(async () =>
         FinanceServices.getSingleSponsorTier(await createTestUser(batmanAppAdmin, orgId), nonexistentTierId, organization)
-      ).rejects.toThrow(new NotFoundException('SponsorTier', nonexistentTierId));
+      ).rejects.toThrow(new NotFoundException('Sponsor', nonexistentTierId));
     });
 
     it('Fails if user is not a head', async () => {

@@ -125,8 +125,8 @@ export default class FinanceServices {
   /**
    * Get Sponsor Tier from sponsor ID
    * @param submitter the person getting the sponsor
-   * @param sponsorId ID of the sponsor 
-   * @param organization organization the person belongs to 
+   * @param sponsorId ID of the sponsor
+   * @param organization organization the person belongs to
    * @returns the designated sponsor tier
    */
   static async getSingleSponsorTier(submitter: User, sponsorId: string, organization: Organization): Promise<SponsorTier> {
