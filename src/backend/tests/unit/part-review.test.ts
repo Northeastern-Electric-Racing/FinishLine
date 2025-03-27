@@ -1,5 +1,14 @@
 import { Organization, User } from '@prisma/client';
-import { createTestCar, createTestOrganization, createTestPart, createTestProject, createTestTeam, createTestTeamType, createTestUser, resetUsers } from '../test-utils';
+import {
+  createTestCar,
+  createTestOrganization,
+  createTestPart,
+  createTestProject,
+  createTestTeam,
+  createTestTeamType,
+  createTestUser,
+  resetUsers
+} from '../test-utils';
 import PartReviewService from '../../src/services/part-review.services';
 import { batmanAppAdmin, supermanAdmin, aquamanLeadership, flashAdmin } from '../test-data/users.test-data';
 import prisma from '../../src/prisma/prisma';
@@ -454,7 +463,6 @@ describe('part review tests', () => {
 
   describe('Get all parts', () => {
     it('getting all parts from a project with no parts successfully returns empty array', async () => {
-
       const division = await createTestTeamType(undefined, orgId);
       const team1 = await createTestTeam(batman.userId, division.teamTypeId, orgId);
       const car = await createTestCar(orgId, batman.userId);
@@ -462,13 +470,12 @@ describe('part review tests', () => {
       const project = await createTestProject(batman, orgId, team1.teamId, car.carId);
 
       const parts = await PartReviewService.getAllParts(project.projectId, orgId);
-      
+
       expect(parts).toBeInstanceOf(Array);
       expect(parts.length).toEqual(0);
     });
 
     it('gets all parts for the correct project', async () => {
-
       const division = await createTestTeamType(undefined, orgId);
       const team1 = await createTestTeam(batman.userId, division.teamTypeId, orgId);
       const team2 = await createTestTeam(superman.userId, division.teamTypeId, orgId);
@@ -477,10 +484,10 @@ describe('part review tests', () => {
       const project1 = await createTestProject(batman, orgId, team1.teamId, car.carId);
       const project2 = await createTestProject(superman, orgId, team2.teamId, car.carId, 2);
 
-      const part1 = await createTestPart(batman, 'part1', "1", 1, project1.projectId);
-      const part2 = await createTestPart(batman, 'part2', "2", 2, project1.projectId);
+      const part1 = await createTestPart(batman, 'part1', '1', 1, project1.projectId);
+      const part2 = await createTestPart(batman, 'part2', '2', 2, project1.projectId);
 
-      const part3 = await createTestPart(superman, 'part3', "3", 3, project2.projectId);
+      const part3 = await createTestPart(superman, 'part3', '3', 3, project2.projectId);
 
       const parts1 = await PartReviewService.getAllParts(project1.projectId, orgId);
       expect(parts1).toHaveLength(2);
@@ -495,7 +502,6 @@ describe('part review tests', () => {
       expect(parts1[1].partId).toBe(part2.partId);
       expect(parts1[1].index).toBe(part2.index);
       expect(parts1[1].projectId).toBe(part2.projectId);
-      
 
       const parts2 = await PartReviewService.getAllParts(project2.projectId, orgId);
       expect(parts2).toHaveLength(1);
@@ -504,8 +510,6 @@ describe('part review tests', () => {
       expect(parts2[0].partId).toBe(part3.partId);
       expect(parts2[0].index).toBe(part3.index);
       expect(parts2[0].projectId).toBe(part3.projectId);
-    }
-    );
+    });
   });
-
 });

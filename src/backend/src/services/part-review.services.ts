@@ -10,7 +10,6 @@ import { partPreviewTransformer } from '../transformers/part-review.transformer'
 import { partsReviewCommonMistakeTransformer } from '../transformers/part-review.transformer';
 
 export default class PartReviewService {
-
   /**
    * Gets all parts for the given project Id
    * @param projectId project Id of the Project that the parts are associated with
@@ -28,7 +27,6 @@ export default class PartReviewService {
 
     return parts.map(partPreviewTransformer);
   }
-
 
   /**
    * Uses the given organizationID to and returns an array of part tags

@@ -4,7 +4,6 @@ import { Project, validateWBS, WbsNumber } from 'shared';
 import ProjectsService from '../services/projects.services';
 
 export default class PartReviewController {
-  
   static async getAllParts(req: Request, res: Response, next: NextFunction) {
     try {
       const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
@@ -17,8 +16,7 @@ export default class PartReviewController {
       next(error);
     }
   }
-  
-  
+
   static async getAllPartTags(req: Request, res: Response, next: NextFunction) {
     try {
       const tags = await PartReviewService.getAllPartTags(req.organization.organizationId);

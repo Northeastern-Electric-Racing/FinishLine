@@ -683,7 +683,6 @@ export const createSlackMessageEvent = (
   };
 };
 
-
 export const createTestPart = async (
   user: User,
   name: string,
@@ -692,7 +691,6 @@ export const createTestPart = async (
   projectId?: string,
   dateDeleted?: Date
 ): Promise<Part> => {
-
   const part = await prisma.part.create({
     data: {
       partId,
@@ -710,7 +708,6 @@ export const createTestPart = async (
 
   return part;
 };
-
 
 export const CreatePartTag = async (organizationId: string, name: string, colorHexCode: string) => {
   return await prisma.partTag.create({
