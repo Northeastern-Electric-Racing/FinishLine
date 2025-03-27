@@ -241,7 +241,7 @@ describe('Finance Tests', () => {
       );
     });
   });
-  
+
   describe('Get Sponsor Tasks', () => {
     it('Succeeds and gets the sponsor tasks from a sponsor', async () => {
       const sponsor = await FinanceServices.createSponsor(
