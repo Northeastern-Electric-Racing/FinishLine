@@ -30,7 +30,7 @@ import {
 import { ReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
 import { VendorQueryArgs } from '../prisma-query-args/vendor.query-args';
 import { decryptPassword } from '../utils/encryption.utils';
-import { HttpException, NotFoundException } from '../utils/errors.utils';
+import { NotFoundException } from '../utils/errors.utils';
 
 export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<ReceiptQueryArgs>): Receipt => {
   return {
