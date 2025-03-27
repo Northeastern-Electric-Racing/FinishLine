@@ -1,9 +1,9 @@
 import { Organization, User } from '@prisma/client';
-import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
+import { createMinimalPartReview, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import PartReviewService from '../../src/services/part-review.services';
 import { batmanAppAdmin, supermanAdmin, aquamanLeadership, flashAdmin } from '../test-data/users.test-data';
 import prisma from '../../src/prisma/prisma';
-import { AccessDeniedAdminOnlyException, DeletedException } from '../../src/utils/errors.utils';
+import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../../src/utils/errors.utils';
 
 describe('part review tests', () => {
   let orgId: string;
@@ -450,5 +450,102 @@ describe('part review tests', () => {
     expect(commonMistakes[0].starred).toBe(false);
     expect(commonMistakes[1].starred).toBe(true);
     expect(commonMistakes[2].starred).toBe(false);
+  });
+
+  describe('part review request endpoints', () => {
+    let orgId: string;
+    let batman: User;
+    let superman: User;
+    let aquaman: User;
+    let partId: string;
+
+    beforeEach(async () => {
+      await resetUsers();
+      const organization = await createTestOrganization();
+      orgId = organization.organizationId;
+      batman = await createTestUser(batmanAppAdmin, orgId);
+      superman = await createTestUser(supermanAdmin, orgId);
+      aquaman = await createTestUser(aquamanLeadership, orgId);
+
+      ({ partId } = await createMinimalPartReview(batman, orgId));
+    });
+
+    afterEach(async () => {
+      await resetUsers();
+    });
+
+    it('creates a review request successfully', async () => {
+      const reviewRequest = await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
+
+      const prismaRequest = await prisma.partReviewRequest.findUnique({
+        where: { partReviewRequestId: reviewRequest.partReviewRequestId }
+      });
+
+      expect(reviewRequest.requester.userId).toBe(batman.userId);
+      expect(reviewRequest.reviewerRequested.userId).toBe(superman.userId);
+      expect(prismaRequest?.dateDeleted).toBeNull();
+    });
+
+    it('fails to create review request if part does not exist', async () => {
+      const fakePartId = 'non-existent-part-id';
+
+      await expect(PartReviewService.createPartReviewRequest(fakePartId, batman, superman.userId, orgId)).rejects.toThrow(
+        new NotFoundException('Part', fakePartId)
+      );
+    });
+
+    it('fails to create review request without permission', async () => {
+      await expect(PartReviewService.createPartReviewRequest(partId, aquaman, batman.userId, orgId)).rejects.toThrow(
+        new AccessDeniedAdminOnlyException('access part')
+      );
+    });
+
+    it('requester can delete their review request', async () => {
+      await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
+
+      const deleted = await PartReviewService.deletePartReviewRequest(partId, batman, orgId);
+
+      const prismaDeleted = await prisma.partReviewRequest.findFirst({ where: { partId } });
+      expect(deleted).toBeDefined();
+      expect(prismaDeleted?.dateDeleted).toBeTruthy();
+    });
+
+    it('reviewer can delete the review request', async () => {
+      await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
+
+      const deleted = await PartReviewService.deletePartReviewRequest(partId, superman, orgId);
+
+      const prismaDeleted = await prisma.partReviewRequest.findFirst({ where: { partId } });
+      expect(deleted).toBeDefined();
+      expect(prismaDeleted?.dateDeleted).toBeTruthy();
+    });
+
+    it('admin can delete the review request', async () => {
+      const flash = await createTestUser(flashAdmin, orgId);
+
+      await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
+
+      const deleted = await PartReviewService.deletePartReviewRequest(partId, flash, orgId);
+
+      const prismaDeleted = await prisma.partReviewRequest.findFirst({ where: { partId } });
+      expect(deleted).toBeDefined();
+      expect(prismaDeleted?.dateDeleted).toBeTruthy();
+    });
+
+    it('non-involved user cannot delete the review request', async () => {
+      await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
+
+      await expect(PartReviewService.deletePartReviewRequest(partId, aquaman, orgId)).rejects.toThrow(
+        new AccessDeniedAdminOnlyException('delete part review request')
+      );
+    });
+
+    it('fails to delete review request if it does not exist', async () => {
+      const fakePartId = 'non-existent-part-id';
+
+      await expect(PartReviewService.deletePartReviewRequest(fakePartId, batman, orgId)).rejects.toThrow(
+        new NotFoundException('Review request', fakePartId)
+      );
+    });
   });
 });
