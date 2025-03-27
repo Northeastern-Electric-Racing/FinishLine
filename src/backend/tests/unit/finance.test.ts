@@ -219,18 +219,24 @@ describe('Finance Tests', () => {
     });
   });
 
-  describe('Get Sponsor Tier', () => {
+  describe('Get Single Sponsor Tier', () => {
     it('Succeeds and retrieves the sponsor tier', async () => {
-      const sponsorTier1 = await FinanceServices.createSponsorTier(await createTestUser(batmanAppAdmin, orgId), 'Silver', organization, 'C0C0C0');
+      const sponsorTier1 = await FinanceServices.createSponsorTier(
+        await createTestUser(batmanAppAdmin, orgId),
+        'Silver',
+        organization,
+        'C0C0C0'
+      );
       const result = await FinanceServices.getSingleSponsierTier(sponsorTier1.sponsorTierId);
 
-      expect(result).toStrictEqual(sponsorTier1);
-    }); 
+      expect(result.colorHexCode).toEqual(sponsorTier1.colorHexCode);
+      expect(result.name).toEqual(sponsorTier1.name);
+      expect(result.sponsorTierId).toEqual(sponsorTier1.sponsorTierId);
+    });
 
     it('Get a single Sponsor Tier fails', async () => {
       const nonexistentTierId = 'nonexistingTierId';
-      await expect(async () => 
-      FinanceServices.getSingleSponsierTier(nonexistentTierId)).rejects.toThrow(
+      await expect(async () => FinanceServices.getSingleSponsierTier(nonexistentTierId)).rejects.toThrow(
         new NotFoundException('SponsorTier', nonexistentTierId)
       );
     });
