@@ -1,7 +1,21 @@
 import { User } from '@prisma/client';
-import { userHasPermission } from '../utils/users.utils';
-import { FrequentlyAskedQuestion, isAdmin, isLeadership, isMember, PartReviewCommonMistake, PartTag } from 'shared';
-import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
+import { getUserRole, userHasPermission } from '../utils/users.utils';
+import {
+  FrequentlyAskedQuestion,
+  isAdmin,
+  isLeadership,
+  isAtLeastRank,
+  PartReviewCommonMistake,
+  PartTag,
+  RoleEnum
+} from 'shared';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedException,
+  DeletedException,
+  HttpException,
+  NotFoundException
+} from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
 import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
 import { faqTransformer } from '../transformers/faq.transformer';
@@ -449,16 +463,14 @@ export default class PartReviewService {
     });
 
     if (!part || part.dateDeleted) {
-      throw new NotFoundException('Part', partId);
+      throw new DeletedException('Part', partId);
     }
 
-    const hasAccess =
-      (await userHasPermission(requester.userId, organizationId, isMember)) ||
-      (await userHasPermission(requester.userId, organizationId, isAdmin)) ||
-      (await userHasPermission(requester.userId, organizationId, isLeadership));
+    const role = await getUserRole(requester.userId, organizationId);
+    const hasAccess = isAtLeastRank(RoleEnum.MEMBER, role);
 
     if (!hasAccess) {
-      throw new AccessDeniedAdminOnlyException('access part');
+      throw new AccessDeniedException('access part');
     }
 
     const createdRequest = await prisma.partReviewRequest.create({
@@ -487,22 +499,20 @@ export default class PartReviewService {
    * @returns the soft-deleted and transformed PartReviewRequest
    */
   static async deletePartReviewRequest(reviewRequestId: string, user: User, organizationId: string) {
-    const reviewRequest = await prisma.partReviewRequest.findFirst({
+    const reviewRequest = await prisma.partReviewRequest.findUnique({
       where: { partReviewRequestId: reviewRequestId }
     });
 
     if (!reviewRequest || reviewRequest.dateDeleted) {
-      throw new NotFoundException('Review request', reviewRequestId);
+      throw new DeletedException('Review request', reviewRequestId);
     }
 
     const isRequester = reviewRequest.requesterId === user.userId;
     const isReviewer = reviewRequest.reviewerId === user.userId;
-    const isLeader =
-      (await userHasPermission(user.userId, organizationId, isLeadership)) ||
-      (await userHasPermission(user.userId, organizationId, isAdmin));
+    const isLeader = await userHasPermission(user.userId, organizationId, isLeadership);
 
     if (!isRequester && !isReviewer && !isLeader) {
-      throw new AccessDeniedAdminOnlyException('delete part review request');
+      throw new AccessDeniedException('delete part review request');
     }
 
     const softDeletedRequest = await prisma.partReviewRequest.update({

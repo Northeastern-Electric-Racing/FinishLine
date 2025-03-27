@@ -3,7 +3,7 @@ import { createMinimalPartReview, createTestOrganization, createTestUser, resetU
 import PartReviewService from '../../src/services/part-review.services';
 import { batmanAppAdmin, supermanAdmin, aquamanLeadership, flashAdmin, financeMember } from '../test-data/users.test-data';
 import prisma from '../../src/prisma/prisma';
-import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../../src/utils/errors.utils';
+import { AccessDeniedAdminOnlyException, AccessDeniedException, DeletedException } from '../../src/utils/errors.utils';
 
 describe('part review tests', () => {
   let orgId: string;
@@ -490,7 +490,7 @@ describe('part review tests', () => {
       const fakePartId = 'non-existent-part-id';
 
       await expect(PartReviewService.createPartReviewRequest(fakePartId, aquaman, superman.userId, orgId)).rejects.toThrow(
-        new NotFoundException('Part', fakePartId)
+        new DeletedException('Part', fakePartId)
       );
     });
 
@@ -532,14 +532,14 @@ describe('part review tests', () => {
 
       await expect(
         PartReviewService.deletePartReviewRequest(request.partReviewRequestId, johnnyBravo, orgId)
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete part review request'));
+      ).rejects.toThrow(new AccessDeniedException('delete part review request'));
     });
 
     it('fails to delete review request if it does not exist', async () => {
       const fakePartId = 'non-existent-part-id';
 
       await expect(PartReviewService.deletePartReviewRequest(fakePartId, batman, orgId)).rejects.toThrow(
-        new NotFoundException('Review request', fakePartId)
+        new DeletedException('Review request', fakePartId)
       );
     });
   });

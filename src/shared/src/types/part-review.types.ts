@@ -44,7 +44,7 @@ export interface PartReviewRequest {
   requester: User;
   reviewerRequested: User;
   createdAt: Date;
-  dateDeleted?: Date | null;
+  dateDeleted?: Date;
 }
 
 export interface PartReview {

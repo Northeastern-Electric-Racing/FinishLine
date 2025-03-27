@@ -68,7 +68,7 @@ export const partReviewRequestTransformer = (
     requester: userTransformer(reviewRequest.requester),
     reviewerRequested: userTransformer(reviewRequest.reviewerRequested),
     createdAt: reviewRequest.createdAt,
-    dateDeleted: reviewRequest.dateDeleted
+    dateDeleted: reviewRequest.dateDeleted ?? undefined
   };
 };
 
