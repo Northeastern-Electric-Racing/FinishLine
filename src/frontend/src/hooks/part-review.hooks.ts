@@ -55,7 +55,6 @@ export interface PartReviewPayload {
 }
 
 export interface PartReviewCommonMistakePayload {
-  partReviewCommonMistakeId: string;
   title: string;
   description: string;
   starred: boolean;
@@ -280,17 +279,17 @@ export const useEditPartReview = (reviewId: string) => {
  *
  * @param partReviewCommonMistakeId the id of the common mistake to edit
  */
-export const useEditPartReviewCommonMistakes = (partReviewCommonMistakeId: string) => {
+// hooks/part-review.hooks.ts
+export const useEditPartReviewCommonMistakes = () => {
   const queryClient = useQueryClient();
-  return useMutation<PartReviewCommonMistake, Error, PartReviewCommonMistakePayload>(
-    ['parts', 'editCommonMistake'],
-    async (mistake: PartReviewCommonMistakePayload) => {
-      const { data } = await editPartReviewCommonMistake(partReviewCommonMistakeId, mistake);
+  return useMutation<PartReviewCommonMistake, Error, { commonMistakeId: string; payload: PartReviewCommonMistakePayload }>(
+    async ({ commonMistakeId, payload }) => {
+      const { data } = await editPartReviewCommonMistake(commonMistakeId, payload);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['parts']);
+        queryClient.invalidateQueries(['partReviewCommonMistakes']);
       }
     }
   );
@@ -302,14 +301,14 @@ export const useEditPartReviewCommonMistakes = (partReviewCommonMistakeId: strin
 export const useCreatePartReviewCommonMistake = () => {
   const queryClient = useQueryClient();
   return useMutation<PartReviewCommonMistake, Error, PartReviewCommonMistakePayload>(
-    ['parts', 'createCommonMistake'],
+    ['partReviewCommonMistakes', 'createCommonMistake'],
     async (mistake: PartReviewCommonMistakePayload) => {
       const { data } = await createPartReviewCommonMistake(mistake);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['parts']);
+        queryClient.invalidateQueries(['partReviewCommonMistakes']);
       }
     }
   );
@@ -320,17 +319,16 @@ export const useCreatePartReviewCommonMistake = () => {
  *
  * @param partReviewCommonMistakeId the id of the common mistake to delete
  */
-export const useDeletePartReviewCommonMistake = (commonMistakeId: string) => {
+export const useDeletePartReviewCommonMistake = () => {
   const queryClient = useQueryClient();
   return useMutation<PartReviewCommonMistake, Error, any>(
-    ['parts', 'deleteCommonMistake'],
-    async () => {
-      const { data } = await deletePartReviewCommonMistake(commonMistakeId);
+    async (partReviewCommonMistakeId: string) => {
+      const { data } = await deletePartReviewCommonMistake(partReviewCommonMistakeId);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['parts']);
+        queryClient.invalidateQueries(['partReviewCommonMistakes']);
       }
     }
   );
@@ -341,7 +339,7 @@ export const useDeletePartReviewCommonMistake = (commonMistakeId: string) => {
  *
  */
 export const useCommonMistakes = () => {
-  return useQuery<PartReviewCommonMistake[], Error>([], async () => {
+  return useQuery<PartReviewCommonMistake[], Error>(['partReviewCommonMistakes'], async () => {
     const { data } = await getPartReviewCommonMistakes();
     return data;
   });

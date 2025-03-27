@@ -24,7 +24,7 @@ interface EditCommonMistakeModalProps {
 
 const EditCommonMistakeModal: React.FC<EditCommonMistakeModalProps> = ({ showModal, handleClose, mistake }) => {
   const toast = useToast();
-  const { isLoading, isError, error, mutateAsync } = useEditPartReviewCommonMistakes(mistake.id);
+  const { isLoading, isError, error, mutateAsync } = useEditPartReviewCommonMistakes();
 
   const {
     handleSubmit,
@@ -42,7 +42,10 @@ const EditCommonMistakeModal: React.FC<EditCommonMistakeModalProps> = ({ showMod
 
   const onSubmit = async (data: { title: string; description: string; starred: boolean }) => {
     try {
-      await mutateAsync(data);
+      await mutateAsync({
+        commonMistakeId: mistake.partReviewCommonMistakeId,
+        payload: data
+      });
       toast.success('Common Mistake updated');
       handleClose();
     } catch (err: unknown) {

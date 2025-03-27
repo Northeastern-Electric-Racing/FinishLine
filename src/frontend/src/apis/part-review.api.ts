@@ -327,9 +327,7 @@ export const createPartReviewCommonMistake = (payload: PartReviewCommonMistakePa
  * @param payload the payload of the common mistake
  */
 export const editPartReviewCommonMistake = (commonMistakeId: string, payload: PartReviewCommonMistakePayload) => {
-  return axios.post<PartReviewCommonMistake>(apiUrls.partsEditCommonMistake(commonMistakeId), {
-    ...payload
-  });
+  return axios.post<PartReviewCommonMistake>(apiUrls.partsEditCommonMistake(commonMistakeId), payload);
 };
 
 /**

@@ -55,7 +55,7 @@ const partsDeleteReviewRequest = (reviewRequestId: string) => `${parts()}/review
 const partsCreateReview = (submissionId: string) => `${parts()}/review/${submissionId}/create`;
 const partsEditReview = (reviewId: string) => `${parts()}/review/${reviewId}/update`;
 const partsCreateCommonMistake = () => `${parts()}/common-mistake/create`;
-const partsEditCommonMistake = (commonMistakeId: string) => `${parts()}/common-mistake/${commonMistakeId}/edit`;
+const partsEditCommonMistake = (commonMistakeId: string) => `${parts()}/common-mistake/${commonMistakeId}/update`;
 const partsDeleteCommonMistake = (commonMistakeId: string) => `${parts()}/common-mistake/${commonMistakeId}/delete`;
 const partsCommonMistake = () => `${parts()}/common-mistakes`;
 
