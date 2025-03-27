@@ -219,38 +219,20 @@ describe('Finance Tests', () => {
     });
   });
 
-  // describe('Get Sponsor Tier', () => {
-  //   it('Succeeds and retrieves the sponsor tier', async () => {
-  //     const spon1 = await FinanceServices.createSponsorTier(
-  //       await createTestUser(batmanAppAdmin, orgId), 
+  describe('Get Sponsor Tier', () => {
+    it('Succeeds and retrieves the sponsor tier', async () => {
+      const sponsorTier1 = await FinanceServices.createSponsorTier(await createTestUser(batmanAppAdmin, orgId), 'Silver', organization, 'C0C0C0');
+      const result = await FinanceServices.getSingleSponsierTier(sponsorTier1.sponsorTierId);
 
-  //     const testUser = await createTestUser(batmanAppAdmin, orgId);
-  //     const result = await FinanceServices.getSingleSponsierTier(sponsorTierId);
+      expect(result).toStrictEqual(sponsorTier1);
+    }); 
 
-  //     expect(result).toStrictEqual(spon1);
-  //   });
-
-  //   it('Fails to retrieve a Single Sponsor Tier', async () => {
-  //     const nonExistingSponsorTier = "nonExistingId";
-  //     it('Succeeds and retrieves the sponsor tier', async () => {
-  //       const spon1 = await FinanceServices.createSponsor(
-  //         await createTestUser(batmanAppAdmin, orgId),
-  //         'Google',
-  //         true,
-  //         5000,
-  //         new Date(12, 1, 24),
-  //         [2024, 2025],
-  //         sponsorTierId,
-  //         true,
-  //         'Bill Gates',
-  //         [],
-  //         organization,
-  //         'googlecode'
-  //       );
-  //       const testUser = await createTestUser(batmanAppAdmin, orgId);
-
-  //     await expect(async () => 
-  //     FinanceServices.getSingleSponsierTier(testUser, spon1.sponsorId, nonExistingSponsorTier)).rejects.toThrow(new NotFoundException('SponsorTier', nonExistingSponsorTier));
-  //   })
-  // });
+    it('Get a single Sponsor Tier fails', async () => {
+      const nonexistentTierId = 'nonexistingTierId';
+      await expect(async () => 
+      FinanceServices.getSingleSponsierTier(nonexistentTierId)).rejects.toThrow(
+        new NotFoundException('SponsorTier', nonexistentTierId)
+      );
+    });
+  });
 });
