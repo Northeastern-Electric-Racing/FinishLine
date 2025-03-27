@@ -288,7 +288,7 @@ export const useCreatePartTag = () => {
 
 export const useDeletePartTag = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, string>(
+  return useMutation<PartTag, Error, string>(
     ['partTags', 'delete'],
     async (partTagId: string) => {
       const { data } = await deletePartTag(partTagId);

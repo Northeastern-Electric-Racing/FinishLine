@@ -1150,10 +1150,10 @@ model Part {
 }
 
 model PartTag {
-  partTagId      String       @id @default(uuid())
+  partTagId      String        @id @default(uuid())
   name           String
   colorHexCode   String
-  dateCreated    DateTime     @default(now())
+  dateCreated    DateTime      @default(now())
   dateDeleted    DateTime?
   parts          Part[]
   organization   Organization @relation(fields: [organizationId], references: [organizationId])

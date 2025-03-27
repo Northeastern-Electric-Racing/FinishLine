@@ -316,5 +316,5 @@ export const createPartTag = async (payload: PartTagPayload) => {
  * Removes a part tag with the given id
  */
 export const deletePartTag = async (partTagId: string) => {
-  return axios.post<{ message: string }>(apiUrls.partTagDelete(partTagId));
+  return axios.post<PartTag>(apiUrls.partTagDelete(partTagId));
 };

@@ -55,8 +55,8 @@ const partsDeleteReviewRequest = (reviewRequestId: string) => `${parts()}/review
 const partsCreateReview = (submissionId: string) => `${parts()}/review/${submissionId}/create`;
 const partsEditReview = (reviewId: string) => `${parts()}/review/${reviewId}/update`;
 const partTags = () => `${parts()}/tags`;
-const partTagCreate = () => `${parts()}/partTag/create`;
-const partTagDelete = (partTagId: string) => `${parts()}/partTag/${partTagId}/delete`;
+const partTagCreate = () => `${parts()}/tag/create`;
+const partTagDelete = (partTagId: string) => `${parts()}/tag/${partTagId}/delete`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;

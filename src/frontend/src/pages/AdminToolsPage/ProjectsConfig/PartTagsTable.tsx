@@ -42,7 +42,7 @@ const PartTagsTable: React.FC = () => {
       toast.success(`Part Tag: ${name} Deleted Successfully!`);
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response?.status === 409) {
-        toast.error(`Part Tag: ${name} cannot be deleted because it is still in use by a Part.`);
+        toast.error(`Part Tag: ${name} cannot be deleted because it has associated parts`);
       } else if (error instanceof Error) {
         toast.error(error.message);
       }
@@ -83,9 +83,7 @@ const PartTagsTable: React.FC = () => {
 
   const partTagTableRows = partTags.map((partTag) => (
     <TableRow>
-      <TableCell sx={{ border: '2px solid black', width: '40%' }}>{partTag.partTagId}</TableCell>
-      <TableCell sx={{ border: '2px solid black', width: '40%' }}>{partTag.name}</TableCell>
-      <TableCell align="left" sx={{ border: '2px solid black', width: '20%' }}>
+      <TableCell align="left" sx={{ border: '2px solid black' }}>
         <Box
           sx={{
             display: 'inline-block',
@@ -96,7 +94,7 @@ const PartTagsTable: React.FC = () => {
             borderRadius: '8px'
           }}
         >
-          {partTag.colorHexCode}
+          {partTag.name}
         </Box>
       </TableCell>
       <TableCell align="center" sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
@@ -111,10 +109,13 @@ const PartTagsTable: React.FC = () => {
   ));
 
   return (
-    <Box>
+    <Box sx={{ width: '50%' }}>
       <CreatePartTagModal showModal={openModal} handleClose={() => setOpenModal(false)} />
       <AdminToolTable
-        columns={[{ name: 'Tag Id' }, { name: 'Tag Name' }, { name: 'Color' }, { name: ' ' }]}
+        columns={[
+          { name: 'Tag Name', width: '80%' },
+          { name: ' ', width: '20%' }
+        ]}
         rows={partTagTableRows}
       />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
