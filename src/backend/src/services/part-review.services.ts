@@ -463,11 +463,11 @@ export default class PartReviewService {
     });
 
     if (!part) {
-      throw new DeletedException('Part', partId);
+      throw new NotFoundException('Part', partId);
     }
 
     if (part.dateDeleted) {
-      throw new NotFoundException('Part', partId);
+      throw new DeletedException('Part', partId);
     }
 
     const role = await getUserRole(requester.userId, organizationId);

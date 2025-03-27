@@ -495,7 +495,7 @@ describe('part review tests', () => {
       const fakePartId = 'non-existent-part-id';
 
       await expect(PartReviewService.createPartReviewRequest(fakePartId, aquaman, superman.userId, orgId)).rejects.toThrow(
-        new DeletedException('Part', fakePartId)
+        new NotFoundException('Part', fakePartId)
       );
     });
 
