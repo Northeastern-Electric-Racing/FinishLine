@@ -227,7 +227,27 @@ describe('Finance Tests', () => {
         organization,
         'C0C0C0'
       );
-      const result = await FinanceServices.getSingleSponsierTier(sponsorTier1.sponsorTierId);
+
+      const sponsor1 = await FinanceServices.createSponsor(
+        await createTestUser(supermanAdmin, orgId),
+        'Google',
+        true,
+        5000,
+        new Date(12, 1, 24),
+        [2024, 2025],
+        sponsorTierId,
+        true,
+        'Bill Gates',
+        [],
+        organization,
+        'googlecode'
+      );
+
+      const result = await FinanceServices.getSingleSponsorTier(
+        await createTestUser(batmanAppAdmin, orgId),
+        sponsor1.sponsorId,
+        organization
+      );
 
       expect(result.colorHexCode).toEqual(sponsorTier1.colorHexCode);
       expect(result.name).toEqual(sponsorTier1.name);
@@ -236,9 +256,30 @@ describe('Finance Tests', () => {
 
     it('Get a single Sponsor Tier fails', async () => {
       const nonexistentTierId = 'nonexistingTierId';
-      await expect(async () => FinanceServices.getSingleSponsierTier(nonexistentTierId)).rejects.toThrow(
-        new NotFoundException('SponsorTier', nonexistentTierId)
+      await expect(async () =>
+        FinanceServices.getSingleSponsorTier(await createTestUser(batmanAppAdmin, orgId), nonexistentTierId, organization)
+      ).rejects.toThrow(new NotFoundException('SponsorTier', nonexistentTierId));
+    });
+
+    it('Fails if user is not a head', async () => {
+      const sponsor1 = await FinanceServices.createSponsor(
+        await createTestUser(supermanAdmin, orgId),
+        'Google',
+        true,
+        5000,
+        new Date(12, 1, 24),
+        [2024, 2025],
+        sponsorTierId,
+        true,
+        'Bill Gates',
+        [],
+        organization,
+        'googlecode'
       );
+
+      await expect(async () =>
+        FinanceServices.getSingleSponsorTier(await createTestUser(wonderwomanGuest, orgId), sponsor1.sponsorId, organization)
+      ).rejects.toThrow(new AccessDeniedException('Only heads can delete sponsors.'));
     });
   });
 

@@ -122,14 +122,32 @@ export default class FinanceServices {
     return deletedSponsor;
   }
 
-  static async getSingleSponsierTier(sponsorTierId: string): Promise<SponsorTier> {
-    const sponsorTier = await prisma.sponsor_Tier.findUnique({
+  /**
+   * Get Sponsor Tier from sponsor ID
+   * @param submitter the person getting the sponsor
+   * @param sponsorId ID of the sponsor 
+   * @param organization organization the person belongs to 
+   * @returns the designated sponsor tier
+   */
+  static async getSingleSponsorTier(submitter: User, sponsorId: string, organization: Organization): Promise<SponsorTier> {
+    const sponsor = await prisma.sponsor.findUnique({
       where: {
-        sponsorTierId
+        sponsorId
       }
     });
 
-    if (!sponsorTier) throw new NotFoundException('SponsorTier', sponsorTierId);
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
+      throw new AccessDeniedException('Only heads can delete sponsors.');
+    }
+    if (!sponsor) throw new NotFoundException('Sponsor', sponsorId);
+
+    const sponsorTier = await prisma.sponsor_Tier.findUnique({
+      where: {
+        sponsorTierId: sponsor.sponsorTierId
+      }
+    });
+
+    if (!sponsorTier) throw new NotFoundException('SponsorTier', sponsor.sponsorTierId);
 
     return sponsorTier;
   }
