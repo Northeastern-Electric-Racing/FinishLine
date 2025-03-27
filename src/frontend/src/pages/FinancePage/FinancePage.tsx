@@ -207,7 +207,7 @@ const FinancePage = () => {
             submittedToSABO={10}
             reimbursed={10}
             available={10}
-          ></BalanceSection>
+          />
         </Grid>
       </Grid>
     </PageLayout>
