@@ -25,7 +25,7 @@ financeRouter.get('/sponsors', FinanceController.getAllSponsors);
 
 financeRouter.delete('/sponsor/:sponsorId/delete', FinanceController.deleteSponsor);
 
-financeRouter.get('/sponsor/:sponsorId', FinanceController.getSingleSponsorTier);
+financeRouter.get('/sponsorTier/:sponsorId/single', FinanceController.getSingleSponsorTier);
 
 financeRouter.post(
   '/sponsorTier/create',

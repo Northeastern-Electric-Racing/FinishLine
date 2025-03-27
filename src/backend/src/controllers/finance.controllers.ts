@@ -58,8 +58,8 @@ export default class FinanceController {
 
   static async getSingleSponsorTier(req: Request, res: Response, next: NextFunction) {
     try {
-      const stId: string = req.params.sponsorId;
-      const SponsorTier = await FinanceServices.getSingleSponsierTier(req.currentUser, stId, req.organization);
+      const { sponsorTierId } = req.params;
+      const SponsorTier = await FinanceServices.getSingleSponsierTier(sponsorTierId);
       res.status(200).json(SponsorTier);
     } catch (error: unknown) {
       next(error);

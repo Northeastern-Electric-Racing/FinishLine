@@ -1,4 +1,4 @@
-import { isHead } from 'shared';
+import { isHead, SponsorTier } from 'shared';
 import { User, Organization, Sponsor_Task, Sponsor } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
 import { getSponsorQueryArgs } from '../prisma-query-args/sponsor.query.args';
@@ -121,17 +121,16 @@ export default class FinanceServices {
     return deletedSponsor;
   }
 
-  static async getSingleSponsierTier(_submitter: User, sponsorId: string, organization: Organization): Promise<Sponsor> {
-    const sponsor = await prisma.sponsor.findUnique({
+  static async getSingleSponsierTier(sponsorTierId: string): Promise<SponsorTier> {
+    const sponsorTier = await prisma.sponsor_Tier.findUnique({
       where: {
-        sponsorId
+        sponsorTierId
       }
     });
 
-    if (!sponsor) throw new NotFoundException('Sponsor', sponsorId);
-    if (sponsor.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Sponsor');
+    if (!sponsorTier) throw new NotFoundException('SponsorTier', sponsorTierId);
 
-    return sponsor;
+    return sponsorTier;
   }
 
   static async createSponsorTier(submitter: User, name: string, organization: Organization, colorHexCode: string) {
