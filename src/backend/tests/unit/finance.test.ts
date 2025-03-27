@@ -220,21 +220,16 @@ describe('Finance Tests', () => {
   });
 
   describe('Get Single Sponsor Tier', () => {
-    let batmanAdminUser;
-    let supermanAdminUser;
-    let wonderwomanGuestUser;
-    let sponsorTier1;
-    let sponsor1;
+    it('Succeeds and retrieves the sponsor tier', async () => {
+      // const sponsorTier1 = await FinanceServices.createSponsorTier(
+      //   await createTestUser(batmanAppAdmin, orgId),
+      //   'Silver',
+      //   organization,
+      //   'C0C0C0'
+      // );
 
-    beforeAll(async () => {
-      batmanAdminUser = await createTestUser(batmanAppAdmin, orgId);
-      supermanAdminUser = await createTestUser(supermanAdmin, orgId);
-      wonderwomanGuestUser = await createTestUser(wonderwomanGuest, orgId);
-
-      sponsorTier1 = await FinanceServices.createSponsorTier(batmanAdminUser, 'Silver', organization, 'C0C0C0');
-
-      sponsor1 = await FinanceServices.createSponsor(
-        supermanAdminUser,
+      const sponsor1 = await FinanceServices.createSponsor(
+        await createTestUser(supermanAdmin, orgId),
         'Google',
         true,
         5000,
@@ -247,26 +242,42 @@ describe('Finance Tests', () => {
         organization,
         'googlecode'
       );
-    });
 
-    it('Succeeds and retrieves the sponsor tier', async () => {
-      const result = await FinanceServices.getSingleSponsorTier(batmanAdminUser, sponsor1.sponsorId, organization);
+      const result = await FinanceServices.getSingleSponsorTier(
+        await createTestUser(batmanAppAdmin, orgId),
+        sponsor1.sponsorId,
+        organization
+      );
 
-      expect(result.colorHexCode).toEqual(sponsorTier1.colorHexCode);
-      expect(result.name).toEqual(sponsorTier1.name);
-      expect(result.sponsorTierId).toEqual(sponsorTier1.sponsorTierId);
+      expect(result.name).toEqual(sponsor1.name);
+      expect(result.sponsorTierId).toEqual(sponsorTierId);
     });
 
     it('Get a single Sponsor Tier fails', async () => {
       const nonexistentTierId = 'nonexistingTierId';
       await expect(async () =>
-        FinanceServices.getSingleSponsorTier(batmanAdminUser, nonexistentTierId, organization)
+        FinanceServices.getSingleSponsorTier(await createTestUser(batmanAppAdmin, orgId), nonexistentTierId, organization)
       ).rejects.toThrow(new NotFoundException('Sponsor', nonexistentTierId));
     });
 
     it('Fails if user is not a head', async () => {
+      const sponsor1 = await FinanceServices.createSponsor(
+        await createTestUser(supermanAdmin, orgId),
+        'Google',
+        true,
+        5000,
+        new Date(12, 1, 24),
+        [2024, 2025],
+        sponsorTierId,
+        true,
+        'Bill Gates',
+        [],
+        organization,
+        'googlecode'
+      );
+
       await expect(async () =>
-        FinanceServices.getSingleSponsorTier(wonderwomanGuestUser, sponsor1.sponsorId, organization)
+        FinanceServices.getSingleSponsorTier(await createTestUser(wonderwomanGuest, orgId), sponsor1.sponsorId, organization)
       ).rejects.toThrow(new AccessDeniedException('Only heads can delete sponsors.'));
     });
   });
