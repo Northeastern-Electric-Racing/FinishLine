@@ -159,4 +159,38 @@ export default class PartReviewController {
       next(error);
     }
   }
+
+  static async createPartReviewRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { partId } = req.params;
+      const { reviewerId } = req.body;
+
+      const request = await PartReviewService.createPartReviewRequest(
+        partId,
+        req.currentUser,
+        reviewerId,
+        req.organization.organizationId
+      );
+
+      res.status(200).json(request);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async deletePartReviewRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { partId } = req.params;
+
+      const deleted = await PartReviewService.deletePartReviewRequest(
+        partId,
+        req.currentUser,
+        req.organization.organizationId
+      );
+
+      res.status(200).json(deleted);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

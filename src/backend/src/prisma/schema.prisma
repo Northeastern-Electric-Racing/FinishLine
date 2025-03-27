@@ -1186,6 +1186,7 @@ model PartReviewRequest {
   reviewerId          String
   reviewerRequested   User     @relation(fields: [reviewerId], references: [userId], name: "PartReviewRequested")
   createdAt           DateTime @default(now())
+  dateDeleted         DateTime?
 }
 
 model PartReview {

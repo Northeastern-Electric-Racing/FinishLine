@@ -6,6 +6,7 @@ import prisma from '../prisma/prisma';
 import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
 import { faqTransformer } from '../transformers/faq.transformer';
 import { partsReviewCommonMistakeTransformer } from '../transformers/part-review.transformer';
+import { partReviewRequestQueryArgs } from '../prisma-query-args/part-review.query-args';
 
 export default class PartReviewService {
   /**
@@ -432,5 +433,82 @@ export default class PartReviewService {
     });
 
     return partsReviewCommonMistakeTransformer(deletedCommonMistake);
+  }
+
+  /**
+   * Creates a new part review request.
+   * @param partId - the id of the part to request a review on
+   * @param requester - user who is creating the review request
+   * @param reviewerId - user who is being asked to review
+   * @param organizationId - organization id to validate permissions
+   * @returns the created and transformed PartReviewRequest
+   */
+  static async createPartReviewRequest(partId: string, requester: User, reviewerId: string, organizationId: string) {
+    const part = await prisma.part.findUnique({
+      where: { partId }
+    });
+
+    if (!part) {
+      throw new NotFoundException('Part', partId);
+    }
+
+    const hasAccess = await userHasPermission(requester.userId, organizationId, isAdmin);
+
+    if (!hasAccess) {
+      throw new AccessDeniedAdminOnlyException('access part');
+    }
+
+    const createdRequest = await prisma.partReviewRequest.create({
+      data: {
+        part: {
+          connect: { partId }
+        },
+        requester: {
+          connect: { userId: requester.userId }
+        },
+        reviewerRequested: {
+          connect: { userId: reviewerId }
+        }
+      },
+      ...partReviewRequestQueryArgs(organizationId)
+    });
+
+    return createdRequest;
+  }
+
+  /**
+   * soft deletes an existing part review request if the requester, reviewer, or an admin initiates the request
+   * @param partId - the ID of the part whose review request should be deleted
+   * @param user - the user attempting to delete the review request
+   * @param organizationId - the organization ID to validate permissions
+   * @returns the soft-deleted and transformed PartReviewRequest
+   */
+  static async deletePartReviewRequest(partId: string, user: User, organizationId: string) {
+    const reviewRequest = await prisma.partReviewRequest.findFirst({
+      where: { partId }
+    });
+
+    if (!reviewRequest) {
+      throw new NotFoundException('Review request', partId);
+    }
+
+    const isRequester = reviewRequest.requesterId === user.userId;
+    const isReviewer = reviewRequest.reviewerId === user.userId;
+    const isLeader = await userHasPermission(user.userId, organizationId, isAdmin);
+
+    if (!isRequester && !isReviewer && !isLeader) {
+      throw new AccessDeniedAdminOnlyException('delete part review request');
+    }
+
+    const softDeletedRequest = await prisma.partReviewRequest.update({
+      where: {
+        partReviewRequestId: reviewRequest.partReviewRequestId
+      },
+      data: {
+        dateDeleted: new Date()
+      },
+      ...partReviewRequestQueryArgs(organizationId)
+    });
+    return softDeletedRequest;
   }
 }
