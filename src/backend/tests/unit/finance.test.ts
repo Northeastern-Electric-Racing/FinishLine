@@ -221,12 +221,12 @@ describe('Finance Tests', () => {
 
   describe('Get Single Sponsor Tier', () => {
     it('Succeeds and retrieves the sponsor tier', async () => {
-      // const sponsorTier1 = await FinanceServices.createSponsorTier(
-      //   await createTestUser(batmanAppAdmin, orgId),
-      //   'Silver',
-      //   organization,
-      //   'C0C0C0'
-      // );
+      const sponsorTier1 = await FinanceServices.createSponsorTier(
+        await createTestUser(batmanAppAdmin, orgId),
+        'Silver',
+        organization,
+        'C0C0C0'
+      );
 
       const sponsor1 = await FinanceServices.createSponsor(
         await createTestUser(supermanAdmin, orgId),
@@ -235,7 +235,7 @@ describe('Finance Tests', () => {
         5000,
         new Date(12, 1, 24),
         [2024, 2025],
-        sponsorTierId,
+        sponsorTier1.sponsorTierId,
         true,
         'Bill Gates',
         [],
@@ -249,8 +249,9 @@ describe('Finance Tests', () => {
         organization
       );
 
-      expect(result.name).toEqual(sponsor1.name);
-      expect(result.sponsorTierId).toEqual(sponsorTierId);
+      expect(result.name).toEqual(sponsorTier1.name);
+      expect(result.sponsorTierId).toEqual(sponsorTier1.sponsorTierId);
+      expect(result.colorHexCode).toEqual(sponsorTier1.colorHexCode);
     });
 
     it('Get a single Sponsor Tier fails', async () => {
