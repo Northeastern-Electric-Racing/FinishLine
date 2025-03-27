@@ -1,10 +1,6 @@
 const CryptoJS = require('crypto-js');
 
-// if (!process.env.ENCRYPTION_KEY) {
-//   throw new Error('ENCRYPTION_KEY is missing');
-// }
-
-const SECRET_KEY = process.env.ENCRYPTION_SECRET_KEY || 'key'; // should "|| 'key" be removed?
+const { ENCRYPTION_KEY } = process.env;
 
 /**
  * Encrypts the given password to be stored in the db
@@ -12,7 +8,7 @@ const SECRET_KEY = process.env.ENCRYPTION_SECRET_KEY || 'key'; // should "|| 'ke
  * @returns encrypted password
  */
 export const encryptPassword = (password: string) => {
-  return CryptoJS.AES.encrypt(password, SECRET_KEY).toString();
+  return CryptoJS.AES.encrypt(password, ENCRYPTION_KEY).toString();
 };
 
 /**
@@ -21,6 +17,6 @@ export const encryptPassword = (password: string) => {
  * @returns orginal password
  */
 export const decryptPassword = (encryptedPassword: string) => {
-  const bytes = CryptoJS.AES.decrypt(encryptedPassword, SECRET_KEY);
+  const bytes = CryptoJS.AES.decrypt(encryptedPassword, ENCRYPTION_KEY);
   return bytes.toString(CryptoJS.enc.Utf8);
 };

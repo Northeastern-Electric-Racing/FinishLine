@@ -30,6 +30,7 @@ import {
 import { ReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
 import { VendorQueryArgs } from '../prisma-query-args/vendor.query-args';
 import { decryptPassword } from '../utils/encryption.utils';
+import { HttpException } from '../utils/errors.utils';
 
 export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<ReceiptQueryArgs>): Receipt => {
   return {
@@ -99,6 +100,9 @@ export const accountCodeTransformer = (accountCode: Prisma.Account_CodeGetPayloa
 };
 
 export const vendorTransformer = (vendor: Prisma.VendorGetPayload<VendorQueryArgs>): Vendor => {
+  if (!process.env.ENCRYPTION_KEY) {
+    throw new HttpException(500, 'Encryption key not found in environment variables');
+  }
   return {
     ...vendor,
     password: decryptPassword(vendor.password),
