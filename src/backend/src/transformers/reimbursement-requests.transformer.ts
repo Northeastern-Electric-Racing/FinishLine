@@ -101,7 +101,7 @@ export const accountCodeTransformer = (accountCode: Prisma.Account_CodeGetPayloa
 
 export const vendorTransformer = (vendor: Prisma.VendorGetPayload<VendorQueryArgs>): Vendor => {
   if (!process.env.ENCRYPTION_KEY) {
-    throw new NotFoundException('Encrpytion Key', 'Encryption key not found in environment variables');
+    throw new NotFoundException('Encryption Key', 'Encryption key not found in environment variables');
   }
   return {
     ...vendor,
