@@ -241,4 +241,52 @@ describe('Finance Tests', () => {
       );
     });
   });
+  
+  describe('Get Sponsor Tasks', () => {
+    it('Succeeds and gets the sponsor tasks from a sponsor', async () => {
+      const sponsor = await FinanceServices.createSponsor(
+        await createTestUser(batmanAppAdmin, orgId),
+        'Google',
+        true,
+        5000,
+        new Date(12, 1, 24),
+        [2024, 2025],
+        sponsorTierId,
+        true,
+        'Bill Gates',
+        [
+          {
+            sponsorId: '1',
+            sponsorTaskId: '2',
+            dueDate: new Date(12, 1, 24),
+            notifyDate: null,
+            assigneeUserId: null,
+            notes: 'uhh nothing'
+          },
+          {
+            sponsorId: '11',
+            sponsorTaskId: '22',
+            dueDate: new Date(12, 1, 24),
+            notifyDate: null,
+            assigneeUserId: null,
+            notes: 'probably nothing again'
+          }
+        ],
+        organization,
+        'googlecode'
+      );
+
+      const sponsorTasks = await FinanceServices.getSponsorTasks(sponsor.sponsorId, organization.organizationId);
+
+      expect(sponsorTasks).toHaveLength(2);
+      expect(sponsorTasks[0].notes).toBe('uhh nothing');
+      expect(sponsorTasks[1].notes).toBe('probably nothing again');
+
+      await expect(async () => FinanceServices.getSponsorTasks('21', organization.organizationId)).rejects.toThrow(
+        new NotFoundException('Sponsor', '21')
+      );
+
+      await prisma.sponsor_Task.deleteMany();
+    });
+  });
 });
