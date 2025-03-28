@@ -54,6 +54,7 @@
     "@types/react-dom": "17.0.1"
   },
   "dependencies": {
+    "@prisma/client": "^6.5.0",
     "mitt": "^3.0.1",
     "typescript": "^5.7.3"
   },
