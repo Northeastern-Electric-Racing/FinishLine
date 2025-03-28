@@ -144,4 +144,4 @@ export type ExceptionObjectNames =
   | 'Graph'
   | 'Graph Collection'
   | 'Sponsor'
-  | 'SponsorTier';
+  | 'Sponsor Tier';

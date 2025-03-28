@@ -221,15 +221,11 @@ describe('Finance Tests', () => {
 
   describe('Get Single Sponsor Tier', () => {
     it('Succeeds and retrieves the sponsor tier', async () => {
-      const sponsorTier1 = await FinanceServices.createSponsorTier(
-        await createTestUser(batmanAppAdmin, orgId),
-        'Silver',
-        organization,
-        'C0C0C0'
-      );
+      const user = await createTestUser(batmanAppAdmin, orgId);
+      const sponsorTier1 = await FinanceServices.createSponsorTier(user, 'Silver', organization, 'C0C0C0');
 
       const sponsor1 = await FinanceServices.createSponsor(
-        await createTestUser(supermanAdmin, orgId),
+        user,
         'Google',
         true,
         5000,
@@ -243,11 +239,7 @@ describe('Finance Tests', () => {
         'googlecode'
       );
 
-      const result = await FinanceServices.getSingleSponsorTier(
-        await createTestUser(batmanAppAdmin, orgId),
-        sponsor1.sponsorId,
-        organization
-      );
+      const result = await FinanceServices.getSingleSponsorTier(user, sponsor1.sponsorId, organization);
 
       expect(result.name).toEqual(sponsorTier1.name);
       expect(result.sponsorTierId).toEqual(sponsorTier1.sponsorTierId);
