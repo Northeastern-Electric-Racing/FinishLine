@@ -2,7 +2,7 @@
   "name": "backend",
   "version": "1.0.0",
   "scripts": {
-    "dev": "yarn nodemon index.ts",
+    "dev": "yarn nodemon -L index.ts",
     "test": "vitest",
     "build": "NODE_OPTIONS='--max-old-space-size=8192' tsc --noEmit false",
     "start": "node -r dotenv/config dist/backend/index.js",
