@@ -165,7 +165,12 @@ export default class FinanceServices {
       throw new AccessDeniedException('Only heads can edit sponsor tasks.');
 
     const oldSponsorTask = await prisma.sponsor_Task.findUnique({
-      where: { sponsorTaskId }
+      where: {
+        sponsorTaskId,
+        sponsor: {
+          organizationId: org.organizationId
+        }
+      }
     });
 
     if (!oldSponsorTask) throw new NotFoundException('SponsorTask', sponsorTaskId);
@@ -173,7 +178,12 @@ export default class FinanceServices {
     if (assigneeUserId) {
       const assignee = await prisma.user.findUnique({
         where: {
-          userId: assigneeUserId
+          userId: assigneeUserId,
+          organizations: {
+            some: {
+              organizationId: org.organizationId
+            }
+          }
         }
       });
 
