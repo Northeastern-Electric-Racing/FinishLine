@@ -219,7 +219,19 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         <Grid item container spacing={2} md={6} xs={12} sx={{ '&.MuiGrid-item': { height: 'fit-content' } }}>
           <Grid item xs={12}>
             <FormControl fullWidth>
-              <FormLabel>Purchased From</FormLabel>
+              <FormLabel
+                sx={{
+                  color: '#dd524c',
+                  textDecoration: 'underline',
+                  textUnderlineOffset: '3.5px',
+                  textDecorationThickness: '0.6px',
+                  paddingBottom: '2px',
+                  fontSize: 'x-large',
+                  fontWeight: 'bold'
+                }}
+              >
+                Purchased From*
+              </FormLabel>
               <Controller
                 name="vendorId"
                 control={control}
@@ -229,7 +241,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     setValue('vendorId', '');
                     onChange('');
                   };
-
                   return (
                     <NERAutocomplete
                       id={'vendor'}
