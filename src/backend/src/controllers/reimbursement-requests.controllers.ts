@@ -55,7 +55,7 @@ export default class ReimbursementRequestsController {
       const {
         dateOfExpense,
         vendorId,
-        account,
+        indexCodeId,
         otherReimbursementProducts,
         wbsReimbursementProducts,
         accountCodeId,
@@ -66,7 +66,7 @@ export default class ReimbursementRequestsController {
       const createdReimbursementRequest = await ReimbursementRequestService.createReimbursementRequest(
         user,
         vendorId,
-        account,
+        indexCodeId,
         otherReimbursementProducts,
         wbsReimbursementProducts,
         accountCodeId,
@@ -101,7 +101,7 @@ export default class ReimbursementRequestsController {
       const {
         dateOfExpense,
         vendorId,
-        account,
+        indexCodeId,
         accountCodeId,
         totalCost,
         otherReimbursementProducts,
@@ -112,7 +112,7 @@ export default class ReimbursementRequestsController {
       const updatedReimbursementRequestId = await ReimbursementRequestService.editReimbursementRequest(
         requestId,
         vendorId,
-        account,
+        indexCodeId,
         accountCodeId,
         totalCost,
         otherReimbursementProducts,

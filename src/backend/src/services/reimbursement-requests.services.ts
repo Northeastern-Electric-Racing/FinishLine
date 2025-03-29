@@ -160,7 +160,7 @@ export default class ReimbursementRequestService {
     if (!recipient.userSecureSettings) throw new HttpException(500, 'User does not have their finance settings set up');
 
     const vendor = await ReimbursementRequestService.getSingleVendor(vendorId, organization);
-    const account = await ReimbursementRequestService.getSingleIndexCode(indexCodeId, organization);
+    const indexCode = await ReimbursementRequestService.getSingleIndexCode(indexCodeId, organization);
     const accountCode = await ReimbursementRequestService.getSingleAccountCode(acccountCodeId, organization);
 
     if (!accountCode.allowed) throw new HttpException(400, `The Account Code ${accountCode.name} is not allowed!`);
@@ -183,7 +183,7 @@ export default class ReimbursementRequestService {
         recipient: { connect: { userId: recipient.userId } },
         dateOfExpense: dateOfExpense ?? null,
         vendor: { connect: { vendorId: vendor.vendorId } },
-        indexCode: { connect: { indexCodeId: account.indexCodeId } },
+        indexCode: { connect: { indexCodeId: indexCode.indexCodeId } },
         accountCode: { connect: { accountCodeId: accountCode.accountCodeId } },
         totalCost,
         reimbursementStatuses: {
@@ -266,7 +266,7 @@ export default class ReimbursementRequestService {
    * @param requestId the id of the reimbursement request we are editing
    * @param dateOfExpense the updated date of expense
    * @param vendorId the updated vendor id
-   * @param account the updated account
+   * @param indexCodeId the updated index code id
    * @param accountCodeId the updated account code id
    * @param totalCost the updated total cost
    * @param reimbursementProducts the updated reimbursement products
@@ -279,7 +279,7 @@ export default class ReimbursementRequestService {
   static async editReimbursementRequest(
     requestId: string,
     vendorId: string,
-    account: IndexCode,
+    indexCodeId: string,
     accountCodeId: string,
     totalCost: number,
     otherReimbursementProducts: OtherReimbursementProductCreateArgs[],
@@ -308,9 +308,10 @@ export default class ReimbursementRequestService {
 
     const vendor = await ReimbursementRequestService.getSingleVendor(vendorId, organization);
     const accountCode = await ReimbursementRequestService.getSingleAccountCode(accountCodeId, organization);
+    const indexCode = await ReimbursementRequestService.getSingleIndexCode(indexCodeId, organization);
 
     if (!accountCode.allowed) throw new HttpException(400, 'Account Code Not Allowed');
-    if (!accountCode.allowedRefundSources.includes(account)) {
+    if (!accountCode.allowedRefundSources.includes(indexCode)) {
       throw new HttpException(400, 'The submitted refund source is not allowed to be used with the submitted Account Code');
     }
 
@@ -326,7 +327,7 @@ export default class ReimbursementRequestService {
       where: { reimbursementRequestId: oldReimbursementRequest.reimbursementRequestId },
       data: {
         dateOfExpense: dateOfExpense ?? null,
-        indexCodeId: account.indexCodeId,
+        indexCodeId,
         totalCost,
         accountCodeId: accountCode.accountCodeId,
         vendorId: vendor.vendorId

@@ -7,7 +7,6 @@ import express from 'express';
 import { body } from 'express-validator';
 import {
   intMinZero,
-  isAccount,
   isDate,
   isOptionalDate,
   nonEmptyString,
@@ -81,7 +80,7 @@ reimbursementRequestsRouter.post(
   '/create',
   isOptionalDate(body('dateOfExpense')),
   nonEmptyString(body('vendorId')),
-  isAccount(body('indexCode')),
+  nonEmptyString(body('indexCodeId')),
   nonEmptyString(body('accountCodeId')),
   intMinZero(body('totalCost')),
   validateReimbursementProducts(),
@@ -97,7 +96,7 @@ reimbursementRequestsRouter.post(
   '/:requestId/edit',
   isOptionalDate(body('dateOfExpense')),
   nonEmptyString(body('vendorId')),
-  isAccount(body('account')),
+  nonEmptyString(body('indexCodeId')),
   body('receiptPictures').isArray(),
   nonEmptyString(body('receiptPictures.*.name')),
   nonEmptyString(body('receiptPictures.*.googleFileId')),
@@ -144,7 +143,6 @@ reimbursementRequestsRouter.post(
   intMinZero(body('code')),
   body('allowed').isBoolean(),
   body('allowedRefundSources').isArray(),
-  isAccount(body('allowedRefundSources.*')),
   validateInputs,
   ReimbursementRequestController.createAccountCode
 );

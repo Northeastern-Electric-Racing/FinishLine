@@ -140,10 +140,6 @@ export const isTaskStatus = (validationObject: ValidationChain): ValidationChain
   return validationObject.isString().isIn([TaskStatus.DONE, TaskStatus.IN_BACKLOG, TaskStatus.IN_PROGRESS]);
 };
 
-export const isAccount = (validationObject: ValidationChain): ValidationChain => {
-  return validationObject.isString().isIn(['Budget', 'Cash']);
-};
-
 export const isMaterialStatus = (validationObject: ValidationChain): ValidationChain => {
   return validationObject
     .isString()
