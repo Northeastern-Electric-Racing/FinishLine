@@ -21,11 +21,7 @@ partsRouter.post(
   PartReviewController.createPart
 );
 
-partsRouter.post(
-  '/:partId/upload-preview',
-  upload.single('image'),
-  PartReviewController.uploadPreview
-);
+partsRouter.post('/:partId/upload-preview', upload.single('image'), PartReviewController.uploadPreview);
 
 partsRouter.post(
   '/:partId/update',
