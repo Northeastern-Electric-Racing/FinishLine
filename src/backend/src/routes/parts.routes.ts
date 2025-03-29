@@ -29,10 +29,9 @@ partsRouter.post(
 
 partsRouter.post(
   '/:partId/update',
-  nonEmptyString(body('index')),
+  intMinZero(body('index')),
   nonEmptyString(body('commonName')),
   body('description').optional().isString(),
-  body('previewImageLink').isString(),
   body('reviewStatus').custom((value) => Object.values(Review_Status).includes(value)),
   body('tagIds').isArray(),
   body('assigneeIds').isArray(),

@@ -1,9 +1,10 @@
 import { Organization, User } from '@prisma/client';
-import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
+import { createTestOrganization, createTestProject, createTestUser, resetUsers } from '../test-utils';
 import PartReviewService from '../../src/services/part-review.services';
-import { batmanAppAdmin, supermanAdmin, aquamanLeadership, flashAdmin } from '../test-data/users.test-data';
+import { batmanAppAdmin, supermanAdmin, aquamanLeadership, flashAdmin, financeMember } from '../test-data/users.test-data';
 import prisma from '../../src/prisma/prisma';
-import { AccessDeniedAdminOnlyException, DeletedException } from '../../src/utils/errors.utils';
+import { AccessDeniedAdminOnlyException, AccessDeniedException, DeletedException } from '../../src/utils/errors.utils';
+import { Review_Status } from 'shared';
 
 describe('part review tests', () => {
   let orgId: string;
@@ -11,16 +12,161 @@ describe('part review tests', () => {
   let batman: User;
   let superman: User;
   let nonAdmin: User;
+  let nonLeadership: User;
   beforeEach(async () => {
     organization = await createTestOrganization();
     orgId = organization.organizationId;
     batman = await createTestUser(batmanAppAdmin, orgId);
     superman = await createTestUser(supermanAdmin, orgId);
     nonAdmin = await createTestUser(aquamanLeadership, orgId);
+    nonLeadership = await createTestUser(financeMember, orgId);
   });
 
   afterEach(async () => {
     await resetUsers();
+  });
+
+  it('creates a part, updates it, and deletes it', async () => {
+    const project = await createTestProject(batman, orgId);
+
+    const project1 = await prisma.project.findUnique({
+      where: { projectId: project.projectId },
+      include: {
+        wbsElement: true
+      }
+    });
+
+    const wbsNum = `${project1?.wbsElement.carNumber}.${project1?.wbsElement.projectNumber}.${project1?.wbsElement.workPackageNumber}`;
+
+    const tag = await PartReviewService.createPartTag('practice', '#000000', superman, orgId);
+    const tag2 = await PartReviewService.createPartTag('practice1', '#000001', superman, orgId);
+    const tag3 = await PartReviewService.createPartTag('practice2', '#000002', superman, orgId);
+
+    const part = await PartReviewService.createPart(
+      organization,
+      wbsNum,
+      batman,
+      1,
+      'part1',
+      'here is a description',
+      Review_Status.IN_PROGRESS,
+      [tag.partTagId, tag3.partTagId],
+      [nonAdmin.userId, batman.userId]
+    );
+
+    expect(part.commonName).toBe('part1');
+    expect(part.description).toBe('here is a description');
+    expect(part.userCreated.userId).toBe(batman.userId);
+    expect(part.status).toBe('IN_PROGRESS');
+    expect(part.tags.map((tag) => tag.partTagId)).toHaveLength(2);
+    expect(part.tags.map((tag) => tag.partTagId)).toContain(tag.partTagId);
+    expect(part.tags.map((tag) => tag.partTagId)).toContain(tag3.partTagId);
+    expect(part.assignees).toHaveLength(2);
+    expect(part.assignees.map((user) => user.userId)).toContain(nonAdmin.userId);
+    expect(part.assignees.map((user) => user.userId)).toContain(batman.userId);
+
+    const updatedPart = await PartReviewService.updatePart(
+      orgId,
+      part.partId,
+      superman,
+      2,
+      'part2',
+      'new description',
+      Review_Status.IN_REVIEW,
+      [tag2.partTagId],
+      [superman.userId, nonAdmin.userId]
+    );
+
+    expect(updatedPart.commonName).toBe('part2');
+    expect(updatedPart.description).toBe('new description');
+    expect(updatedPart.userCreated.userId).toBe(batman.userId);
+    expect(updatedPart.status).toBe('IN_REVIEW');
+    expect(updatedPart.tags.map((tag) => tag.partTagId)).toHaveLength(1);
+    expect(updatedPart.tags.map((tag) => tag.partTagId)).toContain(tag2.partTagId);
+    expect(updatedPart.assignees).toHaveLength(2);
+    expect(updatedPart.assignees.map((user) => user.userId)).toContain(superman.userId);
+    expect(updatedPart.assignees.map((user) => user.userId)).toContain(nonAdmin.userId);
+
+    const deletedPart = await PartReviewService.deletePart(updatedPart.partId, batman, orgId);
+    expect(deletedPart.commonName).toBe('part2');
+    expect(deletedPart.description).toBe('new description');
+    expect(deletedPart.userCreated.userId).toBe(batman.userId);
+    expect(deletedPart.status).toBe('IN_REVIEW');
+    expect(deletedPart.tags.map((tag) => tag.partTagId)).toHaveLength(1);
+    expect(deletedPart.tags.map((tag) => tag.partTagId)).toContain(tag2.partTagId);
+    expect(deletedPart.assignees).toHaveLength(2);
+    expect(deletedPart.assignees.map((user) => user.userId)).toContain(superman.userId);
+    expect(deletedPart.assignees.map((user) => user.userId)).toContain(nonAdmin.userId);
+
+    await expect(
+      async () =>
+        await PartReviewService.updatePart(
+          orgId,
+          part.partId,
+          superman,
+          2,
+          'part2',
+          'new description',
+          Review_Status.IN_REVIEW,
+          [tag2.partTagId],
+          [superman.userId, nonAdmin.userId]
+        )
+    ).rejects.toThrow(new DeletedException('Part', part.partId));
+  });
+
+  it('Does not allow non-leadership or non-team members to create or update a part', async () => {
+    const project = await createTestProject(batman, orgId);
+
+    const project1 = await prisma.project.findUnique({
+      where: { projectId: project.projectId },
+      include: {
+        wbsElement: true
+      }
+    });
+
+    const wbsNum = `${project1?.wbsElement.carNumber}.${project1?.wbsElement.projectNumber}.${project1?.wbsElement.workPackageNumber}`;
+
+    await expect(
+      async () =>
+        await PartReviewService.createPart(
+          organization,
+          wbsNum,
+          nonLeadership,
+          1,
+          'part1',
+          'here is a description',
+          Review_Status.IN_PROGRESS,
+          [],
+          [nonAdmin.userId, batman.userId]
+        )
+    ).rejects.toThrow(new AccessDeniedException('Only leadership and team members can create a part'));
+
+    const part = await PartReviewService.createPart(
+      organization,
+      wbsNum,
+      batman,
+      1,
+      'part1',
+      'here is a description',
+      Review_Status.IN_PROGRESS,
+      [],
+      [nonAdmin.userId, batman.userId]
+    );
+
+    await expect(
+      async () =>
+        await PartReviewService.updatePart(
+          orgId,
+          part.partId,
+          nonLeadership,
+          2,
+          'part2',
+          'new description',
+          Review_Status.IN_REVIEW,
+          [],
+          [superman.userId, nonAdmin.userId]
+        )
+    ).rejects.toThrow(new AccessDeniedException('Only leadership and the part creator can update part data'));
   });
 
   it('creates a part tag, edits it, and deletes it', async () => {

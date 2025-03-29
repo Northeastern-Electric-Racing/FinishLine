@@ -63,7 +63,7 @@ export default class PartReviewService {
       (await userHasPermission(creator.userId, organization.organizationId, isLeadership)) ||
       isUserPartOfTeams(project.teams, creator);
 
-    if (!perms) throw new AccessDeniedException('create materials');
+    if (!perms) throw new AccessDeniedException('Only leadership and team members can create a part');
 
     const part = await prisma.part.create({
       data: {
@@ -155,10 +155,10 @@ export default class PartReviewService {
         description,
         status: reviewStatus,
         tags: {
-          connect: tagIds.map((partTagId) => ({ partTagId }))
+          set: tagIds.map((partTagId) => ({ partTagId }))
         },
         assignees: {
-          connect: assigneeIds.map((userId) => ({ userId }))
+          set: assigneeIds.map((userId) => ({ userId }))
         }
       },
       ...getPartQueryArgs(organizationId)
