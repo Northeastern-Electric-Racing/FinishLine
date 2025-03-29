@@ -1,10 +1,12 @@
-import { Box, IconButton, Typography, Paper } from '@mui/material';
+import { Box, IconButton, Typography } from '@mui/material';
 import { Star, StarBorder, Edit, Delete } from '@mui/icons-material';
 import { NERButton } from '../../../components/NERButton';
 import CreateCommonMistakesModal from './CreateCommonMistakeModal';
 import EditCommonMistakeModal from './EditCommonMistakeModal';
+import NERDeleteModal from '../../../components/NERDeleteModal';
 import { useState } from 'react';
 import LoadingIndicator from '../../../components/LoadingIndicator';
+import { useToast } from '../../../hooks/toasts.hooks';
 import ErrorPage from '../../ErrorPage';
 import type { PartReviewCommonMistake } from 'shared';
 import {
@@ -16,10 +18,12 @@ import {
 const CommonMistakesTable: React.FC = () => {
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [editingMistake, setEditingMistake] = useState<PartReviewCommonMistake | null>(null);
+  const [mistakeToDelete, setMistakeToDelete] = useState<PartReviewCommonMistake | undefined>(undefined);
 
   const { data, isLoading, isError, error } = useCommonMistakes();
   const deleteCommonMistake = useDeletePartReviewCommonMistake();
   const editCommonMistake = useEditPartReviewCommonMistakes();
+  const toast = useToast();
 
   const handleEdit = (mistake: PartReviewCommonMistake) => {
     setEditingMistake(mistake);
@@ -47,19 +51,9 @@ const CommonMistakesTable: React.FC = () => {
           starred: !mistake.starred
         }
       });
-    } catch (err) {
-      console.error('Failed to toggle star:', err);
-    }
-  };
-
-  const handleDelete = async (mistake: PartReviewCommonMistake): Promise<void> => {
-    if (window.confirm(`Are you sure you want to delete the mistake: "${mistake.title}"?`)) {
-      try {
-        await deleteCommonMistake.mutateAsync(mistake.partReviewCommonMistakeId);
-        alert('Mistake deleted successfully.');
-      } catch (error) {
-        console.error('Failed to delete the mistake:', error);
-        alert('An error occurred while deleting the mistake. Please try again.');
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
       }
     }
   };
@@ -76,22 +70,41 @@ const CommonMistakesTable: React.FC = () => {
         />
       )}
 
+      <NERDeleteModal
+        open={!!mistakeToDelete}
+        onHide={() => setMistakeToDelete(undefined)}
+        formId="delete-mistake-form"
+        dataType="Common Mistake"
+        onFormSubmit={async () => {
+          if (mistakeToDelete) {
+            try {
+              await deleteCommonMistake.mutateAsync(mistakeToDelete.partReviewCommonMistakeId);
+              setMistakeToDelete(undefined);
+            } catch (err) {
+              if (err instanceof Error) {
+                toast.error(err.message);
+              }
+            }
+          }
+        }}
+      />
+
       <Typography variant="subtitle1" fontWeight="bold">
         Common Mistakes
       </Typography>
 
       {data &&
         data.map((mistake) => (
-          <Paper
+          <Box
             key={mistake.partReviewCommonMistakeId}
-            elevation={2}
             sx={{
-              backgroundColor: 'transparent',
+              backgroundColor: '#2f3031',
               display: 'flex',
               alignItems: 'center',
               padding: 2,
               marginBottom: 1,
-              borderRadius: 2
+              borderRadius: 2,
+              boxShadow: 2
             }}
           >
             <Box sx={{ marginRight: 1 }}>
@@ -111,11 +124,11 @@ const CommonMistakesTable: React.FC = () => {
               </IconButton>
             </Box>
             <Box>
-              <IconButton sx={{ color: 'dark-gray' }} onClick={() => handleDelete(mistake)}>
+              <IconButton sx={{ color: 'dark-gray' }} onClick={() => setMistakeToDelete(mistake)}>
                 <Delete />
               </IconButton>
             </Box>
-          </Paper>
+          </Box>
         ))}
 
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: 2 }}>

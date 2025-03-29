@@ -69,15 +69,19 @@ const EditCommonMistakeModal: React.FC<EditCommonMistakeModalProps> = ({ showMod
       formId="edit-common-mistake-form"
       showCloseButton
     >
-      <FormControl>
+      <FormControl fullWidth sx={{ mb: 2 }}>
         <FormLabel>Title</FormLabel>
-        <ReactHookTextField name="title" control={control} sx={{ width: 1 }} />
+        <ReactHookTextField name="title" control={control} fullWidth />
         <FormHelperText error>{errors.title?.message}</FormHelperText>
+      </FormControl>
 
+      <FormControl fullWidth sx={{ mb: 2 }}>
         <FormLabel>Description</FormLabel>
-        <ReactHookTextField name="description" control={control} sx={{ width: 1 }} />
+        <ReactHookTextField name="description" control={control} fullWidth />
         <FormHelperText error>{errors.description?.message}</FormHelperText>
+      </FormControl>
 
+      <FormControl fullWidth sx={{ mb: 2 }}>
         <FormLabel>Starred</FormLabel>
         <Controller name="starred" control={control} render={({ field }) => <Switch {...field} checked={field.value} />} />
       </FormControl>
