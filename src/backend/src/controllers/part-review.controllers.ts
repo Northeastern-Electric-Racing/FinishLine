@@ -6,10 +6,10 @@ export default class PartReviewController {
   static async createPart(req: Request, res: Response, next: NextFunction) {
     try {
       const { index, commonName, description, reviewStatus, tagIds, assigneeIds } = req.body;
-      const { projectId } = req.params;
+      const { wbsNum } = req.params;
       const part = await PartReviewService.createPart(
-        req.organization.organizationId,
-        projectId,
+        req.organization,
+        wbsNum,
         req.currentUser,
         index,
         commonName,

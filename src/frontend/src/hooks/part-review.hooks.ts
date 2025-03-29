@@ -38,7 +38,6 @@ export interface PartReviewRequestPayload {
 export interface PartReviewPayload {
   fileIds: string[];
   notes?: string;
-  commonMistakeIds: string[];
 }
 
 /**

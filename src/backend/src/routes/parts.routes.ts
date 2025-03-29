@@ -10,7 +10,7 @@ const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage()
 const partsRouter = express.Router();
 
 partsRouter.post(
-  '/:projectId/create',
+  '/:wbsNum/create',
   intMinZero(body('index')),
   nonEmptyString(body('commonName')),
   body('description').optional().isString(),
@@ -31,7 +31,7 @@ partsRouter.post(
   '/:partId/update',
   nonEmptyString(body('index')),
   nonEmptyString(body('commonName')),
-  body('description').isString(),
+  body('description').optional().isString(),
   body('previewImageLink').isString(),
   body('reviewStatus').custom((value) => Object.values(Review_Status).includes(value)),
   body('tagIds').isArray(),

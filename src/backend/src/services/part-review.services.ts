@@ -1,4 +1,4 @@
-import { User } from '@prisma/client';
+import { Organization, User } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
 import {
   FrequentlyAskedQuestion,
@@ -6,7 +6,9 @@ import {
   isLeadership,
   PartReviewCommonMistake,
   PartTag,
-  Review_Status
+  Review_Status,
+  validateWBS,
+  WbsNumber
 } from 'shared';
 import {
   AccessDeniedAdminOnlyException,
@@ -19,17 +21,17 @@ import prisma from '../prisma/prisma';
 import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
 import { faqTransformer } from '../transformers/faq.transformer';
 import { partsReviewCommonMistakeTransformer, partTransformer } from '../transformers/part-review.transformer';
-import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
 import { isUserPartOfTeams } from '../utils/teams.utils';
 import { getPartQueryArgs } from '../prisma-query-args/part-review.query-args';
 import { uploadFile } from '../utils/google-integration.utils';
+import ProjectsService from './projects.services';
 
 export default class PartReviewService {
   /**
    * Creates a part on the given project id,
    * with no submissions and no review requests
    * @param organization the organization
-   * @param projectId project that the part will be added too
+   * @param wbsNum project that the part will be added too
    * @param creator the user creating the part
    * @param index the index of the part
    * @param commonName the name of the part
@@ -41,8 +43,8 @@ export default class PartReviewService {
    * @returns
    */
   static async createPart(
-    organizationId: string,
-    projectId: string,
+    organization: Organization,
+    wbsNum: string,
     creator: User,
     index: number,
     commonName: string,
@@ -51,17 +53,15 @@ export default class PartReviewService {
     tagIds: string[],
     assigneeIds: string[]
   ) {
-    const project = await prisma.project.findUnique({
-      where: {
-        projectId
-      },
-      ...getProjectQueryArgs(organizationId)
-    });
+    const wbsNumber: WbsNumber = validateWBS(wbsNum);
 
-    if (!project) throw new NotFoundException('Project', projectId);
+    const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNumber, organization);
+
+    if (!project) throw new NotFoundException('Project', wbsNum);
 
     const perms =
-      (await userHasPermission(creator.userId, organizationId, isLeadership)) || isUserPartOfTeams(project.teams, creator);
+      (await userHasPermission(creator.userId, organization.organizationId, isLeadership)) ||
+      isUserPartOfTeams(project.teams, creator);
 
     if (!perms) throw new AccessDeniedException('create materials');
 
@@ -74,13 +74,13 @@ export default class PartReviewService {
         tags: {
           connect: tagIds.map((partTagId) => ({ partTagId }))
         },
-        project: { connect: { projectId } },
+        project: { connect: { projectId: project.projectId } },
         assignees: {
           connect: assigneeIds.map((userId) => ({ userId }))
         },
         userCreated: { connect: { userId: creator.userId } }
       },
-      ...getPartQueryArgs(organizationId)
+      ...getPartQueryArgs(organization.organizationId)
     });
 
     return partTransformer(part);
