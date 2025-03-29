@@ -1,9 +1,8 @@
 import { isHead, SponsorTier } from 'shared';
 import { User, Organization, Sponsor_Task, Sponsor } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
-import { getSponsorQueryArgs } from '../prisma-query-args/sponsor.query.args';
+import { getSponsorQueryArgs, getSponsorTaskQueryArgs } from '../prisma-query-args/sponsor.query.args';
 import {
-  AccessDeniedAdminOnlyException,
   AccessDeniedException,
   DeletedException,
   InvalidOrganizationException,
@@ -49,7 +48,7 @@ export default class FinanceServices {
     discountCode?: string
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
-      throw new AccessDeniedAdminOnlyException('create a sponsor');
+      throw new AccessDeniedException('Only heads can create a sponsor');
 
     const sponsor = await prisma.sponsor.create({
       data: {
@@ -144,12 +143,20 @@ export default class FinanceServices {
 
     return sponsorTier;
   }
-
+  
+  /**
+   * Creates a sponsor tier.
+   * @param submitter current user creating the sponsor tier
+   * @param name tier name
+   * @param organization current organization of the current user
+   * @param colorHexCode tier color
+   * @returns newly created sponsor tier
+   */
   static async createSponsorTier(submitter: User, name: string, organization: Organization, colorHexCode: string) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
-      throw new AccessDeniedAdminOnlyException('create a sponsor tier');
+      throw new AccessDeniedException('Only heads can create a sponsor tier');
 
-    const sponsor = await prisma.sponsor_Tier.create({
+    const sponsorTier = await prisma.sponsor_Tier.create({
       data: {
         name,
         organizationId: organization.organizationId,
@@ -160,7 +167,7 @@ export default class FinanceServices {
       }
     });
 
-    return sponsor;
+    return sponsorTier;
   }
 
   /**
@@ -180,5 +187,55 @@ export default class FinanceServices {
     }
 
     return sponsor.sponsorTasks.map(sponsorTaskTransformer);
+  }
+
+  /**
+   * Creates a sponsor task for the given sponsorId.
+   * @param submitter current user creating the sponsor task
+   * @param organization current organization of the user
+   * @param dueDate sponsor task's due date
+   * @param notes notes for the sponsor task
+   * @param sponsorId the sponsor associated with this sponsor task
+   * @param notifyDate notification date for this sponsor tasks
+   * @param assigneeUserId assignee of this sponsor task
+   * @returns newly created sponsor task, and the given sponsor updated with this sponsor task added
+   * @throws AccessDeniedAdminOnlyException if the user lacks permissions.
+   * @throws NotFoundException if the sponsor or assignee is not found.
+   * @throws DeletedException if the sponsor is marked as deleted.
+   */
+  static async createSponsorTask(
+    submitter: User,
+    organization: Organization,
+    dueDate: Date,
+    notes: string,
+    sponsorId: string,
+    notifyDate?: Date,
+    assigneeUserId?: string
+  ) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
+      throw new AccessDeniedException('Only heads can create a sponsor task');
+    }
+
+    const sponsor = await prisma.sponsor.findUnique({ where: { sponsorId, organizationId: organization.organizationId } });
+    if (!sponsor) throw new NotFoundException('Sponsor', sponsorId);
+    if (sponsor.dateDeleted) throw new DeletedException('Sponsor', sponsorId);
+
+    if (assigneeUserId) {
+      const assignee = await prisma.user.findUnique({ where: { userId: assigneeUserId } });
+      if (!assignee) throw new NotFoundException('User', assigneeUserId);
+    }
+
+    const createdSponsorTask = await prisma.sponsor_Task.create({
+      data: {
+        dueDate,
+        notifyDate,
+        assignee: assigneeUserId ? { connect: { userId: assigneeUserId } } : undefined,
+        notes,
+        sponsor: { connect: { sponsorId } }
+      },
+      ...getSponsorTaskQueryArgs(organization.organizationId)
+    });
+
+    return sponsorTaskTransformer(createdSponsorTask);
   }
 }
