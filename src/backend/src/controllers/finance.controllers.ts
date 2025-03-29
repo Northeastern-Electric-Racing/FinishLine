@@ -78,4 +78,24 @@ export default class FinanceController {
       next(error);
     }
   }
+
+  static async createSponsorTask(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { dueDate, notes, notifyDate, assigneeId } = req.body;
+      const { sponsorId } = req.params;
+
+      const sponsorTask = await FinanceServices.createSponsorTask(
+        req.currentUser,
+        req.organization,
+        dueDate,
+        notes,
+        sponsorId,
+        notifyDate,
+        assigneeId
+      );
+      res.status(200).json(sponsorTask);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

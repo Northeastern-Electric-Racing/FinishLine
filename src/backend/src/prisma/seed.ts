@@ -2034,23 +2034,18 @@ const performSeed: () => Promise<void> = async () => {
     ner.organizationId
   );
 
-  // to be replaced with createSponsorTier
-  const sponsorTier = await prisma.sponsor_Tier.create({
-    data: {
-      name: 'Gold Tier',
-      colorHexCode: '#FFFFFF',
-      organizationId: ner.organizationId
-    }
-  });
+  const goldSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Gold Tier', ner, '#FFD700');
+  await FinanceServices.createSponsorTier(thomasEmrax, 'Silver Tier', ner, '#C0C0C0');
+  await FinanceServices.createSponsorTier(thomasEmrax, 'Bronze Tier', ner, '#CD7F32');
 
-  await FinanceServices.createSponsor(
+  const sponsor = await FinanceServices.createSponsor(
     thomasEmrax,
     'Google',
     true,
     5000,
     new Date(12, 1, 24),
     [2024, 2025],
-    sponsorTier.sponsorTierId,
+    goldSponsorTier.sponsorTierId,
     true,
     'Bill Gates',
     [],
@@ -2058,7 +2053,15 @@ const performSeed: () => Promise<void> = async () => {
     'googlecode'
   );
 
-  await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, 'C0C0C0');
+  await FinanceServices.createSponsorTask(
+    thomasEmrax,
+    ner,
+    new Date(12, 1, 25),
+    'notes...',
+    sponsor.sponsorId,
+    new Date(7, 5, 25),
+    thomasEmrax.userId
+  );
 };
 
 performSeed()
