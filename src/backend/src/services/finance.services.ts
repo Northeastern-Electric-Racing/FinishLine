@@ -143,7 +143,7 @@ export default class FinanceServices {
 
     return sponsorTier;
   }
-  
+
   /**
    * Creates a sponsor tier.
    * @param submitter current user creating the sponsor tier
