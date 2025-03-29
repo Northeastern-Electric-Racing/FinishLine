@@ -2053,7 +2053,6 @@ const performSeed: () => Promise<void> = async () => {
     'googlecode'
   );
 
-
   await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, 'C0C0C0');
 
   await FinanceServices.createSponsorTask(
