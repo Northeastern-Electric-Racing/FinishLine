@@ -1,15 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Part, PartPreview, PartReview, PartReviewRequest, PartSubmission, Review_Status } from 'shared';
+import { FrequentlyAskedQuestion, Part, PartPreview, PartReview, PartReviewRequest, PartSubmission, Review_Status } from 'shared';
 import {
   createPart,
   createPartReview,
+  createPartReviewFaq,
   createPartReviewRequest,
   createPartSubmission,
   deletePart,
+  deletePartReviewFaq,
   deletePartReviewRequest,
   editPart,
+  editPartReviewFaq,
   editPartReview,
   editPartSubmission,
+  getAllPartReviewFaqs,
   getPartsFromProject,
   getSinglePart
 } from '../apis/part-review.api';
@@ -254,4 +258,56 @@ export const useEditPartReview = (reviewId: string) => {
       }
     }
   );
+};
+
+/**
+ * React Query hook to fetch all Part Review FAQs.
+ *
+ * @returns Query result containing FAQs data, loading state, and error state.
+ */
+export const useAllPartReviewFaqs = () => {
+  return useQuery<FrequentlyAskedQuestion[], Error>(['partReviewFaqs'], async () => {
+    const { data } = await getAllPartReviewFaqs();
+    return data;
+  });
+};
+
+/**
+ * React Query hook to create a new Part Review FAQ.
+ *
+ * Automatically invalidates the FAQs query on success.
+ */
+export const useCreatePartReviewFaq = () => {
+  const queryClient = useQueryClient();
+  return useMutation(createPartReviewFaq, {
+    onSuccess: () => queryClient.invalidateQueries(['partReviewFaqs'])
+  });
+};
+
+/**
+ * React Query hook to edit an existing Part Review FAQ.
+ *
+ * Automatically invalidates the FAQs query on success.
+ */
+export const useEditPartReviewFaq = () => {
+  const queryClient = useQueryClient();
+  return useMutation(
+    ({ faqId, payload }: { faqId: string; payload: { question: string; answer: string } }) =>
+      editPartReviewFaq(faqId, payload),
+    {
+      onSuccess: () => queryClient.invalidateQueries(['partReviewFaqs'])
+    }
+  );
+};
+
+/**
+ * React Query hook to delete a Part Review FAQ.
+ *
+ * Automatically invalidates the FAQs query on success.
+ */
+export const useDeletePartReviewFaq = () => {
+  const queryClient = useQueryClient();
+  return useMutation(deletePartReviewFaq, {
+    onSuccess: () => queryClient.invalidateQueries(['partReviewFaqs'])
+  });
 };
