@@ -20,6 +20,7 @@ CREATE TABLE "Index_Code" (
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "dateDeleted" TIMESTAMP(3),
     "userCreatedId" TEXT NOT NULL,
+    "organizationId" TEXT NOT NULL,
     "userDeletedId" TEXT,
 
     CONSTRAINT "Index_Code_pkey" PRIMARY KEY ("indexCodeId")
@@ -48,13 +49,16 @@ ALTER TABLE "Reimbursement_Request" ADD COLUMN "indexCodeId" TEXT NOT NULL;
 -- CreateAdminUser
 INSERT INTO "User" ("userId", "firstName", "lastName", "googleAuthId", "email") VALUES ('0', 'Admin', 'User', 'admin', 'admin@gmail.com');
 
-WITH inserted AS (
-    -- Insert Cash and Budget into Index_Code table and capture the indexCodeId
-    INSERT INTO "Index_Code" ("indexCodeId", "name", "userCreatedId")
-    VALUES 
-        (gen_random_uuid(), 'CASH', '0'),
-        (gen_random_uuid(), 'BUDGET', '0')
-    RETURNING "indexCodeId", "name"
+-- Ensure every organization gets its own CASH and BUDGET index codes
+WITH orgs AS (
+    SELECT "organizationId" FROM "Organization"
+),
+inserted AS (
+    INSERT INTO "Index_Code" ("indexCodeId", "name", "userCreatedId", "organizationId")
+    SELECT gen_random_uuid(), 'CASH', '0', o."organizationId" FROM orgs o
+    UNION ALL
+    SELECT gen_random_uuid(), 'BUDGET', '0', o."organizationId" FROM orgs o
+    RETURNING "indexCodeId", "name", "organizationId"
 )
 
 -- Insert into Reimbursement_Product_Other_Reason using the captured indexCodeId values
@@ -69,7 +73,8 @@ VALUES
 UPDATE "Reimbursement_Request" rr
 SET "indexCodeId" = ic."indexCodeId"
 FROM "Index_Code" ic
-WHERE rr."indexCode"::TEXT = ic."name";
+WHERE rr."indexCode"::TEXT = ic."name"
+AND rr."organizationId" = ic."organizationId";
 
 UPDATE "Reimbursement_Product_Reason" rpr 
 SET "otherReasonId" = orpr."otherReimbursementProductReasonId"
@@ -219,6 +224,9 @@ ALTER TABLE "Index_Code" ADD CONSTRAINT "Index_Code_userCreatedId_fkey" FOREIGN 
 
 -- AddForeignKey
 ALTER TABLE "Index_Code" ADD CONSTRAINT "Index_Code_userDeletedId_fkey" FOREIGN KEY ("userDeletedId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Index_Code" ADD CONSTRAINT "Index_Code_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Reimbursement_Product_Other_Reason" ADD CONSTRAINT "Reimbursement_Product_Other_Reason_userCreatedId_fkey" FOREIGN KEY ("userCreatedId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;

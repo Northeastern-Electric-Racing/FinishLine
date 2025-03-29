@@ -26,20 +26,20 @@ reimbursementRequestsRouter.get('/vendors', ReimbursementRequestController.getAl
 reimbursementRequestsRouter.get('/account-codes', ReimbursementRequestController.getAllAccountCodes);
 
 reimbursementRequestsRouter.post(
-  '/index-code/create',
+  '/index-codes/create',
   nonEmptyString(body('name')),
   validateInputs,
   ReimbursementRequestController.createIndexCode
 );
 
-reimbursementRequestsRouter.get('/index-code/:indexCodeId', ReimbursementRequestController.getSingleIndexCode);
+reimbursementRequestsRouter.get('/index-codes/:indexCodeId', ReimbursementRequestController.getSingleIndexCode);
 
 reimbursementRequestsRouter.get('/index-codes', ReimbursementRequestController.getAllIndexCodes);
 
-reimbursementRequestsRouter.delete('/index-code/:indexCodeId/delete', ReimbursementRequestController.deleteIndexCode);
+reimbursementRequestsRouter.delete('/index-codes/:indexCodeId/delete', ReimbursementRequestController.deleteIndexCode);
 
 reimbursementRequestsRouter.post(
-  '/other-reimbursement-product-reason/create',
+  '/other-reimbursement-product-reasons/create',
   nonEmptyString(body('name')),
   intMinZero(body('budget')),
   nonEmptyString(body('indexCodeId')),
@@ -53,12 +53,12 @@ reimbursementRequestsRouter.get(
 );
 
 reimbursementRequestsRouter.get(
-  '/other-reimbursement-product-reason/:otherReimbursementProductReasonId',
+  '/other-reimbursement-product-reasons/:otherReimbursementProductReasonId',
   ReimbursementRequestController.getSingleOtherReimbursementProductReason
 );
 
 reimbursementRequestsRouter.delete(
-  '/other-reimbursement-product-reason/:otherReimbursementProductReasonId/delete',
+  '/other-reimbursement-product-reasons/:otherReimbursementProductReasonId/delete',
   ReimbursementRequestController.deleteOtherReimbursementProductReason
 );
 
@@ -81,7 +81,7 @@ reimbursementRequestsRouter.post(
   '/create',
   isOptionalDate(body('dateOfExpense')),
   nonEmptyString(body('vendorId')),
-  isAccount(body('account')),
+  isAccount(body('indexCode')),
   nonEmptyString(body('accountCodeId')),
   intMinZero(body('totalCost')),
   validateReimbursementProducts(),

@@ -1333,7 +1333,8 @@ export default class ReimbursementRequestService {
     const indexCode = await prisma.index_Code.create({
       data: {
         userCreated: { connect: { userId: user.userId } },
-        name
+        name,
+        organization: { connect: { organizationId: organization.organizationId } }
       },
       ...getIndexCodeQueryArgs(organization.organizationId)
     });
@@ -1354,6 +1355,8 @@ export default class ReimbursementRequestService {
 
     if (!indexCode) throw new NotFoundException('Index Code', indexCodeId);
     if (indexCode.dateDeleted) throw new DeletedException('Index Code', indexCodeId);
+    if (indexCode.organizationId !== organization.organizationId)
+      throw new AccessDeniedException('You do not have access to this index code');
 
     return indexCodeTransformer(indexCode);
   }
@@ -1365,7 +1368,7 @@ export default class ReimbursementRequestService {
    */
   static async getAllIndexCodes(organization: Organization): Promise<IndexCode[]> {
     const indexCodes = await prisma.index_Code.findMany({
-      where: { dateDeleted: null },
+      where: { dateDeleted: null, organizationId: organization.organizationId },
       ...getIndexCodeQueryArgs(organization.organizationId)
     });
     return indexCodes.map(indexCodeTransformer);

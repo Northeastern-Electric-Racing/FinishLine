@@ -1708,7 +1708,7 @@ const performSeed: () => Promise<void> = async () => {
     'Tax exemption ID NUMBER',
     thomasEmrax.userId
   );
-
+  /*
   const indexCodeCash = await ReimbursementRequestService.createIndexCode('CASH', thomasEmrax, ner);
   const indexCodeBudget = await ReimbursementRequestService.createIndexCode('BUDGET', thomasEmrax, ner);
 
@@ -1763,7 +1763,6 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     new Date()
   );
-
   const otherProductReason = await ReimbursementRequestService.createOtherReimbursementProductReason(
     'CONSUMABLES',
     10,
@@ -1771,6 +1770,7 @@ const performSeed: () => Promise<void> = async () => {
     thomasEmrax,
     ner
   );
+  */
 
   /**
    * Bill of Materials
