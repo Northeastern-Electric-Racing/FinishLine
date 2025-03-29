@@ -3,7 +3,6 @@ import { User, Organization, Sponsor_Task, Sponsor } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
 import { getSponsorQueryArgs, getSponsorTaskQueryArgs } from '../prisma-query-args/sponsor.query.args';
 import {
-  AccessDeniedAdminOnlyException,
   AccessDeniedException,
   DeletedException,
   InvalidOrganizationException,
@@ -49,7 +48,7 @@ export default class FinanceServices {
     discountCode?: string
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
-      throw new AccessDeniedAdminOnlyException('Only heads can create a sponsor');
+      throw new AccessDeniedException('Only heads can create a sponsor');
 
     const sponsor = await prisma.sponsor.create({
       data: {
@@ -132,7 +131,7 @@ export default class FinanceServices {
    */
   static async createSponsorTier(submitter: User, name: string, organization: Organization, colorHexCode: string) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
-      throw new AccessDeniedAdminOnlyException('Only heads can create a sponsor tier');
+      throw new AccessDeniedException('Only heads can create a sponsor tier');
 
     const sponsorTier = await prisma.sponsor_Tier.create({
       data: {
@@ -191,7 +190,7 @@ export default class FinanceServices {
     assigneeUserId?: string
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
-      throw new AccessDeniedAdminOnlyException('Only heads can create a sponsor task');
+      throw new AccessDeniedException('Only heads can create a sponsor task');
     }
 
     const sponsor = await prisma.sponsor.findUnique({ where: { sponsorId }, include: { sponsorTasks: true } });
@@ -214,14 +213,6 @@ export default class FinanceServices {
       ...getSponsorTaskQueryArgs(organization.organizationId)
     });
 
-    const updatedSponsor = await prisma.sponsor.findUnique({
-      where: { sponsorId },
-      include: { sponsorTasks: true }
-    });
-
-    return {
-      ...sponsorTaskTransformer(createdSponsorTask),
-      updatedSponsor
-    };
+    return sponsorTaskTransformer(createdSponsorTask);
   }
 }

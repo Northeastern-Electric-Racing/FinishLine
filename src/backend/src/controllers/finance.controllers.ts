@@ -81,7 +81,8 @@ export default class FinanceController {
 
   static async createSponsorTask(req: Request, res: Response, next: NextFunction) {
     try {
-      const { dueDate, notes, sponsorId, notifyDate, assigneeId } = req.body;
+      const { dueDate, notes, notifyDate, assigneeId } = req.body;
+      const { sponsorId } = req.params;
 
       const sponsorTask = await FinanceServices.createSponsorTask(
         req.currentUser,
