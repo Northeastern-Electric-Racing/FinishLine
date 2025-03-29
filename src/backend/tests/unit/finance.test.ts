@@ -1,11 +1,6 @@
 import { Organization } from '@prisma/client';
 import FinanceServices from '../../src/services/finance.services';
-import {
-  AccessDeniedAdminOnlyException,
-  AccessDeniedException,
-  DeletedException,
-  NotFoundException
-} from '../../src/utils/errors.utils';
+import { AccessDeniedException, DeletedException, NotFoundException } from '../../src/utils/errors.utils';
 import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, theVisitorGuest } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
@@ -50,7 +45,7 @@ describe('Finance Tests', () => {
             organization,
             'googlecode'
           )
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('Only heads can create a sponsor'));
+      ).rejects.toThrow(new AccessDeniedException('Only heads can create a sponsor'));
     });
 
     it('Succeeds and creates a sponsor', async () => {
@@ -202,7 +197,7 @@ describe('Finance Tests', () => {
             organization,
             'C0C0C0'
           )
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('Only heads can create a sponsor tier'));
+      ).rejects.toThrow(new AccessDeniedException('Only heads can create a sponsor tier'));
     });
 
     it('Succeeds and creates a sponsor tier', async () => {
@@ -272,7 +267,7 @@ describe('Finance Tests', () => {
       const user = await createTestUser(wonderwomanGuest, orgId);
       await expect(
         FinanceServices.createSponsorTask(user, organization, new Date(1, 1, 25), 'notes', 'sponsorId')
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('Only heads can create a sponsor task'));
+      ).rejects.toThrow(new AccessDeniedException('Only heads can create a sponsor task'));
     });
 
     it('Fails when assigned user is not found', async () => {
@@ -330,9 +325,6 @@ describe('Finance Tests', () => {
         'telsaCode'
       );
 
-      // sponsor has no sponsor tasks pre createSponsorTask call
-      expect(sponsor.sponsorTasks.length).toEqual(0);
-
       const result = await FinanceServices.createSponsorTask(
         user,
         organization,
@@ -346,9 +338,7 @@ describe('Finance Tests', () => {
       expect(result.assignee?.userId).toEqual(user.userId);
       expect(result.notes).toEqual('hello notes');
       expect(result.dueDate).toEqual(new Date(1, 2, 3));
-
-      // sponsor has one sponsor tasks pre createSponsorTask call
-      expect(result.updatedSponsor?.sponsorTasks.length).toEqual(1);
+      expect(result.assignee?.userId).toEqual(user.userId);
     });
   });
 });

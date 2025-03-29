@@ -2034,7 +2034,9 @@ const performSeed: () => Promise<void> = async () => {
     ner.organizationId
   );
 
-  const sponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Gold Tier', ner, '#FFFFFF');
+  const goldSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Gold Tier', ner, '#FFD700');
+  await FinanceServices.createSponsorTier(thomasEmrax, 'Silver Tier', ner, '#C0C0C0');
+  await FinanceServices.createSponsorTier(thomasEmrax, 'Bronze Tier', ner, '#CD7F32');
 
   const sponsor = await FinanceServices.createSponsor(
     thomasEmrax,
@@ -2043,7 +2045,7 @@ const performSeed: () => Promise<void> = async () => {
     5000,
     new Date(12, 1, 24),
     [2024, 2025],
-    sponsorTier.sponsorTierId,
+    goldSponsorTier.sponsorTierId,
     true,
     'Bill Gates',
     [],
