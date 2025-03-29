@@ -61,14 +61,23 @@ inserted AS (
     RETURNING "indexCodeId", "name", "organizationId"
 )
 
--- Insert into Reimbursement_Product_Other_Reason using the captured indexCodeId values
+-- Insert into Reimbursement_Product_Other_Reason using the correct indexCodeId per organization
 INSERT INTO "Reimbursement_Product_Other_Reason" ("otherReimbursementProductReasonId", "name", "userCreatedId", "budget", "indexCodeId")
-VALUES 
-    (gen_random_uuid(), 'TOOLS_AND_EQUIPMENT', '0', 0, (SELECT "indexCodeId" FROM inserted WHERE "name" = 'CASH')),
-    (gen_random_uuid(), 'COMPETITION', '0', 0, (SELECT "indexCodeId" FROM inserted WHERE "name" = 'BUDGET')),
-    (gen_random_uuid(), 'CONSUMABLES', '0', 0, (SELECT "indexCodeId" FROM inserted WHERE "name" = 'CASH')),
-    (gen_random_uuid(), 'GENERAL_STOCK', '0', 0, (SELECT "indexCodeId" FROM inserted WHERE "name" = 'BUDGET')),
-    (gen_random_uuid(), 'SUBSCRIPTIONS_AND_MEMBERSHIPS', '0', 0, (SELECT "indexCodeId" FROM inserted WHERE "name" = 'CASH'));
+SELECT 
+    gen_random_uuid(), 
+    reason.name, 
+    '0', 
+    0, 
+    i."indexCodeId"
+FROM (
+    VALUES 
+        ('TOOLS_AND_EQUIPMENT', 'CASH'),
+        ('COMPETITION', 'BUDGET'),
+        ('CONSUMABLES', 'CASH'),
+        ('GENERAL_STOCK', 'BUDGET'),
+        ('SUBSCRIPTIONS_AND_MEMBERSHIPS', 'CASH')
+) AS reason(name, index_name)
+JOIN inserted i ON reason.index_name = i."name";
 
 UPDATE "Reimbursement_Request" rr
 SET "indexCodeId" = ic."indexCodeId"

@@ -1708,7 +1708,7 @@ const performSeed: () => Promise<void> = async () => {
     'Tax exemption ID NUMBER',
     thomasEmrax.userId
   );
-  /*
+
   const indexCodeCash = await ReimbursementRequestService.createIndexCode('CASH', thomasEmrax, ner);
   const indexCodeBudget = await ReimbursementRequestService.createIndexCode('BUDGET', thomasEmrax, ner);
 
@@ -1763,14 +1763,46 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     new Date()
   );
-  const otherProductReason = await ReimbursementRequestService.createOtherReimbursementProductReason(
+
+  const otherProductReasonConsumables = await ReimbursementRequestService.createOtherReimbursementProductReason(
     'CONSUMABLES',
     10,
     indexCodeCash.indexCodeId,
     thomasEmrax,
     ner
   );
-  */
+
+  const otherProductReasonTools = await ReimbursementRequestService.createOtherReimbursementProductReason(
+    'TOOLS_AND_EQUIPMENT',
+    10,
+    indexCodeCash.indexCodeId,
+    thomasEmrax,
+    ner
+  );
+
+  const otherProductReasonComp = await ReimbursementRequestService.createOtherReimbursementProductReason(
+    'COMPETITION',
+    10,
+    indexCodeBudget.indexCodeId,
+    thomasEmrax,
+    ner
+  );
+
+  const otherProductReasonGeneral = await ReimbursementRequestService.createOtherReimbursementProductReason(
+    'GENERAL_STOCK',
+    10,
+    indexCodeBudget.indexCodeId,
+    thomasEmrax,
+    ner
+  );
+
+  const otherProductReasonSub = await ReimbursementRequestService.createOtherReimbursementProductReason(
+    'SUBSCRIPTIONS_AND_MEMBERSHIP',
+    10,
+    indexCodeCash.indexCodeId,
+    thomasEmrax,
+    ner
+  );
 
   /**
    * Bill of Materials
