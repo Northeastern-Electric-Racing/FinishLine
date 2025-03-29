@@ -296,7 +296,8 @@ const CreditsPage: React.FC = () => {
       }
     },
     { name: 'Maddy Nenninger', color: '#70d489' },
-    { name: 'Gauri Rajesh', color: '#94C973' }
+    { name: 'Gauri Rajesh', color: '#94C973' },
+    { name: 'Steph Sayegh', color: '#006400' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
