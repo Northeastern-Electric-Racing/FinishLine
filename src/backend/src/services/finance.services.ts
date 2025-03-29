@@ -193,7 +193,7 @@ export default class FinanceServices {
       throw new AccessDeniedException('Only heads can create a sponsor task');
     }
 
-    const sponsor = await prisma.sponsor.findUnique({ where: { sponsorId }, include: { sponsorTasks: true } });
+    const sponsor = await prisma.sponsor.findUnique({ where: { sponsorId, organizationId: organization.organizationId } });
     if (!sponsor) throw new NotFoundException('Sponsor', sponsorId);
     if (sponsor.dateDeleted) throw new DeletedException('Sponsor', sponsorId);
 
