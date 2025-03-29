@@ -88,16 +88,21 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   const hoverColor = userTheme.palette.action.hover;
 
   return (
-    <TableContainer>
+    <TableContainer sx={{ borderTop: '1px solid rgb(131, 131, 131)' }}>
       <Table>
         <TableHead>
-          <TableRow>
-            <TableCell width={'40%'}>
-              <FormLabel>Project/Category</FormLabel>
-            </TableCell>
-            <TableCell width={'60%'}>
-              <FormLabel>Products</FormLabel>
-            </TableCell>
+          <TableRow
+            sx={{
+              color: '#dd524c',
+              textDecoration: 'underline',
+              textUnderlineOffset: '3.5px',
+              textDecorationThickness: '0.6px',
+              marginTop: '10px',
+              fontSize: 'xx-large',
+              fontWeight: 'bold'
+            }}
+          >
+            Items*
           </TableRow>
         </TableHead>
         <TableBody>
