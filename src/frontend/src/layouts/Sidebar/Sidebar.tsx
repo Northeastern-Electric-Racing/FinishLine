@@ -21,6 +21,10 @@ import NavUserMenu from '../PageTitle/NavUserMenu';
 import DrawerHeader from '../../components/DrawerHeader';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import QueryStatsIcon from '@mui/icons-material/QueryStats';
+import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import { useState } from 'react';
 
 interface SidebarProps {
   drawerOpen: boolean;
@@ -30,6 +34,7 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: SidebarProps) => {
+  const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
   const linkItems: LinkItem[] = [
     {
       name: 'Home',
@@ -54,7 +59,30 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
     {
       name: 'Finance',
       icon: <AttachMoneyIcon />,
-      route: routes.FINANCE
+      route: routes.FINANCE,
+      subItems: [
+        {
+          name: 'Finance Dashboard',
+          icon: <QueryStatsIcon sx={{ fontSize: '20px' }} />,
+          route: routes.FINANCE_DASHBOARD
+        },
+        {
+          name: 'Reimbursments',
+          icon: <CurrencyExchangeIcon sx={{ fontSize: '20px' }} />,
+          route: routes.REIMBURSEMENT_REQUESTS
+        },
+        {
+          name: 'Companies & Sponsors',
+          icon: <ShoppingCartIcon sx={{ fontSize: '20px' }} />,
+          route: routes.COMPANIES_SPONSORS
+        },
+        {
+          /* FOR REFRENCE (TO BE REMOVED) */
+          name: 'Original Page',
+          icon: <AttachMoneyIcon sx={{ fontSize: '20px' }} />,
+          route: routes.FINANCE
+        }
+      ]
     },
     {
       name: 'Teams',
@@ -85,6 +113,14 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
     setMoveContent(!moveContent);
   };
 
+  const handleOpenSubmenu = (name: string) => {
+    setOpenSubmenu(name);
+  };
+
+  const handleCloseSubmenu = () => {
+    setOpenSubmenu(null);
+  };
+
   return (
     <NERDrawer
       open={drawerOpen}
@@ -107,7 +143,12 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       >
         <Box>
           {linkItems.map((linkItem) => (
-            <NavPageLink {...linkItem} />
+            <NavPageLink
+              {...linkItem}
+              isSubmenuOpen={openSubmenu === linkItem.name}
+              onSubmenuHover={() => handleOpenSubmenu(linkItem.name)}
+              onSubmenuCollapse={() => handleCloseSubmenu()}
+            />
           ))}
           {<NavUserMenu open={drawerOpen} />}
         </Box>

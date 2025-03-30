@@ -140,9 +140,9 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
   };
 
   return (
-    <div style={{ background: 'transparent', padding: '10px' }}>
-      <ResponsiveContainer width="100%" height={400} style={{ background: 'transparent' }}>
-        <PieChart margin={{ top: -30, right: 0, bottom: 60, left: -140 }} style={{ background: 'transparent' }}>
+    <div style={{ background: 'transparent', display: 'flex', gap: '20px', padding: '10px', minWidth: '600px', flexWrap: 'wrap', maxWidth: '900px' }}>
+      <ResponsiveContainer width="50%" height={400} style={{ background: 'transparent' }}>
+        <PieChart margin={{ top: -30, right: 0, bottom: 60, left: 0 }} style={{ background: 'transparent', minWidth: '450px', flex: '1' }}>
           <Pie
             data={data}
             dataKey="value"
@@ -185,7 +185,10 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
             verticalAlign="middle"
             wrapperStyle={{
               paddingRight: '30px',
-              paddingBottom: '0px'
+              paddingBottom: '0px',
+              minWidth: '200px',
+              maxWidth: '300px',
+              flex: '1'
             }}
           />
         </PieChart>

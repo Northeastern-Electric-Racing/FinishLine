@@ -8,7 +8,6 @@
 import {
   CR_Type,
   Club_Accounts,
-  Graph,
   Graph_Display_Type,
   Graph_Type,
   Measure,
@@ -46,10 +45,9 @@ import { writeFileSync } from 'fs';
 import WorkPackageTemplatesService from '../services/work-package-template.services';
 import RecruitmentServices from '../services/recruitment.services';
 import OrganizationsService from '../services/organizations.services';
-import StatisticsService from '../services/statistics.services';
 import { seedGraph } from './seed-data/statistics.seed';
-import { graphCollectionTransformer } from '../transformers/statistics-graphCollection.transformer';
 import AnnouncementService from '../services/announcement.service';
+import FinanceServices from '../services/finance.services';
 
 const prisma = new PrismaClient();
 
@@ -1676,9 +1674,39 @@ const performSeed: () => Promise<void> = async () => {
    * Reimbursements
    */
 
-  const vendor = await ReimbursementRequestService.createVendor(thomasEmrax, 'Tesla', ner);
-  await ReimbursementRequestService.createVendor(thomasEmrax, 'Amazon', ner);
-  await ReimbursementRequestService.createVendor(thomasEmrax, 'Google', ner);
+  const vendor = await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Tesla',
+    ner,
+    'nershipping@gmail.com',
+    'racecar228!',
+    'SAVE50!',
+    thomasEmrax.userId,
+    'Tax exemption status?',
+    thomasEmrax.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Amazon',
+    ner,
+    'amazon@gmail.com',
+    'racecare228!',
+    'SAVE20!',
+    thomasEmrax.userId,
+    'They want updates on work',
+    thomasEmrax.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Google',
+    ner,
+    'google@gmail.com',
+    'racecar228!',
+    'SAVE50!',
+    thomasEmrax.userId,
+    'Tax exemption ID NUMBER',
+    thomasEmrax.userId
+  );
 
   const accountCode = await ReimbursementRequestService.createAccountCode(
     thomasEmrax,
@@ -1689,7 +1717,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await ReimbursementRequestService.createReimbursementRequest(
+  const reimbursement1 = await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
     vendor.vendorId,
     ClubAccount.CASH,
@@ -1710,7 +1738,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await ReimbursementRequestService.createReimbursementRequest(
+  const reimbursement2 = await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
     vendor.vendorId,
     ClubAccount.BUDGET,
@@ -1786,8 +1814,31 @@ const performSeed: () => Promise<void> = async () => {
       workPackageNumber: 0
     },
     ner,
-    'Here are some more notes',
-    assembly1.assemblyId
+    'Here are some more notes'
+  );
+
+  await BillOfMaterialsService.createMaterial(
+    thomasEmrax,
+    '100k Resistor',
+    MaterialStatus.ReadyToOrder,
+    'Resistor',
+    'Digikey',
+    'lalsd',
+    new Decimal(5),
+    10,
+    50,
+    'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    {
+      carNumber: 0,
+      projectNumber: 1,
+      workPackageNumber: 0
+    },
+    ner,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    reimbursement1.reimbursementRequestId
   );
 
   // Need to do this because the design review cannot be scheduled for a past day
@@ -1981,6 +2032,35 @@ const performSeed: () => Promise<void> = async () => {
     '3',
     'powertrain',
     ner.organizationId
+  );
+
+  const goldSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Gold Tier', ner, '#FFD700');
+  await FinanceServices.createSponsorTier(thomasEmrax, 'Silver Tier', ner, '#C0C0C0');
+  await FinanceServices.createSponsorTier(thomasEmrax, 'Bronze Tier', ner, '#CD7F32');
+
+  const sponsor = await FinanceServices.createSponsor(
+    thomasEmrax,
+    'Google',
+    true,
+    5000,
+    new Date(12, 1, 24),
+    [2024, 2025],
+    goldSponsorTier.sponsorTierId,
+    true,
+    'Bill Gates',
+    [],
+    ner,
+    'googlecode'
+  );
+
+  await FinanceServices.createSponsorTask(
+    thomasEmrax,
+    ner,
+    new Date(12, 1, 25),
+    'notes...',
+    sponsor.sponsorId,
+    new Date(7, 5, 25),
+    thomasEmrax.userId
   );
 };
 

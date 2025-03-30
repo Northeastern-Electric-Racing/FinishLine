@@ -22,6 +22,7 @@ import announcementsRouter from './src/routes/announcements.routes';
 import onboardingRouter from './src/routes/onboarding.routes';
 import popUpsRouter from './src/routes/pop-up.routes';
 import statisticsRouter from './src/routes/statistics.routes';
+import financeRouter from './src/routes/finance.routes';
 
 const app = express();
 
@@ -81,6 +82,7 @@ app.use('/pop-ups', popUpsRouter);
 app.use('/announcements', announcementsRouter);
 app.use('/onboarding', onboardingRouter);
 app.use('/statistics', statisticsRouter);
+app.use('/finance', financeRouter);
 app.use('/', (_req, res) => {
   res.status(200).json('Welcome to FinishLine');
 });

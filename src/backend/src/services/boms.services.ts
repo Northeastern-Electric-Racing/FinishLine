@@ -50,6 +50,7 @@ export default class BillOfMaterialsService {
    * @param assemblyId the id of the Assembly for the material
    * @param pdmFileName the name of the pdm file for the material
    * @param unitName the name of the Quantity Unit the quantity is measured in
+   * @param reimbursementRequestId the id of the Reimbursement Request for the material
    * @returns the created material
    */
   static async createMaterial(
@@ -68,7 +69,8 @@ export default class BillOfMaterialsService {
     notes?: string,
     assemblyId?: string,
     pdmFileName?: string,
-    unitName?: string
+    unitName?: string,
+    reimbursementRequestId?: string
   ): Promise<Material> {
     const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNumber, organization);
 
@@ -99,6 +101,16 @@ export default class BillOfMaterialsService {
       if (!unit) throw new NotFoundException('Unit', unitName);
     }
 
+    if (reimbursementRequestId) {
+      const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+        where: { reimbursementRequestId, dateDeleted: null }
+      });
+
+      if (!reimbursementRequest) {
+        throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+      }
+    }
+
     const perms =
       (await userHasPermission(creator.userId, organization.organizationId, isLeadership)) ||
       isUserPartOfTeams(project.teams, creator);
@@ -122,7 +134,8 @@ export default class BillOfMaterialsService {
         linkUrl,
         notes,
         dateCreated: new Date(),
-        wbsElementId: project.wbsElementId
+        wbsElementId: project.wbsElementId,
+        reimbursementRequestId
       }
     });
 
