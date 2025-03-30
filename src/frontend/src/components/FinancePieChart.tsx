@@ -52,7 +52,7 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
 
   const legendContainerStyle = {
     position: 'absolute' as const,
-    right: '50px',
+    right: '0px',
     top: '-155px',
     display: 'flex',
     flexDirection: 'column' as const

@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Box, Grid, ListItemIcon, Menu, MenuItem } from '@mui/material';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { NERButton } from '../../components/NERButton';
@@ -12,7 +12,6 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import Refunds from './RefundsSection';
-import BalanceSection from './BalanceSection';
 import ReimbursementRequestTable from './ReimbursementRequestsSection';
 import {
   useAllReimbursementRequests,
@@ -27,17 +26,26 @@ import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
 import PendingAdvisorModal from './FinanceComponents/PendingAdvisorListModal';
-import { isAdmin, isGuest } from 'shared';
+import { isAdmin, isGuest, Project, ReimbursementRequest, ReimbursementStatusType } from 'shared';
 import WorkIcon from '@mui/icons-material/Work';
 import TotalAmountSpentModal from './FinanceComponents/TotalAmountSpentModal';
 import { useToast } from '../../hooks/toasts.hooks';
 import ReportRefundModal from './FinanceComponents/ReportRefundModal';
+import { useAllProjects } from '../../hooks/projects.hooks';
+import BalanceSection from './BalanceSection';
 
 const FinancePage = () => {
   const user = useCurrentUser();
   const history = useHistory();
   const [showGenerateReceipts, setShowGenerateReceipts] = useState(false);
 
+  const {
+      data: allProjects,
+      isLoading: allProjectsIsLoading,
+      isError: allProjectsIsError,
+      error: allProjectsError
+    } = useAllProjects();
+    
   const {
     data: userReimbursementRequests,
     isLoading: userReimbursementRequestIsLoading,
@@ -60,6 +68,7 @@ const FinancePage = () => {
   const toast = useToast();
 
   const { isFinance } = user;
+  const canViewAllReimbursementRequestsAndTotalBudget = user.isFinance || isAdmin(user.role);
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -80,6 +89,17 @@ const FinancePage = () => {
 
   if (isFinance && (!allPendingAdvisorList || allPendingAdvisorListIsLoading)) return <LoadingIndicator />;
 
+  if (canViewAllReimbursementRequestsAndTotalBudget && allProjectsIsError)
+    return <ErrorPage message={allProjectsError?.message} />;
+  if (user.isFinance && allProjectsIsError) return <ErrorPage message={allProjectsError?.message} />;
+  if (allProjectsIsError) return <ErrorPage message={allProjectsError?.message} />;
+  if (
+    (canViewAllReimbursementRequestsAndTotalBudget && (allProjectsIsLoading || !allProjects)) ||
+    (user.isFinance && (allProjectsIsLoading || !allProjects)) ||
+    !allProjects
+  )
+    return <LoadingIndicator />;
+
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -97,6 +117,77 @@ const FinancePage = () => {
       }
     }
   };
+
+  const displayedReimbursementRequests = (
+      (canViewAllReimbursementRequestsAndTotalBudget ? (allReimbursementRequests ? allReimbursementRequests : userReimbursementRequests) : userReimbursementRequests)
+    ).filter(
+      (request: ReimbursementRequest) =>
+        !request.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.DENIED)
+    );
+  
+    const totalBudget = allProjects.reduce(
+      (accumulator: number, currentVal: Project) => accumulator + currentVal.budget,
+      0
+    );
+  
+    const totalBalance = displayedReimbursementRequests.reduce(
+      (accumulator: number, currentVal: ReimbursementRequest) => accumulator + currentVal.totalCost,
+      0
+    );
+  
+    const pendingLeadership = displayedReimbursementRequests.reduce(
+      (accumulator: number, currentVal: ReimbursementRequest) => {
+        if (
+          currentVal.reimbursementStatuses[currentVal.reimbursementStatuses.length - 1].type === 
+          'PENDING_LEADERSHIP_APPROVAL'
+        ) {
+          return accumulator + currentVal.totalCost;
+        } 
+        return accumulator; 
+      }, 
+      0 
+    );
+  
+    const pendingFinance = displayedReimbursementRequests.reduce(
+      (accumulator: number, currentVal: ReimbursementRequest) => {
+        if (
+          currentVal.reimbursementStatuses[currentVal.reimbursementStatuses.length - 1].type === 
+          'PENDING_FINANCE'
+        ) {
+          return accumulator + currentVal.totalCost;
+        } 
+        return accumulator; 
+      }, 
+      0 
+    );
+  
+    const submittedToSABO = displayedReimbursementRequests.reduce(
+      (accumulator: number, currentVal: ReimbursementRequest) => {
+        if (
+          currentVal.reimbursementStatuses[currentVal.reimbursementStatuses.length - 1].type === 
+          'SABO_SUBMITTED'
+        ) {
+          return accumulator + currentVal.totalCost;
+        } 
+        return accumulator; 
+      }, 
+      0 
+    );
+  
+    const reimbursed = displayedReimbursementRequests.reduce(
+      (accumulator: number, currentVal: ReimbursementRequest) => {
+        if (
+          currentVal.reimbursementStatuses[currentVal.reimbursementStatuses.length - 1].type === 
+          'REIMBURSED'
+        ) {
+          return accumulator + currentVal.totalCost;
+        } 
+        return accumulator; 
+      }, 
+      0 
+    );
+  
+    const available = totalBudget - totalBalance;
 
   const financeActionsDropdown = (
     <>
@@ -201,12 +292,12 @@ const FinancePage = () => {
         <Grid item xs={12} sm={12} md={4} sx={{ marginTop: '10px' }}>
           {/* TODO: Make this take in actual data */}
           <BalanceSection
-            totalBalance={24000}
-            pendingLeadership={10}
-            pendingFinance={10}
-            submittedToSABO={10}
-            reimbursed={10}
-            available={10}
+            totalBalance={totalBudget}
+            pendingLeadership={pendingLeadership}
+            pendingFinance={pendingFinance}
+            submittedToSABO={submittedToSABO}
+            reimbursed={reimbursed}
+            available={available}
           />
         </Grid>
       </Grid>
