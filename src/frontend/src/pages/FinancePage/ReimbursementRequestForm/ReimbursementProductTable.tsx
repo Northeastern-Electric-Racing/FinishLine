@@ -94,6 +94,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
           <TableRow
             sx={{
               color: '#dd524c',
+              textShadow: '1.5px 0 #dd524c',
+              letterSpacing: '0.5px',
               textDecoration: 'underline',
               textUnderlineOffset: '3.5px',
               textDecorationThickness: '0.6px',
@@ -106,6 +108,94 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
           </TableRow>
         </TableHead>
         <TableBody>
+          <TableRow
+            sx={{
+              '& .MuiTableCell-root': {
+                paddingLeft: '0px',
+                paddingRight: '0px'
+              }
+            }}
+          >
+            <TableCell
+              colSpan={2}
+              sx={{
+                borderBottom: 0
+              }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'horizontal',
+                  gap: '10px'
+                }}
+              >
+                <Autocomplete
+                  fullWidth
+                  options={wbsElementAutocompleteOptions}
+                  onChange={(_event, value) => {
+                    if (value) {
+                      appendProduct({
+                        reason: validateWBS(value.id),
+                        name: '',
+                        cost: 0
+                      });
+                    }
+                  }}
+                  value={null}
+                  blurOnSelect={true}
+                  id={'append-product-autocomplete'}
+                  size={'small'}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      sx={{
+                        background: '#4c4c4c',
+                        borderRadius: '20px',
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: '20px',
+                          color: 'white',
+                          padding: '13px !important'
+                        }
+                      }}
+                      placeholder="Select Project"
+                    />
+                  )}
+                />
+                <Autocomplete
+                  fullWidth
+                  options={otherCategoryOptions}
+                  onChange={(_event, value) => {
+                    if (value) {
+                      appendProduct({
+                        reason: value.id as OtherProductReason,
+                        name: '',
+                        cost: 0
+                      });
+                    }
+                  }}
+                  value={null}
+                  blurOnSelect={true}
+                  id={'append-product-autocomplete'}
+                  size={'small'}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      sx={{
+                        background: '#4c4c4c',
+                        borderRadius: '20px',
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: '20px',
+                          color: 'white',
+                          padding: '13px !important'
+                        }
+                      }}
+                      placeholder="Select Other Category"
+                    />
+                  )}
+                />
+              </Box>
+            </TableCell>
+          </TableRow>
           {Array.from(uniqueWbsElementsWithProducts.keys()).map((key) => {
             return (
               <TableRow key={key}>
@@ -127,7 +217,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                             sx={{
                               display: 'flex',
                               flexDirection: { xs: 'column', sm: 'row' },
-                              gap: { xs: '0', sm: '8px' }
+                              gap: { xs: '0', sm: '12px' }
                             }}
                           >
                             <FormControl fullWidth margin="dense" variant="outlined" size="small">
@@ -215,50 +305,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
               </TableRow>
             );
           })}
-          <TableRow>
-            <TableCell colSpan={2} sx={{ borderBottom: 0 }}>
-              <Box sx={{ display: 'flex', flexDirection: 'horizontal', gap: '5px' }}>
-                <Autocomplete
-                  fullWidth
-                  sx={{ my: 1 }}
-                  options={wbsElementAutocompleteOptions}
-                  onChange={(_event, value) => {
-                    if (value) {
-                      appendProduct({
-                        reason: validateWBS(value.id),
-                        name: '',
-                        cost: 0
-                      });
-                    }
-                  }}
-                  value={null}
-                  blurOnSelect={true}
-                  id={'append-product-autocomplete'}
-                  size={'small'}
-                  renderInput={(params) => <TextField {...params} placeholder="Select Project" />}
-                />
-                <Autocomplete
-                  fullWidth
-                  sx={{ my: 1 }}
-                  options={otherCategoryOptions}
-                  onChange={(_event, value) => {
-                    if (value) {
-                      appendProduct({
-                        reason: value.id as OtherProductReason,
-                        name: '',
-                        cost: 0
-                      });
-                    }
-                  }}
-                  value={null}
-                  blurOnSelect={true}
-                  id={'append-product-autocomplete'}
-                  size={'small'}
-                  renderInput={(params) => <TextField {...params} placeholder="Select Other Category" />}
-                />
-              </Box>
-            </TableCell>
-          </TableRow>
         </TableBody>
       </Table>
     </TableContainer>
