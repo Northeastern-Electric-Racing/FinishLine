@@ -140,9 +140,22 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
   };
 
   return (
-    <div style={{ background: 'transparent', display: 'flex', gap: '20px', padding: '10px', minWidth: '600px', flexWrap: 'wrap', maxWidth: '900px' }}>
+    <div
+      style={{
+        background: 'transparent',
+        display: 'flex',
+        gap: '20px',
+        padding: '10px',
+        minWidth: '600px',
+        flexWrap: 'wrap',
+        maxWidth: '900px'
+      }}
+    >
       <ResponsiveContainer width="50%" height={400} style={{ background: 'transparent' }}>
-        <PieChart margin={{ top: -30, right: 0, bottom: 60, left: 0 }} style={{ background: 'transparent', minWidth: '450px', flex: '1' }}>
+        <PieChart
+          margin={{ top: -30, right: 0, bottom: 60, left: 0 }}
+          style={{ background: 'transparent', minWidth: '450px', flex: '1' }}
+        >
           <Pie
             data={data}
             dataKey="value"
@@ -153,7 +166,7 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
             outerRadius={110}
             strokeWidth={0}
           >
-            {data.map((entry, index) => (
+            {data.map((_entry, index) => (
               <Cell key={`cell-${index}`} fill={sectionColors[index % sectionColors.length]} stroke="none" />
             ))}
             <Label

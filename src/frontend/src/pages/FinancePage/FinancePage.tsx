@@ -37,7 +37,7 @@ const FinancePage = () => {
   const user = useCurrentUser();
   const history = useHistory();
   const [showGenerateReceipts, setShowGenerateReceipts] = useState(false);
-    
+
   const {
     data: userReimbursementRequests,
     isLoading: userReimbursementRequestIsLoading,
