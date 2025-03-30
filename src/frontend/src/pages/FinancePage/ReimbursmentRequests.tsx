@@ -3,6 +3,8 @@ import { SearchBar } from '../../components/SearchBar';
 import { useState } from 'react';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import ReimbursementRequestTable from './ReimbursementRequestsSection';
+import Timeline from './FinanceComponents/ReimbursementRequestTimeline';
+import TimelineInfo from './FinanceComponents/_timeline_info';
 
 const ReimbursementRequests: React.FC = () => {
   const [searchText, setSearchText] = useState<string>('');
@@ -30,6 +32,7 @@ const ReimbursementRequests: React.FC = () => {
         </Button>
       </Box>
       <ReimbursementRequestTable userReimbursementRequests={[]} allReimbursementRequests={[]} />
+      <Timeline events={TimelineInfo} />
     </Box>
   );
 };
