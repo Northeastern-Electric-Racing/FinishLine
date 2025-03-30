@@ -224,6 +224,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               <FormLabel
                 sx={{
                   color: '#dd524c',
+                  textShadow: '1.5px 0 #dd524c',
+                  letterSpacing: '0.5px',
                   textDecoration: 'underline',
                   textUnderlineOffset: '3.5px',
                   textDecorationThickness: '0.6px',
@@ -273,6 +275,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 <FormLabel
                   sx={{
                     color: '#dd524c',
+                    textShadow: '1.5px 0 #dd524c',
+                    letterSpacing: '0.5px',
                     textDecoration: 'underline',
                     textUnderlineOffset: '3.5px',
                     textDecorationThickness: '0.6px',
@@ -328,6 +332,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               <FormLabel
                 sx={{
                   color: '#dd524c',
+                  textShadow: '1.5px 0 #dd524c',
+                  letterSpacing: '0.5px',
                   textDecoration: 'underline',
                   textUnderlineOffset: '3.5px',
                   textDecorationThickness: '0.6px',
@@ -378,6 +384,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               <FormLabel
                 sx={{
                   color: '#dd524c',
+                  textShadow: '1.5px 0 #dd524c',
+                  letterSpacing: '0.5px',
                   textDecoration: 'underline',
                   textUnderlineOffset: '3.5px',
                   textDecorationThickness: '0.6px',
@@ -436,10 +444,12 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
             </FormControl>
           </Grid>
           <Grid item xs={6}>
-            <FormControl sx={{ borderRadius: '25px', width: '85%' }}>
+            <FormControl sx={{ borderRadius: '25px', width: '85%', marginBottom: '70px' }}>
               <FormLabel
                 sx={{
                   color: '#dd524c',
+                  textShadow: '1.5px 0 #dd524c',
+                  letterSpacing: '0.5px',
                   textDecoration: 'underline',
                   textUnderlineOffset: '3.5px',
                   textDecorationThickness: '0.6px',
@@ -463,6 +473,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     sx={{
                       background: '#4c4c4c',
                       borderRadius: '20px',
+
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '20px'
                       }
