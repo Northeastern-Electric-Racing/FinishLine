@@ -393,9 +393,14 @@ export default class UsersService {
     const targetUserRole = await getUserRole(targetUserId, organization.organizationId);
     const userRankedRole = rankUserRole(userRole);
     const targetUserRankedRole = rankUserRole(targetUserRole);
+    const targetUserUpdatedRole = rankUserRole(role);
 
     if (userRole === RoleEnum.LEADERSHIP && targetUserRankedRole > 2) {
       throw new AccessDeniedException('Leadership can only update guests and members');
+    }
+
+    if (userRole === RoleEnum.LEADERSHIP && targetUserUpdatedRole > 2) {
+      throw new AccessDeniedException('Leadership cannot promote guests/members to roles higher than member');
     }
 
     if (!isLeadership(userRole) && !isHead(userRole)) {

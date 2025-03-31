@@ -1,6 +1,6 @@
 import { Organization } from '@prisma/client';
 import { createTestOrganization, createTestTaskWithOrganization, createTestUser, resetUsers } from '../test-utils';
-import { aquamanLeadership, batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
+import { alfred, aquamanLeadership, batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import UsersService from '../../src/services/users.services';
 import { AccessDeniedException, NotFoundException } from '../../src/utils/errors.utils';
 import { User } from '@prisma/client';
@@ -57,15 +57,23 @@ describe('User Tests', () => {
       const testAquaman: User = await createTestUser(aquamanLeadership, orgId);
       const testGuest: User = await createTestUser(wonderwomanGuest, orgId);
       await UsersService.updateUserRole(testGuest.userId, testAquaman, RoleEnum.MEMBER, organization);
-      expect(getUserRole(testGuest.userId, orgId)).toBe(RoleEnum.MEMBER);
+      expect(await getUserRole(testGuest.userId, orgId)).toBe(RoleEnum.MEMBER);
     });
 
-    it('fails if not Leader', async () => {
+    it('fails if Leader tries updating guests/members to higher than member', async () => {
       const testAquaman: User = await createTestUser(aquamanLeadership, orgId);
       const testGuest: User = await createTestUser(wonderwomanGuest, orgId);
       await expect(
         async () => await UsersService.updateUserRole(testGuest.userId, testAquaman, RoleEnum.LEADERSHIP, organization)
-      ).rejects.toThrow(new AccessDeniedException('Only Leadership and Head can update user roles!'));
+      ).rejects.toThrow(new AccessDeniedException('Leadership cannot promote guests/members to roles higher than member'));
+    });
+
+    it('fails is Leader tries updating leadership or higher', async () => {
+      const testAdmin: User = await createTestUser(alfred, orgId);
+      const testAquaman: User = await createTestUser(aquamanLeadership, orgId);
+      await expect(
+        async () => await UsersService.updateUserRole(testAdmin.userId, testAquaman, RoleEnum.LEADERSHIP, organization)
+      ).rejects.toThrow(new AccessDeniedException('Leadership can only update guests and members'));
     });
   });
 });
