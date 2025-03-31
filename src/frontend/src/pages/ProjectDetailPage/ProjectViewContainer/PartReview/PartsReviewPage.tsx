@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
 import { rankUserRole } from 'shared';
 import NERSwitch from '../../../../components/NERSwitch';
+import FileDisplay from '../../../PartPage/components/FileDisplay';
 
 const PartsReviewPage = () => {
   const currentUser = useCurrentUser();
@@ -13,8 +14,26 @@ const PartsReviewPage = () => {
     return rankUserRole(userRole) < rankUserRole('LEADERSHIP');
   });
 
+  const addPopup = (x: number, y: number, title: string, description: string) => {
+    return;
+  };
+
   return (
     <Box>
+      <FileDisplay
+        fileLink="test"
+        popUps={[
+          {
+            partReviewPopupId: 'string',
+            xCoord: 0.5,
+            yCoord: 0.25,
+            title: 'string',
+            description: 'asdf',
+            reviewId: 'string'
+          }
+        ]}
+        addPopup={addPopup}
+      />
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <FormGroup>

@@ -1,4 +1,6 @@
 import { Box, Typography, Grid, Breadcrumbs } from '@mui/material';
+import FileDisplay from './components/FileDisplay';
+import { useCurrentUser } from '../../hooks/users.hooks';
 
 const PartPage: React.FC = () => {
   return (
