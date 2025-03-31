@@ -14,10 +14,13 @@ import TeamsTools from './TeamConfig/TeamsTools';
 import AdminToolsBOMConfig from './AdminToolsBOMConfig';
 import AdminToolsProjectsConfig from './AdminToolsProjectsConfig';
 import { useState } from 'react';
-import NERTabs from '../../components/Tabs';
+import FullPageTabs from '../../components/FullPageTabs';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/system';
 import AdminToolsRecruitmentConfig from './RecruitmentConfig/AdminToolsRecruitmentConfig';
+import GuestViewConfig from './EditGuestView/GuestViewConfig';
+import AdminToolsWorkspaceId from './AdminToolsSlackWorkspaceId';
+import AdminToolsOnboardingConfig from './OnboardingConfig/AdminToolsOnboardingConfig';
 
 const AdminToolsPage: React.FC = () => {
   const currentUser = useCurrentUser();
@@ -40,6 +43,8 @@ const AdminToolsPage: React.FC = () => {
   }
   if (isUserAdmin) {
     tabs.push({ tabUrlValue: 'recruitment', tabName: 'Recruitment' });
+    tabs.push({ tabUrlValue: 'guest-view', tabName: 'Guest View' });
+    tabs.push({ tabUrlValue: 'onboarding', tabName: 'Onboarding' });
     tabs.push({ tabUrlValue: 'miscellaneous', tabName: 'Miscellaneous' });
   }
 
@@ -59,7 +64,7 @@ const AdminToolsPage: React.FC = () => {
       title="Admin Tools"
       tabs={
         <Box borderBottom={1} borderColor={'divider'} width={'100%'}>
-          <NERTabs
+          <FullPageTabs
             noUnderline
             setTab={setTabIndex}
             tabsLabels={tabs}
@@ -81,11 +86,16 @@ const AdminToolsPage: React.FC = () => {
         <AdminToolsFinanceConfig />
       ) : tabIndex === 3 ? (
         <AdminToolsRecruitmentConfig />
+      ) : tabIndex === 4 ? (
+        <GuestViewConfig />
+      ) : tabIndex === 5 ? (
+        <AdminToolsOnboardingConfig />
       ) : (
         <Box>
           <Box pb={2}>
             <AdminToolsSlackUpcomingDeadlines />
           </Box>
+          <AdminToolsWorkspaceId />
           <AdminToolsAttendeeDesignReviewInfo />
         </Box>
       )}

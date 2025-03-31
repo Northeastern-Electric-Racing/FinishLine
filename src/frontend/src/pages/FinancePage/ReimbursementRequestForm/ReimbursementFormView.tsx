@@ -17,7 +17,15 @@ import {
   useTheme
 } from '@mui/material';
 import { Box, Stack } from '@mui/system';
-import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
+import {
+  Control,
+  Controller,
+  FieldErrors,
+  UseFormHandleSubmit,
+  UseFormRegister,
+  UseFormSetValue,
+  UseFormWatch
+} from 'react-hook-form';
 import {
   ClubAccount,
   AccountCode,
@@ -62,6 +70,7 @@ interface ReimbursementRequestFormViewProps {
   handleSubmit: UseFormHandleSubmit<ReimbursementRequestFormInput>;
   errors: FieldErrors<ReimbursementRequestFormInput>;
   watch: UseFormWatch<ReimbursementRequestFormInput>;
+  register: UseFormRegister<ReimbursementRequestFormInput>;
   submitText: 'Save' | 'Submit';
   previousPage: string;
   setValue: UseFormSetValue<ReimbursementRequestFormInput>;
@@ -83,6 +92,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   handleSubmit,
   errors,
   watch,
+  register,
   submitText,
   previousPage,
   setValue,
@@ -259,7 +269,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     .map(accountCodesToAutocomplete);
 
                   const onClear = () => {
-                    setValue('account', undefined);
+                    setValue('account', ClubAccount.BUDGET);
                     onChange('');
                   };
 
@@ -366,16 +376,16 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 <input
                   onChange={(e) => {
                     if (e.target.files) {
-                      [...e.target.files].forEach((file) => {
-                        if (file.size < 1000000) {
-                          receiptPrepend({
-                            file,
-                            name: file.name,
-                            googleFileId: ''
-                          });
-                        } else {
+                      [...e.target.files].forEach((file, index) => {
+                        if (file.size >= 1000000) {
                           toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
                           document.getElementById('receipt-image')!.innerHTML = '';
+                        } else {
+                          receiptPrepend({
+                            file,
+                            name: 'receipt' + (receiptFiles.length + index),
+                            googleFileId: ''
+                          });
                         }
                       });
                     }
@@ -401,7 +411,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               appendProduct={reimbursementProductAppend}
               removeProduct={reimbursementProductRemove}
               wbsElementAutocompleteOptions={wbsElementAutocompleteOptions}
-              control={control}
+              watch={watch}
+              register={register}
               setValue={setValue}
             />
             <FormHelperText error>{errors.reimbursementProducts?.message}</FormHelperText>

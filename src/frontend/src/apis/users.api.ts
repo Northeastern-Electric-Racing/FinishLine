@@ -5,8 +5,9 @@
 
 import axios from '../utils/axios';
 import {
-  Project,
+  ProjectPreview,
   SetUserScheduleSettingsPayload,
+  Task,
   User,
   UserScheduleSettings,
   UserSecureSettings,
@@ -20,7 +21,8 @@ import {
   userWithScheduleSettingsTransformer
 } from './transformers/users.transformers';
 import { AuthenticatedUser, UserSettings } from 'shared';
-import { projectTransformer } from './transformers/projects.transformers';
+import { projectPreviewTransformer } from './transformers/projects.transformers';
+import { taskTransformer } from './transformers/tasks.transformers';
 
 /**
  * Fetches all users.
@@ -53,6 +55,18 @@ export const logUserIn = (id_token: string) => {
     { id_token },
     { transformResponse: (data) => authUserTransformer(JSON.parse(data)) }
   );
+};
+
+/**
+ * Attempts to get the current logged in user
+ *
+ * @returns The authenticated user
+ */
+export const getCurrentUser = () => {
+  return axios.get<AuthenticatedUser>(apiUrls.currentUser(), {
+    transformResponse: (data) => authUserTransformer(JSON.parse(data)),
+    timeout: 5000
+  });
 };
 
 /**
@@ -90,8 +104,8 @@ export const getCurrentUserSecureSettings = () => {
  * @param id User ID of the requested user's favorite projects.
  */
 export const getUsersFavoriteProjects = (id: string) => {
-  return axios.get<Project[]>(apiUrls.userFavoriteProjects(id), {
-    transformResponse: (data) => JSON.parse(data).map(projectTransformer)
+  return axios.get<ProjectPreview[]>(apiUrls.userFavoriteProjects(id), {
+    transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer)
   });
 };
 
@@ -140,4 +154,24 @@ export const updateUserScheduleSettings = (settings: SetUserScheduleSettingsPayl
 
 export const updateUserRole = (id: string, role: string) => {
   return axios.post<{ message: string }>(apiUrls.userRoleByUserId(id), { role });
+};
+
+export const getUserTasks = (id: string) => {
+  return axios.get<Task[]>(apiUrls.userTasks(id), {
+    transformResponse: (data) => JSON.parse(data).map(taskTransformer)
+  });
+};
+
+export const getManyUserTasks = (userIds: string[]) => {
+  return axios.post<Task[]>(
+    apiUrls.manyUserTasks(),
+    { userIds },
+    {
+      transformResponse: (data) => JSON.parse(data).map(taskTransformer)
+    }
+  );
+};
+
+export const logUserOut = () => {
+  return axios.post<{ message: string }>(apiUrls.logUserOut());
 };

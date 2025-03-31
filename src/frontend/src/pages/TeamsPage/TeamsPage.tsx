@@ -19,7 +19,6 @@ const TeamsPage: React.FC = () => {
     data: archivedTeams,
     error: archivedTeamsError
   } = useAllArchivedTeams();
-  console.log(archivedTeams);
 
   if (teamsLoading || !teams) return <LoadingIndicator />;
   if (archivedTeamsLoading || !archivedTeams) return <LoadingIndicator />;
@@ -38,7 +37,7 @@ const TeamsPage: React.FC = () => {
           ))}
         </Grid>
       </PageLayout>
-      <PageLayout title="Archived Teams">
+      <PageLayout useTitleForHelmet={false} title="Archived Teams">
         <Grid container spacing={2}>
           {archivedTeams.map((archivedTeam) => (
             <Grid item key={archivedTeam.teamId}>

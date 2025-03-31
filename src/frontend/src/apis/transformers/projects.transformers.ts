@@ -70,9 +70,15 @@ export const projectTransformer = (project: Project): Project => {
   };
 };
 
-export const projectPreviewTranformer = (project: ProjectPreview): ProjectPreview => {
+export const projectPreviewTransformer = (project: ProjectPreview): ProjectPreview => {
   return {
     ...project,
     workPackages: project.workPackages.map(workPackageTransformer)
+  };
+};
+
+export const projectToProjectPreviewTransformer = (project: Project): ProjectPreview => {
+  return {
+    ...project
   };
 };

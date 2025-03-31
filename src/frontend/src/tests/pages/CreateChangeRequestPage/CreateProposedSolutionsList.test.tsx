@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
+import { render, routerWrapperBuilder, screen, waitFor } from '../../test-support/test-utils';
 import CreateProposedSolutionsList from '../../../pages/CreateChangeRequestPage/CreateProposedSolutionsList';
 import * as authHooks from '../../../hooks/auth.hooks';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
@@ -40,7 +40,7 @@ describe('Proposed Solutions List Test Suite', () => {
     expect(screen.queryAllByText('Timeline Impact').length).toBe(0);
   });
 
-  it('Fires Modal correctly', () => {
+  it('Fires Modal correctly', async () => {
     renderComponent();
     expect(screen.queryByText('Description')).not.toBeInTheDocument();
     expect(screen.queryByText('Scope Impact')).not.toBeInTheDocument();
@@ -48,6 +48,9 @@ describe('Proposed Solutions List Test Suite', () => {
     expect(screen.queryByText('Timeline Impact')).not.toBeInTheDocument();
     expect(screen.queryByText('Add')).not.toBeInTheDocument();
     screen.getByText('+ Add Solution').click();
+    await waitFor(() => {
+      return screen.getByText('Description');
+    });
     expect(screen.getByText('Description')).toBeInTheDocument();
     expect(screen.getByText('Scope Impact')).toBeInTheDocument();
     expect(screen.getByText('Budget Impact')).toBeInTheDocument();

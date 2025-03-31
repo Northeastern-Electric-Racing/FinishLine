@@ -139,6 +139,7 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
   timelineImpact: 2,
   implementedChanges: [
     {
+      changeRequestIdentifier: 1,
       changeId: '1',
       changeRequestId: '37',
       wbsNum: {
@@ -152,12 +153,14 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
         lastName: 'Schmoe',
         email: 'j.schmoe@northeastern.edu',
         emailId: null,
-        role: RoleEnum.LEADERSHIP
+        role: RoleEnum.LEADERSHIP,
+        permissions: []
       },
       detail: 'Adjust description',
       dateImplemented: new Date('02/25/21')
     },
     {
+      changeRequestIdentifier: 1,
       changeId: '1',
       changeRequestId: '37',
       wbsNum: {
@@ -171,12 +174,14 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
         lastName: 'Schmoe',
         email: 'j.schmoe@northeastern.edu',
         emailId: null,
-        role: RoleEnum.LEADERSHIP
+        role: RoleEnum.LEADERSHIP,
+        permissions: []
       },
       detail: 'Increase budget to 200',
       dateImplemented: new Date('02/25/21')
     },
     {
+      changeRequestIdentifier: 1,
       changeId: '1',
       changeRequestId: '37',
       wbsNum: {
@@ -190,7 +195,8 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
         lastName: 'Schmoe',
         email: 'j.schmoe@northeastern.edu',
         emailId: null,
-        role: RoleEnum.LEADERSHIP
+        role: RoleEnum.LEADERSHIP,
+        permissions: []
       },
       detail: 'Add 3 weeks',
       dateImplemented: new Date('02/25/21')

@@ -1,4 +1,4 @@
-import { Design_Review_Status } from '@prisma/client';
+import { Design_Review_Status, Graph_Display_Type, Graph_Type, Measure, Special_Permission } from '@prisma/client';
 import { Request, Response } from 'express';
 import { body, ValidationChain, validationResult } from 'express-validator';
 import { ClubAccount, MaterialStatus, TaskPriority, TaskStatus, WorkPackageStage, RoleEnum, WbsElementStatus } from 'shared';
@@ -27,6 +27,22 @@ export const isRole = (validationObject: ValidationChain): ValidationChain => {
 
 export const isStatus = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.isString().isIn([WbsElementStatus.Inactive, WbsElementStatus.Active, WbsElementStatus.Complete]);
+};
+
+export const isGraphType = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject.isString().isIn(Object.values(Graph_Type));
+};
+
+export const isMeasure = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject.isString().isIn(Object.values(Measure));
+};
+
+export const isGraphDisplayType = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject.isString().isIn(Object.values(Graph_Display_Type));
+};
+
+export const isSpecialPermission = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject.isString().isIn(Object.values(Special_Permission));
 };
 
 export const isWorkPackageStageOrNone = (validationObject: ValidationChain): ValidationChain => {
@@ -172,7 +188,6 @@ export const linkValidators = [
 ];
 
 export const projectValidators = [
-  nonEmptyString(body('crId')),
   nonEmptyString(body('name')),
   nonEmptyString(body('summary')),
   ...descriptionBulletsValidators,
@@ -181,6 +196,21 @@ export const projectValidators = [
   nonEmptyString(body('managerId').optional())
 ];
 
+export const materialValidators = [
+  nonEmptyString(body('name')),
+  nonEmptyString(body('assemblyId').optional()),
+  isMaterialStatus(body('status')),
+  nonEmptyString(body('materialTypeName')),
+  nonEmptyString(body('manufacturerName')),
+  nonEmptyString(body('manufacturerPartNumber')),
+  nonEmptyString(body('pdmFileName').optional()),
+  decimalMinZero(body('quantity')),
+  nonEmptyString(body('unitName')).optional(),
+  intMinZero(body('price')), // in cents
+  intMinZero(body('subtotal')), // in cents
+  nonEmptyString(body('linkUrl')),
+  body('notes').isString().optional()
+];
 export const validateInputs = (req: Request, res: Response, next: Function): void => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {

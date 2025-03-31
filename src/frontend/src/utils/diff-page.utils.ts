@@ -43,8 +43,8 @@ export const changeBulletDetailText = (changeBullet: ChangeBullet): string | str
       Object.values<string>(WbsElementStatus).includes(detail)
       ? displayEnum(detail)
       : new Date(detail).toString() !== 'Invalid Date'
-      ? datePipe(new Date(detail))
-      : detail;
+        ? datePipe(new Date(detail))
+        : detail;
   } else if (typeof detail === 'number') {
     return label === 'budget' ? dollarsPipe(detail) : detail.toString();
   } else if ('firstName' in detail) {
@@ -59,7 +59,7 @@ export const changeBulletDetailText = (changeBullet: ChangeBullet): string | str
     return detail as string[];
   } else if ('teamName' in testVal) {
     return (detail as TeamPreview[]).map((team) => team.teamName);
-  } else if ('userChecked' in testVal) {
+  } else if ('detail' in testVal && 'type' in testVal) {
     return (detail as DescriptionBullet[]).map((bullet) => bullet.detail);
   } else if ('carNumber' in testVal) {
     return (detail as WbsNumber[]).map(wbsPipe);

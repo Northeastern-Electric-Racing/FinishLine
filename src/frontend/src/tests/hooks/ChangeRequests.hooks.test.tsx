@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook, waitFor } from '@testing-library/react';
 import { AxiosResponse } from 'axios';
 import { ChangeRequest } from 'shared';
 import wrapper from '../../app/AppContextQuery';
@@ -19,7 +19,7 @@ describe('change request hooks', () => {
     const mockedGetAllChangeRequests = getAllChangeRequests as jest.Mock<Promise<AxiosResponse<ChangeRequest[]>>>;
     mockedGetAllChangeRequests.mockReturnValue(mockPromiseAxiosResponse<ChangeRequest[]>(exampleAllChangeRequests));
 
-    const { result, waitFor } = renderHook(() => useAllChangeRequests(), { wrapper });
+    const { result } = renderHook(() => useAllChangeRequests(), { wrapper });
     await waitFor(() => result.current.isSuccess);
     expect(result.current.data).toEqual(exampleAllChangeRequests);
   });
@@ -28,7 +28,7 @@ describe('change request hooks', () => {
     const mockedGetSingleChangeRequest = getSingleChangeRequest as jest.Mock<Promise<AxiosResponse<ChangeRequest>>>;
     mockedGetSingleChangeRequest.mockReturnValue(mockPromiseAxiosResponse<ChangeRequest>(exampleStageGateChangeRequest));
 
-    const { result, waitFor } = renderHook(() => useSingleChangeRequest('1'), { wrapper });
+    const { result } = renderHook(() => useSingleChangeRequest('1'), { wrapper });
     await waitFor(() => result.current.isSuccess);
     expect(result.current.data).toEqual(exampleStageGateChangeRequest);
   });

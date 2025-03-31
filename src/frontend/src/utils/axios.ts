@@ -28,7 +28,7 @@ axios.interceptors.response.use(
       throw new Error(messages);
     }
 
-    throw new Error('Unknown Error!');
+    throw new Error('Unknown Error!' + error.message);
   }
 );
 

@@ -6,6 +6,7 @@ import {
   NotFoundException,
   AccessDeniedException,
   HttpException,
+  DeletedException,
   AccessDeniedAdminOnlyException,
   InvalidOrganizationException
 } from '../utils/errors.utils';
@@ -14,7 +15,7 @@ import { isUnderWordCount } from 'shared';
 import { removeUsersFromList } from '../utils/teams.utils';
 import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
 import { uploadFile } from '../utils/google-integration.utils';
-import { createCalendar } from '../utils/google-integration.utils';
+import { teamTypeTransformer } from '../transformers/team-types.transformer';
 
 export default class TeamsService {
   /**
@@ -416,18 +417,18 @@ export default class TeamsService {
       throw new HttpException(400, 'Cannot create a teamType with a name that already exists');
     }
 
-    const teamTypeCalendarId = await createCalendar(name);
+    // const teamTypeCalendarId = await createCalendar(name); TODO Fix unauthorized_client error this is throwing
     const teamType = await prisma.team_Type.create({
       data: {
         name,
         iconName,
         description,
         organizationId: organization.organizationId,
-        calendarId: teamTypeCalendarId
+        calendarId: null
       }
     });
 
-    return teamType;
+    return teamTypeTransformer(teamType);
   }
 
   /**
@@ -445,7 +446,7 @@ export default class TeamsService {
     if (!teamType) throw new NotFoundException('Team Type', teamTypeId);
     if (teamType.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Team Type');
 
-    return teamType;
+    return teamTypeTransformer(teamType);
   }
 
   /**
@@ -454,8 +455,11 @@ export default class TeamsService {
    * @returns all the team types for the given organization
    */
   static async getAllTeamTypes(organization: Organization): Promise<TeamType[]> {
-    const teamTypes = await prisma.team_Type.findMany({ where: { organizationId: organization.organizationId } });
-    return teamTypes;
+    const teamTypes = await prisma.team_Type.findMany({
+      where: { organizationId: organization.organizationId }
+    });
+
+    return teamTypes.map(teamTypeTransformer);
   }
 
   /**
@@ -499,7 +503,7 @@ export default class TeamsService {
       }
     });
 
-    return updatedTeamType;
+    return teamTypeTransformer(updatedTeamType);
   }
 
   /**
@@ -541,6 +545,88 @@ export default class TeamsService {
     });
 
     return teamTransformer(updatedTeam);
+  }
+
+  /**
+   * Deletes the Team Type with the given organization Id and Team_Type id
+   * @param deleter a user who is making this request
+   * @param teamTypeId the id of the Team Type to be deleted
+   * @param organizationId the organization Id of the Team Type
+   */
+  static async deleteTeamType(deleter: User, teamTypeId: string, organization: Organization) {
+    if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('only admins can delete team types');
+
+    const teamType = await prisma.team_Type.findUnique({
+      where: { teamTypeId }
+    });
+
+    if (!teamType) throw new NotFoundException('Team Type', teamTypeId);
+    if (teamType.dateDeleted) throw new DeletedException('Team Type', teamTypeId);
+    if (teamType.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Team Type');
+
+    await prisma.team_Type.update({
+      where: { teamTypeId },
+      data: { dateDeleted: new Date(), deletedById: deleter.userId }
+    });
+
+    return teamType;
+  }
+
+  /**
+   * Adds the user to the team types onboarding list
+   * @param submitter the user who is setting the onboarding team type
+   * @param teamTypeId the id of the team type
+   * @param organization the organization the user is currently in
+   * @returns the updated team type
+   */
+  static async setOnboardingUser(submitter: User, teamTypeId: string, organization: Organization): Promise<TeamType> {
+    const teamType = await prisma.team_Type.findUnique({
+      where: { teamTypeId, organizationId: organization.organizationId },
+      include: { usersOnboarding: true }
+    });
+
+    if (!teamType) throw new NotFoundException('Team Type', teamTypeId);
+
+    // if the user is in any onboarding team type, remove them
+    await prisma.user.update({
+      where: { userId: submitter.userId },
+      data: {
+        onboardingTeamTypes: {
+          set: []
+        }
+      }
+    });
+
+    const updatedTeamType = await prisma.team_Type.update({
+      where: { teamTypeId },
+      data: {
+        usersOnboarding: { connect: { userId: submitter.userId } }
+      }
+    });
+
+    return teamTypeTransformer(updatedTeamType);
+  }
+
+  static async completeOnboarding(submitter: User) {
+    const onboardingTeamTypes = await prisma.team_Type.findMany({
+      where: { usersOnboarding: { some: { userId: submitter.userId } } }
+    });
+
+    const teamTypeIds = onboardingTeamTypes.map((teamType) => ({ teamTypeId: teamType.teamTypeId }));
+
+    // remove the user from any onboardingTeamTypes they are a part of and add them to the onboardedTeamTypes
+    await prisma.user.update({
+      where: { userId: submitter.userId },
+      data: {
+        onboardedTeamTypes: {
+          set: teamTypeIds
+        },
+        onboardingTeamTypes: {
+          set: []
+        }
+      }
+    });
   }
 
   static async setTeamTypeImage(

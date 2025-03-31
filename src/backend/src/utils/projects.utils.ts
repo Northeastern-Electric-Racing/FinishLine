@@ -1,13 +1,17 @@
-import { WBS_Element_Status } from '@prisma/client';
+import { Project, WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { DescriptionBulletPreview, LinkCreateArgs, WbsElementStatus } from 'shared';
-import { DeletedException, NotFoundException } from './errors.utils';
+import { DeletedException, HttpException, InvalidOrganizationException, NotFoundException } from './errors.utils';
 import { ChangeCreateArgs, createChange, createListChanges, getDescriptionBulletChanges } from './changes.utils';
 import { DescriptionBulletDestination, addRawDescriptionBullets, editDescriptionBullets } from './description-bullets.utils';
 import { linkToChangeListValue, updateLinks } from './links.utils';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
 import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
+
+export type ProjectWithId = {
+  projectId: String;
+};
 
 /**
  * calculate the project's status based on its workpacakges' status
@@ -43,7 +47,7 @@ export const getUserFullName = async (userId: string | null): Promise<string | n
 // Update a project and create changes together
 export const updateProjectAndCreateChanges = async (
   projectId: string,
-  crId: string,
+  crId: string | null,
   implementerId: string,
   name: string,
   budget: number | null,
@@ -73,6 +77,7 @@ export const updateProjectAndCreateChanges = async (
   // if it doesn't exist we error
   if (!originalProject) throw new NotFoundException('Project', projectId);
   if (originalProject.wbsElement.dateDeleted) throw new DeletedException('Project', projectId);
+  if (originalProject.wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('Project');
 
   const { wbsElementId } = originalProject;
 
@@ -211,5 +216,34 @@ export const checkMaterialInputs = async (
       where: { name: unitName }
     });
     if (!unit) throw new NotFoundException('Unit', unitName);
+  }
+};
+
+/**
+ * Produce a array of primsa formated projectIDs, given the array of Project
+ * @param projectIds the projectIds to get as users
+ * @returns projectIds in prisma format
+ */
+export const getProjects = async (projectIds: string[], organizationId: string) => {
+  const projects = await prisma.project.findMany({
+    where: { projectId: { in: projectIds }, wbsElement: { organizationId, dateDeleted: null } },
+    ...getProjectQueryArgs(organizationId)
+  });
+
+  validateFoundProjects(projects, projectIds);
+
+  return projects;
+};
+
+/**
+ * Validates that the projects found in the database match the given projectIds
+ * @param projects the projects found in the database
+ * @param projectIds the requested projectIds to retrieve
+ */
+const validateFoundProjects = (projects: Project[], projectIds: string[]) => {
+  if (projects.length !== projectIds.length) {
+    const primsaProjectIds = projects.map((project) => project.projectId);
+    const missingProjectIds = projectIds.filter((id) => !primsaProjectIds.includes(id));
+    throw new HttpException(404, `Projects(s) with the following ids not found: ${missingProjectIds.join(', ')}`);
   }
 };

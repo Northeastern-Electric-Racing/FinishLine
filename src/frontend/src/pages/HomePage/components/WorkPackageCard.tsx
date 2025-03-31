@@ -11,7 +11,7 @@ import {
   Typography,
   useTheme
 } from '@mui/material';
-import { wbsPipe, WorkPackage } from 'shared';
+import { wbsPipe, WorkPackagePreview } from 'shared';
 import { datePipe, fullNamePipe, projectWbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
@@ -34,13 +34,14 @@ export const CircularProgressWithLabel = (props: CircularProgressProps & { value
   );
 };
 
-const WorkPackageCard = ({ wp }: { wp: WorkPackage }) => {
+const WorkPackageCard = ({ wp }: { wp: WorkPackagePreview }) => {
   const theme = useTheme();
   return (
     <Card
       variant="outlined"
       sx={{
-        minWidth: 'fit-content',
+        height: 'fit-content',
+        width: '100%',
         mr: 3,
         background: theme.palette.background.default
       }}
