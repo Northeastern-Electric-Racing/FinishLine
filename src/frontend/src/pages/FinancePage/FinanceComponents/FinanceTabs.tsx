@@ -19,11 +19,11 @@ const FinanceTabs = ({
   };
 
   return (
-    <AppBar sx={{ borderRadius: '8px 8px 0 0' }} position="static">
-      <Tabs value={tabValue} onChange={handleTabChange} indicatorColor="secondary" textColor="inherit" variant="fullWidth">
+    <AppBar color="transparent" sx={{ borderRadius: '8px 8px 0 0', mb: 2 }} position="static">
+      <Tabs value={tabValue} onChange={handleTabChange}>
         {tabs.map((tab: TabData, index: number) => (
           <Tab
-            sx={{ borderRadius: '8px 8px 0 0', fontWeight: 700, pointerEvents: tabs.length === 1 ? 'none' : 'auto' }}
+            sx={{ fontWeight: 700, pointerEvents: tabs.length === 1 ? 'none' : 'auto' }}
             label={tab.label}
             value={tab.value}
             key={`${tab.label}-${index}`}

@@ -1,4 +1,15 @@
-import { Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, useTheme } from '@mui/material';
+import {
+  Box,
+  Button,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  useTheme
+} from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useState } from 'react';
 import { ReimbursementRequest, isHead } from 'shared';
@@ -77,20 +88,24 @@ const ReimbursementRequestTable = ({
 
   const headCells: readonly ReimbursementTableHeadCell[] = [
     {
-      id: 'identifier',
-      label: 'ID'
+      id: 'status',
+      label: 'Status'
     },
     {
       id: 'submitter',
-      label: 'Recipient'
+      label: 'Submitted By'
+    },
+    {
+      id: 'amount',
+      label: 'Amount'
+    },
+    {
+      id: 'identifier',
+      label: 'RR #'
     },
     {
       id: 'saboId',
       label: 'SABO ID'
-    },
-    {
-      id: 'amount',
-      label: 'Amount ($)'
     },
     {
       id: 'dateSubmitted',
@@ -99,27 +114,44 @@ const ReimbursementRequestTable = ({
     {
       id: 'dateSubmittedToSabo',
       label: 'Date Submitted To SABO'
-    },
-    {
-      id: 'vendor',
-      label: 'Vendor'
-    },
-    {
-      id: 'refundSource',
-      label: 'Refund Source'
-    },
-    {
-      id: 'status',
-      label: 'Status'
     }
   ];
 
+  const getStatusColor = (status: string): string => {
+    switch (status) {
+      case 'REIMBURSED':
+        return '#549d49';
+      case 'DENIED':
+        return '#dd514c';
+      case 'PENDING_FINANCE':
+      case 'SABO_SUBMITTED':
+      case 'PENDING_LEADERSHIP_APPROVAL':
+      case 'LEADERSHIP_APPROVED':
+      case 'ADVISOR_APPROVED':
+        return '#997b3e';
+      default:
+        return '#797a7a';
+    }
+  };
+
+  const getRefundTotal = rows.reduce((sum, row) => sum + row.amount, 0);
+
   return (
     <Box sx={{ bgcolor: theme.palette.background.default, width: '100%', borderRadius: '8px 8px 0 0' }}>
-      <FinanceTabs tabValue={tabValue} setTabValue={setTabValue} tabs={tabs} />
-      <TableContainer component={Paper} sx={{ borderRadius: '0 0 8px 8px' }}>
+      <Box
+        sx={{
+          width: 'fit-content'
+        }}
+      >
+        <FinanceTabs tabValue={tabValue} setTabValue={setTabValue} tabs={tabs} />
+      </Box>
+      <TableContainer component={Paper} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
         <Table aria-label="simple table">
-          <TableHead>
+          <TableHead
+            sx={{
+              backgroundColor: '#dd514c'
+            }}
+          >
             <TableRow>
               {headCells.map(
                 (headCell) =>
@@ -134,30 +166,112 @@ const ReimbursementRequestTable = ({
                     />
                   )
               )}
+              <TableCell align="center" />
             </TableRow>
           </TableHead>
-          <TableBody>
+          <TableBody sx={{ backgroundColor: '#121313' }}>
             {rows.map((row, index) => (
               <TableRow
-                component={RouterLink}
-                to={`${routes.REIMBURSEMENT_REQUESTS}/${row.id}`}
                 key={`$${row.amount}-${index}`}
-                sx={{ textDecoration: 'none', '&:last-child td, &:last-child th': { border: 0 } }}
+                sx={{
+                  textDecoration: 'none',
+                  '&:last-child td, &:last-child th': { border: 0 },
+                  '&:hover .viewButton': { opacity: 1 },
+                  '&:hover': { backgroundColor: '#5e5e5e' }
+                }}
               >
-                <TableCell align="center">{undefinedPipe(row.identifier)}</TableCell>
+                <TableCell align="center">
+                  <Box
+                    sx={{
+                      padding: '3px 8px',
+                      display: 'inline-flex',
+                      borderRadius: '8px',
+                      backgroundColor: getStatusColor(row.status),
+                      fontWeight: 700
+                    }}
+                  >
+                    {cleanReimbursementRequestStatus(row.status)}
+                  </Box>
+                </TableCell>
                 {tabValue === 1 && <TableCell align="center">{fullNamePipe(row.submitter)}</TableCell>}
+                <TableCell align="center">{`$${centsToDollar(row.amount)}`}</TableCell>
+                <TableCell align="center">{undefinedPipe(row.identifier)}</TableCell>
                 <TableCell align="center">{undefinedPipe(row.saboId)}</TableCell>
-                <TableCell align="center">{centsToDollar(row.amount)}</TableCell>
                 <TableCell align="center">{datePipe(row.dateSubmitted)}</TableCell>
                 <TableCell align="center">{dateUndefinedPipe(row.dateSubmittedToSabo)}</TableCell>
-                <TableCell align="center">{row.vendor.name}</TableCell>
-                {tabValue === 1 && <TableCell align="center">{codeAndRefundSourceName(row.refundSource)}</TableCell>}
-                <TableCell align="center">{cleanReimbursementRequestStatus(row.status)}</TableCell>
+                <TableCell align="center">
+                  {
+                    <Button
+                      className="viewButton"
+                      size="small"
+                      variant="contained"
+                      component={RouterLink}
+                      to={`${routes.REIMBURSEMENT_REQUESTS}/${row.id}`}
+                      sx={{
+                        borderRadius: '8px',
+                        color: '#ededed',
+                        backgroundColor: '#dd514c',
+                        boxShadow: '0px 4px rgba(0,0,0,0.3)',
+                        padding: '2px 6px',
+                        opacity: 0,
+                        '&:hover': {
+                          backgroundColor: '#c74340'
+                        }
+                      }}
+                    >
+                      View RR
+                    </Button>
+                  }
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
+      <Box
+        sx={{
+          backgroundColor: '#121313',
+          position: 'fixed',
+          bottom: 0,
+          zIndex: 2,
+          width: '100%'
+        }}
+      >
+        <Box
+          sx={{
+            borderBottom: '2px solid white',
+            mb: 2
+          }}
+        />
+
+        <Box
+          sx={{
+            padding: '5px 20px',
+            mb: 2,
+            mr: 2,
+            display: 'inline-flex',
+            backgroundColor: '#3a3b3b',
+            borderRadius: '8px',
+            fontSize: '20px',
+            fontWeight: 700
+          }}
+        >
+          # of Requests: {rows.length}
+        </Box>
+        <Box
+          sx={{
+            padding: '5px 20px',
+            mb: 2,
+            display: 'inline-flex',
+            backgroundColor: '#3a3b3b',
+            borderRadius: '8px',
+            fontSize: '20px',
+            fontWeight: 700
+          }}
+        >
+          Total Amount: {`$${centsToDollar(getRefundTotal)}`}
+        </Box>
+      </Box>
     </Box>
   );
 };
