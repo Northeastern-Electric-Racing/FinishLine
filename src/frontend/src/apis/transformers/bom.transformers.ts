@@ -14,7 +14,6 @@ export const manufacturerTransformer = (manufacturer: Manufacturer): Manufacture
   };
 };
 
-// should this be deleted, looks like we have a duplicate transformer but this one is never used
 export const materialTransformer = (material: Material): Material => {
   return {
     ...material,

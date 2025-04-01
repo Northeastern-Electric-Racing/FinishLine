@@ -1861,30 +1861,6 @@ const performSeed: () => Promise<void> = async () => {
     'Here are some more notes'
   );
 
-  await BillOfMaterialsService.createMaterial(
-    thomasEmrax,
-    '100k Resistor',
-    MaterialStatus.ReadyToOrder,
-    'Resistor',
-    'Digikey',
-    'lalsd',
-    new Decimal(5),
-    10,
-    50,
-    'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-    {
-      carNumber: 0,
-      projectNumber: 1,
-      workPackageNumber: 0
-    },
-    ner,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    reimbursement1.reimbursementRequestId
-  );
-
   // Need to do this because the design review cannot be scheduled for a past day
   const nextDay = new Date();
   nextDay.setDate(nextDay.getDate() + 1);
@@ -2078,35 +2054,27 @@ const performSeed: () => Promise<void> = async () => {
     ner.organizationId
   );
 
-  const goldSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Gold Tier', ner, '#FFD700');
-  await FinanceServices.createSponsorTier(thomasEmrax, 'Silver Tier', ner, '#C0C0C0');
-  await FinanceServices.createSponsorTier(thomasEmrax, 'Bronze Tier', ner, '#CD7F32');
-
-  const sponsor = await FinanceServices.createSponsor(
+  await FinanceServices.createSponsor(
     thomasEmrax,
     'Google',
     true,
     5000,
     new Date(12, 1, 24),
     [2024, 2025],
-    goldSponsorTier.sponsorTierId,
+    (
+      await prisma.sponsor_Tier.create({
+        data: {
+          organizationId: ner.organizationId,
+          name: 'tier1',
+          colorHexCode: '#FF0000'
+        }
+      })
+    ).sponsorTierId,
     true,
     'Bill Gates',
     [],
     ner,
     'googlecode'
-  );
-
-  await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, 'C0C0C0');
-
-  await FinanceServices.createSponsorTask(
-    thomasEmrax,
-    ner,
-    new Date(12, 1, 25),
-    'notes...',
-    sponsor.sponsorId,
-    new Date(7, 5, 25),
-    thomasEmrax.userId
   );
 };
 

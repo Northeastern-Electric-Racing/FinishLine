@@ -101,16 +101,6 @@ export default class BillOfMaterialsService {
       if (!unit) throw new NotFoundException('Unit', unitName);
     }
 
-    if (reimbursementRequestId) {
-      const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
-        where: { reimbursementRequestId, dateDeleted: null }
-      });
-
-      if (!reimbursementRequest) {
-        throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
-      }
-    }
-
     const perms =
       (await userHasPermission(creator.userId, organization.organizationId, isLeadership)) ||
       isUserPartOfTeams(project.teams, creator);

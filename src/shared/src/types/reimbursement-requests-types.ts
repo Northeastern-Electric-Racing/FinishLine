@@ -42,6 +42,7 @@ export interface Receipt {
   receiptId: string;
   googleFileId: string;
   name: string;
+  deletedBy?: User;
 }
 
 export interface ReimbursementRequest {
