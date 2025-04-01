@@ -37,7 +37,8 @@ export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<ReceiptQuer
   return {
     receiptId: receipt.receiptId,
     googleFileId: receipt.googleFileId,
-    name: receipt.name
+    name: receipt.name,
+    deletedBy: receipt.deletedBy ? userTransformer(receipt.deletedBy) : undefined
   };
 };
 
