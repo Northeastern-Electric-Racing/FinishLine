@@ -1,4 +1,4 @@
-import { Part, PartReview, PartReviewRequest, PartSubmission, Review_Status, User } from 'shared';
+import { Part, PartReview, PartReviewRequest, PartSubmission, User } from 'shared';
 
 type HistoryEntry = [Date, string];
 
@@ -121,12 +121,21 @@ export const processReviewerHistory = (
   }
 };
 
-export const completePartHistory = (part: Part): HistoryEntry[] => {
+export const completePartHistory = (part: Part): string[] => {
   const history = [
     ...getPartCreationHistory(part.createdAt, part.commonName),
     ...getSubmissionHistory(part.userCreated, part.submissions, part.commonName),
     ...getReviewRequestHistory(part.reviewRequests),
     ...getReviewHistory(part.submissions)
   ];
-  return history.sort((a, b) => a[0].getTime() - b[0].getTime());
+  const result: string[] = [];
+  history
+    .sort((a, b) => a[0].getTime() - b[0].getTime())
+    .map(([date, message]) => {
+      const formattedDate = date.toLocaleDateString('en-US', { year: '2-digit', month: '2-digit', day: '2-digit' });
+      result.push(`[${formattedDate}] - ${message}`);
+    });
+  return result;
 };
+
+// Part createdAt goes back by 1 day??? 2024-01-01 vs 12/31/23

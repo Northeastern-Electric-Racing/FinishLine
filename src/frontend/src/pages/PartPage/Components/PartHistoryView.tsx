@@ -7,7 +7,7 @@ interface PartHistoryViewProps {
 }
 
 const PartHistoryView: React.FC<PartHistoryViewProps> = ({ part }: PartHistoryViewProps) => {
-  const historyEntries = completePartHistory(part);
+  const historyEntries: string[] = completePartHistory(part);
 
   return <Grid> /* History Entries */ </Grid>;
 };
