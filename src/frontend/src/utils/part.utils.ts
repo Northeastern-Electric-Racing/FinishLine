@@ -6,7 +6,7 @@ export const getPartCreationHistory = (createdAt: Date, name: String): HistoryEn
   return [[new Date(createdAt), `${name} was created`]];
 };
 
-export const getSubmissionHistory = (user: User, submissions: PartSubmission[], name: String): HistoryEntry[] => {
+export const getSubmissionHistory = (submissions: PartSubmission[], name: String): HistoryEntry[] => {
   if (submissions.length === 0) return [];
   const firstSubmission = [...submissions]
     .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
@@ -16,8 +16,8 @@ export const getSubmissionHistory = (user: User, submissions: PartSubmission[], 
   return submissions.map((sub) => {
     const isFirstSubmission = firstSubmission && sub.createdAt === firstSubmission.createdAt;
     const message = isFirstSubmission
-      ? `${user.firstName} ${user.lastName} uploaded ${sub.name} for ${name}`
-      : `${user.firstName} ${user.lastName} uploaded ${sub.name}`;
+      ? `${sub.userCreated.firstName} ${sub.userCreated.lastName} uploaded ${sub.name} for ${name}`
+      : `${sub.userCreated.firstName} ${sub.userCreated.lastName} uploaded ${sub.name}`;
 
     return [new Date(sub.createdAt), message];
   });
@@ -113,7 +113,7 @@ export const processReviewerHistory = (
 export const completePartHistory = (part: Part): string[] => {
   const history = [
     ...getPartCreationHistory(part.createdAt, part.commonName),
-    ...getSubmissionHistory(part.userCreated, part.submissions, part.commonName),
+    ...getSubmissionHistory(part.submissions, part.commonName),
     ...getReviewRequestHistory(part.reviewRequests),
     ...getReviewHistory(part.submissions)
   ];
