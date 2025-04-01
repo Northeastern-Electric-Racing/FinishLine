@@ -1328,6 +1328,7 @@ export default class ReimbursementRequestService {
    * Creates an index code with the given name and current user.
    * @param name name of the index code
    * @param user the user creating the index code
+   * @param organization the organization the user is
    * @returns transformed created index code
    */
   static async createIndexCode(name: string, user: User, organization: Organization): Promise<IndexCode> {

@@ -133,10 +133,8 @@ export const reimbursementTransformer = (
 
 export const indexCodeTransformer = (indexCode: Prisma.Index_CodeGetPayload<IndexCodeQueryArgs>): IndexCode => {
   return {
-    indexCodeId: indexCode.indexCodeId,
-    name: indexCode.name,
-    userCreated: userTransformer(indexCode.userCreated),
-    dateCreated: indexCode.dateCreated
+    ...indexCode,
+    userCreated: userTransformer(indexCode.userCreated)
   };
 };
 
