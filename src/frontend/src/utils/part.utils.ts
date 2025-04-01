@@ -2,16 +2,12 @@ import { Part, PartReview, PartReviewRequest, PartSubmission, User } from 'share
 
 type HistoryEntry = [Date, string];
 
-/* [01/01/24] - PROJ_PartName_0000-00A was created. */
 export const getPartCreationHistory = (createdAt: Date, name: String): HistoryEntry[] => {
   return [[new Date(createdAt), `${name} was created`]];
 };
 
-/* [01/01/24] - Joseph Aoun uploaded Submission #1 for PROJ_PartName_0000-00A. */
-/* [01/01/24] - Joseph Aoun uploaded Submission #2 */
 export const getSubmissionHistory = (user: User, submissions: PartSubmission[], name: String): HistoryEntry[] => {
   if (submissions.length === 0) return [];
-
   const firstSubmission = [...submissions]
     .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
     .at(0);
@@ -21,57 +17,61 @@ export const getSubmissionHistory = (user: User, submissions: PartSubmission[], 
     const isFirstSubmission = firstSubmission && sub.createdAt === firstSubmission.createdAt;
     const message = isFirstSubmission
       ? `${user.firstName} ${user.lastName} uploaded ${sub.name} for ${name}`
-      : `${user} uploaded ${sub.name}`;
+      : `${user.firstName} ${user.lastName} uploaded ${sub.name}`;
 
     return [new Date(sub.createdAt), message];
   });
 };
 
-/* [01/01/24] - Joseph Aoun requested a review from Jacob Brown and George Miller. */
-/* [01/03/24] - Joseph Aoun re-requested a review from George Miller. */
 export const getReviewRequestHistory = (reviewRequests: PartReviewRequest[]): HistoryEntry[] => {
   if (reviewRequests.length === 0) return [];
 
   const historyEntries: HistoryEntry[] = [];
-  const combinedRequests = new Map<Date, Map<User, Set<string>>>();
+  // Tracking for ' and ' concatenation
+  const combinedRequests = new Map<string, Map<User, Set<string>>>();
+  // Tracking for re-request vs request
+  const previousRequests = new Map<User, Set<User>>();
 
   reviewRequests.forEach(({ createdAt, requester, reviewerRequested }) => {
-    const date = new Date(createdAt);
+    // Reformatted date for comparisons
+    const formattedDate = new Date(createdAt).toISOString().split('T')[0];
 
-    if (!combinedRequests.has(date)) combinedRequests.set(date, new Map());
-    const requesters = combinedRequests.get(date)!;
+    if (!combinedRequests.has(formattedDate)) combinedRequests.set(formattedDate, new Map());
+    const requesters = combinedRequests.get(formattedDate)!;
 
     if (!requesters.has(requester)) requesters.set(requester, new Set());
-
     const messages = requesters.get(requester)!;
-    const isReRequest = [...messages].some((msg) => msg.includes(reviewerRequested.userId));
 
-    // Re-request if already requested from the specific reviewerRequested
-    messages.add(`${isReRequest ? 're-requested' : 'requested'} a review from ${reviewerRequested.userId}`);
+    if (!previousRequests.has(requester)) previousRequests.set(requester, new Set());
+    const pastReviewers = previousRequests.get(requester)!;
+
+    const isReRequest = pastReviewers.has(reviewerRequested);
+
+    const action = isReRequest ? 're-requested a review from' : 'requested a review from';
+    messages.add(`${action} ${reviewerRequested.firstName} ${reviewerRequested.lastName}`);
+
+    pastReviewers.add(reviewerRequested);
   });
 
-  // Two different requests on the same date from the same User should be combined
-  combinedRequests.forEach((requesters, date) => {
-    const messages = Array.from(requesters.entries()).map(
-      ([requester, reviews]) => `${requester} ${Array.from(reviews).join(' and ')}.`
-    );
+  // Combine multiple requests from the same requester on the same date
+  combinedRequests.forEach((requesters, formattedDate) => {
+    const date = new Date(formattedDate);
+    const messages = Array.from(requesters.entries()).map(([requester, reviews]) => {
+      const reviewMessages = Array.from(reviews);
+      return `${requester.firstName} ${requester.lastName} ${reviewMessages.join(' and ')}`;
+    });
     historyEntries.push([date, messages.join(' ')]);
   });
 
-  // Sort the history entries by date
   return historyEntries.sort((a, b) => a[0].getTime() - b[0].getTime());
 };
 
-/* [01/01/24] - George Miller began reviewing Submission #1 */
-/* [01/03/24] - George Miller reviewed Submission #1 (in Submission #1 Review)*/
-/* [01/03/24] - George Miller reviewed Submission #2(added comments) */
-/* [01/05/24] - George Miller approved Submission #3 */
 export const getReviewHistory = (submissions: PartSubmission[]): HistoryEntry[] => {
   if (submissions.length === 0) return [];
   const historyEntries: HistoryEntry[] = [];
 
   submissions.forEach((sub) => {
-    // Each reviewer gets a separate "began" and "approved"
+    // Each reviewer gets a separate "began reviewing" and "reviewed"
     const reviewsForReviewer = new Map<User, PartReview[]>();
     sub.reviews.forEach((review) => {
       const reviewer = review.userCreated;
@@ -81,7 +81,6 @@ export const getReviewHistory = (submissions: PartSubmission[]): HistoryEntry[] 
       reviewsForReviewer.get(reviewer)!.push(review);
     });
 
-    // Process each reviewer individually
     reviewsForReviewer.forEach((reviews, reviewer) => {
       processReviewerHistory(reviews, reviewer, sub.name, historyEntries);
     });
@@ -100,25 +99,15 @@ export const processReviewerHistory = (
   reviews.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
   if (reviews.length === 0) return;
 
-  // Began reviewing first review by this reviewer
   const firstReview = reviews[0];
   historyEntries.push([new Date(firstReview.createdAt), `${reviewerName} began reviewing ${subName}`]);
 
   reviews.forEach((review) => {
-    let message = ``;
     if (review.completedAt) {
-      message += `${reviewerName} reviewed ${subName} `;
+      let message = `${reviewerName} reviewed ${subName} (in ${subName} Review)`;
+      historyEntries.push([new Date(review.completedAt), message]);
     }
-    message += `(in ${subName} Review)`;
-
-    historyEntries.push([new Date(review.createdAt), message]);
   });
-
-  // Check if last review was approved
-  const lastreview = reviews.at(-1);
-  if (lastreview?.completedAt) {
-    historyEntries.push([new Date(lastreview.completedAt), `${reviewerName} approved ${subName}`]);
-  }
 };
 
 export const completePartHistory = (part: Part): string[] => {
@@ -132,10 +121,13 @@ export const completePartHistory = (part: Part): string[] => {
   history
     .sort((a, b) => a[0].getTime() - b[0].getTime())
     .map(([date, message]) => {
-      const formattedDate = date.toLocaleDateString('en-US', { year: '2-digit', month: '2-digit', day: '2-digit' });
-      result.push(`[${formattedDate}] - ${message}`);
+      const formattedDate = date.toLocaleDateString('en-US', {
+        timeZone: 'UTC',
+        year: '2-digit',
+        month: '2-digit',
+        day: '2-digit'
+      });
+      result.push(`[${formattedDate}] - ${message}.`);
     });
   return result;
 };
-
-// Part createdAt goes back by 1 day??? 2024-01-01 vs 12/31/23
