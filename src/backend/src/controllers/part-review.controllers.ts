@@ -3,7 +3,7 @@ import PartReviewService from '../services/part-review.services';
 import { validateWBS, WbsNumber } from 'shared';
 
 export default class PartReviewController {
-  static async getAllParts(req: Request, res: Response, next: NextFunction) {
+  static async getAllPartsForProject(req: Request, res: Response, next: NextFunction) {
     try {
       const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
 
