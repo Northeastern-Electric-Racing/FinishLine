@@ -1,7 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { getIndexCodeQueryArgs } from './index-code.query-args';
-import { getUserQueryArgs } from './user.query-args';
-import { getAccountCodeQueryArgs } from './account-code.query-args';
+import { getReimbursementProductOtherReasonQueryArgs } from './reimbursement-product-other-reason.query-args';
 
 export type ReimbursementProductQueryArgs = ReturnType<typeof getReimbursementProductQueryArgs>;
 
@@ -11,13 +9,7 @@ export const getReimbursementProductReasonQueryArgs = (organizationId: string) =
   Prisma.validator<Prisma.Reimbursement_Product_ReasonDefaultArgs>()({
     include: {
       wbsElement: true,
-      otherReason: {
-        include: {
-          userCreated: getUserQueryArgs(organizationId),
-          indexCode: getIndexCodeQueryArgs(organizationId),
-          accountCodes: getAccountCodeQueryArgs(organizationId)
-        }
-      }
+      otherReason: getReimbursementProductOtherReasonQueryArgs(organizationId)
     }
   });
 

@@ -517,11 +517,12 @@ export default class ReimbursementRequestsController {
 
   static async createOtherReimbursementProductReason(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, budget, indexCodeId } = req.body;
+      const { name, budget, indexCodeId, accountCodes } = req.body;
       const otherReimbursementProductReason = await ReimbursementRequestService.createOtherReimbursementProductReason(
         name,
         budget,
         indexCodeId,
+        accountCodes,
         req.currentUser,
         req.organization
       );

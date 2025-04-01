@@ -1768,6 +1768,7 @@ const performSeed: () => Promise<void> = async () => {
     'CONSUMABLES',
     10,
     indexCodeCash.indexCodeId,
+    [accountCode],
     thomasEmrax,
     ner
   );
@@ -1776,6 +1777,7 @@ const performSeed: () => Promise<void> = async () => {
     'TOOLS_AND_EQUIPMENT',
     10,
     indexCodeCash.indexCodeId,
+    [],
     thomasEmrax,
     ner
   );
@@ -1784,6 +1786,7 @@ const performSeed: () => Promise<void> = async () => {
     'COMPETITION',
     10,
     indexCodeBudget.indexCodeId,
+    [accountCode],
     thomasEmrax,
     ner
   );
@@ -1792,6 +1795,7 @@ const performSeed: () => Promise<void> = async () => {
     'GENERAL_STOCK',
     10,
     indexCodeBudget.indexCodeId,
+    [],
     thomasEmrax,
     ner
   );
@@ -1800,6 +1804,7 @@ const performSeed: () => Promise<void> = async () => {
     'SUBSCRIPTIONS_AND_MEMBERSHIP',
     10,
     indexCodeCash.indexCodeId,
+    [],
     thomasEmrax,
     ner
   );

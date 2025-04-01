@@ -29,6 +29,7 @@ describe('Reimbursement Requests', () => {
       'GENERAL STOCK',
       10,
       createdIndexCode.indexCodeId,
+      [createdAccountCode],
       createdUser,
       org
     );
@@ -447,6 +448,7 @@ describe('Reimbursement Requests', () => {
         'CONSUMABLES',
         100,
         createdIndexCode.indexCodeId,
+        [createdAccountCode],
         createdUser,
         org
       );
@@ -465,6 +467,7 @@ describe('Reimbursement Requests', () => {
         'COMPETITION',
         125,
         createdIndexCode.indexCodeId,
+        [createdAccountCode],
         createdUser,
         org
       );

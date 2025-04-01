@@ -31,7 +31,7 @@ const EditReimbursementRequestRenderedDefaultValues: React.FC<{
         submitData={onSubmitData}
         defaultValues={{
           vendorId: reimbursementRequest.vendor.vendorId,
-          account: reimbursementRequest.account,
+          account: reimbursementRequest.indexCode,
           dateOfExpense: reimbursementRequest.dateOfExpense ? new Date(reimbursementRequest.dateOfExpense) : undefined,
           accountCodeId: reimbursementRequest.accountCode.accountCodeId,
           reimbursementProducts: reimbursementRequest.reimbursementProducts.map((product) => ({

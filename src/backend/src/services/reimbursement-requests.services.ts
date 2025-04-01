@@ -1416,6 +1416,7 @@ export default class ReimbursementRequestService {
     name: string,
     budget: number,
     indexCodeId: string,
+    accountCodes: AccountCode[],
     user: User,
     organization: Organization
   ): Promise<OtherProductReason> {
@@ -1428,7 +1429,8 @@ export default class ReimbursementRequestService {
         name,
         budget,
         userCreated: { connect: { userId: user.userId } },
-        indexCode: { connect: { indexCodeId: indexCode.indexCodeId } }
+        indexCode: { connect: { indexCodeId: indexCode.indexCodeId } },
+        accountCodes: { connect: accountCodes.map((accountCode) => ({ accountCodeId: accountCode.accountCodeId })) }
       },
       ...getReimbursementProductOtherReasonQueryArgs(organization.organizationId)
     });
