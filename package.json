@@ -57,6 +57,7 @@
     "@slack/events-api": "^3.0.1",
     "mitt": "^3.0.1",
     "react-hook-form-persist": "^3.0.0",
+    "recharts": "^2.15.1",
     "typescript": "^4.1.5"
   },
   "devDependencies": {
