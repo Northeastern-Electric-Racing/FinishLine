@@ -4,7 +4,7 @@ import { FrequentlyAskedQuestion, isAdmin, PartReviewCommonMistake, PartTag, Pro
 import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
 import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
-import { getPartQueryArgs, partReviewQueryArgs } from '../prisma-query-args/part-review.query-args';
+import { getPartQueryArgs, getPartReviewQueryArgs } from '../prisma-query-args/part-review.query-args';
 import { faqTransformer } from '../transformers/faq.transformer';
 import { partPreviewTransformer } from '../transformers/part-review.transformer';
 import { partsReviewCommonMistakeTransformer } from '../transformers/part-review.transformer';
@@ -505,7 +505,7 @@ export default class PartReviewService {
         title,
         description
       },
-      ...partReviewQueryArgs
+      ...getPartReviewQueryArgs
     });
     return newPopup;
   }
@@ -557,7 +557,7 @@ export default class PartReviewService {
         description,
         updatedAt: new Date()
       },
-      ...partReviewQueryArgs
+      ...getPartReviewQueryArgs
     });
   }
 
@@ -588,7 +588,7 @@ export default class PartReviewService {
       data: {
         deletedAt: new Date()
       },
-      ...partReviewQueryArgs
+      ...getPartReviewQueryArgs
     });
 
     return deletedPopup;
