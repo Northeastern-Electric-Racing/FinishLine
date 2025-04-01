@@ -148,7 +148,6 @@ describe('Part Submission History', () => {
     expect(completePartHistory(part1)[0]).toBe(response);
   });
   it('User uploaded first submission includes part name', () => {
-    // userCreated or assignees???
     const response: string = '[01/02/24] - Chris Pyle uploaded Submission #1 for PROJ_PartName_0000-00A.';
     expect(completePartHistory(part1)[1]).toBe(response);
   });
@@ -172,15 +171,15 @@ describe('Part Submission History', () => {
     const response: string = '[01/07/24] - Chris Pyle requested a review from Griffin Cooper and Zachary Wen.';
     expect(completePartHistory(part1)[6]).toBe(response);
   });
-  it('Reviewer reviewed submission', () => {
+  it('Reviewer began reviewing submission', () => {
     const response: string = '[01/08/24] - Zachary Wen began reviewing Submission #2.';
     expect(completePartHistory(part1)[7]).toBe(response);
   });
-  it('Reviewer approved submission', () => {
+  it('Reviewer finished reviewing submission', () => {
     const response: string = '[01/09/24] - Zachary Wen reviewed Submission #2 (in Submission #2 Review).';
     expect(completePartHistory(part1)[8]).toBe(response);
   });
-  it('Sub 3', () => {
+  it('Submission 3', () => {
     const response: string = '[01/10/24] - Chris Pyle uploaded Submission #3.';
     expect(completePartHistory(part1)[9]).toBe(response);
   });
@@ -192,7 +191,7 @@ describe('Part Submission History', () => {
     const response: string = '[01/12/24] - Zachary Wen began reviewing Submission #3.';
     expect(completePartHistory(part1)[11]).toBe(response);
   });
-  it('Last Review Approves?', () => {
+  it('Last Review', () => {
     const response: string = '[01/13/24] - Zachary Wen reviewed Submission #3 (in Submission #3 Review).';
     expect(completePartHistory(part1)[12]).toBe(response);
   });
