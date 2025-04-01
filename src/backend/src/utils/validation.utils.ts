@@ -1,7 +1,7 @@
 import { Design_Review_Status, Graph_Display_Type, Graph_Type, Measure, Special_Permission } from '@prisma/client';
 import { Request, Response } from 'express';
 import { body, ValidationChain, validationResult } from 'express-validator';
-import { ClubAccount, MaterialStatus, TaskPriority, TaskStatus, WorkPackageStage, RoleEnum, WbsElementStatus } from 'shared';
+import { MaterialStatus, TaskPriority, TaskStatus, WorkPackageStage, RoleEnum, WbsElementStatus } from 'shared';
 
 export const intMinZero = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.isInt({ min: 0 }).not().isString();
@@ -138,10 +138,6 @@ export const isTaskPriority = (validationObject: ValidationChain): ValidationCha
 
 export const isTaskStatus = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.isString().isIn([TaskStatus.DONE, TaskStatus.IN_BACKLOG, TaskStatus.IN_PROGRESS]);
-};
-
-export const isAccount = (validationObject: ValidationChain): ValidationChain => {
-  return validationObject.isString().isIn([ClubAccount.BUDGET, ClubAccount.CASH]);
 };
 
 export const isMaterialStatus = (validationObject: ValidationChain): ValidationChain => {

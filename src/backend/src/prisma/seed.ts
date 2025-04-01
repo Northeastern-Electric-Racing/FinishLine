@@ -7,7 +7,6 @@
 
 import {
   CR_Type,
-  Club_Accounts,
   Graph_Display_Type,
   Graph_Type,
   Measure,
@@ -22,7 +21,6 @@ import { dbSeedAllTeams } from './seed-data/teams.seed';
 import ChangeRequestsService from '../services/change-requests.services';
 import TeamsService from '../services/teams.services';
 import {
-  ClubAccount,
   DesignReviewStatus,
   MaterialStatus,
   RoleEnum,
@@ -1680,6 +1678,7 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'nershipping@gmail.com',
     'racecar228!',
+    false,
     'SAVE50!',
     thomasEmrax.userId,
     'Tax exemption status?',
@@ -1691,6 +1690,7 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'amazon@gmail.com',
     'racecare228!',
+    true,
     'SAVE20!',
     thomasEmrax.userId,
     'They want updates on work',
@@ -1702,25 +1702,29 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'google@gmail.com',
     'racecar228!',
+    false,
     'SAVE50!',
     thomasEmrax.userId,
     'Tax exemption ID NUMBER',
     thomasEmrax.userId
   );
 
+  const indexCodeCash = await ReimbursementRequestService.createIndexCode('CASH', thomasEmrax, ner);
+  const indexCodeBudget = await ReimbursementRequestService.createIndexCode('BUDGET', thomasEmrax, ner);
+
   const accountCode = await ReimbursementRequestService.createAccountCode(
     thomasEmrax,
     'Equipment',
     123,
     true,
-    [Club_Accounts.CASH, Club_Accounts.BUDGET],
+    [indexCodeCash, indexCodeBudget],
     ner
   );
 
   const reimbursement1 = await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
     vendor.vendorId,
-    ClubAccount.CASH,
+    indexCodeCash.indexCodeId,
     [],
     [
       {
@@ -1741,7 +1745,7 @@ const performSeed: () => Promise<void> = async () => {
   const reimbursement2 = await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
     vendor.vendorId,
-    ClubAccount.BUDGET,
+    indexCodeBudget.indexCodeId,
     [],
     [
       {
@@ -1758,6 +1762,46 @@ const performSeed: () => Promise<void> = async () => {
     200,
     ner,
     new Date()
+  );
+
+  const otherProductReasonConsumables = await ReimbursementRequestService.createOtherReimbursementProductReason(
+    'CONSUMABLES',
+    10,
+    indexCodeCash.indexCodeId,
+    thomasEmrax,
+    ner
+  );
+
+  const otherProductReasonTools = await ReimbursementRequestService.createOtherReimbursementProductReason(
+    'TOOLS_AND_EQUIPMENT',
+    10,
+    indexCodeCash.indexCodeId,
+    thomasEmrax,
+    ner
+  );
+
+  const otherProductReasonComp = await ReimbursementRequestService.createOtherReimbursementProductReason(
+    'COMPETITION',
+    10,
+    indexCodeBudget.indexCodeId,
+    thomasEmrax,
+    ner
+  );
+
+  const otherProductReasonGeneral = await ReimbursementRequestService.createOtherReimbursementProductReason(
+    'GENERAL_STOCK',
+    10,
+    indexCodeBudget.indexCodeId,
+    thomasEmrax,
+    ner
+  );
+
+  const otherProductReasonSub = await ReimbursementRequestService.createOtherReimbursementProductReason(
+    'SUBSCRIPTIONS_AND_MEMBERSHIP',
+    10,
+    indexCodeCash.indexCodeId,
+    thomasEmrax,
+    ner
   );
 
   /**
@@ -2034,35 +2078,27 @@ const performSeed: () => Promise<void> = async () => {
     ner.organizationId
   );
 
-  const goldSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Gold Tier', ner, '#FFD700');
-  await FinanceServices.createSponsorTier(thomasEmrax, 'Silver Tier', ner, '#C0C0C0');
-  await FinanceServices.createSponsorTier(thomasEmrax, 'Bronze Tier', ner, '#CD7F32');
-
-  const sponsor = await FinanceServices.createSponsor(
+  await FinanceServices.createSponsor(
     thomasEmrax,
     'Google',
     true,
     5000,
     new Date(12, 1, 24),
     [2024, 2025],
-    goldSponsorTier.sponsorTierId,
+    (
+      await prisma.sponsor_Tier.create({
+        data: {
+          organizationId: ner.organizationId,
+          name: 'tier1',
+          colorHexCode: '#FF0000'
+        }
+      })
+    ).sponsorTierId,
     true,
     'Bill Gates',
     [],
     ner,
     'googlecode'
-  );
-
-  await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, 'C0C0C0');
-
-  await FinanceServices.createSponsorTask(
-    thomasEmrax,
-    ner,
-    new Date(12, 1, 25),
-    'notes...',
-    sponsor.sponsorId,
-    new Date(7, 5, 25),
-    thomasEmrax.userId
   );
 };
 

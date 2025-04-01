@@ -1,5 +1,5 @@
-import { ClubAccount, AccountCode } from 'shared';
-import { AccountCodePayload } from '../../../hooks/finance.hooks';
+import { IndexCode, AccountCode } from 'shared';
+import { AccountCodePayload, useGetAllIndexCodes } from '../../../hooks/finance.hooks';
 import { Controller, useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
 import { Checkbox, FormControl, FormLabel, FormHelperText, Select, MenuItem, OutlinedInput } from '@mui/material';
@@ -9,6 +9,8 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { codeAndRefundSourceName } from '../../../utils/pipes';
 import { useTheme } from '@mui/material/styles';
+import ErrorPage from '../../ErrorPage';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 
 const schema = yup.object().shape({
   code: yup.number().typeError('Account Code must be a number').required('Account Code is Required'),
@@ -52,6 +54,20 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
     handleClose();
   };
 
+  const {
+    data: indexCodes,
+    isLoading: indexCodesIsLoading,
+    isError: indexCodeIsError,
+    error: indexCodeError
+  } = useGetAllIndexCodes();
+
+  if (!indexCodes || indexCodesIsLoading) {
+    return <LoadingIndicator />;
+  }
+  if (indexCodeIsError) {
+    return <ErrorPage message={indexCodeError.message} />;
+  }
+
   return (
     <NERFormModal
       open={showModal}
@@ -77,11 +93,11 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
             <Select
               multiple
               value={formValue}
-              onChange={(e) => onChange(e.target.value as ClubAccount[])}
+              onChange={(e) => onChange(e.target.value as IndexCode[])}
               input={<OutlinedInput />}
             >
-              {Object.values(ClubAccount).map((refundSource) => (
-                <MenuItem key={refundSource} value={refundSource}>
+              {indexCodes.map((refundSource: IndexCode) => (
+                <MenuItem key={refundSource.name} value={refundSource.name}>
                   {codeAndRefundSourceName(refundSource)}
                 </MenuItem>
               ))}

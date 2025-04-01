@@ -1,9 +1,11 @@
 import { WbsNumber } from './project-types';
 import { User } from './user-types';
 
-export enum ClubAccount {
-  CASH = 'CASH',
-  BUDGET = 'BUDGET'
+export interface IndexCode {
+  indexCodeId: string;
+  name: string;
+  userCreated: User;
+  dateCreated: Date;
 }
 
 export interface ReimbursementRequestRow {
@@ -16,7 +18,7 @@ export interface ReimbursementRequestRow {
   dateSubmittedToSabo: Date | undefined;
   submitter: User;
   vendor: Vendor;
-  refundSource: ClubAccount;
+  refundSource: IndexCode;
 }
 
 export enum ReimbursementStatusType {
@@ -51,7 +53,7 @@ export interface ReimbursementRequest {
   reimbursementStatuses: ReimbursementStatus[];
   recipient: User;
   vendor: Vendor;
-  account: ClubAccount;
+  indexCode: IndexCode;
   totalCost: number;
   receiptPictures: Receipt[];
   reimbursementProducts: ReimbursementProduct[];
@@ -59,12 +61,14 @@ export interface ReimbursementRequest {
   accountCode: AccountCode;
 }
 
-export enum OtherProductReason {
-  ToolsAndEquipment = 'TOOLS_AND_EQUIPMENT',
-  Competition = 'COMPETITION',
-  Consumables = 'CONSUMABLES',
-  GeneralStock = 'GENERAL_STOCK',
-  SubscriptionsAndMemberships = 'SUBSCRIPTIONS_AND_MEMBERSHIPS'
+export interface OtherProductReason {
+  otherProductReasonId: string;
+  name: string;
+  userCreated: User;
+  dateCreated: Date;
+  dateDeleted?: Date;
+  budget: number;
+  indexCode: IndexCode;
 }
 
 export type WBSElementData = { wbsNum: WbsNumber; wbsName: string };
@@ -94,7 +98,7 @@ export interface AccountCode {
   name: string;
   code: number;
   allowed: boolean;
-  allowedRefundSources: ClubAccount[];
+  allowedRefundSources: IndexCode[];
 }
 
 export interface ReimbursementProductCreateArgs {

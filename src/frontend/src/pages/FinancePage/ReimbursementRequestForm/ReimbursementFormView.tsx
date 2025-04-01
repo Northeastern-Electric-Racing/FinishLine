@@ -19,7 +19,7 @@ import {
 import { Box, Stack } from '@mui/system';
 import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import {
-  ClubAccount,
+  IndexCode,
   AccountCode,
   ReimbursementProductFormArgs,
   ReimbursementReceiptCreateArgs,
@@ -324,7 +324,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 control={control}
                 render={({ field: { onChange, value } }) => (
                   <Select
-                    onChange={(newValue) => onChange(newValue.target.value as ClubAccount)}
+                    onChange={(newValue) => onChange(newValue.target.value as IndexCode)}
                     value={value}
                     disabled={!selectedAccountCode}
                     error={!!errors.account}
@@ -338,7 +338,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     }}
                   >
                     {refundSources.map((refundSource) => (
-                      <MenuItem key={refundSource} value={refundSource}>
+                      <MenuItem key={refundSource.name} value={refundSource.name}>
                         {codeAndRefundSourceName(refundSource)}
                       </MenuItem>
                     ))}

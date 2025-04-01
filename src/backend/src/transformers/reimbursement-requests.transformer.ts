@@ -6,7 +6,7 @@
 import { Prisma } from '@prisma/client';
 import {
   AccountCode,
-  ClubAccount,
+  IndexCode,
   OtherProductReason,
   Receipt,
   Reimbursement,
@@ -29,6 +29,9 @@ import {
 } from '../prisma-query-args/reimbursement-products.query-args';
 import { ReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
 import { VendorQueryArgs } from '../prisma-query-args/vendor.query-args';
+import { AccountCodeQueryArgs } from '../prisma-query-args/account-code.query-args';
+import { IndexCodeQueryArgs } from '../prisma-query-args/index-code.query-args';
+import { ReimbursementProductOtherReasonQueryArgs } from '../prisma-query-args/reimbursement-product-other-reason.query-args';
 
 export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<ReceiptQueryArgs>): Receipt => {
   return {
@@ -50,7 +53,7 @@ export const reimbursementRequestTransformer = (
     reimbursementStatuses: reimbursementRequest.reimbursementStatuses.map(reimbursementStatusTransformer),
     recipient: userTransformer(reimbursementRequest.recipient),
     vendor: vendorTransformer(reimbursementRequest.vendor),
-    account: reimbursementRequest.account as ClubAccount,
+    indexCode: indexCodeTransformer(reimbursementRequest.indexCode),
     totalCost: reimbursementRequest.totalCost,
     receiptPictures: reimbursementRequest.receiptPictures.filter((receipt) => !receipt.dateDeleted).map(receiptTransformer),
     reimbursementProducts: reimbursementRequest.reimbursementProducts.map(reimbursementProductTransformer),
@@ -85,14 +88,22 @@ const reimbursementProductReasonTransformer = (
   reason: Prisma.Reimbursement_Product_ReasonGetPayload<ReimbursementProductReasonQueryArgs>
 ): ReimbursementProductReason => {
   return reason.wbsElement
-    ? { wbsName: reason.wbsElement?.name, wbsNum: wbsNumOf(reason.wbsElement) }
-    : (reason.otherReason! as OtherProductReason);
+    ? { wbsName: reason.wbsElement.name, wbsNum: wbsNumOf(reason.wbsElement) }
+    : {
+        otherProductReasonId: reason.otherReason!.otherReimbursementProductReasonId,
+        name: reason.otherReason!.name,
+        userCreated: userTransformer(reason.otherReason!.userCreated),
+        dateCreated: reason.otherReason!.dateCreated,
+        dateDeleted: reason.otherReason?.dateDeleted ?? undefined,
+        budget: reason.otherReason!.budget,
+        indexCode: indexCodeTransformer(reason.otherReason!.indexCode)
+      };
 };
 
-export const accountCodeTransformer = (accountCode: Prisma.Account_CodeGetPayload<null>): AccountCode => {
+export const accountCodeTransformer = (accountCode: Prisma.Account_CodeGetPayload<AccountCodeQueryArgs>): AccountCode => {
   return {
     ...accountCode,
-    allowedRefundSources: accountCode.allowedRefundSources as ClubAccount[]
+    allowedRefundSources: accountCode.allowedRefundSources.map(indexCodeTransformer)
   };
 };
 
@@ -118,5 +129,28 @@ export const reimbursementTransformer = (
     dateCreated: reimbursement.dateCreated,
     amount: reimbursement.amount,
     userSubmitted: userTransformer(reimbursement.userSubmitted)
+  };
+};
+
+export const indexCodeTransformer = (indexCode: Prisma.Index_CodeGetPayload<IndexCodeQueryArgs>): IndexCode => {
+  return {
+    indexCodeId: indexCode.indexCodeId,
+    name: indexCode.name,
+    userCreated: userTransformer(indexCode.userCreated),
+    dateCreated: indexCode.dateCreated
+  };
+};
+
+export const otherProductReasonTransformer = (
+  otherProductReason: Prisma.Reimbursement_Product_Other_ReasonGetPayload<ReimbursementProductOtherReasonQueryArgs>
+): OtherProductReason => {
+  return {
+    otherProductReasonId: otherProductReason.otherReimbursementProductReasonId,
+    name: otherProductReason.name,
+    userCreated: userTransformer(otherProductReason.userCreated),
+    dateCreated: otherProductReason.dateCreated,
+    dateDeleted: otherProductReason.dateDeleted ?? undefined,
+    budget: otherProductReason.budget,
+    indexCode: indexCodeTransformer(otherProductReason.indexCode)
   };
 };

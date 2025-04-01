@@ -144,4 +144,6 @@ export type ExceptionObjectNames =
   | 'Graph'
   | 'Graph Collection'
   | 'Sponsor'
-  | 'SponsorTask';
+  | 'SponsorTask'
+  | 'Index Code'
+  | 'Reimbursement Product Other Reason';

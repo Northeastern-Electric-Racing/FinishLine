@@ -4,7 +4,7 @@
  */
 import { useFieldArray, useForm } from 'react-hook-form';
 import {
-  ClubAccount,
+  IndexCode,
   OtherProductReason,
   OtherReimbursementProductCreateArgs,
   ReimbursementProductFormArgs,
@@ -29,7 +29,7 @@ export interface ReimbursementRequestInformation {
   dateOfExpense?: Date;
   accountCodeId: string;
   receiptFiles: ReimbursementReceiptUploadArgs[];
-  account: ClubAccount | undefined;
+  account: IndexCode | undefined;
 }
 export interface ReimbursementRequestFormInput extends ReimbursementRequestInformation {
   reimbursementProducts: ReimbursementProductFormArgs[];

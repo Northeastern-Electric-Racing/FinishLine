@@ -55,7 +55,7 @@ export default class ReimbursementRequestsController {
       const {
         dateOfExpense,
         vendorId,
-        account,
+        indexCodeId,
         otherReimbursementProducts,
         wbsReimbursementProducts,
         accountCodeId,
@@ -66,7 +66,7 @@ export default class ReimbursementRequestsController {
       const createdReimbursementRequest = await ReimbursementRequestService.createReimbursementRequest(
         user,
         vendorId,
-        account,
+        indexCodeId,
         otherReimbursementProducts,
         wbsReimbursementProducts,
         accountCodeId,
@@ -101,7 +101,7 @@ export default class ReimbursementRequestsController {
       const {
         dateOfExpense,
         vendorId,
-        account,
+        indexCodeId,
         accountCodeId,
         totalCost,
         otherReimbursementProducts,
@@ -112,7 +112,7 @@ export default class ReimbursementRequestsController {
       const updatedReimbursementRequestId = await ReimbursementRequestService.editReimbursementRequest(
         requestId,
         vendorId,
-        account,
+        indexCodeId,
         accountCodeId,
         totalCost,
         otherReimbursementProducts,
@@ -464,6 +464,107 @@ export default class ReimbursementRequestsController {
         req.organization
       );
       res.status(200).json(updatedRequest);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createIndexCode(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name } = req.body;
+      const indexCode = await ReimbursementRequestService.createIndexCode(name, req.currentUser, req.organization);
+      res.status(200).json(indexCode);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getSingleIndexCode(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { indexCodeId } = req.params;
+
+      const indexCode = await ReimbursementRequestService.getSingleIndexCode(indexCodeId, req.organization);
+
+      res.status(200).json(indexCode);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllIndexCodes(req: Request, res: Response, next: NextFunction) {
+    try {
+      const indexCodes = await ReimbursementRequestService.getAllIndexCodes(req.organization);
+      res.status(200).json(indexCodes);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteIndexCode(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { indexCodeId } = req.params;
+
+      const deletedIndexCode = await ReimbursementRequestService.deleteIndexCode(
+        indexCodeId,
+        req.currentUser,
+        req.organization
+      );
+      res.status(200).json(deletedIndexCode);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createOtherReimbursementProductReason(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, budget, indexCodeId } = req.body;
+      const otherReimbursementProductReason = await ReimbursementRequestService.createOtherReimbursementProductReason(
+        name,
+        budget,
+        indexCodeId,
+        req.currentUser,
+        req.organization
+      );
+      res.status(200).json(otherReimbursementProductReason);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllOtherReimbursementProductReasons(req: Request, res: Response, next: NextFunction) {
+    try {
+      const otherReimbursementProductReasons = await ReimbursementRequestService.getAllOtherReimbursementProductReasons(
+        req.organization
+      );
+      res.status(200).json(otherReimbursementProductReasons);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getSingleOtherReimbursementProductReason(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { otherReimbursementProductReasonId } = req.params;
+      const otherProductReason = await ReimbursementRequestService.getSingleOtherReimbursementProductReason(
+        otherReimbursementProductReasonId,
+        req.organization
+      );
+      res.status(200).json(otherProductReason);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteOtherReimbursementProductReason(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { otherReimbursementProductReasonId } = req.params;
+
+      const deletedOtherProductReason = await ReimbursementRequestService.deleteOtherReimbursementProductReason(
+        otherReimbursementProductReasonId,
+        req.currentUser,
+        req.organization
+      );
+      res.status(200).json(deletedOtherProductReason);
     } catch (error: unknown) {
       next(error);
     }
