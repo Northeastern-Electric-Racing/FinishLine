@@ -11,11 +11,10 @@
 ALTER TABLE "Material" ADD COLUMN     "reimbursementRequestId" TEXT;
 
 -- AlterTable
-ALTER TABLE "Reimbursement_Product_Reason" DROP COLUMN "otherReason",
-ADD COLUMN     "otherReasonId" TEXT;
+ALTER TABLE "Reimbursement_Product_Reason" ADD COLUMN "otherReasonId" TEXT;
 
 -- AlterTable
-ALTER TABLE "Reimbursement_Request" ADD COLUMN     "indexCodeId" TEXT;
+ALTER TABLE "Reimbursement_Request" ADD COLUMN "indexCodeId" TEXT;
 
 -- AlterTable
 ALTER TABLE "Vendor" ADD COLUMN     "addedByUserId" TEXT,
@@ -146,7 +145,7 @@ JOIN inserted i ON reason.index_name = i."name";
 UPDATE "Reimbursement_Request" rr
 SET "indexCodeId" = ic."indexCodeId"
 FROM "Index_Code" ic
-WHERE rr."indexCode"::TEXT = ic."name"
+WHERE rr."account"::TEXT = ic."name"
 AND rr."organizationId" = ic."organizationId";
 
 UPDATE "Reimbursement_Product_Reason" rpr 
@@ -158,14 +157,16 @@ ALTER TABLE "Reimbursement_Request" ALTER COLUMN "indexCodeId" SET NOT NULL;
 
 ALTER TABLE "Reimbursement_Request" DROP COLUMN "account";
 
--- DropEnum
-DROP TYPE "Club_Accounts";
+ALTER TABLE "Reimbursement_Product_Reason" DROP COLUMN "otherReason";
 
 -- AlterTable
 ALTER TABLE "Account_Code" DROP COLUMN "allowedRefundSources";
 
 -- DropEnum
 DROP TYPE "Other_Reimbursement_Product_Reason";
+
+-- DropEnum
+DROP TYPE "Club_Accounts";
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Sponsor_name_organizationId_key" ON "Sponsor"("name", "organizationId");
