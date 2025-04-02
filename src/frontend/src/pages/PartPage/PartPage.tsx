@@ -73,6 +73,7 @@ const PartPage: React.FC = () => {
                   mb: 2
                 }}
               >
+                <PartSubmissionDetails></PartSubmissionDetails>
                 <Typography>History</Typography>
               </Box>
             </Grid>
