@@ -9,10 +9,16 @@ export * from './src/types/user-types';
 export * from './src/types/work-package-types';
 export * from './src/types/team-types';
 export * from './src/types/task-types';
+export * from './src/types/finance-types';
 export * from './src/types/reimbursement-requests-types';
 export * from './src/types/design-review-types';
+export * from './src/types/frequently-asked-questions-types';
+export * from './src/types/milestone-types';
+export * from './src/types/checklist-types';
 export * from './src/types/pop-up-types';
 export * from './src/types/announcements.types';
+export * from './src/types/finance-types';
+
 export * from './src/validate-wbs';
 export * from './src/date-utils';
 

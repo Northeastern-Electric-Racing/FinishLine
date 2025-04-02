@@ -9,14 +9,14 @@ import NERSuccessButton from '../../components/NERSuccessButton';
 import * as yup from 'yup';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { ProposedSolution } from 'shared';
+import { ProposedSolution, ProposedSolutionFormInput } from 'shared';
 import { TextField, Typography, IconButton } from '@mui/material';
 import { generateUUID } from '../../utils/form';
 
 interface ProposedSolutionFormProps {
   defaultValues?: ProposedSolution;
   readOnly?: boolean;
-  onSubmit: (data: ProposedSolution) => void;
+  onSubmit: (data: ProposedSolutionFormInput) => void;
   open: boolean;
   onClose: () => void;
 }
@@ -33,11 +33,12 @@ const schema = yup.object().shape({
     .number()
     .typeError('Timeline Impact must be a number')
     .required('Timeline Impact is required')
-    .integer('Timeline Impact must be an integer')
+    .integer('Timeline Impact must be an integer'),
+  id: yup.string().required()
 });
 
 const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({ defaultValues, readOnly, onSubmit, open, onClose }) => {
-  const { formState, handleSubmit, control } = useForm<ProposedSolution>({
+  const { formState, handleSubmit, control } = useForm<ProposedSolutionFormInput>({
     resolver: yupResolver(schema),
     defaultValues: {
       description: defaultValues?.description,

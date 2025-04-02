@@ -30,6 +30,7 @@ const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ task, taskNumber }) => {
       sx={{
         width: '100%',
         height: 'fit-content',
+        minHeight: 'fit-content',
         mr: 3,
         background: theme.palette.background.default,
         borderRadius: 2

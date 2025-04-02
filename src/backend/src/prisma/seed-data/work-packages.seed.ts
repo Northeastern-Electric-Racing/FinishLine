@@ -27,6 +27,7 @@ export const seedWorkPackage = async (
   _status: WbsElementStatus,
   lead: string,
   manager: string,
+  projectWbsNum: WbsNumber,
   organization: Organization
 ): Promise<{
   workPackageWbsNumber: WbsNumber;
@@ -41,6 +42,7 @@ export const seedWorkPackage = async (
     duration,
     blockedBy,
     descriptionBullets,
+    projectWbsNum,
     organization
   );
 

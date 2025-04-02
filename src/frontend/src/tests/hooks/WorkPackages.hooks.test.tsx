@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook, waitFor } from '@testing-library/react';
 import { AxiosResponse } from 'axios';
 import { WorkPackage } from 'shared';
 import wrapper from '../../app/AppContextQuery';
@@ -20,7 +20,7 @@ describe('work package hooks', () => {
     const mockedGetAllWorkPackages = getAllWorkPackages as jest.Mock<Promise<AxiosResponse<WorkPackage[]>>>;
     mockedGetAllWorkPackages.mockReturnValue(mockPromiseAxiosResponse<WorkPackage[]>(exampleAllWorkPackages));
 
-    const { result, waitFor } = renderHook(() => useAllWorkPackages(), { wrapper });
+    const { result } = renderHook(() => useAllWorkPackages(), { wrapper });
     await waitFor(() => result.current.isSuccess);
     expect(result.current.data).toEqual(exampleAllWorkPackages);
   });
@@ -29,7 +29,7 @@ describe('work package hooks', () => {
     const mockedGetSingleWorkPackage = getSingleWorkPackage as jest.Mock<Promise<AxiosResponse<WorkPackage>>>;
     mockedGetSingleWorkPackage.mockReturnValue(mockPromiseAxiosResponse<WorkPackage>(exampleResearchWorkPackage));
 
-    const { result, waitFor } = renderHook(() => useSingleWorkPackage(exampleWbsWorkPackage1), {
+    const { result } = renderHook(() => useSingleWorkPackage(exampleWbsWorkPackage1), {
       wrapper
     });
     await waitFor(() => result.current.isSuccess);

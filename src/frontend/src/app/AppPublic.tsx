@@ -38,6 +38,11 @@ const AppPublic: React.FC = () => {
       return <AppAuthenticated userId={auth.user.userId} userRole={auth.user.role} />;
     }
 
+    if (!auth.user && !auth.triedCurrent) {
+      auth.signInCurrent();
+      return <LoadingIndicator />;
+    }
+
     // if we're on development and the userId is stored in localStorage,
     // then dev login right away (no login page redirect needed!)
     if (import.meta.env.MODE === 'development' && devUserId) {

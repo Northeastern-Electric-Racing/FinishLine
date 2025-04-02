@@ -5,7 +5,7 @@ import { ReactNode } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 import { CancelText, SubmitText } from '../utils/teams.utils';
 
-const background = '#ef4345';
+const headerBackground = '#ef4345';
 
 export interface NERModalProps {
   open: boolean;
@@ -53,7 +53,7 @@ const NERModal = ({
           : { borderRadius: '10px', maxWidth: '700px' }
       }}
     >
-      <DialogTitle sx={{ backgroundColor: background, minHeight: '64px', position: 'relative' }}>
+      <DialogTitle sx={{ backgroundColor: headerBackground, minHeight: '64px', position: 'relative' }}>
         {icon ? (
           <Box display="flex" justifyContent="left" alignItems="center">
             <Icon

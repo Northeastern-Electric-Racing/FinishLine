@@ -8,7 +8,7 @@ import ProjectsTable from './ProjectsTable';
 import { routes } from '../../utils/routes';
 import ProjectsOverview from './ProjectsOverview';
 import PageLayout from '../../components/PageLayout';
-import NERTabs from '../../components/Tabs';
+import FullPageTabs from '../../components/FullPageTabs';
 import { NERButton } from '../../components/NERButton';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { isGuest } from 'shared';
@@ -38,7 +38,7 @@ const ProjectsPage: React.FC = () => {
         </NERButton>
       }
       tabs={
-        <NERTabs
+        <FullPageTabs
           setTab={setTabIndex}
           tabsLabels={[
             { tabUrlValue: 'overview', tabName: 'Overview' },
