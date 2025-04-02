@@ -498,7 +498,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
             </FormControl>
           </Grid>
         </Grid>
-        <Grid item md={12} xs={6} sx={{ '&.MuiGrid-item': { paddingTop: '4px' } }}>
+        <Grid item md={12} xs={12} sx={{ '&.MuiGrid-item': { paddingTop: '4px' } }}>
           <FormControl fullWidth>
             <ReimbursementProductTable
               errors={errors}
