@@ -209,6 +209,7 @@ export const materialValidators = [
   intMinZero(body('price')), // in cents
   intMinZero(body('subtotal')), // in cents
   nonEmptyString(body('linkUrl')),
+  nonEmptyString(body('reimbursementRequestId')).optional(),
   body('notes').isString().optional()
 ];
 export const validateInputs = (req: Request, res: Response, next: Function): void => {
