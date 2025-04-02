@@ -146,7 +146,7 @@ const ReimbursementRequestTable = ({
   };
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
+    setRowsPerPage(parseInt(event.target.value));
     setPage(0);
   };
 
@@ -288,26 +288,25 @@ const ReimbursementRequestTable = ({
         >
           Total Amount: {`$${centsToDollar(getRefundTotal)}`}
         </Box>
-        <Box
-          sx={{
-            ml: 'auto',
-            padding: '5px 20px',
-            mb: 2,
-            mr: 10,
-            display: 'inline-flex',
-            float: 'right'
-          }}
-        >
-          <TablePagination
-            count={rows.length}
-            page={page}
-            onPageChange={handleChangePage}
-            rowsPerPage={rowsPerPage}
-            rowsPerPageOptions={[1, 10, 25, 50, 100]}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            labelDisplayedRows={({ page }) => `Page ${page + 1}`}
-          />
-        </Box>
+      </Box>
+      <Box
+        sx={{
+          position: 'fixed',
+          bottom: 0,
+          right: 0,
+          padding: '16px 16px',
+          zIndex: 3
+        }}
+      >
+        <TablePagination
+          count={rows.length}
+          page={page}
+          onPageChange={handleChangePage}
+          rowsPerPage={rowsPerPage}
+          rowsPerPageOptions={[1, 10, 25, 50, 100]}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          labelDisplayedRows={({ page }) => `Page ${page + 1}`}
+        />
       </Box>
     </Box>
   );
