@@ -5,6 +5,8 @@ import PartReviewController from '../controllers/part-review.controllers';
 
 const partsRouter = express.Router();
 
+partsRouter.get('/:wbsNum', PartReviewController.getAllPartsForProject);
+
 partsRouter.get('/tags', PartReviewController.getAllPartTags);
 partsRouter.get('/faqs', PartReviewController.getAllPartReviewFAQS);
 

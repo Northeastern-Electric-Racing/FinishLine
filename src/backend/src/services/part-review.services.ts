@@ -1,14 +1,36 @@
-import { User } from '@prisma/client';
+import { Organization, User } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
-import { FrequentlyAskedQuestion, isAdmin, PartReviewCommonMistake, PartTag } from 'shared';
+import { FrequentlyAskedQuestion, isAdmin, PartReviewCommonMistake, PartTag, Project, WbsNumber } from 'shared';
 import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
 import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
+import { getPartQueryArgs, getPartReviewQueryArgs } from '../prisma-query-args/part-review.query-args';
 import { faqTransformer } from '../transformers/faq.transformer';
+import { partPreviewTransformer } from '../transformers/part-review.transformer';
 import { partsReviewCommonMistakeTransformer } from '../transformers/part-review.transformer';
-import { partReviewQueryArgs } from '../prisma-query-args/part-review.query-args';
+import ProjectsService from '../services/projects.services';
 
 export default class PartReviewService {
+  /**
+   * Gets all parts for the given project
+   * @param wbsNumber the wbs number of the project
+   * @param organization the organization to get the parts for
+   * @returns all the parts from the given project
+   */
+  static async getAllPartsForProject(wbsNumber: WbsNumber, organization: Organization) {
+    const project: Project = await ProjectsService.getSingleProject(wbsNumber, organization);
+
+    const parts = await prisma.part.findMany({
+      where: {
+        projectId: project.id,
+        dateDeleted: null
+      },
+      ...getPartQueryArgs(organization.organizationId)
+    });
+
+    return parts.map(partPreviewTransformer);
+  }
+
   /**
    * Uses the given organizationID to and returns an array of part tags
    * @param organizationId the organization to get the parts for
@@ -483,7 +505,7 @@ export default class PartReviewService {
         title,
         description
       },
-      ...partReviewQueryArgs
+      ...getPartReviewQueryArgs
     });
     return newPopup;
   }
@@ -535,7 +557,7 @@ export default class PartReviewService {
         description,
         updatedAt: new Date()
       },
-      ...partReviewQueryArgs
+      ...getPartReviewQueryArgs
     });
   }
 
@@ -566,7 +588,7 @@ export default class PartReviewService {
       data: {
         deletedAt: new Date()
       },
-      ...partReviewQueryArgs
+      ...getPartReviewQueryArgs
     });
 
     return deletedPopup;
