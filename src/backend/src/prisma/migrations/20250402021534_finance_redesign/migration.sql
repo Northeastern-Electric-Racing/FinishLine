@@ -21,10 +21,10 @@ ALTER TABLE "Reimbursement_Request" ADD COLUMN     "indexCodeId" TEXT;
 ALTER TABLE "Vendor" ADD COLUMN     "addedByUserId" TEXT,
 ADD COLUMN     "discountCode" TEXT,
 ADD COLUMN     "notes" TEXT,
-ADD COLUMN     "password" TEXT NOT NULL DEFAULT "",
+ADD COLUMN     "password" TEXT NOT NULL DEFAULT '',
 ADD COLUMN     "taxExempt" BOOLEAN NOT NULL DEFAULT FALSE,
 ADD COLUMN     "twoFactorContactId" TEXT,
-ADD COLUMN     "username" TEXT NOT NULL DEFAULT "";
+ADD COLUMN     "username" TEXT NOT NULL DEFAULT '';
 
 -- CreateTable
 CREATE TABLE "Sponsor" (

@@ -218,12 +218,12 @@ model User {
   deletedTeamTypes                        Team_Type[]                          @relation(name: "teamTypeDeleter")
   unreadAnnouncements                     Announcement[]                       @relation(name: "receivedAnnouncements")
   unreadPopUps                            PopUp[]                              @relation(name: "userPopUps")
-  createdChecklists               Checklist[]               @relation(name: "checklistCreator")
-  deletedChecklists               Checklist[]               @relation(name: "checklistDeleter")
-  checkedChecklists               Checklist[]               @relation(name: "checkedChecklists")
-  contacts                        Contact[]
-  onboardingTeamTypes             Team_Type[]               @relation(name: "onboardingTeamTypes")
-  onboardedTeamTypes              Team_Type[]               @relation(name: "onboardedTeamTypes")
+  createdChecklists                       Checklist[]                          @relation(name: "checklistCreator")
+  deletedChecklists                       Checklist[]                          @relation(name: "checklistDeleter")
+  checkedChecklists                       Checklist[]                          @relation(name: "checkedChecklists")
+  contacts                                Contact[]
+  onboardingTeamTypes                     Team_Type[]                          @relation(name: "onboardingTeamTypes")
+  onboardedTeamTypes                      Team_Type[]                          @relation(name: "onboardedTeamTypes")
   vendorsAdded                            Vendor[]                             @relation(name: "vendorsCreator")
   sponsorTasksAssigned                    Sponsor_Task[]                       @relation(name: "assignedSponsorTasks")
   twoFactorContactVendors                 Vendor[]                             @relation(name: "twoFactorContactVendors")
@@ -482,7 +482,7 @@ model Link {
   creator     User      @relation(name: "linkCreator", fields: [creatorId], references: [userId])
   dateCreated DateTime  @default(now())
   dateDeleted DateTime?
-  linkTypeId  String
+  linkTypeId  String 
   linkType    Link_Type @relation(name: "linkTypes", fields: [linkTypeId], references: [id])
 
   // Either its on a wbsElement, a wbsProposedChanges, or an organization
@@ -684,7 +684,7 @@ model Account_Code {
   name                             String
   code                             Int
   allowed                          Boolean
-  allowedRefundSources             Index_Code[]
+  indexCodes                       Index_Code[]
   requests                         Reimbursement_Request[]
   dateDeleted                      DateTime?
   organizationId                   String
