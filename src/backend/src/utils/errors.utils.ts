@@ -144,4 +144,5 @@ export type ExceptionObjectNames =
   | 'Graph'
   | 'Graph Collection'
   | 'Sponsor'
+  | 'SponsorTask'
   | 'Encryption Key';
