@@ -58,7 +58,7 @@ export interface CreateReimbursementRequestPayload {
   otherReimbursementProducts: OtherReimbursementProductCreateArgs[];
   wbsReimbursementProducts: WbsReimbursementProductCreateArgs[];
   totalCost: number;
-  account: IndexCode;
+  indexCodeId: string;
 }
 
 export interface EditReimbursementRequestPayload extends CreateReimbursementRequestPayload {
@@ -76,7 +76,7 @@ export interface AccountCodePayload {
   code: number;
   name: string;
   allowed: boolean;
-  allowedRefundSources: IndexCode[];
+  indexCodeIds: string[];
 }
 
 export interface EditVendorPayload {

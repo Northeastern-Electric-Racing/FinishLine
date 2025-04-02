@@ -164,7 +164,7 @@ export default class ReimbursementRequestService {
     const accountCode = await ReimbursementRequestService.getSingleAccountCode(acccountCodeId, organization);
 
     if (!accountCode.allowed) throw new HttpException(400, `The Account Code ${accountCode.name} is not allowed!`);
-    if (!accountCode.allowedRefundSources.some((refundSource) => refundSource.indexCodeId === indexCodeId)) {
+    if (!accountCode.indexCodes.some((refundSource) => refundSource.indexCodeId === indexCodeId)) {
       throw new HttpException(400, 'The submitted refund source is not allowed to be used with the submitted Account Code');
     }
 
@@ -311,7 +311,7 @@ export default class ReimbursementRequestService {
     const indexCode = await ReimbursementRequestService.getSingleIndexCode(indexCodeId, organization);
 
     if (!accountCode.allowed) throw new HttpException(400, 'Account Code Not Allowed');
-    if (!accountCode.allowedRefundSources.includes(indexCode)) {
+    if (!accountCode.indexCodes.includes(indexCode)) {
       throw new HttpException(400, 'The submitted refund source is not allowed to be used with the submitted Account Code');
     }
 
@@ -659,7 +659,7 @@ export default class ReimbursementRequestService {
         name,
         allowed,
         code,
-        allowedRefundSources: { connect: allowedRefundSources.map((indexCode) => ({ indexCodeId: indexCode.indexCodeId })) },
+        indexCodes: { connect: allowedRefundSources.map((indexCode) => ({ indexCodeId: indexCode.indexCodeId })) },
         organizationId: organization.organizationId
       },
       ...getAccountCodeQueryArgs(organization.organizationId)
@@ -699,7 +699,7 @@ export default class ReimbursementRequestService {
         name,
         code,
         allowed,
-        allowedRefundSources: { connect: allowedRefundSources.map((indexCode) => ({ indexCodeId: indexCode.indexCodeId })) }
+        indexCodes: { connect: allowedRefundSources.map((indexCode) => ({ indexCodeId: indexCode.indexCodeId })) }
       }
     });
 

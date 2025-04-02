@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WbsNumber, User, wbsPipe, WbsElement, isProject, WorkPackage, IndexCode, AccountCode, DesignReview, WbsElementPreview, WorkPackagePreview } from 'shared';
+import { WbsNumber, User, wbsPipe, isProject, IndexCode, AccountCode, DesignReview, WbsElementPreview, WorkPackagePreview } from 'shared';
 
 /**
  * Pipes:

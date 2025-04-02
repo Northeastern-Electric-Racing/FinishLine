@@ -16,10 +16,7 @@ const schema = yup.object().shape({
   code: yup.number().typeError('Account Code must be a number').required('Account Code is Required'),
   name: yup.string().required('Account Name is Required'),
   allowed: yup.boolean().required('Allowed is Required'),
-  allowedRefundSources: yup
-    .array()
-    .of(yup.mixed<ClubAccount>().oneOf(Object.values(ClubAccount)).required())
-    .required()
+  indexCodeIds: yup.array().of(yup.string().required()).required()
 });
 
 interface AccountCodeFormModalProps {
@@ -42,7 +39,7 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
       code: defaultValues?.code,
       name: defaultValues?.name ?? '',
       allowed: defaultValues?.allowed ?? false,
-      allowedRefundSources: defaultValues?.allowedRefundSources ?? []
+      indexCodeIds: defaultValues?.indexCodes.map((indexCode) => indexCode.indexCodeId) ?? []
     }
   });
   const theme = useTheme();
@@ -77,7 +74,7 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
       open={showModal}
       onHide={handleClose}
       title={!!defaultValues ? 'Edit Account Code' : 'Create Account Code'}
-      reset={() => reset({ name: '', code: undefined, allowed: false, allowedRefundSources: [] })}
+      reset={() => reset({ name: '', code: undefined, allowed: false, indexCodeIds: [] })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
       formId={!!defaultValues ? 'edit-account-code-form' : 'create-account-code-form'}
@@ -91,13 +88,13 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
       <FormControl fullWidth>
         <FormLabel>Allowed Refund Source</FormLabel>
         <Controller
-          name="allowedRefundSources"
+          name="indexCodeIds"
           control={control}
           render={({ field: { onChange, value: formValue } }) => (
             <Select
               multiple
               value={formValue}
-              onChange={(e) => onChange(e.target.value as IndexCode[])}
+              onChange={(e) => onChange(e.target.value as string[])}
               input={<OutlinedInput />}
             >
               {indexCodes.map((refundSource: IndexCode) => (

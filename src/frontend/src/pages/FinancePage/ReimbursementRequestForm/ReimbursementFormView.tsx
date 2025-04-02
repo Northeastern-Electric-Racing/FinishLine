@@ -27,7 +27,6 @@ import {
   UseFormWatch
 } from 'react-hook-form';
 import {
-  IndexCode,
   AccountCode,
   ReimbursementProductFormArgs,
   ReimbursementReceiptCreateArgs,
@@ -104,7 +103,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const products = watch(`reimbursementProducts`);
   const accountCodeId = watch('accountCodeId');
   const selectedAccountCode = allAccountCodes.find((accountCode) => accountCode.accountCodeId === accountCodeId);
-  const refundSources = selectedAccountCode?.allowedRefundSources || [];
+  const refundSources = selectedAccountCode?.indexCodes || [];
 
   const calculatedTotalCost = products.reduce((acc, product) => acc + Number(product.cost), 0).toFixed(2);
   const [showReimbursementGuidelinesModal, setShowReimbursementGuidelinesModal] = useState(true);
@@ -269,7 +268,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     .map(accountCodesToAutocomplete);
 
                   const onClear = () => {
-                    setValue('account', ClubAccount.BUDGET);
+                    setValue('indexCodeId', '');
                     onChange('');
                   };
 
@@ -330,18 +329,18 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
             <FormControl fullWidth>
               <FormLabel>Refund Source</FormLabel>
               <Controller
-                name="account"
+                name="indexCodeId"
                 control={control}
                 render={({ field: { onChange, value } }) => (
                   <Select
-                    onChange={(newValue) => onChange(newValue.target.value as IndexCode)}
+                    onChange={(newValue) => onChange(newValue.target.value)}
                     value={value}
                     disabled={!selectedAccountCode}
-                    error={!!errors.account}
+                    error={!!errors.indexCodeId}
                     displayEmpty
                     renderValue={() => {
                       return value ? (
-                        <Typography>{codeAndRefundSourceName(value)} </Typography>
+                        <Typography>{value} </Typography>
                       ) : (
                         <Typography style={{ color: 'gray' }}>Select Refund Source</Typography>
                       );
@@ -355,7 +354,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   </Select>
                 )}
               />
-              <FormHelperText error>{errors.account?.message}</FormHelperText>
+              <FormHelperText error>{errors.indexCodeId?.message}</FormHelperText>
             </FormControl>
           </Grid>
           <Grid item xs={6}>

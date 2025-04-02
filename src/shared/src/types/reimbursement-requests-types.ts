@@ -97,7 +97,7 @@ export interface AccountCode {
   name: string;
   code: number;
   allowed: boolean;
-  allowedRefundSources: IndexCode[];
+  indexCodes: IndexCode[];
 }
 
 export interface ReimbursementProductCreateArgs {

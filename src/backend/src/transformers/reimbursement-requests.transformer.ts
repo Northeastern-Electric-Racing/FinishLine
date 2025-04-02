@@ -102,7 +102,7 @@ const reimbursementProductReasonTransformer = (
 export const accountCodeTransformer = (accountCode: Prisma.Account_CodeGetPayload<AccountCodeQueryArgs>): AccountCode => {
   return {
     ...accountCode,
-    allowedRefundSources: accountCode.allowedRefundSources.map(indexCodeTransformer)
+    indexCodes: accountCode.indexCodes.map(indexCodeTransformer)
   };
 };
 
