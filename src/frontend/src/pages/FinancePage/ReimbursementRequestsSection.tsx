@@ -8,7 +8,8 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  useTheme
+  useTheme,
+  TablePagination
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useState } from 'react';
@@ -35,6 +36,7 @@ import {
 import { ReimbursementRequestRow } from 'shared/src/types/reimbursement-requests-types';
 // import TableSortLabel from '@mui/material/TableSortLabel';
 import ColumnHeader from './FinanceComponents/ColumnHeader';
+import { set } from 'react-hook-form';
 
 interface ReimbursementRequestTableProps {
   userReimbursementRequests: ReimbursementRequest[];
@@ -50,6 +52,9 @@ const ReimbursementRequestTable = ({
   userReimbursementRequests,
   allReimbursementRequests
 }: ReimbursementRequestTableProps) => {
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(1);
+
   const [isAscendingOrder, setAscendingOrder] = useState(true);
   const [orderBy, setOrderBy] = useState<keyof ReimbursementRequestRow>('dateSubmittedToSabo');
 
@@ -136,6 +141,17 @@ const ReimbursementRequestTable = ({
 
   const getRefundTotal = rows.reduce((sum, row) => sum + row.amount, 0);
 
+  const handleChangePage = (event: unknown, page: number) => {
+    setPage(page);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const paginatedRows = rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
   return (
     <Box sx={{ bgcolor: theme.palette.background.default, width: '100%', borderRadius: '8px 8px 0 0' }}>
       <Box
@@ -170,7 +186,7 @@ const ReimbursementRequestTable = ({
             </TableRow>
           </TableHead>
           <TableBody sx={{ backgroundColor: '#121313' }}>
-            {rows.map((row, index) => (
+            {paginatedRows.map((row, index) => (
               <TableRow
                 key={`$${row.amount}-${index}`}
                 sx={{
@@ -258,6 +274,7 @@ const ReimbursementRequestTable = ({
         >
           # of Requests: {rows.length}
         </Box>
+
         <Box
           sx={{
             padding: '5px 20px',
@@ -270,6 +287,26 @@ const ReimbursementRequestTable = ({
           }}
         >
           Total Amount: {`$${centsToDollar(getRefundTotal)}`}
+        </Box>
+        <Box
+          sx={{
+            ml: 'auto',
+            padding: '5px 20px',
+            mb: 2,
+            mr: 10,
+            display: 'inline-flex',
+            float: 'right'
+          }}
+        >
+          <TablePagination
+            count={rows.length}
+            page={page}
+            onPageChange={handleChangePage}
+            rowsPerPage={rowsPerPage}
+            rowsPerPageOptions={[1, 10, 25, 50, 100]}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            labelDisplayedRows={({ page }) => `Page ${page + 1}`}
+          />
         </Box>
       </Box>
     </Box>
