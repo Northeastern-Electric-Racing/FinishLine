@@ -15,18 +15,19 @@ interface TimelineProps {
 
 interface EventSectionProps {
   event: TimelineEvent;
+  isLast: boolean;
 }
 const ReimbursementRequestTimeline: React.FC<TimelineProps> = ({ events }) => {
   return (
     <Stack alignItems="center" spacing={0.5}>
       {events.map((event, index) => (
-        <EventSection key={index} event={event} />
+        <EventSection event={event} isLast={events.length - 1 === index} />
       ))}
     </Stack>
   );
 };
 
-const EventSection: React.FC<EventSectionProps> = ({ event }) => {
+const EventSection: React.FC<EventSectionProps> = ({ event, isLast }) => {
   return (
     <Stack direction="row" spacing={2} alignItems="flex-start" width="100%">
       <Box flex={1} textAlign="right">
@@ -36,15 +37,19 @@ const EventSection: React.FC<EventSectionProps> = ({ event }) => {
       </Box>
 
       <Box position="relative" display="flex" flexDirection="column" alignItems="center">
-        <Circle sx={{ fontSize: 25 }} />
-        <Box
-          sx={{
-            width: '4px',
-            height: '50px',
-            backgroundColor: 'white',
-            mt: 0.5
-          }}
-        />
+        <Circle sx={{ fontSize: 20 }} />
+        {isLast ? (
+          <></>
+        ) : (
+          <Box
+            sx={{
+              width: '4px',
+              height: '50px',
+              backgroundColor: 'white',
+              mt: 0.5
+            }}
+          />
+        )}
       </Box>
 
       <Box flex={1}>
