@@ -107,11 +107,11 @@ const DiffPanel: React.FC<ProjectDiffPanelProps> = ({
     } else if (Array.isArray(detailText) && detailText.length > 0) {
       if (typeof detailText[0] === 'string') {
         return (
-          <List sx={{ listStyleType: 'disc', pl: 6 }}>
+          <List sx={{ listStyleType: 'disc', pl: 6, pb: 1, pt: 0 }}>
             {(detailText as string[]).map((bullet) => {
               const url = bullet.includes('http') ? bullet.split(': ')[1] : undefined;
               return (
-                <ListItem sx={{ display: 'list-item' }}>
+                <ListItem sx={{ display: 'list-item', py: 0 }}>
                   {url ? (
                     <>
                       {bullet.split(': ')[0]}:{' '}
@@ -132,7 +132,7 @@ const DiffPanel: React.FC<ProjectDiffPanelProps> = ({
   };
 
   return (
-    <Box>
+    <Box sx={{ padding: '8px' }}>
       {changeBullets.map((changeBullet) => {
         return (
           <>
