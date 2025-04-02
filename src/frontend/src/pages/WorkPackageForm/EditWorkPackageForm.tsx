@@ -7,6 +7,7 @@ import { startDateTester } from '../../utils/form';
 import * as yup from 'yup';
 import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
 import { routes } from '../../utils/routes';
+import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 
 interface EditWorkPackageFormProps {
   wbsNum: WbsNumber;
@@ -43,10 +44,18 @@ const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, workP
     }
   ];
 
+  const editWorkPackageWrapper = (data: WorkPackageApiInputs) => {
+    const { crId } = data;
+    if (!crId) {
+      throw new Error('Change Request is Required');
+    }
+    return editWorkPackage({ ...data, crId });
+  };
+
   return (
     <WorkPackageForm
       wbsNum={wbsNum}
-      workPackageMutateAsync={editWorkPackage}
+      workPackageMutateAsync={editWorkPackageWrapper}
       createWorkPackageScopeCR={createWorkPackageScopeCR}
       exitActiveMode={() => {
         setPageMode(false);

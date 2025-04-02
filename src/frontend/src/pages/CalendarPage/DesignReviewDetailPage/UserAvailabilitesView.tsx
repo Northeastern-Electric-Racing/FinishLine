@@ -126,9 +126,7 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
             Save
           </NERSuccessButton>
           <NERSuccessButton
-            disabled={
-              designReview.status === DesignReviewStatus.DONE || designReview.status === DesignReviewStatus.SCHEDULED
-            }
+            disabled={designReview.status === DesignReviewStatus.DONE}
             variant="contained"
             type="submit"
             sx={{ mr: 1 }}

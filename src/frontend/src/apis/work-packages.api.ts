@@ -14,10 +14,18 @@ export interface WorkPackageApiInputs {
   name: string;
   startDate: string;
   duration: number;
-  crId: string | undefined;
-  stage?: WorkPackageStage;
+  stage: WorkPackageStage | 'NONE';
+  crId?: string;
   blockedBy: WbsNumber[];
   descriptionBullets: DescriptionBulletPreview[];
+}
+
+export interface WorkPackageCreateArgs extends WorkPackageApiInputs {
+  projectWbsNum: WbsNumber;
+}
+
+export interface WorkPackageEditArgs extends WorkPackageApiInputs {
+  crId: string;
 }
 
 export interface WorkPackageTemplateApiInputs {
@@ -55,7 +63,7 @@ export const getSingleWorkPackage = (wbsNum: WbsNumber) => {
  *
  * @param payload Payload containing all the necessary data to create a work package.
  */
-export const createSingleWorkPackage = (payload: WorkPackageApiInputs) => {
+export const createSingleWorkPackage = (payload: WorkPackageCreateArgs) => {
   return axios.post<{ message: string }>(apiUrls.workPackagesCreate(), {
     ...payload
   });
@@ -67,7 +75,7 @@ export const createSingleWorkPackage = (payload: WorkPackageApiInputs) => {
  * @param payload Object containing required key-value pairs for backend function to edit work package
  * @returns Promise that will resolve to either a success status code or a fail status code.
  */
-export const editWorkPackage = (payload: WorkPackageApiInputs) => {
+export const editWorkPackage = (payload: WorkPackageEditArgs) => {
   return axios.post<{ message: string }>(apiUrls.workPackagesEdit(), {
     ...payload
   });

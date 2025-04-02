@@ -4,7 +4,7 @@
  */
 
 import { useHistory } from 'react-router-dom';
-import { ChangeRequestReason, ChangeRequestType, ProposedSolution, validateWBS } from 'shared';
+import { ChangeRequestReason, ChangeRequestType, ProposedSolutionFormInput, validateWBS } from 'shared';
 import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
 import { useQuery } from '../../hooks/utils.hooks';
 import { routes } from '../../utils/routes';
@@ -17,8 +17,10 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 
 interface CreateChangeRequestProps {}
 
+export type StandardChangeRequestType = Exclude<ChangeRequestType, 'STAGE_GATE' | 'ACTIVATION'>;
+
 export interface FormInput {
-  type: Exclude<ChangeRequestType, 'STAGE_GATE' | 'ACTIVATION'>;
+  type: StandardChangeRequestType;
   what: string;
   why: { type: ChangeRequestReason; explain: string }[];
 }
@@ -42,20 +44,20 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
         }
       ]
     : query.get('timelineDelay')
-    ? [
-        {
-          id: '',
-          description: 'Timeline Delay',
-          budgetImpact: 0,
-          timelineImpact: Number(query.get('timelineDelay')),
-          scopeImpact: 'No Changes',
-          createdBy: user,
-          dateCreated: new Date(),
-          approved: false
-        }
-      ]
-    : [];
-  const [proposedSolutions, setProposedSolutions] = useState<ProposedSolution[]>(defaultProposedSolution);
+      ? [
+          {
+            id: '',
+            description: 'Timeline Delay',
+            budgetImpact: 0,
+            timelineImpact: Number(query.get('timelineDelay')),
+            scopeImpact: 'No Changes',
+            createdBy: user,
+            dateCreated: new Date(),
+            approved: false
+          }
+        ]
+      : [];
+  const [proposedSolutions, setProposedSolutions] = useState<ProposedSolutionFormInput[]>(defaultProposedSolution);
   const [wbsNum, setWbsNum] = useState(query.get('wbsNum') || '');
   const toast = useToast();
 

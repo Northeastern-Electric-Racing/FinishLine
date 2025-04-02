@@ -25,10 +25,10 @@ const DiffSection: React.FC<DiffSectionProps> = ({ changeRequest }) => {
     projectProposedChanges && projectProposedChanges.carNumber !== undefined
       ? ChangeRequestAction.CREATE_PROJECT
       : isOnProject && workPackageProposedChanges
-      ? ChangeRequestAction.CREATE_WORK_PACKAGE
-      : isOnProject
-      ? ChangeRequestAction.EDIT_PROJECT
-      : ChangeRequestAction.EDIT_WORK_PACKAGE;
+        ? ChangeRequestAction.CREATE_WORK_PACKAGE
+        : isOnProject
+          ? ChangeRequestAction.EDIT_PROJECT
+          : ChangeRequestAction.EDIT_WORK_PACKAGE;
 
   const projectProposedChangesPreview = projectProposedChangesToPreview(projectProposedChanges);
   const originalProjectData = projectProposedChangesToPreview(changeRequest.originalProjectData);

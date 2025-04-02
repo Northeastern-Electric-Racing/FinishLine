@@ -1,5 +1,5 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Autocomplete, FormControl, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
+import { Autocomplete, FormControl, FormHelperText, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
 import { countWords, isGuest, isUnderWordCount, Task, TaskPriority, TeamPreview } from 'shared';
@@ -9,17 +9,18 @@ import { getTaskAssigneeOptions, taskUserToAutocompleteOption } from '../../../.
 import NERFormModal from '../../../../components/NERFormModal';
 
 const schema = yup.object().shape({
-  notes: yup.string(),
+  notes: yup.string().optional(),
   deadline: yup.date().optional(),
-  priority: yup.string().required(),
-  assignees: yup.array(),
-  title: yup.string().required()
+  priority: yup.mixed<TaskPriority>().oneOf(Object.values(TaskPriority)).required(),
+  assignees: yup.array().required(),
+  title: yup.string().required(),
+  taskId: yup.string().required()
 });
 
 export interface EditTaskFormInput {
   taskId: string;
   title: string;
-  notes: string;
+  notes?: string;
   assignees: string[];
   deadline?: Date;
   priority: TaskPriority;
@@ -44,7 +45,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
     control,
     formState: { errors },
     reset
-  } = useForm({
+  } = useForm<EditTaskFormInput>({
     resolver: yupResolver(schema),
     defaultValues: {
       title: task?.title ?? '',
@@ -105,6 +106,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
                   />
                 )}
               />
+              <FormHelperText error={!!errors.title}>{errors.title?.message}</FormHelperText>
             </FormControl>
           </Grid>
           <Grid item xs={12} md={5}>
@@ -181,10 +183,10 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
                     multiline
                     rows={5}
                     inputProps={{
-                      maxLength: isUnderWordCount(value, 250) ? null : 0
+                      maxLength: isUnderWordCount(value ?? '', 250) ? null : 0
                     }}
-                    helperText={`${countWords(value)}/250 words`}
-                    error={!isUnderWordCount(value, 250)}
+                    helperText={`${countWords(value ?? '')}/250 words`}
+                    error={!isUnderWordCount(value ?? '', 250)}
                   />
                 )}
               />

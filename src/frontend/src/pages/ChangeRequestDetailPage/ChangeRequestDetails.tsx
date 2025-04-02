@@ -32,7 +32,8 @@ const ChangeRequestDetails: React.FC = () => {
       }
       isUserAllowedToImplement={!isGuest(auth.user?.role)}
       isUserAllowedToDelete={
-        isAdmin(auth.user?.role) || (auth.user?.userId === data?.submitter.userId && !data?.dateReviewed)
+        isAdmin(auth.user?.role) ||
+        (auth.user?.userId === data?.submitter.userId && !data?.dateReviewed && data?.implementedChanges?.length === 0)
       }
       changeRequest={data!}
     />

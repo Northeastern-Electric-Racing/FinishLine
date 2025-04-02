@@ -74,13 +74,15 @@ export const taskPriorityColor = (task: Task) => {
   return task.priority === TaskPriority.Low
     ? '#1CAC19'
     : task.priority === TaskPriority.Medium
-    ? '#ffc700'
-    : task.priority === TaskPriority.High
-    ? '#EF4345'
-    : '';
+      ? '#ffc700'
+      : task.priority === TaskPriority.High
+        ? '#EF4345'
+        : '';
 };
 
 export const getOverdueTasks = (tasks: Task[]) => {
-  const overdueTasks = new Set(tasks.filter((task) => (task.deadline ? daysOverdue(new Date(task.deadline)) : 0) > 0));
+  const overdueTasks = new Set(
+    tasks.filter((task) => task.status !== TaskStatus.DONE && (task.deadline ? daysOverdue(new Date(task.deadline)) : 0) > 0)
+  );
   return [...overdueTasks];
 };

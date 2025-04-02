@@ -11,8 +11,7 @@ import PageLayout, { PAGE_GRID_HEIGHT } from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
 import WorkPackagesSelectionView from './components/WorkPackagesSelectionView';
 import ChangeRequestsToReview from './components/ChangeRequestsToReview';
-import GeneralAnnouncements from './components/GeneralAnnouncements';
-import UpcomingDesignReviews from './components/UpcomingDesignReviews';
+import OverdueWorkPackages from './components/OverdueWorkPackages';
 
 interface AdminHomePageProps {
   user: AuthenticatedUser;
@@ -38,18 +37,33 @@ const AdminHomePage = ({ user }: AdminHomePageProps) => {
           mt: 1
         }}
       >
-        <Box height={'40%'}>
-          <ChangeRequestsToReview user={user} />
+        <Box height={'min-content'} display="flex" flexDirection="column">
+          <ChangeRequestsToReview />
         </Box>
-        <Grid container height={'60%'} spacing={2}>
-          <Grid item xs={4} md={4} height="100%">
-            <GeneralAnnouncements />
-          </Grid>
-          <Grid item xs={4} md={4} height="100%">
+        <Grid
+          container
+          spacing={2}
+          height={'60%'}
+          style={{
+            flexGrow: 1,
+            display: 'flex',
+            width: '100%'
+          }}
+        >
+          <Grid
+            item
+            style={{
+              flexGrow: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              minWidth: 'min-content',
+              overflow: 'hidden'
+            }}
+          >
             <WorkPackagesSelectionView />
           </Grid>
-          <Grid item xs={4} md={4} height="100%">
-            <UpcomingDesignReviews user={user} />
+          <Grid item height="100%" style={{ width: 'min-content', minWidth: 'min-content', overflow: 'hidden' }}>
+            <OverdueWorkPackages user={user} />
           </Grid>
         </Grid>
       </Box>
