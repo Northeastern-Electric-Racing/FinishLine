@@ -11,7 +11,7 @@ import {
   transformWorkPackageToGanttTask
 } from '../../../../utils/gantt.utils';
 import { routes } from '../../../../utils/routes';
-import { addWeeksToDate, DesignReview, wbsPipe } from 'shared';
+import { addWeeksToDate, DesignReviewPreview, wbsPipe } from 'shared';
 import {
   ganttTaskBarBackgroundStyles,
   ganttTaskBarContainerStyles,
@@ -90,7 +90,7 @@ const GanttTaskBarDisplay = ({
     };
   };
 
-  const ganttTaskBarDesignReviewOverlayStyles = (designReview: DesignReview): CSSProperties => {
+  const ganttTaskBarDesignReviewOverlayStyles = (designReview: DesignReviewPreview): CSSProperties => {
     return {
       gridColumnStart: getStartCol(designReview.dateScheduled),
       gridColumnEnd: getEndCol(addWeeksToDate(designReview.dateScheduled, 1)),

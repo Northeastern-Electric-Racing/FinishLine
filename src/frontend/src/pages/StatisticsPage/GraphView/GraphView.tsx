@@ -2,12 +2,14 @@ import { Box, IconButton, Typography } from '@mui/material';
 import { Graph, GraphDisplayType } from 'shared';
 import GraphBarChartView from './GraphBarChartView';
 import GraphPieChartView from './GraphPieChartView';
-import { Edit } from '@mui/icons-material';
+import { Delete, Edit } from '@mui/icons-material';
 import { useHistory, useParams } from 'react-router-dom';
 import { datePipe } from '../../../utils/pipes';
 import { useGetCarsByIds } from '../../../hooks/cars.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
+import { useRemoveGraphFromCollection } from '../../../hooks/statistics.hooks';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface GraphViewProps {
   graph: Graph;
@@ -18,14 +20,30 @@ const GraphView = ({ graph, height = 500 }: GraphViewProps) => {
   const history = useHistory();
   const { graphCollectionId } = useParams<{ graphCollectionId: string }>();
   const { isLoading, data: cars, error, isError } = useGetCarsByIds(new Set(graph.carIds));
+  const { isLoading: removeGraphIsLoading, mutateAsync: removeGraph } = useRemoveGraphFromCollection(
+    graphCollectionId,
+    graph.graphId
+  );
+  const toast = useToast();
 
   if (isError) {
     return <ErrorPage error={error} />;
   }
 
-  if (isLoading || !cars) {
+  if (isLoading || !cars || removeGraphIsLoading) {
     return <LoadingIndicator />;
   }
+
+  const onRemovePressed = async () => {
+    try {
+      await removeGraph();
+      toast.success('Successfully removed graph');
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error('Failed to remove graph: ' + error.message);
+      }
+    }
+  };
 
   const Graph = () => {
     switch (graph.graphDisplayType) {
@@ -49,6 +67,9 @@ const GraphView = ({ graph, height = 500 }: GraphViewProps) => {
           }
         >
           <Edit />
+        </IconButton>
+        <IconButton sx={{ height: 40 }} onClick={onRemovePressed}>
+          <Delete />
         </IconButton>
       </Box>
       <Typography textAlign={'center'} fontWeight={'regular'} fontSize={20} variant="h6" noWrap>

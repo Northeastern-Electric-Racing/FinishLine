@@ -1,6 +1,6 @@
 import { financeMember, supermanAdmin } from '../test-data/users.test-data';
 import DesignReviewsService from '../../src/services/design-reviews.services';
-import { AccessDeniedException } from '../../src/utils/errors.utils';
+import { AccessDeniedAdminOnlyException } from '../../src/utils/errors.utils';
 import { createTestDesignReview, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { getUserQueryArgs } from '../../src/prisma-query-args/user.query-args';
@@ -20,6 +20,54 @@ describe('Design Reviews', () => {
 
   afterEach(async () => {
     await resetUsers();
+  });
+
+  test('Marks design review as confirmed if updated list of required members have confirmed', async () => {
+    const user = await createTestUser(supermanAdmin, organizationId);
+
+    const origonalDesignreview = await prisma.design_Review.update({
+      where: { designReviewId: designReview.designReviewId },
+      data: {
+        requiredMembers: {
+          connect: [{ userId: user.userId }]
+        },
+        confirmedMembers: {
+          connect: [{ userId: designReview.userCreatedId }]
+        }
+      },
+      include: {
+        requiredMembers: true,
+        confirmedMembers: true
+      }
+    });
+
+    const requiredMembers = origonalDesignreview.requiredMembers.map((member) => member.userId) || [];
+    const confirmedMembers = origonalDesignreview.confirmedMembers.map((member) => member.userId) || [];
+
+    expect(requiredMembers.length).toBe(2);
+    expect(confirmedMembers.length).toBe(1);
+
+    await DesignReviewsService.setStatus(user, designReview.designReviewId, DesignReviewStatus.SCHEDULED, organization);
+
+    const updatedDesignReview = await DesignReviewsService.editDesignReview(
+      user,
+      designReview.designReviewId,
+      new Date(),
+      origonalDesignreview.teamTypeId,
+      [designReview.userCreatedId],
+      [],
+      false,
+      false,
+      null,
+      null,
+      '',
+      DesignReviewStatus.SCHEDULED,
+      [],
+      [0, 1],
+      organization
+    );
+
+    expect(updatedDesignReview.status).toBe(DesignReviewStatus.CONFIRMED);
   });
 
   // change with admin who is not creator
@@ -64,8 +112,6 @@ describe('Design Reviews', () => {
         DesignReviewStatus.CONFIRMED,
         organization
       )
-    ).rejects.toThrow(
-      new AccessDeniedException('admin and app-admin only have the ability to set the status of a design review')
-    );
+    ).rejects.toThrow(new AccessDeniedAdminOnlyException('set the status of a design review'));
   });
 });

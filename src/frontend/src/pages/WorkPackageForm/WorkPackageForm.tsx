@@ -6,7 +6,6 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useAllUsers } from '../../hooks/users.hooks';
 import { useSingleProject } from '../../hooks/projects.hooks';
-import { useQuery } from '../../hooks/utils.hooks';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { ObjectSchema } from 'yup';
 import { CreateStandardChangeRequestPayload } from '../../hooks/change-requests.hooks';
@@ -38,7 +37,6 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
     error: projectError
   } = useSingleProject({ ...wbsNum, workPackageNumber: 0 });
   const { data: workPackages, isLoading: wpIsLoading, isError: wpIsError, error: wpError } = useAllWorkPackages();
-  const query = useQuery();
 
   if (wpIsLoading || !workPackages || usersIsLoading || !users || projectIsLoading || !project) return <LoadingIndicator />;
   if (usersIsError) return <ErrorPage message={usersError.message} />;
@@ -56,9 +54,9 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
     ? {
         ...workPackage,
         workPackageId: workPackage.id,
-        crId: query.get('crId') || '',
-        stage: workPackage!.stage ?? 'NONE',
-        blockedBy: workPackage!.blockedBy.map(wbsPipe),
+        crId,
+        stage: workPackage.stage ?? 'NONE',
+        blockedBy: workPackage.blockedBy.map(wbsPipe),
         descriptionBullets: bulletsToObject(workPackage.descriptionBullets)
       }
     : undefined;

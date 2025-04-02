@@ -42,6 +42,7 @@ const GraphCollectionForm = ({ open, onHide, defaultValues, onSubmit, successTex
       const createdCollection = await onSubmit(formInput);
       toast.success(successText);
       history.push(`/statistics/graph-collections/${createdCollection.id}`);
+      onHide();
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);

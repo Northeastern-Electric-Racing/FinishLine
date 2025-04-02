@@ -184,7 +184,6 @@ export const linkValidators = [
 ];
 
 export const projectValidators = [
-  nonEmptyString(body('crId')),
   nonEmptyString(body('name')),
   nonEmptyString(body('summary')),
   ...descriptionBulletsValidators,
@@ -193,6 +192,22 @@ export const projectValidators = [
   nonEmptyString(body('managerId').optional())
 ];
 
+export const materialValidators = [
+  nonEmptyString(body('name')),
+  nonEmptyString(body('assemblyId').optional()),
+  isMaterialStatus(body('status')),
+  nonEmptyString(body('materialTypeName')),
+  nonEmptyString(body('manufacturerName')),
+  nonEmptyString(body('manufacturerPartNumber')),
+  nonEmptyString(body('pdmFileName').optional()),
+  decimalMinZero(body('quantity')),
+  nonEmptyString(body('unitName')).optional(),
+  intMinZero(body('price')), // in cents
+  intMinZero(body('subtotal')), // in cents
+  nonEmptyString(body('linkUrl')),
+  nonEmptyString(body('reimbursementRequestId')).optional(),
+  body('notes').isString().optional()
+];
 export const validateInputs = (req: Request, res: Response, next: Function): void => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {

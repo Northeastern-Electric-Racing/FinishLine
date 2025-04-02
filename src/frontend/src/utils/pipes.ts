@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WbsNumber, User, wbsPipe, WbsElement, isProject, WorkPackage, IndexCode, AccountCode, DesignReview } from 'shared';
+import { WbsNumber, User, wbsPipe, WbsElement, isProject, WorkPackage, IndexCode, AccountCode, DesignReview, WbsElementPreview, WorkPackagePreview } from 'shared';
 
 /**
  * Pipes:
@@ -16,6 +16,10 @@ import { WbsNumber, User, wbsPipe, WbsElement, isProject, WorkPackage, IndexCode
 /** Display number as "4 weeks" or "1 week" */
 export const weeksPipe = (weeks: number) => {
   return `${weeks} week${weeks === 1 ? '' : 's'}`;
+};
+
+export const blobPipe = (blob: Blob, fileName: string) => {
+  return new File([blob], fileName, { type: blob.type });
 };
 
 /** Display number as "$535" */
@@ -134,11 +138,11 @@ export const centsToDollar = (cents: number) => {
   return (cents / 100.0).toFixed(2);
 };
 
-export const projectNamePipe = (wbsElement: WbsElement) => {
-  return isProject(wbsElement.wbsNum) ? wbsElement.name : (wbsElement as WorkPackage).projectName;
+export const projectNamePipe = (wbsElement: WbsElementPreview) => {
+  return isProject(wbsElement.wbsNum) ? wbsElement.name : (wbsElement as WorkPackagePreview).projectName;
 };
 
-export const projectWbsNamePipe = (wbsElement: WbsElement) => {
+export const projectWbsNamePipe = (wbsElement: WbsElementPreview) => {
   return `${projectWbsPipe(wbsElement.wbsNum)} - ${projectNamePipe(wbsElement)}`;
 };
 

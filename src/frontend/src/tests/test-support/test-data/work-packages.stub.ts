@@ -43,6 +43,7 @@ export const exampleResearchWorkPackage: WorkPackage = {
     {
       changeId: '1',
       changeRequestId: '33',
+      changeRequestIdentifier: 1,
       wbsNum: exampleWbsWorkPackage3,
       implementer: exampleGuestUser,
       detail: 'Increased funding by $500.',
@@ -51,8 +52,6 @@ export const exampleResearchWorkPackage: WorkPackage = {
   ],
   projectName: 'project1',
   stage: WorkPackageStage.Research,
-  materials: [],
-  assemblies: [],
   blocking: [],
   teamTypes: [],
   designReviews: []
@@ -78,7 +77,8 @@ export const exampleDesignWorkPackage: WorkPackage = {
   changes: [
     {
       changeId: '2',
-      changeRequestId: '1',
+      changeRequestId: 'some id',
+      changeRequestIdentifier: 1,
       wbsNum: exampleWbsWorkPackage3,
       implementer: exampleAppAdminUser,
       detail: 'Decreased duration from 10 weeks to 7 weeks.',
@@ -87,7 +87,8 @@ export const exampleDesignWorkPackage: WorkPackage = {
 
     {
       changeId: '13',
-      changeRequestId: '54',
+      changeRequestId: 'another id',
+      changeRequestIdentifier: 54,
       wbsNum: exampleWbsWorkPackage1,
       implementer: exampleLeadUser,
       detail: 'Added "jet fuel burns hot" bullet.',
@@ -96,8 +97,6 @@ export const exampleDesignWorkPackage: WorkPackage = {
   ],
   projectName: 'project2',
   stage: WorkPackageStage.Design,
-  materials: [],
-  assemblies: [],
   blocking: [],
   teamTypes: [],
   designReviews: []
@@ -124,6 +123,7 @@ export const exampleManufacturingWorkPackage: WorkPackage = {
     {
       changeId: '7',
       changeRequestId: '14',
+      changeRequestIdentifier: 1,
       wbsNum: exampleWbsWorkPackage1,
       implementer: exampleAdminUser,
       detail: 'Increased budget from $10 to $200.',
@@ -132,8 +132,6 @@ export const exampleManufacturingWorkPackage: WorkPackage = {
   ],
   projectName: 'project3',
   stage: WorkPackageStage.Manufacturing,
-  materials: [],
-  assemblies: [],
   blocking: [],
   teamTypes: [],
   designReviews: []
@@ -158,6 +156,7 @@ export const exampleInstallWorkPackage: WorkPackage = {
   changes: [
     {
       changeId: '8',
+      changeRequestIdentifier: 1,
       changeRequestId: '15',
       wbsNum: exampleWbsWorkPackage1,
       implementer: exampleAdminUser,
@@ -167,8 +166,6 @@ export const exampleInstallWorkPackage: WorkPackage = {
   ],
   projectName: 'project3',
   stage: WorkPackageStage.Install,
-  materials: [],
-  assemblies: [],
   blocking: [],
   teamTypes: [],
   designReviews: [],
@@ -196,6 +193,7 @@ export const exampleWorkPackage5: WorkPackage = {
     {
       changeId: '9',
       changeRequestId: '16',
+      changeRequestIdentifier: 1,
       wbsNum: exampleWbsWorkPackage1,
       implementer: exampleAdminUser,
       detail: 'New Work Package Created',
@@ -203,8 +201,6 @@ export const exampleWorkPackage5: WorkPackage = {
     }
   ],
   projectName: 'project3',
-  materials: [],
-  assemblies: [],
   blocking: [],
   teamTypes: [],
   designReviews: []

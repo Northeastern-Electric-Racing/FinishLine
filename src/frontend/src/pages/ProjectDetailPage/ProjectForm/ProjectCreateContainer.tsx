@@ -50,7 +50,7 @@ const ProjectCreateContainer: React.FC = () => {
     teamIds: [],
     carNumber: 0,
     links: [],
-    crId: query.get('crId') || '',
+    crId: query.get('crId') || undefined,
     descriptionBullets: [],
     leadId,
     managerId
