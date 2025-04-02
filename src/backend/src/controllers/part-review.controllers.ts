@@ -1,7 +1,19 @@
 import { NextFunction, Request, Response } from 'express';
 import PartReviewService from '../services/part-review.services';
+import { validateWBS, WbsNumber } from 'shared';
 
 export default class PartReviewController {
+  static async getAllPartsForProject(req: Request, res: Response, next: NextFunction) {
+    try {
+      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
+
+      const parts = await PartReviewService.getAllPartsForProject(wbsNumber, req.organization);
+      res.status(200).json(parts);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getAllPartTags(req: Request, res: Response, next: NextFunction) {
     try {
       const tags = await PartReviewService.getAllPartTags(req.organization.organizationId);
