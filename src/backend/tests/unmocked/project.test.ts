@@ -51,7 +51,7 @@ describe('Material Tests', () => {
 
     expect(material.name).toEqual('100k Resistor');
     expect(material.linkUrl).toEqual('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
-    expect(material.userCreatedId).toEqual(createdUser.userId);
+    expect(material.userCreated.userId).toEqual(createdUser.userId);
     expect(material.price).toEqual(10);
     expect(material.subtotal).toMatchObject(50);
     expect(material.reimbursementRequestId).toEqual(reimbursementRequest.reimbursementRequestId);
