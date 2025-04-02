@@ -1,20 +1,21 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 import { useAllCommonMistakes } from '../../../../hooks/part-review.hooks';
+import LoadingIndicator from '../../../../components/LoadingIndicator';
+import ErrorPage from '../../../ErrorPage';
 
 const CommonMistakes = () => {
   const { data: commonMistakes, isLoading, error } = useAllCommonMistakes();
-
-  if (isLoading) {
-    return <Typography>Loading common mistakes...</Typography>;
+  if (isLoading || !commonMistakes) {
+    return <LoadingIndicator />;
   }
 
   if (error) {
-    return <Typography>Error loading common mistakes.</Typography>;
+    return <ErrorPage message="Error loading common mistakes." error={error} />;
   }
 
   return (
-    <Box>
+    <Box sx={{ mt: 4 }}>
       <Typography variant="h6" component="h2" gutterBottom sx={{ fontWeight: 'bold' }}>
         Common Mistakes
       </Typography>
