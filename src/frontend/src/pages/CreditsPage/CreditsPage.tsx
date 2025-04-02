@@ -270,7 +270,20 @@ const CreditsPage: React.FC = () => {
       name: 'Christopher DiCono',
       color: '#00FF00',
       sx: { textShadow: '0 0 5px #00FF00, 0 0 10px #00FF00, 0 0 20px #00FF00' }
-    }
+    },
+    { name: 'Ricardo Landeros', color: '#3221ed' },
+    { name: 'Mihika Chalasani', color: '#a2d2ff' },
+    {
+      name: 'Edison Kwok',
+      color: 'transparent',
+      sx: {
+        background: 'linear-gradient(45deg,rgb(115, 255, 232) 0%,rgb(45, 94, 255) 11%,rgb(211, 89, 255) 80%)',
+        '-webkit-background-clip': 'text'
+      }
+    },
+    { name: 'Maddy Nenninger', color: '#70d489' },
+    { name: 'Gauri Rajesh', color: '#94C973' },
+    { name: 'Steph Sayegh', color: '#006400' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
