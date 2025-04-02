@@ -1,4 +1,6 @@
 import { Box, Typography, Grid, Breadcrumbs } from '@mui/material';
+import { RoleEnum } from 'shared';
+import PartSubmissionDetails from './Components/PartSubmissionDetails';
 
 const PartPage: React.FC = () => {
   return (
@@ -73,7 +75,27 @@ const PartPage: React.FC = () => {
                   mb: 2
                 }}
               >
-                <PartSubmissionDetails></PartSubmissionDetails>
+                Add part submission details here
+                <PartSubmissionDetails
+                  submission={{
+                    partSubmissionId: '1',
+                    userCreated: {
+                      userId: '123',
+                      email: 'john.doe@example.com',
+                      emailId: 'john.doe@example.com',
+                      role: RoleEnum.MEMBER,
+                      permissions: [],
+                      firstName: 'John',
+                      lastName: 'Doe'
+                    },
+                    notes: 'This is a test note.',
+                    reviews: [],
+                    fileIds: [],
+                    name: 'Test Part Submission',
+                    partId: '456',
+                    createdAt: new Date()
+                  }}
+                />
                 <Typography>History</Typography>
               </Box>
             </Grid>
