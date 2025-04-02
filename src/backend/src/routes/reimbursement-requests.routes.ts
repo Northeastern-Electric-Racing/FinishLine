@@ -27,6 +27,7 @@ reimbursementRequestsRouter.get('/account-codes', ReimbursementRequestController
 reimbursementRequestsRouter.post(
   '/index-codes/create',
   nonEmptyString(body('name')),
+  nonEmptyString(body('code')),
   validateInputs,
   ReimbursementRequestController.createIndexCode
 );

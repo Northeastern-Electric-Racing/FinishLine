@@ -471,8 +471,8 @@ export default class ReimbursementRequestsController {
 
   static async createIndexCode(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name } = req.body;
-      const indexCode = await ReimbursementRequestService.createIndexCode(name, req.currentUser, req.organization);
+      const { name, code } = req.body;
+      const indexCode = await ReimbursementRequestService.createIndexCode(name, code, req.currentUser, req.organization);
       res.status(200).json(indexCode);
     } catch (error: unknown) {
       next(error);

@@ -340,7 +340,7 @@ describe('Reimbursement Requests', () => {
       const indexCodes = await ReimbursementRequestService.getAllIndexCodes(org);
       expect(indexCodes.length).toEqual(1);
       expect(indexCodes[0].name).toEqual('CASH');
-      await ReimbursementRequestService.createIndexCode('BUDGET', createdUser, org);
+      await ReimbursementRequestService.createIndexCode('BUDGET', '800462', createdUser, org);
       const indexCodesAfterAddition = await ReimbursementRequestService.getAllIndexCodes(org);
       expect(indexCodesAfterAddition.length).toEqual(2);
       expect(indexCodesAfterAddition[1].name).toEqual('BUDGET');
@@ -349,7 +349,7 @@ describe('Reimbursement Requests', () => {
 
   describe('Testing create index code', () => {
     test('Creating an index code succeeds', async () => {
-      const indexCode = await ReimbursementRequestService.createIndexCode('CASH', createdUser, org);
+      const indexCode = await ReimbursementRequestService.createIndexCode('CASH', '830667', createdUser, org);
       expect(indexCode.name).toEqual('CASH');
       expect(indexCode.userCreated.userId).toEqual(createdUser.userId);
     });

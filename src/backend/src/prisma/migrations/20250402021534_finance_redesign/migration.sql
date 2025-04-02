@@ -70,6 +70,7 @@ CREATE TABLE "Sponsor_Tier" (
 CREATE TABLE "Index_Code" (
     "indexCodeId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "dateDeleted" TIMESTAMP(3),
     "userCreatedId" TEXT NOT NULL,
@@ -117,10 +118,10 @@ WITH orgs AS (
     SELECT "organizationId" FROM "Organization"
 ),
 inserted AS (
-    INSERT INTO "Index_Code" ("indexCodeId", "name", "userCreatedId", "organizationId")
-    SELECT gen_random_uuid(), 'CASH', '0', o."organizationId" FROM orgs o
+    INSERT INTO "Index_Code" ("indexCodeId", "name", "userCreatedId", "code", "organizationId")
+    SELECT gen_random_uuid(), 'CASH', '0', '830667', o."organizationId" FROM orgs o
     UNION ALL
-    SELECT gen_random_uuid(), 'BUDGET', '0', o."organizationId" FROM orgs o
+    SELECT gen_random_uuid(), 'BUDGET', '0', '800462', o."organizationId" FROM orgs o
     RETURNING "indexCodeId", "name", "organizationId"
 )
 

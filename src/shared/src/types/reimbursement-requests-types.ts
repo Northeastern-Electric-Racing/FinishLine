@@ -4,6 +4,7 @@ import { User } from './user-types';
 export interface IndexCode {
   indexCodeId: string;
   name: string;
+  code: string;
   userCreated: User;
   dateCreated: Date;
 }

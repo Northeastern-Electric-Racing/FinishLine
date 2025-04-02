@@ -482,7 +482,7 @@ model Link {
   creator     User      @relation(name: "linkCreator", fields: [creatorId], references: [userId])
   dateCreated DateTime  @default(now())
   dateDeleted DateTime?
-  linkTypeId  String 
+  linkTypeId  String
   linkType    Link_Type @relation(name: "linkTypes", fields: [linkTypeId], references: [id])
 
   // Either its on a wbsElement, a wbsProposedChanges, or an organization
@@ -1158,6 +1158,7 @@ model Sponsor_Tier {
 model Index_Code {
   indexCodeId                      String                               @id @default(uuid())
   name                             String
+  code                             String
   dateCreated                      DateTime                             @default(now())
   dateDeleted                      DateTime?
   userCreated                      User                                 @relation(fields: [userCreatedId], references: [userId], name: "createdIndexCodes")

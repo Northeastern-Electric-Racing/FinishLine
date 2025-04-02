@@ -1334,15 +1334,17 @@ export default class ReimbursementRequestService {
   /**
    * Creates an index code with the given name and current user.
    * @param name name of the index code
+   * @param code code of the index code
    * @param user the user creating the index code
    * @param organization the organization the user is
    * @returns transformed created index code
    */
-  static async createIndexCode(name: string, user: User, organization: Organization): Promise<IndexCode> {
+  static async createIndexCode(name: string, code: string, user: User, organization: Organization): Promise<IndexCode> {
     const indexCode = await prisma.index_Code.create({
       data: {
         userCreated: { connect: { userId: user.userId } },
         name,
+        code,
         organization: { connect: { organizationId: organization.organizationId } }
       },
       ...getIndexCodeQueryArgs(organization.organizationId)

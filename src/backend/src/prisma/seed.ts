@@ -1750,8 +1750,8 @@ const performSeed: () => Promise<void> = async () => {
     thomasEmrax.userId
   );
 
-  const indexCodeCash = await ReimbursementRequestService.createIndexCode('CASH', thomasEmrax, ner);
-  const indexCodeBudget = await ReimbursementRequestService.createIndexCode('BUDGET', thomasEmrax, ner);
+  const indexCodeCash = await ReimbursementRequestService.createIndexCode('CASH', '830667', thomasEmrax, ner);
+  const indexCodeBudget = await ReimbursementRequestService.createIndexCode('BUDGET', '800462', thomasEmrax, ner);
 
   const accountCode = await ReimbursementRequestService.createAccountCode(
     thomasEmrax,

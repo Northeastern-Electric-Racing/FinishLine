@@ -340,7 +340,9 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     displayEmpty
                     renderValue={() => {
                       return value ? (
-                        <Typography>{value} </Typography>
+                        <Typography>
+                          {codeAndRefundSourceName(refundSources.find((source) => source.indexCodeId === value))}{' '}
+                        </Typography>
                       ) : (
                         <Typography style={{ color: 'gray' }}>Select Refund Source</Typography>
                       );
