@@ -8,7 +8,7 @@ interface PartSubmissionProps {
 
 const PartSubmissionDetails = ({ submission }: PartSubmissionProps) => {
   return (
-    <Box display="flex" alignItems="center" width="50%" padding={2}>
+    <Box display="flex" alignItems="center" width="50%" padding={2} sx={{ flexDirection: 'column' }}>
       <Typography variant="h4">Details for Submission #{submission.partSubmissionId}:</Typography>
 
       <Typography variant="h6">
