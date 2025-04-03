@@ -64,6 +64,7 @@ import { getReimbursementRequestQueryArgs } from '../prisma-query-args/reimburse
 import { getReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
 import { getReimbursementStatusQueryArgs } from '../prisma-query-args/reimbursement-statuses.query-args';
 import { getVendorQueryArgs } from '../prisma-query-args/vendor.query-args';
+import { encryptPassword } from '../utils/encryption.utils';
 
 export default class ReimbursementRequestService {
   /**
@@ -559,7 +560,7 @@ export default class ReimbursementRequestService {
    * @param name vendor name
    * @param organization current organziation
    * @param username vendor username
-   * @param password vendor password *to be encrypted*
+   * @param password vendor password
    * @param notes vendor notes
    * @param addedByUserId userId that added the vendor
    * @param twoFactorContactId two-factor contact id
@@ -582,6 +583,10 @@ export default class ReimbursementRequestService {
       (await isUserLeadOrHeadOfFinanceTeam(submitter, organization.organizationId));
     if (!isAuthorized) throw new AccessDeniedException('Only admins, finance leads, and finance heads can create vendors.');
 
+    if (!process.env.ENCRYPTION_KEY) {
+      throw new NotFoundException('Encryption Key', 'Encryption key not found in environment variables');
+    }
+
     const existingVendor = await prisma.vendor.findUnique({
       where: { uniqueVendor: { name, organizationId: organization.organizationId } }
     });
@@ -599,7 +604,7 @@ export default class ReimbursementRequestService {
         name,
         organizationId: organization.organizationId,
         username,
-        password, // to be encrypted
+        password: encryptPassword(password),
         discountCode,
         twoFactorContactId,
         notes,

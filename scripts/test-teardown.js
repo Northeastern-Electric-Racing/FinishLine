@@ -1,7 +1,10 @@
 const fs = require('fs');
 
 const filePath = './src/backend/.env';
-const lineToMatch = 'DATABASE_URL="postgresql://postgres:docker@localhost:5433/nerpm?schema=public"';
+const linesToRemove = [
+    'DATABASE_URL="postgresql://postgres:docker@localhost:5433/nerpm?schema=public"',
+    'ENCRYPTION_KEY="e4416f4086e08ec8974fb59f6ad3426d64ee5dac92f4b0c349552e21f7aa32a3"'
+];
 
 fs.readFile(filePath, 'utf8', (err, data) => {
     if (err) {
@@ -9,20 +12,15 @@ fs.readFile(filePath, 'utf8', (err, data) => {
         return;
     }
 
-    // Split file contents into lines
-    const lines = data.trim().split('\n');
+    // Remove any lines that match the test-specific ones
+    let lines = data.trim().split('\n');
+    lines = lines.filter((line) => !linesToRemove.includes(line));
 
-    // Check if the last line matches the lineToMatch
-    if (lines[lines.length - 1] === lineToMatch) {
-        // Remove the last line
-        lines.pop();
-
-        // Write modified contents back to the file
-        fs.writeFile(filePath, lines.join('\n'), 'utf8', (err) => {
-            if (err) {
-                console.error('Error writing file:', err);
-                return;
-            }
-        });
-    } 
+    // Write the updated contents back to the file
+    fs.writeFile(filePath, lines.join('\n'), 'utf8', (err) => {
+        if (err) {
+            console.error('Error writing file:', err);
+            return;
+        }
+    });
 });

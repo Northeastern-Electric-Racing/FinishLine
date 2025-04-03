@@ -29,6 +29,8 @@ import {
 } from '../prisma-query-args/reimbursement-products.query-args';
 import { ReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
 import { VendorQueryArgs } from '../prisma-query-args/vendor.query-args';
+import { decryptPassword } from '../utils/encryption.utils';
+import { NotFoundException } from '../utils/errors.utils';
 
 export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<ReceiptQueryArgs>): Receipt => {
   return {
@@ -97,12 +99,12 @@ export const accountCodeTransformer = (accountCode: Prisma.Account_CodeGetPayloa
 };
 
 export const vendorTransformer = (vendor: Prisma.VendorGetPayload<VendorQueryArgs>): Vendor => {
+  if (!process.env.ENCRYPTION_KEY) {
+    throw new NotFoundException('Encryption Key', 'Encryption key not found in environment variables');
+  }
   return {
-    vendorId: vendor.vendorId,
-    dateCreated: vendor.dateCreated,
-    name: vendor.name,
-    username: vendor.username,
-    password: vendor.password, // to be decrypted? either decrypted here or in the hook itself
+    ...vendor,
+    password: decryptPassword(vendor.password),
     discountCode: vendor.discountCode ?? undefined,
     twoFactorContact: vendor.twoFactorContact ? userTransformer(vendor.twoFactorContact) : undefined,
     notes: vendor.notes ?? undefined,
