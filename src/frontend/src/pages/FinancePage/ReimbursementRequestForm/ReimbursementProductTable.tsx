@@ -22,7 +22,7 @@ import {
   Box
 } from '@mui/material';
 import { OtherProductReason, WbsNumber, validateWBS, wbsPipe, ReimbursementProductFormArgs } from 'shared';
-import { Add, Delete, RemoveCircleOutline } from '@mui/icons-material';
+import { Add, Delete, RemoveCircleOutline, AddCircleOutline } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormSetValue } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useTheme } from '@mui/system';
@@ -99,7 +99,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
               textDecoration: 'underline',
               textUnderlineOffset: '3.5px',
               textDecorationThickness: '0.6px',
-              marginTop: '10px',
               fontSize: 'xx-large',
               fontWeight: 'bold'
             }}
@@ -201,7 +200,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
               <TableRow
                 sx={{
                   '& .MuiTableCell-root': {
-                    paddingLeft: '0px',
                     paddingRight: '0px'
                   }
                 }}
@@ -226,22 +224,12 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                   <Box sx={{ flexWrap: 'wrap', listStyle: 'none', p: 0, m: 0 }} component={'ul'}>
                     {uniqueWbsElementsWithProducts.get(key)?.map((product) => (
                       <ListItem key={product.index}>
-                        <Box
-                          sx={{
-                            display: 'flex'
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              width: '100%',
-                              alignItems: 'center',
-                              gap: { xs: '0', sm: '12px' }
-                            }}
-                          >
+                        <Box sx={{ display: 'flex' }}>
+                          <Box sx={{ display: 'flex', width: '100%', alignItems: 'center', gap: { xs: '3px', sm: '12px' } }}>
                             <Box
                               sx={{
-                                flex: '8'
+                                flex: { md: '7', xs: '4', sm: 'auto' },
+                                minWidth: '80px'
                               }}
                             >
                               <FormControl fullWidth margin="dense" variant="outlined" size="small">
@@ -290,8 +278,16 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                         '& .MuiOutlinedInput-root': {
                                           borderRadius: '20px',
                                           color: 'white'
+                                        },
+                                        '& input[type=number]': {
+                                          MozAppearance: 'textfield', // Firefox
+                                          '&::-webkit-outer-spin-button, &::-webkit-inner-spin-button': {
+                                            WebkitAppearance: 'none', // Chrome, Safari, Edge
+                                            margin: 0
+                                          }
                                         }
                                       }}
+                                      value={field.value === 0 ? '' : field.value}
                                       placeholder={'Cost'}
                                       variant={'outlined'}
                                       type="number"
@@ -328,15 +324,21 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                   </Box>
                   <Button
                     sx={{
-                      margin: '4px',
-                      '&:focus': {
-                        backgroundColor: hoverColor
-                      },
-                      '&:hover': {
-                        backgroundColor: hoverColor
-                      }
+                      marginTop: '-5px'
                     }}
-                    startIcon={<Add />}
+                    startIcon={
+                      <AddCircleOutline
+                        sx={{
+                          '&:focus': {
+                            backgroundColor: hoverColor
+                          },
+                          '&:hover': {
+                            backgroundColor: hoverColor
+                          },
+                          marginRight: '-5px'
+                        }}
+                      />
+                    }
                     onClick={(e) => {
                       appendProduct({
                         reason: key.includes('.') ? validateWBS(key) : (key as OtherProductReason),
