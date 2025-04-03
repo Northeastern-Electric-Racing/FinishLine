@@ -20,7 +20,7 @@ const PartPage: React.FC = () => {
             sx={{
               backgroundColor: 'black',
               height: '75vh',
-              width: '100%',
+              width: '50%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -39,7 +39,7 @@ const PartPage: React.FC = () => {
                 sx={{
                   backgroundColor: 'gray',
                   height: '24vh',
-                  width: '100%',
+                  width: '50%',
                   borderRadius: 2,
                   display: 'flex',
                   alignItems: 'center',
@@ -53,7 +53,7 @@ const PartPage: React.FC = () => {
                 sx={{
                   backgroundColor: 'gray',
                   height: '24vh',
-                  width: '100%',
+                  width: '50%',
                   borderRadius: 2,
                   display: 'flex',
                   alignItems: 'center',
@@ -65,9 +65,9 @@ const PartPage: React.FC = () => {
               </Box>
               <Box
                 sx={{
-                  backgroundColor: 'gray',
+                  backgroundColor: 'transparent',
                   height: '24vh',
-                  width: '100%',
+                  width: '50%',
                   borderRadius: 2,
                   display: 'flex',
                   alignItems: 'center',
@@ -75,7 +75,7 @@ const PartPage: React.FC = () => {
                   mb: 2
                 }}
               >
-                Add part submission details here
+                {/*Add part submission details here*/}
                 <PartSubmissionDetails
                   submission={{
                     partSubmissionId: '1',
@@ -96,8 +96,8 @@ const PartPage: React.FC = () => {
                     createdAt: new Date()
                   }}
                 />
-                <Typography>History</Typography>
               </Box>
+              <Typography>History</Typography>
             </Grid>
           </Grid>
         </Grid>
