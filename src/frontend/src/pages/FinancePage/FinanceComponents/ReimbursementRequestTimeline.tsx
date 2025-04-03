@@ -1,8 +1,6 @@
 import { Box, Stack, Typography } from '@mui/material';
-import { Circle, HorizontalRule } from '@mui/icons-material';
+import { Circle } from '@mui/icons-material';
 import { datePipe } from '../../../utils/pipes';
-import { fontSize, height } from '@mui/system';
-import ScrollablePageBlock from '../../HomePage/components/ScrollablePageBlock';
 
 interface TimelineEvent {
   description: string;
