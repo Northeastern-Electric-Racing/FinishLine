@@ -9,7 +9,6 @@ import {
   ReimbursementProductCreateArgs,
   ReimbursementReceiptCreateArgs,
   ValidatedWbsReimbursementProductCreateArgs,
-  isAdmin,
   wbsPipe,
   WbsReimbursementProductCreateArgs,
   ReimbursementStatusType,
@@ -293,9 +292,9 @@ export const createReimbursementProducts = async (
  * @throws {AccessDeniedException} Fails validation when user is not on the
  * finance team.
  */
-export const validateUserIsPartOfFinanceTeamOrAdmin = async (user: User, organizationId: string) => {
+export const validateUserIsPartOfFinanceTeamOrHead = async (user: User, organizationId: string) => {
   const isUserAuthorized =
-    (await isUserOnFinanceTeam(user, organizationId)) || (await userHasPermission(user.userId, organizationId, isAdmin));
+    (await isUserOnFinanceTeam(user, organizationId)) || (await userHasPermission(user.userId, organizationId, isHead));
 
   if (!isUserAuthorized) {
     throw new AccessDeniedException(`You are not a member of the finance team!`);
@@ -366,14 +365,8 @@ export const isAuthUserHeadOfFinance = (user: Prisma.UserGetPayload<AuthUserQuer
   return user.teamsAsHead.some((team) => team.financeTeam);
 };
 
-export const isUserAdminOrOnFinance = async (submitter: User, organizationId: string) => {
-  try {
-    await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organizationId);
-  } catch (error) {
-    if (!(await userHasPermission(submitter.userId, organizationId, isHead))) {
-      throw new AccessDeniedException('Only Admins, Finance Team Leads, or Heads can access this endpoint');
-    }
-  }
+export const isUserHeadOrOnFinance = async (submitter: User, organizationId: string) => {
+  await validateUserIsPartOfFinanceTeamOrHead(submitter, organizationId);
 };
 
 // const isTeamIdInList = (teamId: string, teamsList: Team[]) => {
@@ -392,7 +385,7 @@ export const validateUserEditRRPermissions = async (
   organizationId: string
 ) => {
   try {
-    await validateUserIsPartOfFinanceTeamOrAdmin(user, organizationId);
+    await validateUserIsPartOfFinanceTeamOrHead(user, organizationId);
   } catch {
     if (
       reimbursementRequest.recipientId !== user.userId ||

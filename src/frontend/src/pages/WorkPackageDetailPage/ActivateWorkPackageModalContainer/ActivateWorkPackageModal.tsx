@@ -63,7 +63,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
     handleSubmit,
     control,
     formState: { errors, isValid }
-  } = useForm<FormInput>({
+  } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
       startDate,

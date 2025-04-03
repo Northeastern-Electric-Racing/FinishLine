@@ -384,8 +384,8 @@ export const sendDRScheduledSlackNotif = async (
     zoomLink && designReview.isInPerson
       ? `in ${designReview.location} and ${zoomLink}`
       : designReview.isInPerson
-      ? `in ${designReview.location}`
-      : zoomLink;
+        ? `in ${designReview.location}`
+        : zoomLink;
 
   const msg = `:spiral_calendar_pad: Design Review for *${drName}* has been scheduled for *${drTime}* ${location} by ${drSubmitter}`;
   const docLink = designReview.docTemplateLink ? `<${designReview.docTemplateLink}|Doc Link>` : '';

@@ -9,16 +9,18 @@ import { useState } from 'react';
 
 interface BOMTableProps {
   setHideColumn: React.Dispatch<React.SetStateAction<boolean[]>>;
+  assignMaterial: (materialId: string, assemblyId?: string) => () => Promise<void>;
   columns: GridColumns<BomRow>;
   materials: Material[];
   assemblies: Assembly[];
 }
 
-const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, columns, materials, assemblies }) => {
+const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, columns, materials, assemblies }) => {
   const [openRows, setOpenRows] = useState<String[]>([]);
+  const [draggedMaterial, setDraggedMaterial] = useState<Material | null>(null);
 
   const arrowSymbol = (rowId: string) => {
-    return openRows.includes(rowId) ? '⮝' : '⮟';
+    return openRows.includes(rowId) ? '▼' : '▶';
   };
 
   const noAssemblyMaterials = materials.filter((material) => !material.assembly);
@@ -63,10 +65,31 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, columns, materials, 
     assemblyMaterials.forEach((material, indx) => materialsWithAssemblies.push(materialToRow(material, indx)));
   });
 
+  // drag and drop mechanics
+
+  const handleDragStart = (materialId: string) => {
+    const material = materials.find((m) => m.materialId === materialId);
+    if (material) {
+      setDraggedMaterial(material);
+    }
+  };
+
+  const handleDragOver = (event: React.DragEvent) => {
+    event.preventDefault();
+  };
+
+  const handleDrop = (event: React.DragEvent, targetAssemblyId?: string) => {
+    event.preventDefault();
+    if (!draggedMaterial) return;
+    assignMaterial(draggedMaterial.materialId, targetAssemblyId)().finally(() => {
+      setDraggedMaterial(null);
+    });
+  };
+
   return (
     <Box
       sx={{
-        height: 'calc(100vh - 180px)',
+        height: 'calc(100vh - 200px)',
         width: '100%',
         '& .super-app-theme--header': {
           backgroundColor: '#ef4345'
@@ -102,6 +125,41 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, columns, materials, 
         disableSelectionOnClick
         autoHeight={false}
         onRowClick={openAssembly}
+        componentsProps={{
+          row: {
+            draggable: true,
+            onDragStart: (event: React.DragEvent) => {
+              if (event.currentTarget.className.includes('super-app-theme--assembly')) {
+                event.preventDefault();
+              }
+              const rowIndex = parseInt(event.currentTarget.getAttribute('data-rowindex') || '0');
+              const materials = rows.concat(materialsWithAssemblies.filter(isAssemblyOpen));
+              const { materialId } = materials[rowIndex];
+              handleDragStart(materialId);
+            },
+            onDrop: (event: React.DragEvent) => {
+              console.log(event.currentTarget.id);
+              const rowIndex = parseInt(event.currentTarget.getAttribute('data-rowindex') || '0');
+              const materials = rows.concat(materialsWithAssemblies.filter(isAssemblyOpen));
+              const { assemblyId } = materials[rowIndex];
+              if (assemblyId === 'assembly-misc') {
+                handleDrop(event);
+              } else {
+                handleDrop(event, assemblyId);
+              }
+            },
+            onDragOver: (event: React.DragEvent) => handleDragOver(event),
+            onDragEnd: (event: React.DragEvent) => {
+              if (!event.currentTarget.parentElement) {
+                return;
+              }
+              const tableRect = event.currentTarget.parentElement.getBoundingClientRect();
+              if (event.clientY < tableRect.top) {
+                handleDrop(event);
+              }
+            }
+          }
+        }}
       />
     </Box>
   );

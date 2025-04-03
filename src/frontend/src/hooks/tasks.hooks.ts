@@ -12,37 +12,28 @@ export interface CreateTaskPayload {
   deadline?: string;
   priority: TaskPriority;
   status: TaskStatus;
-  notes: string;
+  notes?: string;
   assignees: string[];
 }
 
 export const useCreateTask = (wbsNum: WbsNumber) => {
-  const queryClient = useQueryClient();
-  return useMutation<Task, Error, CreateTaskPayload>(
-    ['tasks'],
-    async (createTaskPayload: CreateTaskPayload) => {
-      const { data } = await createSingleTask(
-        wbsNum,
-        createTaskPayload.title,
-        createTaskPayload.priority,
-        createTaskPayload.status,
-        createTaskPayload.assignees,
-        createTaskPayload.notes,
-        createTaskPayload.deadline
-      );
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['projects']);
-      }
-    }
-  );
+  return useMutation<Task, Error, CreateTaskPayload>(['tasks'], async (createTaskPayload: CreateTaskPayload) => {
+    const { data } = await createSingleTask(
+      wbsNum,
+      createTaskPayload.title,
+      createTaskPayload.priority,
+      createTaskPayload.status,
+      createTaskPayload.assignees,
+      createTaskPayload.notes ?? '',
+      createTaskPayload.deadline
+    );
+    return data;
+  });
 };
 
 export interface TaskPayload {
   taskId: string;
-  notes: string;
+  notes?: string;
   title: string;
   deadline?: Date;
   priority: TaskPriority;
@@ -60,7 +51,7 @@ export const useEditTask = () => {
       const { data } = await editTask(
         taskPayload.taskId,
         taskPayload.title,
-        taskPayload.notes,
+        taskPayload.notes ?? '',
         taskPayload.priority,
         taskPayload.deadline
       );

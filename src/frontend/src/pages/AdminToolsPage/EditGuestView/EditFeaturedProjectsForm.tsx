@@ -4,20 +4,20 @@ import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import EditFeaturedProjectsDropdown from './EditFeaturedProjectsDropdown';
 import { Box, FormControl } from '@mui/material';
-import { Project } from 'shared';
+import { ProjectPreview } from 'shared';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 
 const schema = yup.object().shape({
-  description: yup.array().of(yup.string())
+  featuredProjects: yup.array().of(yup.mixed<ProjectPreview>().required()).required()
 });
 
 export interface EditFeaturedProjectsFormInput {
-  featuredProjects: Project[];
+  featuredProjects: ProjectPreview[];
 }
 
 interface EditFeaturedProjectsFormProps {
-  featuredProjects: Project[];
+  featuredProjects: ProjectPreview[];
   onSubmit: (formInput: EditFeaturedProjectsFormInput) => Promise<void>;
   onHide: () => void;
   isEditMode: boolean;
@@ -29,7 +29,7 @@ const EditFeaturedProjectsForm: React.FC<EditFeaturedProjectsFormProps> = ({
   onHide,
   isEditMode
 }) => {
-  const { handleSubmit, control, reset } = useForm({
+  const { handleSubmit, control, reset } = useForm<EditFeaturedProjectsFormInput>({
     resolver: yupResolver(schema),
     defaultValues: {
       featuredProjects: featuredProjects ?? []

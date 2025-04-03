@@ -166,6 +166,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                       onChange={(_event, newValue) => {
                         newValue ? onChange(newValue.id) : onClear();
                       }}
+                      errorMessage={errors.manufacturerName}
                     />
                   </Box>
                 );

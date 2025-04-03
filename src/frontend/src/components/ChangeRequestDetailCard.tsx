@@ -6,14 +6,7 @@
 import { Card, CardContent, Grid, Typography, useTheme } from '@mui/material';
 import { Box, Stack } from '@mui/system';
 import { Link } from '@mui/material';
-import {
-  ActivationChangeRequest,
-  ChangeRequest,
-  ChangeRequestStatus,
-  ChangeRequestType,
-  StandardChangeRequest,
-  wbsPipe
-} from 'shared';
+import { ActivationChangeRequest, ChangeRequest, ChangeRequestStatus, ChangeRequestType, wbsPipe } from 'shared';
 import { routes } from '../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
 import { fullNamePipe } from '../utils/pipes';
@@ -56,7 +49,7 @@ const CRCardDescription = ({ cr }: { cr: ChangeRequest }) => {
         ) : isStageGate ? (
           'Stage Gate ' + wbsPipe(cr.wbsNum) + ' - ' + cr.wbsName
         ) : (
-          (cr as StandardChangeRequest).what
+          'Standard Change Request (Click To view more details)'
         )}
       </Typography>
     </Box>

@@ -25,6 +25,8 @@ export const exampleAdminUser: AuthenticatedUser = {
   favoritedProjectsId: [],
   changeRequestsToReviewId: [],
   organizations: ['yello'],
+  onboardingTeamTypeIds: [],
+  onboardedTeamTypeIds: [],
   permissions: []
 };
 
@@ -38,6 +40,8 @@ export const exampleAdminUser2: AuthenticatedUser = {
   favoritedProjectsId: [],
   changeRequestsToReviewId: [],
   organizations: [],
+  onboardingTeamTypeIds: [],
+  onboardedTeamTypeIds: [],
   permissions: []
 };
 
@@ -81,6 +85,8 @@ export const exampleMemberUser: AuthenticatedUser = {
   favoritedProjectsId: [],
   changeRequestsToReviewId: [],
   organizations: [],
+  onboardingTeamTypeIds: [],
+  onboardedTeamTypeIds: [],
   permissions: []
 };
 
@@ -94,6 +100,8 @@ export const exampleGuestUser: AuthenticatedUser = {
   favoritedProjectsId: [],
   changeRequestsToReviewId: [],
   organizations: [],
+  onboardingTeamTypeIds: [],
+  onboardedTeamTypeIds: [],
   permissions: []
 };
 

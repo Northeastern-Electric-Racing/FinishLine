@@ -1,5 +1,4 @@
 import { Prisma } from '@prisma/client';
-import { getAssemblyQueryArgs, getMaterialQueryArgs } from './bom.query-args';
 import { getDescriptionBulletQueryArgs } from './description-bullets.query-args';
 import { getLinkQueryArgs } from './links.query-args';
 import { getUserQueryArgs } from './user.query-args';
@@ -18,9 +17,7 @@ export const getCarQueryArgs = (organizationId: string) =>
           changes: {
             where: { changeRequest: { dateDeleted: null } },
             include: { implementer: getUserQueryArgs(organizationId) }
-          },
-          materials: getMaterialQueryArgs(organizationId),
-          assemblies: getAssemblyQueryArgs(organizationId)
+          }
         }
       }
     }

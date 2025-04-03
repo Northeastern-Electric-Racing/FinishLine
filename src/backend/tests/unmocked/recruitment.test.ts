@@ -1,12 +1,7 @@
 import prisma from '../../src/prisma/prisma';
 import { Organization } from '@prisma/client';
 import RecruitmentServices from '../../src/services/recruitment.services';
-import {
-  AccessDeniedAdminOnlyException,
-  DeletedException,
-  HttpException,
-  NotFoundException
-} from '../../src/utils/errors.utils';
+import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../../src/utils/errors.utils';
 import {
   createTestMilestone,
   createTestFaq,
@@ -249,7 +244,7 @@ describe('Recruitment Tests', () => {
           await expect(
             async () =>
               await RecruitmentServices.deleteMilestone(await createTestUser(batmanAppAdmin, orgId), 'id1', organization)
-          ).rejects.toThrow(new HttpException(400, 'Milestone with id: id1 not found!'));
+          ).rejects.toThrow(new NotFoundException('Milestone', 'id1'));
         });
 
         it('Fails if milestone is already deleted', async () => {

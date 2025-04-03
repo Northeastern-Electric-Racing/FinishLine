@@ -2,13 +2,22 @@ import { NextFunction, Request, Response } from 'express';
 import UsersService from '../services/users.services';
 import { AccessDeniedException } from '../utils/errors.utils';
 import { Task } from 'shared';
-
 export default class UsersController {
   static async getAllUsers(_req: Request, res: Response, next: NextFunction) {
     try {
       const users = await UsersService.getAllUsers();
 
       res.status(200).json(users);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getCurrentUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await UsersService.getCurrentUser(req.currentUser);
+
+      res.status(200).json(user);
     } catch (error: unknown) {
       next(error);
     }
@@ -187,6 +196,15 @@ export default class UsersController {
 
       const tasks: Task[] = await UsersService.getManyUserTasks(userIds, req.organization);
       res.status(200).json(tasks);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async logUserOut(_req: Request, res: Response, next: NextFunction) {
+    try {
+      res.clearCookie('token');
+      res.status(200).json({ message: 'successfully logged out' });
     } catch (error: unknown) {
       next(error);
     }

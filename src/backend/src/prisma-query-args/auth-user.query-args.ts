@@ -43,6 +43,16 @@ export const getAuthUserQueryArgs = (organizationId: string) =>
             organizationId
           }
         }
+      },
+      onboardingTeamTypes: {
+        where: {
+          organizationId
+        }
+      },
+      onboardedTeamTypes: {
+        where: {
+          organizationId
+        }
       }
     }
   });
