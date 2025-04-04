@@ -315,6 +315,28 @@ describe('Reimbursement Requests', () => {
     });
   });
 
+  describe('Testing encryption/decryption of vendor passwords', () => {
+    test('creates a vendor (encrypts password), queries vendor (decryptes password)', async () => {
+      const createdVendor = await ReimbursementRequestService.createVendor(
+        createdUser,
+        'Nasa',
+        org,
+        'nershipping@gmail.com',
+        'ORGINAL-PASSWORD',
+        true,
+        '50!',
+        createdUser.userId,
+        'Tax exemption status?',
+        createdUser.userId
+      );
+      expect(createdVendor.password.length).toEqual(64);
+      // password encrypted, will look something like: 'U2FsdGVkX1/mQIqBjSMQ+7un24OuWs0wsCU4MiQNjLWgkAkxaMX9Zk1RDqKhrBI6'
+
+      const returnedVendor = await ReimbursementRequestService.getSingleVendor(createdVendor.vendorId, org);
+      expect(returnedVendor.password).toEqual('ORGINAL-PASSWORD');
+    });
+  });
+
   describe('Testing get single index code', () => {
     test('gets a single index code that exists', async () => {
       const singleIndexCode = await ReimbursementRequestService.getSingleIndexCode(createdIndexCode.indexCodeId, org);
