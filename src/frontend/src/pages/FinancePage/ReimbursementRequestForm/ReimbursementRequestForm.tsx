@@ -4,7 +4,6 @@
  */
 import { useFieldArray, useForm } from 'react-hook-form';
 import {
-  ClubAccount,
   OtherProductReason,
   OtherReimbursementProductCreateArgs,
   ReimbursementProductFormArgs,
@@ -29,7 +28,7 @@ export interface ReimbursementRequestInformation {
   dateOfExpense?: Date;
   accountCodeId: string;
   receiptFiles: ReimbursementReceiptUploadArgs[];
-  account: ClubAccount;
+  indexCodeId: string;
 }
 export interface ReimbursementRequestFormInput extends ReimbursementRequestInformation {
   reimbursementProducts: ReimbursementProductFormArgs[];
@@ -52,7 +51,7 @@ const RECEIPTS_REQUIRED = import.meta.env.VITE_RR_RECEIPT_REQUIREMENT || 'disabl
 
 const schema = yup.object().shape({
   vendorId: yup.string().required('Vendor is required'),
-  account: yup.mixed<ClubAccount>().oneOf(Object.values(ClubAccount)).required('Account is required'),
+  indexCodeId: yup.array().of(yup.string().required()).required('Index code is required'),
   dateOfExpense: yup.date().optional(),
   accountCodeId: yup.string().required('Account code is required'),
   reimbursementProducts: yup
@@ -97,7 +96,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     resolver: yupResolver(schema as any), // Typing any because its difficult to get around the env variable for the reimbursement files
     defaultValues: {
       vendorId: defaultValues?.vendorId ?? '',
-      account: defaultValues?.account,
+      indexCodeId: defaultValues?.indexCodeId,
       dateOfExpense: defaultValues?.dateOfExpense,
       accountCodeId: defaultValues?.accountCodeId ?? '',
       reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductFormArgs[]),

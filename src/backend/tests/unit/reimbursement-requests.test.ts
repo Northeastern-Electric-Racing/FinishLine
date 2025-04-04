@@ -4,24 +4,35 @@ import { AccessDeniedException, DeletedException, HttpException, NotFoundExcepti
 import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { assert } from 'console';
-import { addDaysToDate, ClubAccount, ReimbursementRequest } from 'shared';
-import { Account_Code, Organization, Vendor } from '@prisma/client';
+import { addDaysToDate, IndexCode, ReimbursementRequest, AccountCode, OtherProductReason } from 'shared';
+import { Organization, Vendor } from '@prisma/client';
 import { UserWithSecureSettings } from '../../src/utils/auth.utils';
 
 describe('Reimbursement Requests', () => {
   let org: Organization;
   let reimbursementRequest: ReimbursementRequest;
   let createdVendor: Vendor;
-  let createdAccountCode: Account_Code;
+  let createdIndexCode: IndexCode;
+  let createdAccountCode: AccountCode;
   let createdUser: UserWithSecureSettings;
+  let createdOtherProductReason: OtherProductReason;
 
   beforeEach(async () => {
     const result = await createTestReimbursementRequest();
     org = result.organization;
     reimbursementRequest = result.rr;
     createdVendor = result.vendor;
+    createdIndexCode = result.indexCode;
     createdAccountCode = result.accountCode;
     createdUser = result.user;
+    createdOtherProductReason = await ReimbursementRequestService.createOtherReimbursementProductReason(
+      'GENERAL STOCK',
+      10,
+      createdIndexCode.indexCodeId,
+      [createdAccountCode],
+      createdUser,
+      org
+    );
   });
 
   afterEach(async () => {
@@ -87,7 +98,7 @@ describe('Reimbursement Requests', () => {
       const rr = await ReimbursementRequestService.createReimbursementRequest(
         createdUser,
         createdVendor.vendorId,
-        ClubAccount.CASH,
+        createdIndexCode.indexCodeId,
         [],
         [
           {
@@ -106,7 +117,7 @@ describe('Reimbursement Requests', () => {
       );
 
       expect(rr.accountCode).toStrictEqual({ ...createdAccountCode, dateDeleted: null });
-      expect(rr.account).toEqual(ClubAccount.CASH);
+      expect(rr.indexCode.name).toEqual('CASH');
       expect(rr.vendor.vendorId).toEqual(createdVendor.vendorId);
       expect(rr.recipient.userId).toEqual(createdUser.userId);
       expect(rr.dateOfExpense).toEqual(undefined);
@@ -128,7 +139,7 @@ describe('Reimbursement Requests', () => {
       const rr = await ReimbursementRequestService.createReimbursementRequest(
         createdUser,
         createdVendor.vendorId,
-        ClubAccount.CASH,
+        createdIndexCode.indexCodeId,
         [],
         [
           {
@@ -148,7 +159,7 @@ describe('Reimbursement Requests', () => {
       );
 
       expect(rr.accountCode).toStrictEqual({ ...createdAccountCode, dateDeleted: null });
-      expect(rr.account).toEqual(ClubAccount.CASH);
+      expect(rr.indexCode.name).toEqual('CASH');
       expect(rr.vendor.vendorId).toEqual(createdVendor.vendorId);
       expect(rr.recipient.userId).toEqual(createdUser.userId);
       expect(rr.dateOfExpense).toEqual(new Date('12-29-2023'));
@@ -198,7 +209,7 @@ describe('Reimbursement Requests', () => {
       const oldReimbursementRequest = await ReimbursementRequestService.createReimbursementRequest(
         createdUser,
         reimbursementRequest.vendor.vendorId,
-        reimbursementRequest.account,
+        reimbursementRequest.indexCode.indexCodeId,
         [],
         [
           {
@@ -245,6 +256,7 @@ describe('Reimbursement Requests', () => {
         org,
         'nershipping@gmail.com',
         'rar',
+        false,
         '50!',
         createdUser.userId,
         'Tax exemption status?',
@@ -311,6 +323,7 @@ describe('Reimbursement Requests', () => {
         org,
         'nershipping@gmail.com',
         'ORGINAL-PASSWORD',
+        true,
         '50!',
         createdUser.userId,
         'Tax exemption status?',
@@ -321,6 +334,223 @@ describe('Reimbursement Requests', () => {
 
       const returnedVendor = await ReimbursementRequestService.getSingleVendor(createdVendor.vendorId, org);
       expect(returnedVendor.password).toEqual('ORGINAL-PASSWORD');
+    });
+  });
+
+  describe('Testing get single index code', () => {
+    test('gets a single index code that exists', async () => {
+      const singleIndexCode = await ReimbursementRequestService.getSingleIndexCode(createdIndexCode.indexCodeId, org);
+      expect(singleIndexCode.name).toEqual('CASH');
+    });
+
+    test('throws when index code has been deleted', async () => {
+      await ReimbursementRequestService.deleteIndexCode(createdIndexCode.indexCodeId, createdUser, org);
+      await expect(async () =>
+        ReimbursementRequestService.getSingleIndexCode(createdIndexCode.indexCodeId, org)
+      ).rejects.toThrow(new DeletedException('Index Code', createdIndexCode.indexCodeId));
+    });
+
+    test('throws when index code does not exists', async () => {
+      await expect(async () => ReimbursementRequestService.getSingleIndexCode('invalidId', org)).rejects.toThrow(
+        new NotFoundException('Index Code', 'invalidId')
+      );
+    });
+  });
+
+  describe('Testing get all index codes', () => {
+    test('gets all index codes, after adding index code', async () => {
+      const indexCodes = await ReimbursementRequestService.getAllIndexCodes(org);
+      expect(indexCodes.length).toEqual(1);
+      expect(indexCodes[0].name).toEqual('CASH');
+      await ReimbursementRequestService.createIndexCode('BUDGET', '800462', createdUser, org);
+      const indexCodesAfterAddition = await ReimbursementRequestService.getAllIndexCodes(org);
+      expect(indexCodesAfterAddition.length).toEqual(2);
+      expect(indexCodesAfterAddition[1].name).toEqual('BUDGET');
+    });
+  });
+
+  describe('Testing create index code', () => {
+    test('Creating an index code succeeds', async () => {
+      const indexCode = await ReimbursementRequestService.createIndexCode('CASH', '830667', createdUser, org);
+      expect(indexCode.name).toEqual('CASH');
+      expect(indexCode.userCreated.userId).toEqual(createdUser.userId);
+    });
+  });
+
+  describe('Deleting an index code', () => {
+    test('Delete Index Code fails when deleter is not a finance lead', async () => {
+      await expect(async () =>
+        ReimbursementRequestService.deleteIndexCode(
+          createdIndexCode.indexCodeId,
+          await createTestUser(alfred, org.organizationId),
+          org
+        )
+      ).rejects.toThrow(
+        new AccessDeniedException(
+          'You do not have access to delete this index code, index codes can only be deleted by their creator or finance leads and above'
+        )
+      );
+    });
+
+    test('Delete Index Code succeeds when the deleter is a finance lead', async () => {
+      const financeLead = await prisma.user.findUnique({
+        where: {
+          googleAuthId: 'financeLead'
+        }
+      });
+
+      if (!financeLead) {
+        console.log('No finance lead found, please run createFinanceTeamAndLead before this function');
+        assert(false);
+        throw new Error('No finance lead found, please run createFinanceTeamAndLead before this function');
+      }
+      await ReimbursementRequestService.deleteIndexCode(createdIndexCode.indexCodeId, financeLead, org);
+    });
+
+    test('Delete Index Code succeeds when the deleter is a head of finance', async () => {
+      const financeHead = await prisma.user.findUnique({
+        where: {
+          googleAuthId: 'financeHead'
+        }
+      });
+
+      if (!financeHead) {
+        console.log('No finance head found, please run createFinanceTeamAndLead before this function');
+        assert(false);
+        throw new Error('No finance head found, please run createFinanceTeamAndLead before this function');
+      }
+      await ReimbursementRequestService.deleteIndexCode(createdIndexCode.indexCodeId, financeHead, org);
+    });
+  });
+
+  describe('Testing get single other product reason', () => {
+    test('gets a single other product reason that exists', async () => {
+      const singleOtherProductReason = await ReimbursementRequestService.getSingleOtherReimbursementProductReason(
+        createdOtherProductReason.otherProductReasonId,
+        org
+      );
+      expect(singleOtherProductReason.name).toEqual('GENERAL STOCK');
+      expect(singleOtherProductReason.budget).toEqual(10);
+      expect(singleOtherProductReason.indexCode.indexCodeId).toEqual(createdIndexCode.indexCodeId);
+      expect(singleOtherProductReason.userCreated.userId).toEqual(createdUser.userId);
+    });
+
+    test('throws when other product reason has been deleted', async () => {
+      await ReimbursementRequestService.deleteOtherReimbursementProductReason(
+        createdOtherProductReason.otherProductReasonId,
+        createdUser,
+        org
+      );
+      await expect(async () =>
+        ReimbursementRequestService.getSingleOtherReimbursementProductReason(
+          createdOtherProductReason.otherProductReasonId,
+          org
+        )
+      ).rejects.toThrow(
+        new DeletedException('Reimbursement Product Other Reason', createdOtherProductReason.otherProductReasonId)
+      );
+    });
+
+    test('throws when other product reason does not exists', async () => {
+      await expect(async () =>
+        ReimbursementRequestService.getSingleOtherReimbursementProductReason('invalidId', org)
+      ).rejects.toThrow(new NotFoundException('Reimbursement Product Other Reason', 'invalidId'));
+    });
+  });
+
+  describe('Testing get all other product reasons', () => {
+    test('gets all other product reasons, after adding other product reason', async () => {
+      const otherProductReasons = await ReimbursementRequestService.getAllOtherReimbursementProductReasons(org);
+      expect(otherProductReasons.length).toEqual(1);
+      expect(otherProductReasons[0].name).toEqual('GENERAL STOCK');
+      expect(otherProductReasons[0].budget).toEqual(10);
+      expect(otherProductReasons[0].indexCode.indexCodeId).toEqual(createdIndexCode.indexCodeId);
+      expect(otherProductReasons[0].userCreated.userId).toEqual(createdUser.userId);
+      await ReimbursementRequestService.createOtherReimbursementProductReason(
+        'CONSUMABLES',
+        100,
+        createdIndexCode.indexCodeId,
+        [createdAccountCode],
+        createdUser,
+        org
+      );
+      const otherProductReasonsAfterAddition = await ReimbursementRequestService.getAllOtherReimbursementProductReasons(org);
+      expect(otherProductReasonsAfterAddition.length).toEqual(2);
+      expect(otherProductReasonsAfterAddition[1].name).toEqual('CONSUMABLES');
+      expect(otherProductReasonsAfterAddition[1].budget).toEqual(100);
+      expect(otherProductReasonsAfterAddition[1].indexCode.indexCodeId).toEqual(createdIndexCode.indexCodeId);
+      expect(otherProductReasonsAfterAddition[1].userCreated.userId).toEqual(createdUser.userId);
+    });
+  });
+
+  describe('Testing create other product reason', () => {
+    test('Creating an other product reason succeeds', async () => {
+      const otherProductReason = await ReimbursementRequestService.createOtherReimbursementProductReason(
+        'COMPETITION',
+        125,
+        createdIndexCode.indexCodeId,
+        [createdAccountCode],
+        createdUser,
+        org
+      );
+      expect(otherProductReason.name).toEqual('COMPETITION');
+      expect(otherProductReason.budget).toEqual(125);
+      expect(otherProductReason.indexCode.indexCodeId).toEqual(createdIndexCode.indexCodeId);
+      expect(otherProductReason.userCreated.userId).toEqual(createdUser.userId);
+    });
+  });
+
+  describe('Deleting an other product reason', () => {
+    test('Delete Other Product Reason fails when deleter is not a finance lead', async () => {
+      await expect(async () =>
+        ReimbursementRequestService.deleteOtherReimbursementProductReason(
+          createdOtherProductReason.otherProductReasonId,
+          await createTestUser(alfred, org.organizationId),
+          org
+        )
+      ).rejects.toThrow(
+        new AccessDeniedException(
+          'You do not have access to delete this other reimbursement product reason, other reimbursement product reasons can only be deleted by their creator or finance leads and above'
+        )
+      );
+    });
+
+    test('Delete Other Product Reason succeeds when the deleter is a finance lead', async () => {
+      const financeLead = await prisma.user.findUnique({
+        where: {
+          googleAuthId: 'financeLead'
+        }
+      });
+
+      if (!financeLead) {
+        console.log('No finance lead found, please run createFinanceTeamAndLead before this function');
+        assert(false);
+        throw new Error('No finance lead found, please run createFinanceTeamAndLead before this function');
+      }
+      await ReimbursementRequestService.deleteOtherReimbursementProductReason(
+        createdOtherProductReason.otherProductReasonId,
+        financeLead,
+        org
+      );
+    });
+
+    test('Delete Other Product Reason succeeds when the deleter is a head of finance', async () => {
+      const financeHead = await prisma.user.findUnique({
+        where: {
+          googleAuthId: 'financeHead'
+        }
+      });
+
+      if (!financeHead) {
+        console.log('No finance head found, please run createFinanceTeamAndLead before this function');
+        assert(false);
+        throw new Error('No finance head found, please run createFinanceTeamAndLead before this function');
+      }
+      await ReimbursementRequestService.deleteOtherReimbursementProductReason(
+        createdOtherProductReason.otherProductReasonId,
+        financeHead,
+        org
+      );
     });
   });
 });
