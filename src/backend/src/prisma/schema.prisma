@@ -231,6 +231,7 @@ model User {
   deletedIndexCodes                       Index_Code[]                         @relation(name: "deletedIndexCodes")
   createdOtherReimbursementProductReasons Reimbursement_Product_Other_Reason[] @relation(name: "createdOtherReimbursementProductReasons")
   deletedOtherReimbursementProductReasons Reimbursement_Product_Other_Reason[] @relation(name: "deletedOtherReimbursementProductReasons")
+  reimbursementRequestComments            Reimbursement_Request_Comment[]      @relation(name: "createdReimbursementRequestComments")
 }
 
 model Role {
@@ -576,29 +577,30 @@ model Receipt {
 }
 
 model Reimbursement_Request {
-  reimbursementRequestId   String                  @id @default(uuid())
+  reimbursementRequestId   String                          @id @default(uuid())
   identifier               Int
-  saboId                   Int?                    @unique
-  dateCreated              DateTime                @default(now())
+  saboId                   Int?                            @unique
+  dateCreated              DateTime                        @default(now())
   dateDeleted              DateTime?
   dateOfExpense            DateTime?
   reimbursementStatuses    Reimbursement_Status[]
   recipientId              String
-  recipient                User                    @relation(name: "reimbursementRequestRecipient", fields: [recipientId], references: [userId])
+  recipient                User                            @relation(name: "reimbursementRequestRecipient", fields: [recipientId], references: [userId])
   vendorId                 String
-  vendor                   Vendor                  @relation(fields: [vendorId], references: [vendorId])
-  indexCode                Index_Code              @relation(fields: [indexCodeId], references: [indexCodeId])
+  vendor                   Vendor                          @relation(fields: [vendorId], references: [vendorId])
+  indexCode                Index_Code                      @relation(fields: [indexCodeId], references: [indexCodeId])
   indexCodeId              String
   totalCost                Int
   receiptPictures          Receipt[]
   reimbursementProducts    Reimbursement_Product[]
   dateDelivered            DateTime?
   accountCodeId            String
-  accountCode              Account_Code            @relation(fields: [accountCodeId], references: [accountCodeId])
+  accountCode              Account_Code                    @relation(fields: [accountCodeId], references: [accountCodeId])
   organizationId           String
-  organization             Organization            @relation(fields: [organizationId], references: [organizationId])
+  organization             Organization                    @relation(fields: [organizationId], references: [organizationId])
   notificationSlackThreads Message_Info[]
   materials                Material[]
+  reimbursementComments    Reimbursement_Request_Comment[]
 
   @@unique([identifier, organizationId], name: "uniqueReimbursementRequest")
 }
@@ -1185,4 +1187,14 @@ model Reimbursement_Product_Other_Reason {
   indexCode                         Index_Code                     @relation(fields: [indexCodeId], references: [indexCodeId])
   indexCodeId                       String
   accountCodes                      Account_Code[]
+}
+
+model Reimbursement_Request_Comment {
+  reimbursementRequestCommentId String                @id @default(uuid())
+  dateCreated                   DateTime              @default(now())
+  userCreated                   User                  @relation(fields: [userCreatedId], references: [userId], name: "createdReimbursementRequestComments")
+  userCreatedId                 String
+  comment                       String
+  reimbursementRequestId        String
+  reimbursementRequuest         Reimbursement_Request @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
 }

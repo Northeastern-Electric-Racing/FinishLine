@@ -95,6 +95,17 @@ CREATE TABLE "Reimbursement_Product_Other_Reason" (
 );
 
 -- CreateTable
+CREATE TABLE "Reimbursement_Request_Comment" (
+    "reimbursementRequestCommentId" TEXT NOT NULL,
+    "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "userCreatedId" TEXT NOT NULL,
+    "comment" TEXT NOT NULL,
+    "reimbursementRequestId" TEXT NOT NULL,
+
+    CONSTRAINT "Reimbursement_Request_Comment_pkey" PRIMARY KEY ("reimbursementRequestCommentId")
+);
+
+-- CreateTable
 CREATE TABLE "_Account_CodeToIndex_Code" (
     "A" TEXT NOT NULL,
     "B" TEXT NOT NULL,
@@ -237,3 +248,9 @@ ALTER TABLE "_Account_CodeToReimbursement_Product_Other_Reason" ADD CONSTRAINT "
 
 -- AddForeignKey
 ALTER TABLE "_Account_CodeToReimbursement_Product_Other_Reason" ADD CONSTRAINT "_Account_CodeToReimbursement_Product_Other_Reason_B_fkey" FOREIGN KEY ("B") REFERENCES "Reimbursement_Product_Other_Reason"("otherReimbursementProductReasonId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Reimbursement_Request_Comment" ADD CONSTRAINT "Reimbursement_Request_Comment_userCreatedId_fkey" FOREIGN KEY ("userCreatedId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Reimbursement_Request_Comment" ADD CONSTRAINT "Reimbursement_Request_Comment_reimbursementRequestId_fkey" FOREIGN KEY ("reimbursementRequestId") REFERENCES "Reimbursement_Request"("reimbursementRequestId") ON DELETE RESTRICT ON UPDATE CASCADE;
