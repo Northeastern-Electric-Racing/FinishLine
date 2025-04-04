@@ -35,10 +35,12 @@ import {
   markPendingFinance,
   createSponsor,
   createSponsorTask,
-  createSponsorTier
+  createSponsorTier,
+  getAllIndexCodes,
+  getAllOtherProductReason
 } from '../apis/finance.api';
 import {
-  ClubAccount,
+  IndexCode,
   AccountCode,
   Reimbursement,
   ReimbursementReceiptCreateArgs,
@@ -50,7 +52,8 @@ import {
   ReimbursementStatusType,
   SponsorTask,
   Sponsor,
-  SponsorTier
+  SponsorTier,
+  OtherProductReason
 } from 'shared';
 import { fullNamePipe } from '../utils/pipes';
 
@@ -61,7 +64,7 @@ export interface CreateReimbursementRequestPayload {
   otherReimbursementProducts: OtherReimbursementProductCreateArgs[];
   wbsReimbursementProducts: WbsReimbursementProductCreateArgs[];
   totalCost: number;
-  account: ClubAccount;
+  indexCodeId: string;
 }
 
 export interface EditReimbursementRequestPayload extends CreateReimbursementRequestPayload {
@@ -79,7 +82,7 @@ export interface AccountCodePayload {
   code: number;
   name: string;
   allowed: boolean;
-  allowedRefundSources: ClubAccount[];
+  indexCodeIds: string[];
 }
 
 export interface EditVendorPayload {
@@ -182,6 +185,10 @@ export const useCreateSponsorTier = () => {
     }
   );
 };
+
+export interface IndexCodePayload {
+  name: string;
+}
 
 /**
  * Custom React Hook to upload a new picture.
@@ -500,7 +507,7 @@ export const useDownloadCSVFileOfReimbursementRequests = () => {
           (rr) =>
             `${rr.saboId},${rr.identifier},${fullNamePipe(rr.recipient)},${rr.totalCost},${
               rr.reimbursementStatuses[rr.reimbursementStatuses.length - 1].type
-            },${rr.account},${rr.accountCode.code},${rr.dateCreated},${rr.dateDelivered ?? ''},${
+            },${rr.indexCode},${rr.accountCode.code},${rr.dateCreated},${rr.dateDelivered ?? ''},${
               rr.reimbursementStatuses.find((rs) => rs.type === ReimbursementStatusType.SABO_SUBMITTED)?.dateCreated ?? ''
             },${rr.vendor.name}`
         )
@@ -683,4 +690,28 @@ export const useRequestReimbursementRequestChanges = (id: string) => {
       }
     }
   );
+};
+
+/**
+ * Custom React Hook to get all IndexCodes
+ *
+ * @returns all the IndexCodes
+ */
+export const useGetAllIndexCodes = () => {
+  return useQuery<IndexCode[], Error>(['index-codes'], async () => {
+    const { data } = await getAllIndexCodes();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get all Other Product Reasons
+ *
+ * @returns all the other product reasons
+ */
+export const useGetAllOtherProductReason = () => {
+  return useQuery<OtherProductReason[], Error>(['other-reimbursement-product-reasons'], async () => {
+    const { data } = await getAllOtherProductReason();
+    return data;
+  });
 };

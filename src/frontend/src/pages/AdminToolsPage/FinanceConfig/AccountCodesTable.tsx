@@ -44,7 +44,7 @@ const AccountCodesTable = () => {
         <Typography>{accountCode.allowed ? 'Yes' : 'No'}</Typography>
       </TableCell>
       <TableCell align="left" sx={{ border: '2px solid black' }}>
-        {accountCode.allowedRefundSources.map((refundSource, idx) => (
+        {accountCode.indexCodes.map((refundSource, idx) => (
           <Typography key={`account-code-refund-source-${index}-${idx}`}>{codeAndRefundSourceName(refundSource)}</Typography>
         ))}
       </TableCell>

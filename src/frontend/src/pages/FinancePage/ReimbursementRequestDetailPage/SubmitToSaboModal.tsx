@@ -118,7 +118,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
         <Grid item xs={7}>
           <DetailDisplay
             label={'SABO Form Index'}
-            content={codeAndRefundSourceName(reimbursementRequest.account)}
+            content={codeAndRefundSourceName(reimbursementRequest.indexCode)}
             copyButton
           />
         </Grid>

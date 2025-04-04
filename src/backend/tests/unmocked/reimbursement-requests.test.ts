@@ -4,15 +4,16 @@ import { AccessDeniedException, HttpException } from '../../src/utils/errors.uti
 import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { assert } from 'console';
-import { addDaysToDate, ClubAccount, ReimbursementRequest, ReimbursementStatusType } from 'shared';
-import { Account_Code, Organization, Role_Type, Theme, User, Vendor } from '@prisma/client';
+import { addDaysToDate, IndexCode, ReimbursementRequest, ReimbursementStatusType, AccountCode } from 'shared';
+import { Organization, Role_Type, Theme, User, Vendor } from '@prisma/client';
 import { UserWithSecureSettings } from '../../src/utils/auth.utils';
 
 describe('Reimbursement Requests', () => {
   let org: Organization;
   let reimbursementRequest: ReimbursementRequest;
   let createdVendor: Vendor;
-  let createdAccountCode: Account_Code;
+  let createdIndexCode: IndexCode;
+  let createdAccountCode: AccountCode;
   let createdUser: UserWithSecureSettings;
 
   beforeEach(async () => {
@@ -20,6 +21,7 @@ describe('Reimbursement Requests', () => {
     org = result.organization;
     reimbursementRequest = result.rr;
     createdVendor = result.vendor;
+    createdIndexCode = result.indexCode;
     createdAccountCode = result.accountCode;
     createdUser = result.user;
   });
@@ -87,7 +89,7 @@ describe('Reimbursement Requests', () => {
       const rr = await ReimbursementRequestService.createReimbursementRequest(
         createdUser,
         createdVendor.vendorId,
-        ClubAccount.CASH,
+        createdIndexCode.indexCodeId,
         [],
         [
           {
@@ -106,7 +108,7 @@ describe('Reimbursement Requests', () => {
       );
 
       expect(rr.accountCode).toStrictEqual({ ...createdAccountCode, dateDeleted: null });
-      expect(rr.account).toEqual(ClubAccount.CASH);
+      expect(rr.indexCode.name).toEqual('CASH');
       expect(rr.vendor.vendorId).toEqual(createdVendor.vendorId);
       expect(rr.recipient.userId).toEqual(createdUser.userId);
       expect(rr.dateOfExpense).toEqual(undefined);
@@ -128,7 +130,7 @@ describe('Reimbursement Requests', () => {
       const rr = await ReimbursementRequestService.createReimbursementRequest(
         createdUser,
         createdVendor.vendorId,
-        ClubAccount.CASH,
+        createdIndexCode.indexCodeId,
         [],
         [
           {
@@ -148,7 +150,7 @@ describe('Reimbursement Requests', () => {
       );
 
       expect(rr.accountCode).toStrictEqual({ ...createdAccountCode, dateDeleted: null });
-      expect(rr.account).toEqual(ClubAccount.CASH);
+      expect(rr.indexCode.name).toEqual('CASH');
       expect(rr.vendor.vendorId).toEqual(createdVendor.vendorId);
       expect(rr.recipient.userId).toEqual(createdUser.userId);
       expect(rr.dateOfExpense).toEqual(new Date('12-29-2023'));
@@ -198,7 +200,7 @@ describe('Reimbursement Requests', () => {
       const oldReimbursementRequest = await ReimbursementRequestService.createReimbursementRequest(
         createdUser,
         reimbursementRequest.vendor.vendorId,
-        reimbursementRequest.account,
+        reimbursementRequest.indexCode.indexCodeId,
         [],
         [
           {
@@ -235,7 +237,7 @@ describe('Reimbursement Requests', () => {
       const rr = await ReimbursementRequestService.createReimbursementRequest(
         createdUser,
         reimbursementRequest.vendor.vendorId,
-        reimbursementRequest.account,
+        reimbursementRequest.indexCode.indexCodeId,
         [],
         [
           {
@@ -327,7 +329,7 @@ describe('Reimbursement Requests', () => {
       const reimbReq = await ReimbursementRequestService.createReimbursementRequest(
         recipient,
         createdVendor.vendorId,
-        ClubAccount.CASH,
+        createdIndexCode.indexCodeId,
         [],
         [
           {
