@@ -105,7 +105,7 @@ export interface SponsorPayload {
   taxExempt: boolean;
   vendorContact: string;
   sponsorTasks: SponsorTask[];
-  discountCode: string;
+  discountCode?: string;
 }
 
 export interface SponsorTierPayload {
@@ -126,10 +126,19 @@ export interface SponsorTaskPayload {
  * @returns the created sponsor
  */
 export const useCreateSponsor = () => {
-  return useMutation<Sponsor, Error, SponsorPayload>(['finance', 'create'], async (formData: SponsorPayload) => {
-    const { data } = await createSponsor(formData);
-    return data;
-  });
+  const queryClient = useQueryClient();
+  return useMutation<Sponsor, Error, SponsorPayload>(
+    ['finance', 'create'],
+    async (formData: SponsorPayload) => {
+      const { data } = await createSponsor(formData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['finance']);
+      }
+    }
+  );
 };
 
 /**
@@ -138,10 +147,19 @@ export const useCreateSponsor = () => {
  * @returns the created sponsor task
  */
 export const useCreateSponsorTask = (sponsorId: string) => {
-  return useMutation<SponsorTask, Error, SponsorTaskPayload>(['finance', 'create'], async (formData: SponsorTaskPayload) => {
-    const { data } = await createSponsorTask(sponsorId, formData);
-    return data;
-  });
+  const queryClient = useQueryClient();
+  return useMutation<SponsorTask, Error, SponsorTaskPayload>(
+    ['finance', 'create'],
+    async (formData: SponsorTaskPayload) => {
+      const { data } = await createSponsorTask(sponsorId, formData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['finance']);
+      }
+    }
+  );
 };
 
 /**
@@ -150,10 +168,19 @@ export const useCreateSponsorTask = (sponsorId: string) => {
  * @returns the created sponsor tier
  */
 export const useCreateSponsorTier = () => {
-  return useMutation<SponsorTier, Error, SponsorTierPayload>(['finance', 'create'], async (formData: SponsorTierPayload) => {
-    const { data } = await createSponsorTier(formData);
-    return data;
-  });
+  const queryClient = useQueryClient();
+  return useMutation<SponsorTier, Error, SponsorTierPayload>(
+    ['finance', 'create'],
+    async (formData: SponsorTierPayload) => {
+      const { data } = await createSponsorTier(formData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['finance']);
+      }
+    }
+  );
 };
 
 /**
