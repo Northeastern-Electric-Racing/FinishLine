@@ -415,6 +415,7 @@ export const createSponsorTier = async (sponsorTierData: SponsorTierPayload) => 
  */
 export const createSponsorTask = async (sponsorId: string, sponsorTaskData: SponsorTaskPayload) => {
   return axios.post(apiUrls.financeCreateSponsorTask(sponsorId), sponsorTaskData);
+};
 
 /**
  * API call to get the list of all IndexCodes
