@@ -2,6 +2,7 @@
 import {
   Club_Accounts,
   Organization,
+  Part,
   PartReview,
   PartSubmission,
   Part_Review_Popup,
@@ -106,6 +107,7 @@ export const resetUsers = async () => {
   await prisma.partTag.deleteMany();
   await prisma.part.deleteMany();
   await prisma.work_Package.deleteMany();
+  await prisma.part.deleteMany();
   await prisma.project.deleteMany();
   await prisma.frequentlyAskedQuestion.deleteMany();
   await prisma.material.deleteMany();
@@ -140,7 +142,6 @@ export const resetUsers = async () => {
   await prisma.team_Type.deleteMany();
   await prisma.wBS_Element.deleteMany();
   await prisma.milestone.deleteMany();
-  await prisma.frequentlyAskedQuestion.deleteMany();
   await prisma.checklist.deleteMany();
   await prisma.contact.deleteMany();
   await prisma.graph.deleteMany();
@@ -682,6 +683,32 @@ export const createSlackMessageEvent = (
   };
 };
 
+export const createTestPart = async (
+  user: User,
+  name: string,
+  partId: string,
+  index: number,
+  projectId?: string,
+  dateDeleted?: Date
+): Promise<Part> => {
+  const part = await prisma.part.create({
+    data: {
+      partId,
+      index,
+      commonName: name,
+      project: {
+        connect: { projectId }
+      },
+      userCreated: {
+        connect: { userId: user.userId }
+      },
+      dateDeleted: dateDeleted ?? null
+    }
+  });
+
+  return part;
+};
+
 export const CreatePartTag = async (organizationId: string, name: string, colorHexCode: string) => {
   return await prisma.partTag.create({
     data: {
@@ -791,7 +818,36 @@ export const createTestPartSubmission = async (
   return partSubmission;
 };
 
-export const createMinimalPartReview = async (
+export const createMinimalPartReview = async (user: User, orgId: string): Promise<PartReview> => {
+  const car = await createTestCar(orgId, user.userId);
+  const project = await createTestProject(user, orgId, undefined, car.carId);
+
+  const part = await prisma.part.create({
+    data: {
+      index: 1,
+      commonName: 'Test Part',
+      description: 'For testing popups',
+      projectId: project.projectId,
+      userCreatedId: user.userId
+    }
+  });
+
+  const submission = await createTestPartSubmission(
+    'sub-id',
+    [],
+    'Submission Name',
+    'Some notes',
+    part.partId,
+    user.userId,
+    []
+  );
+
+  const review = await createTestPartReview('review-id', [], 'Review notes', submission, [], user.userId);
+
+  return review;
+};
+
+export const createMinimalPartReviewForReview = async (
   user: User,
   orgId: string
 ): Promise<{ review: PartReview; partId: string }> => {

@@ -1,31 +1,31 @@
 import { Prisma } from '@prisma/client';
 import { getUserQueryArgs } from './user.query-args';
 
-export type PartQueryArgs = ReturnType<typeof partQueryArgs>;
-export type PartSubmissionQueryArgs = ReturnType<typeof partSubmissionQueryArgs>;
-export type PartReviewQueryArgs = ReturnType<typeof partReviewQueryArgs>;
-export type PartReviewRequestQueryArgs = ReturnType<typeof partReviewRequestQueryArgs>;
+export type PartQueryArgs = ReturnType<typeof getPartQueryArgs>;
+export type PartSubmissionQueryArgs = ReturnType<typeof getPartSubmissionQueryArgs>;
+export type PartReviewQueryArgs = ReturnType<typeof getPartReviewQueryArgs>;
+export type PartReviewRequestQueryArgs = ReturnType<typeof getPartReviewRequestQueryArgs>;
 
-export const partQueryArgs = (organizationId: string) =>
+export const getPartQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.PartDefaultArgs>()({
     include: {
       tags: true,
-      submissions: partSubmissionQueryArgs(organizationId),
-      reviewRequests: partReviewRequestQueryArgs(organizationId),
+      submissions: getPartSubmissionQueryArgs(organizationId),
+      reviewRequests: getPartReviewRequestQueryArgs(organizationId),
       assignees: getUserQueryArgs(organizationId),
       userCreated: getUserQueryArgs(organizationId)
     }
   });
 
-export const partSubmissionQueryArgs = (organizationId: string) =>
+export const getPartSubmissionQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.PartSubmissionDefaultArgs>()({
     include: {
       userCreated: getUserQueryArgs(organizationId),
-      reviews: partReviewQueryArgs(organizationId)
+      reviews: getPartReviewQueryArgs(organizationId)
     }
   });
 
-export const partReviewRequestQueryArgs = (organizationId: string) =>
+export const getPartReviewRequestQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.PartReviewRequestDefaultArgs>()({
     include: {
       requester: getUserQueryArgs(organizationId),
@@ -33,7 +33,7 @@ export const partReviewRequestQueryArgs = (organizationId: string) =>
     }
   });
 
-export const partReviewQueryArgs = (organizationId: string) =>
+export const getPartReviewQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.PartReviewDefaultArgs>()({
     include: {
       popUps: true,

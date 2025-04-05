@@ -5,6 +5,8 @@ import PartReviewController from '../controllers/part-review.controllers';
 
 const partsRouter = express.Router();
 
+partsRouter.get('/:wbsNum', PartReviewController.getAllPartsForProject);
+
 partsRouter.get('/tags', PartReviewController.getAllPartTags);
 partsRouter.get('/faqs', PartReviewController.getAllPartReviewFAQS);
 
@@ -64,10 +66,29 @@ partsRouter.post(
   PartReviewController.updateCommonMistake
 );
 
-partsRouter.post('/common-mistake/:commonMistakeId/delete', PartReviewController.deleteCommonMistake);
+partsRouter.post(
+  '/reviews/:reviewId/popup/create',
+  nonEmptyString(body('title')),
+  nonEmptyString(body('description')),
+  body('starred').isBoolean(),
+  validateInputs,
+  PartReviewController.createPartReviewPopup
+);
 
 partsRouter.post(
-  '/reviewRequest/:partId/create',
+  '/popup/:popupId/update',
+  nonEmptyString(body('title')),
+  nonEmptyString(body('description')),
+  body('starred').isBoolean(),
+  validateInputs,
+  PartReviewController.updatePartReviewPopup
+);
+
+partsRouter.post('/common-mistake/:commonMistakeId/delete', PartReviewController.deleteCommonMistake);
+partsRouter.post('/popup/:popupId/delete', PartReviewController.deletePartReviewPopup);
+
+partsRouter.post(
+  '/:partId/reviewRequest/create',
   nonEmptyString(body('reviewerId')),
   validateInputs,
   PartReviewController.createPartReviewRequest

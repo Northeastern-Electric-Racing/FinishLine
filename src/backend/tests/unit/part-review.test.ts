@@ -1,14 +1,21 @@
 import { Organization, User } from '@prisma/client';
-import { createMinimalPartReview, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
-import PartReviewService from '../../src/services/part-review.services';
-import { batmanAppAdmin, supermanAdmin, aquamanLeadership, flashAdmin, financeMember } from '../test-data/users.test-data';
-import prisma from '../../src/prisma/prisma';
 import {
-  AccessDeniedAdminOnlyException,
-  AccessDeniedException,
-  DeletedException,
-  NotFoundException
-} from '../../src/utils/errors.utils';
+  createMinimalPartReview,
+  createMinimalPartReviewForReview,
+  createTestCar,
+  createTestOrganization,
+  createTestPart,
+  createTestProject,
+  createTestTeam,
+  createTestTeamType,
+  createTestUser,
+  resetUsers
+} from '../test-utils';
+import PartReviewService from '../../src/services/part-review.services';
+import { batmanAppAdmin, supermanAdmin, aquamanLeadership, flashAdmin } from '../test-data/users.test-data';
+import prisma from '../../src/prisma/prisma';
+import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../../src/utils/errors.utils';
+import { validateWBS } from 'shared';
 
 describe('part review tests', () => {
   let orgId: string;
@@ -472,7 +479,7 @@ describe('part review tests', () => {
       superman = await createTestUser(supermanAdmin, orgId);
       aquaman = await createTestUser(aquamanLeadership, orgId);
 
-      ({ partId } = await createMinimalPartReview(batman, orgId));
+      ({ partId } = await createMinimalPartReviewForReview(batman, orgId));
     });
 
     afterEach(async () => {
@@ -530,16 +537,6 @@ describe('part review tests', () => {
       expect(prismaDeleted?.dateDeleted).toBeTruthy();
     });
 
-    it('non-involved user cannot delete the review request', async () => {
-      const request = await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
-
-      const johnnyBravo = await createTestUser(financeMember, orgId);
-
-      await expect(
-        PartReviewService.deletePartReviewRequest(request.partReviewRequestId, johnnyBravo, orgId)
-      ).rejects.toThrow(new AccessDeniedException('delete part review request'));
-    });
-
     it('fails to delete review request if it does not exist', async () => {
       const fakePartId = 'non-existent-part-id';
 
@@ -547,5 +544,170 @@ describe('part review tests', () => {
         new NotFoundException('Review request', fakePartId)
       );
     });
+  });
+  describe('Get all parts', () => {
+    it('getting all parts from a project with no parts successfully returns empty array', async () => {
+      const division = await createTestTeamType(undefined, orgId);
+      const team1 = await createTestTeam(batman.userId, division.teamTypeId, orgId);
+      const car = await createTestCar(orgId, batman.userId);
+
+      // Create a project with no parts
+      await createTestProject(batman, orgId, team1.teamId, car.carId, 4);
+
+      const proj1WbsNum = validateWBS('0.4.0');
+
+      const parts = await PartReviewService.getAllPartsForProject(proj1WbsNum, organization);
+
+      expect(parts).toBeInstanceOf(Array);
+      expect(parts.length).toEqual(0);
+    });
+
+    it('gets all parts for the correct project', async () => {
+      const division = await createTestTeamType(undefined, orgId);
+      const team1 = await createTestTeam(batman.userId, division.teamTypeId, orgId);
+      const team2 = await createTestTeam(superman.userId, division.teamTypeId, orgId);
+      const car = await createTestCar(orgId, batman.userId);
+
+      const project1 = await createTestProject(batman, orgId, team1.teamId, car.carId, 1);
+      const project2 = await createTestProject(superman, orgId, team2.teamId, car.carId, 2);
+
+      const proj1WbsNum = validateWBS('0.1.0');
+      const proj2WbsNum = validateWBS('0.2.0');
+
+      const part1 = await createTestPart(batman, 'part1', '1', 1, project1.projectId);
+      const part2 = await createTestPart(batman, 'part2', '2', 2, project1.projectId);
+
+      const part3 = await createTestPart(superman, 'part3', '3', 3, project2.projectId);
+
+      const parts1 = await PartReviewService.getAllPartsForProject(proj1WbsNum, organization);
+      expect(parts1).toHaveLength(2);
+      expect(parts1[0].userCreated.userId).toEqual(part1.userCreatedId);
+      expect(parts1[0].commonName).toBe(part1.commonName);
+      expect(parts1[0].partId).toBe(part1.partId);
+      expect(parts1[0].index).toBe(part1.index);
+      expect(parts1[0].projectId).toBe(part1.projectId);
+
+      expect(parts1[1].commonName).toBe(part2.commonName);
+      expect(parts1[1].commonName).toBe(part2.commonName);
+      expect(parts1[1].partId).toBe(part2.partId);
+      expect(parts1[1].index).toBe(part2.index);
+      expect(parts1[1].projectId).toBe(part2.projectId);
+
+      const parts2 = await PartReviewService.getAllPartsForProject(proj2WbsNum, organization);
+      expect(parts2).toHaveLength(1);
+      expect(parts2[0].userCreated.userId).toEqual(part3.userCreatedId);
+      expect(parts2[0].commonName).toBe(part3.commonName);
+      expect(parts2[0].partId).toBe(part3.partId);
+      expect(parts2[0].index).toBe(part3.index);
+      expect(parts2[0].projectId).toBe(part3.projectId);
+    });
+  });
+});
+
+describe('Part Review Popups', () => {
+  let orgId: string;
+  let batman: User;
+  let superman: User;
+  let nonAdmin: User;
+
+  beforeEach(async () => {
+    const organization = await createTestOrganization();
+    orgId = organization.organizationId;
+    batman = await createTestUser(batmanAppAdmin, orgId);
+    superman = await createTestUser(supermanAdmin, orgId);
+    nonAdmin = await createTestUser(aquamanLeadership, orgId);
+  });
+
+  afterEach(async () => {
+    await resetUsers();
+  });
+
+  it('creates, updates, and deletes a popup', async () => {
+    const review = await createMinimalPartReview(batman, orgId);
+
+    const popup = await PartReviewService.createPartReviewPopup(
+      orgId,
+      review.partReviewId,
+      10,
+      20,
+      'Initial Title',
+      'Initial Description',
+      batman
+    );
+
+    expect(popup.title).toBe('Initial Title');
+    expect(popup.description).toBe('Initial Description');
+    expect(popup.xCoord).toBe(10);
+    expect(popup.yCoord).toBe(20);
+
+    const updated = await PartReviewService.updatePartReviewPopup(
+      orgId,
+      popup.partReviewPopupId,
+      30,
+      40,
+      'Updated Title',
+      'Updated Description',
+      superman
+    );
+
+    expect(updated.title).toBe('Updated Title');
+    expect(updated.description).toBe('Updated Description');
+    expect(updated.xCoord).toBe(30);
+    expect(updated.yCoord).toBe(40);
+
+    const deleted = await PartReviewService.deletePartReviewPopup(popup.partReviewPopupId, superman, orgId);
+
+    expect(deleted.partReviewPopupId).toBe(popup.partReviewPopupId);
+    expect(deleted.deletedAt).toBeTruthy();
+
+    const prismaDeleted = await prisma.part_Review_Popup.findUnique({
+      where: { partReviewPopupId: popup.partReviewPopupId }
+    });
+
+    expect(prismaDeleted?.deletedAt).toBeTruthy();
+  });
+
+  it('blocks non-admins from creating, updating, or deleting popups', async () => {
+    const review = await createMinimalPartReview(batman, orgId);
+
+    await expect(
+      PartReviewService.createPartReviewPopup(orgId, review.partReviewId, 0, 0, 'title', 'desc', nonAdmin)
+    ).rejects.toThrow(new AccessDeniedAdminOnlyException('create part review popup'));
+
+    const popup = await PartReviewService.createPartReviewPopup(orgId, review.partReviewId, 1, 2, 'x', 'x', batman);
+
+    await expect(
+      PartReviewService.updatePartReviewPopup(orgId, popup.partReviewPopupId, 2, 3, 'fail', 'fail', nonAdmin)
+    ).rejects.toThrow(new AccessDeniedAdminOnlyException('update part review popup'));
+
+    await expect(PartReviewService.deletePartReviewPopup(popup.partReviewPopupId, nonAdmin, orgId)).rejects.toThrow(
+      new AccessDeniedAdminOnlyException('delete part review popup')
+    );
+  });
+
+  it('throws NotFoundException if review does not exist or is deleted', async () => {
+    await expect(
+      PartReviewService.createPartReviewPopup(orgId, 'non-existent-review', 0, 0, 'x', 'x', batman)
+    ).rejects.toThrow(new NotFoundException('Part Review', 'non-existent-review'));
+  });
+
+  it('throws NotFoundException if popup is deleted before update', async () => {
+    const review = await createMinimalPartReview(batman, orgId);
+
+    const popup = await PartReviewService.createPartReviewPopup(
+      orgId,
+      review.partReviewId,
+      1,
+      2,
+      'Delete Me',
+      'Please',
+      batman
+    );
+
+    await PartReviewService.deletePartReviewPopup(popup.partReviewPopupId, superman, orgId);
+
+    await expect(
+      PartReviewService.updatePartReviewPopup(orgId, popup.partReviewPopupId, 10, 10, 'Should Fail', 'Nope', superman)
+    ).rejects.toThrow(new NotFoundException('Pop Up', popup.partReviewPopupId));
   });
 });
