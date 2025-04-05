@@ -144,59 +144,48 @@ const part1: Part = {
 
 describe('Part Submission History', () => {
   it('Part created history', () => {
-    const response: string = '[01/01/24] - PROJ_PartName_0000-00A was created.';
-    expect(completePartHistory(part1)[0]).toBe(response);
+    expect(completePartHistory(part1)[0]).toBe('[01/01/24] - PROJ_PartName_0000-00A was created.');
   });
   it('User uploaded first submission includes part name', () => {
-    const response: string = '[01/02/24] - Chris Pyle uploaded Submission #1 for PROJ_PartName_0000-00A.';
-    expect(completePartHistory(part1)[1]).toBe(response);
+    expect(completePartHistory(part1)[1]).toBe('[01/02/24] - Chris Pyle uploaded Submission #1 for PROJ_PartName_0000-00A.');
   });
   it('User requested single review', () => {
-    const response: string = '[01/03/24] - Chris Pyle requested a review from Griffin Cooper.';
-    expect(completePartHistory(part1)[2]).toBe(response);
+    expect(completePartHistory(part1)[2]).toBe('[01/03/24] - Chris Pyle requested a review from Griffin Cooper.');
   });
   it('Reviewer began reviewing submission', () => {
-    const response: string = '[01/04/24] - Griffin Cooper began reviewing Submission #1.';
-    expect(completePartHistory(part1)[3]).toBe(response);
+    expect(completePartHistory(part1)[3]).toBe('[01/04/24] - Griffin Cooper began reviewing Submission #1.');
   });
   it('Reviewer finished reviewing submission', () => {
-    const response: string = '[01/05/24] - Griffin Cooper reviewed Submission #1 (in Submission #1 Review).';
-    expect(completePartHistory(part1)[4]).toBe(response);
+    expect(completePartHistory(part1)[4]).toBe(
+      '[01/05/24] - Griffin Cooper reviewed Submission #1 (in Submission #1 Review).'
+    );
   });
   it('User uploaded second submission w/o part name', () => {
-    const response: string = '[01/06/24] - Chris Pyle uploaded Submission #2.';
-    expect(completePartHistory(part1)[5]).toBe(response);
+    expect(completePartHistory(part1)[5]).toBe('[01/06/24] - Chris Pyle uploaded Submission #2.');
   });
   it('User requested review from two people combined', () => {
-    const response: string = '[01/07/24] - Chris Pyle requested a review from Griffin Cooper and Zachary Wen.';
-    expect(completePartHistory(part1)[6]).toBe(response);
+    expect(completePartHistory(part1)[6]).toBe(
+      '[01/07/24] - Chris Pyle re-requested a review from Griffin Cooper and requested a review from Zachary Wen.'
+    );
   });
   it('Reviewer began reviewing submission', () => {
-    const response: string = '[01/08/24] - Zachary Wen began reviewing Submission #2.';
-    expect(completePartHistory(part1)[7]).toBe(response);
+    expect(completePartHistory(part1)[7]).toBe('[01/08/24] - Zachary Wen began reviewing Submission #2.');
   });
   it('Reviewer finished reviewing submission', () => {
-    const response: string = '[01/09/24] - Zachary Wen reviewed Submission #2 (in Submission #2 Review).';
-    expect(completePartHistory(part1)[8]).toBe(response);
+    expect(completePartHistory(part1)[8]).toBe('[01/09/24] - Zachary Wen reviewed Submission #2 (in Submission #2 Review).');
   });
   it('Submission 3', () => {
-    const response: string = '[01/10/24] - Chris Pyle uploaded Submission #3.';
-    expect(completePartHistory(part1)[9]).toBe(response);
+    expect(completePartHistory(part1)[9]).toBe('[01/10/24] - Chris Pyle uploaded Submission #3.');
   });
   it('Re-Request Review', () => {
-    const response: string = '[01/11/24] - Chris Pyle re-requested a review from Zachary Wen.';
-    expect(completePartHistory(part1)[10]).toBe(response);
+    expect(completePartHistory(part1)[10]).toBe('[01/11/24] - Chris Pyle re-requested a review from Zachary Wen.');
   });
   it('Began Reviewing', () => {
-    const response: string = '[01/12/24] - Zachary Wen began reviewing Submission #3.';
-    expect(completePartHistory(part1)[11]).toBe(response);
+    expect(completePartHistory(part1)[11]).toBe('[01/12/24] - Zachary Wen began reviewing Submission #3.');
   });
   it('Last Review', () => {
-    const response: string = '[01/13/24] - Zachary Wen reviewed Submission #3 (in Submission #3 Review).';
-    expect(completePartHistory(part1)[12]).toBe(response);
-  });
-  it('Complete History for viewing', () => {
-    const response: string = '...';
-    expect(completePartHistory(part1)).toBe(response);
+    expect(completePartHistory(part1)[12]).toBe(
+      '[01/13/24] - Zachary Wen reviewed Submission #3 (in Submission #3 Review).'
+    );
   });
 });

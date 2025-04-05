@@ -9,7 +9,13 @@ interface PartHistoryViewProps {
 const PartHistoryView: React.FC<PartHistoryViewProps> = ({ part }: PartHistoryViewProps) => {
   const historyEntries: string[] = completePartHistory(part);
 
-  return <Grid> /* History Entries */ </Grid>;
+  return (
+    <Grid>
+      {historyEntries.map((entry, index) => (
+        <Grid key={index}>{entry}</Grid>
+      ))}
+    </Grid>
+  );
 };
 
 export default PartHistoryView;

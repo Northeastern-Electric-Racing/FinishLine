@@ -34,7 +34,7 @@ export const getReviewRequestHistory = (reviewRequests: PartReviewRequest[]): Hi
 
   reviewRequests.forEach(({ createdAt, requester, reviewerRequested }) => {
     // Reformatted date for comparisons
-    const formattedDate = new Date(createdAt).toISOString().split('T')[0];
+    const [formattedDate] = new Date(createdAt).toISOString().split('T');
 
     if (!combinedRequests.has(formattedDate)) combinedRequests.set(formattedDate, new Map());
     const requesters = combinedRequests.get(formattedDate)!;
@@ -99,12 +99,12 @@ export const processReviewerHistory = (
   reviews.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
   if (reviews.length === 0) return;
 
-  const firstReview = reviews[0];
+  const [firstReview] = reviews;
   historyEntries.push([new Date(firstReview.createdAt), `${reviewerName} began reviewing ${subName}`]);
 
   reviews.forEach((review) => {
     if (review.completedAt) {
-      let message = `${reviewerName} reviewed ${subName} (in ${subName} Review)`;
+      const message = `${reviewerName} reviewed ${subName} (in ${subName} Review)`;
       historyEntries.push([new Date(review.completedAt), message]);
     }
   });
@@ -120,7 +120,7 @@ export const completePartHistory = (part: Part): string[] => {
   const result: string[] = [];
   history
     .sort((a, b) => a[0].getTime() - b[0].getTime())
-    .map(([date, message]) => {
+    .forEach(([date, message]) => {
       const formattedDate = date.toLocaleDateString('en-US', {
         timeZone: 'UTC',
         year: '2-digit',
