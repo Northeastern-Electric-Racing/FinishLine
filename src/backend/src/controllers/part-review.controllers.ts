@@ -194,11 +194,7 @@ export default class PartReviewController {
     try {
       const { reviewRequestId } = req.params;
 
-      await PartReviewService.deletePartReviewRequest(
-        reviewRequestId,
-        req.currentUser,
-        req.organization.organizationId
-      );
+      await PartReviewService.deletePartReviewRequest(reviewRequestId, req.currentUser, req.organization.organizationId);
 
       res.status(200).json({ message: 'Successfully deleted review request' });
     } catch (error) {
