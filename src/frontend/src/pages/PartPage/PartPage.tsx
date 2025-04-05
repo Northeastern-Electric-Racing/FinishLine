@@ -1,6 +1,4 @@
 import { Box, Typography, Grid, Breadcrumbs } from '@mui/material';
-import FileDisplay from './components/FileDisplay';
-import { useCurrentUser } from '../../hooks/users.hooks';
 
 const PartPage: React.FC = () => {
   return (
@@ -12,7 +10,6 @@ const PartPage: React.FC = () => {
       <Typography variant="h4" fontWeight="bold" mb={3}>
         [PROJ_PartName_PartNum]
       </Typography>
-
       <Grid container spacing={3}>
         {/* The code below will be replaced by the part preview */}
         <Grid item xs={12} md={6}>
