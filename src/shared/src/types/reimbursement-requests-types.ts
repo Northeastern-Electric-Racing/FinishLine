@@ -142,6 +142,7 @@ export interface Reimbursement {
 }
 
 export interface ReimbursementRequestComment {
+  reimbursementRequestCommentId: string;
   reimbursementRequestId: string;
   dateCreated: Date;
   comment: string;

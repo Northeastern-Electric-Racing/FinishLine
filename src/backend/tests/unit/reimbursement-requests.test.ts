@@ -553,4 +553,97 @@ describe('Reimbursement Requests', () => {
       );
     });
   });
+
+  describe('Creating a reimbursement request comment', () => {
+    test('Successfully creating a RR comment', async () => {
+      const comment = await ReimbursementRequestService.createReimbursementRequestComment(
+        createdUser,
+        org,
+        'Test comment!',
+        reimbursementRequest.reimbursementRequestId
+      );
+
+      expect(comment.comment).toEqual('Test comment!');
+      expect(comment.reimbursementRequestId).toEqual(reimbursementRequest.reimbursementRequestId);
+      expect(comment.userCreated.userId).toEqual(createdUser.userId);
+    });
+    test('Fails when RR id is not found', async () => {
+      await expect(
+        async () =>
+          await ReimbursementRequestService.createReimbursementRequestComment(createdUser, org, 'Test comment!', 'bad ID')
+      ).rejects.toThrow(new NotFoundException('Reimbursement Request', 'bad ID'));
+    });
+  });
+
+  describe('Editing a reimbursement request comment', () => {
+    test('Successfully editing a RR comment', async () => {
+      const comment = await ReimbursementRequestService.createReimbursementRequestComment(
+        createdUser,
+        org,
+        'Test comment!',
+        reimbursementRequest.reimbursementRequestId
+      );
+      const editedComment = await ReimbursementRequestService.editReimbursementRequestComment(
+        org,
+        'Edited',
+        comment.reimbursementRequestCommentId
+      );
+
+      expect(editedComment.comment).toEqual('Edited');
+      expect(comment.reimbursementRequestId).toEqual(editedComment.reimbursementRequestId);
+      expect(editedComment.userCreated.userId).toEqual(comment.userCreated.userId);
+    });
+    test('Fails when RRComment id is not found', async () => {
+      await expect(
+        async () => await ReimbursementRequestService.editReimbursementRequestComment(org, 'Test comment!', 'bad ID')
+      ).rejects.toThrow(new NotFoundException('Reimbursement Request Comment', 'bad ID'));
+    });
+    test('Fails when new comment is the same as existing comment', async () => {
+      const comment = await ReimbursementRequestService.createReimbursementRequestComment(
+        createdUser,
+        org,
+        'Test comment!',
+        reimbursementRequest.reimbursementRequestId
+      );
+      await expect(
+        async () =>
+          await ReimbursementRequestService.editReimbursementRequestComment(
+            org,
+            'Test comment!',
+            comment.reimbursementRequestCommentId
+          )
+      ).rejects.toThrow(new HttpException(400, 'New comment matches existing content'));
+    });
+  });
+
+  describe('Deleting a reimbursement request comment', () => {
+    test('Successfully deleting a RR comment', async () => {
+      const comment = await ReimbursementRequestService.createReimbursementRequestComment(
+        createdUser,
+        org,
+        'Test comment!',
+        reimbursementRequest.reimbursementRequestId
+      );
+      const deletedComment = await ReimbursementRequestService.deleteReimbursementRequestComment(
+        org,
+        comment.reimbursementRequestCommentId
+      );
+      // checking its not found after deleting
+      await expect(
+        async () =>
+          await ReimbursementRequestService.editReimbursementRequestComment(
+            org,
+            'Test comment!',
+            deletedComment.reimbursementRequestCommentId
+          )
+      ).rejects.toThrow(
+        new NotFoundException('Reimbursement Request Comment', deletedComment.reimbursementRequestCommentId)
+      );
+    });
+    test('Fails when RRComment id is not found', async () => {
+      await expect(
+        async () => await ReimbursementRequestService.deleteReimbursementRequestComment(org, 'bad ID')
+      ).rejects.toThrow(new NotFoundException('Reimbursement Request Comment', 'bad ID'));
+    });
+  });
 });
