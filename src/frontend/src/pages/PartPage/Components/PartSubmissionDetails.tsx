@@ -1,5 +1,5 @@
 import { Typography } from '@mui/material';
-import { Box } from '@mui/system';
+import { Stack } from '@mui/system';
 import { PartSubmission } from 'shared';
 
 interface PartSubmissionProps {
@@ -8,26 +8,24 @@ interface PartSubmissionProps {
 
 const PartSubmissionDetails = ({ submission }: PartSubmissionProps) => {
   return (
-    <Box display="left" alignItems="center" width="100%" sx={{ flexDirection: 'column'}}>
-      <Typography sx = {{fontWeight: "normal", marginBottom: '4%'}} variant="h5">Details for Submission #{submission.partSubmissionId}:</Typography>
-
-      <Typography variant="body1" sx = {{marginBottom: '4%'}}>
-        Uploader:
-        {' ' + submission.userCreated.firstName + ' ' + submission.userCreated.lastName}
+    <Stack spacing={'4%'} alignItems="center" width="100%">
+      <Typography sx={{ fontWeight: 'normal' }} variant="h5">
+        Details for ${submission.name}:
       </Typography>
 
-      <Typography variant="body1" sx = {{marginBottom: '4%'}}>
-        Uploader Notes:
-        {' ' + submission.notes || 'There are no notes.'}
+      <Typography variant="body1">
+        Uploader: ${submission.userCreated.firstName} {submission.userCreated.lastName}
       </Typography>
 
-      <Typography variant="body1" sx = {{marginBottom: '4%'}}>
-        Reviewer Notes:{' '}
+      <Typography variant="body1">Uploader Notes: {submission.notes || 'There are no notes.'}</Typography>
+
+      <Typography variant="body1">
+        Reviewer Notes:
         {submission.reviews.length !== 0
-          ? submission.reviews.map((review) => review.notes).join('  ')
+          ? submission.reviews.map((review) => review.notes).join('\n')
           : 'There are no notes.'}
       </Typography>
-    </Box>
+    </Stack>
   );
 };
 
