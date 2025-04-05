@@ -1,5 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Part, PartPreview, PartReview, PartReviewRequest, PartSubmission, Review_Status } from 'shared';
+import {
+  Part,
+  PartPreview,
+  PartReview,
+  PartReviewRequest,
+  PartSubmission,
+  Review_Status,
+  PartReviewCommonMistake
+} from 'shared';
 import {
   createPart,
   createPartReview,
@@ -12,6 +20,7 @@ import {
   editPartSubmission,
   getPartsFromProject,
   getSinglePart,
+  getAllCommonMistakes,
   uploadPreviewImage
 } from '../apis/part-review.api';
 
@@ -266,6 +275,27 @@ export const useEditPartReview = (reviewId: string) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['parts']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to get all common mistakes
+ *
+ * @returns a list of all common mistakes
+ */
+export const useAllCommonMistakes = () => {
+  const queryClient = useQueryClient();
+  return useQuery<PartReviewCommonMistake[], Error>(
+    ['common mistakes'],
+    async () => {
+      const { data } = await getAllCommonMistakes();
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['common mistakes']);
       }
     }
   );
