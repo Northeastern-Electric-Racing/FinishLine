@@ -13,6 +13,7 @@ import {
   ReimbursementProduct,
   ReimbursementProductReason,
   ReimbursementRequest,
+  ReimbursementRequestComment,
   ReimbursementStatus,
   ReimbursementStatusType,
   Vendor
@@ -34,6 +35,7 @@ import { NotFoundException } from '../utils/errors.utils';
 import { AccountCodeQueryArgs } from '../prisma-query-args/account-code.query-args';
 import { IndexCodeQueryArgs } from '../prisma-query-args/index-code.query-args';
 import { ReimbursementProductOtherReasonQueryArgs } from '../prisma-query-args/reimbursement-product-other-reason.query-args';
+import { ReimbursementRequestCommentQueryArgs } from '../prisma-query-args/reimbursement-comment.query-args';
 
 export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<ReceiptQueryArgs>): Receipt => {
   return {
@@ -150,5 +152,14 @@ export const otherProductReasonTransformer = (
     dateCreated: otherProductReason.dateCreated,
     budget: otherProductReason.budget,
     indexCode: indexCodeTransformer(otherProductReason.indexCode)
+  };
+};
+
+export const reimbursementRequestCommentTransformer = (
+  reimbursementRequestComment: Prisma.Reimbursement_Request_CommentGetPayload<ReimbursementRequestCommentQueryArgs>
+): ReimbursementRequestComment => {
+  return {
+    ...reimbursementRequestComment,
+    userCreated: userTransformer(reimbursementRequestComment.userCreated)
   };
 };

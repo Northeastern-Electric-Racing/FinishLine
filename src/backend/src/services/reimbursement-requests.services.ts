@@ -48,6 +48,7 @@ import {
   accountCodeTransformer,
   indexCodeTransformer,
   otherProductReasonTransformer,
+  reimbursementRequestCommentTransformer,
   reimbursementRequestTransformer,
   reimbursementStatusTransformer,
   reimbursementTransformer,
@@ -72,6 +73,7 @@ import { getAccountCodeQueryArgs } from '../prisma-query-args/account-code.query
 import { getIndexCodeQueryArgs } from '../prisma-query-args/index-code.query-args';
 import { getReimbursementProductOtherReasonQueryArgs } from '../prisma-query-args/reimbursement-product-other-reason.query-args';
 import { Or } from '@prisma/client/runtime/library';
+import { getReimbursementRequestCommentQueryArgs } from '../prisma-query-args/reimbursement-comment.query-args';
 
 export default class ReimbursementRequestService {
   /**
@@ -1547,27 +1549,29 @@ export default class ReimbursementRequestService {
       throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
     }
 
-    const reimbursementRequestComment = await prisma.reimbursement_Request_Comment.create({
+    const createdComment = await prisma.reimbursement_Request_Comment.create({
       data: {
         userCreatedId: currentUser.userId,
         reimbursementRequestId,
         comment
-      }
+      },
+      ...getReimbursementRequestCommentQueryArgs(organization.organizationId)
     });
 
-    return reimbursementRequestComment;
+    return reimbursementRequestCommentTransformer(createdComment);
   }
 
   /**
    * Updates the comment for an existing new comment on a reimbursement request
    *
+   * @param organization The organization context for the request
    * @param comment The comment text content
    * @param commentId The ID of the reimbursement request comment
    * @returns The updated reimbursement request comment
    * @throws NotFoundException if the comment doesn't exist
    * @throws HttpException if the comment is the same as the current comment
    */
-  static async editReimbursementRequestComment(comment: string, commentId: string) {
+  static async editReimbursementRequestComment(organization: Organization, comment: string, commentId: string) {
     const reimbursementRequestComment = await prisma.reimbursement_Request_Comment.findUnique({
       where: { reimbursementRequestCommentId: commentId }
     });
@@ -1582,20 +1586,22 @@ export default class ReimbursementRequestService {
 
     const editedComment = await prisma.reimbursement_Request_Comment.update({
       where: { reimbursementRequestCommentId: commentId },
-      data: { comment }
+      data: { comment },
+      ...getReimbursementRequestCommentQueryArgs(organization.organizationId)
     });
 
-    return editedComment;
+    return reimbursementRequestCommentTransformer(editedComment);
   }
 
   /**
    * Deletes the comment for an existing comment on a reimbursement request
    *
+   * @param organization The organization context for the request
    * @param commentId The ID of the reimbursement request comment
    * @returns The deleted reimbursement request comment
    * @throws NotFoundException if the comment doesn't exist
    */
-  static async deleteReimbursementRequestComment(commentId: string) {
+  static async deleteReimbursementRequestComment(organization: Organization, commentId: string) {
     const reimbursementRequestComment = await prisma.reimbursement_Request_Comment.findUnique({
       where: { reimbursementRequestCommentId: commentId }
     });
@@ -1606,9 +1612,10 @@ export default class ReimbursementRequestService {
 
     const deletedComment = await prisma.reimbursement_Request_Comment.update({
       where: { reimbursementRequestCommentId: commentId },
-      data: { dateDeleted: new Date() }
+      data: { dateDeleted: new Date() },
+      ...getReimbursementRequestCommentQueryArgs(organization.organizationId)
     });
 
-    return deletedComment;
+    return reimbursementRequestCommentTransformer(deletedComment);
   }
 }

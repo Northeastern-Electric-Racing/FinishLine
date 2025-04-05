@@ -593,7 +593,11 @@ export default class ReimbursementRequestsController {
       const { comment } = req.body;
       const { commentId } = req.params;
 
-      const createdComment = await ReimbursementRequestService.editReimbursementRequestComment(comment, commentId);
+      const createdComment = await ReimbursementRequestService.editReimbursementRequestComment(
+        req.organization,
+        comment,
+        commentId
+      );
       res.status(200).json(createdComment);
     } catch (error: unknown) {
       next(error);
@@ -604,7 +608,10 @@ export default class ReimbursementRequestsController {
     try {
       const { commentId } = req.params;
 
-      const createdComment = await ReimbursementRequestService.deleteReimbursementRequestComment(commentId);
+      const createdComment = await ReimbursementRequestService.deleteReimbursementRequestComment(
+        req.organization,
+        commentId
+      );
       res.status(200).json(createdComment);
     } catch (error: unknown) {
       next(error);

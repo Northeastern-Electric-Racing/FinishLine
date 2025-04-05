@@ -139,3 +139,10 @@ export interface Reimbursement {
   amount: number;
   userSubmitted: User;
 }
+
+export interface ReimbursementRequestComment {
+  reimbursementRequestId: string;
+  dateCreated: Date;
+  comment: string;
+  userCreated: User;
+}
