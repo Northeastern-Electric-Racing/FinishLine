@@ -1,6 +1,6 @@
 import { Box, Stack, Typography } from '@mui/material';
 import { Circle } from '@mui/icons-material';
-import { datePipe, meetingStartTimePipe } from '../../../utils/pipes';
+import { datePipe } from '../../../utils/pipes';
 
 interface TimelineEvent {
   description: string;
