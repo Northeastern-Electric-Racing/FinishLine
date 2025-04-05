@@ -72,7 +72,6 @@ import { encryptPassword } from '../utils/encryption.utils';
 import { getAccountCodeQueryArgs } from '../prisma-query-args/account-code.query-args';
 import { getIndexCodeQueryArgs } from '../prisma-query-args/index-code.query-args';
 import { getReimbursementProductOtherReasonQueryArgs } from '../prisma-query-args/reimbursement-product-other-reason.query-args';
-import { Or } from '@prisma/client/runtime/library';
 import { getReimbursementRequestCommentQueryArgs } from '../prisma-query-args/reimbursement-comment.query-args';
 
 export default class ReimbursementRequestService {
@@ -1542,7 +1541,7 @@ export default class ReimbursementRequestService {
     reimbursementRequestId: string
   ) {
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
-      where: { reimbursementRequestId, organizationId: organization.organizationId }
+      where: { reimbursementRequestId, organizationId: organization.organizationId, dateDeleted: null }
     });
 
     if (!reimbursementRequest) {
@@ -1573,7 +1572,7 @@ export default class ReimbursementRequestService {
    */
   static async editReimbursementRequestComment(organization: Organization, comment: string, commentId: string) {
     const reimbursementRequestComment = await prisma.reimbursement_Request_Comment.findUnique({
-      where: { reimbursementRequestCommentId: commentId }
+      where: { reimbursementRequestCommentId: commentId, dateDeleted: null }
     });
 
     if (!reimbursementRequestComment) {
@@ -1603,7 +1602,7 @@ export default class ReimbursementRequestService {
    */
   static async deleteReimbursementRequestComment(organization: Organization, commentId: string) {
     const reimbursementRequestComment = await prisma.reimbursement_Request_Comment.findUnique({
-      where: { reimbursementRequestCommentId: commentId }
+      where: { reimbursementRequestCommentId: commentId, dateDeleted: null }
     });
 
     if (!reimbursementRequestComment) {
