@@ -149,4 +149,5 @@ export type ExceptionObjectNames =
   | 'SponsorTask'
   | 'Index Code'
   | 'Reimbursement Product Other Reason'
-  | 'Encryption Key';
+  | 'Encryption Key'
+  | 'Reimbursement Request Comment';

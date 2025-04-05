@@ -570,4 +570,44 @@ export default class ReimbursementRequestsController {
       next(error);
     }
   }
+
+  static async createReimbursementRequestComment(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { comment } = req.body;
+      const { reimbursementRequestId } = req.params;
+
+      const createdComment = await ReimbursementRequestService.createReimbursementRequestComment(
+        req.currentUser,
+        req.organization,
+        comment,
+        reimbursementRequestId
+      );
+      res.status(200).json(createdComment);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editReimbursementRequestComment(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { comment } = req.body;
+      const { commentId } = req.params;
+
+      const createdComment = await ReimbursementRequestService.editReimbursementRequestComment(comment, commentId);
+      res.status(200).json(createdComment);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteReimbursementRequestComment(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { commentId } = req.params;
+
+      const createdComment = await ReimbursementRequestService.deleteReimbursementRequestComment(commentId);
+      res.status(200).json(createdComment);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

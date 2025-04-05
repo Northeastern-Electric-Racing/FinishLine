@@ -71,6 +71,7 @@ import { encryptPassword } from '../utils/encryption.utils';
 import { getAccountCodeQueryArgs } from '../prisma-query-args/account-code.query-args';
 import { getIndexCodeQueryArgs } from '../prisma-query-args/index-code.query-args';
 import { getReimbursementProductOtherReasonQueryArgs } from '../prisma-query-args/reimbursement-product-other-reason.query-args';
+import { Or } from '@prisma/client/runtime/library';
 
 export default class ReimbursementRequestService {
   /**
@@ -1520,5 +1521,94 @@ export default class ReimbursementRequestService {
     });
 
     return otherProductReasonTransformer(deletedOtherProductReason);
+  }
+
+  /**
+   * Creates a new comment for a reimbursement request
+   *
+   * @param currentUser The user creating the comment
+   * @param organization The organization context for the request
+   * @param comment The comment text content
+   * @param reimbursementRequestId The ID of the reimbursement request to comment on
+   * @returns The newly created reimbursement request comment
+   * @throws NotFoundException if the reimbursement request doesn't exist in the organization
+   */
+  static async createReimbursementRequestComment(
+    currentUser: User,
+    organization: Organization,
+    comment: string,
+    reimbursementRequestId: string
+  ) {
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId, organizationId: organization.organizationId }
+    });
+
+    if (!reimbursementRequest) {
+      throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+    }
+
+    const reimbursementRequestComment = await prisma.reimbursement_Request_Comment.create({
+      data: {
+        userCreatedId: currentUser.userId,
+        reimbursementRequestId,
+        comment
+      }
+    });
+
+    return reimbursementRequestComment;
+  }
+
+  /**
+   * Updates the comment for an existing new comment on a reimbursement request
+   *
+   * @param comment The comment text content
+   * @param commentId The ID of the reimbursement request comment
+   * @returns The updated reimbursement request comment
+   * @throws NotFoundException if the comment doesn't exist
+   * @throws HttpException if the comment is the same as the current comment
+   */
+  static async editReimbursementRequestComment(comment: string, commentId: string) {
+    const reimbursementRequestComment = await prisma.reimbursement_Request_Comment.findUnique({
+      where: { reimbursementRequestCommentId: commentId }
+    });
+
+    if (!reimbursementRequestComment) {
+      throw new NotFoundException('Reimbursement Request Comment', commentId);
+    }
+
+    if (reimbursementRequestComment.comment === comment) {
+      throw new HttpException(400, 'New comment matches existing content');
+    }
+
+    const editedComment = await prisma.reimbursement_Request_Comment.update({
+      where: { reimbursementRequestCommentId: commentId },
+      data: { comment }
+    });
+
+    return editedComment;
+  }
+
+  /**
+   * Deletes the comment for an existing comment on a reimbursement request
+   *
+   * @param commentId The ID of the reimbursement request comment
+   * @returns The deleted reimbursement request comment
+   * @throws NotFoundException if the comment doesn't exist
+   */
+  static async deleteReimbursementRequestComment(commentId: string) {
+    const reimbursementRequestComment = await prisma.reimbursement_Request_Comment.findUnique({
+      where: { reimbursementRequestCommentId: commentId }
+    });
+
+    if (!reimbursementRequestComment) {
+      throw new NotFoundException('Reimbursement Request Comment', commentId);
+    }
+
+    const deletedComment = await prisma.reimbursement_Request_Comment.update({
+      where: { reimbursementRequestCommentId: commentId },
+      data: { dateDeleted: new Date() }
+    });
+
+    return deletedComment;
   }
 }

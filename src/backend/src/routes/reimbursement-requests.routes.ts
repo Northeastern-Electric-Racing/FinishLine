@@ -212,4 +212,23 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.markReimbursementRequestAsPendingFinance
 );
 
+reimbursementRequestsRouter.post(
+  '/:requestId/comments',
+  nonEmptyString(body('comment')),
+  validateInputs,
+  ReimbursementRequestController.createReimbursementRequestComment
+);
+
+reimbursementRequestsRouter.post(
+  '/comments/:commentId/edit',
+  nonEmptyString(body('comment')),
+  validateInputs,
+  ReimbursementRequestController.editReimbursementRequestComment
+);
+
+reimbursementRequestsRouter.delete(
+  '/comments/commentId/delete',
+  ReimbursementRequestController.deleteReimbursementRequestComment
+);
+
 export default reimbursementRequestsRouter;
