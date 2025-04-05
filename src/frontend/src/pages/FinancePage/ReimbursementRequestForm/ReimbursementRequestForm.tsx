@@ -30,6 +30,7 @@ export interface ReimbursementRequestInformation {
   accountCodeId: string;
   receiptFiles: ReimbursementReceiptUploadArgs[];
   account: ClubAccount | undefined;
+  secondaryAccount?: ClubAccount;
 }
 export interface ReimbursementRequestFormInput extends ReimbursementRequestInformation {
   reimbursementProducts: ReimbursementProductFormArgs[];
@@ -53,6 +54,7 @@ const RECEIPTS_REQUIRED = import.meta.env.VITE_RR_RECEIPT_REQUIREMENT || 'disabl
 const schema = yup.object().shape({
   vendorId: yup.string().required('Vendor is required'),
   account: yup.string().required('Account is required'),
+  secondaryAccount: yup.string().required('Account is required'),
   dateOfExpense: yup.date().optional(),
   accountCodeId: yup.string().required('Account code is required'),
   reimbursementProducts: yup
@@ -95,6 +97,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     defaultValues: {
       vendorId: defaultValues?.vendorId ?? '',
       account: defaultValues?.account,
+      secondaryAccount: defaultValues?.secondaryAccount,
       dateOfExpense: defaultValues?.dateOfExpense,
       accountCodeId: defaultValues?.accountCodeId ?? '',
       reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductFormArgs[]),
