@@ -7,7 +7,6 @@ import { rankUserRole } from 'shared';
 import NERSwitch from '../../../../components/NERSwitch';
 import CommonMistakes from './CommonMistakes';
 
-
 const PartsReviewPage = () => {
   const currentUser = useCurrentUser();
   const [showSubmissionGuide, setShowSubmissionGuide] = useState(() => {
