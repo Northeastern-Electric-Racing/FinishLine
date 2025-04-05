@@ -60,6 +60,7 @@ export interface ReimbursementRequest {
   reimbursementProducts: ReimbursementProduct[];
   dateDelivered?: Date;
   accountCode: AccountCode;
+  comments: ReimbursementRequestComment[];
 }
 
 export interface OtherProductReason {

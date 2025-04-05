@@ -62,7 +62,8 @@ export const reimbursementRequestTransformer = (
     receiptPictures: reimbursementRequest.receiptPictures.filter((receipt) => !receipt.dateDeleted).map(receiptTransformer),
     reimbursementProducts: reimbursementRequest.reimbursementProducts.map(reimbursementProductTransformer),
     dateDelivered: reimbursementRequest.dateDelivered ?? undefined,
-    accountCode: accountCodeTransformer(reimbursementRequest.accountCode)
+    accountCode: accountCodeTransformer(reimbursementRequest.accountCode),
+    comments: reimbursementRequest.reimbursementComments.map(reimbursementRequestCommentTransformer)
   };
 };
 

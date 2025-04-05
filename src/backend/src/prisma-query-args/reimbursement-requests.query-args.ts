@@ -6,6 +6,7 @@ import { getReceiptQueryArgs } from './receipt-query.args';
 import { getReimbursementProductQueryArgs } from './reimbursement-products.query-args';
 import { getIndexCodeQueryArgs } from './index-code.query-args';
 import { getAccountCodeQueryArgs } from './account-code.query-args';
+import { getReimbursementRequestCommentQueryArgs } from './reimbursement-comment.query-args';
 
 export type ReimbursementRequestQueryArgs = ReturnType<typeof getReimbursementRequestQueryArgs>;
 
@@ -24,6 +25,12 @@ export const getReimbursementRequestQueryArgs = (organizationId: string) =>
         },
         ...getReimbursementProductQueryArgs(organizationId)
       },
-      notificationSlackThreads: true
+      notificationSlackThreads: true,
+      reimbursementComments: {
+        where: {
+          dateDeleted: null
+        },
+        ...getReimbursementRequestCommentQueryArgs(organizationId)
+      }
     }
   });
