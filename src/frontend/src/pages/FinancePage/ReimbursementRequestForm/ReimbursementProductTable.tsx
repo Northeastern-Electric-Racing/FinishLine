@@ -46,6 +46,7 @@ interface ReimbursementProductTableProps {
   errors: FieldErrors<ReimbursementRequestFormInput>;
   control: Control<ReimbursementRequestFormInput>;
   setValue: UseFormSetValue<ReimbursementRequestFormInput>;
+  hasMultipleRefundSources?: boolean;
 }
 
 const ListItem = styled('li')(({ theme }) => ({
@@ -59,7 +60,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   wbsElementAutocompleteOptions,
   control,
   errors,
-  setValue
+  setValue,
+  hasMultipleRefundSources = false
 }) => {
   const uniqueWbsElementsWithProducts = new Map<
     string,
@@ -91,19 +93,26 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     <TableContainer sx={{ borderTop: '1px solid rgb(131, 131, 131)' }}>
       <Table>
         <TableHead>
-          <TableRow
-            sx={{
-              color: '#dd524c',
-              textShadow: '1.5px 0 #dd524c',
-              letterSpacing: '0.5px',
-              textDecoration: 'underline',
-              textUnderlineOffset: '3.5px',
-              textDecorationThickness: '0.6px',
-              fontSize: 'xx-large',
-              fontWeight: 'bold'
-            }}
-          >
-            Items*
+          <TableRow>
+            <TableCell
+              colSpan={2}
+              sx={{
+                paddingTop: '10px',
+                paddingBottom: '10px',
+                borderBottom: 0,
+                paddingLeft: '0px',
+                color: '#dd524c',
+                textShadow: '1.5px 0 #dd524c',
+                letterSpacing: '0.5px',
+                textDecoration: 'underline',
+                textUnderlineOffset: '3.5px',
+                textDecorationThickness: '0.6px',
+                fontSize: 'xx-large',
+                fontWeight: 'bold'
+              }}
+            >
+              Items*
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -136,7 +145,9 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                       appendProduct({
                         reason: validateWBS(value.id),
                         name: '',
-                        cost: 0
+                        cost: 0,
+                        budgetAmount: 0,
+                        cashAmount: 0
                       });
                     }
                   }}
@@ -168,7 +179,9 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                       appendProduct({
                         reason: value.id as OtherProductReason,
                         name: '',
-                        cost: 0
+                        cost: 0,
+                        budgetAmount: 0,
+                        cashAmount: 0
                       });
                     }
                   }}
@@ -222,14 +235,64 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                 </TableCell>
                 <TableCell>
                   <Box sx={{ flexWrap: 'wrap', listStyle: 'none', p: 0, m: 0 }} component={'ul'}>
+                    <Box
+                      sx={{
+                        color: '#dd524c',
+                        textShadow: '0.5px 0 #dd524c',
+                        letterSpacing: '0.5px',
+                        textUnderlineOffset: '3.5px',
+                        textDecorationThickness: '0.6x',
+                        fontSize: 'large',
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: { xs: '3px', sm: '12px' },
+                        flexDirection: { xs: 'column', md: 'row' },
+                        mb: -1
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          flex: hasMultipleRefundSources ? { xs: '1', md: '4' } : '7',
+                          minWidth: '80px',
+                          width: { xs: '100%', md: 'auto' }
+                        }}
+                      ></Box>
+                      <Box
+                        sx={{
+                          flex: '2',
+                          width: '100%'
+                        }}
+                      ></Box>
+                      {hasMultipleRefundSources && (
+                        <>
+                          <Box sx={{ flex: '1.5', textAlign: 'center', display: { xs: 'none', md: 'block' } }}>
+                            <label>Budget</label>
+                          </Box>
+                          <Box sx={{ flex: '1.5', textAlign: 'center', display: { xs: 'none', md: 'block' } }}>
+                            <label>Cash</label>
+                          </Box>
+                          <Box sx={{ width: '40px' }}></Box>
+                        </>
+                      )}
+                    </Box>
                     {uniqueWbsElementsWithProducts.get(key)?.map((product) => (
                       <ListItem key={product.index}>
                         <Box sx={{ display: 'flex' }}>
-                          <Box sx={{ display: 'flex', width: '100%', alignItems: 'center', gap: { xs: '3px', sm: '12px' } }}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              width: '100%',
+                              alignItems: 'center',
+                              gap: { xs: '3px', sm: '12px' },
+                              flexDirection: { xs: 'column', md: 'row' }
+                            }}
+                          >
                             <Box
                               sx={{
-                                flex: { md: '7', xs: '4', sm: 'auto' },
-                                minWidth: '80px'
+                                flex: hasMultipleRefundSources ? { xs: '1', md: '4' } : '7',
+                                minWidth: '80px',
+                                width: { xs: '100%', md: 'auto' }
                               }}
                             >
                               <FormControl fullWidth margin="dense" variant="outlined" size="small">
@@ -262,7 +325,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                             </Box>
                             <Box
                               sx={{
-                                flex: '2'
+                                flex: '2',
+                                width: '100%'
                               }}
                             >
                               <FormControl fullWidth margin="dense" variant="outlined" size="small">
@@ -280,9 +344,9 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                           color: 'white'
                                         },
                                         '& input[type=number]': {
-                                          MozAppearance: 'textfield', // Firefox
+                                          MozAppearance: 'textfield',
                                           '&::-webkit-outer-spin-button, &::-webkit-inner-spin-button': {
-                                            WebkitAppearance: 'none', // Chrome, Safari, Edge
+                                            WebkitAppearance: 'none',
                                             margin: 0
                                           }
                                         }
@@ -306,10 +370,131 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                 </FormHelperText>
                               </FormControl>
                             </Box>
+                            {hasMultipleRefundSources && (
+                              <>
+                                <Box
+                                  sx={{
+                                    flex: '1.5',
+                                    width: '100%'
+                                  }}
+                                >
+                                  <Box
+                                    sx={{
+                                      display: { xs: 'block', md: 'none' },
+                                      textAlign: 'left',
+                                      mb: 1,
+                                      color: '#dd524c',
+                                      textShadow: '0.5px 0 #dd524c',
+                                      letterSpacing: '0.5px'
+                                    }}
+                                  >
+                                    <Typography>Budget</Typography>
+                                  </Box>
+                                  <FormControl fullWidth margin="dense" variant="outlined" size="small">
+                                    <Controller
+                                      name={`reimbursementProducts.${product.index}.budgetAmount`}
+                                      control={control}
+                                      render={({ field }) => (
+                                        <TextField
+                                          {...field}
+                                          sx={{
+                                            background: '#4c4c4c',
+                                            borderRadius: '20px',
+                                            '& .MuiOutlinedInput-root': {
+                                              borderRadius: '20px',
+                                              color: 'white'
+                                            },
+                                            '& input[type=number]': {
+                                              MozAppearance: 'textfield',
+                                              '&::-webkit-outer-spin-button, &::-webkit-inner-spin-button': {
+                                                WebkitAppearance: 'none',
+                                                margin: 0
+                                              }
+                                            }
+                                          }}
+                                          value={field.value === 0 ? '' : field.value}
+                                          placeholder={'Amt'}
+                                          variant={'outlined'}
+                                          type="number"
+                                          fullWidth
+                                          autoComplete="off"
+                                          InputProps={{
+                                            startAdornment: <InputAdornment position="start">$</InputAdornment>
+                                          }}
+                                        />
+                                      )}
+                                    />
+                                  </FormControl>
+                                </Box>
+                                <Box
+                                  sx={{
+                                    flex: '1.5',
+                                    width: '100%'
+                                  }}
+                                >
+                                  <Box
+                                    sx={{
+                                      display: { xs: 'block', md: 'none' },
+                                      textAlign: 'left',
+                                      mb: 1,
+                                      color: '#dd524c',
+                                      textShadow: '0.5px 0 #dd524c',
+                                      letterSpacing: '0.5px'
+                                    }}
+                                  >
+                                    <Typography>Cash</Typography>
+                                  </Box>
+                                  <FormControl fullWidth margin="dense" variant="outlined" size="small">
+                                    <Controller
+                                      name={`reimbursementProducts.${product.index}.cashAmount`}
+                                      control={control}
+                                      render={({ field }) => (
+                                        <TextField
+                                          {...field}
+                                          sx={{
+                                            background: '#4c4c4c',
+                                            borderRadius: '20px',
+                                            '& .MuiOutlinedInput-root': {
+                                              borderRadius: '20px',
+                                              color: 'white'
+                                            },
+                                            '& input[type=number]': {
+                                              MozAppearance: 'textfield',
+                                              '&::-webkit-outer-spin-button, &::-webkit-inner-spin-button': {
+                                                WebkitAppearance: 'none',
+                                                margin: 0
+                                              }
+                                            }
+                                          }}
+                                          value={field.value === 0 ? '' : field.value}
+                                          placeholder={'Amt'}
+                                          variant={'outlined'}
+                                          type="number"
+                                          fullWidth
+                                          autoComplete="off"
+                                          InputProps={{
+                                            startAdornment: <InputAdornment position="start">$</InputAdornment>
+                                          }}
+                                        />
+                                      )}
+                                    />
+                                  </FormControl>
+                                </Box>
+                                <Box
+                                  sx={{
+                                    display: { xs: 'block', md: 'none' },
+                                    width: '100%',
+                                    borderBottom: '1px solid rgb(81, 81, 81)',
+                                    my: 2
+                                  }}
+                                />
+                              </>
+                            )}
                           </Box>
                           <IconButton
                             sx={{
-                              alignSelf: 'center',
+                              alignSelf: { xs: 'flex-start', md: 'center' },
+                              marginTop: { xs: '10px', md: '8px' },
                               '&:hover': {
                                 backgroundColor: hoverColor
                               }
@@ -343,7 +528,9 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                       appendProduct({
                         reason: key.includes('.') ? validateWBS(key) : (key as OtherProductReason),
                         name: '',
-                        cost: 0
+                        cost: 0,
+                        budgetAmount: 0,
+                        cashAmount: 0
                       });
                       e.currentTarget.blur();
                     }}
@@ -359,4 +546,5 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     </TableContainer>
   );
 };
+
 export default ReimbursementProductTable;
