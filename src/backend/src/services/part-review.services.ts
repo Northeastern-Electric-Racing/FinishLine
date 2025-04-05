@@ -1,13 +1,36 @@
-import { User } from '@prisma/client';
+import { Organization, User } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
-import { FrequentlyAskedQuestion, isAdmin, PartReviewCommonMistake, PartTag } from 'shared';
+import { FrequentlyAskedQuestion, isAdmin, PartReviewCommonMistake, PartTag, Project, WbsNumber } from 'shared';
 import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
 import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
+import { getPartQueryArgs, getPartReviewQueryArgs } from '../prisma-query-args/part-review.query-args';
 import { faqTransformer } from '../transformers/faq.transformer';
+import { partPreviewTransformer } from '../transformers/part-review.transformer';
 import { partsReviewCommonMistakeTransformer } from '../transformers/part-review.transformer';
+import ProjectsService from '../services/projects.services';
 
 export default class PartReviewService {
+  /**
+   * Gets all parts for the given project
+   * @param wbsNumber the wbs number of the project
+   * @param organization the organization to get the parts for
+   * @returns all the parts from the given project
+   */
+  static async getAllPartsForProject(wbsNumber: WbsNumber, organization: Organization) {
+    const project: Project = await ProjectsService.getSingleProject(wbsNumber, organization);
+
+    const parts = await prisma.part.findMany({
+      where: {
+        projectId: project.id,
+        dateDeleted: null
+      },
+      ...getPartQueryArgs(organization.organizationId)
+    });
+
+    return parts.map(partPreviewTransformer);
+  }
+
   /**
    * Uses the given organizationID to and returns an array of part tags
    * @param organizationId the organization to get the parts for
@@ -432,5 +455,142 @@ export default class PartReviewService {
     });
 
     return partsReviewCommonMistakeTransformer(deletedCommonMistake);
+  }
+
+  /**
+   * Creates a part review popup
+   * @param organizationId Id of the organization
+   * @param reviewId ID of the review
+   * @param xCoord X coordinate of the popup
+   * @param yCoord Y coordinate of the popup
+   * @param title Title of the popup
+   * @param description Description of the popup
+   * @param creator The user creating the popup
+   * @returns The newly created popup
+   */
+  static async createPartReviewPopup(
+    organizationId: string,
+    reviewId: string,
+    xCoord: number,
+    yCoord: number,
+    title: string,
+    description: string,
+    creator: User
+  ) {
+    const review = await prisma.partReview.findUnique({
+      where: {
+        partReviewId: reviewId
+      }
+    });
+
+    if (!review || review.deletedAt !== null) {
+      throw new NotFoundException('Part Review', reviewId);
+    }
+
+    const isAdminUser = await userHasPermission(creator.userId, organizationId, isAdmin);
+
+    if (review.userCreatedId !== creator.userId && !isAdminUser) {
+      throw new AccessDeniedAdminOnlyException('create part review popup');
+    }
+
+    const newPopup = await prisma.part_Review_Popup.create({
+      data: {
+        review: {
+          connect: {
+            partReviewId: reviewId
+          }
+        },
+        xCoord,
+        yCoord,
+        title,
+        description
+      },
+      ...getPartReviewQueryArgs
+    });
+    return newPopup;
+  }
+
+  /**
+   * Updates a part review popup
+   * @param organizationId id of the organization
+   * @param popupId ID of the popup to update
+   * @param xCoord New X coordinate
+   * @param yCoord New Y coordinate
+   * @param title New title
+   * @param description New description
+   * @param updater The user updating the popup
+   * @returns The updated popup
+   */
+  static async updatePartReviewPopup(
+    organizationId: string,
+    popupId: string,
+    xCoord: number,
+    yCoord: number,
+    title: string,
+    description: string,
+    updater: User
+  ) {
+    const popup = await prisma.part_Review_Popup.findUnique({
+      where: {
+        partReviewPopupId: popupId
+      }
+    });
+
+    if (!popup || popup.deletedAt !== null) {
+      throw new NotFoundException('Pop Up', popupId);
+    }
+
+    const isAdminUser = await userHasPermission(updater.userId, organizationId, isAdmin);
+
+    if (!isAdminUser) {
+      throw new AccessDeniedAdminOnlyException('update part review popup');
+    }
+
+    return prisma.part_Review_Popup.update({
+      where: {
+        partReviewPopupId: popupId
+      },
+      data: {
+        xCoord,
+        yCoord,
+        title,
+        description,
+        updatedAt: new Date()
+      },
+      ...getPartReviewQueryArgs
+    });
+  }
+
+  /**
+   * Deletes a part review popup
+   * @param popupId ID of the popup to delete
+   * @param deleter The user deleting the popup
+   * @returns Confirmation message
+   */
+  static async deletePartReviewPopup(popupId: string, deleter: User, organizationId: string) {
+    const popup = await prisma.part_Review_Popup.findUnique({
+      where: { partReviewPopupId: popupId },
+      include: { review: { select: { userCreatedId: true, partReviewId: true } } }
+    });
+
+    if (!popup || popup.deletedAt) {
+      throw new NotFoundException('Pop Up', popupId);
+    }
+
+    const isAdminUser = await userHasPermission(deleter.userId, organizationId, isAdmin);
+
+    if (!isAdminUser) {
+      throw new AccessDeniedAdminOnlyException('delete part review popup');
+    }
+
+    const deletedPopup = await prisma.part_Review_Popup.update({
+      where: { partReviewPopupId: popupId },
+      data: {
+        deletedAt: new Date()
+      },
+      ...getPartReviewQueryArgs
+    });
+
+    return deletedPopup;
   }
 }

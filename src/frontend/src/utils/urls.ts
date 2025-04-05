@@ -58,6 +58,7 @@ const partsReviewFaqs = () => `${parts()}/faqs`;
 const partsReviewFaqCreate = () => `${parts()}/faqs`;
 const partsReviewFaqEdit = (faqId: string) => `${parts()}/faqs/${faqId}`;
 const partsReviewFaqDelete = (faqId: string) => `${parts()}/faqs/${faqId}/delete`;
+const getAllPartCommonMistakes = () => `${parts()}/common-mistakes`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
@@ -311,6 +312,7 @@ export const apiUrls = {
   partsDeleteReviewRequest,
   partsCreateReview,
   partsEditReview,
+  getAllPartCommonMistakes,
 
   tasksCreate,
   tasks,

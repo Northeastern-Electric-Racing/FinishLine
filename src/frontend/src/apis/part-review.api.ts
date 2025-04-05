@@ -6,7 +6,8 @@ import {
   PartSubmission,
   PartReviewRequest,
   PartReview,
-  FrequentlyAskedQuestion
+  FrequentlyAskedQuestion,
+  PartReviewCommonMistake
 } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -343,4 +344,13 @@ export const editPartReviewFaq = (faqId: string, payload: { question: string; an
  */
 export const deletePartReviewFaq = (faqId: string) => {
   return axios.post<FrequentlyAskedQuestion>(apiUrls.partsReviewFaqDelete(faqId));
+};
+
+/*
+ * Gets all of the common mistakes associated with part reviews
+ *
+ * @returns an array of common mistakes
+ */
+export const getAllCommonMistakes = () => {
+  return axios.get<PartReviewCommonMistake[]>(apiUrls.getAllPartCommonMistakes());
 };
