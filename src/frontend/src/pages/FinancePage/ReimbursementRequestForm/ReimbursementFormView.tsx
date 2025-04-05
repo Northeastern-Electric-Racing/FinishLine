@@ -1,4 +1,4 @@
-import { Delete } from '@mui/icons-material';
+import { AddCircleOutline, Delete } from '@mui/icons-material';
 import HelpIcon from '@mui/icons-material/Help';
 import {
   FormControl,
@@ -40,7 +40,6 @@ import { routes } from '../../../utils/routes';
 import { wbsNumComparator } from 'shared/src/validate-wbs';
 import { codeAndRefundSourceName, accountCodePipe } from '../../../utils/pipes';
 import NERAutocomplete from '../../../components/NERAutocomplete';
-import FileUploadIcon from '@mui/icons-material/FileUpload';
 import NERModal from '../../../components/NERModal';
 import CheckList from '../../../components/CheckList';
 
@@ -89,12 +88,17 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   hasSecureSettingsSet
 }) => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [showAddRefundSourceModal, setShowAddRefundSourceModal] = useState(false);
+  const [hasConfirmedFinance, setHasConfirmedFinance] = useState(false);
   const toast = useToast();
   const theme = useTheme();
   const products = watch(`reimbursementProducts`);
   const accountCodeId = watch('accountCodeId');
   const selectedAccountCode = allAccountCodes.find((accountCode) => accountCode.accountCodeId === accountCodeId);
   const refundSources = selectedAccountCode?.allowedRefundSources || [];
+  const firstRefundSource = watch('account');
+  const secondRefundSource = watch('secondaryAccount');
+  const remainingRefundSources = refundSources.filter((source) => source !== firstRefundSource);
 
   const calculatedTotalCost = products.reduce((acc, product) => acc + Number(product.cost), 0).toFixed(2);
   const [showReimbursementGuidelinesModal, setShowReimbursementGuidelinesModal] = useState(true);
@@ -515,7 +519,18 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 control={control}
                 render={({ field: { onChange, value } }) => (
                   <Select
-                    onChange={(newValue) => onChange(newValue.target.value as ClubAccount)}
+                    onChange={(newValue) => {
+                      const newSource = newValue.target.value as ClubAccount;
+                      if (hasConfirmedFinance && secondRefundSource && newSource === secondRefundSource) {
+                        const otherOptions = refundSources.filter((source) => source !== newSource);
+                        if (otherOptions.length > 0) {
+                          setValue('secondaryAccount', otherOptions[0]);
+                        } else {
+                          setValue('secondaryAccount', undefined);
+                        }
+                      }
+                      onChange(newSource);
+                    }}
                     value={value}
                     disabled={!selectedAccountCode}
                     error={!!errors.account}
@@ -543,21 +558,116 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   </Select>
                 )}
               />
+              {hasConfirmedFinance && (
+                <Controller
+                  name="secondaryAccount"
+                  control={control}
+                  render={({ field: { onChange, value } }) => (
+                    <Select
+                      onChange={(newValue) => onChange(newValue.target.value as ClubAccount)}
+                      value={value}
+                      disabled={!selectedAccountCode || !firstRefundSource}
+                      error={!!errors.secondaryAccount}
+                      displayEmpty
+                      sx={{
+                        background: '#4c4c4c',
+                        borderRadius: '20px',
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: '20px'
+                        },
+                        marginTop: '10px'
+                      }}
+                      renderValue={() => {
+                        return value ? (
+                          <Typography>{codeAndRefundSourceName(value)} </Typography>
+                        ) : (
+                          <Typography style={{ color: 'gray' }}>Select Refund Source</Typography>
+                        );
+                      }}
+                    >
+                      {remainingRefundSources.map((refundSource) => (
+                        <MenuItem key={refundSource} value={refundSource}>
+                          {codeAndRefundSourceName(refundSource)}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  )}
+                />
+              )}
+              {!hasConfirmedFinance && (
+                <Button
+                  sx={{
+                    alignSelf: 'flex-start',
+                    width: 'auto',
+                    marginTop: '5px'
+                  }}
+                  startIcon={<AddCircleOutline sx={{}} />}
+                  onClick={() => setShowAddRefundSourceModal(true)}
+                >
+                  Add Refund Source
+                </Button>
+              )}
+
               <FormHelperText error>{errors.account?.message}</FormHelperText>
             </FormControl>
           </Grid>
           <Grid item xs={12} md={6} sx={{ display: 'flex', width: '85%' }}>
-            <Typography
-              sx={{
-                color: '#dd524c',
-                textShadow: '0.5px 0 #dd524c',
-                letterSpacing: '0.5px',
-                textAlign: 'center',
-                width: '85%'
-              }}
-            >
-              Please confirm using multiple refund sources with Finance before submitting!
-            </Typography>
+            {showAddRefundSourceModal ? (
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: 1 }}>
+                <Typography
+                  sx={{
+                    color: '#dd524c',
+                    textShadow: '0.5px 0 #dd524c',
+                    letterSpacing: '0.5px',
+                    textAlign: 'center'
+                  }}
+                >
+                  Have you confirmed using more than one refund source with Finance?
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Button
+                    variant="contained"
+                    sx={{
+                      backgroundColor: '#dd524c',
+                      color: 'white',
+                      borderRadius: '10px',
+                      padding: '0px 10px 0px 10px'
+                    }}
+                    onClick={() => {
+                      setHasConfirmedFinance(true);
+                      setShowAddRefundSourceModal(false);
+                    }}
+                  >
+                    Yes
+                  </Button>
+                  <Button
+                    variant="contained"
+                    sx={{
+                      backgroundColor: '#dd524c',
+                      color: 'white',
+                      borderRadius: '10px',
+                      padding: '5px 10px 5px 10px'
+                    }}
+                    onClick={() => setShowAddRefundSourceModal(false)}
+                  >
+                    No
+                  </Button>
+                </Box>
+              </Box>
+            ) : (
+              <Typography
+                sx={{
+                  color: '#dd524c',
+                  textShadow: '0.5px 0 #dd524c',
+                  letterSpacing: '0.5px',
+                  textAlign: 'center',
+                  paddingBottom: { md: '10px' },
+                  width: '100%'
+                }}
+              >
+                {hasConfirmedFinance ? '' : 'Please confirm using multiple refund sources with Finance before submitting!'}
+              </Typography>
+            )}
           </Grid>
         </Grid>
 
@@ -571,6 +681,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               wbsElementAutocompleteOptions={wbsElementAutocompleteOptions}
               control={control}
               setValue={setValue}
+              hasMultipleRefundSources={hasConfirmedFinance}
             />
             <FormHelperText error>{errors.reimbursementProducts?.message}</FormHelperText>
           </FormControl>
