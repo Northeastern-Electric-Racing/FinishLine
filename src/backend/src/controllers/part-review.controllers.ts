@@ -5,8 +5,7 @@ import { HttpException } from '../utils/errors.utils';
 export default class PartReviewController {
   static async createPart(req: Request, res: Response, next: NextFunction) {
     try {
-      const { index, commonName, description, reviewStatus, tagIds, assigneeIds } = req.body;
-      const { wbsNum } = req.params;
+      const { wbsNum, index, commonName, description, reviewStatus, tagIds, assigneeIds } = req.body;
       const part = await PartReviewService.createPart(
         req.organization,
         wbsNum,
@@ -30,7 +29,7 @@ export default class PartReviewController {
       const { partId } = req.params;
       if (!file) throw new HttpException(400, 'Invalid or undefined image data');
 
-      const newPreviewImage = await PartReviewService.uploadPreview(
+      const newPreviewImage = await PartReviewService.uploadPartPreviewImage(
         file,
         partId,
         req.currentUser,
@@ -67,8 +66,8 @@ export default class PartReviewController {
   static async deletePart(req: Request, res: Response, next: NextFunction) {
     try {
       const { partId } = req.params;
-      const deletedPart = await PartReviewService.deletePart(partId, req.currentUser, req.organization.organizationId);
-      res.status(200).json(deletedPart);
+      await PartReviewService.deletePart(partId, req.currentUser, req.organization.organizationId);
+      res.status(200).json({ message: `Successfully deleted part #${partId}` });
     } catch (error: unknown) {
       next(error);
     }

@@ -10,7 +10,8 @@ const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage()
 const partsRouter = express.Router();
 
 partsRouter.post(
-  '/:wbsNum/create',
+  '/create',
+  nonEmptyString(body('wbsNum')),
   intMinZero(body('index')),
   nonEmptyString(body('commonName')),
   body('description').optional().isString(),

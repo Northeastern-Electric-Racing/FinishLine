@@ -3,7 +3,12 @@ import { createTestOrganization, createTestProject, createTestUser, resetUsers }
 import PartReviewService from '../../src/services/part-review.services';
 import { batmanAppAdmin, supermanAdmin, aquamanLeadership, flashAdmin, financeMember } from '../test-data/users.test-data';
 import prisma from '../../src/prisma/prisma';
-import { AccessDeniedAdminOnlyException, AccessDeniedException, DeletedException } from '../../src/utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedException,
+  DeletedException,
+  NotFoundException
+} from '../../src/utils/errors.utils';
 import { Review_Status } from 'shared';
 
 describe('part review tests', () => {
@@ -167,6 +172,45 @@ describe('part review tests', () => {
           [superman.userId, nonAdmin.userId]
         )
     ).rejects.toThrow(new AccessDeniedException('Only leadership and the part creator can update part data'));
+  });
+
+  it('Does not allow non-leadership to delete parts, or non-existant/deleted parts to be deleted', async () => {
+    const project = await createTestProject(batman, orgId);
+
+    const project1 = await prisma.project.findUnique({
+      where: { projectId: project.projectId },
+      include: {
+        wbsElement: true
+      }
+    });
+
+    const wbsNum = `${project1?.wbsElement.carNumber}.${project1?.wbsElement.projectNumber}.${project1?.wbsElement.workPackageNumber}`;
+
+    const part = await PartReviewService.createPart(
+      organization,
+      wbsNum,
+      batman,
+      1,
+      'part1',
+      'here is a description',
+      Review_Status.IN_PROGRESS,
+      [],
+      [nonAdmin.userId, batman.userId]
+    );
+
+    await expect(async () => await PartReviewService.deletePart(part.partId, nonLeadership, orgId)).rejects.toThrow(
+      new AccessDeniedException('Only leadership and the part creator can delete a part')
+    );
+
+    await PartReviewService.deletePart(part.partId, superman, orgId);
+
+    await expect(async () => await PartReviewService.deletePart(part.partId, batman, orgId)).rejects.toThrow(
+      new DeletedException('Part', part.partId)
+    );
+
+    await expect(
+      async () => await PartReviewService.deletePart('some id that does not exist', batman, orgId)
+    ).rejects.toThrow(new NotFoundException('Part', 'some id that does not exist'));
   });
 
   it('creates a part tag, edits it, and deletes it', async () => {

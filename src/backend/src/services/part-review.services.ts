@@ -36,7 +36,7 @@ export default class PartReviewService {
    * @param index the index of the part
    * @param commonName the name of the part
    * @param description the description of the part
-   * @param previewImageLink
+   * @param previewImageId
    * @param reviewStatus
    * @param tagIds
    * @param assigneeIds
@@ -93,7 +93,12 @@ export default class PartReviewService {
    * @param submitter the user making the update
    * @param organization the organization
    */
-  static async uploadPreview(previewImage: Express.Multer.File, partId: string, submitter: User, organizationId: string) {
+  static async uploadPartPreviewImage(
+    previewImage: Express.Multer.File,
+    partId: string,
+    submitter: User,
+    organizationId: string
+  ) {
     const part = await prisma.part.findUnique({
       where: {
         partId
@@ -104,17 +109,19 @@ export default class PartReviewService {
 
     if (part.dateDeleted) throw new DeletedException('Part', partId);
 
+    if (previewImage.size > 1000000) throw new HttpException(413, 'files bust be less than 1 mb');
+
     const hasPermission =
       (await userHasPermission(submitter.userId, organizationId, isLeadership)) ||
       submitter.userId === part.userCreated.userId;
     if (!hasPermission) throw new AccessDeniedException('Only leadership and part creators can add a preview image');
 
-    const previewImageData = await uploadFile(previewImage);
+    const { id } = await uploadFile(previewImage);
 
     const updatedPart = await prisma.part.update({
       where: { partId },
       data: {
-        previewImageLink: previewImageData.id
+        previewImageId: id
       },
       ...getPartQueryArgs(organizationId)
     });
@@ -185,7 +192,12 @@ export default class PartReviewService {
     const deletedPart = await prisma.part.update({
       where: { partId },
       data: {
-        dateDeleted: new Date()
+        dateDeleted: new Date(),
+        userDeleted: {
+          connect: {
+            userId: deleter.userId
+          }
+        }
       },
       ...getPartQueryArgs(organizationId)
     });

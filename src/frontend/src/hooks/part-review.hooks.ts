@@ -16,6 +16,7 @@ import {
 } from '../apis/part-review.api';
 
 export interface PartPayload {
+  wbsNum: string;
   index: number;
   commonName: string;
   description?: string;
@@ -67,12 +68,12 @@ export const useSinglePart = (/*partId: string*/) => {
 /**
  * Custom React Hook to create a new part
  */
-export const useCreatePart = (projectId: string) => {
+export const useCreatePart = () => {
   const queryClient = useQueryClient();
   return useMutation<Part, Error, PartPayload>(
     ['parts', 'create'],
     async (part: PartPayload) => {
-      const { data } = await createPart(projectId, part);
+      const { data } = await createPart(part);
       return data;
     },
     {
@@ -128,7 +129,7 @@ export const useUploadPreviewImage = (partId: string) => {
  */
 export const useDeletePart = (partId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<Part, Error, any>(
+  return useMutation<{ message: string }, Error, any>(
     ['parts', 'delete'],
     async () => {
       const { data } = await deletePart(partId);

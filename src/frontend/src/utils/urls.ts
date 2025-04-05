@@ -45,7 +45,7 @@ const projectsEditLinkTypes = (linkTypeName: string) => `${projects()}/link-type
 const parts = () => `${API_URL}/parts`;
 const partsByProject = (projectId: string) => `${parts()}/${projectId}/parts`;
 const partsById = (partId: string) => `${parts()}/${partId}`;
-const partsCreate = (projectId: string) => `${parts()}/${projectId}/create`;
+const partsCreate = () => `${parts()}/create`;
 const partsUploadPreviewImage = (partId: string) => `${parts()}/${partId}/upload-preview`;
 const partsEdit = (partId: string) => `${parts()}/${partId}/update`;
 const partsDelete = (partId: string) => `${parts()}/${partId}/delete`;
