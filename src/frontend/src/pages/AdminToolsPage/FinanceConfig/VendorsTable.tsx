@@ -1,20 +1,19 @@
-import { TableRow, TableCell, Box } from '@mui/material';
+import React, { useState } from 'react';
+import { TableRow, TableCell, Box, Table as MuiTable, TableHead, TableBody, Typography, Button } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useGetAllVendors } from '../../../hooks/finance.hooks';
 import { datePipe } from '../../../utils/pipes';
 import ErrorPage from '../../ErrorPage';
 import { NERButton } from '../../../components/NERButton';
-import { useState } from 'react';
 import CreateVendorModal from './CreateVendorModal';
-import AdminToolTable from '../AdminToolTable';
 import { Vendor } from 'shared';
 import EditVendorModal from './EditVendorModal';
 
 const VendorsTable = () => {
   const { data: vendors, isLoading: vendorIsLoading, isError: vendorIsError, error: vendorError } = useGetAllVendors();
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
-  const [showEditModal, setShowEditModal] = useState<boolean>(false);
-  const [clickedVendor, setClickedVendor] = useState<Vendor>();
+  const [clickedVendor, setClickedVendor] = useState<Vendor | undefined>(undefined);
 
   if (!vendors || vendorIsLoading) {
     return <LoadingIndicator />;
@@ -23,18 +22,47 @@ const VendorsTable = () => {
     return <ErrorPage message={vendorError.message} />;
   }
 
-  const vendorTableRows = vendors.map((vendor) => (
-    <TableRow
-      onClick={() => {
-        setClickedVendor(vendor);
-        setShowEditModal(true);
-      }}
-      sx={{ cursor: 'pointer' }}
-    >
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
-        {datePipe(vendor.dateCreated)}
+  const vendorTableRows = vendors.map((vendor, index) => (
+    <TableRow key={vendor.vendorId || index}>
+      <TableCell
+        align="left"
+        sx={{
+          alignItems: 'center',
+          borderBottom: 'none'
+        }}
+      >
+        <Typography sx={{ maxWidth: 300 }}>{vendor.name}</Typography>
       </TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>{vendor.name}</TableCell>
+      <TableCell
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          borderBottom: 'none',
+          minHeight: '50px'
+        }}
+      >
+        <Typography>{datePipe(vendor.dateCreated)}</Typography>
+        {/* <Box sx={{ display: 'flex' }}>
+          <Button
+            sx={{ p: 0.5, color: 'white' }}
+            onClick={() => {
+              setClickedVendor(vendor);
+            }}
+          >
+            <EditIcon />
+          </Button>
+        </Box> */}
+      </TableCell>
+      <TableCell
+        align="left"
+        sx={{
+          alignItems: 'center',
+          borderBottom: 'none'
+        }}
+      >
+        <Typography sx={{ maxWidth: 300 }}>{vendor.addedBy?.firstName}</Typography>
+      </TableCell>
     </TableRow>
   ));
 
@@ -43,17 +71,55 @@ const VendorsTable = () => {
       <CreateVendorModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} vendors={vendors} />
       {clickedVendor && (
         <EditVendorModal
-          showModal={showEditModal}
+          showModal={!!clickedVendor}
           handleClose={() => {
-            setShowEditModal(false);
             setClickedVendor(undefined);
           }}
           vendor={clickedVendor}
           vendors={vendors}
         />
       )}
-      <AdminToolTable columns={[{ name: 'Date Registered' }, { name: 'Vendor Name' }]} rows={vendorTableRows} />
-      <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
+
+      <MuiTable>
+        <TableHead>
+          <TableRow>
+            <TableCell
+              sx={{
+                fontWeight: 'bold',
+                fontSize: '1em',
+                backgroundColor: '#ef4345',
+                color: 'white',
+                borderRadius: '10px 0px 0px 0px'
+              }}
+            >
+              Company Name
+            </TableCell>
+            <TableCell
+              sx={{
+                fontWeight: 'bold',
+                fontSize: '1em',
+                backgroundColor: '#ef4345',
+                color: 'white'
+              }}
+            >
+              Date Added
+            </TableCell>
+            <TableCell
+              sx={{
+                fontWeight: 'bold',
+                fontSize: '1em',
+                backgroundColor: '#ef4345',
+                color: 'white',
+                borderRadius: '0px 10px 0px 0px'
+              }}
+            >
+              Added By
+            </TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>{vendorTableRows}</TableBody>
+      </MuiTable>
+      <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '20px' }}>
         <NERButton
           variant="contained"
           onClick={() => {
