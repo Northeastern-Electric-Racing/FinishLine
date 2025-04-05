@@ -1,6 +1,6 @@
 import { Box, Typography, Grid, Breadcrumbs } from '@mui/material';
 import { RoleEnum } from 'shared';
-import PartSubmissionDetails from './Components/PartSubmissionDetails';
+import PartSubmissionDetails, { partReviewExample1, partReviewExample2 } from './Components/PartSubmissionDetails';
 
 const PartPage: React.FC = () => {
   return (
@@ -89,7 +89,7 @@ const PartPage: React.FC = () => {
                       lastName: 'Doe'
                     },
                     notes: 'This is a test note.',
-                    reviews: [],
+                    reviews: [partReviewExample1, partReviewExample2],
                     fileIds: [],
                     name: 'Test Part Submission',
                     partId: '456',
