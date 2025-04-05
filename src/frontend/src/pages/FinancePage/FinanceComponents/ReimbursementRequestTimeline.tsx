@@ -1,6 +1,6 @@
 import { Box, Stack, Typography } from '@mui/material';
 import { Circle } from '@mui/icons-material';
-import { datePipe } from '../../../utils/pipes';
+import { datePipe, meetingStartTimePipe } from '../../../utils/pipes';
 
 interface TimelineEvent {
   description: string;
@@ -14,23 +14,27 @@ interface TimelineProps {
 interface EventSectionProps {
   event: TimelineEvent;
   isLast: boolean;
+  isFirst: boolean;
 }
 const ReimbursementRequestTimeline: React.FC<TimelineProps> = ({ events }) => {
   return (
     <Stack alignItems="center" spacing={0.5}>
       {events.map((event, index) => (
-        <EventSection event={event} isLast={events.length - 1 === index} />
+        <EventSection event={event} isLast={events.length - 1 === index} isFirst={0 === index} />
       ))}
     </Stack>
   );
 };
 
-const EventSection: React.FC<EventSectionProps> = ({ event, isLast }) => {
+const EventSection: React.FC<EventSectionProps> = ({ event, isLast, isFirst }) => {
   return (
     <Stack direction="row" spacing={2} alignItems="flex-start" width="100%">
       <Box flex={1} textAlign="right">
         <Typography fontWeight={'regular'} fontSize={18} variant="h1">
           {datePipe(event.time)}
+        </Typography>
+        <Typography fontWeight={'regular'} fontSize={14} variant="h1">
+          {event.time.toLocaleTimeString().replace(':00', '')}
         </Typography>
       </Box>
 
@@ -38,6 +42,14 @@ const EventSection: React.FC<EventSectionProps> = ({ event, isLast }) => {
         <Circle sx={{ fontSize: 20 }} />
         {isLast ? (
           <></>
+        ) : isFirst ? (
+          <Box
+            sx={{
+              borderLeft: '4px dashed white',
+              height: '50px',
+              mt: 0.5
+            }}
+          />
         ) : (
           <Box
             sx={{
