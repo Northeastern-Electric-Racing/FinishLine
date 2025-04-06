@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Document, Page } from 'react-pdf';
 import { pdfjs } from 'react-pdf';
 import file from './test.pdf';
@@ -39,7 +39,7 @@ export default function PDFViewer({ popUps, reviewerName, reviewMode }: FileDisp
   const [variablePopups, setVariablePopups] = useState<Part_Review_Popup[]>([
     ...popUps,
     {
-      partReviewPopupId: '1',
+      partReviewPopupId: '3',
       reviewId: '1',
       xCoord: 5,
       yCoord: 5,
@@ -74,6 +74,30 @@ export default function PDFViewer({ popUps, reviewerName, reviewMode }: FileDisp
     setVariablePopups(changedLastPos);
   };
 
+  const deletePopup = (popUpId: string) => {
+    return () => {
+      const popups = variablePopups;
+      const newPopups = popups.filter((popup) => popup.partReviewPopupId !== popUpId);
+      setVariablePopups(newPopups);
+      setShowPopup(-1);
+    };
+  };
+
+  const editPopup = (popUpId: string) => {
+    return () => {
+      const popups = variablePopups;
+      const popupToEdit = variablePopups.find((popup) => popup.partReviewPopupId === popUpId);
+      if (!popupToEdit) return;
+      const removed = popups.filter((popup) => popup.partReviewPopupId !== popUpId);
+      setVariablePopups([...removed, popupToEdit]);
+      setShowPopup(-1);
+      reset({
+        title: popupToEdit.title,
+        description: popupToEdit.description
+      });
+    };
+  };
+
   const onSubmit = async (data: { title: string; description: string }) => {
     try {
       const changedLastPos = [...variablePopups];
@@ -83,7 +107,7 @@ export default function PDFViewer({ popUps, reviewerName, reviewMode }: FileDisp
         description: data.description
       };
       changedLastPos.push({
-        partReviewPopupId: '1',
+        partReviewPopupId: Math.random().toString(),
         reviewId: '1',
         xCoord: 5,
         yCoord: 5,
@@ -513,13 +537,40 @@ export default function PDFViewer({ popUps, reviewerName, reviewMode }: FileDisp
                           {popup.description}
                         </Typography>
                       </Box>
-                      <Typography
-                        variant="caption"
-                        color="white"
-                        sx={{ display: 'block', textAlign: 'right', fontStyle: 'italic' }}
-                      >
-                        — {reviewerName}
-                      </Typography>
+                      {!reviewMode && (
+                        <Typography
+                          variant="caption"
+                          color="white"
+                          sx={{ display: 'block', textAlign: 'right', fontStyle: 'italic' }}
+                        >
+                          — {reviewerName}
+                        </Typography>
+                      )}
+
+                      {reviewMode && (
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                          <Button
+                            variant="outlined"
+                            color="inherit"
+                            size="small"
+                            onClick={editPopup(popup.partReviewPopupId)}
+                            sx={{ color: 'grey.500', borderColor: 'grey.500' }}
+                            type="button"
+                          >
+                            Edit
+                          </Button>
+
+                          <Button
+                            variant="contained"
+                            color="error"
+                            size="small"
+                            onClick={deletePopup(popup.partReviewPopupId)}
+                            type="button"
+                          >
+                            Delete
+                          </Button>
+                        </Box>
+                      )}
                     </Box>
                   )}
                 </Box>
