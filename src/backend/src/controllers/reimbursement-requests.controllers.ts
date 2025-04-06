@@ -574,7 +574,7 @@ export default class ReimbursementRequestsController {
   static async createReimbursementRequestComment(req: Request, res: Response, next: NextFunction) {
     try {
       const { comment } = req.body;
-      const { reimbursementRequestId } = req.params;
+      const { requestId: reimbursementRequestId } = req.params;
 
       const createdComment = await ReimbursementRequestService.createReimbursementRequestComment(
         req.currentUser,
@@ -593,12 +593,12 @@ export default class ReimbursementRequestsController {
       const { comment } = req.body;
       const { commentId } = req.params;
 
-      const createdComment = await ReimbursementRequestService.editReimbursementRequestComment(
+      const editedComment = await ReimbursementRequestService.editReimbursementRequestComment(
         req.organization,
         comment,
         commentId
       );
-      res.status(200).json(createdComment);
+      res.status(200).json(editedComment);
     } catch (error: unknown) {
       next(error);
     }
@@ -608,11 +608,11 @@ export default class ReimbursementRequestsController {
     try {
       const { commentId } = req.params;
 
-      const createdComment = await ReimbursementRequestService.deleteReimbursementRequestComment(
+      const deletedComment = await ReimbursementRequestService.deleteReimbursementRequestComment(
         req.organization,
         commentId
       );
-      res.status(200).json(createdComment);
+      res.status(200).json(deletedComment);
     } catch (error: unknown) {
       next(error);
     }

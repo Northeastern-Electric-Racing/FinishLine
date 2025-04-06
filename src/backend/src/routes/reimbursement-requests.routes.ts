@@ -226,9 +226,6 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.editReimbursementRequestComment
 );
 
-reimbursementRequestsRouter.delete(
-  '/comments/commentId/delete',
-  ReimbursementRequestController.deleteReimbursementRequestComment
-);
+reimbursementRequestsRouter.delete('/comments/:commentId', ReimbursementRequestController.deleteReimbursementRequestComment);
 
 export default reimbursementRequestsRouter;
