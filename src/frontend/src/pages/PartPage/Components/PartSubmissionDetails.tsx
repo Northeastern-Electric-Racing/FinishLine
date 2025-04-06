@@ -1,6 +1,6 @@
 import { Typography } from '@mui/material';
 import { Stack } from '@mui/system';
-import { Part_Review_Popup, PartSubmission } from 'shared';
+import { PartSubmission, PartReview, RoleEnum } from 'shared';
 
 interface PartSubmissionProps {
   submission: PartSubmission;
@@ -31,60 +31,38 @@ const PartSubmissionDetails = ({ submission }: PartSubmissionProps) => {
 
 export default PartSubmissionDetails;
 
-// mock examples for testing
-
-const partReviewPopUp1: Part_Review_Popup = {
-  partReviewPopupId: '1',
-  xCoord: 0.0,
-  yCoord: 0.0,
-  title: 'review 1 popup',
-  description: 'description1',
-  reviewId: '1'
-};
-
-const partReviewPopUp2: Part_Review_Popup = {
-  partReviewPopupId: '2',
-  xCoord: 0.0,
-  yCoord: 0.0,
-  title: 'review 2 popup',
-  description: 'description2',
-  reviewId: '1'
-};
-
-export const partReviewExample1 = {
-  partReviewId: 'reviewId003',
-  fileIds: ['file5', 'file6'],
+export const partReviewExample1: PartReview = {
+  partReviewId: 'reviewId001',
+  fileIds: ['file1', 'file2'],
   notes: 'this part submission is decent!!',
-  submission: {
-    connect: {
-      partSubmissionId: '1'
-    }
-  },
+  submissionId: '1',
   userCreated: {
-    connect: { userId: '123' }
+    userId: '124',
+    email: 'mark.andrews@example.com',
+    emailId: 'mark.andrews@example.com',
+    role: RoleEnum.MEMBER,
+    permissions: [],
+    firstName: 'Mark',
+    lastName: 'Andrews'
   },
-  popUps: {
-    connect: [partReviewPopUp1]
-  },
-  submissionId: '123',
+  popUps: [],
   createdAt: new Date(2025, 6, 4)
 };
 
-export const partReviewExample2 = {
-  partReviewId: 'reviewId004',
-  fileIds: ['file7', 'file8'],
+export const partReviewExample2: PartReview = {
+  partReviewId: 'reviewId002',
+  fileIds: ['file3', 'file4'],
   notes: 'this part submission is terrible!!',
-  submission: {
-    connect: {
-      partSubmissionId: '1'
-    }
-  },
+  submissionId: '1',
   userCreated: {
-    connect: { userId: '32' }
+    userId: '125',
+    email: 'julia.williams@example.com',
+    emailId: 'julia.williams@example.com',
+    role: RoleEnum.MEMBER,
+    permissions: [],
+    firstName: 'Julia',
+    lastName: 'Williams'
   },
-  popUps: {
-    connect: [partReviewPopUp2]
-  },
-  submissionId: '123',
-  createdAt: new Date(2025, 5, 4)
+  popUps: [],
+  createdAt: new Date(2025, 3, 4)
 };
