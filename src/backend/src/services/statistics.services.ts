@@ -7,7 +7,7 @@ import { userHasPermissionNew } from '../utils/users.utils';
 import { AccessDeniedException, HttpException } from '../utils/errors.utils';
 import { Graph, GraphCollection, GraphData, isSubset, isUnderWordCount, Permission } from 'shared';
 import { getGraphCollectionAndVerifyPermissions, getGraphData } from '../utils/statistics.utils';
-import { graphCollectionTransformer } from '../transformers/statistics-graphCollection.transformer';
+import { graphCollectionTransformer } from '../transformers/statistics-graph-collection.transformer';
 
 export default class StatisticsService {
   /**
@@ -205,6 +205,7 @@ export default class StatisticsService {
         displayGraphType: graphDisplayType,
         specialPermissions,
         cars: {
+          disconnect: graph.cars.map((car) => ({ carId: car.carId })),
           connect: carIds.map((carId) => {
             return { carId };
           })
