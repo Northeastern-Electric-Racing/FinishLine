@@ -704,10 +704,19 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           <Typography variant="h6">${calculatedTotalCost}</Typography>
         </Box>
         <Box sx={{ display: 'flex', alignSelf: 'center' }}>
-          <NERFailButton variant="contained" href={previousPage} sx={{ mx: 1 }}>
+          <NERFailButton
+            variant="contained"
+            href={previousPage}
+            sx={{ mx: 1, background: '#dd524c', color: 'white', borderRadius: '10px' }}
+          >
             Cancel
           </NERFailButton>
-          <NERSuccessButton variant="contained" type="submit" disabled={!hasSecureSettingsSet}>
+          <NERSuccessButton
+            variant="contained"
+            type="submit"
+            disabled={!hasSecureSettingsSet}
+            sx={{ background: '#dd524c', color: 'white', borderRadius: '10px' }}
+          >
             {submitText}
           </NERSuccessButton>
         </Box>
