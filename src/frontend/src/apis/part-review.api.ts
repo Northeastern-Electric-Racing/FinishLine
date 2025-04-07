@@ -355,6 +355,7 @@ export const deletePartReviewCommonMistake = (commonMistakeId: string) => {
  */
 export const getPartReviewCommonMistakes = () => {
   return axios.get<PartReviewCommonMistake[]>(apiUrls.partsCommonMistake());
+};
 
 /**
  * Gets all of the common mistakes associated with part reviews
