@@ -46,7 +46,13 @@ const StatsBarChart: React.FC<StatsBarChartProps> = ({
 }) => {
   const data = {
     labels: xAxisData,
-    datasets: datasets.map((dataset) => ({ label: dataset.yAxisLabel, data: dataset.yAxisData, backgroundColor: '#DE514C' }))
+    datasets: datasets.map((dataset, index) => ({
+      label: dataset.yAxisLabel,
+      data: dataset.yAxisData,
+      backgroundColor: dataset.color,
+      order: datasets.length - index,
+      categoryPercentage: 1 / (index + 1)
+    }))
   };
 
   const options: _DeepPartialObject<
@@ -96,7 +102,6 @@ const StatsBarChart: React.FC<StatsBarChartProps> = ({
         }
       },
       y: {
-        stacked: true,
         title: {
           display: true,
           font: {

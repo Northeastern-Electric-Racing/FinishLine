@@ -293,7 +293,7 @@ export default class StatisticsService {
 
     return Promise.all(
       graphCollections.map(async (graphCollection) => {
-        const addedDataGraphs: (Prisma.GraphGetPayload<GraphQueryArgs> & { graphData: GraphData[][] })[] = await Promise.all(
+        const addedDataGraphs: (Prisma.GraphGetPayload<GraphQueryArgs> & { graphData: GraphData[] })[] = await Promise.all(
           graphCollection.graphs.map(async (graph) => ({
             ...graph,
             graphData: await getGraphData(

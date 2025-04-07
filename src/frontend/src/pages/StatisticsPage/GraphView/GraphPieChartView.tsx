@@ -14,8 +14,8 @@ const GraphPieChartView = ({ graph, height, cars }: GraphPieChartViewProps) => {
       graphTitle={`${displayEnum(graph.measure)} ${graph.title} - ${displayEnum(graph.graphType)} ${
         cars.length > 0 ? `(${cars.map((car) => car.name).join(',')})` : ''
       }`}
-      xAxisData={graph.graphData[0].map((data) => data.label)}
-      yAxisData={graph.graphData[0].map((data) => data.value)}
+      xAxisData={graph.graphData[0].values.map((data) => data.label)}
+      yAxisData={graph.graphData[0].values.map((data) => data.value)}
       height={height}
     />
   );

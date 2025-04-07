@@ -16,11 +16,11 @@ const GraphBarChartView = ({ graph, height, cars }: GraphBarChartViewProps) => {
         cars.length > 0 ? `(${cars.map((car) => car.name).join(',')})` : ''
       }`}
       datasets={graph.graphData.map((data, index) => ({
-        yAxisData: data.map((data) => data.value),
-        yAxisLabel: graph.yAxisLabel,
+        yAxisData: data.values.map((data) => data.value),
+        yAxisLabel: data.tipLabel,
         color: colors[index]
       }))}
-      xAxisData={graph.graphData.map((data) => data.map((data) => data.label)).flat()}
+      xAxisData={graph.graphData[0].values.map((data) => data.label)}
       xAxisLabel={graph.xAxisLabel}
       height={height}
     />

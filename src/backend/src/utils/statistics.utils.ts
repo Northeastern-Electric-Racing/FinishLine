@@ -1,4 +1,4 @@
-import { Graph_Type, Measure, Organization, Prisma, User } from '@prisma/client';
+import { Graph_Type, Measure, Organization, Prisma, Reimbursement_Status_Type, User } from '@prisma/client';
 import { GraphData, wbsPipe, wbsNamePipe, Permission } from 'shared';
 import prisma from '../prisma/prisma';
 import { getGraphCollectionQueryArgs } from '../prisma-query-args/statistics.query-args';
@@ -63,7 +63,7 @@ const getGraphDataForProjectBudgetByProject = async (
   startDate: Date | null,
   endDate: Date | null,
   params: ProjectDataParams
-): Promise<GraphData[]> => {
+): Promise<GraphData> => {
   const projects = await prisma.project.findMany({
     ...getProjectSegmentedWhereInput(organizationId, params.carIds, startDate, endDate),
     include: {
@@ -71,12 +71,15 @@ const getGraphDataForProjectBudgetByProject = async (
     }
   });
 
-  const data: GraphData[] = projects.map((project) => {
-    return {
-      value: project.budget,
-      label: `${wbsPipe(project.wbsElement)} - ${project.wbsElement.name}`
-    };
-  });
+  const data: GraphData = {
+    tipLabel: 'Dollars',
+    values: projects.map((project) => {
+      return {
+        value: project.budget,
+        label: `${wbsPipe(project.wbsElement)} - ${project.wbsElement.name}`
+      };
+    })
+  };
 
   return data;
 };
@@ -87,7 +90,7 @@ const getGraphDataForProjectBudgetByTeam = async (
   startDate: Date | null,
   endDate: Date | null,
   params: ProjectDataParams
-): Promise<GraphData[]> => {
+): Promise<GraphData> => {
   const teams = await prisma.team.findMany({
     where: {
       organizationId,
@@ -100,20 +103,23 @@ const getGraphDataForProjectBudgetByTeam = async (
     }
   });
 
-  const data: GraphData[] = teams.map((team) => {
-    let value = team.projects.reduce((prev, curr) => {
-      return prev + curr.budget;
-    }, 0);
+  const data: GraphData = {
+    tipLabel: 'Dollars',
+    values: teams.map((team) => {
+      let value = team.projects.reduce((prev, curr) => {
+        return prev + curr.budget;
+      }, 0);
 
-    if (measure === Measure.AVG && team.projects.length > 0) {
-      value = value / team.projects.length;
-    }
+      if (measure === Measure.AVG && team.projects.length > 0) {
+        value = value / team.projects.length;
+      }
 
-    return {
-      value,
-      label: `${team.teamName}`
-    };
-  });
+      return {
+        value,
+        label: `${team.teamName}`
+      };
+    })
+  };
 
   return data;
 };
@@ -124,7 +130,7 @@ const getGraphDataForProjectBudgetByDivision = async (
   startDate: Date | null,
   endDate: Date | null,
   params: ProjectDataParams
-): Promise<GraphData[]> => {
+): Promise<GraphData> => {
   const divisions = await prisma.team_Type.findMany({
     where: {
       organizationId
@@ -143,28 +149,31 @@ const getGraphDataForProjectBudgetByDivision = async (
     }
   });
 
-  const data: GraphData[] = divisions.map((division) => {
-    let numProjects = 0;
+  const data: GraphData = {
+    tipLabel: 'Dollars',
+    values: divisions.map((division) => {
+      let numProjects = 0;
 
-    let value = division.teams.reduce((prev, curr) => {
-      return (
-        prev +
-        curr.projects.reduce((prev, curr) => {
-          numProjects++;
-          return prev + curr.budget;
-        }, 0)
-      );
-    }, 0);
+      let value = division.teams.reduce((prev, curr) => {
+        return (
+          prev +
+          curr.projects.reduce((prev, curr) => {
+            numProjects++;
+            return prev + curr.budget;
+          }, 0)
+        );
+      }, 0);
 
-    if (measure === Measure.AVG && numProjects > 0) {
-      value = value / numProjects;
-    }
+      if (measure === Measure.AVG && numProjects > 0) {
+        value = value / numProjects;
+      }
 
-    return {
-      value,
-      label: `${division.name}`
-    };
-  });
+      return {
+        value,
+        label: `${division.name}`
+      };
+    })
+  };
 
   return data;
 };
@@ -220,23 +229,26 @@ const getGraphDataForChangeRequestsByProject = async (
   startDate: Date | null,
   endDate: Date | null,
   params: ChangeRequestDataParams
-): Promise<GraphData[]> => {
+): Promise<GraphData> => {
   const projects = await prisma.project.findMany({
     ...getProjectSegmentedWhereInput(organizationId, params.carIds),
     ...changeRequestProjectDataQueryArgs(startDate, endDate)
   });
 
-  const data: GraphData[] = projects.map((project) => {
-    const workPackageChangeRequestsValue = project.workPackages.reduce(
-      (prev, curr) => prev + curr.wbsElement.changeRequests.length,
-      0
-    );
+  const data: GraphData = {
+    tipLabel: '# Change Requests',
+    values: projects.map((project) => {
+      const workPackageChangeRequestsValue = project.workPackages.reduce(
+        (prev, curr) => prev + curr.wbsElement.changeRequests.length,
+        0
+      );
 
-    return {
-      value: project.wbsElement.changeRequests.length + workPackageChangeRequestsValue,
-      label: wbsNamePipe({ wbsNum: project.wbsElement, name: project.wbsElement.name })
-    };
-  });
+      return {
+        value: project.wbsElement.changeRequests.length + workPackageChangeRequestsValue,
+        label: wbsNamePipe({ wbsNum: project.wbsElement, name: project.wbsElement.name })
+      };
+    })
+  };
 
   return data;
 };
@@ -263,31 +275,34 @@ const getGraphDataForChangeRequestsByTeam = async (
   startDate: Date | null,
   endDate: Date | null,
   params: ChangeRequestDataParams
-): Promise<GraphData[]> => {
+): Promise<GraphData> => {
   const teams = await prisma.team.findMany({
     where: { organizationId, dateArchived: null },
     ...changeRequestTeamQueryArgs(organizationId, params.carIds, startDate, endDate)
   });
 
-  const data: GraphData[] = teams.map((team) => {
-    let value = team.projects.reduce((prev, curr) => {
-      const workPackageChangeRequests = curr.workPackages.reduce(
-        (prev, curr) => prev + curr.wbsElement.changeRequests.length,
-        0
-      );
+  const data: GraphData = {
+    tipLabel: '# Change Requests',
+    values: teams.map((team) => {
+      let value = team.projects.reduce((prev, curr) => {
+        const workPackageChangeRequests = curr.workPackages.reduce(
+          (prev, curr) => prev + curr.wbsElement.changeRequests.length,
+          0
+        );
 
-      return prev + curr.wbsElement.changeRequests.length + workPackageChangeRequests;
-    }, 0);
+        return prev + curr.wbsElement.changeRequests.length + workPackageChangeRequests;
+      }, 0);
 
-    if (measure === Measure.AVG && team.projects.length > 0) {
-      value = value / team.projects.length;
-    }
+      if (measure === Measure.AVG && team.projects.length > 0) {
+        value = value / team.projects.length;
+      }
 
-    return {
-      value,
-      label: team.teamName
-    };
-  });
+      return {
+        value,
+        label: team.teamName
+      };
+    })
+  };
 
   return data;
 };
@@ -298,7 +313,7 @@ const getGraphDataForChangeRequestsByDivision = async (
   startDate: Date | null,
   endDate: Date | null,
   params: ChangeRequestDataParams
-): Promise<GraphData[]> => {
+): Promise<GraphData> => {
   const divisions = await prisma.team_Type.findMany({
     where: { organizationId },
     include: {
@@ -311,32 +326,35 @@ const getGraphDataForChangeRequestsByDivision = async (
     }
   });
 
-  const data: GraphData[] = divisions.map((division) => {
-    let numProjects = 0;
-    let value = division.teams.reduce((prev, curr) => {
-      return (
-        prev +
-        curr.projects.reduce((prev, curr) => {
-          numProjects++;
-          const workPackageChangeRequests = curr.workPackages.reduce(
-            (prev, curr) => prev + curr.wbsElement.changeRequests.length,
-            0
-          );
+  const data: GraphData = {
+    tipLabel: '# Change Requests',
+    values: divisions.map((division) => {
+      let numProjects = 0;
+      let value = division.teams.reduce((prev, curr) => {
+        return (
+          prev +
+          curr.projects.reduce((prev, curr) => {
+            numProjects++;
+            const workPackageChangeRequests = curr.workPackages.reduce(
+              (prev, curr) => prev + curr.wbsElement.changeRequests.length,
+              0
+            );
 
-          return prev + curr.wbsElement.changeRequests.length + workPackageChangeRequests;
-        }, 0)
-      );
-    }, 0);
+            return prev + curr.wbsElement.changeRequests.length + workPackageChangeRequests;
+          }, 0)
+        );
+      }, 0);
 
-    if (measure === Measure.AVG && numProjects > 0) {
-      value = value / numProjects;
-    }
+      if (measure === Measure.AVG && numProjects > 0) {
+        value = value / numProjects;
+      }
 
-    return {
-      value,
-      label: division.name
-    };
-  });
+      return {
+        value,
+        label: division.name
+      };
+    })
+  };
 
   return data;
 };
@@ -392,20 +410,23 @@ const getGraphDataForReimbursementRequestsByProject = async (
     ...reimbursementProductProjectDataQueryArgs(startDate, endDate)
   });
 
-  const data: GraphData[] = projects.map((project) => {
-    let value = project.wbsElement.reimbursementProductReasons.reduce((prev, curr) => {
-      return prev + (curr.reimbursementProduct?.cost ?? 0);
-    }, 0);
+  const data: GraphData = {
+    tipLabel: 'Dollars',
+    values: projects.map((project) => {
+      let value = project.wbsElement.reimbursementProductReasons.reduce((prev, curr) => {
+        return prev + (curr.reimbursementProduct?.cost ?? 0);
+      }, 0);
 
-    if (measure === Measure.AVG && project.wbsElement.reimbursementProductReasons.length > 0) {
-      value = value / project.wbsElement.reimbursementProductReasons.length;
-    }
+      if (measure === Measure.AVG && project.wbsElement.reimbursementProductReasons.length > 0) {
+        value = value / project.wbsElement.reimbursementProductReasons.length;
+      }
 
-    return {
-      value: value / 100,
-      label: wbsNamePipe({ wbsNum: project.wbsElement, name: project.wbsElement.name })
-    };
-  });
+      return {
+        value: value / 100,
+        label: wbsNamePipe({ wbsNum: project.wbsElement, name: project.wbsElement.name })
+      };
+    })
+  };
 
   return data;
 };
@@ -441,25 +462,28 @@ const getGraphDataForReimbursementRequestsByTeam = async (
     ...reimbursementProductTeamDataQueryArgs(organizationId, params.carIds, startDate, endDate)
   });
 
-  const data: GraphData[] = teams.map((team) => {
-    let value = team.projects.reduce((prev, curr) => {
-      return (
-        prev +
-        curr.wbsElement.reimbursementProductReasons.reduce((prev, curr) => {
-          return prev + (curr.reimbursementProduct?.cost ?? 0);
-        }, 0)
-      );
-    }, 0);
+  const data: GraphData = {
+    tipLabel: 'Dollars',
+    values: teams.map((team) => {
+      let value = team.projects.reduce((prev, curr) => {
+        return (
+          prev +
+          curr.wbsElement.reimbursementProductReasons.reduce((prev, curr) => {
+            return prev + (curr.reimbursementProduct?.cost ?? 0);
+          }, 0)
+        );
+      }, 0);
 
-    if (measure === Measure.AVG && team.projects.length > 0) {
-      value = value / team.projects.length;
-    }
+      if (measure === Measure.AVG && team.projects.length > 0) {
+        value = value / team.projects.length;
+      }
 
-    return {
-      value: value / 100,
-      label: team.teamName
-    };
-  });
+      return {
+        value: value / 100,
+        label: team.teamName
+      };
+    })
+  };
 
   return data;
 };
@@ -486,30 +510,33 @@ const getGraphDataForReimbursementRequestsByDivision = async (
     }
   });
 
-  const data: GraphData[] = divisions.map((division) => {
-    let value = division.teams.reduce((prev, curr) => {
-      return (
-        prev +
-        curr.projects.reduce((prev, curr) => {
-          return (
-            prev +
-            curr.wbsElement.reimbursementProductReasons.reduce((prev, curr) => {
-              return prev + (curr.reimbursementProduct?.cost ?? 0);
-            }, 0)
-          );
-        }, 0)
-      );
-    }, 0);
+  const data: GraphData = {
+    tipLabel: 'Dollars',
+    values: divisions.map((division) => {
+      let value = division.teams.reduce((prev, curr) => {
+        return (
+          prev +
+          curr.projects.reduce((prev, curr) => {
+            return (
+              prev +
+              curr.wbsElement.reimbursementProductReasons.reduce((prev, curr) => {
+                return prev + (curr.reimbursementProduct?.cost ?? 0);
+              }, 0)
+            );
+          }, 0)
+        );
+      }, 0);
 
-    if (measure === Measure.AVG && division.teams.length > 0) {
-      value = value / division.teams.length;
-    }
+      if (measure === Measure.AVG && division.teams.length > 0) {
+        value = value / division.teams.length;
+      }
 
-    return {
-      value: value / 100,
-      label: division.name
-    };
-  });
+      return {
+        value: value / 100,
+        label: division.name
+      };
+    })
+  };
 
   return data;
 };
@@ -519,7 +546,7 @@ const getGraphDataForProjectBudgetVsReimbursedAmount = async (
   startDate: Date | null,
   endDate: Date | null,
   params: { carIds: string[] }
-): Promise<GraphData[][]> => {
+): Promise<GraphData[]> => {
   const baseQuery = Prisma.validator<Prisma.ProjectFindManyArgs>()({
     where: { wbsElement: { organizationId, dateDeleted: null, dateCreated: {} }, carId: {} },
     select: {
@@ -533,7 +560,18 @@ const getGraphDataForProjectBudgetVsReimbursedAmount = async (
           reimbursementProductReasons: {
             select: {
               reimbursementProduct: {
-                where: { dateDeleted: null, reimbursementRequest: { dateDeleted: null, dateCreated: {} } },
+                where: {
+                  dateDeleted: null,
+                  reimbursementRequest: {
+                    dateDeleted: null,
+                    dateCreated: {},
+                    reimbursementStatuses: {
+                      some: {
+                        type: Reimbursement_Status_Type.REIMBURSED
+                      }
+                    }
+                  }
+                },
                 select: { cost: true }
               }
             }
@@ -563,18 +601,24 @@ const getGraphDataForProjectBudgetVsReimbursedAmount = async (
 
   const projects = await prisma.project.findMany(baseQuery);
 
-  const data: GraphData[][] = [
-    projects.map((project) => ({
-      value: project.budget,
-      label: 'Budget for ' + wbsNamePipe({ wbsNum: project.wbsElement, name: project.wbsElement.name })
-    })),
-    projects.map((project) => ({
-      value: project.wbsElement.reimbursementProductReasons.reduce(
-        (prev, curr) => prev + (curr.reimbursementProduct?.cost ?? 0),
-        0
-      ),
-      label: 'Reimbursed for ' + wbsNamePipe({ wbsNum: project.wbsElement, name: project.wbsElement.name })
-    }))
+  const data: GraphData[] = [
+    {
+      tipLabel: 'Budget',
+      values: projects.map((project) => ({
+        value: project.budget,
+        label: wbsNamePipe({ wbsNum: project.wbsElement, name: project.wbsElement.name })
+      }))
+    },
+    {
+      tipLabel: 'Reimbursed',
+      values: projects.map((project) => ({
+        value: project.wbsElement.reimbursementProductReasons.reduce(
+          (prev, curr) => prev + (curr.reimbursementProduct?.cost ?? 0) / 100,
+          0
+        ),
+        label: wbsNamePipe({ wbsNum: project.wbsElement, name: project.wbsElement.name })
+      }))
+    }
   ];
 
   return data;
@@ -585,7 +629,7 @@ const getGraphDataForChangeRequestByStatus = async (
   startDate: Date | null,
   endDate: Date | null,
   params: { carIds: string[] }
-): Promise<GraphData[]> => {
+): Promise<GraphData> => {
   const baseQuery = Prisma.validator<Prisma.Change_RequestFindManyArgs>()({
     where: { dateDeleted: null, organizationId, dateSubmitted: {}, wbsElement: { car: { carId: {} } } },
     include: { changes: true }
@@ -613,20 +657,23 @@ const getGraphDataForChangeRequestByStatus = async (
 
   const implementedChangeRequests = changeRequests.filter((cr) => cr.reviewerId === null && cr.changes.length > 0);
 
-  const data: GraphData[] = [
-    {
-      value: acceptedChangeRequests.length,
-      label: 'Accepted Change Requests'
-    },
-    {
-      value: rejectedChangeRequests.length,
-      label: 'Rejected Change Requests'
-    },
-    {
-      value: implementedChangeRequests.length,
-      label: 'Implemented Change Requests'
-    }
-  ];
+  const data: GraphData = {
+    tipLabel: '# Change Requests',
+    values: [
+      {
+        value: acceptedChangeRequests.length,
+        label: 'Accepted Change Requests'
+      },
+      {
+        value: rejectedChangeRequests.length,
+        label: 'Rejected Change Requests'
+      },
+      {
+        value: implementedChangeRequests.length,
+        label: 'Implemented Change Requests'
+      }
+    ]
+  };
 
   return data;
 };
@@ -638,7 +685,7 @@ export const getGraphData = (
   startDate: Date | null,
   endDate: Date | null,
   params: { carIds: string[] }
-): Promise<GraphData[][]> => {
+): Promise<GraphData[]> => {
   switch (graphType) {
     case Graph_Type.PROJECT_BUDGET_BY_PROJECT:
       return getGraphDataForProjectBudgetByProject(measure, organizationId, startDate, endDate, params).then((val) => [val]);

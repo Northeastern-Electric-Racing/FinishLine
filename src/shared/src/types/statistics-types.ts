@@ -31,8 +31,11 @@ export enum Measure {
 }
 
 export interface GraphData {
-  value: number;
-  label: string;
+  tipLabel: string;
+  values: {
+    value: number;
+    label: string;
+  }[];
 }
 
 export interface Graph {
@@ -48,7 +51,7 @@ export interface Graph {
   userCreated: User;
   userDeleted?: User;
   dateDeleted?: Date;
-  graphData: GraphData[][];
+  graphData: GraphData[];
   graphCollectionId?: String;
   carIds: string[];
   specialPermissions: SpecialPermission[];

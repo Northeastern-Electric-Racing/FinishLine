@@ -4,7 +4,7 @@ import { userTransformer } from './user.transformer';
 import { GraphQueryArgs } from '../prisma-query-args/statistics.query-args';
 import { getAxisLabels } from '../utils/statistics.utils';
 
-const graphTransformer = (graph: Prisma.GraphGetPayload<GraphQueryArgs> & { graphData: GraphData[][] }): Graph => {
+const graphTransformer = (graph: Prisma.GraphGetPayload<GraphQueryArgs> & { graphData: GraphData[] }): Graph => {
   return {
     graphId: graph.id,
     ...graph,

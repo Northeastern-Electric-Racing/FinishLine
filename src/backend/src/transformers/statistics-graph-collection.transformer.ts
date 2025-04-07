@@ -6,7 +6,7 @@ import graphTransformer from './statistics-graph.transformer';
 
 export const graphCollectionTransformer = (
   graphCollection: Prisma.Graph_CollectionGetPayload<GraphCollectionQueryArgs>,
-  graphs: (Prisma.GraphGetPayload<GraphQueryArgs> & { graphData: GraphData[][] })[]
+  graphs: (Prisma.GraphGetPayload<GraphQueryArgs> & { graphData: GraphData[] })[]
 ): GraphCollection => {
   return {
     ...graphCollection,
