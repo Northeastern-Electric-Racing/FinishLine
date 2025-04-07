@@ -15,7 +15,9 @@ export enum GraphType {
   PROJECT_BUDGET_BY_TEAM = 'PROJECT_BUDGET_BY_TEAM',
   REIMBURSEMENT_TOTAL_BY_DIVISION = 'REIMBURSEMENT_TOTAL_BY_DIVISION',
   REIMBURSEMENT_TOTAL_BY_PROJECT = 'REIMBURSEMENT_TOTAL_BY_PROJECT',
-  REIMBURSEMENT_TOTAL_BY_TEAM = 'REIMBURSEMENT_TOTAL_BY_TEAM'
+  REIMBURSEMENT_TOTAL_BY_TEAM = 'REIMBURSEMENT_TOTAL_BY_TEAM',
+  PROJECT_BUDGET_VS_REIMBURSED_AMOUNT = 'PROJECT_BUDGET_VS_REIMBURSED_AMOUNT',
+  CHANGE_REQUESTS_BY_STATUS = 'CHANGE_REQUESTS_BY_STATUS'
 }
 
 export enum SpecialPermission {
@@ -46,7 +48,7 @@ export interface Graph {
   userCreated: User;
   userDeleted?: User;
   dateDeleted?: Date;
-  graphData: GraphData[];
+  graphData: GraphData[][];
   graphCollectionId?: String;
   carIds: string[];
   specialPermissions: SpecialPermission[];

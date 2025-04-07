@@ -7,7 +7,7 @@ import { userHasPermissionNew } from '../utils/users.utils';
 import { AccessDeniedException, HttpException } from '../utils/errors.utils';
 import { Graph, GraphCollection, GraphData, isSubset, isUnderWordCount, Permission } from 'shared';
 import { getGraphCollectionAndVerifyPermissions, getGraphData } from '../utils/statistics.utils';
-import { graphCollectionTransformer } from '../transformers/statistics-graphCollection.transformer';
+import { graphCollectionTransformer } from '../transformers/statistics-graph-collection.transformer';
 
 export default class StatisticsService {
   /**
@@ -293,7 +293,7 @@ export default class StatisticsService {
 
     return Promise.all(
       graphCollections.map(async (graphCollection) => {
-        const addedDataGraphs: (Prisma.GraphGetPayload<GraphQueryArgs> & { graphData: GraphData[] })[] = await Promise.all(
+        const addedDataGraphs: (Prisma.GraphGetPayload<GraphQueryArgs> & { graphData: GraphData[][] })[] = await Promise.all(
           graphCollection.graphs.map(async (graph) => ({
             ...graph,
             graphData: await getGraphData(

@@ -20,11 +20,16 @@ import { _DeepPartialObject } from 'chart.js/dist/types/utils';
 
 Chart.register(CategoryScale, LinearScale, BarController, BarElement, Title, Tooltip, Legend);
 
+interface BarChartDataset {
+  yAxisData: number[];
+  yAxisLabel: string;
+  color: string;
+}
+
 interface StatsBarChartProps {
   xAxisData: string[];
-  yAxisData: number[];
   xAxisLabel: string;
-  yAxisLabel: string;
+  datasets: BarChartDataset[];
   timeFrame?: string;
   width?: number;
   height?: number;
@@ -32,23 +37,16 @@ interface StatsBarChartProps {
 }
 
 const StatsBarChart: React.FC<StatsBarChartProps> = ({
-  xAxisData,
-  yAxisData,
   xAxisLabel,
-  yAxisLabel,
+  xAxisData,
+  datasets,
   width = 600,
   height = 400,
   graphTitle
 }) => {
   const data = {
     labels: xAxisData,
-    datasets: [
-      {
-        label: yAxisLabel,
-        data: yAxisData,
-        backgroundColor: '#DE514C'
-      }
-    ]
+    datasets: datasets.map((dataset) => ({ label: dataset.yAxisLabel, data: dataset.yAxisData, backgroundColor: '#DE514C' }))
   };
 
   const options: _DeepPartialObject<
@@ -84,6 +82,7 @@ const StatsBarChart: React.FC<StatsBarChartProps> = ({
 
     scales: {
       x: {
+        stacked: true,
         title: {
           display: true,
           text: xAxisLabel,
@@ -97,9 +96,9 @@ const StatsBarChart: React.FC<StatsBarChartProps> = ({
         }
       },
       y: {
+        stacked: true,
         title: {
           display: true,
-          text: yAxisLabel,
           font: {
             size: 14
           },

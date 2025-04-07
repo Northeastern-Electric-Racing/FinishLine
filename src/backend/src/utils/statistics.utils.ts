@@ -57,7 +57,7 @@ const getProjectSegmentedWhereInput = (
   return baseWhere;
 };
 
-export const getGraphDataForProjectBudgetByProject = async (
+const getGraphDataForProjectBudgetByProject = async (
   _measure: Measure,
   organizationId: string,
   startDate: Date | null,
@@ -81,7 +81,7 @@ export const getGraphDataForProjectBudgetByProject = async (
   return data;
 };
 
-export const getGraphDataForProjectBudgetByTeam = async (
+const getGraphDataForProjectBudgetByTeam = async (
   measure: Measure,
   organizationId: string,
   startDate: Date | null,
@@ -118,7 +118,7 @@ export const getGraphDataForProjectBudgetByTeam = async (
   return data;
 };
 
-export const getGraphDataForProjectBudgetByDivision = async (
+const getGraphDataForProjectBudgetByDivision = async (
   measure: Measure,
   organizationId: string,
   startDate: Date | null,
@@ -214,7 +214,7 @@ const changeRequestProjectDataQueryArgs = (startDate: Date | null, endDate: Date
   return baseWhere;
 };
 
-export const getGraphDataForChangeRequestsByProject = async (
+const getGraphDataForChangeRequestsByProject = async (
   _measure: Measure,
   organizationId: string,
   startDate: Date | null,
@@ -257,7 +257,7 @@ const changeRequestTeamQueryArgs = (
   };
 };
 
-export const getGraphDataForChangeRequestsByTeam = async (
+const getGraphDataForChangeRequestsByTeam = async (
   measure: Measure,
   organizationId: string,
   startDate: Date | null,
@@ -292,7 +292,7 @@ export const getGraphDataForChangeRequestsByTeam = async (
   return data;
 };
 
-export const getGraphDataForChangeRequestsByDivision = async (
+const getGraphDataForChangeRequestsByDivision = async (
   measure: Measure,
   organizationId: string,
   startDate: Date | null,
@@ -380,7 +380,7 @@ const reimbursementProductProjectDataQueryArgs = (startDate: Date | null, endDat
   return baseWhere;
 };
 
-export const getGraphDataForReimbursementRequestsByProject = async (
+const getGraphDataForReimbursementRequestsByProject = async (
   measure: Measure,
   organizationId: string,
   startDate: Date | null,
@@ -426,7 +426,7 @@ const reimbursementProductTeamDataQueryArgs = (
   });
 };
 
-export const getGraphDataForReimbursementRequestsByTeam = async (
+const getGraphDataForReimbursementRequestsByTeam = async (
   measure: Measure,
   organizationId: string,
   startDate: Date | null,
@@ -464,7 +464,7 @@ export const getGraphDataForReimbursementRequestsByTeam = async (
   return data;
 };
 
-export const getGraphDataForReimbursementRequestsByDivision = async (
+const getGraphDataForReimbursementRequestsByDivision = async (
   measure: Measure,
   organizationId: string,
   startDate: Date | null,
@@ -514,6 +514,123 @@ export const getGraphDataForReimbursementRequestsByDivision = async (
   return data;
 };
 
+const getGraphDataForProjectBudgetVsReimbursedAmount = async (
+  organizationId: string,
+  startDate: Date | null,
+  endDate: Date | null,
+  params: { carIds: string[] }
+): Promise<GraphData[][]> => {
+  const baseQuery = Prisma.validator<Prisma.ProjectFindManyArgs>()({
+    where: { wbsElement: { organizationId, dateDeleted: null, dateCreated: {} }, carId: {} },
+    select: {
+      budget: true,
+      wbsElement: {
+        select: {
+          carNumber: true,
+          projectNumber: true,
+          name: true,
+          workPackageNumber: true,
+          reimbursementProductReasons: {
+            select: {
+              reimbursementProduct: {
+                where: { dateDeleted: null, reimbursementRequest: { dateDeleted: null, dateCreated: {} } },
+                select: { cost: true }
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+
+  if (params.carIds.length > 0) {
+    baseQuery.where.carId = { in: params.carIds };
+  }
+
+  if (startDate) {
+    baseQuery.where!.wbsElement!.dateCreated = {
+      gte: startDate
+    };
+    baseQuery.select.wbsElement.select.reimbursementProductReasons.select.reimbursementProduct.where.reimbursementRequest.dateCreated =
+      { gte: startDate };
+  }
+
+  if (endDate) {
+    baseQuery.where.wbsElement.dateCreated = { ...baseQuery.where.wbsElement.dateCreated, lte: endDate };
+    baseQuery.select.wbsElement.select.reimbursementProductReasons.select.reimbursementProduct.where.reimbursementRequest.dateCreated =
+      { lte: endDate };
+  }
+
+  const projects = await prisma.project.findMany(baseQuery);
+
+  const data: GraphData[][] = [
+    projects.map((project) => ({
+      value: project.budget,
+      label: 'Budget for ' + wbsNamePipe({ wbsNum: project.wbsElement, name: project.wbsElement.name })
+    })),
+    projects.map((project) => ({
+      value: project.wbsElement.reimbursementProductReasons.reduce(
+        (prev, curr) => prev + (curr.reimbursementProduct?.cost ?? 0),
+        0
+      ),
+      label: 'Reimbursed for ' + wbsNamePipe({ wbsNum: project.wbsElement, name: project.wbsElement.name })
+    }))
+  ];
+
+  return data;
+};
+
+const getGraphDataForChangeRequestByStatus = async (
+  organizationId: string,
+  startDate: Date | null,
+  endDate: Date | null,
+  params: { carIds: string[] }
+): Promise<GraphData[]> => {
+  const baseQuery = Prisma.validator<Prisma.Change_RequestFindManyArgs>()({
+    where: { dateDeleted: null, organizationId, dateSubmitted: {}, wbsElement: { car: { carId: {} } } },
+    include: { changes: true }
+  });
+
+  if (params.carIds.length > 0) {
+    baseQuery.where.wbsElement.car.carId = { in: params.carIds };
+  }
+
+  if (startDate) {
+    baseQuery.where.dateSubmitted = {
+      gte: startDate
+    };
+  }
+
+  if (endDate) {
+    baseQuery.where.dateSubmitted = { ...baseQuery.where.dateSubmitted, lte: endDate };
+  }
+
+  const changeRequests = await prisma.change_Request.findMany(baseQuery);
+
+  const acceptedChangeRequests = changeRequests.filter((cr) => cr.accepted && cr.reviewerId !== null);
+
+  const rejectedChangeRequests = changeRequests.filter((cr) => !cr.accepted && cr.reviewerId !== null);
+
+  const implementedChangeRequests = changeRequests.filter((cr) => cr.reviewerId === null && cr.changes.length > 0);
+
+  const data: GraphData[] = [
+    {
+      value: acceptedChangeRequests.length,
+      label: 'Accepted Change Requests'
+    },
+    {
+      value: rejectedChangeRequests.length,
+      label: 'Rejected Change Requests'
+    },
+    {
+      value: implementedChangeRequests.length,
+      label: 'Implemented Change Requests'
+    }
+  ];
+
+  return data;
+};
+
 export const getGraphData = (
   graphType: Graph_Type,
   measure: Measure,
@@ -521,26 +638,42 @@ export const getGraphData = (
   startDate: Date | null,
   endDate: Date | null,
   params: { carIds: string[] }
-): Promise<GraphData[]> => {
+): Promise<GraphData[][]> => {
   switch (graphType) {
     case Graph_Type.PROJECT_BUDGET_BY_PROJECT:
-      return getGraphDataForProjectBudgetByProject(measure, organizationId, startDate, endDate, params);
+      return getGraphDataForProjectBudgetByProject(measure, organizationId, startDate, endDate, params).then((val) => [val]);
     case Graph_Type.PROJECT_BUDGET_BY_TEAM:
-      return getGraphDataForProjectBudgetByTeam(measure, organizationId, startDate, endDate, params);
+      return getGraphDataForProjectBudgetByTeam(measure, organizationId, startDate, endDate, params).then((val) => [val]);
     case Graph_Type.PROJECT_BUDGET_BY_DIVISION:
-      return getGraphDataForProjectBudgetByDivision(measure, organizationId, startDate, endDate, params);
+      return getGraphDataForProjectBudgetByDivision(measure, organizationId, startDate, endDate, params).then((val) => [
+        val
+      ]);
     case Graph_Type.CHANGE_REQUESTS_BY_PROJECT:
-      return getGraphDataForChangeRequestsByProject(measure, organizationId, startDate, endDate, params);
+      return getGraphDataForChangeRequestsByProject(measure, organizationId, startDate, endDate, params).then((val) => [
+        val
+      ]);
     case Graph_Type.CHANGE_REQUESTS_BY_TEAM:
-      return getGraphDataForChangeRequestsByTeam(measure, organizationId, startDate, endDate, params);
+      return getGraphDataForChangeRequestsByTeam(measure, organizationId, startDate, endDate, params).then((val) => [val]);
     case Graph_Type.CHANGE_REQUESTS_BY_DIVISION:
-      return getGraphDataForChangeRequestsByDivision(measure, organizationId, startDate, endDate, params);
+      return getGraphDataForChangeRequestsByDivision(measure, organizationId, startDate, endDate, params).then((val) => [
+        val
+      ]);
     case Graph_Type.REIMBURSEMENT_TOTAL_BY_PROJECT:
-      return getGraphDataForReimbursementRequestsByProject(measure, organizationId, startDate, endDate, params);
+      return getGraphDataForReimbursementRequestsByProject(measure, organizationId, startDate, endDate, params).then(
+        (val) => [val]
+      );
     case Graph_Type.REIMBURSEMENT_TOTAL_BY_TEAM:
-      return getGraphDataForReimbursementRequestsByTeam(measure, organizationId, startDate, endDate, params);
+      return getGraphDataForReimbursementRequestsByTeam(measure, organizationId, startDate, endDate, params).then((val) => [
+        val
+      ]);
     case Graph_Type.REIMBURSEMENT_TOTAL_BY_DIVISION:
-      return getGraphDataForReimbursementRequestsByDivision(measure, organizationId, startDate, endDate, params);
+      return getGraphDataForReimbursementRequestsByDivision(measure, organizationId, startDate, endDate, params).then(
+        (val) => [val]
+      );
+    case Graph_Type.PROJECT_BUDGET_VS_REIMBURSED_AMOUNT:
+      return getGraphDataForProjectBudgetVsReimbursedAmount(organizationId, startDate, endDate, params);
+    case Graph_Type.CHANGE_REQUESTS_BY_STATUS:
+      return getGraphDataForChangeRequestByStatus(organizationId, startDate, endDate, params).then((val) => [val]);
   }
 };
 
@@ -585,7 +718,10 @@ export const getAxisLabels = (graphType: Graph_Type): { x: string; y: string } =
     case Graph_Type.PROJECT_BUDGET_BY_TEAM:
       return { x: 'Team', y: 'Dollars' };
     case Graph_Type.REIMBURSEMENT_TOTAL_BY_PROJECT:
+    case Graph_Type.PROJECT_BUDGET_VS_REIMBURSED_AMOUNT:
     case Graph_Type.PROJECT_BUDGET_BY_PROJECT:
       return { x: 'Project', y: 'Dollars' };
+    case Graph_Type.CHANGE_REQUESTS_BY_STATUS:
+      return { x: 'Status', y: '# Change Requests' };
   }
 };
