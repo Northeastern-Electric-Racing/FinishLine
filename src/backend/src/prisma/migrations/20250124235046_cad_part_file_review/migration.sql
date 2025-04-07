@@ -24,7 +24,7 @@ CREATE TABLE "Part" (
     "index" INTEGER NOT NULL,
     "commonName" TEXT NOT NULL,
     "description" TEXT,
-    "previewImageLink" TEXT,
+    "previewImageId" TEXT,
     "status" "Review_Status" NOT NULL DEFAULT 'IN_PROGRESS',
     "projectId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
