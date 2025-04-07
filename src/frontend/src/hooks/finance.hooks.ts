@@ -131,14 +131,14 @@ export interface SponsorTaskPayload {
 export const useCreateSponsor = () => {
   const queryClient = useQueryClient();
   return useMutation<Sponsor, Error, SponsorPayload>(
-    ['finance', 'create'],
+    ['sponsor', 'create'],
     async (formData: SponsorPayload) => {
       const { data } = await createSponsor(formData);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['finance']);
+        queryClient.invalidateQueries(['sponsor']);
       }
     }
   );
@@ -152,14 +152,14 @@ export const useCreateSponsor = () => {
 export const useCreateSponsorTask = (sponsorId: string) => {
   const queryClient = useQueryClient();
   return useMutation<SponsorTask, Error, SponsorTaskPayload>(
-    ['finance', 'create'],
+    ['sponsor-task', 'create'],
     async (formData: SponsorTaskPayload) => {
       const { data } = await createSponsorTask(sponsorId, formData);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['finance']);
+        queryClient.invalidateQueries(['sponsor-task']);
       }
     }
   );
@@ -173,14 +173,14 @@ export const useCreateSponsorTask = (sponsorId: string) => {
 export const useCreateSponsorTier = () => {
   const queryClient = useQueryClient();
   return useMutation<SponsorTier, Error, SponsorTierPayload>(
-    ['finance', 'create'],
+    ['sponsor-tier', 'create'],
     async (formData: SponsorTierPayload) => {
       const { data } = await createSponsorTier(formData);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['finance']);
+        queryClient.invalidateQueries(['sponsor-tier']);
       }
     }
   );
