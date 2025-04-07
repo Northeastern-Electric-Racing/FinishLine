@@ -1,4 +1,4 @@
-import { Box, IconButton, Typography } from '@mui/material';
+import { Box, IconButton, Typography, Tooltip } from '@mui/material';
 import { Star, StarBorder, Edit, Delete } from '@mui/icons-material';
 import { NERButton } from '../../../components/NERButton';
 import CreateCommonMistakesModal from './CreateCommonMistakeModal';
@@ -14,6 +14,7 @@ import {
   useDeletePartReviewCommonMistake,
   useEditPartReviewCommonMistakes
 } from '../../../hooks/part-review.hooks';
+import HelpIcon from '@mui/icons-material/Help';
 
 const CommonMistakesTable: React.FC = () => {
   const [openCreateModal, setOpenCreateModal] = useState(false);
@@ -58,6 +59,10 @@ const CommonMistakesTable: React.FC = () => {
     }
   };
 
+  const tooltipMessage = (
+    <Typography sx={{ fontSize: 14 }}>Star common mistakes that you want displayed on the Submission Guide.</Typography>
+  );
+
   return (
     <Box>
       <CreateCommonMistakesModal showModal={openCreateModal} handleClose={() => setOpenCreateModal(false)} />
@@ -89,47 +94,71 @@ const CommonMistakesTable: React.FC = () => {
         }}
       />
 
-      <Typography variant="subtitle1" fontWeight="bold">
-        Common Mistakes
-      </Typography>
+      <Box>
+        <Typography variant="h6">
+          Common Mistakes
+          <Tooltip title={tooltipMessage} placement="right" arrow>
+            <HelpIcon sx={{ ml: 1, fontSize: 20 }} />
+          </Tooltip>
+        </Typography>
+      </Box>
 
-      {data &&
-        data.map((mistake) => (
-          <Box
-            key={mistake.partReviewCommonMistakeId}
-            sx={{
-              backgroundColor: '#2f3031',
-              display: 'flex',
-              alignItems: 'center',
-              padding: 2,
-              marginBottom: 1,
-              borderRadius: 2,
-              boxShadow: 2
-            }}
-          >
-            <Box sx={{ marginRight: 1 }}>
-              <IconButton onClick={() => handleToggleStar(mistake)}>
-                {mistake.starred ? <Star sx={{ color: '#fbc02d' }} /> : <StarBorder sx={{ color: 'gray' }} />}
-              </IconButton>
-            </Box>
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="subtitle1" fontWeight="bold">
-                {mistake.title}
-              </Typography>
-              <Typography variant="body2">{mistake.description}</Typography>
-            </Box>
-            <Box>
-              <IconButton sx={{ color: 'dark-gray' }} onClick={() => handleEdit(mistake)}>
-                <Edit />
-              </IconButton>
-            </Box>
-            <Box>
-              <IconButton sx={{ color: 'dark-gray' }} onClick={() => setMistakeToDelete(mistake)}>
-                <Delete />
-              </IconButton>
-            </Box>
-          </Box>
-        ))}
+      <Box
+        sx={{
+          maxHeight: '200px',
+          overflowY: 'auto',
+          mt: 1
+        }}
+      >
+        {data &&
+          data
+            .sort((a, b) => Number(b.starred) - Number(a.starred))
+            .map((mistake) => (
+              <Box
+                key={mistake.partReviewCommonMistakeId}
+                sx={{
+                  backgroundColor: '#2f3031',
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: 1.25,
+                  marginBottom: 1,
+                  borderRadius: 2,
+                  boxShadow: 2
+                }}
+              >
+                <Box sx={{ marginRight: 1 }}>
+                  <IconButton onClick={() => handleToggleStar(mistake)}>
+                    {mistake.starred ? <Star sx={{ color: '#fbc02d' }} /> : <StarBorder sx={{ color: 'gray' }} />}
+                  </IconButton>
+                </Box>
+                <Box sx={{ flex: 1, overflow: 'hidden' }}>
+                  <Typography variant="subtitle1" fontWeight="bold" noWrap>
+                    {mistake.title}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}
+                  >
+                    {mistake.description}
+                  </Typography>
+                </Box>
+                <Box>
+                  <IconButton sx={{ color: 'dark-gray' }} onClick={() => handleEdit(mistake)}>
+                    <Edit />
+                  </IconButton>
+                </Box>
+                <Box>
+                  <IconButton sx={{ color: 'dark-gray' }} onClick={() => setMistakeToDelete(mistake)}>
+                    <Delete />
+                  </IconButton>
+                </Box>
+              </Box>
+            ))}
+      </Box>
 
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: 2 }}>
         <NERButton variant="contained" onClick={handleCreate}>

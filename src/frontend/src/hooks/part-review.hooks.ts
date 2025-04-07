@@ -275,6 +275,17 @@ export const useEditPartReview = (reviewId: string) => {
 };
 
 /**
+ * Custom React Hook to fetch all Common Mistakes
+ *
+ */
+export const useCommonMistakes = () => {
+  return useQuery<PartReviewCommonMistake[], Error>(['partReviewCommonMistakes'], async () => {
+    const { data } = await getPartReviewCommonMistakes();
+    return data;
+  });
+};
+
+/**
  * Custom React Hook to edit a common mistake
  *
  * @param partReviewCommonMistakeId the id of the common mistake to edit
@@ -332,15 +343,4 @@ export const useDeletePartReviewCommonMistake = () => {
       }
     }
   );
-};
-
-/**
- * Custom React Hook to fetch all Common Mistakes
- *
- */
-export const useCommonMistakes = () => {
-  return useQuery<PartReviewCommonMistake[], Error>(['partReviewCommonMistakes'], async () => {
-    const { data } = await getPartReviewCommonMistakes();
-    return data;
-  });
 };
