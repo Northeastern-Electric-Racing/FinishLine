@@ -1,5 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Part, PartPreview, PartReview, PartReviewRequest, PartSubmission, Review_Status } from 'shared';
+import {
+  Part,
+  PartPreview,
+  PartReview,
+  PartReviewRequest,
+  PartSubmission,
+  Review_Status,
+  PartReviewCommonMistake
+} from 'shared';
 import {
   createPart,
   createPartReview,
@@ -11,17 +19,18 @@ import {
   editPartReview,
   editPartSubmission,
   getPartsFromProject,
-  getSinglePart
+  getSinglePart,
+  getAllCommonMistakes,
+  uploadPreviewImage
 } from '../apis/part-review.api';
 
 export interface PartPayload {
+  wbsNum: string;
   index: number;
   commonName: string;
   description?: string;
-  previewImageLink?: string;
   reviewStatus: Review_Status;
   tagIds: string[];
-  projectId: string;
   assigneeIds: string[];
 }
 
@@ -39,7 +48,6 @@ export interface PartReviewRequestPayload {
 export interface PartReviewPayload {
   fileIds: string[];
   notes?: string;
-  commonMistakeIds: string[];
 }
 
 /**
@@ -107,6 +115,22 @@ export const useEditPart = (partId: string) => {
   );
 };
 
+export const useUploadPreviewImage = (partId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<any, unknown, File>(
+    async (image: File) => {
+      const { data } = await uploadPreviewImage(image, partId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['parts', 'byProject']);
+        queryClient.invalidateQueries(['parts', 'byId', partId]);
+      }
+    }
+  );
+};
+
 /**
  * Custom React Hook to delete a part
  *
@@ -114,7 +138,7 @@ export const useEditPart = (partId: string) => {
  */
 export const useDeletePart = (partId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<Part, Error, any>(
+  return useMutation<{ message: string }, Error, any>(
     ['parts', 'delete'],
     async () => {
       const { data } = await deletePart(partId);
@@ -251,6 +275,27 @@ export const useEditPartReview = (reviewId: string) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['parts']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to get all common mistakes
+ *
+ * @returns a list of all common mistakes
+ */
+export const useAllCommonMistakes = () => {
+  const queryClient = useQueryClient();
+  return useQuery<PartReviewCommonMistake[], Error>(
+    ['common mistakes'],
+    async () => {
+      const { data } = await getAllCommonMistakes();
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['common mistakes']);
       }
     }
   );

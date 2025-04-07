@@ -46,6 +46,7 @@ const parts = () => `${API_URL}/parts`;
 const partsByProject = (projectId: string) => `${parts()}/${projectId}/parts`;
 const partsById = (partId: string) => `${parts()}/${partId}`;
 const partsCreate = () => `${parts()}/create`;
+const partsUploadPreviewImage = (partId: string) => `${parts()}/${partId}/upload-preview`;
 const partsEdit = (partId: string) => `${parts()}/${partId}/update`;
 const partsDelete = (partId: string) => `${parts()}/${partId}/delete`;
 const partsCreateSubmission = (partId: string) => `${parts()}/submission/${partId}/create`;
@@ -54,6 +55,7 @@ const partsCreateReviewRequest = (submissionId: string) => `${parts()}/reviewReq
 const partsDeleteReviewRequest = (reviewRequestId: string) => `${parts()}/reviewRequest/${reviewRequestId}/delete`;
 const partsCreateReview = (submissionId: string) => `${parts()}/review/${submissionId}/create`;
 const partsEditReview = (reviewId: string) => `${parts()}/review/${reviewId}/update`;
+const getAllPartCommonMistakes = () => `${parts()}/common-mistakes`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
@@ -293,8 +295,9 @@ export const apiUrls = {
 
   parts,
   partsByProject,
-  partById: partsById,
+  partsById,
   partsCreate,
+  partsUploadPreviewImage,
   partsEdit,
   partsDelete,
   partsCreateSubmission,
@@ -303,6 +306,7 @@ export const apiUrls = {
   partsDeleteReviewRequest,
   partsCreateReview,
   partsEditReview,
+  getAllPartCommonMistakes,
 
   tasksCreate,
   tasks,
