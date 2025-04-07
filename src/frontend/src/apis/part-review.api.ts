@@ -30,7 +30,7 @@ export const getPartsFromProject = (/*projectId: string*/): { data: PartPreview[
         index: 1,
         commonName: 'wheels',
         description: 'we need wheels for the car to go, because no wheels means no rolly means no car go',
-        previewImageLink: 'jqoi34ghpwadjkog5qh3',
+        previewImageId: 'jqoi34ghpwadjkog5qh3',
         status: 'IN_PROGRESS' as Review_Status,
         tags: [],
         projectId: '1',
@@ -76,7 +76,7 @@ export const getPartsFromProject = (/*projectId: string*/): { data: PartPreview[
         index: 2,
         commonName: 'Test Part 2',
         description: 'Test Description 2',
-        previewImageLink: 'qogi43tbiohrj3q2jntfpi',
+        previewImageId: 'qogi43tbiohrj3q2jntfpi',
         status: 'READY_FOR_REVIEW' as Review_Status,
         tags: [],
         projectId: '1',
@@ -113,7 +113,7 @@ export const getSinglePart = (/*partId: string*/): { data: Part } => {
       index: 1,
       commonName: 'Suspension',
       description: 'Test description for a suspension part, which could be a fairly lon sentence',
-      previewImageLink: 'qogi43tbiohrj3q2jntfpi',
+      previewImageId: 'qogi43tbiohrj3q2jntfpi',
       status: 'IN_REVIEW' as Review_Status,
       tags: [],
       projectId: '1',
@@ -220,6 +220,17 @@ export const createPart = (payload: PartPayload) => {
 };
 
 /**
+ * Uploads a preview image for a given part
+ * @param file the preview image
+ * @param partId the id of the part that will display this image
+ */
+export const uploadPreviewImage = (file: File, partId: string) => {
+  const formData = new FormData();
+  formData.append('image', file);
+  return axios.post(apiUrls.partsUploadPreviewImage(partId), formData);
+};
+
+/**
  * Edits a part
  *
  * @param partId the id of the part to edit
@@ -237,7 +248,7 @@ export const editPart = (partId: string, payload: PartPayload) => {
  * @param partId the id of the part to delete
  */
 export const deletePart = (partId: string) => {
-  return axios.post<Part>(apiUrls.partsDelete(partId));
+  return axios.post<{ message: string }>(apiUrls.partsDelete(partId));
 };
 
 /**
@@ -344,4 +355,12 @@ export const deletePartReviewCommonMistake = (commonMistakeId: string) => {
  */
 export const getPartReviewCommonMistakes = () => {
   return axios.get<PartReviewCommonMistake[]>(apiUrls.partsCommonMistake());
+
+/**
+ * Gets all of the common mistakes associated with part reviews
+ *
+ * @returns an array of common mistakes
+ */
+export const getAllCommonMistakes = () => {
+  return axios.get<PartReviewCommonMistake[]>(apiUrls.getAllPartCommonMistakes());
 };
