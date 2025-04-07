@@ -630,13 +630,33 @@ const getGraphDataForChangeRequestByStatus = async (
   endDate: Date | null,
   params: { carIds: string[] }
 ): Promise<GraphData> => {
-  const baseQuery = Prisma.validator<Prisma.Change_RequestFindManyArgs>()({
-    where: { dateDeleted: null, organizationId, dateSubmitted: {}, wbsElement: { car: { carId: {} } } },
+  const baseQuery: {
+    where: {
+      dateDeleted: null;
+      organizationId: string;
+      dateSubmitted: { gte?: Date; lte?: Date };
+      wbsElement?: {};
+    };
+    include: {
+      changes: boolean;
+    };
+  } = Prisma.validator<Prisma.Change_RequestFindManyArgs>()({
+    where: {
+      dateDeleted: null,
+      organizationId,
+      dateSubmitted: {}
+    },
     include: { changes: true }
   });
 
   if (params.carIds.length > 0) {
-    baseQuery.where.wbsElement.car.carId = { in: params.carIds };
+    baseQuery.where.wbsElement = {
+      OR: [
+        { car: { carId: { in: params.carIds } } },
+        { project: { carId: { in: params.carIds } } },
+        { workPackage: { project: { carId: { in: params.carIds } } } }
+      ]
+    };
   }
 
   if (startDate) {

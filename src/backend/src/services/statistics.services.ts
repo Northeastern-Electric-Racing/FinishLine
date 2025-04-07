@@ -205,6 +205,7 @@ export default class StatisticsService {
         displayGraphType: graphDisplayType,
         specialPermissions,
         cars: {
+          disconnect: graph.cars.map((car) => ({ carId: car.carId })),
           connect: carIds.map((carId) => {
             return { carId };
           })
