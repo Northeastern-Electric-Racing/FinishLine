@@ -1,4 +1,5 @@
 import { AddCircleOutline, Delete } from '@mui/icons-material';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import HelpIcon from '@mui/icons-material/Help';
 import {
   FormControl,
@@ -28,7 +29,7 @@ import {
   WbsNumber,
   wbsPipe
 } from 'shared';
-import { ClearIcon, DatePicker } from '@mui/x-date-pickers';
+import { ArrowDropDownIcon, ClearIcon, DatePicker } from '@mui/x-date-pickers';
 import ReimbursementProductTable from './ReimbursementProductTable';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
@@ -282,28 +283,40 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 control={control}
                 render={({ field: { onChange, value } }) => {
                   const mappedVendors = allVendors.sort((a, b) => a.name.localeCompare(b.name)).map(vendorsToAutocomplete);
-                  const onClear = () => {
-                    setValue('vendorId', '');
-                    onChange('');
-                  };
                   return (
-                    <NERAutocomplete
-                      id={'vendor'}
-                      size="medium"
-                      options={mappedVendors}
-                      value={mappedVendors.find((vendor) => vendor.id === value) || null}
-                      sx={{
-                        background: '#4c4c4c',
-                        borderRadius: '20px',
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: '20px'
-                        }
-                      }}
-                      placeholder="Select Vendor"
-                      onChange={(_event, newValue) => {
-                        newValue ? onChange(newValue.id) : onClear();
-                      }}
-                    />
+                    <>
+                      <Select
+                        displayEmpty
+                        value={value}
+                        onChange={(e) => {
+                          onChange(e.target.value);
+                        }}
+                        IconComponent={KeyboardArrowDownIcon}
+                        sx={{
+                          background: '#4c4c4c',
+                          borderRadius: '20px',
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: '20px'
+                          },
+                          '& .MuiSelect-icon': {
+                            fontSize: 'xxx-large'
+                          }
+                        }}
+                        renderValue={(selected) => {
+                          if (!selected) {
+                            return <Typography style={{ color: 'gray' }}>Select Vendor</Typography>;
+                          }
+                          return mappedVendors.find((vendor) => vendor.id === selected)?.label;
+                        }}
+                      >
+                        {mappedVendors.map((vendor) => (
+                          <MenuItem key={vendor.id} value={vendor.id}>
+                            {vendor.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      <FormHelperText error>{errors.vendorId?.message}</FormHelperText>
+                    </>
                   );
                 }}
               />
@@ -334,28 +347,39 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   const mappedAccountCodes = allAccountCodes
                     .filter((accountCode) => accountCode.allowed)
                     .map(accountCodesToAutocomplete);
-                  const onClear = () => {
-                    setValue('account', undefined);
-                    onChange('');
-                  };
+
                   return (
-                    <NERAutocomplete
-                      id={'accountCode'}
-                      size="medium"
+                    <Select
+                      value={value}
+                      onChange={(event) => {
+                        const selectedValue = event.target.value;
+                        onChange(selectedValue);
+                      }}
+                      displayEmpty
+                      IconComponent={KeyboardArrowDownIcon}
                       sx={{
                         background: '#4c4c4c',
                         borderRadius: '20px',
                         '& .MuiOutlinedInput-root': {
                           borderRadius: '20px'
+                        },
+                        '& .MuiSelect-icon': {
+                          fontSize: 'xxx-large'
                         }
                       }}
-                      options={mappedAccountCodes}
-                      value={mappedAccountCodes.find((accountCode) => accountCode.id === value) || null}
-                      placeholder="Select Account Code"
-                      onChange={(_event, newValue) => {
-                        newValue ? onChange(newValue.id) : onClear();
+                      renderValue={(selected) => {
+                        if (!selected) {
+                          return <Typography style={{ color: 'gray' }}>Select Account Code</Typography>;
+                        }
+                        return mappedAccountCodes.find((accountCode) => accountCode.id === selected)?.label;
                       }}
-                    />
+                    >
+                      {mappedAccountCodes.map((accountCode) => (
+                        <MenuItem key={accountCode.id} value={accountCode.id}>
+                          {accountCode.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
                   );
                 }}
               />
@@ -524,6 +548,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 control={control}
                 render={({ field: { onChange, value } }) => (
                   <Select
+                    IconComponent={KeyboardArrowDownIcon}
                     onChange={(newValue) => {
                       const newSource = newValue.target.value as ClubAccount;
                       if (hasConfirmedFinance && secondRefundSource && newSource === secondRefundSource) {
@@ -545,6 +570,9 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                       borderRadius: '20px',
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '20px'
+                      },
+                      '& .MuiSelect-icon': {
+                        fontSize: 'xxx-large'
                       }
                     }}
                     renderValue={() => {
@@ -569,6 +597,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   control={control}
                   render={({ field: { onChange, value } }) => (
                     <Select
+                      IconComponent={KeyboardArrowDownIcon}
                       onChange={(newValue) => onChange(newValue.target.value as ClubAccount)}
                       value={value}
                       disabled={!selectedAccountCode || !firstRefundSource}
@@ -580,6 +609,10 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                         '& .MuiOutlinedInput-root': {
                           borderRadius: '20px'
                         },
+                        '& .MuiSelect-icon': {
+                          fontSize: 'xxx-large'
+                        },
+
                         marginTop: '10px'
                       }}
                       renderValue={() => {
