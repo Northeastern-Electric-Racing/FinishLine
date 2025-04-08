@@ -1192,9 +1192,10 @@ model Reimbursement_Product_Other_Reason {
 model Reimbursement_Request_Comment {
   reimbursementRequestCommentId String                @id @default(uuid())
   dateCreated                   DateTime              @default(now())
+  dateDeleted                   DateTime?
   userCreated                   User                  @relation(fields: [userCreatedId], references: [userId], name: "createdReimbursementRequestComments")
   userCreatedId                 String
   comment                       String
   reimbursementRequestId        String
-  reimbursementRequuest         Reimbursement_Request @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
+  reimbursementRequest          Reimbursement_Request @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
 }

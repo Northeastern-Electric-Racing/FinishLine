@@ -60,6 +60,7 @@ export interface ReimbursementRequest {
   reimbursementProducts: ReimbursementProduct[];
   dateDelivered?: Date;
   accountCode: AccountCode;
+  comments: ReimbursementRequestComment[];
 }
 
 export interface OtherProductReason {
@@ -138,4 +139,12 @@ export interface Reimbursement {
   dateCreated: Date;
   amount: number;
   userSubmitted: User;
+}
+
+export interface ReimbursementRequestComment {
+  reimbursementRequestCommentId: string;
+  reimbursementRequestId: string;
+  dateCreated: Date;
+  comment: string;
+  userCreated: User;
 }

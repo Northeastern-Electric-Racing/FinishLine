@@ -570,4 +570,47 @@ export default class ReimbursementRequestsController {
       next(error);
     }
   }
+
+  static async createReimbursementRequestComment(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { comment } = req.body;
+      const { requestId: reimbursementRequestId } = req.params;
+
+      const createdComment = await ReimbursementRequestService.createReimbursementRequestComment(
+        req.currentUser,
+        req.organization,
+        comment,
+        reimbursementRequestId
+      );
+      res.status(200).json(createdComment);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editReimbursementRequestComment(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { comment } = req.body;
+      const { commentId } = req.params;
+
+      const editedComment = await ReimbursementRequestService.editReimbursementRequestComment(
+        req.organization,
+        comment,
+        commentId
+      );
+      res.status(200).json(editedComment);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteReimbursementRequestComment(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { commentId } = req.params;
+      await ReimbursementRequestService.deleteReimbursementRequestComment(req.organization, commentId);
+      res.status(200).json({ message: `Successfully deleted Comment with id ${commentId}` });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
