@@ -548,7 +548,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                           <IconButton
                             sx={{
                               alignSelf: { xs: 'flex-start', md: 'center' },
-                              marginTop: { xs: '10px', md: '8px' },
+                              marginTop: { xs: '10px', md: '1px' },
                               '&:hover': {
                                 backgroundColor: hoverColor
                               }
