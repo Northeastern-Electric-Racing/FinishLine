@@ -47,6 +47,8 @@ interface ReimbursementProductTableProps {
   control: Control<ReimbursementRequestFormInput>;
   setValue: UseFormSetValue<ReimbursementRequestFormInput>;
   hasMultipleRefundSources?: boolean;
+  firstRefundSourceName?: string;
+  secondRefundSourceName?: string;
 }
 
 const ListItem = styled('li')(({ theme }) => ({
@@ -61,7 +63,9 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   control,
   errors,
   setValue,
-  hasMultipleRefundSources = false
+  hasMultipleRefundSources = false,
+  firstRefundSourceName,
+  secondRefundSourceName
 }) => {
   const uniqueWbsElementsWithProducts = new Map<
     string,
@@ -82,8 +86,13 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     }
   });
 
-  const onCostBlurHandler = (value: number, index: number) => {
-    setValue(`reimbursementProducts.${index}.cost`, parseFloat(value.toFixed(2)));
+  const onAmountBlurHandler = (
+    value: string,
+    index: number,
+    fieldName: 'cost' | 'firstSourceAmount' | 'secondSourceAmount'
+  ) => {
+    const parsedValue = value ? parseFloat(value) : 0;
+    setValue(`reimbursementProducts.${index}.${fieldName}`, parsedValue);
   };
 
   const userTheme = useTheme();
@@ -146,8 +155,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                         reason: validateWBS(value.id),
                         name: '',
                         cost: 0,
-                        budgetAmount: 0,
-                        cashAmount: 0
+                        firstSourceAmount: undefined,
+                        secondSourceAmount: undefined
                       });
                     }
                   }}
@@ -180,8 +189,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                         reason: value.id as OtherProductReason,
                         name: '',
                         cost: 0,
-                        budgetAmount: 0,
-                        cashAmount: 0
+                        firstSourceAmount: undefined,
+                        secondSourceAmount: undefined
                       });
                     }
                   }}
@@ -260,17 +269,18 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                       ></Box>
                       <Box
                         sx={{
-                          flex: '2',
+                          flex: '2.2',
+
                           width: '100%'
                         }}
                       ></Box>
                       {hasMultipleRefundSources && (
                         <>
-                          <Box sx={{ flex: '1.5', textAlign: 'center', display: { xs: 'none', md: 'block' } }}>
-                            <label>Budget</label>
+                          <Box sx={{ flex: '1.8', textAlign: 'center', display: { xs: 'none', md: 'block' } }}>
+                            <label>{firstRefundSourceName}</label>
                           </Box>
-                          <Box sx={{ flex: '1.5', textAlign: 'center', display: { xs: 'none', md: 'block' } }}>
-                            <label>Cash</label>
+                          <Box sx={{ flex: '1.6', textAlign: 'center', display: { xs: 'none', md: 'block' } }}>
+                            <label>{secondRefundSourceName}</label>
                           </Box>
                           <Box sx={{ width: '40px' }}></Box>
                         </>
@@ -325,7 +335,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                             </Box>
                             <Box
                               sx={{
-                                flex: '2',
+                                flex: '1.5',
                                 width: '100%'
                               }}
                             >
@@ -352,15 +362,11 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                         }
                                       }}
                                       value={field.value === 0 ? '' : field.value}
-                                      placeholder={'Cost'}
+                                      placeholder={'$ Cost'}
                                       variant={'outlined'}
                                       type="number"
                                       fullWidth
-                                      autoComplete="off"
-                                      InputProps={{
-                                        startAdornment: <InputAdornment position="start">$</InputAdornment>
-                                      }}
-                                      onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
+                                      onBlur={(e) => onAmountBlurHandler(e.target.value, product.index, 'cost')}
                                       error={!!errors.reimbursementProducts?.[product.index]?.cost}
                                     />
                                   )}
@@ -388,11 +394,11 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                       letterSpacing: '0.5px'
                                     }}
                                   >
-                                    <Typography>Budget</Typography>
+                                    <Typography>{firstRefundSourceName}</Typography>
                                   </Box>
                                   <FormControl fullWidth margin="dense" variant="outlined" size="small">
                                     <Controller
-                                      name={`reimbursementProducts.${product.index}.budgetAmount`}
+                                      name={`reimbursementProducts.${product.index}.firstSourceAmount`}
                                       control={control}
                                       render={({ field }) => (
                                         <TextField
@@ -413,17 +419,20 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                             }
                                           }}
                                           value={field.value === 0 ? '' : field.value}
-                                          placeholder={'Amt'}
+                                          placeholder={'$ Amt'}
                                           variant={'outlined'}
                                           type="number"
                                           fullWidth
-                                          autoComplete="off"
-                                          InputProps={{
-                                            startAdornment: <InputAdornment position="start">$</InputAdornment>
-                                          }}
+                                          onBlur={(e) =>
+                                            onAmountBlurHandler(e.target.value, product.index, 'firstSourceAmount')
+                                          }
+                                          error={!!errors.reimbursementProducts?.[product.index]?.firstSourceAmount}
                                         />
                                       )}
                                     />
+                                    <FormHelperText error>
+                                      {errors.reimbursementProducts?.[product.index]?.firstSourceAmount?.message}
+                                    </FormHelperText>
                                   </FormControl>
                                 </Box>
                                 <Box
@@ -442,11 +451,11 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                       letterSpacing: '0.5px'
                                     }}
                                   >
-                                    <Typography>Cash</Typography>
+                                    <Typography>{secondRefundSourceName}</Typography>
                                   </Box>
                                   <FormControl fullWidth margin="dense" variant="outlined" size="small">
                                     <Controller
-                                      name={`reimbursementProducts.${product.index}.cashAmount`}
+                                      name={`reimbursementProducts.${product.index}.secondSourceAmount`}
                                       control={control}
                                       render={({ field }) => (
                                         <TextField
@@ -467,17 +476,20 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                             }
                                           }}
                                           value={field.value === 0 ? '' : field.value}
-                                          placeholder={'Amt'}
+                                          placeholder={'$ Amt'}
                                           variant={'outlined'}
                                           type="number"
                                           fullWidth
-                                          autoComplete="off"
-                                          InputProps={{
-                                            startAdornment: <InputAdornment position="start">$</InputAdornment>
-                                          }}
+                                          onBlur={(e) =>
+                                            onAmountBlurHandler(e.target.value, product.index, 'secondSourceAmount')
+                                          }
+                                          error={!!errors.reimbursementProducts?.[product.index]?.secondSourceAmount}
                                         />
                                       )}
                                     />
+                                    <FormHelperText error>
+                                      {errors.reimbursementProducts?.[product.index]?.secondSourceAmount?.message}
+                                    </FormHelperText>
                                   </FormControl>
                                 </Box>
                                 <Box
@@ -529,8 +541,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                         reason: key.includes('.') ? validateWBS(key) : (key as OtherProductReason),
                         name: '',
                         cost: 0,
-                        budgetAmount: 0,
-                        cashAmount: 0
+                        firstSourceAmount: undefined,
+                        secondSourceAmount: undefined
                       });
                       e.currentTarget.blur();
                     }}
