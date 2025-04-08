@@ -6,7 +6,6 @@ import {
   Autocomplete,
   Button,
   FormControl,
-  FormLabel,
   FormHelperText,
   IconButton,
   InputAdornment,
@@ -19,11 +18,9 @@ import {
   TextField,
   Typography,
   styled,
-  Box,
-  Select,
-  MenuItem
+  Box
 } from '@mui/material';
-import { OtherProductReason, WbsNumber, validateWBS, wbsPipe, ReimbursementProductFormArgs, ClubAccount } from 'shared';
+import { OtherProductReason, WbsNumber, validateWBS, wbsPipe, ReimbursementProductFormArgs } from 'shared';
 import { RemoveCircleOutline, AddCircleOutline } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormSetValue } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';

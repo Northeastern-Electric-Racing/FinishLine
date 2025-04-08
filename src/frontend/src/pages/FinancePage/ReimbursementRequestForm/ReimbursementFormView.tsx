@@ -1,4 +1,4 @@
-import { AddCircleOutline, Delete } from '@mui/icons-material';
+import { AddCircleOutline } from '@mui/icons-material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import HelpIcon from '@mui/icons-material/Help';
 import {
@@ -40,7 +40,6 @@ import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { wbsNumComparator } from 'shared/src/validate-wbs';
 import { codeAndRefundSourceName, accountCodePipe } from '../../../utils/pipes';
-import NERAutocomplete from '../../../components/NERAutocomplete';
 import NERModal from '../../../components/NERModal';
 import CheckList from '../../../components/CheckList';
 
