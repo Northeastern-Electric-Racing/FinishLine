@@ -96,8 +96,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const accountCodeId = watch('accountCodeId');
   const selectedAccountCode = allAccountCodes.find((accountCode) => accountCode.accountCodeId === accountCodeId);
   const refundSources = selectedAccountCode?.allowedRefundSources || [];
-  const firstRefundSource = watch('account');
-  const secondRefundSource = watch('secondaryAccount');
+  const firstRefundSource = watch('account') || ClubAccount.CASH;
+  const secondRefundSource = watch('secondaryAccount') || ClubAccount.BUDGET;
   const remainingRefundSources = refundSources.filter((source) => source !== firstRefundSource);
 
   const calculatedTotalCost = products.reduce((acc, product) => acc + Number(product.cost), 0).toFixed(2);
@@ -217,6 +217,11 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
       label: accountCodePipe(accountCode),
       id: accountCode.accountCodeId
     };
+  };
+
+  const extractSourceName = (source: string): string => {
+    const lastPart = source.split('-').pop() || '';
+    return lastPart.charAt(0).toUpperCase() + lastPart.slice(1).toLowerCase();
   };
 
   const vendorsToAutocomplete = (vendor: Vendor): { label: string; id: string } => {
@@ -682,6 +687,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               control={control}
               setValue={setValue}
               hasMultipleRefundSources={hasConfirmedFinance}
+              firstRefundSourceName={extractSourceName(firstRefundSource) || ''}
+              secondRefundSourceName={extractSourceName(secondRefundSource) || ''}
             />
             <FormHelperText error>{errors.reimbursementProducts?.message}</FormHelperText>
           </FormControl>
