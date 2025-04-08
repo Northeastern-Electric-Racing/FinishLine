@@ -62,14 +62,26 @@ const schema = yup.object().shape({
     .of(
       yup.object().shape({
         name: yup.string().required('Description is required'),
+        firstSourceAmount: yup.number().required('Amount is required').typeError('Amount is required'),
+        secondSourceAmount: yup.number().required('Amount is required').typeError('Amount is required'),
         cost: yup
           .number()
-          .typeError('Amount is required')
-          .required('Amount is required')
-          .min(0.01, 'Amount must be greater than 0')
+          .typeError('Cost is required')
+          .required('Cost is required')
+          .min(0.01, 'Cost must be greater than 0')
+          .when(['firstSourceAmount', 'secondSourceAmount'], {
+            is: (firstSourceAmount: number | undefined, secondSourceAmount: number | undefined) =>
+              typeof firstSourceAmount === 'number' && typeof secondSourceAmount === 'number',
+            then: yup
+              .number()
+              .test('amounts-match', 'Sum of the refund sources must equal the total cost.', function (cost) {
+                const { firstSourceAmount, secondSourceAmount } = this.parent;
+                return cost === firstSourceAmount + secondSourceAmount;
+              })
+          })
       })
     )
-    .required('reimbursement products required')
+    .required('Reimbursement products required')
     .min(1, 'At least one Reimbursement Product is required'),
   receiptFiles:
     // The requirements for receipt uploads is disabled by default on development to make testing easier;
