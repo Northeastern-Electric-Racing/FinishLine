@@ -14,6 +14,7 @@ import {
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
+  AccessDeniedGuestException,
   DeletedException,
   HttpException,
   NotFoundException
@@ -499,7 +500,7 @@ export default class PartReviewService {
     const hasAccess = isAtLeastRank(RoleEnum.MEMBER, role);
 
     if (!hasAccess) {
-      throw new AccessDeniedException('Failed to access part.');
+      throw new AccessDeniedGuestException('Guests must be at least members to access this part.');
     }
 
     const createdRequest = await prisma.partReviewRequest.create({
@@ -545,7 +546,7 @@ export default class PartReviewService {
     const isLeader = await userHasPermission(user.userId, organizationId, isLeadership);
 
     if (!isRequester && !isReviewer && !isLeader) {
-      throw new AccessDeniedException('Failed to delete part review request.');
+      throw new AccessDeniedException('Only the requester, reviewer, or leadership can delete a part review request.');
     }
 
     const softDeletedRequest = await prisma.partReviewRequest.update({
