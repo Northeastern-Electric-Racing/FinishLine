@@ -23,12 +23,10 @@ import {
 } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
 import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
-import { getPartQueryArgs, getPartReviewQueryArgs } from '../prisma-query-args/part-review.query-args';
+import { getPartQueryArgs, getPartReviewQueryArgs, getPartReviewRequestQueryArgs } from '../prisma-query-args/part-review.query-args';
 import { faqTransformer } from '../transformers/faq.transformer';
-import { partReviewRequestTransformer, partsReviewCommonMistakeTransformer } from '../transformers/part-review.transformer';
-import { getPartReviewRequestQueryArgs } from '../prisma-query-args/part-review.query-args';
+import { partReviewRequestTransformer, partsReviewCommonMistakeTransformer, partTransformer } from '../transformers/part-review.transformer';
 import { partPreviewTransformer } from '../transformers/part-review.transformer';
-import { partsReviewCommonMistakeTransformer, partTransformer } from '../transformers/part-review.transformer';
 import { isUserPartOfTeams } from '../utils/teams.utils';
 import { uploadFile } from '../utils/google-integration.utils';
 import ProjectsService from './projects.services';
