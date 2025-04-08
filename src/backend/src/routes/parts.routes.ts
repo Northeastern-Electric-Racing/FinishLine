@@ -9,8 +9,6 @@ const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage()
 
 const partsRouter = express.Router();
 
-partsRouter.get('/:wbsNum', PartReviewController.getAllPartsForProject);
-
 partsRouter.post(
   '/create',
   nonEmptyString(body('wbsNum')),
@@ -23,22 +21,6 @@ partsRouter.post(
   validateInputs,
   PartReviewController.createPart
 );
-
-partsRouter.post('/:partId/upload-preview', upload.single('image'), PartReviewController.uploadPreview);
-
-partsRouter.post(
-  '/:partId/update',
-  intMinZero(body('index')),
-  nonEmptyString(body('commonName')),
-  body('description').optional().isString(),
-  body('reviewStatus').custom((value) => Object.values(Review_Status).includes(value)),
-  body('tagIds').isArray(),
-  body('assigneeIds').isArray(),
-  validateInputs,
-  PartReviewController.updatePart
-);
-
-partsRouter.post('/:partId/delete', PartReviewController.deletePart);
 
 partsRouter.get('/tags', PartReviewController.getAllPartTags);
 partsRouter.get('/faqs', PartReviewController.getAllPartReviewFAQS);
@@ -119,5 +101,21 @@ partsRouter.post(
 
 partsRouter.post('/common-mistake/:commonMistakeId/delete', PartReviewController.deleteCommonMistake);
 partsRouter.post('/popup/:popupId/delete', PartReviewController.deletePartReviewPopup);
+partsRouter.get('/:wbsNum', PartReviewController.getAllPartsForProject);
+partsRouter.post('/:partId/upload-preview', upload.single('image'), PartReviewController.uploadPreview);
+
+partsRouter.post(
+  '/:partId/update',
+  intMinZero(body('index')),
+  nonEmptyString(body('commonName')),
+  body('description').optional().isString(),
+  body('reviewStatus').custom((value) => Object.values(Review_Status).includes(value)),
+  body('tagIds').isArray(),
+  body('assigneeIds').isArray(),
+  validateInputs,
+  PartReviewController.updatePart
+);
+
+partsRouter.post('/:partId/delete', PartReviewController.deletePart);
 
 export default partsRouter;
