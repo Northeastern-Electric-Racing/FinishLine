@@ -19,13 +19,16 @@ import {
   TextField,
   Typography,
   styled,
-  Box
+  Box,
+  Select,
+  MenuItem
 } from '@mui/material';
-import { OtherProductReason, WbsNumber, validateWBS, wbsPipe, ReimbursementProductFormArgs } from 'shared';
+import { OtherProductReason, WbsNumber, validateWBS, wbsPipe, ReimbursementProductFormArgs, ClubAccount } from 'shared';
 import { Add, Delete, RemoveCircleOutline, AddCircleOutline } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormSetValue } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useTheme } from '@mui/system';
+import { useEffect, useState } from 'react';
 
 const otherCategoryOptions = [
   { label: 'Competition', id: 'COMPETITION' },
@@ -97,6 +100,33 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
 
   const userTheme = useTheme();
   const hoverColor = userTheme.palette.action.hover;
+
+  const [showFirstSourceFields, setShowFirstSourceFields] = useState(false);
+  const [showSecondSourceFields, setShowSecondSourceFields] = useState(false);
+
+  useEffect(() => {
+    // Trigger reset for the first refund source fields
+    if (firstRefundSourceName) {
+      setShowFirstSourceFields(true);
+      reimbursementProducts.forEach((_, index) => {
+        setValue(`reimbursementProducts.${index}.firstSourceAmount`, undefined); // Reset to undefined
+      });
+    } else {
+      setShowFirstSourceFields(false);
+    }
+  }, [firstRefundSourceName, reimbursementProducts, setValue]);
+
+  useEffect(() => {
+    // Trigger reset for the second refund source fields
+    if (secondRefundSourceName) {
+      setShowSecondSourceFields(true);
+      reimbursementProducts.forEach((_, index) => {
+        setValue(`reimbursementProducts.${index}.secondSourceAmount`, undefined); // Reset to undefined
+      });
+    } else {
+      setShowSecondSourceFields(false);
+    }
+  }, [secondRefundSourceName, reimbursementProducts, setValue]);
 
   return (
     <TableContainer sx={{ borderTop: '1px solid rgb(131, 131, 131)' }}>
@@ -378,120 +408,132 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                             </Box>
                             {hasMultipleRefundSources && (
                               <>
-                                <Box
-                                  sx={{
-                                    flex: '1.5',
-                                    width: '100%'
-                                  }}
-                                >
+                                {showFirstSourceFields && (
                                   <Box
                                     sx={{
-                                      display: { xs: 'block', md: 'none' },
-                                      textAlign: 'left',
-                                      mb: 1,
-                                      color: '#dd524c',
-                                      textShadow: '0.5px 0 #dd524c',
-                                      letterSpacing: '0.5px'
+                                      flex: '1.5',
+                                      width: '100%'
                                     }}
                                   >
-                                    <Typography>{firstRefundSourceName}</Typography>
-                                  </Box>
-                                  <FormControl fullWidth margin="dense" variant="outlined" size="small">
-                                    <Controller
-                                      name={`reimbursementProducts.${product.index}.firstSourceAmount`}
-                                      control={control}
-                                      render={({ field }) => (
-                                        <TextField
-                                          {...field}
-                                          sx={{
-                                            background: '#4c4c4c',
-                                            borderRadius: '20px',
-                                            '& .MuiOutlinedInput-root': {
+                                    <Box
+                                      sx={{
+                                        display: { xs: 'block', md: 'none' },
+                                        textAlign: 'left',
+                                        mb: 1,
+                                        color: '#dd524c',
+                                        textShadow: '0.5px 0 #dd524c',
+                                        letterSpacing: '0.5px'
+                                      }}
+                                    >
+                                      <Typography>{firstRefundSourceName}</Typography>
+                                    </Box>
+                                    <FormControl fullWidth margin="dense" variant="outlined" size="small">
+                                      <Controller
+                                        name={`reimbursementProducts.${product.index}.firstSourceAmount`}
+                                        control={control}
+                                        render={({ field }) => (
+                                          <TextField
+                                            {...field}
+                                            value={field.value ?? ''}
+                                            onChange={(e) => {
+                                              const value = e.target.value === '' ? undefined : parseFloat(e.target.value);
+                                              field.onChange(value);
+                                            }}
+                                            sx={{
+                                              background: '#4c4c4c',
                                               borderRadius: '20px',
-                                              color: 'white'
-                                            },
-                                            '& input[type=number]': {
-                                              MozAppearance: 'textfield',
-                                              '&::-webkit-outer-spin-button, &::-webkit-inner-spin-button': {
-                                                WebkitAppearance: 'none',
-                                                margin: 0
+                                              '& .MuiOutlinedInput-root': {
+                                                borderRadius: '20px',
+                                                color: 'white'
+                                              },
+                                              '& input[type=number]': {
+                                                MozAppearance: 'textfield',
+                                                '&::-webkit-outer-spin-button, &::-webkit-inner-spin-button': {
+                                                  WebkitAppearance: 'none',
+                                                  margin: 0
+                                                }
                                               }
+                                            }}
+                                            placeholder={'$ Amt'}
+                                            variant={'outlined'}
+                                            type="number"
+                                            fullWidth
+                                            onBlur={(e) =>
+                                              onAmountBlurHandler(e.target.value, product.index, 'firstSourceAmount')
                                             }
-                                          }}
-                                          value={field.value === 0 ? '' : field.value}
-                                          placeholder={'$ Amt'}
-                                          variant={'outlined'}
-                                          type="number"
-                                          fullWidth
-                                          onBlur={(e) =>
-                                            onAmountBlurHandler(e.target.value, product.index, 'firstSourceAmount')
-                                          }
-                                          error={!!errors.reimbursementProducts?.[product.index]?.firstSourceAmount}
-                                        />
-                                      )}
-                                    />
-                                    <FormHelperText error>
-                                      {errors.reimbursementProducts?.[product.index]?.firstSourceAmount?.message}
-                                    </FormHelperText>
-                                  </FormControl>
-                                </Box>
-                                <Box
-                                  sx={{
-                                    flex: '1.5',
-                                    width: '100%'
-                                  }}
-                                >
+                                            error={!!errors.reimbursementProducts?.[product.index]?.firstSourceAmount}
+                                          />
+                                        )}
+                                      />
+                                      <FormHelperText error>
+                                        {errors.reimbursementProducts?.[product.index]?.firstSourceAmount?.message}
+                                      </FormHelperText>
+                                    </FormControl>
+                                  </Box>
+                                )}
+                                {showSecondSourceFields && (
                                   <Box
                                     sx={{
-                                      display: { xs: 'block', md: 'none' },
-                                      textAlign: 'left',
-                                      mb: 1,
-                                      color: '#dd524c',
-                                      textShadow: '0.5px 0 #dd524c',
-                                      letterSpacing: '0.5px'
+                                      flex: '1.5',
+                                      width: '100%'
                                     }}
                                   >
-                                    <Typography>{secondRefundSourceName}</Typography>
-                                  </Box>
-                                  <FormControl fullWidth margin="dense" variant="outlined" size="small">
-                                    <Controller
-                                      name={`reimbursementProducts.${product.index}.secondSourceAmount`}
-                                      control={control}
-                                      render={({ field }) => (
-                                        <TextField
-                                          {...field}
-                                          sx={{
-                                            background: '#4c4c4c',
-                                            borderRadius: '20px',
-                                            '& .MuiOutlinedInput-root': {
+                                    <Box
+                                      sx={{
+                                        display: { xs: 'block', md: 'none' },
+                                        textAlign: 'left',
+                                        mb: 1,
+                                        color: '#dd524c',
+                                        textShadow: '0.5px 0 #dd524c',
+                                        letterSpacing: '0.5px'
+                                      }}
+                                    >
+                                      <Typography>{secondRefundSourceName}</Typography>
+                                    </Box>
+                                    <FormControl fullWidth margin="dense" variant="outlined" size="small">
+                                      <Controller
+                                        name={`reimbursementProducts.${product.index}.secondSourceAmount`}
+                                        control={control}
+                                        render={({ field }) => (
+                                          <TextField
+                                            {...field}
+                                            value={field.value ?? ''}
+                                            onChange={(e) => {
+                                              const value = e.target.value === '' ? undefined : parseFloat(e.target.value);
+                                              field.onChange(value);
+                                            }}
+                                            sx={{
+                                              background: '#4c4c4c',
                                               borderRadius: '20px',
-                                              color: 'white'
-                                            },
-                                            '& input[type=number]': {
-                                              MozAppearance: 'textfield',
-                                              '&::-webkit-outer-spin-button, &::-webkit-inner-spin-button': {
-                                                WebkitAppearance: 'none',
-                                                margin: 0
+                                              '& .MuiOutlinedInput-root': {
+                                                borderRadius: '20px',
+                                                color: 'white'
+                                              },
+                                              '& input[type=number]': {
+                                                MozAppearance: 'textfield',
+                                                '&::-webkit-outer-spin-button, &::-webkit-inner-spin-button': {
+                                                  WebkitAppearance: 'none',
+                                                  margin: 0
+                                                }
                                               }
+                                            }}
+                                            placeholder={'$ Amt'}
+                                            variant={'outlined'}
+                                            type="number"
+                                            fullWidth
+                                            onBlur={(e) =>
+                                              onAmountBlurHandler(e.target.value, product.index, 'secondSourceAmount')
                                             }
-                                          }}
-                                          value={field.value === 0 ? '' : field.value}
-                                          placeholder={'$ Amt'}
-                                          variant={'outlined'}
-                                          type="number"
-                                          fullWidth
-                                          onBlur={(e) =>
-                                            onAmountBlurHandler(e.target.value, product.index, 'secondSourceAmount')
-                                          }
-                                          error={!!errors.reimbursementProducts?.[product.index]?.secondSourceAmount}
-                                        />
-                                      )}
-                                    />
-                                    <FormHelperText error>
-                                      {errors.reimbursementProducts?.[product.index]?.secondSourceAmount?.message}
-                                    </FormHelperText>
-                                  </FormControl>
-                                </Box>
+                                            error={!!errors.reimbursementProducts?.[product.index]?.secondSourceAmount}
+                                          />
+                                        )}
+                                      />
+                                      <FormHelperText error>
+                                        {errors.reimbursementProducts?.[product.index]?.secondSourceAmount?.message}
+                                      </FormHelperText>
+                                    </FormControl>
+                                  </Box>
+                                )}
                                 <Box
                                   sx={{
                                     display: { xs: 'block', md: 'none' },
