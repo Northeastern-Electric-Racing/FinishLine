@@ -39,7 +39,7 @@ const Tabs = ({
           onChange={handleTabChange}
           variant="fullWidth"
           indicatorColor={greyscale ? 'secondary' : 'primary'}
-          textColor={greyscale ? 'secondary' : 'primary'}
+          textColor={greyscale ? 'inherit' : 'primary'}
         >
           {tabs.map((tab: TabData, index: number) => (
             <Tab
