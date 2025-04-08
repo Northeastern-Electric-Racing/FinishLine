@@ -607,12 +607,8 @@ export default class ReimbursementRequestsController {
   static async deleteReimbursementRequestComment(req: Request, res: Response, next: NextFunction) {
     try {
       const { commentId } = req.params;
-
-      const deletedComment = await ReimbursementRequestService.deleteReimbursementRequestComment(
-        req.organization,
-        commentId
-      );
-      res.status(200).json(deletedComment);
+      await ReimbursementRequestService.deleteReimbursementRequestComment(req.organization, commentId);
+      res.status(200).json({ message: `Successfully deleted Comment with id ${commentId}` });
     } catch (error: unknown) {
       next(error);
     }
