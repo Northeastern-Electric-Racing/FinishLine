@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import PartReviewService from '../services/part-review.services';
 import { validateWBS, WbsNumber } from 'shared';
+import { HttpException } from '../utils/errors.utils';
 
 export default class PartReviewController {
   static async getAllPartsForProject(req: Request, res: Response, next: NextFunction) {
@@ -9,6 +10,76 @@ export default class PartReviewController {
 
       const parts = await PartReviewService.getAllPartsForProject(wbsNumber, req.organization);
       res.status(200).json(parts);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createPart(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { wbsNum, index, commonName, description, reviewStatus, tagIds, assigneeIds } = req.body;
+      const part = await PartReviewService.createPart(
+        req.organization,
+        wbsNum,
+        req.currentUser,
+        index,
+        commonName,
+        description,
+        reviewStatus,
+        tagIds,
+        assigneeIds
+      );
+      res.status(200).json(part);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async uploadPreview(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { file } = req;
+      const { partId } = req.params;
+      if (!file) throw new HttpException(400, 'Invalid or undefined image data');
+
+      const newPreviewImage = await PartReviewService.uploadPartPreviewImage(
+        file,
+        partId,
+        req.currentUser,
+        req.organization.organizationId
+      );
+
+      res.status(200).json(newPreviewImage);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async updatePart(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { index, commonName, description, reviewStatus, tagIds, assigneeIds } = req.body;
+      const { partId } = req.params;
+      const part = await PartReviewService.updatePart(
+        req.organization.organizationId,
+        partId,
+        req.currentUser,
+        index,
+        commonName,
+        description,
+        reviewStatus,
+        tagIds,
+        assigneeIds
+      );
+      res.status(200).json(part);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deletePart(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { partId } = req.params;
+      await PartReviewService.deletePart(partId, req.currentUser, req.organization.organizationId);
+      res.status(200).json({ message: `Successfully deleted part #${partId}` });
     } catch (error: unknown) {
       next(error);
     }

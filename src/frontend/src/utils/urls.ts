@@ -46,6 +46,7 @@ const parts = () => `${API_URL}/parts`;
 const partsByProject = (projectId: string) => `${parts()}/${projectId}/parts`;
 const partsById = (partId: string) => `${parts()}/${partId}`;
 const partsCreate = () => `${parts()}/create`;
+const partsUploadPreviewImage = (partId: string) => `${parts()}/${partId}/upload-preview`;
 const partsEdit = (partId: string) => `${parts()}/${partId}/update`;
 const partsDelete = (partId: string) => `${parts()}/${partId}/delete`;
 const partsCreateSubmission = (partId: string) => `${parts()}/submission/${partId}/create`;
@@ -294,8 +295,9 @@ export const apiUrls = {
 
   parts,
   partsByProject,
-  partById: partsById,
+  partsById,
   partsCreate,
+  partsUploadPreviewImage,
   partsEdit,
   partsDelete,
   partsCreateSubmission,

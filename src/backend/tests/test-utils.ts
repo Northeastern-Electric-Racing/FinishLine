@@ -107,6 +107,11 @@ export const resetUsers = async () => {
   await prisma.partTag.deleteMany();
   await prisma.part.deleteMany();
   await prisma.work_Package.deleteMany();
+  await prisma.partReviewCommonMistake.deleteMany();
+  await prisma.partTag.deleteMany();
+  await prisma.part_Review_Popup.deleteMany();
+  await prisma.partReview.deleteMany();
+  await prisma.partSubmission.deleteMany();
   await prisma.part.deleteMany();
   await prisma.project.deleteMany();
   await prisma.frequentlyAskedQuestion.deleteMany();
