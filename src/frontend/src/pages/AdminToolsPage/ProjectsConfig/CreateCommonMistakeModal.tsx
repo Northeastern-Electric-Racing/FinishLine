@@ -71,7 +71,7 @@ const CreateCommonMistakesModal: React.FC<CreateCommonMistakesModalProps> = ({ s
 
       <FormControl fullWidth sx={{ mb: 2 }}>
         <FormLabel>Description</FormLabel>
-        <ReactHookTextField name="description" control={control} fullWidth />
+        <ReactHookTextField name="description" multiline={true} control={control} fullWidth />
         <FormHelperText error>{errors.description?.message}</FormHelperText>
       </FormControl>
 
