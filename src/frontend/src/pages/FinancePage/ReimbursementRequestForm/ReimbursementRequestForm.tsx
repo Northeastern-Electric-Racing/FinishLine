@@ -66,18 +66,17 @@ const schema = yup.object().shape({
         secondSourceAmount: yup.number().required('Amount is required').typeError('Amount is required'),
         cost: yup
           .number()
-          .typeError('Cost is required')
           .required('Cost is required')
+          .typeError('Cost is required')
           .min(0.01, 'Cost must be greater than 0')
+          .transform((value) => (value === '' ? undefined : value))
           .when(['firstSourceAmount', 'secondSourceAmount'], {
             is: (firstSourceAmount: number | undefined, secondSourceAmount: number | undefined) =>
               typeof firstSourceAmount === 'number' && typeof secondSourceAmount === 'number',
-            then: yup
-              .number()
-              .test('amounts-match', 'Sum of the refund sources must equal the total cost.', function (cost) {
-                const { firstSourceAmount, secondSourceAmount } = this.parent;
-                return cost === firstSourceAmount + secondSourceAmount;
-              })
+            then: yup.number().test('amounts-match', 'Sum of the refund sources must equal the total cost', function (cost) {
+              const { firstSourceAmount, secondSourceAmount } = this.parent;
+              return cost === firstSourceAmount + secondSourceAmount;
+            })
           })
       })
     )
