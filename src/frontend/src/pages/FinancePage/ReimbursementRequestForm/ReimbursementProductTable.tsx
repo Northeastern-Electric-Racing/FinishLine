@@ -24,11 +24,12 @@ import {
   MenuItem
 } from '@mui/material';
 import { OtherProductReason, WbsNumber, validateWBS, wbsPipe, ReimbursementProductFormArgs, ClubAccount } from 'shared';
-import { Add, Delete, RemoveCircleOutline, AddCircleOutline } from '@mui/icons-material';
+import { RemoveCircleOutline, AddCircleOutline } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormSetValue } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useTheme } from '@mui/system';
 import { useEffect, useState } from 'react';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 const otherCategoryOptions = [
   { label: 'Competition', id: 'COMPETITION' },
@@ -103,13 +104,11 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
 
   const [showFirstSourceFields, setShowFirstSourceFields] = useState(false);
   const [showSecondSourceFields, setShowSecondSourceFields] = useState(false);
-
   useEffect(() => {
-    // Trigger reset for the first refund source fields
     if (firstRefundSourceName) {
       setShowFirstSourceFields(true);
       reimbursementProducts.forEach((_, index) => {
-        setValue(`reimbursementProducts.${index}.firstSourceAmount`, undefined); // Reset to undefined
+        setValue(`reimbursementProducts.${index}.firstSourceAmount`, undefined);
       });
     } else {
       setShowFirstSourceFields(false);
@@ -117,11 +116,10 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   }, [firstRefundSourceName, reimbursementProducts, setValue]);
 
   useEffect(() => {
-    // Trigger reset for the second refund source fields
     if (secondRefundSourceName) {
       setShowSecondSourceFields(true);
       reimbursementProducts.forEach((_, index) => {
-        setValue(`reimbursementProducts.${index}.secondSourceAmount`, undefined); // Reset to undefined
+        setValue(`reimbursementProducts.${index}.secondSourceAmount`, undefined);
       });
     } else {
       setShowSecondSourceFields(false);
@@ -207,9 +205,18 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                         }
                       }}
                       placeholder="Select Project"
+                      InputProps={{
+                        ...params.InputProps,
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <KeyboardArrowDownIcon sx={{ fontSize: 'xxx-large' }} />
+                          </InputAdornment>
+                        )
+                      }}
                     />
                   )}
                 />
+
                 <Autocomplete
                   fullWidth
                   options={otherCategoryOptions}
@@ -239,6 +246,14 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                           color: 'white',
                           padding: '13px !important'
                         }
+                      }}
+                      InputProps={{
+                        ...params.InputProps,
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <KeyboardArrowDownIcon sx={{ fontSize: 'xxx-large' }} />
+                          </InputAdornment>
+                        )
                       }}
                       placeholder="Select Other Category"
                     />

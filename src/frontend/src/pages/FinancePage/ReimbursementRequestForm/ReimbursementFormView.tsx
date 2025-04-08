@@ -29,7 +29,7 @@ import {
   WbsNumber,
   wbsPipe
 } from 'shared';
-import { ArrowDropDownIcon, ClearIcon, DatePicker } from '@mui/x-date-pickers';
+import { ClearIcon, DatePicker } from '@mui/x-date-pickers';
 import ReimbursementProductTable from './ReimbursementProductTable';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
@@ -132,7 +132,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               <Typography
                 sx={{
                   marginBottom: '4px',
-                  fontSize: '0.875rem' // Slightly smaller font
+                  fontSize: 'medium'
                 }}
               >
                 {receiptFile.name}
@@ -257,12 +257,9 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
       )}
 
       <Grid item container spacing={5} md={12} xs={12} sx={{ '&.MuiGrid-item': { height: 'fit-content' } }}>
-        {/* Left Column Testing*/}
         <Grid item xs={12} md={6}>
           <Grid item xs={12}>
             <FormControl sx={{ borderRadius: '25px', width: '85%' }}>
-              {' '}
-              {/* Apply border-radius to FormControl */}
               <FormLabel
                 sx={{
                   color: '#dd524c',
@@ -347,13 +344,11 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   const mappedAccountCodes = allAccountCodes
                     .filter((accountCode) => accountCode.allowed)
                     .map(accountCodesToAutocomplete);
-
                   return (
                     <Select
                       value={value}
-                      onChange={(event) => {
-                        const selectedValue = event.target.value;
-                        onChange(selectedValue);
+                      onChange={(e) => {
+                        onChange(e.target.value);
                       }}
                       displayEmpty
                       IconComponent={KeyboardArrowDownIcon}
@@ -387,7 +382,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
             </FormControl>
           </Grid>
         </Grid>
-        {/* Right Column Testing*/}
         <Grid item xs={12} md={6}>
           <Grid item xs={12}>
             <FormControl sx={{ borderRadius: '25px', width: '85%' }}>
@@ -519,14 +513,12 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
             </FormControl>
           </Grid>
         </Grid>
-        {/*Bottom row Refund Source + Message*/}
         <Grid
           item
           xs={12}
           md={12}
           sx={{ display: 'flex', alignItems: { md: 'center' }, flexDirection: { xs: 'column', md: 'row' }, gap: 5 }}
         >
-          {/* Left-aligned Refund Source */}
           <Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'flex-start' }}>
             <FormControl sx={{ borderRadius: '25px', width: '85%' }}>
               <FormLabel
