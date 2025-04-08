@@ -144,6 +144,11 @@ const financeEditVendor = (vendorId: string) => `${financeEndpoints()}/${vendorI
 const financeLeadershipApprove = (id: string) => `${financeEndpoints()}/${id}/leadership-approve`;
 const getAllIndexCodes = () => `${financeEndpoints()}/index-codes`;
 const getAllOtherProductReasons = () => `${financeEndpoints()}/other-reimbursement-product-reasons`;
+const financeRoutesEndpoints = () => `${API_URL}/finance`;
+const getAllSponsors = () => `${financeRoutesEndpoints()}/sponsors`;
+const getSponsorTasks = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsors/${sponsorId}/tasks`;
+const deleteSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsors/${sponsorId}/delete`;
+const editSponsorTier = (sponsorTierId: string) => `${financeRoutesEndpoints()}/sponsorTier/${sponsorTierId}/edit`;
 
 /**************** Bill of Material Endpoints **************************/
 const bomEndpoints = () => `${API_URL}/projects/bom`;
@@ -370,6 +375,10 @@ export const apiUrls = {
   financeLeadershipApprove,
   getAllIndexCodes,
   getAllOtherProductReasons,
+  getAllSponsors,
+  getSponsorTasks,
+  deleteSponsor,
+  editSponsorTier,
 
   bomEndpoints,
   bomGetMaterialsByWbsNum,
