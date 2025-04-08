@@ -328,7 +328,6 @@ export const useEditPartReviewCommonMistakes = () => {
 export const useCreatePartReviewCommonMistake = () => {
   const queryClient = useQueryClient();
   return useMutation<PartReviewCommonMistake, Error, PartReviewCommonMistakePayload>(
-    ['partReviewCommonMistakes', 'createCommonMistake'],
     async (mistake: PartReviewCommonMistakePayload) => {
       const { data } = await createPartReviewCommonMistake(mistake);
       return data;
