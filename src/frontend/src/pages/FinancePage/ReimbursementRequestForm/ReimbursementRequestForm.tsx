@@ -62,8 +62,16 @@ const schema = yup.object().shape({
     .of(
       yup.object().shape({
         name: yup.string().required('Description is required'),
-        firstSourceAmount: yup.number().required('Amount is required').typeError('Amount is required'),
-        secondSourceAmount: yup.number().required('Amount is required').typeError('Amount is required'),
+        firstSourceAmount: yup
+          .number()
+          .required('Amount is required')
+          .typeError('Amount is required')
+          .min(0.01, 'Cost must be greater than 0'),
+        secondSourceAmount: yup
+          .number()
+          .required('Amount is required')
+          .typeError('Amount is required')
+          .min(0.01, 'Cost must be greater than 0'),
         cost: yup
           .number()
           .required('Cost is required')
