@@ -18,10 +18,11 @@ import {
   DescriptionBulletPreview,
   LinkCreateArgs,
   WbsNumber,
+  wbsPipe,
   WorkPackageProposedChangesCreateArgs,
   WorkPackageStage
 } from 'shared';
-import { HttpException, NotFoundException } from './errors.utils';
+import { DeletedException, HttpException, NotFoundException } from './errors.utils';
 import { ChangeRequestStatus } from 'shared';
 import { buildChangeDetail, createChange } from './changes.utils';
 import { WorkPackageQueryArgs, getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
@@ -143,8 +144,9 @@ export const validateChangeRequestAccepted = async (crId: string) => {
   if (changeRequest.dateDeleted) throw new HttpException(400, 'Cannot use a deleted change request!');
   if (changeRequest.accepted === null) throw new HttpException(400, 'Cannot implement an unreviewed change request');
   if (!changeRequest.accepted) throw new HttpException(400, 'Cannot implement a denied change request');
-  if (!changeRequest.dateReviewed) throw new HttpException(400, 'Cannot use an unreviewed change request');
   const dateImplemented = getDateImplemented(changeRequest);
+  if (!dateImplemented && !changeRequest.dateReviewed)
+    throw new HttpException(400, 'Cannot use an unreviewed and unimplemented change request');
   if (dateImplemented && currentDate.getTime() - dateImplemented.getTime() > 1000 * 60 * 60 * 24 * 5)
     throw new HttpException(400, 'Cannot tie changes to outdated change request');
 
@@ -178,12 +180,12 @@ export const getDateImplemented = (changeRequest: Change_Request & { changes: Ch
 };
 
 /**
- * Determines whether all the change requests in an array of change requests have been reviewed
+ * Determines whether all the change requests in an array of change requests have been reviewed or implemented
  * @param changeRequests the given array of change requests
  * @returns true if all the change requests have been reviewed, and false otherwise
  */
-export const allChangeRequestsReviewed = (changeRequests: Change_Request[]) => {
-  return changeRequests.every((changeRequest) => changeRequest.dateReviewed);
+export const allChangeRequestsReviewed = (changeRequests: (Change_Request & { changes: Change[] })[]) => {
+  return changeRequests.every((changeRequest) => changeRequest.dateReviewed || getDateImplemented(changeRequest));
 };
 
 export interface ProposedChangedValidationResult<T> {
@@ -578,4 +580,19 @@ export const sendCRSubmitterReviewedNotification = async (
       }
     }
   }
+};
+
+export const validateWbsElement = async (wbsNum: WbsNumber, organization: Organization): Promise<WBS_Element> => {
+  const wbsElement = await prisma.wBS_Element.findUnique({
+    where: {
+      wbsNumber: {
+        ...wbsNum,
+        organizationId: organization.organizationId
+      }
+    }
+  });
+
+  if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
+  if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
+  return wbsElement;
 };

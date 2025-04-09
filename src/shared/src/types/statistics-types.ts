@@ -15,7 +15,9 @@ export enum GraphType {
   PROJECT_BUDGET_BY_TEAM = 'PROJECT_BUDGET_BY_TEAM',
   REIMBURSEMENT_TOTAL_BY_DIVISION = 'REIMBURSEMENT_TOTAL_BY_DIVISION',
   REIMBURSEMENT_TOTAL_BY_PROJECT = 'REIMBURSEMENT_TOTAL_BY_PROJECT',
-  REIMBURSEMENT_TOTAL_BY_TEAM = 'REIMBURSEMENT_TOTAL_BY_TEAM'
+  REIMBURSEMENT_TOTAL_BY_TEAM = 'REIMBURSEMENT_TOTAL_BY_TEAM',
+  PROJECT_BUDGET_VS_REIMBURSED_AMOUNT = 'PROJECT_BUDGET_VS_REIMBURSED_AMOUNT',
+  CHANGE_REQUESTS_BY_STATUS = 'CHANGE_REQUESTS_BY_STATUS'
 }
 
 export enum SpecialPermission {
@@ -29,8 +31,11 @@ export enum Measure {
 }
 
 export interface GraphData {
-  value: number;
-  label: string;
+  tipLabel: string;
+  values: {
+    value: number;
+    label: string;
+  }[];
 }
 
 export interface Graph {
