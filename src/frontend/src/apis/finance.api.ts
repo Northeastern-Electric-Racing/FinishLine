@@ -446,7 +446,7 @@ export const deleteSponsor = (sponsorId: string) => {
 };
 
 /**
- * API call to edit a sponsor tier
+ * API call to edit a sponsor task
  *
  * @param sponsorTaskData the edited data of the sponsor task
  * @param sponsorTaskId the id of the sponsor task to be edited

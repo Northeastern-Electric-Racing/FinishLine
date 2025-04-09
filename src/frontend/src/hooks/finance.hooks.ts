@@ -660,12 +660,11 @@ export const useGetSponsorTasks = (sponsorId: string) => {
 };
 
 /**
- * Custom React Hook to edit a sponsor tier
+ * Custom React Hook to edit a sponsor task
  *
- * @param sponsorTierData the edited data of the sponsor tier
- * @param sponsorTaskId the id of the sponsor tier to be edited
+ * @param sponsorTaskId the id of the sponsor task to be edited
  *
- * @returns the edited sponosor tier
+ * @returns the edited sponosor task
  */
 export const useEditSponsorTask = (sponsorTaskId: string) => {
   const queryClient = useQueryClient();
