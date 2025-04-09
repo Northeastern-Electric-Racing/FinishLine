@@ -71,6 +71,7 @@ CREATE TABLE "PartReviewRequest" (
     "requesterId" TEXT NOT NULL,
     "reviewerId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "dateDeleted" TIMESTAMP(3),
 
     CONSTRAINT "PartReviewRequest_pkey" PRIMARY KEY ("partReviewRequestId")
 );

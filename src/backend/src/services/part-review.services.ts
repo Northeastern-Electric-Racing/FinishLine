@@ -1,5 +1,5 @@
 import { Organization, User } from '@prisma/client';
-import { userHasPermission } from '../utils/users.utils';
+import { userHasPermission, getUserRole } from '../utils/users.utils';
 import {
   FrequentlyAskedQuestion,
   isAdmin,
@@ -8,6 +8,8 @@ import {
   PartTag,
   Project,
   WbsNumber,
+  isAtLeastRank,
+  RoleEnum,
   Review_Status,
   validateWBS
 } from 'shared';
@@ -16,14 +18,23 @@ import {
   AccessDeniedException,
   DeletedException,
   HttpException,
-  NotFoundException
+  NotFoundException,
+  AccessDeniedGuestException
 } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
 import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
-import { getPartQueryArgs, getPartReviewQueryArgs } from '../prisma-query-args/part-review.query-args';
+import {
+  getPartQueryArgs,
+  getPartReviewQueryArgs,
+  getPartReviewRequestQueryArgs
+} from '../prisma-query-args/part-review.query-args';
 import { faqTransformer } from '../transformers/faq.transformer';
-import { partPreviewTransformer } from '../transformers/part-review.transformer';
-import { partsReviewCommonMistakeTransformer, partTransformer } from '../transformers/part-review.transformer';
+import {
+  partReviewRequestTransformer,
+  partsReviewCommonMistakeTransformer,
+  partTransformer,
+  partPreviewTransformer
+} from '../transformers/part-review.transformer';
 import { isUserPartOfTeams } from '../utils/teams.utils';
 import { uploadFile } from '../utils/google-integration.utils';
 import ProjectsService from './projects.services';
@@ -654,6 +665,92 @@ export default class PartReviewService {
   }
 
   /**
+   * Creates a new part review request.
+   * @param partId - the id of the part to request a review on
+   * @param requester - user who is creating the review request
+   * @param reviewerId - user who is being asked to review
+   * @param organizationId - organization id to validate permissions
+   * @returns the created and transformed PartReviewRequest
+   */
+  static async createPartReviewRequest(partId: string, requester: User, reviewerId: string, organizationId: string) {
+    const part = await prisma.part.findUnique({
+      where: { partId }
+    });
+
+    if (!part) {
+      throw new NotFoundException('Part', partId);
+    }
+
+    if (part.dateDeleted) {
+      throw new DeletedException('Part', partId);
+    }
+
+    const role = await getUserRole(requester.userId, organizationId);
+    const hasAccess = isAtLeastRank(RoleEnum.MEMBER, role);
+
+    if (!hasAccess) {
+      throw new AccessDeniedGuestException('Guests must be at least members to access this part.');
+    }
+
+    const createdRequest = await prisma.partReviewRequest.create({
+      data: {
+        part: {
+          connect: { partId }
+        },
+        requester: {
+          connect: { userId: requester.userId }
+        },
+        reviewerRequested: {
+          connect: { userId: reviewerId }
+        }
+      },
+      ...getPartReviewRequestQueryArgs(organizationId)
+    });
+
+    return partReviewRequestTransformer(createdRequest);
+  }
+
+  /**
+   * soft deletes an existing part review request if the requester, reviewer, or an admin initiates the request
+   * @param reviewRequestId - the ID of the part whose review request should be deleted
+   * @param user - the user attempting to delete the review request
+   * @param organizationId - the organization ID to validate permissions
+   * @returns the soft-deleted and transformed PartReviewRequest
+   */
+  static async deletePartReviewRequest(reviewRequestId: string, user: User, organizationId: string) {
+    const reviewRequest = await prisma.partReviewRequest.findUnique({
+      where: { partReviewRequestId: reviewRequestId }
+    });
+
+    if (!reviewRequest) {
+      throw new NotFoundException('Review request', reviewRequestId);
+    }
+
+    if (reviewRequest.dateDeleted) {
+      throw new DeletedException('Review request', reviewRequestId);
+    }
+
+    const isRequester = reviewRequest.requesterId === user.userId;
+    const isReviewer = reviewRequest.reviewerId === user.userId;
+    const isLeader = await userHasPermission(user.userId, organizationId, isLeadership);
+
+    if (!isRequester && !isReviewer && !isLeader) {
+      throw new AccessDeniedException('Only the requester, reviewer, or leadership can delete a part review request.');
+    }
+
+    const softDeletedRequest = await prisma.partReviewRequest.update({
+      where: {
+        partReviewRequestId: reviewRequest.partReviewRequestId
+      },
+      data: {
+        dateDeleted: new Date()
+      },
+      ...getPartReviewRequestQueryArgs(organizationId)
+    });
+    return partReviewRequestTransformer(softDeletedRequest);
+  }
+
+  /*
    * Creates a part review popup
    * @param organizationId Id of the organization
    * @param reviewId ID of the review
@@ -664,6 +761,7 @@ export default class PartReviewService {
    * @param creator The user creating the popup
    * @returns The newly created popup
    */
+
   static async createPartReviewPopup(
     organizationId: string,
     reviewId: string,

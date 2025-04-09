@@ -120,4 +120,13 @@ partsRouter.post(
 partsRouter.post('/common-mistake/:commonMistakeId/delete', PartReviewController.deleteCommonMistake);
 partsRouter.post('/popup/:popupId/delete', PartReviewController.deletePartReviewPopup);
 
+partsRouter.post(
+  '/:partId/reviewRequest/create',
+  nonEmptyString(body('reviewerId')),
+  validateInputs,
+  PartReviewController.createPartReviewRequest
+);
+
+partsRouter.post('/reviewRequest/:reviewRequestId/delete', PartReviewController.deletePartReviewRequest);
+
 export default partsRouter;
