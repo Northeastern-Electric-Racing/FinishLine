@@ -45,7 +45,7 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
     await mutateAsync({
       reviewerId: auth.user?.userId,
       crId,
-      reviewNotes,
+      reviewNotes: reviewNotes ?? '',
       accepted,
       psId
     }).catch((error) => {
