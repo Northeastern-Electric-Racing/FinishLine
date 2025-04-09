@@ -8,7 +8,7 @@ const PartPage: React.FC = () => {
     index: 1,
     commonName,
     description: 'High-precision part for industrial applications with heat-treated steel components and ceramic bearings.',
-    previewImageLink: '/api/placeholder/400/240',
+    previewImageId: '/api/placeholder/400/240',
     projectId: 'proj-1',
     assignees: [
       {
