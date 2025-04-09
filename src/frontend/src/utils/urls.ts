@@ -148,7 +148,7 @@ const financeRoutesEndpoints = () => `${API_URL}/finance`;
 const getAllSponsors = () => `${financeRoutesEndpoints()}/sponsors`;
 const getSponsorTasks = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsors/${sponsorId}/tasks`;
 const deleteSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsors/${sponsorId}/delete`;
-const editSponsorTier = (sponsorTierId: string) => `${financeRoutesEndpoints()}/sponsorTier/${sponsorTierId}/edit`;
+const editSponsorTask = (sponsorTaskId: string) => `${financeRoutesEndpoints()}/sponsorTask/${sponsorTaskId}/edit`;
 
 /**************** Bill of Material Endpoints **************************/
 const bomEndpoints = () => `${API_URL}/projects/bom`;
@@ -378,7 +378,7 @@ export const apiUrls = {
   getAllSponsors,
   getSponsorTasks,
   deleteSponsor,
-  editSponsorTier,
+  editSponsorTask,
 
   bomEndpoints,
   bomGetMaterialsByWbsNum,

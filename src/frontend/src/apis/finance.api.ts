@@ -10,7 +10,7 @@ import {
   AccountCodePayload,
   RefundPayload,
   MarkDeliveredRequestPayload,
-  EditSponsorTierPayload
+  EditSponsorTaskPayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -392,7 +392,7 @@ export const requestReimbursementRequestChanges = async (id: string) => {
  */
 export const getAllIndexCodes = () => {
   return axios.get<IndexCode[]>(apiUrls.getAllIndexCodes(), {
-    transformResponse: (data) => JSON.parse(data) as IndexCode[]
+    transformResponse: (data) => JSON.parse(data)
   });
 };
 
@@ -403,7 +403,7 @@ export const getAllIndexCodes = () => {
  */
 export const getAllOtherProductReason = () => {
   return axios.get<OtherProductReason[]>(apiUrls.getAllOtherProductReasons(), {
-    transformResponse: (data) => JSON.parse(data) as OtherProductReason[]
+    transformResponse: (data) => JSON.parse(data)
   });
 };
 
@@ -427,7 +427,7 @@ export const getAllSponsors = () => {
  * @returns the list of tasks for a given sponsor
  */
 
-export const getsponsorTasks = (sponsorId: string) => {
+export const getSponsorTasks = (sponsorId: string) => {
   return axios.get<SponsorTask[]>(apiUrls.getSponsorTasks(sponsorId), {
     transformResponse: (data) => JSON.parse(data).map(sponsorTaskTranformer)
   });
@@ -448,11 +448,11 @@ export const deleteSponsor = (sponsorId: string) => {
 /**
  * API call to edit a sponsor tier
  *
- * @param sponsorTierData the edited data of the sponsor tier
- * @param sponsorTierId the id of the sponsor tier to be edited
+ * @param sponsorTaskData the edited data of the sponsor task
+ * @param sponsorTaskId the id of the sponsor task to be edited
  *
  * @returns the edited sponosor tier
  */
-export const editSponsorTier = (sponsorTierId: string, sponsorTierData: EditSponsorTierPayload) => {
-  return axios.post(apiUrls.editSponsorTier(sponsorTierId), sponsorTierData);
+export const editSponsorTask = (sponsorTaskId: string, sponsorTaskData: EditSponsorTaskPayload) => {
+  return axios.post(apiUrls.editSponsorTask(sponsorTaskId), sponsorTaskData);
 };

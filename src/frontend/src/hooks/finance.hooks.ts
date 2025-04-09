@@ -36,8 +36,8 @@ import {
   getAllIndexCodes,
   getAllOtherProductReason,
   getAllSponsors,
-  getsponsorTasks,
-  editSponsorTier,
+  getSponsorTasks,
+  editSponsorTask,
   deleteSponsor
 } from '../apis/finance.api';
 import {
@@ -53,8 +53,7 @@ import {
   ReimbursementStatusType,
   OtherProductReason,
   Sponsor,
-  SponsorTask,
-  SponsorTier
+  SponsorTask
 } from 'shared';
 import { fullNamePipe } from '../utils/pipes';
 
@@ -103,9 +102,11 @@ export interface IndexCodePayload {
   name: string;
 }
 
-export interface EditSponsorTierPayload {
-  name: string;
-  colorHexCode: string;
+export interface EditSponsorTaskPayload {
+  dueDate: Date;
+  notes: string;
+  notifyDate?: Date;
+  asigneeId?: string;
 }
 
 /**
@@ -653,7 +654,7 @@ export const useGetAllSponsors = () => {
  */
 export const useGetSponsorTasks = (sponsorId: string) => {
   return useQuery<SponsorTask[], Error>(['sponsor-task'], async () => {
-    const { data } = await getsponsorTasks(sponsorId);
+    const { data } = await getSponsorTasks(sponsorId);
     return data;
   });
 };
@@ -662,17 +663,17 @@ export const useGetSponsorTasks = (sponsorId: string) => {
  * Custom React Hook to edit a sponsor tier
  *
  * @param sponsorTierData the edited data of the sponsor tier
- * @param sponsorTierId the id of the sponsor tier to be edited
+ * @param sponsorTaskId the id of the sponsor tier to be edited
  *
  * @returns the edited sponosor tier
  */
-export const useEditSponsorTier = (sponsorTierId: string) => {
+export const useEditSponsorTask = (sponsorTaskId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<SponsorTier, Error, EditSponsorTierPayload>(
-    ['sponsor-tier', 'edit'],
-    async (formData: EditSponsorTierPayload) => {
-      const { data } = await editSponsorTier(sponsorTierId, formData);
-      queryClient.invalidateQueries(['sponsor-tier']);
+  return useMutation<SponsorTask, Error, EditSponsorTaskPayload>(
+    ['sponsor-task', 'edit'],
+    async (formData: EditSponsorTaskPayload) => {
+      const { data } = await editSponsorTask(sponsorTaskId, formData);
+      queryClient.invalidateQueries(['sponsor-task']);
       return data;
     }
   );
