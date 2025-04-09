@@ -1,26 +1,30 @@
 import { NextFunction, Request, Response } from 'express';
 import PartReviewService from '../services/part-review.services';
+import { WbsNumber, validateWBS } from 'shared';
 
 export default class PartReviewController {
   static async getPart(req: Request, res: Response, next: NextFunction) {
     try {
+      const organizationId = req.organization.organizationId;
       const { partId } = req.params;
-      const part = await PartReviewService.getPart(partId);
+      const part = await PartReviewService.getPart(organizationId, partId);
       res.status(200).json(part);
     } catch (error: unknown) {
       next(error);
     }
   }
 
-  static async getPartPreviews(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { projectId } = req.params;
-      const partPreviews = await PartReviewService.getPartPreviews(projectId);
-      res.status(200).json(partPreviews);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
+  // static async getPartPreviews(req: Request, res: Response, next: NextFunction) {
+  //   try {
+  //     const organization = req.organization;
+  //     const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
+
+  //     const partPreviews = await PartReviewService.getPartPreviews(organization, wbsNumber);
+  //     res.status(200).json(partPreviews);
+  //   } catch (error: unknown) {
+  //     next(error);
+  //   }
+  // }
 
   static async getAllPartTags(req: Request, res: Response, next: NextFunction) {
     try {

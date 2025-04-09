@@ -1,11 +1,13 @@
-import { User } from '@prisma/client';
+import { Organization, User } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
-import { FrequentlyAskedQuestion, isAdmin, PartReviewCommonMistake } from 'shared';
+import { FrequentlyAskedQuestion, isAdmin, PartReviewCommonMistake, Project, WbsNumber } from 'shared';
 import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
 import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
 import { faqTransformer } from '../transformers/faq.transformer';
 import { partsReviewCommonMistakeTransformer, partTransformer } from '../transformers/part-review.transformer';
+import { partQueryArgs } from '../prisma-query-args/part-review.query-args';
+import ProjectsService from './projects.services';
 
 export default class PartReviewService {
   /**
@@ -13,37 +15,29 @@ export default class PartReviewService {
    * @param partId the id of the part
    * @returns a single Part
    */
-  static async getPart(partId: string) {
+  static async getPart(organizationId: string, partId: string) {
     const part = await prisma.part.findUnique({
       where: { partId: partId, dateDeleted: null },
-      include: {
-        tags: true,
-        submissions: true,
-        assignees: true,
-        userCreated: true
-      }
+      ...partQueryArgs(organizationId)
     });
+
+    if (!part) throw new NotFoundException('Part', partId)
+
     return partTransformer(part);
   }
 
-  /**
-   * Uses the given project ID to fetch the respective part preview
-   * @param projectId the id of the project
-   * @returns a part preview
-   */
-  static async getPartPreviews(projectId: string) {
-    const part = await prisma.part.findUnique({
-      where: { projectId: projectId, dateDeleted: null },
-      include: {
-        tags: true,
-        submissions: true,
-        assignees: true,
-        userCreated: true
-      }
-    })
+  // /**
+  //  * Uses the given project ID to fetch the respective part preview
+  //  * @param projectId the id of the project
+  //  * @returns the previews of all parts related to the given project
+  //  */
+  // static async getPartPreviews(organization: Organization, wbsNum: WbsNumber) {
+  //   const project: Project = await ProjectsService.getSingleProject(wbsNum, organization);
 
-    part.
-  }
+  //   const partPreviews = await prisma.
+
+  //   if (!part) throw new NotFoundException('Part', partId)
+  // }
 
   /**
    * Uses the given organizationID to and returns an array of part tags
