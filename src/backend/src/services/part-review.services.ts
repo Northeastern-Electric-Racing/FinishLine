@@ -26,14 +26,16 @@ import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
 import {
   getPartQueryArgs,
   getPartReviewQueryArgs,
-  getPartReviewRequestQueryArgs
+  getPartReviewRequestQueryArgs,
+  getPartSubmissionQueryArgs
 } from '../prisma-query-args/part-review.query-args';
 import { faqTransformer } from '../transformers/faq.transformer';
 import {
   partReviewRequestTransformer,
   partsReviewCommonMistakeTransformer,
   partTransformer,
-  partPreviewTransformer
+  partPreviewTransformer,
+  partSubmissionTransformer
 } from '../transformers/part-review.transformer';
 import { isUserPartOfTeams } from '../utils/teams.utils';
 import { uploadFile } from '../utils/google-integration.utils';
@@ -236,6 +238,110 @@ export default class PartReviewService {
     });
 
     return partTransformer(deletedPart);
+  }
+
+  /**
+   * Creates a submission for a given part
+   * @param partId the part that the submission will be added to
+   * @param creator the creator
+   * @param organizationId the organization
+   * @param name the name of the submission
+   * @param notes optional notes
+   * @returns the created submission
+   */
+  static async createSubmission(partId: string, creator: User, organizationId: string, name: string, notes?: string) {
+    const part = await prisma.part.findUnique({
+      where: { partId }
+    });
+    if (!part) throw new NotFoundException('Part', partId);
+    if (part.dateDeleted) throw new DeletedException('Part', partId);
+
+    const submission = await prisma.partSubmission.create({
+      data: {
+        name,
+        notes,
+        part: {
+          connect: { partId }
+        },
+        userCreated: {
+          connect: { userId: creator.userId }
+        }
+      },
+      ...getPartSubmissionQueryArgs(organizationId)
+    });
+
+    return partSubmissionTransformer(submission);
+  }
+
+  /**
+   * updates a given submission
+   * @param submissionId the submission being updated
+   * @param updater the user updating (must be the creator)
+   * @param organizationId the organization
+   * @param name the new name of the submission
+   * @param notes the new notes (optional)
+   * @returns the updated submission
+   */
+  static async updateSubmission(submissionId: string, updater: User, organizationId: string, name: string, notes?: string) {
+    const submission = await prisma.partSubmission.findUnique({
+      where: { partSubmissionId: submissionId }
+    });
+    if (!submission) throw new NotFoundException('Part Submission', submissionId);
+    if (submission.dateDeleted) throw new DeletedException('Part Submission', submissionId);
+
+    if (updater.userId !== submission.userCreatedId)
+      throw new AccessDeniedException('only submission creators can update submissions');
+
+    const updatedSubmission = await prisma.partSubmission.update({
+      where: { partSubmissionId: submissionId },
+      data: {
+        name,
+        notes: notes ?? submission.notes
+      },
+      ...getPartSubmissionQueryArgs(organizationId)
+    });
+
+    return partSubmissionTransformer(updatedSubmission);
+  }
+
+  /**
+   * Uploads an array of files to a given submission
+   * @param submissionId the submission
+   * @param uploader the user uploading (must be creator)
+   * @param organizationId the organization
+   * @param files an array of files to upload
+   * @returns the updated submission
+   */
+  static async uploadSubmissionFiles(
+    submissionId: string,
+    uploader: User,
+    organizationId: string,
+    files: Express.Multer.File[]
+  ) {
+    const submission = await prisma.partSubmission.findUnique({
+      where: { partSubmissionId: submissionId }
+    });
+    if (!submission) throw new NotFoundException('Part Submission', submissionId);
+    if (submission.dateDeleted) throw new DeletedException('Part Submission', submissionId);
+
+    if (uploader.userId !== submission.userCreatedId)
+      throw new AccessDeniedException('only submission creators can update submissions');
+
+    const fileIds = await Promise.all(
+      files.map(async (file) => {
+        return (await uploadFile(file)).id;
+      })
+    );
+
+    const updatedSubmission = await prisma.partSubmission.update({
+      where: { partSubmissionId: submissionId },
+      data: {
+        fileIds
+      },
+      ...getPartSubmissionQueryArgs(organizationId)
+    });
+
+    return partSubmissionTransformer(updatedSubmission);
   }
 
   /**

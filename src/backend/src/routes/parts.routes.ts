@@ -9,8 +9,6 @@ const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage()
 
 const partsRouter = express.Router();
 
-partsRouter.get('/:wbsNum', PartReviewController.getAllPartsForProject);
-
 partsRouter.post(
   '/create',
   nonEmptyString(body('wbsNum')),
@@ -24,21 +22,26 @@ partsRouter.post(
   PartReviewController.createPart
 );
 
-partsRouter.post('/:partId/upload-preview', upload.single('image'), PartReviewController.uploadPreview);
-
 partsRouter.post(
-  '/:partId/update',
-  intMinZero(body('index')),
-  nonEmptyString(body('commonName')),
-  body('description').optional().isString(),
-  body('reviewStatus').custom((value) => Object.values(Review_Status).includes(value)),
-  body('tagIds').isArray(),
-  body('assigneeIds').isArray(),
-  validateInputs,
-  PartReviewController.updatePart
+  '/submission/create',
+  nonEmptyString(body('partId')),
+  nonEmptyString(body('name')),
+  body('notes').optional().isString(),
+  PartReviewController.createSubmission
 );
 
-partsRouter.post('/:partId/delete', PartReviewController.deletePart);
+partsRouter.post(
+  '/submission/:submissionId/update',
+  nonEmptyString(body('name')),
+  body('notes').optional().isString(),
+  PartReviewController.updateSubmission
+);
+
+partsRouter.post(
+  '/submission/:submissionId/upload-files',
+  upload.array('files', 10),
+  PartReviewController.uploadSubmissionFiles
+);
 
 partsRouter.get('/tags', PartReviewController.getAllPartTags);
 partsRouter.get('/faqs', PartReviewController.getAllPartReviewFAQS);
@@ -120,6 +123,8 @@ partsRouter.post(
 partsRouter.post('/common-mistake/:commonMistakeId/delete', PartReviewController.deleteCommonMistake);
 partsRouter.post('/popup/:popupId/delete', PartReviewController.deletePartReviewPopup);
 
+partsRouter.post('/reviewRequest/:reviewRequestId/delete', PartReviewController.deletePartReviewRequest);
+
 partsRouter.post(
   '/:partId/reviewRequest/create',
   nonEmptyString(body('reviewerId')),
@@ -127,6 +132,22 @@ partsRouter.post(
   PartReviewController.createPartReviewRequest
 );
 
-partsRouter.post('/reviewRequest/:reviewRequestId/delete', PartReviewController.deletePartReviewRequest);
+partsRouter.post('/:partId/upload-preview', upload.single('image'), PartReviewController.uploadPreview);
+
+partsRouter.post(
+  '/:partId/update',
+  intMinZero(body('index')),
+  nonEmptyString(body('commonName')),
+  body('description').optional().isString(),
+  body('reviewStatus').custom((value) => Object.values(Review_Status).includes(value)),
+  body('tagIds').isArray(),
+  body('assigneeIds').isArray(),
+  validateInputs,
+  PartReviewController.updatePart
+);
+
+partsRouter.post('/:partId/delete', PartReviewController.deletePart);
+
+partsRouter.get('/:wbsNum', PartReviewController.getAllPartsForProject);
 
 export default partsRouter;
