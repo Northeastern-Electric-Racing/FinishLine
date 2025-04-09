@@ -7,7 +7,6 @@
 
 import {
   CR_Type,
-  Club_Accounts,
   Graph_Display_Type,
   Graph_Type,
   Measure,
@@ -22,7 +21,6 @@ import { dbSeedAllTeams } from './seed-data/teams.seed';
 import ChangeRequestsService from '../services/change-requests.services';
 import TeamsService from '../services/teams.services';
 import {
-  ClubAccount,
   DesignReviewStatus,
   MaterialStatus,
   RoleEnum,
@@ -1721,6 +1719,7 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'nershipping@gmail.com',
     'racecar228!',
+    false,
     'SAVE50!',
     thomasEmrax.userId,
     'Tax exemption status?',
@@ -1732,6 +1731,7 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'amazon@gmail.com',
     'racecare228!',
+    true,
     'SAVE20!',
     thomasEmrax.userId,
     'They want updates on work',
@@ -1743,25 +1743,29 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'google@gmail.com',
     'racecar228!',
+    false,
     'SAVE50!',
     thomasEmrax.userId,
     'Tax exemption ID NUMBER',
     thomasEmrax.userId
   );
 
+  const indexCodeCash = await ReimbursementRequestService.createIndexCode('CASH', '830667', thomasEmrax, ner);
+  const indexCodeBudget = await ReimbursementRequestService.createIndexCode('BUDGET', '800462', thomasEmrax, ner);
+
   const accountCode = await ReimbursementRequestService.createAccountCode(
     thomasEmrax,
     'Equipment',
     123,
     true,
-    [Club_Accounts.CASH, Club_Accounts.BUDGET],
+    [indexCodeCash, indexCodeBudget],
     ner
   );
 
   const reimbursement1 = await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
     vendor.vendorId,
-    ClubAccount.CASH,
+    indexCodeCash.indexCodeId,
     [],
     [
       {
@@ -1782,7 +1786,7 @@ const performSeed: () => Promise<void> = async () => {
   const reimbursement2 = await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
     vendor.vendorId,
-    ClubAccount.BUDGET,
+    indexCodeBudget.indexCodeId,
     [],
     [
       {
@@ -1799,6 +1803,72 @@ const performSeed: () => Promise<void> = async () => {
     200,
     ner,
     new Date()
+  );
+
+  ReimbursementRequestService.createReimbursementRequestComment(
+    thomasEmrax,
+    ner,
+    'Thomas Followed up - "Please upload reciept"',
+    reimbursement1.reimbursementRequestId
+  );
+
+  ReimbursementRequestService.createReimbursementRequestComment(
+    batman,
+    ner,
+    'Batman Uploaded Receipt',
+    reimbursement1.reimbursementRequestId
+  );
+
+  ReimbursementRequestService.createReimbursementRequestComment(
+    thomasEmrax,
+    ner,
+    'Thomas Submmited to SABO',
+    reimbursement1.reimbursementRequestId
+  );
+
+  const otherProductReasonConsumables = await ReimbursementRequestService.createOtherReimbursementProductReason(
+    'CONSUMABLES',
+    10,
+    indexCodeCash.indexCodeId,
+    [accountCode],
+    thomasEmrax,
+    ner
+  );
+
+  const otherProductReasonTools = await ReimbursementRequestService.createOtherReimbursementProductReason(
+    'TOOLS_AND_EQUIPMENT',
+    10,
+    indexCodeCash.indexCodeId,
+    [],
+    thomasEmrax,
+    ner
+  );
+
+  const otherProductReasonComp = await ReimbursementRequestService.createOtherReimbursementProductReason(
+    'COMPETITION',
+    10,
+    indexCodeBudget.indexCodeId,
+    [accountCode],
+    thomasEmrax,
+    ner
+  );
+
+  const otherProductReasonGeneral = await ReimbursementRequestService.createOtherReimbursementProductReason(
+    'GENERAL_STOCK',
+    10,
+    indexCodeBudget.indexCodeId,
+    [],
+    thomasEmrax,
+    ner
+  );
+
+  const otherProductReasonSub = await ReimbursementRequestService.createOtherReimbursementProductReason(
+    'SUBSCRIPTIONS_AND_MEMBERSHIP',
+    10,
+    indexCodeCash.indexCodeId,
+    [],
+    thomasEmrax,
+    ner
   );
 
   /**

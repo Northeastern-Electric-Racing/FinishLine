@@ -8,7 +8,10 @@ import {
   EditVendorPayload,
   AccountCodePayload,
   RefundPayload,
-  MarkDeliveredRequestPayload
+  MarkDeliveredRequestPayload,
+  SponsorPayload,
+  SponsorTierPayload,
+  SponsorTaskPayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -19,7 +22,7 @@ import {
 } from './transformers/reimbursement-requests.transformer';
 import { saveAs } from 'file-saver';
 import { PDFDocument, PDFImage } from 'pdf-lib';
-import { AccountCode, ReimbursementRequest } from 'shared';
+import { IndexCode, AccountCode, ReimbursementRequest, OtherProductReason } from 'shared';
 
 enum AllowedFileType {
   JPEG = 'image/jpeg',
@@ -381,4 +384,57 @@ export const markPendingFinance = async (id: string) => {
  */
 export const requestReimbursementRequestChanges = async (id: string) => {
   return axios.post(apiUrls.financeRequestChanges(id));
+};
+
+/**
+ * Creates a sponsor in the database
+ *
+ * @param sponsorData the data for the sponsor
+ * @returns the new sponsor
+ */
+export const createSponsor = async (sponsorData: SponsorPayload) => {
+  return axios.post(apiUrls.financeCreateSponsor(), sponsorData);
+};
+
+/**
+ * Creates a sponsor tier in the database
+ *
+ * @param sponsorTierData the data for the sponsor tier
+ * @returns the new sponsor tier
+ */
+export const createSponsorTier = async (sponsorTierData: SponsorTierPayload) => {
+  return axios.post(apiUrls.financeCreateSponsorTier(), sponsorTierData);
+};
+
+/**
+ * Creates a sponsor task in the database
+ *
+ * @param id The id of the sponsor
+ * @param sponsorTaskData the data for sponsor task
+ * @returns the new sponsor task
+ */
+export const createSponsorTask = async (sponsorId: string, sponsorTaskData: SponsorTaskPayload) => {
+  return axios.post(apiUrls.financeCreateSponsorTask(sponsorId), sponsorTaskData);
+};
+
+/**
+ * API call to get the list of all IndexCodes
+ *
+ * @returns The list of IndexCodes
+ */
+export const getAllIndexCodes = () => {
+  return axios.get<IndexCode[]>(apiUrls.getAllIndexCodes(), {
+    transformResponse: (data) => JSON.parse(data) as IndexCode[]
+  });
+};
+
+/**
+ * API call to get the list of all Other Product Reason
+ *
+ * @returns The list of OtherProductReasons
+ */
+export const getAllOtherProductReason = () => {
+  return axios.get<OtherProductReason[]>(apiUrls.getAllOtherProductReasons(), {
+    transformResponse: (data) => JSON.parse(data) as OtherProductReason[]
+  });
 };

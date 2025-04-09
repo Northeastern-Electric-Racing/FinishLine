@@ -6745,6 +6745,7 @@ __metadata:
     concat-stream: ^2.0.0
     cookie-parser: ^1.4.5
     cors: ^2.8.5
+    crypto-js: ^4.2.0
     decimal.js: ^10.4.3
     dotenv: ^16.0.1
     express: ^5.0.0
@@ -7821,6 +7822,13 @@ __metadata:
     shebang-command: ^2.0.0
     which: ^2.0.1
   checksum: 8d306efacaf6f3f60e0224c287664093fa9185680b2d195852ba9a863f85d02dcc737094c6e512175f8ee0161f9b87c73c6826034c2422e39de7d6569cf4503b
+  languageName: node
+  linkType: hard
+
+"crypto-js@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "crypto-js@npm:4.2.0"
+  checksum: f051666dbc077c8324777f44fbd3aaea2986f198fe85092535130d17026c7c2ccf2d23ee5b29b36f7a4a07312db2fae23c9094b644cc35f7858b1b4fcaf27774
   languageName: node
   linkType: hard
 

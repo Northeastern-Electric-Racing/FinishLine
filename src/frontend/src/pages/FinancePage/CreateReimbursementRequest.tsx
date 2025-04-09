@@ -18,7 +18,7 @@ const CreateReimbursementRequestPage: React.FC = () => {
   if (createReimbursementRequestIsLoading || receiptsIsLoading) return <LoadingIndicator />;
 
   const onSubmit = async (data: ReimbursementRequestDataSubmission): Promise<string> => {
-    const { reimbursementRequestId } = await createReimbursementRequest({ ...data, account: data.account! });
+    const { reimbursementRequestId } = await createReimbursementRequest({ ...data, indexCodeId: data.indexCodeId! });
     await uploadReceipts({
       id: reimbursementRequestId,
       files: data.receiptFiles.map((file) => file.file!)

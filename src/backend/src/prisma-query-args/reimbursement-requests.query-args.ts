@@ -4,6 +4,9 @@ import { getVendorQueryArgs } from './vendor.query-args';
 import { getUserQueryArgs } from './user.query-args';
 import { getReceiptQueryArgs } from './receipt-query.args';
 import { getReimbursementProductQueryArgs } from './reimbursement-products.query-args';
+import { getIndexCodeQueryArgs } from './index-code.query-args';
+import { getAccountCodeQueryArgs } from './account-code.query-args';
+import { getReimbursementRequestCommentQueryArgs } from './reimbursement-comment.query-args';
 
 export type ReimbursementRequestQueryArgs = ReturnType<typeof getReimbursementRequestQueryArgs>;
 
@@ -12,7 +15,8 @@ export const getReimbursementRequestQueryArgs = (organizationId: string) =>
     include: {
       recipient: getUserQueryArgs(organizationId),
       vendor: getVendorQueryArgs(organizationId),
-      accountCode: true,
+      indexCode: getIndexCodeQueryArgs(organizationId),
+      accountCode: getAccountCodeQueryArgs(organizationId),
       receiptPictures: getReceiptQueryArgs(organizationId),
       reimbursementStatuses: getReimbursementStatusQueryArgs(organizationId),
       reimbursementProducts: {
@@ -21,6 +25,12 @@ export const getReimbursementRequestQueryArgs = (organizationId: string) =>
         },
         ...getReimbursementProductQueryArgs(organizationId)
       },
-      notificationSlackThreads: true
+      notificationSlackThreads: true,
+      reimbursementComments: {
+        where: {
+          dateDeleted: null
+        },
+        ...getReimbursementRequestCommentQueryArgs(organizationId)
+      }
     }
   });

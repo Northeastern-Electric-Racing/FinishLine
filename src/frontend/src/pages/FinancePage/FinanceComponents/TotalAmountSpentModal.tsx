@@ -1,4 +1,4 @@
-import { ClubAccount, ReimbursementRequest } from 'shared';
+import { ReimbursementRequest } from 'shared';
 import NERModal from '../../../components/NERModal';
 import { Box } from '@mui/material';
 import DetailDisplay from '../../../components/DetailDisplay';
@@ -14,7 +14,7 @@ const TotalAmountSpentModal: React.FC<TotalAmountSpentModalProps> = ({ open, all
   const unDeniedReimbursementRequests = allReimbursementRequests.filter((request) => !isReimbursementRequestDenied(request));
   const cashAccountSpent = centsToDollar(
     unDeniedReimbursementRequests
-      .filter((request) => request.account === ClubAccount.CASH)
+      .filter((request) => request.indexCode.name === 'CASH')
       .reduce((acc, curr) => {
         return acc + curr.totalCost;
       }, 0)
@@ -22,7 +22,7 @@ const TotalAmountSpentModal: React.FC<TotalAmountSpentModalProps> = ({ open, all
 
   const budgetAccountSpent = centsToDollar(
     unDeniedReimbursementRequests
-      .filter((request) => request.account === ClubAccount.BUDGET)
+      .filter((request) => request.indexCode.name === 'BUDGET')
       .reduce((acc, curr) => {
         return acc + curr.totalCost;
       }, 0)

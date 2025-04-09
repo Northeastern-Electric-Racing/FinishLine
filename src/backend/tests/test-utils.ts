@@ -1,6 +1,5 @@
 /* eslint-disable prefer-destructuring */
 import {
-  Club_Accounts,
   Organization,
   Project,
   Schedule_Settings,
@@ -15,7 +14,7 @@ import prisma from '../src/prisma/prisma';
 import { dbSeedAllUsers } from '../src/prisma/seed-data/users.seed';
 import TeamsService from '../src/services/teams.services';
 import ReimbursementRequestService from '../src/services/reimbursement-requests.services';
-import { ClubAccount, Permission, RoleEnum, TaskPriority, TaskStatus } from 'shared';
+import { Permission, RoleEnum, TaskPriority, TaskStatus } from 'shared';
 import {
   batmanAppAdmin,
   batmanScheduleSettings,
@@ -106,6 +105,7 @@ export const resetUsers = async () => {
   await prisma.user_Secure_Settings.deleteMany();
   await prisma.reimbursement_Product.deleteMany();
   await prisma.reimbursement_Status.deleteMany();
+  await prisma.reimbursement_Request_Comment.deleteMany();
   await prisma.reimbursement_Request.deleteMany();
   await prisma.vendor.deleteMany();
   await prisma.account_Code.deleteMany();
@@ -140,6 +140,9 @@ export const resetUsers = async () => {
   await prisma.sponsor_Task.deleteMany();
   await prisma.sponsor.deleteMany();
   await prisma.sponsor_Tier.deleteMany();
+  await prisma.reimbursement_Product_Other_Reason.deleteMany();
+  await prisma.account_Code.deleteMany();
+  await prisma.index_Code.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
 };
@@ -435,25 +438,28 @@ export const createTestReimbursementRequest = async () => {
     organization,
     'nershipping@gmail.com',
     'racecar228!',
+    true,
     'SAVE50!',
     user.userId,
     'Tax exemption status?',
     user.userId
   );
 
+  const indexCode = await ReimbursementRequestService.createIndexCode('CASH', '830667', user, organization);
+
   const accountCode = await ReimbursementRequestService.createAccountCode(
     user,
     'Equipment',
     123,
     true,
-    [Club_Accounts.CASH, Club_Accounts.BUDGET],
+    [indexCode],
     organization
   );
 
   const rr = await ReimbursementRequestService.createReimbursementRequest(
     user,
     vendor.vendorId,
-    ClubAccount.CASH,
+    indexCode.indexCodeId,
     [],
     [
       {
@@ -474,7 +480,7 @@ export const createTestReimbursementRequest = async () => {
 
   if (!rr) throw new Error('Failed to create reimbursement request');
 
-  return { rr, organization, vendor, accountCode, project, user };
+  return { rr, organization, vendor, indexCode, accountCode, project, user };
 };
 
 // Always creates a new design review
