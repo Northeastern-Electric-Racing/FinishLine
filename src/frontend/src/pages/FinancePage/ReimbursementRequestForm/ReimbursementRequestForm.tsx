@@ -71,12 +71,12 @@ const schema = yup.object().shape({
           .number()
           .required('Amount is required')
           .typeError('Amount is required')
-          .min(0.01, 'Cost must be greater than 0'),
+          .min(0, 'Cost cannot be negative'),
         cost: yup
           .number()
           .required('Cost is required')
           .typeError('Cost is required')
-          .min(0.01, 'Cost must be greater than 0')
+          .min(0, 'Cost cannot be negative')
           .transform((value) => (value === '' ? undefined : value))
           .when(['firstSourceAmount', 'secondSourceAmount'], {
             is: (firstSourceAmount: number | undefined, secondSourceAmount: number | undefined) =>
