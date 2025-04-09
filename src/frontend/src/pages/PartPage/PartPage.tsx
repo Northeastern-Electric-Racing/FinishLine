@@ -5,12 +5,10 @@ const PartPage: React.FC = () => {
     <Box padding={4}>
       {/* This is where the breadcrumbs (series of links) will go */}
       <Breadcrumbs sx={{ mb: 2 }}></Breadcrumbs>
-
       {/* Need to query for the part title */}
       <Typography variant="h4" fontWeight="bold" mb={3}>
         [PROJ_PartName_PartNum]
       </Typography>
-
       <Grid container spacing={3}>
         {/* The code below will be replaced by the part preview */}
         <Grid item xs={12} md={6}>

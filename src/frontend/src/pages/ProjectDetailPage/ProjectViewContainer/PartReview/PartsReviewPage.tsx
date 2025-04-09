@@ -6,6 +6,7 @@ import { useCurrentUser } from '../../../../hooks/users.hooks';
 import { rankUserRole } from 'shared';
 import NERSwitch from '../../../../components/NERSwitch';
 import CommonMistakes from './CommonMistakes';
+import CreateMenu from './PartReviewComponents/CreateMenu';
 
 const PartsReviewPage = () => {
   const currentUser = useCurrentUser();
@@ -16,6 +17,7 @@ const PartsReviewPage = () => {
 
   return (
     <Box>
+      <CreateMenu />
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <FormGroup>
