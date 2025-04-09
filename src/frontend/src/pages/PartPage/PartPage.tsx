@@ -1,6 +1,87 @@
 import { Box, Typography, Grid, Breadcrumbs } from '@mui/material';
+import PartDisplay from './components/PartDisplay';
+import { Part, Review_Status } from 'shared';
 
 const PartPage: React.FC = () => {
+  const createSamplePart = (partId: string, commonName: string): Part => ({
+    partId,
+    index: 1,
+    commonName,
+    description: 'High-precision part for industrial applications with heat-treated steel components and ceramic bearings.',
+    previewImageLink: '/api/placeholder/400/240',
+    projectId: 'proj-1',
+    assignees: [
+      {
+        userId: 'user-2',
+        firstName: 'Jane',
+        lastName: 'Smith',
+        email: 'jane@example.com',
+        emailId: '',
+        role: 'ADMIN',
+        permissions: []
+      }
+    ],
+    createdAt: new Date('2025-03-14T09:00:00Z'),
+    /*userCreatedId: 'user-1',*/
+    userCreated: {
+      userId: 'user-1',
+      firstName: 'John',
+      lastName: 'Doe',
+      email: 'john@example.com',
+      emailId: '',
+      role: 'ADMIN',
+      permissions: []
+    },
+    submissions: [
+      {
+        partSubmissionId: '',
+        fileIds: [''],
+        name: 'this part',
+        partId: '',
+        userCreated: {
+          userId: 'user-1',
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'john@example.com',
+          emailId: '',
+          role: 'ADMIN',
+          permissions: []
+        },
+        reviews: [],
+        createdAt: new Date('2025-03-14T09:00:00Z')
+      }
+    ],
+    status: Review_Status.IN_PROGRESS,
+    tags: [],
+    reviewRequests: [
+      {
+        partReviewRequestId: '',
+        partId: '',
+        requester: {
+          userId: 'user-1',
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'john@example.com',
+          emailId: '',
+          role: 'ADMIN',
+          permissions: []
+        },
+        reviewerRequested: {
+          userId: 'user-1',
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'john@example.com',
+          emailId: '',
+          role: 'ADMIN',
+          permissions: []
+        },
+        createdAt: new Date('2025-03-14T09:00:00Z')
+      }
+    ]
+  });
+
+  const samplePart = createSamplePart('part-123', '2025-04-10T23:59:59Z');
+
   return (
     <Box padding={4}>
       {/* This is where the breadcrumbs (series of links) will go */}
@@ -25,7 +106,8 @@ const PartPage: React.FC = () => {
               border: '2px solid white'
             }}
           >
-            <Typography color="white">No submission yet.</Typography>
+            <PartDisplay part={samplePart}></PartDisplay>
+            {/*<Typography color="white">No submission yet.</Typography>*/}
           </Box>
         </Grid>
 
