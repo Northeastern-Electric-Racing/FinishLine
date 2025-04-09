@@ -451,7 +451,7 @@ export const deleteSponsor = (sponsorId: string) => {
  * @param sponsorTaskData the edited data of the sponsor task
  * @param sponsorTaskId the id of the sponsor task to be edited
  *
- * @returns the edited sponosor tier
+ * @returns the edited sponosor task
  */
 export const editSponsorTask = (sponsorTaskId: string, sponsorTaskData: EditSponsorTaskPayload) => {
   return axios.post(apiUrls.editSponsorTask(sponsorTaskId), sponsorTaskData);
