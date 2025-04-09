@@ -168,10 +168,10 @@ describe('Part Submission History', () => {
       '[01/07/24] - Chris Pyle re-requested a review from Griffin Cooper and requested a review from Zachary Wen.'
     );
   });
-  it('Reviewer began reviewing submission', () => {
+  it('Reviewer began reviewing Submission #2', () => {
     expect(completePartHistory(part1)[7]).toBe('[01/08/24] - Zachary Wen began reviewing Submission #2.');
   });
-  it('Reviewer finished reviewing submission', () => {
+  it('Reviewer finished reviewing Submission #2', () => {
     expect(completePartHistory(part1)[8]).toBe('[01/09/24] - Zachary Wen reviewed Submission #2 (in Submission #2 Review).');
   });
   it('Submission 3', () => {
