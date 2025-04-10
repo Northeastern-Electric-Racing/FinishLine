@@ -254,3 +254,6 @@ ALTER TABLE "Reimbursement_Request_Comment" ADD CONSTRAINT "Reimbursement_Reques
 
 -- AddForeignKey
 ALTER TABLE "Reimbursement_Request_Comment" ADD CONSTRAINT "Reimbursement_Request_Comment_reimbursementRequestId_fkey" FOREIGN KEY ("reimbursementRequestId") REFERENCES "Reimbursement_Request"("reimbursementRequestId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AlterTable
+ALTER TABLE "Reimbursement_Request_Comment" ADD COLUMN     "dateDeleted" TIMESTAMP(3);

@@ -33,6 +33,9 @@ import {
   leadershipApproveReimbursementRequest,
   requestReimbursementRequestChanges,
   markPendingFinance,
+  createSponsor,
+  createSponsorTask,
+  createSponsorTier,
   getAllIndexCodes,
   getAllOtherProductReason,
   getAllSponsors,
@@ -53,7 +56,8 @@ import {
   ReimbursementStatusType,
   OtherProductReason,
   Sponsor,
-  SponsorTask
+  SponsorTask,
+  SponsorTier
 } from 'shared';
 import { fullNamePipe } from '../utils/pipes';
 
@@ -97,6 +101,94 @@ export interface RefundPayload {
 export interface MarkDeliveredRequestPayload {
   dateDelivered: Date;
 }
+
+export interface SponsorPayload {
+  name: string;
+  activeStatus: boolean;
+  sponsorValue: number;
+  joinDate: Date;
+  activeYears: number[];
+  sponsorTierId: string;
+  taxExempt: boolean;
+  vendorContact: string;
+  sponsorTasks: SponsorTask[];
+  discountCode?: string;
+}
+
+export interface SponsorTierPayload {
+  name: string;
+  colorHexCode: string;
+}
+
+export interface SponsorTaskPayload {
+  dueDate: Date;
+  notes: string;
+  notifyDate?: Date;
+  asigneeId?: string;
+}
+
+/**
+ * Custom React hook to create a sponsor
+ *
+ * @returns the created sponsor
+ */
+export const useCreateSponsor = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Sponsor, Error, SponsorPayload>(
+    ['sponsor', 'create'],
+    async (formData: SponsorPayload) => {
+      const { data } = await createSponsor(formData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['sponsor']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React hook to create a sponsor task
+ *
+ * @returns the created sponsor task
+ */
+export const useCreateSponsorTask = (sponsorId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<SponsorTask, Error, SponsorTaskPayload>(
+    ['sponsor-task', 'create'],
+    async (formData: SponsorTaskPayload) => {
+      const { data } = await createSponsorTask(sponsorId, formData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['sponsor-task']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React hook to create a sponsor tier
+ *
+ * @returns the created sponsor tier
+ */
+export const useCreateSponsorTier = () => {
+  const queryClient = useQueryClient();
+  return useMutation<SponsorTier, Error, SponsorTierPayload>(
+    ['sponsor-tier', 'create'],
+    async (formData: SponsorTierPayload) => {
+      const { data } = await createSponsorTier(formData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['sponsor-tier']);
+      }
+    }
+  );
+};
 
 export interface IndexCodePayload {
   name: string;

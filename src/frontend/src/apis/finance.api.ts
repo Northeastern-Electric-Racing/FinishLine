@@ -10,7 +10,10 @@ import {
   AccountCodePayload,
   RefundPayload,
   MarkDeliveredRequestPayload,
-  EditSponsorTaskPayload
+  EditSponsorTaskPayload,
+  SponsorPayload,
+  SponsorTierPayload,
+  SponsorTaskPayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -383,6 +386,37 @@ export const markPendingFinance = async (id: string) => {
  */
 export const requestReimbursementRequestChanges = async (id: string) => {
   return axios.post(apiUrls.financeRequestChanges(id));
+};
+
+/**
+ * Creates a sponsor in the database
+ *
+ * @param sponsorData the data for the sponsor
+ * @returns the new sponsor
+ */
+export const createSponsor = async (sponsorData: SponsorPayload) => {
+  return axios.post(apiUrls.financeCreateSponsor(), sponsorData);
+};
+
+/**
+ * Creates a sponsor tier in the database
+ *
+ * @param sponsorTierData the data for the sponsor tier
+ * @returns the new sponsor tier
+ */
+export const createSponsorTier = async (sponsorTierData: SponsorTierPayload) => {
+  return axios.post(apiUrls.financeCreateSponsorTier(), sponsorTierData);
+};
+
+/**
+ * Creates a sponsor task in the database
+ *
+ * @param id The id of the sponsor
+ * @param sponsorTaskData the data for sponsor task
+ * @returns the new sponsor task
+ */
+export const createSponsorTask = async (sponsorId: string, sponsorTaskData: SponsorTaskPayload) => {
+  return axios.post(apiUrls.financeCreateSponsorTask(sponsorId), sponsorTaskData);
 };
 
 /**

@@ -1805,6 +1805,27 @@ const performSeed: () => Promise<void> = async () => {
     new Date()
   );
 
+  ReimbursementRequestService.createReimbursementRequestComment(
+    thomasEmrax,
+    ner,
+    'Thomas Followed up - "Please upload reciept"',
+    reimbursement1.reimbursementRequestId
+  );
+
+  ReimbursementRequestService.createReimbursementRequestComment(
+    batman,
+    ner,
+    'Batman Uploaded Receipt',
+    reimbursement1.reimbursementRequestId
+  );
+
+  ReimbursementRequestService.createReimbursementRequestComment(
+    thomasEmrax,
+    ner,
+    'Thomas Submmited to SABO',
+    reimbursement1.reimbursementRequestId
+  );
+
   const otherProductReasonConsumables = await ReimbursementRequestService.createOtherReimbursementProductReason(
     'CONSUMABLES',
     10,
