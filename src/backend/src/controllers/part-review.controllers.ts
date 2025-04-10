@@ -121,7 +121,7 @@ export default class PartReviewController {
   static async uploadSubmissionFiles(req: Request, res: Response, next: NextFunction) {
     try {
       const { submissionId } = req.params;
-      const { files } = req.body;
+      const files = req.files as Express.Multer.File[];
       const updatedSubmission = await PartReviewService.uploadSubmissionFiles(
         submissionId,
         req.currentUser,
