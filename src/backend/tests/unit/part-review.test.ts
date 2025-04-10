@@ -278,7 +278,7 @@ describe('part review tests', () => {
       reviewNoNotes.partReviewId,
       'added notes'
     );
-    expect(updatedReviewAddNotes.notes).toBe('new notes');
+    expect(updatedReviewAddNotes.notes).toBe('added notes');
     expect(updatedReviewAddNotes.submissionId).toBe(submission.partSubmissionId);
     expect(updatedReviewAddNotes.userCreated.userId).toBe(batman.userId);
   });
@@ -326,7 +326,7 @@ describe('part review tests', () => {
     const review = await PartReviewService.createReview(orgId, batman, submission.partSubmissionId, 'notes about review');
 
     await expect(
-      async () => await PartReviewService.updateReview(orgId, batman, review.partReviewId, 'test notes')
+      async () => await PartReviewService.updateReview(orgId, superman, review.partReviewId, 'test notes')
     ).rejects.toThrow(new AccessDeniedException('only review creators can update reviews'));
   });
 
