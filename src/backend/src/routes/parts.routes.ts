@@ -12,7 +12,7 @@ const partsRouter = express.Router();
 partsRouter.get('/tags', PartReviewController.getAllPartTags);
 partsRouter.get('/faqs', PartReviewController.getAllPartReviewFAQS);
 partsRouter.get('/:wbsNum/:indexNum', PartReviewController.getPart);
-partsRouter.get('/:wbsNum', PartReviewController.getAllPartsForProject);
+partsRouter.get('/byProject/:wbsNum', PartReviewController.getAllPartsForProject);
 
 partsRouter.post(
   '/create',
