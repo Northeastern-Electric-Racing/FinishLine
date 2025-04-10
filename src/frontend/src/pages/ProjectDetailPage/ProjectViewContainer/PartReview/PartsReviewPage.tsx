@@ -3,12 +3,12 @@ import { Box } from '@mui/system';
 import { Grid, FormGroup, FormControlLabel, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
-import { rankUserRole } from 'shared';
+import { Project, rankUserRole } from 'shared';
 import NERSwitch from '../../../../components/NERSwitch';
 import CommonMistakes from './CommonMistakes';
 import CreateMenu from './PartReviewComponents/CreateMenu';
 
-const PartsReviewPage = () => {
+const PartsReviewPage = ({ project }: { project: Project }) => {
   const currentUser = useCurrentUser();
   const [showSubmissionGuide, setShowSubmissionGuide] = useState(() => {
     const userRole = currentUser.role;
@@ -17,7 +17,7 @@ const PartsReviewPage = () => {
 
   return (
     <Box>
-      <CreateMenu />
+      <CreateMenu project={project}/>
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <FormGroup>

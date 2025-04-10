@@ -5,10 +5,16 @@ import PostAddOutlinedIcon from '@mui/icons-material/PostAddOutlined';
 import { useState } from 'react';
 import { useCurrentUser } from '../../../../../hooks/users.hooks';
 import { Box, Button, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
-import { isGuest } from 'shared';
+import { Project, isGuest } from 'shared';
+import CreateSubmissionModal from './CreateSubmissionModal';
 
-const CreateMenu: React.FC = () => {
+type CreateMenuProps = {
+  project: Project;
+};
+
+const CreateMenu: React.FC<CreateMenuProps> = ({ project }: CreateMenuProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [showAddSubmission, setShowAddSubmission] = useState(false);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -22,6 +28,7 @@ const CreateMenu: React.FC = () => {
   const user = useCurrentUser();
   return (
     <Box>
+      <CreateSubmissionModal open={showAddSubmission} onHide={() => setShowAddSubmission(false)} wbsElement={project} />
       <Button
         disabled={isGuest(user.role)}
         onClick={handleClick}
@@ -35,11 +42,7 @@ const CreateMenu: React.FC = () => {
         </Typography>
       </Button>
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
-        <MenuItem
-          onClick={() => {
-            handleDropdownClose();
-          }}
-        >
+        <MenuItem onClick={() => setShowAddSubmission(true)}>
           <ListItemIcon>
             <FilterIcon />
           </ListItemIcon>
