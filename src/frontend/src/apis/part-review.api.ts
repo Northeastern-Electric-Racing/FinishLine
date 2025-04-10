@@ -1,12 +1,5 @@
 import { PartPayload, PartSubmissionPayload, PartReviewRequestPayload, PartReviewPayload } from '../hooks/part-review.hooks';
-import {
-  PartPreview,
-  Part,
-  PartSubmission,
-  PartReviewRequest,
-  PartReview,
-  PartReviewCommonMistake
-} from 'shared';
+import { PartPreview, Part, PartSubmission, PartReviewRequest, PartReview, PartReviewCommonMistake } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import { partPreviewTransformer, partTransformer } from './transformers/part-review.transformers';
