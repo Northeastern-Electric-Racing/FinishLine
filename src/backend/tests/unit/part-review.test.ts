@@ -735,6 +735,42 @@ describe('part review tests', () => {
       );
     });
   });
+
+  describe('Get a singular part', () => {
+    it('successfully gets the part corresponding to the partId', async () => {
+      const division = await createTestTeamType(undefined, orgId);
+      const team = await createTestTeam(batman.userId, division.teamTypeId, orgId);
+      const car = await createTestCar(orgId, batman.userId);
+
+      const project = await createTestProject(batman, orgId, team.teamId, car.carId, 1);
+
+      const part = await createTestPart(superman, 'door', '1', 1, project.projectId);
+
+      const testPart = await PartReviewService.getPart(orgId, '1');
+
+      expect(testPart.userCreated.userId).toEqual(part.userCreatedId);
+      expect(testPart.commonName).toBe(part.commonName);
+      expect(testPart.partId).toBe(part.partId);
+      expect(testPart.index).toBe(part.index);
+      expect(testPart.projectId).toBe(part.projectId);
+    });
+
+    it('throws an error when a part cannot be found with the given partId'),
+      async () => {
+        const division = await createTestTeamType(undefined, orgId);
+        const team = await createTestTeam(batman.userId, division.teamTypeId, orgId);
+        const car = await createTestCar(orgId, batman.userId);
+
+        const project = await createTestProject(batman, orgId, team.teamId, car.carId, 1);
+
+        const part1 = await createTestPart(superman, 'door', '-1', 1, project.projectId);
+        const part2 = await createTestPart(superman, 'door', '23', 1, project.projectId);
+        const part3 = await createTestPart(superman, 'door', '29', 1, project.projectId);
+
+        await expect(PartReviewService.getPart(orgId, '1')).rejects.toThrow(new NotFoundException('Part', '-1'));
+      };
+  });
+
   describe('Get all parts', () => {
     it('getting all parts from a project with no parts successfully returns empty array', async () => {
       const division = await createTestTeamType(undefined, orgId);
