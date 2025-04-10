@@ -49,10 +49,12 @@ export interface PartReviewRequestPayload {
 export interface CreatePartReviewPayload {
   submissisonId: string;
   notes?: string;
+  status?: string;
 }
 
 export interface EditPartReviewPayload {
-  notes: string;
+  notes?: string;
+  status?: Review_Status;
 }
 
 /**

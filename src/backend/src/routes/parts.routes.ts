@@ -26,13 +26,15 @@ partsRouter.post(
   '/review/create',
   nonEmptyString(body('submissionId')),
   body('notes').optional().isString(),
+  body('status').optional().isString(),
   validateInputs,
   PartReviewController.createReview
 );
 
 partsRouter.post(
   '/review/:reviewId/update',
-  nonEmptyString(body('notes')),
+  body('notes').optional().isString(),
+  body('status').optional().isString(),
   validateInputs,
   PartReviewController.updateReview
 );

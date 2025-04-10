@@ -87,11 +87,12 @@ export default class PartReviewController {
 
   static async createReview(req: Request, res: Response, next: NextFunction) {
     try {
-      const { submissionId, notes } = req.body;
+      const { submissionId, notes, status } = req.body;
       const review = await PartReviewService.createReview(
         req.organization.organizationId,
         req.currentUser,
         submissionId,
+        status,
         notes
       );
       res.status(200).json(review);
@@ -103,11 +104,12 @@ export default class PartReviewController {
   static async updateReview(req: Request, res: Response, next: NextFunction) {
     try {
       const { reviewId } = req.params;
-      const { notes } = req.body;
+      const { notes, status } = req.body;
       const updatedReview = await PartReviewService.updateReview(
         req.organization.organizationId,
         req.currentUser,
         reviewId,
+        status,
         notes
       );
       res.status(200).json(updatedReview);

@@ -248,7 +248,7 @@ export default class PartReviewService {
    * @param notes optional notes on the review
    * @returns the created review
    */
-  static async createReview(organizationId: string, creator: User, submissionId: string, notes?: string) {
+  static async createReview(organizationId: string, creator: User, submissionId: string, status: string, notes: string) {
     const submission = await prisma.partSubmission.findUnique({
       where: { partSubmissionId: submissionId },
       include: { part: { include: { project: { include: { wbsElement: true } } } } }
@@ -258,6 +258,18 @@ export default class PartReviewService {
     if (submission.dateDeleted) throw new DeletedException('Part Submission', submissionId);
     if (submission.part.project.wbsElement.organizationId !== organizationId)
       throw new InvalidOrganizationException('Part Submission');
+
+    if (status) {
+      const review_status = status as Review_Status;
+      await prisma.part.update({
+        where: {
+          partId: submission.partId
+        },
+        data: {
+          status: review_status
+        }
+      });
+    }
 
     const review = await prisma.partReview.create({
       data: {
@@ -280,10 +292,11 @@ export default class PartReviewService {
    * @param organizationId the organization
    * @param updater the user updating (must be creator)
    * @param reviewId the review being updated
+   * @param status the status that the
    * @param notes notes for the review
    * @returns the updated review
    */
-  static async updateReview(organizationId: string, updater: User, reviewId: string, notes: string) {
+  static async updateReview(organizationId: string, updater: User, reviewId: string, status: string, notes: string) {
     const review = await prisma.partReview.findUnique({
       where: { partReviewId: reviewId },
       include: { submission: { include: { part: { include: { project: { include: { wbsElement: true } } } } } } }
@@ -302,6 +315,16 @@ export default class PartReviewService {
         notes
       },
       ...getPartReviewQueryArgs(organizationId)
+    });
+    const review_status = status as Review_Status;
+
+    await prisma.part.update({
+      where: {
+        partId: review.submission.partId
+      },
+      data: {
+        status: review_status
+      }
     });
 
     return partReviewTransformer(updatedReview);
