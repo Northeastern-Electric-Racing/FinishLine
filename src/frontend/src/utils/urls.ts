@@ -41,6 +41,22 @@ const projectsLinkTypes = () => `${projects()}/link-types`;
 const projectsCreateLinkTypes = () => `${projects()}/link-types/create`;
 const projectsEditLinkTypes = (linkTypeName: string) => `${projects()}/link-types/${linkTypeName}/edit`;
 
+/**************** Part Review Endpoints ********************/
+const parts = () => `${API_URL}/parts`;
+const partsByProject = (projectId: string) => `${parts()}/${projectId}/parts`;
+const partsById = (partId: string) => `${parts()}/${partId}`;
+const partsCreate = () => `${parts()}/create`;
+const partsUploadPreviewImage = (partId: string) => `${parts()}/${partId}/upload-preview`;
+const partsEdit = (partId: string) => `${parts()}/${partId}/update`;
+const partsDelete = (partId: string) => `${parts()}/${partId}/delete`;
+const partsCreateSubmission = (partId: string) => `${parts()}/submission/${partId}/create`;
+const partsEditSubmission = (submissionId: string) => `${parts()}/submission/${submissionId}/update`;
+const partsCreateReviewRequest = (submissionId: string) => `${parts()}/reviewRequest/${submissionId}/create`;
+const partsDeleteReviewRequest = (reviewRequestId: string) => `${parts()}/reviewRequest/${reviewRequestId}/delete`;
+const partsCreateReview = (submissionId: string) => `${parts()}/review/${submissionId}/create`;
+const partsEditReview = (reviewId: string) => `${parts()}/review/${reviewId}/update`;
+const getAllPartCommonMistakes = () => `${parts()}/common-mistakes`;
+
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
 const tasksCreate = (wbsNum: string) => `${tasks()}/${wbsNum}`;
@@ -276,6 +292,21 @@ export const apiUrls = {
   projectsLinkTypes,
   projectsCreateLinkTypes,
   projectsEditLinkTypes,
+
+  parts,
+  partsByProject,
+  partsById,
+  partsCreate,
+  partsUploadPreviewImage,
+  partsEdit,
+  partsDelete,
+  partsCreateSubmission,
+  partsEditSubmission,
+  partsCreateReviewRequest,
+  partsDeleteReviewRequest,
+  partsCreateReview,
+  partsEditReview,
+  getAllPartCommonMistakes,
 
   tasksCreate,
   tasks,

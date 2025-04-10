@@ -1,21 +1,75 @@
 import express from 'express';
-import { nonEmptyString, validateInputs } from '../utils/validation.utils';
+import { intMinZero, nonEmptyString, validateInputs } from '../utils/validation.utils';
 import { body } from 'express-validator';
-import PartsReviewController from '../controllers/part-review.controllers';
+import PartReviewController from '../controllers/part-review.controllers';
+import { Review_Status } from 'shared';
+import multer, { memoryStorage } from 'multer';
+
+const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage() });
 
 const partsRouter = express.Router();
 
 partsRouter.get('/tags', PartsReviewController.getAllPartTags);
 partsRouter.get('/faqs', PartsReviewController.getAllPartReviewFAQS);
 partsRouter.get('/:partId', PartsReviewController.getPart);
-// partsRouter.get('/projectId/parts', PartsReviewController.getPartPreviews);
+partsRouter.get('/:wbsNum', PartReviewController.getAllPartsForProject);
+
+partsRouter.post(
+  '/create',
+  nonEmptyString(body('wbsNum')),
+  intMinZero(body('index')),
+  nonEmptyString(body('commonName')),
+  body('description').optional().isString(),
+  body('reviewStatus').custom((value) => Object.values(Review_Status).includes(value)),
+  body('tagIds').isArray(),
+  body('assigneeIds').isArray(),
+  validateInputs,
+  PartReviewController.createPart
+);
+
+partsRouter.post('/:partId/upload-preview', upload.single('image'), PartReviewController.uploadPreview);
+
+partsRouter.post(
+  '/:partId/update',
+  intMinZero(body('index')),
+  nonEmptyString(body('commonName')),
+  body('description').optional().isString(),
+  body('reviewStatus').custom((value) => Object.values(Review_Status).includes(value)),
+  body('tagIds').isArray(),
+  body('assigneeIds').isArray(),
+  validateInputs,
+  PartReviewController.updatePart
+);
+
+partsRouter.post('/:partId/delete', PartReviewController.deletePart);
+
+partsRouter.get('/tags', PartReviewController.getAllPartTags);
+partsRouter.get('/faqs', PartReviewController.getAllPartReviewFAQS);
+
+partsRouter.post(
+  '/partTag/create',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('colorHexCode')),
+  validateInputs,
+  PartReviewController.createPartTag
+);
+
+partsRouter.post(
+  '/partTag/:partTagId/update',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('colorHexCode')),
+  validateInputs,
+  PartReviewController.updatePartTag
+);
+
+partsRouter.post('/partTag/:partTagId/delete', PartReviewController.deletePartTag);
 
 partsRouter.post(
   '/faq/create',
   nonEmptyString(body('question')),
   nonEmptyString(body('answer')),
   validateInputs,
-  PartsReviewController.createFaq
+  PartReviewController.createFaq
 );
 
 partsRouter.post(
@@ -23,10 +77,12 @@ partsRouter.post(
   nonEmptyString(body('question')),
   nonEmptyString(body('answer')),
   validateInputs,
-  PartsReviewController.updateFaq
+  PartReviewController.updateFaq
 );
 
-partsRouter.post('/faq/:faqId/delete', PartsReviewController.deleteFaq);
+partsRouter.post('/faq/:faqId/delete', PartReviewController.deleteFaq);
+
+partsRouter.get('/common-mistakes', PartReviewController.getAllCommonMistakes);
 
 partsRouter.post(
   '/common-mistake/create',
@@ -34,7 +90,7 @@ partsRouter.post(
   nonEmptyString(body('description')),
   body('starred').isBoolean(),
   validateInputs,
-  PartsReviewController.createCommonMistake
+  PartReviewController.createCommonMistake
 );
 
 partsRouter.post(
@@ -43,9 +99,37 @@ partsRouter.post(
   nonEmptyString(body('description')),
   body('starred').isBoolean(),
   validateInputs,
-  PartsReviewController.updateCommonMistake
+  PartReviewController.updateCommonMistake
 );
 
-partsRouter.post('/common-mistake/:commonMistakeId/delete', PartsReviewController.deleteCommonMistake);
+partsRouter.post(
+  '/reviews/:reviewId/popup/create',
+  nonEmptyString(body('title')),
+  nonEmptyString(body('description')),
+  body('starred').isBoolean(),
+  validateInputs,
+  PartReviewController.createPartReviewPopup
+);
+
+partsRouter.post(
+  '/popup/:popupId/update',
+  nonEmptyString(body('title')),
+  nonEmptyString(body('description')),
+  body('starred').isBoolean(),
+  validateInputs,
+  PartReviewController.updatePartReviewPopup
+);
+
+partsRouter.post('/common-mistake/:commonMistakeId/delete', PartReviewController.deleteCommonMistake);
+partsRouter.post('/popup/:popupId/delete', PartReviewController.deletePartReviewPopup);
+
+partsRouter.post(
+  '/:partId/reviewRequest/create',
+  nonEmptyString(body('reviewerId')),
+  validateInputs,
+  PartReviewController.createPartReviewRequest
+);
+
+partsRouter.post('/reviewRequest/:reviewRequestId/delete', PartReviewController.deletePartReviewRequest);
 
 export default partsRouter;
