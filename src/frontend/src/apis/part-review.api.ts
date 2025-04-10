@@ -282,7 +282,7 @@ export const editPartSubmission = (partSubmissionId: string, payload: EditPartSu
  */
 export const setUploadSubmissionFiles = (submissionId: string, files: File[]) => {
   return axios.post<PartSubmission>(apiUrls.partsSubmissionUploadFiles(submissionId), {
-    files: files
+    files
   });
 };
 
