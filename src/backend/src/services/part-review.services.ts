@@ -33,7 +33,8 @@ import {
   partReviewRequestTransformer,
   partsReviewCommonMistakeTransformer,
   partTransformer,
-  partPreviewTransformer
+  partPreviewTransformer,
+  partReviewTransformer
 } from '../transformers/part-review.transformer';
 import { isUserPartOfTeams } from '../utils/teams.utils';
 import { uploadFile } from '../utils/google-integration.utils';
@@ -236,6 +237,102 @@ export default class PartReviewService {
     });
 
     return partTransformer(deletedPart);
+  }
+
+  /**
+   * Creates a review on a submission for a part
+   * @param organizationId the organization
+   * @param creator the creator of the review
+   * @param submissionId the submission
+   * @param notes optional notes on the review
+   * @returns the created review
+   */
+  static async createReview(organizationId: string, creator: User, submissionId: string, notes?: string) {
+    const submission = await prisma.partSubmission.findUnique({
+      where: { partSubmissionId: submissionId }
+    });
+
+    if (!submission) throw new NotFoundException('Part Submission', submissionId);
+    if (submission.dateDeleted) throw new DeletedException('Part Submission', submissionId);
+
+    const review = await prisma.partReview.create({
+      data: {
+        submission: {
+          connect: { partSubmissionId: submissionId }
+        },
+        userCreated: {
+          connect: { userId: creator.userId }
+        },
+        notes
+      },
+      ...getPartReviewQueryArgs(organizationId)
+    });
+
+    return partReviewTransformer(review);
+  }
+
+  /**
+   * Updates an existing review
+   * @param organizationId the organization
+   * @param updater the user updating (must be creator)
+   * @param reviewId the review being updated
+   * @param notes notes for the review
+   * @returns the updated review
+   */
+  static async updateReview(organizationId: string, updater: User, reviewId: string, notes: string) {
+    const review = await prisma.partReview.findUnique({
+      where: { partReviewId: reviewId }
+    });
+
+    if (!review) throw new NotFoundException('Part Review', reviewId);
+    if (review.dateDeleted) throw new DeletedException('Part Review', reviewId);
+
+    if (updater.userId !== review.userCreatedId) throw new AccessDeniedException('only review creators can update reviews');
+
+    const updatedReview = await prisma.partReview.update({
+      where: { partReviewId: reviewId },
+      data: {
+        notes
+      },
+      ...getPartReviewQueryArgs(organizationId)
+    });
+
+    return partReviewTransformer(updatedReview);
+  }
+
+  /**
+   * Uploads an array of files to a given review
+   * @param reviewId the review
+   * @param uploader the user uploading (must be creator)
+   * @param organizationId the organization
+   * @param files an array of files to upload
+   * @returns the updated review
+   */
+  static async uploadReviewFiles(reviewId: string, uploader: User, organizationId: string, files: Express.Multer.File[]) {
+    const review = await prisma.partReview.findUnique({
+      where: { partReviewId: reviewId }
+    });
+
+    if (!review) throw new NotFoundException('Part Review', reviewId);
+    if (review.dateDeleted) throw new DeletedException('Part Review', reviewId);
+
+    if (uploader.userId !== review.userCreatedId) throw new AccessDeniedException('only review creators can update reviews');
+
+    const fileIds = await Promise.all(
+      files.map(async (file) => {
+        return (await uploadFile(file)).id;
+      })
+    );
+
+    const updatedReview = await prisma.partReview.update({
+      where: { partReviewId: reviewId },
+      data: {
+        fileIds
+      },
+      ...getPartReviewQueryArgs(organizationId)
+    });
+
+    return partReviewTransformer(updatedReview);
   }
 
   /**
