@@ -88,7 +88,12 @@ export default class PartReviewController {
   static async createReview(req: Request, res: Response, next: NextFunction) {
     try {
       const { submissionId, notes } = req.body;
-      const review = await PartReviewService.createReview(req.organization.organizationId, req.currentUser, submissionId, notes);
+      const review = await PartReviewService.createReview(
+        req.organization.organizationId,
+        req.currentUser,
+        submissionId,
+        notes
+      );
       res.status(200).json(review);
     } catch (error: unknown) {
       next(error);
@@ -99,7 +104,12 @@ export default class PartReviewController {
     try {
       const { reviewId } = req.params;
       const { notes } = req.body;
-      const updatedReview = await PartReviewService.updateReview(req.organization.organizationId, req.currentUser, reviewId, notes);
+      const updatedReview = await PartReviewService.updateReview(
+        req.organization.organizationId,
+        req.currentUser,
+        reviewId,
+        notes
+      );
       res.status(200).json(updatedReview);
     } catch (error: unknown) {
       next(error);
@@ -110,7 +120,12 @@ export default class PartReviewController {
     try {
       const { reviewId } = req.params;
       const files = req.files as Express.Multer.File[];
-      const updatedReview = await PartReviewService.uploadReviewFiles(reviewId, req.currentUser, req.organization.organizationId, files);
+      const updatedReview = await PartReviewService.uploadReviewFiles(
+        reviewId,
+        req.currentUser,
+        req.organization.organizationId,
+        files
+      );
       res.status(200).json(updatedReview);
     } catch (error: unknown) {
       next(error);
