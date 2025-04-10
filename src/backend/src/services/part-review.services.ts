@@ -19,7 +19,8 @@ import {
   DeletedException,
   HttpException,
   NotFoundException,
-  AccessDeniedGuestException
+  AccessDeniedGuestException,
+  InvalidOrganizationException
 } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
 import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
@@ -249,11 +250,14 @@ export default class PartReviewService {
    */
   static async createReview(organizationId: string, creator: User, submissionId: string, notes?: string) {
     const submission = await prisma.partSubmission.findUnique({
-      where: { partSubmissionId: submissionId }
+      where: { partSubmissionId: submissionId },
+      include: { part: { include: { project: { include: { wbsElement: true } } } } }
     });
 
     if (!submission) throw new NotFoundException('Part Submission', submissionId);
     if (submission.dateDeleted) throw new DeletedException('Part Submission', submissionId);
+    if (submission.part.project.wbsElement.organizationId !== organizationId)
+      throw new InvalidOrganizationException('Part Submission');
 
     const review = await prisma.partReview.create({
       data: {
