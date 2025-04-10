@@ -60,7 +60,8 @@ export default class PartReviewService {
       ...getPartQueryArgs(organization.organizationId)
     });
 
-    if (!part) throw new HttpException(404, `could not find a part with projectId: ${project.id} and index number: ${indexNum}`);
+    if (!part)
+      throw new HttpException(404, `could not find a part with projectId: ${project.id} and index number: ${indexNum}`);
 
     return partTransformer(part);
   }
