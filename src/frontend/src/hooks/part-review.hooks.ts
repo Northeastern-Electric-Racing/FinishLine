@@ -34,10 +34,13 @@ export interface PartPayload {
   assigneeIds: string[];
 }
 
-export interface PartSubmissionPayload {
-  fileIds: string[];
+export interface EditPartSubmissionPayload {
   name: string;
   notes?: string;
+}
+
+export interface CreatePartSubmissionPayload extends EditPartSubmissionPayload {
+  partId: string;
 }
 
 export interface PartReviewRequestPayload {
@@ -158,18 +161,18 @@ export const useDeletePart = (partId: string) => {
  *
  * @param partId the id of the part to create the submission for
  */
-export const useCreatePartSubmission = (partId: string) => {
+export const useCreatePartSubmission = () => {
   const queryClient = useQueryClient();
-  return useMutation<PartSubmission, Error, PartSubmissionPayload>(
+  return useMutation<PartSubmission, Error, CreatePartSubmissionPayload>(
     ['parts', 'createSubmission'],
-    async (submission: PartSubmissionPayload) => {
-      const { data } = await createPartSubmission(partId, submission);
+    async (submission: CreatePartSubmissionPayload) => {
+      const { data } = await createPartSubmission(submission);
       return data;
     },
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['parts', 'byProject']);
-        queryClient.invalidateQueries(['parts', 'byId', partId]);
+        queryClient.invalidateQueries(['parts', 'byId']);
       }
     }
   );
@@ -182,9 +185,9 @@ export const useCreatePartSubmission = (partId: string) => {
  */
 export const useEditPartSubmission = (submissionId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<PartSubmission, Error, PartSubmissionPayload>(
+  return useMutation<PartSubmission, Error, EditPartSubmissionPayload>(
     ['parts', 'editSubmission'],
-    async (submission: PartSubmissionPayload) => {
+    async (submission: EditPartSubmissionPayload) => {
       const { data } = await editPartSubmission(submissionId, submission);
       return data;
     },
