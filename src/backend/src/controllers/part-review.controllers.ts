@@ -4,12 +4,12 @@ import { WbsNumber, validateWBS } from 'shared';
 import { HttpException } from '../utils/errors.utils';
 
 export default class PartReviewController {
-  
   static async getPart(req: Request, res: Response, next: NextFunction) {
     try {
-      const organizationId = req.organization.organizationId;
-      const { partId } = req.params;
-      const part = await PartReviewService.getPart(organizationId, partId);
+      const { wbsNum, indexNum } = req.params;
+
+      const wbsNumber: WbsNumber = validateWBS(wbsNum);
+      const part = await PartReviewService.getPart(req.organization, wbsNumber, indexNum);
       res.status(200).json(part);
     } catch (error: unknown) {
       next(error);

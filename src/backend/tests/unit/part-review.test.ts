@@ -18,9 +18,10 @@ import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
   DeletedException,
+  HttpException,
   NotFoundException
 } from '../../src/utils/errors.utils';
-import { validateWBS } from 'shared';
+import { validateWBS, WbsNumber } from 'shared';
 import { Review_Status } from 'shared';
 
 describe('part review tests', () => {
@@ -743,10 +744,16 @@ describe('part review tests', () => {
       const car = await createTestCar(orgId, batman.userId);
 
       const project = await createTestProject(batman, orgId, team.teamId, car.carId, 1);
+      const project1 = await prisma.project.findUnique({
+        where: { projectId: project.projectId },
+        include: {
+          wbsElement: true
+        }
+      });
 
       const part = await createTestPart(superman, 'door', '1', 1, project.projectId);
 
-      const testPart = await PartReviewService.getPart(orgId, '1');
+      const testPart = await PartReviewService.getPart(organization, project1?.wbsElement as WbsNumber, '1');
 
       expect(testPart.userCreated.userId).toEqual(part.userCreatedId);
       expect(testPart.commonName).toBe(part.commonName);
@@ -755,20 +762,24 @@ describe('part review tests', () => {
       expect(testPart.projectId).toBe(part.projectId);
     });
 
-    it('throws an error when a part cannot be found with the given partId'),
-      async () => {
-        const division = await createTestTeamType(undefined, orgId);
-        const team = await createTestTeam(batman.userId, division.teamTypeId, orgId);
-        const car = await createTestCar(orgId, batman.userId);
+    it('throws an error when a part cannot be found with the given partId', async () => {
+      const division = await createTestTeamType(undefined, orgId);
+      const team = await createTestTeam(batman.userId, division.teamTypeId, orgId);
+      const car = await createTestCar(orgId, batman.userId);
 
-        const project = await createTestProject(batman, orgId, team.teamId, car.carId, 1);
+      const project = await createTestProject(batman, orgId, team.teamId, car.carId, 1);
+      const project1 = await prisma.project.findUnique({
+        where: { projectId: project.projectId },
+        include: {
+          wbsElement: true
+        }
+      });
+      const wbsNum = project1?.wbsElement as WbsNumber;
 
-        const part1 = await createTestPart(superman, 'door', '-1', 1, project.projectId);
-        const part2 = await createTestPart(superman, 'door', '23', 1, project.projectId);
-        const part3 = await createTestPart(superman, 'door', '29', 1, project.projectId);
-
-        await expect(PartReviewService.getPart(orgId, '1')).rejects.toThrow(new NotFoundException('Part', '-1'));
-      };
+      await expect(PartReviewService.getPart(organization, wbsNum, '1')).rejects.toThrow(
+        new HttpException(404, `could not find a part with projectId: ${project.projectId} and index number: 1`)
+      );
+    });
   });
 
   describe('Get all parts', () => {
