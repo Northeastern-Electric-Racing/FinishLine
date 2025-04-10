@@ -285,11 +285,14 @@ export default class PartReviewService {
    */
   static async updateReview(organizationId: string, updater: User, reviewId: string, notes: string) {
     const review = await prisma.partReview.findUnique({
-      where: { partReviewId: reviewId }
+      where: { partReviewId: reviewId },
+      include: { submission: { include: { part: { include: { project: { include: { wbsElement: true } } } } } } }
     });
 
     if (!review) throw new NotFoundException('Part Review', reviewId);
     if (review.dateDeleted) throw new DeletedException('Part Review', reviewId);
+    if (review.submission.part.project.wbsElement.organizationId !== organizationId)
+      throw new InvalidOrganizationException('Part Review');
 
     if (updater.userId !== review.userCreatedId) throw new AccessDeniedException('only review creators can update reviews');
 
@@ -314,11 +317,14 @@ export default class PartReviewService {
    */
   static async uploadReviewFiles(reviewId: string, uploader: User, organizationId: string, files: Express.Multer.File[]) {
     const review = await prisma.partReview.findUnique({
-      where: { partReviewId: reviewId }
+      where: { partReviewId: reviewId },
+      include: { submission: { include: { part: { include: { project: { include: { wbsElement: true } } } } } } }
     });
 
     if (!review) throw new NotFoundException('Part Review', reviewId);
     if (review.dateDeleted) throw new DeletedException('Part Review', reviewId);
+    if (review.submission.part.project.wbsElement.organizationId !== organizationId)
+      throw new InvalidOrganizationException('Part Review');
 
     if (uploader.userId !== review.userCreatedId) throw new AccessDeniedException('only review creators can update reviews');
 
