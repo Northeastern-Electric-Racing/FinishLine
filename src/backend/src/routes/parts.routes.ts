@@ -27,6 +27,7 @@ partsRouter.post(
   nonEmptyString(body('partId')),
   nonEmptyString(body('name')),
   body('notes').optional().isString(),
+  validateInputs,
   PartReviewController.createSubmission
 );
 
@@ -34,12 +35,14 @@ partsRouter.post(
   '/submission/:submissionId/update',
   nonEmptyString(body('name')),
   body('notes').optional().isString(),
+  validateInputs,
   PartReviewController.updateSubmission
 );
 
 partsRouter.post(
   '/submission/:submissionId/upload-files',
   upload.array('files', 10),
+  validateInputs,
   PartReviewController.uploadSubmissionFiles
 );
 
