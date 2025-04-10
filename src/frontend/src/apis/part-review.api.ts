@@ -320,9 +320,15 @@ export const editPartReview = (partReviewId: string, payload: EditPartReviewPayl
   });
 };
 
-export const setUploadReviewFiles = (reviewId: string, images: File[]) => {
+/**
+ * Adds files to a review
+ *
+ * @param reviewId the review
+ * @param files the files to add
+ */
+export const setUploadReviewFiles = (reviewId: string, files: File[]) => {
   return axios.post<PartReview>(apiUrls.partsReviewUploadFiles(reviewId), {
-    files: images
+    files
   });
 };
 
