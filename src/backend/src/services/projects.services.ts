@@ -40,6 +40,7 @@ export default class ProjectsService {
    * @returns all the projects
    */
   static async getAllProjects(organization: Organization, includeDeleted: boolean): Promise<Project[]> {
+    console.log(await prisma.partSubmission.findMany());
     const projects = includeDeleted
       ? await prisma.project.findMany({
           where: { wbsElement: { organizationId: organization.organizationId } },
