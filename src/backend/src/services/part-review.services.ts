@@ -19,7 +19,8 @@ import {
   DeletedException,
   HttpException,
   NotFoundException,
-  AccessDeniedGuestException
+  AccessDeniedGuestException,
+  InvalidOrganizationException
 } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
 import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
@@ -251,10 +252,12 @@ export default class PartReviewService {
    */
   static async createSubmission(partId: string, creator: User, organizationId: string, name: string, notes?: string) {
     const part = await prisma.part.findUnique({
-      where: { partId }
+      where: { partId },
+      include: { project: { include: { wbsElement: true } } }
     });
     if (!part) throw new NotFoundException('Part', partId);
     if (part.dateDeleted) throw new DeletedException('Part', partId);
+    if (part.project.wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('Part');
 
     const submission = await prisma.partSubmission.create({
       data: {
@@ -284,10 +287,13 @@ export default class PartReviewService {
    */
   static async updateSubmission(submissionId: string, updater: User, organizationId: string, name: string, notes?: string) {
     const submission = await prisma.partSubmission.findUnique({
-      where: { partSubmissionId: submissionId }
+      where: { partSubmissionId: submissionId },
+      include: { part: { include: { project: { include: { wbsElement: true } } } } }
     });
     if (!submission) throw new NotFoundException('Part Submission', submissionId);
     if (submission.dateDeleted) throw new DeletedException('Part Submission', submissionId);
+    if (submission.part.project.wbsElement.organizationId !== organizationId)
+      throw new InvalidOrganizationException('Part Submission');
 
     if (updater.userId !== submission.userCreatedId)
       throw new AccessDeniedException('only submission creators can update submissions');
@@ -319,10 +325,13 @@ export default class PartReviewService {
     files: Express.Multer.File[]
   ) {
     const submission = await prisma.partSubmission.findUnique({
-      where: { partSubmissionId: submissionId }
+      where: { partSubmissionId: submissionId },
+      include: { part: { include: { project: { include: { wbsElement: true } } } } }
     });
     if (!submission) throw new NotFoundException('Part Submission', submissionId);
     if (submission.dateDeleted) throw new DeletedException('Part Submission', submissionId);
+    if (submission.part.project.wbsElement.organizationId !== organizationId)
+      throw new InvalidOrganizationException('Part Submission');
 
     if (uploader.userId !== submission.userCreatedId)
       throw new AccessDeniedException('only submission creators can update submissions');
