@@ -146,7 +146,7 @@ const getAllIndexCodes = () => `${financeEndpoints()}/index-codes`;
 const getAllOtherProductReasons = () => `${financeEndpoints()}/other-reimbursement-product-reasons`;
 const financeRoutesEndpoints = () => `${API_URL}/finance`;
 const getAllSponsors = () => `${financeRoutesEndpoints()}/sponsors`;
-const getSponsorTasks = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsors/${sponsorId}/tasks`;
+const getSponsorTasks = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsors/${sponsorId}/sponsorTasks`;
 const deleteSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsors/${sponsorId}/delete`;
 const editSponsorTask = (sponsorTaskId: string) => `${financeRoutesEndpoints()}/sponsorTask/${sponsorTaskId}/edit`;
 
