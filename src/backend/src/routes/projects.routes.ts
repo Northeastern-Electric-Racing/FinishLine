@@ -62,10 +62,7 @@ projectRouter.post(
   validateInputs,
   ProjectsController.setAbbreviation
 );
-projectRouter.post(
-  '/:wbsNum/delete-abbreviation',
-  ProjectsController.deleteAbbreviation
-);
+projectRouter.post('/:wbsNum/delete-abbreviation', ProjectsController.deleteAbbreviation);
 
 /**************** BOM Section ****************/
 projectRouter.post(
