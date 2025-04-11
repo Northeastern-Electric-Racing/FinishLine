@@ -828,7 +828,7 @@ describe('part review tests', () => {
 
     await ProjectsService.deleteAbbreviation(wbsNum, batman, organization);
     const projectWithNoAbbrev = await ProjectsService.getSingleProject(wbsNum, organization);
-    expect(projectWithNoAbbrev.abbreviation).toBeNull();
+    expect(projectWithNoAbbrev.abbreviation).toBeUndefined();
   });
 });
 
