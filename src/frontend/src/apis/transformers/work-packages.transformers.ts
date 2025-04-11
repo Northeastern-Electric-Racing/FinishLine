@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WorkPackage } from 'shared';
+import { WorkPackage, WorkPackagePreview } from 'shared';
 import { implementedChangeTransformer } from './change-requests.transformers';
-import { designReviewTransformer } from './design-reviews.tranformers';
+import { designReviewPreviewTransformer } from './design-reviews.tranformers';
 import { descriptionBulletTransformer } from './projects.transformers';
 
 /**
@@ -22,6 +22,14 @@ export const workPackageTransformer = (workPackage: WorkPackage): WorkPackage =>
     endDate: new Date(workPackage.endDate),
     descriptionBullets: workPackage.descriptionBullets.map(descriptionBulletTransformer),
     changes: workPackage.changes.map(implementedChangeTransformer),
-    designReviews: workPackage.designReviews.map(designReviewTransformer)
+    designReviews: workPackage.designReviews.map(designReviewPreviewTransformer)
+  };
+};
+
+export const workPackagePreviewTransformer = (workPackage: WorkPackagePreview): WorkPackagePreview => {
+  return {
+    ...workPackage,
+    startDate: new Date(workPackage.startDate),
+    endDate: new Date(workPackage.endDate)
   };
 };

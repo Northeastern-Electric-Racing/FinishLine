@@ -8,7 +8,12 @@ import {
   EditVendorPayload,
   AccountCodePayload,
   RefundPayload,
-  MarkDeliveredRequestPayload
+  MarkDeliveredRequestPayload,
+  ReimbursementRequestTeamDataPayload,
+  ReimbursementRequestTeamTypeDataPayload,
+  SpendingBarTeamDataPayload,
+  SpendingBarTeamTypeDataPayload,
+  ReimbursementRequestProjectDataPayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -19,7 +24,14 @@ import {
 } from './transformers/reimbursement-requests.transformer';
 import { saveAs } from 'file-saver';
 import { PDFDocument, PDFImage } from 'pdf-lib';
-import { AccountCode, ReimbursementRequest } from 'shared';
+import {
+  IndexCode,
+  AccountCode,
+  ReimbursementRequest,
+  OtherProductReason,
+  ReimbursementRequestData,
+  SpendingBarData
+} from 'shared';
 
 enum AllowedFileType {
   JPEG = 'image/jpeg',
@@ -197,7 +209,7 @@ export const denyReimbursementRequest = (id: string) => {
  * @param fileId the google id of the file to download
  * @returns the downloaded file as a Blob
  */
-export const downloadGoogleImage = async (fileId: string): Promise<Blob> => {
+export const downloadFinanceImage = async (fileId: string): Promise<Blob> => {
   const response = await axios.get(apiUrls.financeImageById(fileId), {
     responseType: 'arraybuffer' // Set the response type to 'arraybuffer' to receive the image as a Buffer
   });
@@ -382,3 +394,56 @@ export const markPendingFinance = async (id: string) => {
 export const requestReimbursementRequestChanges = async (id: string) => {
   return axios.post(apiUrls.financeRequestChanges(id));
 };
+
+/**
+ * API call to get the list of all IndexCodes
+ *
+ * @returns The list of IndexCodes
+ */
+export const getAllIndexCodes = () => {
+  return axios.get<IndexCode[]>(apiUrls.getAllIndexCodes(), {
+    transformResponse: (data) => JSON.parse(data) as IndexCode[]
+  });
+};
+
+/**
+ * API call to get the list of all Other Product Reason
+ *
+ * @returns The list of OtherProductReasons
+ */
+export const getAllOtherProductReason = () => {
+  return axios.get<OtherProductReason[]>(apiUrls.getAllOtherProductReasons(), {
+    transformResponse: (data) => JSON.parse(data) as OtherProductReason[]
+  });
+};
+
+export const getReimbursementRequestProjectData = (payload: ReimbursementRequestProjectDataPayload) => {
+  return axios.get<ReimbursementRequestData>(apiUrls.getReimbursementRequestProjectData(payload.projectId, payload.startDate, payload.endDate), {
+    transformResponse: (data) => JSON.parse(data) as ReimbursementRequestData
+  });
+};
+
+export const getReimbursementRequestTeamData = (payload: ReimbursementRequestTeamDataPayload) => {
+  return axios.get<ReimbursementRequestData>(apiUrls.getReimbursementRequestTeamData(payload.teamId, payload.startDate, payload.endDate), {
+    transformResponse: (data) => JSON.parse(data) as ReimbursementRequestData
+  });
+};
+
+export const getReimbursementRequestTeamTypeData = (payload: ReimbursementRequestTeamTypeDataPayload) => {
+  return axios.get<ReimbursementRequestData>(apiUrls.getReimbursementRequestTeamTypeData(payload.teamTypeId, payload.startDate, payload.endDate), {
+    transformResponse: (data) => JSON.parse(data) as ReimbursementRequestData
+  });
+};
+
+export const getSpendingBarTeamData = (payload: SpendingBarTeamDataPayload) => {
+  return axios.get<SpendingBarData>(apiUrls.getSpendingBarTeamData(payload.teamId, payload.startDate, payload.endDate), {
+    transformResponse: (data) => JSON.parse(data) as SpendingBarData
+  });
+};
+
+export const getSpendingBarTeamTypeData = (payload: SpendingBarTeamTypeDataPayload) => {
+  return axios.get<SpendingBarData>(apiUrls.getSpendingBarTeamTypeData(payload.teamTypeId, payload.startDate, payload.endDate), {
+    transformResponse: (data) => JSON.parse(data) as SpendingBarData
+  });
+};
+

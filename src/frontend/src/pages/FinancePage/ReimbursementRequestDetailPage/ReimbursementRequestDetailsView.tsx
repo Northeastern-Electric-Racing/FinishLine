@@ -313,7 +313,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             <VerticalDetailDisplay label="SABO Number" content={`${undefinedPipe(reimbursementRequest.saboId)}`} />
           </Grid>
           <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Refund Source" content={codeAndRefundSourceName(reimbursementRequest.account)} />
+            <VerticalDetailDisplay label="Refund Source" content={codeAndRefundSourceName(reimbursementRequest.indexCode)} />
           </Grid>
           <Grid item sm={6} xs={12}>
             <VerticalDetailDisplay label="Expense Type" content={accountCodePipe(reimbursementRequest.accountCode)} />
@@ -419,6 +419,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       icon: <AttachMoneyIcon />,
       disabled:
         !user.isFinance ||
+        !isReimbursementRequestSaboSubmitted(reimbursementRequest) ||
         isReimbursementRequestReimbursed(reimbursementRequest) ||
         isReimbursementRequestDenied(reimbursementRequest)
     },
@@ -462,7 +463,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       onClick: () => setShowDenyModal(true),
       icon: <CloseIcon />,
       disabled:
-        !user.isFinance ||
+        (!isAdmin(user.role) && !user.isFinance && user.userId !== reimbursementRequest.recipient.userId) ||
         isReimbursementRequestReimbursed(reimbursementRequest) ||
         isReimbursementRequestDenied(reimbursementRequest)
     }

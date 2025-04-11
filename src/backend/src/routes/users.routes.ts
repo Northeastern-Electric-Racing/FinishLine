@@ -31,6 +31,8 @@ userRouter.post(
   nonEmptyString(body('phoneNumber')),
   UsersController.setUserSecureSettings
 );
+userRouter.get('/auth/current', UsersController.getCurrentUser);
+userRouter.post('/auth/log-out', UsersController.logUserOut);
 
 userRouter.post(
   '/schedule-settings/set',

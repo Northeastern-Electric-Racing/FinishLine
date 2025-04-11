@@ -4,9 +4,8 @@
  */
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Club_Accounts, Reimbursement_Request, Reimbursement_Status_Type, User, Organization } from '@prisma/client';
+import { Reimbursement_Request, Reimbursement_Status_Type, User, Organization } from '@prisma/client';
 import {
-  ClubAccount,
   Reimbursement,
   ReimbursementReceiptCreateArgs,
   ReimbursementRequest,
@@ -19,19 +18,21 @@ import {
   OtherReimbursementProductCreateArgs,
   AccountCode,
   ReimbursementStatus,
-  startOfDay
+  startOfDay,
+  IndexCode,
+  OtherProductReason
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
-  isUserAdminOrOnFinance,
   createReimbursementProducts,
   isUserLeadOrHeadOfFinanceTeam,
   removeDeletedReceiptPictures,
   updateReimbursementProducts,
   validateReimbursementProducts,
   validateUserEditRRPermissions,
-  validateUserIsPartOfFinanceTeamOrAdmin,
-  validateRefund
+  validateRefund,
+  isUserHeadOrOnFinance,
+  validateUserIsPartOfFinanceTeamOrHead
 } from '../utils/reimbursement-requests.utils';
 import {
   AccessDeniedAdminOnlyException,
@@ -45,6 +46,8 @@ import {
 import { downloadImageFile, sendMailToAdvisor, uploadFile } from '../utils/google-integration.utils';
 import {
   accountCodeTransformer,
+  indexCodeTransformer,
+  otherProductReasonTransformer,
   reimbursementRequestTransformer,
   reimbursementStatusTransformer,
   reimbursementTransformer,
@@ -64,6 +67,10 @@ import { getReimbursementRequestQueryArgs } from '../prisma-query-args/reimburse
 import { getReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
 import { getReimbursementStatusQueryArgs } from '../prisma-query-args/reimbursement-statuses.query-args';
 import { getVendorQueryArgs } from '../prisma-query-args/vendor.query-args';
+import { encryptPassword } from '../utils/encryption.utils';
+import { getAccountCodeQueryArgs } from '../prisma-query-args/account-code.query-args';
+import { getIndexCodeQueryArgs } from '../prisma-query-args/index-code.query-args';
+import { getReimbursementProductOtherReasonQueryArgs } from '../prisma-query-args/reimbursement-product-other-reason.query-args';
 
 export default class ReimbursementRequestService {
   /**
@@ -100,7 +107,7 @@ export default class ReimbursementRequestService {
    * @returns All the reimbursements in the database
    */
   static async getAllReimbursements(user: User, organization: Organization): Promise<Reimbursement[]> {
-    await isUserAdminOrOnFinance(user, organization.organizationId);
+    await isUserHeadOrOnFinance(user, organization.organizationId);
 
     const reimbursements = await prisma.reimbursement.findMany({
       where: {
@@ -130,7 +137,7 @@ export default class ReimbursementRequestService {
    * @param recipient the user who is creating the reimbursement request
    * @param dateOfExpense the date that the expense occured
    * @param vendorId the id of the vendor that the expense was made for
-   * @param account the account to be reimbursed from
+   * @param indexCodeId the id of the index code to be reimbursed from
    * @param reimbursementProducts the products that the user bought
    * @param accountCodeId the id of the account code the user made
    * @param totalCost the total cost of the reimbursement with tax
@@ -140,7 +147,7 @@ export default class ReimbursementRequestService {
   static async createReimbursementRequest(
     recipient: UserWithSecureSettings,
     vendorId: string,
-    account: ClubAccount,
+    indexCodeId: string,
     otherReimbursementProducts: OtherReimbursementProductCreateArgs[],
     wbsReimbursementProducts: WbsReimbursementProductCreateArgs[],
     acccountCodeId: string,
@@ -154,10 +161,11 @@ export default class ReimbursementRequestService {
     if (!recipient.userSecureSettings) throw new HttpException(500, 'User does not have their finance settings set up');
 
     const vendor = await ReimbursementRequestService.getSingleVendor(vendorId, organization);
+    const indexCode = await ReimbursementRequestService.getSingleIndexCode(indexCodeId, organization);
     const accountCode = await ReimbursementRequestService.getSingleAccountCode(acccountCodeId, organization);
 
     if (!accountCode.allowed) throw new HttpException(400, `The Account Code ${accountCode.name} is not allowed!`);
-    if (!accountCode.allowedRefundSources.includes(account)) {
+    if (!accountCode.indexCodes.some((refundSource) => refundSource.indexCodeId === indexCodeId)) {
       throw new HttpException(400, 'The submitted refund source is not allowed to be used with the submitted Account Code');
     }
 
@@ -176,7 +184,7 @@ export default class ReimbursementRequestService {
         recipient: { connect: { userId: recipient.userId } },
         dateOfExpense: dateOfExpense ?? null,
         vendor: { connect: { vendorId: vendor.vendorId } },
-        account,
+        indexCode: { connect: { indexCodeId: indexCode.indexCodeId } },
         accountCode: { connect: { accountCodeId: accountCode.accountCodeId } },
         totalCost,
         reimbursementStatuses: {
@@ -259,7 +267,7 @@ export default class ReimbursementRequestService {
    * @param requestId the id of the reimbursement request we are editing
    * @param dateOfExpense the updated date of expense
    * @param vendorId the updated vendor id
-   * @param account the updated account
+   * @param indexCodeId the updated index code id
    * @param accountCodeId the updated account code id
    * @param totalCost the updated total cost
    * @param reimbursementProducts the updated reimbursement products
@@ -272,7 +280,7 @@ export default class ReimbursementRequestService {
   static async editReimbursementRequest(
     requestId: string,
     vendorId: string,
-    account: ClubAccount,
+    indexCodeId: string,
     accountCodeId: string,
     totalCost: number,
     otherReimbursementProducts: OtherReimbursementProductCreateArgs[],
@@ -301,9 +309,10 @@ export default class ReimbursementRequestService {
 
     const vendor = await ReimbursementRequestService.getSingleVendor(vendorId, organization);
     const accountCode = await ReimbursementRequestService.getSingleAccountCode(accountCodeId, organization);
+    const indexCode = await ReimbursementRequestService.getSingleIndexCode(indexCodeId, organization);
 
     if (!accountCode.allowed) throw new HttpException(400, 'Account Code Not Allowed');
-    if (!accountCode.allowedRefundSources.includes(account)) {
+    if (!accountCode.indexCodes.includes(indexCode)) {
       throw new HttpException(400, 'The submitted refund source is not allowed to be used with the submitted Account Code');
     }
 
@@ -319,7 +328,7 @@ export default class ReimbursementRequestService {
       where: { reimbursementRequestId: oldReimbursementRequest.reimbursementRequestId },
       data: {
         dateOfExpense: dateOfExpense ?? null,
-        account,
+        indexCodeId,
         totalCost,
         accountCodeId: accountCode.accountCodeId,
         vendorId: vendor.vendorId
@@ -424,7 +433,7 @@ export default class ReimbursementRequestService {
    * @returns reimbursement requests with no advisor approved reimbursement status
    */
   static async getPendingAdvisorList(requester: User, organization: Organization): Promise<ReimbursementRequest[]> {
-    await validateUserIsPartOfFinanceTeamOrAdmin(requester, organization.organizationId);
+    await validateUserIsPartOfFinanceTeamOrHead(requester, organization.organizationId);
 
     const requestsPendingAdvisors = await prisma.reimbursement_Request.findMany({
       where: {
@@ -459,7 +468,7 @@ export default class ReimbursementRequestService {
 
     if (!organization) throw new NotFoundException('Organization', organizationId);
 
-    await validateUserIsPartOfFinanceTeamOrAdmin(sender, organizationId);
+    await validateUserIsPartOfFinanceTeamOrHead(sender, organizationId);
 
     if (saboNumbers.length === 0) throw new HttpException(400, 'Need to send at least one Sabo #!');
 
@@ -531,7 +540,7 @@ export default class ReimbursementRequestService {
     submitter: User,
     organization: Organization
   ) {
-    await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organization.organizationId);
+    await validateUserIsPartOfFinanceTeamOrHead(submitter, organization.organizationId);
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId }
     });
@@ -559,7 +568,7 @@ export default class ReimbursementRequestService {
    * @param name vendor name
    * @param organization current organziation
    * @param username vendor username
-   * @param password vendor password *to be encrypted*
+   * @param password vendor password
    * @param notes vendor notes
    * @param addedByUserId userId that added the vendor
    * @param twoFactorContactId two-factor contact id
@@ -572,6 +581,7 @@ export default class ReimbursementRequestService {
     organization: Organization,
     username: string,
     password: string,
+    taxExempt: boolean,
     discountCode?: string,
     twoFactorContactId?: string,
     notes?: string,
@@ -581,6 +591,10 @@ export default class ReimbursementRequestService {
       (await userHasPermission(submitter.userId, organization.organizationId, isAdmin)) ||
       (await isUserLeadOrHeadOfFinanceTeam(submitter, organization.organizationId));
     if (!isAuthorized) throw new AccessDeniedException('Only admins, finance leads, and finance heads can create vendors.');
+
+    if (!process.env.ENCRYPTION_KEY) {
+      throw new NotFoundException('Encryption Key', 'Encryption key not found in environment variables');
+    }
 
     const existingVendor = await prisma.vendor.findUnique({
       where: { uniqueVendor: { name, organizationId: organization.organizationId } }
@@ -599,7 +613,8 @@ export default class ReimbursementRequestService {
         name,
         organizationId: organization.organizationId,
         username,
-        password, // to be encrypted
+        password: encryptPassword(password),
+        taxExempt,
         discountCode,
         twoFactorContactId,
         notes,
@@ -616,7 +631,7 @@ export default class ReimbursementRequestService {
    * @param name The name of the Account Code
    * @param code the Account Code's SABO code
    * @param allowed whether or not this Account Code is allowed
-   * @param allowedRefundSources an array of Club_Accounts representing allowed refund sources
+   * @param allowedRefundSources an array of Index_Code representing allowed refund sources
    * @param organizationId the organization the user is currently in
    * @returns the created Account Code
    */
@@ -625,9 +640,9 @@ export default class ReimbursementRequestService {
     name: string,
     code: number,
     allowed: boolean,
-    allowedRefundSources: Club_Accounts[],
+    allowedRefundSources: IndexCode[],
     organization: Organization
-  ) {
+  ): Promise<AccountCode> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create Account Codes');
 
@@ -636,11 +651,12 @@ export default class ReimbursementRequestService {
     });
 
     if (existingAccount && existingAccount.dateDeleted) {
-      await prisma.account_Code.update({
+      const updatedExistingAccount = await prisma.account_Code.update({
         where: { accountCodeId: existingAccount.accountCodeId },
-        data: { dateDeleted: null }
+        data: { dateDeleted: null },
+        ...getAccountCodeQueryArgs(organization.organizationId)
       });
-      return existingAccount;
+      return accountCodeTransformer(updatedExistingAccount);
     } else if (existingAccount) throw new HttpException(400, 'This Account Code already exists');
 
     const expense = await prisma.account_Code.create({
@@ -648,12 +664,13 @@ export default class ReimbursementRequestService {
         name,
         allowed,
         code,
-        allowedRefundSources,
+        indexCodes: { connect: allowedRefundSources.map((indexCode) => ({ indexCodeId: indexCode.indexCodeId })) },
         organizationId: organization.organizationId
-      }
+      },
+      ...getAccountCodeQueryArgs(organization.organizationId)
     });
 
-    return expense;
+    return accountCodeTransformer(expense);
   }
 
   /**
@@ -673,7 +690,7 @@ export default class ReimbursementRequestService {
     name: string,
     allowed: boolean,
     submitter: User,
-    allowedRefundSources: Club_Accounts[],
+    allowedRefundSources: IndexCode[],
     organization: Organization
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
@@ -687,7 +704,7 @@ export default class ReimbursementRequestService {
         name,
         code,
         allowed,
-        allowedRefundSources
+        indexCodes: { connect: allowedRefundSources.map((indexCode) => ({ indexCodeId: indexCode.indexCodeId })) }
       }
     });
 
@@ -703,13 +720,14 @@ export default class ReimbursementRequestService {
    * @returns the 'deleted' account code
    */
   static async deleteAccountCode(accountCodeId: string, submitter: User, organization: Organization) {
-    await isUserAdminOrOnFinance(submitter, organization.organizationId);
+    await isUserHeadOrOnFinance(submitter, organization.organizationId);
 
     const accountCode = await ReimbursementRequestService.getSingleAccountCode(accountCodeId, organization);
 
     const deletedAccountCode = await prisma.account_Code.update({
       where: { accountCodeId: accountCode.accountCodeId },
-      data: { dateDeleted: new Date() }
+      data: { dateDeleted: new Date() },
+      ...getAccountCodeQueryArgs(organization.organizationId)
     });
 
     return accountCodeTransformer(deletedAccountCode);
@@ -736,6 +754,10 @@ export default class ReimbursementRequestService {
       where: { reimbursementRequestId }
     });
 
+    const numReceipts = await prisma.receipt.count({
+      where: { reimbursementRequest: { organizationId: organization.organizationId } }
+    });
+
     if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
     if (reimbursementRequest.dateDeleted) {
       throw new DeletedException('Reimbursement Request', reimbursementRequestId);
@@ -751,6 +773,7 @@ export default class ReimbursementRequestService {
       );
     }
 
+    file.filename = 'receipt' + numReceipts;
     const imageData = await uploadFile(file);
 
     if (!imageData?.name) {
@@ -779,7 +802,8 @@ export default class ReimbursementRequestService {
       where: {
         dateDeleted: null,
         organizationId: organization.organizationId
-      }
+      },
+      ...getAccountCodeQueryArgs(organization.organizationId)
     });
 
     return accountCodes.map(accountCodeTransformer);
@@ -792,7 +816,7 @@ export default class ReimbursementRequestService {
    * @returns an array of the prisma version of the reimbursement requests transformed to the shared version
    */
   static async getAllReimbursementRequests(user: User, organization: Organization): Promise<ReimbursementRequest[]> {
-    await isUserAdminOrOnFinance(user, organization.organizationId);
+    await isUserHeadOrOnFinance(user, organization.organizationId);
 
     const reimbursementRequests = await prisma.reimbursement_Request.findMany({
       where: { dateDeleted: null, accountCode: { organizationId: organization.organizationId } },
@@ -859,7 +883,7 @@ export default class ReimbursementRequestService {
     submitter: User,
     organization: Organization
   ) {
-    await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organization.organizationId);
+    await validateUserIsPartOfFinanceTeamOrHead(submitter, organization.organizationId);
 
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
@@ -916,7 +940,7 @@ export default class ReimbursementRequestService {
       throw new InvalidOrganizationException('Reimbursement Request');
 
     try {
-      await validateUserIsPartOfFinanceTeamOrAdmin(user, organization.organizationId);
+      await validateUserIsPartOfFinanceTeamOrHead(user, organization.organizationId);
     } catch {
       if (user.userId !== reimbursementRequest.recipientId)
         throw new AccessDeniedException('You do not have access to this reimbursement request');
@@ -984,7 +1008,7 @@ export default class ReimbursementRequestService {
    * @returns the created reimbursment status
    */
   static async approveReimbursementRequest(reimbursementRequestId: string, submitter: User, organization: Organization) {
-    await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organization.organizationId);
+    await validateUserIsPartOfFinanceTeamOrHead(submitter, organization.organizationId);
 
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
@@ -1035,12 +1059,10 @@ export default class ReimbursementRequestService {
    *
    * @param reimbursementRequestId the id of the reimbursement request to deny
    * @param submitter the user who is denying the reimbursement request
-   * @param organizationId the organization the user is currently in
+   * @param organization the organization the user is currently in
    * @returns the created reimbursment status
    */
   static async denyReimbursementRequest(reimbursementRequestId: string, submitter: User, organization: Organization) {
-    await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organization.organizationId);
-
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
       include: {
@@ -1060,6 +1082,10 @@ export default class ReimbursementRequestService {
 
     if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.REIMBURSED)) {
       throw new HttpException(400, 'This reimbursement request has already been reimbursed');
+    }
+
+    if (submitter.userId !== reimbursementRequest.recipientId) {
+      await validateUserIsPartOfFinanceTeamOrHead(submitter, organization.organizationId);
     }
 
     const reimbursementStatus = await prisma.reimbursement_Status.create({
@@ -1095,7 +1121,7 @@ export default class ReimbursementRequestService {
    * @returns a buffer of the image data and the image type
    */
   static async downloadReceiptImage(fileId: string, submitter: User, organization: Organization) {
-    await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organization.organizationId);
+    await validateUserIsPartOfFinanceTeamOrHead(submitter, organization.organizationId);
 
     const fileData = await downloadImageFile(fileId);
 
@@ -1113,7 +1139,7 @@ export default class ReimbursementRequestService {
    * @returns the updated vendor
    */
   static async editVendor(name: string, vendorId: string, submitter: User, organization: Organization) {
-    await isUserAdminOrOnFinance(submitter, organization.organizationId);
+    await isUserHeadOrOnFinance(submitter, organization.organizationId);
 
     const oldVendor = await ReimbursementRequestService.getSingleVendor(vendorId, organization);
     if (oldVendor.name === name) throw new HttpException(400, 'Vendor name is the same as the current name');
@@ -1141,7 +1167,7 @@ export default class ReimbursementRequestService {
    * @returns the 'deleted' vendor
    */
   static async deleteVendor(vendorId: string, submitter: User, organization: Organization) {
-    await isUserAdminOrOnFinance(submitter, organization.organizationId);
+    await isUserHeadOrOnFinance(submitter, organization.organizationId);
 
     const vendor = await ReimbursementRequestService.getSingleVendor(vendorId, organization);
 
@@ -1182,7 +1208,8 @@ export default class ReimbursementRequestService {
    */
   static async getSingleAccountCode(accountCodeId: string, organization: Organization): Promise<AccountCode> {
     const accountCode = await prisma.account_Code.findUnique({
-      where: { accountCodeId }
+      where: { accountCodeId },
+      ...getAccountCodeQueryArgs(organization.organizationId)
     });
 
     if (!accountCode) throw new NotFoundException('Account Code', accountCodeId);
@@ -1307,5 +1334,191 @@ export default class ReimbursementRequestService {
     await sendReimbursementRequestChangesRequestedNotification(reimbursementRequest.notificationSlackThreads);
 
     return reimbursementStatusTransformer(deletedStatus);
+  }
+
+  /**
+   * Creates an index code with the given name and current user.
+   * @param name name of the index code
+   * @param code code of the index code
+   * @param user the user creating the index code
+   * @param organization the organization the user is
+   * @returns transformed created index code
+   */
+  static async createIndexCode(name: string, code: string, user: User, organization: Organization): Promise<IndexCode> {
+    const indexCode = await prisma.index_Code.create({
+      data: {
+        userCreated: { connect: { userId: user.userId } },
+        name,
+        code,
+        organization: { connect: { organizationId: organization.organizationId } }
+      },
+      ...getIndexCodeQueryArgs(organization.organizationId)
+    });
+    return indexCodeTransformer(indexCode);
+  }
+
+  /**
+   * Gets the index code with the given id
+   * @param indexCodeId The id of the index code to get
+   * @param organizationId The organization the user is currently in
+   * @returns The index code with the given id
+   */
+  static async getSingleIndexCode(indexCodeId: string, organization: Organization): Promise<IndexCode> {
+    const indexCode = await prisma.index_Code.findUnique({
+      where: { indexCodeId },
+      ...getIndexCodeQueryArgs(organization.organizationId)
+    });
+
+    if (!indexCode) throw new NotFoundException('Index Code', indexCodeId);
+    if (indexCode.dateDeleted) throw new DeletedException('Index Code', indexCodeId);
+    if (indexCode.organizationId !== organization.organizationId)
+      throw new AccessDeniedException('You do not have access to this index code');
+
+    return indexCodeTransformer(indexCode);
+  }
+
+  /**
+   * Gets all index codes in the database
+   * @param organizationId the organization id of the current user
+   * @returns All of the index codes
+   */
+  static async getAllIndexCodes(organization: Organization): Promise<IndexCode[]> {
+    const indexCodes = await prisma.index_Code.findMany({
+      where: { dateDeleted: null, organizationId: organization.organizationId },
+      ...getIndexCodeQueryArgs(organization.organizationId)
+    });
+    return indexCodes.map(indexCodeTransformer);
+  }
+
+  /**
+   * Deletes the index code
+   *
+   * @param indexCodeid the requested index code to be deleted
+   * @param submitter the user deleting the index code
+   * @param organizationId the organization the user is currently in
+   * @returns the 'deleted' index code
+   */
+  static async deleteIndexCode(indexCodeId: string, user: User, organization: Organization): Promise<IndexCode> {
+    const indexCode = await ReimbursementRequestService.getSingleIndexCode(indexCodeId, organization);
+
+    if (
+      indexCode.userCreated.userId !== user.userId &&
+      !(await isUserLeadOrHeadOfFinanceTeam(user, organization.organizationId))
+    )
+      throw new AccessDeniedException(
+        'You do not have access to delete this index code, index codes can only be deleted by their creator or finance leads and above'
+      );
+
+    const deletedIndexCode = await prisma.index_Code.update({
+      where: { indexCodeId: indexCode.indexCodeId },
+      data: { dateDeleted: new Date() },
+      ...getIndexCodeQueryArgs(organization.organizationId)
+    });
+
+    return indexCodeTransformer(deletedIndexCode);
+  }
+
+  /**
+   * Creates an other reimbursement product reason with the given name, budget and current user.
+   * @param name name of the other reimbursement product reason
+   * @param budget budget of other reimbursement product reason
+   * @param indexCodeId index code id of the index code the other reimbursement product reason falls under
+   * @param user the user creating the other reimbursement product reason
+   * @returns transformed created other reimbursement product reason
+   */
+  static async createOtherReimbursementProductReason(
+    name: string,
+    budget: number,
+    indexCodeId: string,
+    accountCodes: AccountCode[],
+    user: User,
+    organization: Organization
+  ): Promise<OtherProductReason> {
+    const indexCode = await ReimbursementRequestService.getSingleIndexCode(indexCodeId, organization);
+
+    if (!indexCode) throw new NotFoundException('Index Code', indexCodeId);
+
+    const otherReimbursementProductReason = await prisma.reimbursement_Product_Other_Reason.create({
+      data: {
+        name,
+        budget,
+        userCreated: { connect: { userId: user.userId } },
+        indexCode: { connect: { indexCodeId: indexCode.indexCodeId } },
+        accountCodes: { connect: accountCodes.map((accountCode) => ({ accountCodeId: accountCode.accountCodeId })) }
+      },
+      ...getReimbursementProductOtherReasonQueryArgs(organization.organizationId)
+    });
+    return otherProductReasonTransformer(otherReimbursementProductReason);
+  }
+
+  /**
+   * Gets the other reimursement product reason with the given id
+   * @param otherReimbursementProductReasonId The id of the other reimursement product reason to get
+   * @param organizationId The organization the user is currently in
+   * @returns The other reimursement product reason with the given id
+   */
+  static async getSingleOtherReimbursementProductReason(
+    otherReimbursementProductReasonId: string,
+    organization: Organization
+  ): Promise<OtherProductReason> {
+    const otherProductReason = await prisma.reimbursement_Product_Other_Reason.findUnique({
+      where: { otherReimbursementProductReasonId },
+      ...getReimbursementProductOtherReasonQueryArgs(organization.organizationId)
+    });
+
+    if (!otherProductReason)
+      throw new NotFoundException('Reimbursement Product Other Reason', otherReimbursementProductReasonId);
+    if (otherProductReason.dateDeleted)
+      throw new DeletedException('Reimbursement Product Other Reason', otherReimbursementProductReasonId);
+
+    return otherProductReasonTransformer(otherProductReason);
+  }
+
+  /**
+   * Gets all other reimbursement product reasons in the database
+   * @param organizationId the organization id of the current user
+   * @returns All of the other reimbursement product reasons
+   */
+  static async getAllOtherReimbursementProductReasons(organization: Organization): Promise<OtherProductReason[]> {
+    const otherReimbursementProductReasons = await prisma.reimbursement_Product_Other_Reason.findMany({
+      where: { dateDeleted: null },
+      ...getReimbursementProductOtherReasonQueryArgs(organization.organizationId)
+    });
+    return otherReimbursementProductReasons.map(otherProductReasonTransformer);
+  }
+
+  /**
+   * Deletes the other reimursement product reason
+   *
+   * @param otherProductReasonId the requested other reimursement product reason to be deleted
+   * @param user the user deleting the other reimursement product reason
+   * @param organizationId the organization the user is currently in
+   * @returns the 'deleted' other reimursement product reason
+   */
+  static async deleteOtherReimbursementProductReason(
+    otherProductReasonId: string,
+    user: User,
+    organization: Organization
+  ): Promise<OtherProductReason> {
+    const otherProductReason = await ReimbursementRequestService.getSingleOtherReimbursementProductReason(
+      otherProductReasonId,
+      organization
+    );
+
+    if (
+      otherProductReason.userCreated.userId !== user.userId &&
+      !(await isUserLeadOrHeadOfFinanceTeam(user, organization.organizationId))
+    )
+      throw new AccessDeniedException(
+        'You do not have access to delete this other reimbursement product reason, other reimbursement product reasons can only be deleted by their creator or finance leads and above'
+      );
+
+    const deletedOtherProductReason = await prisma.reimbursement_Product_Other_Reason.update({
+      where: { otherReimbursementProductReasonId: otherProductReason.otherProductReasonId },
+      data: { dateDeleted: new Date() },
+      ...getReimbursementProductOtherReasonQueryArgs(organization.organizationId)
+    });
+
+    return otherProductReasonTransformer(deletedOtherProductReason);
   }
 }

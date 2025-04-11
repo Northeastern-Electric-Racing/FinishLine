@@ -1,6 +1,6 @@
-import { isHead } from 'shared';
+import { isHead, ReimbursementRequestData, RoleEnum, SpendingBarData } from 'shared';
 import { User, Organization, Sponsor_Task, Sponsor } from '@prisma/client';
-import { userHasPermission } from '../utils/users.utils';
+import { getUserRole, userHasPermission } from '../utils/users.utils';
 import { getSponsorQueryArgs, getSponsorTaskQueryArgs } from '../prisma-query-args/sponsor.query.args';
 import {
   AccessDeniedException,
@@ -11,6 +11,16 @@ import {
 import prisma from '../prisma/prisma';
 import { sponsorTransformer } from '../transformers/finance.transformer';
 import sponsorTaskTransformer from '../transformers/sponsor-task.transformer';
+import { isUserOnFinanceTeam } from '../utils/reimbursement-requests.utils';
+import {
+  getReimbursementRequestDataForAdminFinance,
+  getReimbursementRequestDataForNonAdminFinance,
+  getReimbursementRequestsForReimbursementRequestsByDivision,
+  getReimbursementRequestsForReimbursementRequestsByProject,
+  getReimbursementRequestsForReimbursementRequestsByTeam,
+  getSpendingBarDataForAdminFinance,
+  getSpendingBarDataForNonAdminFinance
+} from '../utils/finance.utils';
 
 export default class FinanceServices {
   /**
@@ -148,6 +158,70 @@ export default class FinanceServices {
   }
 
   /**
+   * Edits a sponsor task
+   * @param submitter the user submitting
+   * @param org the org of the submitter
+   * @param sponsorTaskId the id of the sponsor task we are updating
+   * @param dueDate the updated dueDate
+   * @param notifyDate the updated notify date
+   * @param assignee the updated assignee
+   * @param notes the updated notes
+   * @returns the updated sponsorTask
+   */
+
+  static async editSponsorTask(
+    submitter: User,
+    org: Organization,
+    sponsorTaskId: string,
+    dueDate: Date,
+    notes: string,
+    notifyDate?: Date,
+    assigneeUserId?: string
+  ): Promise<Sponsor_Task> {
+    if (!(await userHasPermission(submitter.userId, org.organizationId, isHead)))
+      throw new AccessDeniedException('Only heads can edit sponsor tasks.');
+
+    const oldSponsorTask = await prisma.sponsor_Task.findUnique({
+      where: {
+        sponsorTaskId,
+        sponsor: {
+          organizationId: org.organizationId
+        }
+      }
+    });
+
+    if (!oldSponsorTask) throw new NotFoundException('SponsorTask', sponsorTaskId);
+
+    if (assigneeUserId) {
+      const assignee = await prisma.user.findUnique({
+        where: {
+          userId: assigneeUserId,
+          organizations: {
+            some: {
+              organizationId: org.organizationId
+            }
+          }
+        }
+      });
+
+      if (!assignee) {
+        throw new NotFoundException('User', assigneeUserId);
+      }
+    }
+
+    const updatedSponsorTask = await prisma.sponsor_Task.update({
+      where: { sponsorTaskId: oldSponsorTask.sponsorTaskId },
+      data: {
+        notifyDate,
+        assigneeUserId,
+        dueDate,
+        notes
+      }
+    });
+
+    return updatedSponsorTask;
+  }
+  /*
    * Gets the sponsor tasks for the given sponsor Id
    * @param sponsorId the id of the sponsor these tasks are tied to
    * @param organizationId the organization the user is in
@@ -214,5 +288,75 @@ export default class FinanceServices {
     });
 
     return sponsorTaskTransformer(createdSponsorTask);
+  }
+
+  static async getReimbursementRequestProjectData(
+    organization: Organization,
+    projectId: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<ReimbursementRequestData> {
+    return await getReimbursementRequestsForReimbursementRequestsByProject(
+      projectId,
+      organization.organizationId,
+      startDate ?? null,
+      endDate ?? null
+    );
+  }
+
+  static async getReimbursementRequestTeamData(
+    organization: Organization,
+    teamId: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<ReimbursementRequestData> {
+    return await getReimbursementRequestDataForNonAdminFinance(
+      teamId,
+      organization.organizationId,
+      startDate ?? null,
+      endDate ?? null
+    );
+  }
+
+  static async getReimbursementRequestTeamTypeData(
+    organization: Organization,
+    teamTypeId: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<ReimbursementRequestData[]> {
+    return await getReimbursementRequestDataForAdminFinance(
+      teamTypeId,
+      organization.organizationId,
+      startDate ?? null,
+      endDate ?? null
+    );
+  }
+
+  static async getSpendingBarTeamData(
+    organization: Organization,
+    teamId: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<SpendingBarData> {
+    return await getSpendingBarDataForNonAdminFinance(
+      teamId,
+      organization.organizationId,
+      startDate ?? null,
+      endDate ?? null
+    );
+  }
+
+  static async getSpendingBarTeamTypeData(
+    organization: Organization,
+    teamTypeId: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<SpendingBarData[]> {
+    return await getSpendingBarDataForAdminFinance(
+      teamTypeId,
+      organization.organizationId,
+      startDate ?? null,
+      endDate ?? null
+    );
   }
 }

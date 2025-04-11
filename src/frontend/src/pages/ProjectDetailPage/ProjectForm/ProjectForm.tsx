@@ -17,7 +17,6 @@ import ProjectFormDetails from './ProjectFormDetails';
 import { useAllUsers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { ObjectShape } from 'yup/lib/object';
 import CreateChangeRequestModal from '../../CreateChangeRequestPage/CreateChangeRequestModal';
 import { ProjectCreateChangeRequestFormInput } from './ProjectEditContainer';
 import { useState } from 'react';
@@ -31,7 +30,7 @@ export interface ProjectFormInput {
   budget: number;
   summary: string;
   links: LinkCreateArgs[];
-  crId: string;
+  crId?: string;
   carNumber: number | undefined;
   teamIds: string[];
   descriptionBullets: DescriptionBulletPreview[];
@@ -45,7 +44,7 @@ interface ProjectFormContainerProps {
   defaultValues: ProjectFormInput;
   setManagerId: (id?: string) => void;
   setLeadId: (id?: string) => void;
-  schema: yup.ObjectSchema<ObjectShape>;
+  schema: yup.ObjectSchema<any>;
   leadId?: string;
   managerId?: string;
   onSubmitChangeRequest?: (data: ProjectCreateChangeRequestFormInput) => void;
@@ -73,7 +72,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
     control,
     watch,
     formState: { errors }
-  } = useForm({
+  } = useForm<ProjectFormInput>({
     resolver: yupResolver(schema),
     defaultValues: {
       name: defaultValues?.name,
@@ -82,7 +81,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
       crId: defaultValues?.crId,
       carNumber: defaultValues?.carNumber,
       links: defaultValues?.links,
-      descriptionBullets: defaultValues?.descriptionBullets,
+      descriptionBullets: defaultValues?.descriptionBullets ?? [],
       teamIds: defaultValues?.teamIds
     }
   });
@@ -101,7 +100,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   }
 
   const crWatch = watch('crId');
-  const changeRequestInputExists = crWatch !== 'null' && crWatch !== '';
+  const changeRequestInputExists = !!crWatch && crWatch !== 'null' && crWatch !== '';
 
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
 
@@ -159,7 +158,12 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
             <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
               Cancel
             </NERFailButton>
-            <NERSuccessButton disabled={!changeRequestInputExists} variant="contained" type="submit" sx={{ mx: 1 }}>
+            <NERSuccessButton
+              disabled={!changeRequestInputExists && !!project}
+              variant="contained"
+              type="submit"
+              sx={{ mx: 1 }}
+            >
               Submit
             </NERSuccessButton>
           </Box>

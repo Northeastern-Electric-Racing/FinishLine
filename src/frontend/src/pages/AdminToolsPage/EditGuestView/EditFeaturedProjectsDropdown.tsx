@@ -1,14 +1,15 @@
 import React from 'react';
 import { Autocomplete, Chip, TextField } from '@mui/material';
-import { Project } from 'shared';
+import { ProjectPreview } from 'shared';
 import { projectWbsNamePipe } from '../../../utils/pipes';
 import { useAllProjects } from '../../../hooks/projects.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
+import { projectToProjectPreviewTransformer } from '../../../apis/transformers/projects.transformers';
 
 interface EditFeatureProjectsDropdownProps {
-  onChange: (value: Project[] | null) => void;
-  value: Project[] | undefined;
+  onChange: (value: ProjectPreview[] | null) => void;
+  value: ProjectPreview[] | undefined;
 }
 
 const EditFeaturedProjectsDropdown: React.FC<EditFeatureProjectsDropdownProps> = ({ onChange, value }) => {
@@ -20,7 +21,7 @@ const EditFeaturedProjectsDropdown: React.FC<EditFeatureProjectsDropdownProps> =
   return (
     <Autocomplete
       multiple
-      options={allProjects}
+      options={allProjects.map(projectToProjectPreviewTransformer)}
       getOptionLabel={(option) => `${projectWbsNamePipe(option)}`}
       isOptionEqualToValue={(option, value) => option.id === value.id}
       value={value}

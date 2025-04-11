@@ -36,6 +36,16 @@ financeRouter.post(
 );
 
 financeRouter.post(
+  '/sponsorTask/:sponsorTaskId/edit',
+  isDate(body('dueDate')),
+  nonEmptyString(body('notes')),
+  isDate(body('notifyDate')).optional(),
+  nonEmptyString(body('assigneeUserId')).optional(),
+  validateInputs,
+  FinanceController.editSponsorTask
+);
+
+financeRouter.post(
   '/sponsor/:sponsorId/sponsorTasks',
   isDate(body('dueDate')),
   nonEmptyString(body('notes')),
@@ -43,6 +53,31 @@ financeRouter.post(
   nonEmptyString(body('assigneeId').optional()),
   validateInputs,
   FinanceController.createSponsorTask
+);
+
+financeRouter.get(
+  '/reimbursement-request-project-data/:projectId',
+  FinanceController.getReimbursementRequestProjectData
+);
+
+financeRouter.get(
+  '/reimbursement-request-team-data/:teamId',
+  FinanceController.getReimbursementRequestTeamData
+);
+
+financeRouter.get(
+  '/reimbursement-request-team-type-data/:teamTypeId',
+  FinanceController.getReimbursementRequestTeamTypeData
+);
+
+financeRouter.get(
+  '/spending-bar-team-data/:teamId',
+  FinanceController.getSpendingBarTeamData
+);
+
+financeRouter.get(
+  '/spending-bar-team-type-data/:teamTypeId',
+  FinanceController.getSpendingBarTeamTypeData
 );
 
 export default financeRouter;

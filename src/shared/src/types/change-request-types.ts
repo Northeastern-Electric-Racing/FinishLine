@@ -99,6 +99,7 @@ export enum ChangeRequestStatus {
 export interface ImplementedChange {
   changeId: string;
   changeRequestId: string;
+  changeRequestIdentifier: number;
   wbsNum: WbsNumber;
   implementer: User;
   detail: string;
@@ -110,6 +111,10 @@ export interface ProposedSolutionCreateArgs {
   scopeImpact: string;
   budgetImpact: number;
   timelineImpact: number;
+}
+
+export interface ProposedSolutionFormInput extends ProposedSolutionCreateArgs {
+  id: string;
 }
 
 export interface DescriptionBulletPreview {

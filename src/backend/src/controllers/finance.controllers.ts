@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import FinanceServices from '../services/finance.services';
+import { transformDate } from '../utils/datetime.utils';
 
 export default class FinanceController {
   static async createSponsor(req: Request, res: Response, next: NextFunction) {
@@ -68,6 +69,26 @@ export default class FinanceController {
     }
   }
 
+  static async editSponsorTask(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { sponsorTaskId } = req.params;
+      const { dueDate, notes, notifyDate, assigneeUserId } = req.body;
+
+      const updatedSponsorTask = await FinanceServices.editSponsorTask(
+        req.currentUser,
+        req.organization,
+        sponsorTaskId,
+        dueDate,
+        notes,
+        notifyDate,
+        assigneeUserId
+      );
+      res.status(200).json(updatedSponsorTask);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createSponsorTier(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, colorHexCode } = req.body;
@@ -94,6 +115,101 @@ export default class FinanceController {
         assigneeId
       );
       res.status(200).json(sponsorTask);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getReimbursementRequestProjectData(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { projectId } = req.params;
+      const { startDate, endDate } = req.query;
+      const parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : undefined;
+      const parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : undefined;
+
+      const rrData = await FinanceServices.getReimbursementRequestProjectData(
+        req.organization,
+        projectId,
+        parsedStartDate,
+        parsedEndDate
+      );
+      res.status(200).json(rrData);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getReimbursementRequestTeamData(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamId } = req.params;
+      const { startDate, endDate } = req.query;
+      const parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : undefined;
+      const parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : undefined;
+
+      const rrData = await FinanceServices.getReimbursementRequestTeamData(
+        req.organization,
+        teamId,
+        parsedStartDate,
+        parsedEndDate
+      );
+      res.status(200).json(rrData);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getReimbursementRequestTeamTypeData(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamTypeId } = req.params;
+      const { startDate, endDate } = req.query;
+      const parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : undefined;
+      const parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : undefined;
+
+      const rrData = await FinanceServices.getReimbursementRequestTeamTypeData(
+        req.organization,
+        teamTypeId,
+        parsedStartDate,
+        parsedEndDate
+      );
+      res.status(200).json(rrData);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getSpendingBarTeamData(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamId } = req.params;
+      const { startDate, endDate } = req.body;
+      const parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : undefined;
+      const parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : undefined;
+
+      const spendingBarData = await FinanceServices.getSpendingBarTeamData(
+        req.organization,
+        teamId,
+        parsedStartDate,
+        parsedEndDate
+      );
+      res.status(200).json(spendingBarData);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getSpendingBarTeamTypeData(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamTypeId } = req.params;
+      const { startDate, endDate } = req.body;
+      const parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : undefined;
+      const parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : undefined;
+
+      const spendingBarData = await FinanceServices.getSpendingBarTeamTypeData(
+        req.organization,
+        teamTypeId,
+        parsedStartDate,
+        parsedEndDate
+      );
+      res.status(200).json(spendingBarData);
     } catch (error: unknown) {
       next(error);
     }

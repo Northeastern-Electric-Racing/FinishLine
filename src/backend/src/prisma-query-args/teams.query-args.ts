@@ -1,8 +1,10 @@
 import { Prisma } from '@prisma/client';
 import { getUserQueryArgs } from './user.query-args';
-import { getWorkPackageQueryArgs } from './work-packages.query-args';
+import { getProjectManyQueryArgs } from './projects.query-args';
 
 export type TeamQueryArgs = ReturnType<typeof getTeamQueryArgs>;
+
+export type TeamPreviewQueryArgs = ReturnType<typeof getTeamPreviewQueryArgs>;
 
 export const getTeamQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.TeamDefaultArgs>()({
@@ -18,10 +20,16 @@ export const getTeamQueryArgs = (organizationId: string) =>
             dateDeleted: null
           }
         },
-        include: {
-          wbsElement: true,
-          workPackages: getWorkPackageQueryArgs(organizationId)
-        }
+        ...getProjectManyQueryArgs(organizationId)
       }
+    }
+  });
+
+export const getTeamPreviewQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.TeamDefaultArgs>()({
+    include: {
+      members: getUserQueryArgs(organizationId),
+      head: getUserQueryArgs(organizationId),
+      leads: getUserQueryArgs(organizationId)
     }
   });

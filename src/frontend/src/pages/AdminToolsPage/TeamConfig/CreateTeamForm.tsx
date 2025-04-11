@@ -20,7 +20,8 @@ const schema = yup.object().shape({
   teamName: yup.string().required('Team Name is Required'),
   headId: yup.string().required('You must set a Head'),
   slackId: yup.string().required('Team Channel SlackId is required'),
-  description: yup.string().required('Description is Required')
+  description: yup.string().required('Description is Required'),
+  isFinanceTeam: yup.boolean().required('Is Finance Team is Required')
 });
 
 interface CreateTeamFormInput {
@@ -50,7 +51,7 @@ const CreateTeamForm = () => {
     control,
     formState: { errors },
     reset
-  } = useForm({
+  } = useForm<CreateTeamFormInput>({
     resolver: yupResolver(schema),
     defaultValues
   });

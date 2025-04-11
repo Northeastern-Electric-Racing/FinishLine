@@ -23,17 +23,13 @@ import {
 } from '@mui/material';
 import { OtherProductReason, WbsNumber, validateWBS, wbsPipe, ReimbursementProductFormArgs } from 'shared';
 import { Add, Delete } from '@mui/icons-material';
-import { Control, Controller, FieldErrors, UseFormSetValue } from 'react-hook-form';
+import { FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useTheme } from '@mui/system';
-
-const otherCategoryOptions = [
-  { label: 'Competition', id: 'COMPETITION' },
-  { label: 'Consumeables', id: 'CONSUMABLES' },
-  { label: 'General Stock', id: 'GENERAL_STOCK' },
-  { label: 'Subscriptions and Memberships', id: 'SUBSCRIPTIONS_AND_MEMBERSHIPS' },
-  { label: 'Tools and Equipment', id: 'TOOLS_AND_EQUIPMENT' }
-];
+import { useGetAllOtherProductReason } from '../../../hooks/finance.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
+import { formatReasonName } from '../../../utils/reimbursement-request.utils';
 
 interface ReimbursementProductTableProps {
   reimbursementProducts: ReimbursementProductFormArgs[];
@@ -43,8 +39,9 @@ interface ReimbursementProductTableProps {
     label: string;
     id: string;
   }[];
+  register: UseFormRegister<ReimbursementRequestFormInput>;
+  watch: UseFormRegister<ReimbursementRequestFormInput>;
   errors: FieldErrors<ReimbursementRequestFormInput>;
-  control: Control<ReimbursementRequestFormInput>;
   setValue: UseFormSetValue<ReimbursementRequestFormInput>;
 }
 
@@ -57,7 +54,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   removeProduct,
   appendProduct,
   wbsElementAutocompleteOptions,
-  control,
+  register,
+  watch,
   errors,
   setValue
 }) => {
@@ -71,7 +69,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   >();
   reimbursementProducts.forEach((product, index) => {
     const hasWbsNum = (product.reason as WbsNumber).carNumber !== undefined;
-    const productReason = hasWbsNum ? wbsPipe(product.reason as WbsNumber) : (product.reason as string);
+    const productReason = hasWbsNum ? wbsPipe(product.reason as WbsNumber) : (product.reason as OtherProductReason).name;
     if (uniqueWbsElementsWithProducts.has(productReason)) {
       const products = uniqueWbsElementsWithProducts.get(productReason);
       products?.push({ ...product, index });
@@ -86,6 +84,20 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
 
   const userTheme = useTheme();
   const hoverColor = userTheme.palette.action.hover;
+
+  const {
+    data: otherReasons,
+    isLoading: otherReasonsIsLoading,
+    isError: otherReasonIsError,
+    error: otherReasonError
+  } = useGetAllOtherProductReason();
+
+  if (!otherReasons || otherReasonsIsLoading) {
+    return <LoadingIndicator />;
+  }
+  if (otherReasonIsError) {
+    return <ErrorPage message={otherReasonError.message} />;
+  }
 
   return (
     <TableContainer>
@@ -106,7 +118,16 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
               <TableRow key={key}>
                 <TableCell>
                   <Typography>
-                    {wbsElementAutocompleteOptions.concat(otherCategoryOptions).find((value) => value.id === key)?.label}
+                    {
+                      wbsElementAutocompleteOptions
+                        .concat(
+                          otherReasons.map((reason) => ({
+                            id: reason.otherProductReasonId,
+                            label: formatReasonName(reason.name)
+                          }))
+                        )
+                        .find((value) => value.id === key)?.label
+                    }
                   </Typography>
                 </TableCell>
                 <TableCell>
@@ -118,51 +139,35 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                             display: 'flex'
                           }}
                         >
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              flexDirection: { xs: 'column', sm: 'row' },
-                              gap: { xs: '0', sm: '8px' }
-                            }}
-                          >
-                            <FormControl fullWidth margin="dense" variant="outlined" size="small">
-                              <Controller
-                                name={`reimbursementProducts.${product.index}.name`}
-                                control={control}
-                                render={({ field }) => (
-                                  <TextField
-                                    {...field}
-                                    placeholder={'Description'}
-                                    autoComplete="off"
-                                    variant={'outlined'}
-                                    fullWidth
-                                    error={!!errors.reimbursementProducts?.[product.index]?.name}
-                                  />
-                                )}
+                          <Box>
+                            <FormControl fullWidth margin="dense" variant="outlined">
+                              <TextField
+                                {...register(`reimbursementProducts.${product.index}.name`, { required: true })}
+                                value={watch(`reimbursementProducts.${product.index}.name`)}
+                                placeholder={'Description'}
+                                autoComplete="off"
+                                variant={'outlined'}
+                                fullWidth
+                                error={!!errors.reimbursementProducts?.[product.index]?.name}
                               />
                               <FormHelperText error>
                                 {errors.reimbursementProducts?.[product.index]?.name?.message}
                               </FormHelperText>
                             </FormControl>
                             <FormControl fullWidth margin="dense" variant="outlined" size="small">
-                              <Controller
-                                name={`reimbursementProducts.${product.index}.cost`}
-                                control={control}
-                                render={({ field }) => (
-                                  <TextField
-                                    {...field}
-                                    placeholder={'Cost'}
-                                    variant={'outlined'}
-                                    type="number"
-                                    fullWidth
-                                    autoComplete="off"
-                                    InputProps={{
-                                      startAdornment: <InputAdornment position="start">$</InputAdornment>
-                                    }}
-                                    onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
-                                    error={!!errors.reimbursementProducts?.[product.index]?.cost}
-                                  />
-                                )}
+                              <TextField
+                                {...register(`reimbursementProducts.${product.index}.cost`, { required: true })}
+                                value={watch(`reimbursementProducts.${product.index}.cost`)}
+                                placeholder={'Cost'}
+                                variant={'outlined'}
+                                type="number"
+                                fullWidth
+                                autoComplete="off"
+                                InputProps={{
+                                  startAdornment: <InputAdornment position="start">$</InputAdornment>
+                                }}
+                                onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
+                                error={!!errors.reimbursementProducts?.[product.index]?.cost}
                               />
                               <FormHelperText error>
                                 {errors.reimbursementProducts?.[product.index]?.cost?.message}
@@ -197,7 +202,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                     startIcon={<Add />}
                     onClick={(e) => {
                       appendProduct({
-                        reason: key.includes('.') ? validateWBS(key) : (key as OtherProductReason),
+                        reason: key.includes('.') ? validateWBS(key) : ({ name: key } as OtherProductReason),
                         name: '',
                         cost: 0
                       });
@@ -235,11 +240,14 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                 <Autocomplete
                   fullWidth
                   sx={{ my: 1 }}
-                  options={otherCategoryOptions}
+                  options={otherReasons.map((reason) => ({
+                    id: reason.otherProductReasonId,
+                    label: formatReasonName(reason.name)
+                  }))}
                   onChange={(_event, value) => {
                     if (value) {
                       appendProduct({
-                        reason: value.id as OtherProductReason,
+                        reason: { name: value.id } as OtherProductReason,
                         name: '',
                         cost: 0
                       });

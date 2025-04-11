@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ProposedSolution, isGuest } from 'shared';
+import { ProposedSolution, ProposedSolutionFormInput, isGuest } from 'shared';
 import ProposedSolutionForm from './ProposedSolutionForm';
 import { useState } from 'react';
 import { useCreateProposeSolution } from '../../hooks/change-requests.hooks';
@@ -36,7 +36,7 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedS
 
   const { userId } = user;
 
-  const addProposedSolution = async (data: ProposedSolution) => {
+  const addProposedSolution = async (data: ProposedSolutionFormInput) => {
     setShowEditableForm(false);
     const { description, timelineImpact, scopeImpact, budgetImpact } = data;
     try {

@@ -17,9 +17,16 @@ import {
   useTheme
 } from '@mui/material';
 import { Box, Stack } from '@mui/system';
-import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import {
-  ClubAccount,
+  Control,
+  Controller,
+  FieldErrors,
+  UseFormHandleSubmit,
+  UseFormRegister,
+  UseFormSetValue,
+  UseFormWatch
+} from 'react-hook-form';
+import {
   AccountCode,
   ReimbursementProductFormArgs,
   ReimbursementReceiptCreateArgs,
@@ -62,6 +69,7 @@ interface ReimbursementRequestFormViewProps {
   handleSubmit: UseFormHandleSubmit<ReimbursementRequestFormInput>;
   errors: FieldErrors<ReimbursementRequestFormInput>;
   watch: UseFormWatch<ReimbursementRequestFormInput>;
+  register: UseFormRegister<ReimbursementRequestFormInput>;
   submitText: 'Save' | 'Submit';
   previousPage: string;
   setValue: UseFormSetValue<ReimbursementRequestFormInput>;
@@ -83,6 +91,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   handleSubmit,
   errors,
   watch,
+  register,
   submitText,
   previousPage,
   setValue,
@@ -94,7 +103,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const products = watch(`reimbursementProducts`);
   const accountCodeId = watch('accountCodeId');
   const selectedAccountCode = allAccountCodes.find((accountCode) => accountCode.accountCodeId === accountCodeId);
-  const refundSources = selectedAccountCode?.allowedRefundSources || [];
+  const refundSources = selectedAccountCode?.indexCodes || [];
 
   const calculatedTotalCost = products.reduce((acc, product) => acc + Number(product.cost), 0).toFixed(2);
   const [showReimbursementGuidelinesModal, setShowReimbursementGuidelinesModal] = useState(true);
@@ -259,7 +268,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     .map(accountCodesToAutocomplete);
 
                   const onClear = () => {
-                    setValue('account', undefined);
+                    setValue('indexCodeId', '');
                     onChange('');
                   };
 
@@ -320,32 +329,34 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
             <FormControl fullWidth>
               <FormLabel>Refund Source</FormLabel>
               <Controller
-                name="account"
+                name="indexCodeId"
                 control={control}
                 render={({ field: { onChange, value } }) => (
                   <Select
-                    onChange={(newValue) => onChange(newValue.target.value as ClubAccount)}
+                    onChange={(newValue) => onChange(newValue.target.value)}
                     value={value}
                     disabled={!selectedAccountCode}
-                    error={!!errors.account}
+                    error={!!errors.indexCodeId}
                     displayEmpty
                     renderValue={() => {
                       return value ? (
-                        <Typography>{codeAndRefundSourceName(value)} </Typography>
+                        <Typography>
+                          {codeAndRefundSourceName(refundSources.find((source) => source.indexCodeId === value))}{' '}
+                        </Typography>
                       ) : (
                         <Typography style={{ color: 'gray' }}>Select Refund Source</Typography>
                       );
                     }}
                   >
                     {refundSources.map((refundSource) => (
-                      <MenuItem key={refundSource} value={refundSource}>
+                      <MenuItem key={refundSource.name} value={refundSource.name}>
                         {codeAndRefundSourceName(refundSource)}
                       </MenuItem>
                     ))}
                   </Select>
                 )}
               />
-              <FormHelperText error>{errors.account?.message}</FormHelperText>
+              <FormHelperText error>{errors.indexCodeId?.message}</FormHelperText>
             </FormControl>
           </Grid>
           <Grid item xs={6}>
@@ -366,21 +377,14 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 <input
                   onChange={(e) => {
                     if (e.target.files) {
-                      [...e.target.files].forEach((file) => {
-                        /* The regex /^[\w.]+$/ limits the file name to the set of alphanumeric characters (\w) and dots (for file type) */
+                      [...e.target.files].forEach((file, index) => {
                         if (file.size >= 1000000) {
                           toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
-                          document.getElementById('receipt-image')!.innerHTML = '';
-                        } else if (file.name.length > 20) {
-                          toast.error(`Error uploading ${file.name}; file name must be less than 20 characters`, 5000);
-                          document.getElementById('receipt-image')!.innerHTML = '';
-                        } else if (!/^[\w.]+$/.test(file.name)) {
-                          toast.error(`Error uploading ${file.name}; file name must only contain letter and numbers`, 5000);
                           document.getElementById('receipt-image')!.innerHTML = '';
                         } else {
                           receiptPrepend({
                             file,
-                            name: file.name,
+                            name: 'receipt' + (receiptFiles.length + index),
                             googleFileId: ''
                           });
                         }
@@ -408,7 +412,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               appendProduct={reimbursementProductAppend}
               removeProduct={reimbursementProductRemove}
               wbsElementAutocompleteOptions={wbsElementAutocompleteOptions}
-              control={control}
+              watch={watch}
+              register={register}
               setValue={setValue}
             />
             <FormHelperText error>{errors.reimbursementProducts?.message}</FormHelperText>

@@ -9,7 +9,7 @@ import {
   deleteReimbursementRequest,
   denyReimbursementRequest,
   downloadBlobsToPdf,
-  downloadGoogleImage,
+  downloadFinanceImage,
   editReimbursementRequest,
   getAllReimbursementRequests,
   getAllReimbursements,
@@ -32,10 +32,12 @@ import {
   editRefund,
   leadershipApproveReimbursementRequest,
   requestReimbursementRequestChanges,
-  markPendingFinance
+  markPendingFinance,
+  getAllIndexCodes,
+  getAllOtherProductReason
 } from '../apis/finance.api';
 import {
-  ClubAccount,
+  IndexCode,
   AccountCode,
   Reimbursement,
   ReimbursementReceiptCreateArgs,
@@ -44,7 +46,11 @@ import {
   ReimbursementStatus,
   OtherReimbursementProductCreateArgs,
   WbsReimbursementProductCreateArgs,
-  ReimbursementStatusType
+  ReimbursementStatusType,
+  OtherProductReason,
+  ReimbursementRequestData,
+  SpendingBarData,
+  TeamType
 } from 'shared';
 import { fullNamePipe } from '../utils/pipes';
 
@@ -55,7 +61,7 @@ export interface CreateReimbursementRequestPayload {
   otherReimbursementProducts: OtherReimbursementProductCreateArgs[];
   wbsReimbursementProducts: WbsReimbursementProductCreateArgs[];
   totalCost: number;
-  account: ClubAccount;
+  indexCodeId: string;
 }
 
 export interface EditReimbursementRequestPayload extends CreateReimbursementRequestPayload {
@@ -73,7 +79,7 @@ export interface AccountCodePayload {
   code: number;
   name: string;
   allowed: boolean;
-  allowedRefundSources: ClubAccount[];
+  indexCodeIds: string[];
 }
 
 export interface EditVendorPayload {
@@ -87,6 +93,40 @@ export interface RefundPayload {
 
 export interface MarkDeliveredRequestPayload {
   dateDelivered: Date;
+}
+
+export interface IndexCodePayload {
+  name: string;
+}
+
+export interface ReimbursementRequestProjectDataPayload {
+  projectId: string;
+  startDate?: Date;
+  endDate?: Date;
+}
+
+export interface ReimbursementRequestTeamDataPayload {
+  teamId: string;
+  startDate?: Date;
+  endDate?: Date;
+}
+
+export interface ReimbursementRequestTeamTypeDataPayload {
+  teamTypeId: string;
+  startDate?: Date;
+  endDate?: Date;
+}
+
+export interface SpendingBarTeamDataPayload {
+  teamId: string;
+  startDate?: Date;
+  endDate?: Date;
+}
+
+export interface SpendingBarTeamTypeDataPayload {
+  teamTypeId: string;
+  startDate?: Date;
+  endDate?: Date;
 }
 
 /**
@@ -111,8 +151,10 @@ export const useUploadManyReceipts = () => {
   return useMutation<{ googleFileId: string; name: string }[], Error, { files: File[]; id: string }>(
     ['reimbursement-requests', 'edit'],
     async (formData: { files: File[]; id: string }) => {
-      const promises = formData.files.map((file) => uploadSingleReceipt(file, formData.id));
-      const results = await Promise.all(promises);
+      const results = [];
+      for (const file of formData.files) {
+        results.push(await uploadSingleReceipt(file, formData.id));
+      }
       return results.map((result) => result.data);
     }
   );
@@ -380,7 +422,7 @@ export const useDenyReimbursementRequest = (id: string) => {
 export const useDownloadPDFOfImages = () => {
   return useMutation(['reimbursement-requests'], async (formData: DownloadReceiptsFormInput) => {
     const promises = formData.fileIds.map((fileId) => {
-      return downloadGoogleImage(fileId);
+      return downloadFinanceImage(fileId);
     });
 
     const blobs = await Promise.all(promises);
@@ -404,7 +446,7 @@ export const useDownloadCSVFileOfReimbursementRequests = () => {
           (rr) =>
             `${rr.saboId},${rr.identifier},${fullNamePipe(rr.recipient)},${rr.totalCost},${
               rr.reimbursementStatuses[rr.reimbursementStatuses.length - 1].type
-            },${rr.account},${rr.accountCode.code},${rr.dateCreated},${rr.dateDelivered ?? ''},${
+            },${rr.indexCode},${rr.accountCode.code},${rr.dateCreated},${rr.dateDelivered ?? ''},${
               rr.reimbursementStatuses.find((rs) => rs.type === ReimbursementStatusType.SABO_SUBMITTED)?.dateCreated ?? ''
             },${rr.vendor.name}`
         )
@@ -588,3 +630,67 @@ export const useRequestReimbursementRequestChanges = (id: string) => {
     }
   );
 };
+
+/**
+ * Custom React Hook to get all IndexCodes
+ *
+ * @returns all the IndexCodes
+ */
+export const useGetAllIndexCodes = () => {
+  return useQuery<IndexCode[], Error>(['index-codes'], async () => {
+    const { data } = await getAllIndexCodes();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get all Other Product Reasons
+ *
+ * @returns all the other product reasons
+ */
+export const useGetAllOtherProductReason = () => {
+  return useQuery<OtherProductReason[], Error>(['other-reimbursement-product-reasons'], async () => {
+    const { data } = await getAllOtherProductReason();
+    return data;
+  });
+};
+
+export const useGetReimbursementRequestTeamData = (reimbursementRequestData: ReimbursementRequestTeamDataPayload) =>
+  useQuery<ReimbursementRequestData, Error>([
+    'reimbursementRequestData',
+    reimbursementRequestData.endDate,
+    reimbursementRequestData.startDate,
+    reimbursementRequestData.teamId
+  ]);
+
+export const useGetReimbursementRequestTeamTypeData = (reimbursementRequestData: ReimbursementRequestTeamTypeDataPayload) =>
+  useQuery<ReimbursementRequestData, Error>([
+    'reimbursementRequestData',
+    reimbursementRequestData.endDate,
+    reimbursementRequestData.startDate,
+    reimbursementRequestData.teamTypeId
+  ]);
+
+export const useGetReimbursementRequestProjectData = (reimbursementRequestData: ReimbursementRequestProjectDataPayload) =>
+  useQuery<ReimbursementRequestData, Error>([
+    'reimbursementRequestData',
+    reimbursementRequestData.endDate,
+    reimbursementRequestData.startDate,
+    reimbursementRequestData.projectId
+  ]);
+
+export const useGetSpendingBarTeamData = (spendingBarData: SpendingBarTeamDataPayload) =>
+  useQuery<ReimbursementRequestData, Error>([
+    'reimbursementRequestData',
+    spendingBarData.endDate,
+    spendingBarData.startDate,
+    spendingBarData.teamId
+  ]);
+
+export const useGetSpendingBarTeamTypeData = (spendingBarData: SpendingBarTeamTypeDataPayload) =>
+  useQuery<ReimbursementRequestData, Error>([
+    'reimbursementRequestData',
+    spendingBarData.endDate,
+    spendingBarData.startDate,
+    spendingBarData.teamTypeId
+  ]);

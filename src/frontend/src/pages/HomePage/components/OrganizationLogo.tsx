@@ -9,7 +9,19 @@ const OrganizationLogo = () => {
   if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
 
-  return <LogoDisplay imageUrl={imageData && URL.createObjectURL(imageData)} />;
+  return (
+    <div
+      style={{
+        width: '100%',
+        aspectRatio: 'auto',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}
+    >
+      <LogoDisplay imageUrl={imageData && URL.createObjectURL(imageData)} />
+    </div>
+  );
 };
 
 export default OrganizationLogo;

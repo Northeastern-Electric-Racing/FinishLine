@@ -60,11 +60,11 @@ const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) =>
             <NERAutocomplete
               sx={{ width: '100%' }}
               id="change-request-id-autocomplete"
-              onChange={(_event, newValue) => onChange(newValue ? newValue.id : '')}
+              onChange={(_event, newValue) => onChange(newValue ? newValue.id : undefined)}
               options={approvedChangeRequestOptions}
               size="small"
               placeholder="Change Request ID"
-              value={approvedChangeRequestOptions.find((cr) => cr.id === value) || { id: '', label: '' }}
+              value={approvedChangeRequestOptions.find((cr) => cr.id === value) || undefined}
             />
           )}
         />

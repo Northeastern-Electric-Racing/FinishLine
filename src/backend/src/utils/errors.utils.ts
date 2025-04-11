@@ -139,8 +139,14 @@ export type ExceptionObjectNames =
   | 'Car'
   | 'Milestone'
   | 'Faq'
+  | 'Checklist'
+  | 'Checklist Item'
   | 'Pop Up'
   | 'Announcement'
   | 'Graph'
   | 'Graph Collection'
-  | 'Sponsor';
+  | 'Sponsor'
+  | 'SponsorTask'
+  | 'Index Code'
+  | 'Reimbursement Product Other Reason'
+  | 'Encryption Key';

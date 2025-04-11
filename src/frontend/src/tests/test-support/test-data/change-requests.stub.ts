@@ -139,6 +139,7 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
   timelineImpact: 2,
   implementedChanges: [
     {
+      changeRequestIdentifier: 1,
       changeId: '1',
       changeRequestId: '37',
       wbsNum: {
@@ -159,6 +160,7 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
       dateImplemented: new Date('02/25/21')
     },
     {
+      changeRequestIdentifier: 1,
       changeId: '1',
       changeRequestId: '37',
       wbsNum: {
@@ -179,6 +181,7 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
       dateImplemented: new Date('02/25/21')
     },
     {
+      changeRequestIdentifier: 1,
       changeId: '1',
       changeRequestId: '37',
       wbsNum: {
