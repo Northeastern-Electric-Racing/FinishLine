@@ -463,6 +463,54 @@ export default class ProjectsService {
   }
 
   /**
+   * Sets an abbreviation for this project
+   * @param wbsNum the project
+   * @param user the user making the change
+   * @param organization the organization
+   * @param abbreviation the new abbreviation
+   * @returns the updated project
+   */
+  static async setAbbreviation(wbsNum: WbsNumber, user: User, organization: Organization, abbreviation: string) {
+    const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNum, organization);
+
+    if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('set Abbreviation');
+    }
+
+    const updatedProject = await prisma.project.update({
+      where: { projectId: project.projectId },
+      data: {
+        abbreviation
+      },
+      ...getProjectQueryArgs(organization.organizationId)
+    });
+
+    return projectTransformer(updatedProject);
+  }
+
+  /**
+   * Revomves the abbreviation from a given project
+   * @param wbsNum the project
+   * @param user the user making the change
+   * @param organization the organization
+   * @returns the updated project
+   */
+  static async deleteAbbreviation(wbsNum: WbsNumber, user: User, organization: Organization) {
+    const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNum, organization);
+
+    if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('delete Abbreviation');
+    }
+
+    await prisma.project.update({
+      where: { projectId: project.projectId },
+      data: {
+        abbreviation: null
+      }
+    });
+  }
+
+  /**
    * Gets all the link types in the users organization
    * @param organizationId The organization the user is currently in
    * @returns all the link types in the users organization
