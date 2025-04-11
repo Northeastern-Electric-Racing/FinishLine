@@ -4,7 +4,7 @@
  */
 
 import prisma from './prisma';
-import { Club_Accounts, Reimbursement_Status_Type, WBS_Element_Status } from '@prisma/client';
+import { Reimbursement_Status_Type, WBS_Element_Status } from '@prisma/client';
 import { calculateEndDate } from 'shared';
 import { writeFileSync } from 'fs';
 import { getUserFullName } from '../utils/users.utils';
@@ -164,14 +164,14 @@ const downloadReimbursementRequests = async () => {
     where: {
       dateDeleted: null
     },
-    include: { reimbursementStatuses: true, vendor: true }
+    include: { reimbursementStatuses: true, vendor: true, indexCode: true }
   });
 
   const promises = rrs.map(
     async (rr) =>
       await `${rr.saboId},${await getUserFullName(rr.recipientId)},${rr.totalCost},${
         rr.reimbursementStatuses[rr.reimbursementStatuses.length - 1].type
-      },${rr.account},${rr.dateCreated},${rr.dateDelivered ?? ''},${
+      },${rr.indexCode},${rr.dateCreated},${rr.dateDelivered ?? ''},${
         rr.reimbursementStatuses.find((rs) => rs.type === Reimbursement_Status_Type.SABO_SUBMITTED)?.dateCreated ?? ''
       },${rr.vendor.name}`
   );
@@ -188,7 +188,8 @@ const getTotalAmountOwedForCashAndBudgetForSubmittedToSaboAndPendingFinanceTeam 
       dateDeleted: null
     },
     include: {
-      reimbursementStatuses: true
+      reimbursementStatuses: true,
+      indexCode: true
     }
   });
 
@@ -201,27 +202,27 @@ const getTotalAmountOwedForCashAndBudgetForSubmittedToSaboAndPendingFinanceTeam 
   );
 
   const totalAmountOwedForCashSabo = submittedToSabo.reduce((acc, curr) => {
-    if (curr.account === 'CASH') {
+    if (curr.indexCode.name === 'CASH') {
       return acc + curr.totalCost / 100;
     }
     return 0;
   }, 0);
   const totalAmountOwedForBudgetSabo = submittedToSabo.reduce((acc, curr) => {
-    if (curr.account === Club_Accounts.BUDGET) {
+    if (curr.indexCode.name === 'Budget') {
       return acc + curr.totalCost / 100;
     }
     return acc + 0;
   }, 0);
 
   const totalAmountOwedForCashFinance = pendingFinance.reduce((acc, curr) => {
-    if (curr.account === Club_Accounts.CASH) {
+    if (curr.indexCode.name === 'Cash') {
       return acc + curr.totalCost / 100;
     }
     return acc + 0;
   }, 0);
 
   const totalAmountOwedForBudgetFinance = pendingFinance.reduce((acc, curr) => {
-    if (curr.account === Club_Accounts.BUDGET) {
+    if (curr.indexCode.name === 'Budget') {
       return acc + curr.totalCost / 100;
     }
     return acc + 0;

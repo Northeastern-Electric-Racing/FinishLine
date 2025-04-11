@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import ChangeRequestsService from '../services/change-requests.services';
+import { validateWBS, WbsNumber } from 'shared';
 
 export default class ChangeRequestsController {
   static async getChangeRequestByID(req: Request, res: Response, next: NextFunction) {
@@ -16,6 +17,49 @@ export default class ChangeRequestsController {
   static async getAllChangeRequests(req: Request, res: Response, next: NextFunction) {
     try {
       const changeRequests = await ChangeRequestsService.getAllChangeRequests(req.organization);
+      res.status(200).json(changeRequests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getToReviewChangeRequests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const changeRequests = await ChangeRequestsService.getToReviewChangeRequests(req.currentUser, req.organization);
+      res.status(200).json(changeRequests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getUnreviewedChangeRequests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { wbsnum } = req.query;
+      let validatedWbs: WbsNumber | undefined;
+      if (wbsnum) validatedWbs = validateWBS(wbsnum as string);
+
+      const changeRequests = await ChangeRequestsService.getUnreviewedChangeRequests(
+        req.currentUser,
+        validatedWbs,
+        req.organization
+      );
+      res.status(200).json(changeRequests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getApprovedChangeRequests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { wbsnum } = req.query;
+      let validatedWbs: WbsNumber | undefined;
+      if (wbsnum) validatedWbs = validateWBS(wbsnum as string);
+
+      const changeRequests = await ChangeRequestsService.getApprovedChangeRequests(
+        req.currentUser,
+        validatedWbs,
+        req.organization
+      );
       res.status(200).json(changeRequests);
     } catch (error: unknown) {
       next(error);

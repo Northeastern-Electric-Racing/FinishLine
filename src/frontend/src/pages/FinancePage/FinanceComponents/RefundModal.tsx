@@ -13,9 +13,8 @@ import { UseMutateAsyncFunction } from 'react-query';
 
 const schema = yup.object().shape({
   amount: yup
-    .number()
+    .string()
     .required('Refund amount is required')
-    .positive('Refund amount must be positive')
     .test('two decimals', 'Refund amount must have at most two decimal places', (value) => {
       // technically this allows trailing zeros, but that's fine
       if (!value) return false;
@@ -67,7 +66,7 @@ const RefundModal: React.FC<RefundModalProps> = ({
     formState: { errors, isValid },
     watch,
     reset
-  } = useForm({
+  } = useForm<RefundModalInputs>({
     resolver: yupResolver(schema),
     defaultValues: defaultValues ?? {
       amount: '0',
@@ -109,7 +108,6 @@ const RefundModal: React.FC<RefundModalProps> = ({
           <FormLabel>Amount</FormLabel>
           <ReactHookTextField
             name="amount"
-            type="number"
             control={control}
             sx={{ width: 1 }}
             startAdornment={<AttachMoneyIcon />}

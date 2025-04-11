@@ -338,6 +338,16 @@ export default class DesignReviewsService {
           meetingTimes,
           originaldesignReview.wbsElement
         )));
+
+    // if all required members are confirmed, set the status to confirmed
+    const allRequiredMembersConfirmed = updatedRequiredMembers.every((member) =>
+      originaldesignReview.confirmedMembers.map((user) => user.userId).includes(member.userId)
+    );
+
+    if (status === Design_Review_Status.SCHEDULED && allRequiredMembersConfirmed) {
+      status = Design_Review_Status.CONFIRMED;
+    }
+
     // actually try to update the design review
     const updatedDesignReview = await prisma.design_Review.update({
       where: { designReviewId },

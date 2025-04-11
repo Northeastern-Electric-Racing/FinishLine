@@ -34,6 +34,7 @@ import {
 import { getBlockingWorkPackages, validateBlockedBys } from '../utils/work-packages.utils';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
 import { userHasPermission } from '../utils/users.utils';
+import ProjectsService from './projects.services';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
@@ -150,69 +151,50 @@ export default class WorkPackagesService {
   static async createWorkPackage(
     user: User,
     name: string,
-    crId: string,
+    crId: string | null,
     stage: WorkPackageStage | null,
     startDate: string,
     duration: number,
     blockedBy: WbsNumber[],
     descriptionBullets: DescriptionBulletPreview[],
-    organization: Organization,
-    wbsElemId?: string
+    projectWbsNum: WbsNumber,
+    organization: Organization
   ): Promise<Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>> {
     if (await userHasPermission(user.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('create work packages');
 
-    const changeRequest = await validateChangeRequestAccepted(crId);
+    if (crId) {
+      await validateChangeRequestAccepted(crId);
+    }
 
-    if (!wbsElemId) wbsElemId = changeRequest.wbsElementId;
-
-    const wbsElem = await prisma.wBS_Element.findUnique({
-      where: {
-        wbsElementId: wbsElemId
-      },
-      include: {
-        project: {
-          include: {
-            workPackages: { include: { wbsElement: true, blockedBy: true } }
-          }
-        }
-      }
-    });
-
-    if (!wbsElem) throw new NotFoundException('WBS Element', changeRequest.wbsElementId);
     const blockedByElements: WBS_Element[] = await validateBlockedBys(blockedBy, organization.organizationId);
 
     // get the corresponding project so we can find the next wbs number
     // and what number work package this should be
-    const { carNumber, projectNumber, workPackageNumber } = wbsElem;
+    const { carNumber, projectNumber } = projectWbsNum;
 
-    const projectWbsNum: WbsNumber = {
-      carNumber,
-      projectNumber,
-      workPackageNumber
-    };
+    const project = await ProjectsService.getSingleProject(projectWbsNum, organization);
 
-    if (wbsElem.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(projectWbsNum));
-
-    if (workPackageNumber !== 0) {
-      throw new HttpException(400, `Given WBS Number ${wbsPipe(projectWbsNum)} is not for a project.`);
-    }
-
-    const { project } = wbsElem;
-
-    if (!project) throw new NotFoundException('Project', `${wbsPipe(projectWbsNum)}`);
-    if (wbsElem.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Project');
-
-    const { projectId } = project;
+    const { id: projectId } = project;
 
     const newWorkPackageNumber: number =
       project.workPackages
-        .map((element) => element.wbsElement.workPackageNumber)
+        .map((element) => element.wbsNum.workPackageNumber)
         .reduce((prev, curr) => Math.max(prev, curr), 0) + 1;
 
     // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
     const date = new Date(startDate.split('T')[0]);
     date.setTime(date.getTime() + 12 * 60 * 60 * 1000);
+
+    const changesToCreate = crId
+      ? [
+          {
+            changeRequestId: crId,
+            implementerId: user.userId,
+            detail: 'New Work Package Created'
+          }
+        ]
+      : [];
 
     // add to the database
     const created = await prisma.work_Package.create({
@@ -224,13 +206,9 @@ export default class WorkPackagesService {
             workPackageNumber: newWorkPackageNumber,
             name,
             changes: {
-              create: {
-                changeRequestId: crId,
-                implementerId: user.userId,
-                detail: 'New Work Package Created'
-              }
+              createMany: { data: changesToCreate }
             },
-            organizationId: wbsElem.organizationId
+            organizationId: organization.organizationId
           }
         },
         stage,

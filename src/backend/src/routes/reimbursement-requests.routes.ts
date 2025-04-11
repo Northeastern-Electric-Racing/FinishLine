@@ -7,7 +7,6 @@ import express from 'express';
 import { body } from 'express-validator';
 import {
   intMinZero,
-  isAccount,
   isDate,
   isOptionalDate,
   nonEmptyString,
@@ -24,6 +23,45 @@ const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage()
 reimbursementRequestsRouter.get('/vendors', ReimbursementRequestController.getAllVendors);
 
 reimbursementRequestsRouter.get('/account-codes', ReimbursementRequestController.getAllAccountCodes);
+
+reimbursementRequestsRouter.post(
+  '/index-codes/create',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('code')),
+  validateInputs,
+  ReimbursementRequestController.createIndexCode
+);
+
+reimbursementRequestsRouter.get('/index-codes/:indexCodeId', ReimbursementRequestController.getSingleIndexCode);
+
+reimbursementRequestsRouter.get('/index-codes', ReimbursementRequestController.getAllIndexCodes);
+
+reimbursementRequestsRouter.delete('/index-codes/:indexCodeId/delete', ReimbursementRequestController.deleteIndexCode);
+
+reimbursementRequestsRouter.post(
+  '/other-reimbursement-product-reasons/create',
+  nonEmptyString(body('name')),
+  intMinZero(body('budget')),
+  nonEmptyString(body('indexCodeId')),
+  body('accountCodes').isArray(),
+  validateInputs,
+  ReimbursementRequestController.createOtherReimbursementProductReason
+);
+
+reimbursementRequestsRouter.get(
+  '/other-reimbursement-product-reasons',
+  ReimbursementRequestController.getAllOtherReimbursementProductReasons
+);
+
+reimbursementRequestsRouter.get(
+  '/other-reimbursement-product-reasons/:otherReimbursementProductReasonId',
+  ReimbursementRequestController.getSingleOtherReimbursementProductReason
+);
+
+reimbursementRequestsRouter.delete(
+  '/other-reimbursement-product-reasons/:otherReimbursementProductReasonId/delete',
+  ReimbursementRequestController.deleteOtherReimbursementProductReason
+);
 
 reimbursementRequestsRouter.get('/current-user', ReimbursementRequestController.getCurrentUserReimbursementRequests);
 
@@ -44,7 +82,7 @@ reimbursementRequestsRouter.post(
   '/create',
   isOptionalDate(body('dateOfExpense')),
   nonEmptyString(body('vendorId')),
-  isAccount(body('account')),
+  nonEmptyString(body('indexCodeId')),
   nonEmptyString(body('accountCodeId')),
   intMinZero(body('totalCost')),
   validateReimbursementProducts(),
@@ -60,7 +98,7 @@ reimbursementRequestsRouter.post(
   '/:requestId/edit',
   isOptionalDate(body('dateOfExpense')),
   nonEmptyString(body('vendorId')),
-  isAccount(body('account')),
+  nonEmptyString(body('indexCodeId')),
   body('receiptPictures').isArray(),
   nonEmptyString(body('receiptPictures.*.name')),
   nonEmptyString(body('receiptPictures.*.googleFileId')),
@@ -107,7 +145,6 @@ reimbursementRequestsRouter.post(
   intMinZero(body('code')),
   body('allowed').isBoolean(),
   body('allowedRefundSources').isArray(),
-  isAccount(body('allowedRefundSources.*')),
   validateInputs,
   ReimbursementRequestController.createAccountCode
 );
@@ -174,5 +211,21 @@ reimbursementRequestsRouter.post(
   '/:requestId/pending-finance',
   ReimbursementRequestController.markReimbursementRequestAsPendingFinance
 );
+
+reimbursementRequestsRouter.post(
+  '/:requestId/comments',
+  nonEmptyString(body('comment')),
+  validateInputs,
+  ReimbursementRequestController.createReimbursementRequestComment
+);
+
+reimbursementRequestsRouter.post(
+  '/comments/:commentId/edit',
+  nonEmptyString(body('comment')),
+  validateInputs,
+  ReimbursementRequestController.editReimbursementRequestComment
+);
+
+reimbursementRequestsRouter.delete('/comments/:commentId', ReimbursementRequestController.deleteReimbursementRequestComment);
 
 export default reimbursementRequestsRouter;

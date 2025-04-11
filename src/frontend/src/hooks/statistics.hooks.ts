@@ -3,9 +3,11 @@ import { CreateGraphArgs, Graph, GraphCollection, GraphCollectionFormInput } fro
 import {
   createGraph,
   createGraphCollection,
+  deleteGraphCollection,
   getAllGraphCollections,
   getSingleGraph,
   getSingleGraphCollection,
+  removeGraphFromCollection,
   updateGraph,
   updateGraphCollection
 } from '../apis/statistics.api';
@@ -115,6 +117,47 @@ export const useUpdateGraphCollection = (id: string) => {
     },
     {
       onSuccess: () => queryClient.invalidateQueries(['graph-collections', id])
+    }
+  );
+};
+
+/**
+ * Custom react hook to remove a graph from a graph collection
+ *
+ * @param collectionId The id of the graph collection to update
+ * @param graphId The id of the graph to remove from the collection
+ * @returns Mutation function to remove the graph from the collection
+ */
+export const useRemoveGraphFromCollection = (collectionId: string, graphId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error>(
+    [],
+    async () => {
+      const { data } = await removeGraphFromCollection(collectionId, graphId);
+      return data;
+    },
+    {
+      onSuccess: () => queryClient.invalidateQueries(['graph-collections', collectionId])
+    }
+  );
+};
+
+/**
+ * Custom react hook to delete a graph collection
+ *
+ * @param id The id of the graph collection to delete
+ * @returns Mutation function to delete the graph collection with the given id
+ */
+export const useDeleteGraphCollection = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error>(
+    [],
+    async () => {
+      const { data } = await deleteGraphCollection(id);
+      return data;
+    },
+    {
+      onSuccess: () => queryClient.invalidateQueries(['graph-collections'])
     }
   );
 };

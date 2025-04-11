@@ -17,7 +17,11 @@ import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 import AppContextUser from '../../../app/AppContextUser';
 import { useAllUsers, useLogUserIn } from '../../../hooks/users.hooks';
 import * as userHooks from '../../../hooks/users.hooks';
-import { mockLogUserInReturnValue, mockLogUserInDevReturnValue } from '../../test-support/mock-hooks';
+import {
+  mockLogUserInReturnValue,
+  mockLogUserInDevReturnValue,
+  mockGetCurrentUserValue
+} from '../../test-support/mock-hooks';
 
 vi.mock('../../../hooks/projects.hooks');
 vi.mock('../../../hooks/users.hooks');
@@ -64,6 +68,7 @@ describe('Implement change request permission tests', () => {
     vi.spyOn(userHooks, 'useLogUserInDev').mockReturnValue(mockLogUserInDevReturnValue);
     vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
     vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    vi.spyOn(userHooks, 'useGetCurrentUser').mockReturnValue(mockGetCurrentUserValue);
   });
 
   const actionBtnText = 'Implement Change Request';

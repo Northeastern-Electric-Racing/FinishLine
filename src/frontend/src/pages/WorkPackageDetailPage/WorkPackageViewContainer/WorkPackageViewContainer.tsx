@@ -27,8 +27,8 @@ import PageLayout from '../../../components/PageLayout';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import ScopeTab from './ScopeTab';
-import NERTabs from '../../../components/Tabs';
-import ChangeRequestsTab from './ChangeRequestsTab';
+import FullPageTabs from '../../../components/FullPageTabs';
+import ChangeRequestTab from '../../../components/ChangeRequestTab';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -166,7 +166,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
       ]}
       headerRight={projectActionsDropdown}
       tabs={
-        <NERTabs
+        <FullPageTabs
           setTab={setTabValue}
           tabsLabels={[
             { tabUrlValue: 'overview', tabName: 'Overview' },
@@ -187,7 +187,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
       ) : tabValue === 2 ? (
         <ChangesList changes={workPackage.changes} />
       ) : (
-        <ChangeRequestsTab workPackage={workPackage} />
+        <ChangeRequestTab wbsElement={workPackage} />
       )}
       {showActivateModal && (
         <ActivateWorkPackageModalContainer

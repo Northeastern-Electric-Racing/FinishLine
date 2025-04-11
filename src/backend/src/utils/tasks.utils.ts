@@ -9,14 +9,14 @@ export const convertTaskPriority = (priority: Task_Priority): TaskPriority =>
     LOW: TaskPriority.Low,
     MEDIUM: TaskPriority.Medium,
     HIGH: TaskPriority.High
-  }[priority]);
+  })[priority];
 
 export const convertTaskStatus = (status: Task_Status): TaskStatus =>
   ({
     IN_BACKLOG: TaskStatus.IN_BACKLOG,
     IN_PROGRESS: TaskStatus.IN_PROGRESS,
     DONE: TaskStatus.DONE
-  }[status]);
+  })[status];
 
 export const hasPermissionToEditTask = async (user: User, taskId: string): Promise<boolean> => {
   const task = await prisma.task.findUnique({

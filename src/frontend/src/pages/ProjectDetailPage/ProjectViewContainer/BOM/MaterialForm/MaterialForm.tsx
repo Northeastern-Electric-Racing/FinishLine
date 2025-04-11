@@ -1,6 +1,6 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
-import { MaterialStatus, WbsElement } from 'shared';
+import { Assembly, MaterialStatus } from 'shared';
 import * as yup from 'yup';
 import LoadingIndicator from '../../../../../components/LoadingIndicator';
 import {
@@ -15,15 +15,17 @@ import { Decimal } from 'decimal.js';
 
 const schema = yup.object().shape({
   name: yup.string().required('Enter a name!'),
-  status: yup.string().required('Select a status!'),
+  status: yup.mixed<MaterialStatus>().oneOf(Object.values(MaterialStatus)).required('Select a status!'),
   materialTypeName: yup.string().required('Select a Material Type!'),
-  manufacturerName: yup.string().required('Select a Manufacturer'),
+  manufacturerName: yup.string().required('Select a Manufacturer!'),
   manufacturerPartNumber: yup.string().required('Manufacturer Part Number is required!'),
   quantity: yup.number().required('Enter a quantity!'),
   price: yup.number().required('Price per Unit is required!'),
   unitName: yup.string().optional(),
-  linkUrl: yup.string().required('URL is required!').url('Invalid URL'),
-  notes: yup.string().optional()
+  linkUrl: yup.string().required('URL is required!'),
+  notes: yup.string().optional(),
+  pdmFileName: yup.string().optional(),
+  assemblyId: yup.string().optional()
 });
 
 export interface MaterialFormInput {
@@ -61,12 +63,12 @@ export interface MaterialFormProps {
   submitText: 'Add' | 'Edit';
   onSubmit: (payload: MaterialDataSubmission) => void;
   defaultValues?: MaterialFormInput;
-  wbsElement: WbsElement;
   onHide: () => void;
   open: boolean;
+  assemblies: Assembly[];
 }
 
-const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defaultValues, wbsElement, onHide, open }) => {
+const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, assemblies, onSubmit, defaultValues, onHide, open }) => {
   const {
     handleSubmit,
     control,
@@ -109,11 +111,9 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
     error: manufacturersError
   } = useGetAllManufacturers();
 
-  const { assemblies } = wbsElement;
-
-  if (materialTypesIsError) return <ErrorPage message={materialTypesError?.message} />;
-  if (unitsIsError) return <ErrorPage message={unitsError?.message} />;
-  if (manufacturersIsError) return <ErrorPage message={manufacturersError?.message} />;
+  if (materialTypesIsError) return <ErrorPage message={materialTypesError.message} />;
+  if (unitsIsError) return <ErrorPage message={unitsError.message} />;
+  if (manufacturersIsError) return <ErrorPage message={manufacturersError.message} />;
   if (
     isLoadingManufactuers ||
     isLoadingMaterialTypes ||

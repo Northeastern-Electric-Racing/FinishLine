@@ -22,19 +22,15 @@ import {
 } from '@mui/material';
 import { OtherProductReason, WbsNumber, validateWBS, wbsPipe, ReimbursementProductFormArgs } from 'shared';
 import { RemoveCircleOutline, AddCircleOutline } from '@mui/icons-material';
-import { Control, Controller, FieldErrors, UseFormSetValue } from 'react-hook-form';
+import { FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useTheme } from '@mui/system';
 import { useEffect, useState } from 'react';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-
-const otherCategoryOptions = [
-  { label: 'Competition', id: 'COMPETITION' },
-  { label: 'Consumeables', id: 'CONSUMABLES' },
-  { label: 'General Stock', id: 'GENERAL_STOCK' },
-  { label: 'Subscriptions and Memberships', id: 'SUBSCRIPTIONS_AND_MEMBERSHIPS' },
-  { label: 'Tools and Equipment', id: 'TOOLS_AND_EQUIPMENT' }
-];
+import { useGetAllOtherProductReason } from '../../../hooks/finance.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
+import { formatReasonName } from '../../../utils/reimbursement-request.utils';
 
 interface ReimbursementProductTableProps {
   reimbursementProducts: ReimbursementProductFormArgs[];
@@ -44,8 +40,9 @@ interface ReimbursementProductTableProps {
     label: string;
     id: string;
   }[];
+  register: UseFormRegister<ReimbursementRequestFormInput>;
+  watch: UseFormRegister<ReimbursementRequestFormInput>;
   errors: FieldErrors<ReimbursementRequestFormInput>;
-  control: Control<ReimbursementRequestFormInput>;
   setValue: UseFormSetValue<ReimbursementRequestFormInput>;
   hasMultipleRefundSources?: boolean;
   firstRefundSourceName?: string;
@@ -61,7 +58,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   removeProduct,
   appendProduct,
   wbsElementAutocompleteOptions,
-  control,
+  register,
+  watch,
   errors,
   setValue,
   hasMultipleRefundSources = false,
@@ -78,7 +76,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   >();
   reimbursementProducts.forEach((product, index) => {
     const hasWbsNum = (product.reason as WbsNumber).carNumber !== undefined;
-    const productReason = hasWbsNum ? wbsPipe(product.reason as WbsNumber) : (product.reason as string);
+    const productReason = hasWbsNum ? wbsPipe(product.reason as WbsNumber) : (product.reason as OtherProductReason).name;
     if (uniqueWbsElementsWithProducts.has(productReason)) {
       const products = uniqueWbsElementsWithProducts.get(productReason);
       products?.push({ ...product, index });
@@ -122,6 +120,20 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
       setShowSecondSourceFields(false);
     }
   }, [secondRefundSourceName, reimbursementProducts, setValue]);
+
+  const {
+    data: otherReasons,
+    isLoading: otherReasonsIsLoading,
+    isError: otherReasonIsError,
+    error: otherReasonError
+  } = useGetAllOtherProductReason();
+
+  if (!otherReasons || otherReasonsIsLoading) {
+    return <LoadingIndicator />;
+  }
+  if (otherReasonIsError) {
+    return <ErrorPage message={otherReasonError.message} />;
+  }
 
   return (
     <TableContainer sx={{ borderTop: '1px solid rgb(131, 131, 131)' }}>
@@ -281,7 +293,16 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                       fontSize: 'medium'
                     }}
                   >
-                    {wbsElementAutocompleteOptions.concat(otherCategoryOptions).find((value) => value.id === key)?.label}
+                    {
+                      wbsElementAutocompleteOptions
+                        .concat(
+                          otherReasons.map((reason) => ({
+                            id: reason.otherProductReasonId,
+                            label: formatReasonName(reason.name)
+                          }))
+                        )
+                        .find((value) => value.id === key)?.label
+                    }
                   </Typography>
                 </TableCell>
                 <TableCell>
@@ -592,7 +613,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                     }
                     onClick={(e) => {
                       appendProduct({
-                        reason: key.includes('.') ? validateWBS(key) : (key as OtherProductReason),
+                        reason: key.includes('.') ? validateWBS(key) : ({ name: key } as OtherProductReason),
                         name: '',
                         cost: 0,
                         firstSourceAmount: undefined,
@@ -607,6 +628,53 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
               </TableRow>
             );
           })}
+          <TableRow>
+            <TableCell colSpan={2} sx={{ borderBottom: 0 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'horizontal', gap: '5px' }}>
+                <Autocomplete
+                  fullWidth
+                  sx={{ my: 1 }}
+                  options={wbsElementAutocompleteOptions}
+                  onChange={(_event, value) => {
+                    if (value) {
+                      appendProduct({
+                        reason: validateWBS(value.id),
+                        name: '',
+                        cost: 0
+                      });
+                    }
+                  }}
+                  value={null}
+                  blurOnSelect={true}
+                  id={'append-product-autocomplete'}
+                  size={'small'}
+                  renderInput={(params) => <TextField {...params} placeholder="Select Project" />}
+                />
+                <Autocomplete
+                  fullWidth
+                  sx={{ my: 1 }}
+                  options={otherReasons.map((reason) => ({
+                    id: reason.otherProductReasonId,
+                    label: formatReasonName(reason.name)
+                  }))}
+                  onChange={(_event, value) => {
+                    if (value) {
+                      appendProduct({
+                        reason: { name: value.id } as OtherProductReason,
+                        name: '',
+                        cost: 0
+                      });
+                    }
+                  }}
+                  value={null}
+                  blurOnSelect={true}
+                  id={'append-product-autocomplete'}
+                  size={'small'}
+                  renderInput={(params) => <TextField {...params} placeholder="Select Other Category" />}
+                />
+              </Box>
+            </TableCell>
+          </TableRow>
         </TableBody>
       </Table>
     </TableContainer>

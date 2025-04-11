@@ -34,10 +34,10 @@ const ScrollablePageBlock: React.FC<ScrollablePageBlockProps> = ({ children, tit
           sx={{
             mt: 2,
             display: 'flex',
-            flexDirection: 'row',
-            flexWrap: 'wrap',
+            flexDirection: horizontal ? 'row' : 'column',
+            flexWrap: 'nowrap',
             gap: 2,
-            height: '100%',
+            alignItems: 'start',
             overflowX: horizontal ? 'auto' : 'hidden',
             overflowY: horizontal ? 'hidden' : 'auto',
             '&::-webkit-scrollbar': {

@@ -12,7 +12,7 @@ export default class TasksController {
         req.currentUser,
         wbsNum,
         title,
-        notes,
+        notes ?? '',
         priority,
         status,
         assignees,
