@@ -33,6 +33,7 @@ import {
   leadershipApproveReimbursementRequest,
   requestReimbursementRequestChanges,
   markPendingFinance,
+  getAllSponsors,
   createSponsor,
   createSponsorTask,
   createSponsorTier,
@@ -712,6 +713,18 @@ export const useGetAllIndexCodes = () => {
 export const useGetAllOtherProductReason = () => {
   return useQuery<OtherProductReason[], Error>(['other-reimbursement-product-reasons'], async () => {
     const { data } = await getAllOtherProductReason();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get all sponsors
+ *
+ * @returns all the sponsors
+ */
+export const useGetAllSponsors = () => {
+  return useQuery<Sponsor[], Error>(['sponsor'], async () => {
+    const { data } = await getAllSponsors();
     return data;
   });
 };

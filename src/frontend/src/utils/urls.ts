@@ -143,6 +143,7 @@ const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
 const financeEditVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/edit`;
 const financeLeadershipApprove = (id: string) => `${financeEndpoints()}/${id}/leadership-approve`;
 const financeRoutesEndpoints = () => `${API_URL}/finance`;
+const financeGetAllSponsors = () => `${financeRoutesEndpoints()}/sponsors`;
 const financeCreateSponsor = () => `${financeRoutesEndpoints()}/sponsor/create`;
 const financeCreateSponsorTier = () => `${financeRoutesEndpoints()}/sponsorTier/create`;
 const financeCreateSponsorTask = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/sponsorTasks`;
@@ -372,6 +373,7 @@ export const apiUrls = {
   financeCreateVendor,
   financeEditVendor,
   financeLeadershipApprove,
+  financeGetAllSponsors,
   financeCreateSponsor,
   financeCreateSponsorTier,
   financeCreateSponsorTask,

@@ -387,6 +387,17 @@ export const requestReimbursementRequestChanges = async (id: string) => {
 };
 
 /**
+ * Gets all the sponsors
+ *
+ * @returns The list of all sponsors
+ */
+export const getAllSponsors = () => {
+  return axios.get(apiUrls.financeGetAllSponsors(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
  * Creates a sponsor in the database
  *
  * @param sponsorData the data for the sponsor
