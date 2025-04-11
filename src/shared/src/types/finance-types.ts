@@ -12,6 +12,7 @@ export interface Sponsor {
   taxExempt: boolean;
   discountCode?: string;
   sponsorTasks: SponsorTask[];
+  sponsorTier?: SponsorTier;
 }
 
 export interface SponsorTask {
