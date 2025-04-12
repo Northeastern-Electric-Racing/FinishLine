@@ -42,7 +42,7 @@ import ReimbursementProductTable from './ReimbursementProductTable';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
@@ -109,27 +109,33 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const firstRefundSourceId = watch('indexCodeId');
   const secondRefundSourceId = watch('secondaryAccount');
 
+  const reimbursementProductsRef = useRef(reimbursementProducts);
+  reimbursementProductsRef.current = reimbursementProducts;
+
+  const resetProductAmounts = useCallback(
+    (field: 'firstSourceAmount' | 'secondSourceAmount') => {
+      reimbursementProductsRef.current.forEach((_, index) => {
+        setValue(`reimbursementProducts.${index}.${field}`, undefined);
+      });
+    },
+    [setValue]
+  );
+
   useEffect(() => {
     if (firstRefundSourceId) {
       if (secondRefundSourceId && firstRefundSourceId === secondRefundSourceId) {
         setValue('secondaryAccount', undefined);
-        reimbursementProducts.forEach((_, index) => {
-          setValue(`reimbursementProducts.${index}.secondSourceAmount`, undefined);
-        });
+        resetProductAmounts('secondSourceAmount');
       }
-      reimbursementProducts.forEach((_, index) => {
-        setValue(`reimbursementProducts.${index}.firstSourceAmount`, undefined);
-      });
+      resetProductAmounts('firstSourceAmount');
     }
-  }, [firstRefundSourceId, setValue]);
+  }, [firstRefundSourceId, secondRefundSourceId, resetProductAmounts]);
 
   useEffect(() => {
     if (secondRefundSourceId) {
-      reimbursementProducts.forEach((_, index) => {
-        setValue(`reimbursementProducts.${index}.secondSourceAmount`, undefined);
-      });
+      resetProductAmounts('secondSourceAmount');
     }
-  }, [secondRefundSourceId, setValue]);
+  }, [secondRefundSourceId, resetProductAmounts]);
 
   const firstRefundSource = refundSources.find((source) => source.indexCodeId === firstRefundSourceId) || {
     name: 'First Source',
@@ -597,9 +603,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                       if (secondRefundSourceId === newSourceId) {
                         setValue('secondaryAccount', undefined);
                         // Reset all second source amounts in products
-                        reimbursementProducts.forEach((_, index) => {
-                          setValue(`reimbursementProducts.${index}.secondSourceAmount`, undefined);
-                        });
+                        resetProductAmounts('secondSourceAmount');
                       }
                       onChange(newSourceId);
                     }}
