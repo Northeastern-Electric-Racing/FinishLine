@@ -20,7 +20,8 @@ import {
   GanttFilters,
   GanttTask,
   isProjectPreview,
-  RequestEventChange
+  RequestEventChange,
+  transformProjectToGanttTask
 } from '../../../utils/gantt.utils';
 import { routes } from '../../../utils/routes';
 import { Box } from '@mui/material';
@@ -118,7 +119,16 @@ const ProjectGanttChartPage: FC = () => {
         return editedProject ? editedProject : project;
       }); // I dont like how inefficient this is
       setAllProjects(allProjects);
-      setCollections(constructCollectionsFromTeamPreviewAndProjects(teams, allProjects, filters, searchText));
+      setCollections(
+        constructCollectionsFromTeamPreviewAndProjects(
+          teams,
+          allProjects,
+          filters,
+          searchText,
+          transformProjectToGanttTask,
+          projectPreviewTransformer
+        )
+      );
       history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
     };
 
@@ -229,7 +239,8 @@ const ProjectGanttChartPage: FC = () => {
     showWorkPackagesMap.clear();
   };
 
-  /***************************************************** */
+  /* **************************************************** */
+  /* ****************** Editability ********************* */
 
   const handleCancel = (_collection?: GanttCollection<TeamPreview, WbsElementPreview>) => {
     //TODO Filter by gantt collection
@@ -293,6 +304,12 @@ const ProjectGanttChartPage: FC = () => {
       element: workPackage
     });
     setSelectedProject(undefined);
+  };
+
+  const getNewProjectNumber = (carNumber: number) => {
+    const existingCarProjects = allProjects.filter((project) => project.wbsNum.carNumber === carNumber).length;
+
+    return existingCarProjects + 1;
   };
 
   const handleAddProjectInfo = (projectInfo: { name: string; carNumber: number }, selectedTeam: TeamPreview) => {
@@ -445,6 +462,16 @@ const ProjectGanttChartPage: FC = () => {
     }
   };
 
+  const highlightProjectComparator = (highlightedElement: WbsElementPreview, wbsElement: WbsElementPreview) => {
+    return projectWbsPipe(highlightedElement.wbsNum) === projectWbsPipe(wbsElement.wbsNum);
+  };
+
+  const highlightWorkPackageComparator = (highlightedElement: WbsElementPreview, wbsElement: WbsElementPreview) => {
+    return wbsPipe(highlightedElement.wbsNum) === wbsPipe(wbsElement.wbsNum);
+  };
+
+  /* **************************************************** */
+
   const allWorkPackages = projects.concat(addedProjects).flatMap((project) => project.workPackages);
 
   // find the earliest start date and subtract 2 weeks to use as the first date on calendar
@@ -489,12 +516,6 @@ const ProjectGanttChartPage: FC = () => {
     setShowWorkPackagesMap((prev) => new Map(prev.set(element.id, !prev.get(element.id))));
   };
 
-  const getNewProjectNumber = (carNumber: number) => {
-    const existingCarProjects = allProjects.filter((project) => project.wbsNum.carNumber === carNumber).length;
-
-    return existingCarProjects + 1;
-  };
-
   const headerRight = (
     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
       <GanttChartColorLegend />
@@ -509,14 +530,6 @@ const ProjectGanttChartPage: FC = () => {
       />
     </Box>
   );
-
-  const highlightProjectComparator = (highlightedElement: WbsElementPreview, wbsElement: WbsElementPreview) => {
-    return projectWbsPipe(highlightedElement.wbsNum) === projectWbsPipe(wbsElement.wbsNum);
-  };
-
-  const highlightWorkPackageComparator = (highlightedElement: WbsElementPreview, wbsElement: WbsElementPreview) => {
-    return wbsPipe(highlightedElement.wbsNum) === wbsPipe(wbsElement.wbsNum);
-  };
 
   return (
     <>
@@ -534,19 +547,20 @@ const ProjectGanttChartPage: FC = () => {
           collections={collections}
           startDate={startDate}
           endDate={endDate}
-          onEditPressed={(collection) => setSelectedTeam(collection.element)}
-          onCancelChanges={handleCancel}
-          onCreateChange={createChangeHandler}
-          highlightedChange={requestEventChanges[requestEventChanges.length - 1]}
+          editability={{
+            onEditPressed: (collection) => setSelectedTeam(collection.element),
+            onCancelChanges: handleCancel,
+            onCreateChange: createChangeHandler,
+            highlightedChange: requestEventChanges[requestEventChanges.length - 1],
+            onNewTaskPressed: onAddNewTask,
+            onNewSubTaskPressed: onAddNewSubtask,
+            createTaskTitle: 'Create New Project',
+            onSavePressed: saveChanges,
+            highlightSubtaskComparator: highlightWorkPackageComparator,
+            highlightTaskComparator: highlightProjectComparator
+          }}
           shouldShowChildren={(task) => !!showWorkPackagesMap.get(task.element.id)}
           onShowChildrenToggle={(task) => toggleElementShowChildren(task.element)}
-          onNewTaskPressed={onAddNewTask}
-          onNewSubTaskPressed={onAddNewSubtask}
-          createTaskTitle="Create New Project"
-          onSavePressed={saveChanges}
-          allowEdit={true}
-          highlightSubtaskComparator={highlightWorkPackageComparator}
-          highlightTaskComparator={highlightProjectComparator}
         />
       </PageLayout>
     </>

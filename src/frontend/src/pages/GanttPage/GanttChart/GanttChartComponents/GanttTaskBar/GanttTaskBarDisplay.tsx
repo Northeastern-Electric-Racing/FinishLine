@@ -6,9 +6,10 @@ import {
   GanttTask,
   HighlightTaskComparator,
   isHighlightedChangeOnGanttTask,
+  OnMouseOverOptions,
   RequestEventChange
 } from '../../../../../utils/gantt.utils';
-import { addWeeksToDate, wbsPipe } from 'shared';
+import { addWeeksToDate } from 'shared';
 import {
   ganttTaskBarBackgroundStyles,
   ganttTaskBarContainerStyles,
@@ -22,7 +23,7 @@ import { ArcherElement } from 'react-archer';
 interface GanttTaskBarDisplayProps<T> {
   days: Date[];
   task: GanttTask<T>;
-  handleOnMouseOver: (e: React.MouseEvent, task: GanttTask<T>) => void;
+  handleOnMouseOver: (e: React.MouseEvent, task: OnMouseOverOptions) => void;
   handleOnMouseLeave: () => void;
   onShowChildrenToggle: () => void;
   highlightedChange?: RequestEventChange<T>;
@@ -115,6 +116,27 @@ const GanttTaskBarDisplay = <T,>({
       cursor: 'pointer',
       gridRow: 1,
       zIndex: 6
+    };
+  };
+
+  const retroOverlayBoxStyles = (retro: { comparativeStart?: Date; comparativeEnd?: Date }): CSSProperties => {
+    if (!retro.comparativeStart || !retro.comparativeEnd) {
+      return {};
+    }
+
+    return {
+      paddingTop: '2px',
+      paddingLeft: '5px',
+      gridColumnStart: getStartCol(retro.comparativeStart),
+      gridColumnEnd: getEndCol(retro.comparativeEnd),
+      height: '2rem',
+      border: `1px solid ${theme.palette.text.primary}`,
+      borderRadius: '0.25rem',
+      backgroundColor: '#ef4345',
+      opacity: 0.5,
+      cursor: 'pointer',
+      gridRow: 1,
+      zIndex: 1
     };
   };
 
@@ -211,6 +233,21 @@ const GanttTaskBarDisplay = <T,>({
               </Typography>
             </div>
           )}
+        {task.retro && (
+          <div
+            id="retro"
+            onMouseEnter={(e) =>
+              handleOnMouseOver(e, {
+                ...task,
+                name: 'Original ' + task.name,
+                start: task.retro?.comparativeStart,
+                end: task.retro?.comparativeEnd
+              })
+            }
+            onMouseLeave={handleOnMouseLeave}
+            style={retroOverlayBoxStyles(task.retro)}
+          ></div>
+        )}
       </Box>
     </div>
   );

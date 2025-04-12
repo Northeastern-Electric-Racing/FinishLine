@@ -1,4 +1,9 @@
-import { RequestEventChange, GanttTask, HighlightTaskComparator } from '../../../../../utils/gantt.utils';
+import {
+  RequestEventChange,
+  GanttTask,
+  HighlightTaskComparator,
+  OnMouseOverOptions
+} from '../../../../../utils/gantt.utils';
 import { Collapse } from '@mui/material';
 import GanttTaskBar from './GanttTaskBar';
 import BlockedGanttTaskView from './BlockedTaskBarView';
@@ -9,7 +14,7 @@ interface GanttTaskBarViewProps<T> {
   task: GanttTask<T>;
   getStartCol: (start: Date) => number;
   getEndCol: (end: Date) => number;
-  handleOnMouseOver: (e: React.MouseEvent, task: GanttTask<T>) => void;
+  handleOnMouseOver: (e: React.MouseEvent, task: OnMouseOverOptions) => void;
   handleOnMouseLeave: () => void;
   onShowChildrenToggle: () => void;
   showChildren: boolean;

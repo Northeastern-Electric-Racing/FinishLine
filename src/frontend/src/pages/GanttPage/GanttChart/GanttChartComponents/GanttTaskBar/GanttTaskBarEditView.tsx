@@ -1,5 +1,4 @@
 import { Box, Chip, Typography } from '@mui/material';
-import useId from '@mui/material/utils/useId';
 import { useTheme } from '@mui/system';
 import { CSSProperties, DragEvent, MouseEvent, useEffect, useState } from 'react';
 import useMeasure from 'react-use-measure';
@@ -14,6 +13,7 @@ import {
   webKitBoxStyles
 } from './GanttTaskBarDisplayStyles';
 import { ArcherElement } from 'react-archer';
+import { v4 as uuidv4 } from 'uuid';
 
 interface GanttTaskBarEditProps<T> {
   days: Date[];
@@ -39,7 +39,6 @@ export const GanttTaskBarEditView = <T,>({
   const [width, setWidth] = useState(0); // current width of component, will change on resize
   const [measureRef, bounds] = useMeasure();
   const widthPerDay = 7.2; //width per day to use for resizing calculations, kind of arbitrary,
-  const id = useId() || 'id'; // id for creating event changes
 
   const taskBarDisplayStyles: CSSProperties = {
     gridColumnStart: getStartCol(task.start),
@@ -105,7 +104,7 @@ export const GanttTaskBarEditView = <T,>({
       const newEndDate = addDaysToDate(task.start, newEventLengthInDays);
       setWidth(correctWidth);
       createChange({
-        id,
+        id: uuidv4(),
         element: task.element,
         type: 'change-end-date',
         originalEnd: task.end,
@@ -126,7 +125,7 @@ export const GanttTaskBarEditView = <T,>({
   };
   const onDrop = (day: Date) => {
     const days = roundToMultipleOf7(differenceInDays(day, task.start));
-    createChange({ id, element: task.element, type: 'shift-by-days', days });
+    createChange({ id: uuidv4(), element: task.element, type: 'shift-by-days', days });
   };
 
   return (

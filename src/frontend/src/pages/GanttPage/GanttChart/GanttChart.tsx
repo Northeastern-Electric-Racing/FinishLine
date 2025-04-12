@@ -9,42 +9,36 @@ import {
 import GanttChartCollectionSection from './GanttChartCollectionSection';
 import { GanttChartTimeline } from './GanttChartComponents/GanttChartTimeline';
 
-interface GanttChartProps<E, T> {
-  startDate: Date;
-  endDate: Date;
-  collections: GanttCollection<E, T>[];
-  onCancelChanges: (collection: GanttCollection<E, T>) => void;
-  onCreateChange: (change: GanttChange<T>) => void;
-  highlightedChange: RequestEventChange<T>;
-  shouldShowChildren: (task: GanttTask<T>) => boolean;
-  onShowChildrenToggle: (task: GanttTask<T>) => void;
+export interface GanttEditability<E, T> {
+  highlightTaskComparator: HighlightTaskComparator<T>;
+  highlightSubtaskComparator: HighlightTaskComparator<T>;
   onNewTaskPressed: (collection: GanttCollection<E, T>) => void;
   onNewSubTaskPressed: (parent: GanttTask<T>) => void;
   createTaskTitle: string;
   onEditPressed: (collection: GanttCollection<E, T>) => void;
   onSavePressed: () => void;
-  allowEdit: boolean;
-  highlightTaskComparator: HighlightTaskComparator<T>;
-  highlightSubtaskComparator: HighlightTaskComparator<T>;
+  onCancelChanges: (collection: GanttCollection<E, T>) => void;
+  onCreateChange: (change: GanttChange<T>) => void;
+  highlightedChange: RequestEventChange<T>;
+}
+
+interface GanttChartProps<E, T> {
+  startDate: Date;
+  endDate: Date;
+  collections: GanttCollection<E, T>[];
+  shouldShowChildren: (task: GanttTask<T>) => boolean;
+  onShowChildrenToggle: (task: GanttTask<T>) => void;
+
+  editability?: GanttEditability<E, T>;
 }
 
 const GanttChart = <E, T>({
   startDate,
   endDate,
   collections,
-  onCancelChanges,
-  onCreateChange,
-  highlightedChange,
   shouldShowChildren,
   onShowChildrenToggle,
-  onNewSubTaskPressed,
-  onNewTaskPressed,
-  onEditPressed,
-  onSavePressed,
-  createTaskTitle,
-  allowEdit,
-  highlightSubtaskComparator,
-  highlightTaskComparator
+  editability
 }: GanttChartProps<E, T>) => {
   return (
     <Box
@@ -67,19 +61,9 @@ const GanttChart = <E, T>({
               startDate={startDate}
               endDate={endDate}
               collection={collection}
-              onCancelChanges={() => onCancelChanges(collection)}
-              onCreateChange={onCreateChange}
-              highlightedChange={highlightedChange}
               shouldShowChildren={shouldShowChildren}
               onShowChildrenToggle={onShowChildrenToggle}
-              onNewSubTaskPressed={onNewSubTaskPressed}
-              onNewTaskPressed={() => onNewTaskPressed(collection)}
-              onEditPressed={() => onEditPressed(collection)}
-              onSavePressed={onSavePressed}
-              createTaskTitle={createTaskTitle}
-              allowEdit={allowEdit}
-              highlightSubtaskComparator={highlightSubtaskComparator}
-              highlightTaskComparator={highlightTaskComparator}
+              editability={editability}
             />
           ) : (
             <></>

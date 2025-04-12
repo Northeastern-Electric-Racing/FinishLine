@@ -4,11 +4,14 @@
  */
 
 import {
+  addWeeksToDate,
   DesignReviewPreview,
   DesignReviewStatus,
   isWorkPackage,
   Project,
   ProjectPreview,
+  RetrospectiveProjectPreview,
+  RetrospectiveWorkPackage,
   TeamPreview,
   User,
   validateWBS,
@@ -17,7 +20,6 @@ import {
   WbsNumber,
   wbsPipe,
   WorkPackage,
-  WorkPackagePreview,
   WorkPackageStage
 } from 'shared';
 import { fullNamePipe, projectWbsPipe } from './pipes';
@@ -49,6 +51,30 @@ export interface GanttEvent {
   name: string;
 }
 
+export interface GanttToolTipProps {
+  upperRightDisplay: ReactNode;
+  lowerRightDisplay: ReactNode;
+}
+
+interface GanttRetroProps {
+  comparativeStart?: Date;
+  comparativeEnd?: Date;
+}
+
+interface GanttTaskStyles {
+  color?: string;
+  backgroundColor?: string;
+  backgroundSelectedColor?: string;
+}
+
+export interface OnMouseOverOptions {
+  start?: Date;
+  end?: Date;
+  name: string;
+  tooltip?: GanttToolTipProps;
+  styles?: GanttTaskStyles;
+}
+
 interface GanttTaskData<T> {
   id: string;
   element: T;
@@ -61,15 +87,9 @@ interface GanttTaskData<T> {
   events: GanttEvent[];
 
   // Optional Values
-  styles?: {
-    color?: string;
-    backgroundColor?: string;
-    backgroundSelectedColor?: string;
-  };
-  tooltip?: {
-    upperRightDisplay: ReactNode;
-    lowerRightDisplay: ReactNode;
-  };
+  styles?: GanttTaskStyles;
+  tooltip?: GanttToolTipProps;
+  retro?: GanttRetroProps;
   onClick?: () => void;
   root?: boolean;
 }
@@ -241,13 +261,14 @@ export interface GanttTask<T> extends GanttTaskData<T> {}
  * @param searchText The search text to apply
  * @param team The team the projects are on
  */
-export const filterGanttProjects = (
-  projects: ProjectPreview[],
+export const filterGanttProjects = <T extends ProjectPreview>(
+  projects: T[],
   ganttFilters: GanttFilters,
   searchText: string,
-  team: TeamPreview
+  team: TeamPreview,
+  reparser: (project: T) => T
 ) => {
-  let deepCopy: ProjectPreview[] = JSON.parse(JSON.stringify(projects)).map(projectPreviewTransformer);
+  let deepCopy: ProjectPreview[] = JSON.parse(JSON.stringify(projects)).map(reparser);
 
   // Show only projects on this team
   deepCopy = deepCopy.filter((project) => project.teams.some((projectTeam) => projectTeam.teamId === team.teamId));
@@ -314,25 +335,26 @@ const UserDisplay = ({ user, label }: { user?: User; label: string }) => {
   );
 };
 
-const getBlockingGanttTasks = (
-  workPackage: WorkPackage,
-  allWorkPackages: WorkPackage[]
-): GanttTaskData<WorkPackagePreview>[] => {
+const getBlockingGanttTasks = <T extends WorkPackage>(
+  workPackage: T,
+  allWorkPackages: T[],
+  transformation: (wp: T, all: T[]) => GanttTaskData<T>
+): GanttTaskData<T>[] => {
   return workPackage.blocking
     .map((wbsNum) => {
       const workPackage = allWorkPackages.find((wp) => wbsPipe(wp.wbsNum) === wbsPipe(wbsNum));
       if (workPackage) {
-        return transformWorkPackageToGanttTask(workPackage, allWorkPackages);
+        return transformation(workPackage, allWorkPackages);
       }
       return undefined;
     })
     .filter((wp) => !!wp);
 };
 
-export const transformWorkPackageToGanttTask = (
-  workPackage: WorkPackage,
-  allWorkPackages: WorkPackage[]
-): GanttTask<WorkPackagePreview> => {
+export const transformWorkPackageToGanttTask = <T extends WorkPackage>(
+  workPackage: T,
+  allWorkPackages: T[]
+): GanttTask<T> => {
   return {
     id: uuidv4(),
     element: workPackage,
@@ -342,7 +364,7 @@ export const transformWorkPackageToGanttTask = (
     end: workPackage.endDate,
 
     events: workPackage.designReviews.map(transformDesignReviewToGanttEvent),
-    blocking: getBlockingGanttTasks(workPackage, allWorkPackages),
+    blocking: getBlockingGanttTasks(workPackage, allWorkPackages, transformWorkPackageToGanttTask),
     children: [],
 
     tooltip: {
@@ -384,11 +406,42 @@ export const transformProjectToGanttTask = (project: ProjectPreview): GanttTask<
   };
 };
 
-export const constructCollectionsFromTeamPreviewAndProjects = (
+export const transformRetrospectiveProjectToGanttTask = (
+  project: RetrospectiveProjectPreview
+): GanttTask<WbsElementPreview> => {
+  return {
+    ...transformProjectToGanttTask(project),
+    children: project.workPackages
+      .filter((wp) => wp.blockedBy.length === 0)
+      .map((wp) => transformRetrospectiveWorkPackageToGanttTask(wp, project.workPackages)),
+    retro: {
+      comparativeEnd: project.originalEndDate,
+      comparativeStart: project.originalStartDate
+    }
+  };
+};
+
+export const transformRetrospectiveWorkPackageToGanttTask = (
+  workPackage: RetrospectiveWorkPackage,
+  allWorkPackages: RetrospectiveWorkPackage[]
+): GanttTask<RetrospectiveWorkPackage> => {
+  return {
+    ...transformWorkPackageToGanttTask(workPackage, allWorkPackages),
+    blocking: getBlockingGanttTasks(workPackage, allWorkPackages, transformRetrospectiveWorkPackageToGanttTask),
+    retro: {
+      comparativeEnd: addWeeksToDate(workPackage.startDate, workPackage.duration),
+      comparativeStart: workPackage.originalStartDate
+    }
+  };
+};
+
+export const constructCollectionsFromTeamPreviewAndProjects = <T extends ProjectPreview>(
   teams: TeamPreview[],
-  projects: ProjectPreview[],
+  projects: T[],
   filters: GanttFilters,
-  searchText: string
+  searchText: string,
+  projectTransformation: (project: T) => GanttTaskData<WbsElementPreview>,
+  reparser: (project: T) => T
 ): GanttCollection<TeamPreview, WbsElementPreview>[] => {
   const projectMap = new Map<string, ProjectPreview[]>();
   projects.forEach((project) => {
@@ -404,8 +457,8 @@ export const constructCollectionsFromTeamPreviewAndProjects = (
   return teams.map((team) => ({
     id: uuidv4(),
     element: team,
-    tasks: filterGanttProjects(projectMap.get(team.teamId) ?? [], filters, searchText, team).map(
-      transformProjectToGanttTask
+    tasks: filterGanttProjects((projectMap.get(team.teamId) ?? []) as T[], filters, searchText, team, reparser).map(
+      (project) => projectTransformation(project as T)
     ),
     title: team.teamName
   }));
@@ -426,27 +479,6 @@ export const sortWbs = (a: { wbsNum: WbsNumber }, b: { wbsNum: WbsNumber }) => {
     return aWbsNum.projectNumber - bWbsNum.projectNumber;
   }
   return aWbsNum.workPackageNumber - bWbsNum.workPackageNumber;
-};
-
-/**
- * Sort function for the teams on the Gantt chart.
- * @param a name of team
- * @param b name of other team
- * @returns a number for sorting
- */
-export const sortTeamList = (
-  a: TeamPreview,
-  b: TeamPreview,
-  ganttFilters: GanttFilters,
-  searchText: string,
-  projects: Project[]
-): number => {
-  const aProjects = filterGanttProjects(projects, ganttFilters, searchText, a);
-  const bProjects = filterGanttProjects(projects, ganttFilters, searchText, b);
-  if (aProjects.length === 0) return Number.MAX_SAFE_INTEGER;
-  if (bProjects.length === 0) return Number.MIN_SAFE_INTEGER;
-
-  return a.teamName.localeCompare(b.teamName);
 };
 
 export const ganttDesignReviewStatusColorPipe = (status: DesignReviewStatus) => {

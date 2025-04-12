@@ -4,7 +4,13 @@
  */
 
 import { eachDayOfInterval, isMonday } from 'date-fns';
-import { GanttChange, GanttTask, HighlightTaskComparator, RequestEventChange } from '../../../utils/gantt.utils';
+import {
+  GanttChange,
+  GanttTask,
+  HighlightTaskComparator,
+  OnMouseOverOptions,
+  RequestEventChange
+} from '../../../utils/gantt.utils';
 import { Box, Typography } from '@mui/material';
 import { useState } from 'react';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar/GanttTaskBar';
@@ -38,23 +44,23 @@ const GanttChartSection = <T,>({
   highlightTaskComparator
 }: GanttChartSectionProps<T>) => {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
-  const [currentTask, setCurrentTask] = useState<GanttTask<T> | undefined>(undefined);
+  const [currentTooltipOptions, setCurrentTooltipOptions] = useState<OnMouseOverOptions | undefined>(undefined);
   const [cursorY, setCursorY] = useState<number>(0);
 
-  const handleOnMouseOver = (e: React.MouseEvent, task: GanttTask<T>) => {
+  const handleOnMouseOver = (e: React.MouseEvent, task: OnMouseOverOptions) => {
     if (!isEditMode) {
-      setCurrentTask(task);
+      setCurrentTooltipOptions(task);
       setCursorY(e.clientY);
     }
   };
 
   const handleCreateProjectChange = (change: GanttChange<T>) => {
     createChange(change);
-    setCurrentTask(undefined);
+    setCurrentTooltipOptions(undefined);
   };
 
   const handleOnMouseLeave = () => {
-    setCurrentTask(undefined);
+    setCurrentTooltipOptions(undefined);
   };
 
   return tasks.length > 0 ? (
@@ -82,15 +88,15 @@ const GanttChartSection = <T,>({
           );
         })}
       </Box>
-      {currentTask && (
+      {currentTooltipOptions && (
         <GanttToolTip
           yCoordinate={cursorY}
-          title={currentTask.name}
-          startDate={currentTask.start}
-          endDate={currentTask.end}
-          color={currentTask.styles?.backgroundColor}
-          upperRightDisplay={currentTask.tooltip?.upperRightDisplay}
-          lowerRightDisplay={currentTask.tooltip?.lowerRightDisplay}
+          title={currentTooltipOptions.name}
+          startDate={currentTooltipOptions.start}
+          endDate={currentTooltipOptions.end}
+          color={currentTooltipOptions.styles?.backgroundColor}
+          upperRightDisplay={currentTooltipOptions.tooltip?.upperRightDisplay}
+          lowerRightDisplay={currentTooltipOptions.tooltip?.lowerRightDisplay}
         />
       )}
     </Box>

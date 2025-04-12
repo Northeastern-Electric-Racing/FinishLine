@@ -1,4 +1,9 @@
-import { GanttTask, HighlightTaskComparator, RequestEventChange } from '../../../../../utils/gantt.utils';
+import {
+  GanttTask,
+  HighlightTaskComparator,
+  OnMouseOverOptions,
+  RequestEventChange
+} from '../../../../../utils/gantt.utils';
 import GanttTaskBarDisplay from './GanttTaskBarDisplay';
 
 interface BlockedGanttTaskViewProps<T> {
@@ -6,7 +11,7 @@ interface BlockedGanttTaskViewProps<T> {
   days: Date[];
   getStartCol: (start: Date) => number;
   getEndCol: (end: Date) => number;
-  handleOnMouseOver: (e: React.MouseEvent, task: GanttTask<T>) => void;
+  handleOnMouseOver: (e: React.MouseEvent, task: OnMouseOverOptions) => void;
   handleOnMouseLeave: () => void;
   onShowChildrenToggle: () => void;
   highlightedChange?: RequestEventChange<T>;

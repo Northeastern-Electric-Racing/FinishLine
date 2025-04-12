@@ -8,7 +8,13 @@ import GanttTaskBarView from './GanttTaskBarView';
 import { ArcherContainer } from 'react-archer';
 import { useRef } from 'react';
 import { ArcherContainerHandle } from 'react-archer/lib/ArcherContainer/ArcherContainer.types';
-import { GanttChange, GanttTask, HighlightTaskComparator, RequestEventChange } from '../../../../../utils/gantt.utils';
+import {
+  GanttChange,
+  GanttTask,
+  HighlightTaskComparator,
+  OnMouseOverOptions,
+  RequestEventChange
+} from '../../../../../utils/gantt.utils';
 import { dateToString, getMonday } from '../../../../../utils/datetime.utils';
 
 interface GanttTaskBarProps<T> {
@@ -16,7 +22,7 @@ interface GanttTaskBarProps<T> {
   task: GanttTask<T>;
   createChange: (change: GanttChange<T>) => void;
   isEditMode: boolean;
-  handleOnMouseOver: (e: React.MouseEvent, task: GanttTask<T>) => void;
+  handleOnMouseOver: (e: React.MouseEvent, task: OnMouseOverOptions) => void;
   handleOnMouseLeave: () => void;
   onShowChildrenToggle: () => void;
   showChildren?: boolean;

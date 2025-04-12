@@ -1,51 +1,26 @@
 import { Edit } from '@mui/icons-material';
 import { Box, Chip, IconButton, Typography, useTheme } from '@mui/material';
 import GanttChartSection from './GanttChartSection';
-import {
-  GanttChange,
-  GanttCollection,
-  GanttTask,
-  HighlightTaskComparator,
-  RequestEventChange
-} from '../../../utils/gantt.utils';
+import { GanttCollection, GanttTask } from '../../../utils/gantt.utils';
 import { useState } from 'react';
+import { GanttEditability } from './GanttChart';
 
 interface GanttChartCollectionSectionProps<E, T> {
   startDate: Date;
   endDate: Date;
-  onCancelChanges: () => void;
-  onEditPressed: () => void;
-  onNewTaskPressed: () => void;
-  onNewSubTaskPressed: (parentTask: GanttTask<T>) => void;
-  createTaskTitle: string;
-  onSavePressed: () => void;
-  onCreateChange: (change: GanttChange<T>) => void;
-  highlightedChange: RequestEventChange<T>;
   shouldShowChildren: (task: GanttTask<T>) => boolean;
   onShowChildrenToggle: (task: GanttTask<T>) => void;
   collection: GanttCollection<E, T>;
-  allowEdit: boolean;
-  highlightTaskComparator: HighlightTaskComparator<T>;
-  highlightSubtaskComparator: HighlightTaskComparator<T>;
+  editability?: GanttEditability<E, T>;
 }
 
 const GanttChartCollectionSection = <E, T>({
   startDate,
   endDate,
-  onCancelChanges,
-  onEditPressed,
   collection,
-  onNewSubTaskPressed,
-  onNewTaskPressed,
-  createTaskTitle,
-  onSavePressed,
-  onCreateChange,
-  highlightedChange,
   shouldShowChildren,
   onShowChildrenToggle,
-  allowEdit,
-  highlightSubtaskComparator,
-  highlightTaskComparator
+  editability
 }: GanttChartCollectionSectionProps<E, T>) => {
   const theme = useTheme();
   const [isEditMode, setIsEditMode] = useState(false);
@@ -71,17 +46,17 @@ const GanttChartCollectionSection = <E, T>({
   };
 
   const handleSave = () => {
-    onSavePressed();
+    editability?.onSavePressed();
     setIsEditMode(false);
   };
 
   const handleCancel = () => {
     setIsEditMode(false);
-    onCancelChanges();
+    editability?.onCancelChanges(collection);
   };
 
   const handleEdit = () => {
-    onEditPressed();
+    editability?.onEditPressed(collection);
 
     setIsEditMode(true);
   };
@@ -91,19 +66,23 @@ const GanttChartCollectionSection = <E, T>({
     task.children.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
   });
 
+  const ignore = () => {};
+
+  const ignoreBool = () => false;
+
   return (
     <Box sx={collectionSectionBackgroundStyle}>
       <Box sx={collectionDescriptionContainerStyle}>
         <Typography variant="h6" fontWeight={400}>
           {collection.title}
         </Typography>
-        {allowEdit && (
+        {editability && (
           <>
             {isEditMode ? (
               <Box display={'flex'} alignItems="center">
                 <Chip label="Save" onClick={handleSave} sx={{ marginRight: '10px' }} />
                 <Chip label="Cancel" onClick={handleCancel} sx={{ marginRight: '10px' }} />
-                <Chip label={createTaskTitle} onClick={onNewTaskPressed} />
+                <Chip label={editability.createTaskTitle} onClick={() => editability.onNewTaskPressed(collection)} />
               </Box>
             ) : (
               <IconButton onClick={handleEdit}>
@@ -118,14 +97,14 @@ const GanttChartCollectionSection = <E, T>({
           start={startDate}
           end={endDate}
           isEditMode={isEditMode}
-          createChange={onCreateChange}
-          highlightedChange={highlightedChange}
+          createChange={editability?.onCreateChange ?? ignore}
+          highlightedChange={editability?.highlightedChange}
           tasks={collection.tasks}
           shouldShowChildren={shouldShowChildren}
-          onAddTaskPressed={onNewSubTaskPressed}
+          onAddTaskPressed={editability?.onNewSubTaskPressed ?? ignore}
           onShowChildrenToggle={onShowChildrenToggle}
-          highlightSubtaskComparator={highlightSubtaskComparator}
-          highlightTaskComparator={highlightTaskComparator}
+          highlightSubtaskComparator={editability?.highlightSubtaskComparator ?? ignoreBool}
+          highlightTaskComparator={editability?.highlightTaskComparator ?? ignoreBool}
         />
       </Box>
     </Box>

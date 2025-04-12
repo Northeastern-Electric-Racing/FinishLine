@@ -3,14 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import {
-  DescriptionBullet,
-  Link,
-  LinkType,
-  Project,
-  ProjectPreview,
-  RetrospectiveProjectPreview
-} from 'shared';
+import { DescriptionBullet, Link, LinkType, Project, ProjectPreview, RetrospectiveProjectPreview } from 'shared';
 import { implementedChangeTransformer } from './change-requests.transformers';
 import { taskTransformer } from './tasks.transformers';
 import { retrospectiveWorkPackageTransformer, workPackageTransformer } from './work-packages.transformers';
@@ -82,8 +75,8 @@ export const retrospectiveProjectPreviewTransformer = (
 ): RetrospectiveProjectPreview => {
   return {
     ...projectPreviewTransformer(project),
-    startDate: project.startDate ? new Date(project.startDate) : undefined,
-    endDate: project.endDate ? new Date(project.endDate) : undefined,
+    originalEndDate: project.originalEndDate ? new Date(project.originalEndDate) : undefined,
+    originalStartDate: project.originalStartDate ? new Date(project.originalStartDate) : undefined,
     workPackages: project.workPackages.map(retrospectiveWorkPackageTransformer)
   };
 };
@@ -91,6 +84,9 @@ export const retrospectiveProjectPreviewTransformer = (
 export const projectPreviewTransformer = (project: ProjectPreview): ProjectPreview => {
   return {
     ...project,
+    dateCreated: new Date(project.dateCreated),
+    startDate: project.startDate ? new Date(project.startDate) : undefined,
+    endDate: project.endDate ? new Date(project.endDate) : undefined,
     workPackages: project.workPackages.map(workPackageTransformer)
   };
 };
