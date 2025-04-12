@@ -18,7 +18,6 @@ import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
   DeletedException,
-  HttpException,
   NotFoundException
 } from '../../src/utils/errors.utils';
 import { validateWBS, WbsNumber } from 'shared';
@@ -777,7 +776,7 @@ describe('part review tests', () => {
       const wbsNum = project1?.wbsElement as WbsNumber;
 
       await expect(PartReviewService.getPart(organization, wbsNum, '1')).rejects.toThrow(
-        new HttpException(404, `could not find a part with projectId: ${project.projectId} and index number: 1`)
+        new NotFoundException('Part', `projectId: ${project.projectId} and index number: 1`)
       );
     });
   });
