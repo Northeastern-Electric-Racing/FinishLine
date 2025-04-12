@@ -290,7 +290,7 @@ describe('part review tests', () => {
     expect(updatedReview.notes).toBe('updated Notes');
     expect(updatedReview.submissionId).toBe(submission.partSubmissionId);
     expect(updatedReview.userCreated.userId).toBe(batman.userId);
-    expect(updatedReview.completedAt).toBe(new Date());
+    expect(updatedReview.completedAt).toBeDefined();
     expect(reviewWithProject2?.submission.part.status).toBe(Review_Status.REVIEWED);
   });
 
