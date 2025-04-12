@@ -225,6 +225,128 @@ describe('part review tests', () => {
     ).rejects.toThrow(new NotFoundException('Part', 'some id that does not exist'));
   });
 
+  it('creates a review and updates it', async () => {
+    const project = await createTestProject(batman, orgId);
+
+    const project1 = await prisma.project.findUnique({
+      where: { projectId: project.projectId },
+      include: {
+        wbsElement: true
+      }
+    });
+
+    const wbsNum = `${project1?.wbsElement.carNumber}.${project1?.wbsElement.projectNumber}.${project1?.wbsElement.workPackageNumber}`;
+
+    const part = await PartReviewService.createPart(
+      organization,
+      wbsNum,
+      batman,
+      1,
+      'part1',
+      'here is a description',
+      Review_Status.IN_PROGRESS,
+      [],
+      [nonAdmin.userId, batman.userId]
+    );
+
+    const submission = await prisma.partSubmission.create({
+      data: {
+        part: { connect: { partId: part.partId } },
+        userCreated: { connect: { userId: batman.userId } },
+        name: 'testName'
+      }
+    });
+
+    const review = await PartReviewService.createReview(
+      orgId,
+      batman,
+      submission.partSubmissionId,
+      'IN_REVIEW',
+      'notes about review'
+    );
+
+    const reviewWithProject = await prisma.partReview.findUnique({
+      where: { partReviewId: review.partReviewId },
+      include: { submission: { include: { part: true } } }
+    });
+
+    expect(review.notes).toBe('notes about review');
+    expect(review.submissionId).toBe(submission.partSubmissionId);
+    expect(review.userCreated.userId).toBe(batman.userId);
+    expect(review.completedAt).toBeUndefined();
+    expect(reviewWithProject?.submission.part.status).toBe(Review_Status.IN_REVIEW);
+
+    const updatedReview = await PartReviewService.updateReview(
+      orgId,
+      batman,
+      review.partReviewId,
+      'REVIEWED',
+      'updated Notes'
+    );
+    const reviewWithProject2 = await prisma.partReview.findUnique({
+      where: { partReviewId: review.partReviewId },
+      include: { submission: { include: { part: true } } }
+    });
+    expect(updatedReview.notes).toBe('updated Notes');
+    expect(updatedReview.submissionId).toBe(submission.partSubmissionId);
+    expect(updatedReview.userCreated.userId).toBe(batman.userId);
+    expect(updatedReview.completedAt).toBeDefined();
+    expect(reviewWithProject2?.submission.part.status).toBe(Review_Status.REVIEWED);
+  });
+
+  it('does not allow non-creators to edit reviews, checks for non-existent and deleted reviews', async () => {
+    const project = await createTestProject(batman, orgId);
+
+    const project1 = await prisma.project.findUnique({
+      where: { projectId: project.projectId },
+      include: {
+        wbsElement: true
+      }
+    });
+
+    const wbsNum = `${project1?.wbsElement.carNumber}.${project1?.wbsElement.projectNumber}.${project1?.wbsElement.workPackageNumber}`;
+
+    const part = await PartReviewService.createPart(
+      organization,
+      wbsNum,
+      batman,
+      1,
+      'part1',
+      'here is a description',
+      Review_Status.IN_PROGRESS,
+      [],
+      [nonAdmin.userId, batman.userId]
+    );
+
+    const submission = await prisma.partSubmission.create({
+      data: {
+        part: { connect: { partId: part.partId } },
+        userCreated: { connect: { userId: batman.userId } },
+        name: 'testName'
+      }
+    });
+
+    await expect(
+      async () => await PartReviewService.createReview(orgId, batman, 'not a submission id', 'REVIEWED', 'notes')
+    ).rejects.toThrow(new NotFoundException('Part Submission', 'not a submission id'));
+
+    await expect(
+      async () => await PartReviewService.updateReview(orgId, batman, 'not a review id', 'REVIEWED', 'new notes')
+    ).rejects.toThrow(new NotFoundException('Part Review', 'not a review id'));
+
+    const review = await PartReviewService.createReview(
+      orgId,
+      batman,
+      submission.partSubmissionId,
+      'REVIEWED',
+      'notes about review'
+    );
+
+    await expect(
+      async () => await PartReviewService.updateReview(orgId, superman, review.partReviewId, 'REVIEWED', 'test notes')
+    ).rejects.toThrow(new AccessDeniedException('only review creators can update reviews'));
+  });
+
   it('creates a part tag, edits it, and deletes it', async () => {
     const partTag = await PartReviewService.createPartTag('practice', '#ad6454', batman, orgId);
 

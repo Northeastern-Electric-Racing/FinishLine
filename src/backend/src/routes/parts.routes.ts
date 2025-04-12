@@ -27,21 +27,29 @@ partsRouter.post(
   PartReviewController.createPart
 );
 
-partsRouter.post('/:partId/upload-preview', upload.single('image'), PartReviewController.uploadPreview);
-
 partsRouter.post(
-  '/:partId/update',
-  intMinZero(body('index')),
-  nonEmptyString(body('commonName')),
-  body('description').optional().isString(),
-  body('reviewStatus').custom((value) => Object.values(Review_Status).includes(value)),
-  body('tagIds').isArray(),
-  body('assigneeIds').isArray(),
+  '/review/create',
+  nonEmptyString(body('submissionId')),
+  body('notes').optional().isString(),
+  body('status').custom((value) => Object.values<string>(Review_Status).includes(value)),
   validateInputs,
-  PartReviewController.updatePart
+  PartReviewController.createReview
 );
 
-partsRouter.post('/:partId/delete', PartReviewController.deletePart);
+partsRouter.post(
+  '/review/:reviewId/update',
+  body('notes').optional().isString(),
+  body('status').custom((value) => Object.values<string>(Review_Status).includes(value)),
+  validateInputs,
+  PartReviewController.updateReview
+);
+
+partsRouter.post(
+  '/review/:reviewId/upload-files',
+  upload.array('files', 10),
+  validateInputs,
+  PartReviewController.uploadReviewFiles
+);
 
 partsRouter.get('/tags', PartReviewController.getAllPartTags);
 partsRouter.get('/faqs', PartReviewController.getAllPartReviewFAQS);
@@ -129,6 +137,24 @@ partsRouter.post(
   validateInputs,
   PartReviewController.createPartReviewRequest
 );
+
+partsRouter.post('/:partId/upload-preview', upload.single('image'), PartReviewController.uploadPreview);
+
+partsRouter.post(
+  '/:partId/update',
+  intMinZero(body('index')),
+  nonEmptyString(body('commonName')),
+  body('description').optional().isString(),
+  body('reviewStatus').custom((value) => Object.values(Review_Status).includes(value)),
+  body('tagIds').isArray(),
+  body('assigneeIds').isArray(),
+  validateInputs,
+  PartReviewController.updatePart
+);
+
+partsRouter.post('/:partId/delete', PartReviewController.deletePart);
+
+partsRouter.get('/:wbsNum', PartReviewController.getAllPartsForProject);
 
 partsRouter.post('/reviewRequest/:reviewRequestId/delete', PartReviewController.deletePartReviewRequest);
 

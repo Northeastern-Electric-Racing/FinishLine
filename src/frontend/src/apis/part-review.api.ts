@@ -1,4 +1,10 @@
-import { PartPayload, PartSubmissionPayload, PartReviewRequestPayload, PartReviewPayload } from '../hooks/part-review.hooks';
+import {
+  PartPayload,
+  PartSubmissionPayload,
+  PartReviewRequestPayload,
+  CreatePartReviewPayload,
+  EditPartReviewPayload
+} from '../hooks/part-review.hooks';
 import { PartPreview, Part, PartSubmission, PartReviewRequest, PartReview, PartReviewCommonMistake } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -121,8 +127,8 @@ export const deletePartReviewRequest = (partReviewRequestId: string) => {
  * @param submissionId the id of the part submission to create the review for
  * @param payload the payload of the part review
  */
-export const createPartReview = (submissionId: string, payload: PartReviewPayload) => {
-  return axios.post<PartReview>(apiUrls.partsCreateReview(submissionId), {
+export const createPartReview = (payload: CreatePartReviewPayload) => {
+  return axios.post<PartReview>(apiUrls.partsCreateReview(), {
     ...payload
   });
 };
@@ -133,9 +139,21 @@ export const createPartReview = (submissionId: string, payload: PartReviewPayloa
  * @param partReviewId the id of the part review to edit
  * @param payload the payload of the part review
  */
-export const editPartReview = (partReviewId: string, payload: PartReviewPayload) => {
+export const editPartReview = (partReviewId: string, payload: EditPartReviewPayload) => {
   return axios.post<PartReview>(apiUrls.partsEditReview(partReviewId), {
     ...payload
+  });
+};
+
+/**
+ * Adds files to a review
+ *
+ * @param reviewId the review
+ * @param files the files to add
+ */
+export const setUploadReviewFiles = (reviewId: string, files: File[]) => {
+  return axios.post<PartReview>(apiUrls.partsReviewUploadFiles(reviewId), {
+    files
   });
 };
 
