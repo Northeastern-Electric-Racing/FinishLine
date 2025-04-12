@@ -22,13 +22,23 @@ const CommonMistakesTable: React.FC = () => {
   const [mistakeToDelete, setMistakeToDelete] = useState<PartReviewCommonMistake | null>(null);
 
   const { data, isLoading, isError, error } = useCommonMistakes();
-  if (!data) {
-    throw new Error('No common mistakes found');
-  }
-  const commonMistakes = [...data];
   const { mutateAsync: mutateDeleteAsync } = useDeletePartReviewCommonMistake();
   const { mutateAsync: mutateEditAsync } = useEditPartReviewCommonMistakes();
   const toast = useToast();
+
+  if (isLoading) {
+    return <LoadingIndicator />;
+  }
+
+  if (isError) {
+    return <ErrorPage message={error?.message} />;
+  }
+
+  if (!data) {
+    return <ErrorPage message="No common mistakes found" />;
+  }
+
+  const commonMistakes = [...data];
 
   const handleEdit = (mistake: PartReviewCommonMistake) => {
     setMistakeToEdit(mistake);
@@ -38,13 +48,6 @@ const CommonMistakesTable: React.FC = () => {
     setMistakeToEdit(null);
     setOpenCreateModal(true);
   };
-
-  if (!commonMistakes || isLoading) {
-    return <LoadingIndicator />;
-  }
-  if (isError) {
-    return <ErrorPage message={error?.message} />;
-  }
 
   const handleToggleStar = async (mistake: PartReviewCommonMistake) => {
     try {
@@ -87,8 +90,9 @@ const CommonMistakesTable: React.FC = () => {
         onFormSubmit={async () => {
           if (mistakeToDelete) {
             try {
-              await mutateDeleteAsync(mistakeToDelete.partReviewCommonMistakeId);
+              const message = await mutateDeleteAsync(mistakeToDelete.partReviewCommonMistakeId);
               setMistakeToDelete(null);
+              toast.success(message.message);
             } catch (err) {
               if (err instanceof Error) {
                 toast.error(err.message);

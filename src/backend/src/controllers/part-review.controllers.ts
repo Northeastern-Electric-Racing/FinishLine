@@ -232,12 +232,8 @@ export default class PartReviewController {
   static async deleteCommonMistake(req: Request, res: Response, next: NextFunction) {
     try {
       const { commonMistakeId } = req.params;
-      const commonMistake = await PartReviewService.deleteCommonMistake(
-        commonMistakeId,
-        req.currentUser,
-        req.organization.organizationId
-      );
-      res.status(200).json(commonMistake);
+      await PartReviewService.deleteCommonMistake(commonMistakeId, req.currentUser, req.organization.organizationId);
+      res.status(200).json({ message: `Successfully deleted common mistake #${commonMistakeId}` });
     } catch (error: unknown) {
       next(error);
     }

@@ -343,9 +343,11 @@ export const useCreatePartReviewCommonMistake = () => {
  *
  * @param partReviewCommonMistakeId the id of the common mistake to delete
  */
+
+
 export const useDeletePartReviewCommonMistake = () => {
   const queryClient = useQueryClient();
-  return useMutation<PartReviewCommonMistake, Error, any>(
+  return useMutation<{ message: string}, Error, any>(
     async (partReviewCommonMistakeId: string) => {
       const { data } = await deletePartReviewCommonMistake(partReviewCommonMistakeId);
       return data;

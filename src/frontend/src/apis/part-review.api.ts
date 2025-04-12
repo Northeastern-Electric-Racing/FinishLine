@@ -347,7 +347,7 @@ export const editPartReviewCommonMistake = (commonMistakeId: string, payload: Pa
  * @param commonMistakeId the id of the common mistake to delete
  */
 export const deletePartReviewCommonMistake = (commonMistakeId: string) => {
-  return axios.post<PartReviewCommonMistake>(apiUrls.partsDeleteCommonMistake(commonMistakeId));
+  return axios.post<{ message: string }>(apiUrls.partsDeleteCommonMistake(commonMistakeId));
 };
 
 /**
