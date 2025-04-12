@@ -3,41 +3,43 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { GanttChange, GanttTask, RequestEventChange } from '../../../../utils/gantt.utils';
-import { dateToString, getMonday } from '../../../../utils/datetime.utils';
 import GanttTaskBarEdit from './GanttTaskBarEdit';
 import GanttTaskBarView from './GanttTaskBarView';
-import { WorkPackage } from 'shared';
 import { ArcherContainer } from 'react-archer';
 import { useRef } from 'react';
 import { ArcherContainerHandle } from 'react-archer/lib/ArcherContainer/ArcherContainer.types';
+import { GanttChange, GanttTask, HighlightTaskComparator, RequestEventChange } from '../../../../../utils/gantt.utils';
+import { dateToString, getMonday } from '../../../../../utils/datetime.utils';
 
-const GanttTaskBar = ({
+interface GanttTaskBarProps<T> {
+  days: Date[];
+  task: GanttTask<T>;
+  createChange: (change: GanttChange<T>) => void;
+  isEditMode: boolean;
+  handleOnMouseOver: (e: React.MouseEvent, task: GanttTask<T>) => void;
+  handleOnMouseLeave: () => void;
+  onShowChildrenToggle: () => void;
+  showChildren?: boolean;
+  highlightedChange?: RequestEventChange<T>;
+  onAddTaskPressed: (parent: GanttTask<T>) => void;
+  highlightTaskComparator: HighlightTaskComparator<T>;
+  highlightSubtaskComparator: HighlightTaskComparator<T>;
+}
+
+const GanttTaskBar = <T,>({
   days,
   task,
   createChange,
   isEditMode,
   handleOnMouseOver,
-  onWorkPackageToggle,
+  onShowChildrenToggle,
   handleOnMouseLeave,
-  showWorkPackages = false,
+  showChildren = false,
   highlightedChange,
-  addWorkPackage = () => {},
-  getNewWorkPackageNumber
-}: {
-  days: Date[];
-  task: GanttTask;
-  createChange: (change: GanttChange) => void;
-  isEditMode: boolean;
-  handleOnMouseOver: (e: React.MouseEvent, task: GanttTask) => void;
-  handleOnMouseLeave: () => void;
-  onWorkPackageToggle?: () => void;
-  showWorkPackages?: boolean;
-  highlightedChange?: RequestEventChange;
-  addWorkPackage?: (task: WorkPackage) => void;
-  getNewWorkPackageNumber: (projectId: string) => number;
-}) => {
-  const isProject = !task.projectId;
+  onAddTaskPressed,
+  highlightSubtaskComparator,
+  highlightTaskComparator
+}: GanttTaskBarProps<T>) => {
   const archerRef = useRef<ArcherContainerHandle>(null);
 
   const getStartCol = (start: Date) => {
@@ -54,7 +56,7 @@ const GanttTaskBar = ({
     return endCol;
   };
 
-  const handleChange = (change: GanttChange) => {
+  const handleChange = (change: GanttChange<T>) => {
     createChange(change);
     setTimeout(() => {
       if (archerRef.current) {
@@ -73,9 +75,7 @@ const GanttTaskBar = ({
             createChange={handleChange}
             getStartCol={getStartCol}
             getEndCol={getEndCol}
-            isProject={isProject}
-            addWorkPackage={addWorkPackage}
-            getNewWorkPackageNumber={getNewWorkPackageNumber}
+            onAddTaskPressed={onAddTaskPressed}
           />
         ) : (
           <GanttTaskBarView
@@ -83,13 +83,14 @@ const GanttTaskBar = ({
             task={task}
             getStartCol={getStartCol}
             getEndCol={getEndCol}
-            isProject={isProject}
             handleOnMouseOver={handleOnMouseOver}
             handleOnMouseLeave={handleOnMouseLeave}
-            onWorkPackageToggle={onWorkPackageToggle}
-            showWorkPackages={showWorkPackages}
+            showChildren={showChildren}
+            onShowChildrenToggle={onShowChildrenToggle}
             highlightedChange={highlightedChange}
-            getNewWorkPackageNumber={getNewWorkPackageNumber}
+            onAddTaskPressed={onAddTaskPressed}
+            highlightSubtaskComparator={highlightSubtaskComparator}
+            highlightTaskComparator={highlightTaskComparator}
           />
         )}
       </div>

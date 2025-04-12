@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { DesignReview, DesignReviewPreview, DesignReviewStatus, isProject } from 'shared';
+import { DesignReview, DesignReviewPreview, DesignReviewStatus, isProjectWbs } from 'shared';
 import { wbsNumOf } from '../utils/utils';
 import { userTransformer, userWithScheduleSettingsTransformer } from './user.transformer';
 import { DesignReviewPreviewQueryArgs, DesignReviewQueryArgs } from '../prisma-query-args/design-reviews.query-args';
@@ -8,7 +8,7 @@ import { teamTypeTransformer } from './team-types.transformer';
 export const designReviewTransformer = (
   designReview: Prisma.Design_ReviewGetPayload<DesignReviewQueryArgs>
 ): DesignReview => {
-  const wbsName = isProject(designReview.wbsElement)
+  const wbsName = isProjectWbs(designReview.wbsElement)
     ? designReview.wbsElement.name
     : `${designReview.wbsElement.workPackage?.project.wbsElement.name} - ${designReview.wbsElement.name}`;
   return {

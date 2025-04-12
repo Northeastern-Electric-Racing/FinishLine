@@ -9,7 +9,7 @@ import {
   wonderwomanSettings
 } from '../test-data/users.test-data';
 import * as apiFunctions from '../../src/integrations/slack';
-import AnnouncementService from '../../src/services/announcement.service';
+import AnnouncementService from '../../src/services/announcement.services';
 import slackServices from '../../src/services/slack.services';
 import { vi } from 'vitest';
 import prisma from '../../src/prisma/prisma';

@@ -3,10 +3,17 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { DescriptionBullet, Link, LinkType, Project, ProjectPreview } from 'shared';
+import {
+  DescriptionBullet,
+  Link,
+  LinkType,
+  Project,
+  ProjectPreview,
+  RetrospectiveProjectPreview
+} from 'shared';
 import { implementedChangeTransformer } from './change-requests.transformers';
 import { taskTransformer } from './tasks.transformers';
-import { workPackageTransformer } from './work-packages.transformers';
+import { retrospectiveWorkPackageTransformer, workPackageTransformer } from './work-packages.transformers';
 
 /**
  * Transforms a description bullet to ensure deep field transformation of date objects.
@@ -67,6 +74,17 @@ export const projectTransformer = (project: Project): Project => {
     changes: project.changes.map(implementedChangeTransformer),
     tasks: project.tasks.map(taskTransformer),
     links: project.links.map(linkTransformer)
+  };
+};
+
+export const retrospectiveProjectPreviewTransformer = (
+  project: RetrospectiveProjectPreview
+): RetrospectiveProjectPreview => {
+  return {
+    ...projectPreviewTransformer(project),
+    startDate: project.startDate ? new Date(project.startDate) : undefined,
+    endDate: project.endDate ? new Date(project.endDate) : undefined,
+    workPackages: project.workPackages.map(retrospectiveWorkPackageTransformer)
   };
 };
 

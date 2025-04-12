@@ -68,8 +68,10 @@ const ORGANIZATIONS = `/organizations`;
 const STATISTICS = `/statistics`;
 const CREATE_GRAPH = `/statistics/graph-collections/:graphCollectionId/graph/create`;
 const EDIT_GRAPH = `/statistics/graph-collections/:graphCollectionId/graph/:graphId/edit`;
-
 const GRAPH_COLLECTION_BY_ID = '/statistics/graph-collections/:graphCollectionId';
+
+/**************** Retrospective ****************/
+const RETROSPECTIVE = `/retrospective`;
 
 export const routes = {
   BASE,
@@ -128,5 +130,7 @@ export const routes = {
   STATISTICS,
   CREATE_GRAPH,
   EDIT_GRAPH,
-  GRAPH_COLLECTION_BY_ID
+  GRAPH_COLLECTION_BY_ID,
+
+  RETROSPECTIVE
 };
