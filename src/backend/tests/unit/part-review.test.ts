@@ -261,7 +261,7 @@ describe('part review tests', () => {
       orgId,
       batman,
       submission.partSubmissionId,
-      'IN_PROGRESS',
+      'IN_REVIEW',
       'notes about review'
     );
 
@@ -273,13 +273,14 @@ describe('part review tests', () => {
     expect(review.notes).toBe('notes about review');
     expect(review.submissionId).toBe(submission.partSubmissionId);
     expect(review.userCreated.userId).toBe(batman.userId);
+    expect(review.completedAt).toBeUndefined();
     expect(reviewWithProject?.submission.part.status).toBe(Review_Status.IN_PROGRESS);
 
     const updatedReview = await PartReviewService.updateReview(
       orgId,
       batman,
       review.partReviewId,
-      'IN_REVIEW',
+      'REVIEWED',
       'updated Notes'
     );
     const reviewWithProject2 = await prisma.partReview.findUnique({
@@ -289,7 +290,8 @@ describe('part review tests', () => {
     expect(updatedReview.notes).toBe('updated Notes');
     expect(updatedReview.submissionId).toBe(submission.partSubmissionId);
     expect(updatedReview.userCreated.userId).toBe(batman.userId);
-    expect(reviewWithProject2?.submission.part.status).toBe(Review_Status.IN_REVIEW);
+    expect(updatedReview.completedAt).toBe(new Date());
+    expect(reviewWithProject2?.submission.part.status).toBe(Review_Status.REVIEWED);
   });
 
   it('does not allow non-creators to edit reviews, checks for non-existent and deleted reviews', async () => {

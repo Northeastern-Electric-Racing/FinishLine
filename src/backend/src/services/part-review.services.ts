@@ -270,7 +270,8 @@ export default class PartReviewService {
    * @param creator the creator of the review
    * @param submissionId the submission
    * @param notes optional notes on the review
-   * @param newPartStatus the new status of the part which the review is added to
+   * @param newPartStatus the new status of the part which the review is added to.
+   * if this status is Reviewed or approved, the completedAt date is set to now
    * @returns the created review
    */
   static async createReview(
@@ -290,17 +291,18 @@ export default class PartReviewService {
     if (submission.part.project.wbsElement.organizationId !== organizationId)
       throw new InvalidOrganizationException('Part Submission');
 
-    if (newPartStatus) {
-      const review_status = newPartStatus as Review_Status;
-      await prisma.part.update({
-        where: {
-          partId: submission.partId
-        },
-        data: {
-          status: review_status
-        }
-      });
-    }
+    const review_status = newPartStatus as Review_Status;
+    const completedAt =
+      review_status === Review_Status.APPROVED || review_status === Review_Status.REVIEWED ? new Date() : null;
+
+    await prisma.part.update({
+      where: {
+        partId: submission.partId
+      },
+      data: {
+        status: review_status
+      }
+    });
 
     const review = await prisma.partReview.create({
       data: {
@@ -310,7 +312,8 @@ export default class PartReviewService {
         userCreated: {
           connect: { userId: creator.userId }
         },
-        notes
+        notes,
+        completedAt
       },
       ...getPartReviewQueryArgs(organizationId)
     });
@@ -323,7 +326,8 @@ export default class PartReviewService {
    * @param organizationId the organization
    * @param updater the user updating (must be creator)
    * @param reviewId the review being updated
-   * @param newPartStatus the new status of the part which the review is added to
+   * @param newPartStatus the new status of the part which the review is added to.
+   * if this status is Reviewed or approved, the completedAt date is set to now
    * @param notes notes for the review
    * @returns the updated review
    */
@@ -340,14 +344,18 @@ export default class PartReviewService {
 
     if (updater.userId !== review.userCreatedId) throw new AccessDeniedException('only review creators can update reviews');
 
+    const review_status = newPartStatus as Review_Status;
+    const completedAt =
+      review_status === Review_Status.APPROVED || review_status === Review_Status.REVIEWED ? new Date() : null;
+
     const updatedReview = await prisma.partReview.update({
       where: { partReviewId: reviewId },
       data: {
-        notes
+        notes,
+        completedAt
       },
       ...getPartReviewQueryArgs(organizationId)
     });
-    const review_status = newPartStatus as Review_Status;
 
     await prisma.part.update({
       where: {

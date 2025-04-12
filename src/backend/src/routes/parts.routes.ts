@@ -39,7 +39,7 @@ partsRouter.post(
 partsRouter.post(
   '/review/:reviewId/update',
   body('notes').optional().isString(),
-  body('status').optional().isString(),
+  body('status').custom((value) => Object.values<string>(Review_Status).includes(value)),
   validateInputs,
   PartReviewController.updateReview
 );
