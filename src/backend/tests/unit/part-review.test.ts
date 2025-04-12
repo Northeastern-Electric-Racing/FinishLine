@@ -1,6 +1,7 @@
 import { Organization, User } from '@prisma/client';
 import {
   createMinimalPartReview,
+  createMinimalPartReviewForReview,
   createTestCar,
   createTestOrganization,
   createTestPart,
@@ -19,7 +20,7 @@ import {
   DeletedException,
   NotFoundException
 } from '../../src/utils/errors.utils';
-import { validateWBS } from 'shared';
+import { validateWBS, WbsNumber } from 'shared';
 import { Review_Status } from 'shared';
 
 describe('part review tests', () => {
@@ -462,7 +463,7 @@ describe('part review tests', () => {
             batman,
             orgId
           )
-      ).rejects.toThrow(new DeletedException('common mistake', commonMistake.partReviewCommonMistakeId));
+      ).rejects.toThrow(new DeletedException('Common Mistake', commonMistake.partReviewCommonMistakeId));
     });
   });
 
@@ -651,6 +652,133 @@ describe('part review tests', () => {
     expect(commonMistakes[0].starred).toBe(false);
     expect(commonMistakes[1].starred).toBe(true);
     expect(commonMistakes[2].starred).toBe(false);
+  });
+
+  describe('part review request endpoints', () => {
+    let orgId: string;
+    let batman: User;
+    let superman: User;
+    let aquaman: User;
+    let partId: string;
+
+    beforeEach(async () => {
+      await resetUsers();
+      const organization = await createTestOrganization();
+      orgId = organization.organizationId;
+      batman = await createTestUser(batmanAppAdmin, orgId);
+      superman = await createTestUser(supermanAdmin, orgId);
+      aquaman = await createTestUser(aquamanLeadership, orgId);
+
+      ({ partId } = await createMinimalPartReviewForReview(batman, orgId));
+    });
+
+    afterEach(async () => {
+      await resetUsers();
+    });
+
+    it('creates a review request successfully', async () => {
+      const reviewRequest = await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
+
+      const prismaRequest = await prisma.partReviewRequest.findUnique({
+        where: { partReviewRequestId: reviewRequest.partReviewRequestId }
+      });
+
+      expect(reviewRequest.requester.userId).toBe(batman.userId);
+      expect(reviewRequest.reviewerRequested.userId).toBe(superman.userId);
+      expect(prismaRequest?.dateDeleted).toBeNull();
+    });
+
+    it('fails to create review request if part does not exist', async () => {
+      const fakePartId = 'non-existent-part-id';
+
+      await expect(PartReviewService.createPartReviewRequest(fakePartId, aquaman, superman.userId, orgId)).rejects.toThrow(
+        new NotFoundException('Part', fakePartId)
+      );
+    });
+
+    it('requester can delete their review request', async () => {
+      const request = await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
+      const deleted = await PartReviewService.deletePartReviewRequest(request.partReviewRequestId, batman, orgId);
+      const prismaDeleted = await prisma.partReviewRequest.findFirst({
+        where: { partReviewRequestId: request.partReviewRequestId }
+      });
+      expect(deleted).toBeDefined();
+      expect(prismaDeleted?.dateDeleted).toBeTruthy();
+    });
+
+    it('reviewer can delete the review request', async () => {
+      const request = await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
+      const deleted = await PartReviewService.deletePartReviewRequest(request.partReviewRequestId, superman, orgId);
+      const prismaDeleted = await prisma.partReviewRequest.findFirst({
+        where: { partReviewRequestId: request.partReviewRequestId }
+      });
+      expect(deleted).toBeDefined();
+      expect(prismaDeleted?.dateDeleted).toBeTruthy();
+    });
+
+    it('admin can delete the review request', async () => {
+      const flash = await createTestUser(flashAdmin, orgId);
+      const request = await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
+      const deleted = await PartReviewService.deletePartReviewRequest(request.partReviewRequestId, flash, orgId);
+      const prismaDeleted = await prisma.partReviewRequest.findFirst({
+        where: { partReviewRequestId: request.partReviewRequestId }
+      });
+      expect(deleted).toBeDefined();
+      expect(prismaDeleted?.dateDeleted).toBeTruthy();
+    });
+
+    it('fails to delete review request if it does not exist', async () => {
+      const fakePartId = 'non-existent-part-id';
+
+      await expect(PartReviewService.deletePartReviewRequest(fakePartId, batman, orgId)).rejects.toThrow(
+        new NotFoundException('Review Request', fakePartId)
+      );
+    });
+  });
+
+  describe('Get a singular part', () => {
+    it('successfully gets the part corresponding to the partId', async () => {
+      const division = await createTestTeamType(undefined, orgId);
+      const team = await createTestTeam(batman.userId, division.teamTypeId, orgId);
+      const car = await createTestCar(orgId, batman.userId);
+
+      const project = await createTestProject(batman, orgId, team.teamId, car.carId, 1);
+      const project1 = await prisma.project.findUnique({
+        where: { projectId: project.projectId },
+        include: {
+          wbsElement: true
+        }
+      });
+
+      const part = await createTestPart(superman, 'door', '1', 1, project.projectId);
+
+      const testPart = await PartReviewService.getPart(organization, project1?.wbsElement as WbsNumber, '1');
+
+      expect(testPart.userCreated.userId).toEqual(part.userCreatedId);
+      expect(testPart.commonName).toBe(part.commonName);
+      expect(testPart.partId).toBe(part.partId);
+      expect(testPart.index).toBe(part.index);
+      expect(testPart.projectId).toBe(part.projectId);
+    });
+
+    it('throws an error when a part cannot be found with the given partId', async () => {
+      const division = await createTestTeamType(undefined, orgId);
+      const team = await createTestTeam(batman.userId, division.teamTypeId, orgId);
+      const car = await createTestCar(orgId, batman.userId);
+
+      const project = await createTestProject(batman, orgId, team.teamId, car.carId, 1);
+      const project1 = await prisma.project.findUnique({
+        where: { projectId: project.projectId },
+        include: {
+          wbsElement: true
+        }
+      });
+      const wbsNum = project1?.wbsElement as WbsNumber;
+
+      await expect(PartReviewService.getPart(organization, wbsNum, '1')).rejects.toThrow(
+        new NotFoundException('Part', `projectId: ${project.projectId} and index number: 1`)
+      );
+    });
   });
 
   describe('Get all parts', () => {

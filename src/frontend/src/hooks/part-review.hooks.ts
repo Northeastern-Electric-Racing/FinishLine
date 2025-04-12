@@ -63,11 +63,11 @@ export interface PartReviewCommonMistakePayload {
 /**
  * Custom React Hook to fetch all parts associated with the given project as part previews
  *
- * @param projectId the id of the project
+ * @param wbsNum the wbs number of the project
  */
-export const usePartsFromProject = (/*projectId: string*/) => {
-  return useQuery<PartPreview[], Error>(['parts', 'byProject'], async () => {
-    const { data } = await getPartsFromProject(/*projectId*/);
+export const usePartsFromProject = (wbsNum: string) => {
+  return useQuery<PartPreview[], Error>(['parts'], async () => {
+    const { data } = await getPartsFromProject(wbsNum);
     return data;
   });
 };
@@ -75,11 +75,12 @@ export const usePartsFromProject = (/*projectId: string*/) => {
 /**
  * Custom React Hook to fetch a single part
  *
- * @param partId the id of the part
+ * @param wbsNum the wbs number of the project
+ * @param index the index number of the part
  */
-export const useSinglePart = (/*partId: string*/) => {
-  return useQuery<Part, Error>(['parts', 'byId' /*partId*/], async () => {
-    const { data } = await getSinglePart(/*partId*/);
+export const useSinglePart = (wbsNum: string, index: number) => {
+  return useQuery<Part, Error>(['parts'], async () => {
+    const { data } = await getSinglePart(wbsNum, index);
     return data;
   });
 };
@@ -97,7 +98,7 @@ export const useCreatePart = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['parts', 'byProject']);
+        queryClient.invalidateQueries(['parts']);
       }
     }
   );
@@ -118,8 +119,7 @@ export const useEditPart = (partId: string) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['parts', 'byProject']);
-        queryClient.invalidateQueries(['parts', 'byId', partId]);
+        queryClient.invalidateQueries(['parts']);
       }
     }
   );
@@ -134,8 +134,7 @@ export const useUploadPreviewImage = (partId: string) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['parts', 'byProject']);
-        queryClient.invalidateQueries(['parts', 'byId', partId]);
+        queryClient.invalidateQueries(['parts']);
       }
     }
   );
@@ -156,8 +155,7 @@ export const useDeletePart = (partId: string) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['parts', 'byProject']);
-        queryClient.invalidateQueries(['parts', 'byId', partId]);
+        queryClient.invalidateQueries(['parts']);
       }
     }
   );
@@ -178,8 +176,7 @@ export const useCreatePartSubmission = (partId: string) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['parts', 'byProject']);
-        queryClient.invalidateQueries(['parts', 'byId', partId]);
+        queryClient.invalidateQueries(['parts']);
       }
     }
   );
@@ -200,7 +197,7 @@ export const useEditPartSubmission = (submissionId: string) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['parts', 'byId']);
+        queryClient.invalidateQueries(['parts']);
       }
     }
   );
