@@ -4,7 +4,6 @@ import {
   isGuest,
   isLeadership,
   isNotLeadership,
-  isProject,
   isProjectWbs,
   ProjectProposedChangesCreateArgs,
   ProposedSolution,

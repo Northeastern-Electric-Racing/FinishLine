@@ -1,5 +1,5 @@
 import { useQuery } from 'react-query';
-import { Project, RetrospectiveProjectPreview } from 'shared';
+import { RetrospectiveProjectPreview } from 'shared';
 import { getRetrospectiveBudgets, getRetrospectiveTimelines } from '../apis/retrospective.api';
 
 export const useGetRetrospectiveTimelines = () =>

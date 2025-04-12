@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Team, TeamPreview } from 'shared';
+import { TeamPreview } from 'shared';
 import { routes } from '../../utils/routes';
 import { fullNamePipe, wbsPipe } from '../../utils/pipes';
 import { Link as RouterLink } from 'react-router-dom';
