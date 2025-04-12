@@ -274,7 +274,7 @@ describe('part review tests', () => {
     expect(review.submissionId).toBe(submission.partSubmissionId);
     expect(review.userCreated.userId).toBe(batman.userId);
     expect(review.completedAt).toBeUndefined();
-    expect(reviewWithProject?.submission.part.status).toBe(Review_Status.IN_PROGRESS);
+    expect(reviewWithProject?.submission.part.status).toBe(Review_Status.IN_REVIEW);
 
     const updatedReview = await PartReviewService.updateReview(
       orgId,
