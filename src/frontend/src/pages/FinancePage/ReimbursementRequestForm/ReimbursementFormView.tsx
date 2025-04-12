@@ -47,7 +47,7 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { wbsNumComparator } from 'shared/src/validate-wbs';
-import { accountCodePipe } from '../../../utils/pipes';
+import { codeAndRefundSourceName, accountCodePipe } from '../../../utils/pipes';
 import NERModal from '../../../components/NERModal';
 import CheckList from '../../../components/CheckList';
 
@@ -143,11 +143,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   }));
 
   wbsElementAutocompleteOptions.sort((wbsNum1, wbsNum2) => wbsNumComparator(wbsNum1.id, wbsNum2.id));
-
-  const codeAndRefundSourceName = (indexCode?: IndexCode) => {
-    if (!indexCode) return '';
-    return `${indexCode.name} - ${indexCode.code}`;
-  };
 
   const ReceiptFileInput = () => (
     <FormControl>
@@ -259,11 +254,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   };
 
   const vendorsToAutocomplete = (vendor: Vendor): { label: string; id: string } => {
-    // Handle potential missing data
-    if (!vendor || !vendor.vendorId || !vendor.name) {
-      console.error('Invalid vendor structure:', vendor);
-      return { label: 'Invalid Vendor', id: 'invalid' };
-    }
     return { label: vendor.name, id: vendor.vendorId };
   };
 
