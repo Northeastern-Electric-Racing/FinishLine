@@ -60,8 +60,7 @@ export default class PartReviewService {
       ...getPartQueryArgs(organization.organizationId)
     });
 
-    if (!part)
-      throw new HttpException(404, `could not find a part with projectId: ${project.id} and index number: ${indexNum}`);
+    if (!part) throw new NotFoundException('Part', `projectId: ${project.id} and index number: ${indexNum}`);
 
     return partTransformer(part);
   }
@@ -621,11 +620,11 @@ export default class PartReviewService {
     });
 
     if (!commonMistake) {
-      throw new NotFoundException('common mistake', commonMistakeId);
+      throw new NotFoundException('Common Mistake', commonMistakeId);
     }
 
     if (commonMistake.dateDeleted) {
-      throw new DeletedException('common mistake', commonMistakeId);
+      throw new DeletedException('Common Mistake', commonMistakeId);
     }
 
     if (!(await userHasPermission(updater.userId, organizationId, isAdmin))) {
@@ -665,7 +664,7 @@ export default class PartReviewService {
     });
 
     if (!commonMistake) {
-      throw new NotFoundException('common mistake', commonMistakeId);
+      throw new NotFoundException('Common Mistake', commonMistakeId);
     }
 
     if (!(await userHasPermission(deleter.userId, organizationId, isAdmin))) {
@@ -748,11 +747,11 @@ export default class PartReviewService {
     });
 
     if (!reviewRequest) {
-      throw new NotFoundException('Review request', reviewRequestId);
+      throw new NotFoundException('Review Request', reviewRequestId);
     }
 
     if (reviewRequest.dateDeleted) {
-      throw new DeletedException('Review request', reviewRequestId);
+      throw new DeletedException('Review Request', reviewRequestId);
     }
 
     const isRequester = reviewRequest.requesterId === user.userId;
