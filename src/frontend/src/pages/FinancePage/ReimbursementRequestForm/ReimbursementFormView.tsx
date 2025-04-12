@@ -29,6 +29,7 @@ import {
 } from 'react-hook-form';
 import {
   AccountCode,
+  IndexCode,
   ReimbursementProductFormArgs,
   ReimbursementReceiptCreateArgs,
   ReimbursementReceiptUploadArgs,
@@ -41,14 +42,15 @@ import ReimbursementProductTable from './ReimbursementProductTable';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { wbsNumComparator } from 'shared/src/validate-wbs';
-import { codeAndRefundSourceName, accountCodePipe } from '../../../utils/pipes';
+import { accountCodePipe } from '../../../utils/pipes';
 import NERModal from '../../../components/NERModal';
 import CheckList from '../../../components/CheckList';
+import UploadIcon from '@mui/icons-material/Upload';
 
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
@@ -101,15 +103,50 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const [hasConfirmedFinance, setHasConfirmedFinance] = useState(false);
   const toast = useToast();
   const theme = useTheme();
-  const products = watch(`reimbursementProducts`);
+  const products = watch('reimbursementProducts') as ReimbursementProductFormArgs[];
   const accountCodeId = watch('accountCodeId');
   const selectedAccountCode = allAccountCodes.find((accountCode) => accountCode.accountCodeId === accountCodeId);
-  const refundSources = selectedAccountCode?.indexCodes || [];
-  const firstRefundSource = watch('account') || ClubAccount.CASH;
-  const secondRefundSource = watch('secondaryAccount') || ClubAccount.BUDGET;
-  const remainingRefundSources = refundSources.filter((source) => source !== firstRefundSource);
+  const refundSources: IndexCode[] = selectedAccountCode?.indexCodes || [];
+  const firstRefundSourceId = watch('indexCodeId');
+  const secondRefundSourceId = watch('secondaryAccount');
 
-  const calculatedTotalCost = products.reduce((acc, product) => acc + Number(product.cost), 0).toFixed(2);
+  useEffect(() => {
+    if (firstRefundSourceId) {
+      if (secondRefundSourceId && firstRefundSourceId === secondRefundSourceId) {
+        setValue('secondaryAccount', undefined);
+        reimbursementProducts.forEach((_, index) => {
+          setValue(`reimbursementProducts.${index}.secondSourceAmount`, undefined);
+        });
+      }
+      reimbursementProducts.forEach((_, index) => {
+        setValue(`reimbursementProducts.${index}.firstSourceAmount`, undefined);
+      });
+    }
+  }, [firstRefundSourceId, setValue]);
+
+  useEffect(() => {
+    if (secondRefundSourceId) {
+      reimbursementProducts.forEach((_, index) => {
+        setValue(`reimbursementProducts.${index}.secondSourceAmount`, undefined);
+      });
+    }
+  }, [secondRefundSourceId, setValue]);
+
+  const firstRefundSource = refundSources.find((source) => source.indexCodeId === firstRefundSourceId) || {
+    name: 'First Source',
+    code: '',
+    indexCodeId: 'placeholder-1'
+  };
+  const secondRefundSource = refundSources.find((source) => source.indexCodeId === secondRefundSourceId) || {
+    name: 'Second Source',
+    code: '',
+    indexCodeId: 'placeholder-2'
+  };
+
+  const remainingRefundSources = refundSources.filter((source) => source.indexCodeId !== firstRefundSourceId);
+  const calculatedTotalCost = products
+    .reduce((acc: number, product: ReimbursementProductFormArgs) => acc + Number(product.cost), 0)
+    .toFixed(2);
   const [showReimbursementGuidelinesModal, setShowReimbursementGuidelinesModal] = useState(true);
 
   const wbsElementAutocompleteOptions = allWbsElements.map((wbsElement) => ({
@@ -118,6 +155,11 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   }));
 
   wbsElementAutocompleteOptions.sort((wbsNum1, wbsNum2) => wbsNumComparator(wbsNum1.id, wbsNum2.id));
+
+  const codeAndRefundSourceName = (indexCode?: IndexCode) => {
+    if (!indexCode) return '';
+    return `${indexCode.name} - ${indexCode.code}`;
+  };
 
   const ReceiptFileInput = () => (
     <FormControl>
@@ -181,7 +223,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           {
             resolved: false,
             detail:
-              'I certify my receipts with expenses greater than $75 include an itemixed description of goods or service purchased.',
+              'I certify my receipts with expenses greater than $75 include an itemized description of goods or service purchased.',
             id: '1'
           },
           {
@@ -191,7 +233,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           },
           {
             resolved: false,
-            detail: `I certify my receipts includes a Transaction Date for each expense.`,
+            detail: `I certify my receipts include a Transaction Date for each expense.`,
             id: '3'
           },
           {
@@ -228,12 +270,12 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
     };
   };
 
-  const extractSourceName = (source: string): string => {
-    const lastPart = source.split('-').pop() || '';
-    return lastPart.charAt(0).toUpperCase() + lastPart.slice(1).toLowerCase();
-  };
-
   const vendorsToAutocomplete = (vendor: Vendor): { label: string; id: string } => {
+    // Handle potential missing data
+    if (!vendor || !vendor.vendorId || !vendor.name) {
+      console.error('Invalid vendor structure:', vendor);
+      return { label: 'Invalid Vendor', id: 'invalid' };
+    }
     return { label: vendor.name, id: vendor.vendorId };
   };
 
@@ -325,7 +367,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   );
                 }}
               />
-              <FormHelperText error>{errors.vendorId?.message}</FormHelperText>
             </FormControl>
           </Grid>
           <Grid item xs={12} sx={{ paddingTop: '33px' }}>
@@ -352,11 +393,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   const mappedAccountCodes = allAccountCodes
                     .filter((accountCode) => accountCode.allowed)
                     .map(accountCodesToAutocomplete);
-
-                  const onClear = () => {
-                    setValue('indexCodeId', '');
-                    onChange('');
-                  };
 
                   return (
                     <Select
@@ -455,81 +491,75 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               />
             </FormControl>
           </Grid>
-          <Grid item xs={6}>
-            <FormControl fullWidth>
-              <FormLabel>Refund Source</FormLabel>
-              <Controller
-                name="indexCodeId"
-                control={control}
-                render={({ field: { onChange, value } }) => (
-                  <Select
-                    onChange={(newValue) => onChange(newValue.target.value)}
-                    value={value}
-                    disabled={!selectedAccountCode}
-                    error={!!errors.indexCodeId}
-                    displayEmpty
-                    renderValue={() => {
-                      return value ? (
-                        <Typography>
-                          {codeAndRefundSourceName(refundSources.find((source) => source.indexCodeId === value))}{' '}
-                        </Typography>
-                      ) : (
-                        <Typography style={{ color: 'gray' }}>Select Refund Source</Typography>
-                      );
-                    }}
-                  >
-                    {refundSources.map((refundSource) => (
-                      <MenuItem key={refundSource.name} value={refundSource.name}>
-                        {codeAndRefundSourceName(refundSource)}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                )}
-              />
-              <FormHelperText error>{errors.indexCodeId?.message}</FormHelperText>
-            </FormControl>
-          </Grid>
-          <Grid item xs={6}>
-            <FormControl fullWidth>
-              <FormLabel>Receipts</FormLabel>
-              <Button
-                variant="contained"
-                color="success"
-                component="label"
-                startIcon={<FileUploadIcon />}
+          <Grid item xs={12} sx={{ paddingTop: '38px' }}>
+            <FormControl sx={{ display: 'flex', borderRadius: '25px', width: '85%' }}>
+              <FormLabel
                 sx={{
-                  width: 'fit-content',
-                  textTransform: 'none',
-                  mt: '9.75px'
+                  color: '#dd524c',
+                  textShadow: '1.5px 0 #dd524c',
+                  letterSpacing: '0.5px',
+                  textDecoration: 'underline',
+                  textUnderlineOffset: '3.5px',
+                  textDecorationThickness: '0.6px',
+                  paddingBottom: '2px',
+                  fontSize: 'x-large',
+                  fontWeight: 'bold'
                 }}
               >
-                Upload
-                <input
-                  onChange={(e) => {
-                    if (e.target.files) {
-                      [...e.target.files].forEach((file, index) => {
-                        if (file.size >= 1000000) {
-                          toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
-                          document.getElementById('receipt-image')!.innerHTML = '';
-                        } else {
-                          receiptPrepend({
-                            file,
-                            name: 'receipt' + (receiptFiles.length + index),
-                            googleFileId: ''
-                          });
-                        }
-                      });
-                    }
+                Receipts
+              </FormLabel>
+
+              <Box>
+                <ReceiptFileInput />
+                <Button
+                  variant="contained"
+                  color="success"
+                  component="label"
+                  sx={{
+                    width: 'fit-content',
+                    textTransform: 'none',
+                    color: 'white',
+                    marginLeft: '10px'
                   }}
-                  type="file"
-                  id="receipt-image"
-                  accept="image/png, image/jpeg, application/pdf"
-                  name="receiptFiles"
-                  multiple
-                  hidden
-                />
-              </Button>
-              <ReceiptFileInput />
+                >
+                  Upload
+                  <input
+                    onChange={(e) => {
+                      if (e.target.files) {
+                        [...e.target.files].forEach((file) => {
+                          /* The regex /^[\w.]+$/ limits the file name to the set of alphanumeric characters (\w) and dots (for file type) */
+                          if (file.size >= 1000000) {
+                            toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
+                            document.getElementById('receipt-image')!.innerHTML = '';
+                          } else if (file.name.length > 20) {
+                            toast.error(`Error uploading ${file.name}; file name must be less than 20 characters`, 5000);
+                            document.getElementById('receipt-image')!.innerHTML = '';
+                          } else if (!/^[\w.]+$/.test(file.name)) {
+                            toast.error(
+                              `Error uploading ${file.name}; file name must only contain letter and numbers`,
+                              5000
+                            );
+                            document.getElementById('receipt-image')!.innerHTML = '';
+                          } else {
+                            receiptPrepend({
+                              file,
+                              name: file.name,
+                              googleFileId: ''
+                            });
+                          }
+                        });
+                      }
+                    }}
+                    type="file"
+                    id="receipt-image"
+                    accept="image/png, image/jpeg, application/pdf"
+                    name="receiptFiles"
+                    multiple
+                    hidden
+                  />
+                </Button>
+              </Box>
+
               <FormHelperText error>{errors.receiptFiles?.message}</FormHelperText>
             </FormControl>
           </Grid>
@@ -557,26 +587,26 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 Refund Source*
               </FormLabel>
               <Controller
-                name="account"
+                name="indexCodeId"
                 control={control}
                 render={({ field: { onChange, value } }) => (
                   <Select
                     IconComponent={KeyboardArrowDownIcon}
-                    onChange={(newValue) => {
-                      const newSource = newValue.target.value as ClubAccount;
-                      if (hasConfirmedFinance && secondRefundSource && newSource === secondRefundSource) {
-                        const otherOptions = refundSources.filter((source) => source !== newSource);
-                        if (otherOptions.length > 0) {
-                          setValue('secondaryAccount', otherOptions[0]);
-                        } else {
-                          setValue('secondaryAccount', undefined);
-                        }
+                    onChange={(e) => {
+                      const newSourceId = e.target.value as string;
+                      // If the second source matches the new first source, reset it
+                      if (secondRefundSourceId === newSourceId) {
+                        setValue('secondaryAccount', undefined);
+                        // Reset all second source amounts in products
+                        reimbursementProducts.forEach((_, index) => {
+                          setValue(`reimbursementProducts.${index}.secondSourceAmount`, undefined);
+                        });
                       }
-                      onChange(newSource);
+                      onChange(newSourceId);
                     }}
                     value={value}
                     disabled={!selectedAccountCode}
-                    error={!!errors.account}
+                    error={!!errors.indexCodeId}
                     displayEmpty
                     sx={{
                       background: '#4c4c4c',
@@ -588,16 +618,26 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                         fontSize: 'xxx-large'
                       }
                     }}
-                    renderValue={() => {
-                      return value ? (
-                        <Typography>{codeAndRefundSourceName(value)} </Typography>
+                    renderValue={(selected) => {
+                      if (!selected) {
+                        return (
+                          <Typography style={{ color: 'gray' }}>
+                            {hasConfirmedFinance ? 'Select First Refund Source' : 'Select Refund Source'}
+                          </Typography>
+                        );
+                      }
+                      const selectedIndexCode = refundSources.find((source) => source.indexCodeId === selected);
+                      return selectedIndexCode ? (
+                        <Typography>{codeAndRefundSourceName(selectedIndexCode)}</Typography>
                       ) : (
-                        <Typography style={{ color: 'gray' }}>Select Refund Source</Typography>
+                        <Typography style={{ color: 'gray' }}>
+                          {hasConfirmedFinance ? 'Select First Refund Source' : 'Select Refund Source'}
+                        </Typography>
                       );
                     }}
                   >
                     {refundSources.map((refundSource) => (
-                      <MenuItem key={refundSource} value={refundSource}>
+                      <MenuItem key={refundSource.indexCodeId} value={refundSource.indexCodeId}>
                         {codeAndRefundSourceName(refundSource)}
                       </MenuItem>
                     ))}
@@ -608,12 +648,12 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 <Controller
                   name="secondaryAccount"
                   control={control}
-                  render={({ field: { onChange, value } }) => (
+                  render={({ field }) => (
                     <Select
+                      {...field}
                       IconComponent={KeyboardArrowDownIcon}
-                      onChange={(newValue) => onChange(newValue.target.value as ClubAccount)}
-                      value={value}
-                      disabled={!selectedAccountCode || !firstRefundSource}
+                      value={field.value ?? ''}
+                      disabled={!selectedAccountCode || !firstRefundSourceId}
                       error={!!errors.secondaryAccount}
                       displayEmpty
                       sx={{
@@ -625,19 +665,22 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                         '& .MuiSelect-icon': {
                           fontSize: 'xxx-large'
                         },
-
                         marginTop: '10px'
                       }}
-                      renderValue={() => {
-                        return value ? (
-                          <Typography>{codeAndRefundSourceName(value)} </Typography>
+                      renderValue={(selected) => {
+                        if (!selected) {
+                          return <Typography style={{ color: 'gray' }}>Select Second Refund Source</Typography>;
+                        }
+                        const selectedIndexCode = refundSources.find((source) => source.indexCodeId === selected);
+                        return selectedIndexCode ? (
+                          <Typography>{codeAndRefundSourceName(selectedIndexCode)}</Typography>
                         ) : (
-                          <Typography style={{ color: 'gray' }}>Select Refund Source</Typography>
+                          <Typography style={{ color: 'gray' }}>Select Second Refund Source</Typography>
                         );
                       }}
                     >
                       {remainingRefundSources.map((refundSource) => (
-                        <MenuItem key={refundSource} value={refundSource}>
+                        <MenuItem key={refundSource.indexCodeId} value={refundSource.indexCodeId}>
                           {codeAndRefundSourceName(refundSource)}
                         </MenuItem>
                       ))}
@@ -652,14 +695,14 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     width: 'auto',
                     marginTop: '5px'
                   }}
-                  startIcon={<AddCircleOutline sx={{}} />}
+                  startIcon={<AddCircleOutline />}
                   onClick={() => setShowAddRefundSourceModal(true)}
                 >
                   Add Refund Source
                 </Button>
               )}
 
-              <FormHelperText error>{errors.account?.message}</FormHelperText>
+              <FormHelperText error>{errors.indexCodeId?.message}</FormHelperText>
             </FormControl>
           </Grid>
           <Grid item xs={12} md={6} sx={{ display: 'flex', width: '85%' }}>
@@ -733,9 +776,10 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               watch={watch}
               register={register}
               setValue={setValue}
+              control={control}
               hasMultipleRefundSources={hasConfirmedFinance}
-              firstRefundSourceName={extractSourceName(firstRefundSource) || ''}
-              secondRefundSourceName={extractSourceName(secondRefundSource) || ''}
+              firstRefundSourceName={firstRefundSource.name}
+              secondRefundSourceName={secondRefundSource.name}
             />
             <FormHelperText error>{errors.reimbursementProducts?.message}</FormHelperText>
           </FormControl>

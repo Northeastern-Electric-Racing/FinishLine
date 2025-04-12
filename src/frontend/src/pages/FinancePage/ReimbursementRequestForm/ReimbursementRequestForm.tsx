@@ -29,7 +29,7 @@ export interface ReimbursementRequestInformation {
   accountCodeId: string;
   receiptFiles: ReimbursementReceiptUploadArgs[];
   indexCodeId: string;
-  secondaryAccount?: ClubAccount;
+  secondaryAccount?: string;
 }
 export interface ReimbursementRequestFormInput extends ReimbursementRequestInformation {
   reimbursementProducts: ReimbursementProductFormArgs[];
@@ -52,7 +52,7 @@ const RECEIPTS_REQUIRED = import.meta.env.VITE_RR_RECEIPT_REQUIREMENT || 'disabl
 
 const schema = yup.object().shape({
   vendorId: yup.string().required('Vendor is required'),
-  indexCodeId: yup.array().of(yup.string().required()).required('Index code is required'),
+  indexCodeId: yup.string().required('Refund source is required'),
   secondaryAccount: yup.string().required('Account is required'),
   dateOfExpense: yup.date().optional(),
   accountCodeId: yup.string().required('Account code is required'),
@@ -65,7 +65,7 @@ const schema = yup.object().shape({
           .number()
           .required('Amount is required')
           .typeError('Amount is required')
-          .min(0.01, 'Cost must be greater than 0'),
+          .min(0, 'Cost cannot be negative'),
         secondSourceAmount: yup
           .number()
           .required('Amount is required')
@@ -77,13 +77,11 @@ const schema = yup.object().shape({
           .typeError('Cost is required')
           .min(0, 'Cost cannot be negative')
           .transform((value) => (value === '' ? undefined : value))
-          .when(['firstSourceAmount', 'secondSourceAmount'], {
-            is: (firstSourceAmount: number | undefined, secondSourceAmount: number | undefined) =>
-              typeof firstSourceAmount === 'number' && typeof secondSourceAmount === 'number',
-            then: yup.number().test('amounts-match', 'Sum of the refund sources must equal the total cost', function (cost) {
-              const { firstSourceAmount, secondSourceAmount } = this.parent;
-              return cost === firstSourceAmount + secondSourceAmount;
-            })
+          .test('amounts-match', 'Sum of the refund sources must equal the total cost', function (cost) {
+            if (typeof this.parent.firstSourceAmount === 'number' && typeof this.parent.secondSourceAmount === 'number') {
+              return cost === this.parent.firstSourceAmount + this.parent.secondSourceAmount;
+            }
+            return true;
           })
       })
     )

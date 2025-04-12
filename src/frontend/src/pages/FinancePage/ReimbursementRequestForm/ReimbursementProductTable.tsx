@@ -22,7 +22,7 @@ import {
 } from '@mui/material';
 import { OtherProductReason, WbsNumber, validateWBS, wbsPipe, ReimbursementProductFormArgs } from 'shared';
 import { RemoveCircleOutline, AddCircleOutline } from '@mui/icons-material';
-import { FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form';
+import { Control, Controller, FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useTheme } from '@mui/system';
 import { useEffect, useState } from 'react';
@@ -44,6 +44,7 @@ interface ReimbursementProductTableProps {
   watch: UseFormRegister<ReimbursementRequestFormInput>;
   errors: FieldErrors<ReimbursementRequestFormInput>;
   setValue: UseFormSetValue<ReimbursementRequestFormInput>;
+  control: Control<ReimbursementRequestFormInput>;
   hasMultipleRefundSources?: boolean;
   firstRefundSourceName?: string;
   secondRefundSourceName?: string;
@@ -58,8 +59,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   removeProduct,
   appendProduct,
   wbsElementAutocompleteOptions,
-  register,
-  watch,
+  control,
   errors,
   setValue,
   hasMultipleRefundSources = false,
@@ -74,6 +74,10 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
       index: number;
     }[]
   >();
+
+  const userTheme = useTheme();
+  const hoverColor = userTheme.palette.action.hover;
+
   reimbursementProducts.forEach((product, index) => {
     const hasWbsNum = (product.reason as WbsNumber).carNumber !== undefined;
     const productReason = hasWbsNum ? wbsPipe(product.reason as WbsNumber) : (product.reason as OtherProductReason).name;
@@ -85,6 +89,13 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     }
   });
 
+  const formatSourceName = (name: string) => name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+  if (typeof firstRefundSourceName === 'string' && firstRefundSourceName !== 'First Source') {
+    firstRefundSourceName = formatSourceName(firstRefundSourceName);
+  }
+  if (typeof secondRefundSourceName === 'string' && secondRefundSourceName !== 'Second Source') {
+    secondRefundSourceName = formatSourceName(secondRefundSourceName);
+  }
   const onAmountBlurHandler = (
     value: string,
     index: number,
@@ -93,9 +104,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     const parsedValue = value ? parseFloat(value) : 0;
     setValue(`reimbursementProducts.${index}.${fieldName}`, parsedValue);
   };
-
-  const userTheme = useTheme();
-  const hoverColor = userTheme.palette.action.hover;
 
   const [showFirstSourceFields, setShowFirstSourceFields] = useState(false);
   const [showSecondSourceFields, setShowSecondSourceFields] = useState(false);
@@ -108,7 +116,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     } else {
       setShowFirstSourceFields(false);
     }
-  }, [firstRefundSourceName, reimbursementProducts, setValue]);
+  }, [firstRefundSourceName, setValue]);
 
   useEffect(() => {
     if (secondRefundSourceName) {
@@ -119,8 +127,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     } else {
       setShowSecondSourceFields(false);
     }
-  }, [secondRefundSourceName, reimbursementProducts, setValue]);
-
+  }, [secondRefundSourceName, setValue]);
   const {
     data: otherReasons,
     isLoading: otherReasonsIsLoading,
@@ -186,7 +193,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                 <Autocomplete
                   fullWidth
                   options={wbsElementAutocompleteOptions}
-                  onChange={(_event, value) => {
+                  onChange={(_e, value) => {
                     if (value) {
                       appendProduct({
                         reason: validateWBS(value.id),
@@ -228,11 +235,12 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
 
                 <Autocomplete
                   fullWidth
-                  options={otherCategoryOptions}
+                  options={otherReasons || []}
+                  getOptionLabel={(option) => formatReasonName(option.name)}
                   onChange={(_event, value) => {
                     if (value) {
                       appendProduct({
-                        reason: value.id as OtherProductReason,
+                        reason: value,
                         name: '',
                         cost: 0,
                         firstSourceAmount: undefined,
@@ -296,7 +304,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                     {
                       wbsElementAutocompleteOptions
                         .concat(
-                          otherReasons.map((reason) => ({
+                          (otherReasons || []).map((reason) => ({
                             id: reason.otherProductReasonId,
                             label: formatReasonName(reason.name)
                           }))
@@ -628,53 +636,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
               </TableRow>
             );
           })}
-          <TableRow>
-            <TableCell colSpan={2} sx={{ borderBottom: 0 }}>
-              <Box sx={{ display: 'flex', flexDirection: 'horizontal', gap: '5px' }}>
-                <Autocomplete
-                  fullWidth
-                  sx={{ my: 1 }}
-                  options={wbsElementAutocompleteOptions}
-                  onChange={(_event, value) => {
-                    if (value) {
-                      appendProduct({
-                        reason: validateWBS(value.id),
-                        name: '',
-                        cost: 0
-                      });
-                    }
-                  }}
-                  value={null}
-                  blurOnSelect={true}
-                  id={'append-product-autocomplete'}
-                  size={'small'}
-                  renderInput={(params) => <TextField {...params} placeholder="Select Project" />}
-                />
-                <Autocomplete
-                  fullWidth
-                  sx={{ my: 1 }}
-                  options={otherReasons.map((reason) => ({
-                    id: reason.otherProductReasonId,
-                    label: formatReasonName(reason.name)
-                  }))}
-                  onChange={(_event, value) => {
-                    if (value) {
-                      appendProduct({
-                        reason: { name: value.id } as OtherProductReason,
-                        name: '',
-                        cost: 0
-                      });
-                    }
-                  }}
-                  value={null}
-                  blurOnSelect={true}
-                  id={'append-product-autocomplete'}
-                  size={'small'}
-                  renderInput={(params) => <TextField {...params} placeholder="Select Other Category" />}
-                />
-              </Box>
-            </TableCell>
-          </TableRow>
         </TableBody>
       </Table>
     </TableContainer>
