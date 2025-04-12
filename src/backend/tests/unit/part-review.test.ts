@@ -20,7 +20,7 @@ import {
   DeletedException,
   NotFoundException
 } from '../../src/utils/errors.utils';
-import { validateWBS } from 'shared';
+import { validateWBS, WbsNumber } from 'shared';
 import { Review_Status } from 'shared';
 
 describe('part review tests', () => {
@@ -463,7 +463,7 @@ describe('part review tests', () => {
             batman,
             orgId
           )
-      ).rejects.toThrow(new DeletedException('common mistake', commonMistake.partReviewCommonMistakeId));
+      ).rejects.toThrow(new DeletedException('Common Mistake', commonMistake.partReviewCommonMistakeId));
     });
   });
 
@@ -731,10 +731,56 @@ describe('part review tests', () => {
       const fakePartId = 'non-existent-part-id';
 
       await expect(PartReviewService.deletePartReviewRequest(fakePartId, batman, orgId)).rejects.toThrow(
-        new NotFoundException('Review request', fakePartId)
+        new NotFoundException('Review Request', fakePartId)
       );
     });
   });
+
+  describe('Get a singular part', () => {
+    it('successfully gets the part corresponding to the partId', async () => {
+      const division = await createTestTeamType(undefined, orgId);
+      const team = await createTestTeam(batman.userId, division.teamTypeId, orgId);
+      const car = await createTestCar(orgId, batman.userId);
+
+      const project = await createTestProject(batman, orgId, team.teamId, car.carId, 1);
+      const project1 = await prisma.project.findUnique({
+        where: { projectId: project.projectId },
+        include: {
+          wbsElement: true
+        }
+      });
+
+      const part = await createTestPart(superman, 'door', '1', 1, project.projectId);
+
+      const testPart = await PartReviewService.getPart(organization, project1?.wbsElement as WbsNumber, '1');
+
+      expect(testPart.userCreated.userId).toEqual(part.userCreatedId);
+      expect(testPart.commonName).toBe(part.commonName);
+      expect(testPart.partId).toBe(part.partId);
+      expect(testPart.index).toBe(part.index);
+      expect(testPart.projectId).toBe(part.projectId);
+    });
+
+    it('throws an error when a part cannot be found with the given partId', async () => {
+      const division = await createTestTeamType(undefined, orgId);
+      const team = await createTestTeam(batman.userId, division.teamTypeId, orgId);
+      const car = await createTestCar(orgId, batman.userId);
+
+      const project = await createTestProject(batman, orgId, team.teamId, car.carId, 1);
+      const project1 = await prisma.project.findUnique({
+        where: { projectId: project.projectId },
+        include: {
+          wbsElement: true
+        }
+      });
+      const wbsNum = project1?.wbsElement as WbsNumber;
+
+      await expect(PartReviewService.getPart(organization, wbsNum, '1')).rejects.toThrow(
+        new NotFoundException('Part', `projectId: ${project.projectId} and index number: 1`)
+      );
+    });
+  });
+
   describe('Get all parts', () => {
     it('getting all parts from a project with no parts successfully returns empty array', async () => {
       const division = await createTestTeamType(undefined, orgId);

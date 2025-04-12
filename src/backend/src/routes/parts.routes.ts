@@ -9,7 +9,10 @@ const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage()
 
 const partsRouter = express.Router();
 
-partsRouter.get('/:wbsNum', PartReviewController.getAllPartsForProject);
+partsRouter.get('/tags', PartReviewController.getAllPartTags);
+partsRouter.get('/faqs', PartReviewController.getAllPartReviewFAQS);
+partsRouter.get('/:wbsNum/:indexNum', PartReviewController.getPart);
+partsRouter.get('/byProject/:wbsNum', PartReviewController.getAllPartsForProject);
 
 partsRouter.post(
   '/create',

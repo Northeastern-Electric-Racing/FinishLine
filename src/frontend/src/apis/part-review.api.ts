@@ -1,205 +1,30 @@
 import { PartPayload, PartSubmissionPayload, PartReviewRequestPayload, PartReviewPayload } from '../hooks/part-review.hooks';
-import {
-  PartPreview,
-  Review_Status,
-  Part,
-  PartSubmission,
-  PartReviewRequest,
-  PartReview,
-  PartReviewCommonMistake
-} from 'shared';
+import { PartPreview, Part, PartSubmission, PartReviewRequest, PartReview, PartReviewCommonMistake } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
+import { partPreviewTransformer, partTransformer } from './transformers/part-review.transformers';
 
 /**
  * Fetches all parts acosiated with the given project as part previews
  *
- * @param projectId the id of the project
+ * @param wbsNum the wbsNum of the project
  */
-export const getPartsFromProject = (/*projectId: string*/): { data: PartPreview[] } => {
-  return {
-    data: [
-      {
-        partId: '1',
-        index: 1,
-        commonName: 'wheels',
-        description: 'we need wheels for the car to go, because no wheels means no rolly means no car go',
-        previewImageId: 'jqoi34ghpwadjkog5qh3',
-        status: 'IN_PROGRESS' as Review_Status,
-        tags: [],
-        projectId: '1',
-        assignees: [],
-        reviewRequests: [
-          {
-            partReviewRequestId: '1',
-            partId: '1',
-            requester: {
-              userId: '1',
-              firstName: 'fred',
-              lastName: 'bellinger',
-              email: 'test@test.com',
-              role: 'ADMIN',
-              emailId: 'test@test.com',
-              permissions: []
-            },
-            reviewerRequested: {
-              userId: '2',
-              firstName: 'albert',
-              lastName: 'stetson',
-              email: 'reviewer@test.com',
-              role: 'ADMIN',
-              emailId: 'reviewer@test.com',
-              permissions: []
-            },
-            createdAt: new Date()
-          }
-        ],
-        createdAt: new Date(),
-        userCreated: {
-          userId: '1',
-          firstName: 'allen',
-          lastName: 'bean',
-          email: 'test@test.com',
-          role: 'ADMIN',
-          emailId: 'test@test.com',
-          permissions: []
-        }
-      },
-      {
-        partId: '2',
-        index: 2,
-        commonName: 'Test Part 2',
-        description: 'Test Description 2',
-        previewImageId: 'qogi43tbiohrj3q2jntfpi',
-        status: 'READY_FOR_REVIEW' as Review_Status,
-        tags: [],
-        projectId: '1',
-        assignees: [],
-        reviewRequests: [],
-        createdAt: new Date(),
-        userCreated: {
-          userId: '1',
-          firstName: 'will',
-          lastName: 'atwater',
-          email: 'test@test.com',
-          role: 'ADMIN',
-          emailId: 'test@test.com',
-          permissions: []
-        }
-      }
-    ]
-  };
-
-  //   return axios.get<PartPreview[]>(apiUrls.partsByProject(projectId), {
-  //     transformResponse: (data) => data.map(partPreviewTransformer)
-  //   });
+export const getPartsFromProject = async (wbsNum: string) => {
+  return axios.get<PartPreview[]>(apiUrls.partsByProject(wbsNum), {
+    transformResponse: (data) => data.map(partPreviewTransformer)
+  });
 };
 
 /**
  * Fetches a single part
  *
- * @param partId the id of the part
+ * @param wbsNum the wbsNum of the project
+ * @param index the index number of the part
  */
-export const getSinglePart = (/*partId: string*/): { data: Part } => {
-  return {
-    data: {
-      partId: '1',
-      index: 1,
-      commonName: 'Suspension',
-      description: 'Test description for a suspension part, which could be a fairly lon sentence',
-      previewImageId: 'qogi43tbiohrj3q2jntfpi',
-      status: 'IN_REVIEW' as Review_Status,
-      tags: [],
-      projectId: '1',
-      assignees: [],
-      reviewRequests: [
-        {
-          partReviewRequestId: '1',
-          partId: '1',
-          requester: {
-            userId: '1',
-            firstName: 'fred',
-            lastName: 'bellinger',
-            email: 'test@test.com',
-            role: 'ADMIN',
-            emailId: 'test@test.com',
-            permissions: []
-          },
-          reviewerRequested: {
-            userId: '2',
-            firstName: 'albert',
-            lastName: 'stetson',
-            email: 'reviewer@test.com',
-            role: 'ADMIN',
-            emailId: 'reviewer@test.com',
-            permissions: []
-          },
-          createdAt: new Date()
-        }
-      ],
-      createdAt: new Date(),
-      userCreated: {
-        userId: '1',
-        firstName: 'john',
-        lastName: 'doe',
-        email: 'test@test.com',
-        role: 'ADMIN',
-        emailId: '1234567',
-        permissions: []
-      },
-      submissions: [
-        {
-          partSubmissionId: '1',
-          fileIds: ['file1', 'file2'],
-          name: 'Initial Submission',
-          notes: 'Please review these changes',
-          partId: '1',
-          userCreated: {
-            userId: '1',
-            firstName: 'jane',
-            lastName: 'plane',
-            email: 'test@test.com',
-            role: 'ADMIN',
-            emailId: 'test@test.com',
-            permissions: []
-          },
-          reviews: [
-            {
-              partReviewId: '1',
-              fileIds: ['reviewFile1'],
-              notes: 'Looks good, just a few minor changes needed',
-              submissionId: '1',
-              popUps: [
-                {
-                  partReviewPopupId: '1',
-                  xCoord: 0.5,
-                  yCoord: 0.25,
-                  title: 'Dimension Issue',
-                  description: 'Please check this measurement',
-                  reviewId: '1'
-                }
-              ],
-              completedAt: new Date(),
-              createdAt: new Date(),
-              userCreated: {
-                userId: '2',
-                firstName: 'albert',
-                lastName: 'stetson',
-                email: 'reviewer@test.com',
-                role: 'ADMIN',
-                emailId: 'reviewer@test.com',
-                permissions: []
-              }
-            }
-          ],
-          createdAt: new Date()
-        }
-      ]
-    }
-  };
-  //   return axios.get<Part>(apiUrls.partById(partId), {
-  //     transformResponse: (data) => partTransformer(JSON.parse(data))
-  //   });
+export const getSinglePart = (wbsNum: string, index: number) => {
+  return axios.get<Part>(apiUrls.partByIndex(wbsNum, index), {
+    transformResponse: (data) => partTransformer(JSON.parse(data))
+  });
 };
 
 /**

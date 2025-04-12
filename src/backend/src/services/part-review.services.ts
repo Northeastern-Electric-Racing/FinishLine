@@ -41,6 +41,30 @@ import ProjectsService from './projects.services';
 
 export default class PartReviewService {
   /**
+   * Uses the given partId to get the specific part and all of its constituent data
+   * @param wbsNumber the wbsNum of the project this part is under
+   * @param indexNum the index number of the part on this project
+   * @returns a single Part
+   */
+  static async getPart(organization: Organization, wbsNumber: WbsNumber, indexNum: string) {
+    const project: Project = await ProjectsService.getSingleProject(wbsNumber, organization);
+    const index = Number(indexNum);
+    const part = await prisma.part.findUnique({
+      where: {
+        ProjectId_and_index: {
+          projectId: project.id,
+          index
+        },
+        dateDeleted: null
+      },
+      ...getPartQueryArgs(organization.organizationId)
+    });
+
+    if (!part) throw new NotFoundException('Part', `projectId: ${project.id} and index number: ${indexNum}`);
+
+    return partTransformer(part);
+  }
+  /**
    * Gets all parts for the given project
    * @param wbsNumber the wbs number of the project
    * @param organization the organization to get the parts for
@@ -596,11 +620,11 @@ export default class PartReviewService {
     });
 
     if (!commonMistake) {
-      throw new NotFoundException('common mistake', commonMistakeId);
+      throw new NotFoundException('Common Mistake', commonMistakeId);
     }
 
     if (commonMistake.dateDeleted) {
-      throw new DeletedException('common mistake', commonMistakeId);
+      throw new DeletedException('Common Mistake', commonMistakeId);
     }
 
     if (!(await userHasPermission(updater.userId, organizationId, isAdmin))) {
@@ -640,7 +664,7 @@ export default class PartReviewService {
     });
 
     if (!commonMistake) {
-      throw new NotFoundException('common mistake', commonMistakeId);
+      throw new NotFoundException('Common Mistake', commonMistakeId);
     }
 
     if (!(await userHasPermission(deleter.userId, organizationId, isAdmin))) {
@@ -723,11 +747,11 @@ export default class PartReviewService {
     });
 
     if (!reviewRequest) {
-      throw new NotFoundException('Review request', reviewRequestId);
+      throw new NotFoundException('Review Request', reviewRequestId);
     }
 
     if (reviewRequest.dateDeleted) {
-      throw new DeletedException('Review request', reviewRequestId);
+      throw new DeletedException('Review Request', reviewRequestId);
     }
 
     const isRequester = reviewRequest.requesterId === user.userId;
