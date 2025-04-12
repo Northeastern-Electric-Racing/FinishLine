@@ -53,7 +53,11 @@ const RECEIPTS_REQUIRED = import.meta.env.VITE_RR_RECEIPT_REQUIREMENT || 'disabl
 const schema = yup.object().shape({
   vendorId: yup.string().required('Vendor is required'),
   indexCodeId: yup.string().required('Refund source is required'),
-  secondaryAccount: yup.string().required('Second refund source is required'),
+  secondaryAccount: yup.string().when('reimbursementProducts', (products: ReimbursementProductFormArgs[]) => {
+    return products?.some((p) => p.secondSourceAmount && p.secondSourceAmount >= 0)
+      ? yup.string().required('Second refund source is required')
+      : yup.string().notRequired();
+  }),
   dateOfExpense: yup.date().optional(),
   accountCodeId: yup.string().required('Account code is required'),
   reimbursementProducts: yup

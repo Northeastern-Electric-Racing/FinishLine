@@ -75,6 +75,10 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     }[]
   >();
 
+  const onCostBlurHandler = (value: number, index: number) => {
+    setValue(`reimbursementProducts.${index}.cost`, parseFloat(value.toFixed(2)));
+  };
+
   const userTheme = useTheme();
   const hoverColor = userTheme.palette.action.hover;
 
@@ -446,7 +450,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                       variant={'outlined'}
                                       type="number"
                                       fullWidth
-                                      onBlur={(e) => onAmountBlurHandler(e.target.value, product.index, 'cost')}
+                                      onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
                                       error={!!errors.reimbursementProducts?.[product.index]?.cost}
                                     />
                                   )}
