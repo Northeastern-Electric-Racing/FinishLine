@@ -120,17 +120,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
     }
   }, [firstRefundSourceId, secondRefundSourceId, reimbursementProducts, setValue]);
 
-  useEffect(() => {
-    if (firstRefundSourceId) {
-      if (secondRefundSourceId && firstRefundSourceId === secondRefundSourceId) {
-        setValue('secondaryAccount', undefined);
-        reimbursementProducts.forEach((_, index) => {
-          setValue(`reimbursementProducts.${index}.secondSourceAmount`, undefined);
-        });
-      }
-    }
-  }, [secondRefundSourceId, reimbursementProducts, setValue]);
-
   const firstRefundSource = refundSources.find((source) => source.indexCodeId === firstRefundSourceId) || {
     name: 'First Source',
     code: '',

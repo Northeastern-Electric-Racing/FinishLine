@@ -25,7 +25,7 @@ import { RemoveCircleOutline, AddCircleOutline } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useTheme } from '@mui/system';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useGetAllOtherProductReason } from '../../../hooks/finance.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -107,27 +107,36 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
 
   const [showFirstSourceFields, setShowFirstSourceFields] = useState(false);
   const [showSecondSourceFields, setShowSecondSourceFields] = useState(false);
+
+  const prevFirstRefundSourceName = useRef(firstRefundSourceName);
+  const prevSecondRefundSourceName = useRef(secondRefundSourceName);
   useEffect(() => {
     if (firstRefundSourceName) {
       setShowFirstSourceFields(true);
-      reimbursementProducts.forEach((_, index) => {
-        setValue(`reimbursementProducts.${index}.firstSourceAmount`, undefined);
-      });
+      if (firstRefundSourceName !== prevFirstRefundSourceName.current) {
+        reimbursementProducts.forEach((_, index) => {
+          setValue(`reimbursementProducts.${index}.firstSourceAmount`, undefined);
+        });
+        prevFirstRefundSourceName.current = firstRefundSourceName;
+      }
     } else {
       setShowFirstSourceFields(false);
     }
-  }, [firstRefundSourceName, setValue]);
+  }, [firstRefundSourceName, setValue, reimbursementProducts]);
 
   useEffect(() => {
     if (secondRefundSourceName) {
       setShowSecondSourceFields(true);
-      reimbursementProducts.forEach((_, index) => {
-        setValue(`reimbursementProducts.${index}.secondSourceAmount`, undefined);
-      });
+      if (secondRefundSourceName !== prevSecondRefundSourceName.current) {
+        reimbursementProducts.forEach((_, index) => {
+          setValue(`reimbursementProducts.${index}.secondSourceAmount`, undefined);
+        });
+        prevSecondRefundSourceName.current = secondRefundSourceName;
+      }
     } else {
       setShowSecondSourceFields(false);
     }
-  }, [secondRefundSourceName, setValue]);
+  }, [secondRefundSourceName, setValue, reimbursementProducts]);
   const {
     data: otherReasons,
     isLoading: otherReasonsIsLoading,
