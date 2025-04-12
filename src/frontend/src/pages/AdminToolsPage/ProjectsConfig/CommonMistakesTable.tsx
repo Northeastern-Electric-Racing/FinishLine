@@ -18,24 +18,28 @@ import HelpIcon from '@mui/icons-material/Help';
 
 const CommonMistakesTable: React.FC = () => {
   const [openCreateModal, setOpenCreateModal] = useState(false);
-  const [editingMistake, setEditingMistake] = useState<PartReviewCommonMistake | null>(null);
-  const [mistakeToDelete, setMistakeToDelete] = useState<PartReviewCommonMistake | undefined>(undefined);
+  const [mistakeToEdit, setMistakeToEdit] = useState<PartReviewCommonMistake | null>(null);
+  const [mistakeToDelete, setMistakeToDelete] = useState<PartReviewCommonMistake | null>(null);
 
   const { data, isLoading, isError, error } = useCommonMistakes();
-  const deleteCommonMistake = useDeletePartReviewCommonMistake();
-  const editCommonMistake = useEditPartReviewCommonMistakes();
+  if (!data) {
+    throw new Error('No common mistakes found');
+  }
+  const commonMistakes = [...data];
+  const { mutateAsync: mutateDeleteAsync } = useDeletePartReviewCommonMistake();
+  const { mutateAsync: mutateEditAsync } = useEditPartReviewCommonMistakes();
   const toast = useToast();
 
   const handleEdit = (mistake: PartReviewCommonMistake) => {
-    setEditingMistake(mistake);
+    setMistakeToEdit(mistake);
   };
 
   const handleCreate = () => {
-    setEditingMistake(null);
+    setMistakeToEdit(null);
     setOpenCreateModal(true);
   };
 
-  if (!data || isLoading) {
+  if (!commonMistakes || isLoading) {
     return <LoadingIndicator />;
   }
   if (isError) {
@@ -44,7 +48,7 @@ const CommonMistakesTable: React.FC = () => {
 
   const handleToggleStar = async (mistake: PartReviewCommonMistake) => {
     try {
-      await editCommonMistake.mutateAsync({
+      await mutateEditAsync({
         commonMistakeId: mistake.partReviewCommonMistakeId,
         payload: {
           title: mistake.title,
@@ -54,7 +58,7 @@ const CommonMistakesTable: React.FC = () => {
       });
     } catch (e: unknown) {
       if (e instanceof Error) {
-        toast.error(e.message, 3000);
+        toast.error(e.message);
       }
     }
   };
@@ -67,24 +71,24 @@ const CommonMistakesTable: React.FC = () => {
     <Box>
       <CreateCommonMistakesModal showModal={openCreateModal} handleClose={() => setOpenCreateModal(false)} />
 
-      {editingMistake && (
+      {mistakeToEdit && (
         <EditCommonMistakeModal
-          showModal={!!editingMistake}
-          handleClose={() => setEditingMistake(null)}
-          mistake={editingMistake}
+          showModal={!!mistakeToEdit}
+          handleClose={() => setMistakeToEdit(null)}
+          mistake={mistakeToEdit}
         />
       )}
 
       <NERDeleteModal
         open={!!mistakeToDelete}
-        onHide={() => setMistakeToDelete(undefined)}
+        onHide={() => setMistakeToDelete(null)}
         formId="delete-mistake-form"
         dataType="Common Mistake"
         onFormSubmit={async () => {
           if (mistakeToDelete) {
             try {
-              await deleteCommonMistake.mutateAsync(mistakeToDelete.partReviewCommonMistakeId);
-              setMistakeToDelete(undefined);
+              await mutateDeleteAsync(mistakeToDelete.partReviewCommonMistakeId);
+              setMistakeToDelete(null);
             } catch (err) {
               if (err instanceof Error) {
                 toast.error(err.message);
@@ -110,8 +114,9 @@ const CommonMistakesTable: React.FC = () => {
           mt: 1
         }}
       >
-        {data &&
-          data
+        {/* Converts true to 1, and false to 0, and then compares the larger number to sort starred */}
+        {commonMistakes &&
+          commonMistakes
             .sort((a, b) => Number(b.starred) - Number(a.starred))
             .map((mistake) => (
               <Box

@@ -303,8 +303,6 @@ export const useCommonMistakes = () => {
 
 /**
  * Custom React Hook to edit a common mistake
- *
- * @param partReviewCommonMistakeId the id of the common mistake to edit
  */
 // hooks/part-review.hooks.ts
 export const useEditPartReviewCommonMistakes = () => {
@@ -366,17 +364,11 @@ export const useDeletePartReviewCommonMistake = () => {
  * @returns a list of all common mistakes
  */
 export const useAllCommonMistakes = () => {
-  const queryClient = useQueryClient();
   return useQuery<PartReviewCommonMistake[], Error>(
     ['common mistakes'],
     async () => {
       const { data } = await getAllCommonMistakes();
       return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['partReviewCommonMistakes']);
-      }
     }
   );
 };
