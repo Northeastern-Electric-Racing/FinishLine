@@ -42,7 +42,7 @@ import ReimbursementProductTable from './ReimbursementProductTable';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
@@ -109,33 +109,27 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const firstRefundSourceId = watch('indexCodeId');
   const secondRefundSourceId = watch('secondaryAccount');
 
-  const reimbursementProductsRef = useRef(reimbursementProducts);
-  reimbursementProductsRef.current = reimbursementProducts;
-
-  const resetProductAmounts = useCallback(
-    (field: 'firstSourceAmount' | 'secondSourceAmount') => {
-      reimbursementProductsRef.current.forEach((_, index) => {
-        setValue(`reimbursementProducts.${index}.${field}`, undefined);
-      });
-    },
-    [setValue]
-  );
+  useEffect(() => {
+    if (firstRefundSourceId) {
+      if (secondRefundSourceId && firstRefundSourceId === secondRefundSourceId) {
+        setValue('secondaryAccount', undefined);
+        reimbursementProducts.forEach((_, index) => {
+          setValue(`reimbursementProducts.${index}.secondSourceAmount`, undefined);
+        });
+      }
+    }
+  }, [firstRefundSourceId, secondRefundSourceId, reimbursementProducts, setValue]);
 
   useEffect(() => {
     if (firstRefundSourceId) {
       if (secondRefundSourceId && firstRefundSourceId === secondRefundSourceId) {
         setValue('secondaryAccount', undefined);
-        resetProductAmounts('secondSourceAmount');
+        reimbursementProducts.forEach((_, index) => {
+          setValue(`reimbursementProducts.${index}.secondSourceAmount`, undefined);
+        });
       }
-      resetProductAmounts('firstSourceAmount');
     }
-  }, [firstRefundSourceId, secondRefundSourceId, resetProductAmounts]);
-
-  useEffect(() => {
-    if (secondRefundSourceId) {
-      resetProductAmounts('secondSourceAmount');
-    }
-  }, [secondRefundSourceId, resetProductAmounts]);
+  }, [secondRefundSourceId, reimbursementProducts, setValue]);
 
   const firstRefundSource = refundSources.find((source) => source.indexCodeId === firstRefundSourceId) || {
     name: 'First Source',
@@ -598,14 +592,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   <Select
                     IconComponent={KeyboardArrowDownIcon}
                     onChange={(e) => {
-                      const newSourceId = e.target.value as string;
-                      // If the second source matches the new first source, reset it
-                      if (secondRefundSourceId === newSourceId) {
-                        setValue('secondaryAccount', undefined);
-                        // Reset all second source amounts in products
-                        resetProductAmounts('secondSourceAmount');
-                      }
-                      onChange(newSourceId);
+                      onChange(e.target.value);
                     }}
                     value={value}
                     disabled={!selectedAccountCode}
@@ -647,6 +634,20 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   </Select>
                 )}
               />
+              {!hasConfirmedFinance && (
+                <Button
+                  sx={{
+                    alignSelf: 'flex-start',
+                    width: 'auto',
+                    marginTop: '5px'
+                  }}
+                  startIcon={<AddCircleOutline />}
+                  onClick={() => setShowAddRefundSourceModal(true)}
+                >
+                  Add Refund Source
+                </Button>
+              )}
+              <FormHelperText error>{errors.indexCodeId?.message}</FormHelperText>
               {hasConfirmedFinance && (
                 <Controller
                   name="secondaryAccount"
@@ -691,21 +692,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   )}
                 />
               )}
-              {!hasConfirmedFinance && (
-                <Button
-                  sx={{
-                    alignSelf: 'flex-start',
-                    width: 'auto',
-                    marginTop: '5px'
-                  }}
-                  startIcon={<AddCircleOutline />}
-                  onClick={() => setShowAddRefundSourceModal(true)}
-                >
-                  Add Refund Source
-                </Button>
-              )}
-
-              <FormHelperText error>{errors.indexCodeId?.message}</FormHelperText>
+              <FormHelperText error>{errors.secondaryAccount?.message}</FormHelperText>
             </FormControl>
           </Grid>
           <Grid item xs={12} md={6} sx={{ display: 'flex', width: '85%' }}>
