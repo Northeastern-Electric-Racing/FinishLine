@@ -464,7 +464,7 @@ describe('part review tests', () => {
             batman,
             orgId
           )
-      ).rejects.toThrow(new DeletedException('common mistake', commonMistake.partReviewCommonMistakeId));
+      ).rejects.toThrow(new DeletedException('Common Mistake', commonMistake.partReviewCommonMistakeId));
     });
   });
 
@@ -732,7 +732,7 @@ describe('part review tests', () => {
       const fakePartId = 'non-existent-part-id';
 
       await expect(PartReviewService.deletePartReviewRequest(fakePartId, batman, orgId)).rejects.toThrow(
-        new NotFoundException('Review request', fakePartId)
+        new NotFoundException('Review Request', fakePartId)
       );
     });
   });
