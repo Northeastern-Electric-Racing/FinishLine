@@ -1,16 +1,16 @@
-import { TableRow, TableCell, Typography, Box } from '@mui/material';
+import { TableRow, TableCell, Typography, Box, TableHead, Table, TableBody, Checkbox } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useGetAllAccountCodes } from '../../../hooks/finance.hooks';
 import ErrorPage from '../../ErrorPage';
 import { NERButton } from '../../../components/NERButton';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { AccountCode } from 'shared';
 import CreateAccountCodeModal from './CreateAccountCodeModal';
 import EditAccountCodeModal from './EditAccountCodeModal';
 import AdminToolTable from '../AdminToolTable';
 import { codeAndRefundSourceName } from '../../../utils/pipes';
 
-const AccountCodesTable = () => {
+const AccountManagerTable = () => {
   const {
     data: accountCodes,
     isLoading: accountCodesIsLoading,
@@ -29,7 +29,7 @@ const AccountCodesTable = () => {
     return <ErrorPage message={accountCodesError.message} />;
   }
 
-  const accountCodesTableRows = accountCodes.map((accountCode, index) => (
+  const accountManagerTableRows = accountCodes.map((accountCode, index) => (
     <TableRow
       onClick={() => {
         setClickedAccountCode(accountCode);
@@ -38,18 +38,22 @@ const AccountCodesTable = () => {
       key={`account-code-${index}`}
       sx={{ cursor: 'pointer' }}
     >
-      <TableCell sx={{ border: '2px solid black' }}>{accountCode.name}</TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>{accountCode.code}</TableCell>
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
-        <Typography>{accountCode.allowed ? 'Yes' : 'No'}</Typography>
+      <TableCell>
+        <Typography>{accountCode.name}</Typography>
       </TableCell>
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
-        {accountCode.indexCodes.map((refundSource, idx) => (
-          <Typography key={`account-code-refund-source-${index}-${idx}`}>{codeAndRefundSourceName(refundSource)}</Typography>
-        ))}
+      <TableCell>
+        <Typography>{accountCode.code}</Typography>
+      </TableCell>
+      <TableCell>
+        <Typography>Description here????</Typography>
+      </TableCell>
+      <TableCell>
+        <Checkbox checked={accountCode.allowed} />
       </TableCell>
     </TableRow>
   ));
+
+  const columns = ['Index Code', 'Account Code', 'Description', 'Allowed'];
 
   return (
     <Box>
@@ -64,27 +68,30 @@ const AccountCodesTable = () => {
           accountCode={clickedAccountCode}
         />
       )}
-      <AdminToolTable
-        columns={[
-          { name: 'Account Name', width: '25%' },
-          { name: 'Account Code', width: '25%' },
-          { name: 'Allowed', width: '15%' },
-          { name: 'Allowed Refund Sources', width: '35%' }
-        ]}
-        rows={accountCodesTableRows}
-      />
-      <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
-        <NERButton
-          variant="contained"
-          onClick={() => {
-            setShowCreateModal(true);
-          }}
-        >
-          New Account Code
-        </NERButton>
-      </Box>
+      <Table>
+        <TableHead>
+          <TableRow>
+            {columns.map((column, index) => (
+              <TableCell
+                key={`account-code-column-${index}`}
+                sx={{
+                  borderBottom: '2px solid white',
+                  fontWeight: 'bold',
+                  fontSize: '1em',
+                  backgroundColor: '#ef4345',
+                  color: 'white',
+                  borderRadius: index === 0 ? '10px 0px 0px 0px' : index === columns.length - 1 ? '0px 10px 0px 0px' : '0px'
+                }}
+              >
+                {column}
+              </TableCell>
+            ))}
+          </TableRow>
+        </TableHead>
+        <TableBody>{accountManagerTableRows} </TableBody>
+      </Table>
     </Box>
   );
 };
 
-export default AccountCodesTable;
+export default AccountManagerTable;
