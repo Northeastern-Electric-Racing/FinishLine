@@ -9,6 +9,11 @@ const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage()
 
 const partsRouter = express.Router();
 
+partsRouter.get('/tags', PartReviewController.getAllPartTags);
+partsRouter.get('/faqs', PartReviewController.getAllPartReviewFAQS);
+partsRouter.get('/:wbsNum/:indexNum', PartReviewController.getPart);
+partsRouter.get('/byProject/:wbsNum', PartReviewController.getAllPartsForProject);
+
 partsRouter.post(
   '/create',
   nonEmptyString(body('wbsNum')),
@@ -26,7 +31,7 @@ partsRouter.post(
   '/review/create',
   nonEmptyString(body('submissionId')),
   body('notes').optional().isString(),
-  body('status').optional().isString(),
+  body('status').custom((value) => Object.values<string>(Review_Status).includes(value)),
   validateInputs,
   PartReviewController.createReview
 );

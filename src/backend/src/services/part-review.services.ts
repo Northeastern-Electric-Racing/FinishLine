@@ -43,6 +43,30 @@ import ProjectsService from './projects.services';
 
 export default class PartReviewService {
   /**
+   * Uses the given partId to get the specific part and all of its constituent data
+   * @param wbsNumber the wbsNum of the project this part is under
+   * @param indexNum the index number of the part on this project
+   * @returns a single Part
+   */
+  static async getPart(organization: Organization, wbsNumber: WbsNumber, indexNum: string) {
+    const project: Project = await ProjectsService.getSingleProject(wbsNumber, organization);
+    const index = Number(indexNum);
+    const part = await prisma.part.findUnique({
+      where: {
+        ProjectId_and_index: {
+          projectId: project.id,
+          index
+        },
+        dateDeleted: null
+      },
+      ...getPartQueryArgs(organization.organizationId)
+    });
+
+    if (!part) throw new NotFoundException('Part', `projectId: ${project.id} and index number: ${indexNum}`);
+
+    return partTransformer(part);
+  }
+  /**
    * Gets all parts for the given project
    * @param wbsNumber the wbs number of the project
    * @param organization the organization to get the parts for
@@ -246,9 +270,16 @@ export default class PartReviewService {
    * @param creator the creator of the review
    * @param submissionId the submission
    * @param notes optional notes on the review
+   * @param newPartStatus the new status of the part which the review is added to
    * @returns the created review
    */
-  static async createReview(organizationId: string, creator: User, submissionId: string, status: string, notes: string) {
+  static async createReview(
+    organizationId: string,
+    creator: User,
+    submissionId: string,
+    newPartStatus: string,
+    notes: string
+  ) {
     const submission = await prisma.partSubmission.findUnique({
       where: { partSubmissionId: submissionId },
       include: { part: { include: { project: { include: { wbsElement: true } } } } }
@@ -259,8 +290,8 @@ export default class PartReviewService {
     if (submission.part.project.wbsElement.organizationId !== organizationId)
       throw new InvalidOrganizationException('Part Submission');
 
-    if (status) {
-      const review_status = status as Review_Status;
+    if (newPartStatus) {
+      const review_status = newPartStatus as Review_Status;
       await prisma.part.update({
         where: {
           partId: submission.partId
@@ -292,11 +323,11 @@ export default class PartReviewService {
    * @param organizationId the organization
    * @param updater the user updating (must be creator)
    * @param reviewId the review being updated
-   * @param status the status that the
+   * @param newPartStatus the new status of the part which the review is added to
    * @param notes notes for the review
    * @returns the updated review
    */
-  static async updateReview(organizationId: string, updater: User, reviewId: string, status: string, notes: string) {
+  static async updateReview(organizationId: string, updater: User, reviewId: string, newPartStatus: string, notes: string) {
     const review = await prisma.partReview.findUnique({
       where: { partReviewId: reviewId },
       include: { submission: { include: { part: { include: { project: { include: { wbsElement: true } } } } } } }
@@ -316,7 +347,7 @@ export default class PartReviewService {
       },
       ...getPartReviewQueryArgs(organizationId)
     });
-    const review_status = status as Review_Status;
+    const review_status = newPartStatus as Review_Status;
 
     await prisma.part.update({
       where: {
@@ -726,11 +757,11 @@ export default class PartReviewService {
     });
 
     if (!commonMistake) {
-      throw new NotFoundException('common mistake', commonMistakeId);
+      throw new NotFoundException('Common Mistake', commonMistakeId);
     }
 
     if (commonMistake.dateDeleted) {
-      throw new DeletedException('common mistake', commonMistakeId);
+      throw new DeletedException('Common Mistake', commonMistakeId);
     }
 
     if (!(await userHasPermission(updater.userId, organizationId, isAdmin))) {
@@ -770,7 +801,7 @@ export default class PartReviewService {
     });
 
     if (!commonMistake) {
-      throw new NotFoundException('common mistake', commonMistakeId);
+      throw new NotFoundException('Common Mistake', commonMistakeId);
     }
 
     if (!(await userHasPermission(deleter.userId, organizationId, isAdmin))) {
@@ -853,11 +884,11 @@ export default class PartReviewService {
     });
 
     if (!reviewRequest) {
-      throw new NotFoundException('Review request', reviewRequestId);
+      throw new NotFoundException('Review Request', reviewRequestId);
     }
 
     if (reviewRequest.dateDeleted) {
-      throw new DeletedException('Review request', reviewRequestId);
+      throw new DeletedException('Review Request', reviewRequestId);
     }
 
     const isRequester = reviewRequest.requesterId === user.userId;

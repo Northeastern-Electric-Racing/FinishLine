@@ -33,6 +33,7 @@ CREATE TABLE "Part" (
     "userCreatedId" TEXT NOT NULL,
     "userDeletedId" TEXT,
 
+    CONSTRAINT "ProjectId_and_index" UNIQUE ("projectId", "index"),
     CONSTRAINT "Part_pkey" PRIMARY KEY ("partId")
 );
 

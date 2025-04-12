@@ -2198,7 +2198,7 @@ const performSeed: () => Promise<void> = async () => {
   const part1Example = await prisma.part.create({
     data: {
       partId: '001',
-      index: 0,
+      index: 100,
       commonName: 'tire',
       project: {
         connect: { projectId: project1Id }
@@ -2213,7 +2213,7 @@ const performSeed: () => Promise<void> = async () => {
   const part2Example = await prisma.part.create({
     data: {
       partId: '002',
-      index: 0,
+      index: 100,
       commonName: 'engine',
       project: {
         connect: { projectId: project2Id }
@@ -2228,7 +2228,7 @@ const performSeed: () => Promise<void> = async () => {
   const part3Example = await prisma.part.create({
     data: {
       partId: '003',
-      index: 0,
+      index: 100,
       commonName: 'door',
       project: {
         connect: { projectId: project3Id }

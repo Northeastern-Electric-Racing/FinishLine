@@ -43,8 +43,8 @@ const projectsEditLinkTypes = (linkTypeName: string) => `${projects()}/link-type
 
 /**************** Part Review Endpoints ********************/
 const parts = () => `${API_URL}/parts`;
-const partsByProject = (projectId: string) => `${parts()}/${projectId}/parts`;
-const partsById = (partId: string) => `${parts()}/${partId}`;
+const partsByProject = (wbsNum: string) => `${parts()}/byProject/${wbsNum}`;
+const partByIndex = (wbsNum: string, partIndex: number) => `${parts()}/${wbsNum}/${partIndex}`;
 const partsCreate = () => `${parts()}/create`;
 const partsUploadPreviewImage = (partId: string) => `${parts()}/${partId}/upload-preview`;
 const partsEdit = (partId: string) => `${parts()}/${partId}/update`;
@@ -296,7 +296,7 @@ export const apiUrls = {
 
   parts,
   partsByProject,
-  partsById,
+  partByIndex,
   partsCreate,
   partsUploadPreviewImage,
   partsEdit,
