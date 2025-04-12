@@ -50,7 +50,6 @@ import { wbsNumComparator } from 'shared/src/validate-wbs';
 import { accountCodePipe } from '../../../utils/pipes';
 import NERModal from '../../../components/NERModal';
 import CheckList from '../../../components/CheckList';
-import UploadIcon from '@mui/icons-material/Upload';
 
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
