@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useState } from 'react';
-import { ReimbursementRequest, Team, Project, isHead, isLead } from 'shared';
+import { ReimbursementRequest, Team, Project, isHead, isLead, isGuest } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { centsToDollar, datePipe, dateUndefinedPipe, fullNamePipe, undefinedPipe } from '../../utils/pipes';
 import FinanceTabs from './FinanceComponents/FinanceTabs';
@@ -79,6 +79,7 @@ const ReimbursementRequestTable = ({
       }
       const query = searchText.toLowerCase();
       return (
+        // see if anything displayed to the user matches the query
         row.status.toLowerCase().includes(query) ||
         ('' + row.identifier).toLowerCase().includes(query) ||
         ('' + fullNamePipe(row.submitter)).toLowerCase().includes(query) ||
@@ -165,7 +166,7 @@ const ReimbursementRequestTable = ({
 
   const getRefundTotal = rows.reduce((sum, row) => sum + row.amount, 0);
 
-  const handleChangePage = (event: unknown, page: number) => {
+  const handleChangePage = (_event: unknown, page: number) => {
     setPage(page);
   };
 
@@ -178,13 +179,15 @@ const ReimbursementRequestTable = ({
 
   return (
     <Box sx={{ bgcolor: theme.palette.background.default, width: '100%', borderRadius: '8px 8px 0 0' }}>
-      <Box
-        sx={{
-          width: 'fit-content'
-        }}
-      >
-        <FinanceTabs tabValue={tabValue} setTabValue={setTabValue} tabs={tabs} />
-      </Box>
+      {canViewAllReimbursementRequests && (
+        <Box
+          sx={{
+            width: 'fit-content'
+          }}
+        >
+          <FinanceTabs tabValue={tabValue} setTabValue={setTabValue} tabs={tabs} />
+        </Box>
+      )}
       <TableContainer component={Paper} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
         <Table aria-label="simple table">
           <TableHead
@@ -283,7 +286,32 @@ const ReimbursementRequestTable = ({
             mb: 2
           }}
         />
-
+        {!canViewAllReimbursementRequests && (
+          <Button
+            className="viewButton"
+            variant="contained"
+            component={RouterLink}
+            to={routes.NEW_REIMBURSEMENT_REQUEST}
+            disabled={isGuest(user.role)}
+            sx={{
+              borderRadius: '8px',
+              color: '#ededed',
+              backgroundColor: '#dd514c',
+              padding: '2px 20px',
+              mb: 1,
+              mr: 2,
+              display: 'inline-flex',
+              fontSize: '20px',
+              fontWeight: 700,
+              textTransform: 'none',
+              '&:hover': {
+                backgroundColor: '#c74340'
+              }
+            }}
+          >
+            Create Request
+          </Button>
+        )}
         <Box
           sx={{
             padding: '5px 20px',

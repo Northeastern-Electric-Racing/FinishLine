@@ -9,7 +9,7 @@ import WorkIcon from '@mui/icons-material/Work';
 import { routes } from '../../utils/routes';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { isAdmin, isGuest } from 'shared';
+import { isAdmin, isGuest, isHead, isLead } from 'shared';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import ReimbursementRequestTable from './ReimbursementRequestsSection';
 import { useToast } from '../../hooks/toasts.hooks';
@@ -39,6 +39,7 @@ const ReimbursementRequests: React.FC = () => {
 
   const history = useHistory();
   const user = useCurrentUser();
+  const canViewAllReimbursementRequests = user.isFinance || isHead(user.role) || isLead(user.role);
   const toast = useToast();
   const { isFinance } = user;
   const { mutateAsync: downloadCSVFileOfReimbursementRequests } = useDownloadCSVFileOfReimbursementRequests();
@@ -52,6 +53,9 @@ const ReimbursementRequests: React.FC = () => {
       }
     }
   };
+
+  const tableOffset = canViewAllReimbursementRequests ? -70 : 0;
+  const searchOffset = canViewAllReimbursementRequests ? '0px' : '10px';
 
   const financeActionsDropdown = (
     <>
@@ -122,6 +126,20 @@ const ReimbursementRequests: React.FC = () => {
 
   const [searchText, setSearchText] = useState<string>('');
 
+  const SearchAndFilterBar = (
+    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, position: 'relative', top: searchOffset }}>
+      <Box sx={{ ml: 'auto', width: { xs: '150px', sm: '200px', md: '250px', zIndex: 2 } }}>
+        <SearchBar placeholder="Search" searchText={searchText} setSearchText={setSearchText} />
+      </Box>
+      <Button color="primary" aria-label="filter" sx={{ zIndex: 1 }}>
+        <FilterListIcon sx={{ fontSize: { xs: '1.25rem', sm: '2.5rem', zIndex: 2 } }} />
+        <Typography variant="button" sx={{ fontSize: { xs: '0.5rem', sm: '1.200rem', zIndex: 1 } }}>
+          Filters
+        </Typography>
+      </Button>
+    </Box>
+  );
+
   return (
     <Box sx={{ padding: '5px', display: 'flex', flexDirection: 'column' }}>
       <Box
@@ -135,26 +153,11 @@ const ReimbursementRequests: React.FC = () => {
         <Typography variant="h3" sx={{ fontSize: { xs: '1.4rem', sm: '1.75rem', md: '3rem' } }}>
           Reimbursement Requests
         </Typography>
-        {financeActionsDropdown}
+        {!canViewAllReimbursementRequests && SearchAndFilterBar}
+        {canViewAllReimbursementRequests && <Box sx={{ position: 'relative', top: '10px' }}> {financeActionsDropdown} </Box>}
       </Box>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          mb: 2
-        }}
-      >
-        <Box sx={{ ml: 'auto', width: { xs: '150px', sm: '200px', md: '250px', zIndex: 2 } }}>
-          <SearchBar placeholder="Search" searchText={searchText} setSearchText={setSearchText} />
-        </Box>
-        <Button color="primary" aria-label="filter" sx={{ zIndex: 1 }}>
-          <FilterListIcon sx={{ fontSize: { xs: '1.25rem', sm: '2.5rem', zIndex: 2 } }} />
-          <Typography variant="button" sx={{ fontSize: { xs: '0.5rem', sm: '1.200rem', zIndex: 1 } }}>
-            Filters
-          </Typography>
-        </Button>
-      </Box>
-      <Box sx={{ position: 'relative', top: -70 }}>
+      {canViewAllReimbursementRequests && SearchAndFilterBar}
+      <Box sx={{ position: 'relative', top: tableOffset }}>
         <ReimbursementRequestTable
           userReimbursementRequests={userReimbursementRequests ?? []}
           allReimbursementRequests={allReimbursementRequests ?? []}
