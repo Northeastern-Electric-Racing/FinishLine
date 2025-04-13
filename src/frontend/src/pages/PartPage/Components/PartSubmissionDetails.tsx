@@ -6,24 +6,34 @@ interface PartSubmissionProps {
   submission: PartSubmission;
 }
 
+const reviewNotes = (reviews: PartReview[]): string => {
+  if (reviews.length === 0) {
+    return 'There are no notes.';
+  } else {
+    return '\n' + reviews.map((review) => '- ' + review.notes).join('\n');
+  }
+};
+
 const PartSubmissionDetails = ({ submission }: PartSubmissionProps) => {
   return (
-    <Stack spacing={'4%'} alignItems="left" width="100%">
+    <Stack spacing={'1%'} alignItems="left" width="100%">
       <Typography sx={{ fontWeight: 'normal' }} variant="h5">
         Details for {submission.name}:
       </Typography>
 
       <Typography variant="body1">
-        Uploader: {submission.userCreated.firstName} {submission.userCreated.lastName}
+        <b>Uploader: </b>
+        {submission.userCreated.firstName} {submission.userCreated.lastName}
       </Typography>
 
-      <Typography variant="body1">Uploader Notes: {submission.notes || 'There are no notes.'}</Typography>
-
       <Typography variant="body1">
-        Reviewer Notes:{' '}
-        {submission.reviews.length !== 0
-          ? submission.reviews.map((review) => review.notes).join('\n')
-          : 'There are no notes.'}
+        <b>Uploader Notes: </b>
+        {submission.notes || 'There are no notes.'}
+      </Typography>
+
+      <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>
+        <b>Reviewer Notes: </b>
+        {reviewNotes(submission.reviews)}
       </Typography>
     </Stack>
   );

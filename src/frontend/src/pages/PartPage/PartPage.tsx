@@ -60,22 +60,8 @@ const PartPage: React.FC = () => {
                   justifyContent: 'center',
                   mb: 2
                 }}
-              >
-                <Typography>Details for Submission</Typography>
-              </Box>
-              <Box
-                sx={{
-                  backgroundColor: 'transparent',
-                  height: '24vh',
-                  width: '50%',
-                  borderRadius: 2,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  mb: 2
-                }}
-              >
-                {/*Add part submission details here*/}
+              ></Box>
+              <Box>
                 <PartSubmissionDetails
                   submission={{
                     partSubmissionId: '1',
@@ -89,7 +75,7 @@ const PartPage: React.FC = () => {
                       lastName: 'Doe'
                     },
                     notes: 'This is a test note.',
-                    reviews: [partReviewExample1, partReviewExample2],
+                    reviews: [],
                     fileIds: [],
                     name: 'Test Part Submission',
                     partId: '456',
