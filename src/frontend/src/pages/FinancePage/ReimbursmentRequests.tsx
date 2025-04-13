@@ -18,7 +18,6 @@ import {
   useCurrentUserReimbursementRequests,
   useDownloadCSVFileOfReimbursementRequests
 } from '../../hooks/finance.hooks';
-import { useAllTeams } from '../../hooks/teams.hooks';
 import { useHistory } from 'react-router-dom';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import { useAllProjects } from '../../hooks/projects.hooks';
@@ -119,7 +118,6 @@ const ReimbursementRequests: React.FC = () => {
 
   const { data: userReimbursementRequests } = useCurrentUserReimbursementRequests();
   const { data: allReimbursementRequests } = useAllReimbursementRequests();
-  const { data: allTeams } = useAllTeams();
   const { data: allProjects } = useAllProjects();
 
   const [searchText, setSearchText] = useState<string>('');
@@ -160,7 +158,6 @@ const ReimbursementRequests: React.FC = () => {
         <ReimbursementRequestTable
           userReimbursementRequests={userReimbursementRequests ?? []}
           allReimbursementRequests={allReimbursementRequests ?? []}
-          allTeams={allTeams ?? []}
           allProjects={allProjects ?? []}
           searchText={searchText}
         />

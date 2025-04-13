@@ -9,8 +9,7 @@ import {
   TableHead,
   TableRow,
   useTheme,
-  TablePagination,
-  TextField
+  TablePagination
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useState } from 'react';
@@ -47,7 +46,6 @@ interface ReimbursementTableHeadCell {
 const ReimbursementRequestTable = ({
   userReimbursementRequests,
   allReimbursementRequests,
-  allTeams,
   searchText
 }: ReimbursementRequestTableProps) => {
   const [page, setPage] = useState(0);
