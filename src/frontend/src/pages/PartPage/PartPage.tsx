@@ -75,7 +75,7 @@ const PartPage: React.FC = () => {
                       lastName: 'Doe'
                     },
                     notes: 'This is a test note.',
-                    reviews: [],
+                    reviews: [partReviewExample1, partReviewExample2],
                     fileIds: [],
                     name: 'Test Part Submission',
                     partId: '456',
