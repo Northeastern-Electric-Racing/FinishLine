@@ -1,4 +1,5 @@
 import { Box, Typography, Grid, Breadcrumbs } from '@mui/material';
+import PartPageOverview from '../PartPage/components/PartPageOverview';
 
 const PartPage: React.FC = () => {
   return (
@@ -33,20 +34,8 @@ const PartPage: React.FC = () => {
         <Grid item xs={12} md={6}>
           <Grid container spacing={2} direction="column">
             <Grid item>
-              <Box
-                sx={{
-                  backgroundColor: 'gray',
-                  height: '24vh',
-                  width: '100%',
-                  borderRadius: 2,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  mb: 2
-                }}
-              >
-                <Typography>Overview</Typography>
-              </Box>
+              {/* Added overview section */}
+              <PartPageOverview />
               <Box
                 sx={{
                   backgroundColor: 'gray',
