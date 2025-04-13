@@ -18,15 +18,17 @@ import {
   useCurrentUserReimbursementRequests,
   useDownloadCSVFileOfReimbursementRequests
 } from '../../hooks/finance.hooks';
+import { useAllTeams } from '../../hooks/teams.hooks';
 import { useHistory } from 'react-router-dom';
 import ListAltIcon from '@mui/icons-material/ListAlt';
+import { useAllProjects } from '../../hooks/projects.hooks';
 
 const ReimbursementRequests: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [accountCreditModalShow, setAccountCreditModalShow] = useState<boolean>(false);
-  const [showPendingAdvisorListModal, setShowPendingAdvisorListModal] = useState(false);
-  const [showGenerateReceipts, setShowGenerateReceipts] = useState(false);
-  const [showTotalAmountSpent, setShowTotalAmountSpent] = useState(false);
+  const [, setAccountCreditModalShow] = useState<boolean>(false);
+  const [, setShowPendingAdvisorListModal] = useState(false);
+  const [, setShowGenerateReceipts] = useState(false);
+  const [, setShowTotalAmountSpent] = useState(false);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -117,6 +119,8 @@ const ReimbursementRequests: React.FC = () => {
 
   const { data: userReimbursementRequests } = useCurrentUserReimbursementRequests();
   const { data: allReimbursementRequests } = useAllReimbursementRequests();
+  const { data: allTeams } = useAllTeams();
+  const { data: allProjects } = useAllProjects();
 
   const [searchText, setSearchText] = useState<string>('');
 
@@ -156,6 +160,9 @@ const ReimbursementRequests: React.FC = () => {
         <ReimbursementRequestTable
           userReimbursementRequests={userReimbursementRequests ?? []}
           allReimbursementRequests={allReimbursementRequests ?? []}
+          allTeams={allTeams ?? []}
+          allProjects={allProjects ?? []}
+          searchText={searchText}
         />
       </Box>
     </Box>

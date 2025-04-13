@@ -9,20 +9,14 @@ import {
   TableHead,
   TableRow,
   useTheme,
-  TablePagination
+  TablePagination,
+  TextField
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useState } from 'react';
-import { ReimbursementRequest, isHead } from 'shared';
+import { ReimbursementRequest, Team, Project, isHead, isLead } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import {
-  centsToDollar,
-  codeAndRefundSourceName,
-  datePipe,
-  dateUndefinedPipe,
-  fullNamePipe,
-  undefinedPipe
-} from '../../utils/pipes';
+import { centsToDollar, datePipe, dateUndefinedPipe, fullNamePipe, undefinedPipe } from '../../utils/pipes';
 import FinanceTabs from './FinanceComponents/FinanceTabs';
 import { routes } from '../../utils/routes';
 import {
@@ -36,11 +30,13 @@ import {
 import { ReimbursementRequestRow } from 'shared/src/types/reimbursement-requests-types';
 // import TableSortLabel from '@mui/material/TableSortLabel';
 import ColumnHeader from './FinanceComponents/ColumnHeader';
-import { set } from 'react-hook-form';
 
 interface ReimbursementRequestTableProps {
   userReimbursementRequests: ReimbursementRequest[];
   allReimbursementRequests?: ReimbursementRequest[];
+  allTeams?: Team[];
+  allProjects?: Project[];
+  searchText?: string;
 }
 
 interface ReimbursementTableHeadCell {
@@ -50,10 +46,12 @@ interface ReimbursementTableHeadCell {
 
 const ReimbursementRequestTable = ({
   userReimbursementRequests,
-  allReimbursementRequests
+  allReimbursementRequests,
+  allTeams,
+  searchText
 }: ReimbursementRequestTableProps) => {
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const [isAscendingOrder, setAscendingOrder] = useState(true);
   const [orderBy, setOrderBy] = useState<keyof ReimbursementRequestRow>('dateSubmittedToSabo');
@@ -61,34 +59,62 @@ const ReimbursementRequestTable = ({
   const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
   const user = useCurrentUser();
-  const canViewAllReimbursementRequests = user.isFinance || isHead(user.role);
+  const canViewAllReimbursementRequests = user.isFinance || isHead(user.role) || isLead(user.role);
+  // const canViewTeamReimbursements = isHead(user.role) || isLead(user.role);
+
+  // let teamUserIds: string[] = [];
+  // if (!canViewAllReimbursementRequests && canViewTeamReimbursements && allTeams) {
+  //   const teamsUserIsIn = allTeams.filter((team) => team.head.userId === user.userId);
+
+  //   teamUserIds = teamsUserIsIn.flatMap((team) => [team.head.userId, ...team.members.map((m) => m.userId)]);
+  // }
 
   const displayedReimbursementRequests =
     tabValue === 1 && allReimbursementRequests ? allReimbursementRequests : userReimbursementRequests;
 
-  const rows = displayedReimbursementRequests.map(createReimbursementRequestRowData).sort((a, b) => {
-    if (orderBy === 'vendor') {
-      return !isAscendingOrder
-        ? vendorDescendingComparator(a.vendor, b.vendor)
-        : -vendorDescendingComparator(a.vendor, b.vendor);
-    }
-    if (orderBy === 'status') {
-      return !isAscendingOrder
-        ? statusDescendingComparator(a.status, b.status)
-        : -statusDescendingComparator(a.status, b.status);
-    }
-    if (orderBy === 'submitter') {
-      return !isAscendingOrder
-        ? submitterDescendingComparator(a.submitter, b.submitter)
-        : -submitterDescendingComparator(a.submitter, b.submitter);
-    }
-    if (b[orderBy] === undefined) {
-      return -1;
-    }
-    return !isAscendingOrder ? descendingComparator(a, b, orderBy) : -descendingComparator(a, b, orderBy);
-  });
+  const rows = displayedReimbursementRequests
+    .map(createReimbursementRequestRowData)
+
+    .filter((row) => {
+      if (!searchText) {
+        return true;
+      }
+      const query = searchText.toLowerCase();
+      return (
+        row.status.toLowerCase().includes(query) ||
+        ('' + row.identifier).toLowerCase().includes(query) ||
+        ('' + fullNamePipe(row.submitter)).toLowerCase().includes(query) ||
+        ('' + row.identifier).toLowerCase().includes(query) ||
+        ('' + row.saboId).toLowerCase().includes(query) ||
+        ('' + datePipe(row.dateSubmitted)).toLowerCase().includes(query) ||
+        ('' + dateUndefinedPipe(row.dateSubmittedToSabo)).toLowerCase().includes(query) ||
+        ('' + centsToDollar(row.amount)).toLowerCase().includes(query)
+      );
+    })
+    .sort((a, b) => {
+      if (orderBy === 'vendor') {
+        return !isAscendingOrder
+          ? vendorDescendingComparator(a.vendor, b.vendor)
+          : -vendorDescendingComparator(a.vendor, b.vendor);
+      }
+      if (orderBy === 'status') {
+        return !isAscendingOrder
+          ? statusDescendingComparator(a.status, b.status)
+          : -statusDescendingComparator(a.status, b.status);
+      }
+      if (orderBy === 'submitter') {
+        return !isAscendingOrder
+          ? submitterDescendingComparator(a.submitter, b.submitter)
+          : -submitterDescendingComparator(a.submitter, b.submitter);
+      }
+      if (b[orderBy] === undefined) {
+        return -1;
+      }
+      return !isAscendingOrder ? descendingComparator(a, b, orderBy) : -descendingComparator(a, b, orderBy);
+    });
 
   const tabs = [{ label: 'My Requests', value: 0 }];
+  // if (canViewTeamReimbursements && !canViewAllReimbursementRequests) tabs.push({ label: "My Team's Requests", value: 1 });
   if (canViewAllReimbursementRequests) tabs.push({ label: 'All Club Requests', value: 1 });
 
   const headCells: readonly ReimbursementTableHeadCell[] = [
@@ -303,7 +329,7 @@ const ReimbursementRequestTable = ({
           page={page}
           onPageChange={handleChangePage}
           rowsPerPage={rowsPerPage}
-          rowsPerPageOptions={[1, 10, 25, 50, 100]}
+          rowsPerPageOptions={[10, 25, 50, 100]}
           onRowsPerPageChange={handleChangeRowsPerPage}
           labelDisplayedRows={({ page }) => `Page ${page + 1}`}
         />
