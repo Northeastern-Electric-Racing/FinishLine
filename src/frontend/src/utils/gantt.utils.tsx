@@ -26,11 +26,13 @@ import { fullNamePipe, projectWbsPipe } from './pipes';
 import dayjs from 'dayjs';
 import { deepOrange, green, grey, indigo, orange, pink } from '@mui/material/colors';
 import { projectPreviewTransformer } from '../apis/transformers/projects.transformers';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Typography, useTheme } from '@mui/material';
 import { routes } from './routes';
 import { workPackageTransformer } from '../apis/transformers/work-packages.transformers';
+import { useHistory } from 'react-router-dom';
+import { useQuery } from '../hooks/utils.hooks';
 
 export const NO_TEAM = 'No Team';
 
@@ -249,7 +251,7 @@ export interface GanttFilters {
   showCars: number[];
   showTeamTypes: string[];
   showTeams: string[];
-  showOnlyOverdue: boolean;
+  showOnlyOverdue?: boolean;
 }
 
 export interface GanttTask<T> extends GanttTaskData<T> {}
@@ -301,7 +303,28 @@ export const filterGanttProjects = <T extends ProjectPreview>(
   return deepCopy;
 };
 
-export const buildGanttSearchParams = (ganttFilters: GanttFilters): string => {
+export interface RetroGanttFilters extends GanttFilters {
+  startDate?: Date;
+  endDate?: Date;
+}
+
+export const buildRetroGanttParams = (ganttFilters: RetroGanttFilters) => {
+  const startFormat = (date: Date) => {
+    return `&retro-start=${encodeURIComponent(date.toISOString())}`;
+  };
+
+  const endFormat = (date: Date) => {
+    return `&retro-end=${encodeURIComponent(date.toISOString())}`;
+  };
+
+  const params =
+    (ganttFilters.startDate ? startFormat(ganttFilters.startDate) : '') +
+    (ganttFilters.endDate ? endFormat(ganttFilters.endDate) : '');
+
+  return buildGanttSearchParams(ganttFilters, params);
+};
+
+export const buildGanttSearchParams = (ganttFilters: GanttFilters, additionalParams?: string): string => {
   const carFormat = (name: string) => {
     return `&car=${name}`;
   };
@@ -319,9 +342,8 @@ export const buildGanttSearchParams = (ganttFilters: GanttFilters): string => {
     ganttFilters.showCars.map((car) => carFormat(car.toString())).join('') +
     ganttFilters.showTeamTypes.map(teamTypeFormat).join('') +
     ganttFilters.showTeams.map(teamFormat).join('') +
-    `&overdue=${ganttFilters.showOnlyOverdue}`;
-
-  localStorage.setItem('ganttURL', newParams);
+    (ganttFilters.showOnlyOverdue ? `&overdue=${ganttFilters.showOnlyOverdue}` : '') +
+    (additionalParams ?? '');
 
   return newParams;
 };
@@ -429,7 +451,7 @@ export const transformRetrospectiveWorkPackageToGanttTask = (
     ...transformWorkPackageToGanttTask(workPackage, allWorkPackages),
     blocking: getBlockingGanttTasks(workPackage, allWorkPackages, transformRetrospectiveWorkPackageToGanttTask),
     retro: {
-      comparativeEnd: addWeeksToDate(workPackage.startDate, workPackage.duration),
+      comparativeEnd: addWeeksToDate(workPackage.originalStartDate, workPackage.originalDuration),
       comparativeStart: workPackage.originalStartDate
     }
   };
@@ -599,4 +621,60 @@ export const constructFinalizedChanges = (
 
 export const isProjectPreview = (wbsPreview: WbsElementPreview): wbsPreview is ProjectPreview => {
   return 'workPackages' in wbsPreview;
+};
+
+export const useGanttFilters = (key: string) => {
+  const query = useQuery();
+  const history = useHistory();
+
+  const filters: RetroGanttFilters = useMemo(() => {
+    const showCars = query.getAll('car').map((car) => parseInt(car));
+
+    const showTeamTypes = query.getAll('teamType');
+
+    const showTeams = query.getAll('team');
+
+    const showOnlyOverdue = query.get('overdue') ? query.get('overdue') === 'true' : undefined;
+
+    const retroStartDate = query.get('retro-start') ? new Date(query.get('retro-start')!) : undefined;
+
+    const retroEndDate = query.get('retro-end') ? new Date(query.get('retro-end')!) : undefined;
+
+    return {
+      showCars,
+      showTeamTypes,
+      showTeams,
+      showOnlyOverdue,
+      startDate: retroStartDate,
+      endDate: retroEndDate
+    };
+  }, [query]);
+
+  const setFilters = (updates: RetroGanttFilters) => {
+    history.push({ search: buildRetroGanttParams(updates) }, { replace: false });
+    localStorage.setItem(key, JSON.stringify(filters));
+  };
+
+  useEffect(() => {
+    const hasQueryParams = Array.from(query.entries()).length > 0;
+    if (!hasQueryParams) {
+      const stored = localStorage.getItem(key);
+      if (stored) {
+        const saved = JSON.parse(stored);
+        history.push(
+          {
+            search: buildRetroGanttParams({
+              ...saved,
+              startDate: saved.startDate ? new Date(saved.startDate) : undefined,
+              endDate: saved.endDate ? new Date(saved.endDate) : undefined
+            })
+          },
+          { replace: false }
+        );
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return { filters, setFilters };
 };

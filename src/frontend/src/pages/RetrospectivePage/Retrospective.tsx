@@ -6,15 +6,14 @@ import { useAllTeamTypes } from '../../hooks/team-types.hooks';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { RetrospectiveProjectPreview, TeamPreview, TeamType, WbsElementPreview } from 'shared';
 import {
-  buildGanttSearchParams,
   constructCollectionsFromTeamPreviewAndProjects,
   GanttCollection,
-  GanttFilters,
-  transformRetrospectiveProjectToGanttTask
+  RetroGanttFilters,
+  transformRetrospectiveProjectToGanttTask,
+  useGanttFilters
 } from '../../utils/gantt.utils';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { useQuery } from '../../hooks/utils.hooks';
 import { routes } from '../../utils/routes';
 import PageLayout from '../../components/PageLayout';
 import { SearchBar } from '../../components/SearchBar';
@@ -24,22 +23,14 @@ import GanttChartFiltersButton from '../GanttPage/ProjectGanttChart/GanttChartFi
 import { Box } from '@mui/system';
 import { add, sub } from 'date-fns';
 import { retrospectiveProjectPreviewTransformer } from '../../apis/transformers/projects.transformers';
+import { DatePicker } from '@mui/x-date-pickers';
 
 const RetrospectivePage = () => {
-  const query = useQuery();
   const history = useHistory();
+  const { filters, setFilters } = useGanttFilters('retro-gantt');
 
-  const ganttParams = localStorage.getItem('ganttURL');
-  if (ganttParams && history.location.search !== ganttParams) {
-    history.push(`${history.location.pathname + ganttParams}`);
-  }
+  console.log(filters.startDate);
 
-  const {
-    data: projects,
-    isLoading: projectsIsLoading,
-    isError: projectsIsError,
-    error: projectsError
-  } = useGetRetrospectiveTimelines();
   const { data: teams, isLoading: teamsIsLoading, isError: teamsIsError, error: teamsError } = useAllTeams();
 
   const {
@@ -55,27 +46,18 @@ const RetrospectivePage = () => {
   const [showWorkPackagesMap, setShowWorkPackagesMap] = useState<Map<string, boolean>>(new Map());
   const [collections, setCollections] = useState<GanttCollection<TeamPreview, WbsElementPreview>[]>([]);
 
-  /******************** Filters ***************************/
-  const showCars = query.getAll('car').map((car) => parseInt(car));
-
-  const showTeamTypes = query.getAll('teamType');
-
-  const showTeams = query.getAll('team');
-
-  const showOnlyOverdue = query.get('overdue') ? query.get('overdue') === 'true' : false;
-
-  const [ganttFilters, setGanttFilters] = useState<GanttFilters>({
-    showCars,
-    showTeamTypes,
-    showTeams,
-    showOnlyOverdue
-  });
+  const {
+    data: projects,
+    isLoading: projectsIsLoading,
+    isError: projectsIsError,
+    error: projectsError
+  } = useGetRetrospectiveTimelines(filters.startDate, filters.endDate);
 
   useEffect(() => {
     const requestRefresh = (
       projects: RetrospectiveProjectPreview[],
       teams: TeamPreview[],
-      filters: GanttFilters,
+      filters: RetroGanttFilters,
       searchText: string
     ) => {
       setCollections(
@@ -88,13 +70,12 @@ const RetrospectivePage = () => {
           retrospectiveProjectPreviewTransformer
         )
       );
-      history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
     };
 
     if (projects && teams) {
-      requestRefresh(projects, teams, ganttFilters, searchText);
+      requestRefresh(projects, teams, filters, searchText);
     }
-  }, [teams, projects, setCollections, ganttFilters, searchText, history]);
+  }, [teams, projects, setCollections, filters, searchText]);
 
   if (projectsIsError) return <ErrorPage message={projectsError.message} />;
   if (teamTypesIsError) return <ErrorPage message={teamTypesError.message} />;
@@ -112,36 +93,40 @@ const RetrospectivePage = () => {
   )
     return <LoadingIndicator />;
 
+  /******************** Filters ***************************/
+  const handleSetGanttFilters = (newFilters: RetroGanttFilters) => {
+    setFilters(newFilters);
+  };
+
   const carFilterHandler = (car: number) => {
     return (event: ChangeEvent<HTMLInputElement>) => {
-      setGanttFilters(
+      handleSetGanttFilters(
         event.target.checked
-          ? { ...ganttFilters, showCars: Array.from(new Set([...ganttFilters.showCars, car])) }
-          : { ...ganttFilters, showCars: ganttFilters.showCars.filter((c) => c !== car) }
+          ? { ...filters, showCars: Array.from(new Set([...filters.showCars, car])) }
+          : { ...filters, showCars: filters.showCars.filter((c) => c !== car) }
       );
     };
   };
 
   const teamTypeFilterHandler = (teamType: TeamType) => {
     return (event: ChangeEvent<HTMLInputElement>) => {
-      setGanttFilters(
+      handleSetGanttFilters(
         event.target.checked
           ? {
-              ...ganttFilters,
-              showTeamTypes: Array.from(new Set([...ganttFilters.showTeamTypes, teamType.name]))
+              ...filters,
+              showTeamTypes: Array.from(new Set([...filters.showTeamTypes, teamType.name]))
             }
-          : { ...ganttFilters, showTeamTypes: ganttFilters.showTeamTypes.filter((t) => t !== teamType.name) }
+          : { ...filters, showTeamTypes: filters.showTeamTypes.filter((t) => t !== teamType.name) }
       );
-      history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
     };
   };
 
   const teamFilterHandler = (team: TeamPreview) => {
     return (event: ChangeEvent<HTMLInputElement>) => {
-      setGanttFilters(
+      handleSetGanttFilters(
         event.target.checked
-          ? { ...ganttFilters, showTeams: Array.from(new Set([...ganttFilters.showTeams, team.teamName])) }
-          : { ...ganttFilters, showTeams: ganttFilters.showTeams.filter((t) => t !== team.teamName) }
+          ? { ...filters, showTeams: Array.from(new Set([...filters.showTeams, team.teamName])) }
+          : { ...filters, showTeams: filters.showTeams.filter((t) => t !== team.teamName) }
       );
     };
   };
@@ -154,7 +139,7 @@ const RetrospectivePage = () => {
     return {
       filterLabel: teamType.name,
       handler: teamTypeFilterHandler(teamType),
-      defaultChecked: ganttFilters.showTeamTypes.includes(teamType.name)
+      defaultChecked: filters.showTeamTypes.includes(teamType.name)
     };
   });
 
@@ -166,7 +151,7 @@ const RetrospectivePage = () => {
     return {
       filterLabel: team.teamName,
       handler: teamFilterHandler(team),
-      defaultChecked: ganttFilters.showTeams.includes(team.teamName)
+      defaultChecked: filters.showTeams.includes(team.teamName)
     };
   });
 
@@ -174,8 +159,8 @@ const RetrospectivePage = () => {
     {
       filterLabel: 'Overdue',
       handler: (event: ChangeEvent<HTMLInputElement>) =>
-        setGanttFilters({ ...ganttFilters, showOnlyOverdue: event.target.checked }),
-      defaultChecked: ganttFilters.showOnlyOverdue
+        handleSetGanttFilters({ ...filters, showOnlyOverdue: event.target.checked }),
+      defaultChecked: filters.showOnlyOverdue
     }
   ];
 
@@ -188,13 +173,13 @@ const RetrospectivePage = () => {
     return {
       filterLabel: carNum === 0 ? 'None' : `Car ${carNum}`,
       handler: carFilterHandler(carNum),
-      defaultChecked: ganttFilters.showCars.includes(carNum)
+      defaultChecked: filters.showCars.includes(carNum)
     };
   });
 
   const resetHandler = () => {
-    history.push(routes.GANTT);
-    localStorage.removeItem('ganttURL');
+    history.push(routes.RETROSPECTIVE);
+    localStorage.removeItem('retro-gantt');
     showWorkPackagesMap.clear();
   };
 
@@ -247,6 +232,12 @@ const RetrospectivePage = () => {
   const headerRight = (
     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
       <GanttChartColorLegend />
+      <DatePicker
+        value={filters.startDate}
+        label={'Start Date For Retro'}
+        onChange={(e) => handleSetGanttFilters({ ...filters, startDate: e ?? undefined })}
+        sx={{ width: 400 }}
+      />
       <GanttChartFiltersButton
         carHandlers={carHandlers}
         teamTypeHandlers={teamTypeHandlers}

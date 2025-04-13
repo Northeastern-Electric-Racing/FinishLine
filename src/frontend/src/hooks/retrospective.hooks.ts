@@ -2,9 +2,9 @@ import { useQuery } from 'react-query';
 import { RetrospectiveProjectPreview } from 'shared';
 import { getRetrospectiveBudgets, getRetrospectiveTimelines } from '../apis/retrospective.api';
 
-export const useGetRetrospectiveTimelines = () =>
-  useQuery<RetrospectiveProjectPreview[], Error>(['retrospective-timelines'], async () => {
-    const { data } = await getRetrospectiveTimelines();
+export const useGetRetrospectiveTimelines = (startDate?: Date, endDate?: Date) =>
+  useQuery<RetrospectiveProjectPreview[], Error>(['retrospective-timelines', startDate, endDate], async () => {
+    const { data } = await getRetrospectiveTimelines(startDate, endDate);
     return data;
   });
 

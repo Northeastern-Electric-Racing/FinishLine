@@ -132,8 +132,11 @@ const GanttTaskBarDisplay = <T,>({
       height: '2rem',
       border: `1px solid ${theme.palette.text.primary}`,
       borderRadius: '0.25rem',
-      backgroundColor: '#ef4345',
-      opacity: 0.5,
+      backgroundImage: `
+        repeating-linear-gradient(-45deg, #000 0, #000 1px, transparent 1px, transparent 10px)
+      `,
+      backgroundColor: grey[100],
+      opacity: 0.3,
       cursor: 'pointer',
       gridRow: 1,
       zIndex: 1

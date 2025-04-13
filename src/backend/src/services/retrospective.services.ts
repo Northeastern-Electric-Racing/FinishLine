@@ -7,7 +7,11 @@ import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
 import { ProjectPreview, RetrospectiveProjectPreview } from 'shared';
 
 export default class RetrospectiveService {
-  static async getRetrospectiveTimelines(organizationId: string): Promise<RetrospectiveProjectPreview[]> {
+  static async getRetrospectiveTimelines(
+    organizationId: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<RetrospectiveProjectPreview[]> {
     const projects = await prisma.project.findMany({
       where: { wbsElement: { organizationId } },
       ...getProjectQueryArgs(organizationId)
@@ -22,20 +26,54 @@ export default class RetrospectiveService {
             originalDuration: workPackage.duration,
             originalStartDate: workPackage.startDate
           };
+          let minDurationChangeDate: Date | undefined = undefined;
+          let minStartChangeDate: Date | undefined = undefined;
+          let maxDurationChangeDate: Date | undefined = undefined;
+          let maxStartChangeDate: Date | undefined = undefined;
           workPackage.wbsElement.changes.forEach((change) => {
-            if (change.detail.toLowerCase().includes('added duration')) {
+            if (startDate && change.dateImplemented.getTime() < startDate?.getTime()) return;
+
+            if (endDate && change.dateImplemented.getTime() > endDate?.getTime()) return;
+
+            if (
+              change.detail.toLowerCase().includes('Added duration') ||
+              change.detail.toLowerCase().includes('changed duration')
+            ) {
               const split = change.detail.split('"');
               if (split.length > 0) {
-                const originalValueSplit = split[1].split('"');
-                const [originalValue] = originalValueSplit;
-                retroWorkpackage.originalDuration = parseFloat(originalValue);
+                if (!minDurationChangeDate || minDurationChangeDate.getTime() > change.dateImplemented.getTime()) {
+                  const [, originalValue] = split;
+                  retroWorkpackage.originalDuration = parseFloat(originalValue);
+                  minDurationChangeDate = change.dateImplemented;
+                }
+                if (
+                  split.length > 3 &&
+                  (!maxDurationChangeDate || maxDurationChangeDate.getTime() < change.dateImplemented.getTime())
+                ) {
+                  const [, , , newValue] = split;
+                  retroWorkpackage.duration = parseFloat(newValue);
+                  maxDurationChangeDate = change.dateImplemented;
+                }
               }
-            } else if (change.detail.toLowerCase().includes('added start date')) {
+            } else if (
+              change.detail.toLowerCase().includes('added start date') ||
+              change.detail.toLowerCase().includes('changed start date')
+            ) {
               const split = change.detail.split('"');
               if (split.length > 0) {
-                const originalValueSplit = split[1].split('"');
-                const [originalValue] = originalValueSplit;
-                retroWorkpackage.originalStartDate = new Date(originalValue);
+                if (!minStartChangeDate || minStartChangeDate.getTime() > change.dateImplemented.getTime()) {
+                  const [, originalValue] = split;
+                  retroWorkpackage.originalStartDate = new Date(originalValue);
+                  minStartChangeDate = change.dateImplemented;
+                }
+                if (
+                  split.length > 3 &&
+                  (!maxStartChangeDate || maxStartChangeDate.getTime() < change.dateImplemented.getTime())
+                ) {
+                  const [, , , newValue] = split;
+                  retroWorkpackage.startDate = new Date(newValue);
+                  maxStartChangeDate = change.dateImplemented;
+                }
               }
             }
           });

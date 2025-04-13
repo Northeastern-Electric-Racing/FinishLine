@@ -252,7 +252,10 @@ const removeGraphFromGraphCollection = (graphCollectionId: string, graphId: stri
 const deleteGraphCollection = (id: string) => `${graphCollectionById(id)}/delete`;
 
 /************** Retrospective Endpoints ***************/
-const retrospectiveTimelines = () => `${API_URL}/retrospective/timelines`;
+const retrospectiveTimelines = (startDate?: Date, endDate?: Date) =>
+  `${API_URL}/retrospective/timelines?` +
+  (startDate ? `start=${encodeURIComponent(startDate.toISOString())}` : '') +
+  (endDate ? `end=${encodeURIComponent(endDate.toISOString())}` : '');
 const retrospectiveBudgets = () => `${API_URL}/retrospective/budgets`;
 
 /**************** Other Endpoints ****************/

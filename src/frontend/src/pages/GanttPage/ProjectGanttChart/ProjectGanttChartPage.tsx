@@ -8,11 +8,9 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useAllProjects } from '../../../hooks/projects.hooks';
 import ErrorPage from '../../ErrorPage';
 import { add, sub } from 'date-fns';
-import { useQuery } from '../../../hooks/utils.hooks';
 import { useHistory } from 'react-router-dom';
 import {
   applyChangesToWBSElement,
-  buildGanttSearchParams,
   constructCollectionsFromTeamPreviewAndProjects,
   constructFinalizedChanges,
   GanttChange,
@@ -21,7 +19,8 @@ import {
   GanttTask,
   isProjectPreview,
   RequestEventChange,
-  transformProjectToGanttTask
+  transformProjectToGanttTask,
+  useGanttFilters
 } from '../../../utils/gantt.utils';
 import { routes } from '../../../utils/routes';
 import { Box } from '@mui/material';
@@ -52,14 +51,8 @@ import { projectWbsPipe } from '../../../utils/pipes';
 import { projectPreviewTransformer } from '../../../apis/transformers/projects.transformers';
 
 const ProjectGanttChartPage: FC = () => {
-  const query = useQuery();
   const history = useHistory();
   const toast = useToast();
-
-  const ganttParams = localStorage.getItem('ganttURL');
-  if (ganttParams && history.location.search !== ganttParams) {
-    history.push(`${history.location.pathname + ganttParams}`);
-  }
 
   const { isLoading: projectsIsLoading, isError: projectsIsError, data: projects, error: projectsError } = useAllProjects();
 
@@ -87,20 +80,7 @@ const ProjectGanttChartPage: FC = () => {
   const [editedProjects, setEditedProjects] = useState<ProjectPreview[]>([]);
 
   /******************** Filters ***************************/
-  const showCars = query.getAll('car').map((car) => parseInt(car));
-
-  const showTeamTypes = query.getAll('teamType');
-
-  const showTeams = query.getAll('team');
-
-  const showOnlyOverdue = query.get('overdue') ? query.get('overdue') === 'true' : false;
-
-  const [ganttFilters, setGanttFilters] = useState<GanttFilters>({
-    showCars,
-    showTeamTypes,
-    showTeams,
-    showOnlyOverdue
-  });
+  const { filters, setFilters } = useGanttFilters('project-gantt');
 
   useEffect(() => {
     const requestRefresh = (
@@ -129,13 +109,16 @@ const ProjectGanttChartPage: FC = () => {
           projectPreviewTransformer
         )
       );
-      history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
     };
 
     if (projects && teams) {
-      requestRefresh(projects, teams, editedProjects, addedProjects, ganttFilters, searchText);
+      requestRefresh(projects, teams, editedProjects, addedProjects, filters, searchText);
     }
-  }, [teams, projects, addedProjects, setAllProjects, setCollections, editedProjects, ganttFilters, searchText, history]);
+  }, [teams, projects, addedProjects, setAllProjects, setCollections, editedProjects, filters, searchText, history]);
+
+  const handleSetGanttFilters = (newFilters: GanttFilters) => {
+    setFilters(newFilters);
+  };
 
   if (
     projectsIsLoading ||
@@ -155,34 +138,33 @@ const ProjectGanttChartPage: FC = () => {
 
   const carFilterHandler = (car: number) => {
     return (event: ChangeEvent<HTMLInputElement>) => {
-      setGanttFilters(
+      handleSetGanttFilters(
         event.target.checked
-          ? { ...ganttFilters, showCars: Array.from(new Set([...ganttFilters.showCars, car])) }
-          : { ...ganttFilters, showCars: ganttFilters.showCars.filter((c) => c !== car) }
+          ? { ...filters, showCars: Array.from(new Set([...filters.showCars, car])) }
+          : { ...filters, showCars: filters.showCars.filter((c) => c !== car) }
       );
     };
   };
 
   const teamTypeFilterHandler = (teamType: TeamType) => {
     return (event: ChangeEvent<HTMLInputElement>) => {
-      setGanttFilters(
+      handleSetGanttFilters(
         event.target.checked
           ? {
-              ...ganttFilters,
-              showTeamTypes: Array.from(new Set([...ganttFilters.showTeamTypes, teamType.name]))
+              ...filters,
+              showTeamTypes: Array.from(new Set([...filters.showTeamTypes, teamType.name]))
             }
-          : { ...ganttFilters, showTeamTypes: ganttFilters.showTeamTypes.filter((t) => t !== teamType.name) }
+          : { ...filters, showTeamTypes: filters.showTeamTypes.filter((t) => t !== teamType.name) }
       );
-      history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
     };
   };
 
   const teamFilterHandler = (team: TeamPreview) => {
     return (event: ChangeEvent<HTMLInputElement>) => {
-      setGanttFilters(
+      handleSetGanttFilters(
         event.target.checked
-          ? { ...ganttFilters, showTeams: Array.from(new Set([...ganttFilters.showTeams, team.teamName])) }
-          : { ...ganttFilters, showTeams: ganttFilters.showTeams.filter((t) => t !== team.teamName) }
+          ? { ...filters, showTeams: Array.from(new Set([...filters.showTeams, team.teamName])) }
+          : { ...filters, showTeams: filters.showTeams.filter((t) => t !== team.teamName) }
       );
     };
   };
@@ -195,7 +177,7 @@ const ProjectGanttChartPage: FC = () => {
     return {
       filterLabel: teamType.name,
       handler: teamTypeFilterHandler(teamType),
-      defaultChecked: ganttFilters.showTeamTypes.includes(teamType.name)
+      defaultChecked: filters.showTeamTypes.includes(teamType.name)
     };
   });
 
@@ -207,7 +189,7 @@ const ProjectGanttChartPage: FC = () => {
     return {
       filterLabel: team.teamName,
       handler: teamFilterHandler(team),
-      defaultChecked: ganttFilters.showTeams.includes(team.teamName)
+      defaultChecked: filters.showTeams.includes(team.teamName)
     };
   });
 
@@ -215,8 +197,8 @@ const ProjectGanttChartPage: FC = () => {
     {
       filterLabel: 'Overdue',
       handler: (event: ChangeEvent<HTMLInputElement>) =>
-        setGanttFilters({ ...ganttFilters, showOnlyOverdue: event.target.checked }),
-      defaultChecked: ganttFilters.showOnlyOverdue
+        handleSetGanttFilters({ ...filters, showOnlyOverdue: event.target.checked }),
+      defaultChecked: filters.showOnlyOverdue
     }
   ];
 
@@ -229,7 +211,7 @@ const ProjectGanttChartPage: FC = () => {
     return {
       filterLabel: carNum === 0 ? 'None' : `Car ${carNum}`,
       handler: carFilterHandler(carNum),
-      defaultChecked: ganttFilters.showCars.includes(carNum)
+      defaultChecked: filters.showCars.includes(carNum)
     };
   });
 

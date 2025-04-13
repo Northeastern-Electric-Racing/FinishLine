@@ -82,7 +82,7 @@ interface GanttChartFiltersProps {
   overdueHandler: {
     filterLabel: string;
     handler: (event: ChangeEvent<HTMLInputElement>) => void;
-    defaultChecked: boolean;
+    defaultChecked?: boolean;
   }[];
   resetHandler: () => void;
   collapseHandler: () => void;
