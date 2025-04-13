@@ -9,9 +9,8 @@ interface PartSubmissionProps {
 const reviewNotes = (reviews: PartReview[]): string => {
   if (reviews.length === 0) {
     return 'There are no notes.';
-  } else {
-    return '\n' + reviews.map((review) => '- ' + review.notes).join('\n');
   }
+  return '\n' + reviews.map((review) => '- ' + review.notes).join('\n');
 };
 
 const PartSubmissionDetails = ({ submission }: PartSubmissionProps) => {
