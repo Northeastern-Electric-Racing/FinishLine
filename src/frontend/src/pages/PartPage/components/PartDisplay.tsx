@@ -38,10 +38,20 @@ const PartDisplay: React.FC<PartDisplayProps> = ({ part }) => {
             <Typography>"Last Updated By "{part.submissions[0]}</Typography>
           </div>
 
+          {/* Assignees */}
           <div style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: '10px' }}>
             {part.assignees.map((assignee) => (
               <Typography>
                 {assignee.firstName} {assignee.lastName}
+              </Typography>
+            ))}
+          </div>
+
+          {/* Reviewers */}
+          <div style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: '10px' }}>
+            {part.submissions[0].reviews.map((review) => (
+              <Typography>
+                {review.userCreated.firstName} {review.userCreated.lastName}
               </Typography>
             ))}
           </div>
@@ -52,6 +62,8 @@ const PartDisplay: React.FC<PartDisplayProps> = ({ part }) => {
         </Box>
       );
 
+
+    {/*full screen*/}
     default:
       return (
         <Box style={{ display: 'flex', flexDirection: 'row' }}>
