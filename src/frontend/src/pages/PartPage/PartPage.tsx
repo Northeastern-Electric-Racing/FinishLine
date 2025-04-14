@@ -1,6 +1,4 @@
 import { Box, Typography, Grid, Breadcrumbs } from '@mui/material';
-import PartDisplay from './components/PartDisplay';
-import { Part, Review_Status } from 'shared';
 
 const PartPage: React.FC = () => {
   return (
@@ -27,7 +25,7 @@ const PartPage: React.FC = () => {
               border: '2px solid white'
             }}
           >
-            {/*<Typography color="white">No submission yet.</Typography>*/}
+            <Typography color="white">No submission yet.</Typography>
           </Box>
         </Grid>
 
