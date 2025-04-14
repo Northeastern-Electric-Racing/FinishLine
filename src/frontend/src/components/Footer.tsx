@@ -1,4 +1,4 @@
-import { ChevronRight } from '@mui/icons-material';
+import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { Box, Typography, IconButton, useTheme } from '@mui/material';
 import { ReactNode } from 'react';
 
@@ -11,10 +11,9 @@ interface FooterProps {
 
 const Footer = ({ footerButton, totalPages, currentPage, setCurrentPage }: FooterProps) => {
   const theme = useTheme();
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
+
+  const handleChangePage = (isNext: boolean) => {
+    isNext ? setCurrentPage(currentPage + 1) : setCurrentPage(currentPage - 1);
   };
 
   return (
@@ -40,16 +39,30 @@ const Footer = ({ footerButton, totalPages, currentPage, setCurrentPage }: Foote
         <Typography sx={{ marginRight: '4px' }}>
           Page {currentPage} of {totalPages}
         </Typography>
-        <IconButton
-          size="small"
-          sx={{
-            padding: '2px',
-            marginLeft: '4px'
-          }}
-          onClick={handleNextPage}
-        >
-          <ChevronRight fontSize="small" />
-        </IconButton>
+        {currentPage !== 1 && (
+          <IconButton
+            size="small"
+            sx={{
+              padding: '2px',
+              marginLeft: '4px'
+            }}
+            onClick={() => handleChangePage(false)}
+          >
+            <ChevronLeft fontSize="small" />
+          </IconButton>
+        )}
+        {currentPage !== totalPages && (
+          <IconButton
+            size="small"
+            sx={{
+              padding: '2px',
+              marginLeft: '4px'
+            }}
+            onClick={() => handleChangePage(true)}
+          >
+            <ChevronRight fontSize="small" />
+          </IconButton>
+        )}
       </Box>
     </Box>
   );
