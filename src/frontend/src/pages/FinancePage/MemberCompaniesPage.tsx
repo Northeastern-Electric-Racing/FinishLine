@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
-import { TableRow, TableCell, Box, Table as MuiTable, TableHead, TableBody, Typography, Button } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { TableRow, TableCell, Box, Table as MuiTable, TableHead, TableBody, Typography } from '@mui/material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useGetAllVendors } from '../../hooks/finance.hooks';
 import { datePipe } from '../../utils/pipes';
 import ErrorPage from '../ErrorPage';
-import { NERButton } from '../../components/NERButton';
 import CreateVendorModal from '../AdminToolsPage/FinanceConfig/CreateVendorModal';
 import { Vendor } from 'shared';
 import EditVendorModal from '../AdminToolsPage/FinanceConfig/EditVendorModal';
@@ -65,12 +62,6 @@ const MemberCompaniesPage = () => {
           <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>
             {vendor.addedBy?.firstName}
           </Typography>
-          {/* <Button sx={{ p: 0.5, minWidth: 'auto', color: 'white' }} onClick={() => {}}>
-            <EditIcon />
-          </Button>
-          <Button sx={{ p: 0.5, minWidth: 'auto', color: 'white' }} onClick={() => {}}>
-            <DeleteIcon />
-          </Button> */}
         </Box>
       </TableCell>
     </TableRow>
@@ -79,7 +70,7 @@ const MemberCompaniesPage = () => {
   return (
     <Box>
       {/*TODO: Replace with header */}
-      <Box>Companies and Sponsoring Vendors</Box>
+      <Box>Companies</Box>
       <CreateVendorModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} vendors={vendors} />
       {clickedVendor && (
         <EditVendorModal
@@ -134,21 +125,7 @@ const MemberCompaniesPage = () => {
           </TableRow>
         </TableHead>
         <TableBody>{vendorTableRows}</TableBody>
-        <Footer
-          // footerButton={
-          //   <NERButton
-          //     variant="contained"
-          //     onClick={() => {
-          //       setCreateModalShow(true);
-          //     }}
-          //   >
-          //     Add Company
-          //   </NERButton>
-          // }
-          totalPages={totalPages}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
-        />
+        <Footer totalPages={totalPages} currentPage={currentPage} setCurrentPage={setCurrentPage} />
       </MuiTable>
     </Box>
   );

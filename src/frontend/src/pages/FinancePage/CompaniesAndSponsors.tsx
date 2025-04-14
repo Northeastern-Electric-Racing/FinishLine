@@ -1,15 +1,12 @@
 import { Box } from '@mui/system';
-import VendorsTable from '../AdminToolsPage/FinanceConfig/VendorsTable';
+import { useCurrentUser } from '../../hooks/users.hooks';
+import { isAdmin, isHead } from 'shared';
+import MemberCompaniesPage from './MemberCompaniesPage';
+import HeadAndAboveCompaniesPage from './HeadAndAboveCompaniesPage';
 
 const CompaniesAndSponsors: React.FC = () => {
-  return (
-    <Box>
-      <Box>Companies and Sponsoring Vendors</Box>
-      <Box sx={{ marginTop: '50px' }}>
-        <VendorsTable />
-      </Box>
-    </Box>
-  );
+  const user = useCurrentUser();
+  return <Box>{isHead(user.role) || isAdmin(user.role) ? <HeadAndAboveCompaniesPage /> : <MemberCompaniesPage />}</Box>;
 };
 
 export default CompaniesAndSponsors;
