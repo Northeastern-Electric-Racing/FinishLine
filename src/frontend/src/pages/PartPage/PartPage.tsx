@@ -1,4 +1,6 @@
 import { Box, Typography, Grid, Breadcrumbs } from '@mui/material';
+import { RoleEnum } from 'shared';
+import PartSubmissionDetails, { partReviewExample1, partReviewExample2 } from './Components/PartSubmissionDetails';
 
 const PartPage: React.FC = () => {
   return (
@@ -16,7 +18,7 @@ const PartPage: React.FC = () => {
             sx={{
               backgroundColor: 'black',
               height: '75vh',
-              width: '100%',
+              width: '50%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -35,7 +37,7 @@ const PartPage: React.FC = () => {
                 sx={{
                   backgroundColor: 'gray',
                   height: '24vh',
-                  width: '100%',
+                  width: '50%',
                   borderRadius: 2,
                   display: 'flex',
                   alignItems: 'center',
@@ -49,30 +51,37 @@ const PartPage: React.FC = () => {
                 sx={{
                   backgroundColor: 'gray',
                   height: '24vh',
-                  width: '100%',
+                  width: '50%',
                   borderRadius: 2,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   mb: 2
                 }}
-              >
-                <Typography>Details for Submission</Typography>
+              ></Box>
+              <Box>
+                <PartSubmissionDetails
+                  submission={{
+                    partSubmissionId: '1',
+                    userCreated: {
+                      userId: '123',
+                      email: 'john.doe@example.com',
+                      emailId: 'john.doe@example.com',
+                      role: RoleEnum.MEMBER,
+                      permissions: [],
+                      firstName: 'John',
+                      lastName: 'Doe'
+                    },
+                    notes: 'This is a test note.',
+                    reviews: [partReviewExample1, partReviewExample2],
+                    fileIds: [],
+                    name: 'Test Part Submission',
+                    partId: '456',
+                    createdAt: new Date()
+                  }}
+                />
               </Box>
-              <Box
-                sx={{
-                  backgroundColor: 'gray',
-                  height: '24vh',
-                  width: '100%',
-                  borderRadius: 2,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  mb: 2
-                }}
-              >
-                <Typography>History</Typography>
-              </Box>
+              <Typography>History</Typography>
             </Grid>
           </Grid>
         </Grid>
