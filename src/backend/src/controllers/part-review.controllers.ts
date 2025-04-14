@@ -1,9 +1,21 @@
 import { NextFunction, Request, Response } from 'express';
 import PartReviewService from '../services/part-review.services';
-import { validateWBS, WbsNumber } from 'shared';
+import { WbsNumber, validateWBS } from 'shared';
 import { HttpException } from '../utils/errors.utils';
 
 export default class PartReviewController {
+  static async getPart(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { wbsNum, indexNum } = req.params;
+
+      const wbsNumber: WbsNumber = validateWBS(wbsNum);
+      const part = await PartReviewService.getPart(req.organization, wbsNumber, indexNum);
+      res.status(200).json(part);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getAllPartsForProject(req: Request, res: Response, next: NextFunction) {
     try {
       const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
@@ -80,6 +92,55 @@ export default class PartReviewController {
       const { partId } = req.params;
       await PartReviewService.deletePart(partId, req.currentUser, req.organization.organizationId);
       res.status(200).json({ message: `Successfully deleted part #${partId}` });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createReview(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { submissionId, notes, status } = req.body;
+      const review = await PartReviewService.createReview(
+        req.organization.organizationId,
+        req.currentUser,
+        submissionId,
+        status,
+        notes
+      );
+      res.status(200).json(review);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async updateReview(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { reviewId } = req.params;
+      const { notes, status } = req.body;
+      const updatedReview = await PartReviewService.updateReview(
+        req.organization.organizationId,
+        req.currentUser,
+        reviewId,
+        status,
+        notes
+      );
+      res.status(200).json(updatedReview);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async uploadReviewFiles(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { reviewId } = req.params;
+      const files = req.files as Express.Multer.File[];
+      const updatedReview = await PartReviewService.uploadReviewFiles(
+        reviewId,
+        req.currentUser,
+        req.organization.organizationId,
+        files
+      );
+      res.status(200).json(updatedReview);
     } catch (error: unknown) {
       next(error);
     }
