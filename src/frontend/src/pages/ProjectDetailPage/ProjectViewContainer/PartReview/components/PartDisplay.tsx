@@ -5,7 +5,7 @@ import { useSinglePart } from '../../../../../hooks/part-review.hooks';
 import LoadingIndicator from '../../../../../components/LoadingIndicator';
 
 interface PartDisplayProps {
-  //part: Part;
+  part: Part;
   screenSize: 'small' | 'medium' | 'large';
 }
 
@@ -33,8 +33,8 @@ const Pill = ({ label = '', bgColor = 'background.paper' }) => {
   );
 };
 
-const PartDisplay: React.FC<PartDisplayProps> = ({ screenSize }) => {
-  const { isLoading, data: part, isError, error } = useSinglePart();
+const PartDisplay: React.FC<PartDisplayProps> = ({ part, screenSize }) => {
+  const { isLoading, isError, error } = useSinglePart();
 
   if (isLoading) {
     return <LoadingIndicator />;
