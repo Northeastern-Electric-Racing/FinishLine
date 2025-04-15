@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import { AccountCode } from 'shared';
 import CreateAccountCodeModal from './CreateAccountCodeModal';
 import EditAccountCodeModal from './EditAccountCodeModal';
+import { NERButton } from '../../../components/NERButton';
 
 const AccountManagerTable = () => {
   const {
@@ -87,6 +88,16 @@ const AccountManagerTable = () => {
         </TableHead>
         <TableBody>{accountManagerTableRows} </TableBody>
       </Table>
+      <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
+        <NERButton
+          variant="contained"
+          onClick={() => {
+            setShowCreateModal(true);
+          }}
+        >
+          Add Account
+        </NERButton>
+      </Box>
     </Box>
   );
 };

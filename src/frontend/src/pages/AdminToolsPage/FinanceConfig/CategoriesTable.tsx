@@ -1,14 +1,10 @@
 import { TableRow, TableCell, Typography, Box, TableHead, Table, TableBody, Checkbox } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useGetAllAccountCodes, useGetAllIndexCodes } from '../../../hooks/finance.hooks';
+import { useGetAllIndexCodes } from '../../../hooks/finance.hooks';
 import ErrorPage from '../../ErrorPage';
 import { NERButton } from '../../../components/NERButton';
 import React, { useState } from 'react';
 import { IndexCode } from 'shared';
-import CreateAccountCodeModal from './CreateAccountCodeModal';
-import EditAccountCodeModal from './EditAccountCodeModal';
-import AdminToolTable from '../AdminToolTable';
-import { codeAndRefundSourceName } from '../../../utils/pipes';
 
 const CategoriesTable = () => {
   const {
@@ -88,6 +84,16 @@ const CategoriesTable = () => {
         </TableHead>
         <TableBody>{categoriesTableRows} </TableBody>
       </Table>
+      <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
+        <NERButton
+          variant="contained"
+          onClick={() => {
+            setShowCreateModal(true);
+          }}
+        >
+          Add Category
+        </NERButton>
+      </Box>
     </Box>
   );
 };
