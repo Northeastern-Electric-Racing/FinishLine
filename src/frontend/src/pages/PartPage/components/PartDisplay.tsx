@@ -1,8 +1,6 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 import { Part, Review_Status } from 'shared';
-import { useSinglePart } from '../../../hooks/part-review.hooks';
-import LoadingIndicator from '../../../components/LoadingIndicator';
 
 interface PartDisplayProps {
   part: Part;
@@ -34,16 +32,6 @@ const Pill = ({ label = '', bgColor = 'background.paper' }) => {
 };
 
 const PartDisplay: React.FC<PartDisplayProps> = ({ part, screenSize }) => {
-  const { isLoading, isError, error } = useSinglePart();
-
-  if (isLoading) {
-    return <LoadingIndicator />;
-  }
-
-  if (isError || !part) {
-    throw error;
-  }
-
   // helper to get part name in the format shown in the ticket
   const getPartName = () => {
     const partNumber = part?.partId || '00000-00A';
