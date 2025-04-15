@@ -33,7 +33,7 @@ export const partPreviewTransformer = (part: Prisma.PartGetPayload<PartQueryArgs
     index: part.index,
     commonName: part.commonName,
     description: part.description ?? undefined,
-    previewImageLink: part.previewImageLink ?? undefined,
+    previewImageId: part.previewImageId ?? undefined,
     status: part.status as Review_Status,
     tags: part.tags,
     projectId: part.projectId,
@@ -67,7 +67,8 @@ export const partReviewRequestTransformer = (
     partId: reviewRequest.partId,
     requester: userTransformer(reviewRequest.requester),
     reviewerRequested: userTransformer(reviewRequest.reviewerRequested),
-    createdAt: reviewRequest.createdAt
+    createdAt: reviewRequest.createdAt,
+    dateDeleted: reviewRequest.dateDeleted ?? undefined
   };
 };
 

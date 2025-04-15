@@ -13,7 +13,7 @@ export interface PartPreview {
   index: number;
   commonName: string;
   description?: string;
-  previewImageLink?: string;
+  previewImageId?: string;
   status: Review_Status;
   tags: PartTag[];
   projectId: string;
@@ -44,6 +44,7 @@ export interface PartReviewRequest {
   requester: User;
   reviewerRequested: User;
   createdAt: Date;
+  dateDeleted?: Date;
 }
 
 export interface PartReview {
