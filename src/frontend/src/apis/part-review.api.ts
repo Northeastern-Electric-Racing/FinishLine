@@ -5,7 +5,15 @@ import {
   CreatePartReviewPayload,
   EditPartReviewPayload
 } from '../hooks/part-review.hooks';
-import { PartPreview, Part, PartSubmission, PartReviewRequest, PartReview, PartReviewCommonMistake, FrequentlyAskedQuestion } from 'shared';
+import {
+  PartPreview,
+  Part,
+  PartSubmission,
+  PartReviewRequest,
+  PartReview,
+  PartReviewCommonMistake,
+  FrequentlyAskedQuestion
+} from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import { partPreviewTransformer, partTransformer } from './transformers/part-review.transformers';
@@ -158,10 +166,10 @@ export const setUploadReviewFiles = (reviewId: string, files: File[]) => {
 };
 
 /**
-* Fetches all Part Review FAQs for the current organization.
-*
-* @returns A list of Part Review FAQs.
-*/
+ * Fetches all Part Review FAQs for the current organization.
+ *
+ * @returns A list of Part Review FAQs.
+ */
 export const getAllPartReviewFaqs = () => {
   return axios.get<FrequentlyAskedQuestion[]>(apiUrls.partsReviewFaqs(), {
     transformResponse: (data) => JSON.parse(data)
