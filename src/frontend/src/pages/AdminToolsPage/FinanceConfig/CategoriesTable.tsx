@@ -1,76 +1,77 @@
 import { TableRow, TableCell, Typography, Box, TableHead, Table, TableBody, Checkbox } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useGetAllAccountCodes } from '../../../hooks/finance.hooks';
+import { useGetAllAccountCodes, useGetAllIndexCodes } from '../../../hooks/finance.hooks';
 import ErrorPage from '../../ErrorPage';
+import { NERButton } from '../../../components/NERButton';
 import React, { useState } from 'react';
-import { AccountCode } from 'shared';
+import { IndexCode } from 'shared';
 import CreateAccountCodeModal from './CreateAccountCodeModal';
 import EditAccountCodeModal from './EditAccountCodeModal';
+import AdminToolTable from '../AdminToolTable';
+import { codeAndRefundSourceName } from '../../../utils/pipes';
 
-const AccountManagerTable = () => {
+const CategoriesTable = () => {
   const {
-    data: accountCodes,
-    isLoading: accountCodesIsLoading,
-    isError: accountCodesIsError,
-    error: accountCodesError
-  } = useGetAllAccountCodes();
+    data: indexCodes,
+    isLoading: indexCodesIsLoading,
+    isError: indexCodesIsError,
+    error: indexCodesError
+  } = useGetAllIndexCodes();
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
-  const [clickedAccountCode, setClickedAccountCode] = useState<AccountCode>();
+  const [clickedIndexCode, setClickedIndexCode] = useState<IndexCode>();
 
-  if (!accountCodes || accountCodesIsLoading) {
+  if (!indexCodes || indexCodesIsLoading) {
     return <LoadingIndicator />;
   }
 
-  if (accountCodesIsError) {
-    return <ErrorPage message={accountCodesError.message} />;
+  if (indexCodesIsError) {
+    return <ErrorPage message={indexCodesError.message} />;
   }
 
-  const accountManagerTableRows = accountCodes.map((accountCode, index) => (
+  const categoriesTableRows = indexCodes.map((indexCode, index) => (
     <TableRow
       onClick={() => {
-        setClickedAccountCode(accountCode);
+        setClickedIndexCode(indexCode);
         setShowEditModal(true);
       }}
-      key={`account-code-${index}`}
+      key={`index-code-${index}`}
       sx={{ cursor: 'pointer' }}
     >
       <TableCell>
-        <Typography>{accountCode.name}</Typography>
+        <Typography>{indexCode.name}</Typography>
       </TableCell>
       <TableCell>
-        <Typography>{accountCode.code}</Typography>
+        <Typography>{indexCode.code}</Typography>
       </TableCell>
       <TableCell>
-        <Typography>Description here????</Typography>
+        <Typography>name/description here?</Typography>
       </TableCell>
-      <TableCell>
-        <Checkbox checked={accountCode.allowed} />
-      </TableCell>
+      <TableCell>Budget Here?</TableCell>
     </TableRow>
   ));
 
-  const columns = ['Index Code', 'Account Code', 'Description', 'Allowed'];
+  const columns = ['Index Code', 'Account Code', 'Name', 'Budget'];
 
   return (
     <Box>
-      <CreateAccountCodeModal showModal={showCreateModal} handleClose={() => setShowCreateModal(false)} />
-      {clickedAccountCode && (
-        <EditAccountCodeModal
+      {/* <CreateIndexCodeModal showModal={showCreateModal} handleClose={() => setShowCreateModal(false)} />
+      {clickedIndexCode && (
+        <EditIndexCodeModal
           showModal={showEditModal}
           handleClose={() => {
             setShowEditModal(false);
-            setClickedAccountCode(undefined);
+            setClickedIndexCode(undefined);
           }}
-          accountCode={clickedAccountCode}
+          indexCode={clickedIndexCode}
         />
-      )}
+      )} */}
       <Table>
         <TableHead>
           <TableRow>
             {columns.map((column, index) => (
               <TableCell
-                key={`account-code-column-${index}`}
+                key={`index-code-column-${index}`}
                 sx={{
                   borderBottom: '2px solid white',
                   fontWeight: 'bold',
@@ -85,10 +86,10 @@ const AccountManagerTable = () => {
             ))}
           </TableRow>
         </TableHead>
-        <TableBody>{accountManagerTableRows} </TableBody>
+        <TableBody>{categoriesTableRows} </TableBody>
       </Table>
     </Box>
   );
 };
 
-export default AccountManagerTable;
+export default CategoriesTable;

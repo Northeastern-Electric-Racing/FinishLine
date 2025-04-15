@@ -1,6 +1,7 @@
 import { Box, Grid, Typography } from '@mui/material';
 import VendorsTable from './FinanceConfig/VendorsTable';
 import AccountManagerTable from './FinanceConfig/AccountManagerTable';
+import CategoriesTable from './FinanceConfig/CategoriesTable';
 
 const AdminToolsFinanceConfig: React.FC = () => {
   return (
@@ -10,10 +11,10 @@ const AdminToolsFinanceConfig: React.FC = () => {
       </Typography>
       <Grid container spacing="3%">
         <Grid item direction="column" xs={12} md={6}>
-          <VendorsTable />
+          <AccountManagerTable />
         </Grid>
         <Grid item direction="column" alignSelf="right" xs={12} md={6}>
-          <AccountManagerTable />
+          <CategoriesTable />
         </Grid>
       </Grid>
     </Box>
