@@ -6,6 +6,7 @@ import ErrorPage from '../ErrorPage';
 import { NERButton } from '../../components/NERButton';
 import Footer from '../../components/Footer';
 import { datePipe } from '../../utils/pipes';
+import SponsorTierPill from '../../components/SponsorTierPill';
 
 const SponsorsTable = () => {
   const { data: sponsors, isLoading: sponsorIsLoading, isError: sponsorIsError, error: sponsorError } = useGetAllSponsors();
@@ -67,7 +68,9 @@ const SponsorsTable = () => {
           borderBottom: 'none'
         }}
       >
-        <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>TIER</Typography>
+        <Box sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>
+          <SponsorTierPill tier={sponsor.tier} />
+        </Box>
       </TableCell>
       <TableCell
         align="center"
