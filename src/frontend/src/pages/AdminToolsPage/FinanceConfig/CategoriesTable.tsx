@@ -51,6 +51,7 @@ const CategoriesTable = () => {
 
   return (
     <Box>
+      {/* uncomment the following lines when the modals for the category table are created: */}
       {/* <CreateIndexCodeModal showModal={showCreateModal} handleClose={() => setShowCreateModal(false)} />
       {clickedIndexCode && (
         <EditIndexCodeModal
