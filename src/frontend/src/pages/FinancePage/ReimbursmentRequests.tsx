@@ -1,4 +1,4 @@
-import { Box, Button, Menu, MenuItem, ListItemIcon, Typography } from '@mui/material';
+import { Box, Button, Menu, MenuItem, ListItemIcon, Typography, FormControlLabel, Checkbox } from '@mui/material';
 import { useState } from 'react';
 import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
@@ -20,6 +20,8 @@ import {
 } from '../../hooks/finance.hooks';
 import { useHistory } from 'react-router-dom';
 import ListAltIcon from '@mui/icons-material/ListAlt';
+import { DatePicker } from '@mui/x-date-pickers';
+import { set } from 'react-hook-form';
 
 const ReimbursementRequests: React.FC = () => {
   const ALL_STATUSES = Object.values(ReimbursementStatusType);
@@ -126,7 +128,7 @@ const ReimbursementRequests: React.FC = () => {
   const [searchText, setSearchText] = useState<string>('');
   const [anchorFilterEl, setAnchorFilterEl] = useState<null | HTMLElement>(null);
   const [selectedStatuses, setSelectedStatuses] = useState<ReimbursementStatusType[]>([]);
-  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [startDate, setStartDate] = useState<null | Date>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
 
   const handleFilterMenuOpen = (e: React.MouseEvent<HTMLElement>) => setAnchorFilterEl(e.currentTarget);
@@ -142,9 +144,45 @@ const ReimbursementRequests: React.FC = () => {
       anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
     >
       <Box sx={{ p: 2 }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
-          Filter by Status
-        </Typography>
+        <Typography sx={{ fontWeight: 'bold', mb: 1 }}>Filter by Status</Typography>
+        {ALL_STATUSES.map((status) => {
+          const isChecked = selectedStatuses.includes(status);
+          return (
+            <MenuItem
+              onClick={() => {
+                if (isChecked) {
+                  setSelectedStatuses(selectedStatuses.filter((s) => status !== s));
+                } else {
+                  setSelectedStatuses([...selectedStatuses, status]);
+                }
+              }}
+            >
+              <FormControlLabel control={<Checkbox checked={isChecked} />} label="" />
+              {status.replace(/_/g, ' ')}
+            </MenuItem>
+          );
+        })}
+        <Typography sx={{ fontWeight: 'bold', mt: 2, mb: 1 }}>Filter by Date</Typography>
+        <Box sx={{ mt: 2 }}>
+          <DatePicker
+            label="From"
+            value={startDate}
+            slotProps={{
+              field: { clearable: true }
+            }}
+            onChange={(newValue: Date | null) => setStartDate(newValue)}
+          />
+        </Box>
+        <Box sx={{ mt: 2 }}>
+          <DatePicker
+            label="Until"
+            value={endDate}
+            slotProps={{
+              field: { clearable: true }
+            }}
+            onChange={(newValue: Date | null) => setEndDate(newValue)}
+          />
+        </Box>
       </Box>
     </Menu>
   );
@@ -186,6 +224,9 @@ const ReimbursementRequests: React.FC = () => {
           userReimbursementRequests={userReimbursementRequests ?? []}
           allReimbursementRequests={allReimbursementRequests ?? []}
           searchText={searchText}
+          statuses={selectedStatuses}
+          startDate={startDate}
+          endDate={endDate}
         />
       </Box>
     </Box>

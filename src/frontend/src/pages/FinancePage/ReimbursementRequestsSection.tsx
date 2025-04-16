@@ -26,7 +26,7 @@ import {
   cleanReimbursementRequestStatus,
   createReimbursementRequestRowData
 } from '../../utils/reimbursement-request.utils';
-import { ReimbursementRequestRow } from 'shared/src/types/reimbursement-requests-types';
+import { ReimbursementRequestRow, ReimbursementStatusType } from 'shared/src/types/reimbursement-requests-types';
 // import TableSortLabel from '@mui/material/TableSortLabel';
 import ColumnHeader from './FinanceComponents/ColumnHeader';
 
@@ -34,6 +34,9 @@ interface ReimbursementRequestTableProps {
   userReimbursementRequests: ReimbursementRequest[];
   allReimbursementRequests?: ReimbursementRequest[];
   searchText?: string;
+  statuses?: ReimbursementStatusType[];
+  startDate?: Date | null;
+  endDate?: Date | null;
 }
 
 interface ReimbursementTableHeadCell {
@@ -44,7 +47,10 @@ interface ReimbursementTableHeadCell {
 const ReimbursementRequestTable = ({
   userReimbursementRequests,
   allReimbursementRequests,
-  searchText
+  searchText,
+  statuses,
+  startDate,
+  endDate
 }: ReimbursementRequestTableProps) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -72,6 +78,19 @@ const ReimbursementRequestTable = ({
     .map(createReimbursementRequestRowData)
 
     .filter((row) => {
+      const submitted = new Date(row.dateSubmitted);
+
+      if (startDate && submitted < startDate) {
+        return false;
+      }
+      if (endDate && submitted > endDate) {
+        return false;
+      }
+
+      if (statuses && statuses.length > 0 && !statuses.includes(row.status)) {
+        return false;
+      }
+
       if (!searchText) {
         return true;
       }
