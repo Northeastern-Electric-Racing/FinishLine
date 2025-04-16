@@ -2,6 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
+import { sponsorTaskTranformer, sponsorTransformer } from '../../../backend/src/transformers/finance.transformer';
 import {
   CreateReimbursementRequestPayload,
   EditReimbursementRequestPayload,
@@ -9,6 +10,10 @@ import {
   AccountCodePayload,
   RefundPayload,
   MarkDeliveredRequestPayload,
+  EditSponsorTaskPayload,
+  SponsorPayload,
+  SponsorTierPayload,
+  SponsorTaskPayload,
   EditOtherReimbursementProductReasonPayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
@@ -20,7 +25,7 @@ import {
 } from './transformers/reimbursement-requests.transformer';
 import { saveAs } from 'file-saver';
 import { PDFDocument, PDFImage } from 'pdf-lib';
-import { IndexCode, AccountCode, ReimbursementRequest, OtherProductReason } from 'shared';
+import { IndexCode, AccountCode, ReimbursementRequest, OtherProductReason, Sponsor, SponsorTask } from 'shared';
 
 enum AllowedFileType {
   JPEG = 'image/jpeg',
@@ -385,13 +390,44 @@ export const requestReimbursementRequestChanges = async (id: string) => {
 };
 
 /**
+ * Creates a sponsor in the database
+ *
+ * @param sponsorData the data for the sponsor
+ * @returns the new sponsor
+ */
+export const createSponsor = async (sponsorData: SponsorPayload) => {
+  return axios.post(apiUrls.financeCreateSponsor(), sponsorData);
+};
+
+/**
+ * Creates a sponsor tier in the database
+ *
+ * @param sponsorTierData the data for the sponsor tier
+ * @returns the new sponsor tier
+ */
+export const createSponsorTier = async (sponsorTierData: SponsorTierPayload) => {
+  return axios.post(apiUrls.financeCreateSponsorTier(), sponsorTierData);
+};
+
+/**
+ * Creates a sponsor task in the database
+ *
+ * @param id The id of the sponsor
+ * @param sponsorTaskData the data for sponsor task
+ * @returns the new sponsor task
+ */
+export const createSponsorTask = async (sponsorId: string, sponsorTaskData: SponsorTaskPayload) => {
+  return axios.post(apiUrls.financeCreateSponsorTask(sponsorId), sponsorTaskData);
+};
+
+/**
  * API call to get the list of all IndexCodes
  *
  * @returns The list of IndexCodes
  */
 export const getAllIndexCodes = () => {
   return axios.get<IndexCode[]>(apiUrls.getAllIndexCodes(), {
-    transformResponse: (data) => JSON.parse(data) as IndexCode[]
+    transformResponse: (data) => JSON.parse(data)
   });
 };
 
@@ -402,8 +438,58 @@ export const getAllIndexCodes = () => {
  */
 export const getAllOtherProductReason = () => {
   return axios.get<OtherProductReason[]>(apiUrls.getAllOtherProductReasons(), {
-    transformResponse: (data) => JSON.parse(data) as OtherProductReason[]
+    transformResponse: (data) => JSON.parse(data)
   });
+};
+
+/**
+ * API call to get the list of all sponsors
+ *
+ * @returns the list of all sponsors
+ */
+
+export const getAllSponsors = () => {
+  return axios.get<Sponsor[]>(apiUrls.getAllSponsors(), {
+    transformResponse: (data) => JSON.parse(data).map(sponsorTransformer)
+  });
+};
+
+/**
+ * API call to the sponsor tasks for a given sponsor
+ *
+ * @param sponsorId the id of the sponsor which tasks are retrieved
+ *
+ * @returns the list of tasks for a given sponsor
+ */
+
+export const getSponsorTasks = (sponsorId: string) => {
+  return axios.get<SponsorTask[]>(apiUrls.getSponsorTasks(sponsorId), {
+    transformResponse: (data) => JSON.parse(data).map(sponsorTaskTranformer)
+  });
+};
+
+/**
+ * API call to delete a given sponsor
+ *
+ * @param sponsorId the id of the sponsor to delete
+ *
+ * @returns the deleted sponsor
+ */
+
+export const deleteSponsor = (sponsorId: string) => {
+  return axios.delete(apiUrls.deleteSponsor(sponsorId));
+};
+
+/**
+ * API call to edit a sponsor task
+ *
+ * @param sponsorTaskData the edited data of the sponsor task
+ * @param sponsorTaskId the id of the sponsor task to be edited
+ *
+ * @returns the edited sponosor task
+ */
+export const editSponsorTask = (sponsorTaskId: string, sponsorTaskData: EditSponsorTaskPayload) => {
+  return axios.post(apiUrls.editSponsorTask(sponsorTaskId), sponsorTaskData);
 };
 
 /**

@@ -8,7 +8,8 @@ export type SponsorTaskQueryArgs = ReturnType<typeof getSponsorTaskQueryArgs>;
 export const getSponsorQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.SponsorDefaultArgs>()({
     include: {
-      sponsorTasks: getSponsorTaskQueryArgs(organizationId)
+      sponsorTasks: getSponsorTaskQueryArgs(organizationId),
+      tier: true
     }
   });
 
