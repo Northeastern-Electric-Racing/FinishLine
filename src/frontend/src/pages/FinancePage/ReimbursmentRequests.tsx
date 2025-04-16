@@ -9,7 +9,7 @@ import WorkIcon from '@mui/icons-material/Work';
 import { routes } from '../../utils/routes';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { isAdmin, isGuest, isHead, isLead } from 'shared';
+import { isAdmin, isGuest, isHead, isLead, ReimbursementStatusType } from 'shared';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import ReimbursementRequestTable from './ReimbursementRequestsSection';
 import { useToast } from '../../hooks/toasts.hooks';
@@ -23,6 +23,7 @@ import ListAltIcon from '@mui/icons-material/ListAlt';
 import { useAllProjects } from '../../hooks/projects.hooks';
 
 const ReimbursementRequests: React.FC = () => {
+  const ALL_STATUSES = Object.values(ReimbursementStatusType);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [, setAccountCreditModalShow] = useState<boolean>(false);
   const [, setShowPendingAdvisorListModal] = useState(false);
@@ -125,18 +126,43 @@ const ReimbursementRequests: React.FC = () => {
   const { data: allProjects } = useAllProjects();
 
   const [searchText, setSearchText] = useState<string>('');
+  const [anchorFilterEl, setAnchorFilterEl] = useState<null | HTMLElement>(null);
+  const [selectedStatuses, setSelectedStatuses] = useState<ReimbursementStatusType[]>([]);
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+
+  const handleFilterMenuOpen = (e: React.MouseEvent<HTMLElement>) => setAnchorFilterEl(e.currentTarget);
+  const handleFilterMenuClose = () => {
+    setAnchorFilterEl(null);
+  };
+
+  const filterMenu = (
+    <Menu
+      open={Boolean(anchorFilterEl)}
+      anchorEl={anchorFilterEl}
+      onClose={handleFilterMenuClose}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+    >
+      <Box sx={{ p: 2 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
+          Filter by Status
+        </Typography>
+      </Box>
+    </Menu>
+  );
 
   const SearchAndFilterBar = (
     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, position: 'relative', top: searchOffset }}>
       <Box sx={{ ml: 'auto', width: { xs: '150px', sm: '200px', md: '250px', zIndex: 2 } }}>
         <SearchBar placeholder="Search" searchText={searchText} setSearchText={setSearchText} />
       </Box>
-      <Button color="primary" aria-label="filter" sx={{ zIndex: 1 }}>
+      <Button color="primary" aria-label="filter" onClick={handleFilterMenuOpen} sx={{ zIndex: 1 }}>
         <FilterListIcon sx={{ fontSize: { xs: '1.25rem', sm: '2.5rem', zIndex: 2 } }} />
         <Typography variant="button" sx={{ fontSize: { xs: '0.5rem', sm: '1.200rem', zIndex: 1 } }}>
           Filters
         </Typography>
       </Button>
+      {filterMenu}
     </Box>
   );
 

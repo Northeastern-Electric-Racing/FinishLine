@@ -77,17 +77,18 @@ const ReimbursementRequestTable = ({
       if (!searchText) {
         return true;
       }
-      const query = searchText.toLowerCase();
-      return (
-        // see if anything displayed to the user matches the query
-        row.status.toLowerCase().includes(query) ||
-        ('' + row.identifier).toLowerCase().includes(query) ||
-        ('' + fullNamePipe(row.submitter)).toLowerCase().includes(query) ||
-        ('' + row.identifier).toLowerCase().includes(query) ||
-        ('' + row.saboId).toLowerCase().includes(query) ||
-        ('' + datePipe(row.dateSubmitted)).toLowerCase().includes(query) ||
-        ('' + dateUndefinedPipe(row.dateSubmittedToSabo)).toLowerCase().includes(query) ||
-        ('' + centsToDollar(row.amount)).toLowerCase().includes(query)
+      const query = searchText.trim().toLowerCase().split(/\s+/);
+      return query.every(
+        (query) =>
+          // see if anything displayed to the user matches the query
+          row.status.toLowerCase().includes(query) ||
+          ('' + row.identifier).toLowerCase().includes(query) ||
+          ('' + fullNamePipe(row.submitter)).toLowerCase().includes(query) ||
+          ('' + row.identifier).toLowerCase().includes(query) ||
+          ('' + row.saboId).toLowerCase().includes(query) ||
+          ('' + datePipe(row.dateSubmitted)).toLowerCase().includes(query) ||
+          ('' + dateUndefinedPipe(row.dateSubmittedToSabo)).toLowerCase().includes(query) ||
+          ('$' + centsToDollar(row.amount)).toLowerCase().includes(query)
       );
     })
     .sort((a, b) => {
