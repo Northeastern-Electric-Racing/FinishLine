@@ -115,8 +115,13 @@ describe('Statistics Tests', () => {
 
       expect(result.graphData).toStrictEqual([
         {
-          label: 'aTeam',
-          value: 2000
+          tipLabel: 'Dollars',
+          values: [
+            {
+              label: 'aTeam',
+              value: 2000
+            }
+          ]
         }
       ]);
     });
@@ -152,8 +157,13 @@ describe('Statistics Tests', () => {
 
       expect(result.graphData).toStrictEqual([
         {
-          label: 'aTeam',
-          value: 1000
+          tipLabel: 'Dollars',
+          values: [
+            {
+              label: 'aTeam',
+              value: 1000
+            }
+          ]
         }
       ]);
     });
@@ -189,8 +199,13 @@ describe('Statistics Tests', () => {
 
       expect(result.graphData).toStrictEqual([
         {
-          label: 'aTeam',
-          value: 1000
+          tipLabel: 'Dollars',
+          values: [
+            {
+              label: 'aTeam',
+              value: 1000
+            }
+          ]
         }
       ]);
     });
@@ -224,8 +239,13 @@ describe('Statistics Tests', () => {
 
       expect(result.graphData).toStrictEqual([
         {
-          label: 'aTeam',
-          value: 1000
+          tipLabel: 'Dollars',
+          values: [
+            {
+              label: 'aTeam',
+              value: 1000
+            }
+          ]
         }
       ]);
     });
@@ -261,8 +281,13 @@ describe('Statistics Tests', () => {
 
       expect(result.graphData).toStrictEqual([
         {
-          label: 'aTeam',
-          value: 0
+          tipLabel: 'Dollars',
+          values: [
+            {
+              label: 'aTeam',
+              value: 0
+            }
+          ]
         }
       ]);
     });

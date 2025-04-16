@@ -1,5 +1,5 @@
 import { CSSProperties } from 'react';
-import { GanttTask, GANTT_CHART_CELL_SIZE, GANTT_CHART_GAP_SIZE } from '../../../../utils/gantt.utils';
+import { GanttTask, GANTT_CHART_CELL_SIZE, GANTT_CHART_GAP_SIZE } from '../../../../../utils/gantt.utils';
 
 export const ganttTaskBarBackgroundStyles = (numDays: number): CSSProperties => {
   return {
@@ -44,7 +44,7 @@ export const webKitBoxStyles = (): CSSProperties => {
   };
 };
 
-export const taskNameContainerStyles = (task: GanttTask): CSSProperties => {
+export const taskNameContainerStyles = <T>(task: GanttTask<T>): CSSProperties => {
   return {
     color: task.styles ? task.styles.color : '#ffffff',
     overflow: 'hidden',

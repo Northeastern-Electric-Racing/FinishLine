@@ -3,7 +3,13 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ChangeRequest, ImplementedChange, StandardChangeRequest } from 'shared';
+import {
+  ChangeRequest,
+  ImplementedChange,
+  ProjectProposedChanges,
+  StandardChangeRequest,
+  WorkPackageProposedChanges
+} from 'shared';
 
 /**
  * Transforms a change request to ensure deep field transformation of date objects.
@@ -12,12 +18,24 @@ import { ChangeRequest, ImplementedChange, StandardChangeRequest } from 'shared'
  * @returns Properly transformed change request object.
  */
 
-interface MaybeActiveChangeRequest extends ChangeRequest {
-  startDate?: Date;
-}
+const transformWorkPackageProposedChanges = (
+  workPackageProposedChanges: WorkPackageProposedChanges
+): WorkPackageProposedChanges => {
+  return {
+    ...workPackageProposedChanges,
+    startDate: new Date(workPackageProposedChanges.startDate)
+  };
+};
 
-export const changeRequestTransformer = (changeRequest: ChangeRequest | StandardChangeRequest) => {
-  const data: MaybeActiveChangeRequest = {
+const transformProjectProposedChanges = (projectProposedChanges: ProjectProposedChanges): ProjectProposedChanges => {
+  return {
+    ...projectProposedChanges,
+    workPackageProposedChanges: projectProposedChanges.workPackageProposedChanges.map(transformWorkPackageProposedChanges)
+  };
+};
+
+export const changeRequestTransformer = (changeRequest: ChangeRequest | StandardChangeRequest): ChangeRequest => {
+  const data: any = {
     ...changeRequest,
     implementedChanges: changeRequest.implementedChanges?.map(implementedChangeTransformer),
     dateSubmitted: new Date(changeRequest.dateSubmitted),
@@ -27,16 +45,12 @@ export const changeRequestTransformer = (changeRequest: ChangeRequest | Standard
   if (data.startDate) {
     data.startDate = new Date(data.startDate);
   }
-  const output: ChangeRequest = data;
+  const output = data;
 
-  const { workPackageProposedChanges } = changeRequest as StandardChangeRequest;
-  if (workPackageProposedChanges && workPackageProposedChanges.startDate) {
-    const scopeOutput = {
-      ...data,
-      workPackageProposedChanges: { ...workPackageProposedChanges },
-      startDate: new Date(workPackageProposedChanges.startDate)
-    };
-    return scopeOutput;
+  if (output.workPackageProposedChanges) {
+    output.workPackageProposedChanges = transformWorkPackageProposedChanges(output.workPackageProposedChanges);
+  } else if (output.projectProposedChanges) {
+    output.projectProposedChanges = transformProjectProposedChanges(output.projectProposedChanges);
   }
   return output;
 };

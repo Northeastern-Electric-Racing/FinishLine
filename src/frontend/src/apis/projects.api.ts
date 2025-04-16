@@ -23,8 +23,8 @@ import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/t
  * Fetches all projects.
  */
 export const getAllProjects = (includeDeleted: boolean) => {
-  return axios.get<Project[]>(apiUrls.allProjects(includeDeleted), {
-    transformResponse: (data) => JSON.parse(data).map(projectTransformer)
+  return axios.get<ProjectPreview[]>(apiUrls.allProjects(includeDeleted), {
+    transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer)
   });
 };
 

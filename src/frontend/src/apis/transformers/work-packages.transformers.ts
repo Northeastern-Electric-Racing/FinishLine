@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WorkPackage, WorkPackagePreview } from 'shared';
+import { RetrospectiveWorkPackage, WorkPackage, WorkPackagePreview } from 'shared';
 import { implementedChangeTransformer } from './change-requests.transformers';
 import { designReviewPreviewTransformer } from './design-reviews.tranformers';
 import { descriptionBulletTransformer } from './projects.transformers';
@@ -23,6 +23,14 @@ export const workPackageTransformer = (workPackage: WorkPackage): WorkPackage =>
     descriptionBullets: workPackage.descriptionBullets.map(descriptionBulletTransformer),
     changes: workPackage.changes.map(implementedChangeTransformer),
     designReviews: workPackage.designReviews.map(designReviewPreviewTransformer)
+  };
+};
+
+export const retrospectiveWorkPackageTransformer = (workPackage: RetrospectiveWorkPackage): RetrospectiveWorkPackage => {
+  return {
+    ...workPackageTransformer(workPackage),
+    originalDuration: workPackage.originalDuration,
+    originalStartDate: new Date(workPackage.originalStartDate)
   };
 };
 
