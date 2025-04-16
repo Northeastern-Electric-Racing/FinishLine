@@ -2,7 +2,6 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { sponsorTaskTranformer, sponsorTransformer } from '../../../backend/src/transformers/finance.transformer';
 import {
   CreateReimbursementRequestPayload,
   EditReimbursementRequestPayload,
@@ -450,7 +449,7 @@ export const getAllOtherProductReason = () => {
 
 export const getAllSponsors = () => {
   return axios.get<Sponsor[]>(apiUrls.getAllSponsors(), {
-    transformResponse: (data) => JSON.parse(data).map(sponsorTransformer)
+    transformResponse: (data) => JSON.parse(data)
   });
 };
 
@@ -464,7 +463,7 @@ export const getAllSponsors = () => {
 
 export const getSponsorTasks = (sponsorId: string) => {
   return axios.get<SponsorTask[]>(apiUrls.getSponsorTasks(sponsorId), {
-    transformResponse: (data) => JSON.parse(data).map(sponsorTaskTranformer)
+    transformResponse: (data) => JSON.parse(data)
   });
 };
 
