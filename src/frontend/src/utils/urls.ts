@@ -144,6 +144,8 @@ const financeEditVendor = (vendorId: string) => `${financeEndpoints()}/${vendorI
 const financeLeadershipApprove = (id: string) => `${financeEndpoints()}/${id}/leadership-approve`;
 const getAllIndexCodes = () => `${financeEndpoints()}/index-codes`;
 const getAllOtherProductReasons = () => `${financeEndpoints()}/other-reimbursement-product-reasons`;
+const financeEditOtherReimbursementProductReason = (id: String) =>
+  `${financeEndpoints()}/other-reimbursement-product-reasons/${id}/edit`;
 
 /**************** Bill of Material Endpoints **************************/
 const bomEndpoints = () => `${API_URL}/projects/bom`;
@@ -370,6 +372,7 @@ export const apiUrls = {
   financeLeadershipApprove,
   getAllIndexCodes,
   getAllOtherProductReasons,
+  financeEditOtherReimbursementProductReason,
 
   bomEndpoints,
   bomGetMaterialsByWbsNum,

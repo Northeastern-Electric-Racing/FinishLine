@@ -646,4 +646,64 @@ describe('Reimbursement Requests', () => {
       ).rejects.toThrow(new NotFoundException('Reimbursement Request Comment', 'bad ID'));
     });
   });
+
+  describe('Editing an other reimbursement product reason', () => {
+    test('Successfully editing a other reimbursement product reason', async () => {
+      const reason = await ReimbursementRequestService.createOtherReimbursementProductReason(
+        'GENERAL STOCK',
+        10,
+        createdIndexCode.indexCodeId,
+        [createdAccountCode],
+        createdUser,
+        org
+      );
+
+      const newIndexCode = await ReimbursementRequestService.createIndexCode(
+        'indexCodeName',
+        'newIndexCode',
+        createdUser,
+        org
+      );
+
+      const editedReason = await ReimbursementRequestService.editOtherReimbursementProductReason(
+        reason.otherProductReasonId,
+        org,
+        createdUser,
+        newIndexCode.indexCodeId,
+        5
+      );
+
+      expect(editedReason.budget).toEqual(5);
+      expect(editedReason.indexCode.name).toEqual('indexCodeName');
+      expect(editedReason.indexCode.code).toEqual('newIndexCode');
+    });
+
+    test('Throws with invalid index code', async () => {
+      const reason = await ReimbursementRequestService.createOtherReimbursementProductReason(
+        'GENERAL STOCK',
+        10,
+        createdIndexCode.indexCodeId,
+        [createdAccountCode],
+        createdUser,
+        org
+      );
+
+      await expect(
+        ReimbursementRequestService.editOtherReimbursementProductReason(
+          reason.otherProductReasonId,
+          org,
+          createdUser,
+          'bad index code',
+          10000
+        )
+      ).rejects.toThrow(new NotFoundException('Index Code', 'bad index code'));
+    });
+    test('Throws with invalid other reimbursement product reason', async () => {
+      const newIndexCode = await ReimbursementRequestService.createIndexCode('x', 'newIndexCode', createdUser, org);
+
+      await expect(
+        ReimbursementRequestService.editOtherReimbursementProductReason('bad id', org, createdUser, newIndexCode.code, 10000)
+      ).rejects.toThrow(new NotFoundException('Reimbursement Product Other Reason', 'bad id'));
+    });
+  });
 });

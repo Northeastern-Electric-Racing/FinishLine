@@ -8,7 +8,8 @@ import {
   EditVendorPayload,
   AccountCodePayload,
   RefundPayload,
-  MarkDeliveredRequestPayload
+  MarkDeliveredRequestPayload,
+  EditOtherReimbursementProductReasonPayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -403,4 +404,14 @@ export const getAllOtherProductReason = () => {
   return axios.get<OtherProductReason[]>(apiUrls.getAllOtherProductReasons(), {
     transformResponse: (data) => JSON.parse(data) as OtherProductReason[]
   });
+};
+
+/**
+ * Edits a reimbursement request in the database
+ * @param id the id of the other reimbursement product reason
+ * @param formData the data expected from teh form
+ * @returns the updated other reimbursement product reason
+ */
+export const editOtherReimbursementProductReason = (id: string, formData: EditOtherReimbursementProductReasonPayload) => {
+  return axios.post(apiUrls.financeEditOtherReimbursementProductReason(id), formData);
 };

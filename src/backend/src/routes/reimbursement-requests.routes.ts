@@ -15,6 +15,7 @@ import {
 } from '../utils/validation.utils';
 import ReimbursementRequestController from '../controllers/reimbursement-requests.controllers';
 import multer, { memoryStorage } from 'multer';
+import FinanceController from '../controllers/finance.controllers';
 
 const reimbursementRequestsRouter = express.Router();
 
@@ -227,5 +228,13 @@ reimbursementRequestsRouter.post(
 );
 
 reimbursementRequestsRouter.delete('/comments/:commentId', ReimbursementRequestController.deleteReimbursementRequestComment);
+
+reimbursementRequestsRouter.post(
+  '/other-reimbursement-product-reasons/:otherReimbursementProductReasonId/edit',
+  nonEmptyString(body('updatedIndexCodeId')),
+  body('updatedBudget').isInt(),
+  validateInputs,
+  FinanceController.editSponsorTask
+);
 
 export default reimbursementRequestsRouter;
