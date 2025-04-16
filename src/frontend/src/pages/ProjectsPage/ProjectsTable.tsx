@@ -24,17 +24,10 @@ const ProjectsTable: React.FC = () => {
   const [pageSize, setPageSize] = useState(localStorage.getItem('projectsTableRowCount'));
   const [windowSize, setWindowSize] = useState(window.innerWidth);
 
-  const baseColDef: GridColDefStyle = {
-    flex: 1,
-    align: 'center',
-    headerAlign: 'center'
-  };
+  const baseColDef: GridColDefStyle = { flex: 1, align: 'center', headerAlign: 'center' };
 
   const dollars = (amount: number) => {
-    const formatter = new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    });
+    const formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
     return formatter.format(amount);
   };
 
@@ -64,11 +57,7 @@ const ProjectsTable: React.FC = () => {
     }
   };
 
-  const projectNameColumn: GridColDef = {
-    ...baseColDef,
-    field: 'name',
-    headerName: 'Project Name'
-  };
+  const projectNameColumn: GridColDef = { ...baseColDef, field: 'name', headerName: 'Project Name' };
 
   const durationColumn: GridColDef = {
     ...baseColDef,
@@ -103,24 +92,9 @@ const ProjectsTable: React.FC = () => {
     { ...baseColDef, field: 'carNumber', headerName: 'Car #', type: 'number', maxWidth: 50 },
     wbsNumColumn,
     projectNameColumn,
-    {
-      ...baseColDef,
-      field: 'lead',
-      headerName: 'Lead',
-      maxWidth: 250
-    },
-    {
-      ...baseColDef,
-      field: 'manager',
-      headerName: 'Manager',
-      maxWidth: 250
-    },
-    {
-      ...baseColDef,
-      field: 'team',
-      headerName: 'Team',
-      maxWidth: 200
-    },
+    { ...baseColDef, field: 'lead', headerName: 'Lead', maxWidth: 250 },
+    { ...baseColDef, field: 'manager', headerName: 'Manager', maxWidth: 250 },
+    { ...baseColDef, field: 'team', headerName: 'Team', maxWidth: 200 },
     durationColumn,
     budgetColumn,
     {
@@ -180,30 +154,26 @@ const ProjectsTable: React.FC = () => {
         error={error}
         rows={
           // flatten some complex data to allow MUI to sort/filter yet preserve the original data being available to the front-end
-          data?.map((v) => ({
-            ...v,
-            carNumber: v.wbsNum.carNumber,
-            lead: fullNamePipe(v.lead),
-            manager: fullNamePipe(v.manager),
-            team: getProjectTeamsName(v)
-          })) || []
+          data
+            ?.filter((project) => project.status !== 'COMPLETE')
+            .map((v) => ({
+              ...v,
+              carNumber: v.wbsNum.carNumber,
+              lead: fullNamePipe(v.lead),
+              manager: fullNamePipe(v.manager),
+              team: getProjectTeamsName(v)
+            })) || []
         }
         columns={windowSize < 900 ? smallColumns : columns}
         sx={{
           border: 0,
-          '& .MuiDataGrid-row:hover': {
-            backgroundColor: 'rgba(239, 67, 69, 0.6)'
-          },
+          '& .MuiDataGrid-row:hover': { backgroundColor: 'rgba(239, 67, 69, 0.6)' },
           '& .MuiDataGrid-columnHeader': {
             borderRight: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}`,
             borderLeft: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}`
           },
-          '& .MuiDataGrid-columnHeaders': {
-            border: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}`
-          },
-          '.MuiDataGrid-columnSeparator': {
-            display: 'none'
-          }
+          '& .MuiDataGrid-columnHeaders': { border: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}` },
+          '.MuiDataGrid-columnSeparator': { display: 'none' }
         }}
         getRowClassName={(params) => (params.indexRelativeToCurrentPage % 2 === 0 ? 'Mui-even' : 'Mui-odd')}
         components={{
@@ -221,12 +191,7 @@ const ProjectsTable: React.FC = () => {
             );
           }
         }}
-        componentsProps={{
-          toolbar: {
-            showQuickFilter: true,
-            quickFilterProps: { debounceMs: 500 }
-          }
-        }}
+        componentsProps={{ toolbar: { showQuickFilter: true, quickFilterProps: { debounceMs: 500 } } }}
         onFilterModelChange={(filterModel: GridFilterModel) => {
           const [filterItems] = filterModel.items;
           if (filterItems) localStorage.setItem('projectsTableFilter', JSON.stringify(filterItems));
@@ -243,15 +208,8 @@ const ProjectsTable: React.FC = () => {
               ]
             }
           },
-          sorting: {
-            sortModel: [{ field: 'status', sort: 'asc' }]
-          },
-          columns: {
-            columnVisibilityModel: {
-              carNumber: false,
-              workPackages: false
-            }
-          }
+          sorting: { sortModel: [{ field: 'status', sort: 'asc' }] },
+          columns: { columnVisibilityModel: { carNumber: false, workPackages: false } }
         }}
       />
     </Box>
