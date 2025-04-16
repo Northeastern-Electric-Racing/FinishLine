@@ -145,6 +145,12 @@ const ReimbursementRequests: React.FC = () => {
     >
       <Box sx={{ p: 2 }}>
         <Typography sx={{ fontWeight: 'bold', mb: 1 }}>Filter by Status</Typography>
+        <Box
+          sx={{
+            borderBottom: '2px solid white',
+            mb: 2
+          }}
+        />
         {ALL_STATUSES.map((status) => {
           const isChecked = selectedStatuses.includes(status);
           return (
@@ -158,11 +164,17 @@ const ReimbursementRequests: React.FC = () => {
               }}
             >
               <FormControlLabel control={<Checkbox checked={isChecked} />} label="" />
-              {status.replace(/_/g, ' ')}
+              <Typography sx={{ fontWeight: 'bold' }}>{status.replace(/_/g, ' ')}</Typography>
             </MenuItem>
           );
         })}
         <Typography sx={{ fontWeight: 'bold', mt: 2, mb: 1 }}>Filter by Date</Typography>
+        <Box
+          sx={{
+            borderBottom: '2px solid white',
+            mb: 2
+          }}
+        />
         <Box sx={{ mt: 2 }}>
           <DatePicker
             label="From"
