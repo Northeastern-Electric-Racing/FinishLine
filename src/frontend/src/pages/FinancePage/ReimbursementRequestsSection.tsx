@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useState } from 'react';
-import { ReimbursementRequest, Team, Project, isHead, isLead, isGuest } from 'shared';
+import { ReimbursementRequest, isHead, isLead, isGuest } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { centsToDollar, datePipe, dateUndefinedPipe, fullNamePipe, undefinedPipe } from '../../utils/pipes';
 import FinanceTabs from './FinanceComponents/FinanceTabs';
@@ -33,8 +33,6 @@ import ColumnHeader from './FinanceComponents/ColumnHeader';
 interface ReimbursementRequestTableProps {
   userReimbursementRequests: ReimbursementRequest[];
   allReimbursementRequests?: ReimbursementRequest[];
-  allTeams?: Team[];
-  allProjects?: Project[];
   searchText?: string;
 }
 
@@ -77,6 +75,7 @@ const ReimbursementRequestTable = ({
       if (!searchText) {
         return true;
       }
+
       const query = searchText.trim().toLowerCase().split(/\s+/);
       return query.every(
         (query) =>

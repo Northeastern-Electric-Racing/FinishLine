@@ -20,7 +20,6 @@ import {
 } from '../../hooks/finance.hooks';
 import { useHistory } from 'react-router-dom';
 import ListAltIcon from '@mui/icons-material/ListAlt';
-import { useAllProjects } from '../../hooks/projects.hooks';
 
 const ReimbursementRequests: React.FC = () => {
   const ALL_STATUSES = Object.values(ReimbursementStatusType);
@@ -123,7 +122,6 @@ const ReimbursementRequests: React.FC = () => {
 
   const { data: userReimbursementRequests } = useCurrentUserReimbursementRequests();
   const { data: allReimbursementRequests } = useAllReimbursementRequests();
-  const { data: allProjects } = useAllProjects();
 
   const [searchText, setSearchText] = useState<string>('');
   const [anchorFilterEl, setAnchorFilterEl] = useState<null | HTMLElement>(null);
@@ -187,7 +185,6 @@ const ReimbursementRequests: React.FC = () => {
         <ReimbursementRequestTable
           userReimbursementRequests={userReimbursementRequests ?? []}
           allReimbursementRequests={allReimbursementRequests ?? []}
-          allProjects={allProjects ?? []}
           searchText={searchText}
         />
       </Box>
