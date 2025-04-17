@@ -3,12 +3,6 @@ import {
   CreatePartSubmissionPayload,
   EditPartSubmissionPayload,
   PartReviewRequestPayload,
-  PartReviewPayload
-} from '../hooks/part-review.hooks';
-import {
-  PartPayload,
-  PartSubmissionPayload,
-  PartReviewRequestPayload,
   CreatePartReviewPayload,
   EditPartReviewPayload
 } from '../hooks/part-review.hooks';
