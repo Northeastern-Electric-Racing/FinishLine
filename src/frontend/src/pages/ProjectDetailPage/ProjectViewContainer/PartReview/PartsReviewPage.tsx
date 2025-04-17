@@ -6,8 +6,14 @@ import { useCurrentUser } from '../../../../hooks/users.hooks';
 import { rankUserRole } from 'shared';
 import NERSwitch from '../../../../components/NERSwitch';
 import CommonMistakes from './CommonMistakes';
+import { Project } from 'shared';
+import MyPartsUnderReview from './MyPartsUnderReview';
 
-const PartsReviewPage = () => {
+interface PartsReviewPageProps {
+  project: Project;
+}
+
+const PartsReviewPage: React.FC<PartsReviewPageProps> = ({ project }) => {
   const currentUser = useCurrentUser();
   const [showSubmissionGuide, setShowSubmissionGuide] = useState(() => {
     const userRole = currentUser.role;
@@ -32,21 +38,20 @@ const PartsReviewPage = () => {
           </FormGroup>
         </Grid>
         <Grid item xs={12}>
-          {/* The guide should be toggled off by default for admins, heads, and leads and toggled on for all other roles */}
-
-          {showSubmissionGuide ? (
-            <Grid container spacing={3}>
+          <Grid container spacing={3}>
+            {/* The guide should be toggled off by default for admins, heads, and leads and toggled on for all other roles */}
+            {showSubmissionGuide ? (
               <Grid item xs={12}>
                 <Typography variant="h4">Submission Guide</Typography>
                 <CommonMistakes />
-                {/* Submission Guide components will go here */}
-                <LoadingIndicator />
                 {/* Loading indicator will be replaced by a grid of all the part cards */}
               </Grid>
-            </Grid>
-          ) : (
-            <LoadingIndicator /> /* Loading indicator will be replaced by a grid of all the part cards */
-          )}
+            ) : (
+              <></>
+            )}
+            <MyPartsUnderReview project={project} />
+            <LoadingIndicator />
+          </Grid>
         </Grid>
       </Grid>
     </Box>
