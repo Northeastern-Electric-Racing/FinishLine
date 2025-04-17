@@ -6,27 +6,36 @@ import { useToast } from '../../../../hooks/toasts.hooks';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { FrequentlyAskedQuestion } from 'shared';
+import useFormPersist from 'react-hook-form-persist';
+import { useEffect } from 'react';
 
 interface PartReviewFAQFormModalProps {
   open: boolean;
   handleClose: () => void;
   defaultValues?: FrequentlyAskedQuestion;
-  onSubmit: (data: { question: string; answer: string }) => void;
+  onSubmit: (data: { question: string; answer: string }) => Promise<void>; // ⬅ ensure it's async
 }
 
-const PartReviewFAQFormModal = ({ open, handleClose, defaultValues, onSubmit }: PartReviewFAQFormModalProps) => {
+const schema = yup.object().shape({
+  question: yup.string().required('Question is required'),
+  answer: yup.string().required('Answer is required')
+});
+
+const PartReviewFAQFormModal = ({
+  open,
+  handleClose,
+  defaultValues,
+  onSubmit
+}: PartReviewFAQFormModalProps) => {
   const toast = useToast();
   const creatingNew = defaultValues === undefined;
-
-  const schema = yup.object().shape({
-    question: yup.string().required('Question is required'),
-    answer: yup.string().required('Answer is required')
-  });
 
   const {
     handleSubmit,
     control,
     reset,
+    watch,
+    setValue,
     formState: { errors }
   } = useForm({
     resolver: yupResolver(schema),
@@ -36,10 +45,32 @@ const PartReviewFAQFormModal = ({ open, handleClose, defaultValues, onSubmit }: 
     }
   });
 
+  // Same form storage key pattern as recruitment
+  const formStorageKey = creatingNew ? 'create-part-review-faq' : 'edit-part-review-faq';
+
+  useFormPersist(formStorageKey, {
+    watch,
+    setValue
+  });
+
+  useEffect(() => {
+    reset({
+      question: defaultValues?.question ?? '',
+      answer: defaultValues?.answer ?? ''
+    });
+  }, [defaultValues, reset]);
+
+  const handleCancel = () => {
+    reset({ question: '', answer: '' });
+    sessionStorage.removeItem(formStorageKey);
+    handleClose();
+  };
+
   const onFormSubmit = async (data: { question: string; answer: string }) => {
+    console.log('Submitting form with:', data);
     try {
-      await onSubmit(data);
-      handleClose();
+      await onSubmit(data); // ✅ ensure await
+      handleClose(); // only close after success
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -50,7 +81,7 @@ const PartReviewFAQFormModal = ({ open, handleClose, defaultValues, onSubmit }: 
   return (
     <NERFormModal
       open={open}
-      onHide={handleClose}
+      onHide={handleCancel}
       title={creatingNew ? 'Create FAQ' : 'Edit FAQ'}
       reset={() => reset({ question: '', answer: '' })}
       handleUseFormSubmit={handleSubmit}

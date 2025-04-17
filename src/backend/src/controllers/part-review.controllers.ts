@@ -25,10 +25,6 @@ export default class PartReviewController {
 
   static async getAllPartReviewFAQS(req: Request, res: Response, next: NextFunction) {
     try {
-      const orgId = req.organization.organizationId;
-
-      // ✅ LOG HERE
-      console.log('📥 Fetching FAQs for org:', orgId);
       const partReviewFAQS = await PartReviewService.getAllPartReviewFAQs(req.organization.organizationId);
       res.status(200).json(partReviewFAQS);
     } catch (error: unknown) {
@@ -85,8 +81,6 @@ export default class PartReviewController {
   static async createFaq(req: Request, res: Response, next: NextFunction) {
     try {
       const { question, answer } = req.body;
-      console.log('📤 Creating FAQ for org:', req.organization.organizationId);
-      console.log('👤 Creator ID:', req.currentUser?.userId);
       const faq = await PartReviewService.createFaq(question, answer, req.currentUser, req.organization.organizationId);
       res.status(200).json(faq);
     } catch (error: unknown) {
@@ -105,7 +99,7 @@ export default class PartReviewController {
         req.currentUser,
         req.organization.organizationId
       );
-      res.status(200).json(updatedfaq);
+      res.status(201).json(updatedfaq);
     } catch (error: unknown) {
       next(error);
     }

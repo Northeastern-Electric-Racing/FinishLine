@@ -29,7 +29,7 @@ partsRouter.post(
 partsRouter.post('/partTag/:partTagId/delete', PartReviewController.deletePartTag);
 
 partsRouter.post(
-  '/faq/create',
+  '/faqs/create',
   nonEmptyString(body('question')),
   nonEmptyString(body('answer')),
   validateInputs,
@@ -37,14 +37,14 @@ partsRouter.post(
 );
 
 partsRouter.post(
-  '/faq/:faqId/update',
+  '/faqs/:faqId/update',
   nonEmptyString(body('question')),
   nonEmptyString(body('answer')),
   validateInputs,
   PartReviewController.updateFaq
 );
 
-partsRouter.post('/faq/:faqId/delete', PartReviewController.deleteFaq);
+partsRouter.post('/faqs/:faqId/delete', PartReviewController.deleteFaq);
 
 partsRouter.get('/common-mistakes', PartReviewController.getAllCommonMistakes);
 

@@ -282,11 +282,6 @@ export const useAllPartReviewFaqs = () => {
       const { data } = await getAllPartReviewFaqs();
       return data;
     },
-    {
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      refetchInterval: false // just to be safe
-    }
   );
 };
 
@@ -298,11 +293,24 @@ export const useAllPartReviewFaqs = () => {
  */
 export const useCreatePartReviewFaq = () => {
   const queryClient = useQueryClient();
-  return useMutation(createPartReviewFaq, {
-    onSuccess: async () => {
-      await queryClient.invalidateQueries(['partReviewFaqs']);
-    }  });
+
+  return useMutation(
+    async (data: { question: string; answer: string }) => {
+      const response = await createPartReviewFaq(data);
+      return response.data;
+    },
+    {
+      onSuccess: async (createdFaq) => {
+        await queryClient.cancelQueries(['partReviewFaqs']);
+        queryClient.setQueryData(['partReviewFaqs'], (old: FrequentlyAskedQuestion[] = []) => [
+          ...old,
+          createdFaq
+        ]);
+      }
+    }
+  );
 };
+
 
 /**
  * React Query hook to edit an existing Part Review FAQ.

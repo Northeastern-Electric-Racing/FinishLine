@@ -16,11 +16,18 @@ const EditPartReviewFAQModal = ({ open, handleClose, faq }: EditPartReviewFAQMod
   if (isError && error instanceof Error) return <ErrorPage message={error.message} />;
   if (isLoading) return <LoadingIndicator />;
 
-  const handleSubmit = (data: { question: string; answer: string }) => {
-    return mutateAsync({ faqId: faq.faqId, payload: data });
+  const handleSubmit = async (data: { question: string; answer: string }) => {
+    await mutateAsync({ faqId: faq.faqId, payload: data });
   };
 
-  return <PartReviewFAQFormModal open={open} handleClose={handleClose} defaultValues={faq} onSubmit={handleSubmit} />;
+  return (
+    <PartReviewFAQFormModal
+      open={open}
+      handleClose={handleClose}
+      defaultValues={faq}
+      onSubmit={handleSubmit}
+    />
+  );
 };
 
 export default EditPartReviewFAQModal;

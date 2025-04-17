@@ -15,6 +15,7 @@ import NERDeleteModal from '../../../../components/NERDeleteModal';
 import { useAllPartReviewFaqs, useDeletePartReviewFaq } from '../../../../hooks/part-review.hooks';
 import { useToast } from '../../../../hooks/toasts.hooks';
 import { FrequentlyAskedQuestion } from 'shared';
+import { useQueryClient } from 'react-query';
 
 const PartsReviewFAQTable: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -25,18 +26,25 @@ const PartsReviewFAQTable: React.FC = () => {
   const { mutateAsync: deleteFaq } = useDeletePartReviewFaq();
   const toast = useToast();
 
-  const handleDelete = async (faqId: string) => {
-    try {
-      await deleteFaq(faqId);
-      toast.success('FAQ deleted successfully');
-    } catch (e) {
-      if (e instanceof Error) {
-        toast.error(e.message);
-      }
-    } finally {
-      setDeletingFaqId(null);
+  console.log('FAQs length:', faqs?.length);
+console.log('FAQs:', faqs);
+
+const queryClient = useQueryClient();
+
+const handleDelete = async (faqId: string) => {
+  try {
+    await deleteFaq(faqId);
+    await queryClient.invalidateQueries(['partReviewFaqs']);
+    await queryClient.refetchQueries(['partReviewFaqs']);
+    toast.success('FAQ deleted successfully');
+  } catch (e) {
+    if (e instanceof Error) {
+      toast.error(e.message);
     }
-  };
+  } finally {
+    setDeletingFaqId(null);
+  }
+};
 
   if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error instanceof Error ? error.message : 'Unknown error'} />;
