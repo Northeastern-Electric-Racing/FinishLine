@@ -51,6 +51,8 @@ export default class PartReviewService {
    * @returns all the part review faqs from the given organization
    */
   static async getAllPartReviewFAQs(organizationId: string) {
+    console.log('📥 DB FETCH: FAQs for org:', organizationId);
+
     const partReviewFAQs = await prisma.frequentlyAskedQuestion.findMany({
       where: { dateDeleted: null, partReviewFaqOrgId: organizationId },
       ...getFaqQueryArgs(organizationId)
@@ -58,6 +60,7 @@ export default class PartReviewService {
 
     return partReviewFAQs.map(faqTransformer);
   }
+
 
   /**
    * creates a new part tag with no ascociated parts

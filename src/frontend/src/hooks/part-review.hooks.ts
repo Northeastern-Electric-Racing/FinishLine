@@ -276,11 +276,20 @@ export const useEditPartReview = (reviewId: string) => {
  * @returns Query result containing FAQs data, loading state, and error state.
  */
 export const useAllPartReviewFaqs = () => {
-  return useQuery<FrequentlyAskedQuestion[], Error>(['partReviewFaqs'], async () => {
-    const { data } = await getAllPartReviewFaqs();
-    return data;
-  });
+  return useQuery<FrequentlyAskedQuestion[], Error>(
+    ['partReviewFaqs'],
+    async () => {
+      const { data } = await getAllPartReviewFaqs();
+      return data;
+    },
+    {
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchInterval: false // just to be safe
+    }
+  );
 };
+
 
 /**
  * React Query hook to create a new Part Review FAQ.
@@ -290,8 +299,9 @@ export const useAllPartReviewFaqs = () => {
 export const useCreatePartReviewFaq = () => {
   const queryClient = useQueryClient();
   return useMutation(createPartReviewFaq, {
-    onSuccess: () => queryClient.invalidateQueries(['partReviewFaqs'])
-  });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries(['partReviewFaqs']);
+    }  });
 };
 
 /**

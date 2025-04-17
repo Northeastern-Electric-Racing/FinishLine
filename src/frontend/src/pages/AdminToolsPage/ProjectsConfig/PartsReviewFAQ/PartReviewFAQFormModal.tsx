@@ -39,12 +39,12 @@ const PartReviewFAQFormModal = ({ open, handleClose, defaultValues, onSubmit }: 
   const onFormSubmit = async (data: { question: string; answer: string }) => {
     try {
       await onSubmit(data);
+      handleClose();
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
       }
     }
-    handleClose();
   };
 
   return (
