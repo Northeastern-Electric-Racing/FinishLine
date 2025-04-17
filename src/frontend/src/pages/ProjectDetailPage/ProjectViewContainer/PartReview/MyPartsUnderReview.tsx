@@ -28,7 +28,7 @@ const MyPartsUnderReview: React.FC<MyPartsUnderReviewProps> = ({ project }) => {
   return (
     <Grid item xs={12}>
       <Typography variant="h4" sx={{ mb: 1 }}>
-        My Parts Under Review
+        My Parts Under Review ({partsUnderReview.length})
       </Typography>
       <Box
         sx={{
