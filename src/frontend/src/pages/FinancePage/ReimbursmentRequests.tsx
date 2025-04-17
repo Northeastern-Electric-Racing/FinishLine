@@ -131,6 +131,12 @@ const ReimbursementRequests: React.FC = () => {
   const [startDate, setStartDate] = useState<null | Date>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
 
+  const clearData = () => {
+    setSelectedStatuses([]);
+    setStartDate(null);
+    setEndDate(null);
+  };
+
   const handleFilterMenuOpen = (e: React.MouseEvent<HTMLElement>) => setAnchorFilterEl(e.currentTarget);
   const handleFilterMenuClose = () => {
     setAnchorFilterEl(null);
@@ -143,8 +149,30 @@ const ReimbursementRequests: React.FC = () => {
       onClose={handleFilterMenuClose}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
     >
-      <Box sx={{ p: 2 }}>
-        <Typography sx={{ fontWeight: 'bold', mb: 1 }}>Filter by Status</Typography>
+      <Box sx={{ ml: 2, mr: 2, mt: 1 }}>
+        <Box sx={{ display: 'inline-flex', mb: 1 }}>
+          <Typography sx={{ fontWeight: 'bold', mb: 1 }}>Filter by Status</Typography>
+          <Box sx={{ ml: 20 }}>
+            <Button
+              className="viewButton"
+              size="small"
+              variant="contained"
+              onClick={clearData}
+              sx={{
+                borderRadius: '8px',
+                color: '#ededed',
+                backgroundColor: '#dd514c',
+                boxShadow: '0px 4px rgba(0,0,0,0.3)',
+                padding: '2px 6px',
+                '&:hover': {
+                  backgroundColor: '#c74340'
+                }
+              }}
+            >
+              Clear
+            </Button>
+          </Box>
+        </Box>
         <Box
           sx={{
             borderBottom: '2px solid white',
@@ -180,6 +208,9 @@ const ReimbursementRequests: React.FC = () => {
             label="From"
             value={startDate}
             slotProps={{
+              textField: {
+                fullWidth: true
+              },
               field: { clearable: true }
             }}
             onChange={(newValue: Date | null) => setStartDate(newValue)}
@@ -190,6 +221,9 @@ const ReimbursementRequests: React.FC = () => {
             label="Until"
             value={endDate}
             slotProps={{
+              textField: {
+                fullWidth: true
+              },
               field: { clearable: true }
             }}
             onChange={(newValue: Date | null) => setEndDate(newValue)}
