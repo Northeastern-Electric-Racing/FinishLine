@@ -23,7 +23,7 @@ import ListAltIcon from '@mui/icons-material/ListAlt';
 import { DatePicker } from '@mui/x-date-pickers';
 
 const ReimbursementRequests: React.FC = () => {
-  const ALL_STATUSES = Object.values(ReimbursementStatusType);
+  const allStatuses = Object.values(ReimbursementStatusType);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [, setAccountCreditModalShow] = useState<boolean>(false);
   const [, setShowPendingAdvisorListModal] = useState(false);
@@ -181,7 +181,7 @@ const ReimbursementRequests: React.FC = () => {
             mb: 2
           }}
         />
-        {ALL_STATUSES.map((status) => {
+        {allStatuses.map((status) => {
           const isChecked = selectedStatuses.includes(status);
           return (
             <MenuItem

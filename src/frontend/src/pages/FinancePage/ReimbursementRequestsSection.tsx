@@ -62,21 +62,13 @@ const ReimbursementRequestTable = ({
   const [tabValue, setTabValue] = useState(0);
   const user = useCurrentUser();
   const canViewAllReimbursementRequests = user.isFinance || isHead(user.role) || isLead(user.role);
-  // const canViewTeamReimbursements = isHead(user.role) || isLead(user.role);
-
-  // let teamUserIds: string[] = [];
-  // if (!canViewAllReimbursementRequests && canViewTeamReimbursements && allTeams) {
-  //   const teamsUserIsIn = allTeams.filter((team) => team.head.userId === user.userId);
-
-  //   teamUserIds = teamsUserIsIn.flatMap((team) => [team.head.userId, ...team.members.map((m) => m.userId)]);
-  // }
 
   const displayedReimbursementRequests =
     tabValue === 1 && allReimbursementRequests ? allReimbursementRequests : userReimbursementRequests;
 
   const rows = displayedReimbursementRequests
     .map(createReimbursementRequestRowData)
-
+    // NOTE : Look into backend filtering
     .filter((row) => {
       const submitted = new Date(row.dateSubmitted);
 
@@ -98,7 +90,7 @@ const ReimbursementRequestTable = ({
       const query = searchText.trim().toLowerCase().split(/\s+/);
       return query.every(
         (query) =>
-          // see if anything displayed to the user matches the query
+          // search filters
           row.status.toLowerCase().includes(query) ||
           ('' + row.identifier).toLowerCase().includes(query) ||
           ('' + fullNamePipe(row.submitter)).toLowerCase().includes(query) ||
@@ -183,8 +175,10 @@ const ReimbursementRequestTable = ({
     }
   };
 
+  // calculate money
   const getRefundTotal = rows.reduce((sum, row) => sum + row.amount, 0);
 
+  // handle pagination
   const handleChangePage = (_event: unknown, page: number) => {
     setPage(page);
   };
