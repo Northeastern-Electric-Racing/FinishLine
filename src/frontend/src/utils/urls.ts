@@ -53,12 +53,13 @@ const partsCreateSubmission = (partId: string) => `${parts()}/submission/${partI
 const partsEditSubmission = (submissionId: string) => `${parts()}/submission/${submissionId}/update`;
 const partsCreateReviewRequest = (submissionId: string) => `${parts()}/reviewRequest/${submissionId}/create`;
 const partsDeleteReviewRequest = (reviewRequestId: string) => `${parts()}/reviewRequest/${reviewRequestId}/delete`;
-const partsCreateReview = (submissionId: string) => `${parts()}/review/${submissionId}/create`;
+const partsCreateReview = () => `${parts()}/review/create`;
 const partsEditReview = (reviewId: string) => `${parts()}/review/${reviewId}/update`;
 const partsCreateCommonMistake = () => `${parts()}/common-mistake/create`;
 const partsEditCommonMistake = (commonMistakeId: string) => `${parts()}/common-mistake/${commonMistakeId}/update`;
 const partsDeleteCommonMistake = (commonMistakeId: string) => `${parts()}/common-mistake/${commonMistakeId}/delete`;
 const partsCommonMistake = () => `${parts()}/common-mistakes`;
+const partsReviewUploadFiles = (reviewId: string) => `${parts()}/review/${reviewId}/upload-files`;
 const getAllPartCommonMistakes = () => `${parts()}/common-mistakes`;
 
 /**************** Tasks Endpoints ********************/
@@ -314,6 +315,7 @@ export const apiUrls = {
   partsEditCommonMistake,
   partsDeleteCommonMistake,
   partsCommonMistake,
+  partsReviewUploadFiles,
   getAllPartCommonMistakes,
 
   tasksCreate,

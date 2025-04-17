@@ -19,7 +19,8 @@ import {
   DeletedException,
   HttpException,
   NotFoundException,
-  AccessDeniedGuestException
+  AccessDeniedGuestException,
+  InvalidOrganizationException
 } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
 import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
@@ -33,7 +34,8 @@ import {
   partReviewRequestTransformer,
   partsReviewCommonMistakeTransformer,
   partTransformer,
-  partPreviewTransformer
+  partPreviewTransformer,
+  partReviewTransformer
 } from '../transformers/part-review.transformer';
 import { isUserPartOfTeams } from '../utils/teams.utils';
 import { uploadFile } from '../utils/google-integration.utils';
@@ -260,6 +262,149 @@ export default class PartReviewService {
     });
 
     return partTransformer(deletedPart);
+  }
+
+  /**
+   * Creates a review on a submission for a part
+   * @param organizationId the organization
+   * @param creator the creator of the review
+   * @param submissionId the submission
+   * @param notes optional notes on the review
+   * @param newPartStatus the new status of the part which the review is added to.
+   * if this status is Reviewed or approved, the completedAt date is set to now
+   * @returns the created review
+   */
+  static async createReview(
+    organizationId: string,
+    creator: User,
+    submissionId: string,
+    newPartStatus: string,
+    notes: string
+  ) {
+    const submission = await prisma.partSubmission.findUnique({
+      where: { partSubmissionId: submissionId },
+      include: { part: { include: { project: { include: { wbsElement: true } } } } }
+    });
+
+    if (!submission) throw new NotFoundException('Part Submission', submissionId);
+    if (submission.dateDeleted) throw new DeletedException('Part Submission', submissionId);
+    if (submission.part.project.wbsElement.organizationId !== organizationId)
+      throw new InvalidOrganizationException('Part Submission');
+
+    const review_status = newPartStatus as Review_Status;
+    const completedAt =
+      review_status === Review_Status.APPROVED || review_status === Review_Status.REVIEWED ? new Date() : null;
+
+    await prisma.part.update({
+      where: {
+        partId: submission.partId
+      },
+      data: {
+        status: review_status
+      }
+    });
+
+    const review = await prisma.partReview.create({
+      data: {
+        submission: {
+          connect: { partSubmissionId: submissionId }
+        },
+        userCreated: {
+          connect: { userId: creator.userId }
+        },
+        notes,
+        completedAt
+      },
+      ...getPartReviewQueryArgs(organizationId)
+    });
+
+    return partReviewTransformer(review);
+  }
+
+  /**
+   * Updates an existing review
+   * @param organizationId the organization
+   * @param updater the user updating (must be creator)
+   * @param reviewId the review being updated
+   * @param newPartStatus the new status of the part which the review is added to.
+   * if this status is Reviewed or approved, the completedAt date is set to now
+   * @param notes notes for the review
+   * @returns the updated review
+   */
+  static async updateReview(organizationId: string, updater: User, reviewId: string, newPartStatus: string, notes: string) {
+    const review = await prisma.partReview.findUnique({
+      where: { partReviewId: reviewId },
+      include: { submission: { include: { part: { include: { project: { include: { wbsElement: true } } } } } } }
+    });
+
+    if (!review) throw new NotFoundException('Part Review', reviewId);
+    if (review.dateDeleted) throw new DeletedException('Part Review', reviewId);
+    if (review.submission.part.project.wbsElement.organizationId !== organizationId)
+      throw new InvalidOrganizationException('Part Review');
+
+    if (updater.userId !== review.userCreatedId) throw new AccessDeniedException('only review creators can update reviews');
+
+    const review_status = newPartStatus as Review_Status;
+    const completedAt =
+      review_status === Review_Status.APPROVED || review_status === Review_Status.REVIEWED ? new Date() : null;
+
+    const updatedReview = await prisma.partReview.update({
+      where: { partReviewId: reviewId },
+      data: {
+        notes,
+        completedAt
+      },
+      ...getPartReviewQueryArgs(organizationId)
+    });
+
+    await prisma.part.update({
+      where: {
+        partId: review.submission.partId
+      },
+      data: {
+        status: review_status
+      }
+    });
+
+    return partReviewTransformer(updatedReview);
+  }
+
+  /**
+   * Uploads an array of files to a given review
+   * @param reviewId the review
+   * @param uploader the user uploading (must be creator)
+   * @param organizationId the organization
+   * @param files an array of files to upload
+   * @returns the updated review
+   */
+  static async uploadReviewFiles(reviewId: string, uploader: User, organizationId: string, files: Express.Multer.File[]) {
+    const review = await prisma.partReview.findUnique({
+      where: { partReviewId: reviewId },
+      include: { submission: { include: { part: { include: { project: { include: { wbsElement: true } } } } } } }
+    });
+
+    if (!review) throw new NotFoundException('Part Review', reviewId);
+    if (review.dateDeleted) throw new DeletedException('Part Review', reviewId);
+    if (review.submission.part.project.wbsElement.organizationId !== organizationId)
+      throw new InvalidOrganizationException('Part Review');
+
+    if (uploader.userId !== review.userCreatedId) throw new AccessDeniedException('only review creators can update reviews');
+
+    const fileIds = await Promise.all(
+      files.map(async (file) => {
+        return (await uploadFile(file)).id;
+      })
+    );
+
+    const updatedReview = await prisma.partReview.update({
+      where: { partReviewId: reviewId },
+      data: {
+        fileIds
+      },
+      ...getPartReviewQueryArgs(organizationId)
+    });
+
+    return partReviewTransformer(updatedReview);
   }
 
   /**

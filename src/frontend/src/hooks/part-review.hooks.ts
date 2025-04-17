@@ -25,7 +25,8 @@ import {
   getPartsFromProject,
   getSinglePart,
   getAllCommonMistakes,
-  uploadPreviewImage
+  uploadPreviewImage,
+  setUploadReviewFiles
 } from '../apis/part-review.api';
 
 export interface PartPayload {
@@ -49,9 +50,15 @@ export interface PartReviewRequestPayload {
   reviewRequestedId: string;
 }
 
-export interface PartReviewPayload {
-  fileIds: string[];
+export interface CreatePartReviewPayload {
+  submissisonId: string;
   notes?: string;
+  status?: string;
+}
+
+export interface EditPartReviewPayload {
+  notes?: string;
+  status?: Review_Status;
 }
 
 export interface PartReviewCommonMistakePayload {
@@ -247,15 +254,13 @@ export const useDeletePartReviewRequest = (reviewRequestId: string) => {
 
 /**
  * Custom React Hook to create a new part review
- *
- * @param submissionId the id of the part submission to create the review for
  */
-export const useCreatePartReview = (submissionId: string) => {
+export const useCreatePartReview = () => {
   const queryClient = useQueryClient();
-  return useMutation<PartReview, Error, PartReviewPayload>(
+  return useMutation<PartReview, Error, CreatePartReviewPayload>(
     ['parts', 'createReview'],
-    async (review: PartReviewPayload) => {
-      const { data } = await createPartReview(submissionId, review);
+    async (review: CreatePartReviewPayload) => {
+      const { data } = await createPartReview(review);
       return data;
     },
     {
@@ -273,10 +278,25 @@ export const useCreatePartReview = (submissionId: string) => {
  */
 export const useEditPartReview = (reviewId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<PartReview, Error, PartReviewPayload>(
+  return useMutation<PartReview, Error, EditPartReviewPayload>(
     ['parts', 'editReview'],
-    async (partReview: PartReviewPayload) => {
+    async (partReview: EditPartReviewPayload) => {
       const { data } = await editPartReview(reviewId, partReview);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['parts']);
+      }
+    }
+  );
+};
+
+export const useUploadReviewFiles = (reviewId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<any, unknown, File[]>(
+    async (images: File[]) => {
+      const { data } = await setUploadReviewFiles(reviewId, images);
       return data;
     },
     {

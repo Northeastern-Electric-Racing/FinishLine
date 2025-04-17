@@ -27,8 +27,29 @@ partsRouter.post(
   PartReviewController.createPart
 );
 
-partsRouter.get('/tags', PartReviewController.getAllPartTags);
-partsRouter.get('/faqs', PartReviewController.getAllPartReviewFAQS);
+partsRouter.post(
+  '/review/create',
+  nonEmptyString(body('submissionId')),
+  body('notes').optional().isString(),
+  body('status').custom((value) => Object.values<string>(Review_Status).includes(value)),
+  validateInputs,
+  PartReviewController.createReview
+);
+
+partsRouter.post(
+  '/review/:reviewId/update',
+  body('notes').optional().isString(),
+  body('status').custom((value) => Object.values<string>(Review_Status).includes(value)),
+  validateInputs,
+  PartReviewController.updateReview
+);
+
+partsRouter.post(
+  '/review/:reviewId/upload-files',
+  upload.array('files', 10),
+  validateInputs,
+  PartReviewController.uploadReviewFiles
+);
 
 partsRouter.post(
   '/partTag/create',
@@ -130,6 +151,7 @@ partsRouter.post(
   PartReviewController.createPartReviewRequest
 );
 
+partsRouter.post('/:partId/delete', PartReviewController.deletePart);
 partsRouter.post('/reviewRequest/:reviewRequestId/delete', PartReviewController.deletePartReviewRequest);
 
 export default partsRouter;
