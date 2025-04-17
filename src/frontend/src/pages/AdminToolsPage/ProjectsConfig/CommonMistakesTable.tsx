@@ -21,7 +21,7 @@ const CommonMistakesTable: React.FC = () => {
   const [mistakeToEdit, setMistakeToEdit] = useState<PartReviewCommonMistake | null>(null);
   const [mistakeToDelete, setMistakeToDelete] = useState<PartReviewCommonMistake | null>(null);
 
-  const { data, isLoading, isError, error } = useCommonMistakes();
+  const { data: commonMistakes, isLoading, isError, error } = useCommonMistakes();
   const { mutateAsync: mutateDeleteAsync } = useDeletePartReviewCommonMistake();
   const { mutateAsync: mutateEditAsync } = useEditPartReviewCommonMistakes();
   const toast = useToast();
@@ -34,11 +34,9 @@ const CommonMistakesTable: React.FC = () => {
     return <ErrorPage message={error?.message} />;
   }
 
-  if (!data) {
+  if (!commonMistakes) {
     return <ErrorPage message="No common mistakes found" />;
   }
-
-  const commonMistakes = [...data];
 
   const handleEdit = (mistake: PartReviewCommonMistake) => {
     setMistakeToEdit(mistake);
