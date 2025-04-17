@@ -21,7 +21,6 @@ import {
 import { useHistory } from 'react-router-dom';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import { DatePicker } from '@mui/x-date-pickers';
-import { set } from 'react-hook-form';
 
 const ReimbursementRequests: React.FC = () => {
   const ALL_STATUSES = Object.values(ReimbursementStatusType);
@@ -66,6 +65,9 @@ const ReimbursementRequests: React.FC = () => {
         variant="contained"
         id="project-actions-dropdown"
         onClick={handleClick}
+        sx={{
+          color: 'white'
+        }}
       >
         Actions
       </NERButton>
