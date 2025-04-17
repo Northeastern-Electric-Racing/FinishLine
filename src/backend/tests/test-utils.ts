@@ -100,12 +100,18 @@ export const createTestUser = async (
 
 export const resetUsers = async () => {
   await prisma.part_Review_Popup.deleteMany();
+  await prisma.partReviewRequest.deleteMany();
   await prisma.partReview.deleteMany();
   await prisma.partSubmission.deleteMany();
   await prisma.partReviewCommonMistake.deleteMany();
   await prisma.partTag.deleteMany();
   await prisma.part.deleteMany();
   await prisma.work_Package.deleteMany();
+  await prisma.partReviewCommonMistake.deleteMany();
+  await prisma.partTag.deleteMany();
+  await prisma.part_Review_Popup.deleteMany();
+  await prisma.partReview.deleteMany();
+  await prisma.partSubmission.deleteMany();
   await prisma.part.deleteMany();
   await prisma.project.deleteMany();
   await prisma.frequentlyAskedQuestion.deleteMany();
@@ -844,4 +850,36 @@ export const createMinimalPartReview = async (user: User, orgId: string): Promis
   const review = await createTestPartReview('review-id', [], 'Review notes', submission, [], user.userId);
 
   return review;
+};
+
+export const createMinimalPartReviewForReview = async (
+  user: User,
+  orgId: string
+): Promise<{ review: PartReview; partId: string }> => {
+  const car = await createTestCar(orgId, user.userId);
+  const project = await createTestProject(user, orgId, undefined, car.carId);
+
+  const part = await prisma.part.create({
+    data: {
+      index: 1,
+      commonName: 'Test Part',
+      description: 'For testing popups',
+      projectId: project.projectId,
+      userCreatedId: user.userId
+    }
+  });
+
+  const submission = await createTestPartSubmission(
+    'sub-id',
+    [],
+    'Submission Name',
+    'Some notes',
+    part.partId,
+    user.userId,
+    []
+  );
+
+  const review = await createTestPartReview('review-id', [], 'Review notes', submission, [], user.userId);
+
+  return { review, partId: part.partId };
 };
