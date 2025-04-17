@@ -1,14 +1,11 @@
 import { Box, Typography, IconButton, Chip, Stack } from '@mui/material';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
-import { useSinglePart } from '../../../hooks/part-review.hooks';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import { Part, Review_Status } from 'shared';
+import { Part, Review_Status, User } from 'shared';
 
 /**
  * gets the status color for each status case
- * (should probably export/reposition later for better placement as a parts utils function)
 */
-const getReviewStatusColor = (status: Review_Status) => {
+export const getReviewStatusColor = (status: Review_Status) => {
     switch (status) {
       case 'IN_PROGRESS':
         return '#FF7700'; 
@@ -28,29 +25,28 @@ const getReviewStatusColor = (status: Review_Status) => {
 
 /**
  * converts a status to a string name format
- * (should probably export/reposition later for better placement as a parts utils function)
 */
-const getReviewStatusName = (status: Review_Status) => {
-switch (status) {
-    case 'IN_PROGRESS':
-    return 'Review In Progress'; 
-    case 'READY_FOR_REVIEW':
-    return 'Ready For Review';    
-    case 'IN_REVIEW':
-    return 'In Review';  
-    case 'REVIEWED':
-    return 'Reviewed';  
-    case 'APPROVED':
-    return 'Approved';   
-    default:
-    return 'N/A';
-}
+export const getReviewStatusDisplayName = (status: Review_Status) => {
+  switch (status) {
+      case 'IN_PROGRESS':
+      return 'Review In Progress'; 
+      case 'READY_FOR_REVIEW':
+      return 'Ready For Review';    
+      case 'IN_REVIEW':
+      return 'In Review';  
+      case 'REVIEWED':
+      return 'Reviewed';  
+      case 'APPROVED':
+      return 'Approved';   
+      default:
+      return 'N/A';
+  }
 };
 
 /**
  * get status color of a reviewer
  */ 
-function getReviewerDotColor(data: Part, reviewerId: String) {
+export function getReviewerDotColor(data: Part, reviewerId: String) {
     const hasReviewed = data.submissions.some(submission => 
       submission.reviews.some(review => 
         review.userCreated.userId === reviewerId && review.completedAt
@@ -70,26 +66,49 @@ function getReviewerDotColor(data: Part, reviewerId: String) {
     return '#FF3333';
   }
 
-const PartPageOverview: React.FC = () => {
-    const { isLoading, data: part, isError, error } = useSinglePart();
+/**
+ * returns the given user's name and a notification button
+ */ 
+function displayAssigneeOrReviewer(anyUser: User) {
+  return  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <IconButton
+                size = 'small'
+                onClick= {(e) => {
+                    e.currentTarget.style.backgroundColor = '#FF0000';
+                    e.currentTarget.disabled = true;
+                }}
+                sx={{
+                    backgroundColor: '#444444',
+                    color: 'white',
+                    borderRadius: '50%',
+                    '&:hover': {
+                    backgroundColor: '#555555',
+                    },
+                    mr: 1
+                }}
+                >
+                <NotificationsNoneIcon fontSize='inherit'/>
+            </IconButton>
+            <Typography>{anyUser.firstName} {anyUser.lastName}</Typography>
+        </Box> 
+}
+
+/**
+ * interface to give part prop a type
+ */
+interface PartPageOverviewProps {
+  part: Part;
+}
+
+const PartPageOverview: React.FC<PartPageOverviewProps> = ({ part }) => {
     
-    if (isLoading) {
-        return <LoadingIndicator />;
-      }
-    
-    if (isError || !part) {
-        throw error;
-    }
 
     const statusColor: string = getReviewStatusColor(part.status);
-    const statusName: string = getReviewStatusName(part.status);
+    const statusName: string = getReviewStatusDisplayName(part.status);
     
   return (
         <Box
             sx={{
-                backgroundColor: 'transparent',
-                width: '100%',
-                borderRadius: 2,
                 display: 'flex-col',
                 mb: 2
             }}
@@ -122,9 +141,6 @@ const PartPageOverview: React.FC = () => {
             </Typography>
             <Box
                 sx={{
-                    backgroundColor: 'transparent',
-                    width: '100%',
-                    borderRadius: 2,
                     display: 'flex',
                     mb: 2
                 }}
@@ -132,27 +148,7 @@ const PartPageOverview: React.FC = () => {
                 <Stack direction={'column'} spacing={0.5} width='50%'>
                     <Typography>Assignees:</Typography>
                     {part.assignees.map((user) => (
-                        <Typography sx={{ display: 'flex', alignItems: 'center' }}>
-                            <IconButton
-                                size = 'small'
-                                onClick= {(e) => {
-                                    e.currentTarget.style.backgroundColor = '#FF0000';
-                                    e.currentTarget.disabled = true;
-                                }}
-                                sx={{
-                                    backgroundColor: '#444444',
-                                    color: 'white',
-                                    borderRadius: '50%',
-                                    '&:hover': {
-                                    backgroundColor: '#555555',
-                                    },
-                                    mr: 1
-                                }}
-                                >
-                                <NotificationsNoneIcon fontSize='inherit'/>
-                            </IconButton>
-                            <Typography>{user.firstName} {user.lastName}]</Typography>
-                        </Typography> 
+                        displayAssigneeOrReviewer(user)
                     ))}
                 </Stack>
                 <Stack direction={'column'} spacing={0.5} width='50%'>
@@ -160,42 +156,22 @@ const PartPageOverview: React.FC = () => {
                         Reviewers:
                     </Typography>
                     {part.reviewRequests.map((revReq) => (
-                        <Typography sx={{ display: 'flex', alignItems: 'center' }}>
-                            <IconButton
-                                size = 'small'
-                                onClick= {(e) => {
-                                    e.currentTarget.style.backgroundColor = '#FF0000';
-                                    e.currentTarget.disabled = true;
-                                }}
-                                sx={{
-                                    backgroundColor: '#444444',
-                                    color: 'white',
-                                    borderRadius: '50%',
-                                    '&:hover': {
-                                    backgroundColor: '#555555',
-                                    },
-                                    mr: 1
-                                }}
-                                >
-                                <NotificationsNoneIcon fontSize='inherit'/>
-                            </IconButton>
-                            <Typography>
-                                {revReq.reviewerRequested.firstName} {revReq.reviewerRequested.lastName}
-                            </Typography>
-                            <Box
-                                sx={{
-                                    width: '10px',
-                                    height: '10px',
-                                    ml: 0.5,
-                                    borderRadius: '50%',
-                                    backgroundColor: getReviewerDotColor(part, revReq.reviewerRequested.userId),
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                }}
-                                >
-                            </Box>
-                        </Typography> 
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          {displayAssigneeOrReviewer(revReq.reviewerRequested)}
+                          <Box
+                              sx={{
+                                  width: '10px',
+                                  height: '10px',
+                                  ml: 0.5,
+                                  borderRadius: '50%',
+                                  backgroundColor: getReviewerDotColor(part, revReq.reviewerRequested.userId),
+                                  display: 'flex',
+                                  justifyContent: 'center',
+                                  alignItems: 'center',
+                              }}
+                              >
+                          </Box>
+                        </Box> 
                     ))}
                 </Stack>
             </Box>
