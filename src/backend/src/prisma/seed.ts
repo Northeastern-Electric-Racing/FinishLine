@@ -2329,6 +2329,42 @@ const performSeed: () => Promise<void> = async () => {
     }
   });
 
+  const part9Example = await prisma.part.create({
+    data: {
+      partId: '009',
+      index: 105,
+      commonName: 'huge battery',
+      status: 'IN_PROGRESS',
+      project: {
+        connect: { projectId: project7Id }
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      },
+      assignees: {
+        connect: { userId: flash.userId }
+      }
+    }
+  });
+
+  const part10Example = await prisma.part.create({
+    data: {
+      partId: '010',
+      index: 106,
+      commonName: 'small battery',
+      status: 'APPROVED',
+      project: {
+        connect: { projectId: project7Id }
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      },
+      assignees: {
+        connect: { userId: flash.userId }
+      }
+    }
+  });
+
   const partSubmissionExample1 = await prisma.partSubmission.create({
     data: {
       partSubmissionId: 'submissionId001',
