@@ -387,4 +387,21 @@ export default class PartReviewController {
       next(error);
     }
   }
+
+  static async downloadSubmissionFile(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { submissionId } = req.params;
+
+      const fileData = await PartReviewService.downloadSubmissionFile(submissionId);
+
+      res.setHeader('content-type', String(fileData.type));
+      res.setHeader('content-length', fileData.buffer.length);
+      res.setHeader('content-disposition', `attachment; filename="${fileData.name}"`);
+
+      res.send(fileData.buffer);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
 }
+

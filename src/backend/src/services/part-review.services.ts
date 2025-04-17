@@ -40,6 +40,7 @@ import {
 import { isUserPartOfTeams } from '../utils/teams.utils';
 import { uploadFile } from '../utils/google-integration.utils';
 import ProjectsService from './projects.services';
+import * as fs from 'fs';
 
 export default class PartReviewService {
   /**
@@ -1055,5 +1056,26 @@ export default class PartReviewService {
     });
 
     return deletedPopup;
+  }
+
+  static async downloadSubmissionFile(submissionId: string): Promise<{ buffer: Buffer; type: string; name: string }> {
+    const submission = await prisma.partSubmission.findUnique({
+      where: { partSubmissionId: submissionId }
+    });
+
+    if (!submission || !submission.fileIds || submission.fileIds.length === 0) {
+      throw new Error('Submission or file not found');
+    }
+
+    const [fileId] = submission.fileIds;
+    const filePath = `/path/to/files/${fileId}.pdf`; // PATH
+
+    const buffer = await fs.promises.readFile(filePath);
+
+    return {
+      buffer,
+      type: 'application/pdf',
+      name: `${submission.name}.pdf`
+    };
   }
 }
