@@ -35,13 +35,13 @@ partsRouter.post(
   validateInputs,
   PartReviewController.createReview
 );
+
 partsRouter.post(
-  '/submission/create',
-  nonEmptyString(body('partId')),
-  nonEmptyString(body('name')),
+  '/review/:reviewId/update',
   body('notes').optional().isString(),
+  body('status').custom((value) => Object.values<string>(Review_Status).includes(value)),
   validateInputs,
-  PartReviewController.createSubmission
+  PartReviewController.updateReview
 );
 
 partsRouter.post(
@@ -49,6 +49,15 @@ partsRouter.post(
   upload.array('files', 10),
   validateInputs,
   PartReviewController.uploadReviewFiles
+);
+
+partsRouter.post(
+  '/submission/create',
+  nonEmptyString(body('partId')),
+  nonEmptyString(body('name')),
+  body('notes').optional().isString(),
+  validateInputs,
+  PartReviewController.createSubmission
 );
 
 partsRouter.post(
