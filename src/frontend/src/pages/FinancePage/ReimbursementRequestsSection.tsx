@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { ReimbursementRequest, isHead, isLead } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import ReimbursementRequestInfo from './FinanceComponents/ReimbursementRequestInfo';
-import Tabs from '../../components/Tabs';
 import { ReimbursementStatusType } from 'shared/src/types/reimbursement-requests-types';
 import FinanceTabs from './FinanceComponents/FinanceTabs';
 
