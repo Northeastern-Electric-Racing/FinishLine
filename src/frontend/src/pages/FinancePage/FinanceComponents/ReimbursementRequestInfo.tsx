@@ -19,8 +19,8 @@ import {
   fullNamePipe,
   centsToDollar,
   datePipe,
-  dateUndefinedPipe,
-  codeAndRefundSourceName
+  dateUndefinedPipe
+  // codeAndRefundSourceName
 } from '../../../utils/pipes';
 import {
   createReimbursementRequestRowData,
