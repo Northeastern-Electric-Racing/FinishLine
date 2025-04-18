@@ -31,6 +31,23 @@ const calculateProjectEndDate = (wps: { duration: number; startDate: Date }[]) =
 };
 
 /**
+ * This function calculates the original end date for a project.
+ * @param wps an array of retrospective work packages
+ * @returns the latest original end date of the workpackages
+ */
+const calculateProjectOriginalEndDate = (wps: { originalDuration: number; originalStartDate: Date }[]) => {
+  if (wps.length === 0) return undefined;
+  const maxDate = wps.reduce(
+    (max, cur) =>
+      calculateEndDate(cur.originalStartDate, cur.originalDuration) > max
+        ? calculateEndDate(cur.originalStartDate, cur.originalDuration)
+        : max,
+    calculateEndDate(wps[0].originalStartDate, wps[0].originalDuration)
+  );
+  return maxDate;
+};
+
+/**
  * This symbol function calculates the duration
  * @param wps an array of work packages
  * @returns the duration of the project in weeks
@@ -87,6 +104,20 @@ const calculateProjectStartDate = (wps: { duration: number; startDate: Date }[])
   return minDate;
 };
 
+/**
+ * Calculates the original start date for a project
+ * @param wps The array of retrospective work packages that project has
+ * @returns the ealiest start date among work packages
+ */
+const calculateProjectOriginalStartDate = (wps: { originalDuration: number; originalStartDate: Date }[]) => {
+  if (wps.length === 0) return undefined;
+  const minDate = wps.reduce(
+    (min, cur) => (cur.originalStartDate < min ? cur.originalStartDate : min),
+    wps[0].originalStartDate
+  );
+  return minDate;
+};
+
 const calculateDaysLeftInProject = (project: ProjectPreview): number | null => {
   const endDate = calculateProjectEndDate(project.workPackages);
   if (!endDate) return null;
@@ -101,5 +132,7 @@ export {
   calculatePercentExpectedProgress,
   calculateTimelineStatus,
   calculateProjectStartDate,
-  calculateDaysLeftInProject
+  calculateDaysLeftInProject,
+  calculateProjectOriginalStartDate,
+  calculateProjectOriginalEndDate
 };

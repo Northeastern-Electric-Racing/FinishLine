@@ -1,18 +1,25 @@
 import { Box, Typography, useTheme } from '@mui/material';
-import { User } from 'shared';
-import { fullNamePipe } from '../../../utils/pipes';
+import { ReactNode } from 'react';
+import { emDashPipe } from '../../../../utils/pipes';
 
 interface GanttToolTipProps {
   yCoordinate: number;
   title: string;
-  startDate: Date;
-  endDate: Date;
+  startDate?: Date;
+  endDate?: Date;
   color?: string;
-  lead?: User;
-  manager?: User;
+  upperRightDisplay: ReactNode;
+  lowerRightDisplay: ReactNode;
 }
 
-const GanttToolTip: React.FC<GanttToolTipProps> = ({ yCoordinate, title, startDate, endDate, lead, manager }) => {
+const GanttToolTip: React.FC<GanttToolTipProps> = ({
+  yCoordinate,
+  title,
+  startDate,
+  endDate,
+  upperRightDisplay,
+  lowerRightDisplay
+}) => {
   const theme = useTheme();
   const xCoordinate = window.innerWidth - 375 - 35;
   return (
@@ -32,15 +39,15 @@ const GanttToolTip: React.FC<GanttToolTipProps> = ({ yCoordinate, title, startDa
         <Box sx={{ backgroundColor: theme.palette.background.paper, borderRadius: '0 0 5px 5px', padding: '5px 10px' }}>
           <Box display={'flex'} flexDirection={'row'}>
             <Typography color={theme.palette.text.primary} marginRight={'10px'}>
-              Start: {startDate.toLocaleDateString()}
+              Start: {startDate?.toLocaleDateString() ?? emDashPipe('')}
             </Typography>
-            <Typography color={theme.palette.text.primary}>Lead: {fullNamePipe(lead)}</Typography>
+            {upperRightDisplay}
           </Box>
           <Box display={'flex'} flexDirection={'row'}>
             <Typography color={theme.palette.text.primary} marginRight={'10px'}>
-              End: {endDate.toLocaleDateString()}
+              End: {endDate?.toLocaleDateString() ?? emDashPipe('')}
             </Typography>
-            <Typography color={theme.palette.text.primary}>Manager: {fullNamePipe(manager)}</Typography>
+            {lowerRightDisplay}
           </Box>
         </Box>
       </Box>

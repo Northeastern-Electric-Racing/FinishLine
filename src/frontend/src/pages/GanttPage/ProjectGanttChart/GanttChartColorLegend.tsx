@@ -6,8 +6,8 @@
 import { Box, Card, Tooltip, Typography } from '@mui/material';
 import { DesignReviewStatus, WbsElementStatus, WorkPackageStage } from 'shared';
 import {
-  GanttDesignReviewStatusColorPipe,
-  GanttWorkPackageStageColorPipe,
+  ganttDesignReviewStatusColorPipe,
+  ganttWorkPackageStageColorPipe,
   GanttWorkPackageTextColor
 } from '../../../utils/gantt.utils';
 import { DesignReviewStatusTextPipe, WbsElementStatusTextPipe, WorkPackageStageTextPipe } from '../../../utils/enum-pipes';
@@ -32,7 +32,7 @@ Object.values(WorkPackageStage).map((stage) =>
           return (
             <Box
               sx={{
-                backgroundColor: GanttWorkPackageStageColorPipe(stage, status),
+                backgroundColor: ganttWorkPackageStageColorPipe(stage, status),
                 height: '2rem',
                 width: '8rem',
                 borderRadius: 1,
@@ -69,7 +69,7 @@ const DesignReviewToolTipPopUp = () => {
           return (
             <Box
               sx={{
-                backgroundColor: GanttDesignReviewStatusColorPipe(status),
+                backgroundColor: ganttDesignReviewStatusColorPipe(status),
                 height: '2rem',
                 width: '8rem',
                 borderRadius: 1,
@@ -110,13 +110,13 @@ const GanttChartColorLegend = () => {
           return (
             <Box
               sx={{
-                background: `linear-gradient(90deg, ${GanttWorkPackageStageColorPipe(
+                background: `linear-gradient(90deg, ${ganttWorkPackageStageColorPipe(
                   stage,
                   WbsElementStatus.Inactive
-                )} 0%, ${GanttWorkPackageStageColorPipe(
+                )} 0%, ${ganttWorkPackageStageColorPipe(
                   stage,
                   WbsElementStatus.Active
-                )} 50%, ${GanttWorkPackageStageColorPipe(stage, WbsElementStatus.Complete)} 100%)`,
+                )} 50%, ${ganttWorkPackageStageColorPipe(stage, WbsElementStatus.Complete)} 100%)`,
                 display: 'flex',
                 flexDirection: 'column',
                 height: '2rem',
@@ -146,9 +146,9 @@ const GanttChartColorLegend = () => {
       }
       <Box
         sx={{
-          background: `linear-gradient(90deg, ${GanttDesignReviewStatusColorPipe(
+          background: `linear-gradient(90deg, ${ganttDesignReviewStatusColorPipe(
             DesignReviewStatus.UNCONFIRMED
-          )} 0%, ${GanttDesignReviewStatusColorPipe(DesignReviewStatus.CONFIRMED)} 100%)`,
+          )} 0%, ${ganttDesignReviewStatusColorPipe(DesignReviewStatus.CONFIRMED)} 100%)`,
           display: 'flex',
           flexDirection: 'column',
           height: '2rem',

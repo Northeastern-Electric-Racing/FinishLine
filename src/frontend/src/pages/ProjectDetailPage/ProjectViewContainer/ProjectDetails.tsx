@@ -6,7 +6,7 @@
 import { Construction, Work } from '@mui/icons-material';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import { Project, WorkPackage, wbsPipe } from 'shared';
+import { Project, ProjectPreview, WorkPackage, wbsPipe } from 'shared';
 import { datePipe, dollarsPipe, fullNamePipe, weeksPipe } from '../../../utils/pipes';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
@@ -15,7 +15,7 @@ import DetailDisplay from '../../../components/DetailDisplay';
 import LinkView from '../../../components/Link/LinkView';
 import GroupIcon from '@mui/icons-material/Group';
 
-export const getProjectTeamsName = (project: Project): string => {
+export const getProjectTeamsName = (project: ProjectPreview): string => {
   return project.teams.map((team) => team.teamName).join(', ');
 };
 
