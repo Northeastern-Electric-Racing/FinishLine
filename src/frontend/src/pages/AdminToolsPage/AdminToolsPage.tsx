@@ -7,7 +7,7 @@ import AdminToolsUserManagement from './AdminToolsUserManagement';
 import AdminToolsSlackUpcomingDeadlines from './AdminToolsSlackUpcomingDeadlines';
 import AdminToolsAttendeeDesignReviewInfo from './AdminToolsAttendeeDesignReviewInfo';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { isAdmin, isHead } from 'shared';
+import { isAdmin, isHead, RoleEnum } from 'shared';
 import PageLayout from '../../components/PageLayout';
 import AdminToolsFinanceConfig from './AdminToolsFinanceConfig';
 import TeamsTools from './TeamConfig/TeamsTools';
@@ -34,9 +34,49 @@ const AdminToolsPage: React.FC = () => {
 
   const tabs = [];
 
+  const pageComponent = (tab: string) => {
+    switch (tab) {
+      case 'user-management':
+        return (
+          <>
+            <AdminToolsUserManagement />
+            {isUserAdmin && <TeamsTools />}
+          </>
+        );
+      case 'project-configuration':
+        return <ProjectConfigurationTab />;
+
+      case 'finance-configuration':
+        return <AdminToolsFinanceConfig />;
+
+      case 'recruitment':
+        return <AdminToolsRecruitmentConfig />;
+
+      case 'guest-view':
+        return <GuestViewConfig />;
+
+      case 'onboarding':
+        return <AdminToolsOnboardingConfig />;
+
+      default:
+        return (
+          <Box>
+            <Box pb={2}>
+              <AdminToolsSlackUpcomingDeadlines />
+            </Box>
+            <AdminToolsWorkspaceId />
+            <AdminToolsAttendeeDesignReviewInfo />
+          </Box>
+        );
+    }
+  };
+
   if (isUserHead || isUserAdmin) {
     tabs.push({ tabUrlValue: 'user-management', tabName: 'User Management' });
     tabs.push({ tabUrlValue: 'project-configuration', tabName: 'Project Configuration' });
+  }
+  if (currentUser.role === RoleEnum.LEADERSHIP) {
+    tabs.push({ tabUrlValue: 'user-management', tabName: 'User Management' });
   }
   if (isUserAdmin || isUserFinanceLead) {
     tabs.push({ tabUrlValue: 'finance-configuration', tabName: 'Finance Configuration' });
@@ -75,30 +115,7 @@ const AdminToolsPage: React.FC = () => {
         </Box>
       }
     >
-      {tabIndex === 0 ? (
-        <>
-          <AdminToolsUserManagement />
-          {isUserAdmin && <TeamsTools />}
-        </>
-      ) : tabIndex === 1 ? (
-        <ProjectConfigurationTab />
-      ) : tabIndex === 2 ? (
-        <AdminToolsFinanceConfig />
-      ) : tabIndex === 3 ? (
-        <AdminToolsRecruitmentConfig />
-      ) : tabIndex === 4 ? (
-        <GuestViewConfig />
-      ) : tabIndex === 5 ? (
-        <AdminToolsOnboardingConfig />
-      ) : (
-        <Box>
-          <Box pb={2}>
-            <AdminToolsSlackUpcomingDeadlines />
-          </Box>
-          <AdminToolsWorkspaceId />
-          <AdminToolsAttendeeDesignReviewInfo />
-        </Box>
-      )}
+      {pageComponent(tabs[tabIndex].tabName)}
     </PageLayout>
   );
 };
