@@ -26,7 +26,6 @@ interface EditBudgetInputs {
 interface EditBudgetModalForReasonProps {
   showModal: boolean;
   handleClose: () => void;
-  // otherReimbursementProductReasonId: string;
 }
 
 export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> = ({
