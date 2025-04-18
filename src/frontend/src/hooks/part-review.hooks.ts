@@ -308,15 +308,11 @@ export const useUploadReviewFiles = (reviewId: string) => {
  * @returns Query result containing FAQs data, loading state, and error state.
  */
 export const useAllPartReviewFaqs = () => {
-  return useQuery<FrequentlyAskedQuestion[], Error>(
-    ['partReviewFaqs'],
-    async () => {
-      const { data } = await getAllPartReviewFaqs();
-      return data;
-    },
-  );
+  return useQuery<FrequentlyAskedQuestion[], Error>(['partReviewFaqs'], async () => {
+    const { data } = await getAllPartReviewFaqs();
+    return data;
+  });
 };
-
 
 /**
  * React Query hook to create a new Part Review FAQ.
@@ -326,23 +322,19 @@ export const useAllPartReviewFaqs = () => {
 export const useCreatePartReviewFaq = () => {
   const queryClient = useQueryClient();
 
-  return useMutation(
-    async (data: { question: string; answer: string }) => {
+  return useMutation<FrequentlyAskedQuestion, Error, { question: string; answer: string }>(
+    async (data) => {
       const response = await createPartReviewFaq(data);
       return response.data;
     },
     {
       onSuccess: async (createdFaq) => {
         await queryClient.cancelQueries(['partReviewFaqs']);
-        queryClient.setQueryData(['partReviewFaqs'], (old: FrequentlyAskedQuestion[] = []) => [
-          ...old,
-          createdFaq
-        ]);
+        queryClient.setQueryData<FrequentlyAskedQuestion[]>(['partReviewFaqs'], (old = []) => [...old, createdFaq]);
       }
     }
   );
 };
-
 
 /**
  * React Query hook to edit an existing Part Review FAQ.
@@ -351,11 +343,16 @@ export const useCreatePartReviewFaq = () => {
  */
 export const useEditPartReviewFaq = () => {
   const queryClient = useQueryClient();
-  return useMutation(
-    ({ faqId, payload }: { faqId: string; payload: { question: string; answer: string } }) =>
-      editPartReviewFaq(faqId, payload),
+
+  return useMutation<FrequentlyAskedQuestion, Error, { faqId: string; payload: { question: string; answer: string } }>(
+    async ({ faqId, payload }) => {
+      const response = await editPartReviewFaq(faqId, payload);
+      return response.data;
+    },
     {
-      onSuccess: () => queryClient.invalidateQueries(['partReviewFaqs'])
+      onSuccess: () => {
+        queryClient.invalidateQueries(['partReviewFaqs']);
+      }
     }
   );
 };

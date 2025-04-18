@@ -26,28 +26,25 @@ const PartsReviewFAQTable: React.FC = () => {
   const { mutateAsync: deleteFaq } = useDeletePartReviewFaq();
   const toast = useToast();
 
-  console.log('FAQs length:', faqs?.length);
-console.log('FAQs:', faqs);
+  const queryClient = useQueryClient();
 
-const queryClient = useQueryClient();
-
-const handleDelete = async (faqId: string) => {
-  try {
-    await deleteFaq(faqId);
-    await queryClient.invalidateQueries(['partReviewFaqs']);
-    await queryClient.refetchQueries(['partReviewFaqs']);
-    toast.success('FAQ deleted successfully');
-  } catch (e) {
-    if (e instanceof Error) {
-      toast.error(e.message);
+  const handleDelete = async (faqId: string) => {
+    try {
+      await deleteFaq(faqId);
+      await queryClient.invalidateQueries(['partReviewFaqs']);
+      await queryClient.refetchQueries(['partReviewFaqs']);
+      toast.success('FAQ deleted successfully');
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
+    } finally {
+      setDeletingFaqId(null);
     }
-  } finally {
-    setDeletingFaqId(null);
-  }
-};
+  };
 
   if (isLoading) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error instanceof Error ? error.message : 'Unknown error'} />;
+  if (isError) return <ErrorPage message={error?.message} />;
 
   const faqRows = (faqs ?? []).map((faq) => (
     <TableRow key={faq.faqId}>

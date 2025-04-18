@@ -435,7 +435,6 @@ export default class PartReviewService {
     return partReviewFAQs.map(faqTransformer);
   }
 
-
   /**
    * creates a new part tag with no ascociated parts
    * @param name the name of the tag

@@ -13,7 +13,7 @@ interface PartReviewFAQFormModalProps {
   open: boolean;
   handleClose: () => void;
   defaultValues?: FrequentlyAskedQuestion;
-  onSubmit: (data: { question: string; answer: string }) => Promise<void>; // ⬅ ensure it's async
+  onSubmit: (data: { question: string; answer: string }) => Promise<void>;
 }
 
 const schema = yup.object().shape({
@@ -21,12 +21,7 @@ const schema = yup.object().shape({
   answer: yup.string().required('Answer is required')
 });
 
-const PartReviewFAQFormModal = ({
-  open,
-  handleClose,
-  defaultValues,
-  onSubmit
-}: PartReviewFAQFormModalProps) => {
+const PartReviewFAQFormModal = ({ open, handleClose, defaultValues, onSubmit }: PartReviewFAQFormModalProps) => {
   const toast = useToast();
   const creatingNew = defaultValues === undefined;
 
@@ -45,7 +40,6 @@ const PartReviewFAQFormModal = ({
     }
   });
 
-  // Same form storage key pattern as recruitment
   const formStorageKey = creatingNew ? 'create-part-review-faq' : 'edit-part-review-faq';
 
   useFormPersist(formStorageKey, {
@@ -69,8 +63,9 @@ const PartReviewFAQFormModal = ({
   const onFormSubmit = async (data: { question: string; answer: string }) => {
     console.log('Submitting form with:', data);
     try {
-      await onSubmit(data); // ✅ ensure await
-      handleClose(); // only close after success
+      await onSubmit(data);
+      toast.success(creatingNew ? 'FAQ created successfully' : 'FAQ updated successfully');
+      handleClose();
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -93,14 +88,14 @@ const PartReviewFAQFormModal = ({
         <Grid item xs={12}>
           <FormControl fullWidth>
             <FormLabel>Question</FormLabel>
-            <ReactHookTextField name="question" control={control} />
+            <ReactHookTextField name="question" control={control} sx={{ width: 1 }} placeholder="Write the question here" />
             <FormHelperText error>{errors.question?.message}</FormHelperText>
           </FormControl>
         </Grid>
         <Grid item xs={12}>
           <FormControl fullWidth>
             <FormLabel>Answer</FormLabel>
-            <ReactHookTextField name="answer" control={control} multiline rows={3} />
+            <ReactHookTextField name="answer" control={control} placeholder="Write the answer here" />
             <FormHelperText error>{errors.answer?.message}</FormHelperText>
           </FormControl>
         </Grid>
