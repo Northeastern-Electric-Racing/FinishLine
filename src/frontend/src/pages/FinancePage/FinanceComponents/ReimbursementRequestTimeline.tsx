@@ -1,40 +1,48 @@
 import { Box, Stack, Typography } from '@mui/material';
 import { Circle } from '@mui/icons-material';
 import { datePipe } from '../../../utils/pipes';
-
-interface TimelineEvent {
-  description: string;
-  time: Date;
-}
+import { useSingleReimbursementRequest } from '../../../hooks/finance.hooks';
+import ErrorPage from '../../ErrorPage';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import { ReimbursementRequestComment } from '../../../../../shared/src/types/reimbursement-requests-types';
 
 interface TimelineProps {
-  events: TimelineEvent[];
+  reimbursementRequestId: string;
 }
 
 interface EventSectionProps {
-  event: TimelineEvent;
+  comment: ReimbursementRequestComment;
   isLast: boolean;
   isFirst: boolean;
 }
-const ReimbursementRequestTimeline: React.FC<TimelineProps> = ({ events }) => {
+
+const ReimbursementRequestTimeline: React.FC<TimelineProps> = ({ reimbursementRequestId }) => {
+  const { data: reimbursementRequest, isError, error, isLoading } = useSingleReimbursementRequest(reimbursementRequestId);
+  const Comments = reimbursementRequest?.comments;
+
+  if (isLoading || !Comments) return <LoadingIndicator />;
+  if (isError) return <ErrorPage error={error} message={error.message} />;
+
   return (
     <Stack alignItems="center" spacing={0.5}>
-      {events.map((event, index) => (
-        <EventSection event={event} isLast={events.length - 1 === index} isFirst={0 === index} />
+      {Comments.map((comment, index) => (
+        <EventSection comment={comment} isLast={Comments.length - 1 === index} isFirst={0 === index} />
       ))}
     </Stack>
   );
 };
 
-const EventSection: React.FC<EventSectionProps> = ({ event, isLast, isFirst }) => {
+const EventSection: React.FC<EventSectionProps> = ({ comment, isLast, isFirst }) => {
+  const commentTime = new Date(comment.dateCreated).toLocaleTimeString();
+  const newCommentTime = commentTime.slice(0, -6) + commentTime.slice(-3);
   return (
     <Stack direction="row" spacing={2} alignItems="flex-start" width="100%">
       <Box flex={1} textAlign="right">
         <Typography fontWeight={'regular'} fontSize={18} variant="h1">
-          {datePipe(event.time)}
+          {datePipe(comment.dateCreated)}
         </Typography>
         <Typography fontWeight={'regular'} fontSize={14} variant="h1">
-          {event.time.toLocaleTimeString().replace(':00', '')}
+          {newCommentTime}
         </Typography>
       </Box>
 
@@ -64,7 +72,7 @@ const EventSection: React.FC<EventSectionProps> = ({ event, isLast, isFirst }) =
 
       <Box flex={1}>
         <Typography fontWeight={'regular'} fontSize={18} variant="h1">
-          {event.description}
+          {comment.comment}
         </Typography>
       </Box>
     </Stack>
