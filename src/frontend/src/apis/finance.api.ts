@@ -446,4 +446,3 @@ export const getSpendingBarTeamTypeData = (payload: SpendingBarTeamTypeDataPaylo
     transformResponse: (data) => JSON.parse(data) as SpendingBarData
   });
 };
-

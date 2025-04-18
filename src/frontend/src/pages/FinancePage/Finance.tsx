@@ -8,7 +8,7 @@ import FinancePage from './FinancePage';
 import CreateReimbursementRequestPage from './CreateReimbursementRequest';
 import EditReimbursementRequestPage from './EditReimbursementRequest/EditReimbursementRequest';
 import ReimbursementRequestDetails from './ReimbursementRequestDetailPage/ReimbursementRequestDetails';
-import FinanceDashboard from './FinanceDashboard';
+import FinanceDashboard from './FinanceDashboard/FinanceDashboard';
 import ReimbursmentRequests from './ReimbursmentRequests';
 import CompaniesAndSponsors from './CompaniesAndSponsors';
 
