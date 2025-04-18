@@ -20,10 +20,13 @@ import { PartReview } from 'shared';
 import { apiUrls } from '../utils/urls';
 
 interface ReviewSidebarProps {
-    wbsNum: string;
-    index: number;
-    reviewId: string;
-  }
+  wbsNum: string;
+  index: number;
+  reviewId: string;
+  partId?: string;
+  submissionId?: string;
+}
+
 
   const ReviewSidebar: React.FC<ReviewSidebarProps> = ({
     wbsNum,
@@ -154,13 +157,53 @@ interface ReviewSidebarProps {
 
     if (isLoading || !review) return <Typography>Loading review...</Typography>;
 
+    const handleDeleteFile = (fileIdToRemove: string) => { //remove a fileID? Idk how to delete a file thats stored
+      if (!review) return;
+      saveReview.mutate(
+        {
+          notes: review.notes ?? '',
+          status: Review_Status.IN_REVIEW,
+        },
+        {
+          onSuccess: () => {
+            addToast({
+              key: Date.now(),
+              message: 'File removed from review.',
+              type: 'success'
+            });
+            queryClient.invalidateQueries(['parts']);
+          },
+          onError: () => {
+            addToast({
+              key: Date.now(),
+              message: 'Failed to remove file.',
+              type: 'error'
+            });
+          }
+        }
+      );
+    };
+
     return (
       <Box display="flex" flexDirection="column" gap={2} width="100%" p={2}>
+
+        {/* TOP BUTTONS */}
+        <Box display="flex" justifyContent="flex-end" gap={2}>
+          <NERSuccessButton onClick={onSubmit} disabled={saveReview.isLoading}>
+            Save as Draft
+          </NERSuccessButton>
+          <NERFailButton onClick={onFinish} disabled={saveReview.isLoading}>
+            Finish Review
+          </NERFailButton>
+        </Box>
+
+        {/* HEADER */}
         <Typography variant="h6" fontWeight="bold">
           Review for {part?.projectId}_{part?.commonName}_{part?.index.toString().padStart(5, '0')}
         </Typography>
 
         <Divider />
+
 
         <Box>
             <Typography variant="subtitle1" fontWeight="medium">Selected Submission</Typography>
@@ -188,14 +231,30 @@ interface ReviewSidebarProps {
         <Divider />
 
         <Box>
-          <Typography variant="subtitle1" fontWeight="medium">Review Status</Typography>
-          <Typography variant="body2">
-            In-App Markups: {review?.popUps?.length ?? 0}
-          </Typography>
-          <Typography variant="body2">
-            File(s) Uploaded: {review?.fileIds?.length ?? 0}
-          </Typography>
-        </Box>
+        <Typography variant="subtitle1" fontWeight="medium">Review Status</Typography>
+        <Typography variant="body2">
+          In-App Markups: {review?.popUps?.length ?? 0}
+        </Typography>
+        <Typography variant="body2">
+          File(s) Uploaded:
+        </Typography>
+
+        <Stack direction="column" spacing={1} mt={1}>
+          {review?.fileIds?.map((fileId) => (
+            <Box key={fileId} display="flex" alignItems="center" gap={1}>
+              <Typography variant="body2">{fileId}</Typography>
+              <IconButton
+                size="small"
+                onClick={() => handleDeleteFile(fileId)}
+                sx={{ color: 'red' }}
+              >
+                🗑️
+              </IconButton>
+            </Box>
+          ))}
+        </Stack>
+      </Box>
+
 
         <Divider />
 
@@ -219,15 +278,6 @@ interface ReviewSidebarProps {
         </Box>
 
         <Divider />
-
-        <Stack direction="row" spacing={2}>
-          <NERSuccessButton onClick={onSubmit} disabled={saveReview.isLoading}>
-            Save as Draft
-          </NERSuccessButton>
-          <NERFailButton onClick={onFinish} disabled={saveReview.isLoading}>
-            Finish Review
-          </NERFailButton>
-        </Stack>
       </Box>
     );
   };
