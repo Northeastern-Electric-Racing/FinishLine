@@ -35,7 +35,7 @@ const ReimbursementRequestTable = ({
         <ReimbursementRequestInfo
           userReimbursementRequests={userReimbursementRequests}
           allReimbursementRequests={allReimbursementRequests}
-          canViewAllReimbursementRequests
+          canViewAllReimbursementRequests={false}
           searchText={searchText}
           statuses={statuses}
           startDate={startDate}
@@ -52,7 +52,7 @@ const ReimbursementRequestTable = ({
         <ReimbursementRequestInfo
           userReimbursementRequests={userReimbursementRequests}
           allReimbursementRequests={allReimbursementRequests}
-          canViewAllReimbursementRequests
+          canViewAllReimbursementRequests={canViewAllReimbursementRequests}
           searchText={searchText}
           statuses={statuses}
           startDate={startDate}

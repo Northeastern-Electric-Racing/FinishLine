@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useState } from 'react';
-import { isGuest, ReimbursementRequest } from 'shared';
+import { isGuest, isLeadership, ReimbursementRequest } from 'shared';
 import { ReimbursementRequestRow, ReimbursementStatusType } from 'shared/src/types/reimbursement-requests-types';
 import {
   undefinedPipe,
@@ -287,7 +287,7 @@ const ReimbursementRequestInfo = ({
             mb: 2
           }}
         />
-        {!canViewAllReimbursementRequests && (
+        {!isLeadership(user.role) && (
           <Button
             className="viewButton"
             variant="contained"
