@@ -1,8 +1,8 @@
-import { AppBar, Tab, Tabs } from '@mui/material';
+import { AppBar, Box, Tab, Tabs } from '@mui/material';
 
 interface TabData {
-  value: number;
   label: string;
+  component: React.ReactNode;
 }
 
 const FinanceTabs = ({
@@ -19,18 +19,20 @@ const FinanceTabs = ({
   };
 
   return (
-    <AppBar color="transparent" sx={{ borderRadius: '8px 8px 0 0', mb: 2 }} position="static">
-      <Tabs value={tabValue} onChange={handleTabChange}>
-        {tabs.map((tab: TabData, index: number) => (
-          <Tab
-            sx={{ fontWeight: 700, pointerEvents: tabs.length === 1 ? 'none' : 'auto' }}
-            label={tab.label}
-            value={tab.value}
-            key={`${tab.label}-${index}`}
-          />
-        ))}
-      </Tabs>
-    </AppBar>
+    <>
+      <AppBar color="transparent" sx={{ borderRadius: '8px 8px 0 0', mb: 2 }} position="static">
+        <Tabs value={tabValue} onChange={handleTabChange}>
+          {tabs.map((tab: TabData, index: number) => (
+            <Tab
+              sx={{ fontWeight: 700, pointerEvents: tabs.length === 1 ? 'none' : 'auto' }}
+              label={tab.label}
+              key={`${tab.label}-${index}`}
+            />
+          ))}
+        </Tabs>
+      </AppBar>
+      <Box sx={{ mt: 2 }}>{tabs[tabValue] && tabs[tabValue].component}</Box>
+    </>
   );
 };
 

@@ -5,6 +5,7 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import ReimbursementRequestInfo from './FinanceComponents/ReimbursementRequestInfo';
 import Tabs from '../../components/Tabs';
 import { ReimbursementStatusType } from 'shared/src/types/reimbursement-requests-types';
+import FinanceTabs from './FinanceComponents/FinanceTabs';
 
 interface ReimbursementRequestTableProps {
   userReimbursementRequests: ReimbursementRequest[];
@@ -35,6 +36,7 @@ const ReimbursementRequestTable = ({
         <ReimbursementRequestInfo
           userReimbursementRequests={userReimbursementRequests}
           allReimbursementRequests={allReimbursementRequests}
+          canViewAllReimbursementRequests
           searchText={searchText}
           statuses={statuses}
           startDate={startDate}
@@ -62,7 +64,7 @@ const ReimbursementRequestTable = ({
 
   return (
     <Box sx={{ bgcolor: theme.palette.background.default, width: '100%', borderRadius: '8px 8px 0 0' }}>
-      <Tabs tabValue={tabValue} setTabValue={setTabValue} tabs={tabs} greyscale />
+      <FinanceTabs tabValue={tabValue} setTabValue={setTabValue} tabs={tabs} />
     </Box>
   );
 };

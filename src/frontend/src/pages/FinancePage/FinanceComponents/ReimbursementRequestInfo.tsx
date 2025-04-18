@@ -126,20 +126,24 @@ const ReimbursementRequestInfo = ({
 
   const headCells: readonly ReimbursementTableHeadCell[] = [
     {
-      id: 'identifier',
-      label: 'ID'
+      id: 'status',
+      label: 'Status'
     },
     {
       id: 'submitter',
-      label: 'Recipient'
+      label: 'Submitted By'
+    },
+    {
+      id: 'amount',
+      label: 'Amount'
+    },
+    {
+      id: 'identifier',
+      label: 'RR #'
     },
     {
       id: 'saboId',
       label: 'SABO ID'
-    },
-    {
-      id: 'amount',
-      label: 'Amount ($)'
     },
     {
       id: 'dateSubmitted',
@@ -148,18 +152,6 @@ const ReimbursementRequestInfo = ({
     {
       id: 'dateSubmittedToSabo',
       label: 'Date Submitted To SABO'
-    },
-    {
-      id: 'vendor',
-      label: 'Vendor'
-    },
-    {
-      id: 'refundSource',
-      label: 'Refund Source'
-    },
-    {
-      id: 'status',
-      label: 'Status'
     }
   ];
 
@@ -197,7 +189,7 @@ const ReimbursementRequestInfo = ({
 
   return (
     <Box sx={{ width: '100%', borderRadius: '8px 8px 0 0' }}>
-      <TableContainer component={Paper} sx={{ borderRadius: '0 0 8px 8px' }}>
+      <TableContainer component={Paper} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
         <Table aria-label="simple table">
           <TableHead
             sx={{
@@ -218,6 +210,7 @@ const ReimbursementRequestInfo = ({
                     />
                   )
               )}
+              <TableCell align="center" />
             </TableRow>
           </TableHead>
           <TableBody sx={{ backgroundColor: '#121313' }}>
