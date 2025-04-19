@@ -90,30 +90,34 @@ const ReimbursementRequests: React.FC = () => {
           </ListItemIcon>
           Report Refund
         </MenuItem>
-        <MenuItem
-          onClick={() => {
-            handleDropdownClose();
-            setShowPendingAdvisorListModal(true);
-          }}
-          disabled={!isFinance}
-        >
-          <ListItemIcon>
-            <ListAltIcon fontSize="small" />
-          </ListItemIcon>
-          Pending Advisor List
-        </MenuItem>
+        {(isLead(user.role) || isHead(user.role)) && (
+          <MenuItem
+            onClick={() => {
+              handleDropdownClose();
+              setShowPendingAdvisorListModal(true);
+            }}
+            disabled={!isFinance}
+          >
+            <ListItemIcon>
+              <ListAltIcon fontSize="small" />
+            </ListItemIcon>
+            Pending Advisor List
+          </MenuItem>
+        )}
         <MenuItem onClick={() => setShowGenerateReceipts(true)} disabled={!isFinance}>
           <ListItemIcon>
             <ReceiptIcon fontSize="small" />
           </ListItemIcon>
           Generate All Receipts
         </MenuItem>
-        <MenuItem onClick={() => setShowTotalAmountSpent(true)} disabled={!isFinance}>
-          <ListItemIcon>
-            <WorkIcon fontSize="small" />
-          </ListItemIcon>
-          Total Amount Spent
-        </MenuItem>
+        {(isLead(user.role) || isHead(user.role)) && (
+          <MenuItem onClick={() => setShowTotalAmountSpent(true)} disabled={!isFinance}>
+            <ListItemIcon>
+              <WorkIcon fontSize="small" />
+            </ListItemIcon>
+            Total Amount Spent
+          </MenuItem>
+        )}
         <MenuItem onClick={async () => await downloadReimbursementRequests()} disabled={!isFinance && !isAdmin(user.role)}>
           <ListItemIcon>
             <WorkIcon fontSize="small" />
