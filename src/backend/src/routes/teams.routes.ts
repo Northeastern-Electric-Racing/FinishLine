@@ -10,6 +10,7 @@ const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage()
 teamsRouter.get('/', TeamsController.getAllTeams);
 teamsRouter.get('/archive', TeamsController.getAllArchivedTeams);
 teamsRouter.get('/:teamId', TeamsController.getSingleTeam);
+teamsRouter.get('/users-teams', TeamsController.getUsersTeams);
 
 teamsRouter.post(
   '/:teamId/set-members',

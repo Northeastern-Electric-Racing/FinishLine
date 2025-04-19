@@ -64,3 +64,5 @@ const AdminFinanceDashboard: React.FC = () => {
     </PageLayout>
   );
 };
+
+export default AdminFinanceDashboard;

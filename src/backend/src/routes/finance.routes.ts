@@ -16,7 +16,7 @@ financeRouter.post(
   body('taxExempt').isBoolean(),
   nonEmptyString(body('vendorContact')),
   body('sponsorTasks').isArray(),
-  nonEmptyString(body('discountCode')),
+  nonEmptyString(body('discountCode')).optional(),
   validateInputs,
   FinanceController.createSponsor
 );

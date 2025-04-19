@@ -99,6 +99,7 @@ const teamsArchive = (id: string) => `${teamsById(id)}/archive`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
 const teamsCreate = () => `${teams()}/create`;
 const teamsSetLeads = (id: string) => `${teamsById(id)}/set-leads`;
+const usersTeams = () => `${teams()}/users-teams`;
 const teamTypes = () => `${teams()}/teamType`;
 const allTeamTypes = () => `${teamTypes()}/all`;
 const teamTypesCreate = () => `${teamTypes()}/create`;
@@ -142,8 +143,16 @@ const financeCreateAccountCode = () => `${getAllAccountCodes()}/create`;
 const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
 const financeEditVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/edit`;
 const financeLeadershipApprove = (id: string) => `${financeEndpoints()}/${id}/leadership-approve`;
+const financeRoutesEndpoints = () => `${API_URL}/finance`;
+const financeCreateSponsor = () => `${financeRoutesEndpoints()}/sponsor/create`;
+const financeCreateSponsorTier = () => `${financeRoutesEndpoints()}/sponsorTier/create`;
+const financeCreateSponsorTask = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/sponsorTasks`;
 const getAllIndexCodes = () => `${financeEndpoints()}/index-codes`;
 const getAllOtherProductReasons = () => `${financeEndpoints()}/other-reimbursement-product-reasons`;
+const getAllSponsors = () => `${financeRoutesEndpoints()}/sponsors`;
+const getSponsorTasks = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsors/${sponsorId}/sponsorTasks`;
+const deleteSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsors/${sponsorId}/delete`;
+const editSponsorTask = (sponsorTaskId: string) => `${financeRoutesEndpoints()}/sponsorTask/${sponsorTaskId}/edit`;
 const getReimbursementRequestProjectData = (projectId: string, startDate?: Date, endDate?: Date): string => {
   const url = new URL(`${financeEndpoints()}/reimbursement-request-project-data/${projectId}`);
   const params = new URLSearchParams();
@@ -366,6 +375,7 @@ export const apiUrls = {
   teamsSetDescription,
   teamsCreate,
   teamsSetLeads,
+  usersTeams,
   allTeamTypes,
   teamsSetTeamType,
   setOnboardingUser,
@@ -408,8 +418,15 @@ export const apiUrls = {
   financeCreateVendor,
   financeEditVendor,
   financeLeadershipApprove,
+  financeCreateSponsor,
+  financeCreateSponsorTier,
+  financeCreateSponsorTask,
   getAllIndexCodes,
   getAllOtherProductReasons,
+  getAllSponsors,
+  getSponsorTasks,
+  deleteSponsor,
+  editSponsorTask,
   getReimbursementRequestProjectData,
   getReimbursementRequestTeamData,
   getReimbursementRequestTeamTypeData,
