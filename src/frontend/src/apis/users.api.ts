@@ -8,6 +8,7 @@ import {
   Project,
   SetUserScheduleSettingsPayload,
   Task,
+  Team,
   User,
   UserScheduleSettings,
   UserSecureSettings,
@@ -158,4 +159,8 @@ export const getManyUserTasks = (userIds: string[]) => {
       transformResponse: (data) => JSON.parse(data).map(taskTransformer)
     }
   );
+};
+
+export const getUserTeams = (userId: string) => {
+  return axios.get<Team[]>(apiUrls.userTeams(userId));
 };

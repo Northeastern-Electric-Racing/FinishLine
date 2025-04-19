@@ -19,7 +19,8 @@ import {
   getUserScheduleSettings,
   updateUserScheduleSettings,
   getUserTasks,
-  getManyUserTasks
+  getManyUserTasks,
+  getUserTeams
 } from '../apis/users.api';
 import {
   User,
@@ -31,7 +32,8 @@ import {
   UserScheduleSettings,
   UserWithScheduleSettings,
   SetUserScheduleSettingsPayload,
-  Task
+  Task,
+  Team
 } from 'shared';
 import { useAuth } from './auth.hooks';
 import { useContext } from 'react';
@@ -257,6 +259,18 @@ export const useUserTasks = (userId: string) => {
 export const useManyUserTasks = (userIds: string[]) => {
   return useQuery<Task[], Error>(['users', userIds, 'tasks'], async () => {
     const { data } = await getManyUserTasks(userIds);
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to supply a single user's teams
+ *
+ * @param id User ID of the requested user's teams
+ */
+export const useUserTeams = (userId: string) => {
+  return useQuery<Team[], Error>(['users', userId, 'userTeams'], async () => {
+    const { data } = await getUserTeams(userId);
     return data;
   });
 };

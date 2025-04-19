@@ -1,18 +1,36 @@
 import { Box } from '@mui/system';
-import Electrical from './FinanceDashboardTabs/Electrical';
-import Mechanical from './FinanceDashboardTabs/Mechanical';
-import Software from './FinanceDashboardTabs/Software';
-import Business from './FinanceDashboardTabs/Business';
-import Categories from './FinanceDashboardTabs/Categories';
-import All from './FinanceDashboardTabs/All';
 import { useState } from 'react';
 import PageLayout from '../../components/PageLayout';
 import NERTabs from '../../components/Tabs';
 import { routes } from '../../utils/routes';
 import { Typography } from '@mui/material';
+import { useCurrentUser, useUserTeams } from '../../hooks/users.hooks';
+import { isAdmin } from 'shared';
+import { useQuery } from 'react-query';
+import { getAllTeams } from '../../apis/teams.api';
 
 const FinanceDashboard: React.FC = () => {
+  const currentUser = useCurrentUser();
+  const { data: allTeams, isLoading: isLoadingAllTeams } = useQuery('allTeams', getAllTeams);
+  const { data: userTeams, isLoading: isLoadingUserTeams } = useUserTeams(currentUser.userId);
   const [tabIndex, setTabIndex] = useState<number>(0);
+
+  const defaultTab = 'all';
+  const tabs: { tabUrlValue: string; tabName: string }[] = [];
+
+  if (!isLoadingAllTeams && !isLoadingUserTeams) {
+    if (currentUser.isFinance || isAdmin(currentUser.role)) {
+      tabs.push({ tabUrlValue: 'all', tabName: 'All' });
+      allTeams?.data.forEach((team) => {
+        tabs.push({ tabUrlValue: team.teamId, tabName: team.teamName });
+      });
+      tabs.push({ tabUrlValue: 'categories', tabName: 'Categories' });
+    } else {
+      userTeams?.forEach((team) => {
+        tabs.push({ tabUrlValue: team.teamId, tabName: team.teamName });
+      });
+    }
+  }
 
   return (
     <Box>
@@ -24,33 +42,16 @@ const FinanceDashboard: React.FC = () => {
         tabs={
           <NERTabs
             setTab={setTabIndex}
-            tabsLabels={[
-              { tabUrlValue: 'all', tabName: 'all' },
-              { tabUrlValue: 'electrical', tabName: 'Electrical' },
-              { tabUrlValue: 'mechanical', tabName: 'Mechanical' },
-              { tabUrlValue: 'software', tabName: 'Software' },
-              { tabUrlValue: 'business', tabName: 'Business' },
-              { tabUrlValue: 'categories', tabName: 'Categories' }
-            ]}
+            tabsLabels={tabs}
             baseUrl={routes.FINANCE_DASHBOARD}
-            defaultTab="all"
+            defaultTab={defaultTab}
             id="finance-dashboard-tabs"
           />
         }
       >
-        {tabIndex === 0 ? (
-          <All />
-        ) : tabIndex === 1 ? (
-          <Electrical />
-        ) : tabIndex === 2 ? (
-          <Mechanical />
-        ) : tabIndex === 3 ? (
-          <Software />
-        ) : tabIndex === 4 ? (
-          <Business />
-        ) : (
-          <Categories />
-        )}
+        {tabs[tabIndex]?.tabUrlValue === 'all' && <div>All</div>}
+        {tabs[tabIndex]?.tabUrlValue === 'categories' && <div>Categories</div>}
+        {allTeams?.data.some((team) => team.teamId === tabs[tabIndex]?.tabUrlValue) && <div>{tabs[tabIndex]?.tabName}</div>}
       </PageLayout>
     </Box>
   );

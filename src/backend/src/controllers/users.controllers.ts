@@ -191,4 +191,17 @@ export default class UsersController {
       next(error);
     }
   }
+
+  static async getUserTeams(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.params;
+
+      const teams = await UsersService.getUserTeams(userId);
+
+      res.status(200).json(teams);
+    }
+    catch (error) {
+      next(error);
+    }
+  }
 }

@@ -568,4 +568,29 @@ export default class UsersService {
     const resolvedTasks = await Promise.all(tasksPromises);
     return resolvedTasks.flat();
   }
+
+  /*
+   * Gets the teams that a user is a part of
+   * @param userId the id of the user whose teams are being returned
+   * @returns the teams that the user is a part of
+   */
+  static async getUserTeams(userId: string) {
+    const userExists = await prisma.user.findUnique({ where: { userId } });
+    if (!userExists) throw new NotFoundException('User', userId);
+
+    const teamsAsMember = await prisma.team.findMany({
+      where: { members: { some: { userId } } }
+    });
+    const teamsAsHead = await prisma.team.findMany({
+      where: { head: { userId } }
+    });
+    const teamsAsLead = await prisma.team.findMany({
+      where: { leads: { some: { userId } } }
+    });
+
+    const allTeams = [...teamsAsMember, ...teamsAsHead, ...teamsAsLead];
+    const uniqueTeams = allTeams.filter((team, index, self) => index === self.findIndex((t) => t.teamId === team.teamId));
+
+    return uniqueTeams;
+  }
 }

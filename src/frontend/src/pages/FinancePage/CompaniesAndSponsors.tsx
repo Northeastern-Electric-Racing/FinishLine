@@ -1,6 +1,4 @@
 import { Box } from '@mui/system';
-import Companies from './CompaniesAndSponsorsTabs/Companies';
-import SponsoringVendors from './CompaniesAndSponsorsTabs/SponsoringVendors';
 import { useState } from 'react';
 import PageLayout from '../../components/PageLayout';
 import NERTabs from '../../components/Tabs';
@@ -9,6 +7,12 @@ import { Typography } from '@mui/material';
 
 const CompaniesAndSponsors: React.FC = () => {
   const [tabIndex, setTabIndex] = useState<number>(0);
+
+  const defaultTab = 'companies';
+  const tabs = [
+    { tabUrlValue: 'companies', tabName: 'Companies' },
+    { tabUrlValue: 'sponsoring-vendors', tabName: 'Sponsoring Vendors' }
+  ];
 
   return (
     <Box>
@@ -20,17 +24,15 @@ const CompaniesAndSponsors: React.FC = () => {
         tabs={
           <NERTabs
             setTab={setTabIndex}
-            tabsLabels={[
-              { tabUrlValue: 'companies', tabName: 'Companies' },
-              { tabUrlValue: 'sponsoring-vendors', tabName: 'Sponsoring Vendors' }
-            ]}
+            tabsLabels={tabs}
             baseUrl={routes.COMPANIES_SPONSORS}
-            defaultTab="companies"
+            defaultTab={defaultTab}
             id="companies-and-sponsors-tabs"
           />
         }
       >
-        {tabIndex === 0 ? <Companies /> : <SponsoringVendors />}
+        {tabs[tabIndex]?.tabUrlValue === 'companies' && <div>Companies</div>}
+        {tabs[tabIndex]?.tabUrlValue === 'sponsoring-vendors' && <div>Sponsoring Vendors</div>}
       </PageLayout>
     </Box>
   );
