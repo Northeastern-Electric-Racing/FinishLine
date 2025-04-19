@@ -14,14 +14,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { useState } from 'react';
 import { isGuest, isLeadership, ReimbursementRequest } from 'shared';
 import { ReimbursementRequestRow, ReimbursementStatusType } from 'shared/src/types/reimbursement-requests-types';
-import {
-  undefinedPipe,
-  fullNamePipe,
-  centsToDollar,
-  datePipe,
-  dateUndefinedPipe
-  // codeAndRefundSourceName
-} from '../../../utils/pipes';
+import { undefinedPipe, fullNamePipe, centsToDollar, datePipe, dateUndefinedPipe } from '../../../utils/pipes';
 import {
   createReimbursementRequestRowData,
   vendorDescendingComparator,
@@ -287,32 +280,30 @@ const ReimbursementRequestInfo = ({
             mb: 2
           }}
         />
-        {!isLeadership(user.role) && (
-          <Button
-            className="viewButton"
-            variant="contained"
-            component={RouterLink}
-            to={routes.NEW_REIMBURSEMENT_REQUEST}
-            disabled={isGuest(user.role)}
-            sx={{
-              borderRadius: '8px',
-              color: '#ededed',
-              backgroundColor: '#dd514c',
-              padding: '2px 20px',
-              mb: 1,
-              mr: 2,
-              display: 'inline-flex',
-              fontSize: '20px',
-              fontWeight: 700,
-              textTransform: 'none',
-              '&:hover': {
-                backgroundColor: '#c74340'
-              }
-            }}
-          >
-            Create Request
-          </Button>
-        )}
+        <Button
+          className="viewButton"
+          variant="contained"
+          component={RouterLink}
+          to={routes.NEW_REIMBURSEMENT_REQUEST}
+          disabled={isGuest(user.role)}
+          sx={{
+            borderRadius: '8px',
+            color: '#ededed',
+            backgroundColor: '#dd514c',
+            padding: '2px 20px',
+            mb: 1,
+            mr: 2,
+            display: 'inline-flex',
+            fontSize: '20px',
+            fontWeight: 700,
+            textTransform: 'none',
+            '&:hover': {
+              backgroundColor: '#c74340'
+            }
+          }}
+        >
+          Create Request
+        </Button>
         <Box
           sx={{
             padding: '5px 20px',
