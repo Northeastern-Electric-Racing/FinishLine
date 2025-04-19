@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useState } from 'react';
-import { isGuest, isLeadership, ReimbursementRequest } from 'shared';
+import { isGuest, ReimbursementRequest } from 'shared';
 import { ReimbursementRequestRow, ReimbursementStatusType } from 'shared/src/types/reimbursement-requests-types';
 import { undefinedPipe, fullNamePipe, centsToDollar, datePipe, dateUndefinedPipe } from '../../../utils/pipes';
 import {
