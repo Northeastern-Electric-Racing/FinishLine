@@ -1,10 +1,9 @@
 import { Box, Typography, Grid, Breadcrumbs } from '@mui/material';
-import { RoleEnum } from 'shared';
-import PartSubmissionDetails, { partReviewExample1, partReviewExample2 } from './Components/PartSubmissionDetails';
+import PartsUnderReviewContainer, { projectExample1 } from './Components/AllPartsUnderReviewContainer';
 
 const PartPage: React.FC = () => {
   return (
-    <Box padding={4}>
+    <Box padding={4} flexDirection={'column'} marginBlockStart={4}>
       {/* This is where the breadcrumbs (series of links) will go */}
       <Breadcrumbs sx={{ mb: 2 }}></Breadcrumbs>
 
@@ -20,7 +19,7 @@ const PartPage: React.FC = () => {
             sx={{
               backgroundColor: 'black',
               height: '75vh',
-              width: '50%',
+              width: '100%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -39,7 +38,7 @@ const PartPage: React.FC = () => {
                 sx={{
                   backgroundColor: 'gray',
                   height: '24vh',
-                  width: '50%',
+                  width: '100%',
                   borderRadius: 2,
                   display: 'flex',
                   alignItems: 'center',
@@ -53,41 +52,48 @@ const PartPage: React.FC = () => {
                 sx={{
                   backgroundColor: 'gray',
                   height: '24vh',
-                  width: '50%',
+                  width: '100%',
                   borderRadius: 2,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   mb: 2
                 }}
-              ></Box>
-              <Box>
-                <PartSubmissionDetails
-                  submission={{
-                    partSubmissionId: '1',
-                    userCreated: {
-                      userId: '123',
-                      email: 'john.doe@example.com',
-                      emailId: 'john.doe@example.com',
-                      role: RoleEnum.MEMBER,
-                      permissions: [],
-                      firstName: 'John',
-                      lastName: 'Doe'
-                    },
-                    notes: 'This is a test note.',
-                    reviews: [partReviewExample1, partReviewExample2],
-                    fileIds: [],
-                    name: 'Test Part Submission',
-                    partId: '456',
-                    createdAt: new Date()
-                  }}
-                />
+              >
+                <Typography>Details for Submission</Typography>
               </Box>
-              <Typography>History</Typography>
+              <Box
+                sx={{
+                  backgroundColor: 'gray',
+                  height: '24vh',
+                  width: '100%',
+                  borderRadius: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  mb: 2
+                }}
+              >
+                <Box
+                  sx={{
+                    backgroundColor: 'gray',
+                    height: '24vh',
+                    width: '100%',
+                    borderRadius: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mb: 2
+                  }}
+                >
+                  <Typography>History</Typography>
+                </Box>
+              </Box>
             </Grid>
           </Grid>
         </Grid>
       </Grid>
+      <PartsUnderReviewContainer project={projectExample1} />
     </Box>
   );
 };
