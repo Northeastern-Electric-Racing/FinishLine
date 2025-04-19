@@ -1,5 +1,5 @@
 import { Box } from '@mui/system';
-import { isHead, isLead, Part, Project, Review_Status, RoleEnum, WbsElementStatus, wbsPipe } from 'shared';
+import { isHead, isLead, Project, Review_Status, RoleEnum, WbsElementStatus, wbsPipe } from 'shared';
 import { Grid, Typography } from '@mui/material';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import { usePartsFromProject } from '../../../hooks/part-review.hooks';
@@ -25,12 +25,10 @@ const PartsUnderReviewContainer: React.FC<AllPartsUnderReview> = ({ project }) =
 
   // filter out parts in project that have not been approved
   const parts = data?.filter((part) => part.status !== Review_Status.APPROVED) || [];
-  const scrollable = parts.length > 3;
   // show list only if head/lead of current project
-  /*
   if (!(isUserHead || isUserLead) || parts.length === 0) {
     return null;
-  }*/
+  }
   return (
     <Grid item xs={12}>
       <Typography variant="h4" sx={{ mb: 1 }}>
@@ -120,73 +118,6 @@ const PartsUnderReviewContainer: React.FC<AllPartsUnderReview> = ({ project }) =
 };
 
 export default PartsUnderReviewContainer;
-
-const partExample1: Part = {
-  submissions: [],
-  partId: '0',
-  index: 0,
-  commonName: 'part example 1',
-  status: Review_Status.IN_PROGRESS,
-  tags: [],
-  projectId: '',
-  assignees: [],
-  reviewRequests: [],
-  createdAt: new Date(),
-  userCreated: {
-    userId: '124',
-    email: 'mark.andrews@example.com',
-    emailId: 'mark.andrews@example.com',
-    role: RoleEnum.MEMBER,
-    permissions: [],
-    firstName: 'Mark',
-    lastName: 'Andrews'
-  }
-};
-
-const partExample2: Part = {
-  submissions: [],
-  partId: '1',
-  index: 1,
-  commonName: 'part example 2',
-  status: Review_Status.IN_PROGRESS,
-  tags: [],
-  projectId: '',
-  assignees: [],
-  reviewRequests: [],
-  createdAt: new Date(),
-  userCreated: {
-    userId: '125',
-    email: 'julia.williams@example.com',
-    emailId: 'julia.williams@example.com',
-    role: RoleEnum.MEMBER,
-    permissions: [],
-    firstName: 'Julia',
-    lastName: 'Williams'
-  }
-};
-
-// should not appear since part is already approved
-const partExample3: Part = {
-  submissions: [],
-  partId: '2',
-  index: 2,
-  commonName: 'part example 3',
-  status: Review_Status.APPROVED,
-  tags: [],
-  projectId: '',
-  assignees: [],
-  reviewRequests: [],
-  createdAt: new Date(),
-  userCreated: {
-    userId: '126',
-    email: 'shawn.g@example.com',
-    emailId: 'shawn.g@example.com',
-    role: RoleEnum.MEMBER,
-    permissions: [],
-    firstName: 'Shawn',
-    lastName: 'G'
-  }
-};
 
 export const projectExample1: Project = {
   summary: 'example project',
