@@ -266,7 +266,7 @@ export const useManyUserTasks = (userIds: string[]) => {
 /**
  * Custom React Hook to supply a single user's teams
  *
- * @param id User ID of the requested user's teams
+ * @param userId User ID of the requested user's teams
  */
 export const useUserTeams = (userId: string) => {
   return useQuery<Team[], Error>(['users', userId, 'userTeams'], async () => {

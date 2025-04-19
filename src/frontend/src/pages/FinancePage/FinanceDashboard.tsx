@@ -6,12 +6,11 @@ import { routes } from '../../utils/routes';
 import { Typography } from '@mui/material';
 import { useCurrentUser, useUserTeams } from '../../hooks/users.hooks';
 import { isAdmin } from 'shared';
-import { useQuery } from 'react-query';
-import { getAllTeams } from '../../apis/teams.api';
+import { useAllTeams } from '../../hooks/teams.hooks';
 
 const FinanceDashboard: React.FC = () => {
   const currentUser = useCurrentUser();
-  const { data: allTeams, isLoading: isLoadingAllTeams } = useQuery('allTeams', getAllTeams);
+  const { data: allTeams, isLoading: isLoadingAllTeams } = useAllTeams();
   const { data: userTeams, isLoading: isLoadingUserTeams } = useUserTeams(currentUser.userId);
   const [tabIndex, setTabIndex] = useState<number>(0);
 
@@ -21,7 +20,7 @@ const FinanceDashboard: React.FC = () => {
   if (!isLoadingAllTeams && !isLoadingUserTeams) {
     if (currentUser.isFinance || isAdmin(currentUser.role)) {
       tabs.push({ tabUrlValue: 'all', tabName: 'All' });
-      allTeams?.data.forEach((team) => {
+      allTeams?.forEach((team) => {
         tabs.push({ tabUrlValue: team.teamId, tabName: team.teamName });
       });
       tabs.push({ tabUrlValue: 'categories', tabName: 'Categories' });
@@ -51,7 +50,7 @@ const FinanceDashboard: React.FC = () => {
       >
         {tabs[tabIndex]?.tabUrlValue === 'all' && <div>All</div>}
         {tabs[tabIndex]?.tabUrlValue === 'categories' && <div>Categories</div>}
-        {allTeams?.data.some((team) => team.teamId === tabs[tabIndex]?.tabUrlValue) && <div>{tabs[tabIndex]?.tabName}</div>}
+        {allTeams?.some((team) => team.teamId === tabs[tabIndex]?.tabUrlValue) && <div>{tabs[tabIndex]?.tabName}</div>}
       </PageLayout>
     </Box>
   );
