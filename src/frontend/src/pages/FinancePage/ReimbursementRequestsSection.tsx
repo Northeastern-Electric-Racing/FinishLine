@@ -4,7 +4,7 @@ import { ReimbursementRequest, isHead, isLead } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import ReimbursementRequestInfo from './FinanceComponents/ReimbursementRequestInfo';
 import { ReimbursementStatusType } from 'shared/src/types/reimbursement-requests-types';
-import FinanceTabs from './FinanceComponents/FinanceTabs';
+import Tabs from '../../components/Tabs';
 
 interface ReimbursementRequestTableProps {
   userReimbursementRequests: ReimbursementRequest[];
@@ -63,7 +63,7 @@ const ReimbursementRequestTable = ({
 
   return (
     <Box sx={{ bgcolor: theme.palette.background.default, width: '100%', borderRadius: '8px 8px 0 0' }}>
-      <FinanceTabs tabValue={tabValue} setTabValue={setTabValue} tabs={tabs} />
+      <Tabs tabValue={tabValue} setTabValue={setTabValue} tabs={tabs} tabVariant="standard" />
     </Box>
   );
 };
