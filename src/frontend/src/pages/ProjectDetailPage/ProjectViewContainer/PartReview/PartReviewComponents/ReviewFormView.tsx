@@ -2,41 +2,39 @@ import { Control, Controller, FieldErrors, UseFormHandleSubmit } from 'react-hoo
 import NERFormModal from '../../../../../components/NERFormModal';
 import { FormControl, FormLabel } from '@mui/material';
 import ReactHookTextField from '../../../../../components/ReactHookTextField';
-import NERAutocomplete from '../../../../../components/NERAutocomplete';
-import { Box } from '@mui/system';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 
 const schema = yup.object().shape({
   partId: yup.string().required('Select a Part!'),
-  name: yup.string().required('Enter a Submission Name!'),
   fileIds: yup.array().of(yup.string().defined()).required(), //????
+  submissionId:  yup.string().required('Select a Submission!'),
   notes: yup.string().optional()
 });
 
-export interface SubmissionFormInput {
+export interface ReviewFormInput {
   partId: string;
   fileIds: string[];
-  name: string;
+  submissionId: string;
   notes?: string;
 }
 
-export interface SubmissionFormProps {
+export interface ReviewFormProps {
   submitText: 'Add' | 'Edit';
-  onSubmit: (payload: SubmissionFormInput) => void;
-  defaultValues?: SubmissionFormInput;
+  onSubmit: (payload: ReviewFormInput) => void;
+  defaultValues?: ReviewFormInput;
   onHide: () => void;
   open: boolean;
 }
 
-const SubmissionForm: React.FC<SubmissionFormProps> = ({ submitText, onSubmit, defaultValues, onHide, open }) => {
+const ReviewForm: React.FC<ReviewFormProps> = ({ submitText, onSubmit, defaultValues, onHide, open }) => {
   const {
     handleSubmit,
     control,
     setValue,
     formState: { errors }
-  } = useForm<SubmissionFormInput>({
+  } = useForm<ReviewFormInput>({
     defaultValues: {
       partId: defaultValues?.partId ?? '',
       fileIds: defaultValues?.fileIds ?? [],
@@ -51,10 +49,10 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({ submitText, onSubmit, d
     isLoading: isLoadingManufactuers,
     isError: manufacturersIsError,
     error: manufacturersError
-  } = useGetAllParts();
+  } = useGetAllReviews();
 
   return (
-    <SubmissionFormView
+    <ReviewFormView
       onSubmit={onSubmit}
       allParts={parts}
       handleSubmit={handleSubmit}
@@ -68,17 +66,17 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({ submitText, onSubmit, d
   );
 };
 
-export interface SubmissionFormViewProps {
+export interface ReviewFormViewProps {
   submitText: 'Add' | 'Edit';
-  handleSubmit: UseFormHandleSubmit<SubmissionFormInput>;
-  onSubmit: (payload: SubmissionFormInput) => void;
+  handleSubmit: UseFormHandleSubmit<ReviewFormInput>;
+  onSubmit: (payload: ReviewFormInput) => void;
   onHide: () => void;
-  control: Control<SubmissionFormInput, any>;
-  errors: FieldErrors<SubmissionFormInput>;
+  control: Control<ReviewFormInput, any>;
+  errors: FieldErrors<ReviewFormInput>;
   open: boolean;
 }
 
-const SubmissionFormView: React.FC<SubmissionFormViewProps> = ({
+const ReviewFormView: React.FC<ReviewFormViewProps> = ({
   submitText,
   handleSubmit,
   onSubmit,
@@ -101,37 +99,7 @@ const SubmissionFormView: React.FC<SubmissionFormViewProps> = ({
       showCloseButton
     >
       <FormControl fullWidth>
-        <FormLabel>
-          Part
-        </FormLabel>
-        {/* <Controller
-          name="partName"
-          control={control}
-          render={({ field: { onChange, value } }) => {
-            const mappedManufacturers = allParts
-              .sort((a, b) => a.name.localeCompare(b.name))
-              .map(partsToAutocomplete);
-            const onClear = () => {
-              setValue('partName', '');
-              onChange('');
-            };
-            return (
-              <Box sx={{ alignItems: 'center' }}>
-                <NERAutocomplete
-                  sx={{ bgcolor: 'inherit' }}
-                  id={'part'}
-                  size="medium"
-                  options={mappedManufacturers}
-                  value={mappedManufacturers.find((part) => part.label === value) || null}
-                  placeholder="Select Part"
-                  onChange={(_event, newValue) => {
-                    newValue ? onChange(newValue.id) : onClear();
-                  }}
-                />
-              </Box>
-            );
-          }}
-        /> */}
+        <FormLabel>Part</FormLabel>
       </FormControl>
       <FormControl fullWidth sx={{ mb: '10px' }}>
         <FormLabel>Submission Name</FormLabel>
@@ -157,4 +125,4 @@ const SubmissionFormView: React.FC<SubmissionFormViewProps> = ({
   );
 };
 
-export default SubmissionFormView;
+export default ReviewFormView;

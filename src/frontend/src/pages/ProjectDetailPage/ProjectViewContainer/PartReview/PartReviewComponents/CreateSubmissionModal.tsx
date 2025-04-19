@@ -3,7 +3,7 @@ import LoadingIndicator from '../../../../../components/LoadingIndicator';
 import { useToast } from '../../../../../hooks/toasts.hooks';
 import ErrorPage from '../../../../ErrorPage';
 import { useCreateAssembly } from '../../../../../hooks/bom.hooks';
-import SubmissionForm, { SubmissionFormInput } from './SubmissionForm';
+import SubmissionFormView, { SubmissionFormInput } from './SubmissionFormView';
 
 export interface CreateSubmissionModalProps {
   open: boolean;
@@ -30,7 +30,7 @@ const CreateSubmissionModal: React.FC<CreateSubmissionModalProps> = ({ open, onH
     }
   };
 
-  return <SubmissionForm submitText="Add" onSubmit={onSubmit} onHide={onHide} open={open} />;
+  return <SubmissionFormView submitText="Add" onSubmit={onSubmit} onHide={onHide} open={open} />;
 };
 
 export default CreateSubmissionModal;
