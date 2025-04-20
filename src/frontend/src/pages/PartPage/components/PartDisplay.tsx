@@ -41,6 +41,17 @@ const getReviewStatusDisplayName = (status: Review_Status): string => {
   }
 };
 
+const getBoxWidth = (screenSize: String) => {
+  switch (screenSize) {
+    case 'small':
+      return '400px';
+    case 'medium':
+      return '600px';
+    default:
+      return 'NA';
+  }
+};
+
 // defined a Pill shape for the review status display
 const Pill = ({ label = '', bgColor = 'background.paper' }) => {
   return (
@@ -149,81 +160,6 @@ const PartDisplay: React.FC<PartDisplayProps> = ({ part, screenSize }) => {
     return 'None';
   };
 
-  // small screen (1/3 of screen width)
-  if (screenSize === 'small') {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          bgcolor: (theme) => theme.palette.grey[800],
-          borderRadius: 2,
-          p: 2,
-          mb: 1,
-          maxWidth: '400px',
-          width: '100%'
-        }}
-      >
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-          <Typography variant="subtitle1" fontWeight="bold">
-            {getPartName()}
-          </Typography>
-          <Typography variant="caption">Last updated by {getLatestSubmission()}</Typography>
-        </Box>
-
-        <Box sx={{ width: '35%', display: 'flex', justifyContent: 'flex-end' }}>
-          <Pill label={getReviewStatusDisplayName(part.status)} bgColor={getReviewStatusColor(part.status)} />
-        </Box>
-      </Box>
-    );
-  }
-
-  // medium screen (1/2 of screen width)
-  if (screenSize === 'medium') {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          bgcolor: (theme) => theme.palette.grey[800],
-          /*bgcolor: 'background.paper', */
-          borderRadius: 2,
-          paddingX: 2,
-          paddingY: 1,
-          mb: 1,
-          maxWidth: '600px',
-          width: '100%'
-        }}
-      >
-        <Box sx={{ width: '40%', display: 'flex', flexDirection: 'column', gap: 0 }}>
-          <Typography variant="subtitle1" fontWeight="bold">
-            {getPartName()}
-          </Typography>
-          <Typography variant="caption">Last updated by {getLatestSubmission()}</Typography>
-        </Box>
-
-        <Box sx={{ padding: '10px' }}>
-          <Typography variant="body2" whiteSpace="pre-line">
-            {getAssignees()}
-          </Typography>
-        </Box>
-
-        <Box sx={{ padding: '10px' }}>
-          <Typography variant="body2" whiteSpace="pre-line">
-            {getReviewers()}
-          </Typography>
-        </Box>
-
-        <Box sx={{ width: '25%', display: 'flex', justifyContent: 'flex-end' }}>
-          <Pill label={getReviewStatusDisplayName(part.status)} bgColor={getReviewStatusColor(part.status)} />
-        </Box>
-      </Box>
-    );
-  }
-
-  // large screen view
   return (
     <Box
       sx={{
@@ -233,36 +169,46 @@ const PartDisplay: React.FC<PartDisplayProps> = ({ part, screenSize }) => {
         bgcolor: (theme) => theme.palette.grey[800],
         borderRadius: 2,
         p: 2,
-        mb: 1
+        mb: 1,
+        maxWidth: getBoxWidth(screenSize),
+        width: '100%'
       }}
     >
-      <Box sx={{ width: '35%', display: 'flex', alignItems: 'center' }}>
+      <Box sx={{ width: '175px', display: 'flex' }}>
         <Typography variant="subtitle1" fontWeight="bold">
           {getPartName()}
         </Typography>
       </Box>
 
-      <Box sx={{ width: '16.6%', display: 'flex', alignItems: 'center' }}>
-        <Typography variant="body2" whiteSpace="pre-line">
-          {getAssignees()}
-        </Typography>
-      </Box>
+      {(screenSize === 'medium' || screenSize === 'large') && (
+        <Box sx={{ display: 'flex' }}>
+          <Typography variant="body2" whiteSpace="pre-line">
+            {getAssignees()}
+          </Typography>
+        </Box>
+      )}
 
-      <Box sx={{ width: '16.6%', display: 'flex', alignItems: 'center' }}>
-        <Typography variant="body2" whiteSpace="pre-line">
-          {getReviewers()}
-        </Typography>
-      </Box>
+      {(screenSize === 'medium' || screenSize === 'large') && (
+        <Box sx={{ display: 'flex' }}>
+          <Typography variant="body2" whiteSpace="pre-line">
+            {getReviewers()}
+          </Typography>
+        </Box>
+      )}
 
-      <Box sx={{ width: '16.6%', display: 'flex', alignItems: 'center' }}>
-        <Typography variant="body2">{getLatestReview()}</Typography>
-      </Box>
+      {screenSize === 'large' && (
+        <Box sx={{ display: 'flex' }}>
+          <Typography variant="body2">{getLatestReview()}</Typography>
+        </Box>
+      )}
 
-      <Box sx={{ width: '16.6%', display: 'flex', alignItems: 'center' }}>
-        <Typography variant="body2">{getLatestSubmission()}</Typography>
-      </Box>
+      {screenSize === 'large' && (
+        <Box sx={{ display: 'flex' }}>
+          <Typography variant="body2">{getLatestSubmission()}</Typography>
+        </Box>
+      )}
 
-      <Box sx={{ width: '16.6%', display: 'flex', alignItems: 'center' }}>
+      <Box sx={{ display: 'flex' }}>
         <Pill label={getReviewStatusDisplayName(part.status)} bgColor={getReviewStatusColor(part.status)} />
       </Box>
     </Box>
