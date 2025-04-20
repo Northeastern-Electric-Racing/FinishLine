@@ -63,4 +63,7 @@ organizationRouter.post(
   OrganizationsController.setSlackWorkspaceId
 );
 
+organizationRouter.get('/part-review-guide-link', OrganizationsController.getPartReviewGuideLink);
+organizationRouter.post('/part-review-guide-link', OrganizationsController.setPartReviewGuideLink);
+
 export default organizationRouter;
