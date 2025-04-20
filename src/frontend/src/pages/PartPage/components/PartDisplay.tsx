@@ -7,6 +7,40 @@ interface PartDisplayProps {
   screenSize: 'small' | 'medium' | 'large';
 }
 
+const getReviewStatusColor = (status: Review_Status) => {
+  switch (status) {
+    case 'IN_PROGRESS':
+      return '#FF7700';
+    case 'READY_FOR_REVIEW':
+      return '#FF5500';
+    case 'IN_REVIEW':
+      return '#F57600';
+    case 'REVIEWED':
+      return '#3DA848';
+    case 'APPROVED':
+      return '#D633FF';
+    default:
+      return '#535151';
+  }
+};
+
+const getReviewStatusDisplayName = (status: Review_Status): string => {
+  switch (status) {
+    case 'IN_PROGRESS':
+      return 'Review In Progress';
+    case 'READY_FOR_REVIEW':
+      return 'Ready For Review';
+    case 'IN_REVIEW':
+      return 'In Review';
+    case 'REVIEWED':
+      return 'Reviewed';
+    case 'APPROVED':
+      return 'Approved';
+    default:
+      return 'N/A';
+  }
+};
+
 // defined a Pill shape for the review status display
 const Pill = ({ label = '', bgColor = 'background.paper' }) => {
   return (
@@ -23,7 +57,7 @@ const Pill = ({ label = '', bgColor = 'background.paper' }) => {
         fontWeight: 500,
         color: 'white',
         userSelect: 'none',
-        width: '120px'
+        width: '121px'
       }}
     >
       {label}
@@ -34,27 +68,25 @@ const Pill = ({ label = '', bgColor = 'background.paper' }) => {
 const PartDisplay: React.FC<PartDisplayProps> = ({ part, screenSize }) => {
   // helper to get part name in the format shown in the ticket
   const getPartName = () => {
-    const partNumber = part?.partId || '00000-00A';
-    return `${part?.projectId}_${part?.commonName}_${partNumber}`;
+    const partNumber = part.partId;
+    return `${part.projectId}_${part.commonName}_${partNumber}`;
   };
 
   // helper to get latest submission
   const getLatestSubmission = () => {
-    if (!part?.submissions?.length) return 'None';
+    if (part.submissions.length === 0) return 'None';
 
     // sorts submissions by date
     const sortedSubmissions = [...part.submissions].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
     const [latestSubmission] = sortedSubmissions;
 
-    return latestSubmission?.userCreated
-      ? `${latestSubmission.userCreated.firstName} ${latestSubmission.userCreated.lastName}`
-      : 'None';
+    return `${latestSubmission.userCreated.firstName} ${latestSubmission.userCreated.lastName}`;
   };
 
   // helper to get latest reviewer
   const getLatestReview = () => {
-    if (!part?.submissions?.length) return 'None';
+    if (part.submissions.length === 0) return 'None';
 
     // sort submissions by date
     const sortedSubmissions = [...part.submissions].sort(
@@ -63,7 +95,7 @@ const PartDisplay: React.FC<PartDisplayProps> = ({ part, screenSize }) => {
 
     const [latestSubmission] = sortedSubmissions;
 
-    if (latestSubmission?.reviews?.length > 0) {
+    if (latestSubmission.reviews.length > 0) {
       // sort reviews by date
       const sortedReviews = [...latestSubmission.reviews].sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -71,9 +103,7 @@ const PartDisplay: React.FC<PartDisplayProps> = ({ part, screenSize }) => {
 
       const [latestReview] = sortedReviews;
 
-      return latestReview?.userCreated
-        ? `${latestReview.userCreated.firstName} ${latestReview.userCreated.lastName}`
-        : 'None';
+      return `${latestReview.userCreated.firstName} ${latestReview.userCreated.lastName}`;
     }
 
     return 'None';
@@ -81,14 +111,14 @@ const PartDisplay: React.FC<PartDisplayProps> = ({ part, screenSize }) => {
 
   // helper to get assignees as a formatted string
   const getAssignees = () => {
-    if (part?.assignees && part.assignees.length > 0) {
+    if (part.assignees.length > 0) {
       return part.assignees.map((assignee) => `${assignee.firstName} ${assignee.lastName}`).join('\n');
     }
     return 'None';
   };
 
   const getAllReviewers = () => {
-    if (!part?.submissions || !Array.isArray(part.submissions)) {
+    if (part.submissions.length === 0) {
       return [];
     }
 
@@ -96,14 +126,12 @@ const PartDisplay: React.FC<PartDisplayProps> = ({ part, screenSize }) => {
 
     // iterate through all submissions
     part.submissions.forEach((submission) => {
-      if (submission?.reviews && Array.isArray(submission.reviews)) {
+      if (submission.reviews) {
         // iterate through each review
         submission.reviews.forEach((review) => {
-          if (review?.userCreated) {
-            const reviewer = review.userCreated;
-            const reviewerName = `${reviewer.firstName} ${reviewer.lastName}`;
-            reviewersSet.add(reviewerName);
-          }
+          const reviewer = review.userCreated;
+          const reviewerName = `${reviewer.firstName} ${reviewer.lastName}`;
+          reviewersSet.add(reviewerName);
         });
       }
     });
@@ -119,22 +147,6 @@ const PartDisplay: React.FC<PartDisplayProps> = ({ part, screenSize }) => {
       return allReviewers.join('\n');
     }
     return 'None';
-  };
-
-  // handles logic for what color to display for each review status
-  const makeStatusPill = () => {
-    switch (part?.status) {
-      case Review_Status.REVIEWED:
-        return <Pill label="Reviewed" bgColor="#43e84e"></Pill>;
-      case Review_Status.APPROVED:
-        return <Pill label="Approved" bgColor="#43e84e"></Pill>;
-      case Review_Status.IN_PROGRESS:
-        return <Pill label="In Progress" bgColor="#ff0000"></Pill>;
-      case Review_Status.IN_REVIEW:
-        return <Pill label="In Review" bgColor="#F89C38"></Pill>;
-      case Review_Status.READY_FOR_REVIEW:
-        return <Pill label="Ready for Review" bgColor="#ff0000"></Pill>;
-    }
   };
 
   // small screen (1/3 of screen width)
@@ -160,7 +172,9 @@ const PartDisplay: React.FC<PartDisplayProps> = ({ part, screenSize }) => {
           <Typography variant="caption">Last updated by {getLatestSubmission()}</Typography>
         </Box>
 
-        <Box sx={{ width: '35%', display: 'flex', justifyContent: 'flex-end' }}>{makeStatusPill()}</Box>
+        <Box sx={{ width: '35%', display: 'flex', justifyContent: 'flex-end' }}>
+          <Pill label={getReviewStatusDisplayName(part.status)} bgColor={getReviewStatusColor(part.status)} />
+        </Box>
       </Box>
     );
   }
@@ -202,7 +216,9 @@ const PartDisplay: React.FC<PartDisplayProps> = ({ part, screenSize }) => {
           </Typography>
         </Box>
 
-        <Box sx={{ width: '25%', display: 'flex', justifyContent: 'flex-end' }}>{makeStatusPill()}</Box>
+        <Box sx={{ width: '25%', display: 'flex', justifyContent: 'flex-end' }}>
+          <Pill label={getReviewStatusDisplayName(part.status)} bgColor={getReviewStatusColor(part.status)} />
+        </Box>
       </Box>
     );
   }
@@ -246,7 +262,9 @@ const PartDisplay: React.FC<PartDisplayProps> = ({ part, screenSize }) => {
         <Typography variant="body2">{getLatestSubmission()}</Typography>
       </Box>
 
-      <Box sx={{ width: '16.6%', display: 'flex', alignItems: 'center' }}>{makeStatusPill()}</Box>
+      <Box sx={{ width: '16.6%', display: 'flex', alignItems: 'center' }}>
+        <Pill label={getReviewStatusDisplayName(part.status)} bgColor={getReviewStatusColor(part.status)} />
+      </Box>
     </Box>
   );
 };
