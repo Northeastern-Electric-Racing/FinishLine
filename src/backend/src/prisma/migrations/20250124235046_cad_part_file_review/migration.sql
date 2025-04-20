@@ -14,7 +14,7 @@ ALTER TABLE "FrequentlyAskedQuestion" ALTER COLUMN "regularFaqOrgId" DROP NOT NU
 
 -- AlterTable
 ALTER TABLE "Organization" ADD COLUMN     "partReviewSampleImageId" TEXT;
-
+ALTER TABLE "Organization" ADD COLUMN "partReviewGuideLink" TEXT;
 -- AlterTable
 ALTER TABLE "Project" ADD COLUMN     "abbreviation" TEXT;
 
