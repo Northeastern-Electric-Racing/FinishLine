@@ -5,15 +5,15 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 
 const PartPage: React.FC = () => {
   const { isLoading, data: part, isError, error } = useSinglePart();
-      
-      if (isLoading) {
-          return <LoadingIndicator />;
-        }
-      
-      if (isError || !part) {
-          throw error;
-      }
-      
+
+  if (isLoading) {
+    return <LoadingIndicator />;
+  }
+
+  if (isError || !part) {
+    throw error;
+  }
+
   return (
     <Box padding={4}>
       {/* This is where the breadcrumbs (series of links) will go */}
