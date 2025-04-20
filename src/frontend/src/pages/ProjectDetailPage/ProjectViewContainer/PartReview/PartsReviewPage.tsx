@@ -9,7 +9,7 @@ import CommonMistakes from './CommonMistakes';
 import PartDisplay from '../../../PartPage/components/PartDisplay';
 import { Review_Status } from 'shared';
 import { Part } from 'shared';
-import { useSinglePart } from '../../../../hooks/part-review.hooks';
+//import { useSinglePart } from '../../../../hooks/part-review.hooks';
 
 const PartsReviewPage = () => {
   const currentUser = useCurrentUser();
@@ -197,7 +197,7 @@ const PartsReviewPage = () => {
   });
 
   const samplePart = createSamplePart('part-123', 'Impact Attenuator');
-  const { isLoading, data: part, isError, error } = useSinglePart();
+  /*const { isLoading, data: part, isError, error } = useSinglePart();
 
   if (isLoading) {
     return <LoadingIndicator />;
@@ -205,13 +205,13 @@ const PartsReviewPage = () => {
 
   if (isError || !part) {
     throw error;
-  }
+  } */
 
   return (
     <Box>
-      <PartDisplay part={part} screenSize="large"></PartDisplay>
-      <PartDisplay part={part} screenSize="medium"></PartDisplay>
-      <PartDisplay part={part} screenSize="small"></PartDisplay>
+      <PartDisplay part={samplePart} screenSize="large"></PartDisplay>
+      <PartDisplay part={samplePart} screenSize="medium"></PartDisplay>
+      <PartDisplay part={samplePart} screenSize="small"></PartDisplay>
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <FormGroup>
