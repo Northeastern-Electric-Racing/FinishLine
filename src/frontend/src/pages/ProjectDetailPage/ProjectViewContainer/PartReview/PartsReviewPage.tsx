@@ -196,7 +196,7 @@ const PartsReviewPage = () => {
     ]
   });
 
-  const samplePart = createSamplePart('part-123', 'Impact Attenuator');
+  const samplePart = createSamplePart('part-123', 'Attenuator');
   /*const { isLoading, data: part, isError, error } = useSinglePart();
 
   if (isLoading) {
