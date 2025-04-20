@@ -43,8 +43,8 @@ const projectsEditLinkTypes = (linkTypeName: string) => `${projects()}/link-type
 
 /**************** Part Review Endpoints ********************/
 const parts = () => `${API_URL}/parts`;
-const partsByProject = (projectId: string) => `${parts()}/${projectId}/parts`;
-const partsById = (partId: string) => `${parts()}/${partId}`;
+const partsByProject = (wbsNum: string) => `${parts()}/byProject/${wbsNum}`;
+const partByIndex = (wbsNum: string, partIndex: number) => `${parts()}/${wbsNum}/${partIndex}`;
 const partsCreate = () => `${parts()}/create`;
 const partsUploadPreviewImage = (partId: string) => `${parts()}/${partId}/upload-preview`;
 const partsEdit = (partId: string) => `${parts()}/${partId}/update`;
@@ -53,8 +53,9 @@ const partsCreateSubmission = (partId: string) => `${parts()}/submission/${partI
 const partsEditSubmission = (submissionId: string) => `${parts()}/submission/${submissionId}/update`;
 const partsCreateReviewRequest = (submissionId: string) => `${parts()}/reviewRequest/${submissionId}/create`;
 const partsDeleteReviewRequest = (reviewRequestId: string) => `${parts()}/reviewRequest/${reviewRequestId}/delete`;
-const partsCreateReview = (submissionId: string) => `${parts()}/review/${submissionId}/create`;
+const partsCreateReview = () => `${parts()}/review/create`;
 const partsEditReview = (reviewId: string) => `${parts()}/review/${reviewId}/update`;
+const partsReviewUploadFiles = (reviewId: string) => `${parts()}/review/${reviewId}/upload-files`;
 const getAllPartCommonMistakes = () => `${parts()}/common-mistakes`;
 
 /**************** Tasks Endpoints ********************/
@@ -295,7 +296,7 @@ export const apiUrls = {
 
   parts,
   partsByProject,
-  partsById,
+  partByIndex,
   partsCreate,
   partsUploadPreviewImage,
   partsEdit,
@@ -306,6 +307,7 @@ export const apiUrls = {
   partsDeleteReviewRequest,
   partsCreateReview,
   partsEditReview,
+  partsReviewUploadFiles,
   getAllPartCommonMistakes,
 
   tasksCreate,
