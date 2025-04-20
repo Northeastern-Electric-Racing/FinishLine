@@ -88,12 +88,12 @@ const PartPage: React.FC = () => {
                 >
                   <Typography>History</Typography>
                 </Box>
+                <PartsUnderReviewContainer project={projectExample1} />
               </Box>
             </Grid>
           </Grid>
         </Grid>
       </Grid>
-      <PartsUnderReviewContainer project={projectExample1} />
     </Box>
   );
 };
