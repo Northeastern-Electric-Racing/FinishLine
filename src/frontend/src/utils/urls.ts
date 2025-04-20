@@ -57,6 +57,8 @@ const partsCreateReview = () => `${parts()}/review/create`;
 const partsEditReview = (reviewId: string) => `${parts()}/review/${reviewId}/update`;
 const partsReviewUploadFiles = (reviewId: string) => `${parts()}/review/${reviewId}/upload-files`;
 const getAllPartCommonMistakes = () => `${parts()}/common-mistakes`;
+const getPartReviewSampleImage = () => `${parts()}//partReviewSampleImage`;
+const setPartReviewSampleImage = () => `${parts()}//partReviewSampleImage/update`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
@@ -309,6 +311,8 @@ export const apiUrls = {
   partsEditReview,
   partsReviewUploadFiles,
   getAllPartCommonMistakes,
+  setPartReviewSampleImage,
+  getPartReviewSampleImage,
 
   tasksCreate,
   tasks,

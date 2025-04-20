@@ -1056,4 +1056,54 @@ export default class PartReviewService {
 
     return deletedPopup;
   }
+
+  /**
+   * Sets the part review sample image for an organization, User must be admin
+   * @param image the image which will be uploaded and have its id stored in the org
+   * @param submitter the user submitting the sample image
+   * @param organization the organization who's sample image is being set
+   * @returns the updated organization
+   * @throws if the user is not an admin
+   */
+  static async setPartReviewSampleImage(
+    image: Express.Multer.File,
+    submitter: User,
+    organization: Organization
+  ): Promise<Organization> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('update part review sample image');
+    }
+
+    const previewImageData = await uploadFile(image);
+
+    if (!previewImageData?.name) {
+      throw new HttpException(500, 'Image Name not found');
+    }
+
+    const updatedOrg = await prisma.organization.update({
+      where: { organizationId: organization.organizationId },
+      data: {
+        partReviewSampleImageId: previewImageData.id
+      }
+    });
+
+    return updatedOrg;
+  }
+
+  /**
+   * Gets the part review sample image of the organization
+   * @param organizationId the id of the organization
+   * @returns the id of the image
+   */
+  static async getPartReviewSampleImage(organizationId: string): Promise<string | null> {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId }
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+
+    return organization.partReviewSampleImageId;
+  }
 }

@@ -158,4 +158,11 @@ partsRouter.get('/:wbsNum', PartReviewController.getAllPartsForProject);
 
 partsRouter.post('/reviewRequest/:reviewRequestId/delete', PartReviewController.deletePartReviewRequest);
 
+partsRouter.post(
+  '/partReviewSampleImage/update',
+  upload.single('partReviewSampleImage'),
+  PartReviewController.setPartReviewSampleImage
+);
+partsRouter.get('/partReviewSampleImage', PartReviewController.getPartReviewSampleImage);
+
 export default partsRouter;

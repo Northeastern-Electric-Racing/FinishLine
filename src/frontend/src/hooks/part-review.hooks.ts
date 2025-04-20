@@ -6,7 +6,8 @@ import {
   PartReviewRequest,
   PartSubmission,
   Review_Status,
-  PartReviewCommonMistake
+  PartReviewCommonMistake,
+  Organization
 } from 'shared';
 import {
   createPart,
@@ -22,7 +23,9 @@ import {
   getSinglePart,
   getAllCommonMistakes,
   uploadPreviewImage,
-  setUploadReviewFiles
+  setUploadReviewFiles,
+  setPartReviewSampleImage,
+  getPartReviewSampleImage
 } from '../apis/part-review.api';
 
 export interface PartPayload {
@@ -316,4 +319,18 @@ export const useAllCommonMistakes = () => {
       }
     }
   );
+};
+
+/**
+ * Hook to set the part review sample image for the organization.
+ */
+export const useSetPartReviewSampleImage = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<Organization, Error, File>(['part-review-sample-image'], async (file: File) => {
+    const { data } = await setPartReviewSampleImage(file);
+    queryClient.invalidateQueries(['part-review-sample-image']);
+    queryClient.invalidateQueries(['organizations']);
+    return data;
+  });
 };

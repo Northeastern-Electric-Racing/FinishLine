@@ -387,4 +387,29 @@ export default class PartReviewController {
       next(error);
     }
   }
+
+  static async setPartReviewSampleImage(req: Request, res: Response, next: NextFunction) {
+    try {
+      if (!req.file) {
+        throw new HttpException(400, 'Invalid or undefined image data');
+      }
+
+      const updatedOrg = await PartReviewService.setPartReviewSampleImage(req.file, req.currentUser, req.organization);
+
+      res.status(200).json(updatedOrg);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getPartReviewSampleImage(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { organization } = req;
+
+      const partReviewSampleImageId = await PartReviewService.getPartReviewSampleImage(organization.organizationId);
+      res.status(200).json(partReviewSampleImageId);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

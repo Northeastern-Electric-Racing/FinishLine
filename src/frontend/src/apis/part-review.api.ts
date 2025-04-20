@@ -165,3 +165,22 @@ export const setUploadReviewFiles = (reviewId: string, files: File[]) => {
 export const getAllCommonMistakes = () => {
   return axios.get<PartReviewCommonMistake[]>(apiUrls.getAllPartCommonMistakes());
 };
+
+/**
+ * Gets the part review sample image of the organization
+ */
+export const getPartReviewSampleImage = async () => {
+  return axios.get<string>(apiUrls.getPartReviewSampleImage(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
+ * Sets the part review sample image for an organization, User must be admin
+ * @param file the image which will be uploaded
+ */
+export const setPartReviewSampleImage = async (file: File) => {
+  const formData = new FormData();
+  formData.append('partReviewSampleImage', file);
+  return axios.post(apiUrls.setPartReviewSampleImage(), formData);
+};
