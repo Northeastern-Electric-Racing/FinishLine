@@ -7,8 +7,7 @@ import { rankUserRole } from 'shared';
 import NERSwitch from '../../../../components/NERSwitch';
 import CommonMistakes from './CommonMistakes';
 import PartDisplay from '../../../PartPage/components/PartDisplay';
-import { Review_Status } from 'shared';
-import { Part } from 'shared';
+import { useSinglePart } from '../../../../hooks/part-review.hooks';
 
 const PartsReviewPage = () => {
   const currentUser = useCurrentUser();
@@ -17,191 +16,21 @@ const PartsReviewPage = () => {
     return rankUserRole(userRole) < rankUserRole('LEADERSHIP');
   });
 
-  const createSamplePart = (partId: string, commonName: string): Part => ({
-    partId,
-    index: 1,
-    commonName,
-    description: '',
-    previewImageId: '/api/placeholder/400/240',
-    projectId: 'proj-1',
-    assignees: [
-      {
-        userId: 'user-2',
-        firstName: 'Jane',
-        lastName: 'Smith',
-        email: 'jane@example.com',
-        emailId: '',
-        role: 'ADMIN',
-        permissions: []
-      },
+  const { isLoading, data: part, isError, error } = useSinglePart();
 
-      {
-        userId: 'user-3',
-        firstName: 'May',
-        lastName: 'Gonzalez',
-        email: 'johnson@example.com',
-        emailId: '',
-        role: 'ADMIN',
-        permissions: []
-      }
-    ],
-    createdAt: new Date('2025-03-14T09:00:00Z'),
-    /*userCreatedId: 'user-1',*/
-    userCreated: {
-      userId: 'user-1',
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'john@example.com',
-      emailId: '',
-      role: 'ADMIN',
-      permissions: []
-    },
-    submissions: [
-      {
-        partSubmissionId: '',
-        fileIds: [''],
-        name: 'this part',
-        partId: '',
-        userCreated: {
-          userId: 'user-1',
-          firstName: 'Henry',
-          lastName: 'Miller',
-          email: 'john@example.com',
-          emailId: '',
-          role: 'ADMIN',
-          permissions: []
-        },
-        reviews: [
-          {
-            partReviewId: '917249',
-            fileIds: [],
-            notes: 'jkasd',
-            submissionId: 'ksdfk',
-            popUps: [],
-            completedAt: new Date(),
-            createdAt: new Date(),
-            userCreated: {
-              userId: 'user-1',
-              firstName: 'John',
-              lastName: 'Doe',
-              email: 'john@example.com',
-              emailId: '',
-              role: 'ADMIN',
-              permissions: []
-            }
-          },
-          {
-            partReviewId: '20384',
-            fileIds: [],
-            notes: 'jkasd',
-            submissionId: '23529',
-            popUps: [],
-            completedAt: new Date(),
-            createdAt: new Date(),
-            userCreated: {
-              userId: 'user-2',
-              firstName: 'Greg',
-              lastName: 'Smith',
-              email: 'greg@example.com',
-              emailId: '',
-              role: 'ADMIN',
-              permissions: []
-            }
-          }
-        ],
-        createdAt: new Date('2025-03-14T09:00:00Z')
-      },
-      {
-        partSubmissionId: '',
-        fileIds: [''],
-        name: 'this part',
-        partId: '',
-        userCreated: {
-          userId: 'user-1',
-          firstName: 'Joe',
-          lastName: 'Lee',
-          email: 'john@example.com',
-          emailId: '',
-          role: 'ADMIN',
-          permissions: []
-        },
-        reviews: [
-          {
-            partReviewId: '917249',
-            fileIds: [],
-            notes: 'jkasd',
-            submissionId: 'ksdfk',
-            popUps: [],
-            completedAt: new Date(),
-            createdAt: new Date(),
-            userCreated: {
-              userId: 'user-1',
-              firstName: 'John',
-              lastName: 'Doe',
-              email: 'john@example.com',
-              emailId: '',
-              role: 'ADMIN',
-              permissions: []
-            }
-          },
-          {
-            partReviewId: '20384',
-            fileIds: [],
-            notes: 'jkasd',
-            submissionId: '23529',
-            popUps: [],
-            completedAt: new Date(),
-            createdAt: new Date(),
-            userCreated: {
-              userId: 'user-2',
-              firstName: 'Greg',
-              lastName: 'Smith',
-              email: 'greg@example.com',
-              emailId: '',
-              role: 'ADMIN',
-              permissions: []
-            }
-          }
-        ],
-        createdAt: new Date('2024-03-14T09:00:00Z')
-      }
-    ],
-    status: Review_Status.READY_FOR_REVIEW,
-    tags: [],
-    reviewRequests: [
-      {
-        partReviewRequestId: '',
-        partId: '',
-        requester: {
-          userId: 'user-1',
-          firstName: 'John',
-          lastName: 'Doe',
-          email: 'john@example.com',
-          emailId: '',
-          role: 'ADMIN',
-          permissions: []
-        },
-        reviewerRequested: {
-          userId: 'user-1',
-          firstName: 'John',
-          lastName: 'Doe',
-          email: 'john@example.com',
-          emailId: '',
-          role: 'ADMIN',
-          permissions: []
-        },
-        createdAt: new Date('2025-03-14T09:00:00Z')
-      }
-    ]
-  });
+  if (isLoading) {
+    return <LoadingIndicator />;
+  }
 
-  const samplePart = createSamplePart('part-123', 'Impact Attenuator');
+  if (isError || !part) {
+    throw error;
+  }
 
   return (
     <Box>
-      <PartDisplay part={samplePart} screenSize="large"></PartDisplay>
-      <PartDisplay part={samplePart} screenSize="medium"></PartDisplay>
-      <PartDisplay part={samplePart} screenSize="small"></PartDisplay>
+      <PartDisplay part={part} screenSize="large"></PartDisplay>
+      <PartDisplay part={part} screenSize="medium"></PartDisplay>
+      <PartDisplay part={part} screenSize="small"></PartDisplay>
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <FormGroup>
