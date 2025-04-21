@@ -1,5 +1,5 @@
 import { Box } from '@mui/system';
-import { isHead, isLead, Part, Project, Review_Status, RoleEnum, WbsElementStatus, wbsPipe } from 'shared';
+import { isHead, isLead, Project, Review_Status, wbsPipe } from 'shared';
 import { Grid, Typography } from '@mui/material';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import { usePartsFromProject } from '../../../hooks/part-review.hooks';
