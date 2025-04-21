@@ -17,7 +17,7 @@ import { partPreviewTransformer, partTransformer } from './transformers/part-rev
  */
 export const getPartsFromProject = async (wbsNum: string) => {
   return axios.get<PartPreview[]>(apiUrls.partsByProject(wbsNum), {
-    transformResponse: (data) => data.map(partPreviewTransformer)
+    transformResponse: (data) => JSON.parse(data).map(partPreviewTransformer)
   });
 };
 
