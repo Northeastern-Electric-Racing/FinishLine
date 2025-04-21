@@ -1,7 +1,7 @@
 import { Box, Typography, Grid, Breadcrumbs } from '@mui/material';
 import { RoleEnum } from 'shared';
 import PartSubmissionDetails, { partReviewExample1, partReviewExample2 } from './Components/PartSubmissionDetails';
-import AllPartsUnderReviewContainer, { projectExample1 } from './Components/AllPartsUnderReviewContainer';
+import AllPartsUnderReviewContainer from './Components/AllPartsUnderReviewContainer';
 
 const PartPage: React.FC = () => {
   return (
@@ -89,7 +89,6 @@ const PartPage: React.FC = () => {
           </Grid>
         </Grid>
       </Grid>
-      <AllPartsUnderReviewContainer project={projectExample1} />
     </Box>
   );
 };
