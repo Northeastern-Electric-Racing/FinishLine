@@ -1,20 +1,12 @@
 import { Box, Typography, Grid, Breadcrumbs } from '@mui/material';
-import PartPageOverview from '../PartPage/components/PartPageOverview';
+import PartPageOverview, { partOverviewExample } from '../PartPage/components/PartPageOverview';
 import { useSinglePart } from '../../hooks/part-review.hooks';
-import LoadingIndicator from '../../components/LoadingIndicator';
 import { RoleEnum } from 'shared';
 import PartSubmissionDetails, { partReviewExample1, partReviewExample2 } from './Components/PartSubmissionDetails';
 
 const PartPage: React.FC = () => {
-  const { isLoading, data: part, isError, error } = useSinglePart();
-
-  if (isLoading) {
-    return <LoadingIndicator />;
-  }
-
-  if (isError || !part) {
-    throw error;
-  }
+  {/* replace this with useSinglePart hook */}
+  const { data: part } = partOverviewExample;
 
   return (
     <Box padding={4}>
