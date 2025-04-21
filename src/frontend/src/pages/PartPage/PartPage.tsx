@@ -1,11 +1,10 @@
 import { Box, Typography, Grid, Breadcrumbs } from '@mui/material';
 import PartPageOverview, { partOverviewExample } from '../PartPage/components/PartPageOverview';
-import { useSinglePart } from '../../hooks/part-review.hooks';
 import { RoleEnum } from 'shared';
 import PartSubmissionDetails, { partReviewExample1, partReviewExample2 } from './Components/PartSubmissionDetails';
 
 const PartPage: React.FC = () => {
-  {/* replace this with useSinglePart hook */}
+  /* replace this with useSinglePart hook */
   const { data: part } = partOverviewExample;
 
   return (
