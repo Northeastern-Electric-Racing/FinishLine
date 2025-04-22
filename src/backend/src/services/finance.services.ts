@@ -13,11 +13,15 @@ import { sponsorTransformer } from '../transformers/finance.transformer';
 import sponsorTaskTransformer from '../transformers/sponsor-task.transformer';
 import { isUserOnFinanceTeam } from '../utils/reimbursement-requests.utils';
 import {
+  getAllReimbursementRequestData,
+  getAllSpendingBarData,
+  getReimbursementRequestCategoryData,
   getReimbursementRequestDataForAdminFinance,
   getReimbursementRequestDataForNonAdminFinance,
   getReimbursementRequestsForReimbursementRequestsByDivision,
   getReimbursementRequestsForReimbursementRequestsByProject,
   getReimbursementRequestsForReimbursementRequestsByTeam,
+  getSpendingBarCategoryData,
   getSpendingBarDataForAdminFinance,
   getSpendingBarDataForNonAdminFinance
 } from '../utils/finance.utils';
@@ -358,5 +362,33 @@ export default class FinanceServices {
       startDate ?? null,
       endDate ?? null
     );
+  }
+
+  static async getAllReimbursementRequestData(
+    organization: Organization,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<ReimbursementRequestData[]> {
+    return await getAllReimbursementRequestData(organization.organizationId, startDate ?? null, endDate ?? null);
+  }
+
+  static async getReimbursementRequestCategoryData(
+    organization: Organization,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<ReimbursementRequestData> {
+    return await getReimbursementRequestCategoryData(organization.organizationId, startDate ?? null, endDate ?? null);
+  }
+
+  static async getAllSpendingBarData(
+    organization: Organization,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<SpendingBarData[]> {
+    return await getAllSpendingBarData(organization.organizationId, startDate ?? null, endDate ?? null);
+  }
+
+  static async getSpendingBarCategoryData(organization: Organization): Promise<SpendingBarData> {
+    return await getSpendingBarCategoryData(organization.organizationId);
   }
 }

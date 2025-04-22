@@ -214,4 +214,68 @@ export default class FinanceController {
       next(error);
     }
   }
+
+  static async getAllReimbursementRequestData(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { startDate, endDate } = req.query;
+      const parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : undefined;
+      const parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : undefined;
+
+      const rrData = await FinanceServices.getAllReimbursementRequestData(
+        req.organization,
+        parsedStartDate,
+        parsedEndDate
+      );
+      res.status(200).json(rrData);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getReimbursementRequestCategoryData(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { startDate, endDate } = req.query;
+      const parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : undefined;
+      const parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : undefined;
+
+      const rrData = await FinanceServices.getReimbursementRequestCategoryData(
+        req.organization,
+        parsedStartDate,
+        parsedEndDate
+      );
+      res.status(200).json(rrData);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllSpendingBarData(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { startDate, endDate } = req.body;
+      const parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : undefined;
+      const parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : undefined;
+
+      const spendingBarData = await FinanceServices.getAllSpendingBarData(
+        req.organization,
+        parsedStartDate,
+        parsedEndDate
+      );
+      res.status(200).json(spendingBarData);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getSpendingBarCategoryData(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { startDate, endDate } = req.body;
+
+      const spendingBarData = await FinanceServices.getSpendingBarCategoryData(
+        req.organization
+      );
+      res.status(200).json(spendingBarData);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

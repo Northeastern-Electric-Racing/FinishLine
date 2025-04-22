@@ -3,6 +3,9 @@ import { wbsPipe, SpendingBarData, ReimbursementRequestData } from 'shared';
 import prisma from '../prisma/prisma';
 import { getReimbursementRequestQueryArgs } from '../prisma-query-args/reimbursement-requests.query-args';
 import { NotFoundException } from './errors.utils';
+import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
+import { getReimbursementProductOtherReasonQueryArgs } from '../prisma-query-args/reimbursement-product-other-reason.query-args';
+import { datacatalog } from 'googleapis/build/src/apis/datacatalog';
 
 const getProjectSegmentedWhereInput = (
   organizationId: string,
@@ -197,33 +200,31 @@ export const getReimbursementRequestsForReimbursementRequestsByProject = async (
     ...getReimbursementRequestQueryArgs(organizationId)
   });
 
-  const pendingFinance = reimbursementRequests.reduce((acc, curr) => {
-    if (curr.reimbursementStatuses[curr.reimbursementStatuses.length - 1].type === 'PENDING_FINANCE') {
-      return acc + curr.totalCost;
-    }
-    return acc;
-  }, 0);
+  let pendingFinance = 0;
+  let pendingLeadership = 0;
+  let submittedToSabo = 0;
+  let reimbursed = 0;
 
-  const pendingLeadership = reimbursementRequests.reduce((acc, curr) => {
-    if (curr.reimbursementStatuses[curr.reimbursementStatuses.length - 1].type === 'PENDING_LEADERSHIP_APPROVAL') {
-      return acc + curr.totalCost;
-    }
-    return acc;
-  }, 0);
+  reimbursementRequests.forEach((req) => {
+    const lastStatus = req.reimbursementStatuses.at(-1)?.type;
 
-  const submittedToSabo = reimbursementRequests.reduce((acc, curr) => {
-    if (curr.reimbursementStatuses[curr.reimbursementStatuses.length - 1].type === 'SABO_SUBMITTED') {
-      return acc + curr.totalCost;
+    switch (lastStatus) {
+      case Reimbursement_Status_Type.PENDING_FINANCE:
+        pendingFinance += req.totalCost;
+        break;
+      case Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL:
+        pendingLeadership += req.totalCost;
+        break;
+      case Reimbursement_Status_Type.SABO_SUBMITTED:
+        submittedToSabo += req.totalCost;
+        break;
+      case Reimbursement_Status_Type.REIMBURSED:
+        reimbursed += req.totalCost;
+        break;
+      default:
+        break;
     }
-    return acc;
-  }, 0);
-
-  const reimbursed = reimbursementRequests.reduce((acc, curr) => {
-    if (curr.reimbursementStatuses[curr.reimbursementStatuses.length - 1].type === 'REIMBURSED') {
-      return acc + curr.totalCost;
-    }
-    return acc;
-  }, 0);
+  });
 
   const totalBalance = reimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0);
 
@@ -288,40 +289,31 @@ export const getReimbursementRequestsForReimbursementRequestsByTeam = async (
 
   const totalBudget = team.projects.reduce((acc, curr) => acc + curr.budget, 0);
 
-  const pendingFinance = reimbursementRequests.reduce((acc, curr) => {
-    if (
-      curr.reimbursementStatuses[curr.reimbursementStatuses.length - 1].type === Reimbursement_Status_Type.PENDING_FINANCE
-    ) {
-      return acc + curr.totalCost;
-    }
-    return acc;
-  }, 0);
+  let pendingFinance = 0;
+  let pendingLeadership = 0;
+  let submittedToSabo = 0;
+  let reimbursed = 0;
 
-  const pendingLeadership = reimbursementRequests.reduce((acc, curr) => {
-    if (
-      curr.reimbursementStatuses[curr.reimbursementStatuses.length - 1].type ===
-      Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL
-    ) {
-      return acc + curr.totalCost;
-    }
-    return acc;
-  }, 0);
+  reimbursementRequests.forEach((req) => {
+    const lastStatus = req.reimbursementStatuses.at(-1)?.type;
 
-  const submittedToSabo = reimbursementRequests.reduce((acc, curr) => {
-    if (
-      curr.reimbursementStatuses[curr.reimbursementStatuses.length - 1].type === Reimbursement_Status_Type.SABO_SUBMITTED
-    ) {
-      return acc + curr.totalCost;
+    switch (lastStatus) {
+      case Reimbursement_Status_Type.PENDING_FINANCE:
+        pendingFinance += req.totalCost;
+        break;
+      case Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL:
+        pendingLeadership += req.totalCost;
+        break;
+      case Reimbursement_Status_Type.SABO_SUBMITTED:
+        submittedToSabo += req.totalCost;
+        break;
+      case Reimbursement_Status_Type.REIMBURSED:
+        reimbursed += req.totalCost;
+        break;
+      default:
+        break;
     }
-    return acc;
-  }, 0);
-
-  const reimbursed = reimbursementRequests.reduce((acc, curr) => {
-    if (curr.reimbursementStatuses[curr.reimbursementStatuses.length - 1].type === Reimbursement_Status_Type.REIMBURSED) {
-      return acc + curr.totalCost;
-    }
-    return acc;
-  }, 0);
+  });
 
   const totalBalance = reimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0);
 
@@ -382,6 +374,307 @@ export const getReimbursementRequestsForReimbursementRequestsByDivision = async 
   }
 
   return results;
+};
+
+export const getAllReimbursementRequestData = async (
+  organizationId: string,
+  startDate: Date | null,
+  endDate: Date | null
+): Promise<ReimbursementRequestData[]> => {
+  const cashReimbursementRequests = await prisma.reimbursement_Request.findMany({
+    where: {
+      dateDeleted: null,
+      accountCode: { organizationId },
+      indexCode: { organizationId, name: 'CASH' },
+      ...getReimbursementRequestWhereInput(startDate, endDate)
+    },
+    ...getReimbursementRequestQueryArgs(organizationId)
+  });
+
+  const budgetReimbursementRequests = await prisma.reimbursement_Request.findMany({
+    where: {
+      dateDeleted: null,
+      accountCode: { organizationId },
+      indexCode: { organizationId, name: 'BUDGET' },
+      ...getReimbursementRequestWhereInput(startDate, endDate)
+    },
+    ...getReimbursementRequestQueryArgs(organizationId)
+  });
+
+  const allReimbursementRequests = await prisma.reimbursement_Request.findMany({
+    where: {
+      dateDeleted: null,
+      accountCode: { organizationId },
+      indexCode: { organizationId },
+      ...getReimbursementRequestWhereInput(startDate, endDate)
+    },
+    ...getReimbursementRequestQueryArgs(organizationId)
+  });
+
+  const teams = await prisma.team.findMany({
+    where: { dateArchived: null, organizationId },
+    ...getTeamQueryArgs(organizationId)
+  });
+
+  const allTotalBudget = teams.reduce((teamAcc, team) => {
+    const teamBudget = team.projects.reduce((projAcc, project) => projAcc + project.budget, 0);
+    return teamAcc + teamBudget;
+  }, 0);
+
+  let allPendingFinance = 0;
+  let allPendingLeadership = 0;
+  let allSubmittedToSabo = 0;
+  let allReimbursed = 0;
+
+  allReimbursementRequests.forEach((req) => {
+    const lastStatus = req.reimbursementStatuses.at(-1)?.type;
+
+    switch (lastStatus) {
+      case Reimbursement_Status_Type.PENDING_FINANCE:
+        allPendingFinance += req.totalCost;
+        break;
+      case Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL:
+        allPendingLeadership += req.totalCost;
+        break;
+      case Reimbursement_Status_Type.SABO_SUBMITTED:
+        allSubmittedToSabo += req.totalCost;
+        break;
+      case Reimbursement_Status_Type.REIMBURSED:
+        allReimbursed += req.totalCost;
+        break;
+      default:
+        break;
+    }
+  });
+
+  const allTotalBalance = allReimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0);
+
+  const allAvailable = allTotalBudget - allTotalBalance;
+
+  let cashPendingFinance = 0;
+  let cashPendingLeadership = 0;
+  let cashSubmittedToSabo = 0;
+  let cashReimbursed = 0;
+
+  cashReimbursementRequests.forEach((req) => {
+    const lastStatus = req.reimbursementStatuses.at(-1)?.type;
+
+    switch (lastStatus) {
+      case Reimbursement_Status_Type.PENDING_FINANCE:
+        cashPendingFinance += req.totalCost;
+        break;
+      case Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL:
+        cashPendingLeadership += req.totalCost;
+        break;
+      case Reimbursement_Status_Type.SABO_SUBMITTED:
+        cashSubmittedToSabo += req.totalCost;
+        break;
+      case Reimbursement_Status_Type.REIMBURSED:
+        cashReimbursed += req.totalCost;
+        break;
+      default:
+        break;
+    }
+  });
+
+  const cashTotalBalance = cashReimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0);
+
+  const cashAvailable = allTotalBudget - cashTotalBalance;
+
+  let budgetPendingFinance = 0;
+  let budgetPendingLeadership = 0;
+  let budgetSubmittedToSabo = 0;
+  let budgetReimbursed = 0;
+
+  cashReimbursementRequests.forEach((req) => {
+    const lastStatus = req.reimbursementStatuses.at(-1)?.type;
+
+    switch (lastStatus) {
+      case Reimbursement_Status_Type.PENDING_FINANCE:
+        budgetPendingFinance += req.totalCost;
+        break;
+      case Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL:
+        budgetPendingLeadership += req.totalCost;
+        break;
+      case Reimbursement_Status_Type.SABO_SUBMITTED:
+        budgetSubmittedToSabo += req.totalCost;
+        break;
+      case Reimbursement_Status_Type.REIMBURSED:
+        budgetReimbursed += req.totalCost;
+        break;
+      default:
+        break;
+    }
+  });
+
+  const budgetTotalBalance = budgetReimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0);
+
+  const budgetAvailable = allTotalBudget - budgetTotalBalance;
+
+  const allData: ReimbursementRequestData = {
+    totalBudget: allTotalBudget,
+    pendingFinance: allPendingFinance,
+    pendingLeadership: allPendingLeadership,
+    submittedToSabo: allSubmittedToSabo,
+    reimbursed: allReimbursed,
+    available: allAvailable
+  };
+
+  const cashData: ReimbursementRequestData = {
+    totalBudget: allTotalBudget,
+    pendingFinance: cashPendingFinance,
+    pendingLeadership: cashPendingLeadership,
+    submittedToSabo: cashSubmittedToSabo,
+    reimbursed: cashReimbursed,
+    available: cashAvailable
+  };
+
+  const budgetData: ReimbursementRequestData = {
+    totalBudget: allTotalBudget,
+    pendingFinance: budgetPendingFinance,
+    pendingLeadership: budgetPendingLeadership,
+    submittedToSabo: budgetSubmittedToSabo,
+    reimbursed: budgetReimbursed,
+    available: budgetAvailable
+  };
+
+  const data: ReimbursementRequestData[] = [allData, budgetData, cashData];
+
+  return data;
+};
+
+export const getReimbursementRequestCategoryData = async (
+  organizationId: string,
+  startDate: Date | null,
+  endDate: Date | null
+): Promise<ReimbursementRequestData> => {
+  const categoires = await prisma.reimbursement_Product_Other_Reason.findMany({
+    where: { dateDeleted: null },
+    ...getReimbursementProductOtherReasonQueryArgs(organizationId)
+  });
+
+  const reimbursementRequests = await prisma.reimbursement_Request.findMany({
+    where: { dateDeleted: null, accountCode: { organizationId }, ...getReimbursementRequestWhereInput(startDate, endDate) },
+    ...getReimbursementRequestQueryArgs(organizationId)
+  });
+
+  const teams = await prisma.team.findMany({
+    where: { dateArchived: null, organizationId },
+    ...getTeamQueryArgs(organizationId)
+  });
+
+  const totalBudget = teams.reduce((teamAcc, team) => {
+    const teamBudget = team.projects.reduce((projAcc, project) => projAcc + project.budget, 0);
+    return teamAcc + teamBudget;
+  }, 0);
+
+  const pendingFinance = reimbursementRequests.reduce((acc, curr) => {
+    if (
+      curr.reimbursementStatuses[curr.reimbursementStatuses.length - 1].type === Reimbursement_Status_Type.PENDING_FINANCE
+    ) {
+      return acc + curr.totalCost;
+    }
+    return acc;
+  }, 0);
+
+  const pendingLeadership = reimbursementRequests.reduce((acc, curr) => {
+    if (
+      curr.reimbursementStatuses[curr.reimbursementStatuses.length - 1].type ===
+      Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL
+    ) {
+      return acc + curr.totalCost;
+    }
+    return acc;
+  }, 0);
+
+  const submittedToSabo = reimbursementRequests.reduce((acc, curr) => {
+    if (
+      curr.reimbursementStatuses[curr.reimbursementStatuses.length - 1].type === Reimbursement_Status_Type.SABO_SUBMITTED
+    ) {
+      return acc + curr.totalCost;
+    }
+    return acc;
+  }, 0);
+
+  const reimbursed = reimbursementRequests.reduce((acc, curr) => {
+    if (curr.reimbursementStatuses[curr.reimbursementStatuses.length - 1].type === Reimbursement_Status_Type.REIMBURSED) {
+      return acc + curr.totalCost;
+    }
+    return acc;
+  }, 0);
+
+  const totalBalance = reimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0);
+
+  const available = totalBudget - totalBalance;
+
+  const data: ReimbursementRequestData = {
+    totalBudget,
+    pendingFinance,
+    pendingLeadership,
+    submittedToSabo,
+    reimbursed,
+    available
+  };
+
+  return data;
+};
+
+export const getSpendingBarCategoryData = async (
+  organizationId: string
+): Promise<SpendingBarData> => {
+  const otherReasons = await prisma.reimbursement_Product_Other_Reason.findMany({
+    where: {
+      dateDeleted: null,
+      indexCode: {
+        name: 'CASH',
+        organizationId
+      }
+    }
+  });
+
+  const data: SpendingBarData = {
+    teamName: `Club Categories`,
+    projects: otherReasons.map((r) => ({
+      title: r.name,
+      budget: r.budget
+    }))
+  };
+
+  return data;
+};
+
+export const getAllSpendingBarData = async (
+  organizationId: string,
+  startDate: Date | null,
+  endDate: Date | null
+): Promise<SpendingBarData[]> => {
+  const teams = await prisma.team.findMany({
+    where: {
+      organizationId,
+      dateArchived: null
+    },
+    include: {
+      projects: {
+        ...getProjectSegmentedWhereInput(organizationId, startDate, endDate),
+        include: {
+          wbsElement: true
+        }
+      }
+    }
+  });
+
+  const data: SpendingBarData[] = teams.map((team) => {
+    return {
+      teamName: `${team.teamName}`,
+      projects: team.projects.map((project) => ({
+        title: `${wbsPipe(project.wbsElement)} - ${project.wbsElement.name}`,
+        budget: project.budget
+      }))
+    };
+  });
+
+  return data;
+
 };
 
 export const getReimbursementRequestDataForAdminFinance = (

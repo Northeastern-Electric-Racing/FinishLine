@@ -41,7 +41,16 @@ import {
   getAllSponsors,
   getSponsorTasks,
   editSponsorTask,
-  deleteSponsor
+  deleteSponsor,
+  getReimbursementRequestTeamData,
+  getReimbursementRequestTeamTypeData,
+  getReimbursementRequestProjectData,
+  getReimbursementRequestCategoryData,
+  getAllReimbursementRequestData,
+  getSpendingBarTeamData,
+  getSpendingBarCategoryData,
+  getSpendingBarTeamTypeData,
+  getAllSpendingBarData
 } from '../apis/finance.api';
 import {
   IndexCode,
@@ -216,6 +225,11 @@ export interface ReimbursementRequestTeamDataPayload {
   endDate?: Date;
 }
 
+export interface ReimbursementRequestDataPayload {
+  startDate?: Date;
+  endDate?: Date;
+}
+
 export interface ReimbursementRequestTeamTypeDataPayload {
   teamTypeId: string;
   startDate?: Date;
@@ -230,6 +244,11 @@ export interface SpendingBarTeamDataPayload {
 
 export interface SpendingBarTeamTypeDataPayload {
   teamTypeId: string;
+  startDate?: Date;
+  endDate?: Date;
+}
+
+export interface SpendingBarDataPayload {
   startDate?: Date;
   endDate?: Date;
 }
@@ -826,41 +845,94 @@ export const useDeleteSponsor = (sponsorId: string) => {
 };
 
 export const useGetReimbursementRequestTeamData = (reimbursementRequestData: ReimbursementRequestTeamDataPayload) =>
-  useQuery<ReimbursementRequestData, Error>([
-    'reimbursementRequestData',
-    reimbursementRequestData.endDate,
-    reimbursementRequestData.startDate,
-    reimbursementRequestData.teamId
-  ]);
+  useQuery<ReimbursementRequestData, Error>(
+    [
+      'reimbursement-request-team-data',
+      reimbursementRequestData.endDate,
+      reimbursementRequestData.startDate,
+      reimbursementRequestData.teamId
+    ],
+    async () => {
+      const { data } = await getReimbursementRequestTeamData(reimbursementRequestData);
+      return data;
+    }
+  );
 
 export const useGetReimbursementRequestTeamTypeData = (reimbursementRequestData: ReimbursementRequestTeamTypeDataPayload) =>
-  useQuery<ReimbursementRequestData, Error>([
-    'reimbursementRequestData',
-    reimbursementRequestData.endDate,
-    reimbursementRequestData.startDate,
-    reimbursementRequestData.teamTypeId
-  ]);
+  useQuery<ReimbursementRequestData, Error>(
+    [
+      'reimbursement-request-team-type-data',
+      reimbursementRequestData.endDate,
+      reimbursementRequestData.startDate,
+      reimbursementRequestData.teamTypeId
+    ],
+    async () => {
+      const { data } = await getReimbursementRequestTeamTypeData(reimbursementRequestData);
+      return data;
+    }
+  );
 
 export const useGetReimbursementRequestProjectData = (reimbursementRequestData: ReimbursementRequestProjectDataPayload) =>
-  useQuery<ReimbursementRequestData, Error>([
-    'reimbursementRequestData',
-    reimbursementRequestData.endDate,
-    reimbursementRequestData.startDate,
-    reimbursementRequestData.projectId
-  ]);
+  useQuery<ReimbursementRequestData, Error>(
+    [
+      'reimbursement-request-project-data',
+      reimbursementRequestData.endDate,
+      reimbursementRequestData.startDate,
+      reimbursementRequestData.projectId
+    ],
+    async () => {
+      const { data } = await getReimbursementRequestProjectData(reimbursementRequestData);
+      return data;
+    }
+  );
+
+export const useGetReimbursementRequestCategoryData = (reimbursementRequestData: ReimbursementRequestDataPayload) =>
+  useQuery<ReimbursementRequestData, Error>(
+    ['reimbursement-request-category-data', reimbursementRequestData.endDate, reimbursementRequestData.startDate],
+    async () => {
+      const { data } = await getReimbursementRequestCategoryData(reimbursementRequestData);
+      return data;
+    }
+  );
+
+export const useGetAllReimbursementRequestData = (reimbursementRequestData: ReimbursementRequestDataPayload) =>
+  useQuery<ReimbursementRequestData[], Error>(
+    ['reimbursement-request-data', reimbursementRequestData.endDate, reimbursementRequestData.startDate],
+    async () => {
+      const { data } = await getAllReimbursementRequestData(reimbursementRequestData);
+      return data;
+    }
+  );
 
 export const useGetSpendingBarTeamData = (spendingBarData: SpendingBarTeamDataPayload) =>
-  useQuery<ReimbursementRequestData, Error>([
-    'reimbursementRequestData',
-    spendingBarData.endDate,
-    spendingBarData.startDate,
-    spendingBarData.teamId
-  ]);
+  useQuery<SpendingBarData, Error>(
+    ['spending-bar-team-data', spendingBarData.endDate, spendingBarData.startDate, spendingBarData.teamId],
+    async () => {
+      const { data } = await getSpendingBarTeamData(spendingBarData);
+      return data;
+    }
+  );
 
 export const useGetSpendingBarTeamTypeData = (spendingBarData: SpendingBarTeamTypeDataPayload) =>
-  useQuery<ReimbursementRequestData, Error>([
-    'reimbursementRequestData',
-    spendingBarData.endDate,
-    spendingBarData.startDate,
-    spendingBarData.teamTypeId
-  ]);
+  useQuery<SpendingBarData, Error>(
+    ['spending-bar-team-type-data', spendingBarData.endDate, spendingBarData.startDate, spendingBarData.teamTypeId],
+    async () => {
+      const { data } = await getSpendingBarTeamTypeData(spendingBarData);
+      return data;
+    }
+  );
+
+export const useGetSpendingBarCategoryData = (spendingBarData: SpendingBarDataPayload) =>
+  useQuery<SpendingBarData, Error>(
+    ['spending-bar-category-data', spendingBarData.endDate, spendingBarData.startDate],
+    async () => {
+      const { data } = await getSpendingBarCategoryData(spendingBarData);
+      return data;
+    }
+  );
+
+export const useGetAllSpendingBarData = (spendingBarData: SpendingBarDataPayload) =>
+  useQuery<SpendingBarData[], Error>(['spending-bar-data', spendingBarData.endDate, spendingBarData.startDate], async () => {
+    const { data } = await getAllSpendingBarData(spendingBarData);
+    return data;
+  });

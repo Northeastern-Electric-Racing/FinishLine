@@ -55,29 +55,25 @@ financeRouter.post(
   FinanceController.createSponsorTask
 );
 
-financeRouter.get(
-  '/reimbursement-request-project-data/:projectId',
-  FinanceController.getReimbursementRequestProjectData
-);
+financeRouter.get('/reimbursement-request-project-data/:projectId', FinanceController.getReimbursementRequestProjectData);
 
-financeRouter.get(
-  '/reimbursement-request-team-data/:teamId',
-  FinanceController.getReimbursementRequestTeamData
-);
+financeRouter.get('/reimbursement-request-team-data/:teamId', FinanceController.getReimbursementRequestTeamData);
+
+financeRouter.get('/reimbursement-request-data', FinanceController.getAllReimbursementRequestData);
+
+financeRouter.get('/reimbursement-request-category-data', FinanceController.getReimbursementRequestCategoryData);
 
 financeRouter.get(
   '/reimbursement-request-team-type-data/:teamTypeId',
   FinanceController.getReimbursementRequestTeamTypeData
 );
 
-financeRouter.get(
-  '/spending-bar-team-data/:teamId',
-  FinanceController.getSpendingBarTeamData
-);
+financeRouter.get('/spending-bar-team-data/:teamId', FinanceController.getSpendingBarTeamData);
 
-financeRouter.get(
-  '/spending-bar-team-type-data/:teamTypeId',
-  FinanceController.getSpendingBarTeamTypeData
-);
+financeRouter.get('/spending-bar-team-type-data/:teamTypeId', FinanceController.getSpendingBarTeamTypeData);
+
+financeRouter.get('/spending-bar-data', FinanceController.getAllSpendingBarData);
+
+financeRouter.get('/spending-bar-category-data', FinanceController.getSpendingBarCategoryData);
 
 export default financeRouter;
