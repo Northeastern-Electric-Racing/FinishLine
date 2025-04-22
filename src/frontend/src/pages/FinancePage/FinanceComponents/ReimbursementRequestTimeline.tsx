@@ -5,6 +5,9 @@ import { useSingleReimbursementRequest } from '../../../hooks/finance.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { ReimbursementRequestComment } from '../../../../../shared/src/types/reimbursement-requests-types';
+import { NERButton } from '../../../components/NERButton';
+import { useState } from 'react';
+import TimelineCommentModal from './TimelineCommentModal';
 
 interface TimelineProps {
   reimbursementRequestId: string;
@@ -18,13 +21,29 @@ interface EventSectionProps {
 
 const ReimbursementRequestTimeline: React.FC<TimelineProps> = ({ reimbursementRequestId }) => {
   const { data: reimbursementRequest, isError, error, isLoading } = useSingleReimbursementRequest(reimbursementRequestId);
-  const Comments = reimbursementRequest?.comments;
+  const Comments = reimbursementRequest?.comments.sort(
+    (a, b) => new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime()
+  );
+  const [timelineCommentModal, setTimelineCommentModalShow] = useState<boolean>(false);
 
   if (isLoading || !Comments) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
   return (
     <Stack alignItems="center" spacing={0.5}>
+      <NERButton
+        variant="contained"
+        onClick={() => {
+          setTimelineCommentModalShow(true);
+        }}
+      >
+        Add Timeline Comment
+      </NERButton>
+      <TimelineCommentModal
+        reimbursementRequestId={reimbursementRequestId}
+        showModal={timelineCommentModal}
+        handleClose={() => setTimelineCommentModalShow(false)}
+      />
       {Comments.map((comment, index) => (
         <EventSection comment={comment} isLast={Comments.length - 1 === index} isFirst={0 === index} />
       ))}

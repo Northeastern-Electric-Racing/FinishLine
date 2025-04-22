@@ -12,7 +12,8 @@ import {
   EditSponsorTaskPayload,
   SponsorPayload,
   SponsorTierPayload,
-  SponsorTaskPayload
+  SponsorTaskPayload,
+  ReimbursementRequestCommentPayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -416,6 +417,17 @@ export const createSponsorTier = async (sponsorTierData: SponsorTierPayload) => 
  */
 export const createSponsorTask = async (sponsorId: string, sponsorTaskData: SponsorTaskPayload) => {
   return axios.post(apiUrls.financeCreateSponsorTask(sponsorId), sponsorTaskData);
+};
+
+/**
+ * Creates a reimbursement request comment in the database
+ *
+ * @param commentData the data for the comment
+ * @param id the reimbursment request id
+ * @returns the new comment
+ */
+export const createReimbursementRequestComment = async (id: string, commentData: ReimbursementRequestCommentPayload) => {
+  return axios.post(apiUrls.financeCreateReimbursementRequestComment(id), commentData);
 };
 
 /**
