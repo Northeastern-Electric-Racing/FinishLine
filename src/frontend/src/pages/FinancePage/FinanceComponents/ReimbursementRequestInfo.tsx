@@ -60,7 +60,9 @@ const ReimbursementRequestInfo = ({
   const user = useCurrentUser();
 
   const displayedReimbursementRequests =
-    canViewAllReimbursementRequests && allReimbursementRequests ? allReimbursementRequests : userReimbursementRequests;
+    canViewAllReimbursementRequests && currentTab !== 0 && allReimbursementRequests
+      ? allReimbursementRequests
+      : userReimbursementRequests;
 
   const rows = displayedReimbursementRequests
     .map(createReimbursementRequestRowData)
