@@ -19,16 +19,16 @@ import {
   useDownloadCSVFileOfReimbursementRequests
 } from '../../hooks/finance.hooks';
 import { useHistory } from 'react-router-dom';
-import ListAltIcon from '@mui/icons-material/ListAlt';
 import { DatePicker } from '@mui/x-date-pickers';
+import ReportRefundModal from './FinanceComponents/ReportRefundModal';
+import ErrorPage from '../ErrorPage';
+import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
 
 const ReimbursementRequests: React.FC = () => {
   const allStatuses = Object.values(ReimbursementStatusType);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [, setAccountCreditModalShow] = useState<boolean>(false);
-  const [, setShowPendingAdvisorListModal] = useState(false);
-  const [, setShowGenerateReceipts] = useState(false);
-  const [, setShowTotalAmountSpent] = useState(false);
+  const [accountCreditModalShow, setAccountCreditModalShow] = useState<boolean>(false);
+  const [showGenerateReceipts, setShowGenerateReceipts] = useState(false);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -90,34 +90,12 @@ const ReimbursementRequests: React.FC = () => {
           </ListItemIcon>
           Report Refund
         </MenuItem>
-        {(isLead(user.role) || isHead(user.role)) && (
-          <MenuItem
-            onClick={() => {
-              handleDropdownClose();
-              setShowPendingAdvisorListModal(true);
-            }}
-            disabled={!isFinance}
-          >
-            <ListItemIcon>
-              <ListAltIcon fontSize="small" />
-            </ListItemIcon>
-            Pending Advisor List
-          </MenuItem>
-        )}
         <MenuItem onClick={() => setShowGenerateReceipts(true)} disabled={!isFinance}>
           <ListItemIcon>
             <ReceiptIcon fontSize="small" />
           </ListItemIcon>
           Generate All Receipts
         </MenuItem>
-        {(isLead(user.role) || isHead(user.role)) && (
-          <MenuItem onClick={() => setShowTotalAmountSpent(true)} disabled={!isFinance}>
-            <ListItemIcon>
-              <WorkIcon fontSize="small" />
-            </ListItemIcon>
-            Total Amount Spent
-          </MenuItem>
-        )}
         <MenuItem onClick={async () => await downloadReimbursementRequests()} disabled={!isFinance && !isAdmin(user.role)}>
           <ListItemIcon>
             <WorkIcon fontSize="small" />
@@ -128,8 +106,16 @@ const ReimbursementRequests: React.FC = () => {
     </>
   );
 
-  const { data: userReimbursementRequests } = useCurrentUserReimbursementRequests();
-  const { data: allReimbursementRequests } = useAllReimbursementRequests();
+  const {
+    data: userReimbursementRequests,
+    isError: userReimbursementRequestIsError,
+    error: userReimbursementRequestError
+  } = useCurrentUserReimbursementRequests();
+  const {
+    data: allReimbursementRequests,
+    isError: allReimbursementRequestsIsError,
+    error: allReimbursementRequestsError
+  } = useAllReimbursementRequests();
 
   const [searchText, setSearchText] = useState<string>('');
   const [anchorFilterEl, setAnchorFilterEl] = useState<null | HTMLElement>(null);
@@ -147,6 +133,9 @@ const ReimbursementRequests: React.FC = () => {
   const handleFilterMenuClose = () => {
     setAnchorFilterEl(null);
   };
+
+  if (isFinance && allReimbursementRequestsIsError) return <ErrorPage message={allReimbursementRequestsError?.message} />;
+  if (userReimbursementRequestIsError) return <ErrorPage message={userReimbursementRequestError?.message} />;
 
   const filterMenu = (
     <Menu
@@ -264,6 +253,12 @@ const ReimbursementRequests: React.FC = () => {
           mb: 2
         }}
       >
+        <GenerateReceiptsModal
+          open={showGenerateReceipts}
+          setOpen={setShowGenerateReceipts}
+          allReimbursementRequests={allReimbursementRequests}
+        />
+        <ReportRefundModal showModal={accountCreditModalShow} handleClose={() => setAccountCreditModalShow(false)} />
         <Typography variant="h3" sx={{ fontSize: { xs: '1.4rem', sm: '1.75rem', md: '3rem' } }}>
           Reimbursement Requests
         </Typography>

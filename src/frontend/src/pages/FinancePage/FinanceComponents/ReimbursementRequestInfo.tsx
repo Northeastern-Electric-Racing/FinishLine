@@ -31,6 +31,7 @@ interface ReimbursementRequestInfoProps {
   userReimbursementRequests: ReimbursementRequest[];
   allReimbursementRequests?: ReimbursementRequest[];
   canViewAllReimbursementRequests?: boolean;
+  currentTab?: number;
   searchText?: string;
   statuses?: ReimbursementStatusType[];
   startDate?: Date | null;
@@ -46,6 +47,7 @@ const ReimbursementRequestInfo = ({
   userReimbursementRequests,
   allReimbursementRequests,
   canViewAllReimbursementRequests = false,
+  currentTab = 0,
   searchText,
   statuses,
   startDate,
@@ -192,7 +194,7 @@ const ReimbursementRequestInfo = ({
             <TableRow>
               {headCells.map(
                 (headCell) =>
-                  (canViewAllReimbursementRequests || (headCell.id !== 'submitter' && headCell.id !== 'refundSource')) && (
+                  (currentTab === 1 || (headCell.id !== 'submitter' && headCell.id !== 'refundSource')) && (
                     <ColumnHeader
                       id={headCell.id}
                       title={headCell.label}
@@ -230,7 +232,7 @@ const ReimbursementRequestInfo = ({
                     {cleanReimbursementRequestStatus(row.status)}
                   </Box>
                 </TableCell>
-                {canViewAllReimbursementRequests && <TableCell align="center">{fullNamePipe(row.submitter)}</TableCell>}
+                {currentTab === 1 && <TableCell align="center">{fullNamePipe(row.submitter)}</TableCell>}
                 <TableCell align="center">{`$${centsToDollar(row.amount)}`}</TableCell>
                 <TableCell align="center">{undefinedPipe(row.identifier)}</TableCell>
                 <TableCell align="center">{undefinedPipe(row.saboId)}</TableCell>
@@ -280,30 +282,32 @@ const ReimbursementRequestInfo = ({
             mb: 2
           }}
         />
-        <Button
-          className="viewButton"
-          variant="contained"
-          component={RouterLink}
-          to={routes.NEW_REIMBURSEMENT_REQUEST}
-          disabled={isGuest(user.role)}
-          sx={{
-            borderRadius: '8px',
-            color: '#ededed',
-            backgroundColor: '#dd514c',
-            padding: '2px 20px',
-            mb: 1,
-            mr: 2,
-            display: 'inline-flex',
-            fontSize: '20px',
-            fontWeight: 700,
-            textTransform: 'none',
-            '&:hover': {
-              backgroundColor: '#c74340'
-            }
-          }}
-        >
-          Create Request
-        </Button>
+        {(!canViewAllReimbursementRequests || currentTab === 0) && (
+          <Button
+            className="viewButton"
+            variant="contained"
+            component={RouterLink}
+            to={routes.NEW_REIMBURSEMENT_REQUEST}
+            disabled={isGuest(user.role)}
+            sx={{
+              borderRadius: '8px',
+              color: '#ededed',
+              backgroundColor: '#dd514c',
+              padding: '2px 20px',
+              mb: 1,
+              mr: 2,
+              display: 'inline-flex',
+              fontSize: '20px',
+              fontWeight: 700,
+              textTransform: 'none',
+              '&:hover': {
+                backgroundColor: '#c74340'
+              }
+            }}
+          >
+            Create Request
+          </Button>
+        )}
         <Box
           sx={{
             padding: '5px 20px',
