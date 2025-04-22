@@ -27,6 +27,7 @@ import {
   setPartReviewSampleImage,
   getPartReviewSampleImage
 } from '../apis/part-review.api';
+import { downloadGoogleImage } from '../apis/organizations.api';
 
 export interface PartPayload {
   wbsNum: string;
@@ -332,5 +333,18 @@ export const useSetPartReviewSampleImage = () => {
     queryClient.invalidateQueries(['part-review-sample-image']);
     queryClient.invalidateQueries(['organizations']);
     return data;
+  });
+};
+
+/**
+ * Hook to get the part review sample image as a Blob
+ */
+export const usePartReviewSampleImage = () => {
+  return useQuery<Blob | undefined, Error>(['part-review-sample-image'], async () => {
+    const { data: fileId } = await getPartReviewSampleImage();
+    if (!fileId) {
+      return;
+    }
+    return await downloadGoogleImage(fileId);
   });
 };

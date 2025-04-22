@@ -12,7 +12,14 @@ import {
   resetUsers
 } from '../test-utils';
 import PartReviewService from '../../src/services/part-review.services';
-import { batmanAppAdmin, supermanAdmin, aquamanLeadership, flashAdmin, financeMember } from '../test-data/users.test-data';
+import {
+  batmanAppAdmin,
+  supermanAdmin,
+  aquamanLeadership,
+  flashAdmin,
+  financeMember,
+  wonderwomanGuest
+} from '../test-data/users.test-data';
 import prisma from '../../src/prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
@@ -22,6 +29,12 @@ import {
 } from '../../src/utils/errors.utils';
 import { validateWBS, WbsNumber } from 'shared';
 import { Review_Status } from 'shared';
+import { uploadFile } from '../../src/utils/google-integration.utils';
+import { Mock, vi } from 'vitest';
+
+vi.mock('../../src/utils/google-integration.utils', () => ({
+  uploadFile: vi.fn()
+}));
 
 describe('part review tests', () => {
   let orgId: string;
@@ -1067,5 +1080,81 @@ describe('Part Review Popups', () => {
     await expect(
       PartReviewService.updatePartReviewPopup(orgId, popup.partReviewPopupId, 10, 10, 'Should Fail', 'Nope', superman)
     ).rejects.toThrow(new NotFoundException('Pop Up', popup.partReviewPopupId));
+  });
+
+  describe('Set Part Review Sample Image', () => {
+    const file1 = { originalname: 'image1.png' } as Express.Multer.File;
+    const file2 = { originalname: 'image2.png' } as Express.Multer.File;
+
+    let orgId: string;
+    let organization: Organization;
+
+    beforeEach(async () => {
+      organization = await createTestOrganization();
+      orgId = organization.organizationId;
+    });
+
+    it('Fails if user is not an admin', async () => {
+      await expect(
+        PartReviewService.setPartReviewSampleImage(file1, await createTestUser(wonderwomanGuest, orgId), organization)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('update part review sample image'));
+    });
+
+    it('Succeeds and updates the sample image', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      (uploadFile as Mock).mockImplementation((file) => {
+        return Promise.resolve({ name: `${file.originalname}`, id: `uploaded-${file.originalname}` });
+      });
+
+      await PartReviewService.setPartReviewSampleImage(file1, testBatman, organization);
+
+      const oldOrganization = await prisma.organization.findUnique({
+        where: {
+          organizationId: orgId
+        }
+      });
+
+      expect(oldOrganization).not.toBeNull();
+      expect(oldOrganization?.partReviewSampleImageId).toBe('uploaded-image1.png');
+
+      await PartReviewService.setPartReviewSampleImage(file2, testBatman, organization);
+
+      const updatedOrganization = await prisma.organization.findUnique({
+        where: {
+          organizationId: orgId
+        }
+      });
+
+      expect(updatedOrganization?.partReviewSampleImageId).toBe('uploaded-image2.png');
+    });
+  });
+
+  describe('Get Part Review Sample Image', () => {
+    let orgId: string;
+    let organization: Organization;
+
+    beforeEach(async () => {
+      organization = await createTestOrganization();
+      orgId = organization.organizationId;
+    });
+
+    it('Fails if an organization does not exist', async () => {
+      await expect(async () => await PartReviewService.getPartReviewSampleImage('1')).rejects.toThrow(
+        new NotFoundException('Organization', '1')
+      );
+    });
+
+    it('Succeeds and gets the image', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      await PartReviewService.setPartReviewSampleImage(
+        { originalname: 'image1.png' } as Express.Multer.File,
+        testBatman,
+        organization
+      );
+      const image = await PartReviewService.getPartReviewSampleImage(orgId);
+
+      expect(image).not.toBeNull();
+      expect(image).toBe('uploaded-image1.png');
+    });
   });
 });
