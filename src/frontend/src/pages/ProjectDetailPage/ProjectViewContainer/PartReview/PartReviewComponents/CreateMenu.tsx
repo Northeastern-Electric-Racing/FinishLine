@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { useCurrentUser } from '../../../../../hooks/users.hooks';
 import { Box, Button, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
 import { Project, isGuest } from 'shared';
-import CreateSubmissionModal from './CreateSubmissionModal';
+import CreateSubmissionModal from './SubmissionModal';
 
 type CreateMenuProps = {
   project: Project;

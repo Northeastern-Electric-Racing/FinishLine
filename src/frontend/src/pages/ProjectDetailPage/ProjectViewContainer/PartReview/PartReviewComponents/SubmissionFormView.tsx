@@ -1,72 +1,10 @@
-import { Control, Controller, FieldErrors, UseFormHandleSubmit } from 'react-hook-form';
+import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormReset } from 'react-hook-form';
 import NERFormModal from '../../../../../components/NERFormModal';
 import { FormControl, FormLabel } from '@mui/material';
 import ReactHookTextField from '../../../../../components/ReactHookTextField';
 import NERAutocomplete from '../../../../../components/NERAutocomplete';
 import { Box } from '@mui/system';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { useForm } from 'react-hook-form';
-import * as yup from 'yup';
-
-const schema = yup.object().shape({
-  partId: yup.string().required('Select a Part!'),
-  name: yup.string().required('Enter a Submission Name!'),
-  fileIds: yup.array().of(yup.string().defined()).required(), //????
-  notes: yup.string().optional()
-});
-
-export interface SubmissionFormInput {
-  partId: string;
-  fileIds: string[];
-  name: string;
-  notes?: string;
-}
-
-export interface SubmissionFormProps {
-  submitText: 'Add' | 'Edit';
-  onSubmit: (payload: SubmissionFormInput) => void;
-  defaultValues?: SubmissionFormInput;
-  onHide: () => void;
-  open: boolean;
-}
-
-const SubmissionForm: React.FC<SubmissionFormProps> = ({ submitText, onSubmit, defaultValues, onHide, open }) => {
-  const {
-    handleSubmit,
-    control,
-    setValue,
-    formState: { errors }
-  } = useForm<SubmissionFormInput>({
-    defaultValues: {
-      partId: defaultValues?.partId ?? '',
-      fileIds: defaultValues?.fileIds ?? [],
-      name: defaultValues?.name ?? '',
-      notes: defaultValues?.notes ?? ''
-    },
-    resolver: yupResolver(schema)
-  });
-
-  const {
-    data: manufactuers,
-    isLoading: isLoadingManufactuers,
-    isError: manufacturersIsError,
-    error: manufacturersError
-  } = useGetAllParts();
-
-  return (
-    <SubmissionFormView
-      onSubmit={onSubmit}
-      allParts={parts}
-      handleSubmit={handleSubmit}
-      submitText={submitText}
-      onHide={onHide}
-      control={control}
-      errors={errors}
-      open={open}
-      setValue={setValue}
-    />
-  );
-};
+import { SubmissionFormInput } from './SubmissionForm';
 
 export interface SubmissionFormViewProps {
   submitText: 'Add' | 'Edit';
@@ -76,6 +14,9 @@ export interface SubmissionFormViewProps {
   control: Control<SubmissionFormInput, any>;
   errors: FieldErrors<SubmissionFormInput>;
   open: boolean;
+  allParts: { id: string; name: string }[]; //fix
+  setValue: UseFormSetValue<SubmissionFormInput>;
+  reset: UseFormReset<SubmissionFormInput>;
 }
 
 const SubmissionFormView: React.FC<SubmissionFormViewProps> = ({
@@ -87,72 +28,71 @@ const SubmissionFormView: React.FC<SubmissionFormViewProps> = ({
   errors,
   allParts,
   open,
-  setValue
+  setValue,
+  reset
 }) => {
+  const partOptions = allParts.map((part) => ({
+    id: part.id,
+    label: part.name
+  })); //fix
+
   return (
     <NERFormModal
       open={open}
-      onHide={onHide}
+      onHide={() => {
+        reset();
+        onHide();
+      }}
       title={submitText + ' Submission'}
-      reset={() => {}}
+      reset={reset}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
       formId={submitText + '-submission'}
       showCloseButton
     >
-      <FormControl fullWidth>
-        <FormLabel>
-          Part
-        </FormLabel>
-        {/* <Controller
-          name="partName"
-          control={control}
-          render={({ field: { onChange, value } }) => {
-            const mappedManufacturers = allParts
-              .sort((a, b) => a.name.localeCompare(b.name))
-              .map(partsToAutocomplete);
-            const onClear = () => {
-              setValue('partName', '');
-              onChange('');
-            };
-            return (
-              <Box sx={{ alignItems: 'center' }}>
-                <NERAutocomplete
-                  sx={{ bgcolor: 'inherit' }}
-                  id={'part'}
-                  size="medium"
-                  options={mappedManufacturers}
-                  value={mappedManufacturers.find((part) => part.label === value) || null}
-                  placeholder="Select Part"
-                  onChange={(_event, newValue) => {
-                    newValue ? onChange(newValue.id) : onClear();
-                  }}
-                />
-              </Box>
-            );
-          }}
-        /> */}
-      </FormControl>
-      <FormControl fullWidth sx={{ mb: '10px' }}>
-        <FormLabel>Submission Name</FormLabel>
-        <ReactHookTextField
-          control={control}
-          name="name"
-          errorMessage={errors.name}
-          placeholder="Name..."
-          sx={{ width: 1 }}
-        />
-      </FormControl>
-      <FormControl fullWidth>
-        <FormLabel>Uploader Notes (optional)</FormLabel>
-        <ReactHookTextField
-          control={control}
-          name="pdmFileName"
-          errorMessage={errors.notes}
-          placeholder="Any additional comments go here..."
-          sx={{ width: 1 }}
-        />
-      </FormControl>
+      <Box display="flex" flexDirection="column" gap={2}>
+        <FormControl fullWidth>
+          <FormLabel>Part</FormLabel>
+          <Controller
+            name="partId"
+            control={control}
+            render={({ field: { onChange, value } }) => (
+              <NERAutocomplete
+                id="part"
+                size="medium"
+                options={partOptions}
+                placeholder="Select Part"
+                value={partOptions.find((p) => p.id === value) || null}
+                onChange={(_e, newValue) => {
+                  onChange(newValue?.id || '');
+                }}
+              />
+            )}
+          />
+        </FormControl>
+
+        <FormControl fullWidth>
+          <FormLabel>Submission Name</FormLabel>
+          <ReactHookTextField
+            control={control}
+            name="name"
+            errorMessage={errors.name}
+            placeholder="Name..."
+            sx={{ width: 1 }}
+          />
+        </FormControl>
+
+        <FormControl fullWidth>
+          <FormLabel>Uploader Notes (optional)</FormLabel>
+          <ReactHookTextField
+            control={control}
+            name="notes"
+            errorMessage={errors.notes}
+            placeholder="Any additional comments go here..."
+            sx={{ width: 1 }}
+          />
+        </FormControl>
+      </Box>
     </NERFormModal>
   );
 };

@@ -3,25 +3,26 @@ import LoadingIndicator from '../../../../../components/LoadingIndicator';
 import { useToast } from '../../../../../hooks/toasts.hooks';
 import ErrorPage from '../../../../ErrorPage';
 import { useCreateAssembly } from '../../../../../hooks/bom.hooks';
-import SubmissionFormView, { SubmissionFormInput } from './SubmissionFormView';
+import { PartFormInput } from './PartForm';
+import PartFormView from './PartFormView';
 
-export interface CreateSubmissionModalProps {
+export interface CreatePartModalProps {
   open: boolean;
   onHide: () => void;
   wbsElement: WbsElement;
 }
 
-const CreateSubmissionModal: React.FC<CreateSubmissionModalProps> = ({ open, onHide, wbsElement }) => {
+const CreatePartModal: React.FC<CreatePartModalProps> = ({ open, onHide, wbsElement }) => {
   const { mutateAsync: createAssembly, isLoading, isError, error } = useCreateAssembly(wbsElement.wbsNum);
   const toast = useToast();
 
   if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
-  const onSubmit = async (data: SubmissionFormInput): Promise<void> => {
+  const onSubmit = async (data: PartFormInput): Promise<void> => {
     try {
       await createAssembly(data);
-      toast.success('Submission Created Successfully');
+      toast.success('Part Created Successfully');
       onHide();
     } catch (error) {
       if (error instanceof Error) {
@@ -30,7 +31,7 @@ const CreateSubmissionModal: React.FC<CreateSubmissionModalProps> = ({ open, onH
     }
   };
 
-  return <SubmissionFormView submitText="Add" onSubmit={onSubmit} onHide={onHide} open={open} />;
+  return <PartFormView submitText="Add" onSubmit={onSubmit} onHide={onHide} open={open} />;
 };
 
-export default CreateSubmissionModal;
+export default CreatePartModal;
