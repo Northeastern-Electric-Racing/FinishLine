@@ -15,8 +15,6 @@ export interface SubmissionFormViewProps {
   errors: FieldErrors<SubmissionFormInput>;
   open: boolean;
   allParts: { id: string; name: string }[]; //fix
-  setValue: UseFormSetValue<SubmissionFormInput>;
-  reset: UseFormReset<SubmissionFormInput>;
 }
 
 const SubmissionFormView: React.FC<SubmissionFormViewProps> = ({
@@ -27,9 +25,7 @@ const SubmissionFormView: React.FC<SubmissionFormViewProps> = ({
   control,
   errors,
   allParts,
-  open,
-  setValue,
-  reset
+  open
 }) => {
   const partOptions = allParts.map((part) => ({
     id: part.id,
@@ -39,12 +35,9 @@ const SubmissionFormView: React.FC<SubmissionFormViewProps> = ({
   return (
     <NERFormModal
       open={open}
-      onHide={() => {
-        reset();
-        onHide();
-      }}
+      onHide={onHide}
       title={submitText + ' Submission'}
-      reset={reset}
+      reset={() => {}}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
       formId={submitText + '-submission'}
@@ -70,7 +63,6 @@ const SubmissionFormView: React.FC<SubmissionFormViewProps> = ({
             )}
           />
         </FormControl>
-
         <FormControl fullWidth>
           <FormLabel>Submission Name</FormLabel>
           <ReactHookTextField
@@ -81,7 +73,6 @@ const SubmissionFormView: React.FC<SubmissionFormViewProps> = ({
             sx={{ width: 1 }}
           />
         </FormControl>
-
         <FormControl fullWidth>
           <FormLabel>Uploader Notes (optional)</FormLabel>
           <ReactHookTextField

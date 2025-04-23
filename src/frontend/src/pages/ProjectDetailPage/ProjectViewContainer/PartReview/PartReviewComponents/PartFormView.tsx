@@ -21,9 +21,7 @@ const PartFormView: React.FC<PartFormViewProps> = ({
   onHide,
   control,
   errors,
-  allParts,
-  open,
-  setValue
+  open
 }) => {
   return (
     <NERFormModal
@@ -33,7 +31,7 @@ const PartFormView: React.FC<PartFormViewProps> = ({
       reset={() => {}}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
-      formId={submitText + '-Part'}
+      formId={submitText + '-part'}
       showCloseButton
     >
       <FormControl fullWidth>
@@ -44,7 +42,7 @@ const PartFormView: React.FC<PartFormViewProps> = ({
         <ReactHookTextField
           control={control}
           name="CommonName"
-          errorMessage={errors.name}
+          errorMessage={errors.commonName}
           placeholder="Name..."
           sx={{ width: 1 }}
         />
@@ -54,7 +52,7 @@ const PartFormView: React.FC<PartFormViewProps> = ({
         <ReactHookTextField
           control={control}
           name="Description"
-          errorMessage={errors.notes}
+          errorMessage={errors.description}
           placeholder="Description of the part goes here..."
           sx={{ width: 1 }}
         />

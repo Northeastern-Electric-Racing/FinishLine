@@ -31,9 +31,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({ submitText, onSubmit, d
   const {
     handleSubmit,
     control,
-    setValue,
-    formState: { errors },
-    reset
+    formState: { errors }
   } = useForm<SubmissionFormInput>({
     defaultValues: {
       partId: defaultValues?.partId ?? '',
@@ -49,15 +47,13 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({ submitText, onSubmit, d
   return (
     <SubmissionFormView
       onSubmit={onSubmit}
-      allParts={allParts}
+      allParts={parts}
       handleSubmit={handleSubmit}
       submitText={submitText}
       onHide={onHide}
       control={control}
       errors={errors}
       open={open}
-      setValue={setValue}
-      reset={reset}
     />
   );
 };

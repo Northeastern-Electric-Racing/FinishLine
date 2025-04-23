@@ -3,7 +3,6 @@ import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { PartTag } from 'shared';
 import PartFormView from './PartFormView';
-
 export interface PartFormInput {
   index: string;
   commonName: string;
@@ -12,7 +11,6 @@ export interface PartFormInput {
   assignees?: string[];
   reviewers?: string[];
 }
-
 export interface PartFormProps {
   submitText: 'Add' | 'Edit';
   onSubmit: (payload: PartFormInput) => void;
@@ -33,7 +31,6 @@ const PartForm: React.FC<PartFormProps> = ({ submitText, onSubmit, defaultValues
   const {
     handleSubmit,
     control,
-    setValue,
     formState: { errors }
   } = useForm<PartFormInput>({
     defaultValues: {
@@ -56,14 +53,12 @@ const PartForm: React.FC<PartFormProps> = ({ submitText, onSubmit, defaultValues
   return (
     <PartFormView
       onSubmit={onSubmit}
-      allParts={parts}
       handleSubmit={handleSubmit}
       submitText={submitText}
       onHide={onHide}
       control={control}
       errors={errors}
       open={open}
-      setValue={setValue}
     />
   );
 };

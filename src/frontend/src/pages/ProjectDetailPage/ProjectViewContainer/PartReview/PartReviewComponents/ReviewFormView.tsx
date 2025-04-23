@@ -12,8 +12,6 @@ export interface ReviewFormViewProps {
   control: Control<ReviewFormInput, any>;
   errors: FieldErrors<ReviewFormInput>;
   open: boolean;
-  setValue: UseFormSetValue<ReviewFormInput>;
-  reset: UseFormReset<ReviewFormInput>;
 }
 
 const ReviewFormView: React.FC<ReviewFormViewProps> = ({
@@ -23,9 +21,7 @@ const ReviewFormView: React.FC<ReviewFormViewProps> = ({
   onHide,
   control,
   errors,
-  open,
-  setValue,
-  reset
+  open
 }) => {
   return (
     <NERFormModal
@@ -38,15 +34,16 @@ const ReviewFormView: React.FC<ReviewFormViewProps> = ({
       formId={submitText + '-review'}
       showCloseButton
     >
-      <FormControl fullWidth>
-        <FormLabel>Part</FormLabel>
-      </FormControl>
       <FormControl fullWidth sx={{ mb: '10px' }}>
         <FormLabel>Part</FormLabel> //fix to be dropdown
         <ReactHookTextField control={control} name="Part" errorMessage={errors.partId} placeholder=" " sx={{ width: 1 }} />
       </FormControl>
+      <FormControl fullWidth sx={{ mb: '10px' }}>
+        <FormLabel>Submission</FormLabel> //fix to be dropdown
+        <ReactHookTextField control={control} name="Submission" errorMessage={errors.partId} placeholder=" " sx={{ width: 1 }} />
+      </FormControl>
       <FormControl fullWidth>
-        <FormLabel>Uploader Notes (optional)</FormLabel>
+        <FormLabel>Reviewer Notes (optional)</FormLabel>
         <ReactHookTextField
           control={control}
           name="comments"

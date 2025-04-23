@@ -29,9 +29,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ submitText, onSubmit, defaultVa
   const {
     handleSubmit,
     control,
-    setValue,
     formState: { errors },
-    reset
   } = useForm<ReviewFormInput>({
     defaultValues: {
       partId: defaultValues?.partId ?? '',
@@ -42,7 +40,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ submitText, onSubmit, defaultVa
     resolver: yupResolver(schema)
   });
 
-  const { data: parts, isLoading: isLoadingParts, isError: partsIsError, error: partsError } = usePartsFromProject(wbsNum);
+  const { data: parts, isLoading: isLoadingParts, isError: partsIsError, error: partsError } = getReviewsFromProject(wbsNum);
 
   return (
     <ReviewFormView
@@ -53,8 +51,6 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ submitText, onSubmit, defaultVa
       control={control}
       errors={errors}
       open={open}
-      setValue={setValue}
-      reset={reset}
     />
   );
 };
