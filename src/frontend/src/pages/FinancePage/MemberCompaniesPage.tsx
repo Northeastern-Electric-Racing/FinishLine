@@ -8,6 +8,7 @@ import CreateVendorModal from '../AdminToolsPage/FinanceConfig/CreateVendorModal
 import { Vendor } from 'shared';
 import EditVendorModal from '../AdminToolsPage/FinanceConfig/EditVendorModal';
 import Footer from '../../components/Footer';
+import PageLayout from '../../components/PageLayout';
 
 const MemberCompaniesPage = () => {
   const { data: vendors, isLoading: vendorIsLoading, isError: vendorIsError, error: vendorError } = useGetAllVendors();
@@ -69,64 +70,64 @@ const MemberCompaniesPage = () => {
 
   return (
     <Box>
-      {/*TODO: Replace with header */}
-      <Box>Companies</Box>
-      <CreateVendorModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} vendors={vendors} />
-      {clickedVendor && (
-        <EditVendorModal
-          showModal={!!clickedVendor}
-          handleClose={() => {
-            setClickedVendor(undefined);
-          }}
-          vendor={clickedVendor}
-          vendors={vendors}
-        />
-      )}
+      <PageLayout title="Companies">
+        <CreateVendorModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} vendors={vendors} />
+        {clickedVendor && (
+          <EditVendorModal
+            showModal={!!clickedVendor}
+            handleClose={() => {
+              setClickedVendor(undefined);
+            }}
+            vendor={clickedVendor}
+            vendors={vendors}
+          />
+        )}
 
-      <MuiTable sx={{ maxWidth: '800px' }}>
-        <TableHead>
-          <TableRow>
-            <TableCell
-              align="center"
-              sx={{
-                fontWeight: 'bold',
-                fontSize: '1.5em',
-                backgroundColor: '#ef4345',
-                color: 'white',
-                borderRadius: '10px 0px 0px 0px',
-                height: '60px'
-              }}
-            >
-              Company Name
-            </TableCell>
-            <TableCell
-              align="center"
-              sx={{
-                fontWeight: 'bold',
-                fontSize: '1.5em',
-                backgroundColor: '#ef4345',
-                color: 'white'
-              }}
-            >
-              Date Added
-            </TableCell>
-            <TableCell
-              align="center"
-              sx={{
-                fontWeight: 'bold',
-                fontSize: '1.5em',
-                backgroundColor: '#ef4345',
-                color: 'white',
-                borderRadius: '0px 10px 0px 0px'
-              }}
-            >
-              Added By
-            </TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>{vendorTableRows}</TableBody>
-        <Footer totalPages={totalPages} currentPage={currentPage} setCurrentPage={setCurrentPage} />
-      </MuiTable>
+        <MuiTable sx={{ maxWidth: '800px' }}>
+          <TableHead>
+            <TableRow>
+              <TableCell
+                align="center"
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '1.5em',
+                  backgroundColor: '#ef4345',
+                  color: 'white',
+                  borderRadius: '10px 0px 0px 0px',
+                  height: '60px'
+                }}
+              >
+                Company Name
+              </TableCell>
+              <TableCell
+                align="center"
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '1.5em',
+                  backgroundColor: '#ef4345',
+                  color: 'white'
+                }}
+              >
+                Date Added
+              </TableCell>
+              <TableCell
+                align="center"
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '1.5em',
+                  backgroundColor: '#ef4345',
+                  color: 'white',
+                  borderRadius: '0px 10px 0px 0px'
+                }}
+              >
+                Added By
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>{vendorTableRows}</TableBody>
+          <Footer totalPages={totalPages} currentPage={currentPage} setCurrentPage={setCurrentPage} />
+        </MuiTable>
+      </PageLayout>
     </Box>
   );
 };
