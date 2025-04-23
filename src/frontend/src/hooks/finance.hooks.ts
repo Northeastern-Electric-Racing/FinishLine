@@ -83,7 +83,6 @@ export interface AccountCodePayload {
   name: string;
   allowed: boolean;
   indexCodeIds: string[];
-  otherReimbursementProductReasons: OtherProductReason[];
 }
 
 export interface EditVendorPayload {

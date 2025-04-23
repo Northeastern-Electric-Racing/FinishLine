@@ -100,7 +100,6 @@ export interface AccountCode {
   code: number;
   allowed: boolean;
   indexCodes: IndexCode[];
-  otherReimbursementProductReasons: OtherProductReason[];
 }
 
 export interface ReimbursementProductCreateArgs {

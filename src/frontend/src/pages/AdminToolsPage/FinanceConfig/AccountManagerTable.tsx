@@ -15,7 +15,6 @@ const AccountManagerTable = () => {
     isError: accountCodesIsError,
     error: accountCodesError
   } = useGetAllAccountCodes();
-
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [clickedAccountCode, setClickedAccountCode] = useState<AccountCode>();
@@ -28,40 +27,35 @@ const AccountManagerTable = () => {
     return <ErrorPage message={accountCodesError.message} />;
   }
 
-  const accountManagerTableRows = accountCodes.map((accountCode, index) => {
-    const description = accountCode.otherReimbursementProductReasons.map((reason) => reason.name).join(', ');
-
-    return (
-      <TableRow
-        onClick={() => {
-          setClickedAccountCode(accountCode);
-          setShowEditModal(true);
-        }}
-        key={`account-code-${index}`}
-        sx={{ cursor: 'pointer' }}
-      >
-        <TableCell>
-          <Typography>{accountCode.name}</Typography>
-        </TableCell>
-        <TableCell>
-          <Typography>{accountCode.code}</Typography>
-        </TableCell>
-        <TableCell>
-          <Typography>{description}</Typography>
-        </TableCell>
-        <TableCell>
-          <Checkbox checked={accountCode.allowed} />
-        </TableCell>
-      </TableRow>
-    );
-  });
+  const accountManagerTableRows = accountCodes.map((accountCode, index) => (
+    <TableRow
+      onClick={() => {
+        setClickedAccountCode(accountCode);
+        setShowEditModal(true);
+      }}
+      key={`account-code-${index}`}
+      sx={{ cursor: 'pointer' }}
+    >
+      <TableCell>
+        <Typography>{accountCode.name}</Typography>
+      </TableCell>
+      <TableCell>
+        <Typography>{accountCode.code}</Typography>
+      </TableCell>
+      <TableCell>
+        <Typography>Description here????</Typography>
+      </TableCell>
+      <TableCell>
+        <Checkbox checked={accountCode.allowed} />
+      </TableCell>
+    </TableRow>
+  ));
 
   const columns = ['Index Code', 'Account Code', 'Description', 'Allowed'];
 
   return (
     <Box>
-      {/*uncomment the following lines when the modals for the account AccountManagerTable are created:*/}
-      {/* <CreateAccountCodeModal showModal={showCreateModal} handleClose={() => setShowCreateModal(false)} />
+      <CreateAccountCodeModal showModal={showCreateModal} handleClose={() => setShowCreateModal(false)} />
       {clickedAccountCode && (
         <EditAccountCodeModal
           showModal={showEditModal}
@@ -71,7 +65,7 @@ const AccountManagerTable = () => {
           }}
           accountCode={clickedAccountCode}
         />
-      )} */}
+      )}
       <Table>
         <TableHead>
           <TableRow>
