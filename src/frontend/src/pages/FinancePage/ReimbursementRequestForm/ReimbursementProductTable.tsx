@@ -105,7 +105,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     index: number,
     fieldName: 'cost' | 'firstSourceAmount' | 'secondSourceAmount'
   ) => {
-    const parsedValue = value ? parseFloat(value) : 0;
+    const parsedValue = value ? parseFloat(value) : undefined;
     setValue(`reimbursementProducts.${index}.${fieldName}`, parsedValue);
   };
 
