@@ -10,14 +10,12 @@ const Tabs = ({
   tabs,
   tabValue,
   setTabValue,
-  greyscale = false,
-  tabVariant = 'fullWidth'
+  greyscale = false
 }: {
   tabs: TabData[];
   tabValue: number;
   setTabValue: (tabValue: number) => void;
   greyscale?: boolean;
-  tabVariant?: 'fullWidth' | 'standard' | 'scrollable';
 }) => {
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -37,7 +35,7 @@ const Tabs = ({
         <MUITabs
           value={tabValue}
           onChange={handleTabChange}
-          variant={tabVariant}
+          variant="fullWidth"
           indicatorColor={greyscale ? 'secondary' : 'primary'}
           textColor={greyscale ? 'inherit' : 'primary'}
         >
