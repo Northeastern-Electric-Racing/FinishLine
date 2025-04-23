@@ -53,10 +53,37 @@ const RECEIPTS_REQUIRED = import.meta.env.VITE_RR_RECEIPT_REQUIREMENT || 'disabl
 const schema = yup.object().shape({
   vendorId: yup.string().required('Vendor is required'),
   indexCodeId: yup.string().required('Refund source is required'),
-  secondaryAccount: yup.string().when('reimbursementProducts', (products: ReimbursementProductFormArgs[]) => {
-    return products?.some((p) => p.secondSourceAmount && p.secondSourceAmount >= 0)
-      ? yup.string().required('Second refund source is required')
-      : yup.string().notRequired();
+  secondaryAccount: yup.string().test('required-if-split', 'Second refund source is required', function (value) {
+    if (!this.parent.$hasConfirmedFinance) return true;
+    if (!value) {
+      return this.createError({
+        message: 'Second refund source is required'
+      });
+    }
+
+    const products = this.parent.reimbursementProducts || [];
+    for (const product of this.parent.reimbursementProducts) {
+      if (!product.cost) continue;
+      if (product.firstSourceAmount === undefined) {
+        return this.createError({
+          message: 'Amount is required',
+          path: `reimbursementProducts.${products.indexOf(product)}.firstSourceAmount`
+        });
+      }
+      if (product.secondSourceAmount === undefined) {
+        return this.createError({
+          message: 'Amount is required',
+          path: `reimbursementProducts.${products.indexOf(product)}.secondSourceAmount`
+        });
+      }
+      if (Math.abs(product.cost - (product.firstSourceAmount + product.secondSourceAmount)) > 0.01) {
+        return this.createError({
+          message: 'Sum of source amounts must equal total cost',
+          path: `reimbursementProducts.${products.indexOf(product)}.cost`
+        });
+      }
+    }
+    return true;
   }),
   dateOfExpense: yup.date().optional(),
   accountCodeId: yup.string().required('Account code is required'),
@@ -65,28 +92,13 @@ const schema = yup.object().shape({
     .of(
       yup.object().shape({
         name: yup.string().required('Description is required'),
-        firstSourceAmount: yup
-          .number()
-          .required('Amount is required')
-          .typeError('Amount is required')
-          .min(0, 'Cost cannot be negative'),
-        secondSourceAmount: yup
-          .number()
-          .required('Amount is required')
-          .typeError('Amount is required')
-          .min(0, 'Cost cannot be negative'),
+        firstSourceAmount: yup.number().typeError('Amount must be a number').min(0, 'Amount cannot be negative'),
+        secondSourceAmount: yup.number().typeError('Amount must be a number').min(0, 'Amount cannot be negative'),
         cost: yup
           .number()
           .required('Cost is required')
           .typeError('Cost is required')
-          .min(0, 'Cost cannot be negative')
-          .transform((value) => (value === '' ? undefined : value))
-          .test('amounts-match', 'Sum of the refund sources must equal the total cost', function (cost) {
-            if (typeof this.parent.firstSourceAmount === 'number' && typeof this.parent.secondSourceAmount === 'number') {
-              return cost === this.parent.firstSourceAmount + this.parent.secondSourceAmount;
-            }
-            return true;
-          })
+          .min(0.01, 'Cost cannot be negative or zero')
       })
     )
     .required('Reimbursement products required')
