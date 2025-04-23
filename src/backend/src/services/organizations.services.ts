@@ -430,7 +430,7 @@ export default class OrganizationsService {
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('update part review guide links');
 
-    await prisma.organization.update({
+    const updatedOrg = await prisma.organization.update({
       where: {
         organizationId: organization.organizationId
       },
@@ -438,6 +438,7 @@ export default class OrganizationsService {
         partReviewGuideLink: guideLink
       }
     });
-    return;
+
+    return updatedOrg;
   }
 }

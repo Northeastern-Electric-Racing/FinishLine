@@ -19,6 +19,17 @@ export const getFeaturedProjects = async () => {
   });
 };
 
+export const getPartReviewGuideLink = async () => {
+  const res = await axios.get<{ partReviewGuideLink: string | null }>(apiUrls.organizationsGetPartReviewGuideLink());
+  return res.data.partReviewGuideLink;
+};
+
+export const setPartReviewGuideLink = async (guideLink: string) => {
+  return axios.post<Organization>(apiUrls.organizationsSetPartReviewGuideLink(), {
+    guideLink
+  });
+};
+
 export const setOrganizationDescription = async (description: string) => {
   return axios.post<Organization>(apiUrls.organizationsSetDescription(), {
     description

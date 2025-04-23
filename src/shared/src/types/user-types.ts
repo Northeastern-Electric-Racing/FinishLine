@@ -7,6 +7,7 @@ import { AvailabilityCreateArgs } from './design-review-types';
 import { Team } from './team-types';
 
 export interface User {
+  [x: string]: String | PromiseLike<String>;
   userId: string;
   firstName: string;
   lastName: string;
