@@ -1,49 +1,55 @@
 import { TableRow, TableCell, Typography, Box, TableHead, Table, TableBody, Checkbox } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useGetAllIndexCodes } from '../../../hooks/finance.hooks';
+import { useGetAllIndexCodes, useGetAllOtherProductReason } from '../../../hooks/finance.hooks';
 import ErrorPage from '../../ErrorPage';
 import { NERButton } from '../../../components/NERButton';
 import React, { useState } from 'react';
-import { IndexCode } from 'shared';
+import { IndexCode, OtherProductReason } from 'shared';
 
 const CategoriesTable = () => {
   const {
-    data: indexCodes,
-    isLoading: indexCodesIsLoading,
-    isError: indexCodesIsError,
-    error: indexCodesError
-  } = useGetAllIndexCodes();
+    data: categories,
+    isLoading: categoriesIsLoading,
+    isError: categoriesIsError,
+    error: categoriesError
+  } = useGetAllOtherProductReason();
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
-  const [clickedIndexCode, setClickedIndexCode] = useState<IndexCode>();
+  const [clickedCategory, setClickedCategory] = useState<OtherProductReason>();
 
-  if (!indexCodes || indexCodesIsLoading) {
+  if (!categories || categoriesIsLoading) {
     return <LoadingIndicator />;
   }
 
-  if (indexCodesIsError) {
-    return <ErrorPage message={indexCodesError.message} />;
+  if (categoriesIsError) {
+    return <ErrorPage message={categoriesError.message} />;
   }
 
-  const categoriesTableRows = indexCodes.map((indexCode, index) => (
+  const uniqueAccountCodeNames = (category: OtherProductReason) => {
+    const uniqueNames = new Set();
+    category.accountCodes.forEach((accountCode) => uniqueNames.add(accountCode.code));
+    return Array.from(uniqueNames).join(', ');
+  };
+
+  const categoriesTableRows = categories.map((category, index) => (
     <TableRow
       onClick={() => {
-        setClickedIndexCode(indexCode);
+        setClickedCategory(category);
         setShowEditModal(true);
       }}
-      key={`index-code-${index}`}
+      key={`category-${index}`}
       sx={{ cursor: 'pointer' }}
     >
       <TableCell>
-        <Typography>{indexCode.name}</Typography>
+        <Typography>{category.indexCode.name}</Typography>
       </TableCell>
       <TableCell>
-        <Typography>{indexCode.code}</Typography>
+        <Typography>{uniqueAccountCodeNames(category)}</Typography>
       </TableCell>
       <TableCell>
-        <Typography>name/description here?</Typography>
+        <Typography>{category.name}</Typography>
       </TableCell>
-      <TableCell>Budget Here?</TableCell>
+      <TableCell>{`$${category.budget}`}</TableCell>
     </TableRow>
   ));
 
@@ -67,7 +73,7 @@ const CategoriesTable = () => {
           <TableRow>
             {columns.map((column, index) => (
               <TableCell
-                key={`index-code-column-${index}`}
+                key={`category-column-${index}`}
                 sx={{
                   borderBottom: '2px solid white',
                   fontWeight: 'bold',

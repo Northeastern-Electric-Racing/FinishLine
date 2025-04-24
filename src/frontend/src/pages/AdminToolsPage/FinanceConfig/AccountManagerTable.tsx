@@ -27,6 +27,13 @@ const AccountManagerTable = () => {
     return <ErrorPage message={accountCodesError.message} />;
   }
 
+  const uniqueIndexCodeNames = (accountCode: AccountCode) => {
+    const uniqueNames = new Set();
+
+    accountCode.indexCodes.forEach((indexCode) => uniqueNames.add(indexCode.name));
+    return Array.from(uniqueNames).join(', ');
+  };
+
   const accountManagerTableRows = accountCodes.map((accountCode, index) => (
     <TableRow
       onClick={() => {
@@ -37,13 +44,13 @@ const AccountManagerTable = () => {
       sx={{ cursor: 'pointer' }}
     >
       <TableCell>
-        <Typography>{accountCode.name}</Typography>
+        <Typography>{uniqueIndexCodeNames(accountCode)}</Typography>
       </TableCell>
       <TableCell>
         <Typography>{accountCode.code}</Typography>
       </TableCell>
       <TableCell>
-        <Typography>Description here????</Typography>
+        <Typography>{accountCode.name}</Typography>
       </TableCell>
       <TableCell>
         <Checkbox checked={accountCode.allowed} />
