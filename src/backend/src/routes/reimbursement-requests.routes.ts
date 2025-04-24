@@ -15,7 +15,6 @@ import {
 } from '../utils/validation.utils';
 import ReimbursementRequestController from '../controllers/reimbursement-requests.controllers';
 import multer, { memoryStorage } from 'multer';
-import FinanceController from '../controllers/finance.controllers';
 
 const reimbursementRequestsRouter = express.Router();
 
@@ -234,7 +233,7 @@ reimbursementRequestsRouter.post(
   nonEmptyString(body('updatedIndexCodeId')),
   body('updatedBudget').isInt(),
   validateInputs,
-  FinanceController.editSponsorTask
+  ReimbursementRequestController.editOtherReimbursementProductReason
 );
 
 export default reimbursementRequestsRouter;

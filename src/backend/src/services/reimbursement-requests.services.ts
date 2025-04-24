@@ -1655,8 +1655,7 @@ export default class ReimbursementRequestService {
     });
 
     if (!indexCode) throw new NotFoundException('Index Code', updatedIndexCodeId);
-    if (indexCode.dateDeleted)
-      throw new DeletedException('Reimbursement Product Other Reason', otherReimbursementProductReasonId);
+    if (indexCode.dateDeleted) throw new DeletedException('Index Code', updatedIndexCodeId);
 
     const editedReason = await prisma.reimbursement_Product_Other_Reason.update({
       where: { otherReimbursementProductReasonId },
