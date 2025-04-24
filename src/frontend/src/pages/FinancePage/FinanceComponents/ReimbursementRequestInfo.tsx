@@ -281,7 +281,8 @@ const ReimbursementRequestInfo = ({
         <Box
           sx={{
             borderBottom: '2px solid white',
-            mb: 2
+            mb: 2,
+            width: 'calc(100% - 60px)'
           }}
         />
         {(!canViewAllReimbursementRequests || currentTab === 0) && (
