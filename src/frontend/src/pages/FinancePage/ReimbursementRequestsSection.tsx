@@ -33,7 +33,7 @@ const ReimbursementRequestTable = ({
 
   const tabs = [{ tabUrlValue: 'my-requests', tabName: 'My Requests' }];
 
-  if (canViewAllReimbursementRequests) tabs.push({ tabUrlValue: 'club-requests', tabName: 'All Club Requests' });
+  if (canViewAllReimbursementRequests) tabs.push({ tabUrlValue: 'all-requests', tabName: 'All Requests' });
 
   return (
     <Box sx={{ bgcolor: theme.palette.background.default, width: '100%', borderRadius: '8px 8px 0 0' }}>

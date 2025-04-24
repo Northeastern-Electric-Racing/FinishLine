@@ -247,7 +247,7 @@ const ReimbursementRequestInfo = ({
                       size="small"
                       variant="contained"
                       component={RouterLink}
-                      to={`${routes.REIMBURSEMENT_REQUESTS}/${row.id}`}
+                      to={`${routes.REIMBURSEMENT_REQUESTS}/view/${row.id}`}
                       sx={{
                         borderRadius: '8px',
                         color: '#ededed',
