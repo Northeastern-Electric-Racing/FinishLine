@@ -307,34 +307,37 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         </Box>
         <Grid container spacing={2}>
           <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Purchased From" content={reimbursementRequest.vendor.name} />
+            <VerticalDetailDisplay label="Purchased From" content={reimbursementRequest.vendor.name} boxHeight="8rem" />
           </Grid>
           <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="SABO Number" content={`${undefinedPipe(reimbursementRequest.saboId)}`} />
+            <VerticalDetailDisplay
+              label="SABO Number"
+              content={`${undefinedPipe(reimbursementRequest.saboId)}`}
+              boxHeight="8rem"
+            />
           </Grid>
           <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Refund Source" content={codeAndRefundSourceName(reimbursementRequest.account)} />
+            <VerticalDetailDisplay
+              label="Refund Source"
+              content={codeAndRefundSourceName(reimbursementRequest.account)}
+              boxHeight="8rem"
+            />
           </Grid>
           <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Expense Type" content={accountCodePipe(reimbursementRequest.accountCode)} />
+            <VerticalDetailDisplay
+              label="Expense Type"
+              content={accountCodePipe(reimbursementRequest.accountCode)}
+              boxHeight="8rem"
+            />
           </Grid>
 
-          <Grid
-            item
-            xs={12}
-            container
-            mt={1}
-            ml={1}
-            sx={{ backgroundColor: totalCostBackgroundColor, borderRadius: '10px', boxShadow: 1, alignItems: 'center' }}
-          >
-            <Grid item sm={12} textAlign={'center'}>
-              <VerticalDetailDisplay
-                label="Description"
-                content={reimbursementRequest.summary}
-                fontSize={12}
-                boxHeight={'10rem'}
-              />
-            </Grid>
+          <Grid item sm={12}>
+            <VerticalDetailDisplay
+              label="Summary"
+              content={reimbursementRequest.summary}
+              fontSize={20}
+              boxHeight={'10rem'}
+            />
           </Grid>
 
           <Grid
