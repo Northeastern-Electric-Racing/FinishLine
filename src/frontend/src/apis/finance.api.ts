@@ -9,6 +9,7 @@ import {
   AccountCodePayload,
   RefundPayload,
   MarkDeliveredRequestPayload,
+  EditSponsorTaskPayload,
   SponsorPayload,
   SponsorTierPayload,
   SponsorTaskPayload
@@ -22,7 +23,7 @@ import {
 } from './transformers/reimbursement-requests.transformer';
 import { saveAs } from 'file-saver';
 import { PDFDocument, PDFImage } from 'pdf-lib';
-import { IndexCode, AccountCode, ReimbursementRequest, OtherProductReason } from 'shared';
+import { IndexCode, AccountCode, ReimbursementRequest, OtherProductReason, Sponsor, SponsorTask } from 'shared';
 
 enum AllowedFileType {
   JPEG = 'image/jpeg',
@@ -424,7 +425,7 @@ export const createSponsorTask = async (sponsorId: string, sponsorTaskData: Spon
  */
 export const getAllIndexCodes = () => {
   return axios.get<IndexCode[]>(apiUrls.getAllIndexCodes(), {
-    transformResponse: (data) => JSON.parse(data) as IndexCode[]
+    transformResponse: (data) => JSON.parse(data)
   });
 };
 
@@ -435,6 +436,56 @@ export const getAllIndexCodes = () => {
  */
 export const getAllOtherProductReason = () => {
   return axios.get<OtherProductReason[]>(apiUrls.getAllOtherProductReasons(), {
-    transformResponse: (data) => JSON.parse(data) as OtherProductReason[]
+    transformResponse: (data) => JSON.parse(data)
   });
+};
+
+/**
+ * API call to get the list of all sponsors
+ *
+ * @returns the list of all sponsors
+ */
+
+export const getAllSponsors = () => {
+  return axios.get<Sponsor[]>(apiUrls.getAllSponsors(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
+ * API call to the sponsor tasks for a given sponsor
+ *
+ * @param sponsorId the id of the sponsor which tasks are retrieved
+ *
+ * @returns the list of tasks for a given sponsor
+ */
+
+export const getSponsorTasks = (sponsorId: string) => {
+  return axios.get<SponsorTask[]>(apiUrls.getSponsorTasks(sponsorId), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
+ * API call to delete a given sponsor
+ *
+ * @param sponsorId the id of the sponsor to delete
+ *
+ * @returns the deleted sponsor
+ */
+
+export const deleteSponsor = (sponsorId: string) => {
+  return axios.delete(apiUrls.deleteSponsor(sponsorId));
+};
+
+/**
+ * API call to edit a sponsor task
+ *
+ * @param sponsorTaskData the edited data of the sponsor task
+ * @param sponsorTaskId the id of the sponsor task to be edited
+ *
+ * @returns the edited sponosor task
+ */
+export const editSponsorTask = (sponsorTaskId: string, sponsorTaskData: EditSponsorTaskPayload) => {
+  return axios.post(apiUrls.editSponsorTask(sponsorTaskId), sponsorTaskData);
 };
