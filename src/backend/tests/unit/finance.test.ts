@@ -69,7 +69,7 @@ describe('Finance Tests', () => {
       expect(result.sponsorValue).toBe(5000);
       expect(result.joinDate).toEqual(new Date(12, 1, 24));
       expect(result.activeYears).toEqual([2024, 2025]);
-      expect(result.tier.sponsorTierId).toEqual(sponsorTierId);
+      expect(result.tierId).toEqual(sponsorTierId);
       expect(result.taxExempt).toBe(true);
       expect(result.discountCode).toEqual('googlecode');
       expect(result.vendorContact).toEqual('Bill Gates');
