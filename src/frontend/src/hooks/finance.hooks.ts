@@ -37,7 +37,11 @@ import {
   createSponsorTask,
   createSponsorTier,
   getAllIndexCodes,
-  getAllOtherProductReason
+  getAllOtherProductReason,
+  getAllSponsors,
+  getSponsorTasks,
+  editSponsorTask,
+  deleteSponsor
 } from '../apis/finance.api';
 import {
   IndexCode,
@@ -50,10 +54,10 @@ import {
   OtherReimbursementProductCreateArgs,
   WbsReimbursementProductCreateArgs,
   ReimbursementStatusType,
-  SponsorTask,
+  OtherProductReason,
   Sponsor,
-  SponsorTier,
-  OtherProductReason
+  SponsorTask,
+  SponsorTier
 } from 'shared';
 import { fullNamePipe } from '../utils/pipes';
 
@@ -188,6 +192,13 @@ export const useCreateSponsorTier = () => {
 
 export interface IndexCodePayload {
   name: string;
+}
+
+export interface EditSponsorTaskPayload {
+  dueDate: Date;
+  notes: string;
+  notifyDate?: Date;
+  asigneeId?: string;
 }
 
 /**
@@ -714,4 +725,69 @@ export const useGetAllOtherProductReason = () => {
     const { data } = await getAllOtherProductReason();
     return data;
   });
+};
+
+/**
+ * custom React Hook to get all the sponsors
+ *
+ * @returns the list of all of the sponsors
+ */
+export const useGetAllSponsors = () => {
+  return useQuery<Sponsor[], Error>(['sponsor'], async () => {
+    const { data } = await getAllSponsors();
+    return data;
+  });
+};
+
+/**
+ * custom react hook to get all of the sponsor tasks for a given sponsor
+ *
+ * @returns the list of all of the sponsor tasks for a given sponsor
+ */
+export const useGetSponsorTasks = (sponsorId: string) => {
+  return useQuery<SponsorTask[], Error>(['sponsor-task'], async () => {
+    const { data } = await getSponsorTasks(sponsorId);
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to edit a sponsor task
+ *
+ * @param sponsorTaskId the id of the sponsor task to be edited
+ *
+ * @returns the edited sponosor task
+ */
+export const useEditSponsorTask = (sponsorTaskId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<SponsorTask, Error, EditSponsorTaskPayload>(
+    ['sponsor-task', 'edit'],
+    async (formData: EditSponsorTaskPayload) => {
+      const { data } = await editSponsorTask(sponsorTaskId, formData);
+      queryClient.invalidateQueries(['sponsor-task']);
+      return data;
+    }
+  );
+};
+
+/**
+ * Custom React Hook to delete a sponsor
+ *
+ * @param sponsorId the id of the sponsor to be deleted
+ * @returns the deleted sponsor
+ */
+export const useDeleteSponsor = (sponsorId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Sponsor, Error>(
+    ['sponsor', 'delete'],
+    async () => {
+      const { data } = await deleteSponsor(sponsorId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['sponsor']);
+      }
+    }
+  );
 };
