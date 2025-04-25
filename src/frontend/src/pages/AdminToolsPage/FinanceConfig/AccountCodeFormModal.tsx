@@ -12,14 +12,12 @@ import { useTheme } from '@mui/material/styles';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 
-const schema = yup
-  .object()
-  .shape({
-    code: yup.number().typeError('Account Code must be a number').required('Account Code is Required'),
-    name: yup.string().required('Account Name is Required'),
-    allowed: yup.boolean().required('Allowed is Required'),
-    indexCodeIds: yup.array().of(yup.string().required()).required()
-  });
+const schema = yup.object().shape({
+  code: yup.number().typeError('Account Code must be a number').required('Account Code is Required'),
+  name: yup.string().required('Account Name is Required'),
+  allowed: yup.boolean().required('Allowed is Required'),
+  indexCodeIds: yup.array().of(yup.string().required()).required()
+});
 
 interface AccountCodeFormModalProps {
   showModal: boolean;

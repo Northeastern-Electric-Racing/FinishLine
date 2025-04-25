@@ -3,7 +3,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useGetAllOtherProductReason } from '../../../hooks/finance.hooks';
 import ErrorPage from '../../ErrorPage';
 import { NERButton } from '../../../components/NERButton';
-import React, { useState } from 'react';
+import React from 'react';
 import { OtherProductReason } from 'shared';
 
 const CategoriesTable = () => {
@@ -13,9 +13,9 @@ const CategoriesTable = () => {
     isError: categoriesIsError,
     error: categoriesError
   } = useGetAllOtherProductReason();
-  const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
-  const [showEditModal, setShowEditModal] = useState<boolean>(false);
-  const [clickedCategory, setClickedCategory] = useState<OtherProductReason>();
+  // const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
+  // const [showEditModal, setShowEditModal] = useState<boolean>(false);
+  // const [clickedCategory, setClickedCategory] = useState<OtherProductReason>();
 
   if (!categories || categoriesIsLoading) {
     return <LoadingIndicator />;
@@ -34,8 +34,8 @@ const CategoriesTable = () => {
   const categoriesTableRows = categories.map((category, index) => (
     <TableRow
       onClick={() => {
-        setClickedCategory(category);
-        setShowEditModal(true);
+        // setClickedCategory(category);
+        // setShowEditModal(true);
       }}
       key={`category-${index}`}
       sx={{ cursor: 'pointer' }}
@@ -76,7 +76,7 @@ const CategoriesTable = () => {
           style={{ color: 'white' }}
           variant="contained"
           onClick={() => {
-            setShowCreateModal(true);
+            // setShowCreateModal(true);
           }}
         >
           Add Category
