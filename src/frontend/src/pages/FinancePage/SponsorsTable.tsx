@@ -10,8 +10,8 @@ import SponsorTierPill from '../../components/SponsorTierPill';
 
 const SponsorsTable = () => {
   const { data: sponsors, isLoading: sponsorIsLoading, isError: sponsorIsError, error: sponsorError } = useGetAllSponsors();
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const itemsPerPage = 14;
+  const [currentPage, setCurrentPage] = useState<number>(0);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(14);
 
   if (!sponsors || sponsorIsLoading) {
     console.log('loading');
@@ -21,10 +21,18 @@ const SponsorsTable = () => {
     return <ErrorPage message={sponsorError.message} />;
   }
 
-  const totalPages = Math.ceil(sponsors.length / itemsPerPage);
-  const lastSponsorIdx = currentPage * itemsPerPage;
-  const firstSponsorIdx = lastSponsorIdx - itemsPerPage;
-  const currentSponsors = sponsors.slice(firstSponsorIdx, lastSponsorIdx);
+  sponsors.sort((a, b) => a.name.localeCompare(b.name));
+  const startIdx = currentPage * rowsPerPage;
+  const currentSponsors = sponsors.slice(startIdx, startIdx + rowsPerPage);
+
+  const handleChangePage = (_event: unknown, newPage: number) => {
+    setCurrentPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setCurrentPage(0);
+  };
 
   const sponsorTableRows = currentSponsors.map((sponsor, index) => (
     <TableRow key={sponsor.sponsorId || index}>
@@ -129,125 +137,147 @@ const SponsorsTable = () => {
 
   return (
     <Box>
-      <MuiTable>
-        <TableHead>
-          <TableRow>
-            <TableCell
-              align="center"
-              sx={{
-                fontWeight: 'bold',
-                fontSize: '1.5em',
-                backgroundColor: '#ef4345',
-                color: 'white',
-                borderRadius: '10px 0px 0px 0px',
-                height: '60px'
-              }}
-            >
-              Sponsor
-            </TableCell>
-            <TableCell
-              align="center"
-              sx={{
-                fontWeight: 'bold',
-                fontSize: '1.5em',
-                backgroundColor: '#ef4345',
-                color: 'white'
-              }}
-            >
-              Sponsor Status
-            </TableCell>
-            <TableCell
-              align="center"
-              sx={{
-                fontWeight: 'bold',
-                fontSize: '1.5em',
-                backgroundColor: '#ef4345',
-                color: 'white'
-              }}
-            >
-              Contacts
-            </TableCell>
-            <TableCell
-              align="center"
-              sx={{
-                fontWeight: 'bold',
-                fontSize: '1.5em',
-                backgroundColor: '#ef4345',
-                color: 'white'
-              }}
-            >
-              Sponsor Tier
-            </TableCell>
-            <TableCell
-              align="center"
-              sx={{
-                fontWeight: 'bold',
-                fontSize: '1.5em',
-                backgroundColor: '#ef4345',
-                color: 'white'
-              }}
-            >
-              Sponsor Value
-            </TableCell>
-            <TableCell
-              align="center"
-              sx={{
-                fontWeight: 'bold',
-                fontSize: '1.5em',
-                backgroundColor: '#ef4345',
-                color: 'white'
-              }}
-            >
-              Sponsor Join Date
-            </TableCell>
-            <TableCell
-              align="center"
-              sx={{
-                fontWeight: 'bold',
-                fontSize: '1.5em',
-                backgroundColor: '#ef4345',
-                color: 'white'
-              }}
-            >
-              Discount
-            </TableCell>
-            <TableCell
-              align="center"
-              sx={{
-                fontWeight: 'bold',
-                fontSize: '1.5em',
-                backgroundColor: '#ef4345',
-                color: 'white'
-              }}
-            >
-              Tax Exempt
-            </TableCell>
-            <TableCell
-              align="center"
-              sx={{
-                fontWeight: 'bold',
-                fontSize: '1.5em',
-                backgroundColor: '#ef4345',
-                color: 'white',
-                borderRadius: '0px 10px 0px 0px'
-              }}
-            >
-              Notes
-            </TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>{sponsorTableRows}</TableBody>
-        <Footer
-          footerButton={
-            <NERButton variant="contained" onClick={() => {}}>
-              Add Sponsor
-            </NERButton>
-          }
-          totalPages={totalPages}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
-        />
-      </MuiTable>
+      <Box sx={{ paddingBottom: '100px' }}>
+        <MuiTable>
+          <TableHead>
+            <TableRow>
+              <TableCell
+                align="center"
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '1.5em',
+                  backgroundColor: '#ef4345',
+                  color: 'white',
+                  borderRadius: '10px 0px 0px 0px',
+                  height: '60px'
+                }}
+              >
+                Sponsor
+              </TableCell>
+              <TableCell
+                align="center"
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '1.5em',
+                  backgroundColor: '#ef4345',
+                  color: 'white'
+                }}
+              >
+                Sponsor Status
+              </TableCell>
+              <TableCell
+                align="center"
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '1.5em',
+                  backgroundColor: '#ef4345',
+                  color: 'white'
+                }}
+              >
+                Contacts
+              </TableCell>
+              <TableCell
+                align="center"
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '1.5em',
+                  backgroundColor: '#ef4345',
+                  color: 'white'
+                }}
+              >
+                Sponsor Tier
+              </TableCell>
+              <TableCell
+                align="center"
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '1.5em',
+                  backgroundColor: '#ef4345',
+                  color: 'white'
+                }}
+              >
+                Sponsor Value
+              </TableCell>
+              <TableCell
+                align="center"
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '1.5em',
+                  backgroundColor: '#ef4345',
+                  color: 'white'
+                }}
+              >
+                Sponsor Join Date
+              </TableCell>
+              <TableCell
+                align="center"
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '1.5em',
+                  backgroundColor: '#ef4345',
+                  color: 'white'
+                }}
+              >
+                Discount
+              </TableCell>
+              <TableCell
+                align="center"
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '1.5em',
+                  backgroundColor: '#ef4345',
+                  color: 'white'
+                }}
+              >
+                Tax Exempt
+              </TableCell>
+              <TableCell
+                align="center"
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '1.5em',
+                  backgroundColor: '#ef4345',
+                  color: 'white',
+                  borderRadius: '0px 10px 0px 0px'
+                }}
+              >
+                Notes
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>{sponsorTableRows}</TableBody>
+        </MuiTable>
+      </Box>
+      <Footer
+        footerButton={
+          <NERButton
+            variant="contained"
+            onClick={() => console.log('create sponsor')}
+            sx={{
+              borderRadius: '8px',
+              color: '#ededed',
+              backgroundColor: '#ef4345',
+              padding: '2px 20px',
+              display: 'inline-flex',
+              fontSize: '20px',
+              fontWeight: 700,
+              textTransform: 'none',
+              '&:hover': {
+                backgroundColor: '#c74340'
+              }
+            }}
+          >
+            Add Sponsors
+          </NERButton>
+        }
+        footerInfoBoxes={[<Box># of Sponsors: {sponsors.length}</Box>]}
+        totalItems={sponsors.length}
+        currentPage={currentPage}
+        rowsPerPage={rowsPerPage}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        rowsPerPageOptions={[10, 14, 25, 50, 100]}
+      />
     </Box>
   );
 };

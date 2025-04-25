@@ -1,70 +1,85 @@
-import { ChevronLeft, ChevronRight } from '@mui/icons-material';
-import { Box, Typography, IconButton, useTheme } from '@mui/material';
+import { Box, TablePagination } from '@mui/material';
 import { ReactNode } from 'react';
 
 interface FooterProps {
   footerButton?: ReactNode;
-  totalPages: number;
+  footerInfoBoxes?: ReactNode[];
+  totalItems: number;
   currentPage: number;
-  setCurrentPage: (page: number) => void;
+  rowsPerPage: number;
+  onPageChange: (event: unknown, newPage: number) => void;
+  onRowsPerPageChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  rowsPerPageOptions?: number[];
 }
 
-const Footer = ({ footerButton, totalPages, currentPage, setCurrentPage }: FooterProps) => {
-  const theme = useTheme();
-
-  const handleChangePage = (isNext: boolean) => {
-    isNext ? setCurrentPage(currentPage + 1) : setCurrentPage(currentPage - 1);
-  };
-
+const Footer = ({
+  footerButton,
+  footerInfoBoxes = [],
+  totalItems,
+  currentPage,
+  rowsPerPage,
+  onPageChange,
+  onRowsPerPageChange,
+  rowsPerPageOptions = [10, 25, 50, 100]
+}: FooterProps) => {
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        borderTop: '1px solid white',
-        backgroundColor: theme.palette.background.default,
-        position: 'fixed',
-        bottom: 0,
-        width: 'calc(100% - 60px)',
-        height: '7%'
-      }}
-    >
-      {footerButton}
+    <>
       <Box
         sx={{
-          display: 'flex',
-          marginLeft: 'auto'
+          backgroundColor: '#121313',
+          position: 'fixed',
+          bottom: 0,
+          zIndex: 2,
+          width: '100%'
         }}
       >
-        <Typography sx={{ marginRight: '4px' }}>
-          Page {currentPage} of {totalPages}
-        </Typography>
-        {currentPage !== 1 && (
-          <IconButton
-            size="small"
+        <Box
+          sx={{
+            borderBottom: '2px solid white',
+            mb: 2,
+            width: 'calc(100% - 60px)'
+          }}
+        />
+        {footerButton && <Box sx={{ display: 'inline-block', mb: 1, mr: 2 }}>{footerButton}</Box>}
+
+        {footerInfoBoxes.map((infoBox, index) => (
+          <Box
+            key={index}
             sx={{
-              padding: '2px',
-              marginLeft: '4px'
+              padding: '5px 20px',
+              mb: 2,
+              mr: 2,
+              display: 'inline-flex',
+              backgroundColor: '#3a3b3b',
+              borderRadius: '8px',
+              fontSize: '20px',
+              fontWeight: 700
             }}
-            onClick={() => handleChangePage(false)}
           >
-            <ChevronLeft fontSize="small" />
-          </IconButton>
-        )}
-        {currentPage !== totalPages && (
-          <IconButton
-            size="small"
-            sx={{
-              padding: '2px',
-              marginLeft: '4px'
-            }}
-            onClick={() => handleChangePage(true)}
-          >
-            <ChevronRight fontSize="small" />
-          </IconButton>
-        )}
+            {infoBox}
+          </Box>
+        ))}
       </Box>
-    </Box>
+      <Box
+        sx={{
+          position: 'fixed',
+          bottom: 0,
+          right: 0,
+          padding: '16px 16px',
+          zIndex: 3
+        }}
+      >
+        <TablePagination
+          count={totalItems}
+          page={currentPage}
+          onPageChange={onPageChange}
+          rowsPerPage={rowsPerPage}
+          rowsPerPageOptions={rowsPerPageOptions}
+          onRowsPerPageChange={onRowsPerPageChange}
+          labelDisplayedRows={({ page }) => `Page ${page + 1}`}
+        />
+      </Box>
+    </>
   );
 };
 

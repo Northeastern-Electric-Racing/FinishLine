@@ -8,7 +8,9 @@ import {
   TableBody,
   Typography,
   Button,
-  useTheme
+  useTheme,
+  TableContainer,
+  Paper
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -27,8 +29,8 @@ const CompaniesTable = () => {
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
   const [clickedEditVendor, setClickedEditVendor] = useState<Vendor | undefined>(undefined);
   const [clickedDeleteVendor, setClickedDeleteVendor] = useState<Vendor | undefined>(undefined);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const itemsPerPage = 14;
+  const [currentPage, setCurrentPage] = useState<number>(0);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(14);
   const theme = useTheme();
 
   if (!vendors || vendorIsLoading) {
@@ -38,11 +40,18 @@ const CompaniesTable = () => {
     return <ErrorPage message={vendorError.message} />;
   }
 
-  const totalPages = Math.ceil(vendors.length / itemsPerPage);
-  const lastVendorIdx = currentPage * itemsPerPage;
-  const firstVendorIdx = lastVendorIdx - itemsPerPage;
   vendors.sort((a, b) => a.name.localeCompare(b.name));
-  const currentVendors = vendors.slice(firstVendorIdx, lastVendorIdx);
+  const startIdx = currentPage * rowsPerPage;
+  const currentVendors = vendors.slice(startIdx, startIdx + rowsPerPage);
+
+  const handleChangePage = (_event: unknown, newPage: number) => {
+    setCurrentPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setCurrentPage(0);
+  };
 
   const vendorTableRows = currentVendors.map((vendor, index) => (
     <TableRow key={vendor.vendorId || index}>
@@ -113,14 +122,16 @@ const CompaniesTable = () => {
               '&:hover': {
                 overflow: 'auto'
               },
-              scrollbarColor: `#555 ${theme.palette.background.default}`
+              scrollbarColor: `#555 ${theme.palette.background.default}`,
+              scrollbarWidth: 'thin'
             }}
           >
             <Typography
               sx={{
                 textAlign: 'left',
                 fontSize: '1.5rem',
-                height: '1.5em'
+                height: '1.5em',
+                whiteSpace: 'nowrap'
               }}
             >
               {vendor.notes}
@@ -149,7 +160,7 @@ const CompaniesTable = () => {
   ));
 
   return (
-    <Box>
+    <Box sx={{ width: '100%', borderRadius: '8px 8px 0 0' }}>
       <CreateVendorModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} vendors={vendors} />
       {clickedEditVendor && (
         <EditVendorModal
@@ -169,98 +180,118 @@ const CompaniesTable = () => {
           vendor={clickedDeleteVendor}
         />
       )}
-
-      <MuiTable>
-        <TableHead>
-          <TableRow>
-            <TableCell
-              align="center"
-              sx={{
-                fontWeight: 'bold',
-                fontSize: '1.5em',
-                backgroundColor: '#ef4345',
-                color: 'white',
-                borderRadius: '10px 0px 0px 0px',
-                height: '60px'
-              }}
-            >
-              Company
-            </TableCell>
-            <TableCell
-              align="center"
-              sx={{
-                fontWeight: 'bold',
-                fontSize: '1.5em',
-                backgroundColor: '#ef4345',
-                color: 'white'
-              }}
-            >
-              Username
-            </TableCell>
-            <TableCell
-              align="center"
-              sx={{
-                fontWeight: 'bold',
-                fontSize: '1.5em',
-                backgroundColor: '#ef4345',
-                color: 'white'
-              }}
-            >
-              Password
-            </TableCell>
-            <TableCell
-              align="center"
-              sx={{
-                fontWeight: 'bold',
-                fontSize: '1.5em',
-                backgroundColor: '#ef4345',
-                color: 'white'
-              }}
-            >
-              Discount
-            </TableCell>
-            <TableCell
-              align="center"
-              sx={{
-                fontWeight: 'bold',
-                fontSize: '1.5em',
-                backgroundColor: '#ef4345',
-                color: 'white'
-              }}
-            >
-              2FA Contacts
-            </TableCell>
-            <TableCell
-              align="center"
-              sx={{
-                fontWeight: 'bold',
-                fontSize: '1.5em',
-                backgroundColor: '#ef4345',
-                color: 'white',
-                borderRadius: '0px 10px 0px 0px'
-              }}
-            >
-              Notes
-            </TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>{vendorTableRows}</TableBody>
-        <Footer
-          footerButton={
-            <NERButton
-              variant="contained"
-              onClick={() => {
-                setCreateModalShow(true);
-              }}
-            >
-              Add Company
-            </NERButton>
-          }
-          totalPages={totalPages}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
-        />
-      </MuiTable>
+      <Box sx={{ paddingBottom: '100px' }}>
+        <TableContainer component={Paper} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
+          <MuiTable>
+            <TableHead>
+              <TableRow>
+                <TableCell
+                  align="center"
+                  sx={{
+                    fontWeight: 'bold',
+                    fontSize: '1.5em',
+                    backgroundColor: '#ef4345',
+                    color: 'white',
+                    borderRadius: '10px 0px 0px 0px',
+                    height: '60px'
+                  }}
+                >
+                  Company
+                </TableCell>
+                <TableCell
+                  align="center"
+                  sx={{
+                    fontWeight: 'bold',
+                    fontSize: '1.5em',
+                    backgroundColor: '#ef4345',
+                    color: 'white'
+                  }}
+                >
+                  Username
+                </TableCell>
+                <TableCell
+                  align="center"
+                  sx={{
+                    fontWeight: 'bold',
+                    fontSize: '1.5em',
+                    backgroundColor: '#ef4345',
+                    color: 'white'
+                  }}
+                >
+                  Password
+                </TableCell>
+                <TableCell
+                  align="center"
+                  sx={{
+                    fontWeight: 'bold',
+                    fontSize: '1.5em',
+                    backgroundColor: '#ef4345',
+                    color: 'white'
+                  }}
+                >
+                  Discount
+                </TableCell>
+                <TableCell
+                  align="center"
+                  sx={{
+                    fontWeight: 'bold',
+                    fontSize: '1.5em',
+                    backgroundColor: '#ef4345',
+                    color: 'white'
+                  }}
+                >
+                  2FA Contacts
+                </TableCell>
+                <TableCell
+                  align="center"
+                  sx={{
+                    fontWeight: 'bold',
+                    fontSize: '1.5em',
+                    backgroundColor: '#ef4345',
+                    color: 'white',
+                    borderRadius: '0px 10px 0px 0px'
+                  }}
+                >
+                  Notes
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody sx={{ backgroundColor: '#121313' }}>{vendorTableRows}</TableBody>
+          </MuiTable>
+        </TableContainer>
+      </Box>
+      <Footer
+        footerButton={
+          <NERButton
+            variant="contained"
+            onClick={() => {
+              setCreateModalShow(true);
+            }}
+            sx={{
+              borderRadius: '8px',
+              color: '#ededed',
+              backgroundColor: '#ef4345',
+              padding: '2px 20px',
+              display: 'inline-flex',
+              fontSize: '20px',
+              fontWeight: 700,
+              textTransform: 'none',
+              '&:hover': {
+                backgroundColor: '#c74340'
+              }
+            }}
+          >
+            Add Company
+          </NERButton>
+        }
+        footerInfoBoxes={[<Box># of Companies: {vendors.length}</Box>]}
+        totalItems={vendors.length}
+        currentPage={currentPage}
+        rowsPerPage={rowsPerPage}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        rowsPerPageOptions={[10, 14, 25, 50, 100]}
+      />
     </Box>
   );
 };

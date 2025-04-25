@@ -4,14 +4,13 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import { useGetAllVendors } from '../../hooks/finance.hooks';
 import { datePipe } from '../../utils/pipes';
 import ErrorPage from '../ErrorPage';
-import EditVendorModal from './Modals/EditVendorModal';
 import Footer from '../../components/Footer';
 import PageLayout from '../../components/PageLayout';
 
 const MemberCompaniesPage = () => {
   const { data: vendors, isLoading: vendorIsLoading, isError: vendorIsError, error: vendorError } = useGetAllVendors();
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const itemsPerPage = 15;
+  const [currentPage, setCurrentPage] = useState<number>(0);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(15);
 
   if (!vendors || vendorIsLoading) {
     return <LoadingIndicator />;
@@ -20,10 +19,18 @@ const MemberCompaniesPage = () => {
     return <ErrorPage message={vendorError.message} />;
   }
 
-  const totalPages = Math.ceil(vendors.length / itemsPerPage);
-  const lastVendorIdx = currentPage * itemsPerPage;
-  const firstVendorIdx = lastVendorIdx - itemsPerPage;
-  const currentVendors = vendors.slice(firstVendorIdx, lastVendorIdx);
+  vendors.sort((a, b) => a.name.localeCompare(b.name));
+  const startIdx = currentPage * rowsPerPage;
+  const currentVendors = vendors.slice(startIdx, startIdx + rowsPerPage);
+
+  const handleChangePage = (_event: unknown, newPage: number) => {
+    setCurrentPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setCurrentPage(0);
+  };
 
   const vendorTableRows = currentVendors.map((vendor, index) => (
     <TableRow key={vendor.vendorId || index}>
@@ -67,50 +74,60 @@ const MemberCompaniesPage = () => {
   return (
     <Box>
       <PageLayout title="Companies">
-        <MuiTable sx={{ maxWidth: '800px' }}>
-          <TableHead>
-            <TableRow>
-              <TableCell
-                align="center"
-                sx={{
-                  fontWeight: 'bold',
-                  fontSize: '1.5em',
-                  backgroundColor: '#ef4345',
-                  color: 'white',
-                  borderRadius: '10px 0px 0px 0px',
-                  height: '60px'
-                }}
-              >
-                Company Name
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{
-                  fontWeight: 'bold',
-                  fontSize: '1.5em',
-                  backgroundColor: '#ef4345',
-                  color: 'white'
-                }}
-              >
-                Date Added
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{
-                  fontWeight: 'bold',
-                  fontSize: '1.5em',
-                  backgroundColor: '#ef4345',
-                  color: 'white',
-                  borderRadius: '0px 10px 0px 0px'
-                }}
-              >
-                Added By
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>{vendorTableRows}</TableBody>
-          <Footer totalPages={totalPages} currentPage={currentPage} setCurrentPage={setCurrentPage} />
-        </MuiTable>
+        <Box sx={{ paddingBottom: '100px' }}>
+          <MuiTable sx={{ maxWidth: '800px' }}>
+            <TableHead>
+              <TableRow>
+                <TableCell
+                  align="center"
+                  sx={{
+                    fontWeight: 'bold',
+                    fontSize: '1.5em',
+                    backgroundColor: '#ef4345',
+                    color: 'white',
+                    borderRadius: '10px 0px 0px 0px',
+                    height: '60px'
+                  }}
+                >
+                  Company Name
+                </TableCell>
+                <TableCell
+                  align="center"
+                  sx={{
+                    fontWeight: 'bold',
+                    fontSize: '1.5em',
+                    backgroundColor: '#ef4345',
+                    color: 'white'
+                  }}
+                >
+                  Date Added
+                </TableCell>
+                <TableCell
+                  align="center"
+                  sx={{
+                    fontWeight: 'bold',
+                    fontSize: '1.5em',
+                    backgroundColor: '#ef4345',
+                    color: 'white',
+                    borderRadius: '0px 10px 0px 0px'
+                  }}
+                >
+                  Added By
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>{vendorTableRows}</TableBody>
+          </MuiTable>
+        </Box>
+        <Footer
+          footerInfoBoxes={[<Box># of Companies: {vendors.length}</Box>]}
+          totalItems={vendors.length}
+          currentPage={currentPage}
+          rowsPerPage={rowsPerPage}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[10, 15, 25, 50, 100]}
+        />
       </PageLayout>
     </Box>
   );
