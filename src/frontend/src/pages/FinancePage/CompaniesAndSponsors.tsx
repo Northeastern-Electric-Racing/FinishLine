@@ -1,6 +1,6 @@
 import { Box } from '@mui/system';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { isAdmin, isHead, RoleEnum } from 'shared';
+import { isHead } from 'shared';
 import MemberCompaniesPage from './MemberCompaniesPage';
 import HeadAndAboveCompaniesPage from './HeadAndAboveCompaniesPage';
 
