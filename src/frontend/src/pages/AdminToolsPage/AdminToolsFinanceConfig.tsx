@@ -1,5 +1,4 @@
 import { Box, Grid, Typography } from '@mui/material';
-import VendorsTable from './FinanceConfig/VendorsTable';
 import AccountManagerTable from './FinanceConfig/AccountManagerTable';
 import CategoriesTable from './FinanceConfig/CategoriesTable';
 
