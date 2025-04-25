@@ -11,7 +11,7 @@ interface EditVendorModalProps {
   vendors: Vendor[];
 }
 
-const CreateVendorModal = ({ showModal, handleClose, vendor, vendors }: EditVendorModalProps) => {
+const EditVendorModal = ({ showModal, handleClose, vendor, vendors }: EditVendorModalProps) => {
   const { isLoading, isError, error, mutateAsync } = useEditVendor(vendor.vendorId);
 
   if (isError) return <ErrorPage message={error?.message} />;
@@ -28,4 +28,4 @@ const CreateVendorModal = ({ showModal, handleClose, vendor, vendors }: EditVend
   );
 };
 
-export default CreateVendorModal;
+export default EditVendorModal;

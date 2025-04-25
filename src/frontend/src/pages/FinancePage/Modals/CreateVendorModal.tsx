@@ -1,8 +1,8 @@
 import { useCreateVendor } from '../../../hooks/finance.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import VendorFormModal from './VendorFormModal';
 import { Vendor } from 'shared';
+import VendorFormModal from './VendorFormModal';
 
 interface CreateVendorModalProps {
   showModal: boolean;

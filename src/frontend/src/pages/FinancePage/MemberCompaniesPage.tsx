@@ -4,16 +4,12 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import { useGetAllVendors } from '../../hooks/finance.hooks';
 import { datePipe } from '../../utils/pipes';
 import ErrorPage from '../ErrorPage';
-import CreateVendorModal from '../AdminToolsPage/FinanceConfig/CreateVendorModal';
-import { Vendor } from 'shared';
-import EditVendorModal from '../AdminToolsPage/FinanceConfig/EditVendorModal';
+import EditVendorModal from './Modals/EditVendorModal';
 import Footer from '../../components/Footer';
 import PageLayout from '../../components/PageLayout';
 
 const MemberCompaniesPage = () => {
   const { data: vendors, isLoading: vendorIsLoading, isError: vendorIsError, error: vendorError } = useGetAllVendors();
-  const [createModalShow, setCreateModalShow] = useState<boolean>(false);
-  const [clickedVendor, setClickedVendor] = useState<Vendor | undefined>(undefined);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 15;
 
@@ -71,18 +67,6 @@ const MemberCompaniesPage = () => {
   return (
     <Box>
       <PageLayout title="Companies">
-        <CreateVendorModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} vendors={vendors} />
-        {clickedVendor && (
-          <EditVendorModal
-            showModal={!!clickedVendor}
-            handleClose={() => {
-              setClickedVendor(undefined);
-            }}
-            vendor={clickedVendor}
-            vendors={vendors}
-          />
-        )}
-
         <MuiTable sx={{ maxWidth: '800px' }}>
           <TableHead>
             <TableRow>

@@ -6,15 +6,17 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import { useGetAllVendors } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
 import { NERButton } from '../../components/NERButton';
-import CreateVendorModal from '../AdminToolsPage/FinanceConfig/CreateVendorModal';
 import { Vendor } from 'shared';
-import EditVendorModal from '../AdminToolsPage/FinanceConfig/EditVendorModal';
 import Footer from '../../components/Footer';
+import CreateVendorModal from './Modals/CreateVendorModal';
+import EditVendorModal from './Modals/EditVendorModal';
+import DeleteVendorModal from './Modals/DeleteVendorModal';
 
 const CompaniesTable = () => {
   const { data: vendors, isLoading: vendorIsLoading, isError: vendorIsError, error: vendorError } = useGetAllVendors();
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
-  const [clickedVendor, setClickedVendor] = useState<Vendor | undefined>(undefined);
+  const [clickedEditVendor, setClickedEditVendor] = useState<Vendor | undefined>(undefined);
+  const [clickedDeleteVendor, setClickedDeleteVendor] = useState<Vendor | undefined>(undefined);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 14;
 
@@ -101,10 +103,15 @@ const CompaniesTable = () => {
               marginLeft: 'auto'
             }}
           >
-            <Button sx={{ p: 0.5, color: 'white' }} onClick={() => {}}>
+            <Button
+              sx={{ p: 0.5, color: 'white' }}
+              onClick={() => {
+                setClickedEditVendor(vendor);
+              }}
+            >
               <EditIcon />
             </Button>
-            <Button sx={{ p: 0.5, color: 'white' }} onClick={() => {}}>
+            <Button sx={{ p: 0.5, color: 'white' }} onClick={() => setClickedDeleteVendor(vendor)}>
               <DeleteIcon />
             </Button>
           </Box>
@@ -116,14 +123,22 @@ const CompaniesTable = () => {
   return (
     <Box>
       <CreateVendorModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} vendors={vendors} />
-      {clickedVendor && (
+      {clickedEditVendor && (
         <EditVendorModal
-          showModal={!!clickedVendor}
+          showModal={!!clickedEditVendor}
           handleClose={() => {
-            setClickedVendor(undefined);
+            setClickedEditVendor(undefined);
           }}
-          vendor={clickedVendor}
+          vendor={clickedEditVendor}
           vendors={vendors}
+        />
+      )}
+      {clickedDeleteVendor && (
+        <DeleteVendorModal
+          handleClose={() => {
+            setClickedDeleteVendor(undefined);
+          }}
+          vendor={clickedDeleteVendor}
         />
       )}
 
