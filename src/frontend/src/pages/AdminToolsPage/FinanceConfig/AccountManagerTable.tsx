@@ -62,6 +62,20 @@ const AccountManagerTable = () => {
 
   return (
     <Box>
+      <Box sx={{ display: 'flex', justifyContent: 'left', marginTop: '20px', paddingBottom: '20px' }}>
+        <Typography variant="h5" gutterBottom color="white" paddingRight={'20px'}>
+          Account Manager
+        </Typography>
+        <NERButton
+          style={{ color: 'white' }}
+          variant="contained"
+          onClick={() => {
+            setShowCreateModal(true);
+          }}
+        >
+          Add Account
+        </NERButton>
+      </Box>
       <CreateAccountCodeModal showModal={showCreateModal} handleClose={() => setShowCreateModal(false)} />
       {clickedAccountCode && (
         <EditAccountCodeModal
@@ -95,16 +109,6 @@ const AccountManagerTable = () => {
         </TableHead>
         <TableBody>{accountManagerTableRows} </TableBody>
       </Table>
-      <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
-        <NERButton
-          variant="contained"
-          onClick={() => {
-            setShowCreateModal(true);
-          }}
-        >
-          Add Account
-        </NERButton>
-      </Box>
     </Box>
   );
 };

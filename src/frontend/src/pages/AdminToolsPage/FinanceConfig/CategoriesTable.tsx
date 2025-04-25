@@ -68,6 +68,20 @@ const CategoriesTable = () => {
           indexCode={clickedIndexCode}
         />
       )} */}
+      <Box sx={{ display: 'flex', justifyContent: 'left', marginTop: '20px', paddingBottom: '20px' }}>
+        <Typography variant="h5" gutterBottom color="white" paddingRight={'20px'}>
+          Categories
+        </Typography>
+        <NERButton
+          style={{ color: 'white' }}
+          variant="contained"
+          onClick={() => {
+            setShowCreateModal(true);
+          }}
+        >
+          Add Category
+        </NERButton>
+      </Box>
       <Table>
         <TableHead>
           <TableRow>
@@ -90,16 +104,6 @@ const CategoriesTable = () => {
         </TableHead>
         <TableBody>{categoriesTableRows} </TableBody>
       </Table>
-      <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
-        <NERButton
-          variant="contained"
-          onClick={() => {
-            setShowCreateModal(true);
-          }}
-        >
-          Add Category
-        </NERButton>
-      </Box>
     </Box>
   );
 };
