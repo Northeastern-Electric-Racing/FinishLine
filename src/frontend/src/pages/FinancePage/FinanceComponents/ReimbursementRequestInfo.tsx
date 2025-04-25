@@ -86,39 +86,38 @@ const ReimbursementRequestInfo = ({
       }
 
       const query = searchText.trim().toLowerCase().split(/\s+/);
-      return query.every(
-        (query) =>
-          // search filters
-          row.status.toLowerCase().includes(query) ||
-          ('' + row.identifier).toLowerCase().includes(query) ||
-          ('' + fullNamePipe(row.submitter)).toLowerCase().includes(query) ||
-          ('' + row.identifier).toLowerCase().includes(query) ||
-          ('' + row.saboId).toLowerCase().includes(query) ||
-          ('' + datePipe(row.dateSubmitted)).toLowerCase().includes(query) ||
-          ('' + dateUndefinedPipe(row.dateSubmittedToSabo)).toLowerCase().includes(query) ||
-          ('$' + centsToDollar(row.amount)).toLowerCase().includes(query)
-      );
+      return query.every((query) => {
+        const lowercase_query = query.toLowerCase();
+        // search filters
+        return (
+          row.status.toLowerCase().includes(lowercase_query) ||
+          ('' + row.identifier).toLowerCase().includes(lowercase_query) ||
+          ('' + fullNamePipe(row.submitter)).toLowerCase().includes(lowercase_query) ||
+          ('' + row.identifier).toLowerCase().includes(lowercase_query) ||
+          ('' + row.saboId).toLowerCase().includes(lowercase_query) ||
+          ('' + datePipe(row.dateSubmitted)).toLowerCase().includes(lowercase_query) ||
+          ('' + datePipe(row.dateSubmittedToSabo)).toLowerCase().includes(lowercase_query) ||
+          ('$' + centsToDollar(row.amount)).toLowerCase().includes(lowercase_query)
+        );
+      });
     })
     .sort((a, b) => {
-      if (orderBy === 'vendor') {
-        return !isAscendingOrder
-          ? vendorDescendingComparator(a.vendor, b.vendor)
-          : -vendorDescendingComparator(a.vendor, b.vendor);
+      switch (orderBy) {
+        case 'vendor':
+          return !isAscendingOrder
+            ? vendorDescendingComparator(a.vendor, b.vendor)
+            : -vendorDescendingComparator(a.vendor, b.vendor);
+        case 'status':
+          return !isAscendingOrder
+            ? statusDescendingComparator(a.status, b.status)
+            : -statusDescendingComparator(a.status, b.status);
+        case 'submitter':
+          return !isAscendingOrder
+            ? submitterDescendingComparator(a.submitter, b.submitter)
+            : -submitterDescendingComparator(a.submitter, b.submitter);
+        default:
+          return !isAscendingOrder ? descendingComparator(a, b, orderBy) : -descendingComparator(a, b, orderBy);
       }
-      if (orderBy === 'status') {
-        return !isAscendingOrder
-          ? statusDescendingComparator(a.status, b.status)
-          : -statusDescendingComparator(a.status, b.status);
-      }
-      if (orderBy === 'submitter') {
-        return !isAscendingOrder
-          ? submitterDescendingComparator(a.submitter, b.submitter)
-          : -submitterDescendingComparator(a.submitter, b.submitter);
-      }
-      if (b[orderBy] === undefined) {
-        return -1;
-      }
-      return !isAscendingOrder ? descendingComparator(a, b, orderBy) : -descendingComparator(a, b, orderBy);
     });
 
   const headCells: readonly ReimbursementTableHeadCell[] = [
@@ -163,7 +162,7 @@ const ReimbursementRequestInfo = ({
   };
 
   // calculate money
-  const getRefundTotal = rows.reduce((sum, row) => sum + row.amount, 0);
+  const refundTotal = rows.reduce((sum, row) => sum + row.amount, 0);
 
   const getStatusColor = (status: string): string => {
     switch (status) {
@@ -337,7 +336,7 @@ const ReimbursementRequestInfo = ({
             fontWeight: 700
           }}
         >
-          Total Amount: {`$${centsToDollar(getRefundTotal)}`}
+          Total Amount: {`$${centsToDollar(refundTotal)}`}
         </Box>
       </Box>
       <Box
