@@ -1,10 +1,10 @@
-import { TableRow, TableCell, Typography, Box, TableHead, Table, TableBody, Checkbox } from '@mui/material';
+import { TableRow, TableCell, Typography, Box, TableHead, Table, TableBody } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useGetAllIndexCodes, useGetAllOtherProductReason } from '../../../hooks/finance.hooks';
+import { useGetAllOtherProductReason } from '../../../hooks/finance.hooks';
 import ErrorPage from '../../ErrorPage';
 import { NERButton } from '../../../components/NERButton';
 import React, { useState } from 'react';
-import { IndexCode, OtherProductReason } from 'shared';
+import { OtherProductReason } from 'shared';
 
 const CategoriesTable = () => {
   const {
