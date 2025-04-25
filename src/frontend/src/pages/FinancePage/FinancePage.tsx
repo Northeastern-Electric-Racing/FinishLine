@@ -74,8 +74,11 @@ const FinancePage = () => {
   const [showSidePage, setShowSidePage] = useState(false);
   const [sidePageTitle, setSidePageTitle] = useState('');
 
-  const { mutateAsync: createReimbursementRequest } = useCreateReimbursementRequest();
-  const { mutateAsync: uploadReceipts } = useUploadManyReceipts();
+  const { isLoading: createReimbursementRequestIsLoading, mutateAsync: createReimbursementRequest } =
+    useCreateReimbursementRequest();
+  const { isLoading: receiptsIsLoading, mutateAsync: uploadReceipts } = useUploadManyReceipts();
+
+  if (createReimbursementRequestIsLoading || receiptsIsLoading) return <LoadingIndicator />;
 
   if (isFinance && allReimbursementRequestsIsError) return <ErrorPage message={allReimbursementRequestsError?.message} />;
   if (userReimbursementRequestIsError) return <ErrorPage message={userReimbursementRequestError?.message} />;
@@ -191,7 +194,7 @@ const FinancePage = () => {
     const reimbursementRequest = await createReimbursementRequest({ ...data, indexCodeId: data.indexCodeId! });
     await uploadReceipts({
       id: reimbursementRequest.reimbursementRequestId,
-      files: data.receiptFiles.filter((receipt) => receipt.googleFileId === '').map((file) => file.file!)
+      files: data.receiptFiles.map((file) => file.file!)
     });
     closeSidePage();
     return reimbursementRequest.reimbursementRequestId;
