@@ -5,13 +5,13 @@ export interface Sponsor {
   name: string;
   activeStatus: boolean;
   vendorContact: string;
-  tierId: string;
   sponsorValue: number;
   joinDate: Date;
   activeYears: number[];
   taxExempt: boolean;
   discountCode?: string;
   sponsorTasks: SponsorTask[];
+  tier: SponsorTier;
 }
 
 export interface SponsorTask {
