@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import { TableRow, TableCell, Box, Table as MuiTable, TableHead, TableBody, Typography, Button } from '@mui/material';
+import {
+  TableRow,
+  TableCell,
+  Box,
+  Table as MuiTable,
+  TableHead,
+  TableBody,
+  Typography,
+  Button,
+  useTheme
+} from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -19,6 +29,7 @@ const CompaniesTable = () => {
   const [clickedDeleteVendor, setClickedDeleteVendor] = useState<Vendor | undefined>(undefined);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 14;
+  const theme = useTheme();
 
   if (!vendors || vendorIsLoading) {
     return <LoadingIndicator />;
@@ -30,6 +41,7 @@ const CompaniesTable = () => {
   const totalPages = Math.ceil(vendors.length / itemsPerPage);
   const lastVendorIdx = currentPage * itemsPerPage;
   const firstVendorIdx = lastVendorIdx - itemsPerPage;
+  vendors.sort((a, b) => a.name.localeCompare(b.name));
   const currentVendors = vendors.slice(firstVendorIdx, lastVendorIdx);
 
   const vendorTableRows = currentVendors.map((vendor, index) => (
@@ -48,14 +60,11 @@ const CompaniesTable = () => {
       <TableCell
         align="center"
         sx={{
-          display: 'flex',
-          justifyContent: 'center',
           alignItems: 'center',
-          borderBottom: 'none',
-          minHeight: '50px'
+          borderBottom: 'none'
         }}
       >
-        <Typography sx={{ fontSize: '1.5rem' }}>{vendor.username}</Typography>
+        <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>{vendor.username}</Typography>
       </TableCell>
       <TableCell
         align="center"
@@ -84,7 +93,7 @@ const CompaniesTable = () => {
         }}
       >
         <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>
-          {`${vendor.twoFactorContact?.firstName} ${vendor.twoFactorContact?.lastName.charAt(0)}.`}
+          {`${vendor.twoFactorContact?.firstName} ${vendor.twoFactorContact?.lastName}`}
         </Typography>
       </TableCell>
       <TableCell
@@ -95,12 +104,31 @@ const CompaniesTable = () => {
           borderLeft: '4px solid white'
         }}
       >
-        <Box sx={{ display: 'flex' }}>
-          <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>{vendor.notes}</Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Box
             sx={{
-              display: 'flex',
-              marginLeft: 'auto'
+              maxWidth: 400,
+              width: '100%',
+              overflow: 'hidden',
+              '&:hover': {
+                overflow: 'auto'
+              },
+              scrollbarColor: `#555 ${theme.palette.background.default}`
+            }}
+          >
+            <Typography
+              sx={{
+                textAlign: 'left',
+                fontSize: '1.5rem',
+                height: '1.5em'
+              }}
+            >
+              {vendor.notes}
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              display: 'flex'
             }}
           >
             <Button
