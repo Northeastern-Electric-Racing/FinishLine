@@ -20,9 +20,10 @@ import ErrorPage from '../ErrorPage';
 import { NERButton } from '../../components/NERButton';
 import { Vendor } from 'shared';
 import Footer from '../../components/Footer';
-import CreateVendorModal from './Modals/CreateVendorModal';
-import EditVendorModal from './Modals/EditVendorModal';
-import DeleteVendorModal from './Modals/DeleteVendorModal';
+
+import DeleteVendorModal from './FinanceComponents/DeleteVendorModal';
+import CreateVendorModal from './FinanceComponents/CreateVendorModal';
+import EditVendorModal from './FinanceComponents/EditVendorModal';
 
 const CompaniesTable = () => {
   const { data: vendors, isLoading: vendorIsLoading, isError: vendorIsError, error: vendorError } = useGetAllVendors();
