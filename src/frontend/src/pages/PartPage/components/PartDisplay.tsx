@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
-import { Part, Review_Status } from 'shared';
+import { Part, Review_Status, User } from 'shared';
 
 interface PartDisplayProps {
   part: Part;
@@ -63,6 +63,7 @@ const Pill = ({ label = '', bgColor = 'background.paper' }) => {
         borderRadius: '16px',
         backgroundColor: bgColor,
         padding: '4px 12px',
+        marginRight: '20px',
         minHeight: '24px',
         fontSize: '0.75rem',
         fontWeight: 500,
@@ -77,88 +78,55 @@ const Pill = ({ label = '', bgColor = 'background.paper' }) => {
 };
 
 const PartDisplay: React.FC<PartDisplayProps> = ({ part, screenSize }) => {
-  // helper to get part name in the format shown in the ticket
-  const getPartName = () => {
-    const partNumber = part.partId;
-    return `${part.projectId}_${part.commonName}_${partNumber}`;
+  // Gets part name in the format shown in the ticket
+  const PartName = `${part.projectId}_${part.commonName}_${part.partId}`;
+
+  // helper that puts a users first and last name into one string with a space
+  const getUserFullName = (user: User) => {
+    return `${user.firstName} ${user.lastName}`;
   };
 
-  // helper to get latest submission
-  const getLatestSubmission = () => {
-    if (part.submissions.length === 0) return 'None';
+  //sorts submissions by date to help later with getting latest submission and latest reviewer
+  const sortedSubmissions = [...part.submissions].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
-    // sorts submissions by date
-    const sortedSubmissions = [...part.submissions].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  // latest submission as a formatted string
+  const latestSubmission = getUserFullName(sortedSubmissions[0].userCreated);
 
-    const [latestSubmission] = sortedSubmissions;
+  // sorts reviews of the most recent submission by date
+  const sortedReviews = [...sortedSubmissions[0].reviews].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
 
-    return `${latestSubmission.userCreated.firstName} ${latestSubmission.userCreated.lastName}`;
-  };
+  // latest reviewer
+  const latestReviewer = sortedSubmissions[0].reviews.length === 0 ? 'None' : getUserFullName(sortedReviews[0].userCreated);
 
-  // helper to get latest reviewer
-  const getLatestReview = () => {
-    if (part.submissions.length === 0) return 'None';
+  // gets assignees as a formatted string
+  const assigneesString =
+    part.assignees.length === 0 ? 'None' : part.assignees.map((assignee) => getUserFullName(assignee)).join('\n');
 
-    // sort submissions by date
-    const sortedSubmissions = [...part.submissions].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+  // allReviewers is a set that collects every reviewer from every submission for the purpose of avoiding duplicates
+  // because the same person could review two different submissions
+  const allReviewersSet =
+    part.submissions.length === 0
+      ? []
+      : (() => {
+          const reviewersSet = new Set();
 
-    const [latestSubmission] = sortedSubmissions;
+          // iterate through all submissions
+          part.submissions.forEach((submission) => {
+            if (submission.reviews) {
+              // iterate through each review
+              submission.reviews.forEach((review) => {
+                reviewersSet.add(getUserFullName(review.userCreated));
+              });
+            }
+          });
 
-    if (latestSubmission.reviews.length > 0) {
-      // sort reviews by date
-      const sortedReviews = [...latestSubmission.reviews].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
+          return Array.from(reviewersSet);
+        })();
 
-      const [latestReview] = sortedReviews;
-
-      return `${latestReview.userCreated.firstName} ${latestReview.userCreated.lastName}`;
-    }
-
-    return 'None';
-  };
-
-  // helper to get assignees as a formatted string
-  const getAssignees = () => {
-    if (part.assignees.length > 0) {
-      return part.assignees.map((assignee) => `${assignee.firstName} ${assignee.lastName}`).join('\n');
-    }
-    return 'None';
-  };
-
-  const getAllReviewers = () => {
-    if (part.submissions.length === 0) {
-      return [];
-    }
-
-    const reviewersSet = new Set();
-
-    // iterate through all submissions
-    part.submissions.forEach((submission) => {
-      if (submission.reviews) {
-        // iterate through each review
-        submission.reviews.forEach((review) => {
-          const reviewer = review.userCreated;
-          const reviewerName = `${reviewer.firstName} ${reviewer.lastName}`;
-          reviewersSet.add(reviewerName);
-        });
-      }
-    });
-
-    return Array.from(reviewersSet);
-  };
-
-  // formats the output from getAllReviewers
-  const getReviewers = () => {
-    const allReviewers = getAllReviewers();
-
-    if (allReviewers.length > 0) {
-      return allReviewers.join('\n');
-    }
-    return 'None';
-  };
+  // formats the output from allReviewersSet
+  const allReviewersString = allReviewersSet.length === 0 ? 'None' : allReviewersSet.join('\n');
 
   return (
     <Box
@@ -176,14 +144,14 @@ const PartDisplay: React.FC<PartDisplayProps> = ({ part, screenSize }) => {
     >
       <Box sx={{ width: '175px', display: 'flex' }}>
         <Typography variant="subtitle1" fontWeight="bold">
-          {getPartName()}
+          {PartName}
         </Typography>
       </Box>
 
       {(screenSize === 'medium' || screenSize === 'large') && (
         <Box sx={{ display: 'flex' }}>
           <Typography variant="body2" whiteSpace="pre-line">
-            {getAssignees()}
+            {assigneesString}
           </Typography>
         </Box>
       )}
@@ -191,20 +159,20 @@ const PartDisplay: React.FC<PartDisplayProps> = ({ part, screenSize }) => {
       {(screenSize === 'medium' || screenSize === 'large') && (
         <Box sx={{ display: 'flex' }}>
           <Typography variant="body2" whiteSpace="pre-line">
-            {getReviewers()}
+            {allReviewersString}
           </Typography>
         </Box>
       )}
 
       {screenSize === 'large' && (
         <Box sx={{ display: 'flex' }}>
-          <Typography variant="body2">{getLatestReview()}</Typography>
+          <Typography variant="body2">{latestReviewer}</Typography>
         </Box>
       )}
 
       {screenSize === 'large' && (
         <Box sx={{ display: 'flex' }}>
-          <Typography variant="body2">{getLatestSubmission()}</Typography>
+          <Typography variant="body2">{latestSubmission}</Typography>
         </Box>
       )}
 
