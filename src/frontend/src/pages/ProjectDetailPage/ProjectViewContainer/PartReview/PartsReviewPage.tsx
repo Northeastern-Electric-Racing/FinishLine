@@ -18,6 +18,7 @@ const PartsReviewPage = () => {
     return rankUserRole(userRole) < rankUserRole('LEADERSHIP');
   });
 
+  // a sample part that i made to test a component
   const createSamplePart = (partId: string, commonName: string): Part => ({
     partId,
     index: 1,
@@ -197,21 +198,12 @@ const PartsReviewPage = () => {
   });
 
   const samplePart = createSamplePart('part-123', 'Attenuator');
-  /*const { isLoading, data: part, isError, error } = useSinglePart();
-
-  if (isLoading) {
-    return <LoadingIndicator />;
-  }
-
-  if (isError || !part) {
-    throw error;
-  } */
 
   return (
     <Box>
-      <PartDisplay part={samplePart} screenSize="large"></PartDisplay>
-      <PartDisplay part={samplePart} screenSize="medium"></PartDisplay>
-      <PartDisplay part={samplePart} screenSize="small"></PartDisplay>
+      <PartDisplay part={samplePart} contentAmount="full"></PartDisplay>
+      <PartDisplay part={samplePart} contentAmount="standard"></PartDisplay>
+      <PartDisplay part={samplePart} contentAmount="compact"></PartDisplay>
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <FormGroup>

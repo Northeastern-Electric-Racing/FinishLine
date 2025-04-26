@@ -4,9 +4,10 @@ import { Part, Review_Status, User } from 'shared';
 
 interface PartDisplayProps {
   part: Part;
-  screenSize: 'small' | 'medium' | 'large';
+  contentAmount: 'compact' | 'standard' | 'full';
 }
 
+// reusing someone else's function that hasn't been merged yet to maintain consistent formatting
 const getReviewStatusColor = (status: Review_Status) => {
   switch (status) {
     case 'IN_PROGRESS':
@@ -41,8 +42,8 @@ const getReviewStatusDisplayName = (status: Review_Status): string => {
   }
 };
 
-const getBoxWidth = (screenSize: String) => {
-  switch (screenSize) {
+const getBoxWidth = (contentAmount: String) => {
+  switch (contentAmount) {
     case 'small':
       return '400px';
     case 'medium':
@@ -77,7 +78,7 @@ const Pill = ({ label = '', bgColor = 'background.paper' }) => {
   );
 };
 
-const PartDisplay: React.FC<PartDisplayProps> = ({ part, screenSize }) => {
+const PartDisplay: React.FC<PartDisplayProps> = ({ part, contentAmount }) => {
   // Gets part name in the format shown in the ticket
   const PartName = `${part.projectId}_${part.commonName}_${part.partId}`;
 
@@ -138,7 +139,7 @@ const PartDisplay: React.FC<PartDisplayProps> = ({ part, screenSize }) => {
         borderRadius: 2,
         p: 2,
         mb: 1,
-        maxWidth: getBoxWidth(screenSize),
+        maxWidth: getBoxWidth(contentAmount),
         width: '100%'
       }}
     >
@@ -148,7 +149,7 @@ const PartDisplay: React.FC<PartDisplayProps> = ({ part, screenSize }) => {
         </Typography>
       </Box>
 
-      {(screenSize === 'medium' || screenSize === 'large') && (
+      {(contentAmount === 'standard' || contentAmount === 'full') && (
         <Box sx={{ display: 'flex' }}>
           <Typography variant="body2" whiteSpace="pre-line">
             {assigneesString}
@@ -156,7 +157,7 @@ const PartDisplay: React.FC<PartDisplayProps> = ({ part, screenSize }) => {
         </Box>
       )}
 
-      {(screenSize === 'medium' || screenSize === 'large') && (
+      {(contentAmount === 'standard' || contentAmount === 'full') && (
         <Box sx={{ display: 'flex' }}>
           <Typography variant="body2" whiteSpace="pre-line">
             {allReviewersString}
@@ -164,13 +165,13 @@ const PartDisplay: React.FC<PartDisplayProps> = ({ part, screenSize }) => {
         </Box>
       )}
 
-      {screenSize === 'large' && (
+      {contentAmount === 'full' && (
         <Box sx={{ display: 'flex' }}>
           <Typography variant="body2">{latestReviewer}</Typography>
         </Box>
       )}
 
-      {screenSize === 'large' && (
+      {contentAmount === 'full' && (
         <Box sx={{ display: 'flex' }}>
           <Typography variant="body2">{latestSubmission}</Typography>
         </Box>
