@@ -1101,7 +1101,7 @@ describe('Part Review Popups', () => {
     });
 
     it('Succeeds and updates the sample image', async () => {
-      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const testBatman = batman;
       (uploadFile as Mock).mockImplementation((file) => {
         return Promise.resolve({ name: `${file.originalname}`, id: `uploaded-${file.originalname}` });
       });
