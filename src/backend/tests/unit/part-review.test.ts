@@ -1094,6 +1094,10 @@ describe('Part Review Popups', () => {
       orgId = organization.organizationId;
     });
 
+    afterEach(async () => {
+      await resetUsers();
+    });  
+
     it('Fails if user is not an admin', async () => {
       await expect(
         PartReviewService.setPartReviewSampleImage(file1, await createTestUser(wonderwomanGuest, orgId), organization)
@@ -1137,6 +1141,10 @@ describe('Part Review Popups', () => {
       organization = await createTestOrganization();
       orgId = organization.organizationId;
     });
+
+    afterEach(async () => {
+      await resetUsers();
+    });  
 
     it('Fails if an organization does not exist', async () => {
       await expect(async () => await PartReviewService.getPartReviewSampleImage('1')).rejects.toThrow(
