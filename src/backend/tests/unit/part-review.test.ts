@@ -1090,6 +1090,7 @@ describe('Part Review Popups', () => {
     let organization: Organization;
 
     beforeEach(async () => {
+      await resetUsers();
       organization = await createTestOrganization();
       orgId = organization.organizationId;
     });
@@ -1134,6 +1135,7 @@ describe('Part Review Popups', () => {
     let organization: Organization;
 
     beforeEach(async () => {
+      await resetUsers();
       organization = await createTestOrganization();
       orgId = organization.organizationId;
     });
@@ -1145,7 +1147,7 @@ describe('Part Review Popups', () => {
     });
 
     it('Succeeds and gets the image', async () => {
-      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const testBatman = batman;
       await PartReviewService.setPartReviewSampleImage(
         { originalname: 'image1.png' } as Express.Multer.File,
         testBatman,
