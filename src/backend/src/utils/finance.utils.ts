@@ -1,11 +1,9 @@
-import { Prisma, Reimbursement_Status_Type, Role, User } from '@prisma/client';
+import { Prisma, Reimbursement_Status_Type } from '@prisma/client';
 import { wbsPipe, SpendingBarData, ReimbursementRequestData } from 'shared';
 import prisma from '../prisma/prisma';
 import { getReimbursementRequestQueryArgs } from '../prisma-query-args/reimbursement-requests.query-args';
 import { NotFoundException } from './errors.utils';
 import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
-import { getReimbursementProductOtherReasonQueryArgs } from '../prisma-query-args/reimbursement-product-other-reason.query-args';
-import { datacatalog } from 'googleapis/build/src/apis/datacatalog';
 
 const getProjectSegmentedWhereInput = (
   organizationId: string,
@@ -46,13 +44,13 @@ const getReimbursementRequestWhereInput = (
   startDate: Date | null = null,
   endDate: Date | null = null
 ): {
-  dataCreated?: {
+  dateCreated?: {
     gte?: Date;
     lte?: Date;
   };
 } => {
   const baseWhere: {
-    dataCreated?: {
+    dateCreated?: {
       gte?: Date;
       lte?: Date;
     };
@@ -70,14 +68,14 @@ const getReimbursementRequestWhereInput = (
   });
 
   if (startDate) {
-    baseWhere.dataCreated = {
+    baseWhere.dateCreated = {
       gte: startDate
     };
   }
 
   if (endDate) {
-    baseWhere.dataCreated = {
-      ...baseWhere.dataCreated,
+    baseWhere.dateCreated = {
+      ...baseWhere.dateCreated,
       lte: endDate
     };
   }
@@ -548,11 +546,6 @@ export const getReimbursementRequestCategoryData = async (
   startDate: Date | null,
   endDate: Date | null
 ): Promise<ReimbursementRequestData> => {
-  const categoires = await prisma.reimbursement_Product_Other_Reason.findMany({
-    where: { dateDeleted: null },
-    ...getReimbursementProductOtherReasonQueryArgs(organizationId)
-  });
-
   const reimbursementRequests = await prisma.reimbursement_Request.findMany({
     where: { dateDeleted: null, accountCode: { organizationId }, ...getReimbursementRequestWhereInput(startDate, endDate) },
     ...getReimbursementRequestQueryArgs(organizationId)
@@ -619,14 +612,11 @@ export const getReimbursementRequestCategoryData = async (
   return data;
 };
 
-export const getSpendingBarCategoryData = async (
-  organizationId: string
-): Promise<SpendingBarData> => {
+export const getSpendingBarCategoryData = async (organizationId: string): Promise<SpendingBarData> => {
   const otherReasons = await prisma.reimbursement_Product_Other_Reason.findMany({
     where: {
       dateDeleted: null,
       indexCode: {
-        name: 'CASH',
         organizationId
       }
     }
@@ -674,7 +664,6 @@ export const getAllSpendingBarData = async (
   });
 
   return data;
-
 };
 
 export const getReimbursementRequestDataForAdminFinance = (

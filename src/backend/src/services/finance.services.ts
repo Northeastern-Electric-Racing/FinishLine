@@ -1,6 +1,6 @@
-import { isHead, ReimbursementRequestData, RoleEnum, SpendingBarData } from 'shared';
+import { isHead, ReimbursementRequestData, SpendingBarData } from 'shared';
 import { User, Organization, Sponsor_Task, Sponsor } from '@prisma/client';
-import { getUserRole, userHasPermission } from '../utils/users.utils';
+import { userHasPermission } from '../utils/users.utils';
 import { getSponsorQueryArgs, getSponsorTaskQueryArgs } from '../prisma-query-args/sponsor.query.args';
 import {
   AccessDeniedException,
@@ -11,16 +11,13 @@ import {
 import prisma from '../prisma/prisma';
 import { sponsorTransformer } from '../transformers/finance.transformer';
 import sponsorTaskTransformer from '../transformers/sponsor-task.transformer';
-import { isUserOnFinanceTeam } from '../utils/reimbursement-requests.utils';
 import {
   getAllReimbursementRequestData,
   getAllSpendingBarData,
   getReimbursementRequestCategoryData,
   getReimbursementRequestDataForAdminFinance,
   getReimbursementRequestDataForNonAdminFinance,
-  getReimbursementRequestsForReimbursementRequestsByDivision,
   getReimbursementRequestsForReimbursementRequestsByProject,
-  getReimbursementRequestsForReimbursementRequestsByTeam,
   getSpendingBarCategoryData,
   getSpendingBarDataForAdminFinance,
   getSpendingBarDataForNonAdminFinance

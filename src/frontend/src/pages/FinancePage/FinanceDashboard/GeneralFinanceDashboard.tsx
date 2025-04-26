@@ -28,6 +28,14 @@ interface GeneralFinanceDashboardProps {
 const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ startDate, endDate }) => {
   const user = useCurrentUser();
   const history = useHistory();
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [tabIndex, setTabIndex] = useState<number>(0);
+  const [showPendingAdvisorListModal, setShowPendingAdvisorListModal] = useState(false);
+  const [showTotalAmountSpent, setShowTotalAmountSpent] = useState(false);
+  const [startDateState, setStartDateState] = useState<Date | undefined>(startDate);
+  const [endDateState, setEndDateState] = useState<Date | undefined>(endDate);
+
   const {
     data: allTeams,
     isLoading: allTeamsIsLoading,
@@ -55,6 +63,22 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
     return <LoadingIndicator />;
   }
 
+  if (allReimbursementRequestsIsError) {
+    return <ErrorPage error={allReimbursementRequestsError} />;
+  }
+
+  if (!allReimbursementRequests || allReimbursementRequestsIsLoading) {
+    return <LoadingIndicator />;
+  }
+
+  if (allPendingAdvisorListIsError) {
+    return <ErrorPage error={allPendingAdvisorListError} />;
+  }
+
+  if (!allPendingAdvisorList || allPendingAdvisorListIsLoading) {
+    return <LoadingIndicator />;
+  }
+
   const tabs = allTeams.map((team) => ({
     tabUrlValue: team.teamId,
     tabName: team.teamName
@@ -62,14 +86,7 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
 
   const { isFinance } = user;
 
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
   const defaultTab = 'team';
-  const [tabIndex, setTabIndex] = useState<number>(0);
-  const [showPendingAdvisorListModal, setShowPendingAdvisorListModal] = useState(false);
-  const [showTotalAmountSpent, setShowTotalAmountSpent] = useState(false);
-  const [startDateState, setStartDateState] = useState<Date | undefined>(startDate);
-  const [endDateState, setEndDateState] = useState<Date | undefined>(endDate);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -143,7 +160,7 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
       <Box sx={{ mt: 2 }}>
         <DatePicker
           label="From"
-          value={startDate}
+          value={startDateState}
           slotProps={{
             textField: { fullWidth: true },
             field: { clearable: true }
@@ -155,7 +172,7 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
       <Box sx={{ mt: 2 }}>
         <DatePicker
           label="Until"
-          value={endDate}
+          value={endDateState}
           slotProps={{
             textField: { fullWidth: true },
             field: { clearable: true }
@@ -163,7 +180,7 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
           onChange={(newValue: Date | null) => setEndDateState(newValue ?? undefined)}
         />
       </Box>
-      { selectedTab && <FinanceDashboardTeamView teamId={selectedTab.tabUrlValue} /> }
+      {selectedTab && <FinanceDashboardTeamView teamId={selectedTab.tabUrlValue} />}
     </PageLayout>
   );
 };

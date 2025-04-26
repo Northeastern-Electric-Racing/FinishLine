@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import PageLayout from '../../../components/PageLayout';
-import { Box } from '@mui/system';
-import FullPageTabs from '../../../components/FullPageTabs';
-import { routes } from '../../../utils/routes';
-import { useGetUsersTeams } from '../../../hooks/teams.hooks';
-import { useGetAllReimbursementRequestData, useGetSpendingBarTeamData } from '../../../hooks/finance.hooks';
+import { useGetAllReimbursementRequestData    } from '../../../hooks/finance.hooks';
+import { Grid } from '@mui/material';
+import TitleBox from '../FinanceComponents/TitleBox';
+import PieChart from '../FinanceComponents/PieChart';
 
 interface FinanceDashboardAllViewProps {
   startDate?: Date;
@@ -15,46 +13,74 @@ interface FinanceDashboardAllViewProps {
 
 const FinanceDashboardAllView: React.FC<FinanceDashboardAllViewProps> = ({ startDate, endDate }) => {
   const payload = { startDate, endDate };
+  // this hook returns the all data then budget data then cash data
   const {
-    data: allTeams,
-    isLoading: allTeamsIsLoading,
-    isError: allTeamsIsError,
-    error: allTeamsError
+    data: allRRData,
+    isLoading: allRRDataIsLoading,
+    isError: allRRDataIsError,
+    error: allRRDataError
   } = useGetAllReimbursementRequestData(payload);
 
-  if (allTeamsIsError) {
-    return <ErrorPage error={allTeamsError} />;
+  const [selectedTab, setSelectedTab] = useState('total');
+
+  if (allRRDataIsError) {
+    return <ErrorPage error={allRRDataError} />;
   }
 
-  if (!allTeams || allTeamsIsLoading) {
+  if (!allRRData || allRRDataIsLoading) {
     return <LoadingIndicator />;
   }
 
-  const tabs = allTeams.map((team) => ({
-    tabUrlValue: team.teamId,
-    tabName: team.teamName
-  }));
-
-  const [tabIndex, setTabIndex] = useState<number>(0);
-
   return (
-    <PageLayout
-      title="Finance Budget Overview"
-      tabs={
-        <Box borderBottom={1} borderColor={'divider'} width={'100%'}>
-          <FullPageTabs
-            noUnderline
-            setTab={setTabIndex}
-            tabsLabels={tabs}
-            baseUrl={routes.FINANCE_DASHBOARD}
-            defaultTab={'team'}
-            id="finance-dashboard-tabs"
-          />
-        </Box>
-      }
-    >
-      <FinanceDashboardTeamView team={tabs.at(tabIndex)?.tabUrlValue} />
-    </PageLayout>
+    <Grid container spacing={2}>
+      <Grid item xs={12} md={4}>
+        <TitleBox
+          title="Balance"
+          tabs={[
+            { label: 'Total', value: 'total' },
+            { label: 'Budget', value: 'budget' },
+            { label: 'Cash', value: 'cash' }
+          ]}
+          selectedTab={selectedTab}
+          onTabChange={setSelectedTab}
+        >
+          {selectedTab === 'total' && (
+            <PieChart
+              totalBalance={allRRData[0].totalBudget}
+              pendingFinance={allRRData[0].pendingFinance}
+              pendingLeadership={allRRData[0].pendingLeadership}
+              submittedToSABO={allRRData[0].submittedToSabo}
+              reimbursed={allRRData[0].reimbursed}
+              available={allRRData[0].available}
+            />
+          )}
+          {selectedTab === 'budget' && (
+            <PieChart
+              totalBalance={allRRData[1].totalBudget}
+              pendingFinance={allRRData[1].pendingFinance}
+              pendingLeadership={allRRData[1].pendingLeadership}
+              submittedToSABO={allRRData[1].submittedToSabo}
+              reimbursed={allRRData[1].reimbursed}
+              available={allRRData[1].available}
+            />
+          )}
+          {selectedTab === 'cash' && (
+            <PieChart
+              totalBalance={allRRData[2].totalBudget}
+              pendingFinance={allRRData[2].pendingFinance}
+              pendingLeadership={allRRData[2].pendingLeadership}
+              submittedToSABO={allRRData[2].submittedToSabo}
+              reimbursed={allRRData[2].reimbursed}
+              available={allRRData[2].available}
+            />
+          )}
+        </TitleBox>
+      </Grid>
+      <Grid item xs={12} md={8}>
+        {/* <TitleBox title="Spending">{/* You can render the spending data here, e.g., in bars or custom cards </TitleBox> */}
+        ;
+      </Grid>
+    </Grid>
   );
 };
 

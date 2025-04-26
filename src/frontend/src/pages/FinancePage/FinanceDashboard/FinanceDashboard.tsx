@@ -1,6 +1,6 @@
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import { isAdmin } from 'shared';
-import React, { useEffect } from 'react';
+import React from 'react';
 import PopUpAlert from '../../../components/PopUpAlert';
 import GeneralFinanceDashboard from './GeneralFinanceDashboard';
 import AdminFinanceDashboard from './AdminFinanceDashboard';
@@ -11,11 +11,7 @@ const FinanceDashboard = () => {
   return (
     <>
       {<PopUpAlert />}
-      {isAdmin(user.role) || user.isFinance ? (
-        <AdminFinanceDashboard />
-      ) : (
-        <GeneralFinanceDashboard />
-      )}
+      {isAdmin(user.role) || user.isFinance ? <AdminFinanceDashboard /> : <GeneralFinanceDashboard />}
     </>
   );
 };

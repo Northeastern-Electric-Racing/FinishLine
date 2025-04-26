@@ -57,7 +57,8 @@ const FinanceDashboardTeamView: React.FC<FinanceDashboardTeamViewProps> = ({ tea
       </Grid>
 
       <Grid item xs={12} md={8}>
-        <TitleBox title="Spending">{/* You can render the spending data here, e.g., in bars or custom cards */}</TitleBox>
+        {/* <TitleBox title="Spending">{/* You can render the spending data here, e.g., in bars or custom cards </TitleBox> */}
+        ;
       </Grid>
     </Grid>
   );

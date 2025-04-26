@@ -37,7 +37,6 @@ export default class TeamsController {
 
   static async getUsersTeams(req: Request, res: Response, next: NextFunction) {
     try {
-
       const teams = await TeamsService.getUsersTeams(req.currentUser, req.organization);
 
       res.status(200).json(teams);

@@ -534,8 +534,9 @@ export const getReimbursementRequestCategoryData = (payload: ReimbursementReques
 };
 
 export const getAllReimbursementRequestData = (payload: ReimbursementRequestDataPayload) => {
-  return axios.get<ReimbursementRequestData>(apiUrls.getAllReimbursementRequestData(payload.startDate, payload.endDate), {
-    transformResponse: (data) => JSON.parse(data) as ReimbursementRequestData
+  console.log('GET URL:', apiUrls.getAllReimbursementRequestData(payload.startDate, payload.endDate));
+  return axios.get<ReimbursementRequestData[]>(apiUrls.getAllReimbursementRequestData(payload.startDate, payload.endDate), {
+    transformResponse: (data) => JSON.parse(data) as ReimbursementRequestData[]
   });
 };
 
@@ -570,7 +571,7 @@ export const getSpendingBarCategoryData = (payload: SpendingBarDataPayload) => {
 };
 
 export const getAllSpendingBarData = (payload: SpendingBarDataPayload) => {
-  return axios.get<SpendingBarData>(apiUrls.getAllSpendingBarData(payload.startDate, payload.endDate), {
-    transformResponse: (data) => JSON.parse(data) as SpendingBarData
+  return axios.get<SpendingBarData[]>(apiUrls.getAllSpendingBarData(payload.startDate, payload.endDate), {
+    transformResponse: (data) => JSON.parse(data) as SpendingBarData[]
   });
 };

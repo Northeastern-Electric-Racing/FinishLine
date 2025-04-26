@@ -154,7 +154,7 @@ const getSponsorTasks = (sponsorId: string) => `${financeRoutesEndpoints()}/spon
 const deleteSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsors/${sponsorId}/delete`;
 const editSponsorTask = (sponsorTaskId: string) => `${financeRoutesEndpoints()}/sponsorTask/${sponsorTaskId}/edit`;
 const getReimbursementRequestProjectData = (projectId: string, startDate?: Date, endDate?: Date): string => {
-  const url = new URL(`${financeEndpoints()}/reimbursement-request-project-data/${projectId}`);
+  const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-project-data/${projectId}`);
   const params = new URLSearchParams();
   if (startDate) params.set('startDate', startDate.toISOString());
   if (endDate) params.set('endDate', endDate.toISOString());
@@ -162,7 +162,7 @@ const getReimbursementRequestProjectData = (projectId: string, startDate?: Date,
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
 const getReimbursementRequestTeamData = (teamId: string, startDate?: Date, endDate?: Date): string => {
-  const url = new URL(`${financeEndpoints()}/reimbursement-request-team-data/${teamId}`);
+  const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-team-data/${teamId}`);
   const params = new URLSearchParams();
   if (startDate) params.set('startDate', startDate.toISOString());
   if (endDate) params.set('endDate', endDate.toISOString());
@@ -170,7 +170,7 @@ const getReimbursementRequestTeamData = (teamId: string, startDate?: Date, endDa
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
 const getReimbursementRequestCategoryData = (startDate?: Date, endDate?: Date): string => {
-  const url = new URL(`${financeEndpoints()}/reimbursement-request-category-data`);
+  const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-category-data`);
   const params = new URLSearchParams();
   if (startDate) params.set('startDate', startDate.toISOString());
   if (endDate) params.set('endDate', endDate.toISOString());
@@ -178,7 +178,7 @@ const getReimbursementRequestCategoryData = (startDate?: Date, endDate?: Date): 
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
 const getAllReimbursementRequestData = (startDate?: Date, endDate?: Date): string => {
-  const url = new URL(`${financeEndpoints()}/reimbursement-request-data`);
+  const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-data`);
   const params = new URLSearchParams();
   if (startDate) params.set('startDate', startDate.toISOString());
   if (endDate) params.set('endDate', endDate.toISOString());
@@ -186,7 +186,7 @@ const getAllReimbursementRequestData = (startDate?: Date, endDate?: Date): strin
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
 const getReimbursementRequestTeamTypeData = (teamTypeId: string, startDate?: Date, endDate?: Date): string => {
-  const url = new URL(`${financeEndpoints()}/reimbursement-request-team-type-data/${teamTypeId}`);
+  const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-team-type-data/${teamTypeId}`);
   const params = new URLSearchParams();
   if (startDate) params.set('startDate', startDate.toISOString());
   if (endDate) params.set('endDate', endDate.toISOString());
@@ -194,7 +194,7 @@ const getReimbursementRequestTeamTypeData = (teamTypeId: string, startDate?: Dat
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
 const getSpendingBarTeamData = (teamId: string, startDate?: Date, endDate?: Date): string => {
-  const url = new URL(`${financeEndpoints()}/spending-bar-team-data/${teamId}`);
+  const url = new URL(`${financeRoutesEndpoints()}/spending-bar-team-data/${teamId}`);
   const params = new URLSearchParams();
   if (startDate) params.set('startDate', startDate.toISOString());
   if (endDate) params.set('endDate', endDate.toISOString());
@@ -202,7 +202,7 @@ const getSpendingBarTeamData = (teamId: string, startDate?: Date, endDate?: Date
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
 const getSpendingBarTeamTypeData = (teamTypeId: string, startDate?: Date, endDate?: Date): string => {
-  const url = new URL(`${financeEndpoints()}/spending-bar-team-type-data/${teamTypeId}`);
+  const url = new URL(`${financeRoutesEndpoints()}/spending-bar-team-type-data/${teamTypeId}`);
   const params = new URLSearchParams();
   if (startDate) params.set('startDate', startDate.toISOString());
   if (endDate) params.set('endDate', endDate.toISOString());
@@ -210,7 +210,7 @@ const getSpendingBarTeamTypeData = (teamTypeId: string, startDate?: Date, endDat
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
 const getSpendingBarCategoryData = (startDate?: Date, endDate?: Date): string => {
-  const url = new URL(`${financeEndpoints()}/spending-bar-category-data`);
+  const url = new URL(`${financeRoutesEndpoints()}/spending-bar-category-data`);
   const params = new URLSearchParams();
   if (startDate) params.set('startDate', startDate.toISOString());
   if (endDate) params.set('endDate', endDate.toISOString());
@@ -218,7 +218,7 @@ const getSpendingBarCategoryData = (startDate?: Date, endDate?: Date): string =>
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
 const getAllSpendingBarData = (startDate?: Date, endDate?: Date): string => {
-  const url = new URL(`${financeEndpoints()}/spending-bar-data`);
+  const url = new URL(`${financeRoutesEndpoints()}/spending-bar-data`);
   const params = new URLSearchParams();
   if (startDate) params.set('startDate', startDate.toISOString());
   if (endDate) params.set('endDate', endDate.toISOString());

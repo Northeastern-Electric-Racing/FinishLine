@@ -1,6 +1,9 @@
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useGetReimbursementRequestTeamData, useGetReimbursementRequestTeamTypeData, useGetSpendingBarTeamData, useGetSpendingBarTeamTypeData } from '../../../hooks/finance.hooks';
+import {
+  useGetReimbursementRequestTeamTypeData,
+  useGetSpendingBarTeamTypeData
+} from '../../../hooks/finance.hooks';
 import { Grid } from '@mui/material';
 import TitleBox from '../FinanceComponents/TitleBox';
 import PieChart from '../FinanceComponents/PieChart';
@@ -57,7 +60,8 @@ const FinanceDashboardTeamView: React.FC<FinanceDashboardTeamTypeViewProps> = ({
       </Grid>
 
       <Grid item xs={12} md={8}>
-        <TitleBox title="Spending">{/* You can render the spending data here, e.g., in bars or custom cards */}</TitleBox>
+        {/* <TitleBox title="Spending">{/* You can render the spending data here, e.g., in bars or custom cards </TitleBox> */}
+        ;
       </Grid>
     </Grid>
   );

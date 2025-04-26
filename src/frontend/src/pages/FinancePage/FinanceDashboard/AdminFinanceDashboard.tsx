@@ -30,6 +30,14 @@ interface AdminFinanceDashboardProps {
 const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate, endDate }) => {
   const user = useCurrentUser();
   const history = useHistory();
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [tabIndex, setTabIndex] = useState<number>(0);
+  const [showPendingAdvisorListModal, setShowPendingAdvisorListModal] = useState(false);
+  const [showTotalAmountSpent, setShowTotalAmountSpent] = useState(false);
+  const [startDateState, setStartDateState] = useState<Date | undefined>(startDate);
+  const [endDateState, setEndDateState] = useState<Date | undefined>(endDate);
+
   const {
     data: allTeamTypes,
     isLoading: allTeamTypesIsLoading,
@@ -57,6 +65,22 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
     return <LoadingIndicator />;
   }
 
+  if (allReimbursementRequestsIsError) {
+    return <ErrorPage error={allReimbursementRequestsError} />;
+  }
+
+  if (!allReimbursementRequests || allReimbursementRequestsIsLoading) {
+    return <LoadingIndicator />;
+  }
+
+  if (allPendingAdvisorListIsError) {
+    return <ErrorPage error={allPendingAdvisorListError} />;
+  }
+
+  if (!allPendingAdvisorList || allPendingAdvisorListIsLoading) {
+    return <LoadingIndicator />;
+  }
+
   const tabs = [];
 
   tabs.push({ tabUrlValue: 'all', tabName: 'All' });
@@ -70,14 +94,7 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
 
   const { isFinance } = user;
 
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-  const defaultTab = 'All';
-  const [tabIndex, setTabIndex] = useState<number>(0);
-  const [showPendingAdvisorListModal, setShowPendingAdvisorListModal] = useState(false);
-  const [showTotalAmountSpent, setShowTotalAmountSpent] = useState(false);
-  const [startDateState, setStartDateState] = useState<Date | undefined>(startDate);
-  const [endDateState, setEndDateState] = useState<Date | undefined>(endDate);
+  const defaultTab = 'all';
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -87,8 +104,95 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
     setAnchorEl(null);
   };
 
+  const datePickerStyle = {
+    width: 120,
+    height: 36,
+    backgroundColor: '#ef4345',
+    color: 'white',
+    fontSize: '13px',
+    textTransform: 'none',
+    fontWeight: 400,
+    border: '1px solid #ef4345',
+    borderRadius: '4px',
+    boxShadow: 'none',
+
+    '.MuiInputBase-root': {
+      height: '36px',
+      padding: '0 8px',
+      color: 'white',
+      fontSize: '13px'
+    },
+
+    '.MuiInputLabel-root': {
+      color: 'white',
+      fontSize: '13px',
+      transform: 'translate(14px, 9px) scale(1)'
+    },
+
+    '.MuiInputLabel-shrink': {
+      transform: 'translate(14px, 2px) scale(0.8)' // Balanced position
+    },
+
+    '& .MuiInputBase-input': {
+      color: 'white',
+      paddingTop: '8px' // Slight push down to avoid clash
+    },
+
+    '& .MuiOutlinedInput-notchedOutline': {
+      borderColor: '#ef4345'
+    },
+
+    '& .MuiSvgIcon-root': {
+      color: 'white'
+    }
+  };
+
   const financeActionsDropdown = (
-    <>
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        mb: 2,
+        gap: 2,
+        flexWrap: 'wrap'
+      }}
+    >
+      {/* From DatePicker */}
+      <DatePicker
+        label="Start Date"
+        value={startDateState}
+        slotProps={{
+          textField: {
+            size: 'small',
+            sx: datePickerStyle
+          },
+          field: { clearable: true }
+        }}
+        onChange={(newValue: Date | null) => setStartDateState(newValue ?? undefined)}
+      />
+
+      {/* Dash between the date pickers */}
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <span style={{ fontSize: '24px', margin: '0 8px' }}>-</span>
+      </Box>
+
+      {/* Until DatePicker */}
+      <DatePicker
+        label="End Date"
+        value={endDateState}
+        slotProps={{
+          textField: {
+            size: 'small',
+            sx: datePickerStyle
+          },
+          field: { clearable: true }
+        }}
+        onChange={(newValue: Date | null) => setEndDateState(newValue ?? undefined)}
+      />
+      {/* Add spacing between date pickers and Actions button */}
+      <Box sx={{ ml: 0 }}></Box>
+      {/* Actions Dropdown Button */}
       <NERButton
         endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
         variant="contained"
@@ -97,6 +201,8 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
       >
         Actions
       </NERButton>
+
+      {/* Dropdown Menu */}
       <Menu open={!!anchorEl} anchorEl={anchorEl} onClose={handleDropdownClose}>
         <MenuItem onClick={() => history.push(routes.NEW_REIMBURSEMENT_REQUEST)} disabled={isGuest(user.role)}>
           <ListItemIcon>
@@ -111,7 +217,7 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
           Total Amount Spent
         </MenuItem>
       </Menu>
-    </>
+    </Box>
   );
 
   const selectedTab = tabs.at(tabIndex);
@@ -147,37 +253,17 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
           onHide={() => setShowTotalAmountSpent(false)}
         />
       )}
-
-      <Box sx={{ mt: 2 }}>
-        <DatePicker
-          label="From"
-          value={startDate}
-          slotProps={{
-            textField: { fullWidth: true },
-            field: { clearable: true }
-          }}
-          onChange={(newValue: Date | null) => setStartDateState(newValue ?? undefined)}
-        />
-      </Box>
-
-      <Box sx={{ mt: 2 }}>
-        <DatePicker
-          label="Until"
-          value={endDate}
-          slotProps={{
-            textField: { fullWidth: true },
-            field: { clearable: true }
-          }}
-          onChange={(newValue: Date | null) => setEndDateState(newValue ?? undefined)}
-        />
-      </Box>
       {tabIndex === 0 ? (
         <FinanceDashboardAllView startDate={startDateState} endDate={endDateState} />
       ) : tabIndex === tabs.length - 1 ? (
         <FinanceDashboardCategoriesView startDate={startDateState} endDate={endDateState} />
       ) : (
         selectedTab && (
-          <FinanceDashboardTeamTypeView teamTypeId={selectedTab.tabUrlValue} startDate={startDateState} endDate={endDateState} />
+          <FinanceDashboardTeamTypeView
+            teamTypeId={selectedTab.tabUrlValue}
+            startDate={startDateState}
+            endDate={endDateState}
+          />
         )
       )}
     </PageLayout>

@@ -35,7 +35,6 @@ export interface SpendingBarData {
     budget: number;
   }[];
 }
-[];
 
 export interface ReimbursementRequestData {
   totalBudget: number;
