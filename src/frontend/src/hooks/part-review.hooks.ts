@@ -21,8 +21,7 @@ import {
   getPartsFromProject,
   getSinglePart,
   getAllCommonMistakes,
-  uploadPreviewImage,
-  setUploadReviewFiles
+  uploadPreviewImage
 } from '../apis/part-review.api';
 
 export interface PartPayload {
@@ -55,6 +54,7 @@ export interface CreatePartReviewPayload {
 export interface EditPartReviewPayload {
   notes?: string;
   status?: Review_Status;
+  fileIds?: string[];
 }
 
 /**
@@ -272,21 +272,6 @@ export const useEditPartReview = (reviewId: string) => {
     ['parts', 'editReview'],
     async (partReview: EditPartReviewPayload) => {
       const { data } = await editPartReview(reviewId, partReview);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['parts']);
-      }
-    }
-  );
-};
-
-export const useUploadReviewFiles = (reviewId: string) => {
-  const queryClient = useQueryClient();
-  return useMutation<any, unknown, File[]>(
-    async (images: File[]) => {
-      const { data } = await setUploadReviewFiles(reviewId, images);
       return data;
     },
     {

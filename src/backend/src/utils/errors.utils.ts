@@ -150,4 +150,5 @@ export type ExceptionObjectNames =
   | 'Part'
   | 'Part Tag'
   | 'Common Mistake'
-  | 'Review Request';
+  | 'Review Request'
+  | 'File';

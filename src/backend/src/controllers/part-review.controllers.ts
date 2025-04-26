@@ -116,13 +116,14 @@ export default class PartReviewController {
   static async updateReview(req: Request, res: Response, next: NextFunction) {
     try {
       const { reviewId } = req.params;
-      const { notes, status } = req.body;
+      const { notes, status, fileIds } = req.body;
       const updatedReview = await PartReviewService.updateReview(
         req.organization.organizationId,
         req.currentUser,
         reviewId,
         status,
-        notes
+        notes,
+        fileIds
       );
       res.status(200).json(updatedReview);
     } catch (error: unknown) {
@@ -388,16 +389,14 @@ export default class PartReviewController {
     }
   }
 
-  static async downloadSubmissionFile(req: Request, res: Response, next: NextFunction) {
+  static async downloadFile(req: Request, res: Response, next: NextFunction) {
     try {
-      const { submissionId } = req.params;
+      const { fileId } = req.params;
 
-      const fileData = await PartReviewService.downloadSubmissionFile(submissionId);
+      const fileData = await PartReviewService.downloadFile(fileId);
 
       res.setHeader('content-type', String(fileData.type));
-      res.setHeader('content-length', fileData.buffer.length);
-      res.setHeader('content-disposition', `attachment; filename="${fileData.name}"`);
-
+      res.setHeader('content-disposition', `attachment; filename="file-${fileId}"`);
       res.send(fileData.buffer);
     } catch (error: unknown) {
       return next(error);

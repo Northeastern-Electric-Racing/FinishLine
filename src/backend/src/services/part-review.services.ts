@@ -38,9 +38,8 @@ import {
   partReviewTransformer
 } from '../transformers/part-review.transformer';
 import { isUserPartOfTeams } from '../utils/teams.utils';
-import { uploadFile } from '../utils/google-integration.utils';
+import { uploadFile, downloadImageFile } from '../utils/google-integration.utils';
 import ProjectsService from './projects.services';
-import * as fs from 'fs';
 
 export default class PartReviewService {
   /**
@@ -332,7 +331,14 @@ export default class PartReviewService {
    * @param notes notes for the review
    * @returns the updated review
    */
-  static async updateReview(organizationId: string, updater: User, reviewId: string, newPartStatus: string, notes: string) {
+  static async updateReview(
+    organizationId: string,
+    updater: User,
+    reviewId: string,
+    newPartStatus: string,
+    notes: string,
+    fileIds?: string[]
+  ) {
     const review = await prisma.partReview.findUnique({
       where: { partReviewId: reviewId },
       include: { submission: { include: { part: { include: { project: { include: { wbsElement: true } } } } } } }
@@ -353,7 +359,8 @@ export default class PartReviewService {
       where: { partReviewId: reviewId },
       data: {
         notes,
-        completedAt
+        completedAt,
+        ...(fileIds !== undefined && { fileIds })
       },
       ...getPartReviewQueryArgs(organizationId)
     });
@@ -1058,24 +1065,25 @@ export default class PartReviewService {
     return deletedPopup;
   }
 
-  static async downloadSubmissionFile(submissionId: string): Promise<{ buffer: Buffer; type: string; name: string }> {
-    const submission = await prisma.partSubmission.findUnique({
-      where: { partSubmissionId: submissionId }
-    });
+  /**
+   * Downloads a file from Google Drive given a fileId
+   * @param fileId The ID of the file in Google Drive
+   * @returns the file buffer and MIME type
+   */
+  static async downloadFile(fileId: string): Promise<{ buffer: Buffer; type: string }> {
+    try {
+      const fileData = await downloadImageFile(fileId);
 
-    if (!submission || !submission.fileIds || submission.fileIds.length === 0) {
-      throw new Error('Submission or file not found');
+      if (!fileData) {
+        throw new NotFoundException('File', fileId);
+      }
+
+      return fileData;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new HttpException(500, `Failed to Download File(${fileId}): ${error.message}`);
+      }
+      throw error;
     }
-
-    const [fileId] = submission.fileIds;
-    const filePath = `/path/to/files/${fileId}.pdf`; // PATH
-
-    const buffer = await fs.promises.readFile(filePath);
-
-    return {
-      buffer,
-      type: 'application/pdf',
-      name: `${submission.name}.pdf`
-    };
   }
 }

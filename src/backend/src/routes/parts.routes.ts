@@ -158,6 +158,6 @@ partsRouter.get('/:wbsNum', PartReviewController.getAllPartsForProject);
 
 partsRouter.post('/reviewRequest/:reviewRequestId/delete', PartReviewController.deletePartReviewRequest);
 
-partsRouter.get('/submission/:submissionId/download', PartReviewController.downloadSubmissionFile);
+partsRouter.get('/submission/:submissionId/download', PartReviewController.downloadFile);
 
 export default partsRouter;

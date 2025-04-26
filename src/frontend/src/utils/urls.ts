@@ -57,7 +57,7 @@ const partsCreateReview = () => `${parts()}/review/create`;
 const partsEditReview = (reviewId: string) => `${parts()}/review/${reviewId}/update`;
 const partsReviewUploadFiles = (reviewId: string) => `${parts()}/review/${reviewId}/upload-files`;
 const getAllPartCommonMistakes = () => `${parts()}/common-mistakes`;
-const downloadSubmissionFile = (submissionId: string) => `${parts()}/submission/${submissionId}/download`;
+const downloadFile = (fileId: string) => `${parts()}/file/${fileId}/download`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
@@ -310,7 +310,7 @@ export const apiUrls = {
   partsEditReview,
   partsReviewUploadFiles,
   getAllPartCommonMistakes,
-  downloadSubmissionFile,
+  downloadFile,
 
   tasksCreate,
   tasks,
