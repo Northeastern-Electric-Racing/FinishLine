@@ -36,10 +36,6 @@ vi.mock('../../src/utils/google-integration.utils', () => ({
   uploadFile: vi.fn()
 }));
 
-beforeEach(async () => {
-  await resetUsers();
-});
-
 describe('part review tests', () => {
   let orgId: string;
   let organization: Organization;
