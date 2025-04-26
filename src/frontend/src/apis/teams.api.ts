@@ -4,20 +4,21 @@
  */
 
 import axios from '../utils/axios';
-import { Team } from 'shared';
+import { Team, TeamPreview, WorkPackage } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { CreateTeamPayload } from '../hooks/teams.hooks';
-import { teamTransformer } from './transformers/teams.transformers';
+import { teamPreviewTransformer, teamTransformer } from './transformers/teams.transformers';
+import { workPackageTransformer } from './transformers/work-packages.transformers';
 
 export const getAllTeams = () => {
-  return axios.get<Team[]>(apiUrls.teams(), {
-    transformResponse: (data) => JSON.parse(data).map(teamTransformer)
+  return axios.get<TeamPreview[]>(apiUrls.teams(), {
+    transformResponse: (data) => JSON.parse(data).map(teamPreviewTransformer)
   });
 };
 
 export const getAllArchivedTeams = () => {
-  return axios.get<Team[]>(apiUrls.teams() + '/archive', {
-    transformResponse: (data) => JSON.parse(data).map(teamTransformer)
+  return axios.get<TeamPreview[]>(apiUrls.teams() + '/archive', {
+    transformResponse: (data) => JSON.parse(data).map(teamPreviewTransformer)
   });
 };
 
@@ -60,5 +61,11 @@ export const createTeam = (payload: CreateTeamPayload) => {
 export const setTeamLeads = (id: string, userIds: string[]) => {
   return axios.post<Team>(apiUrls.teamsSetLeads(id), {
     userIds
+  });
+};
+
+export const getMyTeamsWorkpackages = () => {
+  return axios.get<WorkPackage[]>(apiUrls.myTeamsWorkpackages(), {
+    transformResponse: (data) => JSON.parse(data).map(workPackageTransformer)
   });
 };

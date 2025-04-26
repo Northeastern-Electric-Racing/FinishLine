@@ -1,4 +1,4 @@
-import { Team } from 'shared';
+import { Team, TeamPreview } from 'shared';
 import { projectPreviewTransformer } from './projects.transformers';
 
 /**
@@ -12,5 +12,11 @@ export const teamTransformer = (team: Team): Team => {
     ...team,
     dateArchived: team.dateArchived ? new Date(team.dateArchived) : undefined,
     projects: team.projects.map(projectPreviewTransformer)
+  };
+};
+
+export const teamPreviewTransformer = (team: TeamPreview): TeamPreview => {
+  return {
+    ...team
   };
 };

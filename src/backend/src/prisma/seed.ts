@@ -49,7 +49,7 @@ import OrganizationsService from '../services/organizations.services';
 import StatisticsService from '../services/statistics.services';
 import { seedGraph } from './seed-data/statistics.seed';
 import { graphCollectionTransformer } from '../transformers/statistics-graph-collection.transformer';
-import AnnouncementService from '../services/announcement.service';
+import AnnouncementService from '../services/announcement.services';
 import OnboardingServices from '../services/onboarding.services';
 
 const prisma = new PrismaClient();

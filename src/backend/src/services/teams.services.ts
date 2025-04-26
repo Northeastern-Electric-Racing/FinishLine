@@ -1,7 +1,7 @@
-import { isAdmin, isHead, Team, TeamType } from 'shared';
+import { isAdmin, isHead, Team, TeamPreview, TeamType, WorkPackage } from 'shared';
 import { Organization, User, WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma';
-import teamTransformer from '../transformers/teams.transformer';
+import teamTransformer, { teamPreviewTransformer } from '../transformers/teams.transformer';
 import {
   NotFoundException,
   AccessDeniedException,
@@ -13,9 +13,11 @@ import {
 import { getPrismaQueryUserIds, getUsers, userHasPermission } from '../utils/users.utils';
 import { isUnderWordCount } from 'shared';
 import { removeUsersFromList } from '../utils/teams.utils';
-import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
+import { getTeamPreviewQueryArgs, getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
 import { uploadFile } from '../utils/google-integration.utils';
 import { teamTypeTransformer } from '../transformers/team-types.transformer';
+import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
+import workPackageTransformer from '../transformers/work-packages.transformer';
 
 export default class TeamsService {
   /**
@@ -23,12 +25,12 @@ export default class TeamsService {
    * @param organizationId The organization the user is currently in
    * @returns a list of teams
    */
-  static async getAllTeams(organization: Organization): Promise<Team[]> {
+  static async getAllTeams(organization: Organization): Promise<TeamPreview[]> {
     const teams = await prisma.team.findMany({
       where: { dateArchived: null, organizationId: organization.organizationId },
-      ...getTeamQueryArgs(organization.organizationId)
+      ...getTeamPreviewQueryArgs(organization.organizationId)
     });
-    return teams.map(teamTransformer);
+    return teams.map(teamPreviewTransformer);
   }
 
   /**
@@ -36,12 +38,12 @@ export default class TeamsService {
    * @param organizationId The organization the user is currently in
    * @returns a list of teams
    */
-  static async getAllArchivedTeams(organization: Organization): Promise<Team[]> {
+  static async getAllArchivedTeams(organization: Organization): Promise<TeamPreview[]> {
     const teams = await prisma.team.findMany({
       where: { dateArchived: { not: null }, organizationId: organization.organizationId },
-      ...getTeamQueryArgs(organization.organizationId)
+      ...getTeamPreviewQueryArgs(organization.organizationId)
     });
-    return teams.map(teamTransformer);
+    return teams.map(teamPreviewTransformer);
   }
 
   /**
@@ -659,5 +661,49 @@ export default class TeamsService {
     });
 
     return updatedTeamType;
+  }
+
+  /**
+   * Gets the current users teams workpackages
+   *
+   * @param user The current user
+   * @param organization The organization the current user is logged in for
+   */
+  static async getMyTeamsWorkpackages(user: User, organization: Organization): Promise<WorkPackage[]> {
+    const usersTeams = await prisma.team.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        dateArchived: null,
+        OR: [
+          {
+            members: { some: { userId: user.userId } },
+            leads: { some: { userId: user.userId } },
+            headId: user.userId
+          }
+        ]
+      }
+    });
+
+    const workPackages = await prisma.work_Package.findMany({
+      where: {
+        wbsElement: {
+          organizationId: organization.organizationId,
+          dateDeleted: null,
+          status: { not: WBS_Element_Status.COMPLETE }
+        },
+        project: {
+          teams: {
+            some: {
+              teamId: {
+                in: usersTeams.map((team) => team.teamId)
+              }
+            }
+          }
+        }
+      },
+      ...getWorkPackageQueryArgs(organization.organizationId)
+    });
+
+    return workPackages.map(workPackageTransformer);
   }
 }

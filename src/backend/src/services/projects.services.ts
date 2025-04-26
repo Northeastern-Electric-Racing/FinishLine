@@ -3,7 +3,7 @@ import {
   DescriptionBulletPreview,
   isAdmin,
   isGuest,
-  isProject,
+  isProjectWbs,
   LinkCreateArgs,
   LinkType,
   Project,
@@ -40,18 +40,18 @@ export default class ProjectsService {
    * @param includeDeleted whether or not to include deleted projects
    * @returns all the projects
    */
-  static async getAllProjects(organization: Organization, includeDeleted: boolean): Promise<Project[]> {
+  static async getAllProjects(organization: Organization, includeDeleted: boolean): Promise<ProjectPreview[]> {
     const projects = includeDeleted
       ? await prisma.project.findMany({
           where: { wbsElement: { organizationId: organization.organizationId } },
-          ...getProjectQueryArgs(organization.organizationId)
+          ...getProjectManyQueryArgs(organization.organizationId)
         })
       : await prisma.project.findMany({
           where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId } },
-          ...getProjectQueryArgs(organization.organizationId)
+          ...getProjectManyQueryArgs(organization.organizationId)
         });
 
-    return projects.map(projectTransformer);
+    return projects.map(projectPreviewTransformer);
   }
 
   static async getUsersLeadingProjects(user: User, organization: Organization): Promise<ProjectPreview[]> {
@@ -116,7 +116,7 @@ export default class ProjectsService {
   }
 
   static async getSingleProjectWithQueryArgs(wbsNumber: WbsNumber, organization: Organization) {
-    if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
+    if (!isProjectWbs(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
 
     const { carNumber, projectNumber, workPackageNumber } = wbsNumber;
 
@@ -346,7 +346,7 @@ export default class ProjectsService {
    * @throws if the project isn't found, the team isn't found, or the user doesn't have access
    */
   static async setProjectTeam(user: User, wbsNumber: WbsNumber, teamId: string, organization: Organization): Promise<void> {
-    if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
+    if (!isProjectWbs(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
 
     // find the associated project
     const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNumber, organization);
