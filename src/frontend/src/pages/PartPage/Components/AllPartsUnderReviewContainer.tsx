@@ -12,7 +12,12 @@ const AllPartsUnderReviewContainer: React.FC<AllPartsUnderReview> = ({ project }
   // check if current user is head or lead for this project
   const currentUser = useCurrentUser();
   const { wbsNum } = project;
-  const { data } = usePartsFromProject(wbsPipe(wbsNum));
+  const { data, isLoading, isError, error } = usePartsFromProject(wbsPipe(wbsNum));
+
+  if (isLoading || isError || error) {
+    return null;
+  }
+
   // all heads for this project
   const projectHeads = project.teams.map((team) => team.head);
   // all leads for this project
