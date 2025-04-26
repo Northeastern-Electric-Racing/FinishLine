@@ -1,10 +1,9 @@
-import { Box, Typography, Grid, Breadcrumbs } from '@mui/material';
-import { RoleEnum, validateWBS, wbsPipe } from 'shared';
-import PartSubmissionDetails, { partReviewExample1, partReviewExample2 } from './Components/PartSubmissionDetails';
+import { Box, Typography, Breadcrumbs } from '@mui/material';
+import { validateWBS, wbsPipe } from 'shared';
 import PageLayout from '../../components/PageLayout';
 import { routes } from '../../utils/routes';
 import { useParams } from 'react-router-dom';
-import { usePartsFromProject, useSinglePart } from '../../hooks/part-review.hooks';
+import { useSinglePart } from '../../hooks/part-review.hooks';
 import { useSingleProject } from '../../hooks/projects.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
