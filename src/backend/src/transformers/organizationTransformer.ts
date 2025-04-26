@@ -7,12 +7,3 @@ export const organizationTransformer = (organization: Organization): Organizatio
     applicationLink: organization.applicationLink ?? undefined
   };
 };
-
-export const transformOrganizationWithGuide = (organization: Organization) => ({
-  id: organization.organizationId,
-  name: organization.name,
-  description: organization.description,
-  dateCreated: organization.dateCreated,
-  dateDeleted: organization.dateDeleted,
-  guideLink: organization.partReviewGuideLink
-});

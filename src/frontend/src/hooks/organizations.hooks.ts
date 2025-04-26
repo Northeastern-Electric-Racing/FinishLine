@@ -211,8 +211,13 @@ export const useOrganizationLogo = () => {
  * organization in backend
  *
  */
-export const useGetPartReviewGuideLink = () =>
-  useQuery<string | null, Error>(['part-review-guide-link'], getPartReviewGuideLink);
+
+export const useGetPartReviewGuideLink = () => {
+  return useQuery<Organization, Error>(['part-review-guide-link'], async () => {
+    const { data } = await getPartReviewGuideLink();
+    return data;
+  });
+};
 /*
  * Custom React Hook to set part review guide confluence
  * guide link
@@ -220,9 +225,17 @@ export const useGetPartReviewGuideLink = () =>
  */
 export const useSetPartReviewGuideLink = () => {
   const queryClient = useQueryClient();
-  return useMutation<Organization, Error, string>(['organization', 'part-review-guide-link'], async (guideLink: string) => {
-    const { data } = await setPartReviewGuideLink(guideLink);
-    queryClient.invalidateQueries(['organizations']);
-    return data;
-  });
+  return useMutation<Organization, Error, string>(
+    ['organization', 'part-review-guide-link'],
+    async (guideLink: string) => {
+      const { data } = await setPartReviewGuideLink(guideLink);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['organizations']);
+        queryClient.invalidateQueries(['part-review-guide-link']);
+      }
+    }
+  );
 };

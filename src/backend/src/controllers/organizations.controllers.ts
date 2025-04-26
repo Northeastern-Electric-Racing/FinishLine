@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import OrganizationsService from '../services/organizations.services';
 import { HttpException } from '../utils/errors.utils';
-import { transformOrganizationWithGuide } from '../transformers/organizationTransformer';
 
 export default class OrganizationsController {
   static async getCurrentOrganization(req: Request, res: Response, next: NextFunction) {
@@ -198,7 +197,7 @@ export default class OrganizationsController {
         req.organization.organizationId,
         guideLink
       );
-      res.status(200).json(transformOrganizationWithGuide(organization));
+      res.status(200).json(organization);
     } catch (error: unknown) {
       next(error);
     }
