@@ -1093,6 +1093,7 @@ describe('Part Review Popups', () => {
       await resetUsers();
       organization = await createTestOrganization();
       orgId = organization.organizationId;
+      batman = await createTestUser(batmanAppAdmin, orgId);
     });
 
     it('Fails if user is not an admin', async () => {
@@ -1102,12 +1103,11 @@ describe('Part Review Popups', () => {
     });
 
     it('Succeeds and updates the sample image', async () => {
-      const testBatman = batman;
       (uploadFile as Mock).mockImplementation((file) => {
         return Promise.resolve({ name: `${file.originalname}`, id: `uploaded-${file.originalname}` });
       });
 
-      await PartReviewService.setPartReviewSampleImage(file1, testBatman, organization);
+      await PartReviewService.setPartReviewSampleImage(file1, batman, organization);
 
       const oldOrganization = await prisma.organization.findUnique({
         where: {
@@ -1118,7 +1118,7 @@ describe('Part Review Popups', () => {
       expect(oldOrganization).not.toBeNull();
       expect(oldOrganization?.partReviewSampleImageId).toBe('uploaded-image1.png');
 
-      await PartReviewService.setPartReviewSampleImage(file2, testBatman, organization);
+      await PartReviewService.setPartReviewSampleImage(file2, batman, organization);
 
       const updatedOrganization = await prisma.organization.findUnique({
         where: {
@@ -1138,6 +1138,7 @@ describe('Part Review Popups', () => {
       await resetUsers();
       organization = await createTestOrganization();
       orgId = organization.organizationId;
+      batman = await createTestUser(batmanAppAdmin, orgId);
     });
 
     it('Fails if an organization does not exist', async () => {
@@ -1147,10 +1148,9 @@ describe('Part Review Popups', () => {
     });
 
     it('Succeeds and gets the image', async () => {
-      const testBatman = batman;
       await PartReviewService.setPartReviewSampleImage(
         { originalname: 'image1.png' } as Express.Multer.File,
-        testBatman,
+        batman,
         organization
       );
       const image = await PartReviewService.getPartReviewSampleImage(orgId);
