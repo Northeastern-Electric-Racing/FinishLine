@@ -213,7 +213,7 @@ export const useOrganizationLogo = () => {
  */
 
 export const useGetPartReviewGuideLink = () => {
-  return useQuery<Organization, Error>(['part-review-guide-link'], async () => {
+  return useQuery<Organization, Error>(['organizations', 'part-review-guide-link'], async () => {
     const { data } = await getPartReviewGuideLink();
     return data;
   });
@@ -226,15 +226,14 @@ export const useGetPartReviewGuideLink = () => {
 export const useSetPartReviewGuideLink = () => {
   const queryClient = useQueryClient();
   return useMutation<Organization, Error, string>(
-    ['organization', 'part-review-guide-link'],
+    ['organizations', 'part-review-guide-link'],
     async (guideLink: string) => {
       const { data } = await setPartReviewGuideLink(guideLink);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['organizations']);
-        queryClient.invalidateQueries(['part-review-guide-link']);
+        queryClient.invalidateQueries(['organizations', 'part-review-guide-link']);
       }
     }
   );
