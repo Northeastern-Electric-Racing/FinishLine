@@ -261,6 +261,7 @@ const SponsorsTable = () => {
               fontSize: '20px',
               fontWeight: 700,
               textTransform: 'none',
+              marginBottom: '7px',
               '&:hover': {
                 backgroundColor: '#c74340'
               }
