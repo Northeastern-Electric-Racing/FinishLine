@@ -175,7 +175,18 @@ describe('announcement tests', () => {
         organization.organizationId
       );
 
-      const announcements = await AnnouncementService.getUserUnreadAnnouncements(batman.userId, organization.organizationId);
+      const announcements = (
+        await AnnouncementService.getUserUnreadAnnouncements(batman.userId, organization.organizationId)
+      ).toSorted((a, b) => {
+        // findMany does not guarantee order, so let's sort
+        if (a.text < b.text) {
+          return -1;
+        }
+        if (a.text > b.text) {
+          return 1;
+        }
+        return 0;
+      });
 
       expect(announcements).toHaveLength(2);
       expect(announcements[0].text).toBe('test1');
