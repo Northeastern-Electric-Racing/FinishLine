@@ -1,7 +1,7 @@
 import { Box, TablePagination } from '@mui/material';
 import { ReactNode } from 'react';
 
-interface FooterProps {
+interface PaginationFooterProps {
   footerButton?: ReactNode;
   footerInfoBoxes?: ReactNode[];
   totalItems: number;
@@ -12,7 +12,7 @@ interface FooterProps {
   rowsPerPageOptions?: number[];
 }
 
-const Footer = ({
+const PaginationFooter = ({
   footerButton,
   footerInfoBoxes = [],
   totalItems,
@@ -21,7 +21,7 @@ const Footer = ({
   onPageChange,
   onRowsPerPageChange,
   rowsPerPageOptions = [10, 25, 50, 100]
-}: FooterProps) => {
+}: PaginationFooterProps) => {
   return (
     <>
       <Box
@@ -83,4 +83,4 @@ const Footer = ({
   );
 };
 
-export default Footer;
+export default PaginationFooter;
