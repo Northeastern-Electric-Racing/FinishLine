@@ -49,8 +49,9 @@ const partsCreate = () => `${parts()}/create`;
 const partsUploadPreviewImage = (partId: string) => `${parts()}/${partId}/upload-preview`;
 const partsEdit = (partId: string) => `${parts()}/${partId}/update`;
 const partsDelete = (partId: string) => `${parts()}/${partId}/delete`;
-const partsCreateSubmission = (partId: string) => `${parts()}/submission/${partId}/create`;
+const partsCreateSubmission = () => `${parts()}/submission/create`;
 const partsEditSubmission = (submissionId: string) => `${parts()}/submission/${submissionId}/update`;
+const partsSubmissionUploadFiles = (submissionId: string) => `${parts()}/submission/${submissionId}/upload-files`;
 const partsCreateReviewRequest = (submissionId: string) => `${parts()}/reviewRequest/${submissionId}/create`;
 const partsDeleteReviewRequest = (reviewRequestId: string) => `${parts()}/reviewRequest/${reviewRequestId}/delete`;
 const partsCreateReview = () => `${parts()}/review/create`;
@@ -303,6 +304,7 @@ export const apiUrls = {
   partsDelete,
   partsCreateSubmission,
   partsEditSubmission,
+  partsSubmissionUploadFiles,
   partsCreateReviewRequest,
   partsDeleteReviewRequest,
   partsCreateReview,
