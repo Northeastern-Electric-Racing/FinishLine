@@ -63,7 +63,7 @@ export interface EditPartReviewPayload {
  * @param wbsNum the wbs number of the project
  */
 export const usePartsFromProject = (wbsNum: string) => {
-  return useQuery<PartPreview[], Error>(['parts'], async () => {
+  return useQuery<PartPreview[], Error>(['parts', 'by project', wbsNum], async () => {
     const { data } = await getPartsFromProject(wbsNum);
     return data;
   });
@@ -76,7 +76,7 @@ export const usePartsFromProject = (wbsNum: string) => {
  * @param index the index number of the part
  */
 export const useSinglePart = (wbsNum: string, index: number) => {
-  return useQuery<Part, Error>(['parts'], async () => {
+  return useQuery<Part, Error>(['parts', 'by index', wbsNum, index], async () => {
     const { data } = await getSinglePart(wbsNum, index);
     return data;
   });
@@ -95,7 +95,7 @@ export const useCreatePart = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['parts']);
+        queryClient.invalidateQueries(['parts', 'by project']);
       }
     }
   );

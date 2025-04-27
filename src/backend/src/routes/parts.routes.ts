@@ -11,8 +11,8 @@ const partsRouter = express.Router();
 
 partsRouter.get('/tags', PartReviewController.getAllPartTags);
 partsRouter.get('/faqs', PartReviewController.getAllPartReviewFAQS);
-partsRouter.get('/:wbsNum/:indexNum', PartReviewController.getPart);
-partsRouter.get('/byProject/:wbsNum', PartReviewController.getAllPartsForProject);
+partsRouter.get('/by-project/:wbsNum', PartReviewController.getAllPartsForProject);
+partsRouter.get('/by-index/:wbsNum/:indexNum', PartReviewController.getPart);
 
 partsRouter.post(
   '/create',
