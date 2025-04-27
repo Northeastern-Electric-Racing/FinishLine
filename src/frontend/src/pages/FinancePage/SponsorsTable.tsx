@@ -4,9 +4,9 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import { useGetAllSponsors } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
 import { NERButton } from '../../components/NERButton';
-import Footer from '../../components/Footer';
 import { datePipe } from '../../utils/pipes';
 import SponsorTierPill from '../../components/SponsorTierPill';
+import PaginationFooter from '../../components/PaginationFooter';
 
 const SponsorsTable = () => {
   const { data: sponsors, isLoading: sponsorIsLoading, isError: sponsorIsError, error: sponsorError } = useGetAllSponsors();
@@ -14,7 +14,6 @@ const SponsorsTable = () => {
   const [rowsPerPage, setRowsPerPage] = useState<number>(14);
 
   if (!sponsors || sponsorIsLoading) {
-    console.log('loading');
     return <LoadingIndicator />;
   }
   if (sponsorIsError) {
@@ -57,7 +56,7 @@ const SponsorsTable = () => {
           minHeight: '50px'
         }}
       >
-        <Typography sx={{ fontSize: '1.5rem' }}>{sponsor.activeStatus === true ? 'Active' : 'Inactive'}</Typography>
+        <Typography sx={{ fontSize: '1.5rem' }}>{sponsor.activeStatus ? 'Active' : 'Inactive'}</Typography>
       </TableCell>
       <TableCell
         align="center"
@@ -115,7 +114,7 @@ const SponsorsTable = () => {
         }}
       >
         <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>
-          {sponsor.taxExempt === true ? 'Yes' : 'No'}
+          {sponsor.taxExempt ? 'Yes' : 'No'}
         </Typography>
       </TableCell>
       <TableCell
@@ -248,7 +247,7 @@ const SponsorsTable = () => {
           <TableBody>{sponsorTableRows}</TableBody>
         </MuiTable>
       </Box>
-      <Footer
+      <PaginationFooter
         footerButton={
           <NERButton
             variant="contained"
