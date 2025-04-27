@@ -148,6 +148,7 @@ export type ExceptionObjectNames =
   | 'Part Review'
   | 'Part Submission'
   | 'Part'
+  | 'Part Submission'
   | 'Part Tag'
   | 'Common Mistake'
   | 'Review Request';

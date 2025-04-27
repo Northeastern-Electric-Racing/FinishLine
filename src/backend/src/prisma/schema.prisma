@@ -966,6 +966,7 @@ model Organization {
   applicationLink         String?
   onboardingText          String?
   partReviewSampleImageId String?
+  partReviewGuideLink     String?
 
   // Relation references
   wbsElements              WBS_Element[]
