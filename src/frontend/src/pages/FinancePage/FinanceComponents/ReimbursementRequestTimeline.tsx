@@ -5,9 +5,9 @@ import { useSingleReimbursementRequest } from '../../../hooks/finance.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { ReimbursementRequestComment } from '../../../../../shared/src/types/reimbursement-requests-types';
-import { NERButton } from '../../../components/NERButton';
 import { useState } from 'react';
 import TimelineCommentModal from './TimelineCommentModal';
+import { Link } from '@mui/material';
 
 interface TimelineProps {
   reimbursementRequestId: string;
@@ -16,42 +16,36 @@ interface TimelineProps {
 interface EventSectionProps {
   comment: ReimbursementRequestComment;
   isLast: boolean;
-  isFirst: boolean;
+  key: number;
+}
+
+interface FirstSectionProps {
+  reimbursementRequestId: string;
+  comments: ReimbursementRequestComment[];
 }
 
 const ReimbursementRequestTimeline: React.FC<TimelineProps> = ({ reimbursementRequestId }) => {
   const { data: reimbursementRequest, isError, error, isLoading } = useSingleReimbursementRequest(reimbursementRequestId);
+
   const Comments = reimbursementRequest?.comments.sort(
     (a, b) => new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime()
   );
-  const [timelineCommentModal, setTimelineCommentModalShow] = useState<boolean>(false);
 
   if (isLoading || !Comments) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
+  console.log('hell0');
   return (
-    <Stack alignItems="center" spacing={0.5}>
-      <NERButton
-        variant="contained"
-        onClick={() => {
-          setTimelineCommentModalShow(true);
-        }}
-      >
-        Add Timeline Comment
-      </NERButton>
-      <TimelineCommentModal
-        reimbursementRequestId={reimbursementRequestId}
-        showModal={timelineCommentModal}
-        handleClose={() => setTimelineCommentModalShow(false)}
-      />
+    <Stack direction="column" alignItems="center" spacing={0.5}>
+      <FirstSection reimbursementRequestId={reimbursementRequestId} comments={Comments} />
       {Comments.map((comment, index) => (
-        <EventSection comment={comment} isLast={Comments.length - 1 === index} isFirst={0 === index} />
+        <EventSection comment={comment} isLast={Comments.length - 1 === index} key={index} />
       ))}
     </Stack>
   );
 };
 
-const EventSection: React.FC<EventSectionProps> = ({ comment, isLast, isFirst }) => {
+const EventSection: React.FC<EventSectionProps> = ({ comment, isLast }) => {
   const commentTime = new Date(comment.dateCreated).toLocaleTimeString();
   const newCommentTime = commentTime.slice(0, -6) + commentTime.slice(-3);
   return (
@@ -66,24 +60,15 @@ const EventSection: React.FC<EventSectionProps> = ({ comment, isLast, isFirst })
       </Box>
 
       <Box position="relative" display="flex" flexDirection="column" alignItems="center">
-        <Circle sx={{ fontSize: 20 }} />
+        <Circle sx={{ fontSize: 20, mb: 0.5 }} />
         {isLast ? (
           <></>
-        ) : isFirst ? (
-          <Box
-            sx={{
-              borderLeft: '4px dashed white',
-              height: '50px',
-              mt: 0.5
-            }}
-          />
         ) : (
           <Box
             sx={{
               width: '4px',
               height: '50px',
-              backgroundColor: 'white',
-              mt: 0.5
+              backgroundColor: 'white'
             }}
           />
         )}
@@ -94,6 +79,52 @@ const EventSection: React.FC<EventSectionProps> = ({ comment, isLast, isFirst })
           {comment.comment}
         </Typography>
       </Box>
+    </Stack>
+  );
+};
+
+const FirstSection: React.FC<FirstSectionProps> = ({ reimbursementRequestId, comments }) => {
+  const [timelineCommentModal, setTimelineCommentModalShow] = useState<boolean>(false);
+  const commentTime = new Date().toLocaleTimeString();
+  const newCommentTime = commentTime.slice(0, -6) + commentTime.slice(-3);
+  return (
+    <Stack direction="row" spacing={2} alignItems="flex-start" width="100%">
+      <Box flex={1} textAlign="right">
+        <Typography fontWeight={'regular'} fontSize={18} variant="h1">
+          {datePipe(new Date())}
+        </Typography>
+        <Typography fontWeight={'regular'} fontSize={14} variant="h1">
+          {newCommentTime}
+        </Typography>
+      </Box>
+
+      <Box position="relative" display="flex" flexDirection="column" alignItems="center">
+        <Circle sx={{ fontSize: 20 }} />
+        <Box
+          sx={{
+            borderLeft: '4px dashed white',
+            height: '50px',
+            mt: 0.5
+          }}
+        />
+        {comments.length == 0 ? <Circle sx={{ fontSize: 20 }} /> : <></>}
+      </Box>
+
+      <Stack flex={1} alignItems={'flex-start'}>
+        <Link
+          color="primary"
+          onClick={() => {
+            setTimelineCommentModalShow(true);
+          }}
+        >
+          <Typography fontWeight={'regular'}>Add Timeline Comment</Typography>
+        </Link>
+        <TimelineCommentModal
+          reimbursementRequestId={reimbursementRequestId}
+          showModal={timelineCommentModal}
+          handleClose={() => setTimelineCommentModalShow(false)}
+        />
+      </Stack>
     </Stack>
   );
 };

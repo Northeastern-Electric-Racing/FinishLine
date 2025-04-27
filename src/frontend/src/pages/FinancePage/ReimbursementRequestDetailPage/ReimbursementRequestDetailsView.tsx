@@ -56,6 +56,8 @@ import DownloadIcon from '@mui/icons-material/Download';
 import ReimbursementRequestStatusPill from '../../../components/ReimbursementRequestStatusPill';
 import CheckList from '../../../components/CheckList';
 import MarkDeliveredModal from './MarkDeliveredModal';
+import ReimbursementRequestTimeline from '../FinanceComponents/ReimbursementRequestTimeline';
+import { useParams } from 'react-router-dom';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -297,6 +299,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   );
 
   const BasicInformationView = () => {
+    const { id } = useParams<{ id: string }>();
+    console.log(id);
     return (
       <>
         <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginBottom: '5px' }}>
@@ -340,6 +344,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             </Grid>
           </Grid>
         </Grid>
+        <ReimbursementRequestTimeline reimbursementRequestId={id} />
       </>
     );
   };

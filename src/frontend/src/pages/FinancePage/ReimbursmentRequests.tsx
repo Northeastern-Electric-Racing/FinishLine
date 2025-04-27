@@ -21,8 +21,8 @@ import {
 import { useHistory } from 'react-router-dom';
 import { DatePicker } from '@mui/x-date-pickers';
 import ReportRefundModal from './FinanceComponents/ReportRefundModal';
-import ErrorPage from '../ErrorPage';
 import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
+import ErrorPage from '../ErrorPage';
 import ReimbursementRequestTimeline from './FinanceComponents/ReimbursementRequestTimeline';
 
 const ReimbursementRequests: React.FC = () => {
@@ -277,8 +277,8 @@ const ReimbursementRequests: React.FC = () => {
           endDate={endDate}
         />
       </Box>
+      <ReimbursementRequestTimeline reimbursementRequestId={'7f118975-c63f-4bb6-8a46-4c18f28bd0e6'} />
       <ReimbursementRequestTable userReimbursementRequests={[]} allReimbursementRequests={[]} />
-      <ReimbursementRequestTimeline reimbursementRequestId={'2afa31c9-31cd-4632-ad08-d0cc03a9ff37'} />
     </Box>
   );
 };
