@@ -1,53 +1,41 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
-import { Part, Review_Status, User } from 'shared';
+import { Part, Review_Status } from 'shared';
+import { fullNamePipe } from '../../../utils/pipes';
 
 interface PartDisplayProps {
   part: Part;
   contentAmount: 'compact' | 'standard' | 'full';
 }
 
-// reusing someone else's function that hasn't been merged yet to maintain consistent formatting
 const getReviewStatusColor = (status: Review_Status) => {
-  switch (status) {
-    case 'IN_PROGRESS':
-      return '#FF7700';
-    case 'READY_FOR_REVIEW':
-      return '#FF5500';
-    case 'IN_REVIEW':
-      return '#F57600';
-    case 'REVIEWED':
-      return '#3DA848';
-    case 'APPROVED':
-      return '#D633FF';
-    default:
-      return '#535151';
-  }
+  return {
+    IN_PROGRESS: '#FF7700',
+    READY_FOR_REVIEW: '#FF5500',
+    IN_REVIEW: '#F57600',
+    REVIEWED: '#3DA848',
+    APPROVED: '#D633FF',
+    default: '#535151'
+  }[status];
 };
 
 const getReviewStatusDisplayName = (status: Review_Status): string => {
-  switch (status) {
-    case 'IN_PROGRESS':
-      return 'Review In Progress';
-    case 'READY_FOR_REVIEW':
-      return 'Ready For Review';
-    case 'IN_REVIEW':
-      return 'In Review';
-    case 'REVIEWED':
-      return 'Reviewed';
-    case 'APPROVED':
-      return 'Approved';
-    default:
-      return 'N/A';
-  }
+  return {
+    IN_PROGRESS: 'Review In Progress',
+    READY_FOR_REVIEW: 'Ready for Review',
+    IN_REVIEW: '#F57600',
+    REVIEWED: '#3DA848',
+    APPROVED: '#D633FF',
+    default: '#535151'
+  }[status];
 };
 
 const getBoxWidth = (contentAmount: String) => {
   switch (contentAmount) {
-    case 'small':
-      return '400px';
-    case 'medium':
-      return '600px';
+    case 'compact':
+      return '30%';
+    case 'standard':
+      return '50%';
     default:
       return 'NA';
   }
@@ -80,30 +68,25 @@ const Pill = ({ label = '', bgColor = 'background.paper' }) => {
 
 const PartDisplay: React.FC<PartDisplayProps> = ({ part, contentAmount }) => {
   // Gets part name in the format shown in the ticket
-  const PartName = `${part.projectId}_${part.commonName}_${part.partId}`;
-
-  // helper that puts a users first and last name into one string with a space
-  const getUserFullName = (user: User) => {
-    return `${user.firstName} ${user.lastName}`;
-  };
+  const partName = `${part.projectId}_${part.commonName}_${part.partId}`;
 
   //sorts submissions by date to help later with getting latest submission and latest reviewer
-  const sortedSubmissions = [...part.submissions].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  const sortedSubmissions = part.submissions.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
   // latest submission as a formatted string
-  const latestSubmission = getUserFullName(sortedSubmissions[0].userCreated);
+  const latestSubmission = fullNamePipe(sortedSubmissions[0].userCreated);
 
   // sorts reviews of the most recent submission by date
-  const sortedReviews = [...sortedSubmissions[0].reviews].sort(
+  const sortedReviews = sortedSubmissions[0].reviews.sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
   // latest reviewer
-  const latestReviewer = sortedSubmissions[0].reviews.length === 0 ? 'None' : getUserFullName(sortedReviews[0].userCreated);
+  const latestReviewer = sortedSubmissions[0].reviews.length === 0 ? 'None' : fullNamePipe(sortedReviews[0].userCreated);
 
   // gets assignees as a formatted string
   const assigneesString =
-    part.assignees.length === 0 ? 'None' : part.assignees.map((assignee) => getUserFullName(assignee)).join('\n');
+    part.assignees.length === 0 ? 'None' : part.assignees.map((assignee) => fullNamePipe(assignee)).join('\n');
 
   // allReviewers is a set that collects every reviewer from every submission for the purpose of avoiding duplicates
   // because the same person could review two different submissions
@@ -118,7 +101,7 @@ const PartDisplay: React.FC<PartDisplayProps> = ({ part, contentAmount }) => {
             if (submission.reviews) {
               // iterate through each review
               submission.reviews.forEach((review) => {
-                reviewersSet.add(getUserFullName(review.userCreated));
+                reviewersSet.add(fullNamePipe(review.userCreated));
               });
             }
           });
@@ -145,7 +128,7 @@ const PartDisplay: React.FC<PartDisplayProps> = ({ part, contentAmount }) => {
     >
       <Box sx={{ width: '175px', display: 'flex' }}>
         <Typography variant="subtitle1" fontWeight="bold">
-          {PartName}
+          {partName}
         </Typography>
       </Box>
 
