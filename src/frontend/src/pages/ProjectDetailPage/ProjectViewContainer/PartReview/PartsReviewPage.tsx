@@ -17,7 +17,7 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
 
   return (
     <Box>
-      <CreateMenu project={project}/>
+      <CreateMenu project={project} />
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <FormGroup>

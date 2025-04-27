@@ -5,7 +5,7 @@ import {
   CreatePartReviewPayload,
   EditPartReviewPayload
 } from '../hooks/part-review.hooks';
-import { PartPreview, Part, PartSubmission, PartReviewRequest, PartReview, PartReviewCommonMistake } from 'shared';
+import { PartPreview, Part, PartSubmission, PartReviewRequest, PartReview, PartReviewCommonMistake, PartTag } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import { partPreviewTransformer, partTransformer } from './transformers/part-review.transformers';
@@ -164,4 +164,13 @@ export const setUploadReviewFiles = (reviewId: string, files: File[]) => {
  */
 export const getAllCommonMistakes = () => {
   return axios.get<PartReviewCommonMistake[]>(apiUrls.getAllPartCommonMistakes());
+};
+
+/**
+ * Gets all the part tags for the users organization
+ *
+ * @returns an array of part tags
+ */
+export const getAllPartTags = () => {
+  return axios.get<PartTag[]>(apiUrls.getAllPartTags());
 };

@@ -6,7 +6,8 @@ import {
   PartReviewRequest,
   PartSubmission,
   Review_Status,
-  PartReviewCommonMistake
+  PartReviewCommonMistake,
+  PartTag
 } from 'shared';
 import {
   createPart,
@@ -22,7 +23,8 @@ import {
   getSinglePart,
   getAllCommonMistakes,
   uploadPreviewImage,
-  setUploadReviewFiles
+  setUploadReviewFiles,
+  getAllPartTags
 } from '../apis/part-review.api';
 
 export interface PartPayload {
@@ -316,4 +318,17 @@ export const useAllCommonMistakes = () => {
       }
     }
   );
+};
+
+/**
+ * Custom React Hook to get all part tags
+ *
+ * @returns a list of all part tags
+ */
+export const useGetAllPartTags = () => {
+  const queryClient = useQueryClient();
+  return useQuery<PartTag[], Error>(['part tags'], async () => {
+    const { data } = await getAllPartTags();
+    return data;
+  });
 };

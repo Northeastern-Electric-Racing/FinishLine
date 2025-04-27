@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { useCurrentUser } from '../../../../../hooks/users.hooks';
 import { Box, Button, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
 import { Project, isGuest } from 'shared';
-import CreateSubmissionModal from './SubmissionModal';
+import CreatePartModal from './PartFormModels/CreatePartModel';
 
 type CreateMenuProps = {
   project: Project;
@@ -15,6 +15,7 @@ type CreateMenuProps = {
 const CreateMenu: React.FC<CreateMenuProps> = ({ project }: CreateMenuProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [showAddSubmission, setShowAddSubmission] = useState(false);
+  const [showCreatePart, setShowCreatePart] = useState(false);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -28,7 +29,13 @@ const CreateMenu: React.FC<CreateMenuProps> = ({ project }: CreateMenuProps) => 
   const user = useCurrentUser();
   return (
     <Box>
-      <CreateSubmissionModal open={showAddSubmission} onHide={() => setShowAddSubmission(false)} wbsElement={project} />
+      <CreatePartModal
+        open={showCreatePart}
+        handleClose={() => setShowCreatePart(false)}
+        partsInProject={[]}
+        wbsNum={project.wbsNum}
+      />
+      {/* <CreateSubmissionModal open={showAddSubmission} onHide={() => setShowAddSubmission(false)} wbsElement={project} /> */}
       <Button
         disabled={isGuest(user.role)}
         onClick={handleClick}
@@ -60,6 +67,7 @@ const CreateMenu: React.FC<CreateMenuProps> = ({ project }: CreateMenuProps) => 
         </MenuItem>
         <MenuItem
           onClick={() => {
+            setShowCreatePart(true);
             handleDropdownClose();
           }}
         >
