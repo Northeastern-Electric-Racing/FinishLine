@@ -19,7 +19,7 @@ interface ReviewChangeRequestProps {
 }
 
 export interface FormInput {
-  reviewNotes: string;
+  reviewNotes?: string;
   accepted: boolean;
   psId?: string;
 }
@@ -45,7 +45,7 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
     await mutateAsync({
       reviewerId: auth.user?.userId,
       crId,
-      reviewNotes,
+      reviewNotes: reviewNotes ?? '',
       accepted,
       psId
     }).catch((error) => {
