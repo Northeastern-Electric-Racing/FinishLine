@@ -35,10 +35,13 @@ export interface PartPayload {
   assigneeIds: string[];
 }
 
-export interface PartSubmissionPayload {
-  fileIds: string[];
+export interface EditPartSubmissionPayload {
   name: string;
   notes?: string;
+}
+
+export interface CreatePartSubmissionPayload extends EditPartSubmissionPayload {
+  partId: string;
 }
 
 export interface PartReviewRequestPayload {
@@ -63,7 +66,7 @@ export interface EditPartReviewPayload {
  * @param wbsNum the wbs number of the project
  */
 export const usePartsFromProject = (wbsNum: string) => {
-  return useQuery<PartPreview[], Error>(['parts'], async () => {
+  return useQuery<PartPreview[], Error>(['parts', 'by project', wbsNum], async () => {
     const { data } = await getPartsFromProject(wbsNum);
     return data;
   });
@@ -76,7 +79,7 @@ export const usePartsFromProject = (wbsNum: string) => {
  * @param index the index number of the part
  */
 export const useSinglePart = (wbsNum: string, index: number) => {
-  return useQuery<Part, Error>(['parts'], async () => {
+  return useQuery<Part, Error>(['parts', 'by index', wbsNum, index], async () => {
     const { data } = await getSinglePart(wbsNum, index);
     return data;
   });
@@ -95,7 +98,7 @@ export const useCreatePart = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['parts']);
+        queryClient.invalidateQueries(['parts', 'by project']);
       }
     }
   );
@@ -163,12 +166,12 @@ export const useDeletePart = (partId: string) => {
  *
  * @param partId the id of the part to create the submission for
  */
-export const useCreatePartSubmission = (partId: string) => {
+export const useCreatePartSubmission = () => {
   const queryClient = useQueryClient();
-  return useMutation<PartSubmission, Error, PartSubmissionPayload>(
+  return useMutation<PartSubmission, Error, CreatePartSubmissionPayload>(
     ['parts', 'createSubmission'],
-    async (submission: PartSubmissionPayload) => {
-      const { data } = await createPartSubmission(partId, submission);
+    async (submission: CreatePartSubmissionPayload) => {
+      const { data } = await createPartSubmission(submission);
       return data;
     },
     {
@@ -186,9 +189,9 @@ export const useCreatePartSubmission = (partId: string) => {
  */
 export const useEditPartSubmission = (submissionId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<PartSubmission, Error, PartSubmissionPayload>(
+  return useMutation<PartSubmission, Error, EditPartSubmissionPayload>(
     ['parts', 'editSubmission'],
-    async (submission: PartSubmissionPayload) => {
+    async (submission: EditPartSubmissionPayload) => {
       const { data } = await editPartSubmission(submissionId, submission);
       return data;
     },
