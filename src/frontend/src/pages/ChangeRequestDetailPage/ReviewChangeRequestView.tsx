@@ -39,7 +39,7 @@ interface ReviewChangeRequestViewProps {
 }
 
 const schema = yup.object().shape({
-  reviewNotes: yup.string(),
+  reviewNotes: yup.string().required(),
   accepted: yup.boolean().required(),
   psId: yup.string().optional()
 });
@@ -169,6 +169,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
             <Controller
               name="reviewNotes"
               control={control}
+              rules={{ required: true }}
               render={({ field: { onChange, value } }) => (
                 <>
                   <Typography
@@ -182,6 +183,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
                   <TextField
                     multiline
                     rows={4}
+                    required
                     variant="outlined"
                     id="reviewNotes-input"
                     autoComplete="off"
@@ -244,12 +246,14 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
             <Controller
               name="reviewNotes"
               control={control}
+              rules={{ required: true }}
               render={({ field: { onChange, value } }) => (
                 <>
                   <Typography>{'Additional Comments'}</Typography>
                   <TextField
                     multiline
                     rows={4}
+                    required
                     id="reviewNotes-input"
                     autoComplete="off"
                     onChange={onChange}
