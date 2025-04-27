@@ -19,17 +19,18 @@ import { useGetAllVendors } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
 import { NERButton } from '../../components/NERButton';
 import { Vendor } from 'shared';
-import Footer from '../../components/Footer';
 
 import DeleteVendorModal from './FinanceComponents/DeleteVendorModal';
 import CreateVendorModal from './FinanceComponents/CreateVendorModal';
 import EditVendorModal from './FinanceComponents/EditVendorModal';
+import { fullNamePipe } from '../../utils/pipes';
+import PaginationFooter from '../../components/PaginationFooter';
 
 const VendorsTable = () => {
   const { data: vendors, isLoading: vendorIsLoading, isError: vendorIsError, error: vendorError } = useGetAllVendors();
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
-  const [clickedEditVendor, setClickedEditVendor] = useState<Vendor | undefined>(undefined);
-  const [clickedDeleteVendor, setClickedDeleteVendor] = useState<Vendor | undefined>(undefined);
+  const [vendorToEdit, setVendorToEdit] = useState<Vendor | undefined>(undefined);
+  const [vendorToDelete, setVendorToDelete] = useState<Vendor | undefined>(undefined);
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(14);
   const theme = useTheme();
@@ -103,7 +104,7 @@ const VendorsTable = () => {
         }}
       >
         <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>
-          {`${vendor.twoFactorContact?.firstName} ${vendor.twoFactorContact?.lastName}`}
+          {fullNamePipe(vendor.twoFactorContact)}
         </Typography>
       </TableCell>
       <TableCell
@@ -146,12 +147,12 @@ const VendorsTable = () => {
             <Button
               sx={{ p: 0.5, color: 'white' }}
               onClick={() => {
-                setClickedEditVendor(vendor);
+                setVendorToEdit(vendor);
               }}
             >
               <EditIcon />
             </Button>
-            <Button sx={{ p: 0.5, color: 'white' }} onClick={() => setClickedDeleteVendor(vendor)}>
+            <Button sx={{ p: 0.5, color: 'white' }} onClick={() => setVendorToDelete(vendor)}>
               <DeleteIcon />
             </Button>
           </Box>
@@ -163,22 +164,22 @@ const VendorsTable = () => {
   return (
     <Box sx={{ width: '100%', borderRadius: '8px 8px 0 0' }}>
       <CreateVendorModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} vendors={vendors} />
-      {clickedEditVendor && (
+      {vendorToEdit && (
         <EditVendorModal
-          showModal={!!clickedEditVendor}
+          showModal={!!vendorToEdit}
           handleClose={() => {
-            setClickedEditVendor(undefined);
+            setVendorToEdit(undefined);
           }}
-          vendor={clickedEditVendor}
+          vendor={vendorToEdit}
           vendors={vendors}
         />
       )}
-      {clickedDeleteVendor && (
+      {vendorToDelete && (
         <DeleteVendorModal
           handleClose={() => {
-            setClickedDeleteVendor(undefined);
+            setVendorToDelete(undefined);
           }}
-          vendor={clickedDeleteVendor}
+          vendor={vendorToDelete}
         />
       )}
       <Box sx={{ paddingBottom: '100px' }}>
@@ -241,7 +242,7 @@ const VendorsTable = () => {
                     color: 'white'
                   }}
                 >
-                  2FA Contacts
+                  2FA Contact
                 </TableCell>
                 <TableCell
                   align="center"
@@ -261,7 +262,7 @@ const VendorsTable = () => {
           </MuiTable>
         </TableContainer>
       </Box>
-      <Footer
+      <PaginationFooter
         footerButton={
           <NERButton
             variant="contained"
