@@ -42,7 +42,7 @@ import {
   getSponsorTasks,
   editSponsorTask,
   deleteSponsor,
-  createReimbursementRequestComment
+  createReimbursementRequestComment,
   deleteVendor
 } from '../apis/finance.api';
 import {

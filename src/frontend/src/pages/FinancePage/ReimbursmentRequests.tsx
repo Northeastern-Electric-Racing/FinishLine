@@ -23,7 +23,6 @@ import { DatePicker } from '@mui/x-date-pickers';
 import ReportRefundModal from './FinanceComponents/ReportRefundModal';
 import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
 import ErrorPage from '../ErrorPage';
-import ReimbursementRequestTimeline from './FinanceComponents/ReimbursementRequestTimeline';
 
 const ReimbursementRequests: React.FC = () => {
   const allStatuses = Object.values(ReimbursementStatusType);
@@ -277,7 +276,6 @@ const ReimbursementRequests: React.FC = () => {
           endDate={endDate}
         />
       </Box>
-      <ReimbursementRequestTimeline reimbursementRequestId={'7f118975-c63f-4bb6-8a46-4c18f28bd0e6'} />
     </Box>
   );
 };

@@ -106,7 +106,7 @@ const FirstSection: React.FC<FirstSectionProps> = ({ reimbursementRequestId, com
             mt: 0.5
           }}
         />
-        {comments.length == 0 ? <Circle sx={{ fontSize: 20, mt: 0.5 }} /> : <></>}
+        {comments.length === 0 ? <Circle sx={{ fontSize: 20, mt: 0.5 }} /> : <></>}
       </Box>
 
       <Stack flex={1} alignItems={'flex-start'}>
