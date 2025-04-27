@@ -1,50 +1,69 @@
 import { Box, useTheme } from '@mui/material';
 import { useState } from 'react';
-import { ReimbursementRequest, isHead } from 'shared';
+import { ReimbursementRequest, isHead, isLead } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
+import FullPageTabs from '../../components/FullPageTabs';
+import { routes } from '../../utils/routes';
+import { ReimbursementStatusType } from 'shared/src/types/reimbursement-requests-types';
 import ReimbursementRequestInfo from './FinanceComponents/ReimbursementRequestInfo';
-import Tabs from '../../components/Tabs';
 
 interface ReimbursementRequestTableProps {
   userReimbursementRequests: ReimbursementRequest[];
   allReimbursementRequests?: ReimbursementRequest[];
+  searchText?: string;
+  statuses?: ReimbursementStatusType[];
+  startDate?: Date | null;
+  endDate?: Date | null;
 }
 
 const ReimbursementRequestTable = ({
   userReimbursementRequests,
-  allReimbursementRequests
+  allReimbursementRequests,
+  searchText,
+  statuses,
+  startDate,
+  endDate
 }: ReimbursementRequestTableProps) => {
+  const defaultTab = 'my-requests';
+
   const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
   const user = useCurrentUser();
-  const canViewAllReimbursementRequests = user.isFinance || isHead(user.role);
+  const canViewAllReimbursementRequests = user.isFinance || isHead(user.role) || isLead(user.role);
 
-  const tabs = [
-    {
-      label: 'My Requests',
-      component: (
-        <ReimbursementRequestInfo
-          userReimbursementRequests={userReimbursementRequests}
-          allReimbursementRequests={allReimbursementRequests}
-        />
-      )
-    }
-  ];
-  if (canViewAllReimbursementRequests)
-    tabs.push({
-      label: 'All Club Requests',
-      component: (
-        <ReimbursementRequestInfo
-          userReimbursementRequests={userReimbursementRequests}
-          allReimbursementRequests={allReimbursementRequests}
-          canViewAllReimbursementRequests
-        />
-      )
-    });
+  const tabs = [{ tabUrlValue: 'my-requests', tabName: 'My Requests' }];
+
+  if (canViewAllReimbursementRequests) tabs.push({ tabUrlValue: 'all-requests', tabName: 'All Requests' });
 
   return (
     <Box sx={{ bgcolor: theme.palette.background.default, width: '100%', borderRadius: '8px 8px 0 0' }}>
-      <Tabs tabValue={tabValue} setTabValue={setTabValue} tabs={tabs} greyscale />
+      {canViewAllReimbursementRequests && (
+        <Box
+          sx={{
+            width: 'fit-content',
+            mb: 2
+          }}
+        >
+          <FullPageTabs
+            noUnderline
+            setTab={setTabValue}
+            tabsLabels={tabs}
+            baseUrl={routes.REIMBURSEMENT_REQUESTS}
+            defaultTab={defaultTab}
+            id="reimbursement-request-tabs"
+          />
+        </Box>
+      )}
+      <ReimbursementRequestInfo
+        userReimbursementRequests={userReimbursementRequests}
+        allReimbursementRequests={allReimbursementRequests}
+        canViewAllReimbursementRequests={canViewAllReimbursementRequests}
+        currentTab={tabValue}
+        searchText={searchText}
+        statuses={statuses}
+        startDate={startDate}
+        endDate={endDate}
+      />
     </Box>
   );
 };
