@@ -1,13 +1,39 @@
+import React, { useState } from 'react';
+import FullPageTabs from '../../components/FullPageTabs';
+import PageLayout from '../../components/PageLayout';
+import { routes } from '../../utils/routes';
 import { Box } from '@mui/system';
-import { useCurrentUser } from '../../hooks/users.hooks';
-import { isHead } from 'shared';
-import HeadsAndAboveCompanies from './HeadsAndAboveCompanies';
-import MembersCompanies from './MembersCompanies';
+import SponsorsTable from './SponsorsTable';
+import VendorsTable from './VendorsTable';
 
-const VendorsAndSponsorsPage: React.FC = () => {
-  const user = useCurrentUser();
+const VendorsAndSponsorsPage = () => {
+  const [tabIndex, setTabIndex] = useState<number>(0);
+  const tabs = [
+    { tabUrlValue: 'vendors', tabName: 'Vendors' },
+    { tabUrlValue: 'sponsors', tabName: 'Sponsors' }
+  ];
 
-  return <Box>{isHead(user.role) || user.isFinance ? <HeadsAndAboveCompanies /> : <MembersCompanies />}</Box>;
+  return (
+    <Box>
+      <PageLayout
+        title="Vendors and Sponsors"
+        tabs={
+          <Box borderBottom={1} borderColor={'divider'} width={'100%'}>
+            <FullPageTabs
+              noUnderline
+              setTab={setTabIndex}
+              tabsLabels={tabs}
+              baseUrl={routes.COMPANIES}
+              defaultTab={'vendors'}
+              id="companies-sponsor-tabs"
+            />
+          </Box>
+        }
+      >
+        {tabIndex === 0 ? <VendorsTable /> : <SponsorsTable />}
+      </PageLayout>
+    </Box>
+  );
 };
 
 export default VendorsAndSponsorsPage;

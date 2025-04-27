@@ -7,7 +7,7 @@ import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
 import PaginationFooter from '../../components/PaginationFooter';
 
-const MembersCompanies = () => {
+const VendorsPage = () => {
   const { data: vendors, isLoading: vendorIsLoading, isError: vendorIsError, error: vendorError } = useGetAllVendors();
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(14);
@@ -133,4 +133,4 @@ const MembersCompanies = () => {
   );
 };
 
-export default MembersCompanies;
+export default VendorsPage;
