@@ -19,14 +19,17 @@ import { useGetAllVendors } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
 import { NERButton } from '../../components/NERButton';
 import { Vendor } from 'shared';
-
 import DeleteVendorModal from './FinanceComponents/DeleteVendorModal';
 import CreateVendorModal from './FinanceComponents/CreateVendorModal';
 import EditVendorModal from './FinanceComponents/EditVendorModal';
-import { fullNamePipe } from '../../utils/pipes';
+import { datePipe, fullNamePipe } from '../../utils/pipes';
 import PaginationFooter from '../../components/PaginationFooter';
 
-const VendorsTable = () => {
+interface VendorTableProps {
+  isHeadAndAbove?: boolean;
+}
+
+const VendorTable = ({ isHeadAndAbove = false }: VendorTableProps) => {
   const { data: vendors, isLoading: vendorIsLoading, isError: vendorIsError, error: vendorError } = useGetAllVendors();
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
   const [vendorToEdit, setVendorToEdit] = useState<Vendor | undefined>(undefined);
@@ -68,96 +71,128 @@ const VendorsTable = () => {
           {vendor.name}
         </Typography>
       </TableCell>
-      <TableCell
-        align="center"
-        sx={{
-          alignItems: 'center',
-          borderBottom: 'none'
-        }}
-      >
-        <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>{vendor.username}</Typography>
-      </TableCell>
-      <TableCell
-        align="center"
-        sx={{
-          alignItems: 'center',
-          borderBottom: 'none'
-        }}
-      >
-        <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>{vendor.password}</Typography>
-      </TableCell>
+      {isHeadAndAbove ? (
+        <>
+          <TableCell
+            align="center"
+            sx={{
+              alignItems: 'center',
+              borderBottom: 'none'
+            }}
+          >
+            <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>{vendor.username}</Typography>
+          </TableCell>
+          <TableCell
+            align="center"
+            sx={{
+              alignItems: 'center',
+              borderBottom: 'none'
+            }}
+          >
+            <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>{vendor.password}</Typography>
+          </TableCell>
 
-      <TableCell
-        align="center"
-        sx={{
-          alignItems: 'center',
-          borderBottom: 'none'
-        }}
-      >
-        <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>{vendor.discountCode}</Typography>
-      </TableCell>
-      <TableCell
-        align="center"
-        sx={{
-          alignItems: 'center',
-          borderBottom: 'none'
-        }}
-      >
-        <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>
-          {fullNamePipe(vendor.twoFactorContact)}
-        </Typography>
-      </TableCell>
-      <TableCell
-        align="center"
-        sx={{
-          alignItems: 'center',
-          borderBottom: 'none',
-          borderLeft: '4px solid white'
-        }}
-      >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Box
+          <TableCell
+            align="center"
             sx={{
-              maxWidth: 400,
-              width: '100%',
-              overflow: 'hidden',
-              '&:hover': {
-                overflow: 'auto'
-              },
-              scrollbarColor: `#555 ${theme.palette.background.default}`,
-              scrollbarWidth: 'thin'
+              alignItems: 'center',
+              borderBottom: 'none'
             }}
           >
-            <Typography
-              sx={{
-                textAlign: 'left',
-                fontSize: '1.5rem',
-                height: '1.5em',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              {vendor.notes}
+            <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>{vendor.discountCode}</Typography>
+          </TableCell>
+          <TableCell
+            align="center"
+            sx={{
+              alignItems: 'center',
+              borderBottom: 'none'
+            }}
+          >
+            <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>
+              {fullNamePipe(vendor.twoFactorContact)}
             </Typography>
-          </Box>
-          <Box
+          </TableCell>
+          <TableCell
+            align="center"
             sx={{
-              display: 'flex'
+              alignItems: 'center',
+              borderBottom: 'none',
+              borderLeft: '4px solid white'
             }}
           >
-            <Button
-              sx={{ p: 0.5, color: 'white' }}
-              onClick={() => {
-                setVendorToEdit(vendor);
-              }}
-            >
-              <EditIcon />
-            </Button>
-            <Button sx={{ p: 0.5, color: 'white' }} onClick={() => setVendorToDelete(vendor)}>
-              <DeleteIcon />
-            </Button>
-          </Box>
-        </Box>
-      </TableCell>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Box
+                sx={{
+                  maxWidth: 400,
+                  width: '100%',
+                  overflow: 'hidden',
+                  '&:hover': {
+                    overflow: 'auto'
+                  },
+                  scrollbarColor: `#555 ${theme.palette.background.default}`,
+                  scrollbarWidth: 'thin'
+                }}
+              >
+                <Typography
+                  sx={{
+                    textAlign: 'left',
+                    fontSize: '1.5rem',
+                    height: '1.5em',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {vendor.notes}
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  display: 'flex'
+                }}
+              >
+                <Button
+                  sx={{ p: 0.5, color: 'white' }}
+                  onClick={() => {
+                    setVendorToEdit(vendor);
+                  }}
+                >
+                  <EditIcon />
+                </Button>
+                <Button sx={{ p: 0.5, color: 'white' }} onClick={() => setVendorToDelete(vendor)}>
+                  <DeleteIcon />
+                </Button>
+              </Box>
+            </Box>
+          </TableCell>
+        </>
+      ) : (
+        <>
+          <TableCell
+            align="center"
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              borderBottom: 'none',
+              minHeight: '50px'
+            }}
+          >
+            <Typography sx={{ fontSize: '1.5rem' }}>{datePipe(vendor.dateCreated)}</Typography>
+          </TableCell>
+          <TableCell
+            align="center"
+            sx={{
+              alignItems: 'center',
+              borderBottom: 'none'
+            }}
+          >
+            <Box sx={{ display: 'flex', justifyContent: 'space-around' }}>
+              <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>
+                {fullNamePipe(vendor.addedBy)}
+              </Typography>
+            </Box>
+          </TableCell>
+        </>
+      )}
     </TableRow>
   ));
 
@@ -183,8 +218,11 @@ const VendorsTable = () => {
         />
       )}
       <Box sx={{ paddingBottom: '100px' }}>
-        <TableContainer component={Paper} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
-          <MuiTable>
+        <TableContainer
+          {...(isHeadAndAbove ? { component: Paper } : {})}
+          sx={{ borderRadius: '8px', overflow: 'hidden', backgroundColor: theme.palette.background.default }}
+        >
+          <MuiTable sx={{ ...(!isHeadAndAbove && { maxWidth: '800px' }) }}>
             <TableHead>
               <TableRow>
                 <TableCell
@@ -200,62 +238,92 @@ const VendorsTable = () => {
                 >
                   Vendor
                 </TableCell>
-                <TableCell
-                  align="center"
-                  sx={{
-                    fontWeight: 'bold',
-                    fontSize: '1.5em',
-                    backgroundColor: '#ef4345',
-                    color: 'white'
-                  }}
-                >
-                  Username
-                </TableCell>
-                <TableCell
-                  align="center"
-                  sx={{
-                    fontWeight: 'bold',
-                    fontSize: '1.5em',
-                    backgroundColor: '#ef4345',
-                    color: 'white'
-                  }}
-                >
-                  Password
-                </TableCell>
-                <TableCell
-                  align="center"
-                  sx={{
-                    fontWeight: 'bold',
-                    fontSize: '1.5em',
-                    backgroundColor: '#ef4345',
-                    color: 'white'
-                  }}
-                >
-                  Discount
-                </TableCell>
-                <TableCell
-                  align="center"
-                  sx={{
-                    fontWeight: 'bold',
-                    fontSize: '1.5em',
-                    backgroundColor: '#ef4345',
-                    color: 'white'
-                  }}
-                >
-                  2FA Contact
-                </TableCell>
-                <TableCell
-                  align="center"
-                  sx={{
-                    fontWeight: 'bold',
-                    fontSize: '1.5em',
-                    backgroundColor: '#ef4345',
-                    color: 'white',
-                    borderRadius: '0px 10px 0px 0px'
-                  }}
-                >
-                  Notes
-                </TableCell>
+                {isHeadAndAbove ? (
+                  <>
+                    <TableCell
+                      align="center"
+                      sx={{
+                        fontWeight: 'bold',
+                        fontSize: '1.5em',
+                        backgroundColor: '#ef4345',
+                        color: 'white'
+                      }}
+                    >
+                      Username
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{
+                        fontWeight: 'bold',
+                        fontSize: '1.5em',
+                        backgroundColor: '#ef4345',
+                        color: 'white'
+                      }}
+                    >
+                      Password
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{
+                        fontWeight: 'bold',
+                        fontSize: '1.5em',
+                        backgroundColor: '#ef4345',
+                        color: 'white'
+                      }}
+                    >
+                      Discount
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{
+                        fontWeight: 'bold',
+                        fontSize: '1.5em',
+                        backgroundColor: '#ef4345',
+                        color: 'white'
+                      }}
+                    >
+                      2FA Contact
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{
+                        fontWeight: 'bold',
+                        fontSize: '1.5em',
+                        backgroundColor: '#ef4345',
+                        color: 'white',
+                        borderRadius: '0px 10px 0px 0px'
+                      }}
+                    >
+                      Notes
+                    </TableCell>
+                  </>
+                ) : (
+                  <>
+                    <TableCell
+                      align="center"
+                      sx={{
+                        fontWeight: 'bold',
+                        fontSize: '1.5em',
+                        backgroundColor: '#ef4345',
+                        color: 'white'
+                      }}
+                    >
+                      Date Added
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{
+                        fontWeight: 'bold',
+                        fontSize: '1.5em',
+                        backgroundColor: '#ef4345',
+                        color: 'white',
+                        borderRadius: '0px 10px 0px 0px'
+                      }}
+                    >
+                      Added By
+                    </TableCell>
+                  </>
+                )}
               </TableRow>
             </TableHead>
             <TableBody sx={{ backgroundColor: '#121313' }}>{vendorTableRows}</TableBody>
@@ -264,28 +332,30 @@ const VendorsTable = () => {
       </Box>
       <PaginationFooter
         footerButton={
-          <NERButton
-            variant="contained"
-            onClick={() => {
-              setCreateModalShow(true);
-            }}
-            sx={{
-              borderRadius: '8px',
-              color: '#ededed',
-              backgroundColor: '#ef4345',
-              padding: '2px 20px',
-              display: 'inline-flex',
-              fontSize: '20px',
-              fontWeight: 700,
-              textTransform: 'none',
-              marginBottom: '7px',
-              '&:hover': {
-                backgroundColor: '#c74340'
-              }
-            }}
-          >
-            Add Vendor
-          </NERButton>
+          isHeadAndAbove && (
+            <NERButton
+              variant="contained"
+              onClick={() => {
+                setCreateModalShow(true);
+              }}
+              sx={{
+                borderRadius: '8px',
+                color: '#ededed',
+                backgroundColor: '#ef4345',
+                padding: '2px 20px',
+                display: 'inline-flex',
+                fontSize: '20px',
+                fontWeight: 700,
+                textTransform: 'none',
+                marginBottom: '7px',
+                '&:hover': {
+                  backgroundColor: '#c74340'
+                }
+              }}
+            >
+              Add Vendor
+            </NERButton>
+          )
         }
         footerInfoBoxes={[<Box># of Vendors: {vendors.length}</Box>]}
         totalItems={vendors.length}
@@ -299,4 +369,4 @@ const VendorsTable = () => {
   );
 };
 
-export default VendorsTable;
+export default VendorTable;
