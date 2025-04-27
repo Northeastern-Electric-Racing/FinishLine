@@ -48,6 +48,7 @@ export interface Project extends WbsElement {
   teams: TeamPreview[];
   tasks: Task[];
   favoritedBy: UserPreview[];
+  abbreviation?: string;
 }
 
 export type ProjectPreview = Pick<
