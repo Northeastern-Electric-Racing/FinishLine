@@ -4,13 +4,13 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import { useGetAllVendors } from '../../hooks/finance.hooks';
 import { datePipe } from '../../utils/pipes';
 import ErrorPage from '../ErrorPage';
-import Footer from '../../components/Footer';
 import PageLayout from '../../components/PageLayout';
+import PaginationFooter from '../../components/PaginationFooter';
 
 const MembersCompanies = () => {
   const { data: vendors, isLoading: vendorIsLoading, isError: vendorIsError, error: vendorError } = useGetAllVendors();
   const [currentPage, setCurrentPage] = useState<number>(0);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(15);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(14);
 
   if (!vendors || vendorIsLoading) {
     return <LoadingIndicator />;
@@ -119,7 +119,7 @@ const MembersCompanies = () => {
             <TableBody>{vendorTableRows}</TableBody>
           </MuiTable>
         </Box>
-        <Footer
+        <PaginationFooter
           footerInfoBoxes={[<Box># of Vendors: {vendors.length}</Box>]}
           totalItems={vendors.length}
           currentPage={currentPage}
