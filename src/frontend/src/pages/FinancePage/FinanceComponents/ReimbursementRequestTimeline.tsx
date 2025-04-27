@@ -34,7 +34,6 @@ const ReimbursementRequestTimeline: React.FC<TimelineProps> = ({ reimbursementRe
   if (isLoading || !Comments) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
-  console.log('hell0');
   return (
     <Stack direction="column" alignItems="center" spacing={0.5}>
       <FirstSection reimbursementRequestId={reimbursementRequestId} comments={Comments} />
@@ -107,7 +106,7 @@ const FirstSection: React.FC<FirstSectionProps> = ({ reimbursementRequestId, com
             mt: 0.5
           }}
         />
-        {comments.length == 0 ? <Circle sx={{ fontSize: 20 }} /> : <></>}
+        {comments.length == 0 ? <Circle sx={{ fontSize: 20, mt: 0.5 }} /> : <></>}
       </Box>
 
       <Stack flex={1} alignItems={'flex-start'}>

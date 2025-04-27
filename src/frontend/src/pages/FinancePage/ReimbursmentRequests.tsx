@@ -278,7 +278,6 @@ const ReimbursementRequests: React.FC = () => {
         />
       </Box>
       <ReimbursementRequestTimeline reimbursementRequestId={'7f118975-c63f-4bb6-8a46-4c18f28bd0e6'} />
-      <ReimbursementRequestTable userReimbursementRequests={[]} allReimbursementRequests={[]} />
     </Box>
   );
 };
