@@ -38,7 +38,7 @@ import {
   partReviewTransformer
 } from '../transformers/part-review.transformer';
 import { isUserPartOfTeams } from '../utils/teams.utils';
-import { uploadFile, downloadImageFile } from '../utils/google-integration.utils';
+import { uploadFile, downloadFile } from '../utils/google-integration.utils';
 import ProjectsService from './projects.services';
 
 export default class PartReviewService {
@@ -360,7 +360,7 @@ export default class PartReviewService {
       data: {
         notes,
         completedAt,
-        ...(fileIds !== undefined && { fileIds })
+        fileIds: fileIds ? fileIds : review.fileIds
       },
       ...getPartReviewQueryArgs(organizationId)
     });
@@ -1071,19 +1071,9 @@ export default class PartReviewService {
    * @returns the file buffer and MIME type
    */
   static async downloadFile(fileId: string): Promise<{ buffer: Buffer; type: string }> {
-    try {
-      const fileData = await downloadImageFile(fileId);
+    const fileData = await downloadFile(fileId);
 
-      if (!fileData) {
-        throw new NotFoundException('File', fileId);
-      }
-
-      return fileData;
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        throw new HttpException(500, `Failed to Download File(${fileId}): ${error.message}`);
-      }
-      throw error;
-    }
+    if (!fileData) throw new NotFoundException('File', fileId);
+    return fileData;
   }
 }

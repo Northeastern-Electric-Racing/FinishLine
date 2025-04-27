@@ -4,15 +4,15 @@ import DownloadIcon from '@mui/icons-material/Download';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useForm, Controller } from 'react-hook-form';
 import { useQueryClient } from 'react-query';
-import NERAutocomplete from './NERAutocomplete';
-import NERSuccessButton from './NERSuccessButton';
-import NERFailButton from './NERFailButton';
-import ReactHookTextField from './ReactHookTextField';
-import { useEditPartReview, useSinglePart } from '../hooks/part-review.hooks';
+import NERAutocomplete from '../../../components/NERAutocomplete';
+import NERSuccessButton from '../../../components/NERSuccessButton';
+import NERFailButton from '../../../components/NERFailButton';
+import ReactHookTextField from '../../../components/ReactHookTextField';
+import { useEditPartReview, useSinglePart } from '../../../hooks/part-review.hooks';
 import { Review_Status } from 'shared/src/types/part-review.types';
-import { ToastContext } from './Toast/ToastProvider';
+import { ToastContext } from '../../../components/Toast/ToastProvider';
 import { PartReview } from 'shared';
-import { apiUrls } from '../utils/urls';
+import { apiUrls } from '../../../utils/urls';
 
 interface ReviewSidebarProps {
   wbsNum: string;

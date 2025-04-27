@@ -21,7 +21,8 @@ import {
   getPartsFromProject,
   getSinglePart,
   getAllCommonMistakes,
-  uploadPreviewImage
+  uploadPreviewImage,
+  setUploadReviewFiles
 } from '../apis/part-review.api';
 
 export interface PartPayload {
@@ -282,6 +283,20 @@ export const useEditPartReview = (reviewId: string) => {
   );
 };
 
+export const useUploadReviewFiles = (reviewId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<any, unknown, File[]>(
+    async (images: File[]) => {
+      const { data } = await setUploadReviewFiles(reviewId, images);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['parts']);
+      }
+    }
+  );
+};
 /**
  * Custom React Hook to get all common mistakes
  *
