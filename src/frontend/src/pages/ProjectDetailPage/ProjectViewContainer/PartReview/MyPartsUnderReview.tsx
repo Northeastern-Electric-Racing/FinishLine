@@ -35,39 +35,38 @@ const MyPartsUnderReview: React.FC<MyPartsUnderReviewProps> = ({ project }) => {
           maxHeight: '200px',
           maxWidth: '100%',
           padding: '8px',
-          border: '1px solid #ccc',
           borderRadius: '8px',
           backgroundColor: '#333333'
         }}
       >
         <Grid container spacing={1}>
           <Grid item xs={6} sm={3} md={2} display={{ xs: 'block', sm: 'block', md: 'block' }}>
-            <Typography variant="h6" sx={{ ml: 2 }}>
+            <Typography variant="body1" sx={{ ml: 2 }}>
               Part Name
             </Typography>
           </Grid>
           <Grid item sm={3} md={2} display={{ xs: 'none', sm: 'block', md: 'block' }}>
-            <Typography variant="h6" sx={{ ml: 2 }}>
+            <Typography variant="body1" sx={{ ml: 2 }}>
               Assignee(s)
             </Typography>
           </Grid>
           <Grid item sm={3} md={2} display={{ xs: 'none', sm: 'block', md: 'block' }}>
-            <Typography variant="h6" sx={{ ml: 2 }}>
+            <Typography variant="body1" sx={{ ml: 2 }}>
               Reviewer(s)
             </Typography>
           </Grid>
           <Grid item sm={3} md={2} display={{ xs: 'none', sm: 'none', md: 'block' }}>
-            <Typography variant="h6" sx={{ ml: 2 }}>
+            <Typography variant="body1" sx={{ ml: 2 }}>
               Latest Submission From
             </Typography>
           </Grid>
           <Grid item sm={3} md={2} display={{ xs: 'none', sm: 'none', md: 'block' }}>
-            <Typography variant="h6" sx={{ ml: 2 }}>
+            <Typography variant="body1" sx={{ ml: 2 }}>
               Latest Review From
             </Typography>
           </Grid>
           <Grid item xs={6} sm={3} md={2} display={{ xs: 'block', sm: 'block', md: 'block' }}>
-            <Typography variant="h6" sx={{ ml: 2 }}>
+            <Typography variant="body1" sx={{ ml: 2 }}>
               Review Status
             </Typography>
           </Grid>
@@ -75,17 +74,17 @@ const MyPartsUnderReview: React.FC<MyPartsUnderReviewProps> = ({ project }) => {
       </Box>
       <Box
         sx={{
+          backgroundColor: '#222222',
           maxHeight: '200px',
           maxWidth: '100%',
           overflowY: 'scroll',
           padding: '8px',
-          border: '1px solid #ccc',
           borderRadius: '8px',
           '&::-webkit-scrollbar': {
             width: '8px'
           },
           '&::-webkit-scrollbar-thumb': {
-            backgroundColor: '#ef4244',
+            backgroundColor: '#c44546',
             borderRadius: '4px'
           }
         }}
@@ -96,7 +95,7 @@ const MyPartsUnderReview: React.FC<MyPartsUnderReviewProps> = ({ project }) => {
             <Grid item xs={12} key={part.partId}>
               <Box
                 sx={{
-                  border: '1px solid #ccc',
+                  backgroundColor: '#3f3f3f',
                   borderRadius: '8px',
                   padding: '16px'
                 }}
