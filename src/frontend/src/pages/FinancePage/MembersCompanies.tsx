@@ -7,7 +7,7 @@ import ErrorPage from '../ErrorPage';
 import Footer from '../../components/Footer';
 import PageLayout from '../../components/PageLayout';
 
-const MemberCompaniesPage = () => {
+const MembersCompanies = () => {
   const { data: vendors, isLoading: vendorIsLoading, isError: vendorIsError, error: vendorError } = useGetAllVendors();
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(15);
@@ -73,7 +73,7 @@ const MemberCompaniesPage = () => {
 
   return (
     <Box>
-      <PageLayout title="Companies">
+      <PageLayout title="Vendors">
         <Box sx={{ paddingBottom: '100px' }}>
           <MuiTable sx={{ maxWidth: '800px' }}>
             <TableHead>
@@ -89,7 +89,7 @@ const MemberCompaniesPage = () => {
                     height: '60px'
                   }}
                 >
-                  Company Name
+                  Vendor
                 </TableCell>
                 <TableCell
                   align="center"
@@ -120,7 +120,7 @@ const MemberCompaniesPage = () => {
           </MuiTable>
         </Box>
         <Footer
-          footerInfoBoxes={[<Box># of Companies: {vendors.length}</Box>]}
+          footerInfoBoxes={[<Box># of Vendors: {vendors.length}</Box>]}
           totalItems={vendors.length}
           currentPage={currentPage}
           rowsPerPage={rowsPerPage}
@@ -133,4 +133,4 @@ const MemberCompaniesPage = () => {
   );
 };
 
-export default MemberCompaniesPage;
+export default MembersCompanies;

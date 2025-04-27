@@ -25,7 +25,7 @@ import DeleteVendorModal from './FinanceComponents/DeleteVendorModal';
 import CreateVendorModal from './FinanceComponents/CreateVendorModal';
 import EditVendorModal from './FinanceComponents/EditVendorModal';
 
-const CompaniesTable = () => {
+const VendorsTable = () => {
   const { data: vendors, isLoading: vendorIsLoading, isError: vendorIsError, error: vendorError } = useGetAllVendors();
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
   const [clickedEditVendor, setClickedEditVendor] = useState<Vendor | undefined>(undefined);
@@ -197,7 +197,7 @@ const CompaniesTable = () => {
                     height: '60px'
                   }}
                 >
-                  Company
+                  Vendor
                 </TableCell>
                 <TableCell
                   align="center"
@@ -282,10 +282,10 @@ const CompaniesTable = () => {
               }
             }}
           >
-            Add Company
+            Add Vendor
           </NERButton>
         }
-        footerInfoBoxes={[<Box># of Companies: {vendors.length}</Box>]}
+        footerInfoBoxes={[<Box># of Vendors: {vendors.length}</Box>]}
         totalItems={vendors.length}
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}
@@ -297,4 +297,4 @@ const CompaniesTable = () => {
   );
 };
 
-export default CompaniesTable;
+export default VendorsTable;

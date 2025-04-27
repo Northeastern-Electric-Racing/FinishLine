@@ -267,7 +267,7 @@ const SponsorsTable = () => {
               }
             }}
           >
-            Add Sponsors
+            Add Sponsor
           </NERButton>
         }
         footerInfoBoxes={[<Box># of Sponsors: {sponsors.length}</Box>]}
