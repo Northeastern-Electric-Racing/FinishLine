@@ -91,7 +91,7 @@ describe('Material Tests', () => {
   });
 
   describe('Edit a material', () => {
-    test('Editing an existing material updates the reimbursement request', async () => {
+    test('Updates the reimbursement request when originally undefined', async () => {
       const materialType = await BillOfMaterials.createMaterialType('Resistor', createdUser, org);
       const manufacturer = await BillOfMaterials.createManufacturer(createdUser, 'Digikey', org);
       const oldMaterial = await BillOfMaterials.createMaterial(

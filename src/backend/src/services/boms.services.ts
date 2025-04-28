@@ -547,6 +547,7 @@ export default class BillOfMaterialsService {
    * @param unitName the unit name of the edited material
    * @param assemblyId the assembly id of the edited material
    * @param pdmFileName the pdm file name of the edited material
+   * @param reimbursementRequestId the id of the Reimbursement Request for the material
    * @throws if permission denied or material's wbsElement is undefined/deleted
    * @returns the updated material
    */
@@ -566,7 +567,8 @@ export default class BillOfMaterialsService {
     notes?: string,
     unitName?: string,
     assemblyId?: string,
-    pdmFileName?: string
+    pdmFileName?: string,
+    reimbursementRequestId?: string
   ): Promise<Material> {
     const material = await BillOfMaterialsService.getSingleMaterialWithQueryArgs(materialId, organization);
 
@@ -596,6 +598,16 @@ export default class BillOfMaterialsService {
       if (!unit) throw new NotFoundException('Unit', unitName);
     }
 
+    if (reimbursementRequestId) {
+      const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+        where: { reimbursementRequestId, dateDeleted: null }
+      });
+
+      if (!reimbursementRequest) {
+        throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+      }
+    }
+
     const manufacturer = await BillOfMaterialsService.getSingleManufacturerWithQueryArgs(manufacturerName, organization);
 
     const updatedMaterial = await prisma.material.update({
@@ -614,7 +626,8 @@ export default class BillOfMaterialsService {
         notes,
         wbsElementId: project.wbsElementId,
         assemblyId,
-        pdmFileName
+        pdmFileName,
+        reimbursementRequestId
       },
       ...getMaterialQueryArgs(organization.organizationId)
     });
