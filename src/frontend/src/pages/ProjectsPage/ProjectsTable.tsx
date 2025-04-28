@@ -155,7 +155,7 @@ const ProjectsTable: React.FC = () => {
         rows={
           // flatten some complex data to allow MUI to sort/filter yet preserve the original data being available to the front-end
           data
-            ?.filter((project) => project.status !== 'COMPLETE')
+            ?.filter((project) => project.status !== WbsElementStatus.Complete)
             .map((v) => ({
               ...v,
               carNumber: v.wbsNum.carNumber,
