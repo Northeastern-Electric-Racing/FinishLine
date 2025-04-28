@@ -84,9 +84,9 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organ
           route: routes.REIMBURSEMENT_REQUESTS
         },
         {
-          name: 'Companies & Sponsors',
+          name: 'Companies',
           icon: <ShoppingCartIcon sx={{ fontSize: '20px' }} />,
-          route: routes.COMPANIES_SPONSORS
+          route: routes.COMPANIES
         },
         {
           /* FOR REFRENCE (TO BE REMOVED) */
