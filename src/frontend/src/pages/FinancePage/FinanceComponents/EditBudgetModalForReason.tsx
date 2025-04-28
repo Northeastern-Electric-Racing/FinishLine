@@ -83,7 +83,6 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
     if (!currentCategoryId) return;
 
     const payload = {
-      otherProductReasonId: data.category,
       updatedIndexCodeId: data.updatedIndexCode,
       updatedBudget: data.updatedBudget
     };

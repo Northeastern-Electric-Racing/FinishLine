@@ -203,7 +203,6 @@ export interface EditSponsorTaskPayload {
 }
 
 export interface EditOtherReimbursementProductReasonPayload {
-  otherProductReasonId: string;
   updatedIndexCodeId: string;
   updatedBudget: number;
 }
