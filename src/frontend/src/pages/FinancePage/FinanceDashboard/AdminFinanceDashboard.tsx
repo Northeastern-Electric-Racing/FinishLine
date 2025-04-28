@@ -14,13 +14,12 @@ import { useCurrentUser } from '../../../hooks/users.hooks';
 import { NERButton } from '../../../components/NERButton';
 import { ArrowDropDownIcon } from '@mui/x-date-pickers/icons';
 import { ListItemIcon, Menu, MenuItem } from '@mui/material';
-import { useHistory } from 'react-router-dom';
 import PendingAdvisorModal from '../FinanceComponents/PendingAdvisorListModal';
 import TotalAmountSpentModal from '../FinanceComponents/TotalAmountSpentModal';
 import { DatePicker } from '@mui/x-date-pickers';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import WorkIcon from '@mui/icons-material/Work';
-import { isGuest } from 'shared';
+import { isAdmin } from 'shared';
 
 interface AdminFinanceDashboardProps {
   startDate?: Date;
@@ -29,7 +28,6 @@ interface AdminFinanceDashboardProps {
 
 const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate, endDate }) => {
   const user = useCurrentUser();
-  const history = useHistory();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [tabIndex, setTabIndex] = useState<number>(0);
@@ -126,16 +124,16 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
     '.MuiInputLabel-root': {
       color: 'white',
       fontSize: '13px',
-      transform: 'translate(14px, 9px) scale(1)'
+      transform: 'translate(15px, 8px) scale(1)'
     },
 
     '.MuiInputLabel-shrink': {
-      transform: 'translate(14px, 2px) scale(0.8)' // Balanced position
+      display: 'none'
     },
 
     '& .MuiInputBase-input': {
       color: 'white',
-      paddingTop: '8px' // Slight push down to avoid clash
+      paddingTop: '8px'
     },
 
     '& .MuiOutlinedInput-notchedOutline': {
@@ -158,41 +156,42 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
         flexWrap: 'wrap'
       }}
     >
-      {/* From DatePicker */}
       <DatePicker
         label="Start Date"
         value={startDateState}
         slotProps={{
           textField: {
             size: 'small',
-            sx: datePickerStyle
+            sx: datePickerStyle,
+            InputLabelProps: {
+              shrink: startDateState !== undefined // Shrink the label if a date is selected
+            }
           },
           field: { clearable: true }
         }}
         onChange={(newValue: Date | null) => setStartDateState(newValue ?? undefined)}
       />
 
-      {/* Dash between the date pickers */}
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <span style={{ fontSize: '24px', margin: '0 8px' }}>-</span>
       </Box>
 
-      {/* Until DatePicker */}
       <DatePicker
         label="End Date"
         value={endDateState}
         slotProps={{
           textField: {
             size: 'small',
-            sx: datePickerStyle
+            sx: datePickerStyle,
+            InputLabelProps: {
+              shrink: endDateState !== undefined // Shrink the label if a date is selected
+            }
           },
           field: { clearable: true }
         }}
         onChange={(newValue: Date | null) => setEndDateState(newValue ?? undefined)}
       />
-      {/* Add spacing between date pickers and Actions button */}
       <Box sx={{ ml: 0 }}></Box>
-      {/* Actions Dropdown Button */}
       <NERButton
         endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
         variant="contained"
@@ -201,16 +200,20 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
       >
         Actions
       </NERButton>
-
-      {/* Dropdown Menu */}
       <Menu open={!!anchorEl} anchorEl={anchorEl} onClose={handleDropdownClose}>
-        <MenuItem onClick={() => history.push(routes.NEW_REIMBURSEMENT_REQUEST)} disabled={isGuest(user.role)}>
+        <MenuItem
+          onClick={() => {
+            handleDropdownClose();
+            setShowPendingAdvisorListModal(true);
+          }}
+          disabled={!isFinance || !isAdmin}
+        >
           <ListItemIcon>
             <ListAltIcon fontSize="small" />
           </ListItemIcon>
           Pending Advisor List
         </MenuItem>
-        <MenuItem onClick={() => setShowTotalAmountSpent(true)} disabled={!isFinance}>
+        <MenuItem onClick={() => setShowTotalAmountSpent(true)} disabled={!isFinance || !isAdmin}>
           <ListItemIcon>
             <WorkIcon fontSize="small" />
           </ListItemIcon>
@@ -239,14 +242,14 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
         </Box>
       }
     >
-      {isFinance && (
+      {(isFinance || isAdmin(user.role)) && (
         <PendingAdvisorModal
           open={showPendingAdvisorListModal}
           saboNumbers={allPendingAdvisorList!.map((reimbursementRequest) => reimbursementRequest.saboId!)}
           onHide={() => setShowPendingAdvisorListModal(false)}
         />
       )}
-      {isFinance && (
+      {(isFinance || isAdmin(user.role)) && (
         <TotalAmountSpentModal
           open={showTotalAmountSpent}
           allReimbursementRequests={allReimbursementRequests!}

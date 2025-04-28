@@ -5,18 +5,7 @@ import PageLayout from '../../../components/PageLayout';
 import { Box } from '@mui/system';
 import FullPageTabs from '../../../components/FullPageTabs';
 import { routes } from '../../../utils/routes';
-import { useAllReimbursementRequests, useGetPendingAdvisorList } from '../../../hooks/finance.hooks';
-import { useCurrentUser } from '../../../hooks/users.hooks';
-import { NERButton } from '../../../components/NERButton';
-import { ArrowDropDownIcon } from '@mui/x-date-pickers/icons';
-import { ListItemIcon, Menu, MenuItem } from '@mui/material';
-import { useHistory } from 'react-router-dom';
-import PendingAdvisorModal from '../FinanceComponents/PendingAdvisorListModal';
-import TotalAmountSpentModal from '../FinanceComponents/TotalAmountSpentModal';
 import { DatePicker } from '@mui/x-date-pickers';
-import ListAltIcon from '@mui/icons-material/ListAlt';
-import WorkIcon from '@mui/icons-material/Work';
-import { isGuest } from 'shared';
 import { useGetUsersTeams } from '../../../hooks/teams.hooks';
 import FinanceDashboardTeamView from './FinanceDashboardTeamView';
 
@@ -26,13 +15,7 @@ interface GeneralFinanceDashboardProps {
 }
 
 const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ startDate, endDate }) => {
-  const user = useCurrentUser();
-  const history = useHistory();
-
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [tabIndex, setTabIndex] = useState<number>(0);
-  const [showPendingAdvisorListModal, setShowPendingAdvisorListModal] = useState(false);
-  const [showTotalAmountSpent, setShowTotalAmountSpent] = useState(false);
   const [startDateState, setStartDateState] = useState<Date | undefined>(startDate);
   const [endDateState, setEndDateState] = useState<Date | undefined>(endDate);
 
@@ -42,18 +25,6 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
     isError: allTeamsIsError,
     error: allTeamsError
   } = useGetUsersTeams();
-  const {
-    data: allReimbursementRequests,
-    isLoading: allReimbursementRequestsIsLoading,
-    isError: allReimbursementRequestsIsError,
-    error: allReimbursementRequestsError
-  } = useAllReimbursementRequests();
-  const {
-    data: allPendingAdvisorList,
-    isLoading: allPendingAdvisorListIsLoading,
-    isError: allPendingAdvisorListIsError,
-    error: allPendingAdvisorListError
-  } = useGetPendingAdvisorList();
 
   if (allTeamsIsError) {
     return <ErrorPage error={allTeamsError} />;
@@ -63,64 +34,103 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
     return <LoadingIndicator />;
   }
 
-  if (allReimbursementRequestsIsError) {
-    return <ErrorPage error={allReimbursementRequestsError} />;
-  }
-
-  if (!allReimbursementRequests || allReimbursementRequestsIsLoading) {
-    return <LoadingIndicator />;
-  }
-
-  if (allPendingAdvisorListIsError) {
-    return <ErrorPage error={allPendingAdvisorListError} />;
-  }
-
-  if (!allPendingAdvisorList || allPendingAdvisorListIsLoading) {
-    return <LoadingIndicator />;
-  }
-
   const tabs = allTeams.map((team) => ({
     tabUrlValue: team.teamId,
     tabName: team.teamName
   }));
 
-  const { isFinance } = user;
-
   const defaultTab = 'team';
 
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
+  const datePickerStyle = {
+    width: 120,
+    height: 36,
+    backgroundColor: '#ef4345',
+    color: 'white',
+    fontSize: '13px',
+    textTransform: 'none',
+    fontWeight: 400,
+    border: '1px solid #ef4345',
+    borderRadius: '4px',
+    boxShadow: 'none',
+
+    '.MuiInputBase-root': {
+      height: '36px',
+      padding: '0 8px',
+      color: 'white',
+      fontSize: '13px'
+    },
+
+    '.MuiInputLabel-root': {
+      color: 'white',
+      fontSize: '13px',
+      transform: 'translate(15px, 8px) scale(1)'
+    },
+
+    '.MuiInputLabel-shrink': {
+      display: 'none'
+    },
+
+    '& .MuiInputBase-input': {
+      color: 'white',
+      paddingTop: '8px'
+    },
+
+    '& .MuiOutlinedInput-notchedOutline': {
+      borderColor: '#ef4345'
+    },
+
+    '& .MuiSvgIcon-root': {
+      color: 'white'
+    }
   };
 
-  const handleDropdownClose = () => {
-    setAnchorEl(null);
-  };
+  const dates = (
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        mb: 2,
+        gap: 2,
+        flexWrap: 'wrap'
+      }}
+    >
+      <DatePicker
+        label="Start Date"
+        value={startDateState}
+        slotProps={{
+          textField: {
+            size: 'small',
+            sx: datePickerStyle,
+            InputLabelProps: {
+              shrink: startDateState !== undefined
+            }
+          },
+          field: { clearable: true }
+        }}
+        onChange={(newValue: Date | null) => setStartDateState(newValue ?? undefined)}
+      />
 
-  const financeActionsDropdown = (
-    <>
-      <NERButton
-        endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
-        variant="contained"
-        id="project-actions-dropdown"
-        onClick={handleClick}
-      >
-        Actions
-      </NERButton>
-      <Menu open={!!anchorEl} anchorEl={anchorEl} onClose={handleDropdownClose}>
-        <MenuItem onClick={() => history.push(routes.NEW_REIMBURSEMENT_REQUEST)} disabled={isGuest(user.role)}>
-          <ListItemIcon>
-            <ListAltIcon fontSize="small" />
-          </ListItemIcon>
-          Pending Advisor List
-        </MenuItem>
-        <MenuItem onClick={() => setShowTotalAmountSpent(true)} disabled={!isFinance}>
-          <ListItemIcon>
-            <WorkIcon fontSize="small" />
-          </ListItemIcon>
-          Total Amount Spent
-        </MenuItem>
-      </Menu>
-    </>
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <span style={{ fontSize: '24px', margin: '0 8px' }}>-</span>
+      </Box>
+
+      <DatePicker
+        label="End Date"
+        value={endDateState}
+        slotProps={{
+          textField: {
+            size: 'small',
+            sx: datePickerStyle,
+            InputLabelProps: {
+              shrink: endDateState !== undefined
+            }
+          },
+          field: { clearable: true }
+        }}
+        onChange={(newValue: Date | null) => setEndDateState(newValue ?? undefined)}
+      />
+    </Box>
   );
 
   const selectedTab = tabs.at(tabIndex);
@@ -128,7 +138,7 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
   return (
     <PageLayout
       title="Finance Budget Overview"
-      headerRight={financeActionsDropdown}
+      headerRight={dates}
       tabs={
         <Box borderBottom={1} borderColor="divider" width="100%">
           <FullPageTabs
@@ -142,44 +152,6 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
         </Box>
       }
     >
-      {isFinance && (
-        <PendingAdvisorModal
-          open={showPendingAdvisorListModal}
-          saboNumbers={allPendingAdvisorList!.map((reimbursementRequest) => reimbursementRequest.saboId!)}
-          onHide={() => setShowPendingAdvisorListModal(false)}
-        />
-      )}
-      {isFinance && (
-        <TotalAmountSpentModal
-          open={showTotalAmountSpent}
-          allReimbursementRequests={allReimbursementRequests!}
-          onHide={() => setShowTotalAmountSpent(false)}
-        />
-      )}
-
-      <Box sx={{ mt: 2 }}>
-        <DatePicker
-          label="From"
-          value={startDateState}
-          slotProps={{
-            textField: { fullWidth: true },
-            field: { clearable: true }
-          }}
-          onChange={(newValue: Date | null) => setStartDateState(newValue ?? undefined)}
-        />
-      </Box>
-
-      <Box sx={{ mt: 2 }}>
-        <DatePicker
-          label="Until"
-          value={endDateState}
-          slotProps={{
-            textField: { fullWidth: true },
-            field: { clearable: true }
-          }}
-          onChange={(newValue: Date | null) => setEndDateState(newValue ?? undefined)}
-        />
-      </Box>
       {selectedTab && <FinanceDashboardTeamView teamId={selectedTab.tabUrlValue} />}
     </PageLayout>
   );

@@ -324,7 +324,7 @@ export default class FinanceServices {
     teamTypeId: string,
     startDate?: Date,
     endDate?: Date
-  ): Promise<ReimbursementRequestData[]> {
+  ): Promise<ReimbursementRequestData> {
     return await getReimbursementRequestDataForAdminFinance(
       teamTypeId,
       organization.organizationId,

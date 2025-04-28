@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useGetAllReimbursementRequestData    } from '../../../hooks/finance.hooks';
+import { useGetAllReimbursementRequestData, useGetAllSpendingBarData } from '../../../hooks/finance.hooks';
 import { Grid } from '@mui/material';
 import TitleBox from '../FinanceComponents/TitleBox';
 import PieChart from '../FinanceComponents/PieChart';
@@ -21,6 +21,13 @@ const FinanceDashboardAllView: React.FC<FinanceDashboardAllViewProps> = ({ start
     error: allRRDataError
   } = useGetAllReimbursementRequestData(payload);
 
+  const {
+    data: spendingData,
+    isLoading: spendingDataIsLoading,
+    isError: spendingDataIsError,
+    error: spendingDataError
+  } = useGetAllSpendingBarData(payload);
+
   const [selectedTab, setSelectedTab] = useState('total');
 
   if (allRRDataIsError) {
@@ -28,6 +35,14 @@ const FinanceDashboardAllView: React.FC<FinanceDashboardAllViewProps> = ({ start
   }
 
   if (!allRRData || allRRDataIsLoading) {
+    return <LoadingIndicator />;
+  }
+
+  if (spendingDataIsError) {
+    return <ErrorPage error={spendingDataError} />;
+  }
+
+  if (!spendingData || spendingDataIsLoading) {
     return <LoadingIndicator />;
   }
 
@@ -78,7 +93,6 @@ const FinanceDashboardAllView: React.FC<FinanceDashboardAllViewProps> = ({ start
       </Grid>
       <Grid item xs={12} md={8}>
         {/* <TitleBox title="Spending">{/* You can render the spending data here, e.g., in bars or custom cards </TitleBox> */}
-        ;
       </Grid>
     </Grid>
   );

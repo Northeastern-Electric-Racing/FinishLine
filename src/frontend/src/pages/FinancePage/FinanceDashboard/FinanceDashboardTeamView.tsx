@@ -18,6 +18,7 @@ const FinanceDashboardTeamView: React.FC<FinanceDashboardTeamViewProps> = ({ tea
     isError: rrDataIsError,
     error: rrDataError
   } = useGetReimbursementRequestTeamData({ teamId, startDate, endDate });
+
   const {
     data: spendingBarData,
     isLoading: spendingBarDataIsLoading,
@@ -58,7 +59,6 @@ const FinanceDashboardTeamView: React.FC<FinanceDashboardTeamViewProps> = ({ tea
 
       <Grid item xs={12} md={8}>
         {/* <TitleBox title="Spending">{/* You can render the spending data here, e.g., in bars or custom cards </TitleBox> */}
-        ;
       </Grid>
     </Grid>
   );

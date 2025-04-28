@@ -49,7 +49,7 @@ export const useSingleTeam = (teamId: string) => {
 };
 
 export const useGetUsersTeams = () => {
-  return useQuery<Team[], Error>(['teams', false], async () => {
+  return useQuery<Team[], Error>(['teams', true], async () => {
     const { data } = await getUsersTeams();
     return data;
   });

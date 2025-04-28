@@ -69,24 +69,11 @@ export default class TeamsService {
     const teams = await prisma.team.findMany({
       where: {
         organizationId: organization.organizationId,
+        dateArchived: null,
         OR: [
-          {
-            headId: user.userId
-          },
-          {
-            leads: {
-              some: {
-                userId: user.userId
-              }
-            }
-          },
-          {
-            members: {
-              some: {
-                userId: user.userId
-              }
-            }
-          }
+          { headId: user.userId },
+          { leads: { some: { userId: user.userId } } },
+          { members: { some: { userId: user.userId } } }
         ]
       },
       ...getTeamQueryArgs(organization.organizationId)

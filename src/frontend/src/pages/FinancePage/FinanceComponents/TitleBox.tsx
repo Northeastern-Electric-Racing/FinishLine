@@ -23,6 +23,10 @@ const TitleBox: React.FC<TitleBoxProps> = ({ title, tabs, selectedTab, onTabChan
         backgroundColor: '#2c2c2c',
         borderRadius: 2,
         color: 'white',
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: 0,
+        minWidth: '500px',
         height: '100%'
       }}
     >
@@ -36,15 +40,50 @@ const TitleBox: React.FC<TitleBoxProps> = ({ title, tabs, selectedTab, onTabChan
           onChange={(_, newValue) => onTabChange(newValue)}
           textColor="inherit"
           indicatorColor="primary"
-          sx={{ mb: 2 }}
+          sx={{
+            mb: 2,
+            width: '100%',
+            '& .MuiTabs-flexContainer': {
+              display: 'flex',
+              justifyContent: 'space-between'
+            },
+            '& .MuiTabs-indicator': {
+              backgroundColor: '#dd514c',
+              height: '3px'
+            }
+          }}
         >
           {tabs.map((tab) => (
-            <Tab key={tab.value} label={tab.label} value={tab.value} sx={{ textTransform: 'none' }} />
+            <Tab
+              key={tab.value}
+              label={tab.label}
+              value={tab.value}
+              sx={{
+                textTransform: 'none',
+                flex: 1,
+                maxWidth: 'none',
+                color: 'white',
+                fontWeight: 500,
+                fontSize: '1rem',
+                '&.Mui-selected': {
+                  color: 'white'
+                }
+              }}
+            />
           ))}
         </Tabs>
       )}
 
-      <Box>{children}</Box>
+      <Box
+        sx={{
+          flex: 1,
+          overflow: 'auto',
+          minHeight: 0,
+          minWidth: '100%'
+        }}
+      >
+        {children}
+      </Box>
     </Paper>
   );
 };

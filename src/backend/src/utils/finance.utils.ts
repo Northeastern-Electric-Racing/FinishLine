@@ -333,7 +333,7 @@ export const getReimbursementRequestsForReimbursementRequestsByDivision = async 
   organizationId: string,
   startDate: Date | null,
   endDate: Date | null
-): Promise<ReimbursementRequestData[]> => {
+): Promise<ReimbursementRequestData> => {
   const division = await prisma.team_Type.findUnique({
     where: {
       organizationId,
@@ -358,7 +358,14 @@ export const getReimbursementRequestsForReimbursementRequestsByDivision = async 
 
   if (!division) throw new NotFoundException('Team Type', teamTypeId);
 
-  const results = [];
+  const results: ReimbursementRequestData = {
+    totalBudget: 0,
+    pendingFinance: 0,
+    pendingLeadership: 0,
+    submittedToSabo: 0,
+    reimbursed: 0,
+    available: 0
+  };
 
   for (const team of division.teams) {
     const data: ReimbursementRequestData = await getReimbursementRequestsForReimbursementRequestsByTeam(
@@ -368,7 +375,12 @@ export const getReimbursementRequestsForReimbursementRequestsByDivision = async 
       endDate
     );
 
-    results.push(data);
+    results.totalBudget += data.totalBudget;
+    results.pendingFinance += data.pendingFinance;
+    results.pendingLeadership += data.pendingLeadership;
+    results.submittedToSabo += data.submittedToSabo;
+    results.reimbursed += data.reimbursed;
+    results.available += data.available;
   }
 
   return results;
@@ -383,7 +395,7 @@ export const getAllReimbursementRequestData = async (
     where: {
       dateDeleted: null,
       accountCode: { organizationId },
-      indexCode: { organizationId, name: 'CASH' },
+      indexCode: { organizationId, name: 'CASH', code: '830667' },
       ...getReimbursementRequestWhereInput(startDate, endDate)
     },
     ...getReimbursementRequestQueryArgs(organizationId)
@@ -393,7 +405,7 @@ export const getAllReimbursementRequestData = async (
     where: {
       dateDeleted: null,
       accountCode: { organizationId },
-      indexCode: { organizationId, name: 'BUDGET' },
+      indexCode: { organizationId, name: 'BUDGET', code: '800462' },
       ...getReimbursementRequestWhereInput(startDate, endDate)
     },
     ...getReimbursementRequestQueryArgs(organizationId)
@@ -561,40 +573,31 @@ export const getReimbursementRequestCategoryData = async (
     return teamAcc + teamBudget;
   }, 0);
 
-  const pendingFinance = reimbursementRequests.reduce((acc, curr) => {
-    if (
-      curr.reimbursementStatuses[curr.reimbursementStatuses.length - 1].type === Reimbursement_Status_Type.PENDING_FINANCE
-    ) {
-      return acc + curr.totalCost;
-    }
-    return acc;
-  }, 0);
+  let pendingFinance = 0;
+  let pendingLeadership = 0;
+  let submittedToSabo = 0;
+  let reimbursed = 0;
 
-  const pendingLeadership = reimbursementRequests.reduce((acc, curr) => {
-    if (
-      curr.reimbursementStatuses[curr.reimbursementStatuses.length - 1].type ===
-      Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL
-    ) {
-      return acc + curr.totalCost;
-    }
-    return acc;
-  }, 0);
+  reimbursementRequests.forEach((req) => {
+    const lastStatus = req.reimbursementStatuses.at(-1)?.type;
 
-  const submittedToSabo = reimbursementRequests.reduce((acc, curr) => {
-    if (
-      curr.reimbursementStatuses[curr.reimbursementStatuses.length - 1].type === Reimbursement_Status_Type.SABO_SUBMITTED
-    ) {
-      return acc + curr.totalCost;
+    switch (lastStatus) {
+      case Reimbursement_Status_Type.PENDING_FINANCE:
+        pendingFinance += req.totalCost;
+        break;
+      case Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL:
+        pendingLeadership += req.totalCost;
+        break;
+      case Reimbursement_Status_Type.SABO_SUBMITTED:
+        submittedToSabo += req.totalCost;
+        break;
+      case Reimbursement_Status_Type.REIMBURSED:
+        reimbursed += req.totalCost;
+        break;
+      default:
+        break;
     }
-    return acc;
-  }, 0);
-
-  const reimbursed = reimbursementRequests.reduce((acc, curr) => {
-    if (curr.reimbursementStatuses[curr.reimbursementStatuses.length - 1].type === Reimbursement_Status_Type.REIMBURSED) {
-      return acc + curr.totalCost;
-    }
-    return acc;
-  }, 0);
+  });
 
   const totalBalance = reimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0);
 
@@ -671,7 +674,7 @@ export const getReimbursementRequestDataForAdminFinance = (
   organizationId: string,
   startDate: Date | null,
   endDate: Date | null
-): Promise<ReimbursementRequestData[]> => {
+): Promise<ReimbursementRequestData> => {
   return getReimbursementRequestsForReimbursementRequestsByDivision(teamTypeId, organizationId, startDate, endDate);
 };
 
