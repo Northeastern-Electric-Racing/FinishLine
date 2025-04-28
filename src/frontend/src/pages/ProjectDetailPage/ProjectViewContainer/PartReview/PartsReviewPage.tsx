@@ -9,6 +9,7 @@ import CommonMistakes from './CommonMistakes';
 import { usePartsFromProject } from '../../../../hooks/part-review.hooks';
 import ErrorPage from '../../../ErrorPage';
 import { Link as RouterLink } from 'react-router-dom';
+import CreateMenu from './PartReviewComponents/CreateMenu';
 
 const PartsReviewPage = ({ project }: { project: Project }) => {
   const currentUser = useCurrentUser();
@@ -23,7 +24,7 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
 
   return (
     <Box>
-      <CreateMenu project={project} />
+      <CreateMenu wbsNum={project.wbsNum} partsInProject={parts} />
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <FormGroup>

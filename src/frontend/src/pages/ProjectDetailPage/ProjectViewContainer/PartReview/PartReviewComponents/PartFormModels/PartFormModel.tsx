@@ -1,25 +1,24 @@
-import { Part, PartTag, Project, Review_Status, WbsNumber, wbsPipe } from 'shared';
+import { Part, PartPreview, Review_Status, WbsNumber, wbsPipe } from 'shared';
 import { PartPayload, useGetAllPartTags } from '../../../../../../hooks/part-review.hooks';
 import { useToast } from '../../../../../../hooks/toasts.hooks';
 import * as yup from 'yup';
-import { useTheme } from '@mui/material/styles';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import React, { useState } from 'react';
 import NERFormModal from '../../../../../../components/NERFormModal';
-import { Autocomplete, AutocompleteRenderInputParams, Box, Grid, MenuItem, Select, Switch, Tooltip } from '@mui/material';
+import { Autocomplete, Grid } from '@mui/material';
 import { FormControl, FormHelperText, FormLabel, TextField } from '@mui/material';
 import ReactHookTextField from '../../../../../../components/ReactHookTextField';
-import NERAutocomplete from '../../../../../../components/NERAutocomplete';
 import ErrorPage from '../../../../../ErrorPage';
 import LoadingIndicator from '../../../../../../components/LoadingIndicator';
+import { useAllUsers } from '../../../../../../hooks/users.hooks';
 
 interface PartFormModalProps {
   open: boolean;
   handleClose: () => void;
   defaultValues?: Part;
   onSubmit: (data: PartPayload) => void;
-  partsInProject: Part[];
+  partsInProject: PartPreview[];
   wbsNum: WbsNumber;
 }
 
@@ -29,32 +28,36 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
   const [assigneeIds, setAssigneeIds] = useState<string[]>(
     defaultValues ? defaultValues.assignees.map((user) => user.userId) : []
   );
+  const [reviewerIds, setReviewerIds] = useState<string[]>(
+    defaultValues ? defaultValues.reviewRequests.map((reviewReq) => reviewReq.reviewerRequested.userId) : []
+  );
 
   const schema = yup.object().shape({
     wbsNum: yup.string().required(),
     index: yup
       .number()
       .required()
-      .test((idx) => idx === defaultValues?.index || !partsInProject.some((part) => part.index === idx)),
+      .test({
+        name: 'unique-index',
+        message: 'Index not unique',
+        test: (idx) => idx === defaultValues?.index || !partsInProject.some((part) => part.index === idx)
+      }),
     commonName: yup.string().required(),
-    description: yup.string().optional(),
-    reviewStatus: yup.mixed<Review_Status>().oneOf(Object.values(Review_Status)).required()
+    description: yup.string().optional()
   });
 
   const {
     handleSubmit,
     control,
     reset,
-    formState: { errors },
-    watch
+    formState: { errors }
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
       wbsNum: wbsPipe(wbsNum),
       index: defaultValues?.index,
       commonName: defaultValues?.commonName,
-      description: defaultValues?.description,
-      reviewStatus: defaultValues?.status
+      description: defaultValues?.description
     }
   });
 
@@ -62,8 +65,10 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
     try {
       await onSubmit({
         ...data,
+        reviewStatus: Review_Status.IN_PROGRESS,
         tagIds,
-        assigneeIds
+        assigneeIds,
+        reviewerIds
       });
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -73,9 +78,11 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
     handleClose();
   };
 
-  const { data: tags, isLoading, isError, error } = useGetAllPartTags();
-  if (isError) return <ErrorPage message={error?.message} />;
-  if (isLoading || !tags) return <LoadingIndicator />;
+  const { data: tags, isLoading: tagsLoading, isError: tagsIsError, error: tagsError } = useGetAllPartTags();
+  const { data: users, isLoading: usersLoading, isError: usersIsError, error: usersError } = useAllUsers();
+  if (tagsIsError) return <ErrorPage message={tagsError?.message} />;
+  if (usersIsError) return <ErrorPage message={usersError?.message} />;
+  if (tagsLoading || !tags || usersLoading || !users) return <LoadingIndicator />;
 
   return (
     <NERFormModal
@@ -89,40 +96,37 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
       showCloseButton
     >
       <Grid container spacing={2} alignItems="flex-start" maxWidth={'100%'}>
-        <Grid item xs={6}>
+        <Grid item xs={3}>
           <FormControl fullWidth>
             <FormLabel>Index</FormLabel>
-            <ReactHookTextField name="index" control={control} />
+            <ReactHookTextField name="index" type="number" control={control} placeholder="XXXXX" />
             <FormHelperText error>{errors.index?.message}</FormHelperText>
           </FormControl>
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={9}>
           <FormControl fullWidth>
             <FormLabel>Common Name</FormLabel>
-            <ReactHookTextField name="commonName" control={control} />
+            <ReactHookTextField name="commonName" control={control} placeholder="Name..." />
             <FormHelperText error>{errors.commonName?.message}</FormHelperText>
           </FormControl>
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           <FormControl fullWidth>
-            <FormLabel>Status</FormLabel>
-            <Controller
-              name="reviewStatus"
+            <FormLabel>Description (optional)</FormLabel>
+            <ReactHookTextField
+              required={false}
+              name="description"
               control={control}
-              render={({ field }) => (
-                <Select {...field} error={!!errors.reviewStatus}>
-                  {Object.values(Review_Status).map((status) => (
-                    <MenuItem value={status}>{status}</MenuItem>
-                  ))}
-                </Select>
-              )}
+              multiline
+              rows={3}
+              placeholder="Description of the part goes here..."
             />
-            <FormHelperText error>{errors.reviewStatus?.message}</FormHelperText>
+            <FormHelperText error>{errors.description?.message}</FormHelperText>
           </FormControl>
         </Grid>
-        <Grid item xs={6} width={'10rem'}>
+        <Grid item xs={12}>
           <FormControl fullWidth>
-            <FormLabel>Tags</FormLabel>
+            <FormLabel>Tags (Optional)</FormLabel>
             <Autocomplete
               multiple
               options={tags}
@@ -132,6 +136,40 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
                 setTagIds(selectedIds);
               }}
               renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Select tags" error={false} />}
+            />
+          </FormControl>
+        </Grid>
+        <Grid item xs={6}>
+          <FormControl fullWidth>
+            <FormLabel>Assignees</FormLabel>
+            <Autocomplete
+              multiple
+              options={users}
+              getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
+              onChange={(_event, value) => {
+                const selectedIds = value.map((user) => user.userId);
+                setAssigneeIds(selectedIds);
+              }}
+              renderInput={(params) => (
+                <TextField {...params} variant="outlined" placeholder="Select User(s)" error={false} />
+              )}
+            />
+          </FormControl>
+        </Grid>
+        <Grid item xs={6} width={'10rem'}>
+          <FormControl fullWidth>
+            <FormLabel>Reviewers</FormLabel>
+            <Autocomplete
+              multiple
+              options={users}
+              getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
+              onChange={(_event, value) => {
+                const selectedIds = value.map((user) => user.userId);
+                setReviewerIds(selectedIds);
+              }}
+              renderInput={(params) => (
+                <TextField {...params} variant="outlined" placeholder="Select User(s)" error={false} />
+              )}
             />
           </FormControl>
         </Grid>

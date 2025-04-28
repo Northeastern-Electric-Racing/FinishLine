@@ -29,7 +29,7 @@ export default class PartReviewController {
 
   static async createPart(req: Request, res: Response, next: NextFunction) {
     try {
-      const { wbsNum, index, commonName, description, reviewStatus, tagIds, assigneeIds } = req.body;
+      const { wbsNum, index, commonName, description, reviewStatus, tagIds, assigneeIds, reviewerIds } = req.body;
       const part = await PartReviewService.createPart(
         req.organization,
         wbsNum,
@@ -39,7 +39,8 @@ export default class PartReviewController {
         description,
         reviewStatus,
         tagIds,
-        assigneeIds
+        assigneeIds,
+        reviewerIds
       );
       res.status(200).json(part);
     } catch (error: unknown) {

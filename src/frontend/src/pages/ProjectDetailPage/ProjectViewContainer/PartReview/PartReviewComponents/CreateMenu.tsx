@@ -5,14 +5,15 @@ import PostAddOutlinedIcon from '@mui/icons-material/PostAddOutlined';
 import { useState } from 'react';
 import { useCurrentUser } from '../../../../../hooks/users.hooks';
 import { Box, Button, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
-import { Project, isGuest } from 'shared';
+import { PartPreview, Project, WbsNumber, isGuest } from 'shared';
 import CreatePartModal from './PartFormModels/CreatePartModel';
 
 type CreateMenuProps = {
-  project: Project;
+  wbsNum: WbsNumber;
+  partsInProject: PartPreview[];
 };
 
-const CreateMenu: React.FC<CreateMenuProps> = ({ project }: CreateMenuProps) => {
+const CreateMenu: React.FC<CreateMenuProps> = ({ wbsNum, partsInProject }: CreateMenuProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [showAddSubmission, setShowAddSubmission] = useState(false);
   const [showCreatePart, setShowCreatePart] = useState(false);
@@ -32,8 +33,8 @@ const CreateMenu: React.FC<CreateMenuProps> = ({ project }: CreateMenuProps) => 
       <CreatePartModal
         open={showCreatePart}
         handleClose={() => setShowCreatePart(false)}
-        partsInProject={[]}
-        wbsNum={project.wbsNum}
+        partsInProject={partsInProject}
+        wbsNum={wbsNum}
       />
       {/* <CreateSubmissionModal open={showAddSubmission} onHide={() => setShowAddSubmission(false)} wbsElement={project} /> */}
       <Button

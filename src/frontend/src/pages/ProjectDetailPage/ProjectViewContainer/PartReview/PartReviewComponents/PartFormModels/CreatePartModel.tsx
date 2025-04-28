@@ -1,4 +1,4 @@
-import { Part, WbsNumber } from 'shared';
+import { PartPreview, WbsNumber } from 'shared';
 import { useCreatePart } from '../../../../../../hooks/part-review.hooks';
 import ErrorPage from '../../../../../ErrorPage';
 import LoadingIndicator from '../../../../../../components/LoadingIndicator';
@@ -7,7 +7,7 @@ import PartFormModal from './PartFormModel';
 interface CreatePartModelProps {
   open: boolean;
   handleClose: () => void;
-  partsInProject: Part[];
+  partsInProject: PartPreview[];
   wbsNum: WbsNumber;
 }
 

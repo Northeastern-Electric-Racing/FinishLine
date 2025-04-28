@@ -35,6 +35,7 @@ export interface PartPayload {
   reviewStatus: Review_Status;
   tagIds: string[];
   assigneeIds: string[];
+  reviewerIds: string[];
 }
 
 export interface EditPartSubmissionPayload {
@@ -95,6 +96,7 @@ export const useCreatePart = () => {
   return useMutation<Part, Error, PartPayload>(
     ['parts', 'create'],
     async (part: PartPayload) => {
+      console.log('tried to create a part');
       const { data } = await createPart(part);
       return data;
     },
