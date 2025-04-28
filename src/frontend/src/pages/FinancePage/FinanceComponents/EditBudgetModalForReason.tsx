@@ -9,18 +9,17 @@ import { useGetAllIndexCodes, useGetAllOtherProductReason } from '../../../hooks
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useEditOtherReimbursementProductReason } from '../../../hooks/finance.hooks';
-import { useParams } from 'react-router';
 
 const schema = yup.object().shape({
   category: yup.string().required('Reason is required'),
-  account: yup.string().required('Account is required'),
-  amount: yup.number().positive('Amount must be positive').required('Amount is required')
+  updatedIndexCode: yup.string().required('Account is required'),
+  updatedBudget: yup.number().positive('Amount must be positive').required('Amount is required')
 });
 
 interface EditBudgetInputs {
   category: string;
-  account: string;
-  amount: number;
+  updatedIndexCode: string;
+  updatedBudget: number;
 }
 
 interface EditBudgetModalForReasonProps {
@@ -32,9 +31,8 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
   showModal,
   handleClose
 }: EditBudgetModalForReasonProps) => {
-  const { id } = useParams<{ id: string }>();
-
   const {
+    watch,
     handleSubmit,
     control,
     reset,
@@ -42,11 +40,13 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
   } = useForm<EditBudgetInputs>({
     resolver: yupResolver(schema),
     defaultValues: {
-      category: undefined,
-      account: undefined,
-      amount: 0
+      category: '',
+      updatedIndexCode: '',
+      updatedBudget: 0
     }
   });
+
+  const currentCategoryId = watch('category');
 
   const {
     data: indexCodes,
@@ -55,7 +55,8 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
     error: indexCodeError
   } = useGetAllIndexCodes();
 
-  const { isLoading: editReasonIsLoading, mutateAsync: editReason } = useEditOtherReimbursementProductReason(id);
+  const { isLoading: editReasonIsLoading, mutateAsync: editReason } =
+    useEditOtherReimbursementProductReason(currentCategoryId);
 
   const {
     data: otherReasons,
@@ -63,8 +64,6 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
     isError: otherReasonIsError,
     error: otherReasonError
   } = useGetAllOtherProductReason();
-
-  if (!id) return <ErrorPage message="ID is missing" />;
 
   if (!indexCodes || indexCodesIsLoading || editReasonIsLoading) {
     return <LoadingIndicator />;
@@ -81,16 +80,15 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
   }
 
   const onSubmit = async (data: EditBudgetInputs) => {
-    if (!id) return;
+    if (!currentCategoryId) return;
 
     const payload = {
       otherProductReasonId: data.category,
-      indexCodeId: data.account,
-      amount: data.amount
+      updatedIndexCodeId: data.updatedIndexCode,
+      updatedBudget: data.updatedBudget
     };
     await editReason(payload);
 
-    reset();
     handleClose();
   };
 
@@ -115,7 +113,7 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
           render={({ field: { onChange, value } }) => (
             <Select
               displayEmpty
-              value={value}
+              value={value !== undefined ? value : ''}
               onChange={onChange}
               renderValue={(selected) => {
                 const selectedReason = otherReasons.find((r) => r.otherProductReasonId === selected);
@@ -152,11 +150,11 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
         <FormLabel sx={{ alignSelf: 'start' }}>Account</FormLabel>
         <Controller
           control={control}
-          name={'account'}
+          name={'updatedIndexCode'}
           render={({ field: { onChange, value } }) => (
             <Select
               displayEmpty
-              value={value}
+              value={value !== undefined ? value : ''}
               onChange={onChange}
               renderValue={(selected) => {
                 const code = indexCodes.find((c) => c.indexCodeId === selected);
@@ -189,12 +187,12 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
         <FormLabel>Amount</FormLabel>
         <ReactHookTextField
           placeholder={'New Amount'}
-          name="amount"
+          name="updatedBudget"
           type="number"
           control={control}
           sx={{ width: 1 }}
           startAdornment={<AttachMoneyIcon />}
-          errorMessage={errors.amount}
+          errorMessage={errors.updatedBudget}
         />
       </FormControl>
     </NERFormModal>

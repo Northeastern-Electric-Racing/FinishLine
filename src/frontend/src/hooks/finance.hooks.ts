@@ -204,8 +204,8 @@ export interface EditSponsorTaskPayload {
 
 export interface EditOtherReimbursementProductReasonPayload {
   otherProductReasonId: string;
-  indexCodeId: string;
-  amount: number;
+  updatedIndexCodeId: string;
+  updatedBudget: number;
 }
 
 /**
