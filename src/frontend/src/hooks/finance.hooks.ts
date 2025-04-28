@@ -50,7 +50,8 @@ import {
   getSpendingBarTeamData,
   getSpendingBarCategoryData,
   getSpendingBarTeamTypeData,
-  getAllSpendingBarData
+  getAllSpendingBarData,
+  deleteVendor
 } from '../apis/finance.api';
 import {
   IndexCode,
@@ -708,6 +709,27 @@ export const useCreateVendor = () => {
     queryClient.invalidateQueries(['vendors']);
     return data;
   });
+};
+
+/**
+ * Hook to delete the given vendor
+ * @param vendorId vendor to be deleted
+ * @returns the deleted vendor
+ */
+export const useDeleteVendor = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ id: string }, Error, string>(
+    ['vendor', 'delete'],
+    async (vendorId: string) => {
+      const { data } = await deleteVendor(vendorId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['vendors']);
+      }
+    }
+  );
 };
 
 /**
