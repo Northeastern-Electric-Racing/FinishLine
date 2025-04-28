@@ -49,8 +49,9 @@ const partsCreate = () => `${parts()}/create`;
 const partsUploadPreviewImage = (partId: string) => `${parts()}/${partId}/upload-preview`;
 const partsEdit = (partId: string) => `${parts()}/${partId}/update`;
 const partsDelete = (partId: string) => `${parts()}/${partId}/delete`;
-const partsCreateSubmission = (partId: string) => `${parts()}/submission/${partId}/create`;
+const partsCreateSubmission = () => `${parts()}/submission/create`;
 const partsEditSubmission = (submissionId: string) => `${parts()}/submission/${submissionId}/update`;
+const partsSubmissionUploadFiles = (submissionId: string) => `${parts()}/submission/${submissionId}/upload-files`;
 const partsCreateReviewRequest = (submissionId: string) => `${parts()}/reviewRequest/${submissionId}/create`;
 const partsDeleteReviewRequest = (reviewRequestId: string) => `${parts()}/reviewRequest/${reviewRequestId}/delete`;
 const partsCreateReview = () => `${parts()}/review/create`;
@@ -212,6 +213,8 @@ const organizationsLogoImage = () => `${organizations()}/logo`;
 const organizationsSetLogoImage = () => `${organizations()}/logo/update`;
 const organizationsSetFeaturedProjects = () => `${organizationsFeaturedProjects()}/set`;
 const organizationsSetWorkspaceId = () => `${organizations()}/workspaceId/set`;
+const organizationsGetPartReviewGuideLink = () => `${organizations()}/part-review-guide-link/get`;
+const organizationsSetPartReviewGuideLink = () => `${organizations()}/part-review-guide-link/set`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
@@ -304,6 +307,7 @@ export const apiUrls = {
   partsDelete,
   partsCreateSubmission,
   partsEditSubmission,
+  partsSubmissionUploadFiles,
   partsCreateReviewRequest,
   partsDeleteReviewRequest,
   partsCreateReview,
@@ -440,6 +444,8 @@ export const apiUrls = {
   organizationsSetLogoImage,
   organizationsSetFeaturedProjects,
   organizationsSetWorkspaceId,
+  organizationsGetPartReviewGuideLink,
+  organizationsSetPartReviewGuideLink,
 
   cars,
   carsCreate,
