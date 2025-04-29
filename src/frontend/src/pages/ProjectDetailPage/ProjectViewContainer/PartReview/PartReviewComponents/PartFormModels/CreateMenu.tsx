@@ -3,10 +3,12 @@ import FilterIcon from '@mui/icons-material/Filter';
 import EditNoteOutlinedIcon from '@mui/icons-material/EditNoteOutlined';
 import PostAddOutlinedIcon from '@mui/icons-material/PostAddOutlined';
 import { useState } from 'react';
-import { useCurrentUser } from '../../../../../hooks/users.hooks';
+import { useCurrentUser } from '../../../../../../hooks/users.hooks';
 import { Box, Button, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
-import { PartPreview, Project, WbsNumber, isGuest } from 'shared';
-import CreatePartModal from './PartFormModels/CreatePartModel';
+import { PartPreview, WbsNumber, isGuest } from 'shared';
+import CreatePartModal from './CreatePartModel';
+import CreateSubmissionModal from './CreateSubmissionModel';
+import CreateReviewModal from './CreateReviewModel';
 
 type CreateMenuProps = {
   wbsNum: WbsNumber;
@@ -17,6 +19,7 @@ const CreateMenu: React.FC<CreateMenuProps> = ({ wbsNum, partsInProject }: Creat
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [showAddSubmission, setShowAddSubmission] = useState(false);
   const [showCreatePart, setShowCreatePart] = useState(false);
+  const [showCreateReivew, setShowCreateReview] = useState(false);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -36,7 +39,16 @@ const CreateMenu: React.FC<CreateMenuProps> = ({ wbsNum, partsInProject }: Creat
         partsInProject={partsInProject}
         wbsNum={wbsNum}
       />
-      {/* <CreateSubmissionModal open={showAddSubmission} onHide={() => setShowAddSubmission(false)} wbsElement={project} /> */}
+      <CreateSubmissionModal
+        open={showAddSubmission}
+        handleClose={() => setShowAddSubmission(false)}
+        partsInProject={partsInProject}
+      />
+      <CreateReviewModal
+        open={showCreateReivew}
+        handleClose={() => setShowCreateReview(false)}
+        partsInProject={partsInProject}
+      />
       <Button
         disabled={isGuest(user.role)}
         onClick={handleClick}
@@ -50,7 +62,12 @@ const CreateMenu: React.FC<CreateMenuProps> = ({ wbsNum, partsInProject }: Creat
         </Typography>
       </Button>
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
-        <MenuItem onClick={() => setShowAddSubmission(true)}>
+        <MenuItem
+          onClick={() => {
+            setShowAddSubmission(true);
+            handleDropdownClose();
+          }}
+        >
           <ListItemIcon>
             <FilterIcon />
           </ListItemIcon>
@@ -58,6 +75,7 @@ const CreateMenu: React.FC<CreateMenuProps> = ({ wbsNum, partsInProject }: Creat
         </MenuItem>
         <MenuItem
           onClick={() => {
+            setShowCreateReview(true);
             handleDropdownClose();
           }}
         >

@@ -30,7 +30,7 @@
     "react": "19.0.0",
     "react-archer": "^4.4.0",
     "react-chartjs-2": "5.2.0",
-    "react-dom": "^19.0.0",
+    "react-dom": "19.0.0",
     "react-draggable": "^4.4.6",
     "react-google-charts": "^5.2.1",
     "react-helmet": "^6.1.0",

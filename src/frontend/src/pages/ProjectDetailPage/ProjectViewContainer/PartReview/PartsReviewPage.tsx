@@ -9,7 +9,7 @@ import CommonMistakes from './CommonMistakes';
 import { usePartsFromProject } from '../../../../hooks/part-review.hooks';
 import ErrorPage from '../../../ErrorPage';
 import { Link as RouterLink } from 'react-router-dom';
-import CreateMenu from './PartReviewComponents/CreateMenu';
+import CreateMenu from './PartReviewComponents/PartFormModels/CreateMenu';
 
 const PartsReviewPage = ({ project }: { project: Project }) => {
   const currentUser = useCurrentUser();

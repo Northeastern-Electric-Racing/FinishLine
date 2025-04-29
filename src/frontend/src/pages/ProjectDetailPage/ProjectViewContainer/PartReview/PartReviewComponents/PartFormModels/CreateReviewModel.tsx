@@ -1,0 +1,31 @@
+import { PartPreview, Review_Status } from 'shared';
+import { useCreatePartReview, useUploadReviewFiles } from '../../../../../../hooks/part-review.hooks';
+import ReviewFormModel from './ReviewFormModel';
+
+interface CreateReviewModelProps {
+  open: boolean;
+  handleClose: () => void;
+  partsInProject: PartPreview[];
+}
+
+const CreateReviewModal = ({ open, handleClose, partsInProject }: CreateReviewModelProps) => {
+  const { mutateAsync: createReview } = useCreatePartReview();
+  const { mutateAsync: uploadFiles } = useUploadReviewFiles();
+
+  const onSubmit = async (data: { submissionId: string; status: Review_Status; notes?: string; files: File[] }) => {
+    const review = await createReview({
+      submissionId: data.submissionId,
+      notes: data.notes,
+      status: data.status
+    });
+
+    await uploadFiles({
+      reviewId: review.partReviewId,
+      files: data.files
+    });
+  };
+
+  return <ReviewFormModel open={open} handleClose={handleClose} onSubmit={onSubmit} partsInProject={partsInProject} />;
+};
+
+export default CreateReviewModal;

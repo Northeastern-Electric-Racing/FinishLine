@@ -64,7 +64,8 @@ describe('part review tests', () => {
       'here is a description',
       Review_Status.IN_PROGRESS,
       [],
-      [nonAdmin.userId, batman.userId]
+      [nonAdmin.userId, batman.userId],
+      []
     );
 
     const submission = await PartReviewService.createSubmission(part.partId, batman, orgId, 'name1', 'notes1');
@@ -125,7 +126,8 @@ describe('part review tests', () => {
       'here is a description',
       Review_Status.IN_PROGRESS,
       [],
-      [nonAdmin.userId, batman.userId]
+      [nonAdmin.userId, batman.userId],
+      []
     );
 
     await expect(
@@ -174,7 +176,8 @@ describe('part review tests', () => {
       'here is a description',
       Review_Status.IN_PROGRESS,
       [tag.partTagId, tag3.partTagId],
-      [nonAdmin.userId, batman.userId]
+      [nonAdmin.userId, batman.userId],
+      []
     );
 
     expect(part.commonName).toBe('part1');
@@ -260,7 +263,8 @@ describe('part review tests', () => {
           'here is a description',
           Review_Status.IN_PROGRESS,
           [],
-          [nonAdmin.userId, batman.userId]
+          [nonAdmin.userId, batman.userId],
+          []
         )
     ).rejects.toThrow(new AccessDeniedException('Only leadership and team members can create a part'));
 
@@ -273,7 +277,8 @@ describe('part review tests', () => {
       'here is a description',
       Review_Status.IN_PROGRESS,
       [],
-      [nonAdmin.userId, batman.userId]
+      [nonAdmin.userId, batman.userId],
+      []
     );
 
     await expect(
@@ -313,7 +318,8 @@ describe('part review tests', () => {
       'here is a description',
       Review_Status.IN_PROGRESS,
       [],
-      [nonAdmin.userId, batman.userId]
+      [nonAdmin.userId, batman.userId],
+      []
     );
 
     await expect(async () => await PartReviewService.deletePart(part.partId, nonLeadership, orgId)).rejects.toThrow(
@@ -352,7 +358,8 @@ describe('part review tests', () => {
       'here is a description',
       Review_Status.IN_PROGRESS,
       [],
-      [nonAdmin.userId, batman.userId]
+      [nonAdmin.userId, batman.userId],
+      []
     );
 
     const submission = await prisma.partSubmission.create({
@@ -421,7 +428,8 @@ describe('part review tests', () => {
       'here is a description',
       Review_Status.IN_PROGRESS,
       [],
-      [nonAdmin.userId, batman.userId]
+      [nonAdmin.userId, batman.userId],
+      []
     );
 
     const submission = await prisma.partSubmission.create({

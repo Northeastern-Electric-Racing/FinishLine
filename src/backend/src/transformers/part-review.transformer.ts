@@ -40,7 +40,11 @@ export const partPreviewTransformer = (part: Prisma.PartGetPayload<PartQueryArgs
     assignees: part.assignees.map(userTransformer),
     reviewRequests: part.reviewRequests.map(partReviewRequestTransformer),
     userCreated: userTransformer(part.userCreated),
-    createdAt: part.createdAt
+    createdAt: part.createdAt,
+    submissions: part.submissions.map((submission) => ({
+      partSubmissionId: submission.partSubmissionId,
+      name: submission.name
+    }))
   };
 };
 

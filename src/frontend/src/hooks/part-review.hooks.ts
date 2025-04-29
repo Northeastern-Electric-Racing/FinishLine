@@ -24,7 +24,8 @@ import {
   getAllCommonMistakes,
   uploadPreviewImage,
   setUploadReviewFiles,
-  getAllPartTags
+  getAllPartTags,
+  setUploadSubmissionFiles
 } from '../apis/part-review.api';
 
 export interface PartPayload {
@@ -53,9 +54,9 @@ export interface PartReviewRequestPayload {
 }
 
 export interface CreatePartReviewPayload {
-  submissisonId: string;
+  submissionId: string;
+  status: Review_Status;
   notes?: string;
-  status?: string;
 }
 
 export interface EditPartReviewPayload {
@@ -289,11 +290,26 @@ export const useEditPartReview = (reviewId: string) => {
   );
 };
 
-export const useUploadReviewFiles = (reviewId: string) => {
+export const useUploadSubmissionFiles = () => {
   const queryClient = useQueryClient();
-  return useMutation<any, unknown, File[]>(
-    async (images: File[]) => {
-      const { data } = await setUploadReviewFiles(reviewId, images);
+  return useMutation<any, unknown, { submissionId: string; files: File[] }>(
+    async (fileUpload: { submissionId: string; files: File[] }) => {
+      const { data } = await setUploadSubmissionFiles(fileUpload.submissionId, fileUpload.files);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['parts']);
+      }
+    }
+  );
+};
+
+export const useUploadReviewFiles = () => {
+  const queryClient = useQueryClient();
+  return useMutation<any, unknown, { reviewId: string; files: File[] }>(
+    async (fileUpload: { reviewId: string; files: File[] }) => {
+      const { data } = await setUploadReviewFiles(fileUpload.reviewId, fileUpload.files);
       return data;
     },
     {
@@ -331,7 +347,6 @@ export const useAllCommonMistakes = () => {
  * @returns a list of all part tags
  */
 export const useGetAllPartTags = () => {
-  const queryClient = useQueryClient();
   return useQuery<PartTag[], Error>(['part tags'], async () => {
     const { data } = await getAllPartTags();
     return data;

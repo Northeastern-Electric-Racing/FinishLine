@@ -21,6 +21,10 @@ export interface PartPreview {
   reviewRequests: PartReviewRequest[];
   createdAt: Date;
   userCreated: User;
+  submissions: {
+    partSubmissionId: string;
+    name: string;
+  }[];
 }
 
 export interface Part extends PartPreview {
