@@ -1,6 +1,6 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
-import { Assembly, MaterialStatus } from 'shared';
+import { Assembly, AuthenticatedUser, MaterialStatus } from 'shared';
 import * as yup from 'yup';
 import LoadingIndicator from '../../../../../components/LoadingIndicator';
 import {
@@ -12,6 +12,8 @@ import {
 import ErrorPage from '../../../../ErrorPage';
 import MaterialFormView from './MaterialFormView';
 import { Decimal } from 'decimal.js';
+import { useCurrentUser } from '../../../../../hooks/users.hooks';
+import { useAllReimbursementRequests, useCurrentUserReimbursementRequests } from '../../../../../hooks/finance.hooks';
 
 const schema = yup.object().shape({
   name: yup.string().required('Enter a name!'),
@@ -31,6 +33,7 @@ const schema = yup.object().shape({
 export interface MaterialFormInput {
   name: string;
   status: MaterialStatus;
+  reimbursementRequestId?: string;
   materialTypeName: string;
   manufacturerName: string;
   manufacturerPartNumber: string;
@@ -46,6 +49,7 @@ export interface MaterialFormInput {
 export interface MaterialDataSubmission {
   name: string;
   status: MaterialStatus;
+  reimbursementRequestId?: string;
   materialTypeName: string;
   manufacturerName: string;
   manufacturerPartNumber: string;
@@ -79,6 +83,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, assemblies, onS
     defaultValues: {
       name: defaultValues?.name ?? '',
       status: defaultValues?.status ?? MaterialStatus.NotReadyToOrder,
+      reimbursementRequestId: defaultValues?.reimbursementRequestId,
       materialTypeName: defaultValues?.materialTypeName ?? '',
       manufacturerPartNumber: defaultValues?.manufacturerPartNumber ?? '',
       quantity: defaultValues?.quantity ?? 0,
@@ -92,6 +97,8 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, assemblies, onS
     },
     resolver: yupResolver(schema)
   });
+
+  const user = useCurrentUser();
 
   const { mutateAsync: createManufacturer, isLoading: isLoadingCreateManufacturer } = useCreateManufacturer();
 
@@ -111,16 +118,49 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, assemblies, onS
     error: manufacturersError
   } = useGetAllManufacturers();
 
+  const {
+    data: allReimbursementRequests,
+    isLoading: isLoadingAllRR,
+    isError: allRRIsError,
+    error: allRRError
+  } = useAllReimbursementRequests();
+  const {
+    data: myReimbursementRequests,
+    isLoading: isLoadingMyRR,
+    isError: myRRIsError,
+    error: myRRError
+  } = useCurrentUserReimbursementRequests();
+
+  const bomEligibleReimbursementRequests = (user: AuthenticatedUser) => {
+    switch (user.role) {
+      case 'APP_ADMIN':
+      case 'ADMIN':
+      case 'HEAD':
+      case 'LEADERSHIP':
+        return allReimbursementRequests ?? [];
+      case 'MEMBER':
+        return myReimbursementRequests ?? [];
+      default:
+        return [];
+    }
+  };
+
   if (materialTypesIsError) return <ErrorPage message={materialTypesError.message} />;
   if (unitsIsError) return <ErrorPage message={unitsError.message} />;
   if (manufacturersIsError) return <ErrorPage message={manufacturersError.message} />;
+  if (allRRIsError) return <ErrorPage message={allRRError.message} />;
+  if (myRRIsError) return <ErrorPage message={myRRError.message} />;
   if (
     isLoadingManufactuers ||
     isLoadingMaterialTypes ||
     isLoadingUnits ||
+    isLoadingAllRR ||
+    isLoadingMyRR ||
     !materialTypes ||
     !units ||
     !manufactuers ||
+    !allReimbursementRequests ||
+    !myReimbursementRequests ||
     isLoadingCreateManufacturer
   ) {
     return <LoadingIndicator />;
@@ -155,6 +195,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, assemblies, onS
       onHide={onHide}
       control={control}
       errors={errors}
+      reimbursementRequests={bomEligibleReimbursementRequests(user)}
       open={open}
       watch={watch}
       createManufacturer={createManufacturerWrapper}

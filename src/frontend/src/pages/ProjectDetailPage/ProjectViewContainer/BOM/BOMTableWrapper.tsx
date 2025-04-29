@@ -207,13 +207,23 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
   const columns: GridColumns<any> = [
     {
       ...bomBaseColDef,
+      flex: 1,
+      field: 'reimbursementRequestId',
+      headerName: 'RR#',
+      type: 'string',
+      sortable: false,
+      filterable: false,
+      hide: hideColumn[0]
+    },
+    {
+      ...bomBaseColDef,
       flex: 1.2,
       field: 'status',
       headerName: 'Status',
       renderCell: renderStatusBOM,
       sortable: false,
       filterable: false,
-      hide: hideColumn[0]
+      hide: hideColumn[1]
     },
     {
       ...bomBaseColDef,
@@ -222,7 +232,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       type: 'string',
       sortable: false,
       filterable: false,
-      hide: hideColumn[1]
+      hide: hideColumn[2]
     },
     {
       ...bomBaseColDef,
@@ -232,7 +242,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       type: 'string',
       sortable: false,
       filterable: false,
-      hide: hideColumn[2]
+      hide: hideColumn[3]
     },
     {
       ...bomBaseColDef,
@@ -242,7 +252,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       type: 'string',
       sortable: false,
       filterable: false,
-      hide: hideColumn[3]
+      hide: hideColumn[4]
     },
     {
       ...bomBaseColDef,
@@ -258,7 +268,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
         }
         return 1;
       },
-      hide: hideColumn[4]
+      hide: hideColumn[5]
     },
     {
       ...bomBaseColDef,
@@ -268,7 +278,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       type: 'string',
       sortable: false,
       filterable: false,
-      hide: hideColumn[5]
+      hide: hideColumn[6]
     },
     {
       ...bomBaseColDef,
@@ -277,7 +287,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       type: 'number',
       sortable: false,
       filterable: false,
-      hide: hideColumn[6]
+      hide: hideColumn[7]
     },
     {
       ...bomBaseColDef,
@@ -286,7 +296,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       type: 'number',
       sortable: false,
       filterable: false,
-      hide: hideColumn[7]
+      hide: hideColumn[8]
     },
     {
       ...bomBaseColDef,
@@ -295,7 +305,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       type: 'number',
       sortable: false,
       filterable: false,
-      hide: hideColumn[8]
+      hide: hideColumn[9]
     },
     {
       ...bomBaseColDef,
@@ -306,7 +316,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       getActions,
       sortable: false,
       filterable: false,
-      hide: hideColumn[11]
+      hide: hideColumn[12]
     }
   ];
 

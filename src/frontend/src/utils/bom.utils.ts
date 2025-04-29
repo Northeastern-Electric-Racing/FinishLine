@@ -23,6 +23,7 @@ export interface BomRow extends GridValidRowModel {
 
 export const materialToRow = (material: Material, idx: number): BomRow => {
   return {
+    reimbursementRequestId: material.reimbursementRequestId,
     id: idx + (material.assemblyId ?? ''),
     materialId: material.materialId,
     status: material.status,

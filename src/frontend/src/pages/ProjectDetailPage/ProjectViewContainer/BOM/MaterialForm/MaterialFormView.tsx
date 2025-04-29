@@ -1,7 +1,7 @@
 import { FormControl, FormHelperText, FormLabel, Grid, InputAdornment, MenuItem, TextField, Tooltip } from '@mui/material';
 import { Box } from '@mui/system';
 import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
-import { Assembly, Manufacturer, MaterialType, Unit } from 'shared';
+import { Assembly, Manufacturer, MaterialType, ReimbursementRequest, Unit } from 'shared';
 import ReactHookTextField from '../../../../../components/ReactHookTextField';
 import { MaterialFormInput } from './MaterialForm';
 import NERFormModal from '../../../../../components/NERFormModal';
@@ -24,6 +24,7 @@ export interface MaterialFormViewProps {
   allUnits: Unit[];
   allManufacturers: Manufacturer[];
   assemblies: Assembly[];
+  reimbursementRequests: ReimbursementRequest[];
   open: boolean;
   watch: UseFormWatch<MaterialFormInput>;
   createManufacturer: (name: string) => void;
@@ -45,6 +46,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   allUnits,
   allManufacturers,
   assemblies,
+  reimbursementRequests,
   open,
   watch,
   createManufacturer,
@@ -70,7 +72,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
       showCloseButton
     >
       <Grid container spacing={2} mt={1}>
-        <Grid item xs={12}>
+        <Grid item xs={9}>
           <FormControl fullWidth>
             <FormLabel>Name</FormLabel>
             <ReactHookTextField
@@ -78,6 +80,31 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
               control={control}
               errorMessage={errors.name}
               placeholder="Enter Name for Material"
+            />
+          </FormControl>
+        </Grid>
+        <Grid item xs={3}>
+          <FormControl fullWidth>
+            <FormLabel>RR#</FormLabel>
+            <Controller
+              name="reimbursementRequestId"
+              control={control}
+              defaultValue={control._defaultValues.reimbursementRequestId}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  select
+                  variant="outlined"
+                  error={!!errors.reimbursementRequestId}
+                  helperText={errors.reimbursementRequestId?.message}
+                >
+                  {reimbursementRequests.map((rr: ReimbursementRequest) => (
+                    <MenuItem key={rr.identifier} value={rr.identifier}>
+                      {rr.identifier}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
             />
           </FormControl>
         </Grid>
