@@ -180,6 +180,18 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
               Items*
             </TableCell>
           </TableRow>
+          <TableRow sx={{ width: '100%' }}>
+            <TableCell
+              colSpan={2}
+              sx={{
+                borderBottom: 'none',
+                padding: '0',
+                color: '#dd524c'
+              }}
+            >
+              Add item(s) from a project or from other categories
+            </TableCell>
+          </TableRow>
         </TableHead>
         <TableBody>
           <TableRow
