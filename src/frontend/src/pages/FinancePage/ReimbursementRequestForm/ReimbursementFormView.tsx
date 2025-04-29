@@ -1,4 +1,4 @@
-import { AddCircleOutline } from '@mui/icons-material';
+import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import HelpIcon from '@mui/icons-material/Help';
 import {
@@ -123,6 +123,17 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   useEffect(() => {
     control._formValues.$hasConfirmedFinance = hasConfirmedFinance;
   }, [hasConfirmedFinance, control]);
+
+  const handleRemoveSecondRefundSource = () => {
+    setHasConfirmedFinance(false);
+    setValue('secondaryAccount', undefined);
+
+    reimbursementProducts.forEach((_, index) => {
+      setValue(`reimbursementProducts.${index}.firstSourceAmount`, undefined);
+      setValue(`reimbursementProducts.${index}.secondSourceAmount`, undefined);
+      setValue(`reimbursementProducts.${index}.cost`, 0);
+    });
+  };
 
   const firstRefundSource = refundSources.find((source) => source.indexCodeId === firstRefundSourceId) || {
     name: 'First Source',
@@ -632,48 +643,61 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               )}
               <FormHelperText error>{errors.indexCodeId?.message}</FormHelperText>
               {hasConfirmedFinance && (
-                <Controller
-                  name="secondaryAccount"
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      {...field}
-                      IconComponent={KeyboardArrowDownIcon}
-                      value={field.value ?? ''}
-                      disabled={!selectedAccountCode || !firstRefundSourceId}
-                      error={!!errors.secondaryAccount}
-                      displayEmpty
-                      sx={{
-                        background: '#4c4c4c',
-                        borderRadius: '20px',
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: '20px'
-                        },
-                        '& .MuiSelect-icon': {
-                          fontSize: 'xxx-large'
-                        },
-                        marginTop: '10px'
-                      }}
-                      renderValue={(selected) => {
-                        if (!selected) {
-                          return <Typography style={{ color: 'gray' }}>Select Second Refund Source</Typography>;
-                        }
-                        const selectedIndexCode = refundSources.find((source) => source.indexCodeId === selected);
-                        return selectedIndexCode ? (
-                          <Typography>{codeAndRefundSourceName(selectedIndexCode)}</Typography>
-                        ) : (
-                          <Typography style={{ color: 'gray' }}>Select Second Refund Source</Typography>
-                        );
-                      }}
-                    >
-                      {remainingRefundSources.map((refundSource) => (
-                        <MenuItem key={refundSource.indexCodeId} value={refundSource.indexCodeId}>
-                          {codeAndRefundSourceName(refundSource)}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  )}
-                />
+                <>
+                  <Controller
+                    name="secondaryAccount"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        {...field}
+                        IconComponent={KeyboardArrowDownIcon}
+                        value={field.value ?? ''}
+                        disabled={!selectedAccountCode || !firstRefundSourceId}
+                        error={!!errors.secondaryAccount}
+                        displayEmpty
+                        sx={{
+                          background: '#4c4c4c',
+                          borderRadius: '20px',
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: '20px'
+                          },
+                          '& .MuiSelect-icon': {
+                            fontSize: 'xxx-large'
+                          },
+                          marginTop: '10px'
+                        }}
+                        renderValue={(selected) => {
+                          if (!selected) {
+                            return <Typography style={{ color: 'gray' }}>Select Second Refund Source</Typography>;
+                          }
+                          const selectedIndexCode = refundSources.find((source) => source.indexCodeId === selected);
+                          return selectedIndexCode ? (
+                            <Typography>{codeAndRefundSourceName(selectedIndexCode)}</Typography>
+                          ) : (
+                            <Typography style={{ color: 'gray' }}>Select Second Refund Source</Typography>
+                          );
+                        }}
+                      >
+                        {remainingRefundSources.map((refundSource) => (
+                          <MenuItem key={refundSource.indexCodeId} value={refundSource.indexCodeId}>
+                            {codeAndRefundSourceName(refundSource)}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    )}
+                  />
+                  <Button
+                    sx={{
+                      alignSelf: 'flex-start',
+                      width: 'auto',
+                      marginTop: '5px'
+                    }}
+                    startIcon={<RemoveCircleOutline />}
+                    onClick={handleRemoveSecondRefundSource}
+                  >
+                    Remove Refund Source
+                  </Button>
+                </>
               )}
               <FormHelperText error>{errors.secondaryAccount?.message}</FormHelperText>
             </FormControl>
