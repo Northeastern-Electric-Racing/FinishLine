@@ -25,6 +25,7 @@ import {
 export const exampleResearchWorkPackage: WorkPackage = {
   id: '1',
   wbsElementId: '1',
+  projectId: '1',
   deleted: false,
   wbsNum: exampleWbsWorkPackage1,
   dateCreated: new Date('11/15/20'),
@@ -60,6 +61,7 @@ export const exampleResearchWorkPackage: WorkPackage = {
 export const exampleDesignWorkPackage: WorkPackage = {
   id: '2',
   wbsElementId: '2',
+  projectId: '1',
   deleted: false,
   wbsNum: exampleWbsWorkPackage2,
   dateCreated: new Date('10/02/20'),
@@ -105,6 +107,7 @@ export const exampleDesignWorkPackage: WorkPackage = {
 export const exampleManufacturingWorkPackage: WorkPackage = {
   id: '3',
   wbsElementId: '3',
+  projectId: '1',
   deleted: false,
   wbsNum: exampleWbsWorkPackage3,
   dateCreated: new Date('09/27/20'),
@@ -140,6 +143,7 @@ export const exampleManufacturingWorkPackage: WorkPackage = {
 export const exampleInstallWorkPackage: WorkPackage = {
   id: '4',
   wbsElementId: '4',
+  projectId: '1',
   wbsNum: exampleWbsWorkPackage4,
   dateCreated: new Date('2022-02-20'),
   name: 'Install Wiring Harness',
@@ -175,6 +179,7 @@ export const exampleInstallWorkPackage: WorkPackage = {
 export const exampleWorkPackage5: WorkPackage = {
   id: '5',
   wbsElementId: '5',
+  projectId: '1',
   wbsNum: exampleWbsWorkPackage5,
   dateCreated: new Date('2022-02-20'),
   name: 'Party In Celebration',

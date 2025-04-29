@@ -5,7 +5,6 @@ import { projectWbsNamePipe } from '../../../utils/pipes';
 import { useAllProjects } from '../../../hooks/projects.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { projectToProjectPreviewTransformer } from '../../../apis/transformers/projects.transformers';
 
 interface EditFeatureProjectsDropdownProps {
   onChange: (value: ProjectPreview[] | null) => void;
@@ -21,7 +20,7 @@ const EditFeaturedProjectsDropdown: React.FC<EditFeatureProjectsDropdownProps> =
   return (
     <Autocomplete
       multiple
-      options={allProjects.map(projectToProjectPreviewTransformer)}
+      options={allProjects}
       getOptionLabel={(option) => `${projectWbsNamePipe(option)}`}
       isOptionEqualToValue={(option, value) => option.id === value.id}
       value={value}

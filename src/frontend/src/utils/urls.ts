@@ -104,6 +104,7 @@ const allTeamTypes = () => `${teamTypes()}/all`;
 const teamTypesCreate = () => `${teamTypes()}/create`;
 const teamTypeEdit = (id: string) => `${teamTypes()}/${id}/edit`;
 const teamTypeSetImage = (id: string) => `${teamTypes()}/${id}/set-image`;
+const myTeamsWorkpackages = () => `${teams()}/my-teams-work-packages`;
 
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
@@ -250,6 +251,13 @@ const removeGraphFromGraphCollection = (graphCollectionId: string, graphId: stri
   `${graphCollectionById(graphCollectionId)}/remove/${graphId}`;
 const deleteGraphCollection = (id: string) => `${graphCollectionById(id)}/delete`;
 
+/************** Retrospective Endpoints ***************/
+const retrospectiveTimelines = (startDate?: Date, endDate?: Date) =>
+  `${API_URL}/retrospective/timelines?` +
+  (startDate ? `start=${encodeURIComponent(startDate.toISOString())}` : '') +
+  (endDate ? `end=${encodeURIComponent(endDate.toISOString())}` : '');
+const retrospectiveBudgets = () => `${API_URL}/retrospective/budgets`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -331,6 +339,7 @@ export const apiUrls = {
   teamTypesCreate,
   teamTypeEdit,
   teamTypeSetImage,
+  myTeamsWorkpackages,
 
   descriptionBulletsCheck,
   descriptionBulletTypes,
@@ -456,6 +465,9 @@ export const apiUrls = {
   createChecklist,
   editChecklist,
   checklistDelete,
+
+  retrospectiveTimelines,
+  retrospectiveBudgets,
 
   version
 };

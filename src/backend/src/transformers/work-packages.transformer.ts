@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { calculateEndDate, WorkPackage, WorkPackageStage } from 'shared';
+import { calculateEndDate, RetrospectiveWorkPackage, WorkPackage, WorkPackageStage } from 'shared';
 import descriptionBulletTransformer from '../transformers/description-bullets.transformer';
 import { convertStatus, wbsNumOf } from '../utils/utils';
 import { userTransformer } from './user.transformer';
@@ -12,6 +12,7 @@ const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPacka
   return {
     wbsElementId: wpInput.wbsElementId,
     links: [],
+    projectId: wpInput.projectId,
     id: wpInput.workPackageId,
     dateCreated: wpInput.wbsElement.dateCreated,
     name: wpInput.wbsElement.name,
@@ -42,6 +43,16 @@ const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPacka
       designReviewPreviewTransformer(designReview, `${wpInput.project.wbsElement.name} - ${wpInput.wbsElement.name}`)
     ),
     deleted: wpInput.wbsElement.dateDeleted !== null
+  };
+};
+
+export const retrospectiveWorkPackageTransformer = (
+  wpInput: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs> & { originalStartDate: Date; originalDuration: number }
+): RetrospectiveWorkPackage => {
+  return {
+    ...workPackageTransformer(wpInput),
+    originalStartDate: wpInput.originalStartDate,
+    originalDuration: wpInput.originalDuration
   };
 };
 

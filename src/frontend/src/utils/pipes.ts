@@ -149,7 +149,7 @@ export const centsToDollar = (cents: number) => {
 };
 
 export const projectNamePipe = (wbsElement: WbsElementPreview) => {
-  return isProject(wbsElement.wbsNum) ? wbsElement.name : (wbsElement as WorkPackagePreview).projectName;
+  return isProject(wbsElement) ? wbsElement.name : (wbsElement as WorkPackagePreview).projectName;
 };
 
 export const projectWbsNamePipe = (wbsElement: WbsElementPreview) => {

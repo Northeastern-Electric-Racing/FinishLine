@@ -1,5 +1,5 @@
 import { Box, Typography } from '@mui/material';
-import { Project } from 'shared';
+import { ProjectPreview } from 'shared';
 import dayjs from 'dayjs';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { useToast } from '../../../../hooks/toasts.hooks';
@@ -9,18 +9,15 @@ import { useCreateSingleProject } from '../../../../hooks/projects.hooks';
 import { CreateSingleProjectPayload } from '../../../../utils/types';
 import { WorkPackageApiInputs } from '../../../../apis/work-packages.api';
 import { useCreateSingleWorkPackage } from '../../../../hooks/work-packages.hooks';
-import { transformDate } from '../../../../utils/datetime.utils';
+import { GanttRequestChangeModalProps } from './GanttRequestChangeModal';
 
-interface GanttProjectCreateModalProps {
-  project: Project;
-  handleClose: () => void;
-  open: boolean;
-}
+interface GanttProjectCreateModalProps extends GanttRequestChangeModalProps {}
 
-export const GanttProjectCreateModal = ({ project, handleClose, open }: GanttProjectCreateModalProps) => {
+export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProjectCreateModalProps) => {
   const toast = useToast();
   const { isLoading, mutateAsync: createProject } = useCreateSingleProject();
   const { isLoading: workPackageIsLoading, mutateAsync: createWorkPackage } = useCreateSingleWorkPackage();
+  const project = change.element as ProjectPreview;
 
   const startDate = getProjectStartDate(project);
   const latestEndDate = getProjectEndDate(project);
@@ -47,7 +44,7 @@ export const GanttProjectCreateModal = ({ project, handleClose, open }: GanttPro
 
     const workPackagePayloads: WorkPackageApiInputs[] = project.workPackages.map((workPackage) => ({
       name: workPackage.name,
-      startDate: transformDate(workPackage.startDate),
+      startDate: workPackage.startDate.toISOString(),
       duration: dayjs(workPackage.endDate).diff(dayjs(workPackage.startDate), 'week'),
       crId: undefined,
       blockedBy: workPackage.blockedBy,
@@ -62,7 +59,7 @@ export const GanttProjectCreateModal = ({ project, handleClose, open }: GanttPro
         await createWorkPackage({ ...workPackage, projectWbsNum: project.wbsNum });
       }
       toast.success('All work packages created successfully!');
-      handleClose();
+      handleClose(false);
     } catch (e) {
       if (e instanceof Error) {
         toast.error(e.message);
@@ -75,13 +72,13 @@ export const GanttProjectCreateModal = ({ project, handleClose, open }: GanttPro
       open={open}
       title={'New Project: ' + project.name}
       handleSubmit={handleSubmit}
-      onHide={handleClose}
+      onHide={() => handleClose(true)}
     >
       <Box sx={{ padding: 2, borderRadius: '10px 0 10px 0' }}>
         <Typography sx={{ fontSize: '1em' }}>{`New: ${changeInTimeline}`}</Typography>
         <Typography>
           Are you sure you want to create this project with the existing timeline and its work packages? Changing this will
-          require a change request.
+          not require a change request
         </Typography>
       </Box>
     </NERDraggableFormModal>

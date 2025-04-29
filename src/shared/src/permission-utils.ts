@@ -39,6 +39,10 @@ export const isLeadership: PermissionCheck = (role?: Role) => {
   return isAtLeastRank(RoleEnum.LEADERSHIP, role);
 };
 
+export const notGuest: PermissionCheck = (role?: Role) => {
+  return isAtLeastRank(RoleEnum.MEMBER, role);
+};
+
 export const isNotLeadership: PermissionCheck = (role?: Role) => {
   return isAtMostRank(RoleEnum.MEMBER, role);
 };
