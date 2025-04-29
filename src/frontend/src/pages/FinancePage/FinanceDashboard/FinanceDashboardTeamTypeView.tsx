@@ -1,8 +1,7 @@
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useGetReimbursementRequestTeamTypeData, useGetSpendingBarTeamTypeData } from '../../../hooks/finance.hooks';
-import { Grid } from '@mui/material';
-import TitleBox from '../FinanceComponents/TitleBox';
+import { Box, Grid, Typography } from '@mui/material';
 import PieChart from '../FinanceComponents/PieChart';
 
 interface FinanceDashboardTeamTypeViewProps {
@@ -44,7 +43,19 @@ const FinanceDashboardTeamView: React.FC<FinanceDashboardTeamTypeViewProps> = ({
   return (
     <Grid container spacing={2}>
       <Grid item xs={12} md={4}>
-        <TitleBox title="Balance">
+        <Box
+          sx={{
+            background: '#424242',
+            borderRadius: 2,
+            boxShadow: 2,
+            p: 2,
+            minHeight: '650px',
+            minWidth: '500px'
+          }}
+        >
+          <Typography variant="h6" fontWeight="bold" gutterBottom>
+            Balance
+          </Typography>
           <PieChart
             totalBalance={rrData.totalBudget}
             pendingFinance={rrData.pendingFinance}
@@ -53,7 +64,7 @@ const FinanceDashboardTeamView: React.FC<FinanceDashboardTeamTypeViewProps> = ({
             reimbursed={rrData.reimbursed}
             available={rrData.available}
           />
-        </TitleBox>
+        </Box>
       </Grid>
 
       <Grid item xs={12} md={8}>

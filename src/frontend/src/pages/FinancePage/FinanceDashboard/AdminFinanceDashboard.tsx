@@ -128,16 +128,18 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
     },
 
     '.MuiInputLabel-shrink': {
-      display: 'none'
+      transform: 'translate(14px, -6px) scale(0.75)',
+      color: 'white'
     },
 
     '& .MuiInputBase-input': {
       color: 'white',
-      paddingTop: '8px'
+      paddingTop: '8px',
+      cursor: 'pointer'
     },
 
     '& .MuiOutlinedInput-notchedOutline': {
-      borderColor: '#ef4345'
+      borderColor: '#fff'
     },
 
     '& .MuiSvgIcon-root': {
@@ -162,10 +164,7 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
         slotProps={{
           textField: {
             size: 'small',
-            sx: datePickerStyle,
-            InputLabelProps: {
-              shrink: startDateState !== undefined // Shrink the label if a date is selected
-            }
+            sx: datePickerStyle
           },
           field: { clearable: true }
         }}
@@ -182,10 +181,7 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
         slotProps={{
           textField: {
             size: 'small',
-            sx: datePickerStyle,
-            InputLabelProps: {
-              shrink: endDateState !== undefined // Shrink the label if a date is selected
-            }
+            sx: datePickerStyle
           },
           field: { clearable: true }
         }}

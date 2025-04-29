@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useGetAllReimbursementRequestData, useGetAllSpendingBarData } from '../../../hooks/finance.hooks';
-import { Grid } from '@mui/material';
-import TitleBox from '../FinanceComponents/TitleBox';
+import { Box, Grid, Tab, Tabs, Typography } from '@mui/material';
 import PieChart from '../FinanceComponents/PieChart';
 
 interface FinanceDashboardAllViewProps {
@@ -49,16 +48,30 @@ const FinanceDashboardAllView: React.FC<FinanceDashboardAllViewProps> = ({ start
   return (
     <Grid container spacing={2}>
       <Grid item xs={12} md={4}>
-        <TitleBox
-          title="Balance"
-          tabs={[
-            { label: 'Total', value: 'total' },
-            { label: 'Budget', value: 'budget' },
-            { label: 'Cash', value: 'cash' }
-          ]}
-          selectedTab={selectedTab}
-          onTabChange={setSelectedTab}
+        <Box
+          sx={{
+            background: '#424242',
+            borderRadius: 2,
+            boxShadow: 2,
+            p: 2,
+            minHeight: '650px',
+            minWidth: '500px'
+          }}
         >
+          <Typography variant="h6" fontWeight="bold" gutterBottom>
+            Balance
+          </Typography>
+          <Tabs
+            value={selectedTab}
+            onChange={(_event, newValue) => setSelectedTab(newValue)}
+            textColor="primary"
+            indicatorColor="primary"
+            variant="fullWidth"
+          >
+            <Tab label="Total" value="total" />
+            <Tab label="Budget" value="budget" />
+            <Tab label="Cash" value="cash" />
+          </Tabs>
           {selectedTab === 'total' && (
             <PieChart
               totalBalance={allRRData[0].totalBudget}
@@ -89,7 +102,7 @@ const FinanceDashboardAllView: React.FC<FinanceDashboardAllViewProps> = ({ start
               available={allRRData[2].available}
             />
           )}
-        </TitleBox>
+        </Box>
       </Grid>
       <Grid item xs={12} md={8}>
         {/* <TitleBox title="Spending">{/* You can render the spending data here, e.g., in bars or custom cards </TitleBox> */}

@@ -67,16 +67,18 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
     },
 
     '.MuiInputLabel-shrink': {
-      display: 'none'
+      transform: 'translate(14px, -6px) scale(0.75)',
+      color: 'white'
     },
 
     '& .MuiInputBase-input': {
       color: 'white',
-      paddingTop: '8px'
+      paddingTop: '8px',
+      cursor: 'pointer'
     },
 
     '& .MuiOutlinedInput-notchedOutline': {
-      borderColor: '#ef4345'
+      borderColor: '#fff'
     },
 
     '& .MuiSvgIcon-root': {
@@ -101,10 +103,7 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
         slotProps={{
           textField: {
             size: 'small',
-            sx: datePickerStyle,
-            InputLabelProps: {
-              shrink: startDateState !== undefined
-            }
+            sx: datePickerStyle
           },
           field: { clearable: true }
         }}
@@ -121,10 +120,7 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
         slotProps={{
           textField: {
             size: 'small',
-            sx: datePickerStyle,
-            InputLabelProps: {
-              shrink: endDateState !== undefined
-            }
+            sx: datePickerStyle
           },
           field: { clearable: true }
         }}
