@@ -26,8 +26,7 @@ const CategoriesTable = () => {
   }
 
   const uniqueAccountCodeNames = (category: OtherProductReason) => {
-    const uniqueNames = new Set();
-    category.accountCodes.forEach((accountCode) => uniqueNames.add(accountCode.code));
+    const uniqueNames = new Set(category.accountCodes.map((accountCode) => accountCode.code));
     return Array.from(uniqueNames).join(', ');
   };
 

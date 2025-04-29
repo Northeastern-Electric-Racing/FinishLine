@@ -28,9 +28,7 @@ const AccountManagerTable = () => {
   }
 
   const uniqueIndexCodeNames = (accountCode: AccountCode) => {
-    const uniqueNames = new Set();
-
-    accountCode.indexCodes.forEach((indexCode) => uniqueNames.add(indexCode.name));
+    const uniqueNames = new Set(accountCode.indexCodes.map((indexCode) => indexCode.name));
     return Array.from(uniqueNames).join(', ');
   };
 
