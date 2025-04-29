@@ -429,49 +429,51 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                 </FormHelperText>
                               </FormControl>
                             </Box>
-                            <Box
-                              sx={{
-                                flex: '1.5',
-                                width: '100%'
-                              }}
-                            >
-                              <FormControl fullWidth margin="dense" variant="outlined" size="small">
-                                <Controller
-                                  name={`reimbursementProducts.${product.index}.cost`}
-                                  control={control}
-                                  render={({ field }) => (
-                                    <TextField
-                                      {...field}
-                                      sx={{
-                                        background: '#4c4c4c',
-                                        borderRadius: '20px',
-                                        '& .MuiOutlinedInput-root': {
+                            {!hasMultipleRefundSources && (
+                              <Box
+                                sx={{
+                                  flex: '1.5',
+                                  width: '100%'
+                                }}
+                              >
+                                <FormControl fullWidth margin="dense" variant="outlined" size="small">
+                                  <Controller
+                                    name={`reimbursementProducts.${product.index}.cost`}
+                                    control={control}
+                                    render={({ field }) => (
+                                      <TextField
+                                        {...field}
+                                        sx={{
+                                          background: '#4c4c4c',
                                           borderRadius: '20px',
-                                          color: 'white'
-                                        },
-                                        '& input[type=number]': {
-                                          MozAppearance: 'textfield',
-                                          '&::-webkit-outer-spin-button, &::-webkit-inner-spin-button': {
-                                            WebkitAppearance: 'none',
-                                            margin: 0
+                                          '& .MuiOutlinedInput-root': {
+                                            borderRadius: '20px',
+                                            color: 'white'
+                                          },
+                                          '& input[type=number]': {
+                                            MozAppearance: 'textfield',
+                                            '&::-webkit-outer-spin-button, &::-webkit-inner-spin-button': {
+                                              WebkitAppearance: 'none',
+                                              margin: 0
+                                            }
                                           }
-                                        }
-                                      }}
-                                      value={field.value === 0 ? '' : field.value}
-                                      placeholder={'$ Cost'}
-                                      variant={'outlined'}
-                                      type="number"
-                                      fullWidth
-                                      onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
-                                      error={!!errors.reimbursementProducts?.[product.index]?.cost}
-                                    />
-                                  )}
-                                />
-                                <FormHelperText error>
-                                  {errors.reimbursementProducts?.[product.index]?.cost?.message}
-                                </FormHelperText>
-                              </FormControl>
-                            </Box>
+                                        }}
+                                        value={field.value === 0 ? '' : field.value}
+                                        placeholder={'$ Cost'}
+                                        variant={'outlined'}
+                                        type="number"
+                                        fullWidth
+                                        onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
+                                        error={!!errors.reimbursementProducts?.[product.index]?.cost}
+                                      />
+                                    )}
+                                  />
+                                  <FormHelperText error>
+                                    {errors.reimbursementProducts?.[product.index]?.cost?.message}
+                                  </FormHelperText>
+                                </FormControl>
+                              </Box>
+                            )}
                             {hasMultipleRefundSources && (
                               <>
                                 {showFirstSourceFields && (

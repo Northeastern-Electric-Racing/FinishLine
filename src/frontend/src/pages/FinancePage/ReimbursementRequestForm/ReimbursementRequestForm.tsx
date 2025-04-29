@@ -63,7 +63,6 @@ const schema = yup.object().shape({
 
     const products = this.parent.reimbursementProducts || [];
     for (const product of this.parent.reimbursementProducts) {
-      if (!product.cost) continue;
       if (product.firstSourceAmount === undefined) {
         return this.createError({
           message: 'Amount is required',
@@ -74,12 +73,6 @@ const schema = yup.object().shape({
         return this.createError({
           message: 'Amount is required',
           path: `reimbursementProducts.${products.indexOf(product)}.secondSourceAmount`
-        });
-      }
-      if (Math.abs(product.cost - (product.firstSourceAmount + product.secondSourceAmount)) > 0.01) {
-        return this.createError({
-          message: 'Sum of source amounts must equal total cost',
-          path: `reimbursementProducts.${products.indexOf(product)}.cost`
         });
       }
     }
@@ -97,8 +90,8 @@ const schema = yup.object().shape({
         cost: yup
           .number()
           .required('Cost is required')
-          .typeError('Cost is required')
-          .min(0.01, 'Cost cannot be negative or zero')
+          .typeError('Amount must be a number')
+          .min(0.01, 'Amount cannot be negative or less than zero')
       })
     )
     .required('Reimbursement products required')
