@@ -22,10 +22,10 @@ interface FirstSectionProps {
   comments: ReimbursementRequestComment[];
 }
 
-const ReimbursementRequestTimeline: React.FC<TimelineProps> = ({
-  reimbursementRequestId,
-  reimbursementRequestComments: comments
-}) => {
+const ReimbursementRequestTimeline: React.FC<TimelineProps> = ({ reimbursementRequestId, reimbursementRequestComments }) => {
+  const comments = reimbursementRequestComments.sort(
+    (a, b) => new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime()
+  );
   return (
     <Stack direction="column" alignItems="center" spacing={0.5}>
       <FirstSection reimbursementRequestId={reimbursementRequestId} comments={comments} />
