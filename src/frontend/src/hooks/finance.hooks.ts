@@ -207,14 +207,14 @@ export interface ReimbursementRequestCommentPayload {
 export const useCreateReimbursementRequestComment = (reimbursementRequestId: string) => {
   const queryClient = useQueryClient();
   return useMutation<ReimbursementRequestComment, Error, ReimbursementRequestCommentPayload>(
-    ['reimbursement-request-comment', 'create'],
+    ['reimbursement-requests', 'create'],
     async (formData: ReimbursementRequestCommentPayload) => {
       const { data } = await createReimbursementRequestComment(reimbursementRequestId, formData);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['reimbursement-request-comment']);
+        queryClient.invalidateQueries(['reimbursement-requests']);
       }
     }
   );
