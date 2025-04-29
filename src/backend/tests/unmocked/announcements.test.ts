@@ -2,9 +2,10 @@ import { Organization } from '@prisma/client';
 import { batmanAppAdmin } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import AnnouncementService from '../../src/services/announcement.service';
+import { Announcement } from 'shared';
 
 describe('Announcemnts Tests', () => {
-  const announcementComparator = (a, b) => {
+  const announcementComparator = (a: Announcement, b: Announcement) => {
     // findMany does not guarantee order, so let's sort
     if (a.text < b.text) {
       return -1;
