@@ -64,7 +64,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   setValue,
   hasMultipleRefundSources = false,
   firstRefundSourceName,
-  secondRefundSourceName
+  secondRefundSourceName,
+  watch
 }) => {
   const uniqueWbsElementsWithProducts = new Map<
     string,
@@ -107,6 +108,14 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   ) => {
     const parsedValue = value ? parseFloat(value) : undefined;
     setValue(`reimbursementProducts.${index}.${fieldName}`, parsedValue);
+
+    if (hasMultipleRefundSources) {
+      const firstSourceAmount = Number(watch(`reimbursementProducts.${index}.firstSourceAmount`)) || 0;
+      const secondSourceAmount = Number(watch(`reimbursementProducts.${index}.secondSourceAmount`)) || 0;
+      const totalCost = firstSourceAmount + secondSourceAmount;
+      console.log('Total Cost', totalCost);
+      setValue(`reimbursementProducts.${index}.cost`, totalCost);
+    }
   };
 
   const [showFirstSourceFields, setShowFirstSourceFields] = useState(false);
@@ -363,22 +372,29 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                           width: { xs: '100%', md: 'auto' }
                         }}
                       ></Box>
-                      <Box
-                        sx={{
-                          flex: '2.2',
-
-                          width: '100%'
-                        }}
-                      ></Box>
-                      {hasMultipleRefundSources && (
+                      {!hasMultipleRefundSources && (
                         <>
-                          <Box sx={{ flex: '1.8', textAlign: 'center', display: { xs: 'none', md: 'block' } }}>
+                          <Box
+                            sx={{ flex: '1.5', width: '100%', textAlign: 'center', display: { xs: 'none', md: 'block' } }}
+                          >
                             <label>{firstRefundSourceName}</label>
                           </Box>
-                          <Box sx={{ flex: '1.6', textAlign: 'center', display: { xs: 'none', md: 'block' } }}>
+                          <Box sx={{ width: '30px' }}></Box>
+                        </>
+                      )}
+                      {hasMultipleRefundSources && (
+                        <>
+                          <Box
+                            sx={{ flex: '1.5', width: '100%', textAlign: 'center', display: { xs: 'none', md: 'block' } }}
+                          >
+                            <label>{firstRefundSourceName}</label>
+                          </Box>
+                          <Box
+                            sx={{ flex: '1.5', width: '100%', textAlign: 'center', display: { xs: 'none', md: 'block' } }}
+                          >
                             <label>{secondRefundSourceName}</label>
                           </Box>
-                          <Box sx={{ width: '40px' }}></Box>
+                          <Box sx={{ width: '30px' }}></Box>
                         </>
                       )}
                     </Box>

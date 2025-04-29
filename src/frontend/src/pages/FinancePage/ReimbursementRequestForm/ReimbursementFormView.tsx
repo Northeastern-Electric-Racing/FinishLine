@@ -628,6 +628,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   </Select>
                 )}
               />
+              <FormHelperText error>{errors.indexCodeId?.message}</FormHelperText>
               {!hasConfirmedFinance && (
                 <Button
                   sx={{
@@ -641,7 +642,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   Add Refund Source
                 </Button>
               )}
-              <FormHelperText error>{errors.indexCodeId?.message}</FormHelperText>
               {hasConfirmedFinance && (
                 <>
                   <Controller
@@ -686,6 +686,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                       </Select>
                     )}
                   />
+                  <FormHelperText error>{errors.secondaryAccount?.message}</FormHelperText>
                   <Button
                     sx={{
                       alignSelf: 'flex-start',
@@ -699,7 +700,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   </Button>
                 </>
               )}
-              <FormHelperText error>{errors.secondaryAccount?.message}</FormHelperText>
             </FormControl>
           </Grid>
           <Grid item xs={12} md={6} sx={{ display: 'flex', width: '85%' }}>
