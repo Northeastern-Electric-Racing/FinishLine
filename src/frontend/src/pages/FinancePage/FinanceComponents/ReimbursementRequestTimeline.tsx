@@ -1,9 +1,6 @@
 import { Box, Stack, Typography } from '@mui/material';
 import { Circle } from '@mui/icons-material';
 import { datePipe } from '../../../utils/pipes';
-import { useSingleReimbursementRequest } from '../../../hooks/finance.hooks';
-import ErrorPage from '../../ErrorPage';
-import LoadingIndicator from '../../../components/LoadingIndicator';
 import { ReimbursementRequestComment } from '../../../../../shared/src/types/reimbursement-requests-types';
 import { useState } from 'react';
 import TimelineCommentModal from './TimelineCommentModal';
@@ -11,6 +8,7 @@ import { Link } from '@mui/material';
 
 interface TimelineProps {
   reimbursementRequestId: string;
+  reimbursementRequestComments: ReimbursementRequestComment[];
 }
 
 interface EventSectionProps {
@@ -24,21 +22,15 @@ interface FirstSectionProps {
   comments: ReimbursementRequestComment[];
 }
 
-const ReimbursementRequestTimeline: React.FC<TimelineProps> = ({ reimbursementRequestId }) => {
-  const { data: reimbursementRequest, isError, error, isLoading } = useSingleReimbursementRequest(reimbursementRequestId);
-
-  const Comments = reimbursementRequest?.comments.sort(
-    (a, b) => new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime()
-  );
-
-  if (isLoading || !Comments) return <LoadingIndicator />;
-  if (isError) return <ErrorPage error={error} message={error.message} />;
-
+const ReimbursementRequestTimeline: React.FC<TimelineProps> = ({
+  reimbursementRequestId,
+  reimbursementRequestComments: comments
+}) => {
   return (
     <Stack direction="column" alignItems="center" spacing={0.5}>
-      <FirstSection reimbursementRequestId={reimbursementRequestId} comments={Comments} />
-      {Comments.map((comment, index) => (
-        <EventSection comment={comment} isLast={Comments.length - 1 === index} key={index} />
+      <FirstSection reimbursementRequestId={reimbursementRequestId} comments={comments} />
+      {comments.map((comment, index) => (
+        <EventSection comment={comment} isLast={comments.length - 1 === index} key={index} />
       ))}
     </Stack>
   );

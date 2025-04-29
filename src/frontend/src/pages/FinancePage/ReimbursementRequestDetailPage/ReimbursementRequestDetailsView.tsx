@@ -341,7 +341,10 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             </Grid>
           </Grid>
         </Grid>
-        <ReimbursementRequestTimeline reimbursementRequestId={reimbursementRequest.reimbursementRequestId} />
+        <ReimbursementRequestTimeline
+          reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
+          reimbursementRequestComments={reimbursementRequest.comments}
+        />
       </>
     );
   };
