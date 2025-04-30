@@ -1,14 +1,14 @@
 import { PartPreview, Review_Status } from 'shared';
 import { useCreatePartReview, useUploadReviewFiles } from '../../../../../../hooks/part-review.hooks';
-import ReviewFormModel from './ReviewFormModel';
+import ReviewFormModal from './ReviewFormModal';
 
-interface CreateReviewModelProps {
+interface CreateReviewModalProps {
   open: boolean;
   handleClose: () => void;
   partsInProject: PartPreview[];
 }
 
-const CreateReviewModal = ({ open, handleClose, partsInProject }: CreateReviewModelProps) => {
+const CreateReviewModal = ({ open, handleClose, partsInProject }: CreateReviewModalProps) => {
   const { mutateAsync: createReview } = useCreatePartReview();
   const { mutateAsync: uploadFiles } = useUploadReviewFiles();
 
@@ -30,7 +30,7 @@ const CreateReviewModal = ({ open, handleClose, partsInProject }: CreateReviewMo
     });
   };
 
-  return <ReviewFormModel open={open} handleClose={handleClose} onSubmit={onSubmit} partsInProject={partsInProject} />;
+  return <ReviewFormModal open={open} handleClose={handleClose} onSubmit={onSubmit} partsInProject={partsInProject} />;
 };
 
 export default CreateReviewModal;

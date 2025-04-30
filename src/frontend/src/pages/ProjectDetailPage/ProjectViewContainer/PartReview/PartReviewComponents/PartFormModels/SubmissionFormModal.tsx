@@ -5,12 +5,12 @@ import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import React from 'react';
 import NERFormModal from '../../../../../../components/NERFormModal';
-import { Autocomplete, Button, Grid, IconButton } from '@mui/material';
+import { Autocomplete, Button, Grid, IconButton, Typography } from '@mui/material';
 import { FormControl, FormHelperText, FormLabel, TextField } from '@mui/material';
 import ReactHookTextField from '../../../../../../components/ReactHookTextField';
 import { Delete, FileUpload } from '@mui/icons-material';
 
-interface SubmissionFormModelProps {
+interface SubmissionFormModalProps {
   open: boolean;
   handleClose: () => void;
   defaultValues?: PartSubmission;
@@ -18,7 +18,7 @@ interface SubmissionFormModelProps {
   partsInProject: PartPreview[];
 }
 
-const SubmissionFormModel = ({ open, handleClose, defaultValues, onSubmit, partsInProject }: SubmissionFormModelProps) => {
+const SubmissionFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProject }: SubmissionFormModalProps) => {
   const toast = useToast();
 
   const schema = yup.object().shape({
@@ -117,7 +117,7 @@ const SubmissionFormModel = ({ open, handleClose, defaultValues, onSubmit, parts
               {files.map((file, index) => {
                 return (
                   <Grid key={file.id} display={'flex'} flexDirection={'row'}>
-                    <p>{displayName(file.name)}</p>
+                    <Typography>{displayName(file.name)}</Typography>
                     <IconButton onClick={() => removeFile(index)}>
                       <Delete />
                     </IconButton>
@@ -180,4 +180,4 @@ const SubmissionFormModel = ({ open, handleClose, defaultValues, onSubmit, parts
   );
 };
 
-export default SubmissionFormModel;
+export default SubmissionFormModal;

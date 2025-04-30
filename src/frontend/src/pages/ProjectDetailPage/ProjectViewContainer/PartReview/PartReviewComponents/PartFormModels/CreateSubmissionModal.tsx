@@ -1,14 +1,14 @@
 import { PartPreview } from 'shared';
 import { useCreatePartSubmission, useUploadSubmissionFiles } from '../../../../../../hooks/part-review.hooks';
-import SubmissionFormModel from './SubmissionFormModel';
+import SubmissionFormModal from './SubmissionFormModal';
 
-interface CreateSubmissionModelProps {
+interface CreateSubmissionModalProps {
   open: boolean;
   handleClose: () => void;
   partsInProject: PartPreview[];
 }
 
-const CreateSubmissionModal = ({ open, handleClose, partsInProject }: CreateSubmissionModelProps) => {
+const CreateSubmissionModal = ({ open, handleClose, partsInProject }: CreateSubmissionModalProps) => {
   const { mutateAsync: createSubmission } = useCreatePartSubmission();
   const { mutateAsync: uploadFiles } = useUploadSubmissionFiles();
 
@@ -25,7 +25,7 @@ const CreateSubmissionModal = ({ open, handleClose, partsInProject }: CreateSubm
     });
   };
 
-  return <SubmissionFormModel open={open} handleClose={handleClose} onSubmit={onSubmit} partsInProject={partsInProject} />;
+  return <SubmissionFormModal open={open} handleClose={handleClose} onSubmit={onSubmit} partsInProject={partsInProject} />;
 };
 
 export default CreateSubmissionModal;

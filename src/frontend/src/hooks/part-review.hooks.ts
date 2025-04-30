@@ -289,9 +289,15 @@ export const useEditPartReview = (reviewId: string) => {
   );
 };
 
+/**
+ * Custom React Hook to upload files to a submission
+ *
+ * @returns the updated submission with the fileIds within it
+ */
 export const useUploadSubmissionFiles = () => {
   const queryClient = useQueryClient();
-  return useMutation<any, unknown, { submissionId: string; files: File[] }>(
+  return useMutation<PartSubmission, Error, { submissionId: string; files: File[] }>(
+    ['parts', 'submission', 'upload'],
     async (fileUpload: { submissionId: string; files: File[] }) => {
       const { data } = await setUploadSubmissionFiles(fileUpload.submissionId, fileUpload.files);
       return data;
@@ -304,9 +310,15 @@ export const useUploadSubmissionFiles = () => {
   );
 };
 
+/**
+ * Custom React Hook to upload files to a review
+ *
+ * @returns the updated review with the fileIds within it
+ */
 export const useUploadReviewFiles = () => {
   const queryClient = useQueryClient();
-  return useMutation<any, unknown, { reviewId: string; files: File[] }>(
+  return useMutation<PartReview, Error, { reviewId: string; files: File[] }>(
+    ['parts', 'review', 'upload'],
     async (fileUpload: { reviewId: string; files: File[] }) => {
       const { data } = await setUploadReviewFiles(fileUpload.reviewId, fileUpload.files);
       return data;

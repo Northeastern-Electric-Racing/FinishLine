@@ -6,9 +6,9 @@ import { useState } from 'react';
 import { useCurrentUser } from '../../../../../../hooks/users.hooks';
 import { Box, Button, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
 import { PartPreview, WbsNumber, isGuest } from 'shared';
-import CreatePartModal from './CreatePartModel';
-import CreateSubmissionModal from './CreateSubmissionModel';
-import CreateReviewModal from './CreateReviewModel';
+import CreatePartModal from './CreatePartModal';
+import CreateSubmissionModal from './CreateSubmissionModal';
+import CreateReviewModal from './CreateReviewModal';
 
 type CreateMenuProps = {
   wbsNum: WbsNumber;
