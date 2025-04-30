@@ -112,9 +112,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     if (hasMultipleRefundSources) {
       const firstSourceAmount = Number(watch(`reimbursementProducts.${index}.firstSourceAmount`)) || 0;
       const secondSourceAmount = Number(watch(`reimbursementProducts.${index}.secondSourceAmount`)) || 0;
-      const totalCost = firstSourceAmount + secondSourceAmount;
-      console.log('Total Cost', totalCost);
-      setValue(`reimbursementProducts.${index}.cost`, totalCost);
+      setValue(`reimbursementProducts.${index}.cost`, firstSourceAmount + secondSourceAmount);
     }
   };
 

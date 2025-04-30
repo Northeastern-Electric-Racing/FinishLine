@@ -195,10 +195,18 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
 
   const onSubmitWrapper = async (data: ReimbursementRequestFormInput) => {
     try {
-      //total cost is tracked in cents
+      //total cost, firstSourceAmount and secondSourceAmount is tracked in cents
       const totalCost = Math.round(data.reimbursementProducts.reduce((acc, curr) => acc + curr.cost, 0) * 100);
+      // For each product, if multiple refund sources are enabled, the `cost` represents
+      // the total amount from the first refund source` (firstSourceAmount`) and `second refund source (secondSourceAmount`) of that product.
+      // If only one refund source is present, the `cost` reflects the refund source amount for that product.
       const reimbursementProducts = data.reimbursementProducts.map((product: ReimbursementProductFormArgs) => {
-        return { ...product, cost: Math.round(product.cost * 100) };
+        return {
+          ...product,
+          cost: Math.round(product.cost * 100),
+          firstSourceAmount: (product.firstSourceAmount ?? 0) * 100,
+          secondSourceAmount: (product.secondSourceAmount ?? 0) * 100
+        };
       });
 
       const otherReimbursementProducts: OtherReimbursementProductCreateArgs[] = [];
@@ -218,6 +226,13 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
             name: product.name
           });
         }
+      });
+
+      // Console log to check the values being submitted
+      console.log('Submitting Reimbursement Data:', {
+        totalCost,
+        otherReimbursementProducts,
+        wbsReimbursementProducts
       });
 
       const reimbursementRequestId = await submitData({
