@@ -70,6 +70,7 @@ export interface OtherProductReason {
   dateCreated: Date;
   budget: number;
   indexCode: IndexCode;
+  accountCodes: AccountCode[];
 }
 
 export type WBSElementData = { wbsNum: WbsNumber; wbsName: string };
