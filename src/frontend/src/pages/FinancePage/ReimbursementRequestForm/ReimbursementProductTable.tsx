@@ -377,7 +377,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                           >
                             <label>{firstRefundSourceName}</label>
                           </Box>
-                          <Box sx={{ width: '30px' }}></Box>
+                          <Box sx={{ width: '32.5px' }}></Box>
                         </>
                       )}
                       {hasMultipleRefundSources && (
@@ -392,7 +392,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                           >
                             <label>{secondRefundSourceName}</label>
                           </Box>
-                          <Box sx={{ width: '30px' }}></Box>
+                          <Box sx={{ width: '32.5px' }}></Box>
                         </>
                       )}
                     </Box>
