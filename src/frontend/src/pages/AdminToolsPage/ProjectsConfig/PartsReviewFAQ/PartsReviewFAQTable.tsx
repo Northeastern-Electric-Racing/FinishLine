@@ -1,17 +1,13 @@
 import { useState } from 'react';
-import { TableRow, TableCell, Box, IconButton } from '@mui/material';
+import { Box, IconButton, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ErrorPage from '../../../ErrorPage';
 import { NERButton } from '../../../../components/NERButton';
-import AdminToolTable from '../../AdminToolTable';
-
 import CreatePartReviewFAQModal from './CreatePartReviewFAQModal';
 import EditPartReviewFAQModal from './EditPartReviewFAQModal';
 import NERDeleteModal from '../../../../components/NERDeleteModal';
-
 import { useAllPartReviewFaqs, useDeletePartReviewFaq } from '../../../../hooks/part-review.hooks';
 import { useToast } from '../../../../hooks/toasts.hooks';
 import { FrequentlyAskedQuestion } from 'shared';
@@ -47,31 +43,45 @@ const PartsReviewFAQTable: React.FC = () => {
   if (isError) return <ErrorPage message={error?.message} />;
 
   const faqRows = (faqs ?? []).map((faq) => (
-    <TableRow key={faq.faqId}>
-      <TableCell sx={{ border: '2px solid black' }}>
-        <strong>Q:</strong> {faq.question}
-        <br />
-        <strong>A:</strong> {faq.answer}
-      </TableCell>
-      <TableCell align="right" sx={{ border: '2px solid black' }}>
+    <Box
+      key={faq.faqId}
+      sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '8px',
+        borderRadius: '8px',
+        backgroundColor: '#333333',
+        marginBottom: '8px'
+      }}
+    >
+      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ display: 'flex', gap: '4px' }}>
+          <strong>Q:</strong>
+          {faq.question}
+        </Box>
+        <Box sx={{ display: 'flex', gap: '6px' }}>
+          <strong>A:</strong>
+          {faq.answer}
+        </Box>
+      </Box>
+      <Box sx={{ display: 'flex', gap: '8px' }}>
         <IconButton
-          onClick={() => setEditingFaq(faq)}
-          sx={{ color: 'white' }}
-          disabled={!!deletingFaqId}
-          aria-label={`Edit FAQ ${faq.question}`}
+          onClick={() => {
+            setEditingFaq(faq);
+          }}
         >
           <EditIcon />
         </IconButton>
         <IconButton
-          onClick={() => setDeletingFaqId(faq.faqId)}
-          sx={{ color: 'white' }}
-          disabled={!!deletingFaqId}
-          aria-label={`Delete FAQ ${faq.question}`}
+          onClick={() => {
+            setDeletingFaqId(faq.faqId);
+          }}
         >
           <DeleteIcon />
         </IconButton>
-      </TableCell>
-    </TableRow>
+      </Box>
+    </Box>
   ));
 
   return (
@@ -82,7 +92,6 @@ const PartsReviewFAQTable: React.FC = () => {
         open={showCreateModal}
         handleClose={() => setShowCreateModal(false)}
       />
-
       {editingFaq && (
         <EditPartReviewFAQModal
           key={`edit-modal-${editingFaq.faqId}`}
@@ -91,7 +100,6 @@ const PartsReviewFAQTable: React.FC = () => {
           handleClose={() => setEditingFaq(null)}
         />
       )}
-
       <NERDeleteModal
         open={!!deletingFaqId}
         onHide={() => setDeletingFaqId(null)}
@@ -99,19 +107,33 @@ const PartsReviewFAQTable: React.FC = () => {
         onFormSubmit={() => deletingFaqId && handleDelete(deletingFaqId)}
       />
 
-      <AdminToolTable
-        columns={[
-          { name: 'FAQ', width: '85%' },
-          { name: 'Actions', width: '15%' }
-        ]}
-        rows={faqRows}
-      />
-
+      <Typography variant="subtitle1" sx={{ fontWeight: 'bold', marginBottom: '4px' }}>
+        FAQs
+      </Typography>
+      <Box
+        sx={{
+          maxHeight: '200px',
+          maxWidth: '100%',
+          overflowY: 'scroll',
+          paddingBottom: '8px',
+          paddingRight: '8px',
+          borderRadius: '8px',
+          '&::-webkit-scrollbar': {
+            width: '8px'
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: '#c44546',
+            borderRadius: '4px'
+          }
+        }}
+      >
+        {faqRows}
+      </Box>
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         <NERButton
           variant="contained"
           onClick={() => setShowCreateModal(true)}
-          sx={{ minWidth: '150px' }}
+          sx={{ minWidth: '110px' }}
           disabled={!!deletingFaqId}
         >
           New FAQ
