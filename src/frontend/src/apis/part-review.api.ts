@@ -6,7 +6,15 @@ import {
   CreatePartReviewPayload,
   EditPartReviewPayload
 } from '../hooks/part-review.hooks';
-import { PartPreview, Part, PartSubmission, PartReviewRequest, PartReview, PartReviewCommonMistake } from 'shared';
+import {
+  PartPreview,
+  Part,
+  PartSubmission,
+  PartReviewRequest,
+  PartReview,
+  PartReviewCommonMistake,
+  FrequentlyAskedQuestion
+} from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import { partPreviewTransformer, partTransformer } from './transformers/part-review.transformers';
@@ -170,6 +178,52 @@ export const setUploadReviewFiles = (reviewId: string, files: File[]) => {
 };
 
 /**
+ * Fetches all Part Review FAQs for the current organization.
+ *
+ * @returns A list of Part Review FAQs.
+ */
+export const getAllPartReviewFaqs = () => {
+  return axios.get<FrequentlyAskedQuestion[]>(apiUrls.partsReviewFaqs(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
+ * create a new Part Review FAQ.
+ *
+ * @param payload - The FAQ data, including question and answer.
+ * @returns The created FAQ.
+ */
+export const createPartReviewFaq = (payload: { question: string; answer: string }) => {
+  return axios.post<FrequentlyAskedQuestion>(apiUrls.partsReviewFaqCreate(), {
+    ...payload
+  });
+};
+
+/**
+ * edits an existing Part Review FAQ.
+ *
+ * @param faqId - The ID of the FAQ to edit.
+ * @param payload - The updated FAQ data.
+ * @returns The updated FAQ.
+ */
+export const editPartReviewFaq = (faqId: string, payload: { question: string; answer: string }) => {
+  return axios.post<FrequentlyAskedQuestion>(apiUrls.partsReviewFaqEdit(faqId), {
+    ...payload
+  });
+};
+
+/**
+ * delete a Part Review FAQ.
+ *
+ * @param faqId - The ID of the FAQ to delete.
+ * @returns The deleted FAQ.
+ */
+export const deletePartReviewFaq = (faqId: string) => {
+  return axios.post<FrequentlyAskedQuestion>(apiUrls.partsReviewFaqDelete(faqId));
+};
+
+/*
  * Gets all of the common mistakes associated with part reviews
  *
  * @returns an array of common mistakes

@@ -6,18 +6,23 @@ import {
   PartReviewRequest,
   PartSubmission,
   Review_Status,
-  PartReviewCommonMistake
+  PartReviewCommonMistake,
+  FrequentlyAskedQuestion
 } from 'shared';
 import {
   createPart,
   createPartReview,
+  createPartReviewFaq,
   createPartReviewRequest,
   createPartSubmission,
   deletePart,
+  deletePartReviewFaq,
   deletePartReviewRequest,
   editPart,
+  editPartReviewFaq,
   editPartReview,
   editPartSubmission,
+  getAllPartReviewFaqs,
   getPartsFromProject,
   getSinglePart,
   getAllCommonMistakes,
@@ -301,6 +306,74 @@ export const useUploadReviewFiles = (reviewId: string) => {
 };
 
 /**
+ * React Query hook to fetch all Part Review FAQs.
+ *
+ * @returns Query result containing FAQs data, loading state, and error state.
+ */
+export const useAllPartReviewFaqs = () => {
+  return useQuery<FrequentlyAskedQuestion[], Error>(['partReviewFaqs'], async () => {
+    const { data } = await getAllPartReviewFaqs();
+    return data;
+  });
+};
+
+/**
+ * React Query hook to create a new Part Review FAQ.
+ *
+ * Automatically invalidates the FAQs query on success.
+ */
+export const useCreatePartReviewFaq = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<FrequentlyAskedQuestion, Error, { question: string; answer: string }>(
+    async (data) => {
+      const response = await createPartReviewFaq(data);
+      return response.data;
+    },
+    {
+      onSuccess: async (createdFaq) => {
+        await queryClient.cancelQueries(['partReviewFaqs']);
+        queryClient.setQueryData<FrequentlyAskedQuestion[]>(['partReviewFaqs'], (old = []) => [...old, createdFaq]);
+      }
+    }
+  );
+};
+
+/**
+ * React Query hook to edit an existing Part Review FAQ.
+ *
+ * Automatically invalidates the FAQs query on success.
+ */
+export const useEditPartReviewFaq = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<FrequentlyAskedQuestion, Error, { faqId: string; payload: { question: string; answer: string } }>(
+    async ({ faqId, payload }) => {
+      const response = await editPartReviewFaq(faqId, payload);
+      return response.data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['partReviewFaqs']);
+      }
+    }
+  );
+};
+
+/**
+ * React Query hook to delete a Part Review FAQ.
+ *
+ * Automatically invalidates the FAQs query on success.
+ */
+export const useDeletePartReviewFaq = () => {
+  const queryClient = useQueryClient();
+  return useMutation(deletePartReviewFaq, {
+    onSuccess: () => queryClient.invalidateQueries(['partReviewFaqs'])
+  });
+};
+
+/*
+
  * Custom React Hook to get all common mistakes
  *
  * @returns a list of all common mistakes
