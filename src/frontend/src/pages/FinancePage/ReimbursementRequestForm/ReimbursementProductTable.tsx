@@ -269,7 +269,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                   fullWidth
                   options={otherReasons || []}
                   getOptionLabel={(option) => formatReasonName(option.name)}
-                  onChange={(_event, value) => {
+                  onChange={(_e, value) => {
                     if (value) {
                       appendProduct({
                         reason: value,
@@ -312,6 +312,14 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
             </TableCell>
           </TableRow>
           {Array.from(uniqueWbsElementsWithProducts.keys()).map((key) => {
+            const foundValue = wbsElementAutocompleteOptions
+              .concat(
+                (otherReasons || []).map((reason) => ({
+                  id: reason.otherProductReasonId,
+                  label: reason.name
+                }))
+              )
+              .find((value) => value.label === key);
             return (
               <TableRow
                 sx={{
@@ -333,16 +341,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                       fontSize: 'medium'
                     }}
                   >
-                    {
-                      wbsElementAutocompleteOptions
-                        .concat(
-                          (otherReasons || []).map((reason) => ({
-                            id: reason.otherProductReasonId,
-                            label: formatReasonName(reason.name)
-                          }))
-                        )
-                        .find((value) => value.id === key)?.label
-                    }
+                    {foundValue ? formatReasonName(foundValue.label) : undefined}
                   </Typography>
                 </TableCell>
                 <TableCell>

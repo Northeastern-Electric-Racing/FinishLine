@@ -192,7 +192,6 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     checkSecureSettingsIsLoading
   )
     return <LoadingIndicator />;
-
   const onSubmitWrapper = async (data: ReimbursementRequestFormInput) => {
     try {
       //total cost, firstSourceAmount and secondSourceAmount is tracked in cents
@@ -213,15 +212,15 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       const wbsReimbursementProducts: WbsReimbursementProductCreateArgs[] = [];
 
       reimbursementProducts.forEach((product) => {
-        if (product.reason instanceof Object) {
-          wbsReimbursementProducts.push({
-            reason: product.reason as WbsNumber,
+        if (product.reason && 'otherProductReasonId' in product.reason) {
+          otherReimbursementProducts.push({
+            reason: product.reason as OtherProductReason,
             cost: product.cost,
             name: product.name
           });
         } else {
-          otherReimbursementProducts.push({
-            reason: product.reason as OtherProductReason,
+          wbsReimbursementProducts.push({
+            reason: product.reason as WbsNumber,
             cost: product.cost,
             name: product.name
           });
