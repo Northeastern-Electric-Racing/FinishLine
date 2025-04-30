@@ -2,7 +2,7 @@ import { IndexCode, AccountCode } from 'shared';
 import { AccountCodePayload, useGetAllIndexCodes } from '../../../hooks/finance.hooks';
 import { Controller, useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
-import { Checkbox, FormControl, FormLabel, FormHelperText, Select, MenuItem, OutlinedInput } from '@mui/material';
+import { Checkbox, FormControl, FormLabel, FormHelperText, Select, MenuItem, OutlinedInput, Box } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
@@ -73,7 +73,7 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
     <NERFormModal
       open={showModal}
       onHide={handleClose}
-      title={!!defaultValues ? 'Edit Account Code' : 'Create Account Code'}
+      title={!!defaultValues ? 'Edit Account Code' : 'Add Account Code'}
       reset={() => reset({ name: '', code: undefined, allowed: false, indexCodeIds: [] })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
@@ -81,12 +81,7 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
       showCloseButton
     >
       <FormControl fullWidth>
-        <FormLabel>Account Name</FormLabel>
-        <ReactHookTextField name="name" control={control} fullWidth />
-        <FormHelperText error>{errors.name?.message}</FormHelperText>
-      </FormControl>
-      <FormControl fullWidth>
-        <FormLabel>Allowed Refund Source</FormLabel>
+        <FormLabel>Index Code(s)</FormLabel>
         <Controller
           name="indexCodeIds"
           control={control}
@@ -111,22 +106,23 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
         <ReactHookTextField name="code" control={control} fullWidth />
         <FormHelperText error>{errors.code?.message}</FormHelperText>
       </FormControl>
+      <FormControl fullWidth>
+        <FormLabel>Description</FormLabel>
+        <ReactHookTextField name="name" control={control} fullWidth />
+        <FormHelperText error>{errors.name?.message}</FormHelperText>
+      </FormControl>
       <FormControl>
-        <FormLabel
-          sx={{
-            '&.Mui-focused': { color: theme.palette.text.secondary }
-          }}
-        >
-          Allowed?
-        </FormLabel>
-        <Controller
-          name="allowed"
-          control={control}
-          rules={{ required: true }}
-          render={({ field: { onChange, value } }) => {
-            return <Checkbox onChange={onChange} checked={value} />;
-          }}
-        />
+        <Box flexDirection={'row'}>
+          <FormLabel sx={{ '&.Mui-focused': { color: theme.palette.text.secondary } }}>Allowed?</FormLabel>
+          <Controller
+            name="allowed"
+            control={control}
+            rules={{ required: true }}
+            render={({ field: { onChange, value } }) => {
+              return <Checkbox onChange={onChange} checked={value} />;
+            }}
+          />
+        </Box>
       </FormControl>
     </NERFormModal>
   );
