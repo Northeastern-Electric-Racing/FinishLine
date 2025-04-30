@@ -71,11 +71,11 @@ const SubmissionFormModel = ({ open, handleClose, defaultValues, onSubmit, parts
     <NERFormModal
       open={open}
       onHide={handleClose}
-      title={!!defaultValues ? 'Edit Part' : 'Create Part'}
+      title={!!defaultValues ? 'Edit Submission' : 'New Submission'}
       reset={() => reset()}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
-      formId={!!defaultValues ? 'edit-Part-form' : 'create-Part-form'}
+      formId={!!defaultValues ? 'edit-submission-form' : 'create-submission-form'}
       showCloseButton
     >
       <Grid container spacing={2} alignItems="flex-start" maxWidth={'100%'}>

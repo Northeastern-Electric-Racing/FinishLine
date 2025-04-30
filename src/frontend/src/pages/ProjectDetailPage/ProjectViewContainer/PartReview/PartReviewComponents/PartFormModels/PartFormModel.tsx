@@ -88,7 +88,7 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
     <NERFormModal
       open={open}
       onHide={handleClose}
-      title={!!defaultValues ? 'Edit Part' : 'Create Part'}
+      title={!!defaultValues ? 'Edit Part' : 'New Part'}
       reset={() => reset()}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}

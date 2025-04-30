@@ -74,11 +74,11 @@ const ReviewFormModel = ({ open, handleClose, defaultValues, onSubmit, partsInPr
     <NERFormModal
       open={open}
       onHide={handleClose}
-      title={!!defaultValues ? 'Edit Part' : 'Create Part'}
+      title={!!defaultValues ? 'Edit Review' : 'New Review'}
       reset={() => reset()}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
-      formId={!!defaultValues ? 'edit-Part-form' : 'create-Part-form'}
+      formId={!!defaultValues ? 'edit-review-form' : 'create-review-form'}
       showCloseButton
     >
       <Grid container spacing={2} alignItems="flex-start" maxWidth={'100%'}>
