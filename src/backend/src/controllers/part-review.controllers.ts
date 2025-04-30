@@ -231,7 +231,7 @@ export default class PartReviewController {
         req.currentUser,
         req.organization.organizationId
       );
-      res.status(201).json(updatedfaq);
+      res.status(200).json(updatedfaq);
     } catch (error: unknown) {
       next(error);
     }
