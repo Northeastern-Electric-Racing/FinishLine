@@ -136,7 +136,7 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
                   }
                 }}
               >
-                {Object.values(otherReasons).map((reason) => (
+                {otherReasons.map((reason) => (
                   <MenuItem key={reason.otherProductReasonId} value={reason.otherProductReasonId}>
                     {reason.name}
                   </MenuItem>
@@ -173,7 +173,7 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
                   }
                 }}
               >
-                {Object.values(indexCodes).map((code) => (
+                {indexCodes.map((code) => (
                   <MenuItem key={code.indexCodeId} value={code.indexCodeId}>
                     {code.name}
                   </MenuItem>
