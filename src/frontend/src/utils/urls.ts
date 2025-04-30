@@ -56,6 +56,10 @@ const partsCreateReviewRequest = (submissionId: string) => `${parts()}/reviewReq
 const partsDeleteReviewRequest = (reviewRequestId: string) => `${parts()}/reviewRequest/${reviewRequestId}/delete`;
 const partsCreateReview = () => `${parts()}/review/create`;
 const partsEditReview = (reviewId: string) => `${parts()}/review/${reviewId}/update`;
+const partsReviewFaqs = () => `${parts()}/faqs`;
+const partsReviewFaqCreate = () => `${parts()}/faqs/create`;
+const partsReviewFaqEdit = (faqId: string) => `${parts()}/faqs/${faqId}/update`;
+const partsReviewFaqDelete = (faqId: string) => `${parts()}/faqs/${faqId}/delete`;
 const partsReviewUploadFiles = (reviewId: string) => `${parts()}/review/${reviewId}/upload-files`;
 const getAllPartCommonMistakes = () => `${parts()}/common-mistakes`;
 const getAllPartTags = () => `${parts()}/tags`;
@@ -300,6 +304,10 @@ export const apiUrls = {
 
   parts,
   partsByProject,
+  partsReviewFaqs,
+  partsReviewFaqCreate,
+  partsReviewFaqEdit,
+  partsReviewFaqDelete,
   partByIndex,
   partsCreate,
   partsUploadPreviewImage,
