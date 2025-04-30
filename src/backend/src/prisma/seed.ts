@@ -1712,7 +1712,6 @@ const performSeed: () => Promise<void> = async () => {
   /**
    * Reimbursements
    */
-
   const vendor = await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Tesla',
@@ -1722,7 +1721,7 @@ const performSeed: () => Promise<void> = async () => {
     false,
     'SAVE50!',
     thomasEmrax.userId,
-    'Tax exemption status?',
+    'Tax exemption status? This is a test i am writing alot of text ahhahahahahhaha this is more of a test i am going to write even more test hahahahah.',
     thomasEmrax.userId
   );
   await ReimbursementRequestService.createVendor(
@@ -1747,6 +1746,246 @@ const performSeed: () => Promise<void> = async () => {
     'SAVE50!',
     thomasEmrax.userId,
     'Tax exemption ID NUMBER',
+    thomasEmrax.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Microsoft',
+    ner,
+    'microsoft@outlook.com',
+    'secure123!',
+    true,
+    'WELCOME10',
+    thomasEmrax.userId,
+    'Requires monthly invoicing',
+    thomasEmrax.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Apple',
+    ner,
+    'apple@icloud.com',
+    'appl3Secure!',
+    false,
+    'APPLE30',
+    thomasEmrax.userId,
+    'Eco-friendly packaging preferred',
+    thomasEmrax.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Costco',
+    ner,
+    'costco@wholesale.com',
+    'bulkBuy22!',
+    false,
+    'BULKDEAL',
+    thomasEmrax.userId,
+    'Tax ID attached',
+    thomasEmrax.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Walmart',
+    ner,
+    'support@walmart.com',
+    'WalMartP@ss1',
+    true,
+    'ROLLBACK15',
+    thomasEmrax.userId,
+    'Requires contact for all returns',
+    thomasEmrax.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Target',
+    ner,
+    'vendors@target.com',
+    'target321!',
+    true,
+    'REDTAG10',
+    thomasEmrax.userId,
+    'Needs weekly usage reports',
+    thomasEmrax.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'eBay',
+    ner,
+    'support@ebay.com',
+    'eBayS3ll3r!',
+    false,
+    'FREESHIP',
+    thomasEmrax.userId,
+    'Verification required',
+    thomasEmrax.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Netflix',
+    ner,
+    'billing@netflix.com',
+    'stream4life!',
+    false,
+    'BINGE50',
+    thomasEmrax.userId,
+    'Subscription-based payments',
+    thomasEmrax.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Spotify',
+    ner,
+    'accounts@spotify.com',
+    'listen2music!',
+    false,
+    'MUSIC25',
+    thomasEmrax.userId,
+    'Requires invoice numbers on docs',
+    thomasEmrax.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Adobe',
+    ner,
+    'adobe@creative.com',
+    'Cr3at1ve!',
+    true,
+    'DESIGN10',
+    thomasEmrax.userId,
+    'Needs PO for every purchase',
+    thomasEmrax.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Dell',
+    ner,
+    'orders@dell.com',
+    'd3llP@ss!',
+    true,
+    'TECH30',
+    thomasEmrax.userId,
+    'Requesting business license',
+    thomasEmrax.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'HP',
+    ner,
+    'support@hp.com',
+    'hpSecure12!',
+    false,
+    'PRINT20',
+    thomasEmrax.userId,
+    'Needs signed agreement on file',
+    thomasEmrax.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Facebook',
+    ner,
+    'fb@meta.com',
+    'm3taPass!',
+    true,
+    'META15',
+    thomasEmrax.userId,
+    'Wants to be listed as priority',
+    thomasEmrax.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'LinkedIn',
+    ner,
+    'contact@linkedin.com',
+    'workN3tw0rk!',
+    false,
+    'NETWORK25',
+    thomasEmrax.userId,
+    'Requires biannual contract renewal',
+    thomasEmrax.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Zoom',
+    ner,
+    'sales@zoom.us',
+    'z00mM33t!',
+    true,
+    'VIDEO5',
+    thomasEmrax.userId,
+    'Asks for contact before upgrades',
+    thomasEmrax.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Slack',
+    ner,
+    'help@slack.com',
+    'sl@ckwork!',
+    false,
+    'COLLAB10',
+    thomasEmrax.userId,
+    'Needs project reference ID',
+    thomasEmrax.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Stripe',
+    ner,
+    'payments@stripe.com',
+    'fintech123!',
+    false,
+    'PAYSAFE',
+    thomasEmrax.userId,
+    'Bank info needed for setup',
+    thomasEmrax.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Square',
+    ner,
+    'vendor@square.com',
+    'squ@reRoot!',
+    true,
+    'CASHAPP',
+    thomasEmrax.userId,
+    'Tax info must be updated yearly',
+    thomasEmrax.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Notion',
+    ner,
+    'support@notion.so',
+    'not3sApp!',
+    false,
+    'PLAN50',
+    thomasEmrax.userId,
+    'Requires shared workspace invite',
+    thomasEmrax.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'GitHub',
+    ner,
+    'billing@github.com',
+    'ghRepos!',
+    true,
+    'DEV25',
+    thomasEmrax.userId,
+    'Open source licenses required',
+    thomasEmrax.userId
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Trello',
+    ner,
+    'boards@trello.com',
+    'tr3ll0Board!',
+    false,
+    'TASK15',
+    thomasEmrax.userId,
+    'Needs card for each request',
     thomasEmrax.userId
   );
 
@@ -2257,9 +2496,9 @@ const performSeed: () => Promise<void> = async () => {
     false
   );
 
-  const goldSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Gold Tier', ner, '#FFD700');
-  await FinanceServices.createSponsorTier(thomasEmrax, 'Silver Tier', ner, '#C0C0C0');
-  await FinanceServices.createSponsorTier(thomasEmrax, 'Bronze Tier', ner, '#CD7F32');
+  const goldSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Gold', ner, '#9F9156');
+  await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, '#C0C0C0');
+  await FinanceServices.createSponsorTier(thomasEmrax, 'Bronze', ner, '#CD7F32');
 
   const sponsor = await FinanceServices.createSponsor(
     thomasEmrax,
