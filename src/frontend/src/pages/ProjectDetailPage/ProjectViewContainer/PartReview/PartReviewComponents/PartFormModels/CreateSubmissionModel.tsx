@@ -12,7 +12,7 @@ const CreateSubmissionModal = ({ open, handleClose, partsInProject }: CreateSubm
   const { mutateAsync: createSubmission } = useCreatePartSubmission();
   const { mutateAsync: uploadFiles } = useUploadSubmissionFiles();
 
-  const onSubmit = async (data: { partId: string; name: string; notes?: string; files: File[] }) => {
+  const onSubmit = async (data: { partId: string; name: string; notes?: string; files: { name: string; file: File }[] }) => {
     const submission = await createSubmission({
       partId: data.partId,
       name: data.name,
@@ -21,7 +21,7 @@ const CreateSubmissionModal = ({ open, handleClose, partsInProject }: CreateSubm
 
     await uploadFiles({
       submissionId: submission.partSubmissionId,
-      files: data.files
+      files: data.files.map((file) => file.file)
     });
   };
 

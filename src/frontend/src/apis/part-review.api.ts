@@ -111,7 +111,7 @@ export const setUploadSubmissionFiles = (submissionId: string, files: File[]) =>
   files.forEach((file, _index) => {
     formData.append('files', file);
   });
-  return axios.post<PartSubmission>(apiUrls.partsSubmissionUploadFiles(submissionId), formData);
+  return axios.post<PartSubmission>(apiUrls.partsSubmissionUploadFiles(submissionId), formData, {});
 };
 
 /**
@@ -170,7 +170,7 @@ export const setUploadReviewFiles = (reviewId: string, files: File[]) => {
   files.forEach((file, _index) => {
     formData.append('files', file);
   });
-  return axios.post<PartReview>(apiUrls.partsReviewUploadFiles(reviewId), formData);
+  return axios.post<PartReview>(apiUrls.partsReviewUploadFiles(reviewId), formData, {});
 };
 
 /**

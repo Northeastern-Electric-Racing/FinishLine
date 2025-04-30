@@ -14,7 +14,7 @@ interface SubmissionFormModelProps {
   open: boolean;
   handleClose: () => void;
   defaultValues?: PartSubmission;
-  onSubmit: (data: { partId: string; name: string; notes?: string; files: File[] }) => void;
+  onSubmit: (data: { partId: string; name: string; notes?: string; files: { name: string; file: File }[] }) => void;
   partsInProject: PartPreview[];
 }
 
@@ -54,17 +54,28 @@ const SubmissionFormModel = ({ open, handleClose, defaultValues, onSubmit, parts
     name: 'files'
   });
 
-  const onFormSubmit = async (data: { partId: string; name: string; notes?: string; files: File[] }) => {
+  const onFormSubmit = async (data: {
+    partId: string;
+    name: string;
+    notes?: string;
+    files: { name: string; file: File }[];
+  }) => {
     try {
+      handleClose();
       await onSubmit({
         ...data
       });
+      toast.success('Submission Successfully Created');
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
       }
     }
-    handleClose();
+    reset();
+  };
+
+  const displayName = (name: string) => {
+    return name.length <= 10 ? name : name.slice(0, 9) + '...';
   };
 
   return (
@@ -105,8 +116,8 @@ const SubmissionFormModel = ({ open, handleClose, defaultValues, onSubmit, parts
             <Grid container>
               {files.map((file, index) => {
                 return (
-                  <Grid display={'flex'} flexDirection={'row'}>
-                    <p>{file.file.name.length <= 10 ? file.file.name : file.file.name.slice(0, 9) + '...'}</p>
+                  <Grid key={file.id} display={'flex'} flexDirection={'row'}>
+                    <p>{displayName(file.name)}</p>
                     <IconButton onClick={() => removeFile(index)}>
                       <Delete />
                     </IconButton>
@@ -130,7 +141,10 @@ const SubmissionFormModel = ({ open, handleClose, defaultValues, onSubmit, parts
                   onChange={(e) => {
                     if (e.target.files) {
                       [...e.target.files]?.forEach((file) => {
-                        appendFile({ file });
+                        appendFile({
+                          name: file.name,
+                          file
+                        });
                       });
                     }
                   }}

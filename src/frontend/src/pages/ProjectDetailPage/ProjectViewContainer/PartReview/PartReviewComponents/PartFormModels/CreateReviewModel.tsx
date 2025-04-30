@@ -12,7 +12,12 @@ const CreateReviewModal = ({ open, handleClose, partsInProject }: CreateReviewMo
   const { mutateAsync: createReview } = useCreatePartReview();
   const { mutateAsync: uploadFiles } = useUploadReviewFiles();
 
-  const onSubmit = async (data: { submissionId: string; status: Review_Status; notes?: string; files: File[] }) => {
+  const onSubmit = async (data: {
+    submissionId: string;
+    status: Review_Status;
+    notes?: string;
+    files: { name: string; file: File }[];
+  }) => {
     const review = await createReview({
       submissionId: data.submissionId,
       notes: data.notes,
@@ -21,7 +26,7 @@ const CreateReviewModal = ({ open, handleClose, partsInProject }: CreateReviewMo
 
     await uploadFiles({
       reviewId: review.partReviewId,
-      files: data.files
+      files: data.files.map((file) => file.file)
     });
   };
 

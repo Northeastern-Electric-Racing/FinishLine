@@ -47,7 +47,7 @@ partsRouter.post(
 
 partsRouter.post(
   '/review/:reviewId/upload-files',
-  upload.array('files', 10),
+  upload.fields([{ name: 'files', maxCount: 10 }]),
   validateInputs,
   PartReviewController.uploadReviewFiles
 );
@@ -63,14 +63,7 @@ partsRouter.post(
 
 partsRouter.post(
   '/submission/:submissionId/upload-files',
-  upload.array('files', 10),
-  validateInputs,
-  PartReviewController.uploadSubmissionFiles
-);
-
-partsRouter.post(
-  '/submission/:submissionId/upload-files',
-  upload.array('files', 10),
+  upload.fields([{ name: 'files', maxCount: 10 }]),
   validateInputs,
   PartReviewController.uploadSubmissionFiles
 );

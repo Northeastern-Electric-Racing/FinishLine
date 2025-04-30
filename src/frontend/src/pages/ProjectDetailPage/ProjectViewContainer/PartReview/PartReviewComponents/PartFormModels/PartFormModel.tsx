@@ -63,6 +63,7 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
 
   const onFormSubmit = async (data: PartPayload) => {
     try {
+      handleClose();
       await onSubmit({
         ...data,
         reviewStatus: Review_Status.IN_PROGRESS,
@@ -70,12 +71,13 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
         assigneeIds,
         reviewerIds
       });
+      toast.success('Part Successfully Created');
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
       }
     }
-    handleClose();
+    reset();
   };
 
   const { data: tags, isLoading: tagsLoading, isError: tagsIsError, error: tagsError } = useGetAllPartTags();

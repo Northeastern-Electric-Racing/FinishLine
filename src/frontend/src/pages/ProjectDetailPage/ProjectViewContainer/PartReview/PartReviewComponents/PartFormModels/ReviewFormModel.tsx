@@ -14,7 +14,12 @@ interface ReviewFormModelProps {
   open: boolean;
   handleClose: () => void;
   defaultValues?: PartSubmission;
-  onSubmit: (data: { submissionId: string; status: Review_Status; notes?: string; files: File[] }) => void;
+  onSubmit: (data: {
+    submissionId: string;
+    status: Review_Status;
+    notes?: string;
+    files: { name: string; file: File }[];
+  }) => void;
   partsInProject: PartPreview[];
 }
 
@@ -48,17 +53,28 @@ const ReviewFormModel = ({ open, handleClose, defaultValues, onSubmit, partsInPr
 
   const [selectedPartIndex, setSelectedPartIndex] = useState<number | null>(null);
 
-  const onFormSubmit = async (data: { submissionId: string; status: Review_Status; notes?: string; files: File[] }) => {
+  const onFormSubmit = async (data: {
+    submissionId: string;
+    status: Review_Status;
+    notes?: string;
+    files: { name: string; file: File }[];
+  }) => {
     try {
+      handleClose();
       await onSubmit({
         ...data
       });
+      toast.success('Review Successfully Created');
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
       }
     }
-    handleClose();
+    reset();
+  };
+
+  const displayName = (name: string) => {
+    return name.length <= 10 ? name : name.slice(0, 9) + '...';
   };
 
   const findSubmissionOptions: () => {
@@ -101,8 +117,8 @@ const ReviewFormModel = ({ open, handleClose, defaultValues, onSubmit, partsInPr
             <Grid container>
               {files.map((file, index) => {
                 return (
-                  <Grid display={'flex'} flexDirection={'row'}>
-                    <p>{file.file.name.length <= 10 ? file.file.name : file.file.name.slice(0, 9) + '...'}</p>
+                  <Grid key={file.id} display={'flex'} flexDirection={'row'}>
+                    <p>{displayName(file.name)}</p>
                     <IconButton onClick={() => removeFile(index)}>
                       <Delete />
                     </IconButton>
@@ -126,7 +142,10 @@ const ReviewFormModel = ({ open, handleClose, defaultValues, onSubmit, partsInPr
                   onChange={(e) => {
                     if (e.target.files) {
                       [...e.target.files]?.forEach((file) => {
-                        appendFile({ file });
+                        appendFile({
+                          name: file.name,
+                          file
+                        });
                       });
                     }
                   }}

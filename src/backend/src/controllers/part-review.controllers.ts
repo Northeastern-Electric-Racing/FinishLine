@@ -134,7 +134,9 @@ export default class PartReviewController {
   static async uploadReviewFiles(req: Request, res: Response, next: NextFunction) {
     try {
       const { reviewId } = req.params;
-      const files = req.files as Express.Multer.File[];
+      const { files = [] } = req.files as {
+        files?: Express.Multer.File[];
+      };
       const updatedReview = await PartReviewService.uploadReviewFiles(
         reviewId,
         req.currentUser,
@@ -183,7 +185,9 @@ export default class PartReviewController {
   static async uploadSubmissionFiles(req: Request, res: Response, next: NextFunction) {
     try {
       const { submissionId } = req.params;
-      const files = req.files as Express.Multer.File[];
+      const { files = [] } = req.files as {
+        files?: Express.Multer.File[];
+      };
       const updatedSubmission = await PartReviewService.uploadSubmissionFiles(
         submissionId,
         req.currentUser,
