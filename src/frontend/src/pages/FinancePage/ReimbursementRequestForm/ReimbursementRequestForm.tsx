@@ -228,13 +228,6 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
         }
       });
 
-      // Console log to check the values being submitted
-      console.log('Submitting Reimbursement Data:', {
-        totalCost,
-        otherReimbursementProducts,
-        wbsReimbursementProducts
-      });
-
       const reimbursementRequestId = await submitData({
         ...data,
         otherReimbursementProducts,
