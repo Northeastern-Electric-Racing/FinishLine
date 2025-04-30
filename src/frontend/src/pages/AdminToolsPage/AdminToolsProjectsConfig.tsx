@@ -14,10 +14,12 @@ const AdminToolsProjectsConfig: React.FC = () => {
       <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
         Parts Review Config
       </Typography>
-      <PartsReviewFAQTable />
-      <Grid container spacing="3%">
-        <Grid item direction="column" xs={12} md={6}>
+      <Grid item container direction="row" spacing={2}>
+        <Grid item xs={12} md={6}>
           <AbbreviationsTable />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <PartsReviewFAQTable />
         </Grid>
       </Grid>
       <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
