@@ -13,6 +13,7 @@ import {
   PartReviewRequest,
   PartReview,
   PartReviewCommonMistake,
+  PartTag,
   FrequentlyAskedQuestion
 } from 'shared';
 import axios from '../utils/axios';
@@ -115,9 +116,11 @@ export const editPartSubmission = (partSubmissionId: string, payload: EditPartSu
  * @param images the files to upload
  */
 export const setUploadSubmissionFiles = (submissionId: string, files: File[]) => {
-  return axios.post<PartSubmission>(apiUrls.partsSubmissionUploadFiles(submissionId), {
-    files
+  const formData = new FormData();
+  files.forEach((file, _index) => {
+    formData.append('files', file);
   });
+  return axios.post<PartSubmission>(apiUrls.partsSubmissionUploadFiles(submissionId), formData, {});
 };
 
 /**
@@ -172,9 +175,11 @@ export const editPartReview = (partReviewId: string, payload: EditPartReviewPayl
  * @param files the files to add
  */
 export const setUploadReviewFiles = (reviewId: string, files: File[]) => {
-  return axios.post<PartReview>(apiUrls.partsReviewUploadFiles(reviewId), {
-    files
+  const formData = new FormData();
+  files.forEach((file, _index) => {
+    formData.append('files', file);
   });
+  return axios.post<PartReview>(apiUrls.partsReviewUploadFiles(reviewId), formData, {});
 };
 
 /**
@@ -230,4 +235,13 @@ export const deletePartReviewFaq = (faqId: string) => {
  */
 export const getAllCommonMistakes = () => {
   return axios.get<PartReviewCommonMistake[]>(apiUrls.getAllPartCommonMistakes());
+};
+
+/**
+ * Gets all the part tags for the users organization
+ *
+ * @returns an array of part tags
+ */
+export const getAllPartTags = () => {
+  return axios.get<PartTag[]>(apiUrls.getAllPartTags());
 };

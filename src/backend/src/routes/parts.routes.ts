@@ -23,6 +23,7 @@ partsRouter.post(
   body('reviewStatus').custom((value) => Object.values(Review_Status).includes(value)),
   body('tagIds').isArray(),
   body('assigneeIds').isArray(),
+  body('reviewerIds').isArray(),
   validateInputs,
   PartReviewController.createPart
 );
@@ -46,7 +47,7 @@ partsRouter.post(
 
 partsRouter.post(
   '/review/:reviewId/upload-files',
-  upload.array('files', 10),
+  upload.fields([{ name: 'files', maxCount: 10 }]),
   validateInputs,
   PartReviewController.uploadReviewFiles
 );
@@ -62,14 +63,7 @@ partsRouter.post(
 
 partsRouter.post(
   '/submission/:submissionId/upload-files',
-  upload.array('files', 10),
-  validateInputs,
-  PartReviewController.uploadSubmissionFiles
-);
-
-partsRouter.post(
-  '/submission/:submissionId/upload-files',
-  upload.array('files', 10),
+  upload.fields([{ name: 'files', maxCount: 10 }]),
   validateInputs,
   PartReviewController.uploadSubmissionFiles
 );

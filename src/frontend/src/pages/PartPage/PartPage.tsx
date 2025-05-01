@@ -46,6 +46,7 @@ const PartPage: React.FC = () => {
     >
       <Box>
         <Typography>Part: {part.commonName}</Typography>
+        <Typography>Number of submissions: {part.submissions.length}</Typography>
         <Breadcrumbs sx={{ mb: 2 }}></Breadcrumbs>
       </Box>
     </PageLayout>
