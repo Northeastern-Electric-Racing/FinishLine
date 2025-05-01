@@ -1,5 +1,4 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import EditNote from '@mui/icons-material/EditNote';
 import { FormControl, FormLabel } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
