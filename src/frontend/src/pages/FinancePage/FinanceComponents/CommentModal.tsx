@@ -15,7 +15,6 @@ const schema = yup.object().shape({
     .string()
     .required('Comment is required')
     .test('comment exists', 'Comment field cannot be empty', (value) => {
-      // technically this allows trailing zeros, but that's fine
       if (!value) return false;
       return true;
     })
@@ -100,13 +99,7 @@ const CommentModal: React.FC<CommentModalProps> = ({
       ) : (
         <FormControl>
           <FormLabel>Comment</FormLabel>
-          <ReactHookTextField
-            name="comment"
-            control={control}
-            sx={{ width: 1 }}
-            startAdornment={<EditNote />}
-            errorMessage={errors.comment}
-          />
+          <ReactHookTextField name="comment" control={control} sx={{ width: 1 }} errorMessage={errors.comment} />
         </FormControl>
       )}
     </NERFormModal>

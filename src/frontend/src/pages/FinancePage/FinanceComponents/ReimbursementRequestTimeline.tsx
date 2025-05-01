@@ -3,8 +3,9 @@ import { Circle } from '@mui/icons-material';
 import { datePipe } from '../../../utils/pipes';
 import { ReimbursementRequestComment } from '../../../../../shared/src/types/reimbursement-requests-types';
 import { useState } from 'react';
-import TimelineCommentModal from './TimelineCommentModal';
+import CommentModal from './CommentModal';
 import { Link } from '@mui/material';
+import { useCreateReimbursementRequestComment } from '../../../hooks/finance.hooks';
 
 interface TimelineProps {
   reimbursementRequestId: string;
@@ -28,19 +29,19 @@ const ReimbursementRequestTimeline: React.FC<TimelineProps> = ({ reimbursementRe
   );
   return (
     <Stack direction="column" alignItems="center" spacing={0.5}>
-      <FirstSection reimbursementRequestId={reimbursementRequestId} comments={comments} />
+      <CreateNewCommentSection reimbursementRequestId={reimbursementRequestId} comments={comments} />
       {comments.map((comment, index) => (
-        <EventSection comment={comment} isLast={comments.length - 1 === index} key={index} />
+        <CommentsSection comment={comment} isLast={comments.length - 1 === index} key={index} />
       ))}
     </Stack>
   );
 };
 
-const EventSection: React.FC<EventSectionProps> = ({ comment, isLast }) => {
+const CommentsSection: React.FC<EventSectionProps> = ({ comment, isLast }) => {
   const commentTime = new Date(comment.dateCreated).toLocaleTimeString();
   const newCommentTime = commentTime.slice(0, -6) + commentTime.slice(-3);
   return (
-    <Stack direction="row" spacing={2} alignItems="flex-start" width="100%">
+    <Stack direction="row" spacing={2} alignItems="stretch" width="100%">
       <Box flex={1} textAlign="right">
         <Typography fontWeight={'regular'} fontSize={18} variant="h1">
           {datePipe(comment.dateCreated)}
@@ -58,7 +59,8 @@ const EventSection: React.FC<EventSectionProps> = ({ comment, isLast }) => {
           <Box
             sx={{
               width: '4px',
-              height: '50px',
+              minHeight: '50px',
+              flex: 1,
               backgroundColor: 'white'
             }}
           />
@@ -74,7 +76,8 @@ const EventSection: React.FC<EventSectionProps> = ({ comment, isLast }) => {
   );
 };
 
-const FirstSection: React.FC<FirstSectionProps> = ({ reimbursementRequestId, comments }) => {
+const CreateNewCommentSection: React.FC<FirstSectionProps> = ({ reimbursementRequestId, comments }) => {
+  const { mutateAsync, isLoading } = useCreateReimbursementRequestComment(reimbursementRequestId);
   const [timelineCommentModal, setTimelineCommentModalShow] = useState<boolean>(false);
   const commentTime = new Date().toLocaleTimeString();
   const newCommentTime = commentTime.slice(0, -6) + commentTime.slice(-3);
@@ -108,12 +111,14 @@ const FirstSection: React.FC<FirstSectionProps> = ({ reimbursementRequestId, com
             setTimelineCommentModalShow(true);
           }}
         >
-          <Typography fontWeight={'regular'}>Add Timeline Comment</Typography>
+          <Typography fontWeight={'regular'}>Send a Follow-Up Message!</Typography>
         </Link>
-        <TimelineCommentModal
-          reimbursementRequestId={reimbursementRequestId}
+        <CommentModal
           showModal={timelineCommentModal}
           handleClose={() => setTimelineCommentModalShow(false)}
+          mutateAsync={mutateAsync}
+          isLoading={isLoading}
+          title="Create New Timeline Comment"
         />
       </Stack>
     </Stack>
