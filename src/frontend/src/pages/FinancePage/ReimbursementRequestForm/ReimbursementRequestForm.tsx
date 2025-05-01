@@ -196,9 +196,9 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     try {
       //total cost, firstSourceAmount and secondSourceAmount is tracked in cents
       const totalCost = Math.round(data.reimbursementProducts.reduce((acc, curr) => acc + curr.cost, 0) * 100);
-      // For each product, if multiple refund sources are enabled, the `cost` represents
-      // the total amount from the first refund source` (firstSourceAmount`) and `second refund source (secondSourceAmount`) of that product.
-      // If only one refund source is present, the `cost` reflects the refund source amount for that product.
+      // For each product, if multiple refund sources are enabled, the `cost` field represents
+      // the total amount from the first refund source amount (firstSourceAmount) and second refund source (secondSourceAmount) of that product.
+      // If only one refund source is present, the `cost` reflects the refund source amount for that product, and firstSourceAmount and secondSourceAmount are left as 0 since they will not needed for this scenario.
       const reimbursementProducts = data.reimbursementProducts.map((product: ReimbursementProductFormArgs) => {
         return {
           ...product,
