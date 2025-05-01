@@ -18,6 +18,13 @@ interface SubmissionFormModalProps {
   partsInProject: PartPreview[];
 }
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+const isPdf = (fileName: string) => {
+  const extension = fileName.split('.').pop()?.toLowerCase();
+  return extension === 'pdf';
+};
+
 const SubmissionFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProject }: SubmissionFormModalProps) => {
   const toast = useToast();
 
@@ -25,10 +32,32 @@ const SubmissionFormModal = ({ open, handleClose, defaultValues, onSubmit, parts
     partId: yup.string().required(),
     name: yup.string().required(),
     notes: yup.string().optional(),
-    files: yup.array().test({
-      message: 'Must upload at least 1 file',
-      test: (arr) => (arr ? arr?.length > 0 : false)
-    })
+    files: yup
+      .array()
+      .test({
+        message: 'Cannot upload more than 5 files',
+        test: (arr) => (arr ? arr?.length <= 5 : false)
+      })
+      .test({
+        message: 'Must upload at least 1 file',
+        test: (arr) => (arr ? arr?.length > 0 : false)
+      })
+      .test({
+        name: 'fileNameLength',
+        message: 'File name(s) can only be at most 20 characters long',
+        test: (value) => {
+          if (!value) return true;
+          return !value.some((file) => file.name.length > 20);
+        }
+      })
+      .test({
+        name: 'fileNameCharacters',
+        message: 'File name(s) should only contain letters, numbers, and dots',
+        test: (value) => {
+          if (!value) return true;
+          return !value.some((file) => !/^[\w.]+$/.test(file.name));
+        }
+      })
   });
 
   const {
@@ -141,6 +170,25 @@ const SubmissionFormModal = ({ open, handleClose, defaultValues, onSubmit, parts
                   onChange={(e) => {
                     if (e.target.files) {
                       [...e.target.files]?.forEach((file) => {
+                        if (file.size > MAX_FILE_SIZE) {
+                          toast.error(`File "${file.name}" exceeds the maximum size limit of ${MAX_FILE_SIZE} bytes`);
+                          return;
+                        }
+                        if (!/^[\w.]+$/.test(file.name)) {
+                          toast.error(`File names can only contain letters and numbers`);
+                          return;
+                        }
+                        if (file.name.length > 20) {
+                          toast.error(`File names cannot be longer than 20 characters`);
+                          return;
+                        }
+
+                        if (!isPdf(file.name)) {
+                          toast.warning(
+                            `Warning: "${file.name}" is not a PDF file, so will not be displayed. (Don't worry, reviewers can still download it)`,
+                            5000
+                          );
+                        }
                         appendFile({
                           name: file.name,
                           file

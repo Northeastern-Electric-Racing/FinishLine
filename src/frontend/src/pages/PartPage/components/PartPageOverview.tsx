@@ -8,9 +8,9 @@ import { Part, Review_Status, User } from 'shared';
 export const getReviewStatusColor = (status: Review_Status) => {
   switch (status) {
     case 'IN_PROGRESS':
-      return '#FF7700';
+      return '#0000FF';
     case 'READY_FOR_REVIEW':
-      return '#FF5500';
+      return '#FF0000';
     case 'IN_REVIEW':
       return '#F57600';
     case 'REVIEWED':
@@ -28,7 +28,7 @@ export const getReviewStatusColor = (status: Review_Status) => {
 export const getReviewStatusDisplayName = (status: Review_Status) => {
   switch (status) {
     case 'IN_PROGRESS':
-      return 'Review In Progress';
+      return 'Part In Progress';
     case 'READY_FOR_REVIEW':
       return 'Ready For Review';
     case 'IN_REVIEW':
@@ -40,6 +40,19 @@ export const getReviewStatusDisplayName = (status: Review_Status) => {
     default:
       return 'N/A';
   }
+};
+
+export const PartReviewStatusPill = (status: Review_Status) => {
+  return (
+    <Chip
+      label={getReviewStatusDisplayName(status)}
+      sx={{
+        backgroundColor: getReviewStatusColor(status),
+        ml: 1.5,
+        width: 150
+      }}
+    />
+  );
 };
 
 /**
@@ -92,103 +105,6 @@ function displayAssigneeOrReviewer(anyUser: User) {
   );
 }
 
-export const partOverviewExample: { data: Part } = {
-  data: {
-    partId: '1',
-    index: 1,
-    commonName: 'Suspension',
-    description: 'Test description for a suspension part, which could be a fairly lon sentence',
-    previewImageId: 'qogi43tbiohrj3q2jntfpi',
-    status: 'IN_REVIEW' as Review_Status,
-    tags: [],
-    projectId: '1',
-    assignees: [],
-    reviewRequests: [
-      {
-        partReviewRequestId: '1',
-        partId: '1',
-        requester: {
-          userId: '1',
-          firstName: 'fred',
-          lastName: 'bellinger',
-          email: 'test@test.com',
-          role: 'ADMIN',
-          emailId: 'test@test.com',
-          permissions: []
-        },
-        reviewerRequested: {
-          userId: '2',
-          firstName: 'albert',
-          lastName: 'stetson',
-          email: 'reviewer@test.com',
-          role: 'ADMIN',
-          emailId: 'reviewer@test.com',
-          permissions: []
-        },
-        createdAt: new Date()
-      }
-    ],
-    createdAt: new Date(),
-    userCreated: {
-      userId: '1',
-      firstName: 'john',
-      lastName: 'doe',
-      email: 'test@test.com',
-      role: 'ADMIN',
-      emailId: '1234567',
-      permissions: []
-    },
-    submissions: [
-      {
-        partSubmissionId: '1',
-        fileIds: ['file1', 'file2'],
-        name: 'Initial Submission',
-        notes: 'Please review these changes',
-        partId: '1',
-        userCreated: {
-          userId: '1',
-          firstName: 'jane',
-          lastName: 'plane',
-          email: 'test@test.com',
-          role: 'ADMIN',
-          emailId: 'test@test.com',
-          permissions: []
-        },
-        reviews: [
-          {
-            partReviewId: '1',
-            fileIds: ['reviewFile1'],
-            notes: 'Looks good, just a few minor changes needed',
-            submissionId: '1',
-            popUps: [
-              {
-                partReviewPopupId: '1',
-                xCoord: 0.5,
-                yCoord: 0.25,
-                title: 'Dimension Issue',
-                description: 'Please check this measurement',
-                reviewId: '1'
-              }
-            ],
-            completedAt: new Date(),
-            createdAt: new Date(),
-            userCreated: {
-              userId: '2',
-              firstName: 'albert',
-              lastName: 'stetson',
-              email: 'reviewer@test.com',
-              role: 'ADMIN',
-              emailId: 'reviewer@test.com',
-              permissions: []
-            }
-          }
-        ],
-        createdAt: new Date()
-      }
-    ]
-  }
-};
-
 /**
  * interface to give part prop a type
  */
@@ -197,9 +113,6 @@ interface PartPageOverviewProps {
 }
 
 const PartPageOverview: React.FC<PartPageOverviewProps> = ({ part }) => {
-  const statusColor: string = getReviewStatusColor(part.status);
-  const statusName: string = getReviewStatusDisplayName(part.status);
-
   return (
     <Box
       sx={{
@@ -207,7 +120,7 @@ const PartPageOverview: React.FC<PartPageOverviewProps> = ({ part }) => {
         mb: 2
       }}
     >
-      <Typography variant="h5" mb={1}>
+      <Typography variant="h4" mb={1}>
         Overview
       </Typography>
       <Typography mb={0.5}>{part.description}</Typography>
@@ -226,14 +139,7 @@ const PartPageOverview: React.FC<PartPageOverviewProps> = ({ part }) => {
       </Typography>
       <Typography mb={1.5} sx={{ display: 'flex', alignItems: 'center' }}>
         Current Status:
-        <Chip
-          label={statusName}
-          sx={{
-            backgroundColor: statusColor,
-            ml: 1.5,
-            width: 150
-          }}
-        />
+        {PartReviewStatusPill(part.status)}
       </Typography>
       <Box
         sx={{

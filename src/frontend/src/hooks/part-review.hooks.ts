@@ -32,6 +32,7 @@ import {
   getAllPartTags,
   setUploadSubmissionFiles
 } from '../apis/part-review.api';
+import { downloadGoogleImage } from '../apis/onboarding.api';
 
 export interface PartPayload {
   wbsNum: string;
@@ -430,5 +431,16 @@ export const useGetAllPartTags = () => {
   return useQuery<PartTag[], Error>(['part tags'], async () => {
     const { data } = await getAllPartTags();
     return data;
+  });
+};
+
+/**
+ * Custom React Hook to download files
+ *
+ * @returns a blob of the downloaded file
+ */
+export const useDownloadFile = (fileId: string) => {
+  return useQuery<Blob | undefined, Error>(['parts', 'file', fileId], async () => {
+    return await downloadGoogleImage(fileId);
   });
 };

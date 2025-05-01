@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Document, Page } from 'react-pdf';
 import { pdfjs } from 'react-pdf';
-import file from './test.pdf';
-import { Box, Typography, IconButton } from '@mui/material';
+import { Box, Typography, IconButton, Grid } from '@mui/material';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import { Part_Review_Popup, PartReview, PartSubmission } from 'shared';
@@ -13,38 +12,66 @@ import ReviewPopup from './ReviewPopup';
 import CreateReviewPopup from './CreateReviewPopup';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useAllCommonMistakes } from '../../../hooks/part-review.hooks';
+import { useAllCommonMistakes, useDownloadFile } from '../../../hooks/part-review.hooks';
+import DownloadButton from '../../../components/DownloadButton';
+import { NERButton } from '../../../components/NERButton';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 //set up PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
 
+export const pdfLoadingError = (child: JSX.Element) => {
+  return (
+    <Box
+      sx={{
+        width: '75vh',
+        height: '75vh',
+        border: 2,
+        borderColor: 'grey.50',
+        overflow: 'hidden',
+        position: 'relative',
+        bgcolor: 'grey.500'
+      }}
+    >
+      <Box
+        style={{
+          display: 'grid',
+          placeItems: 'center',
+          height: '75vh'
+        }}
+      >
+        {child}
+      </Box>
+    </Box>
+  );
+};
+
 //null submission indicates no submissions have been made for the part.
 //if the review exists, display that review in review mode. Otherwise display the submission in submission mode
 interface FileDisplayProps {
-  submission: PartSubmission | null;
-  review: PartReview | null;
+  submission: PartSubmission;
+  submissionIdx: number;
+  fileIdx: number;
+  review?: PartReview;
+  reviewMode: boolean;
+  hasNext: () => boolean;
+  next: () => void;
+  hasPrev: () => boolean;
+  prev: () => void;
 }
 
-const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review }) => {
-  if (!submission) {
-    return (
-      <Box
-        sx={{
-          width: '75vh',
-          height: '75vh',
-          border: 2,
-          borderColor: 'grey.400',
-          borderRadius: 1,
-          overflow: 'hidden',
-          position: 'relative',
-          bgcolor: 'grey.50'
-        }}
-      >
-        <Typography>No submission yet.</Typography>
-      </Box>
-    );
-  }
-
+const PDFViewer: React.FC<FileDisplayProps> = ({
+  submission,
+  submissionIdx,
+  review,
+  reviewMode,
+  fileIdx,
+  hasNext,
+  next,
+  hasPrev,
+  prev
+}) => {
   //if in a review, only show that reviews popups. If in general submission display, show all popups from every review
   const allPopups = review
     ? review.popUps
@@ -60,14 +87,27 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review }) => {
   const [editMode, setEditMode] = useState<number>(0);
   const [pdfDimensions, setPdfDimensions] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
   const [customComment, setCustomComment] = useState<boolean>(true);
-  const { data: mistakes, isError: isErrorCommonMistakes, error: errorCommonMistakes } = useAllCommonMistakes();
+  const [loadSuccess, setLoadSuccess] = useState(false);
+  const {
+    data: mistakes,
+    isLoading: isLoadingCommonMistake,
+    isError: isErrorCommonMistakes,
+    error: errorCommonMistakes
+  } = useAllCommonMistakes();
 
+  const {
+    data: pdf,
+    isLoading: pdfLoading,
+    isError: pdfIsError,
+    error: pdfError
+  } = useDownloadFile(submission.fileIds[fileIdx]);
+
+  if (!mistakes || isLoadingCommonMistake) return <LoadingIndicator />;
   if (isErrorCommonMistakes) return <ErrorPage error={errorCommonMistakes} />;
-  if (!mistakes || isErrorCommonMistakes) return <LoadingIndicator />;
 
   const reviewerNameFromPopup = (popup: Part_Review_Popup) => {
     const review = submission.reviews.find((review) => review.partReviewId === popup.reviewId);
-    
+    return `${review?.userCreated.firstName} ${review?.userCreated.lastName}`;
   };
 
   const deletePopupExternal = (popUpId: string) => {
@@ -80,6 +120,8 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review }) => {
   };
 
   const createPopup = (x: number, y: number, title: string, description?: string) => {
+    if (!review || !reviewMode) return;
+
     //create popup in db here
     const newPopup: Part_Review_Popup = {
       partReviewPopupId: '-1',
@@ -170,145 +212,217 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review }) => {
     setIsDragging(false);
   };
 
-  return (
-    <Box display={'flex'} flexDirection={'row'}>
-      {review && (
-        <Box display={'flex'} flexDirection={'column'}>
-          <Box
-            sx={{
-              width: '4rem',
-              height: '4rem',
-              bgcolor: editMode === 1 ? 'red' : 'rgba(0,0,0,0.2)',
-              marginLeft: '2rem',
-              marginRight: '2rem',
-              border: 2,
-              borderColor: 'white',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}
-            onClick={commentOnClick}
-          >
-            <AddCommentRoundedIcon sx={{ width: '60%', height: '60%' }} />
-          </Box>
-          <Box
-            sx={{
-              width: '4rem',
-              height: '4rem',
-              bgcolor: editMode === 2 ? 'red' : 'rgba(0,0,0,0.2)',
-              marginLeft: '2rem',
-              marginRight: '2rem',
-              border: 2,
-              borderColor: 'white',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}
-            onClick={commonMistakeOnClick}
-          >
-            <CommentRoundedIcon sx={{ width: '60%', height: '60%' }} />
-          </Box>
-          <Box
-            sx={{
-              width: '4rem',
-              height: '4rem',
-              bgcolor: editMode === 3 ? 'red' : 'rgba(0,0,0,0.2)',
-              marginLeft: '2rem',
-              marginRight: '2rem',
-              border: 2,
-              borderColor: 'white',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}
-            onClick={fileUploadOnClick}
-          >
-            <UploadFileRoundedIcon sx={{ width: '60%', height: '60%' }} />
-          </Box>
-        </Box>
-      )}
-      {/* <NERButton onClick={() => setEditMode(!editMode)}>{editMode ? 'edit mode' : 'normal mode'}</NERButton> */}
-      <Box
-        sx={{
-          width: '75vh',
-          height: '75vh',
-          border: 2,
-          borderColor: 'grey.400',
-          borderRadius: 1,
-          overflow: 'hidden',
-          position: 'relative',
-          bgcolor: 'grey.50',
-          cursor:
-            editMode === 0 ? (isDragging ? 'grabbing' : 'grab') : editMode === 1 || editMode === 2 ? 'crosshair' : 'auto'
-        }}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-      >
-        {/* Zoom controls */}
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 8,
-            left: 8,
-            zIndex: 1,
-            display: 'flex',
-            gap: 1,
-            bgcolor: 'background.paper',
-            borderRadius: 1,
-            p: 0.5,
-            boxShadow: 1
-          }}
-        >
-          <IconButton onClick={handleZoomIn} size="small">
-            <ZoomInIcon fontSize="small" />
-          </IconButton>
-          <IconButton onClick={handleZoomOut} size="small">
-            <ZoomOutIcon fontSize="small" />
-          </IconButton>
-        </Box>
-        <Box
-          sx={{
-            transform: `scale(${scale}) translate(${position.x}px, ${position.y}px)`,
-            width: '100%',
-            height: '100%',
-            transition: isDragging ? 'none' : 'transform 0.2s ease-out'
-          }}
-        >
-          <Document file={file} error={<Typography color="error">Failed to load PDF</Typography>}>
-            <Page
-              pageNumber={1}
-              renderTextLayer={false}
-              onRenderSuccess={handlePdfRenderSuccess}
-              renderAnnotationLayer={false}
-            />
-          </Document>
+  const resetPos = () => {
+    setIsDragging(false);
+    setPosition({ x: 0, y: 0 });
+    setScale(1);
+  };
 
-          {variablePopups.map((popup: Part_Review_Popup) => (
-            <ReviewPopup
-              key={popup.partReviewPopupId}
-              popup={popup}
-              pdfDimensions={pdfDimensions}
-              scale={scale}
-              reviewMode={!!review}
-              reviewerName={`${review.userCreated.firstName} ${review.userCreated.lastName}`}
-              onDelete={deletePopupExternal}
-              newPopup={false}
-            />
-          ))}
-          <CreateReviewPopup
-            xCoord={newPopupCoords.x}
-            yCoord={newPopupCoords.y}
-            pdfDimensions={pdfDimensions}
-            scale={scale}
-            commonMistakes={mistakes}
-            onDelete={function (): void {
-              setNewPopupCoords({ x: 5, y: 5 });
+  return (
+    <Box display={'flex'} flexDirection={'column'}>
+      <Grid display={'flex'} flexDirection={'row'} gap={2} justifyContent={'space-between'} width={'100%'}>
+        {/* Group the download button and title together */}
+        <Box display="flex" alignItems="center">
+          {pdf && <DownloadButton blob={pdf} filename={submission.name} />}
+          <Typography variant={'h4'}>
+            {submission.name} #{submissionIdx + 1} {review ? ' Review' : ''}
+          </Typography>
+        </Box>
+
+        {/* Group the navigation buttons together */}
+        <Box display="flex" gap={1}>
+          {hasPrev() && (
+            <NERButton
+              variant="contained"
+              sx={{ display: 'flex', height: '50%', transform: 'translateY(50%)' }}
+              onClick={() => {
+                resetPos();
+                prev();
+              }}
+            >
+              <IconButton>
+                <ArrowBackIosIcon />
+                <Typography variant={'h6'}>Previous</Typography>
+              </IconButton>
+            </NERButton>
+          )}
+          {hasNext() && (
+            <NERButton
+              variant="contained"
+              sx={{ display: 'flex', height: '50%', transform: 'translateY(50%)' }}
+              onClick={() => {
+                resetPos();
+                next();
+              }}
+            >
+              <IconButton>
+                <Typography variant={'h6'}>Next</Typography>
+                <ArrowForwardIosIcon />
+              </IconButton>
+            </NERButton>
+          )}
+        </Box>
+      </Grid>
+
+      <Box display={'flex'} flexDirection={'row'}>
+        {reviewMode && (
+          <Box display={'flex'} flexDirection={'column'}>
+            <Box
+              sx={{
+                width: '4rem',
+                height: '4rem',
+                bgcolor: editMode === 1 ? 'red' : 'rgba(0,0,0,0.2)',
+                marginLeft: '2rem',
+                marginRight: '2rem',
+                border: 2,
+                borderColor: 'white',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
+              onClick={commentOnClick}
+            >
+              <AddCommentRoundedIcon sx={{ width: '60%', height: '60%' }} />
+            </Box>
+            <Box
+              sx={{
+                width: '4rem',
+                height: '4rem',
+                bgcolor: editMode === 2 ? 'red' : 'rgba(0,0,0,0.2)',
+                marginLeft: '2rem',
+                marginRight: '2rem',
+                border: 2,
+                borderColor: 'white',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
+              onClick={commonMistakeOnClick}
+            >
+              <CommentRoundedIcon sx={{ width: '60%', height: '60%' }} />
+            </Box>
+            <Box
+              sx={{
+                width: '4rem',
+                height: '4rem',
+                bgcolor: editMode === 3 ? 'red' : 'rgba(0,0,0,0.2)',
+                marginLeft: '2rem',
+                marginRight: '2rem',
+                border: 2,
+                borderColor: 'white',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
+              onClick={fileUploadOnClick}
+            >
+              <UploadFileRoundedIcon sx={{ width: '60%', height: '60%' }} />
+            </Box>
+          </Box>
+        )}
+        {/* <NERButton onClick={() => setEditMode(!editMode)}>{editMode ? 'edit mode' : 'normal mode'}</NERButton> */}
+        <Box
+          sx={{
+            width: '75vh',
+            height: '75vh',
+            border: 2,
+            borderColor: 'grey.400',
+            borderRadius: 1,
+            overflow: 'hidden',
+            position: 'relative',
+            bgcolor: 'grey.50',
+            cursor:
+              editMode === 0 ? (isDragging ? 'grabbing' : 'grab') : editMode === 1 || editMode === 2 ? 'crosshair' : 'auto'
+          }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+        >
+          {/* Zoom controls */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 8,
+              left: 8,
+              zIndex: 1,
+              display: 'flex',
+              gap: 1,
+              bgcolor: 'background.paper',
+              borderRadius: 1,
+              p: 0.5,
+              boxShadow: 1
             }}
-            createPopup={createPopup}
-            custom={customComment}
-          />
+          >
+            <IconButton onClick={handleZoomIn} size="small">
+              <ZoomInIcon fontSize="small" />
+            </IconButton>
+            <IconButton onClick={handleZoomOut} size="small">
+              <ZoomOutIcon fontSize="small" />
+            </IconButton>
+          </Box>
+          <Box
+            sx={{
+              transform: `scale(${scale}) translate(${position.x}px, ${position.y}px)`,
+              width: '100%',
+              height: '100%',
+              transition: isDragging ? 'none' : 'transform 0.2s ease-out'
+            }}
+          >
+            {pdfLoading && pdfLoadingError(<LoadingIndicator />)}
+            {pdfIsError && pdfLoadingError(<ErrorPage error={pdfError} />)}
+            {pdf &&
+              pdf?.type !== 'application/pdf' &&
+              pdfLoadingError(<Typography>Submission is not a pdf. Download to view</Typography>)}
+            {pdf?.type && (
+              <Document
+                file={pdf}
+                onLoadSuccess={() => {
+                  setLoadSuccess(true);
+                }}
+                onLoadError={() => {
+                  setLoadSuccess(false);
+                }}
+                error={pdfLoadingError(<Typography>Could not load pdf</Typography>)}
+              >
+                <Page
+                  pageNumber={1}
+                  renderTextLayer={false}
+                  onRenderSuccess={handlePdfRenderSuccess}
+                  renderAnnotationLayer={false}
+                />
+              </Document>
+            )}
+
+            {loadSuccess && (
+              <Box>
+                {variablePopups.map((popup: Part_Review_Popup) => (
+                  <ReviewPopup
+                    key={popup.partReviewPopupId}
+                    popup={popup}
+                    pdfDimensions={pdfDimensions}
+                    scale={scale}
+                    reviewMode={!!review}
+                    reviewerName={reviewerNameFromPopup(popup)}
+                    onDelete={deletePopupExternal}
+                    newPopup={false}
+                  />
+                ))}
+                <CreateReviewPopup
+                  xCoord={newPopupCoords.x}
+                  yCoord={newPopupCoords.y}
+                  pdfDimensions={pdfDimensions}
+                  scale={scale}
+                  commonMistakes={mistakes}
+                  onDelete={function (): void {
+                    setNewPopupCoords({ x: 5, y: 5 });
+                  }}
+                  createPopup={createPopup}
+                  custom={customComment}
+                />
+              </Box>
+            )}
+          </Box>
         </Box>
       </Box>
     </Box>

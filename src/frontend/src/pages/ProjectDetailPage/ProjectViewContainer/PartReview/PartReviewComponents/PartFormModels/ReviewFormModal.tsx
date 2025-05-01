@@ -23,6 +23,8 @@ interface ReviewFormModalProps {
   partsInProject: PartPreview[];
 }
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
 const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProject }: ReviewFormModalProps) => {
   const toast = useToast();
 
@@ -30,7 +32,28 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
     submissionId: yup.string().required(),
     notes: yup.string().optional(),
     status: yup.string().required(),
-    files: yup.array()
+    files: yup
+      .array()
+      .test({
+        message: 'Cannot upload more than 5 files',
+        test: (arr) => (arr ? arr?.length <= 5 : false)
+      })
+      .test({
+        name: 'fileNameLength',
+        message: 'File name(s) can only be at most 20 characters long',
+        test: (value) => {
+          if (!value) return true;
+          return !value.some((file) => file.name.length > 20);
+        }
+      })
+      .test({
+        name: 'fileNameCharacters',
+        message: 'File name(s) should only contain letters, numbers, and dots',
+        test: (value) => {
+          if (!value) return true;
+          return !value.some((file) => !/^[\w.]+$/.test(file.name));
+        }
+      })
   });
 
   const {
@@ -142,6 +165,18 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
                   onChange={(e) => {
                     if (e.target.files) {
                       [...e.target.files]?.forEach((file) => {
+                        if (file.size > MAX_FILE_SIZE) {
+                          toast.error(`File "${file.name}" exceeds the maximum size limit of ${MAX_FILE_SIZE} bytes`);
+                          return;
+                        }
+                        if (!/^[\w.]+$/.test(file.name)) {
+                          toast.error(`File names can only contain letters and numbers`);
+                          return;
+                        }
+                        if (file.name.length > 20) {
+                          toast.error(`File names cannot be longer than 20 characters`);
+                          return;
+                        }
                         appendFile({
                           name: file.name,
                           file
