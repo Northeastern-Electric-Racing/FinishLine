@@ -330,6 +330,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
               content={reimbursementRequest.summary}
               fontSize={20}
               boxHeight={'10rem'}
+              verticalScroll
             />
           </Grid>
 

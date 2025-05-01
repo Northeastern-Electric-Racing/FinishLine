@@ -13,6 +13,7 @@ interface VerticalDetailDisplayProps {
   boxStyle?: SxProps<Theme>;
   fontSize?: number;
   boxHeight?: string;
+  verticalScroll?: boolean;
 }
 
 const VerticalDetailDisplay: React.FC<VerticalDetailDisplayProps> = ({
@@ -20,7 +21,8 @@ const VerticalDetailDisplay: React.FC<VerticalDetailDisplayProps> = ({
   content,
   boxStyle,
   fontSize = 50,
-  boxHeight
+  boxHeight,
+  verticalScroll
 }) => {
   const theme = useTheme();
   const backgroundColor = theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200];
@@ -40,6 +42,7 @@ const VerticalDetailDisplay: React.FC<VerticalDetailDisplayProps> = ({
       }}
     >
       <Box
+        whiteSpace={verticalScroll ? undefined : 'nowrap'}
         sx={{
           '&::-webkit-scrollbar': {
             height: '0.55rem' // Adjust the the thickness of the scrollbar
