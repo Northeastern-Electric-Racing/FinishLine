@@ -38,11 +38,7 @@ import { ReimbursementProductOtherReasonQueryArgs } from '../prisma-query-args/r
 import { ReimbursementRequestCommentQueryArgs } from '../prisma-query-args/reimbursement-comment.query-args';
 
 export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<ReceiptQueryArgs>): Receipt => {
-  return {
-    receiptId: receipt.receiptId,
-    googleFileId: receipt.googleFileId,
-    name: receipt.name
-  };
+  return { receiptId: receipt.receiptId, googleFileId: receipt.googleFileId, name: receipt.name };
 };
 
 export const reimbursementRequestTransformer = (
@@ -100,15 +96,13 @@ const reimbursementProductReasonTransformer = (
         userCreated: userTransformer(reason.otherReason!.userCreated),
         dateCreated: reason.otherReason!.dateCreated,
         budget: reason.otherReason!.budget,
-        indexCode: indexCodeTransformer(reason.otherReason!.indexCode)
+        indexCode: indexCodeTransformer(reason.otherReason!.indexCode),
+        accountCodes: reason.otherReason!.accountCodes.map(accountCodeTransformer)
       };
 };
 
 export const accountCodeTransformer = (accountCode: Prisma.Account_CodeGetPayload<AccountCodeQueryArgs>): AccountCode => {
-  return {
-    ...accountCode,
-    indexCodes: accountCode.indexCodes.map(indexCodeTransformer)
-  };
+  return { ...accountCode, indexCodes: accountCode.indexCodes.map(indexCodeTransformer) };
 };
 
 export const vendorTransformer = (vendor: Prisma.VendorGetPayload<VendorQueryArgs>): Vendor => {
@@ -137,10 +131,7 @@ export const reimbursementTransformer = (
 };
 
 export const indexCodeTransformer = (indexCode: Prisma.Index_CodeGetPayload<IndexCodeQueryArgs>): IndexCode => {
-  return {
-    ...indexCode,
-    userCreated: userTransformer(indexCode.userCreated)
-  };
+  return { ...indexCode, userCreated: userTransformer(indexCode.userCreated) };
 };
 
 export const otherProductReasonTransformer = (
@@ -152,15 +143,13 @@ export const otherProductReasonTransformer = (
     userCreated: userTransformer(otherProductReason.userCreated),
     dateCreated: otherProductReason.dateCreated,
     budget: otherProductReason.budget,
-    indexCode: indexCodeTransformer(otherProductReason.indexCode)
+    indexCode: indexCodeTransformer(otherProductReason.indexCode),
+    accountCodes: otherProductReason.accountCodes.map(accountCodeTransformer)
   };
 };
 
 export const reimbursementRequestCommentTransformer = (
   reimbursementRequestComment: Prisma.Reimbursement_Request_CommentGetPayload<ReimbursementRequestCommentQueryArgs>
 ): ReimbursementRequestComment => {
-  return {
-    ...reimbursementRequestComment,
-    userCreated: userTransformer(reimbursementRequestComment.userCreated)
-  };
+  return { ...reimbursementRequestComment, userCreated: userTransformer(reimbursementRequestComment.userCreated) };
 };

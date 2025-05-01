@@ -14,6 +14,7 @@ import {
   SponsorTierPayload,
   SponsorTaskPayload,
   ReimbursementRequestCommentPayload
+  EditOtherReimbursementProductReasonPayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -512,4 +513,14 @@ export const deleteSponsor = (sponsorId: string) => {
  */
 export const editSponsorTask = (sponsorTaskId: string, sponsorTaskData: EditSponsorTaskPayload) => {
   return axios.post(apiUrls.editSponsorTask(sponsorTaskId), sponsorTaskData);
+};
+
+/**
+ * Edits a reimbursement request in the database
+ * @param id the id of the other reimbursement product reason
+ * @param formData the data expected from teh form
+ * @returns the updated other reimbursement product reason
+ */
+export const editOtherReimbursementProductReason = (id: string, formData: EditOtherReimbursementProductReasonPayload) => {
+  return axios.post(apiUrls.financeEditOtherReimbursementProductReason(id), formData);
 };
