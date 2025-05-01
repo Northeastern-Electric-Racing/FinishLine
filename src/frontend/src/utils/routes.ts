@@ -33,7 +33,7 @@ const PROJECTS_ALL = PROJECTS + '/all';
 const PROJECTS_BY_WBS = PROJECTS + `/:wbsNum`;
 const PROJECTS_NEW = PROJECTS + `/new`;
 const WORK_PACKAGE_NEW = PROJECTS + `/work-package/new`;
-const PROJECT_PART = PROJECTS_BY_WBS + '/part';
+const PROJECT_PART = PROJECTS_BY_WBS + '/part/:indexNum';
 
 /**************** Teams Section ****************/
 const TEAMS = `/teams`;

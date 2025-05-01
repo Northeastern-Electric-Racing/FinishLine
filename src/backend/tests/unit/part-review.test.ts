@@ -43,6 +43,114 @@ describe('part review tests', () => {
     await resetUsers();
   });
 
+  it('creates a submission and updates it', async () => {
+    const project = await createTestProject(batman, orgId);
+
+    const project1 = await prisma.project.findUnique({
+      where: { projectId: project.projectId },
+      include: {
+        wbsElement: true
+      }
+    });
+
+    const wbsNum = `${project1?.wbsElement.carNumber}.${project1?.wbsElement.projectNumber}.${project1?.wbsElement.workPackageNumber}`;
+
+    const part = await PartReviewService.createPart(
+      organization,
+      wbsNum,
+      batman,
+      1,
+      'part1',
+      'here is a description',
+      Review_Status.IN_PROGRESS,
+      [],
+      [nonAdmin.userId, batman.userId],
+      []
+    );
+
+    const submission = await PartReviewService.createSubmission(part.partId, batman, orgId, 'name1', 'notes1');
+    expect(submission.name).toBe('name1');
+    expect(submission.notes).toBe('notes1');
+    expect(submission.partId).toBe(part.partId);
+    expect(submission.userCreated.userId).toBe(batman.userId);
+
+    const updatedSubmission = await PartReviewService.updateSubmission(
+      submission.partSubmissionId,
+      batman,
+      orgId,
+      'new name',
+      'new notes'
+    );
+    expect(updatedSubmission.name).toBe('new name');
+    expect(updatedSubmission.notes).toBe('new notes');
+    expect(updatedSubmission.partId).toBe(part.partId);
+    expect(updatedSubmission.userCreated.userId).toBe(batman.userId);
+
+    const submissionNoNotes = await PartReviewService.createSubmission(part.partId, batman, orgId, 'name1');
+    expect(submissionNoNotes.name).toBe('name1');
+    expect(submissionNoNotes.notes).toBeUndefined();
+    expect(submissionNoNotes.partId).toBe(part.partId);
+    expect(submissionNoNotes.userCreated.userId).toBe(batman.userId);
+
+    const updatedSubmissionAddNotes = await PartReviewService.updateSubmission(
+      submission.partSubmissionId,
+      batman,
+      orgId,
+      'new name',
+      'new notes'
+    );
+    expect(updatedSubmissionAddNotes.name).toBe('new name');
+    expect(updatedSubmissionAddNotes.notes).toBe('new notes');
+    expect(updatedSubmissionAddNotes.partId).toBe(part.partId);
+    expect(updatedSubmissionAddNotes.userCreated.userId).toBe(batman.userId);
+  });
+
+  it('does not allow non-creators to edit submissions, checks for non-existent and deleted parts', async () => {
+    const project = await createTestProject(batman, orgId);
+
+    const project1 = await prisma.project.findUnique({
+      where: { projectId: project.projectId },
+      include: {
+        wbsElement: true
+      }
+    });
+
+    const wbsNum = `${project1?.wbsElement.carNumber}.${project1?.wbsElement.projectNumber}.${project1?.wbsElement.workPackageNumber}`;
+
+    const part = await PartReviewService.createPart(
+      organization,
+      wbsNum,
+      batman,
+      1,
+      'part1',
+      'here is a description',
+      Review_Status.IN_PROGRESS,
+      [],
+      [nonAdmin.userId, batman.userId],
+      []
+    );
+
+    await expect(
+      async () => await PartReviewService.createSubmission('not a part id', batman, orgId, 'name1', 'notes1')
+    ).rejects.toThrow(new NotFoundException('Part', 'not a part id'));
+
+    await expect(
+      async () => await PartReviewService.updateSubmission('not a submission id', batman, orgId, 'name1', 'notes1')
+    ).rejects.toThrow(new NotFoundException('Part Submission', 'not a submission id'));
+
+    const submission = await PartReviewService.createSubmission(part.partId, batman, orgId, 'name1', 'notes1');
+
+    await expect(
+      async () => await PartReviewService.updateSubmission(submission.partSubmissionId, superman, orgId, 'name1', 'notes1')
+    ).rejects.toThrow(new AccessDeniedException('only submission creators can update submissions'));
+
+    await PartReviewService.deletePart(part.partId, batman, orgId);
+
+    await expect(
+      async () => await PartReviewService.createSubmission(part.partId, batman, orgId, 'name1', 'notes1')
+    ).rejects.toThrow(new DeletedException('Part', part.partId));
+  });
+
   it('creates a part, updates it, and deletes it', async () => {
     const project = await createTestProject(batman, orgId);
 
@@ -68,7 +176,8 @@ describe('part review tests', () => {
       'here is a description',
       Review_Status.IN_PROGRESS,
       [tag.partTagId, tag3.partTagId],
-      [nonAdmin.userId, batman.userId]
+      [nonAdmin.userId, batman.userId],
+      []
     );
 
     expect(part.commonName).toBe('part1');
@@ -154,7 +263,8 @@ describe('part review tests', () => {
           'here is a description',
           Review_Status.IN_PROGRESS,
           [],
-          [nonAdmin.userId, batman.userId]
+          [nonAdmin.userId, batman.userId],
+          []
         )
     ).rejects.toThrow(new AccessDeniedException('Only leadership and team members can create a part'));
 
@@ -167,7 +277,8 @@ describe('part review tests', () => {
       'here is a description',
       Review_Status.IN_PROGRESS,
       [],
-      [nonAdmin.userId, batman.userId]
+      [nonAdmin.userId, batman.userId],
+      []
     );
 
     await expect(
@@ -207,7 +318,8 @@ describe('part review tests', () => {
       'here is a description',
       Review_Status.IN_PROGRESS,
       [],
-      [nonAdmin.userId, batman.userId]
+      [nonAdmin.userId, batman.userId],
+      []
     );
 
     await expect(async () => await PartReviewService.deletePart(part.partId, nonLeadership, orgId)).rejects.toThrow(
@@ -246,7 +358,8 @@ describe('part review tests', () => {
       'here is a description',
       Review_Status.IN_PROGRESS,
       [],
-      [nonAdmin.userId, batman.userId]
+      [nonAdmin.userId, batman.userId],
+      []
     );
 
     const submission = await prisma.partSubmission.create({
@@ -315,7 +428,8 @@ describe('part review tests', () => {
       'here is a description',
       Review_Status.IN_PROGRESS,
       [],
-      [nonAdmin.userId, batman.userId]
+      [nonAdmin.userId, batman.userId],
+      []
     );
 
     const submission = await prisma.partSubmission.create({
