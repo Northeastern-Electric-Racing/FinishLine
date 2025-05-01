@@ -81,10 +81,9 @@ export const isOptionalDate = (validationObject: ValidationChain): ValidationCha
 export const validateReimbursementProducts = () => {
   return [
     body('otherReimbursementProducts').isArray(),
-    body('otherReimbursementProducts.*.reason').isObject().withMessage('Reason must be an object'),
-    body('otherReimbursementProducts.*.reason.otherProductReasonId').notEmpty().withMessage('Reason ID must not be empty'),
-    body('otherReimbursementProducts.*.reason.name').notEmpty().withMessage('Reason name must not be empty'),
     nonEmptyString(body('otherReimbursementProducts.*.name')),
+    nonEmptyString(body('otherReimbursementProducts.*.reason.otherProductReasonId')),
+    nonEmptyString(body('otherReimbursementProducts.*.reason.name')),
     intMinZero(body('otherReimbursementProducts.*.cost')),
     body('wbsReimbursementProducts').isArray(),
     nonEmptyString(body('wbsReimbursementProducts.*.name')),
