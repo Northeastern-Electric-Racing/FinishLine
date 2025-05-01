@@ -269,7 +269,7 @@ const ReimbursementRequestInfo = ({
                         variant="contained"
                         component={RouterLink}
                         onClick={() => openSidePage('')}
-                        to={`${routes.REIMBURSEMENT_REQUESTS}/view/${row.id}`}
+                        to={`${routes.REIMBURSEMENT_REQUESTS}/${row.id}`}
                         sx={{
                           borderRadius: '8px',
                           color: '#ededed',

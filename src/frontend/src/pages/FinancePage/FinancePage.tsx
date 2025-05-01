@@ -26,13 +26,12 @@ import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
 import PendingAdvisorModal from './FinanceComponents/PendingAdvisorListModal';
-import { isAdmin, isGuest, ReimbursementRequest } from 'shared';
+import { isAdmin, isGuest } from 'shared';
 import WorkIcon from '@mui/icons-material/Work';
 import TotalAmountSpentModal from './FinanceComponents/TotalAmountSpentModal';
 import { useToast } from '../../hooks/toasts.hooks';
 import ReportRefundModal from './FinanceComponents/ReportRefundModal';
 import SidePage from './FinanceComponents/SidePagePopup';
-import ReimbursementRequestDetailsView from './ReimbursementRequestDetailPage/ReimbursementRequestDetailsView';
 
 const FinancePage = () => {
   const user = useCurrentUser();
@@ -213,6 +212,24 @@ const FinancePage = () => {
           </Box>
         </Grid>
       </Grid>
+      <NERButton
+        variant="contained"
+        color="primary"
+        onClick={() => openSidePage('Title')} // Opens SidePage
+        sx={{ marginBottom: 2 }} // Adds spacing
+      >
+        Open Side Page
+      </NERButton>
+      <SidePage
+        showPage={showSidePage}
+        handleClose={closeSidePage}
+        title={sidePageTitle}
+        component={
+          <Typography variant="body1" sx={{ color: 'white' }}>
+            This is some text inside the side page.
+          </Typography>
+        }
+      />
     </PageLayout>
   );
 };
