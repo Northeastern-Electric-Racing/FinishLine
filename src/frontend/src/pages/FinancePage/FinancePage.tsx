@@ -213,20 +213,6 @@ const FinancePage = () => {
           </Box>
         </Grid>
       </Grid>
-      <NERButton
-        variant="contained"
-        color="primary"
-        onClick={() => openSidePage('Title')} // Opens SidePage
-        sx={{ marginBottom: 2 }} // Adds spacing
-      >
-        Open Side Page
-      </NERButton>
-      <SidePage
-        showPage={showSidePage}
-        handleClose={closeSidePage}
-        title={''}
-        component={<ReimbursementRequestDetailsView reimbursementRequest={allReimbursementRequests![0]} />}
-      />
     </PageLayout>
   );
 };

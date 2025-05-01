@@ -26,6 +26,10 @@ import {
 import { routes } from '../../../utils/routes';
 import ColumnHeader from './ColumnHeader';
 import { useCurrentUser } from '../../../hooks/users.hooks';
+import SidePage from './SidePagePopup';
+import { useSingleReimbursementRequest } from '../../../hooks/finance.hooks';
+import ReimbursementRequestDetailsView from '../ReimbursementRequestDetailPage/ReimbursementRequestDetailsView';
+import ReimbursementRequestDetails from '../ReimbursementRequestDetailPage/ReimbursementRequestDetails';
 
 interface ReimbursementRequestInfoProps {
   userReimbursementRequests: ReimbursementRequest[];
@@ -182,6 +186,17 @@ const ReimbursementRequestInfo = ({
   };
 
   const paginatedRows = rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  const [showSidePage, setShowSidePage] = useState(false);
+  const [sidePageTitle, setSidePageTitle] = useState('');
+
+  const openSidePage = (title: string) => {
+    setSidePageTitle(title);
+    setShowSidePage(true);
+  };
+
+  const closeSidePage = () => {
+    setShowSidePage(false);
+  };
 
   return (
     <Box sx={{ width: '100%', borderRadius: '8px 8px 0 0' }}>
@@ -210,61 +225,70 @@ const ReimbursementRequestInfo = ({
             </TableRow>
           </TableHead>
           <TableBody sx={{ backgroundColor: '#121313' }}>
-            {paginatedRows.map((row, index) => (
-              <TableRow
-                key={`$${row.amount}-${index}`}
-                sx={{
-                  textDecoration: 'none',
-                  '&:last-child td, &:last-child th': { border: 0 },
-                  '&:hover .viewButton': { opacity: 1 },
-                  '&:hover': { backgroundColor: '#5e5e5e' }
-                }}
-              >
-                <TableCell align="center">
-                  <Box
-                    sx={{
-                      padding: '3px 8px',
-                      display: 'inline-flex',
-                      borderRadius: '8px',
-                      backgroundColor: getStatusColor(row.status),
-                      fontWeight: 700
-                    }}
-                  >
-                    {cleanReimbursementRequestStatus(row.status)}
-                  </Box>
-                </TableCell>
-                {currentTab === 1 && <TableCell align="center">{fullNamePipe(row.submitter)}</TableCell>}
-                <TableCell align="center">{`$${centsToDollar(row.amount)}`}</TableCell>
-                <TableCell align="center">{undefinedPipe(row.identifier)}</TableCell>
-                <TableCell align="center">{undefinedPipe(row.saboId)}</TableCell>
-                <TableCell align="center">{datePipe(row.dateSubmitted)}</TableCell>
-                <TableCell align="center">{dateUndefinedPipe(row.dateSubmittedToSabo)}</TableCell>
-                <TableCell align="center">
-                  {
-                    <Button
-                      className="viewButton"
-                      size="small"
-                      variant="contained"
-                      component={RouterLink}
-                      to={`${routes.REIMBURSEMENT_REQUESTS}/view/${row.id}`}
+            {paginatedRows.map((row, index) => {
+              return (
+                <TableRow
+                  key={`$${row.amount}-${index}`}
+                  sx={{
+                    textDecoration: 'none',
+                    '&:last-child td, &:last-child th': { border: 0 },
+                    '&:hover .viewButton': { opacity: 1 },
+                    '&:hover': { backgroundColor: '#5e5e5e' }
+                  }}
+                >
+                  <TableCell align="center">
+                    <Box
                       sx={{
+                        padding: '3px 8px',
+                        display: 'inline-flex',
                         borderRadius: '8px',
-                        color: '#ededed',
-                        backgroundColor: '#dd514c',
-                        boxShadow: '0px 4px rgba(0,0,0,0.3)',
-                        padding: '2px 6px',
-                        opacity: 0,
-                        '&:hover': {
-                          backgroundColor: '#c74340'
-                        }
+                        backgroundColor: getStatusColor(row.status),
+                        fontWeight: 700
                       }}
                     >
-                      View RR
-                    </Button>
-                  }
-                </TableCell>
-              </TableRow>
-            ))}
+                      {cleanReimbursementRequestStatus(row.status)}
+                    </Box>
+                  </TableCell>
+                  {currentTab === 1 && <TableCell align="center">{fullNamePipe(row.submitter)}</TableCell>}
+                  <TableCell align="center">{`$${centsToDollar(row.amount)}`}</TableCell>
+                  <TableCell align="center">{undefinedPipe(row.identifier)}</TableCell>
+                  <TableCell align="center">{undefinedPipe(row.saboId)}</TableCell>
+                  <TableCell align="center">{datePipe(row.dateSubmitted)}</TableCell>
+                  <TableCell align="center">{dateUndefinedPipe(row.dateSubmittedToSabo)}</TableCell>
+                  <SidePage
+                    showPage={showSidePage}
+                    handleClose={closeSidePage}
+                    title={''}
+                    component={<ReimbursementRequestDetails />}
+                  />
+                  <TableCell align="center">
+                    {
+                      <Button
+                        className="viewButton"
+                        size="small"
+                        variant="contained"
+                        component={RouterLink}
+                        onClick={() => openSidePage('')}
+                        to={`${routes.REIMBURSEMENT_REQUESTS}/view/${row.id}`}
+                        sx={{
+                          borderRadius: '8px',
+                          color: '#ededed',
+                          backgroundColor: '#dd514c',
+                          boxShadow: '0px 4px rgba(0,0,0,0.3)',
+                          padding: '2px 6px',
+                          opacity: 0,
+                          '&:hover': {
+                            backgroundColor: '#c74340'
+                          }
+                        }}
+                      >
+                        View RR
+                      </Button>
+                    }
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </TableContainer>
