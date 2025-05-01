@@ -3,9 +3,10 @@ import { Circle } from '@mui/icons-material';
 import { datePipe } from '../../../utils/pipes';
 import { ReimbursementRequestComment } from '../../../../../shared/src/types/reimbursement-requests-types';
 import { useState } from 'react';
-import CommentModal from './CommentModal';
+
 import { Link } from '@mui/material';
 import { useCreateReimbursementRequestComment } from '../../../hooks/finance.hooks';
+import CreateRRCommentModal from './CreateRRCommentModal';
 
 interface TimelineProps {
   reimbursementRequestId: string;
@@ -113,7 +114,7 @@ const CreateNewCommentSection: React.FC<FirstSectionProps> = ({ reimbursementReq
         >
           <Typography fontWeight={'regular'}>Send a Follow-Up Message!</Typography>
         </Link>
-        <CommentModal
+        <CreateRRCommentModal
           showModal={timelineCommentModal}
           handleClose={() => setTimelineCommentModalShow(false)}
           mutateAsync={mutateAsync}

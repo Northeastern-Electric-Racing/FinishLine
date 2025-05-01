@@ -20,7 +20,7 @@ const schema = yup.object().shape({
     .typeError('Comment is required')
 });
 
-interface CommentModalProps {
+interface CreateRRCommentModalProps {
   showModal: boolean;
   handleClose: () => void;
   mutateAsync: UseMutateAsyncFunction<
@@ -34,22 +34,22 @@ interface CommentModalProps {
     unknown
   >;
   isLoading: boolean;
-  defaultValues?: CommentModalInputs;
+  defaultValues?: CreateRRCommentModalInputs;
   title: string;
 }
 
-export interface CommentModalInputs {
+export interface CreateRRCommentModalInputs {
   comment: string;
 }
 
-const CommentModal: React.FC<CommentModalProps> = ({
+const CreateRRCommentModal: React.FC<CreateRRCommentModalProps> = ({
   showModal: modalShow,
   handleClose,
   mutateAsync,
   defaultValues,
   isLoading,
   title
-}: CommentModalProps) => {
+}: CreateRRCommentModalProps) => {
   const toast = useToast();
 
   const {
@@ -58,7 +58,7 @@ const CommentModal: React.FC<CommentModalProps> = ({
     formState: { errors, isValid },
     watch,
     reset
-  } = useForm<CommentModalInputs>({
+  } = useForm<CreateRRCommentModalInputs>({
     resolver: yupResolver(schema),
     defaultValues: defaultValues ?? {
       comment: ''
@@ -105,4 +105,4 @@ const CommentModal: React.FC<CommentModalProps> = ({
   );
 };
 
-export default CommentModal;
+export default CreateRRCommentModal;
