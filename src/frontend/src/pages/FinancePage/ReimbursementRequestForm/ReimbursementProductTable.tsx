@@ -312,14 +312,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
             </TableCell>
           </TableRow>
           {Array.from(uniqueWbsElementsWithProducts.keys()).map((key) => {
-            const foundValue = wbsElementAutocompleteOptions
-              .concat(
-                (otherReasons || []).map((reason) => ({
-                  id: reason.otherProductReasonId,
-                  label: reason.name
-                }))
-              )
-              .find((value) => value.label === key);
             return (
               <TableRow
                 sx={{
@@ -341,7 +333,16 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                       fontSize: 'medium'
                     }}
                   >
-                    {foundValue ? formatReasonName(foundValue.label) : undefined}
+                    {
+                      wbsElementAutocompleteOptions
+                        .concat(
+                          (otherReasons || []).map((reason) => ({
+                            id: reason.name,
+                            label: formatReasonName(reason.name)
+                          }))
+                        )
+                        .find((value) => value.id === key)?.label
+                    }
                   </Typography>
                 </TableCell>
                 <TableCell>
