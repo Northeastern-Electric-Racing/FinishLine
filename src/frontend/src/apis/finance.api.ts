@@ -13,7 +13,7 @@ import {
   SponsorPayload,
   SponsorTierPayload,
   SponsorTaskPayload,
-  ReimbursementRequestCommentPayload
+  ReimbursementRequestCommentPayload,
   EditOtherReimbursementProductReasonPayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
