@@ -19,7 +19,7 @@ interface SetAbbreviation {
   handleClose: () => void;
 }
 
-const SetAbbreviationModel: React.FC<SetAbbreviation> = ({ open, handleClose }) => {
+const SetAbbreviationModal: React.FC<SetAbbreviation> = ({ open, handleClose }) => {
   const { data: projects, isLoading: projectsIsLoading, isError: projectsIsError, error: projectsError } = useAllProjects();
   const { mutateAsync } = useSetProjectAbbreviation();
 
@@ -104,4 +104,4 @@ const SetAbbreviationModel: React.FC<SetAbbreviation> = ({ open, handleClose }) 
   );
 };
 
-export default SetAbbreviationModel;
+export default SetAbbreviationModal;

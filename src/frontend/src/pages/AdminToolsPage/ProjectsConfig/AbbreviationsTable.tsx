@@ -4,7 +4,7 @@ import { NERButton } from '../../../components/NERButton';
 import { useAllProjects, useDeleteProjectAbbreviation } from '../../../hooks/projects.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import SetAbbreviationModel from './SetAbbreviationModel';
+import SetAbbreviationModal from './SetAbbreviationModal';
 import { useState } from 'react';
 import { Project, wbsPipe } from 'shared';
 import { Delete } from '@mui/icons-material';
@@ -46,14 +46,14 @@ const AbbreviationsTable: React.FC = () => {
 
   return (
     <Box>
-      <SetAbbreviationModel
+      <SetAbbreviationModal
         open={openModal}
         handleClose={() => {
           setOpenModal(false);
         }}
       />
       <Typography variant="subtitle1">Project Name Abbreviations</Typography>
-      <AdminToolTable columns={[{ name: 'Project Name' }, { name: 'Abbreviation' }]} rows={projectTableRows} />
+      <AdminToolTable columns={[{ name: 'Project Name' }, { name: 'Abbreviation' }, { name: '' }]} rows={projectTableRows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         <NERButton
           variant="contained"
