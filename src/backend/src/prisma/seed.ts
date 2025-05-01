@@ -1776,6 +1776,15 @@ const performSeed: () => Promise<void> = async () => {
           workPackageNumber: 0
         },
         cost: 200000
+      },
+      {
+        name: 'BLUE',
+        reason: {
+          carNumber: 0,
+          projectNumber: 0,
+          workPackageNumber: 0
+        },
+        cost: 400000
       }
     ],
     accountCode.accountCodeId,

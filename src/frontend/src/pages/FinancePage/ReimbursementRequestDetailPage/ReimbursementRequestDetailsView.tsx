@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { accountCodePipe } from '../../../utils/pipes';
+import { accountCodePipe, displayEnum } from '../../../utils/pipes';
 import { Assignment, ChangeCircle, Edit, Pending } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
@@ -11,9 +11,18 @@ import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import DeleteIcon from '@mui/icons-material/Delete';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import { Grid, Typography, useTheme, Link, IconButton } from '@mui/material';
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import SpeedIcon from '@mui/icons-material/Speed';
+import LocalAtmIcon from '@mui/icons-material/LocalAtm';
+import StoreIcon from '@mui/icons-material/Store';
+import SellIcon from '@mui/icons-material/Sell';
+import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
+
+import { Grid, Typography, useTheme, Link, IconButton, ListItemIcon } from '@mui/material';
 import { Box } from '@mui/system';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { ReimbursementRequest, isAdmin, isHead } from 'shared';
 import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
@@ -46,7 +55,9 @@ import {
   isReimbursementRequestSaboSubmitted,
   isReimbursementRequestDenied,
   isReimbursementRequestLeadershipApproved,
-  isReimbursementRequestPendingFinance
+  isReimbursementRequestPendingFinance,
+  getUniqueWbsElementsWithProductsFromReimbursementRequest,
+  cleanReimbursementRequestStatus
 } from '../../../utils/reimbursement-request.utils';
 import { routes } from '../../../utils/routes';
 import AddSABONumberModal from './AddSABONumberModal';
@@ -296,54 +307,6 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     </NERModal>
   );
 
-  const BasicInformationView = () => {
-    return (
-      <>
-        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginBottom: '5px' }}>
-          <Typography variant="h5">Details</Typography>
-          <Typography variant="h5" fontSize={24}>{`${
-            reimbursementRequest.dateOfExpense ? datePipe(new Date(reimbursementRequest.dateOfExpense)) : '-'
-          }`}</Typography>
-        </Box>
-        <Grid container spacing={2}>
-          <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Purchased From" content={reimbursementRequest.vendor.name} />
-          </Grid>
-          <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="SABO Number" content={`${undefinedPipe(reimbursementRequest.saboId)}`} />
-          </Grid>
-          <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Refund Source" content={codeAndRefundSourceName(reimbursementRequest.indexCode)} />
-          </Grid>
-          <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Expense Type" content={accountCodePipe(reimbursementRequest.accountCode)} />
-          </Grid>
-          <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay
-              label="Date Item Delivered"
-              content={dateUndefinedPipe(reimbursementRequest.dateDelivered)}
-            />
-          </Grid>
-          <Grid
-            item
-            xs={12}
-            container
-            mt={2}
-            ml={2}
-            sx={{ backgroundColor: totalCostBackgroundColor, borderRadius: '10px', boxShadow: 1 }}
-          >
-            <Grid item xs={6} textAlign={'center'} mt={-2}>
-              <Typography fontSize={50}>Total Cost</Typography>
-            </Grid>
-            <Grid xs={6} mt={-2} sx={{ display: 'flex', alignItems: 'center' }}>
-              <Typography fontSize={50}>{`$${centsToDollar(reimbursementRequest.totalCost)}`}</Typography>
-            </Grid>
-          </Grid>
-        </Grid>
-      </>
-    );
-  };
-
   const GridDivider = () => {
     return (
       <Box
@@ -472,60 +435,127 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const sortedStatus = reimbursementRequest.reimbursementStatuses.sort((a) => a.dateCreated.getDate());
   const statusTypes = sortedStatus.map((status) => status.type);
   const recentStatus = statusTypes[statusTypes.length - 1];
-  return (
-    <PageLayout
-      title={`Reimbursement Request #${reimbursementRequest.identifier} (${fullNamePipe(reimbursementRequest.recipient)})`}
-      chips={
-        <Box id="status" display="flex">
-          {statusTypes.length > 0 && <ReimbursementRequestStatusPill status={recentStatus} />}
+
+  const getStatusColor = (status: string): string => {
+    switch (status) {
+      case 'REIMBURSED':
+        return '#549d49';
+      case 'DENIED':
+        return '#dd514c';
+      case 'PENDING_FINANCE':
+      case 'SABO_SUBMITTED':
+      case 'PENDING_LEADERSHIP_APPROVAL':
+      case 'LEADERSHIP_APPROVED':
+      case 'ADVISOR_APPROVED':
+        return '#997b3e';
+      default:
+        return '#797a7a';
+    }
+  };
+
+  const uniqueWbsElementsWithProducts = getUniqueWbsElementsWithProductsFromReimbursementRequest(reimbursementRequest);
+  const keys: string[] = [];
+  for (const key of uniqueWbsElementsWithProducts.keys()) {
+    keys.push(key);
+  }
+
+  const detailItems = [
+    { label: 'Status', icon: <SpeedIcon fontSize="small" /> },
+    { label: 'Created by', icon: <PersonOutlineIcon fontSize="small" /> },
+    { label: 'Project/Category', icon: <FolderOpenIcon fontSize="small" /> },
+    { label: 'Total Cost', icon: <LocalAtmIcon fontSize="small" /> },
+    { label: 'Purchased From', icon: <StoreIcon fontSize="small" /> },
+    { label: 'SABO Number', icon: <SellIcon fontSize="small" /> },
+    { label: 'Refund Source', icon: <CurrencyExchangeIcon fontSize="small" /> },
+    { label: 'Expense Type', icon: <CurrencyExchangeIcon fontSize="small" /> }
+  ];
+
+  const contentItems = [
+    {
+      content: statusTypes.length > 0 && (
+        <Box
+          sx={{
+            padding: '3px 8px',
+            display: 'inline-flex',
+            borderRadius: '8px',
+            backgroundColor: getStatusColor(recentStatus),
+            fontWeight: 700
+          }}
+        >
+          {cleanReimbursementRequestStatus(recentStatus)}
         </Box>
-      }
-      previousPages={[
-        {
-          name: 'Finance',
-          route: routes.FINANCE
+      )
+    },
+    { content: fullNamePipe(reimbursementRequest.recipient) },
+    {
+      content: keys.map((key) => displayEnum(key)).join(', ')
+    },
+    { content: `$${centsToDollar(reimbursementRequest.totalCost)}` },
+    { content: reimbursementRequest.vendor.name },
+    { content: `${undefinedPipe(reimbursementRequest.saboId)}` },
+    { content: codeAndRefundSourceName(reimbursementRequest.indexCode) },
+    { content: accountCodePipe(reimbursementRequest.accountCode) }
+  ];
+
+  return (
+    <Box sx={{ ml: 2 }}>
+      <PageLayout
+        title={`Reimbursement Request #${reimbursementRequest.identifier}`}
+        headerRight={
+          <Box sx={{ mr: 6 }}>
+            <ActionsMenu buttons={buttons} />
+          </Box>
         }
-      ]}
-      headerRight={<ActionsMenu buttons={buttons} />}
-    >
-      <DeleteModal />
-      <DenyModal />
-      <MarkDeliveredModal
-        modalShow={showMarkDelivered}
-        onHide={() => setShowMarkDelivered(false)}
-        reimbursementRequest={reimbursementRequest}
-      />
-      <MarkReimbursedModal />
-      <LeadershipApproveModal />
-      <MarkPendingFinanceModal />
-      <RequestChangesModal />
-      <SubmitToSaboModal
-        open={showSubmitToSaboModal}
-        setOpen={setShowSubmitToSaboModal}
-        reimbursementRequest={reimbursementRequest}
-      />
-      <AddSABONumberModal
-        modalShow={addSaboNumberModalShow}
-        onHide={() => setAddSaboNumberModalShow(false)}
-        reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
-      />
-      <Grid container spacing={2} mt={2}>
-        <Grid item lg={6} xs={12}>
-          <BasicInformationView />
-        </Grid>
-        <Grid item lg={1} xs={0} justifyContent={'center'} display={'flex'}>
-          <GridDivider />
-        </Grid>
-        <Grid item lg={5} xs={12} rowSpacing={5} container>
-          <Grid item xs={12}>
-            <ReceiptsView />
-          </Grid>
-          <Grid item xs={12}>
-            <ReimbursementProductsView reimbursementRequest={reimbursementRequest} />
-          </Grid>
-        </Grid>
-      </Grid>
-    </PageLayout>
+      >
+        <DeleteModal />
+        <DenyModal />
+        <MarkDeliveredModal
+          modalShow={showMarkDelivered}
+          onHide={() => setShowMarkDelivered(false)}
+          reimbursementRequest={reimbursementRequest}
+        />
+        <MarkReimbursedModal />
+        <LeadershipApproveModal />
+        <MarkPendingFinanceModal />
+        <RequestChangesModal />
+        <SubmitToSaboModal
+          open={showSubmitToSaboModal}
+          setOpen={setShowSubmitToSaboModal}
+          reimbursementRequest={reimbursementRequest}
+        />
+        <AddSABONumberModal
+          modalShow={addSaboNumberModalShow}
+          onHide={() => setAddSaboNumberModalShow(false)}
+          reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
+        />
+        <Box sx={{ display: 'flex', mt: 2 }}>
+          <Box>
+            {detailItems.map(({ label, icon }) => (
+              <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, fontWeight: 'bold' }}>
+                <Box sx={{ display: 'flex', mr: 2 }}>{icon}</Box> {label}
+              </Box>
+            ))}
+          </Box>
+          <Box sx={{ ml: 16 }}>
+            {contentItems.map(({ content }) => (
+              <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, fontWeight: 'bold' }}>{content}</Box>
+            ))}
+          </Box>
+        </Box>
+        <Box
+          sx={{
+            borderBottom: '2px solid white',
+            mt: 2,
+            mb: 2,
+            width: 'calc(100% - 60px)'
+          }}
+        />
+        <ReimbursementProductsView reimbursementRequest={reimbursementRequest} />
+        <Box sx={{ mt: 2 }}>
+          <ReceiptsView />
+        </Box>
+      </PageLayout>
+    </Box>
   );
 };
 
