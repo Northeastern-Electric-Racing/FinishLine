@@ -6,23 +6,31 @@ import {
   PartReviewRequest,
   PartSubmission,
   Review_Status,
-  PartReviewCommonMistake
+  PartReviewCommonMistake,
+  FrequentlyAskedQuestion,
+  PartTag
 } from 'shared';
 import {
   createPart,
   createPartReview,
+  createPartReviewFaq,
   createPartReviewRequest,
   createPartSubmission,
   deletePart,
+  deletePartReviewFaq,
   deletePartReviewRequest,
   editPart,
+  editPartReviewFaq,
   editPartReview,
   editPartSubmission,
+  getAllPartReviewFaqs,
   getPartsFromProject,
   getSinglePart,
   getAllCommonMistakes,
   uploadPreviewImage,
-  setUploadReviewFiles
+  setUploadReviewFiles,
+  getAllPartTags,
+  setUploadSubmissionFiles
 } from '../apis/part-review.api';
 
 export interface PartPayload {
@@ -33,12 +41,16 @@ export interface PartPayload {
   reviewStatus: Review_Status;
   tagIds: string[];
   assigneeIds: string[];
+  reviewerIds: string[];
 }
 
-export interface PartSubmissionPayload {
-  fileIds: string[];
+export interface EditPartSubmissionPayload {
   name: string;
   notes?: string;
+}
+
+export interface CreatePartSubmissionPayload extends EditPartSubmissionPayload {
+  partId: string;
 }
 
 export interface PartReviewRequestPayload {
@@ -47,9 +59,9 @@ export interface PartReviewRequestPayload {
 }
 
 export interface CreatePartReviewPayload {
-  submissisonId: string;
+  submissionId: string;
+  status: Review_Status;
   notes?: string;
-  status?: string;
 }
 
 export interface EditPartReviewPayload {
@@ -63,7 +75,7 @@ export interface EditPartReviewPayload {
  * @param wbsNum the wbs number of the project
  */
 export const usePartsFromProject = (wbsNum: string) => {
-  return useQuery<PartPreview[], Error>(['parts'], async () => {
+  return useQuery<PartPreview[], Error>(['parts', 'by project', wbsNum], async () => {
     const { data } = await getPartsFromProject(wbsNum);
     return data;
   });
@@ -76,7 +88,7 @@ export const usePartsFromProject = (wbsNum: string) => {
  * @param index the index number of the part
  */
 export const useSinglePart = (wbsNum: string, index: number) => {
-  return useQuery<Part, Error>(['parts'], async () => {
+  return useQuery<Part, Error>(['parts', 'by index', wbsNum, index], async () => {
     const { data } = await getSinglePart(wbsNum, index);
     return data;
   });
@@ -95,7 +107,7 @@ export const useCreatePart = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['parts']);
+        queryClient.invalidateQueries(['parts', 'by project']);
       }
     }
   );
@@ -163,12 +175,12 @@ export const useDeletePart = (partId: string) => {
  *
  * @param partId the id of the part to create the submission for
  */
-export const useCreatePartSubmission = (partId: string) => {
+export const useCreatePartSubmission = () => {
   const queryClient = useQueryClient();
-  return useMutation<PartSubmission, Error, PartSubmissionPayload>(
+  return useMutation<PartSubmission, Error, CreatePartSubmissionPayload>(
     ['parts', 'createSubmission'],
-    async (submission: PartSubmissionPayload) => {
-      const { data } = await createPartSubmission(partId, submission);
+    async (submission: CreatePartSubmissionPayload) => {
+      const { data } = await createPartSubmission(submission);
       return data;
     },
     {
@@ -186,9 +198,9 @@ export const useCreatePartSubmission = (partId: string) => {
  */
 export const useEditPartSubmission = (submissionId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<PartSubmission, Error, PartSubmissionPayload>(
+  return useMutation<PartSubmission, Error, EditPartSubmissionPayload>(
     ['parts', 'editSubmission'],
-    async (submission: PartSubmissionPayload) => {
+    async (submission: EditPartSubmissionPayload) => {
       const { data } = await editPartSubmission(submissionId, submission);
       return data;
     },
@@ -282,11 +294,15 @@ export const useEditPartReview = (reviewId: string) => {
   );
 };
 
-export const useUploadReviewFiles = (reviewId: string) => {
+/**
+ * Custom React Hook to upload files to a submission
+ */
+export const useUploadSubmissionFiles = () => {
   const queryClient = useQueryClient();
-  return useMutation<any, unknown, File[]>(
-    async (images: File[]) => {
-      const { data } = await setUploadReviewFiles(reviewId, images);
+  return useMutation<any, unknown, { submissionId: string; files: File[] }>(
+    ['parts', 'submission', 'upload'],
+    async (fileUpload: { submissionId: string; files: File[] }) => {
+      const { data } = await setUploadSubmissionFiles(fileUpload.submissionId, fileUpload.files);
       return data;
     },
     {
@@ -298,6 +314,93 @@ export const useUploadReviewFiles = (reviewId: string) => {
 };
 
 /**
+ * Custom React Hook to upload files to a review
+ */
+export const useUploadReviewFiles = () => {
+  const queryClient = useQueryClient();
+  return useMutation<any, unknown, { reviewId: string; files: File[] }>(
+    ['parts', 'review', 'upload'],
+    async (fileUpload: { reviewId: string; files: File[] }) => {
+      const { data } = await setUploadReviewFiles(fileUpload.reviewId, fileUpload.files);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['parts']);
+      }
+    }
+  );
+};
+
+/**
+ * React Query hook to fetch all Part Review FAQs.
+ *
+ * @returns Query result containing FAQs data, loading state, and error state.
+ */
+export const useAllPartReviewFaqs = () => {
+  return useQuery<FrequentlyAskedQuestion[], Error>(['partReviewFaqs'], async () => {
+    const { data } = await getAllPartReviewFaqs();
+    return data;
+  });
+};
+
+/**
+ * React Query hook to create a new Part Review FAQ.
+ *
+ * Automatically invalidates the FAQs query on success.
+ */
+export const useCreatePartReviewFaq = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<FrequentlyAskedQuestion, Error, { question: string; answer: string }>(
+    async (data) => {
+      const response = await createPartReviewFaq(data);
+      return response.data;
+    },
+    {
+      onSuccess: async (createdFaq) => {
+        await queryClient.cancelQueries(['partReviewFaqs']);
+        queryClient.setQueryData<FrequentlyAskedQuestion[]>(['partReviewFaqs'], (old = []) => [...old, createdFaq]);
+      }
+    }
+  );
+};
+
+/**
+ * React Query hook to edit an existing Part Review FAQ.
+ *
+ * Automatically invalidates the FAQs query on success.
+ */
+export const useEditPartReviewFaq = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<FrequentlyAskedQuestion, Error, { faqId: string; payload: { question: string; answer: string } }>(
+    async ({ faqId, payload }) => {
+      const response = await editPartReviewFaq(faqId, payload);
+      return response.data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['partReviewFaqs']);
+      }
+    }
+  );
+};
+
+/**
+ * React Query hook to delete a Part Review FAQ.
+ *
+ * Automatically invalidates the FAQs query on success.
+ */
+export const useDeletePartReviewFaq = () => {
+  const queryClient = useQueryClient();
+  return useMutation(deletePartReviewFaq, {
+    onSuccess: () => queryClient.invalidateQueries(['partReviewFaqs'])
+  });
+};
+
+/*
+
  * Custom React Hook to get all common mistakes
  *
  * @returns a list of all common mistakes
@@ -316,4 +419,16 @@ export const useAllCommonMistakes = () => {
       }
     }
   );
+};
+
+/**
+ * Custom React Hook to get all part tags
+ *
+ * @returns a list of all part tags
+ */
+export const useGetAllPartTags = () => {
+  return useQuery<PartTag[], Error>(['part tags'], async () => {
+    const { data } = await getAllPartTags();
+    return data;
+  });
 };

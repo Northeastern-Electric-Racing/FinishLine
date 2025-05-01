@@ -56,6 +56,7 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<ProjectQueryArgs>)
     tasks: wbsElement.tasks.map(taskTransformer),
     materials: wbsElement.materials.map(materialTransformer),
     assemblies: wbsElement.assemblies.map(assemblyTransformer),
+    abbreviation: project.abbreviation ?? undefined,
     workPackages: project.workPackages.map((workPackage) => {
       const endDate = calculateEndDate(workPackage.startDate, workPackage.duration);
 

@@ -43,20 +43,26 @@ const projectsEditLinkTypes = (linkTypeName: string) => `${projects()}/link-type
 
 /**************** Part Review Endpoints ********************/
 const parts = () => `${API_URL}/parts`;
-const partsByProject = (wbsNum: string) => `${parts()}/byProject/${wbsNum}`;
-const partByIndex = (wbsNum: string, partIndex: number) => `${parts()}/${wbsNum}/${partIndex}`;
+const partsByProject = (wbsNum: string) => `${parts()}/by-project/${wbsNum}`;
+const partByIndex = (wbsNum: string, partIndex: number) => `${parts()}/by-index/${wbsNum}/${partIndex}`;
 const partsCreate = () => `${parts()}/create`;
 const partsUploadPreviewImage = (partId: string) => `${parts()}/${partId}/upload-preview`;
 const partsEdit = (partId: string) => `${parts()}/${partId}/update`;
 const partsDelete = (partId: string) => `${parts()}/${partId}/delete`;
-const partsCreateSubmission = (partId: string) => `${parts()}/submission/${partId}/create`;
+const partsCreateSubmission = () => `${parts()}/submission/create`;
 const partsEditSubmission = (submissionId: string) => `${parts()}/submission/${submissionId}/update`;
+const partsSubmissionUploadFiles = (submissionId: string) => `${parts()}/submission/${submissionId}/upload-files`;
 const partsCreateReviewRequest = (submissionId: string) => `${parts()}/reviewRequest/${submissionId}/create`;
 const partsDeleteReviewRequest = (reviewRequestId: string) => `${parts()}/reviewRequest/${reviewRequestId}/delete`;
 const partsCreateReview = () => `${parts()}/review/create`;
 const partsEditReview = (reviewId: string) => `${parts()}/review/${reviewId}/update`;
+const partsReviewFaqs = () => `${parts()}/faqs`;
+const partsReviewFaqCreate = () => `${parts()}/faqs/create`;
+const partsReviewFaqEdit = (faqId: string) => `${parts()}/faqs/${faqId}/update`;
+const partsReviewFaqDelete = (faqId: string) => `${parts()}/faqs/${faqId}/delete`;
 const partsReviewUploadFiles = (reviewId: string) => `${parts()}/review/${reviewId}/upload-files`;
 const getAllPartCommonMistakes = () => `${parts()}/common-mistakes`;
+const getAllPartTags = () => `${parts()}/tags`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
@@ -211,6 +217,8 @@ const organizationsLogoImage = () => `${organizations()}/logo`;
 const organizationsSetLogoImage = () => `${organizations()}/logo/update`;
 const organizationsSetFeaturedProjects = () => `${organizationsFeaturedProjects()}/set`;
 const organizationsSetWorkspaceId = () => `${organizations()}/workspaceId/set`;
+const organizationsGetPartReviewGuideLink = () => `${organizations()}/part-review-guide-link/get`;
+const organizationsSetPartReviewGuideLink = () => `${organizations()}/part-review-guide-link/set`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
@@ -296,6 +304,10 @@ export const apiUrls = {
 
   parts,
   partsByProject,
+  partsReviewFaqs,
+  partsReviewFaqCreate,
+  partsReviewFaqEdit,
+  partsReviewFaqDelete,
   partByIndex,
   partsCreate,
   partsUploadPreviewImage,
@@ -303,12 +315,14 @@ export const apiUrls = {
   partsDelete,
   partsCreateSubmission,
   partsEditSubmission,
+  partsSubmissionUploadFiles,
   partsCreateReviewRequest,
   partsDeleteReviewRequest,
   partsCreateReview,
   partsEditReview,
   partsReviewUploadFiles,
   getAllPartCommonMistakes,
+  getAllPartTags,
 
   tasksCreate,
   tasks,
@@ -438,6 +452,8 @@ export const apiUrls = {
   organizationsSetLogoImage,
   organizationsSetFeaturedProjects,
   organizationsSetWorkspaceId,
+  organizationsGetPartReviewGuideLink,
+  organizationsSetPartReviewGuideLink,
 
   cars,
   carsCreate,

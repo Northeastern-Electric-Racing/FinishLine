@@ -252,7 +252,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       ) : tab === 6 ? (
         <ChangeRequestTab project={project} />
       ) : (
-        <PartsReviewPage />
+        <PartsReviewPage project={project} />
       )}
       {deleteModalShow && (
         <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={project.wbsNum} />

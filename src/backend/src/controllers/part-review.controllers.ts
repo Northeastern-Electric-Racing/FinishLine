@@ -29,7 +29,7 @@ export default class PartReviewController {
 
   static async createPart(req: Request, res: Response, next: NextFunction) {
     try {
-      const { wbsNum, index, commonName, description, reviewStatus, tagIds, assigneeIds } = req.body;
+      const { wbsNum, index, commonName, description, reviewStatus, tagIds, assigneeIds, reviewerIds } = req.body;
       const part = await PartReviewService.createPart(
         req.organization,
         wbsNum,
@@ -39,7 +39,8 @@ export default class PartReviewController {
         description,
         reviewStatus,
         tagIds,
-        assigneeIds
+        assigneeIds,
+        reviewerIds
       );
       res.status(200).json(part);
     } catch (error: unknown) {
@@ -133,7 +134,9 @@ export default class PartReviewController {
   static async uploadReviewFiles(req: Request, res: Response, next: NextFunction) {
     try {
       const { reviewId } = req.params;
-      const files = req.files as Express.Multer.File[];
+      const { files = [] } = req.files as {
+        files?: Express.Multer.File[];
+      };
       const updatedReview = await PartReviewService.uploadReviewFiles(
         reviewId,
         req.currentUser,
@@ -141,6 +144,57 @@ export default class PartReviewController {
         files
       );
       res.status(200).json(updatedReview);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createSubmission(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { partId, name, notes } = req.body;
+      const submission = await PartReviewService.createSubmission(
+        partId,
+        req.currentUser,
+        req.organization.organizationId,
+        name,
+        notes
+      );
+      res.status(200).json(submission);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async updateSubmission(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { submissionId } = req.params;
+      const { name, notes } = req.body;
+      const updatedSubmission = await PartReviewService.updateSubmission(
+        submissionId,
+        req.currentUser,
+        req.organization.organizationId,
+        name,
+        notes
+      );
+      res.status(200).json(updatedSubmission);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async uploadSubmissionFiles(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { submissionId } = req.params;
+      const { files = [] } = req.files as {
+        files?: Express.Multer.File[];
+      };
+      const updatedSubmission = await PartReviewService.uploadSubmissionFiles(
+        submissionId,
+        req.currentUser,
+        req.organization.organizationId,
+        files
+      );
+      res.status(200).json(updatedSubmission);
     } catch (error: unknown) {
       next(error);
     }
