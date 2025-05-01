@@ -42,7 +42,7 @@ const FinanceDashboardTeamView: React.FC<FinanceDashboardTeamViewProps> = ({ tea
   }
 
   return (
-    <Grid container spacing={2}>
+    <Grid container columnSpacing={25} rowSpacing={2}>
       <Grid item xs={12} md={4}>
         <Box
           sx={{
@@ -69,7 +69,21 @@ const FinanceDashboardTeamView: React.FC<FinanceDashboardTeamViewProps> = ({ tea
       </Grid>
 
       <Grid item xs={12} md={8}>
-        {/* <TitleBox title="Spending">{/* You can render the spending data here, e.g., in bars or custom cards </TitleBox> */}
+        <Box
+          sx={{
+            background: '#424242',
+            borderRadius: 2,
+            boxShadow: 2,
+            p: 2,
+            minHeight: '650px',
+            width: '100%', // ensures it fills available space in Grid
+            flexShrink: 1 // allows it to shrink when space is tight
+          }}
+        >
+          <Typography variant="h6" fontWeight="bold" gutterBottom>
+            Spending
+          </Typography>
+        </Box>
       </Grid>
     </Grid>
   );

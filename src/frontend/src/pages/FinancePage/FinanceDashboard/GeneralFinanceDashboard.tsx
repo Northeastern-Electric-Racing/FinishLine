@@ -34,12 +34,7 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
     return <LoadingIndicator />;
   }
 
-  const tabs = allTeams.map((team) => ({
-    tabUrlValue: team.teamId,
-    tabName: team.teamName
-  }));
-
-  const defaultTab = 'team';
+  console.log(allTeams);
 
   const datePickerStyle = {
     width: 120,
@@ -129,11 +124,27 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
     </Box>
   );
 
+  if (allTeams.length === 1) {
+    return (
+      <PageLayout title={`Finance Budget Overview - ${allTeams[0].teamName}`} headerRight={dates}>
+        <Box mt={4}></Box>
+        <FinanceDashboardTeamView teamId={allTeams[0].teamId} />
+      </PageLayout>
+    );
+  }
+
+  const tabs = allTeams.map((team) => ({
+    tabUrlValue: team.teamId,
+    tabName: team.teamName
+  }));
+
+  const defaultTab = 'team';
+
   const selectedTab = tabs.at(tabIndex);
 
   return (
     <PageLayout
-      title="Finance Budget Overview"
+      title={`Finance Budget Overview - ${selectedTab?.tabName}`}
       headerRight={dates}
       tabs={
         <Box borderBottom={1} borderColor="divider" width="100%">

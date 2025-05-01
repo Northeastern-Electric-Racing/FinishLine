@@ -154,6 +154,8 @@ const getAllSponsors = () => `${financeRoutesEndpoints()}/sponsors`;
 const getSponsorTasks = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsors/${sponsorId}/sponsorTasks`;
 const deleteSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsors/${sponsorId}/delete`;
 const editSponsorTask = (sponsorTaskId: string) => `${financeRoutesEndpoints()}/sponsorTask/${sponsorTaskId}/edit`;
+const financeEditOtherReimbursementProductReason = (id: String) =>
+  `${financeEndpoints()}/other-reimbursement-product-reasons/${id}/edit`;
 const getReimbursementRequestProjectData = (projectId: string, startDate?: Date, endDate?: Date): string => {
   const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-project-data/${projectId}`);
   const params = new URLSearchParams();
@@ -461,6 +463,7 @@ export const apiUrls = {
   getSponsorTasks,
   deleteSponsor,
   editSponsorTask,
+  financeEditOtherReimbursementProductReason,
   getReimbursementRequestProjectData,
   getReimbursementRequestTeamData,
   getAllReimbursementRequestData,

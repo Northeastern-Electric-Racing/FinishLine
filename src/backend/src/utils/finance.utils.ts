@@ -193,6 +193,11 @@ export const getReimbursementRequestsForReimbursementRequestsByProject = async (
           }
         }
       },
+      reimbursementStatuses: {
+        none: {
+          type: Reimbursement_Status_Type.DENIED
+        }
+      },
       ...getReimbursementRequestWhereInput(startDate, endDate)
     },
     ...getReimbursementRequestQueryArgs(organizationId)
@@ -278,6 +283,11 @@ export const getReimbursementRequestsForReimbursementRequestsByTeam = async (
               }
             }
           }
+        }
+      },
+      reimbursementStatuses: {
+        none: {
+          type: Reimbursement_Status_Type.DENIED
         }
       },
       ...getReimbursementRequestWhereInput(startDate, endDate)
@@ -396,6 +406,11 @@ export const getAllReimbursementRequestData = async (
       dateDeleted: null,
       accountCode: { organizationId },
       indexCode: { organizationId, name: 'CASH', code: '830667' },
+      reimbursementStatuses: {
+        none: {
+          type: Reimbursement_Status_Type.DENIED
+        }
+      },
       ...getReimbursementRequestWhereInput(startDate, endDate)
     },
     ...getReimbursementRequestQueryArgs(organizationId)
@@ -406,6 +421,11 @@ export const getAllReimbursementRequestData = async (
       dateDeleted: null,
       accountCode: { organizationId },
       indexCode: { organizationId, name: 'BUDGET', code: '800462' },
+      reimbursementStatuses: {
+        none: {
+          type: Reimbursement_Status_Type.DENIED
+        }
+      },
       ...getReimbursementRequestWhereInput(startDate, endDate)
     },
     ...getReimbursementRequestQueryArgs(organizationId)
@@ -416,6 +436,11 @@ export const getAllReimbursementRequestData = async (
       dateDeleted: null,
       accountCode: { organizationId },
       indexCode: { organizationId },
+      reimbursementStatuses: {
+        none: {
+          type: Reimbursement_Status_Type.DENIED
+        }
+      },
       ...getReimbursementRequestWhereInput(startDate, endDate)
     },
     ...getReimbursementRequestQueryArgs(organizationId)
@@ -559,7 +584,16 @@ export const getReimbursementRequestCategoryData = async (
   endDate: Date | null
 ): Promise<ReimbursementRequestData> => {
   const reimbursementRequests = await prisma.reimbursement_Request.findMany({
-    where: { dateDeleted: null, accountCode: { organizationId }, ...getReimbursementRequestWhereInput(startDate, endDate) },
+    where: {
+      dateDeleted: null,
+      accountCode: { organizationId },
+      reimbursementStatuses: {
+        none: {
+          type: Reimbursement_Status_Type.DENIED
+        }
+      },
+      ...getReimbursementRequestWhereInput(startDate, endDate)
+    },
     ...getReimbursementRequestQueryArgs(organizationId)
   });
 

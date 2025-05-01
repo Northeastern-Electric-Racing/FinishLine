@@ -42,6 +42,7 @@ import {
   getSponsorTasks,
   editSponsorTask,
   deleteSponsor,
+  editOtherReimbursementProductReason,
   getReimbursementRequestTeamData,
   getReimbursementRequestTeamTypeData,
   getReimbursementRequestProjectData,
@@ -211,6 +212,11 @@ export interface EditSponsorTaskPayload {
   notes: string;
   notifyDate?: Date;
   asigneeId?: string;
+}
+
+export interface EditOtherReimbursementProductReasonPayload {
+  updatedIndexCodeId: string;
+  updatedBudget: number;
 }
 
 export interface ReimbursementRequestProjectDataPayload {
@@ -861,6 +867,23 @@ export const useDeleteSponsor = (sponsorId: string) => {
       onSuccess: () => {
         queryClient.invalidateQueries(['sponsor']);
       }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to edit an other reimbursement product reason.
+ *
+ * @param otherReimbursementProductReasonId The id of the other reimbursement product reason
+ */
+export const useEditOtherReimbursementProductReason = (otherReimbursementProductReasonId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, EditOtherReimbursementProductReasonPayload>(
+    ['other-reimbursement-product-reason', 'edit'],
+    async (otherReasonData: EditOtherReimbursementProductReasonPayload) => {
+      const { data } = await editOtherReimbursementProductReason(otherReimbursementProductReasonId, otherReasonData);
+      queryClient.invalidateQueries(['other-reimbursement-product-reason']);
+      return data;
     }
   );
 };
