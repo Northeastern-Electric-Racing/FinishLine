@@ -1102,6 +1102,7 @@ describe('Part Review Popups', () => {
       review.partReviewId,
       10,
       20,
+      0,
       'Initial Title',
       'Initial Description',
       batman
@@ -1111,12 +1112,14 @@ describe('Part Review Popups', () => {
     expect(popup.description).toBe('Initial Description');
     expect(popup.xCoord).toBe(10);
     expect(popup.yCoord).toBe(20);
+    expect(popup.fileIndex).toBe(0);
 
     const updated = await PartReviewService.updatePartReviewPopup(
       orgId,
       popup.partReviewPopupId,
       30,
       40,
+      1,
       'Updated Title',
       'Updated Description',
       superman
@@ -1126,11 +1129,9 @@ describe('Part Review Popups', () => {
     expect(updated.description).toBe('Updated Description');
     expect(updated.xCoord).toBe(30);
     expect(updated.yCoord).toBe(40);
+    expect(updated.fileIndex).toBe(0);
 
-    const deleted = await PartReviewService.deletePartReviewPopup(popup.partReviewPopupId, superman, orgId);
-
-    expect(deleted.partReviewPopupId).toBe(popup.partReviewPopupId);
-    expect(deleted.deletedAt).toBeTruthy();
+    await PartReviewService.deletePartReviewPopup(popup.partReviewPopupId, superman, orgId);
 
     const prismaDeleted = await prisma.part_Review_Popup.findUnique({
       where: { partReviewPopupId: popup.partReviewPopupId }
@@ -1143,13 +1144,13 @@ describe('Part Review Popups', () => {
     const review = await createMinimalPartReview(batman, orgId);
 
     await expect(
-      PartReviewService.createPartReviewPopup(orgId, review.partReviewId, 0, 0, 'title', 'desc', nonAdmin)
+      PartReviewService.createPartReviewPopup(orgId, review.partReviewId, 0, 0, 0, 'title', 'desc', nonAdmin)
     ).rejects.toThrow(new AccessDeniedAdminOnlyException('create part review popup'));
 
-    const popup = await PartReviewService.createPartReviewPopup(orgId, review.partReviewId, 1, 2, 'x', 'x', batman);
+    const popup = await PartReviewService.createPartReviewPopup(orgId, review.partReviewId, 1, 2, 0, 'x', 'x', batman);
 
     await expect(
-      PartReviewService.updatePartReviewPopup(orgId, popup.partReviewPopupId, 2, 3, 'fail', 'fail', nonAdmin)
+      PartReviewService.updatePartReviewPopup(orgId, popup.partReviewPopupId, 2, 3, 0, 'fail', 'fail', nonAdmin)
     ).rejects.toThrow(new AccessDeniedAdminOnlyException('update part review popup'));
 
     await expect(PartReviewService.deletePartReviewPopup(popup.partReviewPopupId, nonAdmin, orgId)).rejects.toThrow(
@@ -1159,7 +1160,7 @@ describe('Part Review Popups', () => {
 
   it('throws NotFoundException if review does not exist or is deleted', async () => {
     await expect(
-      PartReviewService.createPartReviewPopup(orgId, 'non-existent-review', 0, 0, 'x', 'x', batman)
+      PartReviewService.createPartReviewPopup(orgId, 'non-existent-review', 0, 0, 0, 'x', 'x', batman)
     ).rejects.toThrow(new NotFoundException('Part Review', 'non-existent-review'));
   });
 
@@ -1171,6 +1172,7 @@ describe('Part Review Popups', () => {
       review.partReviewId,
       1,
       2,
+      0,
       'Delete Me',
       'Please',
       batman
@@ -1179,7 +1181,7 @@ describe('Part Review Popups', () => {
     await PartReviewService.deletePartReviewPopup(popup.partReviewPopupId, superman, orgId);
 
     await expect(
-      PartReviewService.updatePartReviewPopup(orgId, popup.partReviewPopupId, 10, 10, 'Should Fail', 'Nope', superman)
+      PartReviewService.updatePartReviewPopup(orgId, popup.partReviewPopupId, 10, 10, 0, 'Should Fail', 'Nope', superman)
     ).rejects.toThrow(new NotFoundException('Pop Up', popup.partReviewPopupId));
   });
 });

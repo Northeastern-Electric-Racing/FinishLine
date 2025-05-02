@@ -128,19 +128,24 @@ partsRouter.post(
 );
 
 partsRouter.post(
-  '/reviews/:reviewId/popup/create',
+  '/review/:reviewId/popup/create',
+  body('xCoord').isFloat(),
+  body('yCoord').isFloat(),
+  intMinZero(body('fileIndex')),
   nonEmptyString(body('title')),
   nonEmptyString(body('description')),
-  body('starred').isBoolean(),
+
   validateInputs,
   PartReviewController.createPartReviewPopup
 );
 
 partsRouter.post(
   '/popup/:popupId/update',
+  body('xCoord').isFloat(),
+  body('yCoord').isFloat(),
+  intMinZero(body('fileIndex')),
   nonEmptyString(body('title')),
-  nonEmptyString(body('description')),
-  body('starred').isBoolean(),
+  body('description').optional().isString(),
   validateInputs,
   PartReviewController.updatePartReviewPopup
 );

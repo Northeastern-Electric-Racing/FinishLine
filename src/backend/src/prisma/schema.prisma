@@ -1215,7 +1215,8 @@ model Part_Review_Popup {
   xCoord            Float
   yCoord            Float
   title             String
-  description       String
+  fileIndex         Int
+  description       String?
   reviewId          String
   review            PartReview @relation(fields: [reviewId], references: [partReviewId])
   createdAt         DateTime   @default(now())

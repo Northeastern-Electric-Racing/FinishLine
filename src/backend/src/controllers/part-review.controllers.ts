@@ -394,12 +394,13 @@ export default class PartReviewController {
       const user = req.currentUser;
       const { reviewId } = req.params;
       const organizationID = req.organization.organizationId;
-      const { xCoord, yCoord, title, description } = req.body;
+      const { xCoord, yCoord, fileIndex, title, description } = req.body;
       const newPopup = await PartReviewService.createPartReviewPopup(
         organizationID,
         reviewId,
         xCoord,
         yCoord,
+        fileIndex,
         title,
         description,
         user
@@ -415,12 +416,13 @@ export default class PartReviewController {
       const user = req.currentUser;
       const { popupId } = req.params;
       const organizationID = req.organization.organizationId;
-      const { xCoord, yCoord, title, description } = req.body;
+      const { xCoord, yCoord, fileIndex, title, description } = req.body;
       const updatedPopup = await PartReviewService.updatePartReviewPopup(
         organizationID,
         popupId,
         xCoord,
         yCoord,
+        fileIndex,
         title,
         description,
         user
@@ -436,8 +438,8 @@ export default class PartReviewController {
       const user = req.currentUser;
       const { popupId } = req.params;
       const organizationID = req.organization.organizationId;
-      const message = await PartReviewService.deletePartReviewPopup(popupId, user, organizationID);
-      res.status(200).json(message);
+      await PartReviewService.deletePartReviewPopup(popupId, user, organizationID);
+      res.status(200).json({ message: 'Popup deleted successfully' });
     } catch (error) {
       next(error);
     }

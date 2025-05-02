@@ -5,6 +5,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { Part_Review_Popup } from 'shared';
 import * as yup from 'yup';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { useUpdateReviewPopup } from '../../../hooks/part-review.hooks';
 
 interface ReviewPopupProps {
   popup: Part_Review_Popup;
@@ -36,6 +37,8 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
   const [currentPopup, setCurrentPopup] = useState<Part_Review_Popup>(popup);
   const toast = useToast();
 
+  const { mutateAsync: editPopup } = useUpdateReviewPopup();
+
   const {
     handleSubmit,
     control,
@@ -51,7 +54,17 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
 
   const onSubmit = async (data: { title: string; description?: string }) => {
     try {
-      //update popup in the backend here
+      editPopup({
+        popupId: popup.partReviewPopupId,
+        payload: {
+          xCoord: popup.xCoord,
+          yCoord: popup.yCoord,
+          fileIndex: popup.fileIndex,
+          title: data.title,
+          description: data.description
+        }
+      });
+
       setCurrentPopup({
         ...currentPopup,
         title: data.title,

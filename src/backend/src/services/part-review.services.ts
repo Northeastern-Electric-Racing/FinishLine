@@ -1063,23 +1063,25 @@ export default class PartReviewService {
     return partReviewRequestTransformer(softDeletedRequest);
   }
 
-  /*
+  /**
    * Creates a part review popup
+   *
    * @param organizationId Id of the organization
    * @param reviewId ID of the review
    * @param xCoord X coordinate of the popup
    * @param yCoord Y coordinate of the popup
+   * @param fileIndex the index of the file this popup is on
    * @param title Title of the popup
    * @param description Description of the popup
    * @param creator The user creating the popup
    * @returns The newly created popup
    */
-
   static async createPartReviewPopup(
     organizationId: string,
     reviewId: string,
     xCoord: number,
     yCoord: number,
+    fileIndex: number,
     title: string,
     description: string,
     creator: User
@@ -1109,6 +1111,7 @@ export default class PartReviewService {
         },
         xCoord,
         yCoord,
+        fileIndex,
         title,
         description
       },
@@ -1123,6 +1126,7 @@ export default class PartReviewService {
    * @param popupId ID of the popup to update
    * @param xCoord New X coordinate
    * @param yCoord New Y coordinate
+   * @param fileIndex the index of the file this popup is on
    * @param title New title
    * @param description New description
    * @param updater The user updating the popup
@@ -1133,6 +1137,7 @@ export default class PartReviewService {
     popupId: string,
     xCoord: number,
     yCoord: number,
+    fileIndex: number,
     title: string,
     description: string,
     updater: User
@@ -1160,6 +1165,7 @@ export default class PartReviewService {
       data: {
         xCoord,
         yCoord,
+        fileIndex,
         title,
         description,
         updatedAt: new Date()
@@ -1190,15 +1196,13 @@ export default class PartReviewService {
       throw new AccessDeniedAdminOnlyException('delete part review popup');
     }
 
-    const deletedPopup = await prisma.part_Review_Popup.update({
+    await prisma.part_Review_Popup.update({
       where: { partReviewPopupId: popupId },
       data: {
         deletedAt: new Date()
       },
       ...getPartReviewQueryArgs
     });
-
-    return deletedPopup;
   }
 
   /**

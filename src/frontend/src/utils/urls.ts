@@ -64,6 +64,9 @@ const partsReviewUploadFiles = (reviewId: string) => `${parts()}/review/${review
 const getAllPartCommonMistakes = () => `${parts()}/common-mistakes`;
 const downloadFile = (fileId: string) => `${parts()}/file/${fileId}/download`;
 const getAllPartTags = () => `${parts()}/tags`;
+const createReviewPopup = (reviewId: string) => `${parts()}/review/${reviewId}/popup/create`;
+const updateReviewPopup = (popupId: string) => `${parts()}/popup/${popupId}/update`;
+const deleteReviewPopup = (popupId: string) => `${parts()}/popup/${popupId}/delete`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
@@ -325,6 +328,9 @@ export const apiUrls = {
   getAllPartCommonMistakes,
   downloadFile,
   getAllPartTags,
+  createReviewPopup,
+  updateReviewPopup,
+  deleteReviewPopup,
 
   tasksCreate,
   tasks,

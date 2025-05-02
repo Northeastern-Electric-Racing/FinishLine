@@ -56,13 +56,12 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
 
   const onSubmit = async (data: { title: string; description?: string }) => {
     try {
-      //update popup in the backend here
       createPopup(xCoord, yCoord, data.title, data.description);
       reset({
         title: '',
         description: ''
       });
-      setTextEdittor(custom);
+      setTextEdittor(false);
     } catch (err: unknown) {
       if (err instanceof Error) {
         toast.error(err.message);
@@ -171,7 +170,11 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
                 size="small"
                 onClick={() => {
                   onDelete();
-                  reset();
+                  reset({
+                    title: '',
+                    description: ''
+                  });
+                  setTextEdittor(false);
                 }}
                 sx={{ color: 'grey.500', borderColor: 'grey.500' }}
                 type="button"

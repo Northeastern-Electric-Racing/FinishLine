@@ -8,7 +8,8 @@ import {
   Review_Status,
   PartReviewCommonMistake,
   FrequentlyAskedQuestion,
-  PartTag
+  PartTag,
+  Part_Review_Popup
 } from 'shared';
 import {
   createPart,
@@ -30,7 +31,10 @@ import {
   uploadPreviewImage,
   setUploadReviewFiles,
   getAllPartTags,
-  setUploadSubmissionFiles
+  setUploadSubmissionFiles,
+  createReviewPopup,
+  updateReviewPopup,
+  deleteReviewPopup
 } from '../apis/part-review.api';
 import { downloadGoogleImage } from '../apis/onboarding.api';
 
@@ -69,6 +73,14 @@ export interface EditPartReviewPayload {
   notes?: string;
   status?: Review_Status;
   fileIds?: string[];
+}
+
+export interface PopupPayload {
+  xCoord: number;
+  yCoord: number;
+  fileIndex: number;
+  title: string;
+  description?: string;
 }
 
 /**
@@ -443,4 +455,70 @@ export const useDownloadFile = (fileId: string) => {
   return useQuery<Blob | undefined, Error>(['parts', 'file', fileId], async () => {
     return await downloadGoogleImage(fileId);
   });
+};
+
+/**
+ * Custom React Hook to create a review popup
+ *
+ * @returns the created popup
+ */
+export const useCreateReviewPopup = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<Part_Review_Popup, Error, { reviewId: string; payload: PopupPayload }>(
+    ['parts', 'popup', 'create'],
+    async (data) => {
+      console.log('hook recieved');
+      const response = await createReviewPopup(data.reviewId, data.payload);
+      return response.data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['parts', 'by index']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to update a review popup
+ *
+ * @returns the updated popup
+ */
+export const useUpdateReviewPopup = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<Part_Review_Popup, Error, { popupId: string; payload: PopupPayload }>(
+    ['parts', 'popup', 'update'],
+    async (data) => {
+      const response = await updateReviewPopup(data.popupId, data.payload);
+      return response.data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['parts', 'by index']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to delete a popup
+ *
+ * @returns a success message
+ */
+export const useDeleteReviewPopup = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['parts', 'popup', 'delete'],
+    async (popupId: string) => {
+      const { data } = await deleteReviewPopup(popupId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['parts', 'by index']);
+      }
+    }
+  );
 };
