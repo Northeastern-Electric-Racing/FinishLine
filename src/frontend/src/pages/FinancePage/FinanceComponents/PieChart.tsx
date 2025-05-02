@@ -162,7 +162,9 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
                       fontSize: '16px'
                     }}
                   >
-                    ${data[index].value.toLocaleString()}
+                    {data[index].value < 0
+                      ? `($${Math.abs(data[index].value).toLocaleString()})`
+                      : `$${data[index].value.toLocaleString()}`}
                   </Box>
                 )}
               </Box>

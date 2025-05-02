@@ -168,10 +168,13 @@ export const getReimbursementRequestsForReimbursementRequestsByProject = async (
   startDate: Date | null,
   endDate: Date | null
 ): Promise<ReimbursementRequestData> => {
-  const project = await prisma.project.findUnique({
+  const project = await prisma.project.findFirst({
     where: {
       projectId,
-      ...getProjectSegmentedWhereInput(organizationId)
+      wbsElement: {
+        organizationId,
+        dateDeleted: null
+      }
     },
     include: {
       wbsElement: true
