@@ -1617,4 +1617,52 @@ export default class ReimbursementRequestService {
 
     return reimbursementRequestCommentTransformer(deletedComment);
   }
+
+  /**
+   *
+   * Edits the other reimbursement product reason
+   * @param otherReimbursementProductReasonId id of the other reimbursement product reason being edited
+   * @param org the organization the user is currently in
+   * @param editor the user editing the reason
+   * @param updatedIndexCodeId the updated index code of the other reimbursement product reason
+   * @param updatedBudget the updated budget of the other reimbursement product reason
+   * @returns the other reimbursement product reason with the given id
+   */
+
+  static async editOtherReimbursementProductReason(
+    otherReimbursementProductReasonId: string,
+    org: Organization,
+    editor: User,
+    updatedIndexCodeId: string,
+    updatedBudget: number
+  ): Promise<OtherProductReason> {
+    if (!(await userHasPermission(editor.userId, org.organizationId, isHead))) {
+      throw new AccessDeniedException('Only heads can edit other reimbursement product reasons.');
+    }
+
+    const otherProductReason = await prisma.reimbursement_Product_Other_Reason.findUnique({
+      where: { otherReimbursementProductReasonId },
+      ...getReimbursementProductOtherReasonQueryArgs(org.organizationId)
+    });
+
+    if (!otherProductReason)
+      throw new NotFoundException('Reimbursement Product Other Reason', otherReimbursementProductReasonId);
+    if (otherProductReason.dateDeleted)
+      throw new DeletedException('Reimbursement Product Other Reason', otherReimbursementProductReasonId);
+
+    const indexCode = await prisma.index_Code.findUnique({
+      where: { indexCodeId: updatedIndexCodeId }
+    });
+
+    if (!indexCode) throw new NotFoundException('Index Code', updatedIndexCodeId);
+    if (indexCode.dateDeleted) throw new DeletedException('Index Code', updatedIndexCodeId);
+
+    const editedReason = await prisma.reimbursement_Product_Other_Reason.update({
+      where: { otherReimbursementProductReasonId },
+      data: { budget: updatedBudget, indexCodeId: indexCode.indexCodeId },
+      ...getReimbursementProductOtherReasonQueryArgs(org.organizationId)
+    });
+
+    return otherProductReasonTransformer(editedReason);
+  }
 }

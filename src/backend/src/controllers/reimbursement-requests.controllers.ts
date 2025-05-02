@@ -613,4 +613,23 @@ export default class ReimbursementRequestsController {
       next(error);
     }
   }
+
+  static async editOtherReimbursementProductReason(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { otherReimbursementProductReasonId } = req.params;
+      const { updatedIndexCodeId, updatedBudget } = req.body;
+
+      const updatedReason = await ReimbursementRequestService.editOtherReimbursementProductReason(
+        otherReimbursementProductReasonId,
+        req.organization,
+        req.currentUser,
+        updatedIndexCodeId,
+        updatedBudget
+      );
+
+      res.status(200).json(updatedReason);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

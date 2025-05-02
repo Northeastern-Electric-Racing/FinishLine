@@ -80,12 +80,16 @@ export default class ProjectsService {
           some: {
             OR: [
               {
-                headId: user.userId,
+                headId: user.userId
+              },
+              {
                 leads: {
                   some: {
                     userId: user.userId
                   }
-                },
+                }
+              },
+              {
                 members: {
                   some: {
                     userId: user.userId
