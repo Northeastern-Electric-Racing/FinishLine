@@ -813,7 +813,7 @@ describe('part review tests', () => {
     await ProjectsService.deleteAbbreviation(wbsNum, batman, organization);
 
     await expect(ProjectsService.setAbbreviation(wbsNum, nonAdmin, organization, 'new abbreviation')).rejects.toThrow(
-      new AccessDeniedAdminOnlyException('set Abbreviation')
+      new AccessDeniedAdminOnlyException('set abbreviation')
     );
 
     const updatedProject = await ProjectsService.setAbbreviation(wbsNum, batman, organization, 'new abbreviation');
@@ -823,7 +823,7 @@ describe('part review tests', () => {
     expect(updatedProject2.abbreviation).toBe('diff');
 
     await expect(ProjectsService.deleteAbbreviation(wbsNum, nonAdmin, organization)).rejects.toThrow(
-      new AccessDeniedAdminOnlyException('delete Abbreviation')
+      new AccessDeniedAdminOnlyException('delete abbreviation')
     );
 
     await ProjectsService.deleteAbbreviation(wbsNum, batman, organization);

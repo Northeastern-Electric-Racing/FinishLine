@@ -476,7 +476,7 @@ export default class ProjectsService {
     if (!project) throw new NotFoundException('Project', wbsPipe(wbsNum));
 
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('set Abbreviation');
+      throw new AccessDeniedAdminOnlyException('set abbreviation');
     }
 
     const updatedProject = await prisma.project.update({
