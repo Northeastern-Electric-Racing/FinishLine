@@ -174,12 +174,7 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
                   Cancel
                 </Button>
 
-                <Button
-                  variant="contained"
-                  color="error"
-                  size="small"
-                  type="submit"
-                >
+                <Button variant="contained" color="error" size="small" type="submit">
                   Done
                 </Button>
               </Box>

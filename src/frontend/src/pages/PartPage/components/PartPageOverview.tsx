@@ -5,7 +5,7 @@ import { Part, Review_Status, User } from 'shared';
 /**
  * gets the status color for each status case
  */
-export const getReviewStatusColor = (status: Review_Status) => {
+const getReviewStatusColor = (status: Review_Status) => {
   switch (status) {
     case 'IN_PROGRESS':
       return '#0000FF';
@@ -25,7 +25,7 @@ export const getReviewStatusColor = (status: Review_Status) => {
 /**
  * converts a status to a string name format
  */
-export const getReviewStatusDisplayName = (status: Review_Status) => {
+const getReviewStatusDisplayName = (status: Review_Status) => {
   switch (status) {
     case 'IN_PROGRESS':
       return 'Part In Progress';
@@ -42,7 +42,7 @@ export const getReviewStatusDisplayName = (status: Review_Status) => {
   }
 };
 
-export const PartReviewStatusPill = (status: Review_Status) => {
+const PartReviewStatusPill = (status: Review_Status) => {
   return (
     <Chip
       label={getReviewStatusDisplayName(status)}
