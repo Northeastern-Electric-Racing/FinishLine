@@ -547,7 +547,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             borderBottom: '2px solid white',
             mt: 2,
             mb: 2,
-            width: 'calc(100% - 60px)'
+            width: 'calc(100% - 40px)'
           }}
         />
         <ReimbursementProductsView reimbursementRequest={reimbursementRequest} />

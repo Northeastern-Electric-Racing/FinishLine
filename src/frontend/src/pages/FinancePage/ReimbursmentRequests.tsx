@@ -108,11 +108,13 @@ const ReimbursementRequests: React.FC = () => {
 
   const {
     data: userReimbursementRequests,
+    refetch: refetchUserReimbursementRequests,
     isError: userReimbursementRequestIsError,
     error: userReimbursementRequestError
   } = useCurrentUserReimbursementRequests();
   const {
     data: allReimbursementRequests,
+    refetch: refetchAllReimbursementRequests,
     isError: allReimbursementRequestsIsError,
     error: allReimbursementRequestsError
   } = useAllReimbursementRequests();
@@ -274,6 +276,10 @@ const ReimbursementRequests: React.FC = () => {
           statuses={selectedStatuses}
           startDate={startDate}
           endDate={endDate}
+          onCloseSidePage={() => {
+            refetchUserReimbursementRequests();
+            refetchAllReimbursementRequests();
+          }}
         />
       </Box>
     </Box>

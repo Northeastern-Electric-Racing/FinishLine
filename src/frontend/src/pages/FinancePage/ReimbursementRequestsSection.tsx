@@ -10,6 +10,7 @@ import ReimbursementRequestInfo from './FinanceComponents/ReimbursementRequestIn
 interface ReimbursementRequestTableProps {
   userReimbursementRequests: ReimbursementRequest[];
   allReimbursementRequests?: ReimbursementRequest[];
+  onCloseSidePage?: () => void;
   searchText?: string;
   statuses?: ReimbursementStatusType[];
   startDate?: Date | null;
@@ -19,6 +20,7 @@ interface ReimbursementRequestTableProps {
 const ReimbursementRequestTable = ({
   userReimbursementRequests,
   allReimbursementRequests,
+  onCloseSidePage,
   searchText,
   statuses,
   startDate,
@@ -63,6 +65,7 @@ const ReimbursementRequestTable = ({
         statuses={statuses}
         startDate={startDate}
         endDate={endDate}
+        onCloseSidePage={onCloseSidePage}
       />
     </Box>
   );

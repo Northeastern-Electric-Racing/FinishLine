@@ -40,6 +40,7 @@ interface ReimbursementRequestInfoProps {
   statuses?: ReimbursementStatusType[];
   startDate?: Date | null;
   endDate?: Date | null;
+  onCloseSidePage?: () => void;
 }
 
 interface ReimbursementTableHeadCell {
@@ -55,7 +56,8 @@ const ReimbursementRequestInfo = ({
   searchText,
   statuses,
   startDate,
-  endDate
+  endDate,
+  onCloseSidePage
 }: ReimbursementRequestInfoProps) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -196,6 +198,7 @@ const ReimbursementRequestInfo = ({
 
   const closeSidePage = () => {
     setShowSidePage(false);
+    onCloseSidePage?.();
   };
 
   return (
