@@ -111,6 +111,8 @@ export interface ReimbursementProductCreateArgs {
 
 export interface ReimbursementProductFormArgs extends ReimbursementProductCreateArgs {
   reason: WbsNumber | OtherProductReason;
+  firstSourceAmount?: number;
+  secondSourceAmount?: number;
 }
 
 export interface OtherReimbursementProductCreateArgs extends ReimbursementProductCreateArgs {

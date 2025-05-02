@@ -17,12 +17,13 @@ import {
   useAllReimbursementRequests,
   useCurrentUserReimbursementRequests,
   useDownloadCSVFileOfReimbursementRequests,
-  useGetPendingAdvisorList
+  useGetPendingAdvisorList,
+  useCreateReimbursementRequest,
+  useUploadManyReceipts
 } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageLayout from '../../components/PageLayout';
-import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
 import PendingAdvisorModal from './FinanceComponents/PendingAdvisorListModal';
@@ -32,10 +33,12 @@ import TotalAmountSpentModal from './FinanceComponents/TotalAmountSpentModal';
 import { useToast } from '../../hooks/toasts.hooks';
 import ReportRefundModal from './FinanceComponents/ReportRefundModal';
 import SidePage from './FinanceComponents/SidePagePopup';
+import ReimbursementRequestForm, {
+  ReimbursementRequestDataSubmission
+} from './ReimbursementRequestForm/ReimbursementRequestForm';
 
 const FinancePage = () => {
   const user = useCurrentUser();
-  const history = useHistory();
   const [showGenerateReceipts, setShowGenerateReceipts] = useState(false);
 
   const {
@@ -70,6 +73,12 @@ const FinancePage = () => {
   // SidePage State
   const [showSidePage, setShowSidePage] = useState(false);
   const [sidePageTitle, setSidePageTitle] = useState('');
+
+  const { isLoading: createReimbursementRequestIsLoading, mutateAsync: createReimbursementRequest } =
+    useCreateReimbursementRequest();
+  const { isLoading: receiptsIsLoading, mutateAsync: uploadReceipts } = useUploadManyReceipts();
+
+  if (createReimbursementRequestIsLoading || receiptsIsLoading) return <LoadingIndicator />;
 
   if (isFinance && allReimbursementRequestsIsError) return <ErrorPage message={allReimbursementRequestsError?.message} />;
   if (userReimbursementRequestIsError) return <ErrorPage message={userReimbursementRequestError?.message} />;
@@ -113,7 +122,14 @@ const FinancePage = () => {
         Actions
       </NERButton>
       <Menu open={!!anchorEl} anchorEl={anchorEl} onClose={handleDropdownClose}>
-        <MenuItem onClick={() => history.push(routes.NEW_REIMBURSEMENT_REQUEST)} disabled={isGuest(user.role)}>
+        <MenuItem
+          onClick={() => {
+            setSidePageTitle('Create Reimbursement Request');
+            setShowSidePage(true);
+            handleDropdownClose();
+          }}
+          disabled={isGuest(user.role)}
+        >
           <ListItemIcon>
             <NoteAddIcon fontSize="small" />
           </ListItemIcon>
@@ -174,6 +190,16 @@ const FinancePage = () => {
     setShowSidePage(false);
   };
 
+  const onSubmit = async (data: ReimbursementRequestDataSubmission): Promise<string> => {
+    const reimbursementRequest = await createReimbursementRequest({ ...data, indexCodeId: data.indexCodeId! });
+    await uploadReceipts({
+      id: reimbursementRequest.reimbursementRequestId,
+      files: data.receiptFiles.map((file) => file.file!)
+    });
+    closeSidePage();
+    return reimbursementRequest.reimbursementRequestId;
+  };
+
   return (
     <PageLayout title="Finance" headerRight={financeActionsDropdown}>
       {isFinance && (
@@ -225,9 +251,11 @@ const FinancePage = () => {
         handleClose={closeSidePage}
         title={sidePageTitle}
         component={
-          <Typography variant="body1" sx={{ color: 'white' }}>
-            This is some text inside the side page.
-          </Typography>
+          sidePageTitle === 'Create Reimbursement Request' ? (
+            <ReimbursementRequestForm submitText="Submit" submitData={onSubmit} previousPage={routes.FINANCE} />
+          ) : (
+            <Typography>This is a side page</Typography>
+          )
         }
       />
     </PageLayout>
