@@ -57,8 +57,9 @@ const pdfLoadingError = (child: JSX.Element) => {
   );
 };
 
-//null submission indicates no submissions have been made for the part.
-//if the review exists, display that review in review mode. Otherwise display the submission in submission mode
+//there will always be a submisssion (o.w handled on part page. index only used for display purposes
+//if review exists, will display review in edit mode iff the user created it and it is in progress
+//has next, next, has prev, and prev used for navigating through reviews and submissions
 interface FileDisplayProps {
   submission: PartSubmission;
   submissionIdx: number;
@@ -70,22 +71,34 @@ interface FileDisplayProps {
 }
 
 const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, review, hasNext, next, hasPrev, prev }) => {
-  //if in a review, only show that reviews popups. If in general submission display, show all popups from every review
+  //States for storing position and scale of pdf in window
   const [scale, setScale] = useState<number>(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+
+  //popups to be displayed (all on submissions, only ones in review on reviews)
   const [variablePopups, setVariablePopups] = useState<Part_Review_Popup[]>([]);
+  //the model to create a new popup always exists, but is just off the screen when not being used
   const [newPopupCoords, setNewPopupCoords] = useState<{ x: number; y: number }>({ x: 5, y: 5 });
+
+  //what mode is the user in. 0 for dragging, 1 for custom comment, 2 for common mistake
   const [editMode, setEditMode] = useState<number>(0);
+
+  //pdf loading states
   const [pdfDimensions, setPdfDimensions] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
-  const [customComment, setCustomComment] = useState<boolean>(true);
   const [loadSuccess, setLoadSuccess] = useState(false);
+
+  //distinguishes between adding a custom comment and pulling from common mistakes
+  const [customComment, setCustomComment] = useState<boolean>(true);
+
+  //the index of the file in this submission
   const [fileIdx, setFileIdx] = useState(0);
   const user = useCurrentUser();
   const toast = useToast();
   const { mutateAsync: uploadFiles } = useUploadReviewFiles();
 
+  //re-generates the popups when the review or submission changes
   useEffect(() => {
     const varPopups = review
       ? review.popUps.filter((popup) => popup.fileIndex === fileIdx)
@@ -97,7 +110,6 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
   }, [review, submission, fileIdx]);
 
   const { mutateAsync: addPopupToDb } = useCreateReviewPopup();
-  // const { mutateAsync: updatePopupInDb } = useUpdateReviewPopup();
   const { mutateAsync: deletePopupFromDb } = useDeleteReviewPopup();
 
   const {
@@ -117,6 +129,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
   if (!mistakes || isLoadingCommonMistake) return <LoadingIndicator />;
   if (isErrorCommonMistakes) return <ErrorPage error={errorCommonMistakes} />;
 
+  //only enter review mode if this user is the creator of the non-complete review
   const reviewMode = review?.userCreated.userId === user.userId && !review.completedAt;
 
   const reviewerNameFromPopup = (popup: Part_Review_Popup) => {
@@ -124,6 +137,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
     return `${review?.userCreated.firstName} ${review?.userCreated.lastName}`;
   };
 
+  //deletes a popup from both the database and the current state
   const deletePopupExternal = async (popUpId: string) => {
     await deletePopupFromDb(popUpId);
 
@@ -133,6 +147,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
     setVariablePopups([...removedPopups]);
   };
 
+  //creates a new popup
   const createPopup = async (x: number, y: number, title: string, description?: string) => {
     if (!review || !reviewMode) return;
     const newPopup = await addPopupToDb({
@@ -175,6 +190,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
     if (!loadSuccess) return;
 
     if (editMode === 1 || editMode === 2) {
+      //panning logic
       const container = e.currentTarget.getBoundingClientRect();
 
       const clickX = e.clientX - container.left;
@@ -197,6 +213,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
     if (editMode === 0) {
       setIsDragging(true);
     }
+
     setStartPos({
       x: e.clientX - position.x * scale,
       y: e.clientY - position.y * scale
@@ -235,7 +252,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
   return (
     <Box display={'flex'} flexDirection={'column'}>
       <Grid display={'flex'} flexDirection={'row'} gap={2} justifyContent={'space-between'} width={'100%'}>
-        {/* Group the download button and title together */}
+        {/* title and download */}
         <Box display="flex" alignItems="center">
           {pdf && <DownloadButton fileId={submission.fileIds[fileIdx]} filename={`${submission.name}_${fileIdx + 1}`} />}
           <Typography variant={'h4'}>
@@ -243,7 +260,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
           </Typography>
         </Box>
 
-        {/* Group the navigation buttons together */}
+        {/* navigate through submissions and reviews */}
         <Box display="flex" gap={1}>
           {hasPrev() && (
             <NERButton
@@ -279,6 +296,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
       </Grid>
 
       <Box display={'flex'} flexDirection={'row'}>
+        {/* custom comment, common mistake, and file upload buttons for reviews*/}
         {reviewMode && (
           <Box display={'flex'} flexDirection={'column'}>
             <Box
@@ -350,6 +368,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
                   if (e.target.files) {
                     const filesToUpload: File[] = [];
                     [...e.target.files]?.forEach((file) => {
+                      //validate each file
                       if (file.size > MAX_FILE_SIZE) {
                         toast.error(`File "${file.name}" exceeds the maximum size limit of ${MAX_FILE_SIZE} bytes`);
                         return;
@@ -364,6 +383,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
                       }
                       filesToUpload.push(file);
                     });
+                    //unsure no more than 5 files
                     if (filesToUpload.length > 5) {
                       toast.error(`Cannot upload more than 5 files`);
                       return;
@@ -378,7 +398,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
             </Button>
           </Box>
         )}
-        {/* <NERButton onClick={() => setEditMode(!editMode)}>{editMode ? 'edit mode' : 'normal mode'}</NERButton> */}
+        {/* pdf display box */}
         <Box
           sx={{
             width: '75vh',
@@ -419,7 +439,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
               <ZoomOutIcon fontSize="small" />
             </IconButton>
           </Box>
-          {/* Cycle submissions */}
+          {/* Cycle submission files */}
           <Box
             sx={{
               position: 'absolute',
@@ -477,6 +497,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
               transition: isDragging ? 'none' : 'transform 0.2s ease-out'
             }}
           >
+            {/* error msgs, for non-pdfs, and then generic errors */}
             {pdfLoading && pdfLoadingError(<LoadingIndicator />)}
             {pdfIsError && pdfLoadingError(<ErrorPage error={pdfError} />)}
             {pdf &&
@@ -502,6 +523,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
               </Document>
             )}
 
+            {/* display popups */}
             {loadSuccess && (
               <Box>
                 {variablePopups.map((popup: Part_Review_Popup) => (

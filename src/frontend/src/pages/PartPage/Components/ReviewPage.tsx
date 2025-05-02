@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -10,13 +10,11 @@ import {
   ListItemText,
   Grid,
   Tooltip,
-  Button
+  Button,
+  TextField
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useForm, Controller } from 'react-hook-form';
 import NERSuccessButton from '../../../components/NERSuccessButton';
-import NERFailButton from '../../../components/NERFailButton';
-import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useEditPartReview } from '../../../hooks/part-review.hooks';
 import { PartSubmission, Review_Status } from 'shared/src/types/part-review.types';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
@@ -28,11 +26,10 @@ interface ReviewSidebarProps {
 }
 
 const ReviewSidebar: React.FC<ReviewSidebarProps> = ({ submission, reviewIndex }) => {
-  const { control, handleSubmit } = useForm({
-    defaultValues: { notes: submission.reviews[reviewIndex].notes ?? '' }
-  });
+  const [notes, setNotes] = useState(submission.reviews[reviewIndex].notes ?? '');
   const { mutateAsync: updateReview } = useEditPartReview(submission.reviews[reviewIndex].partReviewId);
 
+  //Produces array of strings to be shown as bullet points on review that show number of markups on each file
   const markupsStrs = () => {
     const detailsStrs: string[] = [];
 
@@ -47,16 +44,18 @@ const ReviewSidebar: React.FC<ReviewSidebarProps> = ({ submission, reviewIndex }
     return detailsStrs;
   };
 
-  const onSave = (status: Review_Status) => {
-    return handleSubmit((data) => {
+  //curried onSubmit for different buttons to submit with different status
+  const onFormSubmit = (status: Review_Status) => {
+    return () => {
       updateReview({
-        notes: data.notes,
+        notes,
         status,
         fileIds: submission.reviews[reviewIndex].fileIds
       });
-    });
+    };
   };
 
+  //deletes file in db
   const handleDeleteFile = (fileIdToDelete: string) => {
     updateReview({
       notes: submission.reviews[reviewIndex].notes,
@@ -70,7 +69,7 @@ const ReviewSidebar: React.FC<ReviewSidebarProps> = ({ submission, reviewIndex }
       {/* TOP BUTTONS */}
       <Box display="flex" justifyContent="flex-end" gap={2}>
         <Button
-          onClick={onSave(Review_Status.IN_PROGRESS)}
+          onClick={onFormSubmit(Review_Status.IN_PROGRESS)}
           sx={{
             variant: 'contained',
             textTransform: 'none',
@@ -87,9 +86,9 @@ const ReviewSidebar: React.FC<ReviewSidebarProps> = ({ submission, reviewIndex }
         >
           SAVE AS DRAFT
         </Button>
-        <NERSuccessButton onClick={onSave(Review_Status.REVIEWED)}>Request Changes</NERSuccessButton>
+        <NERSuccessButton onClick={onFormSubmit(Review_Status.REVIEWED)}>Request Changes</NERSuccessButton>
         <Button
-          onClick={onSave(Review_Status.APPROVED)}
+          onClick={onFormSubmit(Review_Status.APPROVED)}
           sx={{
             variant: 'contained',
             textTransform: 'none',
@@ -176,28 +175,16 @@ const ReviewSidebar: React.FC<ReviewSidebarProps> = ({ submission, reviewIndex }
       {/* REVIEWER NOTES */}
       <Box>
         <Typography variant="subtitle1" fontWeight="medium">
-          Reviewer’s Notes
+          Reviewer's Notes
         </Typography>
-        <Controller
-          name="notes"
-          control={control}
-          render={({ field }) => (
-            <ReactHookTextField
-              {...field}
-              name="notes"
-              control={control}
-              fullWidth
-              placeholder="Any additional comments go here..."
-              multiline
-              rows={4}
-            />
-          )}
+        <TextField
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          fullWidth
+          placeholder="Any additional comments go here..."
+          multiline
+          rows={4}
         />
-      </Box>
-
-      <Divider />
-      <Box display="flex" justifyContent="flex-end" gap={2}>
-        <NERFailButton>Delete Review</NERFailButton>
       </Box>
     </Box>
   );

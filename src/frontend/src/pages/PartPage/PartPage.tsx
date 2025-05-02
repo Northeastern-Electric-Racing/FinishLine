@@ -21,6 +21,7 @@ const PartPage: React.FC = () => {
     indexNum: string;
   }
   const { wbsNum, indexNum } = useParams<ParamTypes>();
+  //location and history to maintain url with params for submission and review index
   const location = useLocation();
   const history = useHistory();
 
@@ -42,7 +43,9 @@ const PartPage: React.FC = () => {
 
   const [subIndex, setSubIndex] = useState<number>(0);
   const [reviewIndex, setReviewIndex] = useState<number>(-1);
+  const [part, setPart] = useState<Part | null>(null);
 
+  //if the url parameters are not valid, set default values. If they are use those
   useEffect(() => {
     if (!partWithAllReviews) return;
     const searchParams = new URLSearchParams(location.search);
@@ -66,12 +69,26 @@ const PartPage: React.FC = () => {
         }
       }
     }
-  }, [partWithAllReviews, location.search]);
+    //update the part in usage to only include reviews that are either not in progress or made by the current user
+    const part: Part = {
+      ...partWithAllReviews,
+      submissions: partWithAllReviews.submissions.map((sub) => {
+        return {
+          ...sub,
+          review: sub.reviews.filter((review) => {
+            return !!review.completedAt || review.userCreated.userId === user.userId;
+          })
+        };
+      })
+    };
+    setPart(part);
+  }, [partWithAllReviews, location.search, user]);
 
-  if (projectLoading || !project || partLoading || !partWithAllReviews) return <LoadingIndicator />;
+  if (projectLoading || !project || partLoading || !partWithAllReviews || !part) return <LoadingIndicator />;
   if (projectIsError) return <ErrorPage message={projectError?.message} />;
   if (partIsError) return <ErrorPage message={partError?.message} />;
 
+  //updates the url params
   const updateURL = (newSubIndex: number, newReviewIndex: number) => {
     const searchParams = new URLSearchParams(location.search);
     searchParams.set('submissionIndex', newSubIndex.toString());
@@ -83,7 +100,8 @@ const PartPage: React.FC = () => {
     history.replace(`${location.pathname}?${searchParams.toString()}`);
   };
 
-  const pdfLoadingError = (child: JSX.Element) => {
+  //generic to load in place of pdf. Used to display parts with no submissions
+  const pdfLoading = (child: JSX.Element) => {
     return (
       <Box
         sx={{
@@ -109,26 +127,17 @@ const PartPage: React.FC = () => {
     );
   };
 
-  const part: Part = {
-    ...partWithAllReviews,
-    submissions: partWithAllReviews.submissions.map((sub) => {
-      return {
-        ...sub,
-        review: sub.reviews.filter((review) => {
-          return !!review.completedAt || review.userCreated.userId === user.userId;
-        })
-      };
-    })
-  };
-
+  //is there a next submission / review to go to
   const hasNext = () => {
     return !(subIndex === part.submissions.length - 1 && reviewIndex === part.submissions[subIndex].reviews.length - 1);
   };
 
+  //is there a previous submission / review to go to
   const hasPrev = () => {
     return !(subIndex === 0 && reviewIndex === -1);
   };
 
+  //gets the next submission / review and updates state and url
   const next = () => {
     if (reviewIndex === part.submissions[subIndex].reviews.length - 1) {
       updateURL(subIndex + 1, -1);
@@ -140,6 +149,7 @@ const PartPage: React.FC = () => {
     }
   };
 
+  //gets the prev submission / review and updates the state and url
   const prev = () => {
     if (reviewIndex === -1) {
       const temp = subIndex;
@@ -152,6 +162,7 @@ const PartPage: React.FC = () => {
     }
   };
 
+  //is the current submission / review currently an in progress review
   const inReview = () => {
     return (
       reviewIndex !== -1 && part.submissions.length !== 0 && !part.submissions[subIndex].reviews[reviewIndex].completedAt
@@ -172,7 +183,7 @@ const PartPage: React.FC = () => {
       <Breadcrumbs sx={{ mb: 2 }}></Breadcrumbs>
       <Grid container px={2} gap={5}>
         <Grid item maxWidth={'50%'}>
-          {part.submissions.length === 0 && pdfLoadingError(<Typography>No Submissions Yet</Typography>)}
+          {part.submissions.length === 0 && pdfLoading(<Typography>No Submissions Yet</Typography>)}
           {part.submissions.length !== 0 && (
             <PDFViewer
               submission={part.submissions[subIndex]}
@@ -185,9 +196,11 @@ const PartPage: React.FC = () => {
             />
           )}
         </Grid>
+        {/* either display regular review/submission or in progress review */}
         {!inReview() && (
           <Grid item maxWidth={'35%'}>
             <PartPageOverview part={part} />
+            {/* details can only display specific submission / review */}
             {part.submissions.length !== 0 && (
               <PartSubmissionDetails submission={part.submissions[subIndex]} reviewIndex={reviewIndex} />
             )}

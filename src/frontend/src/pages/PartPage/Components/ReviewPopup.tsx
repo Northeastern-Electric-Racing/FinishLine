@@ -169,7 +169,7 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
                   size="small"
                   onClick={() => setEditting(false)}
                   sx={{ color: 'grey.500', borderColor: 'grey.500' }}
-                  type="button" // Important to prevent form submission
+                  type="button"
                 >
                   Cancel
                 </Button>
@@ -178,7 +178,7 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
                   variant="contained"
                   color="error"
                   size="small"
-                  type="submit" // This makes it submit the form
+                  type="submit"
                 >
                   Done
                 </Button>
