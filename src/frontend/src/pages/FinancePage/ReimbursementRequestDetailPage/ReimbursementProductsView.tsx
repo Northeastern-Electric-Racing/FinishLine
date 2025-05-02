@@ -18,7 +18,7 @@ const ReimbursementProductsView: React.FC<ReimbursementRequestProductsViewProps>
   const allKeysAreSame = keys.length === 0 || keys.every((key) => key === keys[0]);
 
   // Placeholder until support for multiple refund sources is available
-  // Currently, does not seem to be the case
+  // Currently, does not seem to be the case, as cost is the only field
   const multipleRefundSources = false;
 
   return (
