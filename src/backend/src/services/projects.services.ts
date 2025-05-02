@@ -473,6 +473,8 @@ export default class ProjectsService {
   static async setAbbreviation(wbsNum: WbsNumber, user: User, organization: Organization, abbreviation: string) {
     const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNum, organization);
 
+    if (!project) throw new NotFoundException('Project', wbsPipe(wbsNum));
+
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('set Abbreviation');
     }
@@ -489,7 +491,7 @@ export default class ProjectsService {
   }
 
   /**
-   * Revomves the abbreviation from a given project
+   * Removes the abbreviation from a given project
    * @param wbsNum the project
    * @param user the user making the change
    * @param organization the organization
@@ -498,8 +500,10 @@ export default class ProjectsService {
   static async deleteAbbreviation(wbsNum: WbsNumber, user: User, organization: Organization) {
     const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNum, organization);
 
+    if (!project) throw new NotFoundException('Project', wbsPipe(wbsNum));
+
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('delete Abbreviation');
+      throw new AccessDeniedAdminOnlyException('delete abbreviation');
     }
 
     await prisma.project.update({
