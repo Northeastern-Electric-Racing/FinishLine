@@ -17,6 +17,10 @@ const ReimbursementProductsView: React.FC<ReimbursementRequestProductsViewProps>
 
   const allKeysAreSame = keys.length === 0 || keys.every((key) => key === keys[0]);
 
+  // Placeholder until support for multiple refund sources is available
+  // Currently, does not seem to be the case
+  const multipleRefundSources = false;
+
   return (
     <>
       <Typography variant="h5">Products</Typography>
@@ -34,6 +38,11 @@ const ReimbursementProductsView: React.FC<ReimbursementRequestProductsViewProps>
             <TableCell>
               <Typography variant="h6">Cost</Typography>
             </TableCell>
+            {multipleRefundSources && (
+              <TableCell>
+                <Typography variant="h6">Bud/Cash</Typography>
+              </TableCell>
+            )}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -51,6 +60,7 @@ const ReimbursementProductsView: React.FC<ReimbursementRequestProductsViewProps>
                     return `$${centsToDollar(product.cost)}`;
                   })}
                 </TableCell>
+                {multipleRefundSources && <TableCell></TableCell>}
               </TableRow>
             );
           })}
