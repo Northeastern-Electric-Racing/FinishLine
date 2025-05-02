@@ -1,6 +1,7 @@
 import { Typography } from '@mui/material';
-import { Stack } from '@mui/system';
+import { Box, Stack } from '@mui/system';
 import { PartSubmission, PartReview } from 'shared';
+import DownloadButton from '../../../components/DownloadButton';
 
 interface PartSubmissionProps {
   submission: PartSubmission;
@@ -24,8 +25,30 @@ const PartSubmissionDetails = ({ submission, reviewIndex }: PartSubmissionProps)
         Details for {submission.name} {reviewIndex !== -1 ? 'Review' : ''}
       </Typography>
 
+      {reviewIndex !== -1 && submission.reviews[reviewIndex].fileIds.length !== 0 && (
+        <Box>
+          <Typography variant="body1">
+            <b>Review Files: </b>
+          </Typography>
+          <Stack direction="row" spacing={1} mt={1}>
+            {submission.reviews[reviewIndex].fileIds.length ? (
+              submission.reviews[reviewIndex].fileIds.map((fileId, index) => (
+                <Box key={fileId} display="flex" alignItems="center" gap={1}>
+                  <Typography variant="body2">{`File #${index + 1}`}</Typography>
+                  <DownloadButton fileId={fileId} filename={`Review_File${index + 1}`} />
+                </Box>
+              ))
+            ) : (
+              <Typography variant="body2" color="textSecondary">
+                No files uploaded yet.
+              </Typography>
+            )}
+          </Stack>
+        </Box>
+      )}
+
       <Typography variant="body1">
-        <b>Uploader: </b>
+        {reviewIndex !== -1 ? <b>Reviewer: </b> : <b>Uploader: </b>}
         {reviewIndex !== -1
           ? `${submission.reviews[reviewIndex].userCreated.firstName} ${submission.reviews[reviewIndex].userCreated.lastName}`
           : `${submission.userCreated.firstName} ${submission.userCreated.lastName}`}

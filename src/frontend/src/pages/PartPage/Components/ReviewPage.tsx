@@ -1,135 +1,112 @@
-import React, { useEffect, useState, useContext, useMemo } from 'react';
-import { Box, Typography, Divider, Stack, IconButton } from '@mui/material';
-import DownloadIcon from '@mui/icons-material/Download';
+import React from 'react';
+import {
+  Box,
+  Typography,
+  Divider,
+  Stack,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  Grid,
+  Tooltip,
+  Button
+} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useForm, Controller } from 'react-hook-form';
-import { useQueryClient } from 'react-query';
-import NERAutocomplete from '../../../components/NERAutocomplete';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import ReactHookTextField from '../../../components/ReactHookTextField';
-import { useEditPartReview, useSinglePart } from '../../../hooks/part-review.hooks';
-import { Review_Status } from 'shared/src/types/part-review.types';
-import { ToastContext } from '../../../components/Toast/ToastProvider';
-import { PartReview } from 'shared';
-import { apiUrls } from '../../../utils/urls';
+import { useEditPartReview } from '../../../hooks/part-review.hooks';
+import { PartSubmission, Review_Status } from 'shared/src/types/part-review.types';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import DownloadButton from '../../../components/DownloadButton';
 
 interface ReviewSidebarProps {
-  wbsNum: string;
-  index: number;
-  reviewId: string;
+  submission: PartSubmission;
+  reviewIndex: number;
 }
 
-const ReviewSidebar: React.FC<ReviewSidebarProps> = ({ wbsNum, index, reviewId }) => {
-  const queryClient = useQueryClient();
-  const { addToast } = useContext(ToastContext);
+const ReviewSidebar: React.FC<ReviewSidebarProps> = ({ submission, reviewIndex }) => {
+  const { control, handleSubmit } = useForm({
+    defaultValues: { notes: submission.reviews[reviewIndex].notes ?? '' }
+  });
+  const { mutateAsync: updateReview } = useEditPartReview(submission.reviews[reviewIndex].partReviewId);
 
-  const { control, handleSubmit, setValue } = useForm({ defaultValues: { notes: '' } });
-  const { data: part, isLoading } = useSinglePart(wbsNum, index);
-  const saveReview = useEditPartReview(reviewId);
+  const markupsStrs = () => {
+    const detailsStrs: string[] = [];
 
-  const [selectedSubmission, setSelectedSubmission] = useState<{ id: string; label: string } | null>(null);
-  const [localFileIds, setLocalFileIds] = useState<string[]>([]);
+    for (let i = 0; i < submission.fileIds.length; i++) {
+      const numOnPage = submission.reviews[reviewIndex].popUps.filter((popup) => popup.fileIndex === i).length;
+      if (numOnPage > 0) {
+        detailsStrs.push(
+          `${submission.reviews[reviewIndex].popUps.filter((popup) => popup.fileIndex === i).length} comment${numOnPage !== 1 ? 's' : ''} left on Page ${i + 1}`
+        );
+      }
+    }
+    return detailsStrs;
+  };
 
-  const allSubmissions = useMemo(() => part?.submissions ?? [], [part?.submissions]);
-  const review: PartReview | undefined = allSubmissions.flatMap((s) => s.reviews).find((r) => r.partReviewId === reviewId);
-
-  useEffect(() => {
-    if (!review || !allSubmissions) return;
-
-    const submission = allSubmissions.find((s) => s.partSubmissionId === review.submissionId);
-    if (submission) {
-      setSelectedSubmission({
-        id: submission.partSubmissionId,
-        label: submission.name || `Submission ${submission.partSubmissionId.slice(0, 4)}`
+  const onSave = (status: Review_Status) => {
+    return handleSubmit((data) => {
+      updateReview({
+        notes: data.notes,
+        status,
+        fileIds: submission.reviews[reviewIndex].fileIds
       });
-    }
-
-    setValue('notes', review.notes ?? '');
-    setLocalFileIds(review.fileIds ?? []);
-  }, [review, allSubmissions, setValue]);
-
-  const submissionOptions = allSubmissions.map((sub) => ({
-    id: sub.partSubmissionId,
-    label: sub.name || `Submission ${sub.partSubmissionId.slice(0, 4)}`
-  }));
-
-  const onSubmit = handleSubmit((data) => {
-    if (!selectedSubmission || !review) {
-      addToast({ key: Date.now(), message: 'Please select a submission.', type: 'error' });
-      return;
-    }
-
-    saveReview.mutate(
-      {
-        status: Review_Status.IN_REVIEW,
-        notes: data.notes,
-        fileIds: localFileIds
-      },
-      {
-        onSuccess: () => {
-          addToast({ key: Date.now(), message: 'Review saved as draft.', type: 'success' });
-          queryClient.invalidateQueries(['parts']);
-        },
-        onError: () => {
-          addToast({ key: Date.now(), message: 'Failed to save review.', type: 'error' });
-        }
-      }
-    );
-  });
-
-  const onFinish = handleSubmit((data) => {
-    if (!selectedSubmission || !review) {
-      addToast({ key: Date.now(), message: 'Please select a submission.', type: 'error' });
-      return;
-    }
-
-    saveReview.mutate(
-      {
-        status: Review_Status.REVIEWED,
-        notes: data.notes,
-        fileIds: localFileIds
-      },
-      {
-        onSuccess: () => {
-          addToast({ key: Date.now(), message: 'Review marked as complete.', type: 'success' });
-          queryClient.invalidateQueries(['parts']);
-        },
-        onError: () => {
-          addToast({ key: Date.now(), message: 'Failed to submit review.', type: 'error' });
-        }
-      }
-    );
-  });
-
-  const handleDownloadFile = (fileId: string) => {
-    const fileUrl = apiUrls.downloadFile(fileId);
-    window.open(fileUrl, '_blank');
+    });
   };
 
   const handleDeleteFile = (fileIdToDelete: string) => {
-    setLocalFileIds((prev) => prev.filter((id) => id !== fileIdToDelete));
+    updateReview({
+      notes: submission.reviews[reviewIndex].notes,
+      status: Review_Status.IN_PROGRESS,
+      fileIds: submission.reviews[reviewIndex].fileIds.filter((id) => id !== fileIdToDelete)
+    });
   };
 
-  if (isLoading || !review) return <Typography>Loading review...</Typography>;
-
   return (
-    <Box display="flex" flexDirection="column" gap={2} width="100%" p={2}>
+    <Box display="flex" width={'100%'} flexDirection="column" gap={2} p={2}>
       {/* TOP BUTTONS */}
       <Box display="flex" justifyContent="flex-end" gap={2}>
-        <NERSuccessButton onClick={onSubmit} disabled={saveReview.isLoading}>
-          Save as Draft
-        </NERSuccessButton>
-        <NERFailButton onClick={onFinish} disabled={saveReview.isLoading}>
-          Finish Review
-        </NERFailButton>
+        <Button
+          onClick={onSave(Review_Status.IN_PROGRESS)}
+          sx={{
+            variant: 'contained',
+            textTransform: 'none',
+            fontSize: 16,
+            borderColor: '#ef4345',
+            backgroundColor: '#999999',
+            color: 'white',
+            boxShadow: 'none',
+            '&:hover': {
+              backgroundColor: '#7A7A7A',
+              color: 'white'
+            }
+          }}
+        >
+          SAVE AS DRAFT
+        </Button>
+        <NERSuccessButton onClick={onSave(Review_Status.REVIEWED)}>Request Changes</NERSuccessButton>
+        <Button
+          onClick={onSave(Review_Status.APPROVED)}
+          sx={{
+            variant: 'contained',
+            textTransform: 'none',
+            fontSize: 16,
+            borderColor: '#ef4345',
+            backgroundColor: '#D633FF',
+            color: 'white',
+            boxShadow: 'none',
+            '&:hover': {
+              backgroundColor: '#B01ADD',
+              color: 'white'
+            }
+          }}
+        >
+          APPROVE
+        </Button>
       </Box>
-
-      {/* HEADER */}
-      <Typography variant="h6" fontWeight="bold">
-        Review for {part?.projectId}_{part?.commonName}_{part?.index.toString().padStart(5, '0')}
-      </Typography>
-
       <Divider />
 
       {/* SUBMISSION SELECTOR */}
@@ -138,55 +115,60 @@ const ReviewSidebar: React.FC<ReviewSidebarProps> = ({ wbsNum, index, reviewId }
           Selected Submission
         </Typography>
         <Box display="flex" alignItems="center" gap={1} mt={1}>
-          <IconButton
-            onClick={() => selectedSubmission && handleDownloadFile(selectedSubmission.id)}
-            disabled={!selectedSubmission}
-            sx={{ border: '1px solid gray', borderRadius: '50%', p: 1 }}
-          >
-            <DownloadIcon />
-          </IconButton>
-          <Box flexGrow={1}>
-            <NERAutocomplete
-              id="submission-selector"
-              options={submissionOptions}
-              value={selectedSubmission}
-              onChange={(_, value) => setSelectedSubmission(value)}
-              size="medium"
-              placeholder="Select a submission"
-            />
-          </Box>
+          <DownloadButton fileId={submission.fileIds[0]} filename={submission.name} />
+          <Typography variant={'h4'}>{submission.name}</Typography>
         </Box>
       </Box>
 
       <Divider />
 
       {/* REVIEW STATUS */}
-      <Box>
-        <Typography variant="subtitle1" fontWeight="medium">
-          Review Status
-        </Typography>
-        <Typography variant="body2">In-App Markups: {review?.popUps?.length ?? 0}</Typography>
-        <Typography variant="body2">Files Uploaded:</Typography>
-
-        <Stack direction="column" spacing={1} mt={1}>
-          {localFileIds.length ? (
-            localFileIds.map((fileId) => (
-              <Box key={fileId} display="flex" alignItems="center" gap={1}>
-                <Typography variant="body2">{fileId}</Typography>
-                <IconButton size="small" onClick={() => handleDownloadFile(fileId)}>
-                  <DownloadIcon fontSize="small" />
-                </IconButton>
-                <IconButton size="small" onClick={() => handleDeleteFile(fileId)} sx={{ color: 'red' }}>
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
-              </Box>
-            ))
-          ) : (
-            <Typography variant="body2" color="textSecondary">
-              No files uploaded yet.
+      <Box width={'100%'}>
+        <Grid container display={'flex'} flexDirection={'row'} mb={2} xs={12}>
+          <Typography variant="h5" fontWeight="medium">
+            Review Status
+          </Typography>
+          <Tooltip title="To submit a review, add at least one of a submission markup, a file, or notes" arrow>
+            <IconButton size="small">
+              <HelpOutlineIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Grid>
+        <Grid container display={'flex'} flexDirection={'row'} justifyContent="space-between" xs={12}>
+          <Grid item>
+            <Typography variant="body2" sx={{ mb: 0 }}>
+              In-App Markups: {markupsStrs().length === 0 ? 'None' : ''}
             </Typography>
-          )}
-        </Stack>
+            <List sx={{ mt: 0, pl: 2 }}>
+              {markupsStrs().map((line: string, index: number) => (
+                <ListItem key={index} sx={{ display: 'list-item', p: 0 }}>
+                  <ListItemText primary={<Typography variant="body2">{line}</Typography>} />
+                </ListItem>
+              ))}
+            </List>
+          </Grid>
+          <Grid item>
+            <Typography variant="body2">File(s) Uploaded:</Typography>
+
+            <Stack direction="column" spacing={1} mt={1}>
+              {submission.reviews[reviewIndex].fileIds.length ? (
+                submission.reviews[reviewIndex].fileIds.map((fileId, index) => (
+                  <Box key={fileId} display="flex" alignItems="center" gap={1}>
+                    <Typography variant="body2">{`File #${index + 1}`}</Typography>
+                    <DownloadButton fileId={fileId} filename={`Review_File${index + 1}`} />
+                    <IconButton size="small" onClick={() => handleDeleteFile(fileId)} sx={{ color: 'red' }}>
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                ))
+              ) : (
+                <Typography variant="body2" color="textSecondary">
+                  No files uploaded yet.
+                </Typography>
+              )}
+            </Stack>
+          </Grid>
+        </Grid>
       </Box>
 
       <Divider />
@@ -214,6 +196,9 @@ const ReviewSidebar: React.FC<ReviewSidebarProps> = ({ wbsNum, index, reviewId }
       </Box>
 
       <Divider />
+      <Box display="flex" justifyContent="flex-end" gap={2}>
+        <NERFailButton>Delete Review</NERFailButton>
+      </Box>
     </Box>
   );
 };

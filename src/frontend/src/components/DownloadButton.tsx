@@ -1,16 +1,19 @@
 import React from 'react';
 import { Box, IconButton, Tooltip } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
+import { useDownloadFile } from '../hooks/part-review.hooks';
 
 interface DownloadButtonProps {
-  blob: Blob;
-  filename?: string;
-  mimeType?: string;
+  fileId: string;
+  filename: string;
 }
 
-const DownloadButton: React.FC<DownloadButtonProps> = ({ blob, filename = 'download' }) => {
+const DownloadButton: React.FC<DownloadButtonProps> = ({ fileId, filename = 'download' }) => {
+  const { data: blobData } = useDownloadFile(fileId);
+
   const handleDownload = () => {
-    const url = URL.createObjectURL(blob);
+    if (!blobData) return;
+    const url = URL.createObjectURL(blobData);
     const link = document.createElement('a');
     link.href = url;
     link.download = filename;

@@ -431,7 +431,7 @@ export default class PartReviewService {
     const updatedReview = await prisma.partReview.update({
       where: { partReviewId: reviewId },
       data: {
-        fileIds
+        fileIds: review.fileIds.concat(fileIds)
       },
       ...getPartReviewQueryArgs(organizationId)
     });
@@ -543,7 +543,7 @@ export default class PartReviewService {
     const updatedSubmission = await prisma.partSubmission.update({
       where: { partSubmissionId: submissionId },
       data: {
-        fileIds
+        fileIds: submission.fileIds.concat(fileIds)
       },
       ...getPartSubmissionQueryArgs(organizationId)
     });

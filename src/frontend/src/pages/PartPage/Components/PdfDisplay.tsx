@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Document, Page } from 'react-pdf';
 import { pdfjs } from 'react-pdf';
-import { Box, Typography, IconButton, Grid } from '@mui/material';
+import { Box, Typography, IconButton, Grid, Button } from '@mui/material';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import { Part_Review_Popup, PartReview, PartSubmission } from 'shared';
@@ -16,16 +16,20 @@ import {
   useAllCommonMistakes,
   useCreateReviewPopup,
   useDeleteReviewPopup,
-  useDownloadFile
+  useDownloadFile,
+  useUploadReviewFiles
 } from '../../../hooks/part-review.hooks';
 import DownloadButton from '../../../components/DownloadButton';
 import { NERButton } from '../../../components/NERButton';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { useCurrentUser } from '../../../hooks/users.hooks';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 //set up PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 const pdfLoadingError = (child: JSX.Element) => {
   return (
@@ -79,17 +83,18 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
   const [loadSuccess, setLoadSuccess] = useState(false);
   const [fileIdx, setFileIdx] = useState(0);
   const user = useCurrentUser();
+  const toast = useToast();
+  const { mutateAsync: uploadFiles } = useUploadReviewFiles();
 
   useEffect(() => {
-    setVariablePopups(
-      review
-        ? review.popUps
-        : submission.reviews.reduce((aac: Part_Review_Popup[], review: PartReview) => {
-            if (review.completedAt) return aac.concat(review.popUps);
-            return aac;
-          }, [])
-    );
-  }, [review, submission]);
+    const varPopups = review
+      ? review.popUps.filter((popup) => popup.fileIndex === fileIdx)
+      : submission.reviews.reduce((aac: Part_Review_Popup[], review: PartReview) => {
+          if (review.completedAt) return aac.concat(review.popUps.filter((popup) => popup.fileIndex === fileIdx));
+          return aac;
+        }, []);
+    setVariablePopups(varPopups);
+  }, [review, submission, fileIdx]);
 
   const { mutateAsync: addPopupToDb } = useCreateReviewPopup();
   // const { mutateAsync: updatePopupInDb } = useUpdateReviewPopup();
@@ -154,10 +159,6 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
     setEditMode(editMode === 2 ? 0 : 2);
     setCustomComment(false);
     setNewPopupCoords({ x: 5, y: 5 });
-  };
-
-  const fileUploadOnClick = () => {
-    setEditMode(editMode === 3 ? 0 : 3);
   };
 
   const handleZoomIn = () => {
@@ -236,7 +237,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
       <Grid display={'flex'} flexDirection={'row'} gap={2} justifyContent={'space-between'} width={'100%'}>
         {/* Group the download button and title together */}
         <Box display="flex" alignItems="center">
-          {pdf && <DownloadButton blob={pdf} filename={`${submission.name}_${fileIdx}`} />}
+          {pdf && <DownloadButton fileId={submission.fileIds[fileIdx]} filename={`${submission.name}_${fileIdx + 1}`} />}
           <Typography variant={'h4'}>
             {submission.name} #{submissionIdx + 1} {review ? ' Review' : ''}
           </Typography>
@@ -285,7 +286,6 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
                 width: '4rem',
                 height: '4rem',
                 bgcolor: editMode === 1 ? 'red' : 'rgba(0,0,0,0.2)',
-                marginLeft: '2rem',
                 marginRight: '2rem',
                 border: 2,
                 borderColor: 'white',
@@ -302,7 +302,6 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
                 width: '4rem',
                 height: '4rem',
                 bgcolor: editMode === 2 ? 'red' : 'rgba(0,0,0,0.2)',
-                marginLeft: '2rem',
                 marginRight: '2rem',
                 border: 2,
                 borderColor: 'white',
@@ -314,23 +313,69 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
             >
               <CommentRoundedIcon sx={{ width: '60%', height: '60%' }} />
             </Box>
-            <Box
+            {/* Show the icon normally */}
+            <Button
+              variant="contained"
+              color="success"
+              component="label"
               sx={{
                 width: '4rem',
                 height: '4rem',
                 bgcolor: editMode === 3 ? 'red' : 'rgba(0,0,0,0.2)',
-                marginLeft: '2rem',
                 marginRight: '2rem',
                 border: 2,
                 borderColor: 'white',
                 display: 'flex',
                 justifyContent: 'center',
-                alignItems: 'center'
+                alignItems: 'center',
+                position: 'relative', // Add position relative
+                cursor: 'pointer' // Add cursor pointer
               }}
-              onClick={fileUploadOnClick}
             >
-              <UploadFileRoundedIcon sx={{ width: '60%', height: '60%' }} />
-            </Box>
+              <UploadFileRoundedIcon sx={{ color: 'white', fontSize: '2rem' }} />
+              {/* Position the input absolutely but keep it invisible */}
+              <input
+                id="fileUploadInput"
+                type="file"
+                style={{
+                  position: 'absolute',
+                  width: '0',
+                  height: '0',
+                  padding: '0',
+                  border: 'none',
+                  overflow: 'hidden',
+                  clip: 'rect(0, 0, 0, 0)'
+                }}
+                onChange={(e) => {
+                  if (e.target.files) {
+                    const filesToUpload: File[] = [];
+                    [...e.target.files]?.forEach((file) => {
+                      if (file.size > MAX_FILE_SIZE) {
+                        toast.error(`File "${file.name}" exceeds the maximum size limit of ${MAX_FILE_SIZE} bytes`);
+                        return;
+                      }
+                      if (!/^[\w.]+$/.test(file.name)) {
+                        toast.error(`File names can only contain letters and numbers`);
+                        return;
+                      }
+                      if (file.name.length > 20) {
+                        toast.error(`File names cannot be longer than 20 characters`);
+                        return;
+                      }
+                      filesToUpload.push(file);
+                    });
+                    if (filesToUpload.length > 5) {
+                      toast.error(`Cannot upload more than 5 files`);
+                      return;
+                    }
+                    uploadFiles({
+                      reviewId: review.partReviewId,
+                      files: filesToUpload
+                    });
+                  }
+                }}
+              />
+            </Button>
           </Box>
         )}
         {/* <NERButton onClick={() => setEditMode(!editMode)}>{editMode ? 'edit mode' : 'normal mode'}</NERButton> */}
@@ -488,7 +533,6 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
           </Box>
         </Box>
       </Box>
-      <Typography>{JSON.stringify(review) ?? ''}</Typography>
     </Box>
   );
 };
