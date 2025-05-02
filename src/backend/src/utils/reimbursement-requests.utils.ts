@@ -165,9 +165,7 @@ const updateExistingProducts = async (products: ReimbursementProductCreateArgs[]
       where: { reimbursementProductId: product.id },
       data: {
         name: product.name,
-        cost: product.cost,
-        firstSourceAmount: product.firstSourceAmount,
-        secondSourceAmount: product.secondSourceAmount
+        cost: product.cost
       }
     });
   }
@@ -256,8 +254,6 @@ export const createReimbursementProducts = async (
       data: {
         name: product.name,
         cost: product.cost,
-        firstSourceAmount: product.firstSourceAmount,
-        secondSourceAmount: product.secondSourceAmount,
         reimbursementRequestId,
         reimbursementProductReasonId: reimbursementProductReason.reimbursementProductReasonId
       }
@@ -280,8 +276,6 @@ export const createReimbursementProducts = async (
         name: product.name,
         cost: product.cost,
         reimbursementRequestId,
-        firstSourceAmount: product.firstSourceAmount,
-        secondSourceAmount: product.secondSourceAmount,
         reimbursementProductReasonId: reimbursementProductReason.reimbursementProductReasonId
       }
     });
