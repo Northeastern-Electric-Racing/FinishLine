@@ -216,13 +216,17 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
           otherReimbursementProducts.push({
             reason: product.reason as OtherProductReason,
             cost: product.cost,
-            name: product.name
+            name: product.name,
+            firstSourceAmount: product.firstSourceAmount ?? 0,
+            secondSourceAmount: product.secondSourceAmount ?? 0
           });
         } else {
           wbsReimbursementProducts.push({
             reason: product.reason as WbsNumber,
             cost: product.cost,
-            name: product.name
+            name: product.name,
+            firstSourceAmount: product.firstSourceAmount ?? 0,
+            secondSourceAmount: product.secondSourceAmount ?? 0
           });
         }
       });

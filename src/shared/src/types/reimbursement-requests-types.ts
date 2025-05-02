@@ -80,6 +80,8 @@ export interface ReimbursementProduct {
   reimbursementProductId: string;
   name: string;
   cost: number;
+  firstSourceAmount?: number;
+  secondSourceAmount?: number;
   reimbursementProductReason: ReimbursementProductReason;
 }
 
@@ -104,6 +106,8 @@ export interface AccountCode {
 }
 
 export interface ReimbursementProductCreateArgs {
+  firstSourceAmount?: number;
+  secondSourceAmount?: number;
   id?: string;
   name: string;
   cost: number;
@@ -117,10 +121,14 @@ export interface ReimbursementProductFormArgs extends ReimbursementProductCreate
 
 export interface OtherReimbursementProductCreateArgs extends ReimbursementProductCreateArgs {
   reason: OtherProductReason;
+  firstSourceAmount?: number;
+  secondSourceAmount?: number;
 }
 
 export interface WbsReimbursementProductCreateArgs extends ReimbursementProductCreateArgs {
   reason: WbsNumber;
+  firstSourceAmount?: number;
+  secondSourceAmount?: number;
 }
 
 export interface ValidatedWbsReimbursementProductCreateArgs extends ReimbursementProductCreateArgs {

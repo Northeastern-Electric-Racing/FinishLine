@@ -27,7 +27,9 @@ const receiptTransformer = (receipt: Receipt): Receipt => {
 
 const reimbursementProductTransformer = (product: ReimbursementProduct): ReimbursementProduct => {
   return {
-    ...product
+    ...product,
+    firstSourceAmount: product.firstSourceAmount ?? 2222222,
+    secondSourceAmount: product.secondSourceAmount ?? 2222222
   };
 };
 
