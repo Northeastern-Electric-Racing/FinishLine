@@ -1129,7 +1129,7 @@ describe('Part Review Popups', () => {
     expect(updated.description).toBe('Updated Description');
     expect(updated.xCoord).toBe(30);
     expect(updated.yCoord).toBe(40);
-    expect(updated.fileIndex).toBe(0);
+    expect(updated.fileIndex).toBe(1);
 
     await PartReviewService.deletePartReviewPopup(popup.partReviewPopupId, superman, orgId);
 
