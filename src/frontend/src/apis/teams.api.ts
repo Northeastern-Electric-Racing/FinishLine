@@ -28,9 +28,7 @@ export const getSingleTeam = (id: string) => {
 };
 
 export const getUsersTeams = () => {
-  return axios.get<Team[]>(apiUrls.usersTeams(), {
-    transformResponse: (data) => JSON.parse(data).map(teamTransformer)
-  });
+  return axios.get<Team[]>(apiUrls.usersTeams());
 };
 
 export const setTeamMembers = (id: string, userIds: string[]) => {

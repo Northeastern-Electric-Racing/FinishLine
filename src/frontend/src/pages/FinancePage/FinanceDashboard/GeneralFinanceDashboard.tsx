@@ -34,8 +34,6 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
     return <LoadingIndicator />;
   }
 
-  console.log(allTeams);
-
   const datePickerStyle = {
     width: 120,
     height: 36,
@@ -123,6 +121,14 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
       />
     </Box>
   );
+
+  if (allTeams.length === 0) {
+    return (
+      <PageLayout title={`Finance Budget Overview`} headerRight={dates}>
+        <Box mt={4}></Box>
+      </PageLayout>
+    );
+  }
 
   if (allTeams.length === 1) {
     return (

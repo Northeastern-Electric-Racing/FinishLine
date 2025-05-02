@@ -944,7 +944,6 @@ export const useGetAllReimbursementRequestData = (reimbursementRequestData: Reim
     ['reimbursement-request-data', reimbursementRequestData.endDate, reimbursementRequestData.startDate],
     async () => {
       const { data } = await getAllReimbursementRequestData(reimbursementRequestData);
-      console.log('Fetched RR data:', data);
       return data;
     }
   );

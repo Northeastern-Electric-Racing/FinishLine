@@ -114,18 +114,18 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
     const { payload } = props;
 
     return (
-      <Box style={legendContainerStyle}>
+      <Box sx={legendContainerStyle}>
         <Button sx={buttonStyle} onClick={() => setIsLegendOpen(!isLegendOpen)}>
           <Typography fontSize="18px"> Total Balance </Typography>
           {isLegendOpen ? <ArrowDropUp /> : <ArrowDropDownIcon />}
         </Button>
-        <List style={legendListStyle}>
+        <List sx={legendListStyle}>
           {payload.map((entry: any, index: number) => {
             const isExpanded = expandedItems.includes(index);
             return (
               <Box key={`item-${index}`}>
                 <ListItem
-                  style={{
+                  sx={{
                     display: 'flex',
                     alignItems: 'center',
                     marginBottom: '16px',
@@ -137,7 +137,7 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
                   onClick={() => toggleItemExpand(index)}
                 >
                   <Typography
-                    style={{
+                    sx={{
                       display: 'inline-block',
                       width: '18px',
                       height: '18px',
@@ -154,7 +154,7 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
                 </ListItem>
                 {isExpanded && (
                   <Box
-                    style={{
+                    sx={{
                       marginLeft: '60px',
                       marginBottom: '5px',
                       marginTop: '-8px',
@@ -175,7 +175,7 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
 
   return (
     <Box
-      style={{
+      sx={{
         background: 'transparent',
         display: 'flex',
         gap: '20px',
@@ -187,7 +187,7 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
     >
       {isDataEmpty ? (
         <Box sx={{ width: '300px', minWidth: '200px' }}>
-          <Typography variant="h6" color="textSecondary" align="left" style={{ flex: '1', marginTop: '20px' }}>
+          <Typography variant="h6" color="textSecondary" align="left" sx={{ flex: '1', marginTop: '20px' }}>
             No data available
           </Typography>
         </Box>

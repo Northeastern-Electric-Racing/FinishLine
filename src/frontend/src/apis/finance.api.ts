@@ -557,7 +557,6 @@ export const getReimbursementRequestCategoryData = (payload: ReimbursementReques
 };
 
 export const getAllReimbursementRequestData = (payload: ReimbursementRequestDataPayload) => {
-  console.log('GET URL:', apiUrls.getAllReimbursementRequestData(payload.startDate, payload.endDate));
   return axios.get<ReimbursementRequestData[]>(apiUrls.getAllReimbursementRequestData(payload.startDate, payload.endDate), {
     transformResponse: (data) => JSON.parse(data) as ReimbursementRequestData[]
   });
