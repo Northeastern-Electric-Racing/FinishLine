@@ -494,7 +494,6 @@ export default class WbsElementTemplatesService {
       },
       ...getProjectTemplateQueryArgs(organization.organizationId)
     });
-
     for (const workPackageTemplate of workPackageTemplates) {
       const createdWorkPackageTemplate = await this.createWorkPackageTemplate(
         creator,
@@ -505,7 +504,8 @@ export default class WbsElementTemplatesService {
         workPackageTemplate.duration ?? null,
         workPackageTemplate.descriptionBullets,
         workPackageTemplate.blockedBy,
-        organization
+        organization,
+        workPackageTemplate.workPackageTemplateId
       );
 
       await prisma.project_Template.update({

@@ -3,7 +3,7 @@ import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import { Box, Stack } from '@mui/system';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
-import { ProjectTemplateApiInputs } from '../../apis/wbs-templates.api';
+import { ProjectTemplateApiInputs, WorkPackageTemplateApiInputs } from '../../apis/wbs-templates.api';
 import { NERButton } from '../../components/NERButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import PageLayout from '../../components/PageLayout';
@@ -18,6 +18,7 @@ import { AttachMoney } from '@mui/icons-material';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
+import { WorkPackageTemplate } from 'shared';
 
 export interface ProjectTemplateFormViewProps {
   exitActiveMode: () => void;
@@ -68,32 +69,6 @@ const ProjectTemplateFormView: React.FC<ProjectTemplateFormViewProps> = ({
     remove: removeWorkPackageTemplate
   } = useFieldArray({ control, name: 'workPackageTemplates' });
 
-  // detects cycles in the work package template blockedBy fields
-  const detectCycle = useCallback((workPackages: ProjectTemplateApiInputs['workPackageTemplates']) => {
-    const visited = new Set<string>();
-    const stack = new Set<string>();
-
-    const visit = (id: string): boolean => {
-      if (stack.has(id)) return true;
-      if (visited.has(id)) return false;
-
-      visited.add(id);
-      stack.add(id);
-
-      const workPackage = workPackages.find((wp) => wp.workPackageTemplateId === id);
-      if (workPackage) {
-        for (const blockedById of workPackage.blockedBy) {
-          if (visit(blockedById)) return true;
-        }
-      }
-
-      stack.delete(id);
-      return false;
-    };
-
-    return workPackages.some((wp) => visit(wp.workPackageTemplateId!));
-  }, []);
-
   if (!teams || teamsLoading) return <LoadingIndicator />;
 
   if (teamsIsError) return <ErrorPage message={teamsError.message} />;
@@ -102,9 +77,57 @@ const ProjectTemplateFormView: React.FC<ProjectTemplateFormViewProps> = ({
     const { templateName, templateNotes, projectName, workPackageTemplates, descriptionBullets, budget, teams, summary } =
       data;
 
-    if (detectCycle(workPackageTemplates)) {
-      toast.error('Error: Circular blocker relationship detected in work package templates');
-      return;
+    let sortedTemplates;
+
+    try {
+      // Topologically sort the templates by blocking relationships
+      sortedTemplates = (() => {
+        const templateMap = new Map<string, WorkPackageTemplateApiInputs[][0]>();
+        const inDegree = new Map<string, number>();
+        const result: WorkPackageTemplateApiInputs[] = [];
+
+        // Initialize the maps
+        workPackageTemplates.forEach((template) => {
+          templateMap.set(template.workPackageTemplateId!, template);
+          inDegree.set(template.workPackageTemplateId!, 0);
+        });
+
+        // Calculate in-degrees
+        workPackageTemplates.forEach((template) => {
+          template.blockedBy.forEach((blockerId) => {
+            inDegree.set(blockerId, (inDegree.get(blockerId) || 0) + 1);
+          });
+        });
+
+        // Collect work packages with no blockers
+        const queue = workPackageTemplates.filter((template) => inDegree.get(template.workPackageTemplateId!) === 0);
+
+        // Process the queue
+        while (queue.length > 0) {
+          const template = queue.shift()!;
+          result.push(template);
+
+          template.blockedBy.forEach((blockerId) => {
+            const degree = inDegree.get(blockerId)! - 1;
+            inDegree.set(blockerId, degree);
+            if (degree === 0) {
+              queue.push(templateMap.get(blockerId)!);
+            }
+          });
+        }
+
+        // Check for cycles
+        if (result.length !== workPackageTemplates.length) {
+          throw new Error('Circular blockers detected in WP templates');
+        }
+
+        return result;
+      })().reverse();
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+        return;
+      }
     }
 
     try {
@@ -112,7 +135,7 @@ const ProjectTemplateFormView: React.FC<ProjectTemplateFormViewProps> = ({
         templateName,
         templateNotes,
         projectName,
-        workPackageTemplates,
+        workPackageTemplates: sortedTemplates!,
         descriptionBullets,
         budget,
         teams,
