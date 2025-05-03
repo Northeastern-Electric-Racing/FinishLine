@@ -3,10 +3,11 @@ import { validateWBS, wbsPipe } from 'shared';
 import PageLayout from '../../components/PageLayout';
 import { routes } from '../../utils/routes';
 import { useParams } from 'react-router-dom';
-import { useSinglePart } from '../../hooks/part-review.hooks';
+import { usePartsFromProject, useSinglePart } from '../../hooks/part-review.hooks';
 import { useSingleProject } from '../../hooks/projects.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
+import PartActionsMenu from './Components/PartActionsMenu';
 
 const PartPage: React.FC = () => {
   interface ParamTypes {
@@ -43,6 +44,7 @@ const PartPage: React.FC = () => {
         { name: `${wbsPipe(project.wbsNum)} - ${project.name}`, route: `${routes.PROJECTS}/${wbsNum}` },
         { name: 'Files', route: `${routes.PROJECTS}/${wbsNum}/parts-review` }
       ]}
+      // headerRight={<PartActionsMenu part={part} partsInProject={} wbsNum={wbsNum} />}
     >
       <Box>
         <Typography>Part: {part.commonName}</Typography>
