@@ -11,7 +11,6 @@ import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import DeleteIcon from '@mui/icons-material/Delete';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import ReceiptIcon from '@mui/icons-material/Receipt';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import SpeedIcon from '@mui/icons-material/Speed';
@@ -20,7 +19,7 @@ import StoreIcon from '@mui/icons-material/Store';
 import SellIcon from '@mui/icons-material/Sell';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 
-import { Grid, Typography, useTheme, Link, IconButton, ListItemIcon } from '@mui/material';
+import { Typography, useTheme, Link, IconButton } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -28,7 +27,6 @@ import { ReimbursementRequest, isAdmin, isHead } from 'shared';
 import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
 import NERModal from '../../../components/NERModal';
 import PageLayout from '../../../components/PageLayout';
-import VerticalDetailDisplay from '../../../components/VerticalDetailDisplay';
 import {
   useDeleteReimbursementRequest,
   useDenyReimbursementRequest,
@@ -40,14 +38,7 @@ import {
 } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
-import {
-  centsToDollar,
-  codeAndRefundSourceName,
-  datePipe,
-  dateUndefinedPipe,
-  fullNamePipe,
-  undefinedPipe
-} from '../../../utils/pipes';
+import { centsToDollar, codeAndRefundSourceName, fullNamePipe, undefinedPipe } from '../../../utils/pipes';
 import {
   imageDownloadUrl,
   imageFileUrl,
@@ -65,7 +56,6 @@ import AddSABONumberModal from './AddSABONumberModal';
 import ReimbursementProductsView from './ReimbursementProductsView';
 import SubmitToSaboModal from './SubmitToSaboModal';
 import DownloadIcon from '@mui/icons-material/Download';
-import ReimbursementRequestStatusPill from '../../../components/ReimbursementRequestStatusPill';
 import CheckList from '../../../components/CheckList';
 import MarkDeliveredModal from './MarkDeliveredModal';
 
@@ -75,7 +65,6 @@ interface ReimbursementRequestDetailsViewProps {
 
 const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewProps> = ({ reimbursementRequest }) => {
   const theme = useTheme();
-  const totalCostBackgroundColor = theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200];
   const user = useCurrentUser();
   const history = useHistory();
   const [addSaboNumberModalShow, setAddSaboNumberModalShow] = useState<boolean>(false);

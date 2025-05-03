@@ -200,7 +200,6 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       // For each product, if multiple refund sources are enabled, the `cost` field represents
       // the total amount from the first refund source amount (firstSourceAmount) and second refund source (secondSourceAmount) of that product.
       // If only one refund source is present, the `cost` reflects the refund source amount for that product, and firstSourceAmount and secondSourceAmount are left as 0 since they will not needed for this scenario.
-      const indexCode = indexCodes?.find((code) => code.indexCodeId === data.indexCodeId);
 
       const reimbursementProducts = data.reimbursementProducts.map((product: ReimbursementProductFormArgs) => {
         return {
@@ -213,6 +212,9 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
 
       const otherReimbursementProducts: OtherReimbursementProductCreateArgs[] = [];
       const wbsReimbursementProducts: WbsReimbursementProductCreateArgs[] = [];
+
+      // find our index code
+      const indexCode = indexCodes?.find((code) => code.indexCodeId === data.indexCodeId);
 
       reimbursementProducts.forEach((product) => {
         let firstSourceBudget = product.firstSourceAmount;
