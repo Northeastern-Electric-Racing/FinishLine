@@ -58,7 +58,7 @@ const PartReviewStatusPill = (status: Review_Status) => {
 /**
  * get status color of a reviewer
  */
-export function getReviewerDotColor(data: Part, reviewerId: String) {
+function getReviewerDotColor(data: Part, reviewerId: String) {
   const hasReviewed = data.submissions.some((submission) =>
     submission.reviews.some((review) => review.userCreated.userId === reviewerId && review.completedAt)
   );
