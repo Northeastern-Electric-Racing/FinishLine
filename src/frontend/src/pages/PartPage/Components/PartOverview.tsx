@@ -112,7 +112,7 @@ interface PartPageOverviewProps {
   part: Part;
 }
 
-const PartPageOverview: React.FC<PartPageOverviewProps> = ({ part }) => {
+const PartOverview: React.FC<PartPageOverviewProps> = ({ part }: PartPageOverviewProps) => {
   return (
     <Box
       sx={{
@@ -176,4 +176,4 @@ const PartPageOverview: React.FC<PartPageOverviewProps> = ({ part }) => {
   );
 };
 
-export default PartPageOverview;
+export default PartOverview;

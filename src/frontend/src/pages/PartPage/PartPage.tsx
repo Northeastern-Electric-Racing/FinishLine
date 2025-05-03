@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 import PDFViewer from './Components/PdfDisplay';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import PartSubmissionDetails from './Components/PartSubmissionDetails';
-import PartPageOverview from './Components/PartPageOverview';
+import PartOverview from './Components/PartOverview';
 import PartHistoryView from './Components/PartHistoryView';
 import ReviewSidebar from './Components/ReviewPage';
 
@@ -199,7 +199,7 @@ const PartPage: React.FC = () => {
         {/* either display regular review/submission or in progress review */}
         {!inReview() && (
           <Grid item maxWidth={'35%'}>
-            <PartPageOverview part={part} />
+            <PartOverview part={part} />
             {/* details can only display specific submission / review */}
             {part.submissions.length !== 0 && (
               <PartSubmissionDetails submission={part.submissions[subIndex]} reviewIndex={reviewIndex} />
