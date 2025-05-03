@@ -8,7 +8,7 @@ import {
   wonderwomanGuest,
   wonderwomanSettings
 } from '../test-data/users.test-data';
-import AnnouncementService from '../../src/services/announcement.service';
+import AnnouncementService from '../../src/services/announcement.services';
 import { NotFoundException } from '../../src/utils/errors.utils';
 
 describe('announcement tests', () => {

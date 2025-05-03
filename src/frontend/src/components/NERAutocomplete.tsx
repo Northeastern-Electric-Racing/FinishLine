@@ -64,6 +64,7 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
         }}
         placeholder={placeholder}
         required={required}
+        error={!!errorMessage}
       />
     );
   };

@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import AnnouncementService from '../services/announcement.service';
+import AnnouncementService from '../services/announcement.services';
 
 export default class AnnouncementController {
   static async getUserUnreadAnnouncements(req: Request, res: Response, next: NextFunction) {

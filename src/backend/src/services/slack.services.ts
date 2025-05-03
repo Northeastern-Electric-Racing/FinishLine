@@ -1,5 +1,5 @@
 import { getChannelName, getUserName } from '../integrations/slack';
-import AnnouncementService from './announcement.service';
+import AnnouncementService from './announcement.services';
 import { Announcement } from 'shared';
 import prisma from '../prisma/prisma';
 import { blockToMentionedUsers, blockToString } from '../utils/slack.utils';

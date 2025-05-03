@@ -37,7 +37,7 @@ const TeamsPage: React.FC = () => {
           ))}
         </Grid>
       </PageLayout>
-      <PageLayout title="Archived Teams">
+      <PageLayout useTitleForHelmet={false} title="Archived Teams">
         <Grid container spacing={2}>
           {archivedTeams.map((archivedTeam) => (
             <Grid item key={archivedTeam.teamId}>

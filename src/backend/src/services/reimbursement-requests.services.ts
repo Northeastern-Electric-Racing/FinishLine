@@ -23,15 +23,15 @@ import {
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
-  isUserAdminOrOnFinance,
   createReimbursementProducts,
   isUserLeadOrHeadOfFinanceTeam,
   removeDeletedReceiptPictures,
   updateReimbursementProducts,
   validateReimbursementProducts,
   validateUserEditRRPermissions,
-  validateUserIsPartOfFinanceTeamOrAdmin,
-  validateRefund
+  validateRefund,
+  isUserHeadOrOnFinance,
+  validateUserIsPartOfFinanceTeamOrHead
 } from '../utils/reimbursement-requests.utils';
 import {
   AccessDeniedAdminOnlyException,
@@ -99,7 +99,7 @@ export default class ReimbursementRequestService {
    * @returns All the reimbursements in the database
    */
   static async getAllReimbursements(user: User, organization: Organization): Promise<Reimbursement[]> {
-    await isUserAdminOrOnFinance(user, organization.organizationId);
+    await isUserHeadOrOnFinance(user, organization.organizationId);
 
     const reimbursements = await prisma.reimbursement.findMany({
       where: {
@@ -196,6 +196,7 @@ export default class ReimbursementRequestService {
 
     await sendReimbursementRequestCreatedNotificationAndCreateMessageInfo(
       createdReimbursementRequest.reimbursementRequestId,
+      createdReimbursementRequest.identifier,
       recipient.userId,
       organization.organizationId
     );
@@ -422,7 +423,7 @@ export default class ReimbursementRequestService {
    * @returns reimbursement requests with no advisor approved reimbursement status
    */
   static async getPendingAdvisorList(requester: User, organization: Organization): Promise<ReimbursementRequest[]> {
-    await validateUserIsPartOfFinanceTeamOrAdmin(requester, organization.organizationId);
+    await validateUserIsPartOfFinanceTeamOrHead(requester, organization.organizationId);
 
     const requestsPendingAdvisors = await prisma.reimbursement_Request.findMany({
       where: {
@@ -457,7 +458,7 @@ export default class ReimbursementRequestService {
 
     if (!organization) throw new NotFoundException('Organization', organizationId);
 
-    await validateUserIsPartOfFinanceTeamOrAdmin(sender, organizationId);
+    await validateUserIsPartOfFinanceTeamOrHead(sender, organizationId);
 
     if (saboNumbers.length === 0) throw new HttpException(400, 'Need to send at least one Sabo #!');
 
@@ -529,7 +530,7 @@ export default class ReimbursementRequestService {
     submitter: User,
     organization: Organization
   ) {
-    await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organization.organizationId);
+    await validateUserIsPartOfFinanceTeamOrHead(submitter, organization.organizationId);
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId }
     });
@@ -679,7 +680,7 @@ export default class ReimbursementRequestService {
    * @returns the 'deleted' account code
    */
   static async deleteAccountCode(accountCodeId: string, submitter: User, organization: Organization) {
-    await isUserAdminOrOnFinance(submitter, organization.organizationId);
+    await isUserHeadOrOnFinance(submitter, organization.organizationId);
 
     const accountCode = await ReimbursementRequestService.getSingleAccountCode(accountCodeId, organization);
 
@@ -777,7 +778,7 @@ export default class ReimbursementRequestService {
    * @returns an array of the prisma version of the reimbursement requests transformed to the shared version
    */
   static async getAllReimbursementRequests(user: User, organization: Organization): Promise<ReimbursementRequest[]> {
-    await isUserAdminOrOnFinance(user, organization.organizationId);
+    await isUserHeadOrOnFinance(user, organization.organizationId);
 
     const reimbursementRequests = await prisma.reimbursement_Request.findMany({
       where: { dateDeleted: null, accountCode: { organizationId: organization.organizationId } },
@@ -844,7 +845,7 @@ export default class ReimbursementRequestService {
     submitter: User,
     organization: Organization
   ) {
-    await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organization.organizationId);
+    await validateUserIsPartOfFinanceTeamOrHead(submitter, organization.organizationId);
 
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
@@ -901,7 +902,7 @@ export default class ReimbursementRequestService {
       throw new InvalidOrganizationException('Reimbursement Request');
 
     try {
-      await validateUserIsPartOfFinanceTeamOrAdmin(user, organization.organizationId);
+      await validateUserIsPartOfFinanceTeamOrHead(user, organization.organizationId);
     } catch {
       if (user.userId !== reimbursementRequest.recipientId)
         throw new AccessDeniedException('You do not have access to this reimbursement request');
@@ -969,7 +970,7 @@ export default class ReimbursementRequestService {
    * @returns the created reimbursment status
    */
   static async approveReimbursementRequest(reimbursementRequestId: string, submitter: User, organization: Organization) {
-    await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organization.organizationId);
+    await validateUserIsPartOfFinanceTeamOrHead(submitter, organization.organizationId);
 
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
@@ -1020,12 +1021,10 @@ export default class ReimbursementRequestService {
    *
    * @param reimbursementRequestId the id of the reimbursement request to deny
    * @param submitter the user who is denying the reimbursement request
-   * @param organizationId the organization the user is currently in
+   * @param organization the organization the user is currently in
    * @returns the created reimbursment status
    */
   static async denyReimbursementRequest(reimbursementRequestId: string, submitter: User, organization: Organization) {
-    await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organization.organizationId);
-
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
       include: {
@@ -1045,6 +1044,10 @@ export default class ReimbursementRequestService {
 
     if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.REIMBURSED)) {
       throw new HttpException(400, 'This reimbursement request has already been reimbursed');
+    }
+
+    if (submitter.userId !== reimbursementRequest.recipientId) {
+      await validateUserIsPartOfFinanceTeamOrHead(submitter, organization.organizationId);
     }
 
     const reimbursementStatus = await prisma.reimbursement_Status.create({
@@ -1080,7 +1083,7 @@ export default class ReimbursementRequestService {
    * @returns a buffer of the image data and the image type
    */
   static async downloadReceiptImage(fileId: string, submitter: User, organization: Organization) {
-    await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organization.organizationId);
+    await validateUserIsPartOfFinanceTeamOrHead(submitter, organization.organizationId);
 
     const fileData = await downloadImageFile(fileId);
 
@@ -1098,7 +1101,7 @@ export default class ReimbursementRequestService {
    * @returns the updated vendor
    */
   static async editVendor(name: string, vendorId: string, submitter: User, organization: Organization) {
-    await isUserAdminOrOnFinance(submitter, organization.organizationId);
+    await isUserHeadOrOnFinance(submitter, organization.organizationId);
 
     const oldVendor = await ReimbursementRequestService.getSingleVendor(vendorId, organization);
     if (oldVendor.name === name) throw new HttpException(400, 'Vendor name is the same as the current name');
@@ -1125,7 +1128,7 @@ export default class ReimbursementRequestService {
    * @returns the 'deleted' vendor
    */
   static async deleteVendor(vendorId: string, submitter: User, organization: Organization) {
-    await isUserAdminOrOnFinance(submitter, organization.organizationId);
+    await isUserHeadOrOnFinance(submitter, organization.organizationId);
 
     const vendor = await ReimbursementRequestService.getSingleVendor(vendorId, organization);
 

@@ -24,14 +24,14 @@ export const getToReviewChangeRequests = () => {
   });
 };
 
-export const getUnreviewedChangeRequests = () => {
-  return axios.get<ChangeRequest[]>(apiUrls.unreviewedChangeRequests(), {
+export const getUnreviewedChangeRequests = (wbsNum?: WbsNumber) => {
+  return axios.get<ChangeRequest[]>(apiUrls.unreviewedChangeRequests(wbsNum), {
     transformResponse: (data) => JSON.parse(data).map(changeRequestTransformer)
   });
 };
 
-export const getApprovedChangeRequests = () => {
-  return axios.get<ChangeRequest[]>(apiUrls.approvedChangeRequests(), {
+export const getApprovedChangeRequests = (wbsNum?: WbsNumber) => {
+  return axios.get<ChangeRequest[]>(apiUrls.approvedChangeRequests(wbsNum), {
     transformResponse: (data) => JSON.parse(data).map(changeRequestTransformer)
   });
 };
