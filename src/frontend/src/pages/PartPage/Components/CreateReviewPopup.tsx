@@ -19,7 +19,7 @@ interface ReviewPopupProps {
 
 const schema = yup.object().shape({
   title: yup.string().required('Title is Required!'),
-  description: yup.string()
+  description: yup.string().optional()
 });
 
 const ReviewPopup: React.FC<ReviewPopupProps> = ({
@@ -39,6 +39,7 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
 
   useEffect(() => {
     setTextEdittor(custom);
+    reset();
   }, [custom]);
 
   const {
@@ -61,7 +62,6 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
         title: '',
         description: ''
       });
-      setTextEdittor(false);
     } catch (err: unknown) {
       if (err instanceof Error) {
         toast.error(err.message);
@@ -169,12 +169,12 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
                 color="inherit"
                 size="small"
                 onClick={() => {
-                  onDelete();
                   reset({
                     title: '',
                     description: ''
                   });
-                  setTextEdittor(false);
+                  setTextEdittor(custom);
+                  onDelete();
                 }}
                 sx={{ color: 'grey.500', borderColor: 'grey.500' }}
                 type="button"

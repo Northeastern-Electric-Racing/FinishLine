@@ -126,7 +126,7 @@ partsRouter.post(
   body('yCoord').isFloat(),
   intMinZero(body('fileIndex')),
   nonEmptyString(body('title')),
-  nonEmptyString(body('description')),
+  body('description').optional().isString(),
 
   validateInputs,
   PartReviewController.createPartReviewPopup

@@ -1054,7 +1054,7 @@ export default class PartReviewService {
         yCoord,
         fileIndex,
         title,
-        description
+        description: description ?? ''
       },
       ...getPartReviewQueryArgs
     });

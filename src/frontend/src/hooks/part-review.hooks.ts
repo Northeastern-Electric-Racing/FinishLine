@@ -440,7 +440,6 @@ export const useCreateReviewPopup = () => {
   return useMutation<Part_Review_Popup, Error, { reviewId: string; payload: PopupPayload }>(
     ['parts', 'popup', 'create'],
     async (data) => {
-      console.log('hook recieved');
       const response = await createReviewPopup(data.reviewId, data.payload);
       return response.data;
     },
