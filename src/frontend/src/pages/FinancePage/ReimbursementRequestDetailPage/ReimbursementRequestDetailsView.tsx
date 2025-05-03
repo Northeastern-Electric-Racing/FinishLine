@@ -460,7 +460,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     { label: 'Expense Type', icon: <CurrencyExchangeIcon fontSize="small" /> }
   ];
 
-  const multipleRefundSources = reimbursementRequest.reimbursementProducts.some(
+  // checks whether both cash and budget are used in the reimbursement request
+  const useBothRefundSources = reimbursementRequest.reimbursementProducts.some(
     (product) => product.firstSourceAmount > 0 && product.secondSourceAmount > 0
   );
 
@@ -494,7 +495,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     { content: reimbursementRequest.vendor.name },
     { content: `${undefinedPipe(reimbursementRequest.saboId)}` },
     {
-      content: multipleRefundSources
+      content: useBothRefundSources
         ? reversedIndexCodes?.map((code) => codeAndRefundSourceName(code)).join(', ')
         : codeAndRefundSourceName(reimbursementRequest.indexCode)
     },
