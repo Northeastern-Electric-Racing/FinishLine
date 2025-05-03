@@ -2015,8 +2015,8 @@ const performSeed: () => Promise<void> = async () => {
           workPackageNumber: 0
         },
         cost: 200000,
-        firstSourceAmount: 10,
-        secondSourceAmount: 20
+        budgetAmount: 10,
+        cashAmount: 20
       },
       {
         name: 'BLUE',
@@ -2026,8 +2026,8 @@ const performSeed: () => Promise<void> = async () => {
           workPackageNumber: 0
         },
         cost: 400000,
-        firstSourceAmount: 10,
-        secondSourceAmount: 20
+        budgetAmount: 10,
+        cashAmount: 20
       }
     ],
     accountCode.accountCodeId,
@@ -2049,8 +2049,8 @@ const performSeed: () => Promise<void> = async () => {
           workPackageNumber: 0
         },
         cost: 10000,
-        firstSourceAmount: 10,
-        secondSourceAmount: 20
+        budgetAmount: 10,
+        cashAmount: 20
       }
     ],
     accountCode.accountCodeId,

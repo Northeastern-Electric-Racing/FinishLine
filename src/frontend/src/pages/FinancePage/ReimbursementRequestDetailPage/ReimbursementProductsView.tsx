@@ -20,7 +20,7 @@ const ReimbursementProductsView: React.FC<ReimbursementRequestProductsViewProps>
   // Placeholder until support for multiple refund sources is available
   // Currently, does not seem to be the case, as cost is the only field
   const multipleRefundSources = reimbursementRequest.reimbursementProducts.some(
-    (product) => product.firstSourceAmount > 0 && product.secondSourceAmount > 0
+    (product) => product.budgetAmount > 0 && product.cashAmount > 0
   );
 
   return (
@@ -65,7 +65,7 @@ const ReimbursementProductsView: React.FC<ReimbursementRequestProductsViewProps>
                 {multipleRefundSources && (
                   <TableCell>
                     {uniqueWbsElementsWithProducts.get(key)?.map((product) => {
-                      return `$${centsToDollar(product.firstSourceAmount)} / $${centsToDollar(product.secondSourceAmount)}`;
+                      return `$${centsToDollar(product.budgetAmount)} / $${centsToDollar(product.cashAmount)}`;
                     })}
                   </TableCell>
                 )}

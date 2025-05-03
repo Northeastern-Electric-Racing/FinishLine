@@ -223,8 +223,6 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
         // Slightly messy fix to deal with the fact that while we only have 2 sources,
         // their order in the form is not guaranteed to be the same every time.
         // Therefore, this just makes a check to see if they need to be swapped for display purposes.
-        // Note: firstSourceAmount and secondSourceAmount should really be changed to budgetAmount and cashAmount
-        // in the future.
         if (indexCode?.name === 'CASH') {
           firstSourceBudget = product.secondSourceAmount;
           secondSourceBudget = product.firstSourceAmount;
@@ -235,16 +233,16 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
             reason: product.reason as OtherProductReason,
             cost: product.cost,
             name: product.name,
-            firstSourceAmount: firstSourceBudget,
-            secondSourceAmount: secondSourceBudget
+            budgetAmount: firstSourceBudget,
+            cashAmount: secondSourceBudget
           });
         } else {
           wbsReimbursementProducts.push({
             reason: product.reason as WbsNumber,
             cost: product.cost,
             name: product.name,
-            firstSourceAmount: firstSourceBudget,
-            secondSourceAmount: secondSourceBudget
+            budgetAmount: firstSourceBudget,
+            cashAmount: secondSourceBudget
           });
         }
       });

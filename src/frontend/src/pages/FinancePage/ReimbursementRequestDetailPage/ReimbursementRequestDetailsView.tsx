@@ -462,7 +462,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
 
   // checks whether both cash and budget are used in the reimbursement request
   const useBothRefundSources = reimbursementRequest.reimbursementProducts.some(
-    (product) => product.firstSourceAmount > 0 && product.secondSourceAmount > 0
+    (product) => product.budgetAmount > 0 && product.cashAmount > 0
   );
 
   // simply use all requests, since we only ever deal with budget or cash

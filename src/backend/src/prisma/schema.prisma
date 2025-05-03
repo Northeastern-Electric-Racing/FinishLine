@@ -621,8 +621,8 @@ model Reimbursement_Product {
   name                         String
   dateDeleted                  DateTime?
   cost                         Int
-  firstSourceAmount            Int                          @default(0)
-  secondSourceAmount           Int                          @default(0)
+  budgetAmount                 Int                          @default(0)
+  cashAmount                   Int                          @default(0)
   reimbursementProductReasonId String                       @unique
   reimbursementProductReason   Reimbursement_Product_Reason @relation(fields: [reimbursementProductReasonId], references: [reimbursementProductReasonId])
   reimbursementRequestId       String

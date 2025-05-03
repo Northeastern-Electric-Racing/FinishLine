@@ -254,8 +254,8 @@ export const createReimbursementProducts = async (
       data: {
         name: product.name,
         cost: product.cost,
-        firstSourceAmount: product.firstSourceAmount,
-        secondSourceAmount: product.secondSourceAmount,
+        budgetAmount: product.budgetAmount,
+        cashAmount: product.cashAmount,
         reimbursementRequestId,
         reimbursementProductReasonId: reimbursementProductReason.reimbursementProductReasonId
       }
@@ -277,8 +277,8 @@ export const createReimbursementProducts = async (
       data: {
         name: product.name,
         cost: product.cost,
-        firstSourceAmount: product.firstSourceAmount,
-        secondSourceAmount: product.secondSourceAmount,
+        budgetAmount: product.budgetAmount,
+        cashAmount: product.cashAmount,
         reimbursementRequestId,
         reimbursementProductReasonId: reimbursementProductReason.reimbursementProductReasonId
       }
