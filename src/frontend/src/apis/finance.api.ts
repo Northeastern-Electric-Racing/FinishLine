@@ -50,6 +50,7 @@ export const uploadSingleReceipt = (file: File, id: string) => {
  * @returns the created reimbursement request
  */
 export const createReimbursementRequest = (formData: CreateReimbursementRequestPayload) => {
+  console.log(formData);
   return axios.post(apiUrls.financeCreateReimbursementRequest(), formData);
 };
 

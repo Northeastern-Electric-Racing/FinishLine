@@ -11,7 +11,7 @@ import {
   WbsNumber,
   WbsReimbursementProductCreateArgs
 } from 'shared';
-import { useGetAllAccountCodes, useGetAllVendors } from '../../../hooks/finance.hooks';
+import { useGetAllAccountCodes, useGetAllIndexCodes, useGetAllVendors } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -171,6 +171,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
 
   // checking the data here instead of using isError since function doesn't ever return an error
   const { data: userSecureSettings, isLoading: checkSecureSettingsIsLoading } = useCurrentUserSecureSettings();
+  const { data: indexCodes } = useGetAllIndexCodes();
 
   // checks to make sure none of the secure settings fields are empty, indicating not properly set
   const hasSecureSettingsSet = Object.values(userSecureSettings ?? {}).every((x) => x !== '');
@@ -199,6 +200,8 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       // For each product, if multiple refund sources are enabled, the `cost` field represents
       // the total amount from the first refund source amount (firstSourceAmount) and second refund source (secondSourceAmount) of that product.
       // If only one refund source is present, the `cost` reflects the refund source amount for that product, and firstSourceAmount and secondSourceAmount are left as 0 since they will not needed for this scenario.
+      const indexCode = indexCodes?.find((code) => code.indexCodeId === data.indexCodeId);
+
       const reimbursementProducts = data.reimbursementProducts.map((product: ReimbursementProductFormArgs) => {
         return {
           ...product,
@@ -212,17 +215,34 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       const wbsReimbursementProducts: WbsReimbursementProductCreateArgs[] = [];
 
       reimbursementProducts.forEach((product) => {
+        let firstSourceBudget = product.firstSourceAmount;
+        let secondSourceBudget = product.secondSourceAmount;
+
+        // Slightly messy fix to deal with the fact that while we only have 2 sources,
+        // their order in the form is not guaranteed to be the same every time.
+        // Therefore, this just makes a check to see if they need to be swapped for display purposes.
+        // Note: firstSourceAmount and secondSourceAmount should really be changed to budgetAmount and cashAmount
+        // in the future.
+        if (indexCode?.name === 'CASH') {
+          firstSourceBudget = product.secondSourceAmount;
+          secondSourceBudget = product.firstSourceAmount;
+        }
+
         if (product.reason && 'otherProductReasonId' in product.reason) {
           otherReimbursementProducts.push({
             reason: product.reason as OtherProductReason,
             cost: product.cost,
-            name: product.name
+            name: product.name,
+            firstSourceAmount: firstSourceBudget,
+            secondSourceAmount: secondSourceBudget
           });
         } else {
           wbsReimbursementProducts.push({
             reason: product.reason as WbsNumber,
             cost: product.cost,
-            name: product.name
+            name: product.name,
+            firstSourceAmount: firstSourceBudget,
+            secondSourceAmount: secondSourceBudget
           });
         }
       });

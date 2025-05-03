@@ -32,6 +32,7 @@ import VerticalDetailDisplay from '../../../components/VerticalDetailDisplay';
 import {
   useDeleteReimbursementRequest,
   useDenyReimbursementRequest,
+  useGetAllIndexCodes,
   useLeadershipApproveReimbursementRequest,
   useMarkPendingFinance,
   useMarkReimbursementRequestAsReimbursed,
@@ -470,6 +471,16 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     { label: 'Expense Type', icon: <CurrencyExchangeIcon fontSize="small" /> }
   ];
 
+  const multipleRefundSources = reimbursementRequest.reimbursementProducts.some(
+    (product) => product.firstSourceAmount > 0 && product.secondSourceAmount > 0
+  );
+
+  // simply use all requests, since we only ever deal with budget or cash
+  const { data: indexCodeData } = useGetAllIndexCodes();
+
+  // to be consistent with the tables order of reimbursement requests
+  const reversedIndexCodes = indexCodeData?.slice().reverse() ?? [];
+
   const contentItems = [
     {
       content: statusTypes.length > 0 && (
@@ -493,7 +504,11 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     { content: `$${centsToDollar(reimbursementRequest.totalCost)}` },
     { content: reimbursementRequest.vendor.name },
     { content: `${undefinedPipe(reimbursementRequest.saboId)}` },
-    { content: codeAndRefundSourceName(reimbursementRequest.indexCode) },
+    {
+      content: multipleRefundSources
+        ? reversedIndexCodes?.map((code) => codeAndRefundSourceName(code)).join(', ')
+        : codeAndRefundSourceName(reimbursementRequest.indexCode)
+    },
     { content: accountCodePipe(reimbursementRequest.accountCode) }
   ];
 

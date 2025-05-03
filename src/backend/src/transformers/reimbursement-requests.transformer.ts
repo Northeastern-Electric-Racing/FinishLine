@@ -81,6 +81,8 @@ export const reimbursementProductTransformer = (
     reimbursementProductId: reimbursementProduct.reimbursementProductId,
     name: reimbursementProduct.name,
     cost: reimbursementProduct.cost,
+    firstSourceAmount: reimbursementProduct.firstSourceAmount,
+    secondSourceAmount: reimbursementProduct.secondSourceAmount,
     reimbursementProductReason: reimbursementProductReasonTransformer(reimbursementProduct.reimbursementProductReason)
   };
 };
