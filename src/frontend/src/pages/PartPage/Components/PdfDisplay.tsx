@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Document, Page } from 'react-pdf';
-import { pdfjs } from 'react-pdf';
+import { Document, Page, pdfjs } from 'react-pdf';
 import { Box, Typography, IconButton, Grid, Button } from '@mui/material';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
@@ -17,7 +16,8 @@ import {
   useCreateReviewPopup,
   useDeleteReviewPopup,
   useDownloadFile,
-  useUploadReviewFiles
+  useEditPartReview,
+  useUploadFile
 } from '../../../hooks/part-review.hooks';
 import DownloadButton from '../../../components/DownloadButton';
 import { NERButton } from '../../../components/NERButton';
@@ -96,7 +96,9 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
   const [fileIdx, setFileIdx] = useState(0);
   const user = useCurrentUser();
   const toast = useToast();
-  const { mutateAsync: uploadFiles } = useUploadReviewFiles();
+  const { mutateAsync: uploadFile } = useUploadFile();
+
+  const { mutateAsync: updateReview } = useEditPartReview();
 
   //re-generates the popups when the review or submission changes
   useEffect(() => {
@@ -271,7 +273,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
                 prev();
               }}
             >
-              <IconButton>
+              <IconButton disableRipple>
                 <ArrowBackIosIcon />
                 <Typography variant={'h6'}>Previous</Typography>
               </IconButton>
@@ -286,7 +288,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
                 next();
               }}
             >
-              <IconButton>
+              <IconButton disableRipple>
                 <Typography variant={'h6'}>Next</Typography>
                 <ArrowForwardIosIcon />
               </IconButton>
@@ -366,8 +368,8 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
                 }}
                 onChange={(e) => {
                   if (e.target.files) {
-                    const filesToUpload: File[] = [];
-                    [...e.target.files]?.forEach((file) => {
+                    const fileIds = review.fileIds;
+                    [...e.target.files]?.forEach(async (file) => {
                       //validate each file
                       if (file.size > MAX_FILE_SIZE) {
                         toast.error(`File "${file.name}" exceeds the maximum size limit of ${MAX_FILE_SIZE} bytes`);
@@ -381,16 +383,16 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
                         toast.error(`File names cannot be longer than 20 characters`);
                         return;
                       }
-                      filesToUpload.push(file);
-                    });
-                    //unsure no more than 5 files
-                    if (filesToUpload.length > 5) {
-                      toast.error(`Cannot upload more than 5 files`);
-                      return;
-                    }
-                    uploadFiles({
-                      reviewId: review.partReviewId,
-                      files: filesToUpload
+
+                      try {
+                        const fileId = await uploadFile(file);
+                        updateReview({
+                          partReviewId: review.partReviewId,
+                          fileIds: [...review.fileIds, fileId]
+                        });
+                      } catch (error: unknown) {
+                        toast.error('file upload failing');
+                      }
                     });
                   }
                 }}
@@ -499,7 +501,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
           >
             {/* error msgs, for non-pdfs, and then generic errors */}
             {pdfLoading && pdfLoadingError(<LoadingIndicator />)}
-            {pdfIsError && pdfLoadingError(<ErrorPage error={pdfError} />)}
+            {pdfIsError && pdfLoadingError(<Typography>Could not load pdf</Typography>)}
             {pdf &&
               pdf?.type !== 'application/pdf' &&
               pdfLoadingError(<Typography>Submission is not a pdf. Download to view</Typography>)}

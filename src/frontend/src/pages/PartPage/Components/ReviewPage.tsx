@@ -27,7 +27,7 @@ interface ReviewSidebarProps {
 
 const ReviewSidebar: React.FC<ReviewSidebarProps> = ({ submission, reviewIndex }) => {
   const [notes, setNotes] = useState(submission.reviews[reviewIndex].notes ?? '');
-  const { mutateAsync: updateReview } = useEditPartReview(submission.reviews[reviewIndex].partReviewId);
+  const { mutateAsync: updateReview } = useEditPartReview();
 
   //Produces array of strings to be shown as bullet points on review that show number of markups on each file
   const markupsStrs = () => {
@@ -48,6 +48,7 @@ const ReviewSidebar: React.FC<ReviewSidebarProps> = ({ submission, reviewIndex }
   const onFormSubmit = (status: Review_Status) => {
     return () => {
       updateReview({
+        partReviewId: submission.reviews[reviewIndex].partReviewId,
         notes,
         status,
         fileIds: submission.reviews[reviewIndex].fileIds
@@ -58,6 +59,7 @@ const ReviewSidebar: React.FC<ReviewSidebarProps> = ({ submission, reviewIndex }
   //deletes file in db
   const handleDeleteFile = (fileIdToDelete: string) => {
     updateReview({
+      partReviewId: submission.reviews[reviewIndex].partReviewId,
       notes: submission.reviews[reviewIndex].notes,
       status: Review_Status.IN_PROGRESS,
       fileIds: submission.reviews[reviewIndex].fileIds.filter((id) => id !== fileIdToDelete)

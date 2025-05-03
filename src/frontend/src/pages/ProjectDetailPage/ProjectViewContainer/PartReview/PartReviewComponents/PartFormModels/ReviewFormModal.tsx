@@ -9,17 +9,13 @@ import { Autocomplete, Button, Grid, IconButton, Typography } from '@mui/materia
 import { FormControl, FormHelperText, FormLabel, TextField } from '@mui/material';
 import ReactHookTextField from '../../../../../../components/ReactHookTextField';
 import { Delete, FileUpload } from '@mui/icons-material';
+import { useUploadFile } from '../../../../../../hooks/part-review.hooks';
 
 interface ReviewFormModalProps {
   open: boolean;
   handleClose: () => void;
   defaultValues?: PartSubmission;
-  onSubmit: (data: {
-    submissionId: string;
-    status: Review_Status;
-    notes?: string;
-    files: { name: string; file: File }[];
-  }) => void;
+  onSubmit: (data: { submissionId: string; status: Review_Status; notes?: string; fileIds: string[] }) => void;
   partsInProject: PartPreview[];
 }
 
@@ -27,33 +23,15 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProject }: ReviewFormModalProps) => {
   const toast = useToast();
+  const [files, setFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const { mutateAsync: uploadFile } = useUploadFile();
 
   const schema = yup.object().shape({
     submissionId: yup.string().required(),
     notes: yup.string().optional(),
     status: yup.string().required(),
-    files: yup
-      .array()
-      .test({
-        message: 'Cannot upload more than 5 files',
-        test: (arr) => (arr ? arr?.length <= 5 : false)
-      })
-      .test({
-        name: 'fileNameLength',
-        message: 'File name(s) can only be at most 20 characters long',
-        test: (value) => {
-          if (!value) return true;
-          return !value.some((file) => file.name.length > 20);
-        }
-      })
-      .test({
-        name: 'fileNameCharacters',
-        message: 'File name(s) should only contain letters, numbers, and dots',
-        test: (value) => {
-          if (!value) return true;
-          return !value.some((file) => !/^[\w.]+$/.test(file.name));
-        }
-      })
+    fileIds: yup.array().max(5, 'cannot upload more than 5 files for a single review')
   });
 
   const {
@@ -66,22 +44,17 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
   });
 
   const {
-    append: appendFile,
-    remove: removeFile,
-    fields: files
+    append: appendFileId,
+    remove: removeFileId,
+    fields: fileIds
   } = useFieldArray({
     control,
-    name: 'files'
+    name: 'fileIds'
   });
 
   const [selectedPartIndex, setSelectedPartIndex] = useState<number | null>(null);
 
-  const onFormSubmit = async (data: {
-    submissionId: string;
-    status: Review_Status;
-    notes?: string;
-    files: { name: string; file: File }[];
-  }) => {
+  const onFormSubmit = async (data: { submissionId: string; status: Review_Status; notes?: string; fileIds: string[] }) => {
     try {
       handleClose();
       await onSubmit({
@@ -138,16 +111,22 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
           <FormControl fullWidth>
             <FormLabel>File(s)</FormLabel>
             <Grid container>
-              {files.map((file, index) => {
+              {fileIds.map((file, index) => {
                 return (
                   <Grid key={file.id} display={'flex'} flexDirection={'row'}>
-                    <Typography>{displayName(file.name)}</Typography>
-                    <IconButton onClick={() => removeFile(index)}>
+                    <Typography>{displayName(files[index].name)}</Typography>
+                    <IconButton
+                      onClick={() => {
+                        setFiles((prevFiles) => [...prevFiles.slice(0, index), ...prevFiles.slice(index + 1)]);
+                        removeFileId(index);
+                      }}
+                    >
                       <Delete />
                     </IconButton>
                   </Grid>
                 );
               })}
+              {uploading && <Typography>Uploading...</Typography>}
               <Button
                 variant="contained"
                 color="success"
@@ -164,7 +143,11 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
                   hidden
                   onChange={(e) => {
                     if (e.target.files) {
-                      [...e.target.files]?.forEach((file) => {
+                      if ([...e.target.files]?.length > 5) {
+                        toast.error('cannot upload more than 5 files');
+                        return;
+                      }
+                      [...e.target.files]?.forEach(async (file) => {
                         if (file.size > MAX_FILE_SIZE) {
                           toast.error(`File "${file.name}" exceeds the maximum size limit of ${MAX_FILE_SIZE} bytes`);
                           return;
@@ -177,17 +160,28 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
                           toast.error(`File names cannot be longer than 20 characters`);
                           return;
                         }
-                        appendFile({
-                          name: file.name,
-                          file
-                        });
+
+                        if (files.length >= 5) {
+                          toast.error('Cannot upload more than 5 files for a single review');
+                        }
+
+                        try {
+                          setUploading(true);
+                          const fileId = await uploadFile(file);
+                          appendFileId(fileId);
+                          setFiles((prev) => [...prev, file]);
+                          setUploading(false);
+                        } catch (error: unknown) {
+                          setUploading(false);
+                          toast.error('file upload failed');
+                        }
                       });
                     }
                   }}
                 />
               </Button>
             </Grid>
-            <FormHelperText error>{errors.files?.message}</FormHelperText>
+            <FormHelperText error>{errors.fileIds?.message}</FormHelperText>
           </FormControl>
         </Grid>
         <Grid item xs={7}>

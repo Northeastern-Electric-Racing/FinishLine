@@ -212,6 +212,16 @@ export default class PartReviewService {
     return partTransformer(updatedPart);
   }
 
+  static async uploadFile(file: Express.Multer.File) {
+    const imagedata = await uploadFile(file);
+
+    if (!imagedata?.id) {
+      throw new HttpException(500, 'could not upload image');
+    }
+
+    return imagedata.id;
+  }
+
   static async updatePart(
     organizationId: string,
     partId: string,
@@ -294,6 +304,7 @@ export default class PartReviewService {
    * @param creator the creator of the review
    * @param submissionId the submission
    * @param notes optional notes on the review
+   * @param fileIds the ids of the files being added to this review
    * @param newPartStatus the new status of the part which the review is added to.
    * if this status is Reviewed or approved, the completedAt date is set to now
    * @returns the created review
@@ -303,6 +314,7 @@ export default class PartReviewService {
     creator: User,
     submissionId: string,
     newPartStatus: string,
+    fileIds: string[],
     notes: string
   ) {
     const submission = await prisma.partSubmission.findUnique({
@@ -336,6 +348,7 @@ export default class PartReviewService {
         userCreated: {
           connect: { userId: creator.userId }
         },
+        fileIds,
         notes,
         completedAt
       },
@@ -361,7 +374,7 @@ export default class PartReviewService {
     reviewId: string,
     newPartStatus: string,
     notes: string,
-    fileIds?: string[]
+    fileIds: string[]
   ) {
     const review = await prisma.partReview.findUnique({
       where: { partReviewId: reviewId },
@@ -382,7 +395,7 @@ export default class PartReviewService {
     const updatedReview = await prisma.partReview.update({
       where: { partReviewId: reviewId },
       data: {
-        notes,
+        notes: notes ? notes : review.notes,
         completedAt,
         fileIds: fileIds ? fileIds : review.fileIds
       },
@@ -402,53 +415,23 @@ export default class PartReviewService {
   }
 
   /**
-   * Uploads an array of files to a given review
-   * @param reviewId the review
-   * @param uploader the user uploading (must be creator)
-   * @param organizationId the organization
-   * @param files an array of files to upload
-   * @returns the updated review
-   */
-  static async uploadReviewFiles(reviewId: string, uploader: User, organizationId: string, files: Express.Multer.File[]) {
-    const review = await prisma.partReview.findUnique({
-      where: { partReviewId: reviewId },
-      include: { submission: { include: { part: { include: { project: { include: { wbsElement: true } } } } } } }
-    });
-
-    if (!review) throw new NotFoundException('Part Review', reviewId);
-    if (review.dateDeleted) throw new DeletedException('Part Review', reviewId);
-    if (review.submission.part.project.wbsElement.organizationId !== organizationId)
-      throw new InvalidOrganizationException('Part Review');
-
-    if (uploader.userId !== review.userCreatedId) throw new AccessDeniedException('only review creators can update reviews');
-
-    const fileIds = await Promise.all(
-      files.map(async (file) => {
-        return (await uploadFile(file)).id;
-      })
-    );
-
-    const updatedReview = await prisma.partReview.update({
-      where: { partReviewId: reviewId },
-      data: {
-        fileIds: review.fileIds.concat(fileIds)
-      },
-      ...getPartReviewQueryArgs(organizationId)
-    });
-
-    return partReviewTransformer(updatedReview);
-  }
-
-  /**
    * Creates a submission for a given part
    * @param partId the part that the submission will be added to
    * @param creator the creator
    * @param organizationId the organization
    * @param name the name of the submission
    * @param notes optional notes
+   * @param files the files in the submission
    * @returns the created submission
    */
-  static async createSubmission(partId: string, creator: User, organizationId: string, name: string, notes?: string) {
+  static async createSubmission(
+    partId: string,
+    creator: User,
+    organizationId: string,
+    name: string,
+    fileIds: string[],
+    notes?: string
+  ) {
     const part = await prisma.part.findUnique({
       where: { partId },
       include: { project: { include: { wbsElement: true } } }
@@ -461,6 +444,7 @@ export default class PartReviewService {
       data: {
         name,
         notes,
+        fileIds,
         part: {
           connect: { partId }
         },
@@ -501,49 +485,6 @@ export default class PartReviewService {
       data: {
         name,
         notes: notes ?? submission.notes
-      },
-      ...getPartSubmissionQueryArgs(organizationId)
-    });
-
-    return partSubmissionTransformer(updatedSubmission);
-  }
-
-  /**
-   * Uploads an array of files to a given submission
-   * @param submissionId the submission
-   * @param uploader the user uploading (must be creator)
-   * @param organizationId the organization
-   * @param files an array of files to upload
-   * @returns the updated submission
-   */
-  static async uploadSubmissionFiles(
-    submissionId: string,
-    uploader: User,
-    organizationId: string,
-    files: Express.Multer.File[]
-  ) {
-    const submission = await prisma.partSubmission.findUnique({
-      where: { partSubmissionId: submissionId },
-      include: { part: { include: { project: { include: { wbsElement: true } } } } }
-    });
-    if (!submission) throw new NotFoundException('Part Submission', submissionId);
-    if (submission.dateDeleted) throw new DeletedException('Part Submission', submissionId);
-    if (submission.part.project.wbsElement.organizationId !== organizationId)
-      throw new InvalidOrganizationException('Part Submission');
-
-    if (uploader.userId !== submission.userCreatedId)
-      throw new AccessDeniedException('only submission creators can update submissions');
-
-    const fileIds = await Promise.all(
-      files.map(async (file) => {
-        return (await uploadFile(file)).id;
-      })
-    );
-
-    const updatedSubmission = await prisma.partSubmission.update({
-      where: { partSubmissionId: submissionId },
-      data: {
-        fileIds: submission.fileIds.concat(fileIds)
       },
       ...getPartSubmissionQueryArgs(organizationId)
     });

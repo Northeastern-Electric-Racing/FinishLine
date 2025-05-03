@@ -14,6 +14,8 @@ partsRouter.get('/faqs', PartReviewController.getAllPartReviewFAQS);
 partsRouter.get('/by-project/:wbsNum', PartReviewController.getAllPartsForProject);
 partsRouter.get('/by-index/:wbsNum/:indexNum', PartReviewController.getPart);
 
+partsRouter.post('/upload/file', upload.single('file'), PartReviewController.uploadFile);
+
 partsRouter.post(
   '/create',
   nonEmptyString(body('wbsNum')),
@@ -32,6 +34,7 @@ partsRouter.post(
   '/review/create',
   nonEmptyString(body('submissionId')),
   body('notes').optional().isString(),
+  body('fileIds').isArray(),
   body('status').custom((value) => Object.values<string>(Review_Status).includes(value)),
   validateInputs,
   PartReviewController.createReview
@@ -40,16 +43,12 @@ partsRouter.post(
 partsRouter.post(
   '/review/:reviewId/update',
   body('notes').optional().isString(),
-  body('status').custom((value) => Object.values<string>(Review_Status).includes(value)),
+  body('fileIds').isArray().optional(),
+  body('status')
+    .custom((value) => Object.values<string>(Review_Status).includes(value))
+    .optional(),
   validateInputs,
   PartReviewController.updateReview
-);
-
-partsRouter.post(
-  '/review/:reviewId/upload-files',
-  upload.fields([{ name: 'files', maxCount: 10 }]),
-  validateInputs,
-  PartReviewController.uploadReviewFiles
 );
 
 partsRouter.post(
@@ -57,15 +56,9 @@ partsRouter.post(
   nonEmptyString(body('partId')),
   nonEmptyString(body('name')),
   body('notes').optional().isString(),
+  body('fileIds').isArray(),
   validateInputs,
   PartReviewController.createSubmission
-);
-
-partsRouter.post(
-  '/submission/:submissionId/upload-files',
-  upload.fields([{ name: 'files', maxCount: 10 }]),
-  validateInputs,
-  PartReviewController.uploadSubmissionFiles
 );
 
 partsRouter.get('/tags', PartReviewController.getAllPartTags);

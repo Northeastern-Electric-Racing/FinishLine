@@ -3,18 +3,20 @@ import { useToast } from '../../../../../../hooks/toasts.hooks';
 import * as yup from 'yup';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import React from 'react';
+import React, { useState } from 'react';
 import NERFormModal from '../../../../../../components/NERFormModal';
 import { Autocomplete, Button, Grid, IconButton, Typography } from '@mui/material';
 import { FormControl, FormHelperText, FormLabel, TextField } from '@mui/material';
 import ReactHookTextField from '../../../../../../components/ReactHookTextField';
 import { Delete, FileUpload } from '@mui/icons-material';
+import { useUploadFile } from '../../../../../../hooks/part-review.hooks';
+import LoadingIndicator from '../../../../../../components/LoadingIndicator';
 
 interface SubmissionFormModalProps {
   open: boolean;
   handleClose: () => void;
   defaultValues?: PartSubmission;
-  onSubmit: (data: { partId: string; name: string; notes?: string; files: { name: string; file: File }[] }) => void;
+  onSubmit: (data: { partId: string; name: string; notes?: string; fileIds: string[] }) => void;
   partsInProject: PartPreview[];
 }
 
@@ -27,37 +29,18 @@ const isPdf = (fileName: string) => {
 
 const SubmissionFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProject }: SubmissionFormModalProps) => {
   const toast = useToast();
+  const [files, setFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const { mutateAsync: uploadFile } = useUploadFile();
 
   const schema = yup.object().shape({
     partId: yup.string().required(),
     name: yup.string().required(),
     notes: yup.string().optional(),
-    files: yup
+    fileIds: yup
       .array()
-      .test({
-        message: 'Cannot upload more than 5 files',
-        test: (arr) => (arr ? arr?.length <= 5 : false)
-      })
-      .test({
-        message: 'Must upload at least 1 file',
-        test: (arr) => (arr ? arr?.length > 0 : false)
-      })
-      .test({
-        name: 'fileNameLength',
-        message: 'File name(s) can only be at most 20 characters long',
-        test: (value) => {
-          if (!value) return true;
-          return !value.some((file) => file.name.length > 20);
-        }
-      })
-      .test({
-        name: 'fileNameCharacters',
-        message: 'File name(s) should only contain letters, numbers, and dots',
-        test: (value) => {
-          if (!value) return true;
-          return !value.some((file) => !/^[\w.]+$/.test(file.name));
-        }
-      })
+      .min(1, 'must upload at least 1 file')
+      .max(5, 'cannot upload more than 5 files for a single submission')
   });
 
   const {
@@ -70,25 +53,21 @@ const SubmissionFormModal = ({ open, handleClose, defaultValues, onSubmit, parts
     defaultValues: {
       partId: defaultValues?.partId,
       name: defaultValues?.name,
-      notes: defaultValues?.notes
+      notes: defaultValues?.notes,
+      fileIds: defaultValues?.fileIds || []
     }
   });
 
   const {
-    append: appendFile,
-    remove: removeFile,
-    fields: files
+    append: appendFileId,
+    remove: removeFileId,
+    fields: fileIds
   } = useFieldArray({
     control,
-    name: 'files'
+    name: 'fileIds'
   });
 
-  const onFormSubmit = async (data: {
-    partId: string;
-    name: string;
-    notes?: string;
-    files: { name: string; file: File }[];
-  }) => {
+  const onFormSubmit = async (data: { partId: string; name: string; notes?: string; fileIds: string[] }) => {
     try {
       handleClose();
       await onSubmit({
@@ -143,16 +122,22 @@ const SubmissionFormModal = ({ open, handleClose, defaultValues, onSubmit, parts
           <FormControl fullWidth>
             <FormLabel>File(s)</FormLabel>
             <Grid container>
-              {files.map((file, index) => {
+              {fileIds.map((file, index) => {
                 return (
                   <Grid key={file.id} display={'flex'} flexDirection={'row'}>
-                    <Typography>{displayName(file.name)}</Typography>
-                    <IconButton onClick={() => removeFile(index)}>
+                    <Typography>{displayName(files[index].name)}</Typography>
+                    <IconButton
+                      onClick={() => {
+                        setFiles((prevFiles) => [...prevFiles.slice(0, index), ...prevFiles.slice(index + 1)]);
+                        removeFileId(index);
+                      }}
+                    >
                       <Delete />
                     </IconButton>
                   </Grid>
                 );
               })}
+              {uploading && <Typography>Uploading...</Typography>}
               <Button
                 variant="contained"
                 color="success"
@@ -169,7 +154,7 @@ const SubmissionFormModal = ({ open, handleClose, defaultValues, onSubmit, parts
                   hidden
                   onChange={(e) => {
                     if (e.target.files) {
-                      [...e.target.files]?.forEach((file) => {
+                      [...e.target.files]?.forEach(async (file) => {
                         if (file.size > MAX_FILE_SIZE) {
                           toast.error(`File "${file.name}" exceeds the maximum size limit of ${MAX_FILE_SIZE} bytes`);
                           return;
@@ -183,23 +168,34 @@ const SubmissionFormModal = ({ open, handleClose, defaultValues, onSubmit, parts
                           return;
                         }
 
+                        if (files.length >= 5) {
+                          toast.error('Cannot upload more than 5 files for a single submission');
+                        }
+
                         if (!isPdf(file.name)) {
                           toast.warning(
                             `Warning: "${file.name}" is not a PDF file, so will not be displayed. (Don't worry, reviewers can still download it)`,
                             5000
                           );
                         }
-                        appendFile({
-                          name: file.name,
-                          file
-                        });
+
+                        try {
+                          setUploading(true);
+                          const fileId = await uploadFile(file);
+                          appendFileId(fileId);
+                          setFiles((prev) => [...prev, file]);
+                          setUploading(false);
+                        } catch (error: unknown) {
+                          setUploading(false);
+                          toast.error('file upload failed');
+                        }
                       });
                     }
                   }}
                 />
               </Button>
             </Grid>
-            <FormHelperText error>{errors.files?.message}</FormHelperText>
+            <FormHelperText error>{errors.fileIds?.message}</FormHelperText>
           </FormControl>
         </Grid>
         <Grid item xs={12}>

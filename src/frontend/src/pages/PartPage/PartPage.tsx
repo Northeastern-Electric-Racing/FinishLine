@@ -3,7 +3,7 @@ import { Part, validateWBS, wbsPipe } from 'shared';
 import PageLayout from '../../components/PageLayout';
 import { routes } from '../../utils/routes';
 import { useParams, useLocation, useHistory } from 'react-router-dom';
-import { useSinglePart } from '../../hooks/part-review.hooks';
+import { useEditPartReview, useSinglePart } from '../../hooks/part-review.hooks';
 import { useSingleProject } from '../../hooks/projects.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';

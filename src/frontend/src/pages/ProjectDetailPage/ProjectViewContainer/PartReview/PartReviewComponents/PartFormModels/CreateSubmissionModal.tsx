@@ -1,5 +1,5 @@
 import { PartPreview } from 'shared';
-import { useCreatePartSubmission, useUploadSubmissionFiles } from '../../../../../../hooks/part-review.hooks';
+import { useCreatePartSubmission } from '../../../../../../hooks/part-review.hooks';
 import SubmissionFormModal from './SubmissionFormModal';
 
 interface CreateSubmissionModalProps {
@@ -10,18 +10,13 @@ interface CreateSubmissionModalProps {
 
 const CreateSubmissionModal = ({ open, handleClose, partsInProject }: CreateSubmissionModalProps) => {
   const { mutateAsync: createSubmission } = useCreatePartSubmission();
-  const { mutateAsync: uploadFiles } = useUploadSubmissionFiles();
 
-  const onSubmit = async (data: { partId: string; name: string; notes?: string; files: { name: string; file: File }[] }) => {
-    const submission = await createSubmission({
+  const onSubmit = async (data: { partId: string; name: string; notes?: string; fileIds: string[] }) => {
+    await createSubmission({
       partId: data.partId,
       name: data.name,
+      fileIds: data.fileIds,
       notes: data.notes
-    });
-
-    await uploadFiles({
-      submissionId: submission.partSubmissionId,
-      files: data.files.map((file) => file.file)
     });
   };
 

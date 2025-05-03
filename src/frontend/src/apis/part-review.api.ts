@@ -111,18 +111,12 @@ export const editPartSubmission = (partSubmissionId: string, payload: EditPartSu
   });
 };
 
-/**
- * Adds an array of files to a review
- *
- * @param submissionId the id of the review
- * @param images the files to upload
- */
-export const setUploadSubmissionFiles = (submissionId: string, files: File[]) => {
+export const uploadFile = (file: File) => {
   const formData = new FormData();
-  files.forEach((file, _index) => {
-    formData.append('files', file);
+  formData.append('file', file);
+  return axios.post(apiUrls.uploadFile(), formData, {
+    transformResponse: (data) => JSON.parse(data)
   });
-  return axios.post<PartSubmission>(apiUrls.partsSubmissionUploadFiles(submissionId), formData, {});
 };
 
 /**
@@ -164,24 +158,10 @@ export const createPartReview = (payload: CreatePartReviewPayload) => {
  * @param partReviewId the id of the part review to edit
  * @param payload the payload of the part review
  */
-export const editPartReview = (partReviewId: string, payload: EditPartReviewPayload) => {
-  return axios.post<PartReview>(apiUrls.partsEditReview(partReviewId), {
+export const editPartReview = (payload: EditPartReviewPayload) => {
+  return axios.post<PartReview>(apiUrls.partsEditReview(payload.partReviewId), {
     ...payload
   });
-};
-
-/**
- * Adds files to a review
- *
- * @param reviewId the review
- * @param files the files to add
- */
-export const setUploadReviewFiles = (reviewId: string, files: File[]) => {
-  const formData = new FormData();
-  files.forEach((file, _index) => {
-    formData.append('files', file);
-  });
-  return axios.post<PartReview>(apiUrls.partsReviewUploadFiles(reviewId), formData, {});
 };
 
 /**

@@ -29,12 +29,11 @@ import {
   getSinglePart,
   getAllCommonMistakes,
   uploadPreviewImage,
-  setUploadReviewFiles,
   getAllPartTags,
-  setUploadSubmissionFiles,
   createReviewPopup,
   updateReviewPopup,
-  deleteReviewPopup
+  deleteReviewPopup,
+  uploadFile
 } from '../apis/part-review.api';
 import { downloadGoogleImage } from '../apis/onboarding.api';
 
@@ -56,6 +55,7 @@ export interface EditPartSubmissionPayload {
 
 export interface CreatePartSubmissionPayload extends EditPartSubmissionPayload {
   partId: string;
+  fileIds: string[];
 }
 
 export interface PartReviewRequestPayload {
@@ -66,10 +66,12 @@ export interface PartReviewRequestPayload {
 export interface CreatePartReviewPayload {
   submissionId: string;
   status: Review_Status;
+  fileIds: string[];
   notes?: string;
 }
 
 export interface EditPartReviewPayload {
+  partReviewId: string;
   notes?: string;
   status?: Review_Status;
   fileIds?: string[];
@@ -184,6 +186,13 @@ export const useDeletePart = (partId: string) => {
   );
 };
 
+export const useUploadFile = () => {
+  return useMutation<string, Error, File>(['file', 'upload'], async (file: File) => {
+    const { data } = await uploadFile(file);
+    return data;
+  });
+};
+
 /**
  * Custom React Hook to create a new part submission
  *
@@ -292,49 +301,12 @@ export const useCreatePartReview = () => {
  *
  * @param reviewId the id of the part review to edit
  */
-export const useEditPartReview = (reviewId: string) => {
+export const useEditPartReview = () => {
   const queryClient = useQueryClient();
   return useMutation<PartReview, Error, EditPartReviewPayload>(
     ['parts', 'editReview'],
     async (partReview: EditPartReviewPayload) => {
-      const { data } = await editPartReview(reviewId, partReview);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['parts']);
-      }
-    }
-  );
-};
-
-/**
- * Custom React Hook to upload files to a submission
- */
-export const useUploadSubmissionFiles = () => {
-  const queryClient = useQueryClient();
-  return useMutation<any, unknown, { submissionId: string; files: File[] }>(
-    ['parts', 'submission', 'upload'],
-    async (fileUpload: { submissionId: string; files: File[] }) => {
-      const { data } = await setUploadSubmissionFiles(fileUpload.submissionId, fileUpload.files);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['parts']);
-      }
-    }
-  );
-};
-/**
- * Custom React Hook to upload files to a review
- */
-export const useUploadReviewFiles = () => {
-  const queryClient = useQueryClient();
-  return useMutation<any, unknown, { reviewId: string; files: File[] }>(
-    ['parts', 'review', 'upload'],
-    async (fileUpload: { reviewId: string; files: File[] }) => {
-      const { data } = await setUploadReviewFiles(fileUpload.reviewId, fileUpload.files);
+      const { data } = await editPartReview(partReview);
       return data;
     },
     {
