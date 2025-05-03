@@ -10,14 +10,7 @@ import { ReimbursementRequestComment } from 'shared';
 import { UseMutateAsyncFunction } from 'react-query';
 
 const schema = yup.object().shape({
-  comment: yup
-    .string()
-    .required('Comment is required')
-    .test('comment exists', 'Comment field cannot be empty', (value) => {
-      if (!value) return false;
-      return true;
-    })
-    .typeError('Comment is required')
+  comment: yup.string().required('Comment is required')
 });
 
 interface CreateRRCommentModalProps {

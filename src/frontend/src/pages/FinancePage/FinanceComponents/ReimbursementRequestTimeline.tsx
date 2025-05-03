@@ -3,7 +3,6 @@ import { Circle } from '@mui/icons-material';
 import { datePipe } from '../../../utils/pipes';
 import { ReimbursementRequestComment } from '../../../../../shared/src/types/reimbursement-requests-types';
 import { useState } from 'react';
-
 import { Link } from '@mui/material';
 import { useCreateReimbursementRequestComment } from '../../../hooks/finance.hooks';
 import CreateRRCommentModal from './CreateRRCommentModal';
@@ -13,13 +12,13 @@ interface TimelineProps {
   reimbursementRequestComments: ReimbursementRequestComment[];
 }
 
-interface EventSectionProps {
+interface CommentsSectionProps {
   comment: ReimbursementRequestComment;
   isLast: boolean;
   key: number;
 }
 
-interface FirstSectionProps {
+interface CreateNewCommentSectionProps {
   reimbursementRequestId: string;
   comments: ReimbursementRequestComment[];
 }
@@ -38,9 +37,10 @@ const ReimbursementRequestTimeline: React.FC<TimelineProps> = ({ reimbursementRe
   );
 };
 
-const CommentsSection: React.FC<EventSectionProps> = ({ comment, isLast }) => {
-  const commentTime = new Date(comment.dateCreated).toLocaleTimeString();
-  const newCommentTime = commentTime.slice(0, -6) + commentTime.slice(-3);
+const CommentsSection: React.FC<CommentsSectionProps> = ({ comment, isLast }) => {
+  // Reformatting time to remove seconds.
+  let commentTime = new Date(comment.dateCreated).toLocaleTimeString();
+  commentTime = commentTime.slice(0, -6) + commentTime.slice(-3);
   return (
     <Stack direction="row" spacing={2} alignItems="stretch" width="100%">
       <Box flex={1} textAlign="right">
@@ -48,7 +48,7 @@ const CommentsSection: React.FC<EventSectionProps> = ({ comment, isLast }) => {
           {datePipe(comment.dateCreated)}
         </Typography>
         <Typography fontWeight={'regular'} fontSize={14} variant="h1">
-          {newCommentTime}
+          {commentTime}
         </Typography>
       </Box>
 
@@ -77,7 +77,7 @@ const CommentsSection: React.FC<EventSectionProps> = ({ comment, isLast }) => {
   );
 };
 
-const CreateNewCommentSection: React.FC<FirstSectionProps> = ({ reimbursementRequestId, comments }) => {
+const CreateNewCommentSection: React.FC<CreateNewCommentSectionProps> = ({ reimbursementRequestId, comments }) => {
   const { mutateAsync, isLoading } = useCreateReimbursementRequestComment(reimbursementRequestId);
   const [timelineCommentModal, setTimelineCommentModalShow] = useState<boolean>(false);
   const commentTime = new Date().toLocaleTimeString();
