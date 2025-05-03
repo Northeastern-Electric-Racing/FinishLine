@@ -28,7 +28,11 @@ const ReimbursementRequestTimeline: React.FC<TimelineProps> = ({ reimbursementRe
     (a, b) => new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime()
   );
   return (
-    <Stack direction="column" alignItems="center" spacing={0.5}>
+    <Stack direction="column" alignItems="flex-start" marginBottom={8}>
+      <Typography fontSize={32} variant="h6" sx={{ ml: 5, mb: 1 }}>
+        Reimbursement Request Timeline
+      </Typography>
+
       <CreateNewCommentSection reimbursementRequestId={reimbursementRequestId} comments={comments} />
       {comments.map((comment, index) => (
         <CommentsSection comment={comment} isLast={comments.length - 1 === index} key={index} />
@@ -42,8 +46,8 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ comment, isLast }) =>
   let commentTime = new Date(comment.dateCreated).toLocaleTimeString();
   commentTime = commentTime.slice(0, -6) + commentTime.slice(-3);
   return (
-    <Stack direction="row" spacing={2} alignItems="stretch" width="100%">
-      <Box flex={1} textAlign="right">
+    <Stack direction="row" spacing={2} alignItems="stretch">
+      <Box sx={{ minWidth: 120, textAlign: 'right' }}>
         <Typography fontWeight={'regular'} fontSize={18} variant="h1">
           {datePipe(comment.dateCreated)}
         </Typography>
@@ -62,13 +66,14 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ comment, isLast }) =>
               width: '4px',
               minHeight: '50px',
               flex: 1,
-              backgroundColor: 'white'
+              backgroundColor: 'white',
+              mb: 0.5
             }}
           />
         )}
       </Box>
 
-      <Box flex={1}>
+      <Box>
         <Typography fontWeight={'regular'} fontSize={18} variant="h1">
           {comment.comment}
         </Typography>
@@ -83,8 +88,8 @@ const CreateNewCommentSection: React.FC<CreateNewCommentSectionProps> = ({ reimb
   const commentTime = new Date().toLocaleTimeString();
   const newCommentTime = commentTime.slice(0, -6) + commentTime.slice(-3);
   return (
-    <Stack direction="row" spacing={2} alignItems="flex-start" width="100%">
-      <Box flex={1} textAlign="right">
+    <Stack direction="row" spacing={2}>
+      <Box sx={{ minWidth: 120, textAlign: 'right' }}>
         <Typography fontWeight={'regular'} fontSize={18} variant="h1">
           {datePipe(new Date())}
         </Typography>
@@ -99,21 +104,25 @@ const CreateNewCommentSection: React.FC<CreateNewCommentSectionProps> = ({ reimb
           sx={{
             borderLeft: '4px dashed white',
             height: '50px',
-            mt: 0.5
+            mt: 0.5,
+            mb: 0.5
           }}
         />
         {comments.length === 0 ? <Circle sx={{ fontSize: 20, mt: 0.5 }} /> : <></>}
       </Box>
 
-      <Stack flex={1} alignItems={'flex-start'}>
-        <Link
-          color="primary"
-          onClick={() => {
-            setTimelineCommentModalShow(true);
-          }}
-        >
-          <Typography fontWeight={'regular'}>Send a Follow-Up Message!</Typography>
-        </Link>
+      <Stack>
+        <Typography fontWeight={'regular'}>
+          <Link
+            sx={{ cursor: 'pointer' }}
+            color="primary"
+            onClick={() => {
+              setTimelineCommentModalShow(true);
+            }}
+          >
+            Send a Follow-Up Message!
+          </Link>
+        </Typography>
         <CreateRRCommentModal
           showModal={timelineCommentModal}
           handleClose={() => setTimelineCommentModalShow(false)}
