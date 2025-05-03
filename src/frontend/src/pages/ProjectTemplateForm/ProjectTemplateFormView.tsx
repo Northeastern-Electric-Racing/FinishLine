@@ -11,14 +11,13 @@ import { useToast } from '../../hooks/toasts.hooks';
 import { routes } from '../../utils/routes';
 import { ObjectSchema } from 'yup';
 import ReactHookTextField from '../../components/ReactHookTextField';
-import React, { useCallback } from 'react';
+import React from 'react';
 import ProjectTemplateWorkPackageSection from './ProjectTemplateWorkPackageSection';
 import { generateUUID } from '../../utils/form';
 import { AttachMoney } from '@mui/icons-material';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { WorkPackageTemplate } from 'shared';
 
 export interface ProjectTemplateFormViewProps {
   exitActiveMode: () => void;
