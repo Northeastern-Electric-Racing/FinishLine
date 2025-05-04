@@ -101,6 +101,7 @@ export default class PartReviewService {
    * @param reviewStatus
    * @param tagIds
    * @param assigneeIds
+   * @param reviewerIds
    * @returns
    */
   static async createPart(
@@ -112,7 +113,8 @@ export default class PartReviewService {
     description: string,
     reviewStatus: Review_Status,
     tagIds: string[],
-    assigneeIds: string[]
+    assigneeIds: string[],
+    reviewerIds: string[]
   ) {
     const wbsNumber: WbsNumber = validateWBS(wbsNum);
 
@@ -126,25 +128,45 @@ export default class PartReviewService {
 
     if (!perms) throw new AccessDeniedException('Only leadership and team members can create a part');
 
-    const part = await prisma.part.create({
-      data: {
-        index,
-        commonName,
-        description,
-        status: reviewStatus,
-        tags: {
-          connect: tagIds.map((partTagId) => ({ partTagId }))
+    const createdPart = await prisma.$transaction(async (tx) => {
+      const part = await tx.part.create({
+        data: {
+          index,
+          commonName,
+          description,
+          status: reviewStatus,
+          tags: {
+            connect: tagIds.map((partTagId) => ({ partTagId }))
+          },
+          project: { connect: { projectId: project.projectId } },
+          assignees: {
+            connect: assigneeIds.map((userId) => ({ userId }))
+          },
+          userCreated: { connect: { userId: creator.userId } }
         },
-        project: { connect: { projectId: project.projectId } },
-        assignees: {
-          connect: assigneeIds.map((userId) => ({ userId }))
-        },
-        userCreated: { connect: { userId: creator.userId } }
-      },
-      ...getPartQueryArgs(organization.organizationId)
+        ...getPartQueryArgs(organization.organizationId)
+      });
+
+      await Promise.all(
+        reviewerIds.map(async (id) => {
+          return tx.partReviewRequest.create({
+            data: {
+              part: {
+                connect: {
+                  partId: part.partId
+                }
+              },
+              requester: { connect: { userId: creator.userId } },
+              reviewerRequested: { connect: { userId: id } }
+            }
+          });
+        })
+      );
+
+      return part;
     });
 
-    return partTransformer(part);
+    return partTransformer(createdPart);
   }
 
   /**

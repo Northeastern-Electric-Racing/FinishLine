@@ -6,7 +6,16 @@ import {
   CreatePartReviewPayload,
   EditPartReviewPayload
 } from '../hooks/part-review.hooks';
-import { PartPreview, Part, PartSubmission, PartReviewRequest, PartReview, PartReviewCommonMistake } from 'shared';
+import {
+  PartPreview,
+  Part,
+  PartSubmission,
+  PartReviewRequest,
+  PartReview,
+  PartReviewCommonMistake,
+  PartTag,
+  FrequentlyAskedQuestion
+} from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import { partPreviewTransformer, partTransformer } from './transformers/part-review.transformers';
@@ -107,9 +116,11 @@ export const editPartSubmission = (partSubmissionId: string, payload: EditPartSu
  * @param images the files to upload
  */
 export const setUploadSubmissionFiles = (submissionId: string, files: File[]) => {
-  return axios.post<PartSubmission>(apiUrls.partsSubmissionUploadFiles(submissionId), {
-    files
+  const formData = new FormData();
+  files.forEach((file, _index) => {
+    formData.append('files', file);
   });
+  return axios.post<PartSubmission>(apiUrls.partsSubmissionUploadFiles(submissionId), formData, {});
 };
 
 /**
@@ -164,16 +175,73 @@ export const editPartReview = (partReviewId: string, payload: EditPartReviewPayl
  * @param files the files to add
  */
 export const setUploadReviewFiles = (reviewId: string, files: File[]) => {
-  return axios.post<PartReview>(apiUrls.partsReviewUploadFiles(reviewId), {
-    files
+  const formData = new FormData();
+  files.forEach((file, _index) => {
+    formData.append('files', file);
+  });
+  return axios.post<PartReview>(apiUrls.partsReviewUploadFiles(reviewId), formData, {});
+};
+
+/**
+ * Fetches all Part Review FAQs for the current organization.
+ *
+ * @returns A list of Part Review FAQs.
+ */
+export const getAllPartReviewFaqs = () => {
+  return axios.get<FrequentlyAskedQuestion[]>(apiUrls.partsReviewFaqs(), {
+    transformResponse: (data) => JSON.parse(data)
   });
 };
 
 /**
+ * create a new Part Review FAQ.
+ *
+ * @param payload - The FAQ data, including question and answer.
+ * @returns The created FAQ.
+ */
+export const createPartReviewFaq = (payload: { question: string; answer: string }) => {
+  return axios.post<FrequentlyAskedQuestion>(apiUrls.partsReviewFaqCreate(), {
+    ...payload
+  });
+};
+
+/**
+ * edits an existing Part Review FAQ.
+ *
+ * @param faqId - The ID of the FAQ to edit.
+ * @param payload - The updated FAQ data.
+ * @returns The updated FAQ.
+ */
+export const editPartReviewFaq = (faqId: string, payload: { question: string; answer: string }) => {
+  return axios.post<FrequentlyAskedQuestion>(apiUrls.partsReviewFaqEdit(faqId), {
+    ...payload
+  });
+};
+
+/**
+ * delete a Part Review FAQ.
+ *
+ * @param faqId - The ID of the FAQ to delete.
+ * @returns The deleted FAQ.
+ */
+export const deletePartReviewFaq = (faqId: string) => {
+  return axios.post<FrequentlyAskedQuestion>(apiUrls.partsReviewFaqDelete(faqId));
+};
+
+/*
  * Gets all of the common mistakes associated with part reviews
  *
  * @returns an array of common mistakes
  */
 export const getAllCommonMistakes = () => {
   return axios.get<PartReviewCommonMistake[]>(apiUrls.getAllPartCommonMistakes());
+};
+
+/**
+ * Gets all the part tags for the users organization
+ *
+ * @returns an array of part tags
+ */
+export const getAllPartTags = () => {
+  return axios.get<PartTag[]>(apiUrls.getAllPartTags());
 };

@@ -179,4 +179,27 @@ export default class OrganizationsController {
       next(error);
     }
   }
+
+  static async getPartReviewGuideLink(req: Request, res: Response, next: NextFunction) {
+    try {
+      const guideLink = await OrganizationsService.getPartReviewGuideLink(req.organization.organizationId);
+      res.status(200).json(guideLink);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async setPartReviewGuideLink(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { guideLink } = req.body;
+      const organization = await OrganizationsService.setPartReviewGuideLink(
+        req.currentUser,
+        req.organization.organizationId,
+        guideLink
+      );
+      res.status(200).json(organization);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

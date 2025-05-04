@@ -23,6 +23,7 @@ partsRouter.post(
   body('reviewStatus').custom((value) => Object.values(Review_Status).includes(value)),
   body('tagIds').isArray(),
   body('assigneeIds').isArray(),
+  body('reviewerIds').isArray(),
   validateInputs,
   PartReviewController.createPart
 );
@@ -46,7 +47,7 @@ partsRouter.post(
 
 partsRouter.post(
   '/review/:reviewId/upload-files',
-  upload.array('files', 10),
+  upload.fields([{ name: 'files', maxCount: 10 }]),
   validateInputs,
   PartReviewController.uploadReviewFiles
 );
@@ -62,14 +63,7 @@ partsRouter.post(
 
 partsRouter.post(
   '/submission/:submissionId/upload-files',
-  upload.array('files', 10),
-  validateInputs,
-  PartReviewController.uploadSubmissionFiles
-);
-
-partsRouter.post(
-  '/submission/:submissionId/upload-files',
-  upload.array('files', 10),
+  upload.fields([{ name: 'files', maxCount: 10 }]),
   validateInputs,
   PartReviewController.uploadSubmissionFiles
 );
@@ -96,7 +90,7 @@ partsRouter.post(
 partsRouter.post('/partTag/:partTagId/delete', PartReviewController.deletePartTag);
 
 partsRouter.post(
-  '/faq/create',
+  '/faqs/create',
   nonEmptyString(body('question')),
   nonEmptyString(body('answer')),
   validateInputs,
@@ -104,14 +98,14 @@ partsRouter.post(
 );
 
 partsRouter.post(
-  '/faq/:faqId/update',
+  '/faqs/:faqId/update',
   nonEmptyString(body('question')),
   nonEmptyString(body('answer')),
   validateInputs,
   PartReviewController.updateFaq
 );
 
-partsRouter.post('/faq/:faqId/delete', PartReviewController.deleteFaq);
+partsRouter.post('/faqs/:faqId/delete', PartReviewController.deleteFaq);
 
 partsRouter.get('/common-mistakes', PartReviewController.getAllCommonMistakes);
 
