@@ -37,11 +37,6 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
   const [textEdittor, setTextEdittor] = useState<boolean>(custom);
   const toast = useToast();
 
-  useEffect(() => {
-    setTextEdittor(custom);
-    reset();
-  }, [custom]);
-
   const {
     handleSubmit,
     control,
@@ -54,6 +49,11 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
       description: ''
     }
   });
+
+  useEffect(() => {
+    setTextEdittor(custom);
+    reset();
+  }, [custom, reset]);
 
   const onSubmit = async (data: { title: string; description?: string }) => {
     try {

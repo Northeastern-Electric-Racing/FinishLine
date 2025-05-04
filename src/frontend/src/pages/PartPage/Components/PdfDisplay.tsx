@@ -121,12 +121,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
     error: errorCommonMistakes
   } = useAllCommonMistakes();
 
-  const {
-    data: pdf,
-    isLoading: pdfLoading,
-    isError: pdfIsError,
-    error: pdfError
-  } = useDownloadFile(submission.fileIds[fileIdx]);
+  const { data: pdf, isLoading: pdfLoading, isError: pdfIsError } = useDownloadFile(submission.fileIds[fileIdx]);
 
   if (!mistakes || isLoadingCommonMistake) return <LoadingIndicator />;
   if (isErrorCommonMistakes) return <ErrorPage error={errorCommonMistakes} />;
@@ -368,7 +363,6 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
                 }}
                 onChange={(e) => {
                   if (e.target.files) {
-                    const fileIds = review.fileIds;
                     [...e.target.files]?.forEach(async (file) => {
                       //validate each file
                       if (file.size > MAX_FILE_SIZE) {

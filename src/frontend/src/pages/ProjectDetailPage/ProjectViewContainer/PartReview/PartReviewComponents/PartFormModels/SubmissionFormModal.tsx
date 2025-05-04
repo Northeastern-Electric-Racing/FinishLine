@@ -10,7 +10,6 @@ import { FormControl, FormHelperText, FormLabel, TextField } from '@mui/material
 import ReactHookTextField from '../../../../../../components/ReactHookTextField';
 import { Delete, FileUpload } from '@mui/icons-material';
 import { useUploadFile } from '../../../../../../hooks/part-review.hooks';
-import LoadingIndicator from '../../../../../../components/LoadingIndicator';
 
 interface SubmissionFormModalProps {
   open: boolean;
