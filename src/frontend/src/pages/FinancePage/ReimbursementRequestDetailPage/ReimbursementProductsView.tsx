@@ -52,21 +52,21 @@ const ReimbursementProductsView: React.FC<ReimbursementRequestProductsViewProps>
             return (
               <TableRow key={key}>
                 <TableCell>
-                  {uniqueWbsElementsWithProducts.get(key)?.map((product) => {
-                    return product.name;
-                  })}
+                  {uniqueWbsElementsWithProducts.get(key)?.map((product, index) => <div key={index}>{product.name}</div>)}
                 </TableCell>
                 {!allKeysAreSame && <TableCell>{displayEnum(key)}</TableCell>}
                 <TableCell>
-                  {uniqueWbsElementsWithProducts.get(key)?.map((product) => {
-                    return `$${centsToDollar(product.cost)}`;
-                  })}
+                  {uniqueWbsElementsWithProducts
+                    .get(key)
+                    ?.map((product, index) => <div key={index}>${centsToDollar(product.cost)}</div>)}
                 </TableCell>
                 {multipleRefundSources && (
                   <TableCell>
-                    {uniqueWbsElementsWithProducts.get(key)?.map((product) => {
-                      return `$${centsToDollar(product.budgetAmount)} / $${centsToDollar(product.cashAmount)}`;
-                    })}
+                    {uniqueWbsElementsWithProducts.get(key)?.map((product, index) => (
+                      <div key={index}>
+                        ${centsToDollar(product.budgetAmount)} / ${centsToDollar(product.cashAmount)}
+                      </div>
+                    ))}
                   </TableCell>
                 )}
               </TableRow>
