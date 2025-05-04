@@ -24,7 +24,14 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
   available
 }) => {
   const [isLegendOpen, setIsLegendOpen] = useState(true);
-  const [expandedItems, setExpandedItems] = useState<number[]>([]);
+
+  const [sectionStates, setSectionStates] = useState([
+    { title: 'Pending Leadership', color: '#562016', expanded: false },
+    { title: 'Pending Finance', color: '#8e3c2d', expanded: false },
+    { title: 'Submitted to SABO', color: '#dd514c', expanded: false },
+    { title: 'Reimbursed', color: '#797a7a', expanded: false },
+    { title: 'Available', color: '#afafaf', expanded: false }
+  ]);
 
   const MIN_PERCENTAGE = 0.05;
 
@@ -38,19 +45,24 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
 
   const totalValue = data.reduce((sum, entry) => sum + entry.value, 0);
 
+  // Check if all data values are zero
   const isDataEmpty = data.every((item) => item.value === 0);
 
   let adjustedData = data;
   if (!isDataEmpty && totalValue > 0) {
+    // Ensure minimum value for visible segments
     const minValue = Math.max(totalValue * MIN_PERCENTAGE, 1);
 
+    // Adjust values to meet minimum threshold
     adjustedData = data.map((entry) => ({
       ...entry,
       value: entry.value > 0 && entry.value < minValue ? minValue : entry.value
     }));
 
+    // Calculate total after adjustments
     const adjustedTotal = adjustedData.reduce((sum, entry) => sum + entry.value, 0);
 
+    // Scale down if total exceeds original
     if (adjustedTotal > totalValue) {
       const scaleFactor = totalValue / adjustedTotal;
       adjustedData = adjustedData.map((entry) => ({
@@ -59,13 +71,20 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
       }));
     }
 
+    // Ensure no negative values
     adjustedData = adjustedData.map((entry) => ({
       ...entry,
       value: Math.max(entry.value, 0)
     }));
   }
 
-  const sectionColors = ['#562016', '#8e3c2d', '#dd514c', '#797a7a', '#afafaf'];
+  const sectionColorMap = new Map([
+    ['Pending Leadership', '#562016'],
+    ['Pending Finance', '#8e3c2d'],
+    ['Submitted to SABO', '#dd514c'],
+    ['Reimbursed', '#797a7a'],
+    ['Available', '#afafaf']
+  ]);
 
   const buttonStyle = {
     display: 'flex',
@@ -102,27 +121,19 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
   };
 
   const toggleItemExpand = (index: number) => {
-    setExpandedItems((prev) => {
-      if (prev.includes(index)) {
-        return prev.filter((i) => i !== index);
-      }
-      return [...prev, index];
-    });
+    setSectionStates((prev) => prev.map((item, i) => (i === index ? { ...item, expanded: !item.expanded } : item)));
   };
 
-  const CustomLegend = (props: any) => {
-    const { payload } = props;
-
+  const CustomLegend = () => {
     return (
       <Box sx={legendContainerStyle}>
-        <Button sx={buttonStyle} onClick={() => setIsLegendOpen(!isLegendOpen)}>
+        <Button sx={buttonStyle} onClick={() => setIsLegendOpen((prev) => !prev)}>
           <Typography fontSize="18px"> Total Balance </Typography>
           {isLegendOpen ? <ArrowDropUp /> : <ArrowDropDownIcon />}
         </Button>
-        <List sx={legendListStyle}>
-          {payload.map((entry: any, index: number) => {
-            const isExpanded = expandedItems.includes(index);
-            return (
+        {isLegendOpen && (
+          <List sx={legendListStyle}>
+            {sectionStates.map((section, index) => (
               <Box key={`item-${index}`}>
                 <ListItem
                   sx={{
@@ -141,18 +152,18 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
                       display: 'inline-block',
                       width: '18px',
                       height: '18px',
-                      backgroundColor: entry.color,
+                      backgroundColor: section.color,
                       marginRight: '2px'
                     }}
                   />
-                  {isExpanded ? (
+                  {section.expanded ? (
                     <ArrowDropDownIcon sx={{ fontSize: 16, marginRight: 0.5, marginLeft: 0.4 }} />
                   ) : (
                     <PlayArrowIcon sx={{ fontSize: 11, marginRight: 0.5, marginLeft: 0.4 }} />
                   )}
-                  <Typography sx={{ fontSize: '16px' }}>{entry.value}</Typography>
+                  <Typography sx={{ fontSize: '16px' }}>{section.title}</Typography>
                 </ListItem>
-                {isExpanded && (
+                {section.expanded && (
                   <Box
                     sx={{
                       marginLeft: '60px',
@@ -168,9 +179,9 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
                   </Box>
                 )}
               </Box>
-            );
-          })}
-        </List>
+            ))}
+          </List>
+        )}
       </Box>
     );
   };
@@ -209,8 +220,8 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
               outerRadius={110}
               strokeWidth={0}
             >
-              {adjustedData.map((_entry, index) => (
-                <Cell key={`cell-${index}`} fill={sectionColors[index % sectionColors.length]} stroke="none" />
+              {adjustedData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={sectionColorMap.get(entry.name) || '#afafaf'} stroke="none" />
               ))}
               <Label
                 value={`$${totalBalance}`}

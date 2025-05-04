@@ -103,28 +103,28 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
   };
 
   const datePickerStyle = {
-    width: 120,
+    width: 180,
     height: 36,
-    backgroundColor: '#ef4345',
     color: 'white',
     fontSize: '13px',
     textTransform: 'none',
     fontWeight: 400,
-    border: '1px solid #ef4345',
     borderRadius: '4px',
     boxShadow: 'none',
 
     '.MuiInputBase-root': {
       height: '36px',
       padding: '0 8px',
+      backgroundColor: '#ef4345',
       color: 'white',
-      fontSize: '13px'
+      fontSize: '13px',
+      borderRadius: '4px'
     },
 
     '.MuiInputLabel-root': {
       color: 'white',
-      fontSize: '13px',
-      transform: 'translate(15px, 8px) scale(1)'
+      fontSize: '14px',
+      transform: 'translate(15px, 7px) scale(1)'
     },
 
     '.MuiInputLabel-shrink': {
@@ -139,7 +139,7 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
     },
 
     '& .MuiOutlinedInput-notchedOutline': {
-      borderColor: '#fff'
+      border: '1px solid #fff'
     },
 
     '& .MuiSvgIcon-root': {
@@ -147,7 +147,7 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
     }
   };
 
-  const financeActionsDropdown = (
+  const dateAndActionsDropdown = (
     <Box
       sx={{
         display: 'flex',
@@ -202,14 +202,14 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
             handleDropdownClose();
             setShowPendingAdvisorListModal(true);
           }}
-          disabled={!isFinance || !isAdmin}
+          disabled={!isFinance && !isAdmin}
         >
           <ListItemIcon>
             <ListAltIcon fontSize="small" />
           </ListItemIcon>
           Pending Advisor List
         </MenuItem>
-        <MenuItem onClick={() => setShowTotalAmountSpent(true)} disabled={!isFinance || !isAdmin}>
+        <MenuItem onClick={() => setShowTotalAmountSpent(true)} disabled={!isFinance && !isAdmin}>
           <ListItemIcon>
             <WorkIcon fontSize="small" />
           </ListItemIcon>
@@ -224,7 +224,7 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
   return (
     <PageLayout
       title="Finance Budget Overview"
-      headerRight={financeActionsDropdown}
+      headerRight={dateAndActionsDropdown}
       tabs={
         <Box borderBottom={1} borderColor="divider" width="100%">
           <FullPageTabs
