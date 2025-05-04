@@ -173,8 +173,8 @@ const getReimbursementRequestTeamData = (teamId: string, startDate?: Date, endDa
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
-const getReimbursementRequestCategoryData = (startDate?: Date, endDate?: Date): string => {
-  const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-category-data`);
+const getReimbursementRequestCategoryData = (otherReasonId: string, startDate?: Date, endDate?: Date): string => {
+  const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-category-data/${otherReasonId}`);
   const params = new URLSearchParams();
   if (startDate) params.set('startDate', startDate.toISOString());
   if (endDate) params.set('endDate', endDate.toISOString());

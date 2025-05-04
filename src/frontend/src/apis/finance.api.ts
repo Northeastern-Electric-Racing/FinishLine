@@ -21,7 +21,8 @@ import {
   SpendingBarTeamTypeDataPayload,
   ReimbursementRequestProjectDataPayload,
   ReimbursementRequestDataPayload,
-  SpendingBarDataPayload
+  SpendingBarDataPayload,
+  ReimbursementRequestCategoryDataPayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -559,9 +560,9 @@ export const getReimbursementRequestTeamData = (payload: ReimbursementRequestTea
   );
 };
 
-export const getReimbursementRequestCategoryData = (payload: ReimbursementRequestDataPayload) => {
+export const getReimbursementRequestCategoryData = (payload: ReimbursementRequestCategoryDataPayload) => {
   return axios.get<ReimbursementRequestData>(
-    apiUrls.getReimbursementRequestCategoryData(payload.startDate, payload.endDate),
+    apiUrls.getReimbursementRequestCategoryData(payload.otherReasonId, payload.startDate, payload.endDate),
     {
       transformResponse: (data) => JSON.parse(data) as ReimbursementRequestData
     }

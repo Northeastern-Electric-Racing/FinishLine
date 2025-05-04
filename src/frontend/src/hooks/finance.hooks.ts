@@ -265,6 +265,12 @@ export interface ReimbursementRequestDataPayload {
   endDate?: Date;
 }
 
+export interface ReimbursementRequestCategoryDataPayload {
+  otherReasonId: string;
+  startDate?: Date;
+  endDate?: Date;
+}
+
 export interface ReimbursementRequestTeamTypeDataPayload {
   teamTypeId: string;
   startDate?: Date;
@@ -959,9 +965,14 @@ export const useGetReimbursementRequestProjectData = (reimbursementRequestData: 
     }
   );
 
-export const useGetReimbursementRequestCategoryData = (reimbursementRequestData: ReimbursementRequestDataPayload) =>
+export const useGetReimbursementRequestCategoryData = (reimbursementRequestData: ReimbursementRequestCategoryDataPayload) =>
   useQuery<ReimbursementRequestData, Error>(
-    ['reimbursement-request-category-data', reimbursementRequestData.endDate, reimbursementRequestData.startDate],
+    [
+      'reimbursement-request-category-data',
+      reimbursementRequestData.endDate,
+      reimbursementRequestData.startDate,
+      reimbursementRequestData.otherReasonId
+    ],
     async () => {
       const { data } = await getReimbursementRequestCategoryData(reimbursementRequestData);
       return data;
