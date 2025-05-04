@@ -27,8 +27,6 @@ import { routes } from '../../../utils/routes';
 import ColumnHeader from './ColumnHeader';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import SidePage from './SidePagePopup';
-import { useSingleReimbursementRequest } from '../../../hooks/finance.hooks';
-import ReimbursementRequestDetailsView from '../ReimbursementRequestDetailPage/ReimbursementRequestDetailsView';
 import ReimbursementRequestDetails from '../ReimbursementRequestDetailPage/ReimbursementRequestDetails';
 
 interface ReimbursementRequestInfoProps {
@@ -189,10 +187,8 @@ const ReimbursementRequestInfo = ({
 
   const paginatedRows = rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
   const [showSidePage, setShowSidePage] = useState(false);
-  const [sidePageTitle, setSidePageTitle] = useState('');
 
-  const openSidePage = (title: string) => {
-    setSidePageTitle(title);
+  const openSidePage = () => {
     setShowSidePage(true);
   };
 
@@ -271,7 +267,7 @@ const ReimbursementRequestInfo = ({
                         size="small"
                         variant="contained"
                         component={RouterLink}
-                        onClick={() => openSidePage('')}
+                        onClick={() => openSidePage()}
                         to={`${routes.REIMBURSEMENT_REQUESTS}/${row.id}`}
                         sx={{
                           borderRadius: '8px',
