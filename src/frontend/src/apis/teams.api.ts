@@ -27,6 +27,10 @@ export const getSingleTeam = (id: string) => {
   });
 };
 
+export const getUsersTeams = () => {
+  return axios.get<Team[]>(apiUrls.usersTeams());
+};
+
 export const setTeamMembers = (id: string, userIds: string[]) => {
   return axios.post<{ message: string }>(apiUrls.teamsSetMembers(id), {
     userIds

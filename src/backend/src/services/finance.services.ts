@@ -1,4 +1,4 @@
-import { isHead } from 'shared';
+import { isHead, ReimbursementRequestData, SpendingBarData } from 'shared';
 import { User, Organization, Sponsor_Task, Sponsor } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
 import { getSponsorQueryArgs, getSponsorTaskQueryArgs } from '../prisma-query-args/sponsor.query.args';
@@ -11,6 +11,17 @@ import {
 import prisma from '../prisma/prisma';
 import { sponsorTransformer } from '../transformers/finance.transformer';
 import sponsorTaskTransformer from '../transformers/sponsor-task.transformer';
+import {
+  getAllReimbursementRequestData,
+  getAllSpendingBarData,
+  getReimbursementRequestCategoryData,
+  getReimbursementRequestDataForAdminFinance,
+  getReimbursementRequestDataForNonAdminFinance,
+  getReimbursementRequestsForReimbursementRequestsByProject,
+  getSpendingBarCategoryData,
+  getSpendingBarDataForAdminFinance,
+  getSpendingBarDataForNonAdminFinance
+} from '../utils/finance.utils';
 
 export default class FinanceServices {
   /**
@@ -278,5 +289,109 @@ export default class FinanceServices {
     });
 
     return sponsorTaskTransformer(createdSponsorTask);
+  }
+
+  static async getReimbursementRequestProjectData(
+    organization: Organization,
+    projectId: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<ReimbursementRequestData> {
+    return await getReimbursementRequestsForReimbursementRequestsByProject(
+      projectId,
+      organization.organizationId,
+      startDate ?? null,
+      endDate ?? null
+    );
+  }
+
+  static async getReimbursementRequestTeamData(
+    organization: Organization,
+    teamId: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<ReimbursementRequestData> {
+    return await getReimbursementRequestDataForNonAdminFinance(
+      teamId,
+      organization.organizationId,
+      startDate ?? null,
+      endDate ?? null
+    );
+  }
+
+  static async getReimbursementRequestTeamTypeData(
+    organization: Organization,
+    teamTypeId: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<ReimbursementRequestData> {
+    return await getReimbursementRequestDataForAdminFinance(
+      teamTypeId,
+      organization.organizationId,
+      startDate ?? null,
+      endDate ?? null
+    );
+  }
+
+  static async getSpendingBarTeamData(
+    organization: Organization,
+    teamId: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<SpendingBarData> {
+    return await getSpendingBarDataForNonAdminFinance(
+      teamId,
+      organization.organizationId,
+      startDate ?? null,
+      endDate ?? null
+    );
+  }
+
+  static async getSpendingBarTeamTypeData(
+    organization: Organization,
+    teamTypeId: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<SpendingBarData[]> {
+    return await getSpendingBarDataForAdminFinance(
+      teamTypeId,
+      organization.organizationId,
+      startDate ?? null,
+      endDate ?? null
+    );
+  }
+
+  static async getAllReimbursementRequestData(
+    organization: Organization,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<ReimbursementRequestData[]> {
+    return await getAllReimbursementRequestData(organization.organizationId, startDate ?? null, endDate ?? null);
+  }
+
+  static async getReimbursementRequestCategoryData(
+    otherReasonId: string,
+    organization: Organization,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<ReimbursementRequestData> {
+    return await getReimbursementRequestCategoryData(
+      otherReasonId,
+      organization.organizationId,
+      startDate ?? null,
+      endDate ?? null
+    );
+  }
+
+  static async getAllSpendingBarData(
+    organization: Organization,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<SpendingBarData[]> {
+    return await getAllSpendingBarData(organization.organizationId, startDate ?? null, endDate ?? null);
+  }
+
+  static async getSpendingBarCategoryData(organization: Organization): Promise<SpendingBarData> {
+    return await getSpendingBarCategoryData(organization.organizationId);
   }
 }
