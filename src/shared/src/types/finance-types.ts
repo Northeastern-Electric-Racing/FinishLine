@@ -29,10 +29,10 @@ export interface SponsorTier {
 }
 
 export interface SpendingBarData {
-  teamName: string;
-  projects: {
+  title: string;
+  data: {
     title: string;
-    budget: number;
+    spendingInfo: ReimbursementRequestData;
   }[];
 }
 

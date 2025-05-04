@@ -229,11 +229,13 @@ export default class FinanceController {
 
   static async getReimbursementRequestCategoryData(req: Request, res: Response, next: NextFunction) {
     try {
+      const { otherReasonId } = req.params;
       const { startDate, endDate } = req.query;
       const parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : undefined;
       const parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : undefined;
 
       const rrData = await FinanceServices.getReimbursementRequestCategoryData(
+        otherReasonId,
         req.organization,
         parsedStartDate,
         parsedEndDate

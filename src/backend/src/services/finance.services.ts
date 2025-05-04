@@ -370,11 +370,17 @@ export default class FinanceServices {
   }
 
   static async getReimbursementRequestCategoryData(
+    otherReasonId: string,
     organization: Organization,
     startDate?: Date,
     endDate?: Date
   ): Promise<ReimbursementRequestData> {
-    return await getReimbursementRequestCategoryData(organization.organizationId, startDate ?? null, endDate ?? null);
+    return await getReimbursementRequestCategoryData(
+      otherReasonId,
+      organization.organizationId,
+      startDate ?? null,
+      endDate ?? null
+    );
   }
 
   static async getAllSpendingBarData(

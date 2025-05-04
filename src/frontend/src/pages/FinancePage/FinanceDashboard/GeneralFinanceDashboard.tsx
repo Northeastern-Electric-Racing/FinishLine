@@ -35,28 +35,38 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
   }
 
   const datePickerStyle = {
-    width: 120,
+    width: 180,
     height: 36,
-    backgroundColor: '#ef4345',
     color: 'white',
     fontSize: '13px',
     textTransform: 'none',
     fontWeight: 400,
-    border: '1px solid #ef4345',
     borderRadius: '4px',
     boxShadow: 'none',
 
     '.MuiInputBase-root': {
       height: '36px',
       padding: '0 8px',
+      backgroundColor: '#ef4345',
       color: 'white',
-      fontSize: '13px'
+      fontSize: '13px',
+      borderRadius: '4px',
+      '&:hover': {
+        backgroundColor: '#ef4345'
+      },
+      '&.Mui-focused': {
+        backgroundColor: '#ef4345',
+        color: 'white'
+      }
     },
 
     '.MuiInputLabel-root': {
       color: 'white',
-      fontSize: '13px',
-      transform: 'translate(15px, 8px) scale(1)'
+      fontSize: '14px',
+      transform: 'translate(15px, 7px) scale(1)',
+      '&.Mui-focused': {
+        color: 'white'
+      }
     },
 
     '.MuiInputLabel-shrink': {
@@ -67,15 +77,30 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
     '& .MuiInputBase-input': {
       color: 'white',
       paddingTop: '8px',
-      cursor: 'pointer'
+      cursor: 'pointer',
+      '&:focus': {
+        color: 'white'
+      }
     },
 
     '& .MuiOutlinedInput-notchedOutline': {
-      borderColor: '#fff'
+      border: '1px solid #fff',
+      '&:hover': {
+        borderColor: '#fff'
+      },
+      '&.Mui-focused': {
+        borderColor: '#fff'
+      }
     },
 
     '& .MuiSvgIcon-root': {
-      color: 'white'
+      color: 'white',
+      '&:hover': {
+        color: 'white'
+      },
+      '&.Mui-focused': {
+        color: 'white'
+      }
     }
   };
 

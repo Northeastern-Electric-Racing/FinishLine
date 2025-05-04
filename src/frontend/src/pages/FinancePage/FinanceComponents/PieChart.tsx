@@ -108,7 +108,8 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
     right: '0px',
     top: '-155px',
     display: 'flex',
-    flexDirection: 'column' as const
+    flexDirection: 'column' as const,
+    width: '192px'
   };
 
   const legendListStyle = {
@@ -117,7 +118,8 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
     margin: 0,
     maxHeight: isLegendOpen ? '500px' : '0',
     overflow: 'hidden',
-    transition: 'max-height 0.3s ease-in-out'
+    transition: 'max-height 0.3s ease-in-out',
+    width: '100%'
   };
 
   const toggleItemExpand = (index: number) => {
@@ -129,7 +131,7 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
       <Box sx={legendContainerStyle}>
         <Button sx={buttonStyle} onClick={() => setIsLegendOpen((prev) => !prev)}>
           <Typography fontSize="18px"> Total Balance </Typography>
-          {isLegendOpen ? <ArrowDropUp /> : <ArrowDropDownIcon />}
+          {isLegendOpen ? <ArrowDropDownIcon /> : <ArrowDropUp />}
         </Button>
         {isLegendOpen && (
           <List sx={legendListStyle}>

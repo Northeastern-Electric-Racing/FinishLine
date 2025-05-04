@@ -61,7 +61,10 @@ financeRouter.get('/reimbursement-request-team-data/:teamId', FinanceController.
 
 financeRouter.get('/reimbursement-request-data', FinanceController.getAllReimbursementRequestData);
 
-financeRouter.get('/reimbursement-request-category-data', FinanceController.getReimbursementRequestCategoryData);
+financeRouter.get(
+  '/reimbursement-request-category-data/:otherReasonId',
+  FinanceController.getReimbursementRequestCategoryData
+);
 
 financeRouter.get(
   '/reimbursement-request-team-type-data/:teamTypeId',
@@ -74,6 +77,6 @@ financeRouter.get('/spending-bar-team-type-data/:teamTypeId', FinanceController.
 
 financeRouter.get('/spending-bar-data', FinanceController.getAllSpendingBarData);
 
-financeRouter.get('/spending-bar-category-data', FinanceController.getSpendingBarCategoryData);
+financeRouter.get('/spending-bar-category-data/', FinanceController.getSpendingBarCategoryData);
 
 export default financeRouter;

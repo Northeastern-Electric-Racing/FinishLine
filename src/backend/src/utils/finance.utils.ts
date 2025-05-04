@@ -107,11 +107,17 @@ export const getSpendingBarDataForProjectBudgetByTeam = async (
 
   if (!team) throw new NotFoundException('Team', teamId);
 
+  const spendingInfoPromises = team.projects.map((project) =>
+    getReimbursementRequestsForReimbursementRequestsByProject(project.projectId, organizationId, startDate, endDate)
+  );
+
+  const spendingInfos = await Promise.all(spendingInfoPromises);
+
   const data: SpendingBarData = {
-    teamName: `${team.teamName}`,
-    projects: team.projects.map((project) => ({
+    title: `${team.teamName}`,
+    data: team.projects.map((project, index) => ({
       title: `${wbsPipe(project.wbsElement)} - ${project.wbsElement.name}`,
-      budget: project.budget
+      spendingInfo: spendingInfos[index]
     }))
   };
 
@@ -149,15 +155,22 @@ export const getSpendingBarDataForProjectBudgetByDivision = async (
 
   if (!division) throw new NotFoundException('Team Type', teamTypeId);
 
-  const data: SpendingBarData[] = division.teams.map((team) => {
+  const teamDataPromises = division.teams.map(async (team) => {
+    const spendingInfoPromises = team.projects.map((project) =>
+      getReimbursementRequestsForReimbursementRequestsByProject(project.projectId, organizationId, startDate, endDate)
+    );
+    const spendingInfos = await Promise.all(spendingInfoPromises);
+
     return {
-      teamName: `${team.teamName}`,
-      projects: team.projects.map((project) => ({
+      title: `${team.teamName}`,
+      data: team.projects.map((project, index) => ({
         title: `${wbsPipe(project.wbsElement)} - ${project.wbsElement.name}`,
-        budget: project.budget
+        spendingInfo: spendingInfos[index]
       }))
     };
   });
+
+  const data: SpendingBarData[] = await Promise.all(teamDataPromises);
 
   return data;
 };
@@ -459,6 +472,14 @@ export const getAllReimbursementRequestData = async (
     return teamAcc + teamBudget;
   }, 0);
 
+  const cashTotalBudget = cashReimbursementRequests.reduce((reqAcc, rr) => {
+    return reqAcc + rr.totalCost;
+  }, 0);
+
+  const budgetTotalBudget = cashReimbursementRequests.reduce((reqAcc, rr) => {
+    return reqAcc + rr.totalCost;
+  }, 0);
+
   let allPendingFinance = 0;
   let allPendingLeadership = 0;
   let allSubmittedToSabo = 0;
@@ -517,7 +538,7 @@ export const getAllReimbursementRequestData = async (
 
   const cashTotalBalance = cashReimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0);
 
-  const cashAvailable = allTotalBudget - cashTotalBalance;
+  const cashAvailable = cashTotalBudget - cashTotalBalance;
 
   let budgetPendingFinance = 0;
   let budgetPendingLeadership = 0;
@@ -547,7 +568,7 @@ export const getAllReimbursementRequestData = async (
 
   const budgetTotalBalance = budgetReimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0);
 
-  const budgetAvailable = allTotalBudget - budgetTotalBalance;
+  const budgetAvailable = budgetTotalBudget - budgetTotalBalance;
 
   const allData: ReimbursementRequestData = {
     totalBudget: allTotalBudget,
@@ -559,7 +580,7 @@ export const getAllReimbursementRequestData = async (
   };
 
   const cashData: ReimbursementRequestData = {
-    totalBudget: allTotalBudget,
+    totalBudget: cashTotalBudget,
     pendingFinance: cashPendingFinance,
     pendingLeadership: cashPendingLeadership,
     submittedToSabo: cashSubmittedToSabo,
@@ -568,7 +589,7 @@ export const getAllReimbursementRequestData = async (
   };
 
   const budgetData: ReimbursementRequestData = {
-    totalBudget: allTotalBudget,
+    totalBudget: budgetTotalBudget,
     pendingFinance: budgetPendingFinance,
     pendingLeadership: budgetPendingLeadership,
     submittedToSabo: budgetSubmittedToSabo,
@@ -582,6 +603,7 @@ export const getAllReimbursementRequestData = async (
 };
 
 export const getReimbursementRequestCategoryData = async (
+  otherReasonId: string,
   organizationId: string,
   startDate: Date | null,
   endDate: Date | null
@@ -595,19 +617,20 @@ export const getReimbursementRequestCategoryData = async (
           type: Reimbursement_Status_Type.DENIED
         }
       },
+      reimbursementProducts: {
+        some: {
+          reimbursementProductReason: {
+            otherReasonId
+          }
+        }
+      },
       ...getReimbursementRequestWhereInput(startDate, endDate)
     },
     ...getReimbursementRequestQueryArgs(organizationId)
   });
 
-  const teams = await prisma.team.findMany({
-    where: { dateArchived: null, organizationId },
-    ...getTeamQueryArgs(organizationId)
-  });
-
-  const totalBudget = teams.reduce((teamAcc, team) => {
-    const teamBudget = team.projects.reduce((projAcc, project) => projAcc + project.budget, 0);
-    return teamAcc + teamBudget;
+  const totalBudget = reimbursementRequests.reduce((reqAcc, rr) => {
+    return reqAcc + rr.totalCost;
   }, 0);
 
   let pendingFinance = 0;
@@ -662,11 +685,16 @@ export const getSpendingBarCategoryData = async (organizationId: string): Promis
     }
   });
 
+  const spendingInfoPromises = otherReasons.map((r) =>
+    getReimbursementRequestCategoryData(r.otherReimbursementProductReasonId, organizationId, null, null)
+  );
+  const spendingInfos = await Promise.all(spendingInfoPromises);
+
   const data: SpendingBarData = {
-    teamName: `Club Categories`,
-    projects: otherReasons.map((r) => ({
+    title: `Club Categories`,
+    data: otherReasons.map((r, index) => ({
       title: r.name,
-      budget: r.budget
+      spendingInfo: spendingInfos[index]
     }))
   };
 
@@ -693,15 +721,22 @@ export const getAllSpendingBarData = async (
     }
   });
 
-  const data: SpendingBarData[] = teams.map((team) => {
+  const teamDataPromises = teams.map(async (team) => {
+    const spendingInfoPromises = team.projects.map((project) =>
+      getReimbursementRequestsForReimbursementRequestsByProject(project.projectId, organizationId, startDate, endDate)
+    );
+    const spendingInfos = await Promise.all(spendingInfoPromises);
+
     return {
-      teamName: `${team.teamName}`,
-      projects: team.projects.map((project) => ({
+      title: `${team.teamName}`,
+      data: team.projects.map((project, index) => ({
         title: `${wbsPipe(project.wbsElement)} - ${project.wbsElement.name}`,
-        budget: project.budget
+        spendingInfo: spendingInfos[index]
       }))
     };
   });
+
+  const data: SpendingBarData[] = await Promise.all(teamDataPromises);
 
   return data;
 };
