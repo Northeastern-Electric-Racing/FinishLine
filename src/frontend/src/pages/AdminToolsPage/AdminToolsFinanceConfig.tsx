@@ -1,18 +1,21 @@
-import { Box, Typography } from '@mui/material';
-import VendorsTable from './FinanceConfig/VendorsTable';
-import AccountCodesTable from './FinanceConfig/AccountCodesTable';
+import { Box, Grid, Typography } from '@mui/material';
+import AccountManagerTable from './FinanceConfig/AccountManagerTable';
+import CategoriesTable from './FinanceConfig/CategoriesTable';
 
 const AdminToolsFinanceConfig: React.FC = () => {
   return (
-    <Box>
+    <Box padding="5px">
       <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
-        Account Manager
+        Finance Config
       </Typography>
-      <VendorsTable />
-      <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
-        Categories
-      </Typography>
-      <AccountCodesTable />
+      <Grid container spacing="3%">
+        <Grid item direction="column" xs={12} md={6}>
+          <AccountManagerTable />
+        </Grid>
+        <Grid item direction="column" alignSelf="right" xs={12} md={6}>
+          <CategoriesTable />
+        </Grid>
+      </Grid>
     </Box>
   );
 };

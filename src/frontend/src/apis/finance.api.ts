@@ -12,7 +12,8 @@ import {
   EditSponsorTaskPayload,
   SponsorPayload,
   SponsorTierPayload,
-  SponsorTaskPayload
+  SponsorTaskPayload,
+  EditOtherReimbursementProductReasonPayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -368,6 +369,18 @@ export const editVendor = async (id: string, vendorData: EditVendorPayload) => {
 };
 
 /**
+ * API call to delete a given vendor
+ *
+ * @param vendorId the id of the vendor to delete
+ *
+ * @returns the deleted vendor
+ */
+
+export const deleteVendor = (vendorId: string) => {
+  return axios.post(apiUrls.financeDeleteVendor(vendorId));
+};
+
+/**
  * Marks a reimbursement request as pending finance
  *
  * @param id The id of the reimbursement request
@@ -488,4 +501,14 @@ export const deleteSponsor = (sponsorId: string) => {
  */
 export const editSponsorTask = (sponsorTaskId: string, sponsorTaskData: EditSponsorTaskPayload) => {
   return axios.post(apiUrls.editSponsorTask(sponsorTaskId), sponsorTaskData);
+};
+
+/**
+ * Edits a reimbursement request in the database
+ * @param id the id of the other reimbursement product reason
+ * @param formData the data expected from teh form
+ * @returns the updated other reimbursement product reason
+ */
+export const editOtherReimbursementProductReason = (id: string, formData: EditOtherReimbursementProductReasonPayload) => {
+  return axios.post(apiUrls.financeEditOtherReimbursementProductReason(id), formData);
 };

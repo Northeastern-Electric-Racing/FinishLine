@@ -228,4 +228,12 @@ reimbursementRequestsRouter.post(
 
 reimbursementRequestsRouter.delete('/comments/:commentId', ReimbursementRequestController.deleteReimbursementRequestComment);
 
+reimbursementRequestsRouter.post(
+  '/other-reimbursement-product-reasons/:otherReimbursementProductReasonId/edit',
+  nonEmptyString(body('updatedIndexCodeId')),
+  body('updatedBudget').isInt(),
+  validateInputs,
+  ReimbursementRequestController.editOtherReimbursementProductReason
+);
+
 export default reimbursementRequestsRouter;

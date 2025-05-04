@@ -29,6 +29,7 @@ export interface ReimbursementRequestInformation {
   accountCodeId: string;
   receiptFiles: ReimbursementReceiptUploadArgs[];
   indexCodeId: string;
+  secondaryAccount?: string;
 }
 export interface ReimbursementRequestFormInput extends ReimbursementRequestInformation {
   reimbursementProducts: ReimbursementProductFormArgs[];
@@ -51,7 +52,32 @@ const RECEIPTS_REQUIRED = import.meta.env.VITE_RR_RECEIPT_REQUIREMENT || 'disabl
 
 const schema = yup.object().shape({
   vendorId: yup.string().required('Vendor is required'),
-  indexCodeId: yup.array().of(yup.string().required()).required('Index code is required'),
+  indexCodeId: yup.string().required('Refund source is required'),
+  secondaryAccount: yup.string().test('required-if-split', 'Second refund source is required', function (value) {
+    if (!this.parent.$hasConfirmedFinance) return true;
+    if (!value) {
+      return this.createError({
+        message: 'Second refund source is required'
+      });
+    }
+
+    const products = this.parent.reimbursementProducts || [];
+    for (const product of this.parent.reimbursementProducts) {
+      if (product.firstSourceAmount === undefined) {
+        return this.createError({
+          message: 'Amount is required',
+          path: `reimbursementProducts.${products.indexOf(product)}.firstSourceAmount`
+        });
+      }
+      if (product.secondSourceAmount === undefined) {
+        return this.createError({
+          message: 'Amount is required',
+          path: `reimbursementProducts.${products.indexOf(product)}.secondSourceAmount`
+        });
+      }
+    }
+    return true;
+  }),
   dateOfExpense: yup.date().optional(),
   accountCodeId: yup.string().required('Account code is required'),
   reimbursementProducts: yup
@@ -59,15 +85,16 @@ const schema = yup.object().shape({
     .of(
       yup.object().shape({
         name: yup.string().required('Description is required'),
+        firstSourceAmount: yup.number().typeError('Amount must be a number').min(0, 'Amount cannot be negative'),
+        secondSourceAmount: yup.number().typeError('Amount must be a number').min(0, 'Amount cannot be negative'),
         cost: yup
           .number()
-          .typeError('Amount is required')
-          .required('Amount is required')
-          .min(0.01, 'Amount must be greater than 0'),
-        reason: yup.mixed<OtherProductReason | WbsNumber>().required()
+          .required('Cost is required')
+          .typeError('Amount must be a number')
+          .min(0.01, 'Amount cannot be negative or less than zero')
       })
     )
-    .required('reimbursement products required')
+    .required('Reimbursement products required')
     .min(1, 'At least one Reimbursement Product is required'),
   receiptFiles:
     // The requirements for receipt uploads is disabled by default on development to make testing easier;
@@ -97,6 +124,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     defaultValues: {
       vendorId: defaultValues?.vendorId ?? '',
       indexCodeId: defaultValues?.indexCodeId,
+      secondaryAccount: defaultValues?.secondaryAccount,
       dateOfExpense: defaultValues?.dateOfExpense,
       accountCodeId: defaultValues?.accountCodeId ?? '',
       reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductFormArgs[]),
@@ -164,28 +192,35 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     checkSecureSettingsIsLoading
   )
     return <LoadingIndicator />;
-
   const onSubmitWrapper = async (data: ReimbursementRequestFormInput) => {
     try {
-      //total cost is tracked in cents
+      //total cost, firstSourceAmount and secondSourceAmount is tracked in cents
       const totalCost = Math.round(data.reimbursementProducts.reduce((acc, curr) => acc + curr.cost, 0) * 100);
+      // For each product, if multiple refund sources are enabled, the `cost` field represents
+      // the total amount from the first refund source amount (firstSourceAmount) and second refund source (secondSourceAmount) of that product.
+      // If only one refund source is present, the `cost` reflects the refund source amount for that product, and firstSourceAmount and secondSourceAmount are left as 0 since they will not needed for this scenario.
       const reimbursementProducts = data.reimbursementProducts.map((product: ReimbursementProductFormArgs) => {
-        return { ...product, cost: Math.round(product.cost * 100) };
+        return {
+          ...product,
+          cost: Math.round(product.cost * 100),
+          firstSourceAmount: (product.firstSourceAmount ?? 0) * 100,
+          secondSourceAmount: (product.secondSourceAmount ?? 0) * 100
+        };
       });
 
       const otherReimbursementProducts: OtherReimbursementProductCreateArgs[] = [];
       const wbsReimbursementProducts: WbsReimbursementProductCreateArgs[] = [];
 
       reimbursementProducts.forEach((product) => {
-        if (product.reason instanceof Object) {
-          wbsReimbursementProducts.push({
-            reason: product.reason as WbsNumber,
+        if (product.reason && 'otherProductReasonId' in product.reason) {
+          otherReimbursementProducts.push({
+            reason: product.reason as OtherProductReason,
             cost: product.cost,
             name: product.name
           });
         } else {
-          otherReimbursementProducts.push({
-            reason: product.reason as OtherProductReason,
+          wbsReimbursementProducts.push({
+            reason: product.reason as WbsNumber,
             cost: product.cost,
             name: product.name
           });

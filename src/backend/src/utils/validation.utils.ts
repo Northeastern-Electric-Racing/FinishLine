@@ -82,8 +82,9 @@ export const validateReimbursementProducts = () => {
   return [
     body('otherReimbursementProducts').isArray(),
     nonEmptyString(body('otherReimbursementProducts.*.name')),
+    nonEmptyString(body('otherReimbursementProducts.*.reason.otherProductReasonId')),
+    nonEmptyString(body('otherReimbursementProducts.*.reason.name')),
     intMinZero(body('otherReimbursementProducts.*.cost')),
-    nonEmptyString(body('otherReimbursementProducts.*.reason')),
     body('wbsReimbursementProducts').isArray(),
     nonEmptyString(body('wbsReimbursementProducts.*.name')),
     intMinZero(body('wbsReimbursementProducts.*.cost')),
