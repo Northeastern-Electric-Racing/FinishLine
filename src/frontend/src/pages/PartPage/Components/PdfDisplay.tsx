@@ -88,6 +88,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
   //pdf loading states
   const [pdfDimensions, setPdfDimensions] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
   const [loadSuccess, setLoadSuccess] = useState(false);
+  const [numPages, setNumPages] = useState<number>(0);
 
   //distinguishes between adding a custom comment and pulling from common mistakes
   const [customComment, setCustomComment] = useState<boolean>(true);
@@ -502,20 +503,29 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
             {pdf && pdf?.type === 'application/pdf' && (
               <Document
                 file={pdf}
-                onLoadSuccess={() => {
+                onLoadSuccess={({ numPages }) => {
                   setLoadSuccess(true);
+                  setNumPages(numPages);
                 }}
                 onLoadError={() => {
                   setLoadSuccess(false);
                 }}
                 error={pdfLoadingError(<Typography>Could not load pdf</Typography>)}
               >
-                <Page
-                  pageNumber={1}
-                  renderTextLayer={false}
-                  onRenderSuccess={handlePdfRenderSuccess}
-                  renderAnnotationLayer={false}
-                />
+                {!loadSuccess ? (
+                  <div>Loading pages...</div>
+                ) : (
+                  Array.from({ length: numPages }, (_, index) => (
+                    <Page
+                      pageNumber={index + 1}
+                      renderAnnotationLayer={false}
+                      renderTextLayer={false}
+                      onRenderSuccess={(page) => {
+                        if (index === 0) handlePdfRenderSuccess(page);
+                      }}
+                    />
+                  ))
+                )}
               </Document>
             )}
 
