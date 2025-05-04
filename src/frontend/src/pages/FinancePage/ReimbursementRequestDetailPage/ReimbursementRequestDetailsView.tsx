@@ -56,6 +56,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import ReimbursementRequestStatusPill from '../../../components/ReimbursementRequestStatusPill';
 import CheckList from '../../../components/CheckList';
 import MarkDeliveredModal from './MarkDeliveredModal';
+import ReimbursementRequestTimeline from '../FinanceComponents/ReimbursementRequestTimeline';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -340,6 +341,10 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             </Grid>
           </Grid>
         </Grid>
+        <ReimbursementRequestTimeline
+          reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
+          reimbursementRequestComments={reimbursementRequest.comments}
+        />
       </>
     );
   };

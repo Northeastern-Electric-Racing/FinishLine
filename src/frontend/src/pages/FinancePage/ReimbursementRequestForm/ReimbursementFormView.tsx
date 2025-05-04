@@ -1,4 +1,5 @@
-import { Delete } from '@mui/icons-material';
+import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import HelpIcon from '@mui/icons-material/Help';
 import {
   FormControl,
@@ -28,6 +29,7 @@ import {
 } from 'react-hook-form';
 import {
   AccountCode,
+  IndexCode,
   ReimbursementProductFormArgs,
   ReimbursementReceiptCreateArgs,
   ReimbursementReceiptUploadArgs,
@@ -35,19 +37,17 @@ import {
   WbsNumber,
   wbsPipe
 } from 'shared';
-import { DatePicker } from '@mui/x-date-pickers';
+import { ClearIcon, DatePicker } from '@mui/x-date-pickers';
 import ReimbursementProductTable from './ReimbursementProductTable';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { wbsNumComparator } from 'shared/src/validate-wbs';
 import { codeAndRefundSourceName, accountCodePipe } from '../../../utils/pipes';
-import NERAutocomplete from '../../../components/NERAutocomplete';
-import FileUploadIcon from '@mui/icons-material/FileUpload';
 import NERModal from '../../../components/NERModal';
 import CheckList from '../../../components/CheckList';
 
@@ -98,14 +98,58 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   hasSecureSettingsSet
 }) => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [showAddRefundSourceModal, setShowAddRefundSourceModal] = useState(false);
+  const [hasConfirmedFinance, setHasConfirmedFinance] = useState(false);
   const toast = useToast();
   const theme = useTheme();
-  const products = watch(`reimbursementProducts`);
+  const products = watch('reimbursementProducts') as ReimbursementProductFormArgs[];
   const accountCodeId = watch('accountCodeId');
   const selectedAccountCode = allAccountCodes.find((accountCode) => accountCode.accountCodeId === accountCodeId);
-  const refundSources = selectedAccountCode?.indexCodes || [];
+  const refundSources: IndexCode[] = selectedAccountCode?.indexCodes || [];
+  const firstRefundSourceId = watch('indexCodeId');
+  const secondRefundSourceId = watch('secondaryAccount');
 
-  const calculatedTotalCost = products.reduce((acc, product) => acc + Number(product.cost), 0).toFixed(2);
+  useEffect(() => {
+    if (firstRefundSourceId) {
+      if (secondRefundSourceId && firstRefundSourceId === secondRefundSourceId) {
+        setValue('secondaryAccount', undefined);
+        reimbursementProducts.forEach((_, index) => {
+          setValue(`reimbursementProducts.${index}.secondSourceAmount`, undefined);
+        });
+      }
+    }
+  }, [firstRefundSourceId, secondRefundSourceId, reimbursementProducts, setValue]);
+
+  useEffect(() => {
+    control._formValues.$hasConfirmedFinance = hasConfirmedFinance;
+  }, [hasConfirmedFinance, control]);
+
+  const handleRemoveSecondRefundSource = () => {
+    setHasConfirmedFinance(false);
+    setValue('secondaryAccount', undefined);
+
+    reimbursementProducts.forEach((_, index) => {
+      setValue(`reimbursementProducts.${index}.firstSourceAmount`, undefined);
+      setValue(`reimbursementProducts.${index}.secondSourceAmount`, undefined);
+      setValue(`reimbursementProducts.${index}.cost`, 0);
+    });
+  };
+
+  const firstRefundSource = refundSources.find((source) => source.indexCodeId === firstRefundSourceId) || {
+    name: 'First Source',
+    code: '',
+    indexCodeId: 'placeholder-1'
+  };
+  const secondRefundSource = refundSources.find((source) => source.indexCodeId === secondRefundSourceId) || {
+    name: 'Second Source',
+    code: '',
+    indexCodeId: 'placeholder-2'
+  };
+
+  const remainingRefundSources = refundSources.filter((source) => source.indexCodeId !== firstRefundSourceId);
+  const calculatedTotalCost = products
+    .reduce((acc: number, product: ReimbursementProductFormArgs) => acc + Number(product.cost), 0)
+    .toFixed(2);
   const [showReimbursementGuidelinesModal, setShowReimbursementGuidelinesModal] = useState(true);
 
   const wbsElementAutocompleteOptions = allWbsElements.map((wbsElement) => ({
@@ -117,13 +161,43 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
 
   const ReceiptFileInput = () => (
     <FormControl>
-      <ul>
+      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
         {receiptFiles.map((receiptFile, index) => (
           <li key={index}>
-            <Stack key={index} direction="row" justifyContent="space-between">
-              <Typography>{receiptFile.name}</Typography>
-              <IconButton onClick={() => receiptRemove(index)}>
-                <Delete />
+            <Stack
+              key={index}
+              direction="row"
+              justifyContent="space-between"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                background: '#4c4c4c',
+                borderRadius: '20px',
+                padding: '2px 0px 2px 10px',
+                marginBottom: '3px'
+              }}
+            >
+              <Typography
+                sx={{
+                  marginBottom: '4px',
+                  fontSize: 'medium'
+                }}
+              >
+                {receiptFile.name}
+              </Typography>
+              <IconButton
+                onClick={() => receiptRemove(index)}
+                sx={{
+                  padding: '0px',
+                  marginLeft: '2px'
+                }}
+              >
+                <ClearIcon
+                  sx={{
+                    color: 'grey',
+                    transform: 'scale(0.7)'
+                  }}
+                />
               </IconButton>
             </Stack>
           </li>
@@ -147,7 +221,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           {
             resolved: false,
             detail:
-              'I certify my receipts with expenses greater than $75 include an itemixed description of goods or service purchased.',
+              'I certify my receipts with expenses greater than $75 include an itemized description of goods or service purchased.',
             id: '1'
           },
           {
@@ -157,7 +231,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           },
           {
             resolved: false,
-            detail: `I certify my receipts includes a Transaction Date for each expense.`,
+            detail: `I certify my receipts include a Transaction Date for each expense.`,
             id: '3'
           },
           {
@@ -224,41 +298,87 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           </Alert>
         </Snackbar>
       )}
-      <Grid container spacing={2}>
-        <Grid item container spacing={2} md={6} xs={12} sx={{ '&.MuiGrid-item': { height: 'fit-content' } }}>
+
+      <Grid item container spacing={5} md={12} xs={12} sx={{ '&.MuiGrid-item': { height: 'fit-content' } }}>
+        <Grid item xs={12} md={6}>
           <Grid item xs={12}>
-            <FormControl fullWidth>
-              <FormLabel>Purchased From</FormLabel>
+            <FormControl sx={{ borderRadius: '25px', width: '85%' }}>
+              <FormLabel
+                sx={{
+                  color: '#dd524c',
+                  textShadow: '1.5px 0 #dd524c',
+                  letterSpacing: '0.5px',
+                  textDecoration: 'underline',
+                  textUnderlineOffset: '3.5px',
+                  textDecorationThickness: '0.6px',
+                  paddingBottom: '2px',
+                  fontSize: 'x-large',
+                  fontWeight: 'bold'
+                }}
+              >
+                Purchased From*
+              </FormLabel>
               <Controller
                 name="vendorId"
                 control={control}
                 render={({ field: { onChange, value } }) => {
                   const mappedVendors = allVendors.sort((a, b) => a.name.localeCompare(b.name)).map(vendorsToAutocomplete);
-                  const onClear = () => {
-                    setValue('vendorId', '');
-                    onChange('');
-                  };
-
                   return (
-                    <NERAutocomplete
-                      id={'vendor'}
-                      size="medium"
-                      options={mappedVendors}
-                      value={mappedVendors.find((vendor) => vendor.id === value) || null}
-                      placeholder="Select Vendor"
-                      onChange={(_event, newValue) => {
-                        newValue ? onChange(newValue.id) : onClear();
-                      }}
-                    />
+                    <>
+                      <Select
+                        displayEmpty
+                        value={value}
+                        onChange={(e) => {
+                          onChange(e.target.value);
+                        }}
+                        IconComponent={KeyboardArrowDownIcon}
+                        sx={{
+                          background: '#4c4c4c',
+                          borderRadius: '20px',
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: '20px'
+                          },
+                          '& .MuiSelect-icon': {
+                            fontSize: 'xxx-large'
+                          }
+                        }}
+                        renderValue={(selected) => {
+                          if (!selected) {
+                            return <Typography style={{ color: 'gray' }}>Select Vendor</Typography>;
+                          }
+                          return mappedVendors.find((vendor) => vendor.id === selected)?.label;
+                        }}
+                      >
+                        {mappedVendors.map((vendor) => (
+                          <MenuItem key={vendor.id} value={vendor.id}>
+                            {vendor.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      <FormHelperText error>{errors.vendorId?.message}</FormHelperText>
+                    </>
                   );
                 }}
               />
-              <FormHelperText error>{errors.vendorId?.message}</FormHelperText>
             </FormControl>
           </Grid>
-          <Grid item xs={6}>
-            <FormControl fullWidth>
-              <FormLabel>Account Code</FormLabel>
+          <Grid item xs={12} sx={{ paddingTop: '33px' }}>
+            <FormControl sx={{ borderRadius: '25px', width: '85%' }}>
+              <FormLabel
+                sx={{
+                  color: '#dd524c',
+                  textShadow: '1.5px 0 #dd524c',
+                  letterSpacing: '0.5px',
+                  textDecoration: 'underline',
+                  textUnderlineOffset: '3.5px',
+                  textDecorationThickness: '0.6px',
+                  paddingBottom: '2px',
+                  fontSize: 'x-large',
+                  fontWeight: 'bold'
+                }}
+              >
+                Account Code*
+              </FormLabel>
               <Controller
                 name="accountCodeId"
                 control={control}
@@ -267,32 +387,63 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     .filter((accountCode) => accountCode.allowed)
                     .map(accountCodesToAutocomplete);
 
-                  const onClear = () => {
-                    setValue('indexCodeId', '');
-                    onChange('');
-                  };
-
                   return (
-                    <NERAutocomplete
-                      id={'accountCode'}
-                      size="medium"
-                      options={mappedAccountCodes}
-                      value={mappedAccountCodes.find((accountCode) => accountCode.id === value) || null}
-                      placeholder="Select Account Code"
-                      onChange={(_event, newValue) => {
-                        newValue ? onChange(newValue.id) : onClear();
+                    <Select
+                      value={value}
+                      onChange={(e) => {
+                        onChange(e.target.value);
                       }}
-                    />
+                      displayEmpty
+                      IconComponent={KeyboardArrowDownIcon}
+                      sx={{
+                        background: '#4c4c4c',
+                        borderRadius: '20px',
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: '20px'
+                        },
+                        '& .MuiSelect-icon': {
+                          fontSize: 'xxx-large'
+                        }
+                      }}
+                      renderValue={(selected) => {
+                        if (!selected) {
+                          return <Typography style={{ color: 'gray' }}>Select Account Code</Typography>;
+                        }
+                        return mappedAccountCodes.find((accountCode) => accountCode.id === selected)?.label;
+                      }}
+                    >
+                      {mappedAccountCodes.map((accountCode) => (
+                        <MenuItem key={accountCode.id} value={accountCode.id}>
+                          {accountCode.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
                   );
                 }}
               />
               <FormHelperText error>{errors.accountCodeId?.message}</FormHelperText>
             </FormControl>
           </Grid>
-          <Grid item xs={6}>
-            <FormControl fullWidth>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Grid item xs={12}>
+            <FormControl sx={{ borderRadius: '25px', width: '85%' }}>
               <Box style={{ display: 'flex', verticalAlign: 'middle', alignItems: 'center' }}>
-                <FormLabel>Date of Expense</FormLabel>
+                <FormLabel
+                  sx={{
+                    color: '#dd524c',
+                    textShadow: '1.5px 0 #dd524c',
+                    letterSpacing: '0.5px',
+                    textDecoration: 'underline',
+                    textUnderlineOffset: '3.5px',
+                    textDecorationThickness: '0.6px',
+                    paddingBottom: '2px',
+                    fontSize: 'x-large',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  Date of Expense*
+                </FormLabel>
                 <Tooltip
                   title="Reimbursements with Different Purchase Dates Should be on Different Requests. Leave Empty for Not Yet Purchased Items"
                   placement="right"
@@ -307,6 +458,14 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   <DatePicker
                     value={value}
                     open={datePickerOpen}
+                    sx={{
+                      background: '#4c4c4c',
+                      borderRadius: '20px',
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '20px',
+                        color: '#989898'
+                      }
+                    }}
                     onClose={() => setDatePickerOpen(false)}
                     onOpen={() => setDatePickerOpen(true)}
                     onChange={(newValue) => {
@@ -325,31 +484,144 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               />
             </FormControl>
           </Grid>
-          <Grid item xs={6}>
-            <FormControl fullWidth>
-              <FormLabel>Refund Source</FormLabel>
+          <Grid item xs={12} sx={{ paddingTop: '38px' }}>
+            <FormControl sx={{ display: 'flex', borderRadius: '25px', width: '85%' }}>
+              <FormLabel
+                sx={{
+                  color: '#dd524c',
+                  textShadow: '1.5px 0 #dd524c',
+                  letterSpacing: '0.5px',
+                  textDecoration: 'underline',
+                  textUnderlineOffset: '3.5px',
+                  textDecorationThickness: '0.6px',
+                  paddingBottom: '2px',
+                  fontSize: 'x-large',
+                  fontWeight: 'bold'
+                }}
+              >
+                Receipts
+              </FormLabel>
+
+              <Box>
+                <ReceiptFileInput />
+                <Button
+                  variant="contained"
+                  color="success"
+                  component="label"
+                  sx={{
+                    width: 'fit-content',
+                    textTransform: 'none',
+                    color: 'white',
+                    marginLeft: '10px'
+                  }}
+                >
+                  Upload
+                  <input
+                    onChange={(e) => {
+                      if (e.target.files) {
+                        [...e.target.files].forEach((file) => {
+                          /* The regex /^[\w.]+$/ limits the file name to the set of alphanumeric characters (\w) and dots (for file type) */
+                          if (file.size >= 1000000) {
+                            toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
+                            document.getElementById('receipt-image')!.innerHTML = '';
+                          } else if (file.name.length > 20) {
+                            toast.error(`Error uploading ${file.name}; file name must be less than 20 characters`, 5000);
+                            document.getElementById('receipt-image')!.innerHTML = '';
+                          } else if (!/^[\w.]+$/.test(file.name)) {
+                            toast.error(
+                              `Error uploading ${file.name}; file name must only contain letter and numbers`,
+                              5000
+                            );
+                            document.getElementById('receipt-image')!.innerHTML = '';
+                          } else {
+                            receiptPrepend({
+                              file,
+                              name: file.name,
+                              googleFileId: ''
+                            });
+                          }
+                        });
+                      }
+                    }}
+                    type="file"
+                    id="receipt-image"
+                    accept="image/png, image/jpeg, application/pdf"
+                    name="receiptFiles"
+                    multiple
+                    hidden
+                  />
+                </Button>
+              </Box>
+
+              <FormHelperText error>{errors.receiptFiles?.message}</FormHelperText>
+            </FormControl>
+          </Grid>
+        </Grid>
+        <Grid
+          item
+          xs={12}
+          md={12}
+          sx={{ display: 'flex', alignItems: { md: 'center' }, flexDirection: { xs: 'column', md: 'row' }, gap: 5 }}
+        >
+          <Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'flex-start' }}>
+            <FormControl sx={{ borderRadius: '25px', width: '85%' }}>
+              <FormLabel
+                sx={{
+                  color: '#dd524c',
+                  textShadow: '1.5px 0 #dd524c',
+                  letterSpacing: '0.5px',
+                  textDecoration: 'underline',
+                  textUnderlineOffset: '3.5px',
+                  textDecorationThickness: '0.6px',
+                  fontSize: 'x-large',
+                  fontWeight: 'bold'
+                }}
+              >
+                Refund Source*
+              </FormLabel>
               <Controller
                 name="indexCodeId"
                 control={control}
                 render={({ field: { onChange, value } }) => (
                   <Select
-                    onChange={(newValue) => onChange(newValue.target.value)}
+                    IconComponent={KeyboardArrowDownIcon}
+                    onChange={(e) => {
+                      onChange(e.target.value);
+                    }}
                     value={value}
                     disabled={!selectedAccountCode}
                     error={!!errors.indexCodeId}
                     displayEmpty
-                    renderValue={() => {
-                      return value ? (
-                        <Typography>
-                          {codeAndRefundSourceName(refundSources.find((source) => source.indexCodeId === value))}{' '}
-                        </Typography>
+                    sx={{
+                      background: '#4c4c4c',
+                      borderRadius: '20px',
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '20px'
+                      },
+                      '& .MuiSelect-icon': {
+                        fontSize: 'xxx-large'
+                      }
+                    }}
+                    renderValue={(selected) => {
+                      if (!selected) {
+                        return (
+                          <Typography style={{ color: 'gray' }}>
+                            {hasConfirmedFinance ? 'Select First Refund Source' : 'Select Refund Source'}
+                          </Typography>
+                        );
+                      }
+                      const selectedIndexCode = refundSources.find((source) => source.indexCodeId === selected);
+                      return selectedIndexCode ? (
+                        <Typography>{codeAndRefundSourceName(selectedIndexCode)}</Typography>
                       ) : (
-                        <Typography style={{ color: 'gray' }}>Select Refund Source</Typography>
+                        <Typography style={{ color: 'gray' }}>
+                          {hasConfirmedFinance ? 'Select First Refund Source' : 'Select Refund Source'}
+                        </Typography>
                       );
                     }}
                   >
                     {refundSources.map((refundSource) => (
-                      <MenuItem key={refundSource.name} value={refundSource.name}>
+                      <MenuItem key={refundSource.indexCodeId} value={refundSource.indexCodeId}>
                         {codeAndRefundSourceName(refundSource)}
                       </MenuItem>
                     ))}
@@ -357,54 +629,140 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 )}
               />
               <FormHelperText error>{errors.indexCodeId?.message}</FormHelperText>
+              {!hasConfirmedFinance && (
+                <Button
+                  sx={{
+                    alignSelf: 'flex-start',
+                    width: 'auto',
+                    marginTop: '5px'
+                  }}
+                  startIcon={<AddCircleOutline />}
+                  onClick={() => setShowAddRefundSourceModal(true)}
+                >
+                  Add Refund Source
+                </Button>
+              )}
+              {hasConfirmedFinance && (
+                <>
+                  <Controller
+                    name="secondaryAccount"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        {...field}
+                        IconComponent={KeyboardArrowDownIcon}
+                        value={field.value ?? ''}
+                        disabled={!selectedAccountCode || !firstRefundSourceId}
+                        error={!!errors.secondaryAccount}
+                        displayEmpty
+                        sx={{
+                          background: '#4c4c4c',
+                          borderRadius: '20px',
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: '20px'
+                          },
+                          '& .MuiSelect-icon': {
+                            fontSize: 'xxx-large'
+                          },
+                          marginTop: '10px'
+                        }}
+                        renderValue={(selected) => {
+                          if (!selected) {
+                            return <Typography style={{ color: 'gray' }}>Select Second Refund Source</Typography>;
+                          }
+                          const selectedIndexCode = refundSources.find((source) => source.indexCodeId === selected);
+                          return selectedIndexCode ? (
+                            <Typography>{codeAndRefundSourceName(selectedIndexCode)}</Typography>
+                          ) : (
+                            <Typography style={{ color: 'gray' }}>Select Second Refund Source</Typography>
+                          );
+                        }}
+                      >
+                        {remainingRefundSources.map((refundSource) => (
+                          <MenuItem key={refundSource.indexCodeId} value={refundSource.indexCodeId}>
+                            {codeAndRefundSourceName(refundSource)}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    )}
+                  />
+                  <FormHelperText error>{errors.secondaryAccount?.message}</FormHelperText>
+                  <Button
+                    sx={{
+                      alignSelf: 'flex-start',
+                      width: 'auto',
+                      marginTop: '5px'
+                    }}
+                    startIcon={<RemoveCircleOutline />}
+                    onClick={handleRemoveSecondRefundSource}
+                  >
+                    Remove Refund Source
+                  </Button>
+                </>
+              )}
             </FormControl>
           </Grid>
-          <Grid item xs={6}>
-            <FormControl fullWidth>
-              <FormLabel>Receipts</FormLabel>
-              <Button
-                variant="contained"
-                color="success"
-                component="label"
-                startIcon={<FileUploadIcon />}
+          <Grid item xs={12} md={6} sx={{ display: 'flex', width: '85%' }}>
+            {showAddRefundSourceModal ? (
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: 1 }}>
+                <Typography
+                  sx={{
+                    color: '#dd524c',
+                    textShadow: '0.5px 0 #dd524c',
+                    letterSpacing: '0.5px',
+                    textAlign: 'center'
+                  }}
+                >
+                  Have you confirmed using more than one refund source with Finance?
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Button
+                    variant="contained"
+                    sx={{
+                      backgroundColor: '#dd524c',
+                      color: 'white',
+                      borderRadius: '10px',
+                      padding: '0px 10px 0px 10px'
+                    }}
+                    onClick={() => {
+                      setHasConfirmedFinance(true);
+                      setShowAddRefundSourceModal(false);
+                    }}
+                  >
+                    Yes
+                  </Button>
+                  <Button
+                    variant="contained"
+                    sx={{
+                      backgroundColor: '#dd524c',
+                      color: 'white',
+                      borderRadius: '10px',
+                      padding: '5px 10px 5px 10px'
+                    }}
+                    onClick={() => setShowAddRefundSourceModal(false)}
+                  >
+                    No
+                  </Button>
+                </Box>
+              </Box>
+            ) : (
+              <Typography
                 sx={{
-                  width: 'fit-content',
-                  textTransform: 'none',
-                  mt: '9.75px'
+                  color: '#dd524c',
+                  textShadow: '0.5px 0 #dd524c',
+                  letterSpacing: '0.5px',
+                  textAlign: 'center',
+                  paddingBottom: { md: '10px' },
+                  width: '100%'
                 }}
               >
-                Upload
-                <input
-                  onChange={(e) => {
-                    if (e.target.files) {
-                      [...e.target.files].forEach((file, index) => {
-                        if (file.size >= 1000000) {
-                          toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
-                          document.getElementById('receipt-image')!.innerHTML = '';
-                        } else {
-                          receiptPrepend({
-                            file,
-                            name: 'receipt' + (receiptFiles.length + index),
-                            googleFileId: ''
-                          });
-                        }
-                      });
-                    }
-                  }}
-                  type="file"
-                  id="receipt-image"
-                  accept="image/png, image/jpeg, application/pdf"
-                  name="receiptFiles"
-                  multiple
-                  hidden
-                />
-              </Button>
-              <ReceiptFileInput />
-              <FormHelperText error>{errors.receiptFiles?.message}</FormHelperText>
-            </FormControl>
+                {hasConfirmedFinance ? '' : 'Please confirm using multiple refund sources with Finance before submitting!'}
+              </Typography>
+            )}
           </Grid>
         </Grid>
-        <Grid item md={6} xs={12} sx={{ '&.MuiGrid-item': { paddingTop: '4px' } }}>
+
+        <Grid item md={12} xs={12} sx={{ '&.MuiGrid-item': { paddingTop: '80px' } }}>
           <FormControl fullWidth>
             <ReimbursementProductTable
               errors={errors}
@@ -415,6 +773,10 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               watch={watch}
               register={register}
               setValue={setValue}
+              control={control}
+              hasMultipleRefundSources={hasConfirmedFinance}
+              firstRefundSourceName={firstRefundSource.name}
+              secondRefundSourceName={secondRefundSource.name}
             />
             <FormHelperText error>{errors.reimbursementProducts?.message}</FormHelperText>
           </FormControl>
@@ -437,10 +799,19 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           <Typography variant="h6">${calculatedTotalCost}</Typography>
         </Box>
         <Box sx={{ display: 'flex', alignSelf: 'center' }}>
-          <NERFailButton variant="contained" href={previousPage} sx={{ mx: 1 }}>
+          <NERFailButton
+            variant="contained"
+            href={previousPage}
+            sx={{ mx: 1, background: '#dd524c', color: 'white', borderRadius: '10px' }}
+          >
             Cancel
           </NERFailButton>
-          <NERSuccessButton variant="contained" type="submit" disabled={!hasSecureSettingsSet}>
+          <NERSuccessButton
+            variant="contained"
+            type="submit"
+            disabled={!hasSecureSettingsSet}
+            sx={{ background: '#dd524c', color: 'white', borderRadius: '10px' }}
+          >
             {submitText}
           </NERSuccessButton>
         </Box>
