@@ -2,7 +2,7 @@ import * as yup from 'yup';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import NERFormModal from '../../../components/NERFormModal';
-import { Box, FormControl, FormLabel, MenuItem, Select, Typography } from '@mui/material';
+import { Box, FormControl, FormHelperText, FormLabel, MenuItem, Select, Typography } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { useGetAllIndexCodes } from '../../../hooks/finance.hooks';
@@ -10,41 +10,47 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
 import { useAllProjects } from '../../../hooks/projects.hooks';
-import { ChangeRequestType } from 'shared';
+import { ChangeRequestType, Project } from 'shared';
 
 const schema = yup.object().shape({
   project: yup.string().required('Project is required'),
   account: yup.string().required('Account is required'),
-  budget: yup.number().positive('Amount must be positive').required('Amount is required')
+  budget: yup
+    .number()
+    .typeError('Amount must be a number')
+    .positive('Amount must be positive')
+    .required('Amount is required')
 });
 
-interface EditBudgetInputs {
+interface EditProjectBudgetModalInputs {
   project: string;
   account: string;
   budget: number;
 }
 
-interface EditBudgetModalForProjectProps {
+interface EditProjectBudgetModalProps {
   showModal: boolean;
   handleClose: () => void;
+  project?: Project;
 }
 
-export const EditBudgetModalForProject: React.FC<EditBudgetModalForProjectProps> = ({
+export const EditProjectBudgetModal: React.FC<EditProjectBudgetModalProps> = ({
   showModal,
-  handleClose
-}: EditBudgetModalForProjectProps) => {
+  handleClose,
+  project
+}: EditProjectBudgetModalProps) => {
   const {
     watch,
     handleSubmit,
     control,
     reset,
     formState: { errors }
-  } = useForm<EditBudgetInputs>({
+  } = useForm<EditProjectBudgetModalInputs>({
     resolver: yupResolver(schema),
     defaultValues: {
-      project: '',
+      project: project?.id || '',
       account: '',
-      budget: 0
+      budget: project?.budget || 0
     }
   });
 
@@ -75,7 +81,7 @@ export const EditBudgetModalForProject: React.FC<EditBudgetModalForProjectProps>
     return <ErrorPage message={projectsError.message} />;
   }
 
-  const onSubmit = async (data: EditBudgetInputs) => {
+  const onSubmit = async (data: EditProjectBudgetModalInputs) => {
     if (!currentProjectId) return;
     const currentProject = projects.find((project) => project.id === currentProjectId);
     if (!currentProject) return;
@@ -87,6 +93,8 @@ export const EditBudgetModalForProject: React.FC<EditBudgetModalForProjectProps>
       why: [],
       proposedSolutions: [],
       projectProposedChanges: {
+        leadId: currentProject.lead?.userId,
+        managerId: currentProject.manager?.userId,
         name: currentProject.name,
         descriptionBullets: currentProject.descriptionBullets.map((bullet) => ({
           id: bullet.id,
@@ -99,7 +107,7 @@ export const EditBudgetModalForProject: React.FC<EditBudgetModalForProjectProps>
           linkId: link.linkId
         })),
         budget: data.budget,
-        summary: 'Budget update',
+        summary: currentProject.summary,
         teamIds: currentProject.teams.map((team) => team.teamId),
         workPackageProposedChanges: []
       }
@@ -129,11 +137,14 @@ export const EditBudgetModalForProject: React.FC<EditBudgetModalForProjectProps>
           <Controller
             control={control}
             name={'project'}
-            render={({ field: { onChange, value } }) => (
+            render={({ field: { onChange, value, onBlur, ref } }) => (
               <Select
                 displayEmpty
                 value={value !== undefined ? value : ''}
                 onChange={onChange}
+                onBlur={onBlur}
+                inputRef={ref}
+                error={!!errors.project}
                 renderValue={(selected) => {
                   const selectedReason = projects.find((project) => project.id === selected);
                   return selectedReason ? (
@@ -163,6 +174,7 @@ export const EditBudgetModalForProject: React.FC<EditBudgetModalForProjectProps>
               </Select>
             )}
           />
+          <FormHelperText error>{errors.project?.message}</FormHelperText>
         </FormControl>
 
         <FormControl fullWidth>
@@ -200,6 +212,7 @@ export const EditBudgetModalForProject: React.FC<EditBudgetModalForProjectProps>
               </Select>
             )}
           />
+          <FormHelperText error>{errors.account?.message}</FormHelperText>
         </FormControl>
 
         <FormControl>
