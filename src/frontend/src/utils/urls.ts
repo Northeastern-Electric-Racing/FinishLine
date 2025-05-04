@@ -37,6 +37,8 @@ const projectsEdit = () => `${projects()}/edit`;
 const projectsSetTeam = (wbsNum: string) => `${projects()}/${wbsNum}/set-team`;
 const projectsDelete = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/delete';
 const projectsToggleFavorite = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/favorite';
+const projectsSetAbbreviation = () => `${projects()}/set-abbreviation`;
+const projectsDeleteAbbreviation = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/delete-abbreviation';
 const projectsLinkTypes = () => `${projects()}/link-types`;
 const projectsCreateLinkTypes = () => `${projects()}/link-types/create`;
 const projectsEditLinkTypes = (linkTypeName: string) => `${projects()}/link-types/${linkTypeName}/edit`;
@@ -62,6 +64,7 @@ const partsReviewFaqEdit = (faqId: string) => `${parts()}/faqs/${faqId}/update`;
 const partsReviewFaqDelete = (faqId: string) => `${parts()}/faqs/${faqId}/delete`;
 const partsReviewUploadFiles = (reviewId: string) => `${parts()}/review/${reviewId}/upload-files`;
 const getAllPartCommonMistakes = () => `${parts()}/common-mistakes`;
+const getAllPartTags = () => `${parts()}/tags`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
@@ -297,6 +300,8 @@ export const apiUrls = {
   projectsSetTeam,
   projectsDelete,
   projectsToggleFavorite,
+  projectsSetAbbreviation,
+  projectsDeleteAbbreviation,
   projectsLinkTypes,
   projectsCreateLinkTypes,
   projectsEditLinkTypes,
@@ -321,6 +326,7 @@ export const apiUrls = {
   partsEditReview,
   partsReviewUploadFiles,
   getAllPartCommonMistakes,
+  getAllPartTags,
 
   tasksCreate,
   tasks,

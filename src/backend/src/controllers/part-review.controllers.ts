@@ -29,7 +29,7 @@ export default class PartReviewController {
 
   static async createPart(req: Request, res: Response, next: NextFunction) {
     try {
-      const { wbsNum, index, commonName, description, reviewStatus, tagIds, assigneeIds } = req.body;
+      const { wbsNum, index, commonName, description, reviewStatus, tagIds, assigneeIds, reviewerIds } = req.body;
       const part = await PartReviewService.createPart(
         req.organization,
         wbsNum,
@@ -39,7 +39,8 @@ export default class PartReviewController {
         description,
         reviewStatus,
         tagIds,
-        assigneeIds
+        assigneeIds,
+        reviewerIds
       );
       res.status(200).json(part);
     } catch (error: unknown) {
@@ -133,7 +134,9 @@ export default class PartReviewController {
   static async uploadReviewFiles(req: Request, res: Response, next: NextFunction) {
     try {
       const { reviewId } = req.params;
-      const files = req.files as Express.Multer.File[];
+      const { files = [] } = req.files as {
+        files?: Express.Multer.File[];
+      };
       const updatedReview = await PartReviewService.uploadReviewFiles(
         reviewId,
         req.currentUser,
@@ -182,7 +185,9 @@ export default class PartReviewController {
   static async uploadSubmissionFiles(req: Request, res: Response, next: NextFunction) {
     try {
       const { submissionId } = req.params;
-      const files = req.files as Express.Multer.File[];
+      const { files = [] } = req.files as {
+        files?: Express.Multer.File[];
+      };
       const updatedSubmission = await PartReviewService.uploadSubmissionFiles(
         submissionId,
         req.currentUser,

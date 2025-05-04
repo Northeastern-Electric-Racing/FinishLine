@@ -22,6 +22,7 @@ import {
 } from '../../src/utils/errors.utils';
 import { validateWBS, WbsNumber } from 'shared';
 import { Review_Status } from 'shared';
+import ProjectsService from '../../src/services/projects.services';
 
 describe('part review tests', () => {
   let orgId: string;
@@ -64,7 +65,8 @@ describe('part review tests', () => {
       'here is a description',
       Review_Status.IN_PROGRESS,
       [],
-      [nonAdmin.userId, batman.userId]
+      [nonAdmin.userId, batman.userId],
+      []
     );
 
     const submission = await PartReviewService.createSubmission(part.partId, batman, orgId, 'name1', 'notes1');
@@ -125,7 +127,8 @@ describe('part review tests', () => {
       'here is a description',
       Review_Status.IN_PROGRESS,
       [],
-      [nonAdmin.userId, batman.userId]
+      [nonAdmin.userId, batman.userId],
+      []
     );
 
     await expect(
@@ -174,7 +177,8 @@ describe('part review tests', () => {
       'here is a description',
       Review_Status.IN_PROGRESS,
       [tag.partTagId, tag3.partTagId],
-      [nonAdmin.userId, batman.userId]
+      [nonAdmin.userId, batman.userId],
+      []
     );
 
     expect(part.commonName).toBe('part1');
@@ -260,7 +264,8 @@ describe('part review tests', () => {
           'here is a description',
           Review_Status.IN_PROGRESS,
           [],
-          [nonAdmin.userId, batman.userId]
+          [nonAdmin.userId, batman.userId],
+          []
         )
     ).rejects.toThrow(new AccessDeniedException('Only leadership and team members can create a part'));
 
@@ -273,7 +278,8 @@ describe('part review tests', () => {
       'here is a description',
       Review_Status.IN_PROGRESS,
       [],
-      [nonAdmin.userId, batman.userId]
+      [nonAdmin.userId, batman.userId],
+      []
     );
 
     await expect(
@@ -313,7 +319,8 @@ describe('part review tests', () => {
       'here is a description',
       Review_Status.IN_PROGRESS,
       [],
-      [nonAdmin.userId, batman.userId]
+      [nonAdmin.userId, batman.userId],
+      []
     );
 
     await expect(async () => await PartReviewService.deletePart(part.partId, nonLeadership, orgId)).rejects.toThrow(
@@ -352,7 +359,8 @@ describe('part review tests', () => {
       'here is a description',
       Review_Status.IN_PROGRESS,
       [],
-      [nonAdmin.userId, batman.userId]
+      [nonAdmin.userId, batman.userId],
+      []
     );
 
     const submission = await prisma.partSubmission.create({
@@ -421,7 +429,8 @@ describe('part review tests', () => {
       'here is a description',
       Review_Status.IN_PROGRESS,
       [],
-      [nonAdmin.userId, batman.userId]
+      [nonAdmin.userId, batman.userId],
+      []
     );
 
     const submission = await prisma.partSubmission.create({
@@ -1065,6 +1074,43 @@ describe('part review tests', () => {
       expect(parts2[0].index).toBe(part3.index);
       expect(parts2[0].projectId).toBe(part3.projectId);
     });
+  });
+
+  it('updates the abbreviation on a project and then deletes it', async () => {
+    const project = await createTestProject(batman, orgId);
+
+    const projectWithWbs = await prisma.project.findUnique({
+      where: { projectId: project.projectId },
+      include: {
+        wbsElement: true
+      }
+    });
+
+    expect(projectWithWbs?.abbreviation).toBeNull();
+
+    const wbsNum: WbsNumber = validateWBS(
+      `${projectWithWbs?.wbsElement.carNumber}.${projectWithWbs?.wbsElement.projectNumber}.${projectWithWbs?.wbsElement.workPackageNumber}`
+    );
+
+    await ProjectsService.deleteAbbreviation(wbsNum, batman, organization);
+
+    await expect(ProjectsService.setAbbreviation(wbsNum, nonAdmin, organization, 'new abbreviation')).rejects.toThrow(
+      new AccessDeniedAdminOnlyException('set abbreviation')
+    );
+
+    const updatedProject = await ProjectsService.setAbbreviation(wbsNum, batman, organization, 'new abbreviation');
+    expect(updatedProject.abbreviation).toBe('new abbreviation');
+
+    const updatedProject2 = await ProjectsService.setAbbreviation(wbsNum, batman, organization, 'diff');
+    expect(updatedProject2.abbreviation).toBe('diff');
+
+    await expect(ProjectsService.deleteAbbreviation(wbsNum, nonAdmin, organization)).rejects.toThrow(
+      new AccessDeniedAdminOnlyException('delete abbreviation')
+    );
+
+    await ProjectsService.deleteAbbreviation(wbsNum, batman, organization);
+    const projectWithNoAbbrev = await ProjectsService.getSingleProject(wbsNum, organization);
+    expect(projectWithNoAbbrev.abbreviation).toBeUndefined();
   });
 });
 

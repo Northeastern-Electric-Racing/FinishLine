@@ -7,7 +7,8 @@ import {
   PartSubmission,
   Review_Status,
   PartReviewCommonMistake,
-  FrequentlyAskedQuestion
+  FrequentlyAskedQuestion,
+  PartTag
 } from 'shared';
 import {
   createPart,
@@ -27,7 +28,9 @@ import {
   getSinglePart,
   getAllCommonMistakes,
   uploadPreviewImage,
-  setUploadReviewFiles
+  setUploadReviewFiles,
+  getAllPartTags,
+  setUploadSubmissionFiles
 } from '../apis/part-review.api';
 
 export interface PartPayload {
@@ -38,6 +41,7 @@ export interface PartPayload {
   reviewStatus: Review_Status;
   tagIds: string[];
   assigneeIds: string[];
+  reviewerIds: string[];
 }
 
 export interface EditPartSubmissionPayload {
@@ -55,9 +59,9 @@ export interface PartReviewRequestPayload {
 }
 
 export interface CreatePartReviewPayload {
-  submissisonId: string;
+  submissionId: string;
+  status: Review_Status;
   notes?: string;
-  status?: string;
 }
 
 export interface EditPartReviewPayload {
@@ -290,11 +294,34 @@ export const useEditPartReview = (reviewId: string) => {
   );
 };
 
-export const useUploadReviewFiles = (reviewId: string) => {
+/**
+ * Custom React Hook to upload files to a submission
+ */
+export const useUploadSubmissionFiles = () => {
   const queryClient = useQueryClient();
-  return useMutation<any, unknown, File[]>(
-    async (images: File[]) => {
-      const { data } = await setUploadReviewFiles(reviewId, images);
+  return useMutation<any, unknown, { submissionId: string; files: File[] }>(
+    ['parts', 'submission', 'upload'],
+    async (fileUpload: { submissionId: string; files: File[] }) => {
+      const { data } = await setUploadSubmissionFiles(fileUpload.submissionId, fileUpload.files);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['parts']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to upload files to a review
+ */
+export const useUploadReviewFiles = () => {
+  const queryClient = useQueryClient();
+  return useMutation<any, unknown, { reviewId: string; files: File[] }>(
+    ['parts', 'review', 'upload'],
+    async (fileUpload: { reviewId: string; files: File[] }) => {
+      const { data } = await setUploadReviewFiles(fileUpload.reviewId, fileUpload.files);
       return data;
     },
     {
@@ -392,4 +419,16 @@ export const useAllCommonMistakes = () => {
       }
     }
   );
+};
+
+/**
+ * Custom React Hook to get all part tags
+ *
+ * @returns a list of all part tags
+ */
+export const useGetAllPartTags = () => {
+  return useQuery<PartTag[], Error>(['part tags'], async () => {
+    const { data } = await getAllPartTags();
+    return data;
+  });
 };
