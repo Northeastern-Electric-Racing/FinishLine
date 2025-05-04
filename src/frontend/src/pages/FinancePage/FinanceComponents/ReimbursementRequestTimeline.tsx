@@ -29,7 +29,7 @@ const ReimbursementRequestTimeline: React.FC<TimelineProps> = ({ reimbursementRe
   );
   return (
     <Stack direction="column" alignItems="flex-start" marginBottom={8}>
-      <Typography fontSize={32} variant="h6" sx={{ ml: 5, mb: 1 }}>
+      <Typography variant="h5" sx={{ mb: 1, mt: 5 }}>
         Reimbursement Request Timeline
       </Typography>
 
@@ -46,8 +46,8 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ comment, isLast }) =>
   let commentTime = new Date(comment.dateCreated).toLocaleTimeString();
   commentTime = commentTime.slice(0, -6) + commentTime.slice(-3);
   return (
-    <Stack direction="row" spacing={2} alignItems="stretch">
-      <Box sx={{ minWidth: 120, textAlign: 'right' }}>
+    <Stack direction="row" spacing={2}>
+      <Box sx={{ width: 'auto', textAlign: 'right' }}>
         <Typography fontWeight={'regular'} fontSize={18} variant="h1">
           {datePipe(comment.dateCreated)}
         </Typography>
@@ -73,8 +73,8 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ comment, isLast }) =>
         )}
       </Box>
 
-      <Box>
-        <Typography fontWeight={'regular'} fontSize={18} variant="h1">
+      <Box sx={{ maxWidth: '70%', wordBreak: 'break-word' }}>
+        <Typography fontWeight={'regular'} fontSize={18} variant="h1" marginBottom={1}>
           {comment.comment}
         </Typography>
       </Box>
@@ -89,7 +89,7 @@ const CreateNewCommentSection: React.FC<CreateNewCommentSectionProps> = ({ reimb
   const newCommentTime = commentTime.slice(0, -6) + commentTime.slice(-3);
   return (
     <Stack direction="row" spacing={2}>
-      <Box sx={{ minWidth: 120, textAlign: 'right' }}>
+      <Box sx={{ width: 'auto', textAlign: 'right' }}>
         <Typography fontWeight={'regular'} fontSize={18} variant="h1">
           {datePipe(new Date())}
         </Typography>
