@@ -297,21 +297,6 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     </NERModal>
   );
 
-  const GridDivider = () => {
-    return (
-      <Box
-        sx={{
-          height: '100%',
-          borderColor: theme.palette.divider,
-          borderWidth: '2px',
-          borderStyle: 'solid',
-          width: '0px',
-          textAlign: 'center'
-        }}
-      />
-    );
-  };
-
   const ReceiptsView = () => {
     return (
       <Box sx={{ maxHeight: `250px`, overflow: reimbursementRequest.receiptPictures.length > 0 ? 'auto' : 'none' }}>
