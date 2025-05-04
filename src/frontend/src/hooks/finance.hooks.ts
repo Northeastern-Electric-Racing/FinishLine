@@ -42,6 +42,7 @@ import {
   getSponsorTasks,
   editSponsorTask,
   deleteSponsor,
+  createReimbursementRequestComment,
   editOtherReimbursementProductReason,
   deleteVendor
 } from '../apis/finance.api';
@@ -59,7 +60,8 @@ import {
   OtherProductReason,
   Sponsor,
   SponsorTask,
-  SponsorTier
+  SponsorTier,
+  ReimbursementRequestComment
 } from 'shared';
 import { fullNamePipe } from '../utils/pipes';
 
@@ -187,6 +189,33 @@ export const useCreateSponsorTier = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['sponsor-tier']);
+      }
+    }
+  );
+};
+
+export interface ReimbursementRequestCommentPayload {
+  reimbursementRequestId: string;
+  dateCreated: Date;
+  comment: string;
+}
+
+/**
+ * Custom React hook to create a reimbursement request comment
+ *
+ * @returns the created comment
+ */
+export const useCreateReimbursementRequestComment = (reimbursementRequestId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ReimbursementRequestComment, Error, ReimbursementRequestCommentPayload>(
+    ['reimbursement-requests', 'create'],
+    async (formData: ReimbursementRequestCommentPayload) => {
+      const { data } = await createReimbursementRequestComment(reimbursementRequestId, formData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests']);
       }
     }
   );
