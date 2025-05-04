@@ -114,20 +114,11 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organ
   ];
 
   if (!isGuest(user.role)) {
-    memberLinkItems.splice(
-      6,
-      0,
-      {
-        name: 'Finance',
-        icon: <AttachMoneyIcon />,
-        route: routes.FINANCE
-      },
-      {
-        name: 'Statistics',
-        icon: <BarChartIcon />,
-        route: routes.STATISTICS
-      }
-    );
+    memberLinkItems.splice(6, 0, {
+      name: 'Statistics',
+      icon: <BarChartIcon />,
+      route: routes.STATISTICS
+    });
   }
 
   const onboardingLinkItems: LinkItem[] = [

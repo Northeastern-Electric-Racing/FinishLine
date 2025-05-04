@@ -99,6 +99,7 @@ const teamsArchive = (id: string) => `${teamsById(id)}/archive`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
 const teamsCreate = () => `${teams()}/create`;
 const teamsSetLeads = (id: string) => `${teamsById(id)}/set-leads`;
+const usersTeams = () => `${teams()}/users-teams`;
 const teamTypes = () => `${teams()}/teamType`;
 const allTeamTypes = () => `${teamTypes()}/all`;
 const teamTypesCreate = () => `${teamTypes()}/create`;
@@ -156,6 +157,78 @@ const deleteSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponso
 const editSponsorTask = (sponsorTaskId: string) => `${financeRoutesEndpoints()}/sponsorTask/${sponsorTaskId}/edit`;
 const financeEditOtherReimbursementProductReason = (id: String) =>
   `${financeEndpoints()}/other-reimbursement-product-reasons/${id}/edit`;
+const getReimbursementRequestProjectData = (projectId: string, startDate?: Date, endDate?: Date): string => {
+  const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-project-data/${projectId}`);
+  const params = new URLSearchParams();
+  if (startDate) params.set('startDate', startDate.toISOString());
+  if (endDate) params.set('endDate', endDate.toISOString());
+  const queryString = params.toString();
+  return queryString ? `${url.toString()}?${queryString}` : url.toString();
+};
+const getReimbursementRequestTeamData = (teamId: string, startDate?: Date, endDate?: Date): string => {
+  const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-team-data/${teamId}`);
+  const params = new URLSearchParams();
+  if (startDate) params.set('startDate', startDate.toISOString());
+  if (endDate) params.set('endDate', endDate.toISOString());
+  const queryString = params.toString();
+  return queryString ? `${url.toString()}?${queryString}` : url.toString();
+};
+const getReimbursementRequestCategoryData = (otherReasonId: string, startDate?: Date, endDate?: Date): string => {
+  const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-category-data/${otherReasonId}`);
+  const params = new URLSearchParams();
+  if (startDate) params.set('startDate', startDate.toISOString());
+  if (endDate) params.set('endDate', endDate.toISOString());
+  const queryString = params.toString();
+  return queryString ? `${url.toString()}?${queryString}` : url.toString();
+};
+const getAllReimbursementRequestData = (startDate?: Date, endDate?: Date): string => {
+  const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-data`);
+  const params = new URLSearchParams();
+  if (startDate) params.set('startDate', startDate.toISOString());
+  if (endDate) params.set('endDate', endDate.toISOString());
+  const queryString = params.toString();
+  return queryString ? `${url.toString()}?${queryString}` : url.toString();
+};
+const getReimbursementRequestTeamTypeData = (teamTypeId: string, startDate?: Date, endDate?: Date): string => {
+  const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-team-type-data/${teamTypeId}`);
+  const params = new URLSearchParams();
+  if (startDate) params.set('startDate', startDate.toISOString());
+  if (endDate) params.set('endDate', endDate.toISOString());
+  const queryString = params.toString();
+  return queryString ? `${url.toString()}?${queryString}` : url.toString();
+};
+const getSpendingBarTeamData = (teamId: string, startDate?: Date, endDate?: Date): string => {
+  const url = new URL(`${financeRoutesEndpoints()}/spending-bar-team-data/${teamId}`);
+  const params = new URLSearchParams();
+  if (startDate) params.set('startDate', startDate.toISOString());
+  if (endDate) params.set('endDate', endDate.toISOString());
+  const queryString = params.toString();
+  return queryString ? `${url.toString()}?${queryString}` : url.toString();
+};
+const getSpendingBarTeamTypeData = (teamTypeId: string, startDate?: Date, endDate?: Date): string => {
+  const url = new URL(`${financeRoutesEndpoints()}/spending-bar-team-type-data/${teamTypeId}`);
+  const params = new URLSearchParams();
+  if (startDate) params.set('startDate', startDate.toISOString());
+  if (endDate) params.set('endDate', endDate.toISOString());
+  const queryString = params.toString();
+  return queryString ? `${url.toString()}?${queryString}` : url.toString();
+};
+const getSpendingBarCategoryData = (startDate?: Date, endDate?: Date): string => {
+  const url = new URL(`${financeRoutesEndpoints()}/spending-bar-category-data`);
+  const params = new URLSearchParams();
+  if (startDate) params.set('startDate', startDate.toISOString());
+  if (endDate) params.set('endDate', endDate.toISOString());
+  const queryString = params.toString();
+  return queryString ? `${url.toString()}?${queryString}` : url.toString();
+};
+const getAllSpendingBarData = (startDate?: Date, endDate?: Date): string => {
+  const url = new URL(`${financeRoutesEndpoints()}/spending-bar-data`);
+  const params = new URLSearchParams();
+  if (startDate) params.set('startDate', startDate.toISOString());
+  if (endDate) params.set('endDate', endDate.toISOString());
+  const queryString = params.toString();
+  return queryString ? `${url.toString()}?${queryString}` : url.toString();
+};
 
 /**************** Bill of Material Endpoints **************************/
 const bomEndpoints = () => `${API_URL}/projects/bom`;
@@ -338,6 +411,7 @@ export const apiUrls = {
   teamsSetDescription,
   teamsCreate,
   teamsSetLeads,
+  usersTeams,
   allTeamTypes,
   teamsSetTeamType,
   setOnboardingUser,
@@ -392,6 +466,15 @@ export const apiUrls = {
   deleteSponsor,
   editSponsorTask,
   financeEditOtherReimbursementProductReason,
+  getReimbursementRequestProjectData,
+  getReimbursementRequestTeamData,
+  getAllReimbursementRequestData,
+  getReimbursementRequestCategoryData,
+  getReimbursementRequestTeamTypeData,
+  getSpendingBarTeamData,
+  getSpendingBarTeamTypeData,
+  getSpendingBarCategoryData,
+  getAllSpendingBarData,
 
   bomEndpoints,
   bomGetMaterialsByWbsNum,

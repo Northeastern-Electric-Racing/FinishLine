@@ -27,3 +27,20 @@ export interface SponsorTier {
   name: string;
   colorHexCode: string;
 }
+
+export interface SpendingBarData {
+  title: string;
+  data: {
+    title: string;
+    spendingInfo: ReimbursementRequestData;
+  }[];
+}
+
+export interface ReimbursementRequestData {
+  totalBudget: number;
+  pendingFinance: number;
+  pendingLeadership: number;
+  submittedToSabo: number;
+  reimbursed: number;
+  available: number;
+}
