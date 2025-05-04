@@ -32,8 +32,8 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
   newPopup
 }) => {
   const [hovering, setHovering] = useState<boolean>(false);
-  const [selelcted, setSelected] = useState<boolean>(false);
-  const [editting, setEditting] = useState<boolean>(newPopup);
+  const [selected, setSelected] = useState<boolean>(false);
+  const [editing, setEditing] = useState<boolean>(newPopup);
   const [currentPopup, setCurrentPopup] = useState<Part_Review_Popup>(popup);
   const toast = useToast();
 
@@ -70,7 +70,7 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
         title: data.title,
         description: data.description ?? ''
       });
-      setEditting(false);
+      setEditing(false);
     } catch (err: unknown) {
       if (err instanceof Error) {
         toast.error(err.message);
@@ -91,7 +91,7 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
       <Box>
         <Box
           onClick={() => {
-            setSelected(!selelcted);
+            setSelected(!selected);
           }}
           onMouseEnter={() => {
             setHovering(true);
@@ -104,7 +104,7 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
             backgroundColor: 'red',
             width: '15px',
             height: '15px',
-            outline: `2px solid ${selelcted ? 'black' : 'white'}`,
+            outline: `2px solid ${selected ? 'black' : 'white'}`,
             borderRadius: '50%',
             padding: '2px',
             cursor: 'default',
@@ -112,7 +112,7 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
           }}
         />
       </Box>
-      {(selelcted || hovering) && (
+      {(selected || hovering) && (
         <Box
           sx={{
             transform: `translate(${-20}px, ${10}px)`,
@@ -124,7 +124,7 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
             zIndex: 1
           }}
         >
-          {editting && (
+          {editing && (
             <Box component="form" onSubmit={handleSubmit(onSubmit)} zIndex={3}>
               <FormControl fullWidth sx={{ mb: 2 }}>
                 <Controller
@@ -167,7 +167,7 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
                   variant="outlined"
                   color="inherit"
                   size="small"
-                  onClick={() => setEditting(false)}
+                  onClick={() => setEditing(false)}
                   sx={{ color: 'grey.500', borderColor: 'grey.500' }}
                   type="button"
                 >
@@ -180,7 +180,7 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
               </Box>
             </Box>
           )}
-          {!editting && (
+          {!editing && (
             <Box>
               <Typography variant="h6" color="white" zIndex={2}>
                 {currentPopup.title}
@@ -226,7 +226,7 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
                         title: currentPopup.title,
                         description: currentPopup.description
                       });
-                      setEditting(true);
+                      setEditing(true);
                     }}
                     sx={{ color: 'grey.500', borderColor: 'grey.500' }}
                     type="button"

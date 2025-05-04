@@ -187,7 +187,6 @@ const PartPage: React.FC = () => {
           {part.submissions.length !== 0 && (
             <PDFViewer
               submission={part.submissions[subIndex]}
-              submissionIdx={subIndex}
               review={reviewIndex === -1 ? undefined : part.submissions[subIndex].reviews[reviewIndex]}
               hasNext={hasNext}
               next={next}

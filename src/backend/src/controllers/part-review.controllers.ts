@@ -70,7 +70,7 @@ export default class PartReviewController {
   static async uploadFile(req: Request, res: Response, next: NextFunction) {
     try {
       if (!req.file) {
-        throw new HttpException(400, 'Invalid or undefined image data');
+        throw new HttpException(400, 'Invalid or undefined file data');
       }
 
       const fileId = await PartReviewService.uploadFile(req.file);

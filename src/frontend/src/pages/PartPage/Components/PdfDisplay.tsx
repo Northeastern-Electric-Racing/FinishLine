@@ -62,7 +62,6 @@ const pdfLoadingError = (child: JSX.Element) => {
 //has next, next, has prev, and prev used for navigating through reviews and submissions
 interface FileDisplayProps {
   submission: PartSubmission;
-  submissionIdx: number;
   review?: PartReview;
   hasNext: () => boolean;
   next: () => void;
@@ -70,7 +69,7 @@ interface FileDisplayProps {
   prev: () => void;
 }
 
-const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, review, hasNext, next, hasPrev, prev }) => {
+const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, next, hasPrev, prev }) => {
   //States for storing position and scale of pdf in window
   const [scale, setScale] = useState<number>(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -80,7 +79,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
   //popups to be displayed (all on submissions, only ones in review on reviews)
   const [variablePopups, setVariablePopups] = useState<Part_Review_Popup[]>([]);
   //the model to create a new popup always exists, but is just off the screen when not being used
-  const [newPopupCoords, setNewPopupCoords] = useState<{ x: number; y: number }>({ x: 5, y: 5 });
+  const [newPopupCoords, setNewPopupCoords] = useState<{ x: number; y: number }>({ x: -5, y: -5 });
 
   //what mode is the user in. 0 for dragging, 1 for custom comment, 2 for common mistake
   const [editMode, setEditMode] = useState<number>(0);
@@ -254,7 +253,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
         <Box display="flex" alignItems="center">
           {pdf && <DownloadButton fileId={submission.fileIds[fileIdx]} filename={`${submission.name}_${fileIdx + 1}`} />}
           <Typography variant={'h4'}>
-            {submission.name} #{submissionIdx + 1} {review ? ' Review' : ''}
+            {submission.name} {review ? ' Review' : ''}
           </Typography>
         </Box>
 
@@ -554,7 +553,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, submissionIdx, revi
                     setNewPopupCoords({ x: 5, y: 5 });
                   }}
                   createPopup={createPopup}
-                  custom={customComment}
+                  customComment={customComment}
                 />
               </Box>
             )}

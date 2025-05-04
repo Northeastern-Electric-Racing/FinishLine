@@ -14,7 +14,7 @@ interface ReviewPopupProps {
   commonMistakes: PartReviewCommonMistake[];
   onDelete: () => void;
   createPopup: (xCoord: number, yCoord: number, title: string, description?: string) => void;
-  custom: boolean;
+  customComment: boolean;
 }
 
 const schema = yup.object().shape({
@@ -30,11 +30,11 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
   commonMistakes,
   onDelete,
   createPopup,
-  custom
+  customComment
 }) => {
   const [hovering, setHovering] = useState<boolean>(false);
-  const [selelcted, setSelected] = useState<boolean>(true);
-  const [textEdittor, setTextEdittor] = useState<boolean>(custom);
+  const [selected, setSelected] = useState<boolean>(true);
+  const [showCustomTextField, setShowCustomTextField] = useState<boolean>(customComment);
   const toast = useToast();
 
   const {
@@ -51,9 +51,9 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
   });
 
   useEffect(() => {
-    setTextEdittor(custom);
+    setShowCustomTextField(customComment);
     reset();
-  }, [custom, reset]);
+  }, [customComment, reset]);
 
   const onSubmit = async (data: { title: string; description?: string }) => {
     try {
@@ -71,7 +71,7 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
 
   const handleChange = (_event: React.SyntheticEvent, newValue: PartReviewCommonMistake | null) => {
     if (newValue) {
-      setTextEdittor(true);
+      setShowCustomTextField(true);
       reset({
         title: newValue.title,
         description: newValue.description
@@ -92,7 +92,7 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
       <Box>
         <Box
           onClick={() => {
-            setSelected(!selelcted);
+            setSelected(!selected);
           }}
           onMouseEnter={() => {
             setHovering(true);
@@ -105,7 +105,7 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
             backgroundColor: 'red',
             width: '15px',
             height: '15px',
-            outline: `2px solid ${selelcted ? 'black' : 'white'}`,
+            outline: `2px solid ${selected ? 'black' : 'white'}`,
             borderRadius: '50%',
             padding: '2px',
             cursor: 'default',
@@ -122,10 +122,10 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
           padding: '8px 12px',
           boxShadow: '2px 2px 4px rgba(0,0,0,0.2)',
           zIndex: 1,
-          visibility: selelcted || hovering ? 'visible' : 'hidden'
+          visibility: selected || hovering ? 'visible' : 'hidden'
         }}
       >
-        {textEdittor && (
+        {showCustomTextField && (
           <Box component="form" onSubmit={handleSubmit(onSubmit)} zIndex={3}>
             <FormControl fullWidth sx={{ mb: 2 }}>
               <Controller
@@ -173,7 +173,7 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
                     title: '',
                     description: ''
                   });
-                  setTextEdittor(custom);
+                  setShowCustomTextField(customComment);
                   onDelete();
                 }}
                 sx={{ color: 'grey.500', borderColor: 'grey.500' }}
@@ -188,7 +188,7 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
             </Box>
           </Box>
         )}
-        {!textEdittor && (
+        {!showCustomTextField && (
           <Autocomplete
             options={commonMistakes}
             getOptionLabel={(option) => option.title}

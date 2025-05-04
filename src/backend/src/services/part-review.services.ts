@@ -213,13 +213,13 @@ export default class PartReviewService {
   }
 
   static async uploadFile(file: Express.Multer.File) {
-    const imagedata = await uploadFile(file);
+    const data = await uploadFile(file);
 
-    if (!imagedata?.id) {
-      throw new HttpException(500, 'could not upload image');
+    if (!data?.id) {
+      throw new HttpException(500, 'could not upload file');
     }
 
-    return imagedata.id;
+    return data.id;
   }
 
   static async updatePart(
