@@ -1,6 +1,15 @@
 import Edit from '@mui/icons-material/Edit';
 import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
-import { Part, PartPreview, RoleEnum, WbsNumber, isAtLeastRank, isNotLeadership } from 'shared';
+import {
+  Part,
+  PartPreview,
+  PartSubmission,
+  Review_Status,
+  RoleEnum,
+  WbsNumber,
+  isAtLeastRank,
+  isNotLeadership
+} from 'shared';
 import { Check, Collections, EditNote } from '@mui/icons-material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useCurrentUser } from '../../../hooks/users.hooks';
@@ -9,20 +18,33 @@ import { useHistory } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import CreateSubmissionModal from '../../ProjectDetailPage/ProjectViewContainer/PartReview/PartReviewComponents/PartFormModels/CreateSubmissionModal';
 import SubmissionFormModal from '../../ProjectDetailPage/ProjectViewContainer/PartReview/PartReviewComponents/PartFormModels/SubmissionFormModal';
-import { useDeletePart, useEditPart, useEditPartSubmission, useUploadSubmissionFiles } from '../../../hooks/part-review.hooks';
+import {
+  useDeletePart,
+  useEditPart,
+  useEditPartSubmission,
+  useUploadSubmissionFiles
+} from '../../../hooks/part-review.hooks';
 import PartFormModal from '../../ProjectDetailPage/ProjectViewContainer/PartReview/PartReviewComponents/PartFormModels/PartFormModal';
 import { Typography } from '@mui/material';
 import NERModal from '../../../components/NERModal';
 import Toast from '../../../components/Toast/Toast';
 import { useToast } from '../../../hooks/toasts.hooks';
 
+// TODO: fix onSubmitPart, history.push in handleDelete, and approval stuff
+
 interface PartActionsMenuProps {
   part: Part;
+  submissionIndex: number;
   partsInProject: PartPreview[];
   wbsNum: WbsNumber;
 }
 
-const PartActionsMenu: React.FC<PartActionsMenuProps> = ({ part, partsInProject, wbsNum }: PartActionsMenuProps) => {
+const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
+  part,
+  submissionIndex,
+  partsInProject,
+  wbsNum
+}: PartActionsMenuProps) => {
   const user = useCurrentUser();
   const history = useHistory();
   const toast = useToast();
@@ -32,22 +54,25 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({ part, partsInProject,
   const [showApproveSubmission, setShowApproveSubmission] = useState(false);
   const [showDeletePart, setShowDeletePart] = useState(false);
 
-  const { mutateAsync: editSubmission } = useEditPartSubmission();
   const { mutateAsync: uploadFiles } = useUploadSubmissionFiles();
   const { mutateAsync: editPart } = useEditPart(part.partId);
   const { mutateAsync: deletePart } = useDeletePart(part.partId);
 
-  const onSubmitPart = async (data: {}) => {
-    const editedPart = await editPart();
-  };
-  const onSubmitSubmission = async (data: {
-    partId: string;
-    name: string;
-    notes?: string;
-    files: { name: string; file: File }[];
-  }) => {
+  const submission: PartSubmission | undefined =
+    Array.isArray(part.submissions) && submissionIndex >= 0 && submissionIndex < part.submissions.length
+      ? part.submissions[submissionIndex]
+      : undefined;
+  if (!submission) {
+    // Maybe show a toast or exit early
+    toast.error('No submission found.');
+    return;
+  }
+  const submissionId = submission.partSubmissionId;
+
+  const { mutateAsync: editSubmission } = useEditPartSubmission(submissionId);
+
+  const onSubmitSubmission = async (data: { name: string; notes?: string; files: { name: string; file: File }[] }) => {
     const submission = await editSubmission({
-      partId: data.partId,
       name: data.name,
       notes: data.notes
     });
@@ -70,10 +95,8 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({ part, partsInProject,
   };
 
   const isUserAReviewer = (userId: string, part: Part): boolean => {
-    return part.reviewRequests.some(
-      (request) => request.reviewerRequested.userId === userId
-    );
-  };  
+    return part.reviewRequests.some((request) => request.reviewerRequested.userId === userId);
+  };
 
   const DeleteModal = () => {
     return (
@@ -107,19 +130,19 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({ part, partsInProject,
       title: 'Edit Submission',
       onClick: () => setShowEditSubmission(true),
       icon: <Edit />,
-      disabled: !isAtLeastRank(RoleEnum.MEMBER, user.role) && undefined
+      disabled: !isAtLeastRank(RoleEnum.MEMBER, user.role) || !submission || submission.reviews.length === 0
     },
     {
       title: 'Review',
       onClick: () => history.push(`${routes}`),
       icon: <EditNote />,
-      disabled: !isUserAReviewer(user.userId, part);
+      disabled: !isUserAReviewer(user.userId, part) || part.submissions.length === 0
     },
     {
       title: 'Approve',
       onClick: () => setShowApproveSubmission(true),
       icon: <Check />,
-      disabled: undefined
+      disabled: !isUserAReviewer(user.userId, part) // assuming we can approve a part without a submission
     },
     {
       title: 'Delete',
@@ -135,7 +158,7 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({ part, partsInProject,
         open={showEditPart}
         handleClose={() => setShowEditPart(false)}
         defaultValues={part}
-        onSubmit={onSubmitPart}
+        onSubmit={editPart}
         partsInProject={partsInProject}
         wbsNum={wbsNum}
       />
@@ -147,7 +170,7 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({ part, partsInProject,
       <SubmissionFormModal
         open={showEditSubmission}
         handleClose={() => setShowEditSubmission(false)}
-        defaultValues={undefined}
+        defaultValues={submission}
         onSubmit={onSubmitSubmission}
         partsInProject={partsInProject}
       />
