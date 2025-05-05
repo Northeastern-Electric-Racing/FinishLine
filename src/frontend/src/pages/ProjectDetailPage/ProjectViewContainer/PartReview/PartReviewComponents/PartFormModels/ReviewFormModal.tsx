@@ -5,7 +5,7 @@ import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import React, { useState } from 'react';
 import NERFormModal from '../../../../../../components/NERFormModal';
-import { Autocomplete, Button, Grid, IconButton, Typography } from '@mui/material';
+import { Autocomplete, Button, Grid, IconButton, List, ListItem, Typography } from '@mui/material';
 import { FormControl, FormHelperText, FormLabel, TextField } from '@mui/material';
 import ReactHookTextField from '../../../../../../components/ReactHookTextField';
 import { Delete, FileUpload } from '@mui/icons-material';
@@ -70,7 +70,7 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
   };
 
   const displayName = (name: string) => {
-    return name.length <= 10 ? name : name.slice(0, 9) + '...';
+    return name.length <= 15 ? name : name.slice(0, 14) + '...';
   };
 
   const findSubmissionOptions: () => {
@@ -111,21 +111,23 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
           <FormControl fullWidth>
             <FormLabel>File(s)</FormLabel>
             <Grid container>
-              {fileIds.map((file, index) => {
-                return (
-                  <Grid key={file.id} display={'flex'} flexDirection={'row'}>
-                    <Typography>{displayName(files[index].name)}</Typography>
-                    <IconButton
-                      onClick={() => {
-                        setFiles((prevFiles) => [...prevFiles.slice(0, index), ...prevFiles.slice(index + 1)]);
-                        removeFileId(index);
-                      }}
-                    >
-                      <Delete />
-                    </IconButton>
-                  </Grid>
-                );
-              })}
+              <List>
+                {fileIds.map((file, index) => {
+                  return (
+                    <ListItem key={file.id}>
+                      <Typography>{displayName(files[index].name)}</Typography>
+                      <IconButton
+                        onClick={() => {
+                          setFiles((prevFiles) => [...prevFiles.slice(0, index), ...prevFiles.slice(index + 1)]);
+                          removeFileId(index);
+                        }}
+                      >
+                        <Delete />
+                      </IconButton>
+                    </ListItem>
+                  );
+                })}
+              </List>
               {uploading && <Typography>Uploading...</Typography>}
               <Button
                 variant="contained"

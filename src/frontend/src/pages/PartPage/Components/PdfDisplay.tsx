@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
-import { Box, Typography, IconButton, Grid, Button } from '@mui/material';
+import { Box, Typography, IconButton, Grid, Button, Tooltip } from '@mui/material';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import { Part_Review_Popup, PartReview, PartSubmission } from 'shared';
@@ -310,7 +310,9 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
               }}
               onClick={commentOnClick}
             >
-              <AddCommentRoundedIcon sx={{ width: '60%', height: '60%' }} />
+              <Tooltip title={'Add Custom Comment'}>
+                <AddCommentRoundedIcon sx={{ width: '60%', height: '60%' }} />
+              </Tooltip>
             </Box>
             <Box
               sx={{
@@ -326,7 +328,9 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
               }}
               onClick={commonMistakeOnClick}
             >
-              <CommentRoundedIcon sx={{ width: '60%', height: '60%' }} />
+              <Tooltip title={'Add Common Mistake'}>
+                <CommentRoundedIcon sx={{ width: '60%', height: '60%' }} />
+              </Tooltip>
             </Box>
             {/* Show the icon normally */}
             <Button
@@ -347,7 +351,9 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
                 cursor: 'pointer' // Add cursor pointer
               }}
             >
-              <UploadFileRoundedIcon sx={{ color: 'white', fontSize: '2rem' }} />
+              <Tooltip title={'Upload Review File'}>
+                <UploadFileRoundedIcon sx={{ color: 'white', fontSize: '2rem' }} />
+              </Tooltip>
               {/* Position the input absolutely but keep it invisible */}
               <input
                 id="fileUploadInput"

@@ -53,22 +53,6 @@ const PartPage: React.FC = () => {
     const submissionParam = searchParams.get('submissionIndex');
     const reviewParam = searchParams.get('reviewIndex');
 
-    if (submissionParam !== null) {
-      const parsedSubIndex = parseInt(submissionParam);
-      if (!isNaN(parsedSubIndex) && parsedSubIndex >= 0 && parsedSubIndex <= partWithAllReviews.submissions.length - 1) {
-        setSubIndex(parsedSubIndex);
-        if (reviewParam !== null) {
-          const parsedReviewIndex = parseInt(reviewParam);
-          if (
-            !isNaN(parsedReviewIndex) &&
-            parsedReviewIndex >= -1 &&
-            parsedReviewIndex <= partWithAllReviews.submissions[parsedSubIndex].reviews.length - 1
-          ) {
-            setReviewIndex(parsedReviewIndex);
-          }
-        }
-      }
-    }
     //update the part in usage to only include reviews that are either not in progress or made by the current user
     const part: Part = {
       ...partWithAllReviews,
@@ -82,6 +66,29 @@ const PartPage: React.FC = () => {
       })
     };
     setPart(part);
+
+    setSubIndex(part.submissions.length - 1);
+    if (part.submissions[part.submissions.length - 1].reviews.length > 0) {
+      setReviewIndex(part.submissions[part.submissions.length - 1].reviews.length - 1);
+    }
+
+    if (submissionParam !== null) {
+      const parsedSubIndex = parseInt(submissionParam);
+      if (!isNaN(parsedSubIndex) && parsedSubIndex >= 0 && parsedSubIndex <= part.submissions.length - 1) {
+        setSubIndex(parsedSubIndex);
+        setReviewIndex(-1);
+        if (reviewParam !== null) {
+          const parsedReviewIndex = parseInt(reviewParam);
+          if (
+            !isNaN(parsedReviewIndex) &&
+            parsedReviewIndex >= -1 &&
+            parsedReviewIndex <= part.submissions[parsedSubIndex].reviews.length - 1
+          ) {
+            setReviewIndex(parsedReviewIndex);
+          }
+        }
+      }
+    }
   }, [partWithAllReviews, location.search, user]);
 
   if (projectLoading || !project || partLoading || !partWithAllReviews || !part) return <LoadingIndicator />;
