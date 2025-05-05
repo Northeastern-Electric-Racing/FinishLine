@@ -44,7 +44,7 @@ const SetTeamTypeModal: React.FC<SetTeamTypeModelProps> = ({ teamId, showModal, 
     try {
       await mutateAsync(teamType);
       onHide();
-      toast.success('Team type set successfully!');
+      toast.success('Subteam set successfully!');
     } catch (e) {
       if (e instanceof Error) {
         toast.error(e.message);
@@ -60,17 +60,17 @@ const SetTeamTypeModal: React.FC<SetTeamTypeModelProps> = ({ teamId, showModal, 
     <NERFormModal
       open={showModal}
       onHide={onHide}
-      title={'Set Team Type'}
+      title={'Set Subteam'}
       reset={() => reset}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={handleConfirm}
-      formId="set-team-type"
+      formId="set-subteam"
       submitText="Submit"
       disabled={!isValid || isLoading}
       showCloseButton
     >
       <FormControl fullWidth>
-        <FormLabel>Team Type</FormLabel>
+        <FormLabel>Subteam</FormLabel>
         <Controller
           name="teamType"
           control={control}

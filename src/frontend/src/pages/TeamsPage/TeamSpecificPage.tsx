@@ -59,9 +59,9 @@ const TeamSpecificPage: React.FC = () => {
     </MenuItem>
   );
 
-  const SetTeamTypeButton = () => (
+  const SetSubteamButton = () => (
     <NERButton variant="contained" onClick={() => setShowTeamTypeModal(true)} disabled={!isAdmin(user.role)}>
-      Set Team Type
+      Set Subteam
     </NERButton>
   );
 
@@ -122,11 +122,11 @@ const TeamSpecificPage: React.FC = () => {
     <PageLayout
       headerRight={
         <Stack direction="row" spacing={2} justifyContent="flex-end">
-          <SetTeamTypeButton />
+          <SetSubteamButton />
           {TeamActionsDropdown}
         </Stack>
       }
-      title={`Team ${data.teamName}`}
+      title={`${data.teamName} - ${data.teamType}`}
       chips={
         data.dateArchived ? (
           <Box display="flex" gap="20px">
