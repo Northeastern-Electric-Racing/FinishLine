@@ -65,6 +65,23 @@ export default class TeamsService {
     return teamTransformer(team);
   }
 
+  static async getUsersTeams(user: User, organization: Organization): Promise<Team[]> {
+    const teams = await prisma.team.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        dateArchived: null,
+        OR: [
+          { headId: user.userId },
+          { leads: { some: { userId: user.userId } } },
+          { members: { some: { userId: user.userId } } }
+        ]
+      },
+      ...getTeamQueryArgs(organization.organizationId)
+    });
+
+    return teams.map(teamTransformer);
+  }
+
   /**
    * Update the given teamId's team's members
    * @param submitter a user who's making this request

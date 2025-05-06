@@ -55,6 +55,8 @@
   },
   "dependencies": {
     "mitt": "^3.0.1",
+    "react-hook-form-persist": "^3.0.0",
+    "recharts": "^2.15.3",
     "typescript": "^5.7.3"
   },
   "devDependencies": {
