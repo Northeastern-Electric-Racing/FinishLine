@@ -4,7 +4,6 @@ import {
   Part,
   PartPreview,
   PartSubmission,
-  Review_Status,
   RoleEnum,
   WbsNumber,
   isAtLeastRank,
@@ -27,10 +26,8 @@ import {
 import PartFormModal from '../../ProjectDetailPage/ProjectViewContainer/PartReview/PartReviewComponents/PartFormModels/PartFormModal';
 import { Typography } from '@mui/material';
 import NERModal from '../../../components/NERModal';
-import Toast from '../../../components/Toast/Toast';
 import { useToast } from '../../../hooks/toasts.hooks';
-
-// TODO: fix onSubmitPart, history.push in handleDelete, and approval stuff
+import ApprovePartModal from '../../ProjectDetailPage/ProjectViewContainer/PartReview/PartReviewComponents/PartFormModels/ApprovePartModal';
 
 interface PartActionsMenuProps {
   part: Part;
@@ -65,7 +62,7 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
   if (!submission) {
     // Maybe show a toast or exit early
     toast.error('No submission found.');
-    return;
+    return null;
   }
   const submissionId = submission.partSubmissionId;
 
@@ -134,7 +131,7 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
     },
     {
       title: 'Review',
-      onClick: () => history.push(`${routes}`),
+      onClick: () => history.push(`${routes}`), // not entirely sure what this route should be...
       icon: <EditNote />,
       disabled: !isUserAReviewer(user.userId, part) || part.submissions.length === 0
     },
@@ -173,6 +170,12 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
         defaultValues={submission}
         onSubmit={onSubmitSubmission}
         partsInProject={partsInProject}
+      />
+      <ApprovePartModal
+        open={showApproveSubmission}
+        handleClose={() => setShowApproveSubmission(false)}
+        onSubmit={editPart}
+        submissionsInPart={part.submissions}
       />
       <DeleteModal />
     </ActionsMenu>
