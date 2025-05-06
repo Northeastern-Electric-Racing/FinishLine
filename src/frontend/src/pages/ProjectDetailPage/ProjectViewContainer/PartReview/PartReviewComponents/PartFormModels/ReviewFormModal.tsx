@@ -40,7 +40,12 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
     reset,
     formState: { errors }
   } = useForm({
-    resolver: yupResolver(schema)
+    resolver: yupResolver(schema),
+    defaultValues: {
+      submissionId: defaultValues?.partSubmissionId || '',
+      notes: defaultValues?.notes || '',
+      fileIds: defaultValues?.fileIds || []
+    }
   });
 
   const {
@@ -92,6 +97,7 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
       onFormSubmit={onFormSubmit}
       formId={!!defaultValues ? 'edit-review-form' : 'create-review-form'}
       showCloseButton
+      disabled={uploading}
     >
       <Grid container spacing={2} alignItems="flex-start" maxWidth={'100%'}>
         <Grid item xs={7}>
@@ -143,40 +149,45 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
                 <input
                   type="file"
                   hidden
+                  multiple
                   onChange={(e) => {
                     if (e.target.files) {
-                      if ([...e.target.files]?.length > 5) {
+                      const numFiles = [...e.target.files]?.length;
+                      const checkLast = (index: number) => {
+                        if (index === numFiles - 1) {
+                          setUploading(false);
+                        }
+                      };
+                      if (numFiles + files.length > 5) {
                         toast.error('cannot upload more than 5 files');
                         return;
                       }
-                      [...e.target.files]?.forEach(async (file) => {
+                      setUploading(true);
+                      [...e.target.files]?.forEach(async (file, index) => {
                         if (file.size > MAX_FILE_SIZE) {
                           toast.error(`File "${file.name}" exceeds the maximum size limit of ${MAX_FILE_SIZE} bytes`);
+                          checkLast(index);
                           return;
                         }
                         if (!/^[\w.]+$/.test(file.name)) {
                           toast.error(`File names can only contain letters and numbers`);
+                          checkLast(index);
                           return;
                         }
                         if (file.name.length > 20) {
                           toast.error(`File names cannot be longer than 20 characters`);
+                          checkLast(index);
                           return;
                         }
 
-                        if (files.length >= 5) {
-                          toast.error('Cannot upload more than 5 files for a single review');
-                        }
-
                         try {
-                          setUploading(true);
                           const fileId = await uploadFile(file);
                           appendFileId(fileId);
                           setFiles((prev) => [...prev, file]);
-                          setUploading(false);
                         } catch (error: unknown) {
-                          setUploading(false);
                           toast.error('file upload failed');
                         }
+                        checkLast(index);
                       });
                     }
                   }}

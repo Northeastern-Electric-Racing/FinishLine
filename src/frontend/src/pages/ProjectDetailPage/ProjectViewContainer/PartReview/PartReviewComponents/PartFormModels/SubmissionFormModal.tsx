@@ -95,6 +95,7 @@ const SubmissionFormModal = ({ open, handleClose, defaultValues, onSubmit, parts
       onFormSubmit={onFormSubmit}
       formId={!!defaultValues ? 'edit-submission-form' : 'create-submission-form'}
       showCloseButton
+      disabled={uploading}
     >
       <Grid container spacing={2} alignItems="flex-start" maxWidth={'100%'}>
         <Grid item xs={7}>
@@ -153,24 +154,35 @@ const SubmissionFormModal = ({ open, handleClose, defaultValues, onSubmit, parts
                 <input
                   type="file"
                   hidden
+                  multiple
                   onChange={(e) => {
                     if (e.target.files) {
-                      [...e.target.files]?.forEach(async (file) => {
+                      const numFiles = [...e.target.files]?.length;
+                      const checkLast = (index: number) => {
+                        if (index === numFiles - 1) {
+                          setUploading(false);
+                        }
+                      };
+                      if (numFiles + files.length > 5) {
+                        toast.error('cannot upload more than 5 files');
+                        return;
+                      }
+                      setUploading(true);
+                      [...e.target.files]?.forEach(async (file, index) => {
                         if (file.size > MAX_FILE_SIZE) {
                           toast.error(`File "${file.name}" exceeds the maximum size limit of ${MAX_FILE_SIZE} bytes`);
+                          checkLast(index);
                           return;
                         }
                         if (!/^[\w.]+$/.test(file.name)) {
                           toast.error(`File names can only contain letters and numbers`);
+                          checkLast(index);
                           return;
                         }
                         if (file.name.length > 20) {
                           toast.error(`File names cannot be longer than 20 characters`);
+                          checkLast(index);
                           return;
-                        }
-
-                        if (files.length >= 5) {
-                          toast.error('Cannot upload more than 5 files for a single submission');
                         }
 
                         if (!isPdf(file.name)) {
@@ -181,15 +193,13 @@ const SubmissionFormModal = ({ open, handleClose, defaultValues, onSubmit, parts
                         }
 
                         try {
-                          setUploading(true);
                           const fileId = await uploadFile(file);
                           appendFileId(fileId);
                           setFiles((prev) => [...prev, file]);
-                          setUploading(false);
                         } catch (error: unknown) {
-                          setUploading(false);
                           toast.error('file upload failed');
                         }
+                        checkLast(index);
                       });
                     }
                   }}

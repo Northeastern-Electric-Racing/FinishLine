@@ -306,7 +306,8 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
                 borderColor: 'white',
                 display: 'flex',
                 justifyContent: 'center',
-                alignItems: 'center'
+                alignItems: 'center',
+                cursor: 'pointer'
               }}
               onClick={commentOnClick}
             >
@@ -324,7 +325,8 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
                 borderColor: 'white',
                 display: 'flex',
                 justifyContent: 'center',
-                alignItems: 'center'
+                alignItems: 'center',
+                cursor: 'pointer'
               }}
               onClick={commonMistakeOnClick}
             >
@@ -332,7 +334,6 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
                 <CommentRoundedIcon sx={{ width: '60%', height: '60%' }} />
               </Tooltip>
             </Box>
-            {/* Show the icon normally */}
             <Button
               variant="contained"
               color="success"
@@ -347,8 +348,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                position: 'relative', // Add position relative
-                cursor: 'pointer' // Add cursor pointer
+                cursor: 'pointer'
               }}
             >
               <Tooltip title={'Upload Review File'}>
