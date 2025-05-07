@@ -1,6 +1,9 @@
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useGetAllReimbursementRequestData, useGetAllSpendingBarData } from '../../../hooks/finance.hooks';
+import {
+  useGetAllReimbursementRequestData,
+  useGetSpendingBarCategoryData
+} from '../../../hooks/finance.hooks';
 import { Box, Grid, Tab, Tabs, Typography } from '@mui/material';
 import PieChart from '../FinanceComponents/PieChart';
 import { useState } from 'react';
@@ -26,7 +29,7 @@ const FinanceDashboardCategoriesView: React.FC<FinanceDashboardCategoryViewProps
     isLoading: spendingBarDataIsLoading,
     isError: spendingBarDataIsError,
     error: spendingBarDataError
-  } = useGetAllSpendingBarData({ startDate, endDate });
+  } = useGetSpendingBarCategoryData({ startDate, endDate });
 
   const [selectedTab, setSelectedTab] = useState('total');
 
@@ -106,7 +109,7 @@ const FinanceDashboardCategoriesView: React.FC<FinanceDashboardCategoryViewProps
         </Box>
       </Grid>
       <Grid item xs={12} md={8}>
-        <SpendingAndAllocation data={spendingBarData} />
+        <SpendingAndAllocation data={[spendingBarData]} />
       </Grid>
     </Grid>
   );
