@@ -70,7 +70,7 @@ const FinanceDashboardTeamView: React.FC<FinanceDashboardTeamViewProps> = ({ tea
       </Grid>
 
       <Grid item xs={12} md={8}>
-        <SpendingAndAllocation data={spendingBarData} />
+        <SpendingAndAllocation data={[spendingBarData]} />
       </Grid>
     </Grid>
   );

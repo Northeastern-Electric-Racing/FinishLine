@@ -989,7 +989,7 @@ export const useGetAllReimbursementRequestData = (reimbursementRequestData: Reim
   );
 
 export const useGetSpendingBarTeamData = (spendingBarData: SpendingBarTeamDataPayload) =>
-  useQuery<SpendingBarData[], Error>(
+  useQuery<SpendingBarData, Error>(
     ['spending-bar-team-data', spendingBarData.endDate, spendingBarData.startDate, spendingBarData.teamId],
     async () => {
       const { data } = await getSpendingBarTeamData(spendingBarData);

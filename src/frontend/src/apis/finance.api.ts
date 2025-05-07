@@ -585,7 +585,7 @@ export const getReimbursementRequestTeamTypeData = (payload: ReimbursementReques
 };
 
 export const getSpendingBarTeamData = (payload: SpendingBarTeamDataPayload) => {
-  return axios.get<SpendingBarData[]>(apiUrls.getSpendingBarTeamData(payload.teamId, payload.startDate, payload.endDate), {
+  return axios.get<SpendingBarData>(apiUrls.getSpendingBarTeamData(payload.teamId, payload.startDate, payload.endDate), {
     transformResponse: (data) => JSON.parse(data) as SpendingBarData
   });
 };
