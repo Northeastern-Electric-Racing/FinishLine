@@ -1,9 +1,6 @@
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import {
-  useGetAllReimbursementRequestData,
-  useGetSpendingBarCategoryData
-} from '../../../hooks/finance.hooks';
+import { useGetAllReimbursementRequestData, useGetSpendingBarCategoryData } from '../../../hooks/finance.hooks';
 import { Box, Grid, Tab, Tabs, Typography } from '@mui/material';
 import PieChart from '../FinanceComponents/PieChart';
 import { useState } from 'react';
