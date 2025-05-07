@@ -15,54 +15,41 @@ import { ReimbursementRequestData, SpendingBarData } from 'shared';
 import { grey } from '@mui/material/colors';
 import { useEffect, useRef, useState } from 'react';
 
-export const sampleData: { title: string; spendingInfo: ReimbursementRequestData }[] = [
-  {
-    title: 'Segments',
-    spendingInfo: {
-      totalBudget: 5000,
-      pendingFinance: 1500,
-      reimbursed: 3000,
-      pendingLeadership: 0,
-      submittedToSabo: 250,
-      available: 250
-    }
-  },
-  {
-    title: 'Shepherd',
-    spendingInfo: {
-      totalBudget: 2000,
-      pendingFinance: 1500,
-      reimbursed: 400,
-      pendingLeadership: 0,
-      submittedToSabo: 250,
-      available: 250
-    }
-  },
-  {
-    title: 'Flex PCB',
-    spendingInfo: {
-      totalBudget: 0,
-      pendingFinance: 0,
-      reimbursed: 0,
-      pendingLeadership: 0,
-      submittedToSabo: 0,
-      available: 0
-    }
-  }
-];
-
 const getTotalMoneySpent = (data: ReimbursementRequestData) =>
   data.available + data.pendingFinance + data.pendingLeadership + data.reimbursed + data.submittedToSabo;
 
-const transformReimbursementDataToBarData = (title: string, average: number, data: ReimbursementRequestData) =>
-  getBarData(title, getTotalMoneySpent(data) + average, getTotalMoneySpent(data) === 0 ? grey[500] : grey[800]);
+const transformReimbursementDataToBarData = (
+  title: string,
+  average: number,
+  data: ReimbursementRequestData,
+  dataLength: number
+) =>
+  getBarData(title, getTotalMoneySpent(data) + average, getTotalMoneySpent(data) === 0 ? grey[500] : grey[800], dataLength);
 
-const getBarData = (title: string, value: number, color: string) => ({
+const getBarData = (title: string, value: number, color: string, dataLength: number) => ({
   label: title,
   data: [value],
   backgroundColor: color,
-  borderWidth: 5,
-  borderColor: 'rgba(255, 255, 255, 0)'
+  borderWidth: 2,
+  categoryPercentage: 1.0,
+  barThickness: 'flex' as any,
+  stack: 'stack',
+  barPercentage: 1.0,
+  borderColor: 'rgba(255, 255, 255, 0)',
+  borderRadius: (context: any): any => {
+    const { datasetIndex } = context;
+    const isFirst = datasetIndex === 0;
+    const isLast = datasetIndex === dataLength - 1;
+
+    const object = {
+      topLeft: isFirst ? 10 : 0,
+      bottomLeft: isFirst ? 10 : 0,
+      topRight: isLast ? 10 : 0,
+      bottomRight: isLast ? 10 : 0
+    };
+    return object;
+  },
+  borderSkipped: false
 });
 
 const SpendingBar = ({ data, title }: SpendingBarData) => {
@@ -76,7 +63,7 @@ const SpendingBar = ({ data, title }: SpendingBarData) => {
 
   const [barData, setBarData] = useState({
     labels: [title],
-    datasets: data.map((val) => transformReimbursementDataToBarData(val.title, average, val.spendingInfo))
+    datasets: data.map((val) => transformReimbursementDataToBarData(val.title, average, val.spendingInfo, data.length))
   });
 
   useEffect(() => {
@@ -85,7 +72,7 @@ const SpendingBar = ({ data, title }: SpendingBarData) => {
         setHoveredIndex(undefined);
         setBarData((prev) => ({
           ...prev,
-          datasets: data.map((val) => transformReimbursementDataToBarData(val.title, average, val.spendingInfo))
+          datasets: data.map((val) => transformReimbursementDataToBarData(val.title, average, val.spendingInfo, data.length))
         }));
       }
     };
@@ -101,14 +88,14 @@ const SpendingBar = ({ data, title }: SpendingBarData) => {
         datasets: data.flatMap((val, index) => {
           if (index === hoveredIndex) {
             return [
-              getBarData('Leadership', val.spendingInfo.pendingLeadership + average, '#ef2020'),
-              getBarData('Finance', val.spendingInfo.pendingFinance + average, '#ef4545'),
-              getBarData('SABO', val.spendingInfo.submittedToSabo + average, '#efA0A0'),
-              getBarData('Reimbursed', val.spendingInfo.reimbursed + average, grey[800]),
-              getBarData('Available', val.spendingInfo.available + average, grey[500])
+              getBarData('Leadership', val.spendingInfo.pendingLeadership + average, '#ef2020', data.length + 4),
+              getBarData('Finance', val.spendingInfo.pendingFinance + average, '#ef4545', data.length + 4),
+              getBarData('SABO', val.spendingInfo.submittedToSabo + average, '#efA0A0', data.length + 4),
+              getBarData('Reimbursed', val.spendingInfo.reimbursed + average, grey[800], data.length + 4),
+              getBarData('Available', val.spendingInfo.available + average, grey[500], data.length + 4)
             ];
           }
-          return transformReimbursementDataToBarData(val.title, average, val.spendingInfo);
+          return transformReimbursementDataToBarData(val.title, average, val.spendingInfo, data.length + 4);
         })
       }));
     }
@@ -123,6 +110,9 @@ const SpendingBar = ({ data, title }: SpendingBarData) => {
       BarControllerChartOptions
   > = {
     indexAxis: 'y',
+    layout: {
+      padding: 0
+    },
     plugins: {
       title: {
         display: false,
@@ -140,7 +130,11 @@ const SpendingBar = ({ data, title }: SpendingBarData) => {
           }
           const dataset = data[datasetIndex];
 
-          if (datasetIndex !== hoveredIndex && dataset.spendingInfo.totalBudget < getTotalMoneySpent(dataset.spendingInfo)) {
+          if (
+            dataset &&
+            datasetIndex !== hoveredIndex &&
+            dataset.spendingInfo.totalBudget < getTotalMoneySpent(dataset.spendingInfo)
+          ) {
             return '#ef4545';
           }
           return 'white';
@@ -150,7 +144,19 @@ const SpendingBar = ({ data, title }: SpendingBarData) => {
         textAlign: 'center',
         formatter: (value, context) => {
           const realValue = value - average;
-          const { label } = context.dataset;
+          let { label } = context.dataset;
+          const datasetMeta = context.chart.getDatasetMeta(context.datasetIndex);
+          const bar: any = datasetMeta.data[context.dataIndex];
+
+          const barWidth = bar.width;
+
+          const maxTextLength = Math.floor(barWidth / 8);
+
+          // Truncate the text with ellipsis if it exceeds the maximum length
+          if (label && label.length > maxTextLength) {
+            label = label.slice(0, maxTextLength) + '...';
+          }
+
           return [label, `$${realValue}`];
         }
       },
@@ -165,7 +171,7 @@ const SpendingBar = ({ data, title }: SpendingBarData) => {
 
           const dataset = data[datasetIndex];
 
-          if (dataset.spendingInfo.totalBudget < getTotalMoneySpent(dataset.spendingInfo)) {
+          if (dataset && dataset.spendingInfo.totalBudget < getTotalMoneySpent(dataset.spendingInfo)) {
             return '#ef4545';
           }
           return undefined;
@@ -196,7 +202,7 @@ const SpendingBar = ({ data, title }: SpendingBarData) => {
             }
             const dataset = data[datasetIndex];
 
-            if (dataset.spendingInfo.totalBudget < getTotalMoneySpent(dataset.spendingInfo)) {
+            if (dataset && dataset.spendingInfo.totalBudget < getTotalMoneySpent(dataset.spendingInfo)) {
               return [];
             }
             return dataset.title;
@@ -225,27 +231,29 @@ const SpendingBar = ({ data, title }: SpendingBarData) => {
     scales: {
       x: {
         stacked: true,
-        ticks: {
-          display: false
-        }
+        display: false,
+        grid: { drawTicks: false },
+        max: barData.datasets.reduce((prev, curr) => prev + curr.data[0], 0)
       },
       y: {
-        stacked: true,
-        ticks: {
-          display: false
-        }
+        display: false,
+        grid: { drawTicks: false }
       }
     }
   };
 
   return (
     <>
-      <Typography fontWeight={'bold'} variant="h6">
+      <Typography fontWeight={'bold'} variant="body1">
         {title}
       </Typography>
-      <Box ref={chartRef} height={100}>
-        <Bar data={barData} options={config} />
-      </Box>
+      {data.length > 0 ? (
+        <Box ref={chartRef} height={100} sx={{ padding: 0, margin: 0 }}>
+          <Bar data={barData} options={config} />
+        </Box>
+      ) : (
+        <Typography>No Spending Data Available</Typography>
+      )}
     </>
   );
 };

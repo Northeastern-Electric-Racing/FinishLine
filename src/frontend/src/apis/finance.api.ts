@@ -585,13 +585,13 @@ export const getReimbursementRequestTeamTypeData = (payload: ReimbursementReques
 };
 
 export const getSpendingBarTeamData = (payload: SpendingBarTeamDataPayload) => {
-  return axios.get<SpendingBarData>(apiUrls.getSpendingBarTeamData(payload.teamId, payload.startDate, payload.endDate), {
+  return axios.get<SpendingBarData[]>(apiUrls.getSpendingBarTeamData(payload.teamId, payload.startDate, payload.endDate), {
     transformResponse: (data) => JSON.parse(data) as SpendingBarData
   });
 };
 
 export const getSpendingBarTeamTypeData = (payload: SpendingBarTeamTypeDataPayload) => {
-  return axios.get<SpendingBarData>(
+  return axios.get<SpendingBarData[]>(
     apiUrls.getSpendingBarTeamTypeData(payload.teamTypeId, payload.startDate, payload.endDate),
     {
       transformResponse: (data) => JSON.parse(data) as SpendingBarData
