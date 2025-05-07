@@ -68,7 +68,7 @@ const PartPage: React.FC = () => {
     setPart(part);
 
     setSubIndex(part.submissions.length - 1);
-    if (part.submissions[part.submissions.length - 1].reviews.length > 0) {
+    if (part.submissions.length > 0 && part.submissions[part.submissions.length - 1].reviews.length > 0) {
       setReviewIndex(part.submissions[part.submissions.length - 1].reviews.length - 1);
     }
 
