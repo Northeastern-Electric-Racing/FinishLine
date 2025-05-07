@@ -40,7 +40,7 @@ import {
   partReviewTransformer
 } from '../transformers/part-review.transformer';
 import { isUserPartOfTeams } from '../utils/teams.utils';
-import { uploadFile } from '../utils/google-integration.utils';
+import { uploadFile, downloadFile } from '../utils/google-integration.utils';
 import ProjectsService from './projects.services';
 
 export default class PartReviewService {
@@ -212,6 +212,16 @@ export default class PartReviewService {
     return partTransformer(updatedPart);
   }
 
+  static async uploadFile(file: Express.Multer.File) {
+    const data = await uploadFile(file);
+
+    if (!data?.id) {
+      throw new HttpException(500, 'could not upload file');
+    }
+
+    return data.id;
+  }
+
   static async updatePart(
     organizationId: string,
     partId: string,
@@ -294,6 +304,7 @@ export default class PartReviewService {
    * @param creator the creator of the review
    * @param submissionId the submission
    * @param notes optional notes on the review
+   * @param fileIds the ids of the files being added to this review
    * @param newPartStatus the new status of the part which the review is added to.
    * if this status is Reviewed or approved, the completedAt date is set to now
    * @returns the created review
@@ -303,6 +314,7 @@ export default class PartReviewService {
     creator: User,
     submissionId: string,
     newPartStatus: string,
+    fileIds: string[],
     notes: string
   ) {
     const submission = await prisma.partSubmission.findUnique({
@@ -336,6 +348,7 @@ export default class PartReviewService {
         userCreated: {
           connect: { userId: creator.userId }
         },
+        fileIds,
         notes,
         completedAt
       },
@@ -355,7 +368,14 @@ export default class PartReviewService {
    * @param notes notes for the review
    * @returns the updated review
    */
-  static async updateReview(organizationId: string, updater: User, reviewId: string, newPartStatus: string, notes: string) {
+  static async updateReview(
+    organizationId: string,
+    updater: User,
+    reviewId: string,
+    newPartStatus: string,
+    notes: string,
+    fileIds: string[]
+  ) {
     const review = await prisma.partReview.findUnique({
       where: { partReviewId: reviewId },
       include: { submission: { include: { part: { include: { project: { include: { wbsElement: true } } } } } } }
@@ -375,8 +395,9 @@ export default class PartReviewService {
     const updatedReview = await prisma.partReview.update({
       where: { partReviewId: reviewId },
       data: {
-        notes,
-        completedAt
+        notes: notes ? notes : review.notes,
+        completedAt,
+        fileIds: fileIds ? fileIds : review.fileIds
       },
       ...getPartReviewQueryArgs(organizationId)
     });
@@ -394,53 +415,23 @@ export default class PartReviewService {
   }
 
   /**
-   * Uploads an array of files to a given review
-   * @param reviewId the review
-   * @param uploader the user uploading (must be creator)
-   * @param organizationId the organization
-   * @param files an array of files to upload
-   * @returns the updated review
-   */
-  static async uploadReviewFiles(reviewId: string, uploader: User, organizationId: string, files: Express.Multer.File[]) {
-    const review = await prisma.partReview.findUnique({
-      where: { partReviewId: reviewId },
-      include: { submission: { include: { part: { include: { project: { include: { wbsElement: true } } } } } } }
-    });
-
-    if (!review) throw new NotFoundException('Part Review', reviewId);
-    if (review.dateDeleted) throw new DeletedException('Part Review', reviewId);
-    if (review.submission.part.project.wbsElement.organizationId !== organizationId)
-      throw new InvalidOrganizationException('Part Review');
-
-    if (uploader.userId !== review.userCreatedId) throw new AccessDeniedException('only review creators can update reviews');
-
-    const fileIds = await Promise.all(
-      files.map(async (file) => {
-        return (await uploadFile(file)).id;
-      })
-    );
-
-    const updatedReview = await prisma.partReview.update({
-      where: { partReviewId: reviewId },
-      data: {
-        fileIds
-      },
-      ...getPartReviewQueryArgs(organizationId)
-    });
-
-    return partReviewTransformer(updatedReview);
-  }
-
-  /**
    * Creates a submission for a given part
    * @param partId the part that the submission will be added to
    * @param creator the creator
    * @param organizationId the organization
    * @param name the name of the submission
    * @param notes optional notes
+   * @param files the files in the submission
    * @returns the created submission
    */
-  static async createSubmission(partId: string, creator: User, organizationId: string, name: string, notes?: string) {
+  static async createSubmission(
+    partId: string,
+    creator: User,
+    organizationId: string,
+    name: string,
+    fileIds: string[],
+    notes?: string
+  ) {
     const part = await prisma.part.findUnique({
       where: { partId },
       include: { project: { include: { wbsElement: true } } }
@@ -453,6 +444,7 @@ export default class PartReviewService {
       data: {
         name,
         notes,
+        fileIds,
         part: {
           connect: { partId }
         },
@@ -493,49 +485,6 @@ export default class PartReviewService {
       data: {
         name,
         notes: notes ?? submission.notes
-      },
-      ...getPartSubmissionQueryArgs(organizationId)
-    });
-
-    return partSubmissionTransformer(updatedSubmission);
-  }
-
-  /**
-   * Uploads an array of files to a given submission
-   * @param submissionId the submission
-   * @param uploader the user uploading (must be creator)
-   * @param organizationId the organization
-   * @param files an array of files to upload
-   * @returns the updated submission
-   */
-  static async uploadSubmissionFiles(
-    submissionId: string,
-    uploader: User,
-    organizationId: string,
-    files: Express.Multer.File[]
-  ) {
-    const submission = await prisma.partSubmission.findUnique({
-      where: { partSubmissionId: submissionId },
-      include: { part: { include: { project: { include: { wbsElement: true } } } } }
-    });
-    if (!submission) throw new NotFoundException('Part Submission', submissionId);
-    if (submission.dateDeleted) throw new DeletedException('Part Submission', submissionId);
-    if (submission.part.project.wbsElement.organizationId !== organizationId)
-      throw new InvalidOrganizationException('Part Submission');
-
-    if (uploader.userId !== submission.userCreatedId)
-      throw new AccessDeniedException('only submission creators can update submissions');
-
-    const fileIds = await Promise.all(
-      files.map(async (file) => {
-        return (await uploadFile(file)).id;
-      })
-    );
-
-    const updatedSubmission = await prisma.partSubmission.update({
-      where: { partSubmissionId: submissionId },
-      data: {
-        fileIds
       },
       ...getPartSubmissionQueryArgs(organizationId)
     });
@@ -1055,23 +1004,25 @@ export default class PartReviewService {
     return partReviewRequestTransformer(softDeletedRequest);
   }
 
-  /*
+  /**
    * Creates a part review popup
+   *
    * @param organizationId Id of the organization
    * @param reviewId ID of the review
    * @param xCoord X coordinate of the popup
    * @param yCoord Y coordinate of the popup
+   * @param fileIndex the index of the file this popup is on
    * @param title Title of the popup
    * @param description Description of the popup
    * @param creator The user creating the popup
    * @returns The newly created popup
    */
-
   static async createPartReviewPopup(
     organizationId: string,
     reviewId: string,
     xCoord: number,
     yCoord: number,
+    fileIndex: number,
     title: string,
     description: string,
     creator: User
@@ -1101,8 +1052,9 @@ export default class PartReviewService {
         },
         xCoord,
         yCoord,
+        fileIndex,
         title,
-        description
+        description: description ?? ''
       },
       ...getPartReviewQueryArgs
     });
@@ -1115,6 +1067,7 @@ export default class PartReviewService {
    * @param popupId ID of the popup to update
    * @param xCoord New X coordinate
    * @param yCoord New Y coordinate
+   * @param fileIndex the index of the file this popup is on
    * @param title New title
    * @param description New description
    * @param updater The user updating the popup
@@ -1125,6 +1078,7 @@ export default class PartReviewService {
     popupId: string,
     xCoord: number,
     yCoord: number,
+    fileIndex: number,
     title: string,
     description: string,
     updater: User
@@ -1152,6 +1106,7 @@ export default class PartReviewService {
       data: {
         xCoord,
         yCoord,
+        fileIndex,
         title,
         description,
         updatedAt: new Date()
@@ -1182,14 +1137,24 @@ export default class PartReviewService {
       throw new AccessDeniedAdminOnlyException('delete part review popup');
     }
 
-    const deletedPopup = await prisma.part_Review_Popup.update({
+    await prisma.part_Review_Popup.update({
       where: { partReviewPopupId: popupId },
       data: {
         deletedAt: new Date()
       },
       ...getPartReviewQueryArgs
     });
+  }
 
-    return deletedPopup;
+  /**
+   * Downloads a file from Google Drive given a fileId
+   * @param fileId The ID of the file in Google Drive
+   * @returns the file buffer and MIME type
+   */
+  static async downloadFile(fileId: string): Promise<{ buffer: Buffer; type: string }> {
+    const fileData = await downloadFile(fileId);
+
+    if (!fileData) throw new NotFoundException('File', fileId);
+    return fileData;
   }
 }

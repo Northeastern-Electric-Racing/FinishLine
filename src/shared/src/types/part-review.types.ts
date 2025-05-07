@@ -66,8 +66,9 @@ export interface Part_Review_Popup {
   partReviewPopupId: string;
   xCoord: number;
   yCoord: number;
+  fileIndex: number;
   title: string;
-  description: string;
+  description?: string;
   reviewId: string;
 }
 
