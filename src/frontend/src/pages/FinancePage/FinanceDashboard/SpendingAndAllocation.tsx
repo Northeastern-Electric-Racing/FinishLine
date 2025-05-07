@@ -1,6 +1,6 @@
 import { Box, Typography } from '@mui/material';
 import { SpendingBarData } from 'shared';
-import SpendingBar from '../FinanceComponents/SpedingBar';
+import SpendingBar from '../FinanceComponents/SpendingBar';
 import { grey } from '@mui/material/colors';
 
 const SpendingAndAllocation = ({ data }: { data: SpendingBarData[] }) => {
