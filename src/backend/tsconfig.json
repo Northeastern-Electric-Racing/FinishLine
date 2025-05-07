@@ -6,7 +6,7 @@
     "outDir": "./dist",
     "noEmit": false,
     "esModuleInterop": true,
-    "types": ["Multer"]
+    "types": ["multer"]
   },
   "ts-node": {
     "files": true
