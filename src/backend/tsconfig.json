@@ -5,7 +5,8 @@
     "target": "ES2019",
     "outDir": "./dist",
     "noEmit": false,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "types": ["Multer"]
   },
   "ts-node": {
     "files": true
