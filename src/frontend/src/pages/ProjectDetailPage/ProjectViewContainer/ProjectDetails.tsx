@@ -45,16 +45,12 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
     return <LoadingIndicator />;
   }
 
-  let isEmpty = false;
-  if (
+  const isEmpty =
     rrData.pendingLeadership === 0 &&
     rrData.pendingFinance === 0 &&
     rrData.submittedToSabo === 0 &&
     rrData.reimbursed === 0 &&
-    rrData.available === 0
-  ) {
-    isEmpty = true;
-  }
+    rrData.available === 0;
 
   if (isEmpty) {
     return (
