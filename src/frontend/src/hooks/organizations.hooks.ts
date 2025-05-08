@@ -13,7 +13,9 @@ import {
   updateApplicationLink,
   setOnboardingText,
   updateOrganizationContacts,
-  setOrganizationImages
+  setOrganizationImages,
+  getPartReviewGuideLink,
+  setPartReviewGuideLink
 } from '../apis/organizations.api';
 import { downloadGoogleImage } from '../apis/organizations.api';
 
@@ -202,4 +204,37 @@ export const useOrganizationLogo = () => {
     }
     return await downloadGoogleImage(fileId);
   });
+};
+
+/*
+ * Custom React Hook to fetch confluence guide for current
+ * organization in backend
+ *
+ */
+
+export const useGetPartReviewGuideLink = () => {
+  return useQuery<Organization, Error>(['organizations', 'part-review-guide-link'], async () => {
+    const { data } = await getPartReviewGuideLink();
+    return data;
+  });
+};
+/*
+ * Custom React Hook to set part review guide confluence
+ * guide link
+ *
+ */
+export const useSetPartReviewGuideLink = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Organization, Error, string>(
+    ['organizations', 'part-review-guide-link'],
+    async (guideLink: string) => {
+      const { data } = await setPartReviewGuideLink(guideLink);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['organizations', 'part-review-guide-link']);
+      }
+    }
+  );
 };

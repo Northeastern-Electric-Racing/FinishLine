@@ -81,6 +81,22 @@ export const toggleProjectFavorite = (wbsNum: WbsNumber) => {
 };
 
 /**
+ * Set the abbreviation of a project
+ */
+export const setAbbreviation = (payload: { wbsNum: string; abbreviation: string }) => {
+  return axios.post<Project>(apiUrls.projectsSetAbbreviation(), {
+    ...payload
+  });
+};
+
+/**
+ * Delete the abbreviation of a project
+ */
+export const deleteAbbreviation = (wbsNum: string) => {
+  return axios.post<{ message: string }>(apiUrls.projectsDeleteAbbreviation(wbsNum));
+};
+
+/**
  * gets all the link types from the database
  * @returns gets all the link types
  */

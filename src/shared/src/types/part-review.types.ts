@@ -21,6 +21,10 @@ export interface PartPreview {
   reviewRequests: PartReviewRequest[];
   createdAt: Date;
   userCreated: User;
+  submissions: {
+    partSubmissionId: string;
+    name: string;
+  }[];
 }
 
 export interface Part extends PartPreview {
@@ -44,6 +48,7 @@ export interface PartReviewRequest {
   requester: User;
   reviewerRequested: User;
   createdAt: Date;
+  dateDeleted?: Date;
 }
 
 export interface PartReview {
@@ -61,8 +66,9 @@ export interface Part_Review_Popup {
   partReviewPopupId: string;
   xCoord: number;
   yCoord: number;
+  fileIndex: number;
   title: string;
-  description: string;
+  description?: string;
   reviewId: string;
 }
 

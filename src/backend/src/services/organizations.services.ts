@@ -407,4 +407,38 @@ export default class OrganizationsService {
 
     return updatedOrg;
   }
+
+  static async getPartReviewGuideLink(organizationId: string) {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId }
+    });
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+    return organization.partReviewGuideLink;
+  }
+
+  static async setPartReviewGuideLink(submitter: User, organizationId: string, guideLink: string) {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId }
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+
+    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('update part review guide links');
+
+    const updatedOrg = await prisma.organization.update({
+      where: {
+        organizationId: organization.organizationId
+      },
+      data: {
+        partReviewGuideLink: guideLink
+      }
+    });
+
+    return updatedOrg;
+  }
 }

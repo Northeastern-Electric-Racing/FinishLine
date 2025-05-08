@@ -42,7 +42,7 @@ import {
   InvalidOrganizationException,
   NotFoundException
 } from '../utils/errors.utils';
-import { downloadImageFile, sendMailToAdvisor, uploadFile } from '../utils/google-integration.utils';
+import { downloadFile, sendMailToAdvisor, uploadFile } from '../utils/google-integration.utils';
 import {
   accountCodeTransformer,
   reimbursementRequestTransformer,
@@ -1077,7 +1077,7 @@ export default class ReimbursementRequestService {
   static async downloadReceiptImage(fileId: string, submitter: User, organization: Organization) {
     await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organization.organizationId);
 
-    const fileData = await downloadImageFile(fileId);
+    const fileData = await downloadFile(fileId);
 
     if (!fileData) throw new NotFoundException('Image File', fileId);
     return fileData;

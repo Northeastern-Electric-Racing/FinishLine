@@ -1,22 +1,29 @@
 import LoadingIndicator from '../../../../components/LoadingIndicator';
-import { Box } from '@mui/system';
-import { Grid, FormGroup, FormControlLabel, Typography } from '@mui/material';
+import { Box, Stack } from '@mui/system';
+import { Grid, FormGroup, FormControlLabel, Typography, Link } from '@mui/material';
 import { useState } from 'react';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
-import { rankUserRole } from 'shared';
+import { Project, rankUserRole, wbsPipe, Review_Status, Part } from 'shared';
 import NERSwitch from '../../../../components/NERSwitch';
 import CommonMistakes from './CommonMistakes';
 import PartDisplay from '../../../PartPage/components/PartDisplay';
-import { Review_Status } from 'shared';
-import { Part } from 'shared';
 //import { useSinglePart } from '../../../../hooks/part-review.hooks';
+import { usePartsFromProject } from '../../../../hooks/part-review.hooks';
+import ErrorPage from '../../../ErrorPage';
+import { Link as RouterLink } from 'react-router-dom';
+import PartReviewFAQs from './PartReviewFAQs';
+import CreateMenu from './PartReviewComponents/PartFormModels/CreateMenu';
 
-const PartsReviewPage = () => {
+const PartsReviewPage = ({ project }: { project: Project }) => {
   const currentUser = useCurrentUser();
   const [showSubmissionGuide, setShowSubmissionGuide] = useState(() => {
     const userRole = currentUser.role;
     return rankUserRole(userRole) < rankUserRole('LEADERSHIP');
   });
+  const { data: parts, isLoading, isError, error } = usePartsFromProject(wbsPipe(project.wbsNum));
+
+  if (isLoading || !parts) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
 
   // a sample part that i made to test a component
   const createSamplePart = (partId: string, commonName: string): Part => ({
@@ -204,6 +211,7 @@ const PartsReviewPage = () => {
       <PartDisplay part={samplePart} contentAmount="full"></PartDisplay>
       <PartDisplay part={samplePart} contentAmount="standard"></PartDisplay>
       <PartDisplay part={samplePart} contentAmount="compact"></PartDisplay>
+      <CreateMenu wbsNum={project.wbsNum} partsInProject={parts} />
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <FormGroup>
@@ -221,20 +229,41 @@ const PartsReviewPage = () => {
         </Grid>
         <Grid item xs={12}>
           {/* The guide should be toggled off by default for admins, heads, and leads and toggled on for all other roles */}
-
           {showSubmissionGuide ? (
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <Typography variant="h4">Submission Guide</Typography>
-                <CommonMistakes />
-                {/* Submission Guide components will go here */}
-                <LoadingIndicator />
-                {/* Loading indicator will be replaced by a grid of all the part cards */}
+            <Grid item container direction="column" spacing={3} sx={{ paddingTop: '10px' }}>
+              <Typography variant="h4" sx={{ pl: 2 }}>
+                Submission Guide
+              </Typography>
+
+              <Grid container spacing={3} sx={{ paddingTop: '10px' }}>
+                <Grid item xs={12} md={6}>
+                  <Typography variant="h6" sx={{ pl: 2 }}>
+                    Sample Drawing
+                  </Typography>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <Stack spacing={2}>
+                    <PartReviewFAQs />
+                    <CommonMistakes />
+                  </Stack>
+                </Grid>
               </Grid>
             </Grid>
           ) : (
             <LoadingIndicator /> /* Loading indicator will be replaced by a grid of all the part cards */
           )}
+          {/* temporary test component to show that parts are being displayed */}
+          <Stack>
+            Parts for this project:
+            {parts.map((part, _index) => (
+              <Box>
+                <Link component={RouterLink} to={`/projects/${wbsPipe(project.wbsNum)}/part/${part.index}`}>
+                  index:{part.index}, commonName: {part.commonName}, status: {part.status}
+                </Link>
+              </Box>
+            ))}
+          </Stack>
         </Grid>
       </Grid>
     </Box>

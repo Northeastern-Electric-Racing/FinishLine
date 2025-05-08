@@ -1,205 +1,48 @@
-import { PartPayload, PartSubmissionPayload, PartReviewRequestPayload, PartReviewPayload } from '../hooks/part-review.hooks';
+import {
+  PartPayload,
+  CreatePartSubmissionPayload,
+  EditPartSubmissionPayload,
+  PartReviewRequestPayload,
+  CreatePartReviewPayload,
+  EditPartReviewPayload,
+  PopupPayload
+} from '../hooks/part-review.hooks';
 import {
   PartPreview,
-  Review_Status,
   Part,
   PartSubmission,
   PartReviewRequest,
   PartReview,
-  PartReviewCommonMistake
+  PartReviewCommonMistake,
+  PartTag,
+  FrequentlyAskedQuestion,
+  Part_Review_Popup
 } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
+import { partPreviewTransformer, partTransformer } from './transformers/part-review.transformers';
 
 /**
  * Fetches all parts acosiated with the given project as part previews
  *
- * @param projectId the id of the project
+ * @param wbsNum the wbsNum of the project
  */
-export const getPartsFromProject = (/*projectId: string*/): { data: PartPreview[] } => {
-  return {
-    data: [
-      {
-        partId: '1',
-        index: 1,
-        commonName: 'wheels',
-        description: 'we need wheels for the car to go, because no wheels means no rolly means no car go',
-        previewImageId: 'jqoi34ghpwadjkog5qh3',
-        status: 'IN_PROGRESS' as Review_Status,
-        tags: [],
-        projectId: '1',
-        assignees: [],
-        reviewRequests: [
-          {
-            partReviewRequestId: '1',
-            partId: '1',
-            requester: {
-              userId: '1',
-              firstName: 'fred',
-              lastName: 'bellinger',
-              email: 'test@test.com',
-              role: 'ADMIN',
-              emailId: 'test@test.com',
-              permissions: []
-            },
-            reviewerRequested: {
-              userId: '2',
-              firstName: 'albert',
-              lastName: 'stetson',
-              email: 'reviewer@test.com',
-              role: 'ADMIN',
-              emailId: 'reviewer@test.com',
-              permissions: []
-            },
-            createdAt: new Date()
-          }
-        ],
-        createdAt: new Date(),
-        userCreated: {
-          userId: '1',
-          firstName: 'allen',
-          lastName: 'bean',
-          email: 'test@test.com',
-          role: 'ADMIN',
-          emailId: 'test@test.com',
-          permissions: []
-        }
-      },
-      {
-        partId: '2',
-        index: 2,
-        commonName: 'Test Part 2',
-        description: 'Test Description 2',
-        previewImageId: 'qogi43tbiohrj3q2jntfpi',
-        status: 'READY_FOR_REVIEW' as Review_Status,
-        tags: [],
-        projectId: '1',
-        assignees: [],
-        reviewRequests: [],
-        createdAt: new Date(),
-        userCreated: {
-          userId: '1',
-          firstName: 'will',
-          lastName: 'atwater',
-          email: 'test@test.com',
-          role: 'ADMIN',
-          emailId: 'test@test.com',
-          permissions: []
-        }
-      }
-    ]
-  };
-
-  //   return axios.get<PartPreview[]>(apiUrls.partsByProject(projectId), {
-  //     transformResponse: (data) => data.map(partPreviewTransformer)
-  //   });
+export const getPartsFromProject = async (wbsNum: string) => {
+  return axios.get<PartPreview[]>(apiUrls.partsByProject(wbsNum), {
+    transformResponse: (data) => JSON.parse(data).map(partPreviewTransformer)
+  });
 };
 
 /**
  * Fetches a single part
  *
- * @param partId the id of the part
+ * @param wbsNum the wbsNum of the project
+ * @param index the index number of the part
  */
-export const getSinglePart = (/*partId: string*/): { data: Part } => {
-  return {
-    data: {
-      partId: '1',
-      index: 1,
-      commonName: 'Suspension',
-      description: 'Test description for a suspension part, which could be a fairly lon sentence',
-      previewImageId: 'qogi43tbiohrj3q2jntfpi',
-      status: 'IN_REVIEW' as Review_Status,
-      tags: [],
-      projectId: '1',
-      assignees: [],
-      reviewRequests: [
-        {
-          partReviewRequestId: '1',
-          partId: '1',
-          requester: {
-            userId: '1',
-            firstName: 'fred',
-            lastName: 'bellinger',
-            email: 'test@test.com',
-            role: 'ADMIN',
-            emailId: 'test@test.com',
-            permissions: []
-          },
-          reviewerRequested: {
-            userId: '2',
-            firstName: 'albert',
-            lastName: 'stetson',
-            email: 'reviewer@test.com',
-            role: 'ADMIN',
-            emailId: 'reviewer@test.com',
-            permissions: []
-          },
-          createdAt: new Date()
-        }
-      ],
-      createdAt: new Date(),
-      userCreated: {
-        userId: '1',
-        firstName: 'john',
-        lastName: 'doe',
-        email: 'test@test.com',
-        role: 'ADMIN',
-        emailId: '1234567',
-        permissions: []
-      },
-      submissions: [
-        {
-          partSubmissionId: '1',
-          fileIds: ['file1', 'file2'],
-          name: 'Initial Submission',
-          notes: 'Please review these changes',
-          partId: '1',
-          userCreated: {
-            userId: '1',
-            firstName: 'jane',
-            lastName: 'plane',
-            email: 'test@test.com',
-            role: 'ADMIN',
-            emailId: 'test@test.com',
-            permissions: []
-          },
-          reviews: [
-            {
-              partReviewId: '1',
-              fileIds: ['reviewFile1'],
-              notes: 'Looks good, just a few minor changes needed',
-              submissionId: '1',
-              popUps: [
-                {
-                  partReviewPopupId: '1',
-                  xCoord: 0.5,
-                  yCoord: 0.25,
-                  title: 'Dimension Issue',
-                  description: 'Please check this measurement',
-                  reviewId: '1'
-                }
-              ],
-              completedAt: new Date(),
-              createdAt: new Date(),
-              userCreated: {
-                userId: '2',
-                firstName: 'albert',
-                lastName: 'stetson',
-                email: 'reviewer@test.com',
-                role: 'ADMIN',
-                emailId: 'reviewer@test.com',
-                permissions: []
-              }
-            }
-          ],
-          createdAt: new Date()
-        }
-      ]
-    }
-  };
-  //   return axios.get<Part>(apiUrls.partById(partId), {
-  //     transformResponse: (data) => partTransformer(JSON.parse(data))
-  //   });
+export const getSinglePart = (wbsNum: string, index: number) => {
+  return axios.get<Part>(apiUrls.partByIndex(wbsNum, index), {
+    transformResponse: (data) => partTransformer(JSON.parse(data))
+  });
 };
 
 /**
@@ -248,11 +91,10 @@ export const deletePart = (partId: string) => {
 /**
  * Creates a new part submission
  *
- * @param partId the id of the part to create the submission for
  * @param payload the payload of the part submission
  */
-export const createPartSubmission = (partId: string, payload: PartSubmissionPayload) => {
-  return axios.post<PartSubmission>(apiUrls.partsCreateSubmission(partId), {
+export const createPartSubmission = (payload: CreatePartSubmissionPayload) => {
+  return axios.post<PartSubmission>(apiUrls.partsCreateSubmission(), {
     ...payload
   });
 };
@@ -263,9 +105,17 @@ export const createPartSubmission = (partId: string, payload: PartSubmissionPayl
  * @param partSubmissionId the id of the part submission to edit
  * @param payload the payload of the part submission
  */
-export const editPartSubmission = (partSubmissionId: string, payload: PartSubmissionPayload) => {
+export const editPartSubmission = (partSubmissionId: string, payload: EditPartSubmissionPayload) => {
   return axios.post<PartSubmission>(apiUrls.partsEditSubmission(partSubmissionId), {
     ...payload
+  });
+};
+
+export const uploadFile = (file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return axios.post(apiUrls.uploadFile(), formData, {
+    transformResponse: (data) => JSON.parse(data)
   });
 };
 
@@ -296,8 +146,8 @@ export const deletePartReviewRequest = (partReviewRequestId: string) => {
  * @param submissionId the id of the part submission to create the review for
  * @param payload the payload of the part review
  */
-export const createPartReview = (submissionId: string, payload: PartReviewPayload) => {
-  return axios.post<PartReview>(apiUrls.partsCreateReview(submissionId), {
+export const createPartReview = (payload: CreatePartReviewPayload) => {
+  return axios.post<PartReview>(apiUrls.partsCreateReview(), {
     ...payload
   });
 };
@@ -308,17 +158,113 @@ export const createPartReview = (submissionId: string, payload: PartReviewPayloa
  * @param partReviewId the id of the part review to edit
  * @param payload the payload of the part review
  */
-export const editPartReview = (partReviewId: string, payload: PartReviewPayload) => {
-  return axios.post<PartReview>(apiUrls.partsEditReview(partReviewId), {
+export const editPartReview = (payload: EditPartReviewPayload) => {
+  return axios.post<PartReview>(apiUrls.partsEditReview(payload.partReviewId), {
     ...payload
   });
 };
 
 /**
+ * Fetches all Part Review FAQs for the current organization.
+ *
+ * @returns A list of Part Review FAQs.
+ */
+export const getAllPartReviewFaqs = () => {
+  return axios.get<FrequentlyAskedQuestion[]>(apiUrls.partsReviewFaqs(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
+ * create a new Part Review FAQ.
+ *
+ * @param payload - The FAQ data, including question and answer.
+ * @returns The created FAQ.
+ */
+export const createPartReviewFaq = (payload: { question: string; answer: string }) => {
+  return axios.post<FrequentlyAskedQuestion>(apiUrls.partsReviewFaqCreate(), {
+    ...payload
+  });
+};
+
+/**
+ * edits an existing Part Review FAQ.
+ *
+ * @param faqId - The ID of the FAQ to edit.
+ * @param payload - The updated FAQ data.
+ * @returns The updated FAQ.
+ */
+export const editPartReviewFaq = (faqId: string, payload: { question: string; answer: string }) => {
+  return axios.post<FrequentlyAskedQuestion>(apiUrls.partsReviewFaqEdit(faqId), {
+    ...payload
+  });
+};
+
+/**
+ * delete a Part Review FAQ.
+ *
+ * @param faqId - The ID of the FAQ to delete.
+ * @returns The deleted FAQ.
+ */
+export const deletePartReviewFaq = (faqId: string) => {
+  return axios.post<FrequentlyAskedQuestion>(apiUrls.partsReviewFaqDelete(faqId));
+};
+
+/*
  * Gets all of the common mistakes associated with part reviews
  *
  * @returns an array of common mistakes
  */
 export const getAllCommonMistakes = () => {
   return axios.get<PartReviewCommonMistake[]>(apiUrls.getAllPartCommonMistakes());
+};
+
+/**
+ * Gets all the part tags for the users organization
+ *
+ * @returns an array of part tags
+ */
+export const getAllPartTags = () => {
+  return axios.get<PartTag[]>(apiUrls.getAllPartTags());
+};
+
+/**
+ * Creates a new Popup
+ *
+ * @returns the created popup
+ */
+export const createReviewPopup = (partReviewId: string, payload: PopupPayload) => {
+  return axios.post<Part_Review_Popup>(
+    apiUrls.createReviewPopup(partReviewId),
+    {
+      ...payload
+    },
+    {
+      transformResponse: (data) => JSON.parse(data)
+    }
+  );
+};
+
+/**
+ * Updates a new Popup
+ *
+ * @returns the updated popup
+ */
+export const updateReviewPopup = (popupId: string, payload: PopupPayload) => {
+  return axios.post<Part_Review_Popup>(
+    apiUrls.updateReviewPopup(popupId),
+    {
+      ...payload
+    },
+    {
+      transformResponse: (data) => JSON.parse(data)
+    }
+  );
+};
+
+/**
+ * Deletes a popup
+ */
+export const deleteReviewPopup = (popupId: string) => {
+  return axios.post<{ message: string }>(apiUrls.deleteReviewPopup(popupId));
 };

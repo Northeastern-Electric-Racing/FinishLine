@@ -37,25 +37,37 @@ const projectsEdit = () => `${projects()}/edit`;
 const projectsSetTeam = (wbsNum: string) => `${projects()}/${wbsNum}/set-team`;
 const projectsDelete = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/delete';
 const projectsToggleFavorite = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/favorite';
+const projectsSetAbbreviation = () => `${projects()}/set-abbreviation`;
+const projectsDeleteAbbreviation = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/delete-abbreviation';
 const projectsLinkTypes = () => `${projects()}/link-types`;
 const projectsCreateLinkTypes = () => `${projects()}/link-types/create`;
 const projectsEditLinkTypes = (linkTypeName: string) => `${projects()}/link-types/${linkTypeName}/edit`;
 
 /**************** Part Review Endpoints ********************/
 const parts = () => `${API_URL}/parts`;
-const partsByProject = (projectId: string) => `${parts()}/${projectId}/parts`;
-const partsById = (partId: string) => `${parts()}/${partId}`;
+const partsByProject = (wbsNum: string) => `${parts()}/by-project/${wbsNum}`;
+const partByIndex = (wbsNum: string, partIndex: number) => `${parts()}/by-index/${wbsNum}/${partIndex}`;
 const partsCreate = () => `${parts()}/create`;
 const partsUploadPreviewImage = (partId: string) => `${parts()}/${partId}/upload-preview`;
 const partsEdit = (partId: string) => `${parts()}/${partId}/update`;
 const partsDelete = (partId: string) => `${parts()}/${partId}/delete`;
-const partsCreateSubmission = (partId: string) => `${parts()}/submission/${partId}/create`;
+const partsCreateSubmission = () => `${parts()}/submission/create`;
 const partsEditSubmission = (submissionId: string) => `${parts()}/submission/${submissionId}/update`;
 const partsCreateReviewRequest = (submissionId: string) => `${parts()}/reviewRequest/${submissionId}/create`;
 const partsDeleteReviewRequest = (reviewRequestId: string) => `${parts()}/reviewRequest/${reviewRequestId}/delete`;
-const partsCreateReview = (submissionId: string) => `${parts()}/review/${submissionId}/create`;
+const partsCreateReview = () => `${parts()}/review/create`;
 const partsEditReview = (reviewId: string) => `${parts()}/review/${reviewId}/update`;
+const partsReviewFaqs = () => `${parts()}/faqs`;
+const partsReviewFaqCreate = () => `${parts()}/faqs/create`;
+const partsReviewFaqEdit = (faqId: string) => `${parts()}/faqs/${faqId}/update`;
+const partsReviewFaqDelete = (faqId: string) => `${parts()}/faqs/${faqId}/delete`;
 const getAllPartCommonMistakes = () => `${parts()}/common-mistakes`;
+const uploadFile = () => `${parts()}/upload/file`;
+const downloadFile = (fileId: string) => `${parts()}/file/${fileId}/download`;
+const getAllPartTags = () => `${parts()}/tags`;
+const createReviewPopup = (reviewId: string) => `${parts()}/review/${reviewId}/popup/create`;
+const updateReviewPopup = (popupId: string) => `${parts()}/popup/${popupId}/update`;
+const deleteReviewPopup = (popupId: string) => `${parts()}/popup/${popupId}/delete`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
@@ -210,6 +222,8 @@ const organizationsLogoImage = () => `${organizations()}/logo`;
 const organizationsSetLogoImage = () => `${organizations()}/logo/update`;
 const organizationsSetFeaturedProjects = () => `${organizationsFeaturedProjects()}/set`;
 const organizationsSetWorkspaceId = () => `${organizations()}/workspaceId/set`;
+const organizationsGetPartReviewGuideLink = () => `${organizations()}/part-review-guide-link/get`;
+const organizationsSetPartReviewGuideLink = () => `${organizations()}/part-review-guide-link/set`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
@@ -289,13 +303,19 @@ export const apiUrls = {
   projectsSetTeam,
   projectsDelete,
   projectsToggleFavorite,
+  projectsSetAbbreviation,
+  projectsDeleteAbbreviation,
   projectsLinkTypes,
   projectsCreateLinkTypes,
   projectsEditLinkTypes,
 
   parts,
   partsByProject,
-  partsById,
+  partsReviewFaqs,
+  partsReviewFaqCreate,
+  partsReviewFaqEdit,
+  partsReviewFaqDelete,
+  partByIndex,
   partsCreate,
   partsUploadPreviewImage,
   partsEdit,
@@ -307,6 +327,12 @@ export const apiUrls = {
   partsCreateReview,
   partsEditReview,
   getAllPartCommonMistakes,
+  downloadFile,
+  uploadFile,
+  getAllPartTags,
+  createReviewPopup,
+  updateReviewPopup,
+  deleteReviewPopup,
 
   tasksCreate,
   tasks,
@@ -436,6 +462,8 @@ export const apiUrls = {
   organizationsSetLogoImage,
   organizationsSetFeaturedProjects,
   organizationsSetWorkspaceId,
+  organizationsGetPartReviewGuideLink,
+  organizationsSetPartReviewGuideLink,
 
   cars,
   carsCreate,

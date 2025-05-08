@@ -6,23 +6,36 @@ import {
   PartReviewRequest,
   PartSubmission,
   Review_Status,
-  PartReviewCommonMistake
+  PartReviewCommonMistake,
+  FrequentlyAskedQuestion,
+  PartTag,
+  Part_Review_Popup
 } from 'shared';
 import {
   createPart,
   createPartReview,
+  createPartReviewFaq,
   createPartReviewRequest,
   createPartSubmission,
   deletePart,
+  deletePartReviewFaq,
   deletePartReviewRequest,
   editPart,
+  editPartReviewFaq,
   editPartReview,
   editPartSubmission,
+  getAllPartReviewFaqs,
   getPartsFromProject,
   getSinglePart,
   getAllCommonMistakes,
-  uploadPreviewImage
+  uploadPreviewImage,
+  getAllPartTags,
+  createReviewPopup,
+  updateReviewPopup,
+  deleteReviewPopup,
+  uploadFile
 } from '../apis/part-review.api';
+import { downloadGoogleImage } from '../apis/onboarding.api';
 
 export interface PartPayload {
   wbsNum: string;
@@ -32,12 +45,17 @@ export interface PartPayload {
   reviewStatus: Review_Status;
   tagIds: string[];
   assigneeIds: string[];
+  reviewerIds: string[];
 }
 
-export interface PartSubmissionPayload {
-  fileIds: string[];
+export interface EditPartSubmissionPayload {
   name: string;
   notes?: string;
+}
+
+export interface CreatePartSubmissionPayload extends EditPartSubmissionPayload {
+  partId: string;
+  fileIds: string[];
 }
 
 export interface PartReviewRequestPayload {
@@ -45,19 +63,36 @@ export interface PartReviewRequestPayload {
   reviewRequestedId: string;
 }
 
-export interface PartReviewPayload {
+export interface CreatePartReviewPayload {
+  submissionId: string;
+  status: Review_Status;
   fileIds: string[];
   notes?: string;
+}
+
+export interface EditPartReviewPayload {
+  partReviewId: string;
+  notes?: string;
+  status?: Review_Status;
+  fileIds?: string[];
+}
+
+export interface PopupPayload {
+  xCoord: number;
+  yCoord: number;
+  fileIndex: number;
+  title: string;
+  description?: string;
 }
 
 /**
  * Custom React Hook to fetch all parts associated with the given project as part previews
  *
- * @param projectId the id of the project
+ * @param wbsNum the wbs number of the project
  */
-export const usePartsFromProject = (/*projectId: string*/) => {
-  return useQuery<PartPreview[], Error>(['parts', 'byProject'], async () => {
-    const { data } = await getPartsFromProject(/*projectId*/);
+export const usePartsFromProject = (wbsNum: string) => {
+  return useQuery<PartPreview[], Error>(['parts', 'by project', wbsNum], async () => {
+    const { data } = await getPartsFromProject(wbsNum);
     return data;
   });
 };
@@ -65,11 +100,12 @@ export const usePartsFromProject = (/*projectId: string*/) => {
 /**
  * Custom React Hook to fetch a single part
  *
- * @param partId the id of the part
+ * @param wbsNum the wbs number of the project
+ * @param index the index number of the part
  */
-export const useSinglePart = (/*partId: string*/) => {
-  return useQuery<Part, Error>(['parts', 'byId' /*partId*/], async () => {
-    const { data } = await getSinglePart(/*partId*/);
+export const useSinglePart = (wbsNum: string, index: number) => {
+  return useQuery<Part, Error>(['parts', 'by index', wbsNum, index], async () => {
+    const { data } = await getSinglePart(wbsNum, index);
     return data;
   });
 };
@@ -87,7 +123,7 @@ export const useCreatePart = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['parts', 'byProject']);
+        queryClient.invalidateQueries(['parts', 'by project']);
       }
     }
   );
@@ -108,8 +144,7 @@ export const useEditPart = (partId: string) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['parts', 'byProject']);
-        queryClient.invalidateQueries(['parts', 'byId', partId]);
+        queryClient.invalidateQueries(['parts']);
       }
     }
   );
@@ -124,8 +159,7 @@ export const useUploadPreviewImage = (partId: string) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['parts', 'byProject']);
-        queryClient.invalidateQueries(['parts', 'byId', partId]);
+        queryClient.invalidateQueries(['parts']);
       }
     }
   );
@@ -146,11 +180,17 @@ export const useDeletePart = (partId: string) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['parts', 'byProject']);
-        queryClient.invalidateQueries(['parts', 'byId', partId]);
+        queryClient.invalidateQueries(['parts']);
       }
     }
   );
+};
+
+export const useUploadFile = () => {
+  return useMutation<string, Error, File>(['file', 'upload'], async (file: File) => {
+    const { data } = await uploadFile(file);
+    return data;
+  });
 };
 
 /**
@@ -158,18 +198,17 @@ export const useDeletePart = (partId: string) => {
  *
  * @param partId the id of the part to create the submission for
  */
-export const useCreatePartSubmission = (partId: string) => {
+export const useCreatePartSubmission = () => {
   const queryClient = useQueryClient();
-  return useMutation<PartSubmission, Error, PartSubmissionPayload>(
+  return useMutation<PartSubmission, Error, CreatePartSubmissionPayload>(
     ['parts', 'createSubmission'],
-    async (submission: PartSubmissionPayload) => {
-      const { data } = await createPartSubmission(partId, submission);
+    async (submission: CreatePartSubmissionPayload) => {
+      const { data } = await createPartSubmission(submission);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['parts', 'byProject']);
-        queryClient.invalidateQueries(['parts', 'byId', partId]);
+        queryClient.invalidateQueries(['parts']);
       }
     }
   );
@@ -182,15 +221,15 @@ export const useCreatePartSubmission = (partId: string) => {
  */
 export const useEditPartSubmission = (submissionId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<PartSubmission, Error, PartSubmissionPayload>(
+  return useMutation<PartSubmission, Error, EditPartSubmissionPayload>(
     ['parts', 'editSubmission'],
-    async (submission: PartSubmissionPayload) => {
+    async (submission: EditPartSubmissionPayload) => {
       const { data } = await editPartSubmission(submissionId, submission);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['parts', 'byId']);
+        queryClient.invalidateQueries(['parts']);
       }
     }
   );
@@ -240,15 +279,13 @@ export const useDeletePartReviewRequest = (reviewRequestId: string) => {
 
 /**
  * Custom React Hook to create a new part review
- *
- * @param submissionId the id of the part submission to create the review for
  */
-export const useCreatePartReview = (submissionId: string) => {
+export const useCreatePartReview = () => {
   const queryClient = useQueryClient();
-  return useMutation<PartReview, Error, PartReviewPayload>(
+  return useMutation<PartReview, Error, CreatePartReviewPayload>(
     ['parts', 'createReview'],
-    async (review: PartReviewPayload) => {
-      const { data } = await createPartReview(submissionId, review);
+    async (review: CreatePartReviewPayload) => {
+      const { data } = await createPartReview(review);
       return data;
     },
     {
@@ -264,12 +301,12 @@ export const useCreatePartReview = (submissionId: string) => {
  *
  * @param reviewId the id of the part review to edit
  */
-export const useEditPartReview = (reviewId: string) => {
+export const useEditPartReview = () => {
   const queryClient = useQueryClient();
-  return useMutation<PartReview, Error, PartReviewPayload>(
+  return useMutation<PartReview, Error, EditPartReviewPayload>(
     ['parts', 'editReview'],
-    async (partReview: PartReviewPayload) => {
-      const { data } = await editPartReview(reviewId, partReview);
+    async (partReview: EditPartReviewPayload) => {
+      const { data } = await editPartReview(partReview);
       return data;
     },
     {
@@ -281,6 +318,74 @@ export const useEditPartReview = (reviewId: string) => {
 };
 
 /**
+ * React Query hook to fetch all Part Review FAQs.
+ *
+ * @returns Query result containing FAQs data, loading state, and error state.
+ */
+export const useAllPartReviewFaqs = () => {
+  return useQuery<FrequentlyAskedQuestion[], Error>(['partReviewFaqs'], async () => {
+    const { data } = await getAllPartReviewFaqs();
+    return data;
+  });
+};
+
+/**
+ * React Query hook to create a new Part Review FAQ.
+ *
+ * Automatically invalidates the FAQs query on success.
+ */
+export const useCreatePartReviewFaq = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<FrequentlyAskedQuestion, Error, { question: string; answer: string }>(
+    async (data) => {
+      const response = await createPartReviewFaq(data);
+      return response.data;
+    },
+    {
+      onSuccess: async (createdFaq) => {
+        await queryClient.cancelQueries(['partReviewFaqs']);
+        queryClient.setQueryData<FrequentlyAskedQuestion[]>(['partReviewFaqs'], (old = []) => [...old, createdFaq]);
+      }
+    }
+  );
+};
+
+/**
+ * React Query hook to edit an existing Part Review FAQ.
+ *
+ * Automatically invalidates the FAQs query on success.
+ */
+export const useEditPartReviewFaq = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<FrequentlyAskedQuestion, Error, { faqId: string; payload: { question: string; answer: string } }>(
+    async ({ faqId, payload }) => {
+      const response = await editPartReviewFaq(faqId, payload);
+      return response.data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['partReviewFaqs']);
+      }
+    }
+  );
+};
+
+/**
+ * React Query hook to delete a Part Review FAQ.
+ *
+ * Automatically invalidates the FAQs query on success.
+ */
+export const useDeletePartReviewFaq = () => {
+  const queryClient = useQueryClient();
+  return useMutation(deletePartReviewFaq, {
+    onSuccess: () => queryClient.invalidateQueries(['partReviewFaqs'])
+  });
+};
+
+/*
+
  * Custom React Hook to get all common mistakes
  *
  * @returns a list of all common mistakes
@@ -296,6 +401,94 @@ export const useAllCommonMistakes = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['common mistakes']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to get all part tags
+ *
+ * @returns a list of all part tags
+ */
+export const useGetAllPartTags = () => {
+  return useQuery<PartTag[], Error>(['part tags'], async () => {
+    const { data } = await getAllPartTags();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to download files
+ *
+ * @returns a blob of the downloaded file
+ */
+export const useDownloadFile = (fileId: string) => {
+  return useQuery<Blob | undefined, Error>(['parts', 'file', fileId], async () => {
+    return await downloadGoogleImage(fileId);
+  });
+};
+
+/**
+ * Custom React Hook to create a review popup
+ *
+ * @returns the created popup
+ */
+export const useCreateReviewPopup = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<Part_Review_Popup, Error, { reviewId: string; payload: PopupPayload }>(
+    ['parts', 'popup', 'create'],
+    async (data) => {
+      const response = await createReviewPopup(data.reviewId, data.payload);
+      return response.data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['parts', 'by index']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to update a review popup
+ *
+ * @returns the updated popup
+ */
+export const useUpdateReviewPopup = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<Part_Review_Popup, Error, { popupId: string; payload: PopupPayload }>(
+    ['parts', 'popup', 'update'],
+    async (data) => {
+      const response = await updateReviewPopup(data.popupId, data.payload);
+      return response.data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['parts', 'by index']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to delete a popup
+ *
+ * @returns a success message
+ */
+export const useDeleteReviewPopup = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['parts', 'popup', 'delete'],
+    async (popupId: string) => {
+      const { data } = await deleteReviewPopup(popupId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['parts', 'by index']);
       }
     }
   );

@@ -966,6 +966,7 @@ model Organization {
   applicationLink         String?
   onboardingText          String?
   partReviewSampleImageId String?
+  partReviewGuideLink     String?
 
   // Relation references
   wbsElements              WBS_Element[]
@@ -1128,32 +1129,34 @@ model Contact {
 }
 
 model Part {
-  partId           String              @id @default(uuid())
-  index            Int
-  commonName       String
-  description      String?
+  partId         String              @id @default(uuid())
+  index          Int
+  commonName     String
+  description    String?
   previewImageId String?
-  status           Review_Status       @default(IN_PROGRESS)
-  tags             PartTag[]
-  submissions      PartSubmission[]
-  reviewRequests   PartReviewRequest[]
-  project          Project             @relation(fields: [projectId], references: [projectId])
-  projectId        String
-  assignees        User[]              @relation("partAssignees")
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
-  dateDeleted      DateTime?
-  userCreatedId    String
-  userCreated      User                @relation(fields: [userCreatedId], references: [userId], name: "partCreator")
-  userDeletedId    String?
-  userDeleted      User?               @relation(fields: [userDeletedId], references: [userId], name: "partDeleter")
+  status         Review_Status       @default(IN_PROGRESS)
+  tags           PartTag[]
+  submissions    PartSubmission[]
+  reviewRequests PartReviewRequest[]
+  project        Project             @relation(fields: [projectId], references: [projectId])
+  projectId      String
+  assignees      User[]              @relation("partAssignees")
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  dateDeleted    DateTime?
+  userCreatedId  String
+  userCreated    User                @relation(fields: [userCreatedId], references: [userId], name: "partCreator")
+  userDeletedId  String?
+  userDeleted    User?               @relation(fields: [userDeletedId], references: [userId], name: "partDeleter")
+
+  @@unique([projectId, index], name: "ProjectId_and_index")
 }
 
 model PartTag {
-  partTagId      String        @id @default(uuid())
+  partTagId      String       @id @default(uuid())
   name           String
   colorHexCode   String
-  dateCreated    DateTime      @default(now())
+  dateCreated    DateTime     @default(now())
   dateDeleted    DateTime?
   parts          Part[]
   organization   Organization @relation(fields: [organizationId], references: [organizationId])
@@ -1178,14 +1181,15 @@ model PartSubmission {
 }
 
 model PartReviewRequest {
-  partReviewRequestId String   @id @default(uuid())
+  partReviewRequestId String    @id @default(uuid())
   partId              String
-  part                Part     @relation(fields: [partId], references: [partId])
+  part                Part      @relation(fields: [partId], references: [partId])
   requesterId         String
-  requester           User     @relation(fields: [requesterId], references: [userId], name: "PartReviewRequestor")
+  requester           User      @relation(fields: [requesterId], references: [userId], name: "PartReviewRequestor")
   reviewerId          String
-  reviewerRequested   User     @relation(fields: [reviewerId], references: [userId], name: "PartReviewRequested")
-  createdAt           DateTime @default(now())
+  reviewerRequested   User      @relation(fields: [reviewerId], references: [userId], name: "PartReviewRequested")
+  createdAt           DateTime  @default(now())
+  dateDeleted         DateTime?
 }
 
 model PartReview {
@@ -1211,7 +1215,8 @@ model Part_Review_Popup {
   xCoord            Float
   yCoord            Float
   title             String
-  description       String
+  fileIndex         Int
+  description       String?
   reviewId          String
   review            PartReview @relation(fields: [reviewId], references: [partReviewId])
   createdAt         DateTime   @default(now())
