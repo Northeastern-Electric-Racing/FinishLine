@@ -151,8 +151,8 @@ const readableToBuffer = async (readable: Readable): Promise<Buffer> => {
   });
 };
 
-//given the google file id, downloads the image data and return it as a Buffer along with the image type
-export const downloadImageFile = async (fileId: string) => {
+//given the google file id, downloads the file data and return it as a Buffer along with the file type
+export const downloadFile = async (fileId: string) => {
   oauth2Client.setCredentials({
     refresh_token: DRIVE_REFRESH_TOKEN
   });
@@ -169,7 +169,7 @@ export const downloadImageFile = async (fileId: string) => {
     return { buffer: bufferData, type: res.headers['content-type'] };
   } catch (error: unknown) {
     if (error instanceof Error) {
-      throw new HttpException(500, `Failed to Download Image(${fileId}): ${error.message}`);
+      throw new HttpException(500, `Failed to Download File(${fileId}): ${error.message}`);
     }
     throw error;
   }

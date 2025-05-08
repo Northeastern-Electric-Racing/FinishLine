@@ -1,5 +1,5 @@
 import { Organization, User } from '@prisma/client';
-import { userHasPermission } from '../utils/users.utils';
+import { userHasPermission, getUserRole } from '../utils/users.utils';
 import {
   FrequentlyAskedQuestion,
   isAdmin,
@@ -8,6 +8,8 @@ import {
   PartTag,
   Project,
   WbsNumber,
+  isAtLeastRank,
+  RoleEnum,
   Review_Status,
   validateWBS
 } from 'shared';
@@ -16,19 +18,56 @@ import {
   AccessDeniedException,
   DeletedException,
   HttpException,
-  NotFoundException
+  NotFoundException,
+  InvalidOrganizationException,
+  AccessDeniedGuestException
 } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
 import { getFaqQueryArgs } from '../prisma-query-args/faq.query-args';
-import { getPartQueryArgs, getPartReviewQueryArgs } from '../prisma-query-args/part-review.query-args';
+import {
+  getPartQueryArgs,
+  getPartReviewQueryArgs,
+  getPartReviewRequestQueryArgs,
+  getPartSubmissionQueryArgs
+} from '../prisma-query-args/part-review.query-args';
 import { faqTransformer } from '../transformers/faq.transformer';
-import { partPreviewTransformer } from '../transformers/part-review.transformer';
-import { partsReviewCommonMistakeTransformer, partTransformer } from '../transformers/part-review.transformer';
+import {
+  partReviewRequestTransformer,
+  partsReviewCommonMistakeTransformer,
+  partTransformer,
+  partPreviewTransformer,
+  partSubmissionTransformer,
+  partReviewTransformer
+} from '../transformers/part-review.transformer';
 import { isUserPartOfTeams } from '../utils/teams.utils';
-import { uploadFile } from '../utils/google-integration.utils';
+import { uploadFile, downloadFile } from '../utils/google-integration.utils';
 import ProjectsService from './projects.services';
 
 export default class PartReviewService {
+  /**
+   * Uses the given partId to get the specific part and all of its constituent data
+   * @param wbsNumber the wbsNum of the project this part is under
+   * @param indexNum the index number of the part on this project
+   * @returns a single Part
+   */
+  static async getPart(organization: Organization, wbsNumber: WbsNumber, indexNum: string) {
+    const project: Project = await ProjectsService.getSingleProject(wbsNumber, organization);
+    const index = Number(indexNum);
+    const part = await prisma.part.findUnique({
+      where: {
+        ProjectId_and_index: {
+          projectId: project.id,
+          index
+        },
+        dateDeleted: null
+      },
+      ...getPartQueryArgs(organization.organizationId)
+    });
+
+    if (!part) throw new NotFoundException('Part', `projectId: ${project.id} and index number: ${indexNum}`);
+
+    return partTransformer(part);
+  }
   /**
    * Gets all parts for the given project
    * @param wbsNumber the wbs number of the project
@@ -62,6 +101,7 @@ export default class PartReviewService {
    * @param reviewStatus
    * @param tagIds
    * @param assigneeIds
+   * @param reviewerIds
    * @returns
    */
   static async createPart(
@@ -73,7 +113,8 @@ export default class PartReviewService {
     description: string,
     reviewStatus: Review_Status,
     tagIds: string[],
-    assigneeIds: string[]
+    assigneeIds: string[],
+    reviewerIds: string[]
   ) {
     const wbsNumber: WbsNumber = validateWBS(wbsNum);
 
@@ -87,25 +128,45 @@ export default class PartReviewService {
 
     if (!perms) throw new AccessDeniedException('Only leadership and team members can create a part');
 
-    const part = await prisma.part.create({
-      data: {
-        index,
-        commonName,
-        description,
-        status: reviewStatus,
-        tags: {
-          connect: tagIds.map((partTagId) => ({ partTagId }))
+    const createdPart = await prisma.$transaction(async (tx) => {
+      const part = await tx.part.create({
+        data: {
+          index,
+          commonName,
+          description,
+          status: reviewStatus,
+          tags: {
+            connect: tagIds.map((partTagId) => ({ partTagId }))
+          },
+          project: { connect: { projectId: project.projectId } },
+          assignees: {
+            connect: assigneeIds.map((userId) => ({ userId }))
+          },
+          userCreated: { connect: { userId: creator.userId } }
         },
-        project: { connect: { projectId: project.projectId } },
-        assignees: {
-          connect: assigneeIds.map((userId) => ({ userId }))
-        },
-        userCreated: { connect: { userId: creator.userId } }
-      },
-      ...getPartQueryArgs(organization.organizationId)
+        ...getPartQueryArgs(organization.organizationId)
+      });
+
+      await Promise.all(
+        reviewerIds.map(async (id) => {
+          return tx.partReviewRequest.create({
+            data: {
+              part: {
+                connect: {
+                  partId: part.partId
+                }
+              },
+              requester: { connect: { userId: creator.userId } },
+              reviewerRequested: { connect: { userId: id } }
+            }
+          });
+        })
+      );
+
+      return part;
     });
 
-    return partTransformer(part);
+    return partTransformer(createdPart);
   }
 
   /**
@@ -149,6 +210,16 @@ export default class PartReviewService {
     });
 
     return partTransformer(updatedPart);
+  }
+
+  static async uploadFile(file: Express.Multer.File) {
+    const data = await uploadFile(file);
+
+    if (!data?.id) {
+      throw new HttpException(500, 'could not upload file');
+    }
+
+    return data.id;
   }
 
   static async updatePart(
@@ -225,6 +296,200 @@ export default class PartReviewService {
     });
 
     return partTransformer(deletedPart);
+  }
+
+  /**
+   * Creates a review on a submission for a part
+   * @param organizationId the organization
+   * @param creator the creator of the review
+   * @param submissionId the submission
+   * @param notes optional notes on the review
+   * @param fileIds the ids of the files being added to this review
+   * @param newPartStatus the new status of the part which the review is added to.
+   * if this status is Reviewed or approved, the completedAt date is set to now
+   * @returns the created review
+   */
+  static async createReview(
+    organizationId: string,
+    creator: User,
+    submissionId: string,
+    newPartStatus: string,
+    fileIds: string[],
+    notes: string
+  ) {
+    const submission = await prisma.partSubmission.findUnique({
+      where: { partSubmissionId: submissionId },
+      include: { part: { include: { project: { include: { wbsElement: true } } } } }
+    });
+
+    if (!submission) throw new NotFoundException('Part Submission', submissionId);
+    if (submission.dateDeleted) throw new DeletedException('Part Submission', submissionId);
+    if (submission.part.project.wbsElement.organizationId !== organizationId)
+      throw new InvalidOrganizationException('Part Submission');
+
+    const review_status = newPartStatus as Review_Status;
+    const completedAt =
+      review_status === Review_Status.APPROVED || review_status === Review_Status.REVIEWED ? new Date() : null;
+
+    await prisma.part.update({
+      where: {
+        partId: submission.partId
+      },
+      data: {
+        status: review_status
+      }
+    });
+
+    const review = await prisma.partReview.create({
+      data: {
+        submission: {
+          connect: { partSubmissionId: submissionId }
+        },
+        userCreated: {
+          connect: { userId: creator.userId }
+        },
+        fileIds,
+        notes,
+        completedAt
+      },
+      ...getPartReviewQueryArgs(organizationId)
+    });
+
+    return partReviewTransformer(review);
+  }
+
+  /**
+   * Updates an existing review
+   * @param organizationId the organization
+   * @param updater the user updating (must be creator)
+   * @param reviewId the review being updated
+   * @param newPartStatus the new status of the part which the review is added to.
+   * if this status is Reviewed or approved, the completedAt date is set to now
+   * @param notes notes for the review
+   * @returns the updated review
+   */
+  static async updateReview(
+    organizationId: string,
+    updater: User,
+    reviewId: string,
+    newPartStatus: string,
+    notes: string,
+    fileIds: string[]
+  ) {
+    const review = await prisma.partReview.findUnique({
+      where: { partReviewId: reviewId },
+      include: { submission: { include: { part: { include: { project: { include: { wbsElement: true } } } } } } }
+    });
+
+    if (!review) throw new NotFoundException('Part Review', reviewId);
+    if (review.dateDeleted) throw new DeletedException('Part Review', reviewId);
+    if (review.submission.part.project.wbsElement.organizationId !== organizationId)
+      throw new InvalidOrganizationException('Part Review');
+
+    if (updater.userId !== review.userCreatedId) throw new AccessDeniedException('only review creators can update reviews');
+
+    const review_status = newPartStatus as Review_Status;
+    const completedAt =
+      review_status === Review_Status.APPROVED || review_status === Review_Status.REVIEWED ? new Date() : null;
+
+    const updatedReview = await prisma.partReview.update({
+      where: { partReviewId: reviewId },
+      data: {
+        notes: notes ? notes : review.notes,
+        completedAt,
+        fileIds: fileIds ? fileIds : review.fileIds
+      },
+      ...getPartReviewQueryArgs(organizationId)
+    });
+
+    await prisma.part.update({
+      where: {
+        partId: review.submission.partId
+      },
+      data: {
+        status: review_status
+      }
+    });
+
+    return partReviewTransformer(updatedReview);
+  }
+
+  /**
+   * Creates a submission for a given part
+   * @param partId the part that the submission will be added to
+   * @param creator the creator
+   * @param organizationId the organization
+   * @param name the name of the submission
+   * @param notes optional notes
+   * @param files the files in the submission
+   * @returns the created submission
+   */
+  static async createSubmission(
+    partId: string,
+    creator: User,
+    organizationId: string,
+    name: string,
+    fileIds: string[],
+    notes?: string
+  ) {
+    const part = await prisma.part.findUnique({
+      where: { partId },
+      include: { project: { include: { wbsElement: true } } }
+    });
+    if (!part) throw new NotFoundException('Part', partId);
+    if (part.dateDeleted) throw new DeletedException('Part', partId);
+    if (part.project.wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('Part');
+
+    const submission = await prisma.partSubmission.create({
+      data: {
+        name,
+        notes,
+        fileIds,
+        part: {
+          connect: { partId }
+        },
+        userCreated: {
+          connect: { userId: creator.userId }
+        }
+      },
+      ...getPartSubmissionQueryArgs(organizationId)
+    });
+
+    return partSubmissionTransformer(submission);
+  }
+
+  /**
+   * updates a given submission
+   * @param submissionId the submission being updated
+   * @param updater the user updating (must be the creator)
+   * @param organizationId the organization
+   * @param name the new name of the submission
+   * @param notes the new notes (optional)
+   * @returns the updated submission
+   */
+  static async updateSubmission(submissionId: string, updater: User, organizationId: string, name: string, notes?: string) {
+    const submission = await prisma.partSubmission.findUnique({
+      where: { partSubmissionId: submissionId },
+      include: { part: { include: { project: { include: { wbsElement: true } } } } }
+    });
+    if (!submission) throw new NotFoundException('Part Submission', submissionId);
+    if (submission.dateDeleted) throw new DeletedException('Part Submission', submissionId);
+    if (submission.part.project.wbsElement.organizationId !== organizationId)
+      throw new InvalidOrganizationException('Part Submission');
+
+    if (updater.userId !== submission.userCreatedId)
+      throw new AccessDeniedException('only submission creators can update submissions');
+
+    const updatedSubmission = await prisma.partSubmission.update({
+      where: { partSubmissionId: submissionId },
+      data: {
+        name,
+        notes: notes ?? submission.notes
+      },
+      ...getPartSubmissionQueryArgs(organizationId)
+    });
+
+    return partSubmissionTransformer(updatedSubmission);
   }
 
   /**
@@ -585,11 +850,11 @@ export default class PartReviewService {
     });
 
     if (!commonMistake) {
-      throw new NotFoundException('common mistake', commonMistakeId);
+      throw new NotFoundException('Common Mistake', commonMistakeId);
     }
 
     if (commonMistake.dateDeleted) {
-      throw new DeletedException('common mistake', commonMistakeId);
+      throw new DeletedException('Common Mistake', commonMistakeId);
     }
 
     if (!(await userHasPermission(updater.userId, organizationId, isAdmin))) {
@@ -629,7 +894,7 @@ export default class PartReviewService {
     });
 
     if (!commonMistake) {
-      throw new NotFoundException('common mistake', commonMistakeId);
+      throw new NotFoundException('Common Mistake', commonMistakeId);
     }
 
     if (!(await userHasPermission(deleter.userId, organizationId, isAdmin))) {
@@ -654,11 +919,99 @@ export default class PartReviewService {
   }
 
   /**
+   * Creates a new part review request.
+   * @param partId - the id of the part to request a review on
+   * @param requester - user who is creating the review request
+   * @param reviewerId - user who is being asked to review
+   * @param organizationId - organization id to validate permissions
+   * @returns the created and transformed PartReviewRequest
+   */
+  static async createPartReviewRequest(partId: string, requester: User, reviewerId: string, organizationId: string) {
+    const part = await prisma.part.findUnique({
+      where: { partId }
+    });
+
+    if (!part) {
+      throw new NotFoundException('Part', partId);
+    }
+
+    if (part.dateDeleted) {
+      throw new DeletedException('Part', partId);
+    }
+
+    const role = await getUserRole(requester.userId, organizationId);
+    const hasAccess = isAtLeastRank(RoleEnum.MEMBER, role);
+
+    if (!hasAccess) {
+      throw new AccessDeniedGuestException('Guests must be at least members to access this part.');
+    }
+
+    const createdRequest = await prisma.partReviewRequest.create({
+      data: {
+        part: {
+          connect: { partId }
+        },
+        requester: {
+          connect: { userId: requester.userId }
+        },
+        reviewerRequested: {
+          connect: { userId: reviewerId }
+        }
+      },
+      ...getPartReviewRequestQueryArgs(organizationId)
+    });
+
+    return partReviewRequestTransformer(createdRequest);
+  }
+
+  /**
+   * soft deletes an existing part review request if the requester, reviewer, or an admin initiates the request
+   * @param reviewRequestId - the ID of the part whose review request should be deleted
+   * @param user - the user attempting to delete the review request
+   * @param organizationId - the organization ID to validate permissions
+   * @returns the soft-deleted and transformed PartReviewRequest
+   */
+  static async deletePartReviewRequest(reviewRequestId: string, user: User, organizationId: string) {
+    const reviewRequest = await prisma.partReviewRequest.findUnique({
+      where: { partReviewRequestId: reviewRequestId }
+    });
+
+    if (!reviewRequest) {
+      throw new NotFoundException('Review Request', reviewRequestId);
+    }
+
+    if (reviewRequest.dateDeleted) {
+      throw new DeletedException('Review Request', reviewRequestId);
+    }
+
+    const isRequester = reviewRequest.requesterId === user.userId;
+    const isReviewer = reviewRequest.reviewerId === user.userId;
+    const isLeader = await userHasPermission(user.userId, organizationId, isLeadership);
+
+    if (!isRequester && !isReviewer && !isLeader) {
+      throw new AccessDeniedException('Only the requester, reviewer, or leadership can delete a part review request.');
+    }
+
+    const softDeletedRequest = await prisma.partReviewRequest.update({
+      where: {
+        partReviewRequestId: reviewRequest.partReviewRequestId
+      },
+      data: {
+        dateDeleted: new Date()
+      },
+      ...getPartReviewRequestQueryArgs(organizationId)
+    });
+    return partReviewRequestTransformer(softDeletedRequest);
+  }
+
+  /**
    * Creates a part review popup
+   *
    * @param organizationId Id of the organization
    * @param reviewId ID of the review
    * @param xCoord X coordinate of the popup
    * @param yCoord Y coordinate of the popup
+   * @param fileIndex the index of the file this popup is on
    * @param title Title of the popup
    * @param description Description of the popup
    * @param creator The user creating the popup
@@ -669,6 +1022,7 @@ export default class PartReviewService {
     reviewId: string,
     xCoord: number,
     yCoord: number,
+    fileIndex: number,
     title: string,
     description: string,
     creator: User
@@ -698,8 +1052,9 @@ export default class PartReviewService {
         },
         xCoord,
         yCoord,
+        fileIndex,
         title,
-        description
+        description: description ?? ''
       },
       ...getPartReviewQueryArgs
     });
@@ -712,6 +1067,7 @@ export default class PartReviewService {
    * @param popupId ID of the popup to update
    * @param xCoord New X coordinate
    * @param yCoord New Y coordinate
+   * @param fileIndex the index of the file this popup is on
    * @param title New title
    * @param description New description
    * @param updater The user updating the popup
@@ -722,6 +1078,7 @@ export default class PartReviewService {
     popupId: string,
     xCoord: number,
     yCoord: number,
+    fileIndex: number,
     title: string,
     description: string,
     updater: User
@@ -749,6 +1106,7 @@ export default class PartReviewService {
       data: {
         xCoord,
         yCoord,
+        fileIndex,
         title,
         description,
         updatedAt: new Date()
@@ -779,14 +1137,24 @@ export default class PartReviewService {
       throw new AccessDeniedAdminOnlyException('delete part review popup');
     }
 
-    const deletedPopup = await prisma.part_Review_Popup.update({
+    await prisma.part_Review_Popup.update({
       where: { partReviewPopupId: popupId },
       data: {
         deletedAt: new Date()
       },
       ...getPartReviewQueryArgs
     });
+  }
 
-    return deletedPopup;
+  /**
+   * Downloads a file from Google Drive given a fileId
+   * @param fileId The ID of the file in Google Drive
+   * @returns the file buffer and MIME type
+   */
+  static async downloadFile(fileId: string): Promise<{ buffer: Buffer; type: string }> {
+    const fileData = await downloadFile(fileId);
+
+    if (!fileData) throw new NotFoundException('File', fileId);
+    return fileData;
   }
 }

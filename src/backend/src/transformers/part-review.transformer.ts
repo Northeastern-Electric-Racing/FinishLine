@@ -6,7 +6,8 @@ import {
   PartSubmission,
   PartReviewRequest,
   PartReview,
-  PartPreview
+  PartPreview,
+  Part_Review_Popup
 } from 'shared';
 import {
   PartQueryArgs,
@@ -40,7 +41,11 @@ export const partPreviewTransformer = (part: Prisma.PartGetPayload<PartQueryArgs
     assignees: part.assignees.map(userTransformer),
     reviewRequests: part.reviewRequests.map(partReviewRequestTransformer),
     userCreated: userTransformer(part.userCreated),
-    createdAt: part.createdAt
+    createdAt: part.createdAt,
+    submissions: part.submissions.map((submission) => ({
+      partSubmissionId: submission.partSubmissionId,
+      name: submission.name
+    }))
   };
 };
 
@@ -67,7 +72,8 @@ export const partReviewRequestTransformer = (
     partId: reviewRequest.partId,
     requester: userTransformer(reviewRequest.requester),
     reviewerRequested: userTransformer(reviewRequest.reviewerRequested),
-    createdAt: reviewRequest.createdAt
+    createdAt: reviewRequest.createdAt,
+    dateDeleted: reviewRequest.dateDeleted ?? undefined
   };
 };
 
@@ -77,9 +83,21 @@ export const partReviewTransformer = (review: Prisma.PartReviewGetPayload<PartRe
     fileIds: review.fileIds,
     notes: review.notes ?? undefined,
     submissionId: review.submissionId,
-    popUps: review.popUps,
+    popUps: review.popUps.map(partReviewPopupTransformer),
     completedAt: review.completedAt ?? undefined,
     createdAt: review.createdAt,
     userCreated: userTransformer(review.userCreated)
+  };
+};
+
+export const partReviewPopupTransformer = (popup: Prisma.Part_Review_PopupGetPayload<null>): Part_Review_Popup => {
+  return {
+    partReviewPopupId: popup.partReviewPopupId,
+    xCoord: popup.xCoord,
+    yCoord: popup.yCoord,
+    fileIndex: popup.fileIndex,
+    title: popup.title,
+    description: popup.description ?? undefined,
+    reviewId: popup.reviewId
   };
 };

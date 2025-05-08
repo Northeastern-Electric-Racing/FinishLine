@@ -1,9 +1,21 @@
 import { NextFunction, Request, Response } from 'express';
 import PartReviewService from '../services/part-review.services';
-import { validateWBS, WbsNumber } from 'shared';
+import { WbsNumber, validateWBS } from 'shared';
 import { HttpException } from '../utils/errors.utils';
 
 export default class PartReviewController {
+  static async getPart(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { wbsNum, indexNum } = req.params;
+
+      const wbsNumber: WbsNumber = validateWBS(wbsNum);
+      const part = await PartReviewService.getPart(req.organization, wbsNumber, indexNum);
+      res.status(200).json(part);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getAllPartsForProject(req: Request, res: Response, next: NextFunction) {
     try {
       const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
@@ -17,7 +29,7 @@ export default class PartReviewController {
 
   static async createPart(req: Request, res: Response, next: NextFunction) {
     try {
-      const { wbsNum, index, commonName, description, reviewStatus, tagIds, assigneeIds } = req.body;
+      const { wbsNum, index, commonName, description, reviewStatus, tagIds, assigneeIds, reviewerIds } = req.body;
       const part = await PartReviewService.createPart(
         req.organization,
         wbsNum,
@@ -27,7 +39,8 @@ export default class PartReviewController {
         description,
         reviewStatus,
         tagIds,
-        assigneeIds
+        assigneeIds,
+        reviewerIds
       );
       res.status(200).json(part);
     } catch (error: unknown) {
@@ -49,6 +62,20 @@ export default class PartReviewController {
       );
 
       res.status(200).json(newPreviewImage);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async uploadFile(req: Request, res: Response, next: NextFunction) {
+    try {
+      if (!req.file) {
+        throw new HttpException(400, 'Invalid or undefined file data');
+      }
+
+      const fileId = await PartReviewService.uploadFile(req.file);
+
+      res.status(200).json(fileId);
     } catch (error: unknown) {
       next(error);
     }
@@ -80,6 +107,75 @@ export default class PartReviewController {
       const { partId } = req.params;
       await PartReviewService.deletePart(partId, req.currentUser, req.organization.organizationId);
       res.status(200).json({ message: `Successfully deleted part #${partId}` });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createReview(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { submissionId, notes, fileIds, status } = req.body;
+      const review = await PartReviewService.createReview(
+        req.organization.organizationId,
+        req.currentUser,
+        submissionId,
+        status,
+        fileIds,
+        notes
+      );
+      res.status(200).json(review);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async updateReview(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { reviewId } = req.params;
+      const { notes, status, fileIds } = req.body;
+      const updatedReview = await PartReviewService.updateReview(
+        req.organization.organizationId,
+        req.currentUser,
+        reviewId,
+        status,
+        notes,
+        fileIds
+      );
+      res.status(200).json(updatedReview);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createSubmission(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { partId, name, fileIds, notes } = req.body;
+      const submission = await PartReviewService.createSubmission(
+        partId,
+        req.currentUser,
+        req.organization.organizationId,
+        name,
+        fileIds,
+        notes
+      );
+      res.status(200).json(submission);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async updateSubmission(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { submissionId } = req.params;
+      const { name, notes } = req.body;
+      const updatedSubmission = await PartReviewService.updateSubmission(
+        submissionId,
+        req.currentUser,
+        req.organization.organizationId,
+        name,
+        notes
+      );
+      res.status(200).json(updatedSubmission);
     } catch (error: unknown) {
       next(error);
     }
@@ -243,17 +339,48 @@ export default class PartReviewController {
     }
   }
 
+  static async createPartReviewRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { partId } = req.params;
+      const { reviewerId } = req.body;
+
+      const request = await PartReviewService.createPartReviewRequest(
+        partId,
+        req.currentUser,
+        reviewerId,
+        req.organization.organizationId
+      );
+
+      res.status(200).json(request);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async deletePartReviewRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { reviewRequestId } = req.params;
+
+      await PartReviewService.deletePartReviewRequest(reviewRequestId, req.currentUser, req.organization.organizationId);
+
+      res.status(200).json({ message: 'Successfully deleted review request' });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async createPartReviewPopup(req: Request, res: Response, next: NextFunction) {
     try {
       const user = req.currentUser;
       const { reviewId } = req.params;
       const organizationID = req.organization.organizationId;
-      const { xCoord, yCoord, title, description } = req.body;
+      const { xCoord, yCoord, fileIndex, title, description } = req.body;
       const newPopup = await PartReviewService.createPartReviewPopup(
         organizationID,
         reviewId,
         xCoord,
         yCoord,
+        fileIndex,
         title,
         description,
         user
@@ -269,12 +396,13 @@ export default class PartReviewController {
       const user = req.currentUser;
       const { popupId } = req.params;
       const organizationID = req.organization.organizationId;
-      const { xCoord, yCoord, title, description } = req.body;
+      const { xCoord, yCoord, fileIndex, title, description } = req.body;
       const updatedPopup = await PartReviewService.updatePartReviewPopup(
         organizationID,
         popupId,
         xCoord,
         yCoord,
+        fileIndex,
         title,
         description,
         user
@@ -290,10 +418,24 @@ export default class PartReviewController {
       const user = req.currentUser;
       const { popupId } = req.params;
       const organizationID = req.organization.organizationId;
-      const message = await PartReviewService.deletePartReviewPopup(popupId, user, organizationID);
-      res.status(200).json(message);
+      await PartReviewService.deletePartReviewPopup(popupId, user, organizationID);
+      res.status(200).json({ message: 'Popup deleted successfully' });
     } catch (error) {
       next(error);
+    }
+  }
+
+  static async downloadFile(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { fileId } = req.params;
+
+      const fileData = await PartReviewService.downloadFile(fileId);
+
+      res.setHeader('content-type', String(fileData.type));
+      res.setHeader('content-disposition', `attachment; filename="file-${fileId}"`);
+      res.send(fileData.buffer);
+    } catch (error: unknown) {
+      return next(error);
     }
   }
 }

@@ -1,6 +1,7 @@
 import { Organization, User } from '@prisma/client';
 import {
   createMinimalPartReview,
+  createMinimalPartReviewForReview,
   createTestCar,
   createTestOrganization,
   createTestPart,
@@ -19,8 +20,9 @@ import {
   DeletedException,
   NotFoundException
 } from '../../src/utils/errors.utils';
-import { validateWBS } from 'shared';
+import { validateWBS, WbsNumber } from 'shared';
 import { Review_Status } from 'shared';
+import ProjectsService from '../../src/services/projects.services';
 
 describe('part review tests', () => {
   let orgId: string;
@@ -40,6 +42,115 @@ describe('part review tests', () => {
 
   afterEach(async () => {
     await resetUsers();
+  });
+
+  it('creates a submission and updates it', async () => {
+    const project = await createTestProject(batman, orgId);
+
+    const project1 = await prisma.project.findUnique({
+      where: { projectId: project.projectId },
+      include: {
+        wbsElement: true
+      }
+    });
+
+    const wbsNum = `${project1?.wbsElement.carNumber}.${project1?.wbsElement.projectNumber}.${project1?.wbsElement.workPackageNumber}`;
+
+    const part = await PartReviewService.createPart(
+      organization,
+      wbsNum,
+      batman,
+      1,
+      'part1',
+      'here is a description',
+      Review_Status.IN_PROGRESS,
+      [],
+      [nonAdmin.userId, batman.userId],
+      []
+    );
+
+    const submission = await PartReviewService.createSubmission(part.partId, batman, orgId, 'name1', ['fileId1'], 'notes1');
+    expect(submission.name).toBe('name1');
+    expect(submission.notes).toBe('notes1');
+    expect(submission.partId).toBe(part.partId);
+    expect(submission.userCreated.userId).toBe(batman.userId);
+    expect(submission.fileIds[0]).toBe('fileId1');
+
+    const updatedSubmission = await PartReviewService.updateSubmission(
+      submission.partSubmissionId,
+      batman,
+      orgId,
+      'new name',
+      'new notes'
+    );
+    expect(updatedSubmission.name).toBe('new name');
+    expect(updatedSubmission.notes).toBe('new notes');
+    expect(updatedSubmission.partId).toBe(part.partId);
+    expect(updatedSubmission.userCreated.userId).toBe(batman.userId);
+
+    const submissionNoNotes = await PartReviewService.createSubmission(part.partId, batman, orgId, 'name1', ['file1']);
+    expect(submissionNoNotes.name).toBe('name1');
+    expect(submissionNoNotes.notes).toBeUndefined();
+    expect(submissionNoNotes.partId).toBe(part.partId);
+    expect(submissionNoNotes.userCreated.userId).toBe(batman.userId);
+
+    const updatedSubmissionAddNotes = await PartReviewService.updateSubmission(
+      submission.partSubmissionId,
+      batman,
+      orgId,
+      'new name',
+      'new notes'
+    );
+    expect(updatedSubmissionAddNotes.name).toBe('new name');
+    expect(updatedSubmissionAddNotes.notes).toBe('new notes');
+    expect(updatedSubmissionAddNotes.partId).toBe(part.partId);
+    expect(updatedSubmissionAddNotes.userCreated.userId).toBe(batman.userId);
+  });
+
+  it('does not allow non-creators to edit submissions, checks for non-existent and deleted parts', async () => {
+    const project = await createTestProject(batman, orgId);
+
+    const project1 = await prisma.project.findUnique({
+      where: { projectId: project.projectId },
+      include: {
+        wbsElement: true
+      }
+    });
+
+    const wbsNum = `${project1?.wbsElement.carNumber}.${project1?.wbsElement.projectNumber}.${project1?.wbsElement.workPackageNumber}`;
+
+    const part = await PartReviewService.createPart(
+      organization,
+      wbsNum,
+      batman,
+      1,
+      'part1',
+      'here is a description',
+      Review_Status.IN_PROGRESS,
+      [],
+      [nonAdmin.userId, batman.userId],
+      []
+    );
+
+    await expect(
+      async () => await PartReviewService.createSubmission('not a part id', batman, orgId, 'name1', ['file1'], 'notes1')
+    ).rejects.toThrow(new NotFoundException('Part', 'not a part id'));
+
+    await expect(
+      async () => await PartReviewService.updateSubmission('not a submission id', batman, orgId, 'name1', 'notes1')
+    ).rejects.toThrow(new NotFoundException('Part Submission', 'not a submission id'));
+
+    const submission = await PartReviewService.createSubmission(part.partId, batman, orgId, 'name1', ['file1'], 'notes1');
+
+    await expect(
+      async () => await PartReviewService.updateSubmission(submission.partSubmissionId, superman, orgId, 'name1', 'notes1')
+    ).rejects.toThrow(new AccessDeniedException('only submission creators can update submissions'));
+
+    await PartReviewService.deletePart(part.partId, batman, orgId);
+
+    await expect(
+      async () => await PartReviewService.createSubmission(part.partId, batman, orgId, 'name1', ['file1'], 'notes1')
+    ).rejects.toThrow(new DeletedException('Part', part.partId));
   });
 
   it('creates a part, updates it, and deletes it', async () => {
@@ -67,7 +178,8 @@ describe('part review tests', () => {
       'here is a description',
       Review_Status.IN_PROGRESS,
       [tag.partTagId, tag3.partTagId],
-      [nonAdmin.userId, batman.userId]
+      [nonAdmin.userId, batman.userId],
+      []
     );
 
     expect(part.commonName).toBe('part1');
@@ -153,7 +265,8 @@ describe('part review tests', () => {
           'here is a description',
           Review_Status.IN_PROGRESS,
           [],
-          [nonAdmin.userId, batman.userId]
+          [nonAdmin.userId, batman.userId],
+          []
         )
     ).rejects.toThrow(new AccessDeniedException('Only leadership and team members can create a part'));
 
@@ -166,7 +279,8 @@ describe('part review tests', () => {
       'here is a description',
       Review_Status.IN_PROGRESS,
       [],
-      [nonAdmin.userId, batman.userId]
+      [nonAdmin.userId, batman.userId],
+      []
     );
 
     await expect(
@@ -206,7 +320,8 @@ describe('part review tests', () => {
       'here is a description',
       Review_Status.IN_PROGRESS,
       [],
-      [nonAdmin.userId, batman.userId]
+      [nonAdmin.userId, batman.userId],
+      []
     );
 
     await expect(async () => await PartReviewService.deletePart(part.partId, nonLeadership, orgId)).rejects.toThrow(
@@ -222,6 +337,135 @@ describe('part review tests', () => {
     await expect(
       async () => await PartReviewService.deletePart('some id that does not exist', batman, orgId)
     ).rejects.toThrow(new NotFoundException('Part', 'some id that does not exist'));
+  });
+
+  it('creates a review and updates it', async () => {
+    const project = await createTestProject(batman, orgId);
+
+    const project1 = await prisma.project.findUnique({
+      where: { projectId: project.projectId },
+      include: {
+        wbsElement: true
+      }
+    });
+
+    const wbsNum = `${project1?.wbsElement.carNumber}.${project1?.wbsElement.projectNumber}.${project1?.wbsElement.workPackageNumber}`;
+
+    const part = await PartReviewService.createPart(
+      organization,
+      wbsNum,
+      batman,
+      1,
+      'part1',
+      'here is a description',
+      Review_Status.IN_PROGRESS,
+      [],
+      [nonAdmin.userId, batman.userId],
+      []
+    );
+
+    const submission = await prisma.partSubmission.create({
+      data: {
+        part: { connect: { partId: part.partId } },
+        userCreated: { connect: { userId: batman.userId } },
+        name: 'testName'
+      }
+    });
+
+    const review = await PartReviewService.createReview(
+      orgId,
+      batman,
+      submission.partSubmissionId,
+      'IN_REVIEW',
+      ['file1'],
+      'notes about review'
+    );
+
+    const reviewWithProject = await prisma.partReview.findUnique({
+      where: { partReviewId: review.partReviewId },
+      include: { submission: { include: { part: true } } }
+    });
+
+    expect(review.notes).toBe('notes about review');
+    expect(review.submissionId).toBe(submission.partSubmissionId);
+    expect(review.userCreated.userId).toBe(batman.userId);
+    expect(review.completedAt).toBeUndefined();
+    expect(reviewWithProject?.submission.part.status).toBe(Review_Status.IN_REVIEW);
+    expect(review.fileIds[0]).toBe('file1');
+
+    const updatedReview = await PartReviewService.updateReview(
+      orgId,
+      batman,
+      review.partReviewId,
+      'REVIEWED',
+      'updated Notes',
+      ['file2']
+    );
+    const reviewWithProject2 = await prisma.partReview.findUnique({
+      where: { partReviewId: review.partReviewId },
+      include: { submission: { include: { part: true } } }
+    });
+    expect(updatedReview.notes).toBe('updated Notes');
+    expect(updatedReview.submissionId).toBe(submission.partSubmissionId);
+    expect(updatedReview.userCreated.userId).toBe(batman.userId);
+    expect(updatedReview.completedAt).toBeDefined();
+    expect(reviewWithProject2?.submission.part.status).toBe(Review_Status.REVIEWED);
+    expect(updatedReview.fileIds[0]).toBe('file2');
+  });
+
+  it('does not allow non-creators to edit reviews, checks for non-existent and deleted reviews', async () => {
+    const project = await createTestProject(batman, orgId);
+
+    const project1 = await prisma.project.findUnique({
+      where: { projectId: project.projectId },
+      include: {
+        wbsElement: true
+      }
+    });
+
+    const wbsNum = `${project1?.wbsElement.carNumber}.${project1?.wbsElement.projectNumber}.${project1?.wbsElement.workPackageNumber}`;
+
+    const part = await PartReviewService.createPart(
+      organization,
+      wbsNum,
+      batman,
+      1,
+      'part1',
+      'here is a description',
+      Review_Status.IN_PROGRESS,
+      [],
+      [nonAdmin.userId, batman.userId],
+      []
+    );
+
+    const submission = await prisma.partSubmission.create({
+      data: {
+        part: { connect: { partId: part.partId } },
+        userCreated: { connect: { userId: batman.userId } },
+        name: 'testName'
+      }
+    });
+
+    await expect(
+      async () => await PartReviewService.createReview(orgId, batman, 'not a submission id', 'REVIEWED', [], 'notes')
+    ).rejects.toThrow(new NotFoundException('Part Submission', 'not a submission id'));
+
+    await expect(
+      async () => await PartReviewService.updateReview(orgId, batman, 'not a review id', 'REVIEWED', 'new notes', [])
+    ).rejects.toThrow(new NotFoundException('Part Review', 'not a review id'));
+
+    const review = await PartReviewService.createReview(
+      orgId,
+      batman,
+      submission.partSubmissionId,
+      'REVIEWED',
+      [],
+      'notes about review'
+    );
+
+    await expect(
+      async () => await PartReviewService.updateReview(orgId, superman, review.partReviewId, 'REVIEWED', 'test notes', [])
+    ).rejects.toThrow(new AccessDeniedException('only review creators can update reviews'));
   });
 
   it('creates a part tag, edits it, and deletes it', async () => {
@@ -462,7 +706,7 @@ describe('part review tests', () => {
             batman,
             orgId
           )
-      ).rejects.toThrow(new DeletedException('common mistake', commonMistake.partReviewCommonMistakeId));
+      ).rejects.toThrow(new DeletedException('Common Mistake', commonMistake.partReviewCommonMistakeId));
     });
   });
 
@@ -653,6 +897,133 @@ describe('part review tests', () => {
     expect(commonMistakes[2].starred).toBe(false);
   });
 
+  describe('part review request endpoints', () => {
+    let orgId: string;
+    let batman: User;
+    let superman: User;
+    let aquaman: User;
+    let partId: string;
+
+    beforeEach(async () => {
+      await resetUsers();
+      const organization = await createTestOrganization();
+      orgId = organization.organizationId;
+      batman = await createTestUser(batmanAppAdmin, orgId);
+      superman = await createTestUser(supermanAdmin, orgId);
+      aquaman = await createTestUser(aquamanLeadership, orgId);
+
+      ({ partId } = await createMinimalPartReviewForReview(batman, orgId));
+    });
+
+    afterEach(async () => {
+      await resetUsers();
+    });
+
+    it('creates a review request successfully', async () => {
+      const reviewRequest = await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
+
+      const prismaRequest = await prisma.partReviewRequest.findUnique({
+        where: { partReviewRequestId: reviewRequest.partReviewRequestId }
+      });
+
+      expect(reviewRequest.requester.userId).toBe(batman.userId);
+      expect(reviewRequest.reviewerRequested.userId).toBe(superman.userId);
+      expect(prismaRequest?.dateDeleted).toBeNull();
+    });
+
+    it('fails to create review request if part does not exist', async () => {
+      const fakePartId = 'non-existent-part-id';
+
+      await expect(PartReviewService.createPartReviewRequest(fakePartId, aquaman, superman.userId, orgId)).rejects.toThrow(
+        new NotFoundException('Part', fakePartId)
+      );
+    });
+
+    it('requester can delete their review request', async () => {
+      const request = await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
+      const deleted = await PartReviewService.deletePartReviewRequest(request.partReviewRequestId, batman, orgId);
+      const prismaDeleted = await prisma.partReviewRequest.findFirst({
+        where: { partReviewRequestId: request.partReviewRequestId }
+      });
+      expect(deleted).toBeDefined();
+      expect(prismaDeleted?.dateDeleted).toBeTruthy();
+    });
+
+    it('reviewer can delete the review request', async () => {
+      const request = await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
+      const deleted = await PartReviewService.deletePartReviewRequest(request.partReviewRequestId, superman, orgId);
+      const prismaDeleted = await prisma.partReviewRequest.findFirst({
+        where: { partReviewRequestId: request.partReviewRequestId }
+      });
+      expect(deleted).toBeDefined();
+      expect(prismaDeleted?.dateDeleted).toBeTruthy();
+    });
+
+    it('admin can delete the review request', async () => {
+      const flash = await createTestUser(flashAdmin, orgId);
+      const request = await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
+      const deleted = await PartReviewService.deletePartReviewRequest(request.partReviewRequestId, flash, orgId);
+      const prismaDeleted = await prisma.partReviewRequest.findFirst({
+        where: { partReviewRequestId: request.partReviewRequestId }
+      });
+      expect(deleted).toBeDefined();
+      expect(prismaDeleted?.dateDeleted).toBeTruthy();
+    });
+
+    it('fails to delete review request if it does not exist', async () => {
+      const fakePartId = 'non-existent-part-id';
+
+      await expect(PartReviewService.deletePartReviewRequest(fakePartId, batman, orgId)).rejects.toThrow(
+        new NotFoundException('Review Request', fakePartId)
+      );
+    });
+  });
+
+  describe('Get a singular part', () => {
+    it('successfully gets the part corresponding to the partId', async () => {
+      const division = await createTestTeamType(undefined, orgId);
+      const team = await createTestTeam(batman.userId, division.teamTypeId, orgId);
+      const car = await createTestCar(orgId, batman.userId);
+
+      const project = await createTestProject(batman, orgId, team.teamId, car.carId, 1);
+      const project1 = await prisma.project.findUnique({
+        where: { projectId: project.projectId },
+        include: {
+          wbsElement: true
+        }
+      });
+
+      const part = await createTestPart(superman, 'door', '1', 1, project.projectId);
+
+      const testPart = await PartReviewService.getPart(organization, project1?.wbsElement as WbsNumber, '1');
+
+      expect(testPart.userCreated.userId).toEqual(part.userCreatedId);
+      expect(testPart.commonName).toBe(part.commonName);
+      expect(testPart.partId).toBe(part.partId);
+      expect(testPart.index).toBe(part.index);
+      expect(testPart.projectId).toBe(part.projectId);
+    });
+
+    it('throws an error when a part cannot be found with the given partId', async () => {
+      const division = await createTestTeamType(undefined, orgId);
+      const team = await createTestTeam(batman.userId, division.teamTypeId, orgId);
+      const car = await createTestCar(orgId, batman.userId);
+
+      const project = await createTestProject(batman, orgId, team.teamId, car.carId, 1);
+      const project1 = await prisma.project.findUnique({
+        where: { projectId: project.projectId },
+        include: {
+          wbsElement: true
+        }
+      });
+      const wbsNum = project1?.wbsElement as WbsNumber;
+
+      await expect(PartReviewService.getPart(organization, wbsNum, '1')).rejects.toThrow(
+        new NotFoundException('Part', `projectId: ${project.projectId} and index number: 1`)
+      );
+    });
+  });
+
   describe('Get all parts', () => {
     it('getting all parts from a project with no parts successfully returns empty array', async () => {
       const division = await createTestTeamType(undefined, orgId);
@@ -710,6 +1081,43 @@ describe('part review tests', () => {
       expect(parts2[0].projectId).toBe(part3.projectId);
     });
   });
+
+  it('updates the abbreviation on a project and then deletes it', async () => {
+    const project = await createTestProject(batman, orgId);
+
+    const projectWithWbs = await prisma.project.findUnique({
+      where: { projectId: project.projectId },
+      include: {
+        wbsElement: true
+      }
+    });
+
+    expect(projectWithWbs?.abbreviation).toBeNull();
+
+    const wbsNum: WbsNumber = validateWBS(
+      `${projectWithWbs?.wbsElement.carNumber}.${projectWithWbs?.wbsElement.projectNumber}.${projectWithWbs?.wbsElement.workPackageNumber}`
+    );
+
+    await ProjectsService.deleteAbbreviation(wbsNum, batman, organization);
+
+    await expect(ProjectsService.setAbbreviation(wbsNum, nonAdmin, organization, 'new abbreviation')).rejects.toThrow(
+      new AccessDeniedAdminOnlyException('set abbreviation')
+    );
+
+    const updatedProject = await ProjectsService.setAbbreviation(wbsNum, batman, organization, 'new abbreviation');
+    expect(updatedProject.abbreviation).toBe('new abbreviation');
+
+    const updatedProject2 = await ProjectsService.setAbbreviation(wbsNum, batman, organization, 'diff');
+    expect(updatedProject2.abbreviation).toBe('diff');
+
+    await expect(ProjectsService.deleteAbbreviation(wbsNum, nonAdmin, organization)).rejects.toThrow(
+      new AccessDeniedAdminOnlyException('delete abbreviation')
+    );
+
+    await ProjectsService.deleteAbbreviation(wbsNum, batman, organization);
+    const projectWithNoAbbrev = await ProjectsService.getSingleProject(wbsNum, organization);
+    expect(projectWithNoAbbrev.abbreviation).toBeUndefined();
+  });
 });
 
 describe('Part Review Popups', () => {
@@ -738,6 +1146,7 @@ describe('Part Review Popups', () => {
       review.partReviewId,
       10,
       20,
+      0,
       'Initial Title',
       'Initial Description',
       batman
@@ -747,12 +1156,14 @@ describe('Part Review Popups', () => {
     expect(popup.description).toBe('Initial Description');
     expect(popup.xCoord).toBe(10);
     expect(popup.yCoord).toBe(20);
+    expect(popup.fileIndex).toBe(0);
 
     const updated = await PartReviewService.updatePartReviewPopup(
       orgId,
       popup.partReviewPopupId,
       30,
       40,
+      1,
       'Updated Title',
       'Updated Description',
       superman
@@ -762,11 +1173,9 @@ describe('Part Review Popups', () => {
     expect(updated.description).toBe('Updated Description');
     expect(updated.xCoord).toBe(30);
     expect(updated.yCoord).toBe(40);
+    expect(updated.fileIndex).toBe(1);
 
-    const deleted = await PartReviewService.deletePartReviewPopup(popup.partReviewPopupId, superman, orgId);
-
-    expect(deleted.partReviewPopupId).toBe(popup.partReviewPopupId);
-    expect(deleted.deletedAt).toBeTruthy();
+    await PartReviewService.deletePartReviewPopup(popup.partReviewPopupId, superman, orgId);
 
     const prismaDeleted = await prisma.part_Review_Popup.findUnique({
       where: { partReviewPopupId: popup.partReviewPopupId }
@@ -779,13 +1188,13 @@ describe('Part Review Popups', () => {
     const review = await createMinimalPartReview(batman, orgId);
 
     await expect(
-      PartReviewService.createPartReviewPopup(orgId, review.partReviewId, 0, 0, 'title', 'desc', nonAdmin)
+      PartReviewService.createPartReviewPopup(orgId, review.partReviewId, 0, 0, 0, 'title', 'desc', nonAdmin)
     ).rejects.toThrow(new AccessDeniedAdminOnlyException('create part review popup'));
 
-    const popup = await PartReviewService.createPartReviewPopup(orgId, review.partReviewId, 1, 2, 'x', 'x', batman);
+    const popup = await PartReviewService.createPartReviewPopup(orgId, review.partReviewId, 1, 2, 0, 'x', 'x', batman);
 
     await expect(
-      PartReviewService.updatePartReviewPopup(orgId, popup.partReviewPopupId, 2, 3, 'fail', 'fail', nonAdmin)
+      PartReviewService.updatePartReviewPopup(orgId, popup.partReviewPopupId, 2, 3, 0, 'fail', 'fail', nonAdmin)
     ).rejects.toThrow(new AccessDeniedAdminOnlyException('update part review popup'));
 
     await expect(PartReviewService.deletePartReviewPopup(popup.partReviewPopupId, nonAdmin, orgId)).rejects.toThrow(
@@ -795,7 +1204,7 @@ describe('Part Review Popups', () => {
 
   it('throws NotFoundException if review does not exist or is deleted', async () => {
     await expect(
-      PartReviewService.createPartReviewPopup(orgId, 'non-existent-review', 0, 0, 'x', 'x', batman)
+      PartReviewService.createPartReviewPopup(orgId, 'non-existent-review', 0, 0, 0, 'x', 'x', batman)
     ).rejects.toThrow(new NotFoundException('Part Review', 'non-existent-review'));
   });
 
@@ -807,6 +1216,7 @@ describe('Part Review Popups', () => {
       review.partReviewId,
       1,
       2,
+      0,
       'Delete Me',
       'Please',
       batman
@@ -815,7 +1225,7 @@ describe('Part Review Popups', () => {
     await PartReviewService.deletePartReviewPopup(popup.partReviewPopupId, superman, orgId);
 
     await expect(
-      PartReviewService.updatePartReviewPopup(orgId, popup.partReviewPopupId, 10, 10, 'Should Fail', 'Nope', superman)
+      PartReviewService.updatePartReviewPopup(orgId, popup.partReviewPopupId, 10, 10, 0, 'Should Fail', 'Nope', superman)
     ).rejects.toThrow(new NotFoundException('Pop Up', popup.partReviewPopupId));
   });
 });
