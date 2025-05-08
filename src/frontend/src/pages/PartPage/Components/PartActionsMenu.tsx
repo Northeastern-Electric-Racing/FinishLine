@@ -1,14 +1,6 @@
 import Edit from '@mui/icons-material/Edit';
 import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
-import {
-  Part,
-  PartPreview,
-  PartSubmission,
-  RoleEnum,
-  WbsNumber,
-  isAtLeastRank,
-  isNotLeadership
-} from 'shared';
+import { Part, PartPreview, PartSubmission, RoleEnum, WbsNumber, isAtLeastRank, isNotLeadership, validateWBS, wbsPipe } from 'shared';
 import { Check, Collections, EditNote } from '@mui/icons-material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useCurrentUser } from '../../../hooks/users.hooks';
@@ -21,6 +13,7 @@ import {
   useDeletePart,
   useEditPart,
   useEditPartSubmission,
+  usePartsFromProject,
   useUploadSubmissionFiles
 } from '../../../hooks/part-review.hooks';
 import PartFormModal from '../../ProjectDetailPage/ProjectViewContainer/PartReview/PartReviewComponents/PartFormModels/PartFormModal';
@@ -32,14 +25,12 @@ import ApprovePartModal from '../../ProjectDetailPage/ProjectViewContainer/PartR
 interface PartActionsMenuProps {
   part: Part;
   submissionIndex: number;
-  partsInProject: PartPreview[];
   wbsNum: WbsNumber;
 }
 
 const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
   part,
   submissionIndex,
-  partsInProject,
   wbsNum
 }: PartActionsMenuProps) => {
   const user = useCurrentUser();
@@ -54,13 +45,18 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
   const { mutateAsync: uploadFiles } = useUploadSubmissionFiles();
   const { mutateAsync: editPart } = useEditPart(part.partId);
   const { mutateAsync: deletePart } = useDeletePart(part.partId);
+  const {
+    data: partsInProject,
+    isLoading: partsLoading,
+    isError: partsIsError,
+    error: partsError
+  } = usePartsFromProject(wbsPipe(wbsNum));
 
   const submission: PartSubmission | undefined =
     Array.isArray(part.submissions) && submissionIndex >= 0 && submissionIndex < part.submissions.length
       ? part.submissions[submissionIndex]
       : undefined;
   if (!submission) {
-    // Maybe show a toast or exit early
     toast.error('No submission found.');
     return null;
   }
