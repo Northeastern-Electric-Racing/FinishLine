@@ -682,7 +682,7 @@ export default class ReimbursementRequestService {
    * @param name the new Account Code code name
    * @param allowed the new Account Code allowed value
    * @param submitter the person editing account code code number
-   * @param allowedRefundSources the new allowed refund sources
+   * @param indexCodeIds the new allowed refund sources
    * @param orgainzationId the organization the user is currently in
    * @returns the updated account code
    */
@@ -692,7 +692,7 @@ export default class ReimbursementRequestService {
     name: string,
     allowed: boolean,
     submitter: User,
-    allowedRefundSources: IndexCode[],
+    indexCodeIds: string[],
     organization: Organization
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
@@ -706,7 +706,7 @@ export default class ReimbursementRequestService {
         name,
         code,
         allowed,
-        indexCodes: { connect: allowedRefundSources.map((indexCode) => ({ indexCodeId: indexCode.indexCodeId })) }
+        indexCodes: { connect: indexCodeIds.map((id) => ({ indexCodeId: id })) }
       }
     });
 

@@ -384,7 +384,7 @@ export default class ReimbursementRequestsController {
   static async editAccountCode(req: Request, res: Response, next: NextFunction) {
     try {
       const { accountCodeId } = req.params;
-      const { name, code, allowed, allowedRefundSources } = req.body;
+      const { name, code, allowed, indexCodeIds } = req.body;
 
       const accountCodeUpdated = await ReimbursementRequestService.editAccountCode(
         accountCodeId,
@@ -392,7 +392,7 @@ export default class ReimbursementRequestsController {
         name,
         allowed,
         req.currentUser,
-        allowedRefundSources,
+        indexCodeIds,
         req.organization
       );
       res.status(200).json(accountCodeUpdated);
