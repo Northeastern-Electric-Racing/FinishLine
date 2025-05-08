@@ -1,37 +1,68 @@
 import { Typography } from '@mui/material';
-import { Stack } from '@mui/system';
-import { PartSubmission, PartReview, RoleEnum } from 'shared';
+import { Box, Stack } from '@mui/system';
+import { PartSubmission, PartReview } from 'shared';
+import DownloadButton from '../../../components/DownloadButton';
 
 interface PartSubmissionProps {
   submission: PartSubmission;
+  reviewIndex: number;
 }
 
-const reviewNotes = (reviews: PartReview[]): string => {
-  if (reviews.length === 0) {
-    return 'There are no notes.';
-  }
-  return '\n' + reviews.map((review) => '- ' + review.notes).join('\n');
-};
+const PartSubmissionDetails = ({ submission, reviewIndex }: PartSubmissionProps) => {
+  const reviewNotes = (reviews: PartReview[]): string => {
+    if (reviewIndex !== -1) {
+      return submission.reviews[reviewIndex].notes ?? 'There are no notes.';
+    }
+    if (reviews.length === 0) {
+      return 'There are no notes.';
+    }
+    return '\n' + reviews.map((review) => '- ' + review.notes).join('\n');
+  };
 
-const PartSubmissionDetails = ({ submission }: PartSubmissionProps) => {
   return (
-    <Stack spacing={'1%'} alignItems="left" width="100%">
-      <Typography sx={{ fontWeight: 'normal' }} variant="h5">
-        Details for {submission.name}:
+    <Stack spacing={2} alignItems="left" width="100%">
+      <Typography variant="h4" mb={1}>
+        Details for {submission.name} {reviewIndex !== -1 ? 'Review' : ''}
       </Typography>
 
-      <Typography variant="body1">
-        <b>Uploader: </b>
-        {submission.userCreated.firstName} {submission.userCreated.lastName}
-      </Typography>
+      {reviewIndex !== -1 && submission.reviews[reviewIndex].fileIds.length !== 0 && (
+        <Box>
+          <Typography variant="body1">
+            <b>Review Files: </b>
+          </Typography>
+          <Stack direction="row" spacing={1} mt={1}>
+            {submission.reviews[reviewIndex].fileIds.length ? (
+              submission.reviews[reviewIndex].fileIds.map((fileId, index) => (
+                <Box key={fileId} display="flex" alignItems="center" gap={1}>
+                  <Typography variant="body2">{`File #${index + 1}`}</Typography>
+                  <DownloadButton fileId={fileId} filename={`Review_File${index + 1}`} />
+                </Box>
+              ))
+            ) : (
+              <Typography variant="body2" color="textSecondary">
+                No files uploaded yet.
+              </Typography>
+            )}
+          </Stack>
+        </Box>
+      )}
 
       <Typography variant="body1">
-        <b>Uploader Notes: </b>
-        {submission.notes || 'There are no notes.'}
+        {reviewIndex !== -1 ? <b>Reviewer: </b> : <b>Uploader: </b>}
+        {reviewIndex !== -1
+          ? `${submission.reviews[reviewIndex].userCreated.firstName} ${submission.reviews[reviewIndex].userCreated.lastName}`
+          : `${submission.userCreated.firstName} ${submission.userCreated.lastName}`}
       </Typography>
+
+      {reviewIndex === -1 && (
+        <Typography variant="body1">
+          <b>Uploader Notes: </b>
+          {submission.notes || 'There are no notes.'}
+        </Typography>
+      )}
 
       <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>
-        <b>Reviewer Notes: </b>
+        <b>{reviewIndex === -1 ? 'Reviewer' : ''} Notes: </b>
         {reviewNotes(submission.reviews)}
       </Typography>
     </Stack>
@@ -39,39 +70,3 @@ const PartSubmissionDetails = ({ submission }: PartSubmissionProps) => {
 };
 
 export default PartSubmissionDetails;
-
-export const partReviewExample1: PartReview = {
-  partReviewId: 'reviewId001',
-  fileIds: ['file1', 'file2'],
-  notes: 'this part submission is decent!!',
-  submissionId: '1',
-  userCreated: {
-    userId: '124',
-    email: 'mark.andrews@example.com',
-    emailId: 'mark.andrews@example.com',
-    role: RoleEnum.MEMBER,
-    permissions: [],
-    firstName: 'Mark',
-    lastName: 'Andrews'
-  },
-  popUps: [],
-  createdAt: new Date(2025, 6, 4)
-};
-
-export const partReviewExample2: PartReview = {
-  partReviewId: 'reviewId002',
-  fileIds: ['file3', 'file4'],
-  notes: 'this part submission is terrible!!',
-  submissionId: '1',
-  userCreated: {
-    userId: '125',
-    email: 'julia.williams@example.com',
-    emailId: 'julia.williams@example.com',
-    role: RoleEnum.MEMBER,
-    permissions: [],
-    firstName: 'Julia',
-    lastName: 'Williams'
-  },
-  popUps: [],
-  createdAt: new Date(2025, 3, 4)
-};

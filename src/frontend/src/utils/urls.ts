@@ -37,6 +37,8 @@ const projectsEdit = () => `${projects()}/edit`;
 const projectsSetTeam = (wbsNum: string) => `${projects()}/${wbsNum}/set-team`;
 const projectsDelete = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/delete';
 const projectsToggleFavorite = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/favorite';
+const projectsSetAbbreviation = () => `${projects()}/set-abbreviation`;
+const projectsDeleteAbbreviation = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/delete-abbreviation';
 const projectsLinkTypes = () => `${projects()}/link-types`;
 const projectsCreateLinkTypes = () => `${projects()}/link-types/create`;
 const projectsEditLinkTypes = (linkTypeName: string) => `${projects()}/link-types/${linkTypeName}/edit`;
@@ -51,7 +53,6 @@ const partsEdit = (partId: string) => `${parts()}/${partId}/update`;
 const partsDelete = (partId: string) => `${parts()}/${partId}/delete`;
 const partsCreateSubmission = () => `${parts()}/submission/create`;
 const partsEditSubmission = (submissionId: string) => `${parts()}/submission/${submissionId}/update`;
-const partsSubmissionUploadFiles = (submissionId: string) => `${parts()}/submission/${submissionId}/upload-files`;
 const partsCreateReviewRequest = (submissionId: string) => `${parts()}/reviewRequest/${submissionId}/create`;
 const partsDeleteReviewRequest = (reviewRequestId: string) => `${parts()}/reviewRequest/${reviewRequestId}/delete`;
 const partsCreateReview = () => `${parts()}/review/create`;
@@ -60,9 +61,13 @@ const partsReviewFaqs = () => `${parts()}/faqs`;
 const partsReviewFaqCreate = () => `${parts()}/faqs/create`;
 const partsReviewFaqEdit = (faqId: string) => `${parts()}/faqs/${faqId}/update`;
 const partsReviewFaqDelete = (faqId: string) => `${parts()}/faqs/${faqId}/delete`;
-const partsReviewUploadFiles = (reviewId: string) => `${parts()}/review/${reviewId}/upload-files`;
 const getAllPartCommonMistakes = () => `${parts()}/common-mistakes`;
+const uploadFile = () => `${parts()}/upload/file`;
+const downloadFile = (fileId: string) => `${parts()}/file/${fileId}/download`;
 const getAllPartTags = () => `${parts()}/tags`;
+const createReviewPopup = (reviewId: string) => `${parts()}/review/${reviewId}/popup/create`;
+const updateReviewPopup = (popupId: string) => `${parts()}/popup/${popupId}/update`;
+const deleteReviewPopup = (popupId: string) => `${parts()}/popup/${popupId}/delete`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
@@ -298,6 +303,8 @@ export const apiUrls = {
   projectsSetTeam,
   projectsDelete,
   projectsToggleFavorite,
+  projectsSetAbbreviation,
+  projectsDeleteAbbreviation,
   projectsLinkTypes,
   projectsCreateLinkTypes,
   projectsEditLinkTypes,
@@ -315,14 +322,17 @@ export const apiUrls = {
   partsDelete,
   partsCreateSubmission,
   partsEditSubmission,
-  partsSubmissionUploadFiles,
   partsCreateReviewRequest,
   partsDeleteReviewRequest,
   partsCreateReview,
   partsEditReview,
-  partsReviewUploadFiles,
   getAllPartCommonMistakes,
+  downloadFile,
+  uploadFile,
   getAllPartTags,
+  createReviewPopup,
+  updateReviewPopup,
+  deleteReviewPopup,
 
   tasksCreate,
   tasks,

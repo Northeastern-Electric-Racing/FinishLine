@@ -56,7 +56,7 @@ const WorkPackageTemplateTable = () => {
 
   return (
     <Box>
-      <AdminToolTable columns={[{ name: 'Name' }, { name: 'Description' }]} rows={workPackageTemplateRows} />
+      <AdminToolTable columns={[{ name: 'Name' }, { name: 'Description' }, { name: '' }]} rows={workPackageTemplateRows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         {isAdmin(currentUser.role) && (
           <NERButton variant="contained" size="small" onClick={() => history.push(routes.WORK_PACKAGE_TEMPLATE_NEW)}>

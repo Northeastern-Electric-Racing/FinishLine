@@ -8,7 +8,8 @@ import {
   Review_Status,
   PartReviewCommonMistake,
   FrequentlyAskedQuestion,
-  PartTag
+  PartTag,
+  Part_Review_Popup
 } from 'shared';
 import {
   createPart,
@@ -28,10 +29,13 @@ import {
   getSinglePart,
   getAllCommonMistakes,
   uploadPreviewImage,
-  setUploadReviewFiles,
   getAllPartTags,
-  setUploadSubmissionFiles
+  createReviewPopup,
+  updateReviewPopup,
+  deleteReviewPopup,
+  uploadFile
 } from '../apis/part-review.api';
+import { downloadGoogleImage } from '../apis/onboarding.api';
 
 export interface PartPayload {
   wbsNum: string;
@@ -51,6 +55,7 @@ export interface EditPartSubmissionPayload {
 
 export interface CreatePartSubmissionPayload extends EditPartSubmissionPayload {
   partId: string;
+  fileIds: string[];
 }
 
 export interface PartReviewRequestPayload {
@@ -61,12 +66,23 @@ export interface PartReviewRequestPayload {
 export interface CreatePartReviewPayload {
   submissionId: string;
   status: Review_Status;
+  fileIds: string[];
   notes?: string;
 }
 
 export interface EditPartReviewPayload {
+  partReviewId: string;
   notes?: string;
   status?: Review_Status;
+  fileIds?: string[];
+}
+
+export interface PopupPayload {
+  xCoord: number;
+  yCoord: number;
+  fileIndex: number;
+  title: string;
+  description?: string;
 }
 
 /**
@@ -168,6 +184,13 @@ export const useDeletePart = (partId: string) => {
       }
     }
   );
+};
+
+export const useUploadFile = () => {
+  return useMutation<string, Error, File>(['file', 'upload'], async (file: File) => {
+    const { data } = await uploadFile(file);
+    return data;
+  });
 };
 
 /**
@@ -278,50 +301,12 @@ export const useCreatePartReview = () => {
  *
  * @param reviewId the id of the part review to edit
  */
-export const useEditPartReview = (reviewId: string) => {
+export const useEditPartReview = () => {
   const queryClient = useQueryClient();
   return useMutation<PartReview, Error, EditPartReviewPayload>(
     ['parts', 'editReview'],
     async (partReview: EditPartReviewPayload) => {
-      const { data } = await editPartReview(reviewId, partReview);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['parts']);
-      }
-    }
-  );
-};
-
-/**
- * Custom React Hook to upload files to a submission
- */
-export const useUploadSubmissionFiles = () => {
-  const queryClient = useQueryClient();
-  return useMutation<any, unknown, { submissionId: string; files: File[] }>(
-    ['parts', 'submission', 'upload'],
-    async (fileUpload: { submissionId: string; files: File[] }) => {
-      const { data } = await setUploadSubmissionFiles(fileUpload.submissionId, fileUpload.files);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['parts']);
-      }
-    }
-  );
-};
-
-/**
- * Custom React Hook to upload files to a review
- */
-export const useUploadReviewFiles = () => {
-  const queryClient = useQueryClient();
-  return useMutation<any, unknown, { reviewId: string; files: File[] }>(
-    ['parts', 'review', 'upload'],
-    async (fileUpload: { reviewId: string; files: File[] }) => {
-      const { data } = await setUploadReviewFiles(fileUpload.reviewId, fileUpload.files);
+      const { data } = await editPartReview(partReview);
       return data;
     },
     {
@@ -431,4 +416,80 @@ export const useGetAllPartTags = () => {
     const { data } = await getAllPartTags();
     return data;
   });
+};
+
+/**
+ * Custom React Hook to download files
+ *
+ * @returns a blob of the downloaded file
+ */
+export const useDownloadFile = (fileId: string) => {
+  return useQuery<Blob | undefined, Error>(['parts', 'file', fileId], async () => {
+    return await downloadGoogleImage(fileId);
+  });
+};
+
+/**
+ * Custom React Hook to create a review popup
+ *
+ * @returns the created popup
+ */
+export const useCreateReviewPopup = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<Part_Review_Popup, Error, { reviewId: string; payload: PopupPayload }>(
+    ['parts', 'popup', 'create'],
+    async (data) => {
+      const response = await createReviewPopup(data.reviewId, data.payload);
+      return response.data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['parts', 'by index']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to update a review popup
+ *
+ * @returns the updated popup
+ */
+export const useUpdateReviewPopup = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<Part_Review_Popup, Error, { popupId: string; payload: PopupPayload }>(
+    ['parts', 'popup', 'update'],
+    async (data) => {
+      const response = await updateReviewPopup(data.popupId, data.payload);
+      return response.data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['parts', 'by index']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to delete a popup
+ *
+ * @returns a success message
+ */
+export const useDeleteReviewPopup = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['parts', 'popup', 'delete'],
+    async (popupId: string) => {
+      const { data } = await deleteReviewPopup(popupId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['parts', 'by index']);
+      }
+    }
+  );
 };

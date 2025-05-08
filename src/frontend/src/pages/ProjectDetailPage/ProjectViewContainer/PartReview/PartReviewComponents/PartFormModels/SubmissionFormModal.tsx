@@ -3,32 +3,43 @@ import { useToast } from '../../../../../../hooks/toasts.hooks';
 import * as yup from 'yup';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import React from 'react';
+import React, { useState } from 'react';
 import NERFormModal from '../../../../../../components/NERFormModal';
-import { Autocomplete, Button, Grid, IconButton, Typography } from '@mui/material';
+import { Autocomplete, Button, Grid, IconButton, List, ListItem, Typography } from '@mui/material';
 import { FormControl, FormHelperText, FormLabel, TextField } from '@mui/material';
 import ReactHookTextField from '../../../../../../components/ReactHookTextField';
 import { Delete, FileUpload } from '@mui/icons-material';
+import { useUploadFile } from '../../../../../../hooks/part-review.hooks';
 
 interface SubmissionFormModalProps {
   open: boolean;
   handleClose: () => void;
   defaultValues?: PartSubmission;
-  onSubmit: (data: { partId: string; name: string; notes?: string; files: { name: string; file: File }[] }) => void;
+  onSubmit: (data: { partId: string; name: string; notes?: string; fileIds: string[] }) => void;
   partsInProject: PartPreview[];
 }
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+const isPdf = (fileName: string) => {
+  const extension = fileName.split('.').pop()?.toLowerCase();
+  return extension === 'pdf';
+};
+
 const SubmissionFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProject }: SubmissionFormModalProps) => {
   const toast = useToast();
+  const [files, setFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const { mutateAsync: uploadFile } = useUploadFile();
 
   const schema = yup.object().shape({
     partId: yup.string().required(),
     name: yup.string().required(),
     notes: yup.string().optional(),
-    files: yup.array().test({
-      message: 'Must upload at least 1 file',
-      test: (arr) => (arr ? arr?.length > 0 : false)
-    })
+    fileIds: yup
+      .array()
+      .min(1, 'must upload at least 1 file')
+      .max(5, 'cannot upload more than 5 files for a single submission')
   });
 
   const {
@@ -41,25 +52,21 @@ const SubmissionFormModal = ({ open, handleClose, defaultValues, onSubmit, parts
     defaultValues: {
       partId: defaultValues?.partId,
       name: defaultValues?.name,
-      notes: defaultValues?.notes
+      notes: defaultValues?.notes,
+      fileIds: defaultValues?.fileIds || []
     }
   });
 
   const {
-    append: appendFile,
-    remove: removeFile,
-    fields: files
+    append: appendFileId,
+    remove: removeFileId,
+    fields: fileIds
   } = useFieldArray({
     control,
-    name: 'files'
+    name: 'fileIds'
   });
 
-  const onFormSubmit = async (data: {
-    partId: string;
-    name: string;
-    notes?: string;
-    files: { name: string; file: File }[];
-  }) => {
+  const onFormSubmit = async (data: { partId: string; name: string; notes?: string; fileIds: string[] }) => {
     try {
       handleClose();
       await onSubmit({
@@ -75,7 +82,7 @@ const SubmissionFormModal = ({ open, handleClose, defaultValues, onSubmit, parts
   };
 
   const displayName = (name: string) => {
-    return name.length <= 10 ? name : name.slice(0, 9) + '...';
+    return name.length <= 15 ? name : name.slice(0, 14) + '...';
   };
 
   return (
@@ -88,6 +95,7 @@ const SubmissionFormModal = ({ open, handleClose, defaultValues, onSubmit, parts
       onFormSubmit={onFormSubmit}
       formId={!!defaultValues ? 'edit-submission-form' : 'create-submission-form'}
       showCloseButton
+      disabled={uploading}
     >
       <Grid container spacing={2} alignItems="flex-start" maxWidth={'100%'}>
         <Grid item xs={7}>
@@ -114,16 +122,24 @@ const SubmissionFormModal = ({ open, handleClose, defaultValues, onSubmit, parts
           <FormControl fullWidth>
             <FormLabel>File(s)</FormLabel>
             <Grid container>
-              {files.map((file, index) => {
-                return (
-                  <Grid key={file.id} display={'flex'} flexDirection={'row'}>
-                    <Typography>{displayName(file.name)}</Typography>
-                    <IconButton onClick={() => removeFile(index)}>
-                      <Delete />
-                    </IconButton>
-                  </Grid>
-                );
-              })}
+              <List>
+                {fileIds.map((file, index) => {
+                  return (
+                    <ListItem key={file.id}>
+                      <Typography>{displayName(files[index].name)}</Typography>
+                      <IconButton
+                        onClick={() => {
+                          setFiles((prevFiles) => [...prevFiles.slice(0, index), ...prevFiles.slice(index + 1)]);
+                          removeFileId(index);
+                        }}
+                      >
+                        <Delete />
+                      </IconButton>
+                    </ListItem>
+                  );
+                })}
+              </List>
+              {uploading && <Typography>Uploading...</Typography>}
               <Button
                 variant="contained"
                 color="success"
@@ -138,20 +154,59 @@ const SubmissionFormModal = ({ open, handleClose, defaultValues, onSubmit, parts
                 <input
                   type="file"
                   hidden
+                  multiple
                   onChange={(e) => {
                     if (e.target.files) {
-                      [...e.target.files]?.forEach((file) => {
-                        appendFile({
-                          name: file.name,
-                          file
-                        });
+                      const numFiles = [...e.target.files]?.length;
+                      const checkLast = (index: number) => {
+                        if (index === numFiles - 1) {
+                          setUploading(false);
+                        }
+                      };
+                      if (numFiles + files.length > 5) {
+                        toast.error('cannot upload more than 5 files');
+                        return;
+                      }
+                      setUploading(true);
+                      [...e.target.files]?.forEach(async (file, index) => {
+                        if (file.size > MAX_FILE_SIZE) {
+                          toast.error(`File "${file.name}" exceeds the maximum size limit of ${MAX_FILE_SIZE} bytes`);
+                          checkLast(index);
+                          return;
+                        }
+                        if (!/^[\w.]+$/.test(file.name)) {
+                          toast.error(`File names can only contain letters and numbers`);
+                          checkLast(index);
+                          return;
+                        }
+                        if (file.name.length > 20) {
+                          toast.error(`File names cannot be longer than 20 characters`);
+                          checkLast(index);
+                          return;
+                        }
+
+                        if (!isPdf(file.name)) {
+                          toast.warning(
+                            `Warning: "${file.name}" is not a PDF file, so will not be displayed. (Don't worry, reviewers can still download it)`,
+                            5000
+                          );
+                        }
+
+                        try {
+                          const fileId = await uploadFile(file);
+                          appendFileId(fileId);
+                          setFiles((prev) => [...prev, file]);
+                        } catch (error: unknown) {
+                          toast.error('file upload failed');
+                        }
+                        checkLast(index);
                       });
                     }
                   }}
                 />
               </Button>
             </Grid>
-            <FormHelperText error>{errors.files?.message}</FormHelperText>
+            <FormHelperText error>{errors.fileIds?.message}</FormHelperText>
           </FormControl>
         </Grid>
         <Grid item xs={12}>
