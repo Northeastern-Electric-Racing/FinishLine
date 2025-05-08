@@ -192,7 +192,7 @@ const SpendingBar = ({ data, title }: SpendingBarData) => {
               return `Spending is $${getTotalMoneySpent(dataset.spendingInfo) - dataset.spendingInfo.totalBudget} overbudget!`;
             }
 
-            return `${title}: ${value}`;
+            return `${title}: $${value}`;
           },
           title: (tooltipItems) => {
             let [{ datasetIndex }] = tooltipItems;
@@ -238,6 +238,16 @@ const SpendingBar = ({ data, title }: SpendingBarData) => {
       y: {
         display: false,
         grid: { drawTicks: false }
+      }
+    },
+    onHover: (event, chartElement) => {
+      const target = event.native?.target;
+      if (target instanceof HTMLElement) {
+        if (chartElement.length > 0) {
+          target.style.cursor = 'pointer';
+        } else {
+          target.style.cursor = 'default';
+        }
       }
     }
   };
