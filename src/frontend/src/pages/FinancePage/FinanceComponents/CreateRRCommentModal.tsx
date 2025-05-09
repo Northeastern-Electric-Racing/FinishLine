@@ -8,6 +8,7 @@ import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { ReimbursementRequestComment } from 'shared';
 import { UseMutateAsyncFunction } from 'react-query';
+import { useCurrentUser } from '../../../hooks/users.hooks';
 
 const schema = yup.object().shape({
   comment: yup.string().required('Comment is required')
@@ -59,10 +60,12 @@ const CreateRRCommentModal: React.FC<CreateRRCommentModalProps> = ({
     mode: 'onChange'
   });
 
+  const user = useCurrentUser();
+
   const handleConfirm = async (data: { comment: string; reimbursementRequestId: string }) => {
     try {
       await mutateAsync({
-        comment: data.comment,
+        comment: `@${user.firstName}${user.lastName} followed up: "${data.comment}`,
         dateCreated: new Date(),
         reimbursementRequestId: data.reimbursementRequestId
       });

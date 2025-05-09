@@ -84,7 +84,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ comment, isLast }) =>
 
 const CreateNewCommentSection: React.FC<CreateNewCommentSectionProps> = ({ reimbursementRequestId, comments }) => {
   const { mutateAsync, isLoading } = useCreateReimbursementRequestComment(reimbursementRequestId);
-  const [timelineCommentModal, setTimelineCommentModalShow] = useState<boolean>(false);
+  const [showTimelineCommentModal, setShowTimelineCommentModal] = useState<boolean>(false);
   const commentTime = new Date().toLocaleTimeString();
   const newCommentTime = commentTime.slice(0, -6) + commentTime.slice(-3);
   return (
@@ -117,15 +117,15 @@ const CreateNewCommentSection: React.FC<CreateNewCommentSectionProps> = ({ reimb
             sx={{ cursor: 'pointer' }}
             color="primary"
             onClick={() => {
-              setTimelineCommentModalShow(true);
+              setShowTimelineCommentModal(true);
             }}
           >
             Send a Follow-Up Message!
           </Link>
         </Typography>
         <CreateRRCommentModal
-          showModal={timelineCommentModal}
-          handleClose={() => setTimelineCommentModalShow(false)}
+          showModal={showTimelineCommentModal}
+          handleClose={() => setShowTimelineCommentModal(false)}
           mutateAsync={mutateAsync}
           isLoading={isLoading}
           title="Create New Timeline Comment"

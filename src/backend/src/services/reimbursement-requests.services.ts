@@ -61,9 +61,10 @@ import {
   sendReimbursementRequestDeniedNotification,
   sendReimbursementRequestLeadershipApprovedNotification,
   sendReimbursementRequestPendingFinanceNotification,
+  sendSlackCRReviewedNotification,
   sendSubmittedToSaboNotification
 } from '../utils/slack.utils';
-import { userHasPermission } from '../utils/users.utils';
+import { getUserFullName, userHasPermission } from '../utils/users.utils';
 import { getReimbursementRequestQueryArgs } from '../prisma-query-args/reimbursement-requests.query-args';
 import { getReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
 import { getReimbursementStatusQueryArgs } from '../prisma-query-args/reimbursement-statuses.query-args';
@@ -1555,6 +1556,55 @@ export default class ReimbursementRequestService {
         comment
       },
       ...getReimbursementRequestCommentQueryArgs(organization.organizationId)
+    });
+
+    // send slack notification
+
+    const tagRegex = /@([\p{L}\-']+)/gu;
+
+    const taggedNames = [...comment.matchAll(tagRegex)].map((match) => match[1]);
+
+    const splitTaggedNames = taggedNames.map((name) => {
+      const match = name.match(/([A-Z][a-z]+)([A-Z][a-z]+)/);
+
+      if (match) {
+        return {
+          firstName: match[1],
+          lastName: match[2]
+        };
+      }
+
+      // possible for user to have one name
+      return {
+        firstName: name,
+        lastName: ''
+      };
+    });
+
+    const tags: string[] = [];
+
+    for (const taggedName of splitTaggedNames) {
+      const { firstName, lastName } = taggedName;
+
+      const taggedUser = await prisma.user.findFirst({
+        where: {
+          firstName: { equals: firstName, mode: 'insensitive' },
+          lastName: { equals: lastName, mode: 'insensitive' }
+        },
+        include: { userSettings: true }
+      });
+
+      tags.push(taggedUser?.userSettings?.slackId ? `<@${taggedUser.userSettings.slackId}>` : `${firstName} ${lastName}`);
+    }
+
+    let replacementIndex = 0;
+
+    comment = comment.replace(tagRegex, (_match, _group) => {
+      const replacement = tags[replacementIndex];
+
+      replacementIndex++;
+
+      return replacement;
     });
 
     return reimbursementRequestCommentTransformer(createdComment);
