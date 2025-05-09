@@ -2239,6 +2239,15 @@ const performSeed: () => Promise<void> = async () => {
     }
   });
 
+  // const reviewRequest1 = await prisma.partReviewRequest.create({
+  //   data: {
+  //     partReviewRequestId: '001',
+  //     requesterId: hawkMan.userId,
+  //     reviewerId: batman.userId,
+
+  //   }
+  // });
+
   const part4Example = await prisma.part.create({
     data: {
       partId: '004',
@@ -2253,6 +2262,13 @@ const performSeed: () => Promise<void> = async () => {
       },
       assignees: {
         connect: { userId: hawkMan.userId }
+      },
+      reviewRequests: {
+        create: {
+          partReviewRequestId: '001',
+          requesterId: hawkMan.userId,
+          reviewerId: batman.userId
+        }
       }
     }
   });
@@ -2271,6 +2287,13 @@ const performSeed: () => Promise<void> = async () => {
       },
       assignees: {
         connect: { userId: hawkMan.userId }
+      },
+      reviewRequests: {
+        create: {
+          partReviewRequestId: '002',
+          requesterId: hawkMan.userId,
+          reviewerId: batman.userId
+        }
       }
     }
   });
@@ -2289,6 +2312,13 @@ const performSeed: () => Promise<void> = async () => {
       },
       assignees: {
         connect: { userId: hawkMan.userId }
+      },
+      reviewRequests: {
+        create: {
+          partReviewRequestId: '003',
+          requesterId: hawkMan.userId,
+          reviewerId: batman.userId
+        }
       }
     }
   });
@@ -2307,6 +2337,13 @@ const performSeed: () => Promise<void> = async () => {
       },
       assignees: {
         connect: { userId: hawkMan.userId }
+      },
+      reviewRequests: {
+        create: {
+          partReviewRequestId: '004',
+          requesterId: hawkMan.userId,
+          reviewerId: batman.userId
+        }
       }
     }
   });
@@ -2325,6 +2362,13 @@ const performSeed: () => Promise<void> = async () => {
       },
       assignees: {
         connect: { userId: hawkMan.userId }
+      },
+      reviewRequests: {
+        create: {
+          partReviewRequestId: '005',
+          requesterId: hawkMan.userId,
+          reviewerId: batman.userId
+        }
       }
     }
   });
@@ -2343,6 +2387,13 @@ const performSeed: () => Promise<void> = async () => {
       },
       assignees: {
         connect: { userId: flash.userId }
+      },
+      reviewRequests: {
+        create: {
+          partReviewRequestId: '006',
+          requesterId: hawkMan.userId,
+          reviewerId: batman.userId
+        }
       }
     }
   });
@@ -2361,6 +2412,13 @@ const performSeed: () => Promise<void> = async () => {
       },
       assignees: {
         connect: { userId: flash.userId }
+      },
+      reviewRequests: {
+        create: {
+          partReviewRequestId: '007',
+          requesterId: hawkMan.userId,
+          reviewerId: batman.userId
+        }
       }
     }
   });
