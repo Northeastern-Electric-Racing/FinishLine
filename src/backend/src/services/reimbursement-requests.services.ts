@@ -661,12 +661,6 @@ export default class ReimbursementRequestService {
       return accountCodeTransformer(updatedExistingAccount);
     } else if (existingAccount) throw new HttpException(400, 'This Account Code already exists');
 
-    console.log('name', name);
-    console.log('allowed', allowed);
-    console.log('code', code);
-    console.log('indexCodeIds', indexCodeIds);
-    console.log('organizationId', organization.organizationId);
-
     const expense = await prisma.account_Code.create({
       data: {
         name,

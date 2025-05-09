@@ -89,7 +89,9 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
             <Select
               multiple
               value={formValue}
-              onChange={(e) => onChange(e.target.value as string[])}
+              onChange={({ target: { value } }) => {
+                onChange(typeof value === 'string' ? value.split(',') : value);
+              }}
               input={<OutlinedInput />}
             >
               {indexCodes.map((refundSource: IndexCode) => (
