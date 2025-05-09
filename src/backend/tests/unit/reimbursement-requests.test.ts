@@ -4,8 +4,8 @@ import { AccessDeniedException, DeletedException, HttpException, NotFoundExcepti
 import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { assert } from 'console';
-import { addDaysToDate, IndexCode, ReimbursementRequest, AccountCode, OtherProductReason, Vendor } from 'shared';
-import { Organization } from '@prisma/client';
+import { addDaysToDate, IndexCode, ReimbursementRequest, AccountCode, OtherProductReason } from 'shared';
+import { Organization, Vendor } from '@prisma/client';
 import { UserWithSecureSettings } from '../../src/utils/auth.utils';
 
 describe('Reimbursement Requests', () => {

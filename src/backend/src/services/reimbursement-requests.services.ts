@@ -587,7 +587,7 @@ export default class ReimbursementRequestService {
     taxExempt: boolean,
     twoFactorContacts: string[],
     notes?: string
-  ): Promise<Vendor> {
+  ) {
     const isAuthorized =
       (await userHasPermission(submitter.userId, organization.organizationId, isAdmin)) ||
       (await isUserLeadOrHeadOfFinanceTeam(submitter, organization.organizationId));
@@ -607,7 +607,7 @@ export default class ReimbursementRequestService {
         where: { vendorId: existingVendor.vendorId },
         data: { dateDeleted: null }
       });
-      return vendorTransformer(existingVendor);
+      return existingVendor;
     } else if (existingVendor) throw new HttpException(400, 'This vendor already exists');
 
     const users = await getUsers(twoFactorContacts);
@@ -627,7 +627,7 @@ export default class ReimbursementRequestService {
       ...getVendorQueryArgs(organization.organizationId)
     });
 
-    return vendorTransformer(vendor);
+    return vendor;
   }
 
   /**

@@ -108,7 +108,7 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
         </FormControl>
         <FormControl>
           <FormLabel sx={{ fontWeight: 'bold', fontSize: 18, textDecoration: 'underline' }}>Discount:*</FormLabel>
-          <ReactHookTextField name="discountCode" placeholder="Sponsor Value" control={control} sx={{ width: 1 }} />
+          <ReactHookTextField name="discountCode" placeholder="Vendor Value" control={control} sx={{ width: 1 }} />
           <FormHelperText error>{errors.discountCode?.message}</FormHelperText>
         </FormControl>
         <Box display="flex" flexDirection="row" gap={2} sx={{ width: '100%' }}>
@@ -200,7 +200,7 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
         </Box>
         <FormControl>
           <FormLabel sx={{ fontWeight: 'bold', fontSize: 18, textDecoration: 'underline' }}>Notes on Vendor:</FormLabel>
-          <ReactHookTextField name="notes" placeholder="Sponsor is tax-exempt" control={control} sx={{ width: 1 }} />
+          <ReactHookTextField name="notes" placeholder="Vendor is tax-exempt" control={control} sx={{ width: 1 }} />
           <FormHelperText error>{errors.note?.message}</FormHelperText>
         </FormControl>
       </Box>
