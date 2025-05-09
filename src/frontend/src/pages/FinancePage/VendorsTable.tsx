@@ -109,7 +109,7 @@ const VendorTable = ({ isHeadAndAbove = false }: VendorTableProps) => {
             }}
           >
             <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>
-              {fullNamePipe(vendor.twoFactorContact)}
+              {vendor.twoFactorContacts.map(fullNamePipe).join(', ')}
             </Typography>
           </TableCell>
           <TableCell
@@ -198,7 +198,7 @@ const VendorTable = ({ isHeadAndAbove = false }: VendorTableProps) => {
 
   return (
     <Box sx={{ width: '100%', borderRadius: '8px 8px 0 0' }}>
-      <CreateVendorModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} vendors={vendors} />
+      <CreateVendorModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} />
       {vendorToEdit && (
         <EditVendorModal
           showModal={!!vendorToEdit}
@@ -206,7 +206,6 @@ const VendorTable = ({ isHeadAndAbove = false }: VendorTableProps) => {
             setVendorToEdit(undefined);
           }}
           vendor={vendorToEdit}
-          vendors={vendors}
         />
       )}
       {vendorToDelete && (

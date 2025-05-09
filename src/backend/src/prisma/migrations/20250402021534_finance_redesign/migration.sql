@@ -17,12 +17,11 @@ ALTER TABLE "Reimbursement_Product_Reason" ADD COLUMN "otherReasonId" TEXT;
 ALTER TABLE "Reimbursement_Request" ADD COLUMN "indexCodeId" TEXT;
 
 -- AlterTable
-ALTER TABLE "Vendor" ADD COLUMN     "addedByUserId" TEXT,
-ADD COLUMN     "discountCode" TEXT,
+ALTER TABLE "Vendor" ADD COLUMN     "addedByUserId" TEXT NOT NULL,
+ADD COLUMN     "discountCode" TEXT NOT NULL DEFAULT '',
 ADD COLUMN     "notes" TEXT,
 ADD COLUMN     "password" TEXT NOT NULL DEFAULT '',
 ADD COLUMN     "taxExempt" BOOLEAN NOT NULL DEFAULT FALSE,
-ADD COLUMN     "twoFactorContactId" TEXT,
 ADD COLUMN     "username" TEXT NOT NULL DEFAULT '';
 
 -- CreateTable
@@ -196,10 +195,7 @@ ALTER TABLE "Reimbursement_Request" ADD CONSTRAINT "Reimbursement_Request_indexC
 ALTER TABLE "Reimbursement_Product_Reason" ADD CONSTRAINT "Reimbursement_Product_Reason_otherReasonId_fkey" FOREIGN KEY ("otherReasonId") REFERENCES "Reimbursement_Product_Other_Reason"("otherReimbursementProductReasonId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Vendor" ADD CONSTRAINT "Vendor_twoFactorContactId_fkey" FOREIGN KEY ("twoFactorContactId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Vendor" ADD CONSTRAINT "Vendor_addedByUserId_fkey" FOREIGN KEY ("addedByUserId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Vendor" ADD CONSTRAINT "Vendor_addedByUserId_fkey" FOREIGN KEY ("addedByUserId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Sponsor" ADD CONSTRAINT "Sponsor_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -257,3 +253,20 @@ ALTER TABLE "Reimbursement_Request_Comment" ADD CONSTRAINT "Reimbursement_Reques
 
 -- AlterTable
 ALTER TABLE "Reimbursement_Request_Comment" ADD COLUMN     "dateDeleted" TIMESTAMP(3);
+
+-- CreateTable
+CREATE TABLE "_twoFactorContactVendors" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_twoFactorContactVendors_AB_pkey" PRIMARY KEY ("A","B")
+);
+
+-- CreateIndex
+CREATE INDEX "_twoFactorContactVendors_B_index" ON "_twoFactorContactVendors"("B");
+
+-- AddForeignKey
+ALTER TABLE "_twoFactorContactVendors" ADD CONSTRAINT "_twoFactorContactVendors_A_fkey" FOREIGN KEY ("A") REFERENCES "User"("userId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_twoFactorContactVendors" ADD CONSTRAINT "_twoFactorContactVendors_B_fkey" FOREIGN KEY ("B") REFERENCES "Vendor"("vendorId") ON DELETE CASCADE ON UPDATE CASCADE;

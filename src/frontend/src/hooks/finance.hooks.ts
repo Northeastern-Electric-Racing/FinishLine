@@ -106,6 +106,12 @@ export interface AccountCodePayload {
 
 export interface EditVendorPayload {
   name: string;
+  username: string;
+  password: string;
+  discountCode: string;
+  taxExempt: boolean;
+  twoFactorContactIds: string[];
+  notes: string;
 }
 
 export interface RefundPayload {
@@ -745,11 +751,14 @@ export const useCreateAccountCode = () => {
  */
 export const useCreateVendor = () => {
   const queryClient = useQueryClient();
-  return useMutation<Vendor, Error, { name: string }>(['vendors', 'create'], async (vendorData: { name: string }) => {
-    const { data } = await createVendor(vendorData);
-    queryClient.invalidateQueries(['vendors']);
-    return data;
-  });
+  return useMutation<{ message: string }, Error, EditVendorPayload>(
+    ['vendors', 'create'],
+    async (vendorData: EditVendorPayload) => {
+      const { data } = await createVendor(vendorData);
+      queryClient.invalidateQueries(['vendors']);
+      return data;
+    }
+  );
 };
 
 /**
