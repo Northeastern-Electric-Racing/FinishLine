@@ -4,6 +4,8 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useGetAllReimbursementRequestData, useGetAllSpendingBarData } from '../../../hooks/finance.hooks';
 import { Box, Grid, Tab, Tabs, Typography } from '@mui/material';
 import PieChart from '../FinanceComponents/PieChart';
+import SpendingAndAllocation from './SpendingAndAllocation';
+import { grey } from '@mui/material/colors';
 
 interface FinanceDashboardAllViewProps {
   startDate?: Date;
@@ -33,15 +35,11 @@ const FinanceDashboardAllView: React.FC<FinanceDashboardAllViewProps> = ({ start
     return <ErrorPage error={allRRDataError} />;
   }
 
-  if (!allRRData || allRRDataIsLoading) {
-    return <LoadingIndicator />;
-  }
-
   if (spendingDataIsError) {
     return <ErrorPage error={spendingDataError} />;
   }
 
-  if (!spendingData || spendingDataIsLoading) {
+  if (!allRRData || allRRDataIsLoading || !spendingData || spendingDataIsLoading) {
     return <LoadingIndicator />;
   }
 
@@ -50,7 +48,7 @@ const FinanceDashboardAllView: React.FC<FinanceDashboardAllViewProps> = ({ start
       <Grid item xs={12} md={4}>
         <Box
           sx={{
-            background: '#424242',
+            background: grey[900],
             borderRadius: 2,
             boxShadow: 2,
             p: 2,
@@ -105,20 +103,7 @@ const FinanceDashboardAllView: React.FC<FinanceDashboardAllViewProps> = ({ start
         </Box>
       </Grid>
       <Grid item xs={12} md={8}>
-        <Box
-          sx={{
-            background: '#424242',
-            borderRadius: 2,
-            boxShadow: 2,
-            p: 2,
-            minHeight: '650px',
-            minWidth: '500px'
-          }}
-        >
-          <Typography variant="h6" fontWeight="bold" gutterBottom>
-            Spending & Allocation
-          </Typography>
-        </Box>
+        <SpendingAndAllocation data={spendingData} />
       </Grid>
     </Grid>
   );

@@ -3,6 +3,8 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useGetReimbursementRequestTeamTypeData, useGetSpendingBarTeamTypeData } from '../../../hooks/finance.hooks';
 import { Box, Grid, Typography } from '@mui/material';
 import PieChart from '../FinanceComponents/PieChart';
+import SpendingAndAllocation from './SpendingAndAllocation';
+import { grey } from '@mui/material/colors';
 
 interface FinanceDashboardTeamTypeViewProps {
   teamTypeId: string;
@@ -45,7 +47,7 @@ const FinanceDashboardTeamView: React.FC<FinanceDashboardTeamTypeViewProps> = ({
       <Grid item xs={12} md={4}>
         <Box
           sx={{
-            background: '#424242',
+            background: grey[900],
             borderRadius: 2,
             boxShadow: 2,
             p: 2,
@@ -68,20 +70,7 @@ const FinanceDashboardTeamView: React.FC<FinanceDashboardTeamTypeViewProps> = ({
       </Grid>
 
       <Grid item xs={12} md={8}>
-        <Box
-          sx={{
-            background: '#424242',
-            borderRadius: 2,
-            boxShadow: 2,
-            p: 2,
-            minHeight: '650px',
-            minWidth: '500px'
-          }}
-        >
-          <Typography variant="h6" fontWeight="bold" gutterBottom>
-            Spending
-          </Typography>
-        </Box>
+        <SpendingAndAllocation data={spendingBarData} />
       </Grid>
     </Grid>
   );

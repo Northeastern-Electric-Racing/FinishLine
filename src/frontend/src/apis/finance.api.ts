@@ -591,7 +591,7 @@ export const getSpendingBarTeamData = (payload: SpendingBarTeamDataPayload) => {
 };
 
 export const getSpendingBarTeamTypeData = (payload: SpendingBarTeamTypeDataPayload) => {
-  return axios.get<SpendingBarData>(
+  return axios.get<SpendingBarData[]>(
     apiUrls.getSpendingBarTeamTypeData(payload.teamTypeId, payload.startDate, payload.endDate),
     {
       transformResponse: (data) => JSON.parse(data) as SpendingBarData
