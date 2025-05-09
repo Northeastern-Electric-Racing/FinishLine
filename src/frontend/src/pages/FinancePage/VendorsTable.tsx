@@ -108,9 +108,28 @@ const VendorTable = ({ isHeadAndAbove = false }: VendorTableProps) => {
               borderBottom: 'none'
             }}
           >
-            <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>
-              {vendor.twoFactorContacts.map(fullNamePipe).join(', ')}
-            </Typography>
+            <Box
+              sx={{
+                maxWidth: 225,
+                overflow: 'hidden',
+                '&:hover': {
+                  overflow: 'auto'
+                },
+                scrollbarColor: `#555 ${theme.palette.background.default}`,
+                scrollbarWidth: 'thin'
+              }}
+            >
+              <Typography
+                sx={{
+                  textAlign: 'left',
+                  fontSize: '1.5rem',
+                  height: '1.5em',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {vendor.twoFactorContacts.map(fullNamePipe).join(', ')}
+              </Typography>
+            </Box>
           </TableCell>
           <TableCell
             align="center"
@@ -281,7 +300,7 @@ const VendorTable = ({ isHeadAndAbove = false }: VendorTableProps) => {
                         color: 'white'
                       }}
                     >
-                      2FA Contact
+                      2FA Contacts
                     </TableCell>
                     <TableCell
                       align="center"
