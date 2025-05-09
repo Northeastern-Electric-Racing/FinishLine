@@ -355,6 +355,7 @@ export const editRefund = (id: string, formData: RefundPayload) => {
  * @returns the updated expense type
  */
 export const editAccountCode = async (id: string, accountCodeData: AccountCodePayload) => {
+  console.log(accountCodeData.indexCodeIds);
   return axios.post(apiUrls.financeEditAccountCode(id), accountCodeData);
 };
 
@@ -364,6 +365,7 @@ export const editAccountCode = async (id: string, accountCodeData: AccountCodePa
  * @returns the new expense type
  */
 export const createAccountCode = async (accountCodeData: AccountCodePayload) => {
+  console.log(accountCodeData.indexCodeIds);
   return axios.post(apiUrls.financeCreateAccountCode(), accountCodeData);
 };
 

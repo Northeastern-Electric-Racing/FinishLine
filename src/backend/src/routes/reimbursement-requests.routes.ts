@@ -144,7 +144,7 @@ reimbursementRequestsRouter.post(
   nonEmptyString(body('name')),
   intMinZero(body('code')),
   body('allowed').isBoolean(),
-  body('allowedRefundSources').isArray(),
+  body('indexCodeIds').isArray(),
   validateInputs,
   ReimbursementRequestController.createAccountCode
 );

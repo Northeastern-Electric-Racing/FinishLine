@@ -633,7 +633,7 @@ export default class ReimbursementRequestService {
    * @param name The name of the Account Code
    * @param code the Account Code's SABO code
    * @param allowed whether or not this Account Code is allowed
-   * @param allowedRefundSources an array of Index_Code representing allowed refund sources
+   * @param indexCodeIds an array of index code ids representing allowed refund sources
    * @param organizationId the organization the user is currently in
    * @returns the created Account Code
    */
@@ -642,7 +642,7 @@ export default class ReimbursementRequestService {
     name: string,
     code: number,
     allowed: boolean,
-    allowedRefundSources: IndexCode[],
+    indexCodeIds: string[],
     organization: Organization
   ): Promise<AccountCode> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
@@ -661,12 +661,18 @@ export default class ReimbursementRequestService {
       return accountCodeTransformer(updatedExistingAccount);
     } else if (existingAccount) throw new HttpException(400, 'This Account Code already exists');
 
+    console.log('name', name);
+    console.log('allowed', allowed);
+    console.log('code', code);
+    console.log('indexCodeIds', indexCodeIds);
+    console.log('organizationId', organization.organizationId);
+
     const expense = await prisma.account_Code.create({
       data: {
         name,
         allowed,
         code,
-        indexCodes: { connect: allowedRefundSources.map((indexCode) => ({ indexCodeId: indexCode.indexCodeId })) },
+        indexCodes: { connect: indexCodeIds.map((id) => ({ indexCodeId: id })) },
         organizationId: organization.organizationId
       },
       ...getAccountCodeQueryArgs(organization.organizationId)

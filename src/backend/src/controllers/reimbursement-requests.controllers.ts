@@ -219,14 +219,15 @@ export default class ReimbursementRequestsController {
   }
 
   static async createAccountCode(req: Request, res: Response, next: NextFunction) {
+    console.log('ehllo');
     try {
-      const { name, code, allowed, allowedRefundSources } = req.body;
+      const { name, code, allowed, indexCodeIds } = req.body;
       const createdAccountCode = await ReimbursementRequestService.createAccountCode(
         req.currentUser,
         name,
         code,
         allowed,
-        allowedRefundSources,
+        indexCodeIds,
         req.organization
       );
       res.status(200).json(createdAccountCode);

@@ -93,7 +93,7 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
               input={<OutlinedInput />}
             >
               {indexCodes.map((refundSource: IndexCode) => (
-                <MenuItem key={refundSource.name} value={refundSource.name}>
+                <MenuItem key={refundSource.indexCodeId} value={refundSource.indexCodeId}>
                   {codeAndRefundSourceName(refundSource)}
                 </MenuItem>
               ))}
