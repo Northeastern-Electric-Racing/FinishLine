@@ -706,11 +706,12 @@ export default class ReimbursementRequestService {
         name,
         code,
         allowed,
-        indexCodes: { connect: indexCodeIds.map((id) => ({ indexCodeId: id })) }
-      }
+        indexCodes: { set: indexCodeIds.map((id) => ({ indexCodeId: id })) }
+      },
+      ...getAccountCodeQueryArgs(organization.organizationId)
     });
 
-    return accountCodeUpdated;
+    return accountCodeTransformer(accountCodeUpdated);
   }
 
   /**
