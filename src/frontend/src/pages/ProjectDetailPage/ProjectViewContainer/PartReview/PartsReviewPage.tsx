@@ -11,6 +11,7 @@ import ErrorPage from '../../../ErrorPage';
 import { Link as RouterLink } from 'react-router-dom';
 import PartReviewFAQs from './PartReviewFAQs';
 import MyPartsUnderReview from './MyPartsUnderReview';
+import PartsForMeToReview from './PartsForMeToReview';
 
 const PartsReviewPage = ({ project }: { project: Project }) => {
   const currentUser = useCurrentUser();
@@ -67,6 +68,8 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
             <LoadingIndicator /> /* Loading indicator will be replaced by a grid of all the part cards */
           )}
           {/* temporary test component to show that parts are being displayed */}
+          <MyPartsUnderReview project={project} />
+          <PartsForMeToReview project={project} />
           <Stack>
             Parts for this project:
             {parts.map((part, _index) => (
@@ -77,7 +80,6 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
               </Box>
             ))}
           </Stack>
-          <MyPartsUnderReview project={project} />
         </Grid>
       </Grid>
     </Box>
