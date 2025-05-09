@@ -92,7 +92,7 @@ export interface Vendor {
   taxExempt: boolean;
   twoFactorContacts: User[];
   addedBy: User;
-  discountCode?: string;
+  discountCode: string;
   notes?: string;
 }
 
