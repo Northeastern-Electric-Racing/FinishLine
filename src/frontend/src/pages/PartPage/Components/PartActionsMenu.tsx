@@ -1,6 +1,6 @@
 import Edit from '@mui/icons-material/Edit';
 import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
-import { Part, PartPreview, PartSubmission, RoleEnum, WbsNumber, isAtLeastRank, isNotLeadership, validateWBS, wbsPipe } from 'shared';
+import { Part, PartSubmission, RoleEnum, WbsNumber, isAtLeastRank, isNotLeadership, wbsPipe } from 'shared';
 import { Check, Collections, EditNote } from '@mui/icons-material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useCurrentUser } from '../../../hooks/users.hooks';
@@ -9,18 +9,14 @@ import { useHistory } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import CreateSubmissionModal from '../../ProjectDetailPage/ProjectViewContainer/PartReview/PartReviewComponents/PartFormModels/CreateSubmissionModal';
 import SubmissionFormModal from '../../ProjectDetailPage/ProjectViewContainer/PartReview/PartReviewComponents/PartFormModels/SubmissionFormModal';
-import {
-  useDeletePart,
-  useEditPart,
-  useEditPartSubmission,
-  usePartsFromProject,
-  useUploadSubmissionFiles
-} from '../../../hooks/part-review.hooks';
+import { useDeletePart, useEditPart, useEditPartSubmission, usePartsFromProject } from '../../../hooks/part-review.hooks';
 import PartFormModal from '../../ProjectDetailPage/ProjectViewContainer/PartReview/PartReviewComponents/PartFormModels/PartFormModal';
 import { Typography } from '@mui/material';
 import NERModal from '../../../components/NERModal';
 import { useToast } from '../../../hooks/toasts.hooks';
 import ApprovePartModal from '../../ProjectDetailPage/ProjectViewContainer/PartReview/PartReviewComponents/PartFormModels/ApprovePartModal';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
 
 interface PartActionsMenuProps {
   part: Part;
@@ -28,11 +24,8 @@ interface PartActionsMenuProps {
   wbsNum: WbsNumber;
 }
 
-const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
-  part,
-  submissionIndex,
-  wbsNum
-}: PartActionsMenuProps) => {
+const PartActionsMenu: React.FC<PartActionsMenuProps> = ({ part, submissionIndex, wbsNum }: PartActionsMenuProps) => {
+  
   const user = useCurrentUser();
   const history = useHistory();
   const toast = useToast();
@@ -42,7 +35,6 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
   const [showApproveSubmission, setShowApproveSubmission] = useState(false);
   const [showDeletePart, setShowDeletePart] = useState(false);
 
-  const { mutateAsync: uploadFiles } = useUploadSubmissionFiles();
   const { mutateAsync: editPart } = useEditPart(part.partId);
   const { mutateAsync: deletePart } = useDeletePart(part.partId);
   const {
@@ -64,15 +56,10 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
 
   const { mutateAsync: editSubmission } = useEditPartSubmission(submissionId);
 
-  const onSubmitSubmission = async (data: { name: string; notes?: string; files: { name: string; file: File }[] }) => {
-    const submission = await editSubmission({
+  const onSubmitSubmission = async (data: { name: string; notes?: string; fileIds: string[] }) => {
+    await editSubmission({
       name: data.name,
       notes: data.notes
-    });
-
-    await uploadFiles({
-      submissionId: submission.partSubmissionId,
-      files: data.files.map((file) => file.file)
     });
   };
 
@@ -86,6 +73,9 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
       }
     }
   };
+
+  if (!partsInProject || partsLoading) return <LoadingIndicator />;
+  if (partsIsError) return <ErrorPage message={partsError?.message} />;
 
   const isUserAReviewer = (userId: string, part: Part): boolean => {
     return part.reviewRequests.some((request) => request.reviewerRequested.userId === userId);
