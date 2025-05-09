@@ -4,7 +4,8 @@ import {
   EditPartSubmissionPayload,
   PartReviewRequestPayload,
   CreatePartReviewPayload,
-  EditPartReviewPayload
+  EditPartReviewPayload,
+  PopupPayload
 } from '../hooks/part-review.hooks';
 import {
   PartPreview,
@@ -14,7 +15,8 @@ import {
   PartReview,
   PartReviewCommonMistake,
   PartTag,
-  FrequentlyAskedQuestion
+  FrequentlyAskedQuestion,
+  Part_Review_Popup
 } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -109,18 +111,12 @@ export const editPartSubmission = (partSubmissionId: string, payload: EditPartSu
   });
 };
 
-/**
- * Adds an array of files to a review
- *
- * @param submissionId the id of the review
- * @param images the files to upload
- */
-export const setUploadSubmissionFiles = (submissionId: string, files: File[]) => {
+export const uploadFile = (file: File) => {
   const formData = new FormData();
-  files.forEach((file, _index) => {
-    formData.append('files', file);
+  formData.append('file', file);
+  return axios.post(apiUrls.uploadFile(), formData, {
+    transformResponse: (data) => JSON.parse(data)
   });
-  return axios.post<PartSubmission>(apiUrls.partsSubmissionUploadFiles(submissionId), formData, {});
 };
 
 /**
@@ -162,24 +158,10 @@ export const createPartReview = (payload: CreatePartReviewPayload) => {
  * @param partReviewId the id of the part review to edit
  * @param payload the payload of the part review
  */
-export const editPartReview = (partReviewId: string, payload: EditPartReviewPayload) => {
-  return axios.post<PartReview>(apiUrls.partsEditReview(partReviewId), {
+export const editPartReview = (payload: EditPartReviewPayload) => {
+  return axios.post<PartReview>(apiUrls.partsEditReview(payload.partReviewId), {
     ...payload
   });
-};
-
-/**
- * Adds files to a review
- *
- * @param reviewId the review
- * @param files the files to add
- */
-export const setUploadReviewFiles = (reviewId: string, files: File[]) => {
-  const formData = new FormData();
-  files.forEach((file, _index) => {
-    formData.append('files', file);
-  });
-  return axios.post<PartReview>(apiUrls.partsReviewUploadFiles(reviewId), formData, {});
 };
 
 /**
@@ -244,4 +226,45 @@ export const getAllCommonMistakes = () => {
  */
 export const getAllPartTags = () => {
   return axios.get<PartTag[]>(apiUrls.getAllPartTags());
+};
+
+/**
+ * Creates a new Popup
+ *
+ * @returns the created popup
+ */
+export const createReviewPopup = (partReviewId: string, payload: PopupPayload) => {
+  return axios.post<Part_Review_Popup>(
+    apiUrls.createReviewPopup(partReviewId),
+    {
+      ...payload
+    },
+    {
+      transformResponse: (data) => JSON.parse(data)
+    }
+  );
+};
+
+/**
+ * Updates a new Popup
+ *
+ * @returns the updated popup
+ */
+export const updateReviewPopup = (popupId: string, payload: PopupPayload) => {
+  return axios.post<Part_Review_Popup>(
+    apiUrls.updateReviewPopup(popupId),
+    {
+      ...payload
+    },
+    {
+      transformResponse: (data) => JSON.parse(data)
+    }
+  );
+};
+
+/**
+ * Deletes a popup
+ */
+export const deleteReviewPopup = (popupId: string) => {
+  return axios.post<{ message: string }>(apiUrls.deleteReviewPopup(popupId));
 };

@@ -3,18 +3,19 @@ CREATE TYPE "Review_Status" AS ENUM ('IN_PROGRESS', 'READY_FOR_REVIEW', 'IN_REVI
 
 -- DropForeignKey
 ALTER TABLE "FrequentlyAskedQuestion" DROP CONSTRAINT "FrequentlyAskedQuestion_organizationId_fkey";
+
+-- AlterTable
 ALTER TABLE "FrequentlyAskedQuestion" RENAME COLUMN "organizationId" TO "regularFaqOrgId";
 ALTER TABLE "FrequentlyAskedQuestion" ALTER "regularFaqOrgId" DROP NOT NULL;
 ALTER TABLE "FrequentlyAskedQuestion" ADD COLUMN     "partReviewFaqOrgId" TEXT;
-ALTER TABLE "FrequentlyAskedQuestion" ADD CONSTRAINT "FrequentlyAskedQuestion_regularFaqOrgId_fkey" FOREIGN KEY ("regularFaqOrgId") REFERENCES "Organization"("organizationId") ON DELETE SET NULL ON UPDATE CASCADE;
-ALTER TABLE "FrequentlyAskedQuestion" ADD CONSTRAINT "FrequentlyAskedQuestion_partReviewFaqOrgId_fkey" FOREIGN KEY ("partReviewFaqOrgId") REFERENCES "Organization"("organizationId") ON DELETE SET NULL ON UPDATE CASCADE;
--- Add constriant so every faq is either a reulage faq or a part review faq
+
+-- Custom constriant so every faq is either a regular faq or a part review faq
 ALTER TABLE "FrequentlyAskedQuestion" ADD CONSTRAINT "at_least_one_field_required" CHECK ("regularFaqOrgId" IS NOT NULL OR "partReviewFaqOrgId" IS NOT NULL);
-ALTER TABLE "FrequentlyAskedQuestion" ALTER COLUMN "regularFaqOrgId" DROP NOT NULL;
 
 -- AlterTable
-ALTER TABLE "Organization" ADD COLUMN     "partReviewSampleImageId" TEXT;
-ALTER TABLE "Organization" ADD COLUMN "partReviewGuideLink" TEXT;
+ALTER TABLE "Organization" ADD COLUMN     "partReviewGuideLink" TEXT,
+ADD COLUMN     "partReviewSampleImageId" TEXT;
+
 -- AlterTable
 ALTER TABLE "Project" ADD COLUMN     "abbreviation" TEXT;
 
@@ -32,8 +33,7 @@ CREATE TABLE "Part" (
     "dateDeleted" TIMESTAMP(3),
     "userCreatedId" TEXT NOT NULL,
     "userDeletedId" TEXT,
-
-    CONSTRAINT "ProjectId_and_index" UNIQUE ("projectId", "index"),
+    
     CONSTRAINT "Part_pkey" PRIMARY KEY ("partId")
 );
 
@@ -83,8 +83,8 @@ CREATE TABLE "PartReview" (
     "fileIds" TEXT[],
     "notes" TEXT,
     "submissionId" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "completedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "dateDeleted" TIMESTAMP(3),
     "userCreatedId" TEXT NOT NULL,
@@ -100,7 +100,8 @@ CREATE TABLE "Part_Review_Popup" (
     "xCoord" DOUBLE PRECISION NOT NULL,
     "yCoord" DOUBLE PRECISION NOT NULL,
     "title" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
+    "fileIndex" INTEGER NOT NULL,
+    "description" TEXT,
     "reviewId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -119,7 +120,7 @@ CREATE TABLE "PartReviewCommonMistake" (
     "userDeletedId" TEXT,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "dateDeleted" TIMESTAMP(3),
-    "organizationId" TEXT NOT NULL,
+    "organizationId" TEXT,
 
     CONSTRAINT "PartReviewCommonMistake_pkey" PRIMARY KEY ("partReviewCommonMistakeId")
 );
@@ -137,6 +138,9 @@ CREATE TABLE "_partAssignees" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Part_projectId_index_key" ON "Part"("projectId", "index");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "_PartToPartTag_AB_unique" ON "_PartToPartTag"("A", "B");
 
 -- CreateIndex
@@ -147,6 +151,12 @@ CREATE UNIQUE INDEX "_partAssignees_AB_unique" ON "_partAssignees"("A", "B");
 
 -- CreateIndex
 CREATE INDEX "_partAssignees_B_index" ON "_partAssignees"("B");
+
+-- AddForeignKey
+ALTER TABLE "FrequentlyAskedQuestion" ADD CONSTRAINT "FrequentlyAskedQuestion_regularFaqOrgId_fkey" FOREIGN KEY ("regularFaqOrgId") REFERENCES "Organization"("organizationId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "FrequentlyAskedQuestion" ADD CONSTRAINT "FrequentlyAskedQuestion_partReviewFaqOrgId_fkey" FOREIGN KEY ("partReviewFaqOrgId") REFERENCES "Organization"("organizationId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Part" ADD CONSTRAINT "Part_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("projectId") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -197,7 +207,7 @@ ALTER TABLE "PartReviewCommonMistake" ADD CONSTRAINT "PartReviewCommonMistake_us
 ALTER TABLE "PartReviewCommonMistake" ADD CONSTRAINT "PartReviewCommonMistake_userDeletedId_fkey" FOREIGN KEY ("userDeletedId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PartReviewCommonMistake" ADD CONSTRAINT "PartReviewCommonMistake_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "PartReviewCommonMistake" ADD CONSTRAINT "PartReviewCommonMistake_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_PartToPartTag" ADD CONSTRAINT "_PartToPartTag_A_fkey" FOREIGN KEY ("A") REFERENCES "Part"("partId") ON DELETE CASCADE ON UPDATE CASCADE;

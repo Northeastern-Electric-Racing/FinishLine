@@ -3,15 +3,18 @@ import { Box, Stack } from '@mui/system';
 import { Grid, FormGroup, FormControlLabel, Typography, Link } from '@mui/material';
 import { useState } from 'react';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
-import { Project, rankUserRole, wbsPipe } from 'shared';
+import { Project, rankUserRole, wbsPipe, Review_Status, Part } from 'shared';
 import NERSwitch from '../../../../components/NERSwitch';
 import CommonMistakes from './CommonMistakes';
+import PartDisplay from '../../../PartPage/components/PartDisplay';
+//import { useSinglePart } from '../../../../hooks/part-review.hooks';
 import { usePartsFromProject } from '../../../../hooks/part-review.hooks';
 import ErrorPage from '../../../ErrorPage';
 import { Link as RouterLink } from 'react-router-dom';
 import PartReviewFAQs from './PartReviewFAQs';
 import MyPartsUnderReview from './MyPartsUnderReview';
 import PartsForMeToReview from './PartsForMeToReview';
+import CreateMenu from './PartReviewComponents/PartFormModels/CreateMenu';
 
 const PartsReviewPage = ({ project }: { project: Project }) => {
   const currentUser = useCurrentUser();
@@ -24,8 +27,193 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
   if (isLoading || !parts) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
+  // a sample part that i made to test a component
+  const createSamplePart = (partId: string, commonName: string): Part => ({
+    partId,
+    index: 1,
+    commonName,
+    description: '',
+    previewImageId: '/api/placeholder/400/240',
+    projectId: 'proj-1',
+    assignees: [
+      {
+        userId: 'user-2',
+        firstName: 'Jane',
+        lastName: 'Smith',
+        email: 'jane@example.com',
+        emailId: '',
+        role: 'ADMIN',
+        permissions: []
+      },
+
+      {
+        userId: 'user-3',
+        firstName: 'May',
+        lastName: 'Gonzalez',
+        email: 'johnson@example.com',
+        emailId: '',
+        role: 'ADMIN',
+        permissions: []
+      }
+    ],
+    createdAt: new Date('2025-03-14T09:00:00Z'),
+    /*userCreatedId: 'user-1',*/
+    userCreated: {
+      userId: 'user-1',
+      firstName: 'John',
+      lastName: 'Doe',
+      email: 'john@example.com',
+      emailId: '',
+      role: 'ADMIN',
+      permissions: []
+    },
+    submissions: [
+      {
+        partSubmissionId: '',
+        fileIds: [''],
+        name: 'this part',
+        partId: '',
+        userCreated: {
+          userId: 'user-1',
+          firstName: 'Henry',
+          lastName: 'Miller',
+          email: 'john@example.com',
+          emailId: '',
+          role: 'ADMIN',
+          permissions: []
+        },
+        reviews: [
+          {
+            partReviewId: '917249',
+            fileIds: [],
+            notes: 'jkasd',
+            submissionId: 'ksdfk',
+            popUps: [],
+            completedAt: new Date(),
+            createdAt: new Date(),
+            userCreated: {
+              userId: 'user-1',
+              firstName: 'John',
+              lastName: 'Doe',
+              email: 'john@example.com',
+              emailId: '',
+              role: 'ADMIN',
+              permissions: []
+            }
+          },
+          {
+            partReviewId: '20384',
+            fileIds: [],
+            notes: 'jkasd',
+            submissionId: '23529',
+            popUps: [],
+            completedAt: new Date(),
+            createdAt: new Date(),
+            userCreated: {
+              userId: 'user-2',
+              firstName: 'Greg',
+              lastName: 'Smith',
+              email: 'greg@example.com',
+              emailId: '',
+              role: 'ADMIN',
+              permissions: []
+            }
+          }
+        ],
+        createdAt: new Date('2025-03-14T09:00:00Z')
+      },
+      {
+        partSubmissionId: '',
+        fileIds: [''],
+        name: 'this part',
+        partId: '',
+        userCreated: {
+          userId: 'user-1',
+          firstName: 'Joe',
+          lastName: 'Lee',
+          email: 'john@example.com',
+          emailId: '',
+          role: 'ADMIN',
+          permissions: []
+        },
+        reviews: [
+          {
+            partReviewId: '917249',
+            fileIds: [],
+            notes: 'jkasd',
+            submissionId: 'ksdfk',
+            popUps: [],
+            completedAt: new Date(),
+            createdAt: new Date(),
+            userCreated: {
+              userId: 'user-1',
+              firstName: 'John',
+              lastName: 'Doe',
+              email: 'john@example.com',
+              emailId: '',
+              role: 'ADMIN',
+              permissions: []
+            }
+          },
+          {
+            partReviewId: '20384',
+            fileIds: [],
+            notes: 'jkasd',
+            submissionId: '23529',
+            popUps: [],
+            completedAt: new Date(),
+            createdAt: new Date(),
+            userCreated: {
+              userId: 'user-2',
+              firstName: 'Greg',
+              lastName: 'Smith',
+              email: 'greg@example.com',
+              emailId: '',
+              role: 'ADMIN',
+              permissions: []
+            }
+          }
+        ],
+        createdAt: new Date('2024-03-14T09:00:00Z')
+      }
+    ],
+    status: Review_Status.READY_FOR_REVIEW,
+    tags: [],
+    reviewRequests: [
+      {
+        partReviewRequestId: '',
+        partId: '',
+        requester: {
+          userId: 'user-1',
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'john@example.com',
+          emailId: '',
+          role: 'ADMIN',
+          permissions: []
+        },
+        reviewerRequested: {
+          userId: 'user-1',
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'john@example.com',
+          emailId: '',
+          role: 'ADMIN',
+          permissions: []
+        },
+        createdAt: new Date('2025-03-14T09:00:00Z')
+      }
+    ]
+  });
+
+  const samplePart = createSamplePart('part-123', 'Attenuator');
+
   return (
     <Box>
+      <PartDisplay part={samplePart} contentAmount="full"></PartDisplay>
+      <PartDisplay part={samplePart} contentAmount="standard"></PartDisplay>
+      <PartDisplay part={samplePart} contentAmount="compact"></PartDisplay>
+      <CreateMenu wbsNum={project.wbsNum} partsInProject={parts} />
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <FormGroup>

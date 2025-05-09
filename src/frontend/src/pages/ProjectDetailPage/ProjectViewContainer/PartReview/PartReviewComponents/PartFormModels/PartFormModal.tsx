@@ -146,7 +146,7 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
             <FormLabel>Assignees</FormLabel>
             <Autocomplete
               multiple
-              options={users}
+              options={users.filter((user) => !reviewerIds.some((reviewerId) => reviewerId === user.userId))}
               getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
               onChange={(_event, value) => {
                 const selectedIds = value.map((user) => user.userId);
@@ -163,7 +163,7 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
             <FormLabel>Reviewers</FormLabel>
             <Autocomplete
               multiple
-              options={users}
+              options={users.filter((user) => !assigneeIds.some((assigneeId) => assigneeId === user.userId))}
               getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
               onChange={(_event, value) => {
                 const selectedIds = value.map((user) => user.userId);

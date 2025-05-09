@@ -6,7 +6,8 @@ import {
   PartSubmission,
   PartReviewRequest,
   PartReview,
-  PartPreview
+  PartPreview,
+  Part_Review_Popup
 } from 'shared';
 import {
   PartQueryArgs,
@@ -82,9 +83,21 @@ export const partReviewTransformer = (review: Prisma.PartReviewGetPayload<PartRe
     fileIds: review.fileIds,
     notes: review.notes ?? undefined,
     submissionId: review.submissionId,
-    popUps: review.popUps,
+    popUps: review.popUps.map(partReviewPopupTransformer),
     completedAt: review.completedAt ?? undefined,
     createdAt: review.createdAt,
     userCreated: userTransformer(review.userCreated)
+  };
+};
+
+export const partReviewPopupTransformer = (popup: Prisma.Part_Review_PopupGetPayload<null>): Part_Review_Popup => {
+  return {
+    partReviewPopupId: popup.partReviewPopupId,
+    xCoord: popup.xCoord,
+    yCoord: popup.yCoord,
+    fileIndex: popup.fileIndex,
+    title: popup.title,
+    description: popup.description ?? undefined,
+    reviewId: popup.reviewId
   };
 };
