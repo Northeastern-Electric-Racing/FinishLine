@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { accountCodePipe, displayEnum } from '../../../utils/pipes';
+import { accountCodePipe, datePipe, dateUndefinedPipe, displayEnum } from '../../../utils/pipes';
 import { Assignment, ChangeCircle, Edit, Pending } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
@@ -19,7 +19,7 @@ import StoreIcon from '@mui/icons-material/Store';
 import SellIcon from '@mui/icons-material/Sell';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 
-import { Typography, useTheme, Link, IconButton } from '@mui/material';
+import { Typography, useTheme, Link, IconButton, Grid } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -58,6 +58,8 @@ import SubmitToSaboModal from './SubmitToSaboModal';
 import DownloadIcon from '@mui/icons-material/Download';
 import CheckList from '../../../components/CheckList';
 import MarkDeliveredModal from './MarkDeliveredModal';
+import ReimbursementRequestTimeline from '../FinanceComponents/ReimbursementRequestTimeline';
+import VerticalDetailDisplay from '../../../components/VerticalDetailDisplay';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -65,6 +67,7 @@ interface ReimbursementRequestDetailsViewProps {
 
 const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewProps> = ({ reimbursementRequest }) => {
   const theme = useTheme();
+  const totalCostBackgroundColor = theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200];
   const user = useCurrentUser();
   const history = useHistory();
   const [addSaboNumberModalShow, setAddSaboNumberModalShow] = useState<boolean>(false);
@@ -296,6 +299,73 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       <Typography>Are you sure you want to mark this reimbursement request as pending finance?</Typography>
     </NERModal>
   );
+
+  const BasicInformationView = () => {
+    return (
+      <>
+        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginBottom: '5px' }}>
+          <Typography variant="h5">Details</Typography>
+          <Typography variant="h5" fontSize={24}>{`${
+            reimbursementRequest.dateOfExpense ? datePipe(new Date(reimbursementRequest.dateOfExpense)) : '-'
+          }`}</Typography>
+        </Box>
+        <Grid container spacing={2}>
+          <Grid item sm={6} xs={12}>
+            <VerticalDetailDisplay label="Purchased From" content={reimbursementRequest.vendor.name} />
+          </Grid>
+          <Grid item sm={6} xs={12}>
+            <VerticalDetailDisplay label="SABO Number" content={`${undefinedPipe(reimbursementRequest.saboId)}`} />
+          </Grid>
+          <Grid item sm={6} xs={12}>
+            <VerticalDetailDisplay label="Refund Source" content={codeAndRefundSourceName(reimbursementRequest.indexCode)} />
+          </Grid>
+          <Grid item sm={6} xs={12}>
+            <VerticalDetailDisplay label="Expense Type" content={accountCodePipe(reimbursementRequest.accountCode)} />
+          </Grid>
+          <Grid item sm={6} xs={12}>
+            <VerticalDetailDisplay
+              label="Date Item Delivered"
+              content={dateUndefinedPipe(reimbursementRequest.dateDelivered)}
+            />
+          </Grid>
+          <Grid
+            item
+            xs={12}
+            container
+            mt={2}
+            ml={2}
+            sx={{ backgroundColor: totalCostBackgroundColor, borderRadius: '10px', boxShadow: 1 }}
+          >
+            <Grid item xs={6} textAlign={'center'} mt={-2}>
+              <Typography fontSize={50}>Total Cost</Typography>
+            </Grid>
+            <Grid xs={6} mt={-2} sx={{ display: 'flex', alignItems: 'center' }}>
+              <Typography fontSize={50}>{`$${centsToDollar(reimbursementRequest.totalCost)}`}</Typography>
+            </Grid>
+          </Grid>
+        </Grid>
+        <ReimbursementRequestTimeline
+          reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
+          reimbursementRequestComments={reimbursementRequest.comments}
+        />
+      </>
+    );
+  };
+
+  const GridDivider = () => {
+    return (
+      <Box
+        sx={{
+          height: '100%',
+          borderColor: theme.palette.divider,
+          borderWidth: '2px',
+          borderStyle: 'solid',
+          width: '0px',
+          textAlign: 'center'
+        }}
+      />
+    );
+  };
 
   const ReceiptsView = () => {
     return (
