@@ -469,7 +469,13 @@ export const createTestReimbursementRequest = async () => {
           projectNumber: 0,
           workPackageNumber: 0
         },
-        cost: 200000
+        cost: 200000,
+        refundSources: [
+          {
+            indexCode,
+            amount: 200
+          }
+        ]
       }
     ],
     accountCode.accountCodeId,
