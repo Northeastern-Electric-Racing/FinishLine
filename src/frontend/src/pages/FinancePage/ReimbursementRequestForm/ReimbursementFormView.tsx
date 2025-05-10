@@ -123,11 +123,11 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   useEffect(() => {
     if (!firstRefundSourceId || hasConfirmedFinance) return;
 
-    const primary = indexCodes.find((i) => i.indexCodeId === firstRefundSourceId);
-    if (!primary) return;
+    const firstCodeId = indexCodes.find((code) => code.indexCodeId === firstRefundSourceId);
+    if (!firstCodeId) return;
 
-    reimbursementProducts.forEach((_, i) => {
-      setValue(`reimbursementProducts.${i}.refundSources`, [{ indexCode: primary, amount: 0 }]);
+    reimbursementProducts.forEach((_, index) => {
+      setValue(`reimbursementProducts.${index}.refundSources`, [{ indexCode: firstCodeId, amount: 0 }]);
     });
   }, [firstRefundSourceId, hasConfirmedFinance, indexCodes, reimbursementProducts, setValue]);
 
