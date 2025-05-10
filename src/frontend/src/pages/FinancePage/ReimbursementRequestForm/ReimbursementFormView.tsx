@@ -293,9 +293,9 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
 
     const specificCode = refundSources.find((src) => src.indexCodeId === firstRefundSourceId);
     if (!specificCode) return;
-    reimbursementProducts.forEach((prod, prodIdx) => {
-      const existing: { indexCode: IndexCode; amount: number }[] = prod.refundSources || [];
-      setValue(`reimbursementProducts.${prodIdx}.refundSources`, [...existing, { indexCode: specificCode, amount: 0 }]);
+    reimbursementProducts.forEach((product, index) => {
+      const existing: { indexCode: IndexCode; amount: number }[] = product.refundSources;
+      setValue(`reimbursementProducts.${index}.refundSources`, [...existing, { indexCode: specificCode, amount: 0 }]);
     });
 
     setShowAddRefundSourceModal(false);
