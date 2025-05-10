@@ -9,8 +9,10 @@ import { useGetAllIndexCodes } from '../../../hooks/finance.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
-import { useAllProjects } from '../../../hooks/projects.hooks';
 import { ChangeRequestType, Project } from 'shared';
+import { useSingleTeam } from '../../../hooks/teams.hooks';
+import { useQuery } from 'react-query';
+import { getSingleProject } from '../../../apis/projects.api';
 
 const schema = yup.object().shape({
   project: yup.string().required('Project is required'),
@@ -31,12 +33,14 @@ interface EditProjectBudgetModalInputs {
 interface EditProjectBudgetModalProps {
   showModal: boolean;
   handleClose: () => void;
+  teamId: string;
   project?: Project;
 }
 
 export const EditProjectBudgetModal: React.FC<EditProjectBudgetModalProps> = ({
   showModal,
   handleClose,
+  teamId,
   project
 }: EditProjectBudgetModalProps) => {
   const {
@@ -65,7 +69,22 @@ export const EditProjectBudgetModal: React.FC<EditProjectBudgetModalProps> = ({
 
   const { isLoading: crIsLoading, mutateAsync: createCR } = useCreateStandardChangeRequest();
 
-  const { data: projects, isLoading: projectsIsLoading, isError: projectsIsError, error: projectsError } = useAllProjects();
+  const { data: team, isLoading: teamIsLoading, isError: teamsIsError, error: teamError } = useSingleTeam(teamId);
+
+  const projectsQuery = useQuery(
+    ['projects', team?.teamId],
+    async () => {
+      if (!team?.projects) return [];
+      const projectPromises = team.projects.map((project) => getSingleProject(project.wbsNum));
+      const responses = await Promise.all(projectPromises);
+      return responses.map((res) => res.data);
+    },
+    {
+      enabled: !!team?.projects
+    }
+  );
+
+  const projects: Project[] = projectsQuery.data ?? [];
 
   if (!indexCodes || indexCodesIsLoading || crIsLoading) {
     return <LoadingIndicator />;
@@ -74,11 +93,11 @@ export const EditProjectBudgetModal: React.FC<EditProjectBudgetModalProps> = ({
     return <ErrorPage message={indexCodeError.message} />;
   }
 
-  if (!projects || projectsIsLoading) {
+  if (!team || teamIsLoading) {
     return <LoadingIndicator />;
   }
-  if (projectsIsError) {
-    return <ErrorPage message={projectsError.message} />;
+  if (teamsIsError) {
+    return <ErrorPage message={teamError.message} />;
   }
 
   const onSubmit = async (data: EditProjectBudgetModalInputs) => {

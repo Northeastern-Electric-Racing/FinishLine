@@ -5,6 +5,7 @@ import { Box, Grid, Typography } from '@mui/material';
 import PieChart from '../FinanceComponents/PieChart';
 import SpendingAndAllocation from './SpendingAndAllocation';
 import { grey } from '@mui/material/colors';
+import GeneralBalance from './GeneralBalance';
 
 interface FinanceDashboardTeamTypeViewProps {
   teamTypeId: string;
@@ -45,30 +46,8 @@ const FinanceDashboardTeamView: React.FC<FinanceDashboardTeamTypeViewProps> = ({
   return (
     <Grid container columnSpacing={25} rowSpacing={2}>
       <Grid item xs={12} md={4}>
-        <Box
-          sx={{
-            background: grey[900],
-            borderRadius: 2,
-            boxShadow: 2,
-            p: 2,
-            minHeight: '650px',
-            minWidth: '500px'
-          }}
-        >
-          <Typography variant="h6" fontWeight="bold" gutterBottom>
-            Balance
-          </Typography>
-          <PieChart
-            totalBalance={rrData.totalBudget}
-            pendingFinance={rrData.pendingFinance}
-            pendingLeadership={rrData.pendingLeadership}
-            submittedToSABO={rrData.submittedToSabo}
-            reimbursed={rrData.reimbursed}
-            available={rrData.available}
-          />
-        </Box>
+        <GeneralBalance data={rrData} />
       </Grid>
-
       <Grid item xs={12} md={8}>
         <SpendingAndAllocation data={spendingBarData} />
       </Grid>

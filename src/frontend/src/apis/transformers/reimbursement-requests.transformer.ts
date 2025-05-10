@@ -3,7 +3,16 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Receipt, Reimbursement, ReimbursementProduct, ReimbursementRequest, ReimbursementStatus, Vendor } from 'shared';
+import {
+  Receipt,
+  Reimbursement,
+  ReimbursementProduct,
+  ReimbursementRequest,
+  ReimbursementRequestData,
+  ReimbursementStatus,
+  SpendingBarData,
+  Vendor
+} from 'shared';
 
 const reimbursementStatusTransformer = (status: ReimbursementStatus): ReimbursementStatus => {
   return {
@@ -48,5 +57,23 @@ export const reimbursementTransformer = (reimbursement: Reimbursement): Reimburs
   return {
     ...reimbursement,
     dateCreated: new Date(reimbursement.dateCreated)
+  };
+};
+
+export const reimbursementRequestDataTransformer = (
+  reimbursementRequestData: ReimbursementRequestData
+): ReimbursementRequestData => {
+  return {
+    ...reimbursementRequestData
+  };
+};
+
+export const spendingBarDataTransformer = (spendingBarData: SpendingBarData): SpendingBarData => {
+  return {
+    ...spendingBarData,
+    data: spendingBarData.data.map((spend) => ({
+      title: spend.title,
+      spendingInfo: reimbursementRequestDataTransformer(spend.spendingInfo)
+    }))
   };
 };

@@ -1,4 +1,4 @@
-import { Box, Typography } from '@mui/material';
+import { Box, IconButton, Typography } from '@mui/material';
 import {
   BarControllerChartOptions,
   CoreChartOptions,
@@ -11,9 +11,13 @@ import {
 import { _DeepPartialObject } from 'chart.js/dist/types/utils';
 import { Bar } from 'react-chartjs-2';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { ReimbursementRequestData, SpendingBarData } from 'shared';
+import { ReimbursementRequestData, SpendingBarData, Team } from 'shared';
 import { grey } from '@mui/material/colors';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import EditIcon from '@mui/icons-material/Edit';
+import { useAllTeams } from '../../../hooks/teams.hooks';
+import { EditProjectBudgetModal } from './EditProjectBudgetModal';
+import { EditBudgetModalForReason } from './EditBudgetModalForReason';
 
 const getTotalMoneySpent = (data: ReimbursementRequestData) =>
   data.available + data.pendingFinance + data.pendingLeadership + data.reimbursed + data.submittedToSabo;
@@ -252,11 +256,32 @@ const SpendingBar = ({ data, title }: SpendingBarData) => {
     }
   };
 
+  const [openEditProjectModal, setOpenEditProjectModal] = useState(false);
+  const [openEditReasonModal, setOpenEditReasonModal] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState<Team | undefined>(undefined);
+  const { data: allTeams } = useAllTeams();
+
+  const handleEditClick = (title: string) => {
+    const matchTeam = allTeams?.find((u) => u.teamName === title);
+    const matchReason = 'Club Categories' === title;
+    if (matchTeam) {
+      setSelectedTeam(matchTeam);
+      setOpenEditProjectModal(true);
+    } else if (matchReason) {
+      setOpenEditReasonModal(true);
+    }
+  };
+
   return (
     <>
-      <Typography fontWeight={'bold'} variant="body1">
-        {title}
-      </Typography>
+      <Box display="flex" alignItems="center" gap={1}>
+        <Typography fontWeight="bold" variant="body1">
+          {title}
+        </Typography>
+        <IconButton size="small" onClick={() => handleEditClick(title)}>
+          <EditIcon fontSize="small" />
+        </IconButton>
+      </Box>
       {data.length > 0 ? (
         <Box ref={chartRef} height={100} sx={{ padding: 0, margin: 0 }}>
           <Bar data={barData} options={config} />
@@ -264,6 +289,14 @@ const SpendingBar = ({ data, title }: SpendingBarData) => {
       ) : (
         <Typography>No Spending Data Available</Typography>
       )}
+      {selectedTeam && (
+        <EditProjectBudgetModal
+          showModal={openEditProjectModal}
+          handleClose={() => setOpenEditProjectModal(false)}
+          teamId={selectedTeam.teamId}
+        />
+      )}
+      <EditBudgetModalForReason showModal={openEditReasonModal} handleClose={() => setOpenEditReasonModal(false)} />
     </>
   );
 };
