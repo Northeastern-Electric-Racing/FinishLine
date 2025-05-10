@@ -1998,7 +1998,7 @@ const performSeed: () => Promise<void> = async () => {
     'Equipment',
     123,
     true,
-    [indexCodeCash, indexCodeBudget],
+    [indexCodeCash.indexCodeId, indexCodeBudget.indexCodeId],
     ner
   );
 
@@ -2070,7 +2070,7 @@ const performSeed: () => Promise<void> = async () => {
     'CONSUMABLES',
     10,
     indexCodeCash.indexCodeId,
-    [accountCode],
+    [accountCode.accountCodeId],
     thomasEmrax,
     ner
   );
@@ -2088,7 +2088,7 @@ const performSeed: () => Promise<void> = async () => {
     'COMPETITION',
     10,
     indexCodeBudget.indexCodeId,
-    [accountCode],
+    [accountCode.accountCodeId],
     thomasEmrax,
     ner
   );

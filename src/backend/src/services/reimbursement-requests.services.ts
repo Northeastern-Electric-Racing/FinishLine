@@ -1433,7 +1433,7 @@ export default class ReimbursementRequestService {
     name: string,
     budget: number,
     indexCodeId: string,
-    accountCodes: AccountCode[],
+    accountCodeIds: string[],
     user: User,
     organization: Organization
   ): Promise<OtherProductReason> {
@@ -1447,7 +1447,7 @@ export default class ReimbursementRequestService {
         budget,
         userCreated: { connect: { userId: user.userId } },
         indexCode: { connect: { indexCodeId: indexCode.indexCodeId } },
-        accountCodes: { connect: accountCodes.map((accountCode) => ({ accountCodeId: accountCode.accountCodeId })) }
+        accountCodes: { connect: accountCodeIds.map((accountCodeId) => ({ accountCodeId })) }
       },
       ...getReimbursementProductOtherReasonQueryArgs(organization.organizationId)
     });
@@ -1634,8 +1634,10 @@ export default class ReimbursementRequestService {
     otherReimbursementProductReasonId: string,
     org: Organization,
     editor: User,
-    updatedIndexCodeId: string,
-    updatedBudget: number
+    name: string,
+    budget: number,
+    indexCodeId: string,
+    accountCodeIds: string[]
   ): Promise<OtherProductReason> {
     if (!(await userHasPermission(editor.userId, org.organizationId, isHead))) {
       throw new AccessDeniedException('Only heads can edit other reimbursement product reasons.');
@@ -1652,15 +1654,20 @@ export default class ReimbursementRequestService {
       throw new DeletedException('Reimbursement Product Other Reason', otherReimbursementProductReasonId);
 
     const indexCode = await prisma.index_Code.findUnique({
-      where: { indexCodeId: updatedIndexCodeId }
+      where: { indexCodeId }
     });
 
-    if (!indexCode) throw new NotFoundException('Index Code', updatedIndexCodeId);
-    if (indexCode.dateDeleted) throw new DeletedException('Index Code', updatedIndexCodeId);
+    if (!indexCode) throw new NotFoundException('Index Code', indexCodeId);
+    if (indexCode.dateDeleted) throw new DeletedException('Index Code', indexCodeId);
 
     const editedReason = await prisma.reimbursement_Product_Other_Reason.update({
       where: { otherReimbursementProductReasonId },
-      data: { budget: updatedBudget, indexCodeId: indexCode.indexCodeId },
+      data: {
+        budget,
+        indexCodeId,
+        name,
+        accountCodes: { connect: accountCodeIds.map((accountCodeId) => ({ accountCodeId })) }
+      },
       ...getReimbursementProductOtherReasonQueryArgs(org.organizationId)
     });
 

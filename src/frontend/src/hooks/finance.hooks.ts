@@ -26,6 +26,7 @@ import {
   uploadSingleReceipt,
   editAccountCode,
   createAccountCode,
+  createOtherProductReason,
   createVendor,
   editVendor,
   getAllAccountCodes,
@@ -43,7 +44,6 @@ import {
   editSponsorTask,
   deleteSponsor,
   createReimbursementRequestComment,
-  editOtherReimbursementProductReason,
   getReimbursementRequestTeamData,
   getReimbursementRequestTeamTypeData,
   getReimbursementRequestProjectData,
@@ -53,7 +53,8 @@ import {
   getSpendingBarCategoryData,
   getSpendingBarTeamTypeData,
   getAllSpendingBarData,
-  deleteVendor
+  deleteVendor,
+  editOtherProductReason
 } from '../apis/finance.api';
 import {
   IndexCode,
@@ -140,6 +141,13 @@ export interface SponsorTaskPayload {
   notes: string;
   notifyDate?: Date;
   asigneeId?: string;
+}
+
+export interface OtherProductReasonPayload {
+  indexCodeId: string;
+  accountCodeIds: string[];
+  name: string;
+  budget: number;
 }
 
 /**
@@ -241,11 +249,6 @@ export interface EditSponsorTaskPayload {
   notes: string;
   notifyDate?: Date;
   asigneeId?: string;
-}
-
-export interface EditOtherReimbursementProductReasonPayload {
-  updatedIndexCodeId: string;
-  updatedBudget: number;
 }
 
 export interface ReimbursementRequestProjectDataPayload {
@@ -842,6 +845,40 @@ export const useGetAllOtherProductReason = () => {
 };
 
 /**
+ * Custom react hook to create an other reimbursement product reason
+ *
+ */
+export const useCreateOtherProductReason = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, OtherProductReasonPayload>(
+    ['other-reimbursement-product-reason', 'create'],
+    async (otherProductReasonData: OtherProductReasonPayload) => {
+      const { data } = await createOtherProductReason(otherProductReasonData);
+      queryClient.invalidateQueries(['other-reimbursement-product-reason']);
+      return data;
+    }
+  );
+};
+
+/**
+ * Custom React Hook to edit an Other Product Reason
+ *
+ * @param otherProductReasonId The id of the other product reason
+ */
+
+export const useEditOtherProductReason = (otherProductReasonId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, OtherProductReasonPayload>(
+    ['other-reimbursement-product-reason', 'edit'],
+    async (otherProductReasonData: OtherProductReasonPayload) => {
+      const { data } = await editOtherProductReason(otherProductReasonId, otherProductReasonData);
+      queryClient.invalidateQueries(['other-reimbursement-product-reason']);
+      return data;
+    }
+  );
+};
+
+/**
  * custom React Hook to get all the sponsors
  *
  * @returns the list of all of the sponsors
@@ -911,17 +948,17 @@ export const useDeleteSponsor = (sponsorId: string) => {
  *
  * @param otherReimbursementProductReasonId The id of the other reimbursement product reason
  */
-export const useEditOtherReimbursementProductReason = (otherReimbursementProductReasonId: string) => {
-  const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, EditOtherReimbursementProductReasonPayload>(
-    ['other-reimbursement-product-reason', 'edit'],
-    async (otherReasonData: EditOtherReimbursementProductReasonPayload) => {
-      const { data } = await editOtherReimbursementProductReason(otherReimbursementProductReasonId, otherReasonData);
-      queryClient.invalidateQueries(['other-reimbursement-product-reason']);
-      return data;
-    }
-  );
-};
+// export const useEditOtherReimbursementProductReason = (otherReimbursementProductReasonId: string) => {
+//   const queryClient = useQueryClient();
+//   return useMutation<{ message: string }, Error, EditOtherReimbursementProductReasonPayload>(
+//     ['other-reimbursement-product-reason', 'edit'],
+//     async (otherReasonData: EditOtherReimbursementProductReasonPayload) => {
+//       const { data } = await editOtherReimbursementProductReason(otherReimbursementProductReasonId, otherReasonData);
+//       queryClient.invalidateQueries(['other-reimbursement-product-reason']);
+//       return data;
+//     }
+//   );
+// };
 
 export const useGetReimbursementRequestTeamData = (reimbursementRequestData: ReimbursementRequestTeamDataPayload) =>
   useQuery<ReimbursementRequestData, Error>(

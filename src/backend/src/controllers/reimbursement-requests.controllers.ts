@@ -518,12 +518,12 @@ export default class ReimbursementRequestsController {
 
   static async createOtherReimbursementProductReason(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, budget, indexCodeId, accountCodes } = req.body;
+      const { name, budget, indexCodeId, accountCodeIds } = req.body;
       const otherReimbursementProductReason = await ReimbursementRequestService.createOtherReimbursementProductReason(
         name,
         budget,
         indexCodeId,
-        accountCodes,
+        accountCodeIds,
         req.currentUser,
         req.organization
       );
@@ -618,14 +618,16 @@ export default class ReimbursementRequestsController {
   static async editOtherReimbursementProductReason(req: Request, res: Response, next: NextFunction) {
     try {
       const { otherReimbursementProductReasonId } = req.params;
-      const { updatedIndexCodeId, updatedBudget } = req.body;
+      const { name, budget, indexCodeId, accountCodeIds } = req.body;
 
       const updatedReason = await ReimbursementRequestService.editOtherReimbursementProductReason(
         otherReimbursementProductReasonId,
         req.organization,
         req.currentUser,
-        updatedIndexCodeId,
-        updatedBudget
+        name,
+        budget,
+        indexCodeId,
+        accountCodeIds
       );
 
       res.status(200).json(updatedReason);

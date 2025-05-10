@@ -151,6 +151,7 @@ const financeCreateSponsorTask = (sponsorId: string) => `${financeRoutesEndpoint
 const financeCreateReimbursementRequestComment = (id: string) => `${financeEndpoints()}/${id}/comments`;
 const getAllIndexCodes = () => `${financeEndpoints()}/index-codes`;
 const getAllOtherProductReasons = () => `${financeEndpoints()}/other-reimbursement-product-reasons`;
+const financeCreateOtherProductReason = () => `${getAllOtherProductReasons()}/create`;
 const getAllSponsors = () => `${financeRoutesEndpoints()}/sponsors`;
 const getSponsorTasks = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsors/${sponsorId}/sponsorTasks`;
 const deleteSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsors/${sponsorId}/delete`;
@@ -461,6 +462,7 @@ export const apiUrls = {
   financeCreateReimbursementRequestComment,
   getAllIndexCodes,
   getAllOtherProductReasons,
+  financeCreateOtherProductReason,
   getAllSponsors,
   getSponsorTasks,
   deleteSponsor,

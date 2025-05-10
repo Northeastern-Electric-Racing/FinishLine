@@ -14,7 +14,6 @@ import {
   SponsorTierPayload,
   SponsorTaskPayload,
   ReimbursementRequestCommentPayload,
-  EditOtherReimbursementProductReasonPayload,
   ReimbursementRequestTeamDataPayload,
   ReimbursementRequestTeamTypeDataPayload,
   SpendingBarTeamDataPayload,
@@ -22,7 +21,8 @@ import {
   ReimbursementRequestProjectDataPayload,
   ReimbursementRequestDataPayload,
   SpendingBarDataPayload,
-  ReimbursementRequestCategoryDataPayload
+  ReimbursementRequestCategoryDataPayload,
+  OtherProductReasonPayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -355,7 +355,6 @@ export const editRefund = (id: string, formData: RefundPayload) => {
  * @returns the updated expense type
  */
 export const editAccountCode = async (id: string, accountCodeData: AccountCodePayload) => {
-  console.log(accountCodeData.indexCodeIds);
   return axios.post(apiUrls.financeEditAccountCode(id), accountCodeData);
 };
 
@@ -365,7 +364,6 @@ export const editAccountCode = async (id: string, accountCodeData: AccountCodePa
  * @returns the new expense type
  */
 export const createAccountCode = async (accountCodeData: AccountCodePayload) => {
-  console.log(accountCodeData.indexCodeIds);
   return axios.post(apiUrls.financeCreateAccountCode(), accountCodeData);
 };
 
@@ -485,6 +483,26 @@ export const getAllOtherProductReason = () => {
 };
 
 /**
+ * API call to create an Other Product Reason
+ *
+ * @param otherProductReasonData the data for the other product reason
+ * @returns the new other product reason
+ */
+export const createOtherProductReason = async (otherProductReasonData: OtherProductReasonPayload) => {
+  return axios.post(apiUrls.financeCreateOtherProductReason(), otherProductReasonData);
+};
+
+/**
+ * Edits a reimbursement request in the database
+ * @param id the id of the other reimbursement product reason
+ * @param otherProductReasonData the data expected from the form
+ * @returns the updated other reimbursement product reason
+ */
+export const editOtherProductReason = (id: string, otherProductReasonData: OtherProductReasonPayload) => {
+  return axios.post(apiUrls.financeEditOtherReimbursementProductReason(id), otherProductReasonData);
+};
+
+/**
  * API call to get the list of all sponsors
  *
  * @returns the list of all sponsors
@@ -532,16 +550,6 @@ export const deleteSponsor = (sponsorId: string) => {
  */
 export const editSponsorTask = (sponsorTaskId: string, sponsorTaskData: EditSponsorTaskPayload) => {
   return axios.post(apiUrls.editSponsorTask(sponsorTaskId), sponsorTaskData);
-};
-
-/**
- * Edits a reimbursement request in the database
- * @param id the id of the other reimbursement product reason
- * @param formData the data expected from teh form
- * @returns the updated other reimbursement product reason
- */
-export const editOtherReimbursementProductReason = (id: string, formData: EditOtherReimbursementProductReasonPayload) => {
-  return axios.post(apiUrls.financeEditOtherReimbursementProductReason(id), formData);
 };
 
 export const getReimbursementRequestProjectData = (payload: ReimbursementRequestProjectDataPayload) => {

@@ -230,8 +230,10 @@ reimbursementRequestsRouter.delete('/comments/:commentId', ReimbursementRequestC
 
 reimbursementRequestsRouter.post(
   '/other-reimbursement-product-reasons/:otherReimbursementProductReasonId/edit',
-  nonEmptyString(body('updatedIndexCodeId')),
+  nonEmptyString(body('indexCodeId')),
+  body('accountCodeIds').isArray(),
   body('updatedBudget').isInt(),
+  body('name').isString(),
   validateInputs,
   ReimbursementRequestController.editOtherReimbursementProductReason
 );
