@@ -11,7 +11,7 @@ import {
   WbsNumber,
   WbsReimbursementProductCreateArgs
 } from 'shared';
-import { useGetAllAccountCodes, useGetAllIndexCodes, useGetAllVendors } from '../../../hooks/finance.hooks';
+import { useGetAllAccountCodes, useGetAllVendors } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -178,7 +178,6 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
 
   // checking the data here instead of using isError since function doesn't ever return an error
   const { data: userSecureSettings, isLoading: checkSecureSettingsIsLoading } = useCurrentUserSecureSettings();
-  const { data: indexCodes } = useGetAllIndexCodes();
 
   // checks to make sure none of the secure settings fields are empty, indicating not properly set
   const hasSecureSettingsSet = Object.values(userSecureSettings ?? {}).every((x) => x !== '');
