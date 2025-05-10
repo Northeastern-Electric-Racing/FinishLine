@@ -109,6 +109,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   if (typeof secondRefundSourceName === 'string' && secondRefundSourceName !== 'Second Source') {
     secondRefundSourceName = formatSourceName(secondRefundSourceName);
   }
+
   const onAmountBlurHandler = (
     value: string,
     index: number,
