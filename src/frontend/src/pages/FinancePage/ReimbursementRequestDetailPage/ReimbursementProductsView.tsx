@@ -70,14 +70,11 @@ const ReimbursementProductsView: React.FC<ReimbursementRequestProductsViewProps>
                 </TableCell>
                 {multipleRefundSources && (
                   <TableCell>
-                    {uniqueWbsElementsWithProducts.get(key)?.map((product, index) => (
-                      <div key={index}>
-                        {product.refundSources
-                          .map((rs) => centsToDollar(rs.amount))
-                          .map((s) => `$${s}`)
-                          .join('/')}
-                      </div>
-                    ))}
+                    {uniqueWbsElementsWithProducts
+                      .get(key)
+                      ?.map((product, index) => (
+                        <div key={index}>{product.refundSources.map((rs) => `$${centsToDollar(rs.amount)}`).join('/')}</div>
+                      ))}
                   </TableCell>
                 )}
               </TableRow>
