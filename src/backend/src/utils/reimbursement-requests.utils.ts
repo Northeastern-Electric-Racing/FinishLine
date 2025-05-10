@@ -250,7 +250,7 @@ export const createReimbursementProducts = async (
       }
     });
 
-    const refundSourceCreates = product.refundSources.map((rs) => ({
+    const refundSources = product.refundSources.map((rs) => ({
       indexCode: { connect: { indexCodeId: rs.indexCode.indexCodeId } },
       amount: rs.amount
     }));
@@ -261,7 +261,7 @@ export const createReimbursementProducts = async (
         cost: product.cost,
         reimbursementRequestId,
         refundSources: {
-          create: refundSourceCreates
+          create: refundSources
         },
         reimbursementProductReasonId: reimbursementProductReason.reimbursementProductReasonId
       }
@@ -279,7 +279,7 @@ export const createReimbursementProducts = async (
       }
     });
 
-    const refundSourceCreates = product.refundSources.map((rs) => ({
+    const refundSources = product.refundSources.map((rs) => ({
       indexCode: { connect: { indexCodeId: rs.indexCode.indexCodeId } },
       amount: rs.amount
     }));
@@ -290,7 +290,7 @@ export const createReimbursementProducts = async (
         cost: product.cost,
         reimbursementRequestId,
         refundSources: {
-          create: refundSourceCreates
+          create: refundSources
         },
         reimbursementProductReasonId: reimbursementProductReason.reimbursementProductReasonId
       }
