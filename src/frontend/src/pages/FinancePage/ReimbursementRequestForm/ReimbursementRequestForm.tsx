@@ -22,7 +22,6 @@ import { useAllProjects } from '../../../hooks/projects.hooks';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { useCurrentUserSecureSettings } from '../../../hooks/users.hooks';
-import { dateRangePipe } from '../../../utils/pipes';
 
 export interface ReimbursementRequestInformation {
   vendorId: string;
@@ -215,28 +214,17 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
         return {
           ...product,
           cost: Math.round(product.cost * 100),
-          refundSources: formattedRefundSources
+          refundSources: formattedRefundSources.map((rs) => ({
+            ...rs,
+            amount: Math.round(Number(rs.amount) * 100)
+          }))
         };
       });
 
       const otherReimbursementProducts: OtherReimbursementProductCreateArgs[] = [];
       const wbsReimbursementProducts: WbsReimbursementProductCreateArgs[] = [];
 
-      // find our index code
-      const indexCode = indexCodes?.find((code) => code.indexCodeId === data.indexCodeId);
-
       reimbursementProducts.forEach((product) => {
-        // let firstSourceBudget = product.firstSourceAmount;
-        // let secondSourceBudget = product.secondSourceAmount;
-
-        // Slightly messy fix to deal with the fact that while we only have 2 sources,
-        // their order in the form is not guaranteed to be the same every time.
-        // Therefore, this just makes a check to see if they need to be swapped for display purposes.
-        if (indexCode?.name === 'CASH') {
-          // firstSourceBudget = product.secondSourceAmount;
-          // secondSourceBudget = product.firstSourceAmount;
-        }
-
         if (product.reason && 'otherProductReasonId' in product.reason) {
           otherReimbursementProducts.push({
             reason: product.reason as OtherProductReason,

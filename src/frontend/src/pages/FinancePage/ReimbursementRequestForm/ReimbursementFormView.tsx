@@ -42,7 +42,7 @@ import ReimbursementProductTable from './ReimbursementProductTable';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
@@ -105,7 +105,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const products = watch('reimbursementProducts') as ReimbursementProductFormArgs[];
   const accountCodeId = watch('accountCodeId');
   const selectedAccountCode = allAccountCodes.find((accountCode) => accountCode.accountCodeId === accountCodeId);
-  const refundSources: IndexCode[] = selectedAccountCode?.indexCodes || [];
+  const indexCodes: IndexCode[] = useMemo(() => selectedAccountCode?.indexCodes ?? [], [selectedAccountCode?.indexCodes]);
   const firstRefundSourceId = watch('indexCodeId');
   const secondRefundSourceId = watch('secondaryAccount');
 
@@ -123,13 +123,13 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   useEffect(() => {
     if (!firstRefundSourceId || hasConfirmedFinance) return;
 
-    const primary = refundSources.find((i) => i.indexCodeId === firstRefundSourceId);
+    const primary = indexCodes.find((i) => i.indexCodeId === firstRefundSourceId);
     if (!primary) return;
 
     reimbursementProducts.forEach((_, i) => {
       setValue(`reimbursementProducts.${i}.refundSources`, [{ indexCode: primary, amount: 0 }]);
     });
-  }, [firstRefundSourceId, hasConfirmedFinance, refundSources, reimbursementProducts, setValue]);
+  }, [firstRefundSourceId, hasConfirmedFinance, indexCodes, reimbursementProducts, setValue]);
 
   useEffect(() => {
     control._formValues.$hasConfirmedFinance = hasConfirmedFinance;
@@ -146,23 +146,23 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
     });
   };
 
-  const firstRefundSource = refundSources.find((source) => source.indexCodeId === firstRefundSourceId) || {
+  const firstRefundSource = indexCodes.find((indexCodes) => indexCodes.indexCodeId === firstRefundSourceId) || {
     name: 'First Source',
     code: '',
     indexCodeId: 'placeholder-1'
   };
 
-  const firstRefundSourcePassed = refundSources.find((source) => source.indexCodeId === firstRefundSourceId) || undefined;
+  const firstRefundSourcePassed = indexCodes.find((code) => code.indexCodeId === firstRefundSourceId) || undefined;
 
-  const secondRefundSource = refundSources.find((source) => source.indexCodeId === secondRefundSourceId) || {
+  const secondRefundSource = indexCodes.find((code) => code.indexCodeId === secondRefundSourceId) || {
     name: 'Second Source',
     code: '',
     indexCodeId: 'placeholder-2'
   };
 
-  const secondRefundSourcePassed = refundSources.find((source) => source.indexCodeId === secondRefundSourceId) || undefined;
+  const secondRefundSourcePassed = indexCodes.find((code) => code.indexCodeId === secondRefundSourceId) || undefined;
 
-  const remainingRefundSources = refundSources.filter((source) => source.indexCodeId !== firstRefundSourceId);
+  const remainingRefundSources = indexCodes.filter((code) => code.indexCodeId !== firstRefundSourceId);
   const calculatedTotalCost = products
     .reduce((acc: number, product: ReimbursementProductFormArgs) => acc + Number(product.cost), 0)
     .toFixed(2);
@@ -291,11 +291,11 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const handleConfirmAddRefundSource = () => {
     setHasConfirmedFinance(true);
 
-    const specificCode = refundSources.find((src) => src.indexCodeId === firstRefundSourceId);
+    const specificCode = indexCodes.find((code) => code.indexCodeId === firstRefundSourceId);
     if (!specificCode) return;
     reimbursementProducts.forEach((product, index) => {
-      const existing: { indexCode: IndexCode; amount: number }[] = product.refundSources;
-      setValue(`reimbursementProducts.${index}.refundSources`, [...existing, { indexCode: specificCode, amount: 0 }]);
+      const currSources: { indexCode: IndexCode; amount: number }[] = product.refundSources;
+      setValue(`reimbursementProducts.${index}.refundSources`, [...currSources, { indexCode: specificCode, amount: 0 }]);
     });
 
     setShowAddRefundSourceModal(false);
@@ -639,7 +639,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                           </Typography>
                         );
                       }
-                      const selectedIndexCode = refundSources.find((source) => source.indexCodeId === selected);
+                      const selectedIndexCode = indexCodes.find((code) => code.indexCodeId === selected);
                       return selectedIndexCode ? (
                         <Typography>{codeAndRefundSourceName(selectedIndexCode)}</Typography>
                       ) : (
@@ -649,9 +649,9 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                       );
                     }}
                   >
-                    {refundSources.map((refundSource) => (
-                      <MenuItem key={refundSource.indexCodeId} value={refundSource.indexCodeId}>
-                        {codeAndRefundSourceName(refundSource)}
+                    {indexCodes.map((code) => (
+                      <MenuItem key={code.indexCodeId} value={code.indexCodeId}>
+                        {codeAndRefundSourceName(code)}
                       </MenuItem>
                     ))}
                   </Select>
@@ -699,7 +699,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                           if (!selected) {
                             return <Typography style={{ color: 'gray' }}>Select Second Refund Source</Typography>;
                           }
-                          const selectedIndexCode = refundSources.find((source) => source.indexCodeId === selected);
+                          const selectedIndexCode = indexCodes.find((code) => code.indexCodeId === selected);
                           return selectedIndexCode ? (
                             <Typography>{codeAndRefundSourceName(selectedIndexCode)}</Typography>
                           ) : (

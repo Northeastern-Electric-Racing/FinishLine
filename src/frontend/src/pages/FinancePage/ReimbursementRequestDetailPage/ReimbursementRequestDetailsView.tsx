@@ -30,7 +30,6 @@ import PageLayout from '../../../components/PageLayout';
 import {
   useDeleteReimbursementRequest,
   useDenyReimbursementRequest,
-  useGetAllIndexCodes,
   useLeadershipApproveReimbursementRequest,
   useMarkPendingFinance,
   useMarkReimbursementRequestAsReimbursed,
@@ -500,6 +499,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     { label: 'Expense Type', icon: <CurrencyExchangeIcon fontSize="small" /> }
   ];
 
+  // grab all unique refund source names
   const refundSourceNames: string[] = Array.from(
     new Set(
       reimbursementRequest.reimbursementProducts.flatMap((product) =>
@@ -507,8 +507,6 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       )
     )
   );
-
-  const formattedIndexNames = refundSourceNames.join(', ');
 
   const contentItems = [
     {
@@ -534,7 +532,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     { content: reimbursementRequest.vendor.name },
     { content: `${undefinedPipe(reimbursementRequest.saboId)}` },
     {
-      content: formattedIndexNames
+      content: refundSourceNames.join(', ')
     },
     { content: accountCodePipe(reimbursementRequest.accountCode) }
   ];
