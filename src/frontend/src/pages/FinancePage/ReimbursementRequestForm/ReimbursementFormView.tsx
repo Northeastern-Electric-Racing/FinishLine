@@ -291,11 +291,11 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const handleConfirmAddRefundSource = () => {
     setHasConfirmedFinance(true);
 
-    const codeObj = refundSources.find((src) => src.indexCodeId === firstRefundSourceId);
-    if (!codeObj) return;
+    const specificCode = refundSources.find((src) => src.indexCodeId === firstRefundSourceId);
+    if (!specificCode) return;
     reimbursementProducts.forEach((prod, prodIdx) => {
       const existing: { indexCode: IndexCode; amount: number }[] = prod.refundSources || [];
-      setValue(`reimbursementProducts.${prodIdx}.refundSources`, [...existing, { indexCode: codeObj, amount: 0 }]);
+      setValue(`reimbursementProducts.${prodIdx}.refundSources`, [...existing, { indexCode: specificCode, amount: 0 }]);
     });
 
     setShowAddRefundSourceModal(false);
