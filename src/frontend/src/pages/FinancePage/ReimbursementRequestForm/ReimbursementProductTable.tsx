@@ -20,7 +20,7 @@ import {
   styled,
   Box
 } from '@mui/material';
-import { OtherProductReason, WbsNumber, validateWBS, wbsPipe, ReimbursementProductFormArgs } from 'shared';
+import { OtherProductReason, WbsNumber, validateWBS, wbsPipe, ReimbursementProductFormArgs, IndexCode } from 'shared';
 import { RemoveCircleOutline, AddCircleOutline } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
@@ -46,6 +46,8 @@ interface ReimbursementProductTableProps {
   setValue: UseFormSetValue<ReimbursementRequestFormInput>;
   control: Control<ReimbursementRequestFormInput>;
   hasMultipleRefundSources?: boolean;
+  firstRefundSourceIndexCode?: IndexCode | undefined;
+  secondRefundSourceIndexCode?: IndexCode | undefined;
   firstRefundSourceName?: string;
   secondRefundSourceName?: string;
 }
@@ -63,6 +65,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   errors,
   setValue,
   hasMultipleRefundSources = false,
+  firstRefundSourceIndexCode,
+  secondRefundSourceIndexCode,
   firstRefundSourceName,
   secondRefundSourceName,
   watch
@@ -78,6 +82,10 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
 
   const onCostBlurHandler = (value: number, index: number) => {
     setValue(`reimbursementProducts.${index}.cost`, parseFloat(value.toFixed(2)));
+
+    if (firstRefundSourceIndexCode) {
+      setValue(`reimbursementProducts.${index}.refundSources`, [{ indexCode: firstRefundSourceIndexCode, amount: value }]);
+    }
   };
 
   const userTheme = useTheme();
@@ -104,14 +112,23 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   const onAmountBlurHandler = (
     value: string,
     index: number,
-    fieldName: 'cost' | 'firstSourceAmount' | 'secondSourceAmount'
+    fieldName: 'cost' | `refundSources.${0}.amount` | `refundSources.${1}.amount`
   ) => {
-    const parsedValue = value ? parseFloat(value) : undefined;
+    const parsedValue = value ? parseFloat(value) : 0;
     setValue(`reimbursementProducts.${index}.${fieldName}`, parsedValue);
 
     if (hasMultipleRefundSources) {
-      const firstSourceAmount = Number(watch(`reimbursementProducts.${index}.firstSourceAmount`)) || 0;
-      const secondSourceAmount = Number(watch(`reimbursementProducts.${index}.secondSourceAmount`)) || 0;
+      const firstSourceAmount = Number(watch(`reimbursementProducts.${index}.refundSources.${0}.amount`)) || 0;
+      const secondSourceAmount = Number(watch(`reimbursementProducts.${index}.refundSources.${1}.amount`)) || 0;
+
+      if (firstRefundSourceIndexCode !== undefined) {
+        setValue(`reimbursementProducts.${index}.refundSources.${0}.indexCode`, firstRefundSourceIndexCode);
+      }
+
+      if (secondRefundSourceIndexCode !== undefined) {
+        setValue(`reimbursementProducts.${index}.refundSources.${1}.indexCode`, secondRefundSourceIndexCode);
+      }
+
       setValue(`reimbursementProducts.${index}.cost`, firstSourceAmount + secondSourceAmount);
     }
   };
@@ -126,7 +143,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
       setShowFirstSourceFields(true);
       if (firstRefundSourceName !== prevFirstRefundSourceName.current) {
         reimbursementProducts.forEach((_, index) => {
-          setValue(`reimbursementProducts.${index}.firstSourceAmount`, undefined);
+          setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, 0);
         });
         prevFirstRefundSourceName.current = firstRefundSourceName;
       }
@@ -140,7 +157,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
       setShowSecondSourceFields(true);
       if (secondRefundSourceName !== prevSecondRefundSourceName.current) {
         reimbursementProducts.forEach((_, index) => {
-          setValue(`reimbursementProducts.${index}.secondSourceAmount`, undefined);
+          setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, 0);
         });
         prevSecondRefundSourceName.current = secondRefundSourceName;
       }
@@ -231,8 +248,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                         reason: validateWBS(value.id),
                         name: '',
                         cost: 0,
-                        firstSourceAmount: undefined,
-                        secondSourceAmount: undefined
+                        refundSources: []
                       });
                     }
                   }}
@@ -275,8 +291,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                         reason: value,
                         name: '',
                         cost: 0,
-                        firstSourceAmount: undefined,
-                        secondSourceAmount: undefined
+                        refundSources: []
                       });
                     }
                   }}
@@ -511,7 +526,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                     </Box>
                                     <FormControl fullWidth margin="dense" variant="outlined" size="small">
                                       <Controller
-                                        name={`reimbursementProducts.${product.index}.firstSourceAmount`}
+                                        name={`reimbursementProducts.${product.index}.refundSources.${0}.amount`}
                                         control={control}
                                         render={({ field }) => (
                                           <TextField
@@ -541,14 +556,16 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                             type="number"
                                             fullWidth
                                             onBlur={(e) =>
-                                              onAmountBlurHandler(e.target.value, product.index, 'firstSourceAmount')
+                                              onAmountBlurHandler(e.target.value, product.index, `refundSources.${0}.amount`)
                                             }
-                                            error={!!errors.reimbursementProducts?.[product.index]?.firstSourceAmount}
+                                            error={
+                                              !!errors.reimbursementProducts?.[product.index]?.refundSources?.[0]?.amount
+                                            }
                                           />
                                         )}
                                       />
                                       <FormHelperText error>
-                                        {errors.reimbursementProducts?.[product.index]?.firstSourceAmount?.message}
+                                        {errors.reimbursementProducts?.[product.index]?.refundSources?.[0]?.amount?.message}
                                       </FormHelperText>
                                     </FormControl>
                                   </Box>
@@ -574,7 +591,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                     </Box>
                                     <FormControl fullWidth margin="dense" variant="outlined" size="small">
                                       <Controller
-                                        name={`reimbursementProducts.${product.index}.secondSourceAmount`}
+                                        name={`reimbursementProducts.${product.index}.refundSources.${1}.amount`}
                                         control={control}
                                         render={({ field }) => (
                                           <TextField
@@ -604,14 +621,16 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                             type="number"
                                             fullWidth
                                             onBlur={(e) =>
-                                              onAmountBlurHandler(e.target.value, product.index, 'secondSourceAmount')
+                                              onAmountBlurHandler(e.target.value, product.index, `refundSources.${1}.amount`)
                                             }
-                                            error={!!errors.reimbursementProducts?.[product.index]?.secondSourceAmount}
+                                            error={
+                                              !!errors.reimbursementProducts?.[product.index]?.refundSources?.[1]?.amount
+                                            }
                                           />
                                         )}
                                       />
                                       <FormHelperText error>
-                                        {errors.reimbursementProducts?.[product.index]?.secondSourceAmount?.message}
+                                        {errors.reimbursementProducts?.[product.index]?.refundSources?.[1]?.amount?.message}
                                       </FormHelperText>
                                     </FormControl>
                                   </Box>
@@ -665,8 +684,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                         reason: key.includes('.') ? validateWBS(key) : ({ name: key } as OtherProductReason),
                         name: '',
                         cost: 0,
-                        firstSourceAmount: undefined,
-                        secondSourceAmount: undefined
+                        refundSources: []
                       });
                       e.currentTarget.blur();
                     }}

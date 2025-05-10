@@ -445,16 +445,15 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     { label: 'Expense Type', icon: <CurrencyExchangeIcon fontSize="small" /> }
   ];
 
-  // checks whether both cash and budget are used in the reimbursement request
-  const useBothRefundSources = reimbursementRequest.reimbursementProducts.some(
-    (product) => product.budgetAmount > 0 && product.cashAmount > 0
+  const refundSourceNames: string[] = Array.from(
+    new Set(
+      reimbursementRequest.reimbursementProducts.flatMap((product) =>
+        product.refundSources.map((rs) => rs.indexCode.code + ' ' + rs.indexCode.name)
+      )
+    )
   );
 
-  // simply use all requests, since we only ever deal with budget or cash
-  const { data: indexCodeData } = useGetAllIndexCodes();
-
-  // to be consistent with the tables order of reimbursement requests
-  const reversedIndexCodes = indexCodeData?.slice().reverse() ?? [];
+  const formattedIndexNames = refundSourceNames.join(', ');
 
   const contentItems = [
     {
@@ -480,9 +479,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     { content: reimbursementRequest.vendor.name },
     { content: `${undefinedPipe(reimbursementRequest.saboId)}` },
     {
-      content: useBothRefundSources
-        ? reversedIndexCodes?.map((code) => codeAndRefundSourceName(code)).join(', ')
-        : codeAndRefundSourceName(reimbursementRequest.indexCode)
+      content: formattedIndexNames
     },
     { content: accountCodePipe(reimbursementRequest.accountCode) }
   ];

@@ -39,6 +39,7 @@ const EditReimbursementRequestRenderedDefaultValues: React.FC<{
               ? (product.reimbursementProductReason as WBSElementData).wbsNum
               : (product.reimbursementProductReason as OtherProductReason),
             name: product.name,
+            refundSources: [],
             cost: Number(centsToDollar(product.cost))
           })),
           receiptFiles: reimbursementRequest.receiptPictures.map((receipt) => ({

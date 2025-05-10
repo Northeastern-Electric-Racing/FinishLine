@@ -630,7 +630,7 @@ model Reimbursement_Product {
 
 model RefundSource {
   refundSourceId         String                 @id @default(uuid())
-  indexCodeId            String                 @unique
+  indexCodeId            String
   indexCode              Index_Code             @relation(fields: [indexCodeId], references: [indexCodeId])
   amount                 Int
   reimbursementProduct   Reimbursement_Product? @relation(fields: [reimbursementProductId], references: [reimbursementProductId])

@@ -114,11 +114,22 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
       if (secondRefundSourceId && firstRefundSourceId === secondRefundSourceId) {
         setValue('secondaryAccount', undefined);
         reimbursementProducts.forEach((_, index) => {
-          setValue(`reimbursementProducts.${index}.secondSourceAmount`, undefined);
+          setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, 0);
         });
       }
     }
   }, [firstRefundSourceId, secondRefundSourceId, reimbursementProducts, setValue]);
+
+  useEffect(() => {
+    if (!firstRefundSourceId || hasConfirmedFinance) return;
+
+    const primary = refundSources.find((i) => i.indexCodeId === firstRefundSourceId);
+    if (!primary) return;
+
+    reimbursementProducts.forEach((_, i) => {
+      setValue(`reimbursementProducts.${i}.refundSources`, [{ indexCode: primary, amount: 0 }]);
+    });
+  }, [firstRefundSourceId, hasConfirmedFinance, refundSources, reimbursementProducts, setValue]);
 
   useEffect(() => {
     control._formValues.$hasConfirmedFinance = hasConfirmedFinance;
@@ -129,8 +140,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
     setValue('secondaryAccount', undefined);
 
     reimbursementProducts.forEach((_, index) => {
-      setValue(`reimbursementProducts.${index}.firstSourceAmount`, undefined);
-      setValue(`reimbursementProducts.${index}.secondSourceAmount`, undefined);
+      setValue(`reimbursementProducts.${index}.refundSources.${0}.amount`, 0);
+      setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, 0);
       setValue(`reimbursementProducts.${index}.cost`, 0);
     });
   };
@@ -140,11 +151,16 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
     code: '',
     indexCodeId: 'placeholder-1'
   };
+
+  const firstRefundSourcePassed = refundSources.find((source) => source.indexCodeId === firstRefundSourceId) || undefined;
+
   const secondRefundSource = refundSources.find((source) => source.indexCodeId === secondRefundSourceId) || {
     name: 'Second Source',
     code: '',
     indexCodeId: 'placeholder-2'
   };
+
+  const secondRefundSourcePassed = refundSources.find((source) => source.indexCodeId === secondRefundSourceId) || undefined;
 
   const remainingRefundSources = refundSources.filter((source) => source.indexCodeId !== firstRefundSourceId);
   const calculatedTotalCost = products
@@ -270,6 +286,19 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
 
   const vendorsToAutocomplete = (vendor: Vendor): { label: string; id: string } => {
     return { label: vendor.name, id: vendor.vendorId };
+  };
+
+  const handleConfirmAddRefundSource = () => {
+    setHasConfirmedFinance(true);
+
+    const codeObj = refundSources.find((src) => src.indexCodeId === firstRefundSourceId);
+    if (!codeObj) return;
+    reimbursementProducts.forEach((prod, prodIdx) => {
+      const existing: { indexCode: IndexCode; amount: number }[] = prod.refundSources || [];
+      setValue(`reimbursementProducts.${prodIdx}.refundSources`, [...existing, { indexCode: codeObj, amount: 0 }]);
+    });
+
+    setShowAddRefundSourceModal(false);
   };
 
   return (
@@ -724,10 +753,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                       borderRadius: '10px',
                       padding: '0px 10px 0px 10px'
                     }}
-                    onClick={() => {
-                      setHasConfirmedFinance(true);
-                      setShowAddRefundSourceModal(false);
-                    }}
+                    onClick={handleConfirmAddRefundSource}
                   >
                     Yes
                   </Button>
@@ -775,6 +801,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               setValue={setValue}
               control={control}
               hasMultipleRefundSources={hasConfirmedFinance}
+              firstRefundSourceIndexCode={firstRefundSourcePassed}
+              secondRefundSourceIndexCode={secondRefundSourcePassed}
               firstRefundSourceName={firstRefundSource.name}
               secondRefundSourceName={secondRefundSource.name}
             />

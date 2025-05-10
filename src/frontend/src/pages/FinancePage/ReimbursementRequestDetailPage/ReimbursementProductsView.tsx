@@ -20,8 +20,16 @@ const ReimbursementProductsView: React.FC<ReimbursementRequestProductsViewProps>
   // Placeholder until support for multiple refund sources is available
   // Currently, does not seem to be the case, as cost is the only field
   const multipleRefundSources = reimbursementRequest.reimbursementProducts.some(
-    (product) => product.budgetAmount > 0 && product.cashAmount > 0
+    (product) => product.refundSources.length > 1
   );
+
+  const refundSourceNames: string[] = Array.from(
+    new Set(
+      reimbursementRequest.reimbursementProducts.flatMap((product) => product.refundSources.map((rs) => rs.indexCode.name))
+    )
+  );
+
+  const formattedIndexNames = refundSourceNames.join(' / ');
 
   return (
     <>
@@ -42,7 +50,7 @@ const ReimbursementProductsView: React.FC<ReimbursementRequestProductsViewProps>
             </TableCell>
             {multipleRefundSources && (
               <TableCell>
-                <Typography variant="h6">Bud/Cash</Typography>
+                <Typography variant="h6">{formattedIndexNames}</Typography>
               </TableCell>
             )}
           </TableRow>
@@ -64,7 +72,10 @@ const ReimbursementProductsView: React.FC<ReimbursementRequestProductsViewProps>
                   <TableCell>
                     {uniqueWbsElementsWithProducts.get(key)?.map((product, index) => (
                       <div key={index}>
-                        ${centsToDollar(product.budgetAmount)} / ${centsToDollar(product.cashAmount)}
+                        {product.refundSources
+                          .map((rs) => centsToDollar(rs.amount))
+                          .map((s) => `$${s}`)
+                          .join('/')}
                       </div>
                     ))}
                   </TableCell>

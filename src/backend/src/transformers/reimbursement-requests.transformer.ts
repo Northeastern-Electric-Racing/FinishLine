@@ -9,6 +9,7 @@ import {
   IndexCode,
   OtherProductReason,
   Receipt,
+  RefundSource,
   Reimbursement,
   ReimbursementProduct,
   ReimbursementProductReason,
@@ -26,7 +27,8 @@ import { ReimbursementRequestQueryArgs } from '../prisma-query-args/reimbursemen
 import { ReimbursementStatusQueryArgs } from '../prisma-query-args/reimbursement-statuses.query-args';
 import {
   ReimbursementProductQueryArgs,
-  ReimbursementProductReasonQueryArgs
+  ReimbursementProductReasonQueryArgs,
+  RefundSourceQueryArgs
 } from '../prisma-query-args/reimbursement-products.query-args';
 import { ReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
 import { VendorQueryArgs } from '../prisma-query-args/vendor.query-args';
@@ -81,9 +83,16 @@ export const reimbursementProductTransformer = (
     reimbursementProductId: reimbursementProduct.reimbursementProductId,
     name: reimbursementProduct.name,
     cost: reimbursementProduct.cost,
-    budgetAmount: reimbursementProduct.budgetAmount,
-    cashAmount: reimbursementProduct.cashAmount,
-    reimbursementProductReason: reimbursementProductReasonTransformer(reimbursementProduct.reimbursementProductReason)
+    reimbursementProductReason: reimbursementProductReasonTransformer(reimbursementProduct.reimbursementProductReason),
+    refundSources: reimbursementProduct.refundSources.map(refundSourceTransformer)
+  };
+};
+
+const refundSourceTransformer = (source: Prisma.RefundSourceGetPayload<RefundSourceQueryArgs>): RefundSource => {
+  return {
+    refundSourceId: source.refundSourceId,
+    indexCode: indexCodeTransformer(source.indexCode),
+    amount: source.amount
   };
 };
 

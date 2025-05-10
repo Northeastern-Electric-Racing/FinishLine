@@ -22,6 +22,7 @@ import { useAllProjects } from '../../../hooks/projects.hooks';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { useCurrentUserSecureSettings } from '../../../hooks/users.hooks';
+import { dateRangePipe } from '../../../utils/pipes';
 
 export interface ReimbursementRequestInformation {
   vendorId: string;
@@ -63,16 +64,16 @@ const schema = yup.object().shape({
 
     const products = this.parent.reimbursementProducts || [];
     for (const product of this.parent.reimbursementProducts) {
-      if (product.firstSourceAmount === undefined) {
+      if (product.refundSources[0].amount === undefined) {
         return this.createError({
           message: 'Amount is required',
-          path: `reimbursementProducts.${products.indexOf(product)}.firstSourceAmount`
+          path: `reimbursementProducts.${products.indexOf(product)}.refundSources.${0}.amount`
         });
       }
-      if (product.secondSourceAmount === undefined) {
+      if (product.refundSources[1].amount === undefined) {
         return this.createError({
           message: 'Amount is required',
-          path: `reimbursementProducts.${products.indexOf(product)}.secondSourceAmount`
+          path: `reimbursementProducts.${products.indexOf(product)}.refundSources.${1}.amount`
         });
       }
     }
@@ -85,8 +86,15 @@ const schema = yup.object().shape({
     .of(
       yup.object().shape({
         name: yup.string().required('Description is required'),
-        firstSourceAmount: yup.number().typeError('Amount must be a number').min(0, 'Amount cannot be negative'),
-        secondSourceAmount: yup.number().typeError('Amount must be a number').min(0, 'Amount cannot be negative'),
+        refundSources: yup.array().of(
+          yup.object({
+            amount: yup
+              .number()
+              .typeError('Amount must be a number')
+              .min(0, 'Amount cannot be negative')
+              .required('Amount is required')
+          })
+        ),
         cost: yup
           .number()
           .required('Cost is required')
@@ -202,11 +210,12 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       // If only one refund source is present, the `cost` reflects the refund source amount for that product, and firstSourceAmount and secondSourceAmount are left as 0 since they will not needed for this scenario.
 
       const reimbursementProducts = data.reimbursementProducts.map((product: ReimbursementProductFormArgs) => {
+        const anyNonZero = product.refundSources.some((rs) => Number(rs.amount) > 0);
+        const formattedRefundSources = anyNonZero ? product.refundSources : [];
         return {
           ...product,
           cost: Math.round(product.cost * 100),
-          firstSourceAmount: (product.firstSourceAmount ?? 0) * 100,
-          secondSourceAmount: (product.secondSourceAmount ?? 0) * 100
+          refundSources: formattedRefundSources
         };
       });
 
@@ -217,15 +226,15 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       const indexCode = indexCodes?.find((code) => code.indexCodeId === data.indexCodeId);
 
       reimbursementProducts.forEach((product) => {
-        let firstSourceBudget = product.firstSourceAmount;
-        let secondSourceBudget = product.secondSourceAmount;
+        // let firstSourceBudget = product.firstSourceAmount;
+        // let secondSourceBudget = product.secondSourceAmount;
 
         // Slightly messy fix to deal with the fact that while we only have 2 sources,
         // their order in the form is not guaranteed to be the same every time.
         // Therefore, this just makes a check to see if they need to be swapped for display purposes.
         if (indexCode?.name === 'CASH') {
-          firstSourceBudget = product.secondSourceAmount;
-          secondSourceBudget = product.firstSourceAmount;
+          // firstSourceBudget = product.secondSourceAmount;
+          // secondSourceBudget = product.firstSourceAmount;
         }
 
         if (product.reason && 'otherProductReasonId' in product.reason) {
@@ -233,16 +242,14 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
             reason: product.reason as OtherProductReason,
             cost: product.cost,
             name: product.name,
-            budgetAmount: firstSourceBudget,
-            cashAmount: secondSourceBudget
+            refundSources: product.refundSources
           });
         } else {
           wbsReimbursementProducts.push({
             reason: product.reason as WbsNumber,
             cost: product.cost,
             name: product.name,
-            budgetAmount: firstSourceBudget,
-            cashAmount: secondSourceBudget
+            refundSources: product.refundSources
           });
         }
       });
