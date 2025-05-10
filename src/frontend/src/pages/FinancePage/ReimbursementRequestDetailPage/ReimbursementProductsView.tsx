@@ -21,13 +21,12 @@ const ReimbursementProductsView: React.FC<ReimbursementRequestProductsViewProps>
     (product) => product.refundSources.length > 1
   );
 
+  // put all the refund source names in a set to avoid duplicate names
   const refundSourceNames: string[] = Array.from(
     new Set(
       reimbursementRequest.reimbursementProducts.flatMap((product) => product.refundSources.map((rs) => rs.indexCode.name))
     )
   );
-
-  const formattedIndexNames = refundSourceNames.join(' / ');
 
   return (
     <>
@@ -48,7 +47,7 @@ const ReimbursementProductsView: React.FC<ReimbursementRequestProductsViewProps>
             </TableCell>
             {multipleRefundSources && (
               <TableCell>
-                <Typography variant="h6">{formattedIndexNames}</Typography>
+                <Typography variant="h6">{refundSourceNames.join(' / ')}</Typography>
               </TableCell>
             )}
           </TableRow>
