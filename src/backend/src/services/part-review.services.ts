@@ -11,8 +11,7 @@ import {
   isAtLeastRank,
   RoleEnum,
   Review_Status,
-  validateWBS,
-  wbsNamePipe
+  validateWBS
 } from 'shared';
 import {
   AccessDeniedAdminOnlyException,
@@ -44,7 +43,6 @@ import { isUserPartOfTeams } from '../utils/teams.utils';
 import { uploadFile, downloadFile } from '../utils/google-integration.utils';
 import ProjectsService from './projects.services';
 import { sendPartAssignmentPopUp, sendPartReviewRequestPopUp } from '../utils/pop-up.utils';
-import { wbsNumOf } from '../utils/utils';
 
 export default class PartReviewService {
   /**

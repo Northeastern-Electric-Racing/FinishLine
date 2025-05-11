@@ -148,14 +148,16 @@ partsRouter.post('/popup/:popupId/delete', PartReviewController.deletePartReview
 
 partsRouter.post('/reviewRequest/:reviewRequestId/delete', PartReviewController.deletePartReviewRequest);
 
-partsRouter.post('/notifyReviewer',
+partsRouter.post(
+  '/notifyReviewer',
   nonEmptyString(body('reviewerId')),
   nonEmptyString(body('partId')),
   validateInputs,
   PartReviewController.notifyReviewer
 );
 
-partsRouter.post('/notifyAssignee',
+partsRouter.post(
+  '/notifyAssignee',
   nonEmptyString(body('assigneeId')),
   nonEmptyString(body('partId')),
   validateInputs,
@@ -186,7 +188,6 @@ partsRouter.post(
 partsRouter.post('/:partId/delete', PartReviewController.deletePart);
 
 partsRouter.get('/:wbsNum', PartReviewController.getAllPartsForProject);
-
 
 partsRouter.get('/submission/:submissionId/download', PartReviewController.downloadFile);
 

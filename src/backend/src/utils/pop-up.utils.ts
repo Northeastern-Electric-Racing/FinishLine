@@ -1,6 +1,5 @@
 import { Change_Request, Design_Review, User } from '@prisma/client';
 import { PopUpService } from '../services/pop-up.services';
-import { Part } from 'shared';
 
 /**
  * Sends a pop up that a design review was scheduled
