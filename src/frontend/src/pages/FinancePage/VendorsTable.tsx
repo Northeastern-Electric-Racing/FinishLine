@@ -50,7 +50,7 @@ const VendorTable = ({ isHeadAndAbove = false }: VendorTableProps) => {
     return <ErrorPage message={vendorError.message} />;
   }
 
-  const ScrollableCell = ({ children, maxWidth = 225 }: ScrollableCellProps) => (
+  const ScrollableCell = ({ children, maxWidth = 150 }: ScrollableCellProps) => (
     <Box
       sx={{
         maxWidth,
@@ -219,7 +219,7 @@ const VendorTable = ({ isHeadAndAbove = false }: VendorTableProps) => {
       <Box sx={{ paddingBottom: '100px' }}>
         <TableContainer
           {...(isHeadAndAbove ? { component: Paper } : {})}
-          sx={{ borderRadius: '8px', overflow: 'hidden', backgroundColor: theme.palette.background.default }}
+          sx={{ borderRadius: '8px', overflow: 'auto', backgroundColor: theme.palette.background.default }}
         >
           <MuiTable sx={{ ...(!isHeadAndAbove && { maxWidth: '800px' }) }}>
             <TableHead>
