@@ -33,7 +33,9 @@ import {
   createReviewPopup,
   updateReviewPopup,
   deleteReviewPopup,
-  uploadFile
+  uploadFile,
+  sendPartAssignmentNotification,
+  sendPartReviewRequestNotification
 } from '../apis/part-review.api';
 import { downloadGoogleImage } from '../apis/onboarding.api';
 
@@ -490,6 +492,36 @@ export const useDeleteReviewPopup = () => {
       onSuccess: () => {
         queryClient.invalidateQueries(['parts', 'by index']);
       }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to notify the assignee of a part
+ *
+ * @returns a success message
+ */
+export const useNotifyPartAssignee = () => {
+  return useMutation<{ message: string }, Error, { partId: string; assigneeId: string }>(
+    ['parts', 'notifyAssignee'],
+    async (notification) => {
+      const { data } = await sendPartAssignmentNotification(notification);
+      return data;
+    }
+  );
+};
+
+/**
+ * Custom React Hook to notify the reviewer of a part
+ *
+ * @returns a success message
+ */
+export const useNotifyPartReviewer = () => {
+  return useMutation<{ message: string }, Error, { partId: string; reviewerId: string }>(
+    ['parts', 'notifyReviewer'],
+    async (notification) => {
+      const { data } = await sendPartReviewRequestNotification(notification);
+      return data;
     }
   );
 };

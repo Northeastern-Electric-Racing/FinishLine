@@ -148,13 +148,26 @@ partsRouter.post('/popup/:popupId/delete', PartReviewController.deletePartReview
 
 partsRouter.post('/reviewRequest/:reviewRequestId/delete', PartReviewController.deletePartReviewRequest);
 
+partsRouter.post('/notifyReviewer',
+  nonEmptyString(body('reviewerId')),
+  nonEmptyString(body('partId')),
+  validateInputs,
+  PartReviewController.notifyReviewer
+);
+
+partsRouter.post('/notifyAssignee',
+  nonEmptyString(body('assigneeId')),
+  nonEmptyString(body('partId')),
+  validateInputs,
+  PartReviewController.notifyAssignee
+);
+
 partsRouter.post(
   '/:partId/reviewRequest/create',
   nonEmptyString(body('reviewerId')),
   validateInputs,
   PartReviewController.createPartReviewRequest
 );
-partsRouter.post('/reviewRequest/:reviewRequestId/delete', PartReviewController.deletePartReviewRequest);
 
 partsRouter.post('/:partId/upload-preview', upload.single('image'), PartReviewController.uploadPreview);
 
@@ -174,41 +187,6 @@ partsRouter.post('/:partId/delete', PartReviewController.deletePart);
 
 partsRouter.get('/:wbsNum', PartReviewController.getAllPartsForProject);
 
-partsRouter.post('/:partId/upload-preview', upload.single('image'), PartReviewController.uploadPreview);
-
-partsRouter.post(
-  '/:partId/update',
-  intMinZero(body('index')),
-  nonEmptyString(body('commonName')),
-  body('description').optional().isString(),
-  body('reviewStatus').custom((value) => Object.values(Review_Status).includes(value)),
-  body('tagIds').isArray(),
-  body('assigneeIds').isArray(),
-  validateInputs,
-  PartReviewController.updatePart
-);
-
-partsRouter.post('/:partId/delete', PartReviewController.deletePart);
-
-partsRouter.get('/:wbsNum', PartReviewController.getAllPartsForProject);
-
-partsRouter.post('/:partId/upload-preview', upload.single('image'), PartReviewController.uploadPreview);
-
-partsRouter.post(
-  '/:partId/update',
-  intMinZero(body('index')),
-  nonEmptyString(body('commonName')),
-  body('description').optional().isString(),
-  body('reviewStatus').custom((value) => Object.values(Review_Status).includes(value)),
-  body('tagIds').isArray(),
-  body('assigneeIds').isArray(),
-  validateInputs,
-  PartReviewController.updatePart
-);
-
-partsRouter.post('/:partId/delete', PartReviewController.deletePart);
-
-partsRouter.get('/:wbsNum', PartReviewController.getAllPartsForProject);
 
 partsRouter.get('/submission/:submissionId/download', PartReviewController.downloadFile);
 

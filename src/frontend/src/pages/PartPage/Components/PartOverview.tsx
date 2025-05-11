@@ -1,6 +1,9 @@
 import { Box, Typography, IconButton, Chip, Stack } from '@mui/material';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
+import CachedIcon from '@mui/icons-material/Cached';
 import { Part, Review_Status, User } from 'shared';
+import { useNotifyPartAssignee, useNotifyPartReviewer } from '../../../hooks/part-review.hooks';
+import { useState } from 'react';
 
 /**
  * gets the status color for each status case
@@ -75,37 +78,6 @@ function getReviewerDotColor(data: Part, reviewerId: String) {
 }
 
 /**
- * returns the given user's name and a notification button
- */
-function displayAssigneeOrReviewer(anyUser: User) {
-  return (
-    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-      <IconButton
-        size="small"
-        onClick={(e) => {
-          e.currentTarget.style.backgroundColor = '#FF0000';
-          e.currentTarget.disabled = true;
-        }}
-        sx={{
-          backgroundColor: '#444444',
-          color: 'white',
-          borderRadius: '50%',
-          '&:hover': {
-            backgroundColor: '#555555'
-          },
-          mr: 1
-        }}
-      >
-        <NotificationsNoneIcon fontSize="inherit" />
-      </IconButton>
-      <Typography>
-        {anyUser.firstName} {anyUser.lastName}
-      </Typography>
-    </Box>
-  );
-}
-
-/**
  * interface to give part prop a type
  */
 interface PartPageOverviewProps {
@@ -113,6 +85,49 @@ interface PartPageOverviewProps {
 }
 
 const PartOverview: React.FC<PartPageOverviewProps> = ({ part }: PartPageOverviewProps) => {
+  const { mutate: notifyPartAssignee } = useNotifyPartAssignee();
+  const { mutate: notifyPartReviewer } = useNotifyPartReviewer();
+
+  const [notifiedUserIds, setNotifiedUserIds] = useState<Set<string>>(new Set());
+
+  /**
+   * returns the given user's name and a notification button
+   */
+  function displayAssigneeOrReviewer(anyUser: User, isReviewer: boolean) {
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <IconButton
+          size="small"
+          onClick={(e) => {
+            if (isReviewer) {
+              notifyPartReviewer({ partId: part.partId, reviewerId: anyUser.userId });
+            } else {
+              notifyPartAssignee({ partId: part.partId, assigneeId: anyUser.userId });
+            }
+            setNotifiedUserIds((ids) => ids.add(anyUser.userId));
+          }}
+          sx={{
+            backgroundColor: '#444444',
+            color: 'white',
+            borderRadius: '50%',
+            '&:hover': {
+              backgroundColor: '#555555'
+            },
+            mr: 1
+          }}
+        >
+          {notifiedUserIds.has(anyUser.userId) ? (
+            <CachedIcon fontSize="inherit" />
+          ) : (
+            <NotificationsNoneIcon fontSize="inherit" />
+          )}
+        </IconButton>
+        <Typography>
+          {anyUser.firstName} {anyUser.lastName}
+        </Typography>
+      </Box>
+    );
+  }
   return (
     <Box
       sx={{
@@ -149,13 +164,13 @@ const PartOverview: React.FC<PartPageOverviewProps> = ({ part }: PartPageOvervie
       >
         <Stack direction={'column'} spacing={0.5} width="50%">
           <Typography>Assignees:</Typography>
-          {part.assignees.map((user) => displayAssigneeOrReviewer(user))}
+          {part.assignees.map((user) => displayAssigneeOrReviewer(user, false))}
         </Stack>
         <Stack direction={'column'} spacing={0.5} width="50%">
           <Typography>Reviewers:</Typography>
           {part.reviewRequests.map((revReq) => (
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              {displayAssigneeOrReviewer(revReq.reviewerRequested)}
+              {displayAssigneeOrReviewer(revReq.reviewerRequested, true)}
               <Box
                 sx={{
                   width: '10px',

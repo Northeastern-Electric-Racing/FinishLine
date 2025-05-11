@@ -11,7 +11,8 @@ import {
   isAtLeastRank,
   RoleEnum,
   Review_Status,
-  validateWBS
+  validateWBS,
+  wbsNamePipe
 } from 'shared';
 import {
   AccessDeniedAdminOnlyException,
@@ -42,6 +43,8 @@ import {
 import { isUserPartOfTeams } from '../utils/teams.utils';
 import { uploadFile, downloadFile } from '../utils/google-integration.utils';
 import ProjectsService from './projects.services';
+import { sendPartAssignmentPopUp, sendPartReviewRequestPopUp } from '../utils/pop-up.utils';
+import { wbsNumOf } from '../utils/utils';
 
 export default class PartReviewService {
   /**
@@ -1002,6 +1005,82 @@ export default class PartReviewService {
       ...getPartReviewRequestQueryArgs(organizationId)
     });
     return partReviewRequestTransformer(softDeletedRequest);
+  }
+
+  /**
+   * Sends a notification to the reviewer of a part review request
+   * @param reviewerId id of the reviewer
+   * @param partId id of the part
+   * @param creator id of the creator
+   * @param organizationId id of the organization
+   */
+  static async notifyReviewer(reviewerId: string, partId: string, creator: User, organizationId: string) {
+    const part = await prisma.part.findUnique({
+      where: { partId },
+      include: {
+        project: {
+          include: {
+            wbsElement: true
+          }
+        },
+        reviewRequests: true
+      }
+    });
+
+    if (!part) {
+      throw new NotFoundException('Part', partId);
+    }
+
+    if (part.dateDeleted) {
+      throw new DeletedException('Part', partId);
+    }
+
+    if (!part.reviewRequests.some((request) => request.reviewerId === reviewerId)) {
+      throw new HttpException(400, 'User is not a reviewer for this part');
+    }
+
+    const wbsNum = `${part.project.wbsElement.carNumber}.${part.project.wbsElement.projectNumber}.0`;
+    const partLink = `/projects/${wbsNum}/part/${part.index}`;
+
+    await sendPartReviewRequestPopUp(partLink, part.commonName, creator, organizationId);
+  }
+
+  /**
+   * Sends a notification to the assignee of a part
+   * @param partId id of the part
+   * @param assigneeId id of the assignee
+   * @param creator id of the creator
+   * @param organizationId id of the organization
+   */
+  static async notifyAssignee(partId: string, assigneeId: string, creator: User, organizationId: string) {
+    const part = await prisma.part.findUnique({
+      where: { partId },
+      include: {
+        project: {
+          include: {
+            wbsElement: true
+          }
+        },
+        assignees: true
+      }
+    });
+
+    if (!part) {
+      throw new NotFoundException('Part', partId);
+    }
+
+    if (part.dateDeleted) {
+      throw new DeletedException('Part', partId);
+    }
+
+    if (!part.assignees.some((assignee) => assignee.userId === assigneeId)) {
+      throw new HttpException(400, 'User is not an assignee for this part');
+    }
+
+    const wbsNum = `${part.project.wbsElement.carNumber}.${part.project.wbsElement.projectNumber}.0`;
+    const partLink = `/projects/${wbsNum}/part/${part.index}`;
+
+    await sendPartAssignmentPopUp(partLink, part.commonName, creator, organizationId);
   }
 
   /**

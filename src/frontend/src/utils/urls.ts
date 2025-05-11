@@ -68,6 +68,8 @@ const getAllPartTags = () => `${parts()}/tags`;
 const createReviewPopup = (reviewId: string) => `${parts()}/review/${reviewId}/popup/create`;
 const updateReviewPopup = (popupId: string) => `${parts()}/popup/${popupId}/update`;
 const deleteReviewPopup = (popupId: string) => `${parts()}/popup/${popupId}/delete`;
+const notifyPartAssignee = () => `${parts()}/notifyAssignee`;
+const notifyPartReviewer = () => `${parts()}/notifyReviewer`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
@@ -333,6 +335,8 @@ export const apiUrls = {
   createReviewPopup,
   updateReviewPopup,
   deleteReviewPopup,
+  notifyPartAssignee,
+  notifyPartReviewer,
 
   tasksCreate,
   tasks,
