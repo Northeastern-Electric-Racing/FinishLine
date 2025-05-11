@@ -355,7 +355,8 @@ describe('Finance Tests', () => {
             dueDate: new Date(12, 1, 24),
             notifyDate: null,
             assigneeUserId: null,
-            notes: 'uhh nothing'
+            notes: 'uhh nothing',
+            dateDeleted: null
           },
           {
             sponsorId: '11',
@@ -363,7 +364,8 @@ describe('Finance Tests', () => {
             dueDate: new Date(12, 1, 24),
             notifyDate: null,
             assigneeUserId: null,
-            notes: 'probably nothing again'
+            notes: 'probably nothing again',
+            dateDeleted: null
           }
         ],
         organization,
@@ -457,10 +459,10 @@ describe('Finance Tests', () => {
         user.userId
       );
 
-      expect(result.assignee?.userId).toEqual(user.userId);
-      expect(result.notes).toEqual('hello notes');
-      expect(result.dueDate).toEqual(new Date(1, 2, 3));
-      expect(result.assignee?.userId).toEqual(user.userId);
+      expect(result?.assignee?.userId).toEqual(user.userId);
+      expect(result?.notes).toEqual('hello notes');
+      expect(result?.dueDate).toEqual(new Date(1, 2, 3));
+      expect(result?.assignee?.userId).toEqual(user.userId);
     });
   });
 });
