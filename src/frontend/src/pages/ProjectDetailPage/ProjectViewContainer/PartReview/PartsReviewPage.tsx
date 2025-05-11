@@ -6,7 +6,7 @@ import { useCurrentUser } from '../../../../hooks/users.hooks';
 import { Project, rankUserRole, wbsPipe, Review_Status, Part } from 'shared';
 import NERSwitch from '../../../../components/NERSwitch';
 import CommonMistakes from './CommonMistakes';
-import PartDisplay from '../../../PartPage/components/PartDisplay';
+import PartDisplay from '../../../PartPage/PartPageComponents/PartDisplay';
 import { usePartsFromProject } from '../../../../hooks/part-review.hooks';
 import ErrorPage from '../../../ErrorPage';
 import { Link as RouterLink } from 'react-router-dom';
