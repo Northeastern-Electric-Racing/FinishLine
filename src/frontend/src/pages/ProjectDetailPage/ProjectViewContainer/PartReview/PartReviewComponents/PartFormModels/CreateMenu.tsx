@@ -53,7 +53,8 @@ const CreateMenu: React.FC<CreateMenuProps> = ({ wbsNum, partsInProject }: Creat
         disabled={isGuest(user.role)}
         onClick={handleClick}
         sx={{
-          border: 1
+          border: 1,
+          height: '2.25rem'
         }}
       >
         <AddIcon fontSize="small" />
