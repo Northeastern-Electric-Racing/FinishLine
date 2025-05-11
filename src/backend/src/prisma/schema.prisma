@@ -625,10 +625,10 @@ model Reimbursement_Product {
   reimbursementProductReason   Reimbursement_Product_Reason @relation(fields: [reimbursementProductReasonId], references: [reimbursementProductReasonId])
   reimbursementRequestId       String
   reimbursementRequest         Reimbursement_Request        @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
-  refundSources                RefundSource[]
+  refundSources                Refund_Source[]
 }
 
-model RefundSource {
+model Refund_Source {
   refundSourceId         String                 @id @default(uuid())
   indexCodeId            String
   indexCode              Index_Code             @relation(fields: [indexCodeId], references: [indexCodeId])
@@ -1181,7 +1181,7 @@ model Index_Code {
   reimbursementRequests            Reimbursement_Request[]
   accountCodes                     Account_Code[]
   otherReimbursementProductReasons Reimbursement_Product_Other_Reason[]
-  refundSources                    RefundSource[]
+  refundSources                    Refund_Source[]
 }
 
 model Reimbursement_Product_Other_Reason {

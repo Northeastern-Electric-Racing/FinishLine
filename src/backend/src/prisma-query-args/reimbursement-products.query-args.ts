@@ -15,7 +15,7 @@ export const getReimbursementProductReasonQueryArgs = (organizationId: string) =
   });
 
 export const getRefundSourceQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.RefundSourceDefaultArgs>()({
+  Prisma.validator<Prisma.Refund_SourceDefaultArgs>()({
     include: {
       indexCode: getIndexCodeQueryArgs(organizationId)
     }

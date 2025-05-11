@@ -88,7 +88,7 @@ export const reimbursementProductTransformer = (
   };
 };
 
-const refundSourceTransformer = (source: Prisma.RefundSourceGetPayload<RefundSourceQueryArgs>): RefundSource => {
+const refundSourceTransformer = (source: Prisma.Refund_SourceGetPayload<RefundSourceQueryArgs>): RefundSource => {
   return {
     refundSourceId: source.refundSourceId,
     indexCode: indexCodeTransformer(source.indexCode),
