@@ -1634,9 +1634,9 @@ export default class ReimbursementRequestService {
       );
 
       // dont retag the creator of the comment
-      const [, restOfTags] = tags;
+      const [, ...restOfTags] = tags;
 
-      comment += ` ${[...new Set([restOfTags])].join(' ')}`;
+      comment += ` ${[...new Set(restOfTags)].join(' ')}`;
     }
 
     await sendReimbursementCommentNotification(comment, reimbursementRequest.notificationSlackThreads);
