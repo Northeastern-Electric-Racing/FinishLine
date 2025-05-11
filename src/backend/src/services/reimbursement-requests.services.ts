@@ -56,15 +56,15 @@ import {
 } from '../transformers/reimbursement-requests.transformer';
 import { UserWithSecureSettings } from '../utils/auth.utils';
 import {
+  sendReimbursementCommentNotification,
   sendReimbursementRequestChangesRequestedNotification,
   sendReimbursementRequestCreatedNotificationAndCreateMessageInfo,
   sendReimbursementRequestDeniedNotification,
   sendReimbursementRequestLeadershipApprovedNotification,
   sendReimbursementRequestPendingFinanceNotification,
-  sendSlackCRReviewedNotification,
   sendSubmittedToSaboNotification
 } from '../utils/slack.utils';
-import { getUserFullName, userHasPermission } from '../utils/users.utils';
+import { userHasPermission } from '../utils/users.utils';
 import { getReimbursementRequestQueryArgs } from '../prisma-query-args/reimbursement-requests.query-args';
 import { getReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
 import { getReimbursementStatusQueryArgs } from '../prisma-query-args/reimbursement-statuses.query-args';
@@ -1542,7 +1542,8 @@ export default class ReimbursementRequestService {
     reimbursementRequestId: string
   ) {
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
-      where: { reimbursementRequestId, organizationId: organization.organizationId, dateDeleted: null }
+      where: { reimbursementRequestId, organizationId: organization.organizationId, dateDeleted: null },
+      include: { notificationSlackThreads: true }
     });
 
     if (!reimbursementRequest) {
@@ -1559,13 +1560,12 @@ export default class ReimbursementRequestService {
     });
 
     // send slack notification
-
-    const tagRegex = /@([\p{L}\-']+)/gu;
+    const tagRegex = /@([A-Z][a-z'-]+(?:[A-Z][a-z'-]+)?)/gu;
 
     const taggedNames = [...comment.matchAll(tagRegex)].map((match) => match[1]);
 
     const splitTaggedNames = taggedNames.map((name) => {
-      const match = name.match(/([A-Z][a-z]+)([A-Z][a-z]+)/);
+      const match = name.match(/([A-Z][a-z'-]+)([A-Z][a-z'-]+)/);
 
       if (match) {
         return {
@@ -1606,6 +1606,40 @@ export default class ReimbursementRequestService {
 
       return replacement;
     });
+
+    // if there is no more than one tag, tag stakeholders
+    if (tags.length < 2) {
+      const stakeholders = await prisma.user.findMany({
+        where: {
+          organizations: {
+            some: {
+              organizationId: organization.organizationId
+            }
+          },
+          userSettings: { slackId: { not: '' } },
+          OR: [
+            { reimbursementRequestComments: { some: { reimbursementRequestId } } },
+            { reimbursementRequests: { some: { reimbursementRequestId } } }
+          ]
+        },
+        include: { userSettings: true }
+      });
+
+      tags.push(
+        ...stakeholders.map((user) =>
+          user.userSettings?.slackId && !tags.includes(`<@${user.userSettings.slackId}>`)
+            ? `<@${user.userSettings.slackId}>`
+            : ''
+        )
+      );
+
+      // dont retag the creator of the comment
+      const [, restOfTags] = tags;
+
+      comment += ` ${[...new Set([restOfTags])].join(' ')}`;
+    }
+
+    await sendReimbursementCommentNotification(comment, reimbursementRequest.notificationSlackThreads);
 
     return reimbursementRequestCommentTransformer(createdComment);
   }

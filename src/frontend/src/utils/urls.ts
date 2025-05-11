@@ -286,6 +286,7 @@ const organizationsLogoImage = () => `${organizations()}/logo`;
 const organizationsSetLogoImage = () => `${organizations()}/logo/update`;
 const organizationsSetFeaturedProjects = () => `${organizationsFeaturedProjects()}/set`;
 const organizationsSetWorkspaceId = () => `${organizations()}/workspaceId/set`;
+const organizationsSetSlackSponsorshipNotificationChannelId = () => `${organizations()}/sponsorshipChannelId/set`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
@@ -522,6 +523,7 @@ export const apiUrls = {
   organizationsSetLogoImage,
   organizationsSetFeaturedProjects,
   organizationsSetWorkspaceId,
+  organizationsSetSlackSponsorshipNotificationChannelId,
 
   cars,
   carsCreate,

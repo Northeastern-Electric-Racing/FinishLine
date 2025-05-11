@@ -60,6 +60,14 @@ organizationRouter.get('/featured-projects', OrganizationsController.getOrganiza
 organizationRouter.post(
   '/workspaceId/set',
   nonEmptyString(body('workspaceId')),
+  validateInputs,
   OrganizationsController.setSlackWorkspaceId
+);
+
+organizationRouter.post(
+  '/sponsorshipChannelId/set',
+  nonEmptyString(body('channelId')),
+  validateInputs,
+  OrganizationsController.setSlackSponsorshipNotificationsSlackId
 );
 export default organizationRouter;

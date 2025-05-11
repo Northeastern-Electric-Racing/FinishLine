@@ -1,5 +1,5 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import { FormControl, FormLabel } from '@mui/material';
+import { Box, FormControl, FormLabel, Typography } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -65,7 +65,7 @@ const CreateRRCommentModal: React.FC<CreateRRCommentModalProps> = ({
   const handleConfirm = async (data: { comment: string; reimbursementRequestId: string }) => {
     try {
       await mutateAsync({
-        comment: `@${user.firstName}${user.lastName} followed up: "${data.comment}`,
+        comment: `@${user.firstName}${user.lastName} followed up: "${data.comment}"`,
         dateCreated: new Date(),
         reimbursementRequestId: data.reimbursementRequestId
       });
@@ -92,10 +92,16 @@ const CreateRRCommentModal: React.FC<CreateRRCommentModalProps> = ({
       {isLoading ? (
         <LoadingIndicator />
       ) : (
-        <FormControl>
-          <FormLabel>Comment</FormLabel>
-          <ReactHookTextField name="comment" control={control} sx={{ width: 1 }} errorMessage={errors.comment} />
-        </FormControl>
+        <Box gap={2} display="flex" flexDirection="column">
+          <Typography variant="body1" color="text.secondary">
+            This will also send a Slack notification in this request's thread. You can tag users (i.e. @JohnDoe,
+            @JaneO'Connor) to ping them in the message.
+          </Typography>
+          <FormControl>
+            <FormLabel>Comment</FormLabel>
+            <ReactHookTextField name="comment" control={control} sx={{ width: 1 }} errorMessage={errors.comment} />
+          </FormControl>
+        </Box>
       )}
     </NERFormModal>
   );

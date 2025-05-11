@@ -1,5 +1,5 @@
 import { ChangeRequest, daysBetween, Task, UserPreview, wbsPipe, calculateEndDate, meetingStartTimePipe } from 'shared';
-import { User } from '@prisma/client';
+import { Sponsor_Task, User } from '@prisma/client';
 import {
   editMessage,
   getChannelName,
@@ -575,4 +575,29 @@ export const getUserIdFromSlackId = async (slackId: string): Promise<string | un
   if (!user) return undefined;
 
   return user.userId;
+};
+
+/**
+ * Sends a comment to the slack thread of a reimbursement request
+ * @param comment the comment to send
+ * @param threads the threads to send the comment to
+ */
+export const sendReimbursementCommentNotification = async (comment: string, threads: SlackMessageThread[]) => {
+  await sendThreadResponse(threads, comment);
+};
+
+/**
+ * Sends a notification to the assignee of a sponsor task
+ * @param assignee the user to notify
+ * @param sponsorTask the sponsor task to notify about
+ * @param sponsor the name of the sponsor
+ */
+export const notifySponsorTaskAssignee = async (assignee: UserWithSettings, sponsorTask: Sponsor_Task, sponsor: string) => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  if (!assignee.userSettings?.slackId) return;
+
+  const msg = `You have been assigned a task for ${sponsor}: ${sponsorTask.notes}`;
+  const link = `https://finishlinebyner.com/finance/companies/sponsors/${sponsorTask.sponsorId}`;
+  const linkButtonText = `View Tasks for ${sponsor}`;
+  await sendMessage(assignee.userSettings?.slackId, msg, link, linkButtonText);
 };
