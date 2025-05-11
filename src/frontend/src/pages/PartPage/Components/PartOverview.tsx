@@ -98,7 +98,7 @@ const PartOverview: React.FC<PartPageOverviewProps> = ({ part }: PartPageOvervie
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <IconButton
           size="small"
-          onClick={(e) => {
+          onClick={() => {
             if (isReviewer) {
               notifyPartReviewer({ partId: part.partId, reviewerId: anyUser.userId });
             } else {
