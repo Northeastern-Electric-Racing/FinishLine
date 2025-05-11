@@ -114,27 +114,24 @@ export interface ReimbursementProductCreateArgs {
   id?: string;
   name: string;
   cost: number;
+  refundSources: RefundSource[];
 }
 
 export interface ReimbursementProductFormArgs extends ReimbursementProductCreateArgs {
   reason: WbsNumber | OtherProductReason;
-  refundSources: RefundSource[];
 }
 
 export interface OtherReimbursementProductCreateArgs extends ReimbursementProductCreateArgs {
   reason: OtherProductReason;
-  refundSources: RefundSource[];
 }
 
 export interface WbsReimbursementProductCreateArgs extends ReimbursementProductCreateArgs {
   reason: WbsNumber;
-  refundSources: RefundSource[];
 }
 
 export interface ValidatedWbsReimbursementProductCreateArgs extends ReimbursementProductCreateArgs {
   wbsElementId: string;
   wbsNum: WbsNumber;
-  refundSources: RefundSource[];
 }
 
 export interface ReimbursementReceiptCreateArgs {

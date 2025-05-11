@@ -503,7 +503,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const refundSourceNames: string[] = Array.from(
     new Set(
       reimbursementRequest.reimbursementProducts.flatMap((product) =>
-        product.refundSources.map((rs) => rs.indexCode.code + ' ' + rs.indexCode.name)
+        product.refundSources.map((rs) => rs.indexCode.code + '-' + rs.indexCode.name)
       )
     )
   );
