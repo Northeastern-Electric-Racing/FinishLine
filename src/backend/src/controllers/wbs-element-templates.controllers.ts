@@ -133,8 +133,8 @@ export default class WbsElementTemplatesController {
         req.organization,
         workPackageTemplates,
         teams,
-        budget,
         summary,
+        budget,
         projectName
       );
 
