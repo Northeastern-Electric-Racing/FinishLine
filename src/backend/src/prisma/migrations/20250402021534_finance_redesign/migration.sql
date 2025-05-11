@@ -259,20 +259,17 @@ ALTER TABLE "Reimbursement_Request_Comment" ADD CONSTRAINT "Reimbursement_Reques
 ALTER TABLE "Reimbursement_Request_Comment" ADD COLUMN     "dateDeleted" TIMESTAMP(3);
 
 -- CreateTable
-CREATE TABLE "RefundSource" (
+CREATE TABLE "Refund_Source" (
     "refundSourceId" TEXT NOT NULL,
     "indexCodeId" TEXT NOT NULL,
     "amount" INTEGER NOT NULL,
     "reimbursementProductId" TEXT,
 
-    CONSTRAINT "RefundSource_pkey" PRIMARY KEY ("refundSourceId")
+    CONSTRAINT "Refund_Source_pkey" PRIMARY KEY ("refundSourceId")
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX "RefundSource_indexCodeId_key" ON "RefundSource"("indexCodeId");
+-- AddForeignKey
+ALTER TABLE "Refund_Source" ADD CONSTRAINT "Refund_Source_indexCodeId_fkey" FOREIGN KEY ("indexCodeId") REFERENCES "Index_Code"("indexCodeId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "RefundSource" ADD CONSTRAINT "RefundSource_indexCodeId_fkey" FOREIGN KEY ("indexCodeId") REFERENCES "Index_Code"("indexCodeId") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "RefundSource" ADD CONSTRAINT "RefundSource_reimbursementProductId_fkey" FOREIGN KEY ("reimbursementProductId") REFERENCES "Reimbursement_Product"("reimbursementProductId") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Refund_Source" ADD CONSTRAINT "Refund_Source_reimbursementProductId_fkey" FOREIGN KEY ("reimbursementProductId") REFERENCES "Reimbursement_Product"("reimbursementProductId") ON DELETE SET NULL ON UPDATE CASCADE;
