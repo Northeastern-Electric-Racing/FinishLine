@@ -45,8 +45,21 @@ const ReimbursementRequests: React.FC = () => {
 
   if (createReimbursementRequestIsLoading || receiptsIsLoading) return <LoadingIndicator />;
 
-  const openSidePage = () => {
-    setShowSidePage(true);
+  const history = useHistory();
+  const user = useCurrentUser();
+  const canViewAllReimbursementRequests = user.isFinance || isHead(user.role) || isLead(user.role);
+  const toast = useToast();
+  const { isFinance } = user;
+  const { mutateAsync: downloadCSVFileOfReimbursementRequests } = useDownloadCSVFileOfReimbursementRequests();
+
+  const downloadReimbursementRequests = async () => {
+    try {
+      await downloadCSVFileOfReimbursementRequests();
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    }
   };
 
   const closeSidePage = () => {
@@ -71,23 +84,6 @@ const ReimbursementRequests: React.FC = () => {
 
   const handleDropdownClose = () => {
     setAnchorEl(null);
-  };
-
-  const history = useHistory();
-  const user = useCurrentUser();
-  const canViewAllReimbursementRequests = user.isFinance || isHead(user.role) || isLead(user.role);
-  const toast = useToast();
-  const { isFinance } = user;
-  const { mutateAsync: downloadCSVFileOfReimbursementRequests } = useDownloadCSVFileOfReimbursementRequests();
-
-  const downloadReimbursementRequests = async () => {
-    try {
-      await downloadCSVFileOfReimbursementRequests();
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      }
-    }
   };
 
   const tableOffset = canViewAllReimbursementRequests ? -70 : 0;
