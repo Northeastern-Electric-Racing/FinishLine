@@ -465,23 +465,6 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const statusTypes = sortedStatus.map((status) => status.type);
   const recentStatus = statusTypes[statusTypes.length - 1];
 
-  const getStatusColor = (status: string): string => {
-    switch (status) {
-      case 'REIMBURSED':
-        return '#549d49';
-      case 'DENIED':
-        return '#dd514c';
-      case 'PENDING_FINANCE':
-      case 'SABO_SUBMITTED':
-      case 'PENDING_LEADERSHIP_APPROVAL':
-      case 'LEADERSHIP_APPROVED':
-      case 'ADVISOR_APPROVED':
-        return '#997b3e';
-      default:
-        return '#797a7a';
-    }
-  };
-
   const uniqueWbsElementsWithProducts = getUniqueWbsElementsWithProductsFromReimbursementRequest(reimbursementRequest);
   const keys: string[] = [];
   for (const key of uniqueWbsElementsWithProducts.keys()) {

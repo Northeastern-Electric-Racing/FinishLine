@@ -16,19 +16,54 @@ import { useToast } from '../../hooks/toasts.hooks';
 import {
   useAllReimbursementRequests,
   useCurrentUserReimbursementRequests,
-  useDownloadCSVFileOfReimbursementRequests
+  useDownloadCSVFileOfReimbursementRequests,
+  useCreateReimbursementRequest,
+  useUploadManyReceipts
 } from '../../hooks/finance.hooks';
 import { useHistory } from 'react-router-dom';
 import { DatePicker } from '@mui/x-date-pickers';
 import ReportRefundModal from './FinanceComponents/ReportRefundModal';
 import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
 import ErrorPage from '../ErrorPage';
+import ReimbursementRequestForm, {
+  ReimbursementRequestDataSubmission
+} from './ReimbursementRequestForm/ReimbursementRequestForm';
+import SidePage from './FinanceComponents/SidePagePopup';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 const ReimbursementRequests: React.FC = () => {
+  const { isLoading: createReimbursementRequestIsLoading, mutateAsync: createReimbursementRequest } =
+    useCreateReimbursementRequest();
   const allStatuses = Object.values(ReimbursementStatusType);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [accountCreditModalShow, setAccountCreditModalShow] = useState<boolean>(false);
   const [showGenerateReceipts, setShowGenerateReceipts] = useState(false);
+  const { isLoading: receiptsIsLoading, mutateAsync: uploadReceipts } = useUploadManyReceipts();
+
+  const [showSidePage, setShowSidePage] = useState(false);
+  const [sidePageTitle, setSidePageTitle] = useState('');
+
+  if (createReimbursementRequestIsLoading || receiptsIsLoading) return <LoadingIndicator />;
+
+  const openSidePage = () => {
+    setShowSidePage(true);
+  };
+
+  const closeSidePage = () => {
+    setShowSidePage(false);
+  };
+
+  const onSubmit = async (data: ReimbursementRequestDataSubmission): Promise<string> => {
+    const reimbursementRequest = await createReimbursementRequest({ ...data, indexCodeId: data.indexCodeId! });
+    await uploadReceipts({
+      id: reimbursementRequest.reimbursementRequestId,
+      files: data.receiptFiles.map((file) => file.file!)
+    });
+    refetchUserReimbursementRequests();
+    refetchAllReimbursementRequests();
+    closeSidePage();
+    return reimbursementRequest.reimbursementRequestId;
+  };
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -72,7 +107,15 @@ const ReimbursementRequests: React.FC = () => {
         Actions
       </NERButton>
       <Menu open={!!anchorEl} anchorEl={anchorEl} onClose={handleDropdownClose}>
-        <MenuItem onClick={() => history.push(routes.NEW_REIMBURSEMENT_REQUEST)} disabled={isGuest(user.role)}>
+        <MenuItem
+          onClick={() => {
+            history.push(routes.NEW_REIMBURSEMENT_REQUEST);
+            setSidePageTitle('Create Reimbursement Request');
+            setShowSidePage(true);
+            handleDropdownClose();
+          }}
+          disabled={isGuest(user.role)}
+        >
           <ListItemIcon>
             <NoteAddIcon fontSize="small" />
           </ListItemIcon>
@@ -282,6 +325,18 @@ const ReimbursementRequests: React.FC = () => {
           }}
         />
       </Box>
+      <SidePage
+        showPage={showSidePage}
+        handleClose={closeSidePage}
+        title={sidePageTitle}
+        component={
+          sidePageTitle === 'Create Reimbursement Request' ? (
+            <ReimbursementRequestForm submitText="Submit" submitData={onSubmit} previousPage={routes.FINANCE} />
+          ) : (
+            <Typography>This is a side page</Typography>
+          )
+        }
+      />
     </Box>
   );
 };
