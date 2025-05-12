@@ -1,13 +1,12 @@
 import LoadingIndicator from '../../../../components/LoadingIndicator';
-import { Box, Stack } from '@mui/system';
+import { Box, Stack, useTheme } from '@mui/system';
 import { Grid, FormGroup, FormControlLabel, Typography, Link } from '@mui/material';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
-import { Project, rankUserRole, wbsPipe, Review_Status, Part } from 'shared';
+import { isAtLeastRank, PartPreview, Project, rankUserRole, wbsPipe } from 'shared';
 import NERSwitch from '../../../../components/NERSwitch';
 import CommonMistakes from './CommonMistakes';
-import PartDisplay from '../../../PartPage/components/PartDisplay';
-//import { useSinglePart } from '../../../../hooks/part-review.hooks';
+import PartDisplay from '../../../PartPage/PartPageComponents/PartDisplay';
 import { usePartsFromProject } from '../../../../hooks/part-review.hooks';
 import ErrorPage from '../../../ErrorPage';
 import { Link as RouterLink } from 'react-router-dom';
@@ -15,6 +14,7 @@ import PartReviewFAQs from './PartReviewFAQs';
 import CreateMenu from './PartReviewComponents/PartFormModels/CreateMenu';
 
 const PartsReviewPage = ({ project }: { project: Project }) => {
+  const theme = useTheme();
   const currentUser = useCurrentUser();
   const [showSubmissionGuide, setShowSubmissionGuide] = useState(() => {
     const userRole = currentUser.role;
@@ -22,195 +22,125 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
   });
   const { data: parts, isLoading, isError, error } = usePartsFromProject(wbsPipe(project.wbsNum));
 
+  const partsForMeToReview = useMemo(() => {
+    return parts?.filter(
+      (part) =>
+        part.reviewRequests.some((request) => request.reviewerRequested.userId === currentUser.userId) &&
+        (part.status === 'READY_FOR_REVIEW' || part.status === 'IN_REVIEW')
+    );
+  }, [parts, currentUser]);
+
+  const myPartsUnderReview = useMemo(() => {
+    return parts?.filter(
+      (part) => part.assignees.some((assignee) => assignee.userId === currentUser.userId) && part.status !== 'APPROVED'
+    );
+  }, [parts, currentUser]);
+
+  const allPartsUnderReview = useMemo(() => {
+    return parts?.filter((part) => part.status !== 'APPROVED');
+  }, [parts]);
+
+  const contentAmount = useMemo(() => {
+    const nonEmptyCount = [partsForMeToReview, myPartsUnderReview, allPartsUnderReview].filter(
+      (partArr) => partArr?.length !== 0
+    ).length;
+    if (nonEmptyCount === 3) return 'compact';
+    if (nonEmptyCount === 2) return 'standard';
+    return 'full';
+  }, [partsForMeToReview, myPartsUnderReview, allPartsUnderReview]);
+
   if (isLoading || !parts) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
-  // a sample part that i made to test a component
-  const createSamplePart = (partId: string, commonName: string): Part => ({
-    partId,
-    index: 1,
-    commonName,
-    description: '',
-    previewImageId: '/api/placeholder/400/240',
-    projectId: 'proj-1',
-    assignees: [
-      {
-        userId: 'user-2',
-        firstName: 'Jane',
-        lastName: 'Smith',
-        email: 'jane@example.com',
-        emailId: '',
-        role: 'ADMIN',
-        permissions: []
-      },
+  const PartsDisplay = (parts: PartPreview[] | undefined, title: string) => {
+    if (!parts) return null;
+    return (
+      <Grid item xs={12} md={contentAmount === 'full' ? 12 : contentAmount === 'standard' ? 6 : 4}>
+        <Typography variant="h6" mb={1}>
+          {title}
+        </Typography>
+        <Box
+          sx={{
+            overflow: 'auto',
+            bgcolor: 'grey.800',
+            borderRadius: 2
+          }}
+        >
+          <Box display="flex" justifyContent="space-between" alignItems="center" mx={3} mt={1}>
+            <Typography sx={{ fontSize: '12px' }} mb={1} width={'175px'}>
+              Part Name
+            </Typography>
+            {contentAmount !== 'compact' && (
+              <Typography sx={{ fontSize: '12px' }} mb={1}>
+                Assignee(s)
+              </Typography>
+            )}
+            {contentAmount !== 'compact' && (
+              <Typography sx={{ fontSize: '12px' }} mb={1}>
+                Reviewer(s)
+              </Typography>
+            )}
+            {contentAmount === 'full' && (
+              <Typography sx={{ fontSize: '12px' }} mb={1}>
+                Latest Submission Form
+              </Typography>
+            )}
+            {contentAmount === 'full' && (
+              <Typography sx={{ fontSize: '12px' }} mb={1}>
+                Latest Review Form
+              </Typography>
+            )}
+            <Typography sx={{ fontSize: '12px' }} mb={1}>
+              Review Status
+            </Typography>
+          </Box>
 
-      {
-        userId: 'user-3',
-        firstName: 'May',
-        lastName: 'Gonzalez',
-        email: 'johnson@example.com',
-        emailId: '',
-        role: 'ADMIN',
-        permissions: []
-      }
-    ],
-    createdAt: new Date('2025-03-14T09:00:00Z'),
-    /*userCreatedId: 'user-1',*/
-    userCreated: {
-      userId: 'user-1',
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'john@example.com',
-      emailId: '',
-      role: 'ADMIN',
-      permissions: []
-    },
-    submissions: [
-      {
-        partSubmissionId: '',
-        fileIds: [''],
-        name: 'this part',
-        partId: '',
-        userCreated: {
-          userId: 'user-1',
-          firstName: 'Henry',
-          lastName: 'Miller',
-          email: 'john@example.com',
-          emailId: '',
-          role: 'ADMIN',
-          permissions: []
-        },
-        reviews: [
-          {
-            partReviewId: '917249',
-            fileIds: [],
-            notes: 'jkasd',
-            submissionId: 'ksdfk',
-            popUps: [],
-            completedAt: new Date(),
-            createdAt: new Date(),
-            userCreated: {
-              userId: 'user-1',
-              firstName: 'John',
-              lastName: 'Doe',
-              email: 'john@example.com',
-              emailId: '',
-              role: 'ADMIN',
-              permissions: []
-            }
-          },
-          {
-            partReviewId: '20384',
-            fileIds: [],
-            notes: 'jkasd',
-            submissionId: '23529',
-            popUps: [],
-            completedAt: new Date(),
-            createdAt: new Date(),
-            userCreated: {
-              userId: 'user-2',
-              firstName: 'Greg',
-              lastName: 'Smith',
-              email: 'greg@example.com',
-              emailId: '',
-              role: 'ADMIN',
-              permissions: []
-            }
-          }
-        ],
-        createdAt: new Date('2025-03-14T09:00:00Z')
-      },
-      {
-        partSubmissionId: '',
-        fileIds: [''],
-        name: 'this part',
-        partId: '',
-        userCreated: {
-          userId: 'user-1',
-          firstName: 'Joe',
-          lastName: 'Lee',
-          email: 'john@example.com',
-          emailId: '',
-          role: 'ADMIN',
-          permissions: []
-        },
-        reviews: [
-          {
-            partReviewId: '917249',
-            fileIds: [],
-            notes: 'jkasd',
-            submissionId: 'ksdfk',
-            popUps: [],
-            completedAt: new Date(),
-            createdAt: new Date(),
-            userCreated: {
-              userId: 'user-1',
-              firstName: 'John',
-              lastName: 'Doe',
-              email: 'john@example.com',
-              emailId: '',
-              role: 'ADMIN',
-              permissions: []
-            }
-          },
-          {
-            partReviewId: '20384',
-            fileIds: [],
-            notes: 'jkasd',
-            submissionId: '23529',
-            popUps: [],
-            completedAt: new Date(),
-            createdAt: new Date(),
-            userCreated: {
-              userId: 'user-2',
-              firstName: 'Greg',
-              lastName: 'Smith',
-              email: 'greg@example.com',
-              emailId: '',
-              role: 'ADMIN',
-              permissions: []
-            }
-          }
-        ],
-        createdAt: new Date('2024-03-14T09:00:00Z')
-      }
-    ],
-    status: Review_Status.READY_FOR_REVIEW,
-    tags: [],
-    reviewRequests: [
-      {
-        partReviewRequestId: '',
-        partId: '',
-        requester: {
-          userId: 'user-1',
-          firstName: 'John',
-          lastName: 'Doe',
-          email: 'john@example.com',
-          emailId: '',
-          role: 'ADMIN',
-          permissions: []
-        },
-        reviewerRequested: {
-          userId: 'user-1',
-          firstName: 'John',
-          lastName: 'Doe',
-          email: 'john@example.com',
-          emailId: '',
-          role: 'ADMIN',
-          permissions: []
-        },
-        createdAt: new Date('2025-03-14T09:00:00Z')
-      }
-    ]
-  });
-
-  const samplePart = createSamplePart('part-123', 'Attenuator');
+          <Box
+            sx={{
+              height: '30vh',
+              overflow: 'auto',
+              bgcolor: 'grey.900',
+              p: 1,
+              position: 'relative',
+              '&::-webkit-scrollbar': {
+                width: '8px',
+                position: 'absolute',
+                right: 0
+              },
+              '&::-webkit-scrollbar-track': {
+                backgroundColor: 'transparent'
+              },
+              '&::-webkit-scrollbar-thumb': {
+                backgroundColor: theme.palette.primary.main,
+                borderRadius: '4px',
+                border: '2px solid transparent',
+                backgroundClip: 'content-box'
+              }
+            }}
+          >
+            <Stack>
+              {parts?.map((part) => (
+                <PartDisplay index={part.index} wbsNum={wbsPipe(project.wbsNum)} contentAmount={contentAmount}></PartDisplay>
+              ))}
+            </Stack>
+          </Box>
+        </Box>
+      </Grid>
+    );
+  };
 
   return (
     <Box>
-      <PartDisplay part={samplePart} contentAmount="full"></PartDisplay>
-      <PartDisplay part={samplePart} contentAmount="standard"></PartDisplay>
-      <PartDisplay part={samplePart} contentAmount="compact"></PartDisplay>
+      <Grid container spacing={3} width="100%">
+        {partsForMeToReview?.length !== 0 &&
+          PartsDisplay(partsForMeToReview, `Parts for me to Review (${partsForMeToReview?.length})`)}
+        {myPartsUnderReview?.length !== 0 &&
+          PartsDisplay(myPartsUnderReview, `My Parts Under Review (${myPartsUnderReview?.length})`)}
+        {allPartsUnderReview?.length !== 0 &&
+          isAtLeastRank('LEADERSHIP', currentUser.role) &&
+          PartsDisplay(allPartsUnderReview, `All Parts Under Review (${allPartsUnderReview?.length})`)}
+      </Grid>
+
       <CreateMenu wbsNum={project.wbsNum} partsInProject={parts} />
       <Grid container spacing={3}>
         <Grid item xs={12}>
