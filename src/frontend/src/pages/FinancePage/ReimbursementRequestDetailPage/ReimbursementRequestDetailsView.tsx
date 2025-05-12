@@ -57,7 +57,6 @@ import DownloadIcon from '@mui/icons-material/Download';
 import CheckList from '../../../components/CheckList';
 import MarkDeliveredModal from './MarkDeliveredModal';
 import ReimbursementRequestTimeline from '../FinanceComponents/ReimbursementRequestTimeline';
-import VerticalDetailDisplay from '../../../components/VerticalDetailDisplay';
 import ReimbursementRequestStatusPill from '../../../components/ReimbursementRequestStatusPill';
 
 interface ReimbursementRequestDetailsViewProps {
