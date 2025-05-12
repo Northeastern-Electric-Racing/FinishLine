@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useGetAllReimbursementRequestData, useGetAllSpendingBarData } from '../../../hooks/finance.hooks';
-import { Box, Grid, Tab, Tabs, Typography } from '@mui/material';
-import PieChart from '../FinanceComponents/PieChart';
+import { Grid } from '@mui/material';
 import SpendingAndAllocation from './SpendingAndAllocation';
-import { grey } from '@mui/material/colors';
 import AdminBalance from './AdminBalance';
 
 interface FinanceDashboardAllViewProps {

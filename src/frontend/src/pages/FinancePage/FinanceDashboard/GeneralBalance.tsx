@@ -1,5 +1,5 @@
 import { Box, Typography } from '@mui/material';
-import { ReimbursementRequestData, SpendingBarData } from 'shared';
+import { ReimbursementRequestData } from 'shared';
 import { grey } from '@mui/material/colors';
 import PieChart from '../FinanceComponents/PieChart';
 

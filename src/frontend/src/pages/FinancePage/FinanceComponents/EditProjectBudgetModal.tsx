@@ -10,9 +10,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
 import { ChangeRequestType, Project } from 'shared';
-import { useSingleTeam } from '../../../hooks/teams.hooks';
-import { useQuery } from 'react-query';
-import { getSingleProject } from '../../../apis/projects.api';
+import { useGetTeamsProjects } from '../../../hooks/projects.hooks';
 
 const schema = yup.object().shape({
   project: yup.string().required('Project is required'),
@@ -69,22 +67,12 @@ export const EditProjectBudgetModal: React.FC<EditProjectBudgetModalProps> = ({
 
   const { isLoading: crIsLoading, mutateAsync: createCR } = useCreateStandardChangeRequest();
 
-  const { data: team, isLoading: teamIsLoading, isError: teamsIsError, error: teamError } = useSingleTeam(teamId);
-
-  const projectsQuery = useQuery(
-    ['projects', team?.teamId],
-    async () => {
-      if (!team?.projects) return [];
-      const projectPromises = team.projects.map((project) => getSingleProject(project.wbsNum));
-      const responses = await Promise.all(projectPromises);
-      return responses.map((res) => res.data);
-    },
-    {
-      enabled: !!team?.projects
-    }
-  );
-
-  const projects: Project[] = projectsQuery.data ?? [];
+  const {
+    data: projects,
+    isLoading: projectsIsLoading,
+    isError: projectsIsError,
+    error: projectsError
+  } = useGetTeamsProjects(teamId);
 
   if (!indexCodes || indexCodesIsLoading || crIsLoading) {
     return <LoadingIndicator />;
@@ -93,11 +81,11 @@ export const EditProjectBudgetModal: React.FC<EditProjectBudgetModalProps> = ({
     return <ErrorPage message={indexCodeError.message} />;
   }
 
-  if (!team || teamIsLoading) {
+  if (!projects || projectsIsLoading) {
     return <LoadingIndicator />;
   }
-  if (teamsIsError) {
-    return <ErrorPage message={teamError.message} />;
+  if (projectsIsError) {
+    return <ErrorPage message={projectsError.message} />;
   }
 
   const onSubmit = async (data: EditProjectBudgetModalInputs) => {

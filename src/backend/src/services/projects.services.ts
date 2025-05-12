@@ -106,6 +106,25 @@ export default class ProjectsService {
     return projects.map(projectPreviewTransformer);
   }
 
+  static async getTeamsProjects(organization: Organization, teamId: string): Promise<Project[]> {
+    const projects = await prisma.project.findMany({
+      where: {
+        wbsElement: {
+          organizationId: organization.organizationId,
+          dateDeleted: null
+        },
+        teams: {
+          some: {
+            teamId
+          }
+        }
+      },
+      ...getProjectQueryArgs(organization.organizationId)
+    });
+
+    return projects.map(projectTransformer);
+  }
+
   /**
    * Get a single project
    * @param wbsNumber the wbsNumber of the project to get

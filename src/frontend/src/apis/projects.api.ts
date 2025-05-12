@@ -45,6 +45,16 @@ export const getUsersLeadingProjects = () => {
     transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer)
   });
 };
+
+/**
+ * Fetches all projects that the user is the manager or lead of.
+ */
+export const getTeamsProjects = (teamId: string) => {
+  return axios.get<Project[]>(apiUrls.teamsProjects(teamId), {
+    transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer)
+  });
+};
+
 /**
  * Fetches a single project.
  *

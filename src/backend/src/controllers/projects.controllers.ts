@@ -32,6 +32,16 @@ export default class ProjectsController {
     }
   }
 
+  static async getTeamsProjects(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamId } = req.params;
+      const projects: Project[] = await ProjectsService.getTeamsProjects(req.organization, teamId);
+      res.status(200).json(projects);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getSingleProject(req: Request, res: Response, next: NextFunction) {
     try {
       const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);

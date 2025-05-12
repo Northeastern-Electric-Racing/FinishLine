@@ -1,9 +1,8 @@
 import { Box, Tab, Tabs, Typography } from '@mui/material';
-import { ReimbursementRequestData, SpendingBarData } from 'shared';
+import { ReimbursementRequestData } from 'shared';
 import { grey } from '@mui/material/colors';
 import PieChart from '../FinanceComponents/PieChart';
 import { useState } from 'react';
-import ExtendedPieChart from '../FinanceComponents/ExtendedPieChart';
 
 const AdminBalance = ({ data }: { data: ReimbursementRequestData[] }) => {
   const [selectedTab, setSelectedTab] = useState('total');
@@ -57,7 +56,6 @@ const AdminBalance = ({ data }: { data: ReimbursementRequestData[] }) => {
             reimbursed={data[1].reimbursed}
             available={data[1].available}
           />
-          <ExtendedPieChart />
         </Box>
       )}
       {selectedTab === 'cash' && (
