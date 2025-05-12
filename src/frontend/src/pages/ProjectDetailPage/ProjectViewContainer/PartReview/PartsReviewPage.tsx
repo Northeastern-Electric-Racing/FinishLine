@@ -131,16 +131,6 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
 
   return (
     <Box>
-      <Grid container spacing={3} width="100%">
-        {partsForMeToReview?.length !== 0 &&
-          PartsDisplay(partsForMeToReview, `Parts for me to Review (${partsForMeToReview?.length})`)}
-        {myPartsUnderReview?.length !== 0 &&
-          PartsDisplay(myPartsUnderReview, `My Parts Under Review (${myPartsUnderReview?.length})`)}
-        {allPartsUnderReview?.length !== 0 &&
-          isAtLeastRank('LEADERSHIP', currentUser.role) &&
-          PartsDisplay(allPartsUnderReview, `All Parts Under Review (${allPartsUnderReview?.length})`)}
-      </Grid>
-
       <CreateMenu wbsNum={project.wbsNum} partsInProject={parts} />
       <Grid container spacing={3}>
         <Grid item xs={12}>
@@ -159,7 +149,7 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
         </Grid>
         <Grid item xs={12}>
           {/* The guide should be toggled off by default for admins, heads, and leads and toggled on for all other roles */}
-          {showSubmissionGuide ? (
+          {showSubmissionGuide && (
             <Grid item container direction="column" spacing={3} sx={{ paddingTop: '10px' }}>
               <Typography variant="h4" sx={{ pl: 2 }}>
                 Submission Guide
@@ -180,10 +170,17 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
                 </Grid>
               </Grid>
             </Grid>
-          ) : (
-            <LoadingIndicator /> /* Loading indicator will be replaced by a grid of all the part cards */
           )}
           {/* temporary test component to show that parts are being displayed */}
+          <Grid container spacing={3} width="100%" my={3}>
+            {partsForMeToReview?.length !== 0 &&
+              PartsDisplay(partsForMeToReview, `Parts for me to Review (${partsForMeToReview?.length})`)}
+            {myPartsUnderReview?.length !== 0 &&
+              PartsDisplay(myPartsUnderReview, `My Parts Under Review (${myPartsUnderReview?.length})`)}
+            {allPartsUnderReview?.length !== 0 &&
+              isAtLeastRank('LEADERSHIP', currentUser.role) &&
+              PartsDisplay(allPartsUnderReview, `All Parts Under Review (${allPartsUnderReview?.length})`)}
+          </Grid>
           <Stack>
             Parts for this project:
             {parts.map((part, _index) => (

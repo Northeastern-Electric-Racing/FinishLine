@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Link, Typography } from '@mui/material';
-import { Review_Status, wbsPipe } from 'shared';
+import { Review_Status } from 'shared';
 import { fullNamePipe } from '../../../utils/pipes';
 import { useSinglePart } from '../../../hooks/part-review.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
