@@ -32,6 +32,7 @@ const EditReimbursementRequestRenderedDefaultValues: React.FC<{
         defaultValues={{
           vendorId: reimbursementRequest.vendor.vendorId,
           indexCodeId: reimbursementRequest.indexCode.indexCodeId,
+          secondaryAccount: '',
           dateOfExpense: reimbursementRequest.dateOfExpense ? new Date(reimbursementRequest.dateOfExpense) : undefined,
           accountCodeId: reimbursementRequest.accountCode.accountCodeId,
           reimbursementProducts: reimbursementRequest.reimbursementProducts.map((product) => ({
@@ -39,7 +40,7 @@ const EditReimbursementRequestRenderedDefaultValues: React.FC<{
               ? (product.reimbursementProductReason as WBSElementData).wbsNum
               : (product.reimbursementProductReason as OtherProductReason),
             name: product.name,
-            refundSources: [],
+            refundSources: product.refundSources,
             cost: Number(centsToDollar(product.cost))
           })),
           receiptFiles: reimbursementRequest.receiptPictures.map((receipt) => ({

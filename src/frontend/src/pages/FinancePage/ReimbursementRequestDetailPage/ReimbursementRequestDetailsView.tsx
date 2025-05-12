@@ -22,7 +22,7 @@ import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import { Typography, useTheme, Link, IconButton } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import { ReimbursementRequest, isAdmin, isHead } from 'shared';
 import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
 import NERModal from '../../../components/NERModal';
@@ -30,10 +30,12 @@ import PageLayout from '../../../components/PageLayout';
 import {
   useDeleteReimbursementRequest,
   useDenyReimbursementRequest,
+  useEditReimbursementRequest,
   useLeadershipApproveReimbursementRequest,
   useMarkPendingFinance,
   useMarkReimbursementRequestAsReimbursed,
-  useRequestReimbursementRequestChanges
+  useRequestReimbursementRequestChanges,
+  useUploadManyReceipts
 } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
@@ -58,12 +60,20 @@ import CheckList from '../../../components/CheckList';
 import MarkDeliveredModal from './MarkDeliveredModal';
 import ReimbursementRequestTimeline from '../FinanceComponents/ReimbursementRequestTimeline';
 import ReimbursementRequestStatusPill from '../../../components/ReimbursementRequestStatusPill';
+import SidePage from '../FinanceComponents/SidePagePopup';
+import EditReimbursementRequestPage from '../EditReimbursementRequest/EditReimbursementRequest';
+import { ReimbursementRequestDataSubmission } from '../ReimbursementRequestForm/ReimbursementRequestForm';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
+  onCloseSidePage?: () => void;
 }
 
-const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewProps> = ({ reimbursementRequest }) => {
+const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewProps> = ({
+  reimbursementRequest,
+  onCloseSidePage
+}) => {
   const theme = useTheme();
   const user = useCurrentUser();
   const history = useHistory();
@@ -96,6 +106,16 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const isSaboSubmitted = isReimbursementRequestSaboSubmitted(reimbursementRequest);
   const isLeadershipApproved = isReimbursementRequestLeadershipApproved(reimbursementRequest);
   const isPendingFinance = isReimbursementRequestPendingFinance(reimbursementRequest);
+  const [showSidePage, setShowSidePage] = useState(false);
+
+  const openSidePage = () => {
+    setShowSidePage(true);
+  };
+
+  const closeSidePage = () => {
+    setShowSidePage(false);
+    onCloseSidePage?.();
+  };
 
   const handleDelete = async () => {
     try {
@@ -329,7 +349,10 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const buttons: ButtonInfo[] = [
     {
       title: 'Edit',
-      onClick: () => history.push(`${routes.REIMBURSEMENT_REQUESTS}/${reimbursementRequest.reimbursementRequestId}/edit`),
+      onClick: () => {
+        history.push(`${routes.REIMBURSEMENT_REQUESTS}/${reimbursementRequest.reimbursementRequestId}/edit`);
+        openSidePage();
+      },
       icon: <Edit />,
       disabled: !allowEdit && !user.isFinance
     },
@@ -458,6 +481,27 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     { content: accountCodePipe(reimbursementRequest.accountCode) }
   ];
 
+  const { id } = useParams<{ id: string }>();
+
+  const { isLoading: editReimbursementRequestIsLoading, mutateAsync: editReimbursementRequest } =
+    useEditReimbursementRequest(id);
+  const { isLoading: uploadReceiptsIsLoading, mutateAsync: uploadReceipts } = useUploadManyReceipts();
+
+  if (editReimbursementRequestIsLoading || uploadReceiptsIsLoading || !reimbursementRequest) return <LoadingIndicator />;
+
+  const onSubmit = async (data: ReimbursementRequestDataSubmission): Promise<string> => {
+    const filesToKeep = data.receiptFiles.filter((file) => file.googleFileId !== '');
+
+    await editReimbursementRequest({ ...data, receiptPictures: filesToKeep, indexCodeId: data.indexCodeId! });
+    await uploadReceipts({
+      id: reimbursementRequest.reimbursementRequestId,
+      files: data.receiptFiles.filter((receipt) => receipt.googleFileId === '').map((file) => file.file!)
+    });
+
+    closeSidePage();
+    return reimbursementRequest.reimbursementRequestId;
+  };
+
   return (
     <Box sx={{ ml: 2 }}>
       <PageLayout
@@ -488,6 +532,12 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
           modalShow={addSaboNumberModalShow}
           onHide={() => setAddSaboNumberModalShow(false)}
           reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
+        />
+        <SidePage
+          showPage={showSidePage}
+          handleClose={closeSidePage}
+          title={''}
+          component={<EditReimbursementRequestPage onSubmitEditData={onSubmit} />}
         />
         <Box sx={{ display: 'flex', mt: 2 }}>
           <Box>
