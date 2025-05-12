@@ -33,11 +33,6 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
 
   const DayCardTitle = () => (
     <Grid container alignItems="center" margin={0} padding={0}>
-      <Grid item>
-        <IconButton onClick={() => setIsCreateModalOpen(true)} disabled={cardDate.getTime() < new Date().getTime()}>
-          <AddCircleOutlineIcon fontSize="small" />
-        </IconButton>
-      </Grid>
       <Grid item xs display="flex" justifyContent="flex-end">
         <Typography variant="h6" marginRight={1} noWrap>
           {cardDate.getDate()}
@@ -61,7 +56,15 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
           markedStatus={markedStatus}
           setMarkedStatus={setMarkedStatus}
         />
-        <Box marginLeft={0.5} marginBottom={0.5} onClick={() => setIsSummaryModalOpen(true)} sx={{ cursor: 'pointer' }}>
+        <Box
+          marginLeft={0.5}
+          marginBottom={0.5}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsSummaryModalOpen(true);
+          }}
+          sx={{ cursor: 'pointer' }}
+        >
           <Card
             sx={{
               backgroundColor: designReviewStatusColor(markedStatus),
@@ -180,6 +183,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
 
   const today = new Date().toDateString();
   const isCurrentDay = cardDate.toDateString() === today;
+  const isFutureDay = cardDate > new Date();
 
   return (
     <>
@@ -197,7 +201,15 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
           width: { xs: '95%', md: '80%' },
           height: { xs: '10vh', sm: '15vh' },
           border: isCurrentDay ? '2px solid gray' : 'none',
-          boxShadow: isCurrentDay ? '0 0 10px rgba(255, 255, 255, 0.5)' : 'none'
+          boxShadow: isCurrentDay ? '0 0 10px rgba(255, 255, 255, 0.5)' : 'none',
+          cursor: isFutureDay ? 'pointer' : 'default',
+          transition: 'background 0.2s',
+          '&:hover': isFutureDay ? { background: '#232323' } : {}
+        }}
+        onClick={() => {
+          if (cardDate.getTime() >= new Date().getTime()) {
+            setIsCreateModalOpen(true);
+          }
         }}
       >
         <CardContent sx={{ padding: 0 }}>
