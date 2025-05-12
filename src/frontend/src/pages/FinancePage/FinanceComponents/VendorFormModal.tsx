@@ -107,14 +107,9 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
           <ReactHookTextField name="password" placeholder="Add Password Here" control={control} sx={{ width: 1 }} />
           <FormHelperText error>{errors.password?.message}</FormHelperText>
         </FormControl>
-        <FormControl sx={{ paddingBottom: 2 }}>
-          <FormLabel sx={{ fontWeight: 'bold', fontSize: 18 }}>Discount Code:*</FormLabel>
-          <ReactHookTextField name="discountCode" placeholder="Add Discount Code Here" control={control} sx={{ width: 1 }} />
-          <FormHelperText error>{errors.discountCode?.message}</FormHelperText>
-        </FormControl>
-        <Box display="flex" flexDirection="row" gap={2} sx={{ width: '100%' }}>
-          <FormControl fullWidth sx={{ paddingBottom: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, height: 85 }}>
+        <Box display="flex" flexDirection="row" gap={3} sx={{ width: '100%' }}>
+          <FormControl sx={{ paddingBottom: 2, flex: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, height: 85 }}>
               <FormLabel
                 sx={{
                   fontWeight: 'bold',
@@ -140,57 +135,67 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
               />
             </Box>
           </FormControl>
-          <FormControl fullWidth sx={{ paddingBottom: 2 }}>
-            <FormLabel
-              sx={{
-                alignSelf: 'start',
-                fontWeight: 'bold',
-                fontSize: 18
-              }}
-            >
-              2FA Contacts:
-            </FormLabel>
-            <Controller
+          <FormControl sx={{ paddingBottom: 2, flex: 3 }}>
+            <FormLabel sx={{ fontWeight: 'bold', fontSize: 18 }}>Discount Code:*</FormLabel>
+            <ReactHookTextField
+              name="discountCode"
+              placeholder="Add Discount Code Here"
               control={control}
-              defaultValue={[]}
-              name="twoFactorContacts"
-              render={({ field: { onChange, value } }) => (
-                <Autocomplete
-                  multiple
-                  options={users}
-                  disableCloseOnSelect
-                  getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
-                  isOptionEqualToValue={(option, val) => option.userId === val.userId}
-                  value={users.filter((u) => value?.includes(u.userId)) || []}
-                  onChange={(_, newValue) => {
-                    onChange(newValue.map((item) => item.userId));
-                  }}
-                  renderOption={(props, option, { selected }) => (
-                    <MenuItem {...props} key={option.userId} dense sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Checkbox checked={selected} />
-                      <ListItemText primary={`${option.firstName} ${option.lastName}`} />
-                    </MenuItem>
-                  )}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      placeholder={value?.length ? '' : 'Select Member(s)'}
-                      sx={{
-                        '& .MuiInputBase-root': {
-                          height: 'auto',
-                          flexWrap: 'wrap',
-                          overflowY: 'auto'
-                        }
-                      }}
-                    />
-                  )}
-                  popupIcon={null}
-                  clearIcon={null}
-                />
-              )}
+              sx={{ width: 1 }}
             />
+            <FormHelperText error>{errors.discountCode?.message}</FormHelperText>
           </FormControl>
         </Box>
+        <FormControl fullWidth sx={{ paddingBottom: 2 }}>
+          <FormLabel
+            sx={{
+              alignSelf: 'start',
+              fontWeight: 'bold',
+              fontSize: 18
+            }}
+          >
+            2FA Contacts:
+          </FormLabel>
+          <Controller
+            control={control}
+            defaultValue={[]}
+            name="twoFactorContacts"
+            render={({ field: { onChange, value } }) => (
+              <Autocomplete
+                multiple
+                options={users}
+                disableCloseOnSelect
+                getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
+                isOptionEqualToValue={(option, val) => option.userId === val.userId}
+                value={users.filter((u) => value?.includes(u.userId)) || []}
+                onChange={(_, newValue) => {
+                  onChange(newValue.map((item) => item.userId));
+                }}
+                renderOption={(props, option, { selected }) => (
+                  <MenuItem {...props} key={option.userId} dense sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Checkbox checked={selected} />
+                    <ListItemText primary={`${option.firstName} ${option.lastName}`} />
+                  </MenuItem>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    placeholder={value?.length ? '' : 'Select Member(s)'}
+                    sx={{
+                      '& .MuiInputBase-root': {
+                        height: 'auto',
+                        flexWrap: 'wrap',
+                        overflowY: 'auto'
+                      }
+                    }}
+                  />
+                )}
+                popupIcon={null}
+                clearIcon={null}
+              />
+            )}
+          />
+        </FormControl>
         <FormControl>
           <FormLabel sx={{ fontWeight: 'bold', fontSize: 18 }}>Notes on Vendor:</FormLabel>
           <ReactHookTextField name="notes" placeholder="e.g. Vendor is tax-exempt" control={control} sx={{ width: 1 }} />
