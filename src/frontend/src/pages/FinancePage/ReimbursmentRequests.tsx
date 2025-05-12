@@ -43,8 +43,6 @@ const ReimbursementRequests: React.FC = () => {
   const [showSidePage, setShowSidePage] = useState(false);
   const [sidePageTitle, setSidePageTitle] = useState('');
 
-  if (createReimbursementRequestIsLoading || receiptsIsLoading) return <LoadingIndicator />;
-
   const history = useHistory();
   const user = useCurrentUser();
   const canViewAllReimbursementRequests = user.isFinance || isHead(user.role) || isLead(user.role);
@@ -177,6 +175,7 @@ const ReimbursementRequests: React.FC = () => {
 
   if (isFinance && allReimbursementRequestsIsError) return <ErrorPage message={allReimbursementRequestsError?.message} />;
   if (userReimbursementRequestIsError) return <ErrorPage message={userReimbursementRequestError?.message} />;
+  if (createReimbursementRequestIsLoading || receiptsIsLoading) return <LoadingIndicator />;
 
   const filterMenu = (
     <Menu
