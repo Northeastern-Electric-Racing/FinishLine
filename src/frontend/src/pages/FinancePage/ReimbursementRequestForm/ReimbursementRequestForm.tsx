@@ -102,7 +102,8 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       dateOfExpense: defaultValues?.dateOfExpense,
       accountCodeId: defaultValues?.accountCodeId ?? '',
       reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductFormArgs[]),
-      receiptFiles: defaultValues?.receiptFiles ?? ([] as ReimbursementReceiptUploadArgs[])
+      receiptFiles: defaultValues?.receiptFiles ?? ([] as ReimbursementReceiptUploadArgs[]),
+      summary: defaultValues?.summary ?? '' // added to include summary field
     }
   });
 
@@ -169,6 +170,8 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
 
   const onSubmitWrapper = async (data: ReimbursementRequestFormInput) => {
     try {
+      console.log('Form data being submitted:', data);
+
       //total cost is tracked in cents
       const totalCost = Math.round(data.reimbursementProducts.reduce((acc, curr) => acc + curr.cost, 0) * 100);
       const reimbursementProducts = data.reimbursementProducts.map((product: ReimbursementProductFormArgs) => {
