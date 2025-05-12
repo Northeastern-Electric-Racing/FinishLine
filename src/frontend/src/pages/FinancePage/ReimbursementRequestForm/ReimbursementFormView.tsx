@@ -120,6 +120,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
     }
   }, [firstRefundSourceId, secondRefundSourceId, reimbursementProducts, setValue]);
 
+  // for setting the first refund source in the array
   useEffect(() => {
     if (!firstRefundSourceId || hasConfirmedFinance) return;
 

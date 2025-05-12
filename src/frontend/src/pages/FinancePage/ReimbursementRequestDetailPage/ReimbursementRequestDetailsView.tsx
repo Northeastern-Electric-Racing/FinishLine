@@ -299,58 +299,6 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     </NERModal>
   );
 
-  const BasicInformationView = () => {
-    return (
-      <>
-        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginBottom: '5px' }}>
-          <Typography variant="h5">Details</Typography>
-          <Typography variant="h5" fontSize={24}>{`${
-            reimbursementRequest.dateOfExpense ? datePipe(new Date(reimbursementRequest.dateOfExpense)) : '-'
-          }`}</Typography>
-        </Box>
-        <Grid container spacing={2}>
-          <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Purchased From" content={reimbursementRequest.vendor.name} />
-          </Grid>
-          <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="SABO Number" content={`${undefinedPipe(reimbursementRequest.saboId)}`} />
-          </Grid>
-          <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Refund Source" content={codeAndRefundSourceName(reimbursementRequest.indexCode)} />
-          </Grid>
-          <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Expense Type" content={accountCodePipe(reimbursementRequest.accountCode)} />
-          </Grid>
-          <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay
-              label="Date Item Delivered"
-              content={dateUndefinedPipe(reimbursementRequest.dateDelivered)}
-            />
-          </Grid>
-          <Grid
-            item
-            xs={12}
-            container
-            mt={2}
-            ml={2}
-            sx={{ backgroundColor: totalCostBackgroundColor, borderRadius: '10px', boxShadow: 1 }}
-          >
-            <Grid item xs={6} textAlign={'center'} mt={-2}>
-              <Typography fontSize={50}>Total Cost</Typography>
-            </Grid>
-            <Grid xs={6} mt={-2} sx={{ display: 'flex', alignItems: 'center' }}>
-              <Typography fontSize={50}>{`$${centsToDollar(reimbursementRequest.totalCost)}`}</Typography>
-            </Grid>
-          </Grid>
-        </Grid>
-        <ReimbursementRequestTimeline
-          reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
-          reimbursementRequestComments={reimbursementRequest.comments}
-        />
-      </>
-    );
-  };
-
   const ReceiptsView = () => {
     return (
       <Box sx={{ maxHeight: `250px`, overflow: reimbursementRequest.receiptPictures.length > 0 ? 'auto' : 'none' }}>
@@ -569,7 +517,12 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         <Box sx={{ mt: 2 }}>
           <ReceiptsView />
         </Box>
-        <Box sx={{ mt: 2 }}>{BasicInformationView}</Box>
+        <Box sx={{ mt: 2 }}>
+          <ReimbursementRequestTimeline
+            reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
+            reimbursementRequestComments={reimbursementRequest.comments}
+          />
+        </Box>
       </PageLayout>
     </Box>
   );
