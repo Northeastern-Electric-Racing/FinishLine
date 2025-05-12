@@ -47,8 +47,7 @@ import {
   isReimbursementRequestDenied,
   isReimbursementRequestLeadershipApproved,
   isReimbursementRequestPendingFinance,
-  getUniqueWbsElementsWithProductsFromReimbursementRequest,
-  cleanReimbursementRequestStatus
+  getUniqueWbsElementsWithProductsFromReimbursementRequest
 } from '../../../utils/reimbursement-request.utils';
 import { routes } from '../../../utils/routes';
 import AddSABONumberModal from './AddSABONumberModal';
@@ -59,6 +58,7 @@ import CheckList from '../../../components/CheckList';
 import MarkDeliveredModal from './MarkDeliveredModal';
 import ReimbursementRequestTimeline from '../FinanceComponents/ReimbursementRequestTimeline';
 import VerticalDetailDisplay from '../../../components/VerticalDetailDisplay';
+import ReimbursementRequestStatusPill from '../../../components/ReimbursementRequestStatusPill';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -511,16 +511,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const contentItems = [
     {
       content: statusTypes.length > 0 && (
-        <Box
-          sx={{
-            padding: '3px 8px',
-            display: 'inline-flex',
-            borderRadius: '8px',
-            backgroundColor: getStatusColor(recentStatus),
-            fontWeight: 700
-          }}
-        >
-          {cleanReimbursementRequestStatus(recentStatus)}
+        <Box id="status" display="flex">
+          {statusTypes.length > 0 && <ReimbursementRequestStatusPill status={recentStatus} />}
         </Box>
       )
     },
@@ -594,7 +586,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         <Box sx={{ mt: 2 }}>
           <ReceiptsView />
         </Box>
-        <Box>{BasicInformationView}</Box>
+        <Box sx={{ mt: 2 }}>{BasicInformationView}</Box>
       </PageLayout>
     </Box>
   );
