@@ -46,8 +46,8 @@ interface ReimbursementProductTableProps {
   setValue: UseFormSetValue<ReimbursementRequestFormInput>;
   control: Control<ReimbursementRequestFormInput>;
   hasMultipleRefundSources?: boolean;
-  firstRefundSourceIndexCode?: IndexCode | undefined;
-  secondRefundSourceIndexCode?: IndexCode | undefined;
+  firstRefundSourceIndexCode?: IndexCode;
+  secondRefundSourceIndexCode?: IndexCode;
   firstRefundSourceName?: string;
   secondRefundSourceName?: string;
 }
