@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { accountCodePipe, datePipe, dateUndefinedPipe, displayEnum } from '../../../utils/pipes';
+import { accountCodePipe, displayEnum } from '../../../utils/pipes';
 import { Assignment, ChangeCircle, Edit, Pending } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
@@ -19,7 +19,7 @@ import StoreIcon from '@mui/icons-material/Store';
 import SellIcon from '@mui/icons-material/Sell';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 
-import { Typography, useTheme, Link, IconButton, Grid } from '@mui/material';
+import { Typography, useTheme, Link, IconButton } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -37,7 +37,7 @@ import {
 } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
-import { centsToDollar, codeAndRefundSourceName, fullNamePipe, undefinedPipe } from '../../../utils/pipes';
+import { centsToDollar, fullNamePipe, undefinedPipe } from '../../../utils/pipes';
 import {
   imageDownloadUrl,
   imageFileUrl,
@@ -65,7 +65,6 @@ interface ReimbursementRequestDetailsViewProps {
 
 const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewProps> = ({ reimbursementRequest }) => {
   const theme = useTheme();
-  const totalCostBackgroundColor = theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200];
   const user = useCurrentUser();
   const history = useHistory();
   const [addSaboNumberModalShow, setAddSaboNumberModalShow] = useState<boolean>(false);
@@ -512,15 +511,19 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             width: 'calc(100% - 40px)'
           }}
         />
-        <ReimbursementProductsView reimbursementRequest={reimbursementRequest} />
-        <Box sx={{ mt: 2 }}>
-          <ReceiptsView />
-        </Box>
-        <Box sx={{ mt: 2 }}>
-          <ReimbursementRequestTimeline
-            reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
-            reimbursementRequestComments={reimbursementRequest.comments}
-          />
+        <Box sx={{ display: 'flex' }}>
+          <Box sx={{ mt: -4 }}>
+            <ReimbursementRequestTimeline
+              reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
+              reimbursementRequestComments={reimbursementRequest.comments}
+            />
+          </Box>
+          <Box sx={{ padding: 7, mt: -6 }}>
+            <ReimbursementProductsView reimbursementRequest={reimbursementRequest} />
+            <Box sx={{ mt: 2 }}>
+              <ReceiptsView />
+            </Box>
+          </Box>
         </Box>
       </PageLayout>
     </Box>
