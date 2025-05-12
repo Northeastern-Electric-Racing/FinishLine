@@ -43,11 +43,16 @@ const FinanceDashboardTeamView: React.FC<FinanceDashboardTeamViewProps> = ({ tea
   }
 
   return (
-    <Grid container columnSpacing={25} rowSpacing={2}>
-      <Grid item xs={12} md={4}>
+    <Grid
+      container
+      columnSpacing={{ xs: 1, sm: 2, md: 3 }}
+      rowSpacing={{ xs: 1, sm: 2 }}
+      sx={{ flexWrap: 'wrap', padding: { xs: 1, sm: 2 } }}
+    >
+      <Grid item xs={12} sm={6} md={4.5}>
         <GeneralBalance data={rrData} />
       </Grid>
-      <Grid item xs={12} md={8}>
+      <Grid item xs={12} sm={6} md={7.5}>
         <SpendingAndAllocation data={[spendingBarData]} />
       </Grid>
     </Grid>
