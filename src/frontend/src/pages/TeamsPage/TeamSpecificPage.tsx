@@ -57,7 +57,7 @@ const TeamSpecificPage: React.FC = () => {
   } = useGetSpendingBarTeamData({
     startDate: undefined,
     endDate: undefined,
-    teamId: teamId
+    teamId
   });
 
   if (isError) return <ErrorPage message={error?.message} />;
