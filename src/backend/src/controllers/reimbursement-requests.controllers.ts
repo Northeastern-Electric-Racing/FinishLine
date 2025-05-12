@@ -108,7 +108,8 @@ export default class ReimbursementRequestsController {
         totalCost,
         otherReimbursementProducts,
         wbsReimbursementProducts,
-        receiptPictures
+        receiptPictures,
+        summary
       } = req.body;
 
       const updatedReimbursementRequestId = await ReimbursementRequestService.editReimbursementRequest(
@@ -122,8 +123,10 @@ export default class ReimbursementRequestsController {
         receiptPictures,
         req.currentUser,
         req.organization,
+        summary,
         dateOfExpense
       );
+
       res.status(200).json(updatedReimbursementRequestId);
     } catch (error: unknown) {
       next(error);

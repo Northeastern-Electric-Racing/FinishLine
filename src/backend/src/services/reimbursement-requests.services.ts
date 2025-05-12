@@ -267,6 +267,7 @@ export default class ReimbursementRequestService {
    * @param receiptPictures the old receipts that haven't been deleted (new receipts must be separately uploaded)
    * @param submitter the person editing the reimbursement request
    * @param organizationId the organization the user is currently in
+   * @param summary the summary of a purchase
    * @returns the edited reimbursement request
    */
   static async editReimbursementRequest(
@@ -280,6 +281,7 @@ export default class ReimbursementRequestService {
     receiptPictures: ReimbursementReceiptCreateArgs[],
     submitter: User,
     organization: Organization,
+    summary: string,
     dateOfExpense?: Date
   ): Promise<Reimbursement_Request> {
     const oldReimbursementRequest = await prisma.reimbursement_Request.findUnique({
@@ -322,7 +324,8 @@ export default class ReimbursementRequestService {
         account,
         totalCost,
         accountCodeId: accountCode.accountCodeId,
-        vendorId: vendor.vendorId
+        vendorId: vendor.vendorId,
+        summary
       }
     });
 

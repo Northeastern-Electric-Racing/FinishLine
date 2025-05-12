@@ -65,6 +65,7 @@ reimbursementRequestsRouter.post(
   nonEmptyString(body('receiptPictures.*.name')),
   nonEmptyString(body('receiptPictures.*.googleFileId')),
   nonEmptyString(body('accountCodeId')),
+  nonEmptyString(body('summary')),
   intMinZero(body('totalCost')),
   validateReimbursementProducts(),
   validateInputs,
