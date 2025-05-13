@@ -19,3 +19,11 @@ export const getSponsorTaskQueryArgs = (organizationId: string) =>
       assignee: getUserQueryArgs(organizationId)
     }
   });
+
+export const getSponsorTierQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Sponsor_TierDefaultArgs>()({
+    include: {
+      sponsors: getSponsorQueryArgs(organizationId),
+      organization: true
+    }
+  });

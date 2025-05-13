@@ -229,6 +229,8 @@ const getAllSpendingBarData = (startDate?: Date, endDate?: Date): string => {
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
+const getAllSponsorTiers = () => `${financeRoutesEndpoints()}/sponsorTiers`;
+const editSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/edit`;
 
 /**************** Bill of Material Endpoints **************************/
 const bomEndpoints = () => `${API_URL}/projects/bom`;
@@ -475,6 +477,8 @@ export const apiUrls = {
   getSpendingBarTeamTypeData,
   getSpendingBarCategoryData,
   getAllSpendingBarData,
+  getAllSponsorTiers,
+  editSponsor,   
 
   bomEndpoints,
   bomGetMaterialsByWbsNum,

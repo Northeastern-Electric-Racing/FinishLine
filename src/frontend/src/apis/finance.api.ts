@@ -22,7 +22,8 @@ import {
   ReimbursementRequestProjectDataPayload,
   ReimbursementRequestDataPayload,
   SpendingBarDataPayload,
-  ReimbursementRequestCategoryDataPayload
+  ReimbursementRequestCategoryDataPayload,
+  EditSponsorPayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -41,7 +42,8 @@ import {
   Sponsor,
   SponsorTask,
   ReimbursementRequestData,
-  SpendingBarData
+  SpendingBarData,
+  SponsorTier
 } from 'shared';
 
 enum AllowedFileType {
@@ -609,4 +611,16 @@ export const getAllSpendingBarData = (payload: SpendingBarDataPayload) => {
   return axios.get<SpendingBarData[]>(apiUrls.getAllSpendingBarData(payload.startDate, payload.endDate), {
     transformResponse: (data) => JSON.parse(data) as SpendingBarData[]
   });
+};
+
+export const getAllSponsorTiers = () => {
+  return axios.get(apiUrls.getAllSponsorTiers(), {
+    transformResponse: (data) => {
+      return JSON.parse(data) as SponsorTier[];
+    }
+  });
+};
+
+export const editSponsor = (id: string, formData: EditSponsorPayload) => {
+  return axios.post(apiUrls.editSponsor(id), formData);
 };

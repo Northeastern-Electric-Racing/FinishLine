@@ -147,6 +147,7 @@ export type ExceptionObjectNames =
   | 'Graph Collection'
   | 'Sponsor'
   | 'SponsorTask'
+  | 'Sponsor Tier'
   | 'Index Code'
   | 'Reimbursement Product Other Reason'
   | 'Encryption Key'

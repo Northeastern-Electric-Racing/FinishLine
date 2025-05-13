@@ -1,7 +1,11 @@
-import { isHead, ReimbursementRequestData, SpendingBarData } from 'shared';
+import { isHead, ReimbursementRequestData, SpendingBarData, SponsorTask, SponsorTier } from 'shared';
 import { User, Organization, Sponsor_Task, Sponsor } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
-import { getSponsorQueryArgs, getSponsorTaskQueryArgs } from '../prisma-query-args/sponsor.query.args';
+import {
+  getSponsorQueryArgs,
+  getSponsorTaskQueryArgs,
+  getSponsorTierQueryArgs
+} from '../prisma-query-args/sponsor.query.args';
 import {
   AccessDeniedException,
   DeletedException,
@@ -393,5 +397,79 @@ export default class FinanceServices {
 
   static async getSpendingBarCategoryData(organization: Organization): Promise<SpendingBarData> {
     return await getSpendingBarCategoryData(organization.organizationId);
+  }
+
+  static async editSponsor(
+    submitter: User,
+    organization: Organization,
+    sponsorId: string,
+    name: string,
+    activeStatus: boolean,
+    sponsorValue: number,
+    joinDate: Date,
+    activeYears: number[],
+    sponsorTierId: string,
+    vendorContact: string,
+    taxExempt: boolean,
+    sponsorTasks: SponsorTask[],
+    discountCode?: string
+  ): Promise<Sponsor> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
+      throw new AccessDeniedException('Only heads can edit sponsors.');
+
+    const oldSponsor = await prisma.sponsor.findUnique({
+      where: {
+        sponsorId,
+        organizationId: organization.organizationId
+      },
+      include: {
+        sponsorTasks: true
+      }
+    });
+
+    if (!oldSponsor) throw new NotFoundException('Sponsor', sponsorId);
+
+    const tier = await prisma.sponsor_Tier.findUnique({
+      where: {
+        sponsorTierId,
+        organizationId: organization.organizationId
+      }
+    });
+
+    if (!tier) throw new NotFoundException('Sponsor Tier', sponsorId);
+
+    const updatedSponsor = await prisma.sponsor.update({
+      where: { sponsorId: oldSponsor.sponsorId },
+      data: {
+        name,
+        activeStatus,
+        sponsorValue,
+        joinDate,
+        activeYears,
+        tier: {
+          connect: { sponsorTierId }
+        },
+        sponsorTasks: {
+          connect: sponsorTasks.map((task) => ({ sponsorTaskId: task.sponsorTaskId }))
+        },
+        vendorContact,
+        taxExempt,
+        discountCode
+      },
+      include: {
+        sponsorTasks: true
+      }
+    });
+
+    return updatedSponsor;
+  }
+
+  static async getAllSponsorTiers(organization: Organization): Promise<SponsorTier[]> {
+    const allSponsorTiers = await prisma.sponsor_Tier.findMany({
+      where: { organizationId: organization.organizationId },
+      ...getSponsorTierQueryArgs(organization.organizationId)
+    });
+
+    return allSponsorTiers;
   }
 }

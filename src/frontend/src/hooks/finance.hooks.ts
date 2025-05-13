@@ -53,7 +53,9 @@ import {
   getSpendingBarCategoryData,
   getSpendingBarTeamTypeData,
   getAllSpendingBarData,
-  deleteVendor
+  deleteVendor,
+  getAllSponsorTiers,
+  editSponsor
 } from '../apis/finance.api';
 import {
   IndexCode,
@@ -140,6 +142,10 @@ export interface SponsorTaskPayload {
   notes: string;
   notifyDate?: Date;
   asigneeId?: string;
+}
+
+export interface EditSponsorPayload extends SponsorPayload {
+  sponsorId: string;
 }
 
 /**
@@ -1020,3 +1026,24 @@ export const useGetAllSpendingBarData = (spendingBarData: SpendingBarDataPayload
     const { data } = await getAllSpendingBarData(spendingBarData);
     return data;
   });
+
+/**
+ * Custom react hook to get all sponsor tiers
+ *
+ * @returns all the sponsor tiers
+ */
+export const useGetAllSponsorTiers = () => {
+  return useQuery<SponsorTier[], Error>(['sponsor-tiers'], async () => {
+    const { data } = await getAllSponsorTiers();
+    return data;
+  });
+};
+
+export const useEditSponsor = (sponsorId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Sponsor, Error, EditSponsorPayload>(['sponsor', 'edit'], async (formData: EditSponsorPayload) => {
+    const { data } = await editSponsor(sponsorId, formData);
+    queryClient.invalidateQueries(['sponsor']);
+    return data;
+  });
+};
