@@ -59,9 +59,9 @@ const TeamSpecificPage: React.FC = () => {
     </MenuItem>
   );
 
-  const SetSubteamButton = () => (
+  const SetDivisionButton = () => (
     <NERButton variant="contained" onClick={() => setShowTeamTypeModal(true)} disabled={!isAdmin(user.role)}>
-      Set Subteam
+      Set Division
     </NERButton>
   );
 
@@ -122,7 +122,7 @@ const TeamSpecificPage: React.FC = () => {
     <PageLayout
       headerRight={
         <Stack direction="row" spacing={2} justifyContent="flex-end">
-          <SetSubteamButton />
+          <SetDivisionButton />
           {TeamActionsDropdown}
         </Stack>
       }
