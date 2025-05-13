@@ -1,4 +1,5 @@
-import { Box, Grid, Link, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { Box, Grid, Link, ToggleButton, ToggleButtonGroup, Typography, Tooltip } from '@mui/material';
+import HelpIcon from '@mui/icons-material/Help';
 import { useState } from 'react';
 import { DesignReview, wbsPipe } from 'shared';
 import { meetingStartTimePipe } from '../../../utils/pipes';
@@ -113,7 +114,13 @@ const FinalizeDesignReviewDetailsModal = ({
       </Box>
       {meetingType.includes('virtual') && (
         <Box style={{ display: 'flex', marginBottom: 20, alignItems: 'center' }}>
-          <Typography style={{ fontSize: '1.2em', marginRight: 118 }}>Zoom Link:</Typography>
+          <Typography style={{ fontSize: '1.2em', marginRight: 5 }}>Zoom Link:</Typography>
+          <Tooltip
+            title="Double check that your Zoom link is publicly accessible and does not require a password."
+            placement="right"
+          >
+            <HelpIcon style={{ fontSize: 'medium', marginRight: 96 }} />
+          </Tooltip>
           <ReactHookTextField name="zoomLink" control={control} sx={{ width: 0.48 }} errorMessage={errors.zoomLink} />
         </Box>
       )}
