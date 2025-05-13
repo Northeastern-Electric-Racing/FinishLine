@@ -661,15 +661,15 @@ describe('part review tests', () => {
       expect(prismaDeletedMistake?.dateDeleted).toBeTruthy();
     });
 
-    it('does not let non-admins create, edit, or delete common mistakes', async () => {
+    it('does not let non-admins create, edit, or delete common mistakes if starred', async () => {
       await expect(
-        async () => await PartReviewService.createCommonMistake('some title', 'some description', false, nonAdmin, orgId)
+        async () => await PartReviewService.createCommonMistake('some title', 'some description', true, nonAdmin, orgId)
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create common mistake'));
 
       const commonMistake = await PartReviewService.createCommonMistake(
         'some title',
         'some description',
-        false,
+        true,
         batman,
         orgId
       );
