@@ -25,7 +25,6 @@ interface PartActionsMenuProps {
 }
 
 const PartActionsMenu: React.FC<PartActionsMenuProps> = ({ part, submissionIndex, wbsNum }: PartActionsMenuProps) => {
-  
   const user = useCurrentUser();
   const history = useHistory();
   const toast = useToast();
@@ -44,19 +43,14 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({ part, submissionIndex
     error: partsError
   } = usePartsFromProject(wbsPipe(wbsNum));
 
-  const submission: PartSubmission | undefined =
-    Array.isArray(part.submissions) && submissionIndex >= 0 && submissionIndex < part.submissions.length
-      ? part.submissions[submissionIndex]
-      : undefined;
-  if (!submission) {
-    toast.error('No submission found.');
-    return null;
-  }
-  const submissionId = submission.partSubmissionId;
-
-  const { mutateAsync: editSubmission } = useEditPartSubmission(submissionId);
+  const submission = part.submissions[submissionIndex];
+  const { mutateAsync: editSubmission } = useEditPartSubmission(submission ? submission.partSubmissionId : '');
 
   const onSubmitSubmission = async (data: { name: string; notes?: string; fileIds: string[] }) => {
+    if (!submission) {
+      toast.error('No submission found.');
+      return;
+    }
     await editSubmission({
       name: data.name,
       notes: data.notes
@@ -66,7 +60,8 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({ part, submissionIndex
   const handleDelete = async () => {
     try {
       await deletePart();
-      history.push(routes.PROJECT_PART);
+      history.goBack();
+      toast.success(`${part.commonName} Deleted Successfully!`);
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 3000);
@@ -136,7 +131,8 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({ part, submissionIndex
   ];
 
   return (
-    <ActionsMenu buttons={buttons}>
+    <>
+      <ActionsMenu buttons={buttons} />
       <PartFormModal
         open={showEditPart}
         handleClose={() => setShowEditPart(false)}
@@ -164,7 +160,7 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({ part, submissionIndex
         submissionsInPart={part.submissions}
       />
       <DeleteModal />
-    </ActionsMenu>
+    </>
   );
 };
 

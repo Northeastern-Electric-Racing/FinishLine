@@ -71,7 +71,8 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
         assigneeIds,
         reviewerIds
       });
-      toast.success('Part Successfully Created');
+      toast.success(!!defaultValues ? 'Part Successfully Edited' : 'Part Successfully Created'); // Note to Chris: might wanna check for
+      // defaultValues in this toast message for SubmissionFormModal and ReviewFormModal too
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
