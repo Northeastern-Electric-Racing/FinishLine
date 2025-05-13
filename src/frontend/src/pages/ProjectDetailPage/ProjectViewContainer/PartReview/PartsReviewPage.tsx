@@ -1,18 +1,16 @@
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { Box, Stack } from '@mui/system';
-import { Grid, FormGroup, FormControlLabel, Typography, Link } from '@mui/material';
+import { Grid, FormGroup, FormControlLabel, Link } from '@mui/material';
 import { useState } from 'react';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
 import { Project, rankUserRole, wbsPipe, Review_Status, Part } from 'shared';
 import NERSwitch from '../../../../components/NERSwitch';
-import CommonMistakes from './CommonMistakes';
-import PartDisplay from '../../../PartPage/components/PartDisplay';
-//import { useSinglePart } from '../../../../hooks/part-review.hooks';
+import PartDisplay from '../../../PartPage/Components/PartDisplay';
 import { usePartsFromProject } from '../../../../hooks/part-review.hooks';
 import ErrorPage from '../../../ErrorPage';
 import { Link as RouterLink } from 'react-router-dom';
-import PartReviewFAQs from './PartReviewFAQs';
 import CreateMenu from './PartReviewComponents/PartFormModels/CreateMenu';
+import SubmissionGuide from './PartReviewComponents/SubmissionGuide';
 
 const PartsReviewPage = ({ project }: { project: Project }) => {
   const currentUser = useCurrentUser();
@@ -230,26 +228,7 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
         <Grid item xs={12}>
           {/* The guide should be toggled off by default for admins, heads, and leads and toggled on for all other roles */}
           {showSubmissionGuide ? (
-            <Grid item container direction="column" spacing={3} sx={{ paddingTop: '10px' }}>
-              <Typography variant="h4" sx={{ pl: 2 }}>
-                Submission Guide
-              </Typography>
-
-              <Grid container spacing={3} sx={{ paddingTop: '10px' }}>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="h6" sx={{ pl: 2 }}>
-                    Sample Drawing
-                  </Typography>
-                </Grid>
-
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={2}>
-                    <PartReviewFAQs />
-                    <CommonMistakes />
-                  </Stack>
-                </Grid>
-              </Grid>
-            </Grid>
+            <SubmissionGuide />
           ) : (
             <LoadingIndicator /> /* Loading indicator will be replaced by a grid of all the part cards */
           )}

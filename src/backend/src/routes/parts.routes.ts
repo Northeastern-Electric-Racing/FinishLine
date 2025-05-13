@@ -143,6 +143,13 @@ partsRouter.post(
   PartReviewController.updatePartReviewPopup
 );
 
+partsRouter.post(
+  '/partReviewSampleImage/update',
+  upload.single('partReviewSampleImage'),
+  PartReviewController.setPartReviewSampleImage
+);
+partsRouter.get('/partReviewSampleImage', PartReviewController.getPartReviewSampleImage);
+
 partsRouter.post('/common-mistake/:commonMistakeId/delete', PartReviewController.deleteCommonMistake);
 partsRouter.post('/popup/:popupId/delete', PartReviewController.deletePartReviewPopup);
 

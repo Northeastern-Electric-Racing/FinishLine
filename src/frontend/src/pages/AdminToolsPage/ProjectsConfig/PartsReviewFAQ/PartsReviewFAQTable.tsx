@@ -107,12 +107,10 @@ const PartsReviewFAQTable: React.FC = () => {
         onFormSubmit={() => deletingFaqId && handleDelete(deletingFaqId)}
       />
 
-      <Typography variant="subtitle1" sx={{ fontWeight: 'bold', marginBottom: '4px' }}>
-        FAQs
-      </Typography>
+      <Typography variant="h6">FAQs</Typography>
       <Box
         sx={{
-          maxHeight: '200px',
+          maxHeight: '30vh',
           maxWidth: '100%',
           overflowY: 'scroll',
           paddingBottom: '8px',
