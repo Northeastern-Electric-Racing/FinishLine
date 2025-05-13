@@ -115,10 +115,7 @@ const FinalizeDesignReviewDetailsModal = ({
       {meetingType.includes('virtual') && (
         <Box style={{ display: 'flex', marginBottom: 20, alignItems: 'center' }}>
           <Typography style={{ fontSize: '1.2em', marginRight: 5 }}>Zoom Link:</Typography>
-          <Tooltip
-            title="Double check that your Zoom link is publicly accessible and does not require a password."
-            placement="right"
-          >
+          <Tooltip title="Ensure your Zoom Link is Publicly Accessible and Does Not Require a Password." placement="right">
             <HelpIcon style={{ fontSize: 'medium', marginRight: 96 }} />
           </Tooltip>
           <ReactHookTextField name="zoomLink" control={control} sx={{ width: 0.48 }} errorMessage={errors.zoomLink} />
