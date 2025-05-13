@@ -433,7 +433,6 @@ export default class PartReviewController {
 
   static async setPartReviewSampleImage(req: Request, res: Response, next: NextFunction) {
     try {
-      console.log('setting part review sample image');
       if (!req.file) {
         throw new HttpException(400, 'Invalid or undefined image data');
       }

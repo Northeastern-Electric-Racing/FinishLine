@@ -258,7 +258,6 @@ export const getAllPartTags = () => {
   return axios.get<PartTag[]>(apiUrls.getAllPartTags());
 };
 
-
 /**
  * Creates a new Part Tag
  * @param payload payload of the part tag
@@ -331,6 +330,5 @@ export const getPartReviewSampleImage = async () => {
 export const setPartReviewSampleImage = async (file: File) => {
   const formData = new FormData();
   formData.append('partReviewSampleImage', file);
-  console.log('setting part review sample image');
   return axios.post(apiUrls.setPartReviewSampleImage(), formData, {});
 };

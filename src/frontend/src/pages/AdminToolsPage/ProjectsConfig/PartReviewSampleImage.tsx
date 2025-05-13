@@ -95,7 +95,6 @@ const PartReviewSampleImage: React.FC = () => {
                   await setPartReviewSampleImage(e.target.files[0]);
                   toast.success('Part review sample image uploaded successfully');
                 } catch (error) {
-                  console.error('Error in file upload:', error);
                   toast.error('Error uploading part review sample image');
                 }
               }

@@ -607,7 +607,6 @@ export const useSetPartReviewSampleImage = () => {
   return useMutation<any, unknown, File>(
     ['part-review-sample-image', 'upload'],
     async (file: File) => {
-      console.log('setting part review sample image');
       const { data } = await setPartReviewSampleImage(file);
       return data;
     },

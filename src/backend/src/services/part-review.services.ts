@@ -1167,8 +1167,6 @@ export default class PartReviewService {
       throw new AccessDeniedAdminOnlyException('update part review sample image');
     }
 
-    console.log('trying to set part review sample image');
-
     const previewImageData = await uploadFile(image);
 
     if (!previewImageData?.name) {
