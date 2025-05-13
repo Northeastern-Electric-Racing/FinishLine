@@ -16,7 +16,7 @@ export interface Sponsor {
 
 export interface SponsorTask {
   sponsorTaskId: string;
-  dueDate: Date;
+  dueDate?: Date;
   notifyDate?: Date;
   assignee?: User;
   notes: string;

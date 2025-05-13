@@ -1,17 +1,22 @@
 import React, { useState } from 'react';
 import { TableRow, TableCell, Box, Table as MuiTable, TableHead, TableBody, Typography } from '@mui/material';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { useGetAllSponsors } from '../../hooks/finance.hooks';
+import { EditableTask, useEditSponsorTask, useGetAllSponsors } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
 import { NERButton } from '../../components/NERButton';
 import { datePipe } from '../../utils/pipes';
 import SponsorTierPill from '../../components/SponsorTierPill';
 import PaginationFooter from '../../components/PaginationFooter';
+import { Sponsor } from 'shared';
+import SidePagePopup from './FinanceComponents/SidePagePopup';
+import SponsorNotesForm from './FinanceComponents/SponsorNotesForm';
 
 const SponsorsTable = () => {
   const { data: sponsors, isLoading: sponsorIsLoading, isError: sponsorIsError, error: sponsorError } = useGetAllSponsors();
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(14);
+  const [openSponsorModal, setOpenSponsorModal] = useState(false);
+  const [selectedSponsor, setSelectedSponsor] = useState<Sponsor | null>(null);
 
   if (!sponsors || sponsorIsLoading) {
     return <LoadingIndicator />;
@@ -31,6 +36,22 @@ const SponsorsTable = () => {
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setCurrentPage(0);
+  };
+
+  const handleSubmitTasks = (tasks: EditableTask[]) => {
+    const newTasks = tasks.filter((t) => !t.id);
+    const updates = tasks.filter((t) => t.id);
+
+    if (newTasks.length > 0) {
+      useEditSponsor({ sponsorId: selectedSponsor?.sponsorId, tasks: newTasks });
+    }
+
+    updates.forEach((task) => {
+      useEditSponsorTask({ sponsorTaskId: task.id!, ...task });
+    });
+
+    setOpenSponsorModal(false);
+    setSelectedSponsor(null);
   };
 
   const sponsorTableRows = currentSponsors.map((sponsor, index) => (
@@ -126,7 +147,13 @@ const SponsorsTable = () => {
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <NERButton variant="contained" onClick={() => {}}>
+          <NERButton
+            variant="contained"
+            onClick={() => {
+              setSelectedSponsor(sponsor);
+              setOpenSponsorModal(true);
+            }}
+          >
             View Notes
           </NERButton>
         </Box>
@@ -278,6 +305,29 @@ const SponsorsTable = () => {
         onRowsPerPageChange={handleChangeRowsPerPage}
         rowsPerPageOptions={[10, 14, 25, 50, 100]}
       />
+      {selectedSponsor && (
+        <SidePagePopup
+          showPage={openSponsorModal}
+          handleClose={() => {
+            setOpenSponsorModal(false);
+            setSelectedSponsor(null);
+          }}
+          title={selectedSponsor ? `Add Task: ${selectedSponsor.name}` : 'Add Task'}
+          component={
+            selectedSponsor && (
+              <SponsorNotesForm
+                sponsor={selectedSponsor}
+                onSubmit={handleSubmitTasks}
+                onClose={() => {
+                  setOpenSponsorModal(false);
+                  setSelectedSponsor(null);
+                }}
+                open={openSponsorModal}
+              />
+            )
+          }
+        />
+      )}
     </Box>
   );
 };

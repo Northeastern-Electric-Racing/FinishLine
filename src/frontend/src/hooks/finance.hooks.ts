@@ -136,10 +136,14 @@ export interface SponsorTierPayload {
 }
 
 export interface SponsorTaskPayload {
-  dueDate: Date;
+  dueDate?: Date;
   notes: string;
   notifyDate?: Date;
   asigneeId?: string;
+}
+
+export interface EditableTask extends SponsorTaskPayload {
+  id?: string;
 }
 
 /**

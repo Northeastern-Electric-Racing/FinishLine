@@ -47,7 +47,7 @@ CREATE TABLE "Sponsor" (
 -- CreateTable
 CREATE TABLE "Sponsor_Task" (
     "sponsorTaskId" TEXT NOT NULL,
-    "dueDate" TIMESTAMP(3) NOT NULL,
+    "dueDate" TIMESTAMP(3),
     "notifyDate" TIMESTAMP(3),
     "assigneeUserId" TEXT,
     "notes" TEXT NOT NULL,
