@@ -1,4 +1,4 @@
-import { FormControl, FormHelperText, FormLabel } from '@mui/material';
+import { FormControl, FormHelperText, FormLabel, Box } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import ErrorPage from '../../ErrorPage';
 import { useForm } from 'react-hook-form';
@@ -40,6 +40,7 @@ const CreatePartTagModal: React.FC<CreatePartTagProps> = ({ showModal, handleClo
     handleSubmit,
     control,
     reset,
+    watch,
     formState: { errors }
   } = useForm({
     resolver: yupResolver(schema),
@@ -48,6 +49,8 @@ const CreatePartTagModal: React.FC<CreatePartTagProps> = ({ showModal, handleClo
       colorHexCode: defaultValues?.colorHexCode ?? '#FF0000'
     }
   });
+
+  const colorValue = watch('colorHexCode');
 
   if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading) return <LoadingIndicator />;
@@ -68,7 +71,18 @@ const CreatePartTagModal: React.FC<CreatePartTagProps> = ({ showModal, handleClo
         <ReactHookTextField name="name" control={control} sx={{ width: 1 }} />
         <FormHelperText error>{errors.name?.message}</FormHelperText>
         <FormLabel>Color</FormLabel>
-        <ReactHookTextField name="colorHexCode" control={control} sx={{ width: 1 }} placeholder="#FF0000" />
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <ReactHookTextField name="colorHexCode" control={control} sx={{ width: 1 }} placeholder="#FF0000" />
+          <Box
+            sx={{
+              width: 40,
+              height: 40,
+              border: '1px solid #ccc',
+              borderRadius: 1,
+              backgroundColor: colorValue || '#FF0000'
+            }}
+          />
+        </Box>
         <FormHelperText error>{errors.colorHexCode?.message}</FormHelperText>
       </FormControl>
     </NERFormModal>

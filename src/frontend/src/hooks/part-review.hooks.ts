@@ -484,7 +484,7 @@ export const useDeletePartReviewCommonMistake = () => {
  * @returns a list of all part tags
  */
 export const useGetAllPartTags = () => {
-  return useQuery<PartTag[], Error>(['part tags'], async () => {
+  return useQuery<PartTag[], Error>(['partTags'], async () => {
     const { data } = await getAllPartTags();
     return data;
   });
