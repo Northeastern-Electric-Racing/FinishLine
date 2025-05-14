@@ -314,7 +314,7 @@ export default class ReimbursementRequestService {
     const indexCode = await ReimbursementRequestService.getSingleIndexCode(indexCodeId, organization);
 
     if (!accountCode.allowed) throw new HttpException(400, 'Account Code Not Allowed');
-    if (!accountCode.indexCodes.includes(indexCode)) {
+    if (!accountCode.indexCodes.some((refundSource) => refundSource.indexCodeId === indexCodeId)) {
       throw new HttpException(400, 'The submitted refund source is not allowed to be used with the submitted Account Code');
     }
 
