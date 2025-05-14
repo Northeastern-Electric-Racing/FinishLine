@@ -20,7 +20,6 @@ import { EditVendorPayload } from '../../../hooks/finance.hooks';
 import { useAllUsers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { grey } from '@mui/material/colors';
 
 interface VenderFormModalProps {
   showModal: boolean;
@@ -93,17 +92,17 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
     >
       <Box display="flex" flexDirection={'column'} minWidth={400} maxWidth={400}>
         <FormControl sx={{ paddingBottom: 2 }}>
-          <FormLabel sx={{ fontWeight: 'bold', fontSize: 18 }}>Vendor Name:*</FormLabel>
+          <FormLabel sx={{ fontWeight: 'bold', fontSize: 18, color: '#EF4345' }}>Vendor Name:*</FormLabel>
           <ReactHookTextField name="name" placeholder="Vendor Name Here" control={control} sx={{ width: 1 }} />
           <FormHelperText error>{errors.name?.message}</FormHelperText>
         </FormControl>
         <FormControl sx={{ paddingBottom: 2 }}>
-          <FormLabel sx={{ fontWeight: 'bold', fontSize: 18 }}>Username:*</FormLabel>
+          <FormLabel sx={{ fontWeight: 'bold', fontSize: 18, color: '#EF4345' }}>Username:*</FormLabel>
           <ReactHookTextField name="username" placeholder="Add Username Here" control={control} sx={{ width: 1 }} />
           <FormHelperText error>{errors.username?.message}</FormHelperText>
         </FormControl>
         <FormControl sx={{ paddingBottom: 2 }}>
-          <FormLabel sx={{ fontWeight: 'bold', fontSize: 18 }}>Password:*</FormLabel>
+          <FormLabel sx={{ fontWeight: 'bold', fontSize: 18, color: '#EF4345' }}>Password:*</FormLabel>
           <ReactHookTextField name="password" placeholder="Add Password Here" control={control} sx={{ width: 1 }} />
           <FormHelperText error>{errors.password?.message}</FormHelperText>
         </FormControl>
@@ -114,9 +113,9 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
                 sx={{
                   fontWeight: 'bold',
                   fontSize: 18,
-                  color: grey[400],
-                  '&.Mui-focused': { color: grey[400] },
-                  '&.Mui-error': { color: grey[400] }
+                  color: '#EF4345',
+                  '&.Mui-focused': { color: '#EF4345' },
+                  '&.Mui-error': { color: '#EF4345' }
                 }}
               >
                 Tax Exempt:*
@@ -136,7 +135,7 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
             </Box>
           </FormControl>
           <FormControl sx={{ paddingBottom: 2, flex: 3 }}>
-            <FormLabel sx={{ fontWeight: 'bold', fontSize: 18 }}>Discount Code:*</FormLabel>
+            <FormLabel sx={{ fontWeight: 'bold', fontSize: 18, color: '#EF4345' }}>Discount Code:*</FormLabel>
             <ReactHookTextField
               name="discountCode"
               placeholder="Add Discount Code Here"
@@ -151,7 +150,8 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
             sx={{
               alignSelf: 'start',
               fontWeight: 'bold',
-              fontSize: 18
+              fontSize: 18,
+              color: '#EF4345'
             }}
           >
             2FA Contacts:
@@ -197,7 +197,7 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
           />
         </FormControl>
         <FormControl>
-          <FormLabel sx={{ fontWeight: 'bold', fontSize: 18 }}>Notes on Vendor:</FormLabel>
+          <FormLabel sx={{ fontWeight: 'bold', fontSize: 18, color: '#EF4345' }}>Notes on Vendor:</FormLabel>
           <ReactHookTextField name="notes" placeholder="e.g. Vendor is tax-exempt" control={control} sx={{ width: 1 }} />
           <FormHelperText error>{errors.note?.message}</FormHelperText>
         </FormControl>
