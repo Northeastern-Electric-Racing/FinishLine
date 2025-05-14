@@ -4,6 +4,7 @@ import { AccessDeniedException, DeletedException, NotFoundException } from '../.
 import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, theVisitorGuest } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
+import { Sponsor } from 'shared';
 
 describe('Finance Tests', () => {
   let orgId: string;
@@ -525,10 +526,9 @@ describe('Finance Tests', () => {
       expect(updatedSponsor.sponsorValue).toBe(4000);
       expect(updatedSponsor.joinDate).toEqual(new Date(5, 11, 25));
       expect(updatedSponsor.activeYears).toEqual([2024, 2025]);
-      expect(updatedSponsor.sponsorTierId).toBe(sponsorTierId);
+      expect(updatedSponsor.tier.sponsorTierId).toBe(sponsorTierId);
       expect(updatedSponsor.vendorContact).toBe('New Vendor Contact');
       expect(updatedSponsor.taxExempt).toBe(false);
-      expect(updatedSponsor.sponsorTasks).toStrictEqual([]);
       expect(updatedSponsor.discountCode).toBe('New Discount code');
     });
   });

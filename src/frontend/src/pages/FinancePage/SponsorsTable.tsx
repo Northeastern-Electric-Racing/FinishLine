@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TableRow, TableCell, Box, Table as MuiTable, TableHead, TableBody, Typography } from '@mui/material';
+import { TableRow, TableCell, Box, Table as MuiTable, TableHead, TableBody, Typography, Button } from '@mui/material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useGetAllSponsors } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
@@ -7,11 +7,21 @@ import { NERButton } from '../../components/NERButton';
 import { datePipe } from '../../utils/pipes';
 import SponsorTierPill from '../../components/SponsorTierPill';
 import PaginationFooter from '../../components/PaginationFooter';
+import CreateSponsorModal from './FinanceComponents/CreateSponsorModal';
+import { Sponsor } from 'shared';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditSponsorModal from './FinanceComponents/EditSponsorPage';
+import DeleteSponsorModal from './FinanceComponents/DeleteSponsor';
+import SidePage from './FinanceComponents/SidePagePopup';
 
 const SponsorsTable = () => {
   const { data: sponsors, isLoading: sponsorIsLoading, isError: sponsorIsError, error: sponsorError } = useGetAllSponsors();
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(14);
+  const [showAddSponsor, setShowAddSponsor] = useState(false);
+  const [sponsorToEdit, setSponsorToEdit] = useState<Sponsor | undefined>(undefined);
+  const [sponsorToDelete, setSponsorToDelete] = useState<Sponsor | undefined>(undefined);
 
   if (!sponsors || sponsorIsLoading) {
     return <LoadingIndicator />;
@@ -129,6 +139,23 @@ const SponsorsTable = () => {
           <NERButton variant="contained" onClick={() => {}}>
             View Notes
           </NERButton>
+          <Box
+            sx={{
+              display: 'flex'
+            }}
+          >
+            <Button
+              sx={{ p: 0.5, color: 'white' }}
+              onClick={() => {
+                setSponsorToEdit(sponsor);
+              }}
+            >
+              <EditIcon />
+            </Button>
+            <Button sx={{ p: 0.5, color: 'white' }} onClick={() => setSponsorToDelete(sponsor)}>
+              <DeleteIcon />
+            </Button>
+          </Box>
         </Box>
       </TableCell>
     </TableRow>
@@ -136,6 +163,33 @@ const SponsorsTable = () => {
 
   return (
     <Box>
+      <CreateSponsorModal showModal={showAddSponsor} handleClose={() => setShowAddSponsor(false)} />
+      {sponsorToEdit && (
+        <SidePage
+          showPage={!!sponsorToEdit}
+          handleClose={() => {
+            setSponsorToEdit(undefined);
+          }}
+          title="Edit Sponsor"
+          component={
+            <EditSponsorModal
+              showPage={!!sponsorToEdit}
+              handleClose={() => {
+                setSponsorToEdit(undefined);
+              }}
+              sponsor={sponsorToEdit}
+            ></EditSponsorModal>
+          }
+        ></SidePage>
+      )}
+      {sponsorToDelete && (
+        <DeleteSponsorModal
+          handleClose={() => {
+            setSponsorToDelete(undefined);
+          }}
+          sponsor={sponsorToDelete}
+        />
+      )}
       <Box sx={{ paddingBottom: '100px' }}>
         <MuiTable>
           <TableHead>
@@ -251,7 +305,7 @@ const SponsorsTable = () => {
         footerButton={
           <NERButton
             variant="contained"
-            onClick={() => console.log('create sponsor')}
+            onClick={() => setShowAddSponsor(true)}
             sx={{
               borderRadius: '8px',
               color: '#ededed',
@@ -267,7 +321,14 @@ const SponsorsTable = () => {
               }
             }}
           >
+            {' '}
             Add Sponsor
+            <CreateSponsorModal
+              showModal={showAddSponsor}
+              handleClose={() => {
+                setShowAddSponsor(false);
+              }}
+            />
           </NERButton>
         }
         footerInfoBoxes={[<Box># of Sponsors: {sponsors.length}</Box>]}

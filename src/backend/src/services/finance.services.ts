@@ -1,5 +1,5 @@
-import { isHead, ReimbursementRequestData, SpendingBarData, SponsorTask, SponsorTier } from 'shared';
-import { User, Organization, Sponsor_Task, Sponsor } from '@prisma/client';
+import { isHead, ReimbursementRequestData, SpendingBarData, Sponsor, SponsorTask, SponsorTier } from 'shared';
+import { User, Organization, Sponsor_Task } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
 import {
   getSponsorQueryArgs,
@@ -411,7 +411,7 @@ export default class FinanceServices {
     sponsorTierId: string,
     vendorContact: string,
     taxExempt: boolean,
-    sponsorTasks: SponsorTask[],
+    sponsorTasks: Sponsor_Task[],
     discountCode?: string
   ): Promise<Sponsor> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
@@ -438,7 +438,7 @@ export default class FinanceServices {
 
     if (!tier) throw new NotFoundException('Sponsor Tier', sponsorId);
 
-    const updatedSponsor = await prisma.sponsor.update({
+    const updatedSponsor: Sponsor = await prisma.sponsor.update({
       where: { sponsorId: oldSponsor.sponsorId },
       data: {
         name,
@@ -454,9 +454,10 @@ export default class FinanceServices {
         },
         vendorContact,
         taxExempt,
-        discountCode
+        discountCode: discountCode ?? undefined
       },
       include: {
+        tier: true,
         sponsorTasks: true
       }
     });
