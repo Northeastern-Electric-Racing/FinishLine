@@ -231,7 +231,8 @@ export default class PartReviewService {
     description: string,
     reviewStatus: Review_Status,
     tagIds: string[],
-    assigneeIds: string[]
+    assigneeIds: string[],
+    reviewerIds: string[]
   ) {
     const part = await prisma.part.findUnique({
       where: { partId },
@@ -247,24 +248,63 @@ export default class PartReviewService {
 
     if (!hasPermission) throw new AccessDeniedException('Only leadership and the part creator can update part data');
 
-    const updatedPart = await prisma.part.update({
-      where: { partId },
-      data: {
-        index,
-        commonName,
-        description,
-        status: reviewStatus,
-        tags: {
-          set: tagIds.map((partTagId) => ({ partTagId }))
+    const edittedPart = await prisma.$transaction(async (tx) => {
+      const edittedPart = await tx.part.update({
+        where: { partId },
+        data: {
+          index,
+          commonName,
+          description,
+          status: reviewStatus,
+          tags: {
+            connect: tagIds.map((partTagId) => ({ partTagId }))
+          },
+          assignees: {
+            connect: assigneeIds.map((userId) => ({ userId }))
+          }
         },
-        assignees: {
-          set: assigneeIds.map((userId) => ({ userId }))
-        }
-      },
-      ...getPartQueryArgs(organizationId)
+        ...getPartQueryArgs(organizationId)
+      });
+
+      const reviewersToAdd = reviewerIds.filter(
+        (id) => !edittedPart.reviewRequests.some((reviewReq) => reviewReq.reviewerRequested.userId === id)
+      );
+
+      await Promise.all(
+        reviewersToAdd.map(async (id) => {
+          return tx.partReviewRequest.create({
+            data: {
+              part: {
+                connect: {
+                  partId: edittedPart.partId
+                }
+              },
+              requester: { connect: { userId: updater.userId } },
+              reviewerRequested: { connect: { userId: id } }
+            }
+          });
+        })
+      );
+
+      const reviewRequestsToRemove = edittedPart.reviewRequests.filter(
+        (reviewReq) => !reviewerIds.includes(reviewReq.reviewerRequested.userId)
+      );
+
+      await Promise.all(
+        reviewRequestsToRemove.map(async (reviewReq) => {
+          return tx.partReviewRequest.update({
+            where: { partReviewRequestId: reviewReq.partReviewRequestId },
+            data: {
+              dateDeleted: new Date()
+            }
+          });
+        })
+      );
+
+      return edittedPart;
     });
 
-    return partTransformer(updatedPart);
+    return partTransformer(edittedPart);
   }
 
   static async deletePart(partId: string, deleter: User, organizationId: string) {

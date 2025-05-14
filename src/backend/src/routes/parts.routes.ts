@@ -166,6 +166,7 @@ partsRouter.post(
   body('reviewStatus').custom((value) => Object.values(Review_Status).includes(value)),
   body('tagIds').isArray(),
   body('assigneeIds').isArray(),
+  body('reviewerIds').isArray(),
   validateInputs,
   PartReviewController.updatePart
 );

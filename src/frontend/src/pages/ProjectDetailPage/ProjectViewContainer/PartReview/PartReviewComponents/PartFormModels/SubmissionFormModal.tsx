@@ -68,11 +68,11 @@ const SubmissionFormModal = ({ open, handleClose, defaultValues, onSubmit, parts
 
   const onFormSubmit = async (data: { partId: string; name: string; notes?: string; fileIds: string[] }) => {
     try {
-      handleClose();
       await onSubmit({
         ...data
       });
       toast.success('Submission Successfully Created');
+      handleClose();
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -123,21 +123,22 @@ const SubmissionFormModal = ({ open, handleClose, defaultValues, onSubmit, parts
             <FormLabel>File(s)</FormLabel>
             <Grid container>
               <List>
-                {fileIds.map((file, index) => {
-                  return (
-                    <ListItem key={file.id}>
-                      <Typography>{displayName(files[index].name)}</Typography>
-                      <IconButton
-                        onClick={() => {
-                          setFiles((prevFiles) => [...prevFiles.slice(0, index), ...prevFiles.slice(index + 1)]);
-                          removeFileId(index);
-                        }}
-                      >
-                        <Delete />
-                      </IconButton>
-                    </ListItem>
-                  );
-                })}
+                {fileIds.length === files.length &&
+                  fileIds.map((file, index) => {
+                    return (
+                      <ListItem key={file.id}>
+                        <Typography>{displayName(files[index].name)}</Typography>
+                        <IconButton
+                          onClick={() => {
+                            setFiles((prevFiles) => [...prevFiles.slice(0, index), ...prevFiles.slice(index + 1)]);
+                            removeFileId(index);
+                          }}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </ListItem>
+                    );
+                  })}
               </List>
               {uploading && <Typography>Uploading...</Typography>}
               <Button
