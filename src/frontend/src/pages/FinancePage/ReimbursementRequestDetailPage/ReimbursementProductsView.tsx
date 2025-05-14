@@ -1,4 +1,4 @@
-import { Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
+import { Box, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
 import { getUniqueWbsElementsWithProductsFromReimbursementRequest } from '../../../utils/reimbursement-request.utils';
 import { ReimbursementRequest } from 'shared';
 import { centsToDollar, displayEnum } from '../../../utils/pipes';
@@ -30,55 +30,59 @@ const ReimbursementProductsView: React.FC<ReimbursementRequestProductsViewProps>
 
   return (
     <>
-      <Typography variant="h5">Products</Typography>
-      <Table sx={{ maxWidth: 500 }}>
-        <TableHead>
-          <TableRow>
-            <TableCell>
-              <Typography variant="h6">Item</Typography>
-            </TableCell>
-            {!allKeysAreSame && (
+      <Box sx={{ whiteSpace: 'nowrap' }}>
+        <Typography variant="h5">Products</Typography>
+        <Table sx={{ maxWidth: 500 }}>
+          <TableHead>
+            <TableRow>
               <TableCell>
-                <Typography variant="h6">Project</Typography>
+                <Typography variant="h6">Item</Typography>
               </TableCell>
-            )}
-            <TableCell>
-              <Typography variant="h6">Cost</Typography>
-            </TableCell>
-            {multipleRefundSources && (
+              {!allKeysAreSame && (
+                <TableCell>
+                  <Typography variant="h6">Project</Typography>
+                </TableCell>
+              )}
               <TableCell>
-                <Typography variant="h6">{refundSourceNames.join(' / ')}</Typography>
+                <Typography variant="h6">Cost</Typography>
               </TableCell>
-            )}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {keys.map((key) => {
-            return (
-              <TableRow key={key}>
+              {multipleRefundSources && (
                 <TableCell>
-                  {uniqueWbsElementsWithProducts.get(key)?.map((product, index) => <div key={index}>{product.name}</div>)}
+                  <Typography variant="h6">{refundSourceNames.join(' / ')}</Typography>
                 </TableCell>
-                {!allKeysAreSame && <TableCell>{displayEnum(key)}</TableCell>}
-                <TableCell>
-                  {uniqueWbsElementsWithProducts
-                    .get(key)
-                    ?.map((product, index) => <div key={index}>${centsToDollar(product.cost)}</div>)}
-                </TableCell>
-                {multipleRefundSources && (
+              )}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {keys.map((key) => {
+              return (
+                <TableRow key={key}>
+                  <TableCell>
+                    {uniqueWbsElementsWithProducts.get(key)?.map((product, index) => <div key={index}>{product.name}</div>)}
+                  </TableCell>
+                  {!allKeysAreSame && <TableCell>{displayEnum(key)}</TableCell>}
                   <TableCell>
                     {uniqueWbsElementsWithProducts
                       .get(key)
-                      ?.map((product, index) => (
-                        <div key={index}>{product.refundSources.map((rs) => `$${centsToDollar(rs.amount)}`).join('/')}</div>
-                      ))}
+                      ?.map((product, index) => <div key={index}>${centsToDollar(product.cost)}</div>)}
                   </TableCell>
-                )}
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+                  {multipleRefundSources && (
+                    <TableCell>
+                      {uniqueWbsElementsWithProducts
+                        .get(key)
+                        ?.map((product, index) => (
+                          <div key={index}>
+                            {product.refundSources.map((rs) => `$${centsToDollar(rs.amount)}`).join('/')}
+                          </div>
+                        ))}
+                    </TableCell>
+                  )}
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </Box>
     </>
   );
 };
