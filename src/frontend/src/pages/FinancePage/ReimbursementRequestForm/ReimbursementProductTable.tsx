@@ -20,7 +20,15 @@ import {
   styled,
   Box
 } from '@mui/material';
-import { OtherProductReason, WbsNumber, validateWBS, wbsPipe, ReimbursementProductFormArgs, IndexCode } from 'shared';
+import {
+  OtherProductReason,
+  WbsNumber,
+  validateWBS,
+  wbsPipe,
+  ReimbursementProductFormArgs,
+  IndexCode,
+  RefundSource
+} from 'shared';
 import { RemoveCircleOutline, AddCircleOutline } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
@@ -139,10 +147,31 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
 
   const prevFirstRefundSourceName = useRef(firstRefundSourceName);
   const prevSecondRefundSourceName = useRef(secondRefundSourceName);
+
+  const refundSources: RefundSource[] = Array.from(
+    new Set(reimbursementProducts.flatMap((product) => product.refundSources).filter((source) => source.amount > 0))
+  );
+
+  // in the event the code was from a prior refund
+  const hasPreFilledData = useRef(false);
+
+  useEffect(() => {
+    if (hasPreFilledData.current) return;
+
+    if (refundSources.length > 1) {
+      reimbursementProducts.forEach((product, index) => {
+        setValue(`reimbursementProducts.${index}.refundSources.${0}.amount`, product.refundSources[0].amount / 100);
+        setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, product.refundSources[1].amount / 100);
+      });
+    }
+
+    hasPreFilledData.current = true;
+  }, [refundSources, setValue, reimbursementProducts]);
+
   useEffect(() => {
     if (firstRefundSourceName) {
       setShowFirstSourceFields(true);
-      if (firstRefundSourceName !== prevFirstRefundSourceName.current) {
+      if (!hasPreFilledData.current && firstRefundSourceName !== prevFirstRefundSourceName.current) {
         reimbursementProducts.forEach((_, index) => {
           setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, 0);
         });
@@ -156,7 +185,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   useEffect(() => {
     if (secondRefundSourceName) {
       setShowSecondSourceFields(true);
-      if (secondRefundSourceName !== prevSecondRefundSourceName.current) {
+      if (!hasPreFilledData.current && secondRefundSourceName !== prevSecondRefundSourceName.current) {
         reimbursementProducts.forEach((_, index) => {
           setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, 0);
         });

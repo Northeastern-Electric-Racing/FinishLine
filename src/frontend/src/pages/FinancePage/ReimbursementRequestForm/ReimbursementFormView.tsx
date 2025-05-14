@@ -30,6 +30,7 @@ import {
 import {
   AccountCode,
   IndexCode,
+  RefundSource,
   ReimbursementProductFormArgs,
   ReimbursementReceiptCreateArgs,
   ReimbursementReceiptUploadArgs,
@@ -99,15 +100,34 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
 }) => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [showAddRefundSourceModal, setShowAddRefundSourceModal] = useState(false);
-  const [hasConfirmedFinance, setHasConfirmedFinance] = useState(false);
+
+  // to grab all the proper refund sources
+  const refundSources: RefundSource[] = Array.from(
+    new Set(reimbursementProducts.flatMap((product) => product.refundSources).filter((source) => source.amount > 0))
+  );
+
+  const [hasConfirmedFinance, setHasConfirmedFinance] = useState(refundSources.length > 1);
   const toast = useToast();
   const theme = useTheme();
   const products = watch('reimbursementProducts') as ReimbursementProductFormArgs[];
   const accountCodeId = watch('accountCodeId');
+
   const selectedAccountCode = allAccountCodes.find((accountCode) => accountCode.accountCodeId === accountCodeId);
   const indexCodes: IndexCode[] = useMemo(() => selectedAccountCode?.indexCodes ?? [], [selectedAccountCode?.indexCodes]);
+
   const firstRefundSourceId = watch('indexCodeId');
   const secondRefundSourceId = watch('secondaryAccount');
+  const [hasPreFilledData, setHasPreFilledData] = useState(true);
+
+  useEffect(() => {
+    if (hasPreFilledData && refundSources.length > 1) {
+      const firstSource = refundSources[0].indexCode.indexCodeId;
+      const secondSource = refundSources[1].indexCode.indexCodeId;
+      setValue('indexCodeId', firstSource);
+      setValue('secondaryAccount', secondSource);
+      setHasPreFilledData(false);
+    }
+  }, [hasPreFilledData, reimbursementProducts, setValue, refundSources]);
 
   useEffect(() => {
     if (firstRefundSourceId) {
