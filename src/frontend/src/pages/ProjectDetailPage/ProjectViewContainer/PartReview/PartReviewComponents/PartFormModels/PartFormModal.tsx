@@ -102,7 +102,13 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
         <Grid item xs={3}>
           <FormControl fullWidth>
             <FormLabel>Index</FormLabel>
-            <ReactHookTextField name="index" type="number" control={control} placeholder="XXXXX" />
+            <ReactHookTextField
+              disabled={!!defaultValues}
+              name="index"
+              type="number"
+              control={control}
+              placeholder="XXXXX"
+            />
             <FormHelperText error>{errors.index?.message}</FormHelperText>
           </FormControl>
         </Grid>

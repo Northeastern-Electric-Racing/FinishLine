@@ -1,6 +1,6 @@
 import Edit from '@mui/icons-material/Edit';
 import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
-import { Part, PartSubmission, RoleEnum, WbsNumber, isAtLeastRank, isNotLeadership, wbsPipe } from 'shared';
+import { Part, RoleEnum, WbsNumber, isAtLeastRank, isNotLeadership, wbsPipe } from 'shared';
 import { Check, Collections, EditNote } from '@mui/icons-material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useCurrentUser } from '../../../hooks/users.hooks';
@@ -46,7 +46,7 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({ part, submissionIndex
   const submission = part.submissions[submissionIndex];
   const { mutateAsync: editSubmission } = useEditPartSubmission(submission ? submission.partSubmissionId : '');
 
-  const onSubmitSubmission = async (data: { name: string; notes?: string; fileIds: string[] }) => {
+  const onSubmitEditSubmission = async (data: { name: string; notes?: string; fileIds: string[] }) => {
     if (!submission) {
       toast.error('No submission found.');
       return;
@@ -108,11 +108,15 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({ part, submissionIndex
       title: 'Edit Submission',
       onClick: () => setShowEditSubmission(true),
       icon: <Edit />,
-      disabled: !isAtLeastRank(RoleEnum.MEMBER, user.role) || !submission || submission.reviews.length === 0
+      disabled:
+        !isAtLeastRank(RoleEnum.MEMBER, user.role) ||
+        !submission ||
+        submission.reviews.length !== 0 ||
+        submission.userCreated.userId !== user.userId
     },
     {
       title: 'Review',
-      onClick: () => history.push(`${routes}`), // not entirely sure what this route should be...
+      onClick: () => history.push(`test`), // not entirely sure what this route should be...
       icon: <EditNote />,
       disabled: !isUserAReviewer(user.userId, part) || part.submissions.length === 0
     },
@@ -120,7 +124,7 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({ part, submissionIndex
       title: 'Approve',
       onClick: () => setShowApproveSubmission(true),
       icon: <Check />,
-      disabled: !isUserAReviewer(user.userId, part) // assuming we can approve a part without a submission
+      disabled: !isUserAReviewer(user.userId, part) || part.submissions.length === 0
     },
     {
       title: 'Delete',
@@ -150,7 +154,7 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({ part, submissionIndex
         open={showEditSubmission}
         handleClose={() => setShowEditSubmission(false)}
         defaultValues={submission}
-        onSubmit={onSubmitSubmission}
+        onSubmit={onSubmitEditSubmission}
         partsInProject={partsInProject}
       />
       <ApprovePartModal
