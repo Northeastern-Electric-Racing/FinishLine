@@ -70,6 +70,7 @@ export interface OtherProductReason {
   dateCreated: Date;
   budget: number;
   indexCode: IndexCode;
+  accountCodes: AccountCode[];
 }
 
 export type WBSElementData = { wbsNum: WbsNumber; wbsName: string };
@@ -110,6 +111,8 @@ export interface ReimbursementProductCreateArgs {
 
 export interface ReimbursementProductFormArgs extends ReimbursementProductCreateArgs {
   reason: WbsNumber | OtherProductReason;
+  firstSourceAmount?: number;
+  secondSourceAmount?: number;
 }
 
 export interface OtherReimbursementProductCreateArgs extends ReimbursementProductCreateArgs {

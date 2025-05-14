@@ -383,7 +383,8 @@ const performSeed: () => Promise<void> = async () => {
       kyleHamilton,
       marcusWilliams,
       roquanSmith,
-      justinTucker
+      justinTucker,
+      regina
     ].map((user) => user.userId),
     ner
   );
