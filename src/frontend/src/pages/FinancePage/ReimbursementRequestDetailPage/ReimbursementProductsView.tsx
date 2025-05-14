@@ -58,7 +58,17 @@ const ReimbursementProductsView: React.FC<ReimbursementRequestProductsViewProps>
               return (
                 <TableRow key={key}>
                   <TableCell>
-                    {uniqueWbsElementsWithProducts.get(key)?.map((product, index) => <div key={index}>{product.name}</div>)}
+                    <Box
+                      sx={{
+                        maxWidth: '64ch',
+                        overflowWrap: 'anywhere',
+                        whiteSpace: 'normal'
+                      }}
+                    >
+                      {uniqueWbsElementsWithProducts
+                        .get(key)
+                        ?.map((product, index) => <div key={index}>{product.name}</div>)}
+                    </Box>
                   </TableCell>
                   {!allKeysAreSame && <TableCell>{displayEnum(key)}</TableCell>}
                   <TableCell>
