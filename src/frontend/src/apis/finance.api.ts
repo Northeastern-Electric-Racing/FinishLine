@@ -139,6 +139,15 @@ export const getCurrentUserReimbursementRequests = () => {
 };
 
 /**
+ * Get the reimbursement requests for the current user's teams
+ */
+export const getCurrentUsersTeamsReimbursementRequests = () => {
+  return axios.get(apiUrls.financeGetUsersTeamsReimbursementRequests(), {
+    transformResponse: (data) => JSON.parse(data).map(reimbursementRequestTransformer)
+  });
+};
+
+/**
  * Gets all the reimbursement requests
  */
 export const getAllReimbursementRequests = () => {

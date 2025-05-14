@@ -153,6 +153,7 @@ const getAllSponsors = () => `${financeRoutesEndpoints()}/sponsors`;
 const getSponsorTasks = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsors/${sponsorId}/sponsorTasks`;
 const deleteSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsors/${sponsorId}/delete`;
 const editSponsorTask = (sponsorTaskId: string) => `${financeRoutesEndpoints()}/sponsorTask/${sponsorTaskId}/edit`;
+const financeGetUsersTeamsReimbursementRequests = () => `${financeEndpoints()}/reimbursements/current-user-team`;
 
 /**************** Bill of Material Endpoints **************************/
 const bomEndpoints = () => `${API_URL}/projects/bom`;
@@ -387,6 +388,7 @@ export const apiUrls = {
   getSponsorTasks,
   deleteSponsor,
   editSponsorTask,
+  financeGetUsersTeamsReimbursementRequests,
 
   bomEndpoints,
   bomGetMaterialsByWbsNum,

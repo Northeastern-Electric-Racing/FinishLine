@@ -5,6 +5,7 @@ import { DataGrid, GridValidRowModel } from '@mui/x-data-grid';
 import { styled } from '@mui/system';
 
 export interface BomRow extends GridValidRowModel {
+  reimbursementRequestId: number | undefined;
   id: string;
   materialId: string;
   status: string;
@@ -23,7 +24,7 @@ export interface BomRow extends GridValidRowModel {
 
 export const materialToRow = (material: Material, idx: number): BomRow => {
   return {
-    reimbursementRequestId: material.reimbursementRequestId,
+    reimbursementRequestId: material.reimbursementRequest?.identifier,
     id: idx + (material.assemblyId ?? ''),
     materialId: material.materialId,
     status: material.status,

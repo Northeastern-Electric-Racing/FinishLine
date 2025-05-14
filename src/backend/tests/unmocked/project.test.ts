@@ -55,7 +55,7 @@ describe('Material Tests', () => {
       expect(material.userCreated.userId).toEqual(createdUser.userId);
       expect(material.price).toEqual(10);
       expect(material.subtotal).toMatchObject(50);
-      expect(material.reimbursementRequestId).toEqual(reimbursementRequest.reimbursementRequestId);
+      expect(material.reimbursementRequest?.reimbursementRequestId).toEqual(reimbursementRequest.reimbursementRequestId);
     });
 
     test('Fails on invalid reimbursement request id', async () => {
@@ -113,7 +113,7 @@ describe('Material Tests', () => {
         org
       );
 
-      expect(oldMaterial.reimbursementRequestId).toBeUndefined();
+      expect(oldMaterial.reimbursementRequest?.reimbursementRequestId).toBeUndefined();
 
       const newMaterial = await BillOfMaterials.editMaterial(
         createdUser,
@@ -135,8 +135,10 @@ describe('Material Tests', () => {
         reimbursementRequest.reimbursementRequestId
       );
 
-      expect(newMaterial.reimbursementRequestId).not.toEqual(oldMaterial.reimbursementRequestId);
-      expect(newMaterial.reimbursementRequestId).toEqual(reimbursementRequest.reimbursementRequestId);
+      expect(newMaterial.reimbursementRequest?.reimbursementRequestId).not.toEqual(
+        oldMaterial.reimbursementRequest?.reimbursementRequestId
+      );
+      expect(newMaterial.reimbursementRequest?.reimbursementRequestId).toEqual(reimbursementRequest.reimbursementRequestId);
     });
 
     test('Fails on invalid reimbursement request id', async () => {

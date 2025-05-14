@@ -67,6 +67,11 @@ reimbursementRequestsRouter.get('/current-user', ReimbursementRequestController.
 
 reimbursementRequestsRouter.get('/reimbursements/current-user', ReimbursementRequestController.getCurrentUserReimbursements);
 
+reimbursementRequestsRouter.get(
+  '/reimbursements/current-user-team',
+  ReimbursementRequestController.getCurrentUsersTeamsReimbursementRequests
+);
+
 reimbursementRequestsRouter.get('/reimbursements', ReimbursementRequestController.getAllReimbursements);
 
 reimbursementRequestsRouter.post(

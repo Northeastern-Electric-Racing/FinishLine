@@ -11,12 +11,14 @@ import { useToast } from '../../../../hooks/toasts.hooks';
 import { useAssignMaterialToAssembly, useDeleteAssembly, useDeleteMaterial } from '../../../../hooks/bom.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import EditMaterialModal from './MaterialForm/EditMaterialModal';
-import { Typography } from '@mui/material';
+import { Link, Typography } from '@mui/material';
 import { bomBaseColDef } from '../../../../utils/bom.utils';
 import NERModal from '../../../../components/NERModal';
 import { renderStatusBOM } from './BOMTableCustomCells';
 import LinkIcon from '@mui/icons-material/Link';
 import NotesIcon from '@mui/icons-material/Notes';
+import { routes } from '../../../../utils/routes';
+import { Link as RouterLink } from 'react-router-dom';
 
 interface BOMTableWrapperProps {
   project: Project;
@@ -202,7 +204,6 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
     }
     return actions;
   };
-
   //Try to have the updated column created in BOMTable stored here, and then look at if the name of the column appears here, if it does then we dont hide, else we hide.
   const columns: GridColumns<any> = [
     {
@@ -213,7 +214,25 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       type: 'string',
       sortable: false,
       filterable: false,
-      hide: hideColumn[0]
+      hide: hideColumn[0],
+      renderCell: (params) => {
+        const material = materials.find((m) => m.materialId === params.row.materialId);
+        const reimbursementRequest = material?.reimbursementRequest;
+
+        if (!reimbursementRequest) return null;
+
+        return (
+          <Link
+            component={RouterLink}
+            to={`${routes.REIMBURSEMENT_REQUESTS}/view/${reimbursementRequest.reimbursementRequestId}`}
+            underline="hover"
+            sx={{ color: '#dd514c', fontWeight: 'bold', cursor: 'pointer' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {reimbursementRequest.identifier}
+          </Link>
+        );
+      }
     },
     {
       ...bomBaseColDef,
