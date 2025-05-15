@@ -62,7 +62,10 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
             e.stopPropagation();
             setIsSummaryModalOpen(true);
           }}
-          sx={{ cursor: 'pointer' }}
+          sx={{
+            position: 'relative',
+            zIndex: 2
+          }}
         >
           <Card
             sx={{
@@ -124,7 +127,14 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
   const ExtraEventsCard = ({ extraEvents }: { extraEvents: DesignReview[] }) => {
     const [showTooltip, setShowTooltip] = useState(false);
     return (
-      <Box marginLeft={0.5} marginBottom={0.2}>
+      <Box
+        marginLeft={0.5}
+        marginBottom={0.2}
+        sx={{
+          position: 'relative',
+          zIndex: 2
+        }}
+      >
         <Card
           sx={{
             backgroundColor: 'grey',
@@ -196,6 +206,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
       />
       <Card
         sx={{
+          position: 'relative',
           borderRadius: 2,
           width: { xs: '95%', md: '80%' },
           height: { xs: '10vh', sm: '15vh' },
@@ -205,12 +216,21 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
           transition: 'background 0.2s',
           '&:hover': isFutureDay ? { background: '#232323' } : {}
         }}
-        onClick={() => {
-          if (cardDate.getTime() >= new Date().getTime()) {
-            setIsCreateModalOpen(true);
-          }
-        }}
       >
+        <Box
+          onClick={() => {
+            if (cardDate.getTime() >= new Date().getTime()) {
+              setIsCreateModalOpen(true);
+            }
+          }}
+          sx={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            zIndex: 1,
+            pointerEvents: 'auto'
+          }}
+        />
         <CardContent sx={{ padding: 0 }}>
           <DayCardTitle />
           {events.length < 3 ? (
