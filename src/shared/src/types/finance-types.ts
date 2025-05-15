@@ -44,3 +44,10 @@ export interface ReimbursementRequestData {
   reimbursed: number;
   available: number;
 }
+
+export interface CreateSponsorTask {
+  dueDate: Date;
+  notifyDate?: Date;
+  assigneeUserId?: string;
+  notes: string;
+}

@@ -1,4 +1,12 @@
-import { isHead, ReimbursementRequestData, SpendingBarData, Sponsor, SponsorTask, SponsorTier } from 'shared';
+import {
+  CreateSponsorTask,
+  isHead,
+  ReimbursementRequestData,
+  SpendingBarData,
+  Sponsor,
+  SponsorTask,
+  SponsorTier
+} from 'shared';
 import { User, Organization, Sponsor_Task } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
 import {
@@ -58,7 +66,7 @@ export default class FinanceServices {
     sponsorTierId: string,
     taxExempt: boolean,
     vendorContact: string,
-    sponsorTasks: Sponsor_Task[],
+    sponsorTasks: CreateSponsorTask[],
     organization: Organization,
     discountCode?: string
   ) {
