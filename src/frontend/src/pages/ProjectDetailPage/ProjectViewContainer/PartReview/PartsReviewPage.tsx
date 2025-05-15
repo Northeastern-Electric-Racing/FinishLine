@@ -27,10 +27,10 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
   // filtering state
   const [showFilters, setShowFilters] = useState(false);
   const [searchValue, setSearchValue] = useState<string>('');
-  const [statuses, setStatuses] = useState<Review_Status[] | null>();
-  const [assigneeIds, setAssigneeIds] = useState<string[] | null>();
-  const [reviewerIds, setReviewerIds] = useState<string[] | null>();
-  const [tagIds, setTagIds] = useState<string[] | null>();
+  const [statuses, setStatuses] = useState<Review_Status[]>([]);
+  const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
+  const [reviewerIds, setReviewerIds] = useState<string[]>([]);
+  const [tagIds, setTagIds] = useState<string[]>([]);
 
   const filteredParts = useMemo(() => {
     return parts?.filter((part) => {
@@ -116,8 +116,8 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
             multiple
             size="small"
             options={Object.values(Review_Status)}
-            value={statuses || []}
-            onChange={(_event, newValue) => setStatuses(newValue.length ? newValue : null)}
+            value={statuses}
+            onChange={(_event, newValue) => setStatuses(newValue)}
             renderInput={(params) => (
               <TextField {...params} variant="outlined" label="Status" placeholder="Filter by status" />
             )}
@@ -130,7 +130,7 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
             getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
             onChange={(_event, value) => {
               const selectedIds = value.map((user) => user.userId);
-              setAssigneeIds(selectedIds.length ? selectedIds : null);
+              setAssigneeIds(selectedIds.length ? selectedIds : []);
             }}
             renderInput={(params) => (
               <TextField {...params} variant="outlined" label="Assignees" placeholder="Select Assignees" error={false} />
@@ -144,7 +144,7 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
             getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
             onChange={(_event, value) => {
               const selectedIds = value.map((user) => user.userId);
-              setReviewerIds(selectedIds.length ? selectedIds : null);
+              setReviewerIds(selectedIds);
             }}
             renderInput={(params) => (
               <TextField {...params} variant="outlined" label="Reviewers" placeholder="Select Reviewers" error={false} />
@@ -158,7 +158,7 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
             getOptionLabel={(tag) => tag.name}
             onChange={(_event, value) => {
               const selectedIds = value.map((tag) => tag.partTagId);
-              setTagIds(selectedIds.length ? selectedIds : null);
+              setTagIds(selectedIds);
             }}
             renderInput={(params) => (
               <TextField {...params} variant="outlined" label="Tags" placeholder="Select Tags" error={false} />

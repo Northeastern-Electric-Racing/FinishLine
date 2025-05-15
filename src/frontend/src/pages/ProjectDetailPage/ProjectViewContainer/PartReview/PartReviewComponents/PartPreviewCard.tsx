@@ -1,37 +1,11 @@
 import React from 'react';
-import { Review_Status, PartPreview } from 'shared';
-import { yellow, blue, purple, green, grey } from '@mui/material/colors';
+import { PartPreview } from 'shared';
+import { grey } from '@mui/material/colors';
 import { Card, CardContent, Typography, Box, Chip, Link } from '@mui/material';
 import { useGetImageUrl } from '../../../../../hooks/onboarding.hook';
 import { Link as RouterLink } from 'react-router-dom';
 import DownloadButton from '../../../../../components/DownloadButton';
-
-// fills status pill with color based on review status
-function getStatusColor(status: Review_Status) {
-  switch (status) {
-    case Review_Status.IN_PROGRESS:
-      return yellow[700];
-    case Review_Status.READY_FOR_REVIEW:
-      return blue[600];
-    case Review_Status.IN_REVIEW:
-      return purple[600];
-    case Review_Status.REVIEWED:
-      return green[600];
-    case Review_Status.APPROVED:
-      return green[800];
-    default:
-      return grey[600];
-  }
-}
-
-// converts statuses from ALL CAPS to Title Case
-function formatStatus(status: Review_Status): string {
-  return status
-    .toLowerCase()
-    .split('_')
-    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-    .join(' ');
-}
+import { formatPartStatus, getStatusColor } from '../../../../../utils/part.utils';
 
 interface PartPreviewCardProps {
   partPreview: PartPreview;
@@ -100,7 +74,7 @@ export function PartPreviewCard({ partPreview, projectName, redirectUrl }: PartP
               {`${projectName}_${commonName}_${index.toString().padStart(5, '0')}`}
             </Typography>
             <Chip
-              label={formatStatus(status)}
+              label={formatPartStatus(status)}
               size="small"
               sx={{
                 bgcolor: getStatusColor(status),
