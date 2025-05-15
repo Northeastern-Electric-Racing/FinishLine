@@ -72,6 +72,12 @@ reimbursementRequestsRouter.get('/reimbursements', ReimbursementRequestControlle
 reimbursementRequestsRouter.post(
   '/:vendorId/vendors/edit',
   nonEmptyString(body('name')),
+  nonEmptyString(body('username')),
+  nonEmptyString(body('password')),
+  nonEmptyString(body('discountCode')),
+  body('taxExempt').isBoolean(),
+  body('twoFactorContacts').isArray(),
+  nonEmptyString(body('notes')).optional(),
   validateInputs,
   ReimbursementRequestController.editVendor
 );
@@ -131,10 +137,10 @@ reimbursementRequestsRouter.post(
   nonEmptyString(body('name')),
   nonEmptyString(body('username')),
   nonEmptyString(body('password')),
-  nonEmptyString(body('discountCode')).optional(),
-  nonEmptyString(body('twoFactorContactId')).optional(),
-  nonEmptyString(body('note')).optional(),
-  nonEmptyString(body('addedByUserId')).optional(),
+  nonEmptyString(body('discountCode')),
+  body('taxExempt').isBoolean(),
+  body('twoFactorContacts').isArray(),
+  nonEmptyString(body('notes')).optional(),
   validateInputs,
   ReimbursementRequestController.createVendor
 );

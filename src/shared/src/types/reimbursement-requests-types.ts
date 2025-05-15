@@ -90,10 +90,11 @@ export interface Vendor {
   name: string;
   username: string;
   password: string;
-  discountCode?: string;
-  twoFactorContact?: User;
+  taxExempt: boolean;
+  twoFactorContacts: User[];
+  addedBy: User;
+  discountCode: string;
   notes?: string;
-  addedBy?: User;
 }
 
 export interface AccountCode {

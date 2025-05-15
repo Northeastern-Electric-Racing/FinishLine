@@ -63,7 +63,7 @@ import {
   sendReimbursementRequestPendingFinanceNotification,
   sendSubmittedToSaboNotification
 } from '../utils/slack.utils';
-import { userHasPermission } from '../utils/users.utils';
+import { getUsers, userHasPermission } from '../utils/users.utils';
 import { getReimbursementRequestQueryArgs } from '../prisma-query-args/reimbursement-requests.query-args';
 import { getReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
 import { getReimbursementStatusQueryArgs } from '../prisma-query-args/reimbursement-statuses.query-args';
@@ -572,7 +572,7 @@ export default class ReimbursementRequestService {
    * @param password vendor password
    * @param notes vendor notes
    * @param addedByUserId userId that added the vendor
-   * @param twoFactorContactId two-factor contact id
+   * @param twoFactorContacts two-factor contact ids
    * @param discountCode vendor discount code
    * @returns
    */
@@ -582,11 +582,10 @@ export default class ReimbursementRequestService {
     organization: Organization,
     username: string,
     password: string,
+    discountCode: string,
     taxExempt: boolean,
-    discountCode?: string,
-    twoFactorContactId?: string,
-    notes?: string,
-    addedByUserId?: string
+    twoFactorContacts: string[],
+    notes?: string
   ) {
     const isAuthorized =
       (await userHasPermission(submitter.userId, organization.organizationId, isAdmin)) ||
@@ -598,7 +597,8 @@ export default class ReimbursementRequestService {
     }
 
     const existingVendor = await prisma.vendor.findUnique({
-      where: { uniqueVendor: { name, organizationId: organization.organizationId } }
+      where: { uniqueVendor: { name, organizationId: organization.organizationId } },
+      ...getVendorQueryArgs(organization.organizationId)
     });
 
     if (existingVendor && existingVendor.dateDeleted) {
@@ -609,6 +609,8 @@ export default class ReimbursementRequestService {
       return existingVendor;
     } else if (existingVendor) throw new HttpException(400, 'This vendor already exists');
 
+    const users = await getUsers(twoFactorContacts);
+
     const vendor = await prisma.vendor.create({
       data: {
         name,
@@ -617,10 +619,11 @@ export default class ReimbursementRequestService {
         password: encryptPassword(password),
         taxExempt,
         discountCode,
-        twoFactorContactId,
+        twoFactorContacts: { connect: users.map((user) => ({ userId: user.userId })) },
         notes,
-        addedByUserId
-      }
+        addedByUserId: submitter.userId
+      },
+      ...getVendorQueryArgs(organization.organizationId)
     });
 
     return vendor;
@@ -1139,20 +1142,34 @@ export default class ReimbursementRequestService {
    * @param organizationId the organization the user is currently in
    * @returns the updated vendor
    */
-  static async editVendor(name: string, vendorId: string, submitter: User, organization: Organization) {
+  static async editVendor(
+    name: string,
+    vendorId: string,
+    username: string,
+    password: string,
+    discountCode: string,
+    taxExempt: boolean,
+    twoFactorContacts: string[],
+    notes: string,
+    submitter: User,
+    organization: Organization
+  ): Promise<Vendor> {
     await isUserHeadOrOnFinance(submitter, organization.organizationId);
 
-    const oldVendor = await ReimbursementRequestService.getSingleVendor(vendorId, organization);
-    if (oldVendor.name === name) throw new HttpException(400, 'Vendor name is the same as the current name');
-
-    const desiredName = await prisma.vendor.findUnique({
-      where: { uniqueVendor: { name, organizationId: organization.organizationId } }
-    });
-    if (desiredName) throw new HttpException(400, 'vendor name already exists');
+    const users = await getUsers(twoFactorContacts);
 
     const vendor = await prisma.vendor.update({
       where: { vendorId },
-      data: { name },
+      data: {
+        name,
+        organizationId: organization.organizationId,
+        username,
+        password: encryptPassword(password),
+        taxExempt,
+        discountCode,
+        twoFactorContacts: { connect: users.map((user) => ({ userId: user.userId })) },
+        notes
+      },
       ...getVendorQueryArgs(organization.organizationId)
     });
 

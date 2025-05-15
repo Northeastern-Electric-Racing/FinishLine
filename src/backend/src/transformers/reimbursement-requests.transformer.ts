@@ -124,9 +124,9 @@ export const vendorTransformer = (vendor: Prisma.VendorGetPayload<VendorQueryArg
     ...vendor,
     password: decryptPassword(vendor.password),
     discountCode: vendor.discountCode ?? undefined,
-    twoFactorContact: vendor.twoFactorContact ? userTransformer(vendor.twoFactorContact) : undefined,
+    twoFactorContacts: vendor.twoFactorContacts.map(userTransformer),
     notes: vendor.notes ?? undefined,
-    addedBy: vendor.addedBy ? userTransformer(vendor.addedBy) : undefined
+    addedBy: userTransformer(vendor.addedBy)
   };
 };
 
