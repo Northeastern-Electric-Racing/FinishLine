@@ -72,14 +72,19 @@ export const sendCrRequestReviewPopUp = async (changeRequest: Change_Request, re
  * Sends a finishline pop up to a user whose review was requested on a part
  * @param partLink link to the part
  * @param partName name of the part
- * @param user user whose review was requested
+ * @param reviewer user whose review was requested
  * @param organizationId id of the organization of the part
  */
-export const sendPartReviewRequestPopUp = async (partLink: string, partName: string, user: User, organizationId: string) => {
+export const sendPartReviewRequestPopUp = async (
+  partLink: string,
+  partName: string,
+  reviewer: User,
+  organizationId: string
+) => {
   await PopUpService.sendPopUpToUsers(
     `Your review has been requested on ${partName}`,
     'edit_note',
-    [user.userId],
+    [reviewer.userId],
     organizationId,
     partLink
   );
@@ -89,14 +94,19 @@ export const sendPartReviewRequestPopUp = async (partLink: string, partName: str
  * Sends a finishline pop up to a user who is assigned to a part
  * @param partLink link to the part
  * @param partName name of the part
- * @param user user who is assigned to the part
+ * @param assignee user who is assigned to the part
  * @param organizationId id of the organization of the part
  */
-export const sendPartAssignmentPopUp = async (partLink: string, partName: string, user: User, organizationId: string) => {
+export const sendPartAssignmentPopUp = async (
+  partLink: string,
+  partName: string,
+  assignee: User,
+  organizationId: string
+) => {
   await PopUpService.sendPopUpToUsers(
     `You have been assigned to ${partName}`,
     'edit_note',
-    [user.userId],
+    [assignee.userId],
     organizationId,
     partLink
   );

@@ -93,35 +93,37 @@ const PartOverview: React.FC<PartPageOverviewProps> = ({ part }: PartPageOvervie
   /**
    * returns the given user's name and a notification button
    */
-  function displayAssigneeOrReviewer(anyUser: User, isReviewer: boolean) {
+  function displayAssigneeOrReviewer(anyUser: User, isReviewer: boolean, status: Review_Status) {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        <IconButton
-          size="small"
-          onClick={() => {
-            if (isReviewer) {
-              notifyPartReviewer({ partId: part.partId, reviewerId: anyUser.userId });
-            } else {
-              notifyPartAssignee({ partId: part.partId, assigneeId: anyUser.userId });
-            }
-            setNotifiedUserIds((ids) => ids.add(anyUser.userId));
-          }}
-          sx={{
-            backgroundColor: '#444444',
-            color: 'white',
-            borderRadius: '50%',
-            '&:hover': {
-              backgroundColor: '#555555'
-            },
-            mr: 1
-          }}
-        >
-          {notifiedUserIds.has(anyUser.userId) ? (
-            <CachedIcon fontSize="inherit" />
-          ) : (
-            <NotificationsNoneIcon fontSize="inherit" />
-          )}
-        </IconButton>
+        {status !== Review_Status.APPROVED && (
+          <IconButton
+            size="small"
+            onClick={() => {
+              if (isReviewer) {
+                notifyPartReviewer({ partId: part.partId, reviewerId: anyUser.userId });
+              } else {
+                notifyPartAssignee({ partId: part.partId, assigneeId: anyUser.userId });
+              }
+              setNotifiedUserIds((ids) => ids.add(anyUser.userId));
+            }}
+            sx={{
+              backgroundColor: '#444444',
+              color: 'white',
+              borderRadius: '50%',
+              '&:hover': {
+                backgroundColor: '#555555'
+              },
+              mr: 1
+            }}
+          >
+            {notifiedUserIds.has(anyUser.userId) ? (
+              <CachedIcon fontSize="inherit" />
+            ) : (
+              <NotificationsNoneIcon fontSize="inherit" />
+            )}
+          </IconButton>
+        )}
         <Typography>
           {anyUser.firstName} {anyUser.lastName}
         </Typography>
@@ -164,25 +166,27 @@ const PartOverview: React.FC<PartPageOverviewProps> = ({ part }: PartPageOvervie
       >
         <Stack direction={'column'} spacing={0.5} width="50%">
           <Typography>Assignees:</Typography>
-          {part.assignees.map((user) => displayAssigneeOrReviewer(user, false))}
+          {part.assignees.map((user) => displayAssigneeOrReviewer(user, false, part.status))}
         </Stack>
         <Stack direction={'column'} spacing={0.5} width="50%">
           <Typography>Reviewers:</Typography>
           {part.reviewRequests.map((revReq) => (
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              {displayAssigneeOrReviewer(revReq.reviewerRequested, true)}
-              <Box
-                sx={{
-                  width: '10px',
-                  height: '10px',
-                  ml: 0.5,
-                  borderRadius: '50%',
-                  backgroundColor: getReviewerDotColor(part, revReq.reviewerRequested.userId),
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}
-              ></Box>
+              {displayAssigneeOrReviewer(revReq.reviewerRequested, true, part.status)}
+              {part.status !== Review_Status.APPROVED && (
+                <Box
+                  sx={{
+                    width: '10px',
+                    height: '10px',
+                    ml: 0.5,
+                    borderRadius: '50%',
+                    backgroundColor: getReviewerDotColor(part, revReq.reviewerRequested.userId),
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                />
+              )}
             </Box>
           ))}
         </Stack>
