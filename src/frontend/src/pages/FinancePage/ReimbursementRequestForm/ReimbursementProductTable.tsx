@@ -566,6 +566,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                               const value = e.target.value === '' ? undefined : parseFloat(e.target.value);
                                               field.onChange(value);
                                             }}
+                                            disabled={firstRefundSourceIndexCode === undefined}
                                             sx={{
                                               background: '#4c4c4c',
                                               borderRadius: '20px',
@@ -631,6 +632,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                               const value = e.target.value === '' ? undefined : parseFloat(e.target.value);
                                               field.onChange(value);
                                             }}
+                                            disabled={secondRefundSourceIndexCode === undefined}
                                             sx={{
                                               background: '#4c4c4c',
                                               borderRadius: '20px',

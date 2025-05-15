@@ -120,14 +120,14 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const [hasPreFilledData, setHasPreFilledData] = useState(true);
 
   useEffect(() => {
-    if (hasPreFilledData && refundSources.length > 1) {
-      const firstSource = refundSources[0].indexCode.indexCodeId;
-      const secondSource = refundSources[1].indexCode.indexCodeId;
-      setValue('indexCodeId', firstSource);
-      setValue('secondaryAccount', secondSource);
+    if (!hasPreFilledData) return;
+
+    if (refundSources.length > 1 && refundSources[0].indexCode && refundSources[1].indexCode) {
+      setValue('indexCodeId', refundSources[0].indexCode.indexCodeId);
+      setValue('secondaryAccount', refundSources[1].indexCode.indexCodeId);
       setHasPreFilledData(false);
     }
-  }, [hasPreFilledData, reimbursementProducts, setValue, refundSources]);
+  }, [hasPreFilledData, refundSources, setValue]);
 
   useEffect(() => {
     if (firstRefundSourceId) {
@@ -691,7 +691,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     width: 'auto',
                     marginTop: '5px'
                   }}
-                  disabled={!firstRefundSourceId}
                   startIcon={<AddCircleOutline />}
                   onClick={() => setShowAddRefundSourceModal(true)}
                 >
