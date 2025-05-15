@@ -81,7 +81,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organ
         {
           name: 'Reimbursments',
           icon: <CurrencyExchangeIcon sx={{ fontSize: '20px' }} />,
-          route: routes.REIMBURSEMENT_REQUESTS
+          route: routes.REIMBURSEMENT_REQUESTS + '/my-requests'
         },
         {
           name: 'Companies',

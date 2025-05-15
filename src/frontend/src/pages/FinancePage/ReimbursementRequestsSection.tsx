@@ -26,7 +26,7 @@ const ReimbursementRequestTable = ({
   startDate,
   endDate
 }: ReimbursementRequestTableProps) => {
-  const defaultTab = 'my-requests';
+  const defaultTab = '/my-requests';
 
   const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);

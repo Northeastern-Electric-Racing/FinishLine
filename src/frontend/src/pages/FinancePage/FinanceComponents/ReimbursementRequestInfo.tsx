@@ -297,7 +297,7 @@ const ReimbursementRequestInfo = ({
                         variant="contained"
                         component={RouterLink}
                         onClick={() => openSidePage()}
-                        to={`${routes.REIMBURSEMENT_REQUESTS}/${row.id}`}
+                        to={`${routes.REIMBURSEMENT_REQUESTS}/my-requests/${row.id}`}
                         sx={{
                           borderRadius: '8px',
                           color: '#ededed',
@@ -336,35 +336,36 @@ const ReimbursementRequestInfo = ({
             width: 'calc(100% - 60px)'
           }}
         />
-
-        <Button
-          className="viewButton"
-          variant="contained"
-          component={RouterLink}
-          onClick={() => {
-            setSidePageTitle('Create Reimbursement Request');
-            setShowCreateSidePage(true);
-          }}
-          to={routes.NEW_REIMBURSEMENT_REQUEST}
-          disabled={isGuest(user.role)}
-          sx={{
-            borderRadius: '8px',
-            color: '#ededed',
-            backgroundColor: '#dd514c',
-            padding: '2px 20px',
-            mb: 1,
-            mr: 2,
-            display: 'inline-flex',
-            fontSize: '20px',
-            fontWeight: 700,
-            textTransform: 'none',
-            '&:hover': {
-              backgroundColor: '#c74340'
-            }
-          }}
-        >
-          Create Request
-        </Button>
+        {(!canViewAllReimbursementRequests || currentTab === 0) && (
+          <Button
+            className="viewButton"
+            variant="contained"
+            component={RouterLink}
+            onClick={() => {
+              setSidePageTitle('Create Reimbursement Request');
+              setShowCreateSidePage(true);
+            }}
+            to={routes.NEW_REIMBURSEMENT_REQUEST}
+            disabled={isGuest(user.role)}
+            sx={{
+              borderRadius: '8px',
+              color: '#ededed',
+              backgroundColor: '#dd514c',
+              padding: '2px 20px',
+              mb: 1,
+              mr: 2,
+              display: 'inline-flex',
+              fontSize: '20px',
+              fontWeight: 700,
+              textTransform: 'none',
+              '&:hover': {
+                backgroundColor: '#c74340'
+              }
+            }}
+          >
+            Create Request
+          </Button>
+        )}
         <Box
           sx={{
             padding: '5px 20px',

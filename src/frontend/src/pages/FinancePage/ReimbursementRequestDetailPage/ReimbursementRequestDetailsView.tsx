@@ -350,7 +350,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     {
       title: 'Edit',
       onClick: () => {
-        history.push(`${routes.REIMBURSEMENT_REQUESTS}/${reimbursementRequest.reimbursementRequestId}/edit`);
+        history.push(`${routes.REIMBURSEMENT_REQUESTS}/my-requests/${reimbursementRequest.reimbursementRequestId}/edit`);
         openSidePage();
       },
       icon: <Edit />,
