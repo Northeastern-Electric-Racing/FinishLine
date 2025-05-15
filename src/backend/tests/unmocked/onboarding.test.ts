@@ -15,8 +15,10 @@ describe('Onboarding tests', () => {
   let organization: Organization;
 
   beforeEach(async () => {
-    organization = await createTestOrganization();
-    orgId = organization.organizationId;
+    if (!orgId) {
+      organization = await createTestOrganization();
+      orgId = organization.organizationId;
+    }
   });
 
   afterEach(async () => {
