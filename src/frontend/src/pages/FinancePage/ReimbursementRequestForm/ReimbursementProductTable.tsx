@@ -27,7 +27,8 @@ import {
   wbsPipe,
   ReimbursementProductFormArgs,
   IndexCode,
-  RefundSource
+  RefundSource,
+  CreateRefundSourceArgs
 } from 'shared';
 import { RemoveCircleOutline, AddCircleOutline } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form';
@@ -148,7 +149,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   const prevFirstRefundSourceName = useRef(firstRefundSourceName);
   const prevSecondRefundSourceName = useRef(secondRefundSourceName);
 
-  const refundSources: RefundSource[] = Array.from(
+  const refundSources: CreateRefundSourceArgs[] = Array.from(
     new Set(reimbursementProducts.flatMap((product) => product.refundSources).filter((source) => source.amount > 0))
   );
 

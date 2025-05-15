@@ -105,7 +105,12 @@ export interface AccountCode {
 }
 
 export interface RefundSource {
-  refundSourceId?: string;
+  refundSourceId: string;
+  indexCode: IndexCode;
+  amount: number;
+}
+
+export interface CreateRefundSourceArgs {
   indexCode: IndexCode;
   amount: number;
 }
@@ -114,7 +119,7 @@ export interface ReimbursementProductCreateArgs {
   id?: string;
   name: string;
   cost: number;
-  refundSources: RefundSource[];
+  refundSources: CreateRefundSourceArgs[];
 }
 
 export interface ReimbursementProductFormArgs extends ReimbursementProductCreateArgs {

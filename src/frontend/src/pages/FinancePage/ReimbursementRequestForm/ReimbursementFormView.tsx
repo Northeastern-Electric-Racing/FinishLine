@@ -29,6 +29,7 @@ import {
 } from 'react-hook-form';
 import {
   AccountCode,
+  CreateRefundSourceArgs,
   IndexCode,
   RefundSource,
   ReimbursementProductFormArgs,
@@ -102,7 +103,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const [showAddRefundSourceModal, setShowAddRefundSourceModal] = useState(false);
 
   // to grab all the proper refund sources
-  const refundSources: RefundSource[] = Array.from(
+  const refundSources: CreateRefundSourceArgs[] = Array.from(
     new Set(reimbursementProducts.flatMap((product) => product.refundSources).filter((source) => source.amount > 0))
   );
 
