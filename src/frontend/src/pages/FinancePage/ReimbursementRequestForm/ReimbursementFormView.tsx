@@ -691,6 +691,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     width: 'auto',
                     marginTop: '5px'
                   }}
+                  disabled={!firstRefundSourceId}
                   startIcon={<AddCircleOutline />}
                   onClick={() => setShowAddRefundSourceModal(true)}
                 >
