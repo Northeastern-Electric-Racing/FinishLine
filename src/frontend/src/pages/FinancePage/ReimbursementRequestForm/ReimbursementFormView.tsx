@@ -31,7 +31,6 @@ import {
   AccountCode,
   CreateRefundSourceArgs,
   IndexCode,
-  RefundSource,
   ReimbursementProductFormArgs,
   ReimbursementReceiptCreateArgs,
   ReimbursementReceiptUploadArgs,

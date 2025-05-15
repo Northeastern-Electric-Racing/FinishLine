@@ -27,7 +27,6 @@ import {
   wbsPipe,
   ReimbursementProductFormArgs,
   IndexCode,
-  RefundSource,
   CreateRefundSourceArgs
 } from 'shared';
 import { RemoveCircleOutline, AddCircleOutline } from '@mui/icons-material';
