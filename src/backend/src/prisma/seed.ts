@@ -1996,11 +1996,11 @@ const performSeed: () => Promise<void> = async () => {
         refundSources: [
           {
             indexCode: indexCodeBudget,
-            amount: 200
+            amount: 150000
           },
           {
             indexCode: indexCodeCash,
-            amount: 800
+            amount: 50000
           }
         ]
       }
@@ -2027,11 +2027,11 @@ const performSeed: () => Promise<void> = async () => {
         refundSources: [
           {
             indexCode: indexCodeBudget,
-            amount: 200
+            amount: 7000
           },
           {
             indexCode: indexCodeCash,
-            amount: 800
+            amount: 3000
           }
         ]
       }
