@@ -229,7 +229,7 @@ export const createTestOrganization = async () => {
     data: {
       firstName: 'Admin',
       lastName: 'User',
-      email: '',
+      email: randomUUID(),
       googleAuthId: randomUUID()
     }
   });
