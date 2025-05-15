@@ -2,7 +2,7 @@ import { Project, PartPreview } from 'shared';
 import { Box } from '@mui/system';
 import { Grid, Typography } from '@mui/material';
 import { wbsPipe } from 'shared';
-import PartDisplay from '../../../PartPage/components/PartDisplay';
+import PartDisplay from '../../../PartPage/components-temp/PartDisplay';
 
 interface PartsToReviewProps {
   project: Project;
