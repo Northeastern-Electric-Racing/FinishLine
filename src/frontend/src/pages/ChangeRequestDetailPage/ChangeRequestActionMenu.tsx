@@ -135,36 +135,40 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
   const renderUnreviewedActionsDropdown = () =>
     isRequestAllowed ? requestReviewerDropdown() : <UnreviewedActionsDropdown />;
 
-  const ImplementCrDropdown = () => (
-    <ActionsMenu
-      buttons={[
-        {
-          title: 'Create New Project',
-          onClick: () =>
-            history.push(`${routes.PROJECTS_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`),
-          disabled: !isUserAllowedToImplement,
-          icon: <CreateNewFolderIcon fontSize="small" />
-        },
-        {
-          title: 'Create New Work Package',
-          onClick: () =>
-            history.push(
-              `${routes.WORK_PACKAGE_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`
-            ),
-          disabled: !isUserAllowedToImplement,
-          icon: <PostAddIcon fontSize="small" />
-        },
-        {
-          title: `Edit ${changeRequest.wbsNum.workPackageNumber === 0 ? 'Project' : 'Work Package'}`,
-          onClick: () =>
-            history.push(`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}?crId=${changeRequest.crId}&edit=${true}`),
-          disabled: !isUserAllowedToImplement,
-          icon: <EditIcon fontSize="small" />
-        }
-      ]}
-      title="Implement Change Request"
-    />
-  );
+  const ImplementCrDropdown = () => {
+    if (!changeRequest.wbsNum) return null;
+
+    return (
+      <ActionsMenu
+        buttons={[
+          {
+            title: 'Create New Project',
+            onClick: () =>
+              history.push(`${routes.PROJECTS_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum!)}`),
+            disabled: !isUserAllowedToImplement,
+            icon: <CreateNewFolderIcon fontSize="small" />
+          },
+          {
+            title: 'Create New Work Package',
+            onClick: () =>
+              history.push(
+                `${routes.WORK_PACKAGE_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum!)}`
+              ),
+            disabled: !isUserAllowedToImplement,
+            icon: <PostAddIcon fontSize="small" />
+          },
+          {
+            title: `Edit ${changeRequest.wbsNum.workPackageNumber === 0 ? 'Project' : 'Work Package'}`,
+            onClick: () =>
+              history.push(`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum!)}?crId=${changeRequest.crId}&edit=true`),
+            disabled: !isUserAllowedToImplement,
+            icon: <EditIcon fontSize="small" />
+          }
+        ]}
+        title="Implement Change Request"
+      />
+    );
+  };
 
   return changeRequest.accepted ? <ImplementCrDropdown /> : <>{renderUnreviewedActionsDropdown()}</>;
 };

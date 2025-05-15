@@ -7,6 +7,9 @@
   - Added the required column `indexCodeId` to the `Reimbursement_Request` table without a default value. This is not possible if the table is not empty.
 */
 
+-- AlterEnum
+ALTER TYPE "CR_Type" ADD VALUE 'BUDGET';
+
 -- AlterTable
 ALTER TABLE "Material" ADD COLUMN     "reimbursementRequestId" TEXT;
 
@@ -257,3 +260,45 @@ ALTER TABLE "Reimbursement_Request_Comment" ADD CONSTRAINT "Reimbursement_Reques
 
 -- AlterTable
 ALTER TABLE "Reimbursement_Request_Comment" ADD COLUMN     "dateDeleted" TIMESTAMP(3);
+
+-- DropForeignKey
+ALTER TABLE "Change_Request" DROP CONSTRAINT "Change_Request_wbsElementId_fkey";
+
+-- AlterTable
+ALTER TABLE "Change_Request" ADD COLUMN     "categoryId" TEXT,
+ALTER COLUMN "wbsElementId" DROP NOT NULL;
+
+-- CreateTable
+CREATE TABLE "Budget_CR" (
+    "budgetCrId" TEXT NOT NULL,
+    "changeRequestId" TEXT NOT NULL,
+    "proposedBudget" INTEGER NOT NULL,
+
+    CONSTRAINT "Budget_CR_pkey" PRIMARY KEY ("budgetCrId")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Budget_CR_changeRequestId_key" ON "Budget_CR"("changeRequestId");
+
+-- AddForeignKey
+ALTER TABLE "Change_Request" ADD CONSTRAINT "Change_Request_wbsElementId_fkey" FOREIGN KEY ("wbsElementId") REFERENCES "WBS_Element"("wbsElementId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Change_Request" ADD CONSTRAINT "Change_Request_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Reimbursement_Product_Other_Reason"("otherReimbursementProductReasonId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Budget_CR" ADD CONSTRAINT "Budget_CR_changeRequestId_fkey" FOREIGN KEY ("changeRequestId") REFERENCES "Change_Request"("crId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- DropForeignKey
+ALTER TABLE "Change" DROP CONSTRAINT "Change_wbsElementId_fkey";
+
+-- AlterTable
+ALTER TABLE "Change" ADD COLUMN     "categoryId" TEXT,
+ALTER COLUMN "wbsElementId" DROP NOT NULL;
+
+-- AddForeignKey
+ALTER TABLE "Change" ADD CONSTRAINT "Change_wbsElementId_fkey" FOREIGN KEY ("wbsElementId") REFERENCES "WBS_Element"("wbsElementId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Change" ADD CONSTRAINT "Change_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Reimbursement_Product_Other_Reason"("otherReimbursementProductReasonId") ON DELETE SET NULL ON UPDATE CASCADE;
+

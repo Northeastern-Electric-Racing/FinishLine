@@ -123,6 +123,22 @@ export default class ChangeRequestsController {
     }
   }
 
+  static async createBudgetChangeRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { otherReasonId, type, proposedBudget } = req.body;
+      const id = await ChangeRequestsService.createBudgetChangeRequest(
+        req.currentUser,
+        otherReasonId,
+        type,
+        proposedBudget,
+        req.organization
+      );
+      res.status(200).json({ message: `Successfully created stage gate request with id #${id}` });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createStandardChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const { wbsNum, type, what, why, proposedSolutions, projectProposedChanges, workPackageProposedChanges } = req.body;
