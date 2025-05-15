@@ -8,7 +8,8 @@ import {
   TableContainer,
   TableHead,
   TablePagination,
-  TableRow
+  TableRow,
+  Typography
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useState } from 'react';
@@ -28,6 +29,11 @@ import ColumnHeader from './ColumnHeader';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import SidePage from './SidePagePopup';
 import ReimbursementRequestDetails from '../ReimbursementRequestDetailPage/ReimbursementRequestDetails';
+import ReimbursementRequestForm, {
+  ReimbursementRequestDataSubmission
+} from '../ReimbursementRequestForm/ReimbursementRequestForm';
+import { useCreateReimbursementRequest, useUploadManyReceipts } from '../../../hooks/finance.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 
 interface ReimbursementRequestInfoProps {
   userReimbursementRequests: ReimbursementRequest[];
@@ -62,6 +68,7 @@ const ReimbursementRequestInfo = ({
   const [isAscendingOrder, setAscendingOrder] = useState(true);
   const [orderBy, setOrderBy] = useState<keyof ReimbursementRequestRow>('identifier');
   const user = useCurrentUser();
+  const [sidePageTitle, setSidePageTitle] = useState('');
 
   const displayedReimbursementRequests =
     canViewAllReimbursementRequests && currentTab !== 0 && allReimbursementRequests
@@ -187,6 +194,8 @@ const ReimbursementRequestInfo = ({
 
   const paginatedRows = rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
   const [showSidePage, setShowSidePage] = useState(false);
+  const [showCreateSidePage, setShowCreateSidePage] = useState(false);
+  const { isLoading: receiptsIsLoading, mutateAsync: uploadReceipts } = useUploadManyReceipts();
 
   const openSidePage = () => {
     setShowSidePage(true);
@@ -196,6 +205,26 @@ const ReimbursementRequestInfo = ({
     setShowSidePage(false);
     onCloseSidePage?.();
   };
+
+  const closeCreateSidePage = () => {
+    setShowCreateSidePage(false);
+    onCloseSidePage?.();
+  };
+
+  const { isLoading: createReimbursementRequestIsLoading, mutateAsync: createReimbursementRequest } =
+    useCreateReimbursementRequest();
+
+  const onSubmitCreate = async (data: ReimbursementRequestDataSubmission): Promise<string> => {
+    const reimbursementRequest = await createReimbursementRequest({ ...data, indexCodeId: data.indexCodeId! });
+    await uploadReceipts({
+      id: reimbursementRequest.reimbursementRequestId,
+      files: data.receiptFiles.map((file) => file.file!)
+    });
+    closeCreateSidePage();
+    return reimbursementRequest.reimbursementRequestId;
+  };
+
+  if (createReimbursementRequestIsLoading || receiptsIsLoading) return <LoadingIndicator />;
 
   return (
     <Box sx={{ width: '100%', borderRadius: '8px 8px 0 0' }}>
@@ -307,32 +336,35 @@ const ReimbursementRequestInfo = ({
             width: 'calc(100% - 60px)'
           }}
         />
-        {(!canViewAllReimbursementRequests || currentTab === 0) && (
-          <Button
-            className="viewButton"
-            variant="contained"
-            component={RouterLink}
-            to={routes.NEW_REIMBURSEMENT_REQUEST}
-            disabled={isGuest(user.role)}
-            sx={{
-              borderRadius: '8px',
-              color: '#ededed',
-              backgroundColor: '#dd514c',
-              padding: '2px 20px',
-              mb: 1,
-              mr: 2,
-              display: 'inline-flex',
-              fontSize: '20px',
-              fontWeight: 700,
-              textTransform: 'none',
-              '&:hover': {
-                backgroundColor: '#c74340'
-              }
-            }}
-          >
-            Create Request
-          </Button>
-        )}
+
+        <Button
+          className="viewButton"
+          variant="contained"
+          component={RouterLink}
+          onClick={() => {
+            setSidePageTitle('Create Reimbursement Request');
+            setShowCreateSidePage(true);
+          }}
+          to={routes.NEW_REIMBURSEMENT_REQUEST}
+          disabled={isGuest(user.role)}
+          sx={{
+            borderRadius: '8px',
+            color: '#ededed',
+            backgroundColor: '#dd514c',
+            padding: '2px 20px',
+            mb: 1,
+            mr: 2,
+            display: 'inline-flex',
+            fontSize: '20px',
+            fontWeight: 700,
+            textTransform: 'none',
+            '&:hover': {
+              backgroundColor: '#c74340'
+            }
+          }}
+        >
+          Create Request
+        </Button>
         <Box
           sx={{
             padding: '5px 20px',
@@ -381,6 +413,18 @@ const ReimbursementRequestInfo = ({
           labelDisplayedRows={({ page }) => `Page ${page + 1}`}
         />
       </Box>
+      <SidePage
+        showPage={showCreateSidePage}
+        handleClose={closeCreateSidePage}
+        title={sidePageTitle}
+        component={
+          sidePageTitle === 'Create Reimbursement Request' ? (
+            <ReimbursementRequestForm submitText="Submit" submitData={onSubmitCreate} previousPage={routes.FINANCE} />
+          ) : (
+            <Typography>This is a side page</Typography>
+          )
+        }
+      />
     </Box>
   );
 };

@@ -1,12 +1,10 @@
 import { Box, Button, Menu, MenuItem, ListItemIcon, Typography, FormControlLabel, Checkbox } from '@mui/material';
 import { useState } from 'react';
-import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { SearchBar } from '../../components/SearchBar';
 import { NERButton } from '../../components/NERButton';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import WorkIcon from '@mui/icons-material/Work';
-import { routes } from '../../utils/routes';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { isAdmin, isGuest, isHead, isLead, ReimbursementStatusType } from 'shared';
@@ -16,34 +14,19 @@ import { useToast } from '../../hooks/toasts.hooks';
 import {
   useAllReimbursementRequests,
   useCurrentUserReimbursementRequests,
-  useDownloadCSVFileOfReimbursementRequests,
-  useCreateReimbursementRequest,
-  useUploadManyReceipts
+  useDownloadCSVFileOfReimbursementRequests
 } from '../../hooks/finance.hooks';
-import { useHistory } from 'react-router-dom';
 import { DatePicker } from '@mui/x-date-pickers';
 import ReportRefundModal from './FinanceComponents/ReportRefundModal';
 import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
 import ErrorPage from '../ErrorPage';
-import ReimbursementRequestForm, {
-  ReimbursementRequestDataSubmission
-} from './ReimbursementRequestForm/ReimbursementRequestForm';
-import SidePage from './FinanceComponents/SidePagePopup';
-import LoadingIndicator from '../../components/LoadingIndicator';
 
 const ReimbursementRequests: React.FC = () => {
-  const { isLoading: createReimbursementRequestIsLoading, mutateAsync: createReimbursementRequest } =
-    useCreateReimbursementRequest();
   const allStatuses = Object.values(ReimbursementStatusType);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [accountCreditModalShow, setAccountCreditModalShow] = useState<boolean>(false);
   const [showGenerateReceipts, setShowGenerateReceipts] = useState(false);
-  const { isLoading: receiptsIsLoading, mutateAsync: uploadReceipts } = useUploadManyReceipts();
 
-  const [showSidePage, setShowSidePage] = useState(false);
-  const [sidePageTitle, setSidePageTitle] = useState('');
-
-  const history = useHistory();
   const user = useCurrentUser();
   const canViewAllReimbursementRequests = user.isFinance || isHead(user.role) || isLead(user.role);
   const toast = useToast();
@@ -58,22 +41,6 @@ const ReimbursementRequests: React.FC = () => {
         toast.error(error.message);
       }
     }
-  };
-
-  const closeSidePage = () => {
-    setShowSidePage(false);
-  };
-
-  const onSubmit = async (data: ReimbursementRequestDataSubmission): Promise<string> => {
-    const reimbursementRequest = await createReimbursementRequest({ ...data, indexCodeId: data.indexCodeId! });
-    await uploadReceipts({
-      id: reimbursementRequest.reimbursementRequestId,
-      files: data.receiptFiles.map((file) => file.file!)
-    });
-    refetchUserReimbursementRequests();
-    refetchAllReimbursementRequests();
-    closeSidePage();
-    return reimbursementRequest.reimbursementRequestId;
   };
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -101,20 +68,6 @@ const ReimbursementRequests: React.FC = () => {
         Actions
       </NERButton>
       <Menu open={!!anchorEl} anchorEl={anchorEl} onClose={handleDropdownClose}>
-        <MenuItem
-          onClick={() => {
-            history.push(routes.NEW_REIMBURSEMENT_REQUEST);
-            setSidePageTitle('Create Reimbursement Request');
-            setShowSidePage(true);
-            handleDropdownClose();
-          }}
-          disabled={isGuest(user.role)}
-        >
-          <ListItemIcon>
-            <NoteAddIcon fontSize="small" />
-          </ListItemIcon>
-          Create Reimbursement Request
-        </MenuItem>
         <MenuItem
           onClick={() => {
             setAccountCreditModalShow(true);
@@ -175,7 +128,6 @@ const ReimbursementRequests: React.FC = () => {
 
   if (isFinance && allReimbursementRequestsIsError) return <ErrorPage message={allReimbursementRequestsError?.message} />;
   if (userReimbursementRequestIsError) return <ErrorPage message={userReimbursementRequestError?.message} />;
-  if (createReimbursementRequestIsLoading || receiptsIsLoading) return <LoadingIndicator />;
 
   const filterMenu = (
     <Menu
@@ -320,18 +272,6 @@ const ReimbursementRequests: React.FC = () => {
           }}
         />
       </Box>
-      <SidePage
-        showPage={showSidePage}
-        handleClose={closeSidePage}
-        title={sidePageTitle}
-        component={
-          sidePageTitle === 'Create Reimbursement Request' ? (
-            <ReimbursementRequestForm submitText="Submit" submitData={onSubmit} previousPage={routes.FINANCE} />
-          ) : (
-            <Typography>This is a side page</Typography>
-          )
-        }
-      />
     </Box>
   );
 };
