@@ -47,7 +47,7 @@ export const getUsersLeadingProjects = () => {
 };
 
 /**
- * Fetches all projects that the user is the manager or lead of.
+ * Fetches all projects that are on that team.
  */
 export const getTeamsProjects = (teamId: string) => {
   return axios.get<Project[]>(apiUrls.teamsProjects(teamId), {

@@ -42,20 +42,21 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
     { name: 'Available', value: available }
   ];
 
-  const totalValue = data.reduce((sum, entry) => sum + entry.value, 0);
+  const totalValue = data.reduce((sum, entry) => sum + Math.max(entry.value, 0), 0);
 
-  // Check if all data values are zero
-  const isDataEmpty = data.every((item) => item.value === 0);
+  // Check if all data values are zero or negative
+  const isDataEmpty = data.every((item) => item.value <= 0);
 
-  let adjustedData = data;
+  // Create adjusted data for pie chart (only non-negative values)
+  let adjustedData = data.filter((entry) => entry.value > 0);
   if (!isDataEmpty && totalValue > 0) {
     // Ensure minimum value for visible segments
     const minValue = Math.max(totalValue * MIN_PERCENTAGE, 1);
 
     // Adjust values to meet minimum threshold
-    adjustedData = data.map((entry) => ({
+    adjustedData = adjustedData.map((entry) => ({
       ...entry,
-      value: entry.value > 0 && entry.value < minValue ? minValue : entry.value
+      value: entry.value < minValue ? minValue : entry.value
     }));
 
     // Calculate total after adjustments
@@ -69,12 +70,6 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
         value: entry.value * scaleFactor
       }));
     }
-
-    // Ensure no negative values
-    adjustedData = adjustedData.map((entry) => ({
-      ...entry,
-      value: Math.max(entry.value, 0)
-    }));
   }
 
   const sectionColorMap = new Map([

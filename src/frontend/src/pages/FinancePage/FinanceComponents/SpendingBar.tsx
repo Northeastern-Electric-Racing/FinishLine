@@ -1,4 +1,4 @@
-import { Box, IconButton, Typography } from '@mui/material';
+import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import {
   BarControllerChartOptions,
   CoreChartOptions,
@@ -18,6 +18,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import { useAllTeams } from '../../../hooks/teams.hooks';
 import { EditProjectBudgetModal } from './EditProjectBudgetModal';
 import { EditBudgetModalForReason } from './EditBudgetModalForReason';
+import { displayEnum } from '../../../utils/pipes';
+import HelpIcon from '@mui/icons-material/Help';
 
 const getTotalMoneySpent = (data: ReimbursementRequestData) =>
   data.available + data.pendingFinance + data.pendingLeadership + data.reimbursed + data.submittedToSabo;
@@ -158,7 +160,9 @@ const SpendingBar = ({ data, title }: SpendingBarData) => {
 
           // Truncate the text with ellipsis if it exceeds the maximum length
           if (label && label.length > maxTextLength) {
-            label = label.slice(0, maxTextLength) + '...';
+            label = displayEnum(label).slice(0, maxTextLength) + '...';
+          } else if (label) {
+            label = displayEnum(label);
           }
 
           return [label, `$${realValue}`];
@@ -278,6 +282,14 @@ const SpendingBar = ({ data, title }: SpendingBarData) => {
         <Typography fontWeight="bold" variant="body1">
           {title}
         </Typography>
+        {title === 'Club Categories' && (
+          <Tooltip
+            title="A Club Category is another reason why a reimbursement request would be submitted if not on a project."
+            placement="right"
+          >
+            <HelpIcon style={{ fontSize: 'medium' }} />
+          </Tooltip>
+        )}
         <IconButton size="small" onClick={() => handleEditClick(title)}>
           <EditIcon fontSize="small" />
         </IconButton>
