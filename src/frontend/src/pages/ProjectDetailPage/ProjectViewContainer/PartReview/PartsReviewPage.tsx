@@ -1,20 +1,18 @@
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { Box, Stack } from '@mui/system';
 import { Grid, FormGroup, FormControlLabel, Typography, Link } from '@mui/material';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
 import { Project, rankUserRole, wbsPipe, Review_Status, Part } from 'shared';
 import NERSwitch from '../../../../components/NERSwitch';
 import CommonMistakes from './CommonMistakes';
-import PartDisplay from '../../../PartPage/components/PartDisplay';
-//import { useSinglePart } from '../../../../hooks/part-review.hooks';
 import { usePartsFromProject } from '../../../../hooks/part-review.hooks';
 import ErrorPage from '../../../ErrorPage';
 import { Link as RouterLink } from 'react-router-dom';
 import PartReviewFAQs from './PartReviewFAQs';
-import MyPartsUnderReview from './MyPartsUnderReview';
-import PartsForMeToReview from './PartsForMeToReview';
+import PartsToReview from './PartsToReview';
 import CreateMenu from './PartReviewComponents/PartFormModels/CreateMenu';
+import { isAtLeastRank } from 'shared';
 
 const PartsReviewPage = ({ project }: { project: Project }) => {
   const currentUser = useCurrentUser();
@@ -23,6 +21,43 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
     return rankUserRole(userRole) < rankUserRole('LEADERSHIP');
   });
   const { data: parts, isLoading, isError, error } = usePartsFromProject(wbsPipe(project.wbsNum));
+
+  const partsForMeToReview = useMemo(() => {
+    return parts?.filter(
+      (part) =>
+        part.reviewRequests.some((request) => request.reviewerRequested.userId === currentUser.userId) &&
+        // Right now, we have no way to access the reviews for the most recent submission -- thus, we can't check if
+        // the current user specifically reviewed the most recent submission (the part status does not tell us this)
+        // If we could modify the PartPreview type to include reviews for the most recent submission, the below check would work
+        // If that's too complicated, this list won't really be useful
+        // part.submissions[0].reviews.some(review => review.userCreated.userId === currentUser.userId) &&
+        (part.status === 'READY_FOR_REVIEW' || part.status === 'IN_REVIEW')
+    );
+  }, [parts, currentUser]);
+
+  const myPartsUnderReview = useMemo(() => {
+    return parts?.filter(
+      (part) =>
+        part.assignees.some((assignee) => assignee.userId === currentUser.userId) &&
+        part.status !== 'APPROVED' &&
+        part.status !== 'IN_PROGRESS'
+    );
+  }, [parts, currentUser]);
+
+  const allPartsUnderReview = useMemo(() => {
+    return parts?.filter(
+      (part) => part.status !== 'APPROVED' && part.status !== 'IN_PROGRESS' && isAtLeastRank('LEADERSHIP', currentUser.role)
+    );
+  }, [parts, currentUser]);
+
+  const formatStyle = useMemo(() => {
+    const nonEmptyCount = [partsForMeToReview, myPartsUnderReview, allPartsUnderReview].filter(
+      (partArr) => partArr?.length !== 0
+    ).length;
+    if (nonEmptyCount === 3) return 'compact';
+    if (nonEmptyCount === 2) return 'standard';
+    return 'full';
+  }, [partsForMeToReview, myPartsUnderReview, allPartsUnderReview]);
 
   if (isLoading || !parts) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
@@ -210,9 +245,9 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
 
   return (
     <Box>
-      <PartDisplay part={samplePart} contentAmount="full"></PartDisplay>
+      {/* <PartDisplay part={samplePart} contentAmount="full"></PartDisplay>
       <PartDisplay part={samplePart} contentAmount="standard"></PartDisplay>
-      <PartDisplay part={samplePart} contentAmount="compact"></PartDisplay>
+      <PartDisplay part={samplePart} contentAmount="compact"></PartDisplay> */}
       <CreateMenu wbsNum={project.wbsNum} partsInProject={parts} />
       <Grid container spacing={3}>
         <Grid item xs={12}>
@@ -256,8 +291,34 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
             <LoadingIndicator /> /* Loading indicator will be replaced by a grid of all the part cards */
           )}
           {/* temporary test component to show that parts are being displayed */}
-          <MyPartsUnderReview project={project} />
-          <PartsForMeToReview project={project} />
+
+          <Grid container spacing={2}>
+            {(partsForMeToReview ?? []).length > 0 && (
+              <PartsToReview
+                project={project}
+                parts={partsForMeToReview}
+                formatStyle={formatStyle}
+                title={'Parts For Me To Review'}
+              />
+            )}
+            {(myPartsUnderReview ?? []).length > 0 && (
+              <PartsToReview
+                project={project}
+                parts={myPartsUnderReview}
+                formatStyle={formatStyle}
+                title={'My Parts Under Review'}
+              />
+            )}
+            {(allPartsUnderReview ?? []).length > 0 && (
+              <PartsToReview
+                project={project}
+                parts={allPartsUnderReview}
+                formatStyle={formatStyle}
+                title={'All Parts Under Review'}
+              />
+            )}
+          </Grid>
+
           <Stack>
             Parts for this project:
             {parts.map((part, _index) => (
