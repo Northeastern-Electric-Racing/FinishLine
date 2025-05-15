@@ -107,32 +107,41 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
           <FormHelperText error>{errors.password?.message}</FormHelperText>
         </FormControl>
         <Box display="flex" flexDirection="row" gap={3} sx={{ width: '100%' }}>
-          <FormControl sx={{ paddingBottom: 2, flex: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, height: 85 }}>
-              <FormLabel
-                sx={{
-                  fontWeight: 'bold',
-                  fontSize: 18,
-                  color: '#EF4345',
-                  '&.Mui-focused': { color: '#EF4345' },
-                  '&.Mui-error': { color: '#EF4345' }
-                }}
-              >
-                Tax Exempt:*
-              </FormLabel>
-              <Controller
-                control={control}
-                name="taxExempt"
-                defaultValue={false}
-                render={({ field: { onChange, value } }) => (
-                  <Checkbox
-                    checked={value === true}
-                    onChange={(event) => onChange(event.target.checked)}
-                    sx={{ padding: 1, scale: 1.25 }}
-                  />
-                )}
-              />
-            </Box>
+          <FormControl
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              paddingBottom: 2,
+              flex: 2,
+              paddingTop: 1
+            }}
+          >
+            <FormLabel
+              sx={{
+                fontWeight: 'bold',
+                fontSize: 18,
+                color: '#EF4345',
+                textAlign: 'center',
+                '&.Mui-focused': { color: '#EF4345' },
+                '&.Mui-error': { color: '#EF4345' },
+                marginBottom: 1
+              }}
+            >
+              Tax Exempt:*
+            </FormLabel>
+            <Controller
+              control={control}
+              name="taxExempt"
+              defaultValue={false}
+              render={({ field: { onChange, value } }) => (
+                <Checkbox
+                  checked={value === true}
+                  onChange={(event) => onChange(event.target.checked)}
+                  sx={{ padding: 0, transform: 'scale(1.4)' }}
+                />
+              )}
+            />
           </FormControl>
           <FormControl sx={{ paddingBottom: 2, flex: 3 }}>
             <FormLabel sx={{ fontWeight: 'bold', fontSize: 18, color: '#EF4345' }}>Discount Code:*</FormLabel>
