@@ -438,11 +438,10 @@ export const createTestReimbursementRequest = async () => {
     organization,
     'nershipping@gmail.com',
     'racecar228!',
-    true,
     'SAVE50!',
-    user.userId,
-    'Tax exemption status?',
-    user.userId
+    true,
+    [user.userId],
+    'Tax exemption status?'
   );
 
   const indexCode = await ReimbursementRequestService.createIndexCode('CASH', '830667', user, organization);

@@ -6,7 +6,7 @@ export type VendorQueryArgs = ReturnType<typeof getVendorQueryArgs>;
 export const getVendorQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.VendorDefaultArgs>()({
     include: {
-      twoFactorContact: getUserQueryArgs(organizationId),
+      twoFactorContacts: getUserQueryArgs(organizationId),
       addedBy: getUserQueryArgs(organizationId)
     }
   });
