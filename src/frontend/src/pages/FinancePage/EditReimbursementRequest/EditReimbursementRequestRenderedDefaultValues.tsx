@@ -10,7 +10,7 @@ const EditReimbursementRequestRenderedDefaultValues: React.FC<{
   reimbursementRequest: ReimbursementRequest;
   onSubmitData: (data: ReimbursementRequestDataSubmission) => Promise<string>;
 }> = ({ reimbursementRequest, onSubmitData }) => {
-  const previousPage = `${routes.REIMBURSEMENT_REQUESTS}/${reimbursementRequest.reimbursementRequestId}`;
+  const previousPage = `${routes.REIMBURSEMENT_REQUESTS}/my-requests/${reimbursementRequest.reimbursementRequestId}`;
 
   return (
     <PageLayout

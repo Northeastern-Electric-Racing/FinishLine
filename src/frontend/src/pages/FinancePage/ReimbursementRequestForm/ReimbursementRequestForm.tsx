@@ -247,7 +247,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
         wbsReimbursementProducts,
         totalCost
       });
-      history.push(routes.REIMBURSEMENT_REQUESTS + '/' + reimbursementRequestId);
+      history.push(routes.REIMBURSEMENT_REQUESTS + '/my-requests/' + reimbursementRequestId);
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 5000);
