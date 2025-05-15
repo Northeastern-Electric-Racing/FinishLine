@@ -561,7 +561,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                         render={({ field }) => (
                                           <TextField
                                             {...field}
-                                            value={field.value ?? ''}
+                                            value={field.value === 0 ? '' : field.value}
                                             onChange={(e) => {
                                               const value = e.target.value === '' ? undefined : parseFloat(e.target.value);
                                               field.onChange(value);
@@ -626,7 +626,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                         render={({ field }) => (
                                           <TextField
                                             {...field}
-                                            value={field.value ?? ''}
+                                            value={field.value === 0 ? '' : field.value}
                                             onChange={(e) => {
                                               const value = e.target.value === '' ? undefined : parseFloat(e.target.value);
                                               field.onChange(value);
