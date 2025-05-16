@@ -134,12 +134,15 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
     if (firstRefundSourceId) {
       if (secondRefundSourceId && firstRefundSourceId === secondRefundSourceId) {
         setValue('secondaryAccount', undefined);
+
         reimbursementProducts.forEach((_, index) => {
+          setValue(`reimbursementProducts.${index}.refundSources.${0}.amount`, 0);
           setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, 0);
+          setValue(`reimbursementProducts.${index}.cost`, 0);
         });
       }
     }
-  }, [firstRefundSourceId, secondRefundSourceId, reimbursementProducts, setValue]);
+  }, [firstRefundSourceId, secondRefundSourceId, reimbursementProducts, setValue, watch]);
 
   // for setting the first refund source in the array
   useEffect(() => {
@@ -151,7 +154,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
     reimbursementProducts.forEach((_, index) => {
       setValue(`reimbursementProducts.${index}.refundSources.${0}`, { indexCode: firstCodeId, amount: 0 });
     });
-    // console.log('form state now:', watch('reimbursementProducts'));
   }, [firstRefundSourceId, hasConfirmedFinance, indexCodes, reimbursementProducts, setValue, watch]);
 
   useEffect(() => {
@@ -167,8 +169,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
       setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, 0);
       setValue(`reimbursementProducts.${index}.cost`, 0);
     });
-
-    console.log(watch(`reimbursementProducts`));
   };
 
   useEffect(() => {
@@ -186,7 +186,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const handleConfirmAddRefundSource = () => {
     setHasConfirmedFinance(true);
     setShowAddRefundSourceModal(false);
-    console.log(watch(`reimbursementProducts`));
   };
 
   const firstRefundSource = indexCodes.find((indexCodes) => indexCodes.indexCodeId === firstRefundSourceId) || {
