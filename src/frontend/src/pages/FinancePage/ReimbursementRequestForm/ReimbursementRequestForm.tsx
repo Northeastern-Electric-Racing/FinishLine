@@ -75,6 +75,20 @@ const schema = yup.object().shape({
           path: `reimbursementProducts.${products.indexOf(product)}.refundSources.${1}.amount`
         });
       }
+
+      if (product.refundSources[0].amount < 0.01) {
+        return this.createError({
+          message: 'Amount must be greater than 0.01',
+          path: `reimbursementProducts.${products.indexOf(product)}.refundSources.${0}.amount`
+        });
+      }
+
+      if (product.refundSources[1].amount < 0.01) {
+        return this.createError({
+          message: 'Amount must be greater than 0.01',
+          path: `reimbursementProducts.${products.indexOf(product)}.refundSources.${1}.amount`
+        });
+      }
     }
     return true;
   }),
