@@ -562,10 +562,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                           <TextField
                                             {...field}
                                             value={field.value === 0 ? '' : field.value}
-                                            onChange={(e) => {
-                                              const value = e.target.value === '' ? undefined : parseFloat(e.target.value);
-                                              field.onChange(value);
-                                            }}
                                             disabled={firstRefundSourceIndexCode === undefined}
                                             sx={{
                                               background: '#4c4c4c',

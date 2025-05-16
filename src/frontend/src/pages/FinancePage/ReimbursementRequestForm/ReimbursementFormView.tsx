@@ -43,7 +43,7 @@ import ReimbursementProductTable from './ReimbursementProductTable';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
@@ -117,16 +117,17 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
 
   const firstRefundSourceId = watch('indexCodeId');
   const secondRefundSourceId = watch('secondaryAccount');
-  const [hasPreFilledData, setHasPreFilledData] = useState(true);
+  const hasPreFilledData = useRef(true);
 
   useEffect(() => {
-    if (!hasPreFilledData) return;
+    if (!hasPreFilledData.current) return;
 
     if (refundSources.length > 1 && refundSources[0].indexCode && refundSources[1].indexCode) {
       setValue('indexCodeId', refundSources[0].indexCode.indexCodeId);
       setValue('secondaryAccount', refundSources[1].indexCode.indexCodeId);
-      setHasPreFilledData(false);
     }
+
+    hasPreFilledData.current = false;
   }, [hasPreFilledData, refundSources, setValue]);
 
   useEffect(() => {
@@ -148,9 +149,10 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
     if (!firstCodeId) return;
 
     reimbursementProducts.forEach((_, index) => {
-      setValue(`reimbursementProducts.${index}.refundSources`, [{ indexCode: firstCodeId, amount: 0 }]);
+      setValue(`reimbursementProducts.${index}.refundSources.${0}`, { indexCode: firstCodeId, amount: 0 });
     });
-  }, [firstRefundSourceId, hasConfirmedFinance, indexCodes, reimbursementProducts, setValue]);
+    // console.log('form state now:', watch('reimbursementProducts'));
+  }, [firstRefundSourceId, hasConfirmedFinance, indexCodes, reimbursementProducts, setValue, watch]);
 
   useEffect(() => {
     control._formValues.$hasConfirmedFinance = hasConfirmedFinance;
@@ -165,6 +167,26 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
       setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, 0);
       setValue(`reimbursementProducts.${index}.cost`, 0);
     });
+
+    console.log(watch(`reimbursementProducts`));
+  };
+
+  useEffect(() => {
+    const specificCode = indexCodes.find((code) => code.indexCodeId === secondRefundSourceId);
+    if (hasPreFilledData) return;
+    if (!specificCode) return;
+    reimbursementProducts.forEach((product, index) => {
+      setValue(`reimbursementProducts.${index}.refundSources`, [
+        product.refundSources[0],
+        { indexCode: specificCode, amount: 0 }
+      ]);
+    });
+  }, [hasPreFilledData, indexCodes, reimbursementProducts, secondRefundSourceId, setValue]);
+
+  const handleConfirmAddRefundSource = () => {
+    setHasConfirmedFinance(true);
+    setShowAddRefundSourceModal(false);
+    console.log(watch(`reimbursementProducts`));
   };
 
   const firstRefundSource = indexCodes.find((indexCodes) => indexCodes.indexCodeId === firstRefundSourceId) || {
@@ -307,24 +329,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
 
   const vendorsToAutocomplete = (vendor: Vendor): { label: string; id: string } => {
     return { label: vendor.name, id: vendor.vendorId };
-  };
-
-  const handleConfirmAddRefundSource = () => {
-    setHasConfirmedFinance(true);
-
-    const specificCode = indexCodes.find((code) => code.indexCodeId === firstRefundSourceId);
-    if (!specificCode) return;
-    reimbursementProducts.forEach((product, index) => {
-      const currSources: { indexCode: IndexCode; amount: number }[] = product.refundSources
-        .map((source) => ({
-          indexCode: source.indexCode,
-          amount: 0
-        }))
-        .filter((source) => source.indexCode.indexCodeId !== specificCode.indexCodeId);
-      setValue(`reimbursementProducts.${index}.refundSources`, [{ indexCode: specificCode, amount: 0 }, ...currSources]);
-    });
-
-    setShowAddRefundSourceModal(false);
   };
 
   return (
