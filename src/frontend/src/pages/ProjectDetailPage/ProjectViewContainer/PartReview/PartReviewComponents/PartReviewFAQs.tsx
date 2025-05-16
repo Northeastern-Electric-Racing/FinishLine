@@ -1,8 +1,8 @@
 import { Accordion, AccordionSummary, AccordionDetails, Typography, Box } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { useAllPartReviewFaqs } from '../../../../hooks/part-review.hooks';
-import LoadingIndicator from '../../../../components/LoadingIndicator';
-import ErrorPage from '../../../ErrorPage';
+import { useAllPartReviewFaqs } from '../../../../../hooks/part-review.hooks';
+import LoadingIndicator from '../../../../../components/LoadingIndicator';
+import ErrorPage from '../../../../ErrorPage';
 
 const PartReviewFAQs: React.FC = () => {
   const { data: faqs, isLoading, error } = useAllPartReviewFaqs();
@@ -20,7 +20,27 @@ const PartReviewFAQs: React.FC = () => {
       <Typography variant="h6" component="h2" gutterBottom sx={{ fontWeight: 'bold' }}>
         FAQs
       </Typography>
-      <Box sx={{ padding: 0 }}>
+      <Box
+        sx={{
+          padding: 0,
+          maxHeight: '25vh',
+          overflow: 'auto',
+          '&::-webkit-scrollbar': {
+            width: '8px'
+          },
+          '&::-webkit-scrollbar-track': {
+            background: '#2a2a2a',
+            borderRadius: '4px'
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: '#e57373',
+            borderRadius: '4px',
+            '&:hover': {
+              background: '#ef5350'
+            }
+          }
+        }}
+      >
         {faqs.map((faq) => (
           <Accordion
             key={faq.faqId}
@@ -28,7 +48,6 @@ const PartReviewFAQs: React.FC = () => {
               borderRadius: 2,
               marginBottom: 1,
               boxShadow: 1,
-              overflow: 'hidden',
               '&:before': {
                 display: 'none'
               },

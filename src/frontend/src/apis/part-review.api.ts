@@ -5,7 +5,9 @@ import {
   PartReviewRequestPayload,
   CreatePartReviewPayload,
   EditPartReviewPayload,
-  PopupPayload
+  PopupPayload,
+  PartReviewCommonMistakePayload,
+  PartTagPayload
 } from '../hooks/part-review.hooks';
 import {
   PartPreview,
@@ -220,12 +222,55 @@ export const getAllCommonMistakes = () => {
 };
 
 /**
+ * Creates a new common mistake
+ *
+ * @param payload the payload of the common mistake
+ */
+export const createCommonMistake = (payload: PartReviewCommonMistakePayload) => {
+  return axios.post<PartReviewCommonMistake>(apiUrls.partsCreateCommonMistake(), { ...payload });
+};
+
+/**
+ * Updates a common mistake
+ *
+ * @param commonMistakeId the id of the common mistake to update
+ * @param payload the payload of the common mistake
+ */
+export const updateCommonMistake = (commonMistakeId: string, payload: PartReviewCommonMistakePayload) => {
+  return axios.post<PartReviewCommonMistake>(apiUrls.partsUpdateCommonMistake(commonMistakeId), { ...payload });
+};
+
+/**
+ * Deletes a common mistake
+ *
+ * @param commonMistakeId the id of the common mistake to delete
+ */
+export const deleteCommonMistake = (commonMistakeId: string) => {
+  return axios.post<{ message: string }>(apiUrls.partsDeleteCommonMistake(commonMistakeId));
+};
+
+/**
  * Gets all the part tags for the users organization
  *
  * @returns an array of part tags
  */
 export const getAllPartTags = () => {
   return axios.get<PartTag[]>(apiUrls.getAllPartTags());
+};
+
+/**
+ * Creates a new Part Tag
+ * @param payload payload of the part tag
+ */
+export const createPartTag = async (payload: PartTagPayload) => {
+  return await axios.post<PartTag>(apiUrls.partTagCreate(), payload);
+};
+
+/**
+ * Removes a part tag with the given id
+ */
+export const deletePartTag = async (partTagId: string) => {
+  return axios.post<{ message: string }>(apiUrls.partTagDelete(partTagId));
 };
 
 /**
@@ -267,4 +312,23 @@ export const updateReviewPopup = (popupId: string, payload: PopupPayload) => {
  */
 export const deleteReviewPopup = (popupId: string) => {
   return axios.post<{ message: string }>(apiUrls.deleteReviewPopup(popupId));
+};
+
+/**
+ * Gets the part review sample image of the organization
+ */
+export const getPartReviewSampleImage = async () => {
+  return axios.get<string>(apiUrls.getPartReviewSampleImage(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
+ * Sets the part review sample image for an organization, User must be admin
+ * @param file the image which will be uploaded
+ */
+export const setPartReviewSampleImage = async (file: File) => {
+  const formData = new FormData();
+  formData.append('partReviewSampleImage', file);
+  return axios.post(apiUrls.setPartReviewSampleImage(), formData, {});
 };
