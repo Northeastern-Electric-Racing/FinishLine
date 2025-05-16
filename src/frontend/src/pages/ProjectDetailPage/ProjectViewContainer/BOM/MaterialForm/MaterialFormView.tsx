@@ -68,11 +68,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
 }) => {
   const quantity = watch('quantity');
   const price = watch('price');
-  const subtotal = quantity && price ? parseFloat((quantity * price).toFixed(2)) : 0;
-
-  const onCostBlurHandler = (value: number) => {
-    setValue(`price`, parseFloat(value.toFixed(2)));
-  };
+  const subtotal = quantity && price ? quantity * price : 0;
 
   return (
     <NERFormModal
@@ -85,18 +81,18 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
       formId={submitText + '-material-form'}
       showCloseButton
     >
-      <Grid container spacing={2} mt={1}>
+      <Grid container spacing={2}>
         <Grid item xs={7}>
           <FormControl fullWidth>
             <Typography
               sx={{
                 fontWeight: 'bold',
-                fontSize: '1.5rem',
-                color: '#EF4345',
-                textDecoration: 'underline'
+                fontSize: '1.75rem',
+                color: '#EF4345'
               }}
+              variant="h5"
             >
-              Name*
+              Name:*
             </Typography>
             <ReactHookTextField
               name="name"
@@ -111,12 +107,12 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             <Typography
               sx={{
                 fontWeight: 'bold',
-                fontSize: '1.5rem',
-                color: '#EF4345',
-                textDecoration: 'underline'
+                fontSize: '1.75rem',
+                color: '#EF4345'
               }}
+              variant="h5"
             >
-              Reimbursement #
+              Reimbursement #:
             </Typography>
             <Controller
               name="reimbursementRequestId"
@@ -156,12 +152,12 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             <Typography
               sx={{
                 fontWeight: 'bold',
-                fontSize: '1.5rem',
-                color: '#EF4345',
-                textDecoration: 'underline'
+                fontSize: '1.75rem',
+                color: '#EF4345'
               }}
+              variant="h5"
             >
-              Status*
+              Status:*
             </Typography>
             <Controller
               name="status"
@@ -190,12 +186,12 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             <Typography
               sx={{
                 fontWeight: 'bold',
-                fontSize: '1.5rem',
-                color: '#EF4345',
-                textDecoration: 'underline'
+                fontSize: '1.75rem',
+                color: '#EF4345'
               }}
+              variant="h5"
             >
-              Type*
+              Type:*
             </Typography>
             <Controller
               name="materialTypeName"
@@ -238,12 +234,12 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                 <Typography
                   sx={{
                     fontWeight: 'bold',
-                    fontSize: '1.5rem',
-                    color: '#EF4345',
-                    textDecoration: 'underline'
+                    fontSize: '1.75rem',
+                    color: '#EF4345'
                   }}
+                  variant="h5"
                 >
-                  Manufacturer*
+                  Manufacturer:*
                 </Typography>
                 <Tooltip
                   title={'Make sure not to enter the distributor (e.g. Amazon)'}
@@ -317,19 +313,19 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             <Typography
               sx={{
                 fontWeight: 'bold',
-                fontSize: '1.5rem',
+                fontSize: '1.75rem',
                 color: '#EF4345',
-                textDecoration: 'underline'
+                mb: -2
               }}
+              variant="h5"
             >
-              Part Details*
+              Part Details:*
             </Typography>
             <Tooltip title={"Enter 'N/A' if no Manufacturer Part Number"} placement="right">
               <HelpIcon
                 sx={{
                   fontSize: 'medium',
                   ml: 1,
-                  mb: '0.2em',
                   color: 'lightgray',
                   cursor: 'pointer'
                 }}
@@ -425,7 +421,6 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                   InputProps={{
                     startAdornment: <InputAdornment position="start">$</InputAdornment>
                   }}
-                  onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value))}
                   sx={{ width: '100%' }}
                   error={!!errors.price}
                 />
@@ -435,18 +430,19 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
           </FormControl>
         </Grid>
         <Grid item xs={3} display="flex" alignItems="center" color="#EF4345">
-          <DetailDisplay label="Subtotal" content={'$' + subtotal.toString()} />
+          <DetailDisplay label="Subtotal" content={`$${subtotal.toFixed(2)}`} />
         </Grid>
         <Grid item xs={12}>
           <Typography
             sx={{
               fontWeight: 'bold',
-              fontSize: '1.5rem',
+              fontSize: '1.75rem',
               color: '#EF4345',
-              textDecoration: 'underline'
+              mb: -2
             }}
+            variant="h5"
           >
-            Additional Information
+            Additional Information:
           </Typography>
         </Grid>
         <Grid item xs={12}>
