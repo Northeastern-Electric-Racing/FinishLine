@@ -654,12 +654,11 @@ model Vendor {
   organization          Organization            @relation(fields: [organizationId], references: [organizationId])
   username              String
   password              String // password is encrypted  
-  discountCode          String?
-  twoFactorContact      User?                   @relation(fields: [twoFactorContactId], references: [userId], name: "twoFactorContactVendors")
-  twoFactorContactId    String?
+  discountCode          String
+  twoFactorContacts     User[]                  @relation(name: "twoFactorContactVendors")
   notes                 String?
-  addedBy               User?                   @relation(fields: [addedByUserId], references: [userId], name: "vendorsCreator")
-  addedByUserId         String?
+  addedBy               User                    @relation(fields: [addedByUserId], references: [userId], name: "vendorsCreator")
+  addedByUserId         String
   taxExempt             Boolean
 
   @@unique([name, organizationId], name: "uniqueVendor")
