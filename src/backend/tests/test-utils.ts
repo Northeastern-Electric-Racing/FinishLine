@@ -32,7 +32,6 @@ import DesignReviewsService from '../src/services/design-reviews.services';
 import TasksService from '../src/services/tasks.services';
 import ProjectsService from '../src/services/projects.services';
 import { SlackMessage } from '../src/services/slack.services';
-import { randomUUID } from 'crypto';
 
 export interface CreateTestUserParams {
   firstName: string;
@@ -229,8 +228,8 @@ export const createTestOrganization = async () => {
     data: {
       firstName: 'Admin',
       lastName: 'User',
-      email: randomUUID(),
-      googleAuthId: randomUUID()
+      email: '',
+      googleAuthId: 'organizationCreator'
     }
   });
 
