@@ -14,18 +14,18 @@ describe('Onboarding tests', () => {
   let orgId: string;
   let organization: Organization;
 
-  beforeEach(async () => {
-    if (!orgId) {
-      organization = await createTestOrganization();
-      orgId = organization.organizationId;
-    }
-  });
-
-  afterEach(async () => {
-    await resetUsers();
-  });
-
   describe('Get all Checklists', () => {
+    beforeEach(async () => {
+      if (!orgId) {
+        organization = await createTestOrganization();
+        orgId = organization.organizationId;
+      }
+    });
+
+    afterEach(async () => {
+      await resetUsers();
+    });
+
     it('Gets all checklists and checklistItems for the given organization', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       const checklist1 = await createTestChecklist(batman, orgId, 'Checklist 1');
@@ -49,6 +49,17 @@ describe('Onboarding tests', () => {
   });
 
   describe('Get Checked Checklists', () => {
+    beforeEach(async () => {
+      if (!orgId) {
+        organization = await createTestOrganization();
+        orgId = organization.organizationId;
+      }
+    });
+
+    afterEach(async () => {
+      await resetUsers();
+    });
+
     it('Succeeds and gets all checked checklists for the user', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       const checklist1 = await createTestChecklist(batman, orgId, 'Checklist 1');
@@ -74,6 +85,16 @@ describe('Onboarding tests', () => {
   });
 
   describe('Get Users Checklists', () => {
+    beforeEach(async () => {
+      if (!orgId) {
+        organization = await createTestOrganization();
+        orgId = organization.organizationId;
+      }
+    });
+
+    afterEach(async () => {
+      await resetUsers();
+    });
     it('Fails if user does not exists', async () => {
       await expect(async () => await OnboardingServices.getUsersChecklists('1', organization)).rejects.toThrow(
         new NotFoundException('User', '1')
@@ -97,6 +118,17 @@ describe('Onboarding tests', () => {
   });
 
   describe('Create Checklist', () => {
+    beforeEach(async () => {
+      if (!orgId) {
+        organization = await createTestOrganization();
+        orgId = organization.organizationId;
+      }
+    });
+
+    afterEach(async () => {
+      await resetUsers();
+    });
+
     it('Fails if user is not admin', async () => {
       await expect(
         async () =>
@@ -259,6 +291,17 @@ describe('Onboarding tests', () => {
   });
 
   describe('Edit Checklist', () => {
+    beforeEach(async () => {
+      if (!orgId) {
+        organization = await createTestOrganization();
+        orgId = organization.organizationId;
+      }
+    });
+
+    afterEach(async () => {
+      await resetUsers();
+    });
+
     it('Fails if user is not admin', async () => {
       await expect(
         async () =>
@@ -413,6 +456,17 @@ describe('Onboarding tests', () => {
   });
 
   describe('Delete Checklist', () => {
+    beforeEach(async () => {
+      if (!orgId) {
+        organization = await createTestOrganization();
+        orgId = organization.organizationId;
+      }
+    });
+
+    afterEach(async () => {
+      await resetUsers();
+    });
+
     it('Fails if checklistId is not found', async () => {
       await expect(
         async () =>
@@ -467,6 +521,16 @@ describe('Onboarding tests', () => {
   });
 
   describe('Toggle Checklist Item', () => {
+    beforeEach(async () => {
+      if (!orgId) {
+        organization = await createTestOrganization();
+        orgId = organization.organizationId;
+      }
+    });
+
+    afterEach(async () => {
+      await resetUsers();
+    });
     it('Toggles checklist item and updates the parent checklist item if all children checked', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
 
