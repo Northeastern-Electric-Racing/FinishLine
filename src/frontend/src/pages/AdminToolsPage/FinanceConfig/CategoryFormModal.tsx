@@ -118,7 +118,6 @@ const CategoryFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: 
           control={control}
           render={({ field: { onChange, value: formValue } }) => (
             <Select
-              multiple
               value={formValue}
               onChange={({ target: { value } }) => {
                 onChange(typeof value === 'string' ? value.split(',') : value);
@@ -127,7 +126,7 @@ const CategoryFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: 
             >
               {accountCodes.map((accountCode: AccountCode) => (
                 <MenuItem key={accountCode.accountCodeId} value={accountCode.accountCodeId}>
-                  {accountCode.accountCodeId}
+                  {accountCode.code}
                 </MenuItem>
               ))}
             </Select>

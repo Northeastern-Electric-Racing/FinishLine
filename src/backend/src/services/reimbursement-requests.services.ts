@@ -1666,7 +1666,7 @@ export default class ReimbursementRequestService {
         budget,
         indexCodeId,
         name,
-        accountCodes: { connect: accountCodeIds.map((accountCodeId) => ({ accountCodeId })) }
+        accountCodes: { set: accountCodeIds.map((accountCodeId) => ({ accountCodeId })) }
       },
       ...getReimbursementProductOtherReasonQueryArgs(org.organizationId)
     });

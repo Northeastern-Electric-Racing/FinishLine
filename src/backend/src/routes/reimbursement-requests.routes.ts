@@ -43,7 +43,7 @@ reimbursementRequestsRouter.post(
   nonEmptyString(body('name')),
   intMinZero(body('budget')),
   nonEmptyString(body('indexCodeId')),
-  body('accountCodes').isArray(),
+  body('accountCodeIds').isArray(),
   validateInputs,
   ReimbursementRequestController.createOtherReimbursementProductReason
 );
