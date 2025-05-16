@@ -1,12 +1,15 @@
-import { Sponsor } from 'shared';
+import { CreateSponsorTask, Sponsor } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useEditSponsor } from '../../../hooks/finance.hooks';
+import { SponsorPayload, useEditSponsor } from '../../../hooks/finance.hooks';
 import ErrorPage from '../../ErrorPage';
 import SidePage from './SidePagePopup';
-import { SponsorForm } from './SponsorForm';
-import { NERButton } from '../../../components/NERButton';
+import sponsorSchema, { SponsorForm } from './SponsorForm';
+
 import { Box } from '@mui/system';
-import { SubmitButton } from '../../../components/SubmitButton';
+import NERFailButton from '../../../components/NERFailButton';
+import NERSuccessButton from '../../../components/NERSuccessButton';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
 
 interface EditSponsorPageProps {
   showPage: boolean;
@@ -17,29 +20,41 @@ interface EditSponsorPageProps {
 const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProps) => {
   const { isLoading, isError, error, mutateAsync } = useEditSponsor(sponsor.sponsorId);
 
-  // const {
-  //   handleSubmit,
-  //   control,
-  //   formState: { errors }
-  // } = useForm<EditSponsorPayload>({
-  //   resolver: yupResolver(sponsorSchema),
-  //   defaultValues: {
-  //     name: sponsor.name,
-  //     activeStatus: sponsor.activeStatus,
-  //     sponsorValue: sponsor.sponsorValue,
-  //     joinDate: sponsor.joinDate,
-  //     activeYears: sponsor.activeYears,
-  //     sponsorTierId: sponsor.tier.sponsorTierId,
-  //     vendorContact: sponsor.vendorContact,
-  //     taxExempt: sponsor.taxExempt,
-  //     discountCode: sponsor.discountCode ?? '',
-  //     sponsorTasks: sponsor.sponsorTasks
-  //   }
-  // });
+  const defaultSponsorTasks: CreateSponsorTask[] =
+    sponsor.sponsorTasks?.map((task) => ({
+      sponsorTaskId: task.sponsorTaskId,
+      dueDate: new Date(task.dueDate),
+      notifyDate: task.notifyDate ? new Date(task.notifyDate) : undefined,
+      assigneeUserId: task.assignee?.userId ?? undefined,
+      notes: task.notes
+    })) ?? [];
+
+  const {
+    handleSubmit,
+    control,
+    formState: { errors }
+  } = useForm<SponsorPayload>({
+    resolver: yupResolver(sponsorSchema),
+    defaultValues: {
+      name: sponsor.name,
+      activeStatus: sponsor.activeStatus,
+      sponsorValue: sponsor.sponsorValue,
+      joinDate: sponsor.joinDate,
+      activeYears: sponsor.activeYears,
+      sponsorTierId: sponsor.tier.sponsorTierId,
+      vendorContact: sponsor.vendorContact,
+      taxExempt: sponsor.taxExempt,
+      discountCode: sponsor.discountCode ?? '',
+      sponsorTasks: defaultSponsorTasks
+    }
+  });
   if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading) return <LoadingIndicator />;
 
-  // needs to submit the data
+  const onSubmit = async (formData: SponsorPayload) => {
+    await mutateAsync({ sponsorId: sponsor.sponsorId, ...formData });
+    handleClose();
+  };
 
   return (
     <SidePage
@@ -48,9 +63,13 @@ const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProp
       title="Edit Sponsor"
       component={
         <Box>
-          <SponsorForm></SponsorForm>
-          <NERButton onClick={handleClose}>CLOSE</NERButton>
-          <SubmitButton onClick={() => {}}>Submit</SubmitButton>
+          <SponsorForm control={control} errors={errors} defaultValues={sponsor}></SponsorForm>
+          <NERFailButton sx={{ mx: 1 }} onClick={handleClose}>
+            CLOSE
+          </NERFailButton>
+          <NERSuccessButton sx={{ mx: 1 }} onClick={handleSubmit(onSubmit)}>
+            Submit
+          </NERSuccessButton>
         </Box>
       }
     />

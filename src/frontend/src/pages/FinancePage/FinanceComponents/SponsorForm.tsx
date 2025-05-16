@@ -1,11 +1,10 @@
 import * as yup from 'yup';
-import { useGetAllSponsorTiers } from '../../../hooks/finance.hooks';
+import { SponsorPayload, useGetAllSponsorTiers } from '../../../hooks/finance.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
+import { Control, Controller, FieldErrors, useFieldArray } from 'react-hook-form';
 import { Sponsor } from 'shared';
-import { FormControl, Grid, FormHelperText, FormLabel, IconButton, MenuItem, Select, Typography } from '@mui/material';
+import { FormControl, Grid, FormHelperText, IconButton, MenuItem, Select, Typography } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { DatePicker } from '@mui/x-date-pickers';
 import { useAllUsers } from '../../../hooks/users.hooks';
@@ -16,58 +15,43 @@ import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
 interface SponsorFormModalProps {
+  control: Control<SponsorPayload>;
+  errors: FieldErrors<SponsorPayload>;
   defaultValues?: Sponsor;
 }
 
 const sponsorSchema = yup.object().shape({
   name: yup.string().required('Name is required'),
-  sponsorStatus: yup.boolean().required('Sponsor Status is required'),
+  activeStatus: yup.boolean().required('Sponsor status is required'),
   sponsorValue: yup.number().typeError('Sponsor value must be a number').required('Sponsor value is required'),
-  sponsorJoinDate: yup.date().required('Sponsor join date is required'),
-  sponsorActiveYears: yup
+  joinDate: yup.date().required('Join date is required'),
+  activeYears: yup
     .array()
-    .of(yup.number().typeError('Active Year must be a number').required('Year is required'))
-    .required('Sponsor active years is required'),
+    .of(yup.number().typeError('Active year must be a number').required('Active year is required'))
+    .required('Active years are required'),
   sponsorTierId: yup.string().required('Sponsor tier is required'),
-  contactName: yup.string().required('Contact name is required'),
+  vendorContact: yup.string().required('Vendor contact is required'),
   taxExempt: yup.boolean().required('Tax exempt is required'),
   discountCode: yup.string(),
-  sponsorTasks: yup.array().of(
-    yup.object().shape({
-      dueDate: yup.date().required('Due date is required'),
-      notifyDate: yup.date(),
-      assigneeUserId: yup.string(),
-      notes: yup.string().required('Notes are required')
-    })
-  )
+  sponsorTasks: yup
+    .array()
+    .of(
+      yup.object().shape({
+        dueDate: yup.date().required('Due date is required'),
+        notifyDate: yup.date(),
+        assigneeUserId: yup.string(),
+        notes: yup.string().required('Notes are required')
+      })
+    )
+    .required('Sponsor Tasks are Required')
 });
-// this is just the grid, just the visual, so none of the submission aspects are in here.
-// create will be wrapped in ner modal that will deal with the submitting
-// edit sponsor will be on the side page that will need to have some sort of submission
-export const SponsorForm: React.FC<SponsorFormModalProps> = ({ defaultValues }: SponsorFormModalProps) => {
+
+export const SponsorForm: React.FC<SponsorFormModalProps> = ({ control, errors, defaultValues }: SponsorFormModalProps) => {
   const theme = useTheme();
 
   const [datePickerOpenNotify, setDatePickerOpenNotify] = useState(false);
   const [datePickerOpenJoin, setDatePickerOpenJoin] = useState(false);
   const [datePickerOpenDue, setDatePickerOpenDue] = useState(false);
-
-  const {
-    control,
-    formState: { errors }
-  } = useForm({
-    resolver: yupResolver(sponsorSchema),
-    defaultValues: {
-      name: defaultValues?.name ?? '',
-      sponsorStatus: defaultValues?.activeStatus ?? false,
-      sponsorValue: defaultValues?.sponsorValue ?? 0,
-      sponsorJoinDate: defaultValues?.joinDate ?? new Date(),
-      sponsorActiveYears: defaultValues?.activeYears ?? [],
-      taxExempt: defaultValues?.taxExempt ?? false,
-      discountCode: defaultValues?.discountCode ?? '',
-      sponsorTasks: defaultValues?.sponsorTasks ?? [],
-      sponsorTierId: defaultValues?.tier?.sponsorTierId ?? ''
-    }
-  });
 
   const { isLoading: membersLoading, isError: membersIsError, error: membersError, data: members } = useAllUsers();
 
@@ -94,23 +78,21 @@ export const SponsorForm: React.FC<SponsorFormModalProps> = ({ defaultValues }: 
   return (
     <Grid container justifyContent="space-between" alignItems="flex-start">
       <FormControl>
-        <Typography sx={{ color: (theme) => theme.palette.primary.main }} variant="h5">
-          Sponsor Name
-        </Typography>
+        <Typography variant="h5">Sponsor Name:*</Typography>
         <ReactHookTextField name="name" control={control} sx={{ width: 1 }} placeholder="Enter Name" />
         <FormHelperText error> {errors.name?.message}</FormHelperText>
       </FormControl>
       <FormControl>
-        <Typography variant="h5">Sponsor Status</Typography>
+        <Typography variant="h5">Sponsor Status:*</Typography>
         <Controller
           control={control}
-          name={'sponsorStatus'}
+          name={'activeStatus'}
           render={({ field: { onChange, value } }) => (
             <Select
               displayEmpty
               value={value !== undefined ? value : ''}
               onChange={(e) => onChange(e.target.value === 'true')}
-              error={!!errors.sponsorStatus}
+              error={!!errors.activeStatus}
               renderValue={(selected) => {
                 if (selected === true) return 'Active';
                 if (selected === false) return 'Inactive';
@@ -122,10 +104,10 @@ export const SponsorForm: React.FC<SponsorFormModalProps> = ({ defaultValues }: 
             </Select>
           )}
         ></Controller>
-        <FormHelperText>{errors.sponsorStatus?.message}</FormHelperText>
+        <FormHelperText>{errors.activeStatus?.message}</FormHelperText>
       </FormControl>
       <FormControl>
-        <Typography variant="h5">Sponsor Value</Typography>
+        <Typography variant="h5">Sponsor Value:*</Typography>
         <ReactHookTextField
           placeholder={'Enter Value'}
           name="sponsorValue"
@@ -136,19 +118,19 @@ export const SponsorForm: React.FC<SponsorFormModalProps> = ({ defaultValues }: 
         />
       </FormControl>
       <FormControl>
-        <Typography variant="h5">Sponsor Active Years</Typography>
+        <Typography variant="h5">Sponsor Active Years:*</Typography>
         <ReactHookTextField
-          name="sponsorActiveYears"
+          name="activeYears"
           control={control}
           sx={{ width: 1 }}
           placeholder="Enter Sponsor Active Years"
         />
-        <FormHelperText error> {errors.sponsorActiveYears?.message}</FormHelperText>
+        <FormHelperText error> {errors.activeYears?.message}</FormHelperText>
       </FormControl>
       <FormControl>
-        <Typography variant="h5">Sponsor Join Date</Typography>
+        <Typography variant="h5">Sponsor Join Date:*</Typography>
         <Controller
-          name="sponsorJoinDate"
+          name="joinDate"
           control={control}
           render={({ field: { onChange, value } }) => (
             <DatePicker
@@ -161,18 +143,18 @@ export const SponsorForm: React.FC<SponsorFormModalProps> = ({ defaultValues }: 
               }}
               slotProps={{
                 textField: {
-                  error: !!errors.sponsorJoinDate,
-                  helperText: errors.sponsorJoinDate?.message,
+                  error: !!errors.joinDate,
+                  helperText: errors.joinDate?.message,
                   onClick: () => setDatePickerOpenJoin(true)
                 }
               }}
             />
           )}
         />
-        <FormHelperText error>{errors.sponsorJoinDate?.message}</FormHelperText>
+        <FormHelperText error>{errors.joinDate?.message}</FormHelperText>
       </FormControl>
       <FormControl>
-        <Typography variant="h5">Sponsor Tier</Typography>
+        <Typography variant="h5">Sponsor Tier:*</Typography>
         <Controller
           control={control}
           name={'sponsorTierId'}
@@ -209,10 +191,10 @@ export const SponsorForm: React.FC<SponsorFormModalProps> = ({ defaultValues }: 
         <FormHelperText error>{errors.sponsorTierId?.message}</FormHelperText>
       </FormControl>
       <FormControl>
-        <Typography variant="h5">Contact Name</Typography>
+        <Typography variant="h5">Contact Name:*</Typography>
         <Controller
           control={control}
-          name={'contactName'}
+          name={'vendorContact'}
           render={({ field: { onChange } }) => (
             <NERAutocomplete
               sx={{ width: '100%', backgroundColor: theme.palette.grey[750] }}
@@ -226,7 +208,7 @@ export const SponsorForm: React.FC<SponsorFormModalProps> = ({ defaultValues }: 
         ></Controller>
       </FormControl>
       <FormControl>
-        <Typography variant="h5">Tax Exempt</Typography>
+        <Typography variant="h5">Tax Exempt:*</Typography>
         <Controller
           control={control}
           name={'taxExempt'}
@@ -235,7 +217,7 @@ export const SponsorForm: React.FC<SponsorFormModalProps> = ({ defaultValues }: 
               displayEmpty
               value={value !== undefined ? value : ''}
               onChange={(e) => onChange(e.target.value === 'true')}
-              error={!!errors.sponsorStatus}
+              error={!!errors.taxExempt}
               renderValue={(selected) => {
                 if (selected === true) return 'Exempt';
                 if (selected === false) return 'Not Exempt';
@@ -250,121 +232,128 @@ export const SponsorForm: React.FC<SponsorFormModalProps> = ({ defaultValues }: 
         <FormHelperText>{errors.taxExempt?.message}</FormHelperText>
       </FormControl>
       <FormControl>
-        <Typography variant="h5">Discount Code</Typography>
+        <Typography variant="h5">Discount Code:</Typography>
         <ReactHookTextField name="discountCode" control={control} sx={{ width: 1 }} placeholder="Enter Code" />
         <FormHelperText error> {errors.discountCode?.message}</FormHelperText>
       </FormControl>
-      <FormControl>
-        <FormLabel>Notes on Sponsor</FormLabel>
+      <FormControl fullWidth>
+        <Typography variant="h5">Notes on Sponsor:</Typography>
         {fields.map((item, index) => (
-          <Box key={item.id} sx={{ display: 'flex', gap: 2, mt: 1, flexWrap: 'wrap' }}>
-            <FormControl>
-              <FormLabel>Due Date</FormLabel>
-              <Controller
-                name={`sponsorTasks.${index}.dueDate`}
-                control={control}
-                render={({ field: { onChange, value } }) => (
-                  <DatePicker
-                    value={value ? new Date(value) : null}
-                    open={datePickerOpenDue}
-                    onClose={() => setDatePickerOpenDue(false)}
-                    onOpen={() => setDatePickerOpenDue(true)}
-                    onChange={(newValue) => {
-                      onChange(newValue ?? new Date());
-                    }}
-                    slotProps={{
-                      textField: {
-                        error: !!errors.sponsorTasks?.[index]?.dueDate,
-                        helperText: errors.sponsorTasks?.[index]?.dueDate?.message,
-                        onClick: () => setDatePickerOpenDue(true)
-                      }
-                    }}
-                  />
-                )}
-              />
-              <FormHelperText error>{errors.sponsorTasks?.[index]?.dueDate?.message}</FormHelperText>
-            </FormControl>
-            <FormControl>
-              <FormLabel>Notify Date</FormLabel>
-              <Controller
-                name={`sponsorTasks.${index}.notifyDate`}
-                control={control}
-                render={({ field: { onChange, value } }) => (
-                  <DatePicker
-                    value={value ? new Date(value) : null}
-                    open={datePickerOpenNotify}
-                    onClose={() => setDatePickerOpenNotify(false)}
-                    onOpen={() => setDatePickerOpenNotify(true)}
-                    onChange={(newValue) => {
-                      onChange(newValue ?? new Date());
-                    }}
-                    slotProps={{
-                      textField: {
-                        error: !!errors.sponsorTasks?.[index]?.notifyDate,
-                        helperText: errors.sponsorTasks?.[index]?.notifyDate?.message,
-                        onClick: () => setDatePickerOpenNotify(true)
-                      }
-                    }}
-                  />
-                )}
-              />
-              <FormHelperText error>{errors.sponsorTasks?.[index]?.notifyDate?.message}</FormHelperText>
-            </FormControl>
-            <FormControl>
-              <FormLabel>Assign To</FormLabel>
-              <Controller
-                control={control}
-                name={`sponsorTasks.${index}.assigneeUserId`}
-                render={({ field: { onChange, value } }) => (
-                  <Select
-                    displayEmpty
-                    value={value !== undefined ? value : ''}
-                    onChange={onChange}
-                    renderValue={(selected) => {
-                      const assignee = users.find((u) => u.userId === selected);
-                      return assignee ? (
-                        assignee.firstName + ' ' + assignee.lastName
-                      ) : (
-                        <Typography sx={{ color: 'gray' }}>Select assignee</Typography>
-                      );
-                    }}
-                    sx={{ height: 56, width: '100%', textAlign: 'left' }}
-                    fullWidth
-                    MenuProps={{
-                      anchorOrigin: {
-                        vertical: 'bottom',
-                        horizontal: 'right'
-                      },
-                      transformOrigin: {
-                        vertical: 'top',
-                        horizontal: 'right'
-                      }
-                    }}
-                  >
-                    {users.map((user) => (
-                      <MenuItem key={user.userId} value={user.userId}>
-                        {user.firstName + ' ' + user.lastName}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                )}
-              />
-              <FormHelperText error>{errors.sponsorTasks?.[index]?.assigneeUserId?.message}</FormHelperText>
-            </FormControl>
-            <FormControl>
-              <FormLabel>Notes</FormLabel>
-              <ReactHookTextField
-                name={`notesOnSponsor.${index}.notes`}
-                control={control}
-                sx={{ width: 1 }}
-                placeholder="Enter notes"
-              />
-              <FormHelperText error> {errors.sponsorTasks?.[index]?.notes?.message}</FormHelperText>
-            </FormControl>
-            <IconButton onClick={() => remove(index)}>
-              <RemoveCircleOutlineIcon sx={{ color: 'white' }} />
-            </IconButton>
-          </Box>
+          <Grid container spacing={0.5}>
+            <Box key={item.id} sx={{ display: 'flex', gap: 2, mt: 1, flexWrap: 'wrap' }}>
+              <FormControl>
+                <Typography variant="h6">Due Date:*</Typography>
+                <Controller
+                  name={`sponsorTasks.${index}.dueDate`}
+                  control={control}
+                  render={({ field: { onChange, value } }) => (
+                    <DatePicker
+                      value={value ? new Date(value) : null}
+                      open={datePickerOpenDue}
+                      onClose={() => setDatePickerOpenDue(false)}
+                      onOpen={() => setDatePickerOpenDue(true)}
+                      onChange={(newValue) => {
+                        onChange(newValue ?? new Date());
+                      }}
+                      slotProps={{
+                        textField: {
+                          error: !!errors.sponsorTasks?.[index]?.dueDate,
+                          helperText: errors.sponsorTasks?.[index]?.dueDate?.message,
+                          onClick: () => setDatePickerOpenDue(true)
+                        }
+                      }}
+                    />
+                  )}
+                />
+                <FormHelperText error>{errors.sponsorTasks?.[index]?.dueDate?.message}</FormHelperText>
+              </FormControl>
+
+              <FormControl>
+                <Typography variant="h6">Notify Date:</Typography>
+                <Controller
+                  name={`sponsorTasks.${index}.notifyDate`}
+                  control={control}
+                  render={({ field: { onChange, value } }) => (
+                    <DatePicker
+                      value={value ? new Date(value) : null}
+                      open={datePickerOpenNotify}
+                      onClose={() => setDatePickerOpenNotify(false)}
+                      onOpen={() => setDatePickerOpenNotify(true)}
+                      onChange={(newValue) => {
+                        onChange(newValue ?? new Date());
+                      }}
+                      slotProps={{
+                        textField: {
+                          error: !!errors.sponsorTasks?.[index]?.notifyDate,
+                          helperText: errors.sponsorTasks?.[index]?.notifyDate?.message,
+                          onClick: () => setDatePickerOpenNotify(true)
+                        }
+                      }}
+                    />
+                  )}
+                />
+                <FormHelperText error>{errors.sponsorTasks?.[index]?.notifyDate?.message}</FormHelperText>
+              </FormControl>
+
+              <FormControl>
+                <Typography variant="h6">Assign To:</Typography>
+
+                <Controller
+                  control={control}
+                  name={`sponsorTasks.${index}.assigneeUserId`}
+                  render={({ field: { onChange, value } }) => (
+                    <Select
+                      displayEmpty
+                      value={value !== undefined ? value : ''}
+                      onChange={onChange}
+                      renderValue={(selected) => {
+                        const assignee = users.find((u) => u.userId === selected);
+                        return assignee ? (
+                          assignee.firstName + ' ' + assignee.lastName
+                        ) : (
+                          <Typography sx={{ color: 'gray' }}>Select assignee</Typography>
+                        );
+                      }}
+                      sx={{ height: 56, width: '100%', textAlign: 'left' }}
+                      fullWidth
+                      MenuProps={{
+                        anchorOrigin: {
+                          vertical: 'bottom',
+                          horizontal: 'right'
+                        },
+                        transformOrigin: {
+                          vertical: 'top',
+                          horizontal: 'right'
+                        }
+                      }}
+                    >
+                      {users.map((user) => (
+                        <MenuItem key={user.userId} value={user.userId}>
+                          {user.firstName + ' ' + user.lastName}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  )}
+                />
+                <FormHelperText error>{errors.sponsorTasks?.[index]?.assigneeUserId?.message}</FormHelperText>
+              </FormControl>
+
+              <FormControl>
+                <Typography variant="h6">Notes:*</Typography>
+                <ReactHookTextField
+                  name={`notesOnSponsor.${index}.notes`}
+                  control={control}
+                  sx={{ width: 1 }}
+                  placeholder="Enter notes"
+                />
+                <FormHelperText error> {errors.sponsorTasks?.[index]?.notes?.message}</FormHelperText>
+              </FormControl>
+
+              <IconButton onClick={() => remove(index)}>
+                <RemoveCircleOutlineIcon sx={{ color: 'white' }} />
+              </IconButton>
+            </Box>
+          </Grid>
         ))}
         <IconButton
           onClick={() =>

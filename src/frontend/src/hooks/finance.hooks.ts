@@ -74,7 +74,8 @@ import {
   SponsorTier,
   ReimbursementRequestComment,
   ReimbursementRequestData,
-  SpendingBarData
+  SpendingBarData,
+  CreateSponsorTask
 } from 'shared';
 import { fullNamePipe } from '../utils/pipes';
 
@@ -128,7 +129,7 @@ export interface SponsorPayload {
   sponsorTierId: string;
   taxExempt: boolean;
   vendorContact: string;
-  sponsorTasks: SponsorTask[];
+  sponsorTasks: CreateSponsorTask[];
   discountCode?: string;
 }
 
@@ -141,7 +142,7 @@ export interface SponsorTaskPayload {
   dueDate: Date;
   notes: string;
   notifyDate?: Date;
-  asigneeId?: string;
+  assigneeId?: string;
 }
 
 export interface EditSponsorPayload extends SponsorPayload {

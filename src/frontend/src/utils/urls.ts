@@ -478,7 +478,7 @@ export const apiUrls = {
   getSpendingBarCategoryData,
   getAllSpendingBarData,
   getAllSponsorTiers,
-  editSponsor,   
+  editSponsor,
 
   bomEndpoints,
   bomGetMaterialsByWbsNum,

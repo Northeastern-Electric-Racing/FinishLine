@@ -163,7 +163,6 @@ const SponsorsTable = () => {
 
   return (
     <Box>
-      <CreateSponsorModal showModal={showAddSponsor} handleClose={() => setShowAddSponsor(false)} />
       {sponsorToEdit && (
         <SidePage
           showPage={!!sponsorToEdit}
@@ -301,44 +300,42 @@ const SponsorsTable = () => {
           <TableBody>{sponsorTableRows}</TableBody>
         </MuiTable>
       </Box>
-      <PaginationFooter
-        footerButton={
-          <NERButton
-            variant="contained"
-            onClick={() => setShowAddSponsor(true)}
-            sx={{
-              borderRadius: '8px',
-              color: '#ededed',
-              backgroundColor: '#ef4345',
-              padding: '2px 20px',
-              display: 'inline-flex',
-              fontSize: '20px',
-              fontWeight: 700,
-              textTransform: 'none',
-              marginBottom: '7px',
-              '&:hover': {
-                backgroundColor: '#c74340'
-              }
-            }}
-          >
-            {' '}
-            Add Sponsor
-            <CreateSponsorModal
-              showModal={showAddSponsor}
-              handleClose={() => {
-                setShowAddSponsor(false);
+      <Box>
+        <CreateSponsorModal showModal={showAddSponsor} handleClose={() => setShowAddSponsor(false)} />
+
+        <PaginationFooter
+          footerButton={
+            <NERButton
+              variant="contained"
+              onClick={() => setShowAddSponsor(true)}
+              sx={{
+                borderRadius: '8px',
+                color: '#ededed',
+                backgroundColor: '#ef4345',
+                padding: '2px 20px',
+                display: 'inline-flex',
+                fontSize: '20px',
+                fontWeight: 700,
+                textTransform: 'none',
+                marginBottom: '7px',
+                '&:hover': {
+                  backgroundColor: '#c74340'
+                }
               }}
-            />
-          </NERButton>
-        }
-        footerInfoBoxes={[<Box># of Sponsors: {sponsors.length}</Box>]}
-        totalItems={sponsors.length}
-        currentPage={currentPage}
-        rowsPerPage={rowsPerPage}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-        rowsPerPageOptions={[10, 14, 25, 50, 100]}
-      />
+            >
+              {' '}
+              Add Sponsor
+            </NERButton>
+          }
+          footerInfoBoxes={[<Box># of Sponsors: {sponsors.length}</Box>]}
+          totalItems={sponsors.length}
+          currentPage={currentPage}
+          rowsPerPage={rowsPerPage}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[10, 14, 25, 50, 100]}
+        />
+      </Box>
     </Box>
   );
 };

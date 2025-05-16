@@ -1,12 +1,4 @@
-import {
-  CreateSponsorTask,
-  isHead,
-  ReimbursementRequestData,
-  SpendingBarData,
-  Sponsor,
-  SponsorTask,
-  SponsorTier
-} from 'shared';
+import { CreateSponsorTask, isHead, ReimbursementRequestData, SpendingBarData, Sponsor, SponsorTier } from 'shared';
 import { User, Organization, Sponsor_Task } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
 import {
@@ -138,10 +130,11 @@ export default class FinanceServices {
 
     const deletedSponsor = await prisma.sponsor.update({
       where: { sponsorId },
-      data: { dateDeleted: new Date() }
+      data: { dateDeleted: new Date() },
+      ...getSponsorQueryArgs(organization.organizationId)
     });
 
-    return deletedSponsor;
+    return sponsorTransformer(deletedSponsor);
   }
 
   /**
@@ -407,6 +400,24 @@ export default class FinanceServices {
     return await getSpendingBarCategoryData(organization.organizationId);
   }
 
+  /**
+   * Edits a sponsor.
+   * @param submitter The user submitting the request, who must have appropriate permissions to create a sponsor.
+   * @param sponsorId the id of the sponsor to be edited
+   * @param name The name of the sponsor.
+   * @param activeStatus The status indicating whether the sponsor is active or not.
+   * @param sponsorValue The financial value associated with the sponsor.
+   * @param joinDate The date when the sponsor joins.
+   * @param activeYears An array of years indicating the sponsor's active period.
+   * @param sponsorTierId The ID of the sponsor's tier.
+   * @param taxExempt Boolean indicating if the sponsor is tax-exempt.
+   * @param discountCode The discount code associated with the sponsor.
+   * @param vendorContact The contact information for the sponsor's vendor.
+   * @param sponsorTasks An array of sponsor tasks associated with the sponsor.
+   * @param organization The organization for which the sponsor is being edited.
+   * @returns the edited sponsor.
+   */
+
   static async editSponsor(
     submitter: User,
     organization: Organization,
@@ -419,7 +430,7 @@ export default class FinanceServices {
     sponsorTierId: string,
     vendorContact: string,
     taxExempt: boolean,
-    sponsorTasks: Sponsor_Task[],
+    sponsorTasks: CreateSponsorTask[],
     discountCode?: string
   ): Promise<Sponsor> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
@@ -437,6 +448,16 @@ export default class FinanceServices {
 
     if (!oldSponsor) throw new NotFoundException('Sponsor', sponsorId);
 
+    await Promise.all(
+      oldSponsor.sponsorTasks.map((t) =>
+        prisma.sponsor_Task.deleteMany({
+          where: {
+            sponsorTaskId: t.sponsorTaskId
+          }
+        })
+      )
+    );
+
     const tier = await prisma.sponsor_Tier.findUnique({
       where: {
         sponsorTierId,
@@ -446,7 +467,7 @@ export default class FinanceServices {
 
     if (!tier) throw new NotFoundException('Sponsor Tier', sponsorId);
 
-    const updatedSponsor: Sponsor = await prisma.sponsor.update({
+    const updatedSponsor = await prisma.sponsor.update({
       where: { sponsorId: oldSponsor.sponsorId },
       data: {
         name,
@@ -458,21 +479,38 @@ export default class FinanceServices {
           connect: { sponsorTierId }
         },
         sponsorTasks: {
-          connect: sponsorTasks.map((task) => ({ sponsorTaskId: task.sponsorTaskId }))
+          // but some of the sponsor tasks already exist and are being edited OR are being deleleted...
+          // should delete all of the sponsor tasks before coming in here so it will just have the ones that it was assigned
+          connect: await Promise.all(
+            sponsorTasks.map(async (t) => {
+              const createdTask = await this.createSponsorTask(
+                submitter,
+                organization,
+                t.dueDate,
+                t.notes,
+                sponsorId,
+                t.notifyDate,
+                t.assigneeUserId
+              );
+              return { sponsorTaskId: createdTask.sponsorTaskId };
+            })
+          )
         },
         vendorContact,
         taxExempt,
-        discountCode: discountCode ?? undefined
+        discountCode
       },
-      include: {
-        tier: true,
-        sponsorTasks: true
-      }
+      ...getSponsorQueryArgs(organization.organizationId)
     });
 
-    return updatedSponsor;
+    return sponsorTransformer(updatedSponsor);
   }
 
+  /**
+   * Gets all sponsor tiers
+   * @param organization organization sponsor tiers belong to
+   * @returns all sponsor tiers
+   */
   static async getAllSponsorTiers(organization: Organization): Promise<SponsorTier[]> {
     const allSponsorTiers = await prisma.sponsor_Tier.findMany({
       where: { organizationId: organization.organizationId },
