@@ -232,8 +232,8 @@ reimbursementRequestsRouter.post(
   '/other-reimbursement-product-reasons/:otherReimbursementProductReasonId/edit',
   nonEmptyString(body('indexCodeId')),
   body('accountCodeIds').isArray(),
-  body('updatedBudget').isInt(),
-  body('name').isString(),
+  nonEmptyString(body('name')),
+  intMinZero(body('budget')),
   validateInputs,
   ReimbursementRequestController.editOtherReimbursementProductReason
 );

@@ -3,8 +3,10 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useGetAllOtherProductReason } from '../../../hooks/finance.hooks';
 import ErrorPage from '../../ErrorPage';
 import { NERButton } from '../../../components/NERButton';
-import React from 'react';
+import React, { useState } from 'react';
 import { OtherProductReason } from 'shared';
+import CreateCategoryModal from './CreateCategoryModal';
+import EditCategoryModal from './EditCategoryModal';
 
 const CategoriesTable = () => {
   const {
@@ -13,9 +15,9 @@ const CategoriesTable = () => {
     isError: categoriesIsError,
     error: categoriesError
   } = useGetAllOtherProductReason();
-  // const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
-  // const [showEditModal, setShowEditModal] = useState<boolean>(false);
-  // const [clickedCategory, setClickedCategory] = useState<OtherProductReason>();
+  const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
+  const [showEditModal, setShowEditModal] = useState<boolean>(false);
+  const [clickedCategory, setClickedCategory] = useState<OtherProductReason>();
 
   if (!categories || categoriesIsLoading) {
     return <LoadingIndicator />;
@@ -33,8 +35,8 @@ const CategoriesTable = () => {
   const categoriesTableRows = categories.map((category, index) => (
     <TableRow
       onClick={() => {
-        // setClickedCategory(category);
-        // setShowEditModal(true);
+        setClickedCategory(category);
+        setShowEditModal(true);
       }}
       key={`category-${index}`}
       sx={{ cursor: 'pointer' }}
@@ -56,17 +58,17 @@ const CategoriesTable = () => {
 
   return (
     <Box>
-      {/* <CreateIndexCodeModal showModal={showCreateModal} handleClose={() => setShowCreateModal(false)} />
-      {clickedIndexCode && (
-        <EditIndexCodeModal
+      <CreateCategoryModal showModal={showCreateModal} handleClose={() => setShowCreateModal(false)} />
+      {clickedCategory && (
+        <EditCategoryModal
           showModal={showEditModal}
           handleClose={() => {
             setShowEditModal(false);
-            setClickedIndexCode(undefined);
+            setClickedCategory(undefined);
           }}
-          indexCode={clickedIndexCode}
+          category={clickedCategory}
         />
-      )} */}
+      )}
       <Box sx={{ display: 'flex', justifyContent: 'left', marginTop: '20px', paddingBottom: '20px' }}>
         <Typography variant="h5" gutterBottom color="white" paddingRight={'20px'}>
           Categories
@@ -75,7 +77,7 @@ const CategoriesTable = () => {
           style={{ color: 'white' }}
           variant="contained"
           onClick={() => {
-            // setShowCreateModal(true);
+            setShowCreateModal(true);
           }}
         >
           Add Category

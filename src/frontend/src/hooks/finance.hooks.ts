@@ -865,14 +865,13 @@ export const useCreateOtherProductReason = () => {
  *
  * @param otherProductReasonId The id of the other product reason
  */
-
 export const useEditOtherProductReason = (otherProductReasonId: string) => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, OtherProductReasonPayload>(
     ['other-reimbursement-product-reason', 'edit'],
     async (otherProductReasonData: OtherProductReasonPayload) => {
       const { data } = await editOtherProductReason(otherProductReasonId, otherProductReasonData);
-      queryClient.invalidateQueries(['other-reimbursement-product-reason']);
+      queryClient.invalidateQueries(['other-reimbursement-product-reasons']);
       return data;
     }
   );
