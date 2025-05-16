@@ -35,12 +35,11 @@ const PartReviewSampleImage: React.FC = () => {
         <Box
           component="img"
           sx={{
-            width: '95%',
+            width: '100%',
             display: 'block',
             alignItems: 'center',
             bgcolor: 'grey.800',
             height: '50vh',
-            mx: 3,
             my: 1
           }}
           alt="Apply Interest"
@@ -49,12 +48,11 @@ const PartReviewSampleImage: React.FC = () => {
       ) : (
         <Box
           sx={{
-            width: '95%',
+            width: '100%',
             display: 'block',
             alignItems: 'center',
             bgcolor: 'grey.800',
             height: '50vh',
-            mx: 3,
             my: 1
           }}
         />
