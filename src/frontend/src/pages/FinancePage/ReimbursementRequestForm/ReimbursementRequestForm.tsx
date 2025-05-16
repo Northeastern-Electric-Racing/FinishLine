@@ -68,14 +68,26 @@ const schema = yup.object().shape({
           message: 'Amount is required',
           path: `reimbursementProducts.${products.indexOf(product)}.refundSources.${0}.amount`
         });
+      } else if (product.refundSources[0].amount < 0.01) {
+        return this.createError({
+          message: 'Amount must be greater than 0.01',
+          path: `reimbursementProducts.${products.indexOf(product)}.refundSources.${0}.amount`
+        });
       }
+
       if (product.refundSources[1].amount === undefined) {
         return this.createError({
           message: 'Amount is required',
           path: `reimbursementProducts.${products.indexOf(product)}.refundSources.${1}.amount`
         });
+      } else if (product.refundSources[1].amount < 0.01) {
+        return this.createError({
+          message: 'Amount must be greater than 0.01',
+          path: `reimbursementProducts.${products.indexOf(product)}.refundSources.${1}.amount`
+        });
       }
     }
+
     return true;
   }),
   dateOfExpense: yup.date().optional(),
