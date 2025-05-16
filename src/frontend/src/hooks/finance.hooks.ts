@@ -854,7 +854,7 @@ export const useCreateOtherProductReason = () => {
     ['other-reimbursement-product-reason', 'create'],
     async (otherProductReasonData: OtherProductReasonPayload) => {
       const { data } = await createOtherProductReason(otherProductReasonData);
-      queryClient.invalidateQueries(['other-reimbursement-product-reason']);
+      queryClient.invalidateQueries(['other-reimbursement-product-reasons']);
       return data;
     }
   );
