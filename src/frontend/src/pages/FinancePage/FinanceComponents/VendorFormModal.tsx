@@ -2,14 +2,14 @@ import { Controller, useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
 import {
   FormControl,
-  FormLabel,
   FormHelperText,
   Box,
   MenuItem,
   Checkbox,
   ListItemText,
   Autocomplete,
-  TextField
+  TextField,
+  Typography
 } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
@@ -92,17 +92,23 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
     >
       <Box display="flex" flexDirection={'column'} minWidth={400} maxWidth={400}>
         <FormControl sx={{ paddingBottom: 2 }}>
-          <FormLabel sx={{ fontWeight: 'bold', fontSize: 18, color: '#EF4345' }}>Vendor Name:*</FormLabel>
+          <Typography sx={{ fontWeight: 'bold', fontSize: 22, color: '#EF4345' }} variant="h5">
+            Vendor Name:*
+          </Typography>
           <ReactHookTextField name="name" placeholder="Vendor Name Here" control={control} sx={{ width: 1 }} />
           <FormHelperText error>{errors.name?.message}</FormHelperText>
         </FormControl>
         <FormControl sx={{ paddingBottom: 2 }}>
-          <FormLabel sx={{ fontWeight: 'bold', fontSize: 18, color: '#EF4345' }}>Username:*</FormLabel>
+          <Typography sx={{ fontWeight: 'bold', fontSize: 22, color: '#EF4345' }} variant="h5">
+            Username:*
+          </Typography>
           <ReactHookTextField name="username" placeholder="Add Username Here" control={control} sx={{ width: 1 }} />
           <FormHelperText error>{errors.username?.message}</FormHelperText>
         </FormControl>
         <FormControl sx={{ paddingBottom: 2 }}>
-          <FormLabel sx={{ fontWeight: 'bold', fontSize: 18, color: '#EF4345' }}>Password:*</FormLabel>
+          <Typography sx={{ fontWeight: 'bold', fontSize: 22, color: '#EF4345' }} variant="h5">
+            Password:*
+          </Typography>
           <ReactHookTextField name="password" placeholder="Add Password Here" control={control} sx={{ width: 1 }} />
           <FormHelperText error>{errors.password?.message}</FormHelperText>
         </FormControl>
@@ -117,19 +123,20 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
               paddingTop: 1
             }}
           >
-            <FormLabel
+            <Typography
               sx={{
                 fontWeight: 'bold',
-                fontSize: 18,
+                fontSize: 22,
                 color: '#EF4345',
                 textAlign: 'center',
                 '&.Mui-focused': { color: '#EF4345' },
                 '&.Mui-error': { color: '#EF4345' },
                 marginBottom: 1
               }}
+              variant="h5"
             >
               Tax Exempt:*
-            </FormLabel>
+            </Typography>
             <Controller
               control={control}
               name="taxExempt"
@@ -144,7 +151,9 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
             />
           </FormControl>
           <FormControl sx={{ paddingBottom: 2, flex: 3 }}>
-            <FormLabel sx={{ fontWeight: 'bold', fontSize: 18, color: '#EF4345' }}>Discount Code:*</FormLabel>
+            <Typography sx={{ fontWeight: 'bold', fontSize: 22, color: '#EF4345' }} variant="h5">
+              Discount Code:*
+            </Typography>
             <ReactHookTextField
               name="discountCode"
               placeholder="Add Discount Code Here"
@@ -155,16 +164,17 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
           </FormControl>
         </Box>
         <FormControl fullWidth sx={{ paddingBottom: 2 }}>
-          <FormLabel
+          <Typography
             sx={{
               alignSelf: 'start',
               fontWeight: 'bold',
-              fontSize: 18,
+              fontSize: 22,
               color: '#EF4345'
             }}
+            variant="h5"
           >
             2FA Contacts:
-          </FormLabel>
+          </Typography>
           <Controller
             control={control}
             defaultValue={[]}
@@ -206,7 +216,9 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
           />
         </FormControl>
         <FormControl>
-          <FormLabel sx={{ fontWeight: 'bold', fontSize: 18, color: '#EF4345' }}>Notes on Vendor:</FormLabel>
+          <Typography sx={{ fontWeight: 'bold', fontSize: 22, color: '#EF4345' }} variant="h5">
+            Notes on Vendor:
+          </Typography>
           <ReactHookTextField name="notes" placeholder="e.g. Vendor is tax-exempt" control={control} sx={{ width: 1 }} />
           <FormHelperText error>{errors.note?.message}</FormHelperText>
         </FormControl>
