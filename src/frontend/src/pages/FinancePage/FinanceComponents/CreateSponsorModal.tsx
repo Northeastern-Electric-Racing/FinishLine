@@ -1,22 +1,23 @@
 import { useForm } from 'react-hook-form';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import NERFormModal from '../../../components/NERFormModal';
 import { SponsorPayload, useCreateSponsor } from '../../../hooks/finance.hooks';
 import ErrorPage from '../../ErrorPage';
 import sponsorSchema, { SponsorForm } from './SponsorForm';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Box } from '@mui/system';
+import SidePage from './SidePagePopup';
+import NERFailButton from '../../../components/NERFailButton';
+import NERSuccessButton from '../../../components/NERSuccessButton';
 
 interface CreateSponsorModalProps {
-  showModal: boolean;
+  showPage: boolean;
   handleClose: () => void;
 }
 
-const CreateSponsorModal = ({ showModal, handleClose }: CreateSponsorModalProps) => {
+const CreateSponsorModal = ({ showPage, handleClose }: CreateSponsorModalProps) => {
   const { isLoading, isError, error, mutateAsync } = useCreateSponsor();
 
   const {
-    reset,
     handleSubmit,
     control,
     formState: { errors }
@@ -45,20 +46,24 @@ const CreateSponsorModal = ({ showModal, handleClose }: CreateSponsorModalProps)
   };
 
   return (
-    <Box>
-      <NERFormModal
-        open={showModal}
-        onHide={handleClose}
-        title={'Create Sponsor'}
-        reset={() => reset()}
-        handleUseFormSubmit={handleSubmit}
-        onFormSubmit={onFormSubmit}
-        formId={'create-sponsor-form'}
-        showCloseButton
-      >
-        <SponsorForm control={control} errors={errors} />
-      </NERFormModal>
-    </Box>
+    <SidePage
+      showPage={showPage}
+      handleClose={handleClose}
+      title="Add Sponsor"
+      component={
+        <Box display="flex" flexDirection="column" alignItems="flex-end">
+          <SponsorForm control={control} errors={errors} />
+          <Box mt={2}>
+            <NERFailButton sx={{ mx: 1 }} onClick={handleClose}>
+              CLOSE
+            </NERFailButton>
+            <NERSuccessButton sx={{ mx: 1 }} onClick={handleSubmit(onFormSubmit)}>
+              Submit
+            </NERSuccessButton>
+          </Box>
+        </Box>
+      }
+    />
   );
 };
 

@@ -301,7 +301,7 @@ const SponsorsTable = () => {
         </MuiTable>
       </Box>
       <Box>
-        <CreateSponsorModal showModal={showAddSponsor} handleClose={() => setShowAddSponsor(false)} />
+        <CreateSponsorModal showPage={showAddSponsor} handleClose={() => setShowAddSponsor(false)} />
 
         <PaginationFooter
           footerButton={

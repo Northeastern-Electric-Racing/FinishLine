@@ -62,14 +62,16 @@ const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProp
       handleClose={handleClose}
       title="Edit Sponsor"
       component={
-        <Box>
+        <Box display="flex" flexDirection="column" alignItems="flex-end">
           <SponsorForm control={control} errors={errors} defaultValues={sponsor}></SponsorForm>
-          <NERFailButton sx={{ mx: 1 }} onClick={handleClose}>
-            CLOSE
-          </NERFailButton>
-          <NERSuccessButton sx={{ mx: 1 }} onClick={handleSubmit(onSubmit)}>
-            Submit
-          </NERSuccessButton>
+          <Box mt={2}>
+            <NERFailButton sx={{ mx: 1 }} onClick={handleClose}>
+              CLOSE
+            </NERFailButton>
+            <NERSuccessButton sx={{ mx: 1 }} onClick={handleSubmit(onSubmit)}>
+              Submit
+            </NERSuccessButton>
+          </Box>
         </Box>
       }
     />

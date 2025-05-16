@@ -4,7 +4,6 @@ import { AccessDeniedException, DeletedException, NotFoundException } from '../.
 import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, theVisitorGuest } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
-import { Sponsor } from 'shared';
 
 describe('Finance Tests', () => {
   let orgId: string;
@@ -136,7 +135,10 @@ describe('Finance Tests', () => {
       );
 
       expect(deletedSponsor).not.toBe(null);
-      expect(deletedSponsor?.dateDeleted).not.toBe(null);
+      expect(deletedSponsor).toMatchObject({
+        ...deletedSponsor,
+        dateDeleted: expect.any(Date)
+      });
     });
     it('Delete fails if user is not head or above', async () => {
       const sponsor = await FinanceServices.createSponsor(
@@ -351,19 +353,15 @@ describe('Finance Tests', () => {
         'Bill Gates',
         [
           {
-            sponsorId: '1',
-            sponsorTaskId: '2',
             dueDate: new Date(12, 1, 24),
-            notifyDate: null,
-            assigneeUserId: null,
+            notifyDate: undefined,
+            assigneeUserId: undefined,
             notes: 'uhh nothing'
           },
           {
-            sponsorId: '11',
-            sponsorTaskId: '22',
             dueDate: new Date(12, 1, 24),
-            notifyDate: null,
-            assigneeUserId: null,
+            notifyDate: undefined,
+            assigneeUserId: undefined,
             notes: 'probably nothing again'
           }
         ],
