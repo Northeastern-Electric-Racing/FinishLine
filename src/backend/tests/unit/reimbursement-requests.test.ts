@@ -29,7 +29,7 @@ describe('Reimbursement Requests', () => {
       'GENERAL STOCK',
       10,
       createdIndexCode.indexCodeId,
-      [createdAccountCode],
+      [createdAccountCode.accountCodeId],
       createdUser,
       org
     );
@@ -470,7 +470,7 @@ describe('Reimbursement Requests', () => {
         'CONSUMABLES',
         100,
         createdIndexCode.indexCodeId,
-        [createdAccountCode],
+        [createdAccountCode.accountCodeId],
         createdUser,
         org
       );
@@ -489,7 +489,7 @@ describe('Reimbursement Requests', () => {
         'COMPETITION',
         125,
         createdIndexCode.indexCodeId,
-        [createdAccountCode],
+        [createdAccountCode.accountCodeId],
         createdUser,
         org
       );
@@ -653,7 +653,7 @@ describe('Reimbursement Requests', () => {
         'GENERAL STOCK',
         10,
         createdIndexCode.indexCodeId,
-        [createdAccountCode],
+        [createdAccountCode.accountCodeId],
         createdUser,
         org
       );
@@ -669,8 +669,10 @@ describe('Reimbursement Requests', () => {
         reason.otherProductReasonId,
         org,
         createdUser,
+        'indexCodeName',
+        5,
         newIndexCode.indexCodeId,
-        5
+        []
       );
 
       expect(editedReason.budget).toEqual(5);
@@ -683,7 +685,7 @@ describe('Reimbursement Requests', () => {
         'GENERAL STOCK',
         10,
         createdIndexCode.indexCodeId,
-        [createdAccountCode],
+        [createdAccountCode.accountCodeId],
         createdUser,
         org
       );
@@ -693,8 +695,10 @@ describe('Reimbursement Requests', () => {
           reason.otherProductReasonId,
           org,
           createdUser,
+          'new name',
+          10000,
           'bad index code',
-          10000
+          []
         )
       ).rejects.toThrow(new NotFoundException('Index Code', 'bad index code'));
     });
@@ -702,7 +706,15 @@ describe('Reimbursement Requests', () => {
       const newIndexCode = await ReimbursementRequestService.createIndexCode('x', 'newIndexCode', createdUser, org);
 
       await expect(
-        ReimbursementRequestService.editOtherReimbursementProductReason('bad id', org, createdUser, newIndexCode.code, 10000)
+        ReimbursementRequestService.editOtherReimbursementProductReason(
+          'bad id',
+          org,
+          createdUser,
+          'name',
+          50,
+          newIndexCode.code,
+          []
+        )
       ).rejects.toThrow(new NotFoundException('Reimbursement Product Other Reason', 'bad id'));
     });
   });

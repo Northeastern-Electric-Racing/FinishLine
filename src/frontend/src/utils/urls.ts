@@ -139,6 +139,9 @@ const financeRequestChanges = (id: string) => `${financeEndpoints()}/${id}/reque
 const financeGetPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/list`;
 const financeSendPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/send`;
 const financeEditAccountCode = (accountCodeId: string) => `${getAllAccountCodes()}/${accountCodeId}/edit`;
+const financeDeleteAccountCode = (accountCodeId: string) => `${financeEndpoints()}/account-codes/${accountCodeId}/delete`;
+const financeDeleteOtherProductReason = (otherReasonId: string) =>
+  `${financeEndpoints()}/other-reimbursement-product-reasons/${otherReasonId}/delete`;
 const financeCreateAccountCode = () => `${getAllAccountCodes()}/create`;
 const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
 const financeEditVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/edit`;
@@ -451,6 +454,7 @@ export const apiUrls = {
   financeGetPendingAdvisorList,
   financeSendPendingAdvisorList,
   financeEditAccountCode,
+  financeDeleteAccountCode,
   financeCreateAccountCode,
   financeCreateVendor,
   financeEditVendor,
@@ -468,6 +472,7 @@ export const apiUrls = {
   deleteSponsor,
   editSponsorTask,
   financeEditOtherReimbursementProductReason,
+  financeDeleteOtherProductReason,
   getReimbursementRequestProjectData,
   getReimbursementRequestTeamData,
   getAllReimbursementRequestData,

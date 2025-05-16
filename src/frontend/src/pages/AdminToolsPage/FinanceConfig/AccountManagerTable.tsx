@@ -1,4 +1,4 @@
-import { TableRow, TableCell, Typography, Box, TableHead, Table, TableBody, Checkbox } from '@mui/material';
+import { TableRow, TableCell, Typography, Box, TableHead, Table, TableBody, Checkbox, IconButton } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useGetAllAccountCodes } from '../../../hooks/finance.hooks';
 import ErrorPage from '../../ErrorPage';
@@ -7,6 +7,8 @@ import { AccountCode } from 'shared';
 import CreateAccountCodeModal from './CreateAccountCodeModal';
 import EditAccountCodeModal from './EditAccountCodeModal';
 import { NERButton } from '../../../components/NERButton';
+import DeleteAccountCodeModal from './DeleteAccountCodeModal';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const AccountManagerTable = () => {
   const {
@@ -18,6 +20,7 @@ const AccountManagerTable = () => {
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [clickedAccountCode, setClickedAccountCode] = useState<AccountCode>();
+  const [accountCodeToDelete, setAccountCodeToDelete] = useState<AccountCode | undefined>(undefined);
 
   if (!accountCodes || accountCodesIsLoading) {
     return <LoadingIndicator />;
@@ -51,15 +54,36 @@ const AccountManagerTable = () => {
         <Typography>{accountCode.name}</Typography>
       </TableCell>
       <TableCell>
+        <Typography>{accountCode.amount ? `$${accountCode.amount}` : ''}</Typography>
+      </TableCell>
+      <TableCell>
         <Checkbox checked={accountCode.allowed} />
+        <IconButton
+          onClick={(e) => {
+            e.stopPropagation();
+            setAccountCodeToDelete(accountCode);
+          }}
+          aria-label="delete"
+          sx={{ ml: 4 }}
+        >
+          <DeleteIcon />
+        </IconButton>
       </TableCell>
     </TableRow>
   ));
 
-  const columns = ['Index Code', 'Account Code', 'Description', 'Allowed'];
+  const columns = ['Index Code', 'Account Code', 'Description', 'Amount', 'Allowed'];
 
   return (
     <Box>
+      {accountCodeToDelete && (
+        <DeleteAccountCodeModal
+          handleClose={() => {
+            setAccountCodeToDelete(undefined);
+          }}
+          accountCode={accountCodeToDelete}
+        />
+      )}
       <Box sx={{ display: 'flex', justifyContent: 'left', marginTop: '20px', paddingBottom: '20px' }}>
         <Typography variant="h5" gutterBottom color="white" paddingRight={'20px'}>
           Account Manager

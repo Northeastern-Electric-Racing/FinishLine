@@ -99,6 +99,7 @@ export interface AccountCode {
   accountCodeId: string;
   name: string;
   code: number;
+  amount?: number;
   allowed: boolean;
   indexCodes: IndexCode[];
 }

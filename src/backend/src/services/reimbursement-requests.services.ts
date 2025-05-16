@@ -643,7 +643,8 @@ export default class ReimbursementRequestService {
     code: number,
     allowed: boolean,
     indexCodeIds: string[],
-    organization: Organization
+    organization: Organization,
+    amount?: number
   ): Promise<AccountCode> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create Account Codes');
@@ -666,6 +667,7 @@ export default class ReimbursementRequestService {
         name,
         allowed,
         code,
+        amount,
         indexCodes: { connect: indexCodeIds.map((id) => ({ indexCodeId: id })) },
         organizationId: organization.organizationId
       },
@@ -693,7 +695,8 @@ export default class ReimbursementRequestService {
     allowed: boolean,
     submitter: User,
     indexCodeIds: string[],
-    organization: Organization
+    organization: Organization,
+    amount?: number
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('Only the head or admin can update account code number and name');
@@ -706,6 +709,7 @@ export default class ReimbursementRequestService {
         name,
         code,
         allowed,
+        amount,
         indexCodes: { set: indexCodeIds.map((id) => ({ indexCodeId: id })) }
       },
       ...getAccountCodeQueryArgs(organization.organizationId)

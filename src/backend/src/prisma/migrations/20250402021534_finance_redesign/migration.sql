@@ -174,6 +174,9 @@ ALTER TABLE "Reimbursement_Product_Reason" DROP COLUMN "otherReason";
 -- AlterTable
 ALTER TABLE "Account_Code" DROP COLUMN "allowedRefundSources";
 
+-- AlterTable
+ALTER TABLE "Account_Code" ADD COLUMN     "amount" INTEGER;
+
 -- DropEnum
 DROP TYPE "Other_Reimbursement_Product_Reason";
 

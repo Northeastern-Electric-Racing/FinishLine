@@ -54,7 +54,9 @@ import {
   getSpendingBarTeamTypeData,
   getAllSpendingBarData,
   deleteVendor,
-  editOtherProductReason
+  editOtherProductReason,
+  deleteAccountCode,
+  deleteOtherProductReason
 } from '../apis/finance.api';
 import {
   IndexCode,
@@ -102,6 +104,7 @@ export interface AccountCodePayload {
   code: number;
   name: string;
   allowed: boolean;
+  amount?: number;
   indexCodeIds: string[];
 }
 
@@ -729,6 +732,27 @@ export const useEditAccountCode = (accountCodeId: string) => {
 };
 
 /**
+ * Hook to delete the given expense type
+ * @param accountCodeId expense type to be deleted
+ * @returns the deleted expense type
+ */
+export const useDeleteAccountCode = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ id: string }, Error, string>(
+    ['expense-types', 'delete'],
+    async (accountCodeId: string) => {
+      const { data } = await deleteAccountCode(accountCodeId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['expense-types']);
+      }
+    }
+  );
+};
+
+/**
  * Custom React Hook to create an expense type.
  */
 export const useCreateAccountCode = () => {
@@ -873,6 +897,27 @@ export const useEditOtherProductReason = (otherProductReasonId: string) => {
       const { data } = await editOtherProductReason(otherProductReasonId, otherProductReasonData);
       queryClient.invalidateQueries(['other-reimbursement-product-reasons']);
       return data;
+    }
+  );
+};
+
+/**
+ * Hook to delete the given other reimbursement product reason
+ * @param otherReasonId other reason to be deleted
+ * @returns the deleted other reason
+ */
+export const useDeleteOtherProductReason = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ id: string }, Error, string>(
+    ['other-reimbursement-product-reason', 'delete'],
+    async (otherReasonId: string) => {
+      const { data } = await deleteOtherProductReason(otherReasonId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['other-reimbursement-product-reasons']);
+      }
     }
   );
 };

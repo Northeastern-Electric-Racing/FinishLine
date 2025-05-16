@@ -685,6 +685,7 @@ model Account_Code {
   name                             String
   code                             Int
   allowed                          Boolean
+  amount                           Int?
   indexCodes                       Index_Code[]
   requests                         Reimbursement_Request[]
   dateDeleted                      DateTime?

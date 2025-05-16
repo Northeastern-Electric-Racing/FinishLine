@@ -8,7 +8,7 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { useGetAllIndexCodes, useGetAllOtherProductReason } from '../../../hooks/finance.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { useEditOtherReimbursementProductReason } from '../../../hooks/finance.hooks';
+import { useEditOtherProductReason } from '../../../hooks/finance.hooks';
 
 const schema = yup.object().shape({
   category: yup.string().required('Reason is required'),
@@ -55,8 +55,7 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
     error: indexCodeError
   } = useGetAllIndexCodes();
 
-  const { isLoading: editReasonIsLoading, mutateAsync: editReason } =
-    useEditOtherReimbursementProductReason(currentCategoryId);
+  const { isLoading: editReasonIsLoading, mutateAsync: editReason } = useEditOtherProductReason(currentCategoryId);
 
   const {
     data: otherReasons,
@@ -82,10 +81,16 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
   const onSubmit = async (data: EditBudgetInputs) => {
     if (!currentCategoryId) return;
 
+    const selectedReason = otherReasons.find((r) => r.otherProductReasonId === currentCategoryId);
+    if (!selectedReason) return;
+
     const payload = {
-      updatedIndexCodeId: data.updatedIndexCode,
-      updatedBudget: data.updatedBudget
+      name: selectedReason.name,
+      accountCodeIds: selectedReason.accountCodes.map((accountCode) => accountCode.accountCodeId),
+      indexCodeId: data.updatedIndexCode,
+      budget: data.updatedBudget
     };
+
     await editReason(payload);
 
     handleClose();

@@ -1,4 +1,4 @@
-import { TableRow, TableCell, Typography, Box, TableHead, Table, TableBody } from '@mui/material';
+import { TableRow, TableCell, Typography, Box, TableHead, Table, TableBody, IconButton } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useGetAllOtherProductReason } from '../../../hooks/finance.hooks';
 import ErrorPage from '../../ErrorPage';
@@ -7,6 +7,9 @@ import React, { useState } from 'react';
 import { OtherProductReason } from 'shared';
 import CreateCategoryModal from './CreateCategoryModal';
 import EditCategoryModal from './EditCategoryModal';
+import DeleteCategoryModal from './DeleteCategoryModal';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { displayEnum } from '../../../utils/pipes';
 
 const CategoriesTable = () => {
   const {
@@ -18,6 +21,7 @@ const CategoriesTable = () => {
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [clickedCategory, setClickedCategory] = useState<OtherProductReason>();
+  const [categoryToDelete, setCategoryToDelete] = useState<OtherProductReason | undefined>(undefined);
 
   if (!categories || categoriesIsLoading) {
     return <LoadingIndicator />;
@@ -48,9 +52,21 @@ const CategoriesTable = () => {
         <Typography>{uniqueAccountCodeNames(category)}</Typography>
       </TableCell>
       <TableCell>
-        <Typography>{category.name}</Typography>
+        <Typography>{displayEnum(category.name)}</Typography>
       </TableCell>
-      <TableCell>{`$${category.budget}`}</TableCell>
+      <TableCell>
+        {`$${category.budget}`}
+        <IconButton
+          onClick={(e) => {
+            e.stopPropagation();
+            setCategoryToDelete(category);
+          }}
+          aria-label="delete"
+          sx={{ ml: 4 }}
+        >
+          <DeleteIcon />
+        </IconButton>
+      </TableCell>
     </TableRow>
   ));
 
@@ -105,6 +121,14 @@ const CategoriesTable = () => {
         </TableHead>
         <TableBody>{categoriesTableRows} </TableBody>
       </Table>
+      {categoryToDelete && (
+        <DeleteCategoryModal
+          handleClose={() => {
+            setCategoryToDelete(undefined);
+          }}
+          category={categoryToDelete}
+        />
+      )}
     </Box>
   );
 };

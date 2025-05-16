@@ -359,6 +359,17 @@ export const editAccountCode = async (id: string, accountCodeData: AccountCodePa
 };
 
 /**
+ * API call to delete a given expense type
+ *
+ * @param expenseId the id of the expense type to delete
+ *
+ * @returns the deleted expense type
+ */
+export const deleteAccountCode = async (id: string) => {
+  return axios.post(apiUrls.financeDeleteAccountCode(id));
+};
+
+/**
  * Creates an expense type in the database
  * @param accountCodeData the data for the expense type
  * @returns the new expense type
@@ -500,6 +511,17 @@ export const createOtherProductReason = async (otherProductReasonData: OtherProd
  */
 export const editOtherProductReason = (id: string, otherProductReasonData: OtherProductReasonPayload) => {
   return axios.post(apiUrls.financeEditOtherReimbursementProductReason(id), otherProductReasonData);
+};
+
+/**
+ * API call to delete a given other reimbursement product reason
+ *
+ * @param otherReasonId the id of the other reason to delete
+ *
+ * @returns the deleted other reason
+ */
+export const deleteOtherProductReason = async (id: string) => {
+  return axios.delete(apiUrls.financeDeleteOtherProductReason(id));
 };
 
 /**

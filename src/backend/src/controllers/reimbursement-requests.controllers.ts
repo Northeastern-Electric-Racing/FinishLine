@@ -221,14 +221,15 @@ export default class ReimbursementRequestsController {
   static async createAccountCode(req: Request, res: Response, next: NextFunction) {
     console.log('ehllo');
     try {
-      const { name, code, allowed, indexCodeIds } = req.body;
+      const { name, code, allowed, amount, indexCodeIds } = req.body;
       const createdAccountCode = await ReimbursementRequestService.createAccountCode(
         req.currentUser,
         name,
         code,
         allowed,
         indexCodeIds,
-        req.organization
+        req.organization,
+        amount
       );
       res.status(200).json(createdAccountCode);
     } catch (error: unknown) {
@@ -385,7 +386,7 @@ export default class ReimbursementRequestsController {
   static async editAccountCode(req: Request, res: Response, next: NextFunction) {
     try {
       const { accountCodeId } = req.params;
-      const { name, code, allowed, indexCodeIds } = req.body;
+      const { name, code, allowed, amount, indexCodeIds } = req.body;
 
       const accountCodeUpdated = await ReimbursementRequestService.editAccountCode(
         accountCodeId,
@@ -394,7 +395,8 @@ export default class ReimbursementRequestsController {
         allowed,
         req.currentUser,
         indexCodeIds,
-        req.organization
+        req.organization,
+        amount
       );
       res.status(200).json(accountCodeUpdated);
     } catch (error: unknown) {
