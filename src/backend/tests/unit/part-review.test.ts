@@ -1251,6 +1251,10 @@ describe('Set Part Review Sample Image', () => {
     batman = await createTestUser(batmanAppAdmin, orgId);
   });
 
+  afterEach(async () => {
+    await resetUsers();
+  });
+
   it('Fails if user is not an admin', async () => {
     await expect(
       PartReviewService.setPartReviewSampleImage(file1, await createTestUser(wonderwomanGuest, orgId), organization)
@@ -1296,6 +1300,10 @@ describe('Get Part Review Sample Image', () => {
     batman = await createTestUser(batmanAppAdmin, orgId);
   });
 
+  afterEach(async () => {
+    await resetUsers();
+  });
+
   it('Fails if an organization does not exist', async () => {
     await expect(async () => await PartReviewService.getPartReviewSampleImage('1')).rejects.toThrow(
       new NotFoundException('Organization', '1')
@@ -1326,6 +1334,10 @@ describe('Get Part Review Sample Image', () => {
       organization = await createTestOrganization();
       orgId = organization.organizationId;
       batman = await createTestUser(batmanAppAdmin, orgId);
+    });
+
+    afterEach(async () => {
+      await resetUsers();
     });
 
     it('Fails if user is not an admin', async () => {
@@ -1371,6 +1383,10 @@ describe('Get Part Review Sample Image', () => {
       organization = await createTestOrganization();
       orgId = organization.organizationId;
       batman = await createTestUser(batmanAppAdmin, orgId);
+    });
+
+    afterEach(async () => {
+      await resetUsers();
     });
 
     it('Fails if an organization does not exist', async () => {
