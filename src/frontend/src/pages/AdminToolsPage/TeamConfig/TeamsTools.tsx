@@ -5,24 +5,19 @@ import { useAllTeams } from '../../../hooks/teams.hooks';
 import { fullNamePipe } from '../../../utils/pipes';
 import AdminToolTable from '../AdminToolTable';
 
-
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import CreateTeamForm from './CreateTeamForm';
 import TeamTypeTable from './TeamTypeTable';
 
-
 const TeamsTools = () => {
   const { data: allTeams, isLoading: allTeamsIsLoading, isError: allTeamsIsError, error: allTeamsError } = useAllTeams();
 
-
   if (!allTeams || allTeamsIsLoading) return <LoadingIndicator />;
-
 
   if (allTeamsIsError) {
     return <ErrorPage message={allTeamsError.message} />;
   }
-
 
   const teamTableRows = allTeams.map((team, index) => (
     <TableRow component={RouterLink} to={`${routes.TEAMS}/${team.teamId}`} sx={{ color: 'inherit', textDecoration: 'none' }}>
@@ -37,7 +32,6 @@ const TeamsTools = () => {
       </TableCell>
     </TableRow>
   ));
-
 
   return (
     <Box>
@@ -62,7 +56,4 @@ const TeamsTools = () => {
   );
 };
 
-
 export default TeamsTools;
-
-

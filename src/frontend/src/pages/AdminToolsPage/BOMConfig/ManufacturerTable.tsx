@@ -11,12 +11,10 @@ import CreateManufacturerModal from './CreateManufacturerFormModal';
 import ManufacturerDeleteModal from './ManufacturerDeleteModal';
 import { useState } from 'react';
 
-
 interface ManufacturerDeleteButtonProps {
   name: string;
   onDelete: (name: string) => void;
 }
-
 
 const ManufacturerTable: React.FC = () => {
   const {
@@ -29,14 +27,12 @@ const ManufacturerTable: React.FC = () => {
   const { mutateAsync } = useDeleteManufacturer();
   const toast = useToast();
 
-
   if (!manufacturers || manufacturersIsLoading) {
     return <LoadingIndicator />;
   }
   if (manufacturersIsError) {
     return <ErrorPage message={manufacturersError?.message} />;
   }
-
 
   const handleDeleteManufacturer = async (manufacturerName: string) => {
     try {
@@ -49,16 +45,13 @@ const ManufacturerTable: React.FC = () => {
     }
   };
 
-
   const ManufacturerDeleteButton: React.FC<ManufacturerDeleteButtonProps> = ({ name, onDelete }) => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-
 
     const handleDeleteSubmit = () => {
       onDelete(name);
       setShowDeleteModal(false);
     };
-
 
     return (
       <>
@@ -78,19 +71,22 @@ const ManufacturerTable: React.FC = () => {
     );
   };
 
-
   const manufacturersTableRows = manufacturers.map((manufacturer, index) => (
     <TableRow>
-      <TableCell align="left" sx={{ borderRight: '1px solid', borderBottom: index === manufacturers.length - 1 ? 'none' : '1px solid' }}>
+      <TableCell
+        align="left"
+        sx={{ borderRight: '1px solid', borderBottom: index === manufacturers.length - 1 ? 'none' : '1px solid' }}
+      >
         {datePipe(manufacturer.dateCreated)}
       </TableCell>
-      <TableCell sx={{ borderBottom: index === manufacturers.length - 1 ? 'none' : '1px solid' }}>{manufacturer.name}</TableCell>
+      <TableCell sx={{ borderBottom: index === manufacturers.length - 1 ? 'none' : '1px solid' }}>
+        {manufacturer.name}
+      </TableCell>
       <TableCell align="center" sx={{ borderBottom: index === manufacturers.length - 1 ? 'none' : '1px solid' }}>
         <ManufacturerDeleteButton name={manufacturer.name} onDelete={handleDeleteManufacturer} />
       </TableCell>
     </TableRow>
   ));
-
 
   return (
     <Box>
@@ -112,6 +108,5 @@ const ManufacturerTable: React.FC = () => {
     </Box>
   );
 };
-
 
 export default ManufacturerTable;

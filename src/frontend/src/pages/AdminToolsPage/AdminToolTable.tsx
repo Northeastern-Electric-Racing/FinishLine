@@ -1,6 +1,5 @@
 import { Table, TableBody, TableCell, TableContainer, TableHead } from '@mui/material';
 
-
 interface AdminToolTableProps {
   columns: {
     name: string;
@@ -8,7 +7,6 @@ interface AdminToolTableProps {
   }[];
   rows: JSX.Element[];
 }
-
 
 const AdminToolTable = ({ columns, rows }: AdminToolTableProps) => {
   return (
@@ -32,13 +30,10 @@ const AdminToolTable = ({ columns, rows }: AdminToolTableProps) => {
             </TableCell>
           ))}
         </TableHead>
-        <TableBody>
-          {rows}
-        </TableBody>
+        <TableBody>{rows}</TableBody>
       </Table>
     </TableContainer>
   );
 };
-
 
 export default AdminToolTable;
