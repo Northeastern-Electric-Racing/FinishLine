@@ -9,12 +9,12 @@ import SidePage from './SidePagePopup';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 
-interface CreateSponsorModalProps {
+interface CreateSponsorPageProps {
   showPage: boolean;
   handleClose: () => void;
 }
 
-const CreateSponsorModal = ({ showPage, handleClose }: CreateSponsorModalProps) => {
+const CreateSponsorPage = ({ showPage, handleClose }: CreateSponsorPageProps) => {
   const { isLoading, isError, error, mutateAsync } = useCreateSponsor();
 
   const {
@@ -67,4 +67,4 @@ const CreateSponsorModal = ({ showPage, handleClose }: CreateSponsorModalProps) 
   );
 };
 
-export default CreateSponsorModal;
+export default CreateSponsorPage;

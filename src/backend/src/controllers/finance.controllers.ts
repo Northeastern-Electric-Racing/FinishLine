@@ -289,7 +289,7 @@ export default class FinanceController {
         sponsorTierId,
         vendorContact,
         taxExempt,
-        sponsorTaskIds,
+        sponsorTasks,
         discountCode
       } = req.body;
 
@@ -305,7 +305,7 @@ export default class FinanceController {
         sponsorTierId,
         vendorContact,
         taxExempt,
-        sponsorTaskIds,
+        sponsorTasks,
         discountCode
       );
 

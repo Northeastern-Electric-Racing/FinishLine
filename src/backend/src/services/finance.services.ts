@@ -111,7 +111,7 @@ export default class FinanceServices {
    * @param sponsorId the id of the sponsor that is getting deleted
    * @param deleter the person deleting the sponsor
    * @param organization the organization the person deleting belongs to
-   * @returns
+   * @returns the deleted sponsor
    */
   static async deleteSponsor(sponsorId: string, deleter: User, organization: Organization): Promise<Sponsor> {
     const sponsor = await prisma.sponsor.findUnique({
@@ -465,7 +465,7 @@ export default class FinanceServices {
       }
     });
 
-    if (!tier) throw new NotFoundException('Sponsor Tier', sponsorId);
+    if (!tier) throw new NotFoundException('Sponsor Tier', sponsorTierId);
 
     const updatedSponsor = await prisma.sponsor.update({
       where: { sponsorId: oldSponsor.sponsorId },
@@ -479,8 +479,6 @@ export default class FinanceServices {
           connect: { sponsorTierId }
         },
         sponsorTasks: {
-          // but some of the sponsor tasks already exist and are being edited OR are being deleleted...
-          // should delete all of the sponsor tasks before coming in here so it will just have the ones that it was assigned
           connect: await Promise.all(
             sponsorTasks.map(async (t) => {
               const createdTask = await this.createSponsorTask(

@@ -7,7 +7,7 @@ import { NERButton } from '../../components/NERButton';
 import { datePipe } from '../../utils/pipes';
 import SponsorTierPill from '../../components/SponsorTierPill';
 import PaginationFooter from '../../components/PaginationFooter';
-import CreateSponsorModal from './FinanceComponents/CreateSponsorModal';
+import CreateSponsorPage from './FinanceComponents/CreateSponsorPage';
 import { Sponsor } from 'shared';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -22,6 +22,7 @@ const SponsorsTable = () => {
   const [showAddSponsor, setShowAddSponsor] = useState(false);
   const [sponsorToEdit, setSponsorToEdit] = useState<Sponsor | undefined>(undefined);
   const [sponsorToDelete, setSponsorToDelete] = useState<Sponsor | undefined>(undefined);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   if (!sponsors || sponsorIsLoading) {
     return <LoadingIndicator />;
@@ -152,7 +153,13 @@ const SponsorsTable = () => {
             >
               <EditIcon />
             </Button>
-            <Button sx={{ p: 0.5, color: 'white' }} onClick={() => setSponsorToDelete(sponsor)}>
+            <Button
+              sx={{ p: 0.5, color: 'white' }}
+              onClick={() => {
+                setSponsorToDelete(sponsor);
+                setShowDeleteModal(true);
+              }}
+            >
               <DeleteIcon />
             </Button>
           </Box>
@@ -183,8 +190,9 @@ const SponsorsTable = () => {
       )}
       {sponsorToDelete && (
         <DeleteSponsorModal
+          showModal={showDeleteModal}
           handleClose={() => {
-            setSponsorToDelete(undefined);
+            setShowDeleteModal(false);
           }}
           sponsor={sponsorToDelete}
         />
@@ -301,7 +309,7 @@ const SponsorsTable = () => {
         </MuiTable>
       </Box>
       <Box>
-        <CreateSponsorModal showPage={showAddSponsor} handleClose={() => setShowAddSponsor(false)} />
+        <CreateSponsorPage showPage={showAddSponsor} handleClose={() => setShowAddSponsor(false)} />
 
         <PaginationFooter
           footerButton={

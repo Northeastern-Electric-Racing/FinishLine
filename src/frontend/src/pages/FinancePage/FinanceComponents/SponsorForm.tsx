@@ -3,7 +3,6 @@ import { SponsorPayload, useGetAllSponsorTiers } from '../../../hooks/finance.ho
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { Control, Controller, FieldErrors, useFieldArray } from 'react-hook-form';
-import { Sponsor } from 'shared';
 import {
   FormControl,
   Grid,
@@ -19,16 +18,15 @@ import {
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { DatePicker } from '@mui/x-date-pickers';
 import { useAllUsers } from '../../../hooks/users.hooks';
-import NERAutocomplete from '../../../components/NERAutocomplete';
 import React, { useState } from 'react';
-import { Box, useTheme } from '@mui/system';
+import { Box } from '@mui/system';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
-interface SponsorFormModalProps {
+interface SponsorFormProps {
   control: Control<SponsorPayload>;
   errors: FieldErrors<SponsorPayload>;
-  defaultValues?: Sponsor;
 }
 
 const getYears = (startYear = 1950) => {
@@ -66,9 +64,7 @@ const sponsorSchema = yup.object().shape({
     .required('Sponsor Tasks are Required')
 });
 
-export const SponsorForm: React.FC<SponsorFormModalProps> = ({ control, errors, defaultValues }: SponsorFormModalProps) => {
-  const theme = useTheme();
-
+export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors }: SponsorFormProps) => {
   const yearsOptions = getYears();
 
   const [datePickerOpenNotify, setDatePickerOpenNotify] = useState(false);
@@ -147,6 +143,7 @@ export const SponsorForm: React.FC<SponsorFormModalProps> = ({ control, errors, 
             type="number"
             control={control}
             sx={{ width: 1 }}
+            startAdornment={<AttachMoneyIcon />}
             errorMessage={errors.sponsorValue}
           />
         </FormControl>
@@ -251,24 +248,12 @@ export const SponsorForm: React.FC<SponsorFormModalProps> = ({ control, errors, 
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={6}>
-        <FormControl sx={{ width: '75%' }}>
+        <FormControl fullWidth>
           <Typography variant="h5" color="#EF4345">
-            Contact Name:*
+            Vendor Contact:*
           </Typography>
-          <Controller
-            control={control}
-            name={'vendorContact'}
-            render={({ field: { onChange } }) => (
-              <NERAutocomplete
-                sx={{ width: '100%', backgroundColor: theme.palette.grey[750] }}
-                id="sponsor-contact-name-autocomplete"
-                onChange={(_event, newValue) => onChange(newValue ? newValue.id : undefined)}
-                options={members.map((m) => ({ label: m.firstName + ' ' + m.lastName, id: m.userId }))}
-                size="small"
-                placeholder={!!defaultValues?.vendorContact ? defaultValues.vendorContact : 'Select Member'}
-              ></NERAutocomplete>
-            )}
-          ></Controller>
+          <ReactHookTextField name="vendorContact" control={control} sx={{ width: 1 }} placeholder="Enter Vendor Contact" />
+          <FormHelperText error> {errors.name?.message}</FormHelperText>
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={6}>
@@ -426,7 +411,7 @@ export const SponsorForm: React.FC<SponsorFormModalProps> = ({ control, errors, 
                       Notes:*
                     </Typography>
                     <ReactHookTextField
-                      name={`notesOnSponsor.${index}.notes`}
+                      name={`sponsorTasks.${index}.notes`}
                       control={control}
                       sx={{ width: 1 }}
                       placeholder="Enter notes"

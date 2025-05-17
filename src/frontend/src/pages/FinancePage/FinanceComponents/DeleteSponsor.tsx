@@ -8,9 +8,10 @@ import { Typography } from '@mui/material';
 interface DeleteSponsorProps {
   handleClose: () => void;
   sponsor: Sponsor;
+  showModal: boolean;
 }
 
-const DeleteSponsorModal = ({ handleClose, sponsor }: DeleteSponsorProps) => {
+const DeleteSponsorModal = ({ handleClose, sponsor, showModal }: DeleteSponsorProps) => {
   const { isLoading, isError, error, mutateAsync } = useDeleteSponsor(sponsor.sponsorId);
 
   if (isError) return <ErrorPage message={error?.message} />;
@@ -18,7 +19,7 @@ const DeleteSponsorModal = ({ handleClose, sponsor }: DeleteSponsorProps) => {
 
   return (
     <NERModal
-      open={!!sponsor}
+      open={showModal}
       title="Warning!"
       onHide={handleClose}
       submitText="Delete"
