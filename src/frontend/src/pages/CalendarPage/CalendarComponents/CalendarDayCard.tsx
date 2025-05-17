@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Grid, Link, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Card, CardContent, Grid, Link, Stack, Tooltip, Typography, useTheme } from '@mui/material';
 import { DesignReview, DesignReviewStatus, TeamType } from 'shared';
 import { meetingStartTimePipe } from '../../../utils/pipes';
 import ConstructionIcon from '@mui/icons-material/Construction';
@@ -29,11 +29,18 @@ interface CalendarDayCardProps {
 
 const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, teamTypes }) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
+  const theme = useTheme();
   const DayCardTitle = () => (
     <Grid container alignItems="center" margin={0} padding={0}>
       <Grid item xs display="flex" justifyContent="flex-end">
-        <Typography variant="h6" marginRight={1} noWrap>
+        <Typography
+          variant="h6"
+          marginRight={1}
+          noWrap
+          sx={{
+            color: !(isFutureDay || isCurrentDay) ? theme.palette.grey[600] : 'inherit'
+          }}
+        >
           {cardDate.getDate()}
         </Typography>
       </Grid>
@@ -64,7 +71,8 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
           }}
           sx={{
             position: 'relative',
-            zIndex: 2
+            zIndex: 2,
+            cursor: 'pointer'
           }}
         >
           <Card
@@ -192,7 +200,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
 
   const today = new Date().toDateString();
   const isCurrentDay = cardDate.toDateString() === today;
-  const isFutureDay = cardDate > new Date();
+  const isFutureDay = cardDate >= new Date();
 
   return (
     <>
@@ -207,19 +215,20 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
       <Card
         sx={{
           position: 'relative',
+          backgroundColor: !(isFutureDay || isCurrentDay) ? theme.palette.grey[900] : 'inherit',
           borderRadius: 2,
           width: { xs: '95%', md: '80%' },
           height: { xs: '10vh', sm: '15vh' },
           border: isCurrentDay ? '2px solid gray' : 'none',
           boxShadow: isCurrentDay ? '0 0 10px rgba(255, 255, 255, 0.5)' : 'none',
-          cursor: isFutureDay ? 'pointer' : 'default',
+          cursor: isFutureDay || isCurrentDay ? 'pointer' : 'default',
           transition: 'background 0.2s',
-          '&:hover': isFutureDay ? { background: '#232323' } : {}
+          '&:hover': isFutureDay || isCurrentDay ? { background: '#232323' } : {}
         }}
       >
         <Box
           onClick={() => {
-            if (cardDate.getTime() >= new Date().getTime()) {
+            if (isFutureDay || isCurrentDay) {
               setIsCreateModalOpen(true);
             }
           }}
