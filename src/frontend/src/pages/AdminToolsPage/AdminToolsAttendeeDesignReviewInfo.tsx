@@ -61,9 +61,23 @@ const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
 
   const attendeeRows = filteredMembers.map((member, index) => (
     <TableRow key={index}>
-      <TableCell sx={{ border: '2px solid black' }}>{fullNamePipe(member)}</TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>{attendanceDict.get(member.userId) ?? 0}</TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>{missedDict.get(member.userId) ?? 0}</TableCell>
+      <TableCell
+        sx={{ borderRight: '1px solid', borderBottom: index === filteredMembers.length - 1 ? 'none' : '1px solid' }}
+      >
+        {fullNamePipe(member)}
+      </TableCell>
+      <TableCell
+        sx={{ borderRight: '1px solid', borderBottom: index === filteredMembers.length - 1 ? 'none' : '1px solid' }}
+      >
+        {attendanceDict.get(member.userId) ?? 0}
+      </TableCell>
+      <TableCell
+        sx={{
+          borderBottom: index === filteredMembers.length - 1 ? 'none' : '1px solid'
+        }}
+      >
+        {missedDict.get(member.userId) ?? 0}
+      </TableCell>
     </TableRow>
   ));
 

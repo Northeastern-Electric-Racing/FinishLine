@@ -38,12 +38,24 @@ const AccountCodesTable = () => {
       key={`account-code-${index}`}
       sx={{ cursor: 'pointer' }}
     >
-      <TableCell sx={{ border: '2px solid black' }}>{accountCode.name}</TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>{accountCode.code}</TableCell>
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
+      <TableCell sx={{ borderRight: '1px solid', borderBottom: index === accountCodes.length - 1 ? 'none' : '1px solid' }}>
+        {accountCode.name}
+      </TableCell>
+      <TableCell sx={{ borderRight: '1px solid', borderBottom: index === accountCodes.length - 1 ? 'none' : '1px solid' }}>
+        {accountCode.code}
+      </TableCell>
+      <TableCell
+        align="left"
+        sx={{ borderRight: '1px solid', borderBottom: index === accountCodes.length - 1 ? 'none' : '1px solid' }}
+      >
         <Typography>{accountCode.allowed ? 'Yes' : 'No'}</Typography>
       </TableCell>
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
+      <TableCell
+        align="left"
+        sx={{
+          borderBottom: index === accountCodes.length - 1 ? 'none' : '1px solid'
+        }}
+      >
         {accountCode.allowedRefundSources.map((refundSource, idx) => (
           <Typography key={`account-code-refund-source-${index}-${idx}`}>{codeAndRefundSourceName(refundSource)}</Typography>
         ))}

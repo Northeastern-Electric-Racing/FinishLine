@@ -23,7 +23,7 @@ const VendorsTable = () => {
     return <ErrorPage message={vendorError.message} />;
   }
 
-  const vendorTableRows = vendors.map((vendor) => (
+  const vendorTableRows = vendors.map((vendor, index) => (
     <TableRow
       onClick={() => {
         setClickedVendor(vendor);
@@ -31,10 +31,19 @@ const VendorsTable = () => {
       }}
       sx={{ cursor: 'pointer' }}
     >
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
+      <TableCell
+        align="left"
+        sx={{ borderRight: '1px solid', borderBottom: index === vendors.length - 1 ? 'none' : '1px solid' }}
+      >
         {datePipe(vendor.dateCreated)}
       </TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>{vendor.name}</TableCell>
+      <TableCell
+        sx={{
+          borderBottom: index === vendors.length - 1 ? 'none' : '1px solid'
+        }}
+      >
+        {vendor.name}
+      </TableCell>
     </TableRow>
   ));
 
