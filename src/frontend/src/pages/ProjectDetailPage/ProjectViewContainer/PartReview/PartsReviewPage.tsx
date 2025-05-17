@@ -1,14 +1,11 @@
 import LoadingIndicator from '../../../../components/LoadingIndicator';
-import { Box, Stack } from '@mui/system';
-import { Grid, FormControlLabel, Autocomplete, TextField, Button, Chip, Typography } from '@mui/material';
+import { Grid, Box, FormControlLabel, Autocomplete, TextField, Button, Chip, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { useAllUsers, useCurrentUser } from '../../../../hooks/users.hooks';
 import { Project, rankUserRole, Review_Status, wbsPipe } from 'shared';
 import NERSwitch from '../../../../components/NERSwitch';
-import PartDisplay from '../../../PartPage/PartPageComponents/PartDisplay';
 import { useGetAllPartTags, usePartsFromProject } from '../../../../hooks/part-review.hooks';
 import ErrorPage from '../../../ErrorPage';
-import { Link as RouterLink } from 'react-router-dom';
 import CreateMenu from './PartReviewComponents/PartFormModels/CreateMenu';
 import SubmissionGuide from './PartReviewComponents/SubmissionGuide';
 import { PartPreviewCard } from './PartReviewComponents/PartPreviewCard';
@@ -273,9 +270,7 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
       <Grid container spacing={3}>
         <Grid item xs={12}>
           {/* The guide should be toggled off by default for admins, heads, and leads and toggled on for all other roles */}
-          {showSubmissionGuide && (
-            <SubmissionGuide />
-          )}
+          {showSubmissionGuide && <SubmissionGuide />}
           <Typography variant="h4" sx={{ mb: 2 }}>
             {`${filteredParts?.length === parts.length ? 'All ' : ''} Parts for ${project.name}`}
           </Typography>
