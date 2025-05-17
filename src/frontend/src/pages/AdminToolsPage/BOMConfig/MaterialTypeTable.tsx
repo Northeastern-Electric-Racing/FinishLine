@@ -8,6 +8,7 @@ import AdminToolTable from '../AdminToolTable';
 import { useGetAllMaterialTypes } from '../../../hooks/bom.hooks';
 import CreateMaterialTypeModal from './CreateMaterialTypeFormModal';
 
+
 const MaterialTypeTable: React.FC = () => {
   const {
     data: materialTypes,
@@ -17,6 +18,7 @@ const MaterialTypeTable: React.FC = () => {
   } = useGetAllMaterialTypes();
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
 
+
   if (!materialTypes || materialTypesIsLoading) {
     return <LoadingIndicator />;
   }
@@ -24,14 +26,16 @@ const MaterialTypeTable: React.FC = () => {
     return <ErrorPage message={materialTypesError?.message} />;
   }
 
-  const materialTypesTableRows = materialTypes.map((materialType) => (
+
+  const materialTypesTableRows = materialTypes.map((materialType, index) => (
     <TableRow>
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
+      <TableCell align="left" sx={{ borderRight: '1px solid', borderBottom: index === materialTypes.length - 1 ? 'none' : '1px solid' }}>
         {datePipe(materialType.dateCreated)}
       </TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>{materialType.name}</TableCell>
+      <TableCell sx={{ borderBottom: index === materialTypes.length - 1 ? 'none' : '1px solid' }}>{materialType.name}</TableCell>
     </TableRow>
   ));
+
 
   return (
     <Box>
@@ -50,5 +54,6 @@ const MaterialTypeTable: React.FC = () => {
     </Box>
   );
 };
+
 
 export default MaterialTypeTable;

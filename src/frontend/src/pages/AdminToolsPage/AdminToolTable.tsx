@@ -1,4 +1,5 @@
-import { Paper, Table, TableBody, TableCell, TableContainer, TableHead } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead } from '@mui/material';
+
 
 interface AdminToolTableProps {
   columns: {
@@ -8,26 +9,36 @@ interface AdminToolTableProps {
   rows: JSX.Element[];
 }
 
+
 const AdminToolTable = ({ columns, rows }: AdminToolTableProps) => {
   return (
-    <TableContainer component={Paper}>
+    <TableContainer>
       <Table>
         <TableHead>
           {columns.map((column, idx) => (
             <TableCell
               key={`${column.name}-${idx}`}
               align="left"
-              sx={{ fontSize: '16px', fontWeight: 600, border: '2px solid black' }}
+              sx={{
+                fontWeight: 'bold',
+                fontSize: '1em',
+                backgroundColor: '#ef4345',
+                color: 'white',
+                borderRadius: idx === 0 ? '10px 0px 0px 0px' : idx === columns.length - 1 ? '0px 10px 0px 0px' : '0px'
+              }}
               width={column.width}
             >
               {column.name}
             </TableCell>
           ))}
         </TableHead>
-        <TableBody>{rows}</TableBody>
+        <TableBody>
+          {rows}
+        </TableBody>
       </Table>
     </TableContainer>
   );
 };
+
 
 export default AdminToolTable;

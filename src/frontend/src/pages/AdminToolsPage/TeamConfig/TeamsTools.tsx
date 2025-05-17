@@ -5,29 +5,39 @@ import { useAllTeams } from '../../../hooks/teams.hooks';
 import { fullNamePipe } from '../../../utils/pipes';
 import AdminToolTable from '../AdminToolTable';
 
+
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import CreateTeamForm from './CreateTeamForm';
 import TeamTypeTable from './TeamTypeTable';
 
+
 const TeamsTools = () => {
   const { data: allTeams, isLoading: allTeamsIsLoading, isError: allTeamsIsError, error: allTeamsError } = useAllTeams();
 
+
   if (!allTeams || allTeamsIsLoading) return <LoadingIndicator />;
+
 
   if (allTeamsIsError) {
     return <ErrorPage message={allTeamsError.message} />;
   }
 
-  const teamTableRows = allTeams.map((team) => (
+
+  const teamTableRows = allTeams.map((team, index) => (
     <TableRow component={RouterLink} to={`${routes.TEAMS}/${team.teamId}`} sx={{ color: 'inherit', textDecoration: 'none' }}>
-      <TableCell sx={{ border: '2px solid black' }}>{team.teamName}</TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>{fullNamePipe(team.head)}</TableCell>
-      <TableCell align="center" sx={{ border: '2px solid black' }}>
+      <TableCell sx={{ borderRight: '1px solid', borderBottom: index === allTeams.length - 1 ? 'none' : '1px solid' }}>
+        {team.teamName}
+      </TableCell>
+      <TableCell sx={{ borderRight: '1px solid', borderBottom: index === allTeams.length - 1 ? 'none' : '1px solid' }}>
+        {fullNamePipe(team.head)}
+      </TableCell>
+      <TableCell align="center" sx={{ borderBottom: index === allTeams.length - 1 ? 'none' : '1px solid' }}>
         {team.members.length}
       </TableCell>
     </TableRow>
   ));
+
 
   return (
     <Box>
@@ -52,4 +62,7 @@ const TeamsTools = () => {
   );
 };
 
+
 export default TeamsTools;
+
+

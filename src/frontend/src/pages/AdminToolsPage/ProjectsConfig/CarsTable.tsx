@@ -8,10 +8,13 @@ import { useGetAllCars } from '../../../hooks/cars.hooks';
 import CreateCarModal from './CreateCarFormModal';
 import { useState } from 'react';
 
+
 const CarsTable: React.FC = () => {
   const { data: cars, isLoading: carsIsLoading, isError: carsIsError, error: carsError } = useGetAllCars();
 
+
   const [openModal, setOpenModal] = useState(false);
+
 
   if (!cars || carsIsLoading) {
     return <LoadingIndicator />;
@@ -20,15 +23,19 @@ const CarsTable: React.FC = () => {
     return <ErrorPage message={carsError?.message} />;
   }
 
-  const carsTableRows = cars.map((car) => (
+
+  const carsTableRows = cars.map((car, index) => (
     <TableRow>
-      <TableCell sx={{ border: '2px solid black' }}>{car.wbsNum.carNumber}</TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>{car.name}</TableCell>
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
+      <TableCell sx={{ borderRight: '1px solid', borderBottom: index === cars.length - 1 ? 'none' : '1px solid' }}>
+        {car.wbsNum.carNumber}
+      </TableCell>
+      <TableCell sx={{ borderRight: '1px solid', borderBottom: index === cars.length - 1 ? 'none' : '1px solid' }}>{car.name}</TableCell>
+      <TableCell align="left" sx={{ borderBottom: index === cars.length - 1 ? 'none' : '1px solid' }}>
         {datePipe(car.dateCreated)}
       </TableCell>
     </TableRow>
   ));
+
 
   return (
     <Box>
@@ -46,4 +53,7 @@ const CarsTable: React.FC = () => {
   );
 };
 
+
 export default CarsTable;
+
+

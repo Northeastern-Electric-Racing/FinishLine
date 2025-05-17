@@ -13,9 +13,11 @@ import { useHistory } from 'react-router-dom';
 import { useState } from 'react';
 import NERModal from '../../../components/NERModal';
 
+
 const WorkPackageTemplateTable = () => {
   const currentUser = useCurrentUser();
   const history = useHistory();
+
 
   const {
     data: workPackageTemplates,
@@ -24,24 +26,28 @@ const WorkPackageTemplateTable = () => {
     error: workPackageTemplatesError
   } = useAllWorkPackageTemplates();
 
+
   const [templateToDelete, setTemplateToDelete] = useState<WorkPackageTemplate>();
 
+
   const { mutateAsync } = useDeleteWorkPackageTemplate();
+
 
   if (!workPackageTemplates || workPackageTemplatesIsLoading) return <LoadingIndicator />;
   if (workPackageTemplatesIsError) return <ErrorPage message={workPackageTemplatesError.message} />;
 
-  const workPackageTemplateRows = workPackageTemplates.map((workPackageTemplate) => (
+
+  const workPackageTemplateRows = workPackageTemplates.map((workPackageTemplate, index) => (
     <TableRow
       key={workPackageTemplate.workPackageTemplateId}
       onClick={() => history.push(`${routes.WORK_PACKAGE_TEMPLATE_EDIT}?id=${workPackageTemplate.workPackageTemplateId}`)}
       sx={{ cursor: 'pointer' }}
     >
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
+      <TableCell align="left" sx={{ borderRight: '1px solid', borderBottom: index === workPackageTemplates.length - 1 ? 'none' : '1px solid' }}>
         {workPackageTemplate.templateName}
       </TableCell>
-      <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>{workPackageTemplate.templateNotes}</TableCell>
-      <TableCell align="center" sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
+      <TableCell sx={{ borderBottom: index === workPackageTemplates.length - 1 ? 'none' : '1px solid', verticalAlign: 'middle' }}>{workPackageTemplate.templateNotes}</TableCell>
+      <TableCell align="center" sx={{ border: 'transparent', verticalAlign: 'middle' }}>
         <IconButton
           onClick={(event) => {
             event.stopPropagation();
@@ -53,6 +59,7 @@ const WorkPackageTemplateTable = () => {
       </TableCell>
     </TableRow>
   ));
+
 
   return (
     <Box>
@@ -87,4 +94,7 @@ const WorkPackageTemplateTable = () => {
   );
 };
 
+
 export default WorkPackageTemplateTable;
+
+

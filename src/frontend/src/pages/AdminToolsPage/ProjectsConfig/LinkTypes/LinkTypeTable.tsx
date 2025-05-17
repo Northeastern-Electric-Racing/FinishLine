@@ -10,6 +10,7 @@ import AdminToolTable from '../../AdminToolTable';
 import { isAdmin, LinkType } from 'shared';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
 
+
 const LinkTypeTable = () => {
   const currentUser = useCurrentUser();
   const {
@@ -22,10 +23,12 @@ const LinkTypeTable = () => {
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [clickedLinkType, setClickedLinkType] = useState<LinkType>();
 
+
   if (!linkTypes || linkTypeIsLoading) return <LoadingIndicator />;
   if (linkTypeIsError) return <ErrorPage message={linkTypeError.message} />;
 
-  const linkTypeTableRows = linkTypes.map((linkType) => (
+
+  const linkTypeTableRows = linkTypes.map((linkType, index) => (
     <TableRow
       onClick={() => {
         setClickedLinkType(linkType);
@@ -33,10 +36,10 @@ const LinkTypeTable = () => {
       }}
       sx={{ cursor: 'pointer' }}
     >
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
+      <TableCell align="left" sx={{ borderRight: '1px solid', borderBottom: index === linkTypes.length - 1 ? 'none' : '1px solid' }}>
         {linkType.name}
       </TableCell>
-      <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
+      <TableCell sx={{ borderRight: '1px solid', borderBottom: index === linkTypes.length - 1 ? 'none' : '1px solid', verticalAlign: 'middle' }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Icon>{linkType.iconName}</Icon>
           <Typography variant="body1" sx={{ marginLeft: 1 }}>
@@ -44,9 +47,10 @@ const LinkTypeTable = () => {
           </Typography>
         </Box>
       </TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>{linkType.required ? 'Yes' : 'No'}</TableCell>
+      <TableCell sx={{ borderBottom: index === linkTypes.length - 1 ? 'none' : '1px solid' }}>{linkType.required ? 'Yes' : 'No'}</TableCell>
     </TableRow>
   ));
+
 
   return (
     <Box>
@@ -80,4 +84,7 @@ const LinkTypeTable = () => {
   );
 };
 
+
 export default LinkTypeTable;
+
+

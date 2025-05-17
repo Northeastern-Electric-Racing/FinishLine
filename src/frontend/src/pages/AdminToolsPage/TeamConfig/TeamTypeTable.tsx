@@ -12,6 +12,7 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import NERUploadButton from '../../../components/NERUploadButton';
 import { useGetImageUrls } from '../../../hooks/onboarding.hook';
 
+
 const TeamTypeTable: React.FC = () => {
   const {
     data: teamTypes,
@@ -20,35 +21,43 @@ const TeamTypeTable: React.FC = () => {
     error: teamTypesError
   } = useAllTeamTypes();
 
+
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
   const [editingTeamType, setEditingTeamType] = useState<TeamType | undefined>(undefined);
   const [addedImages, setAddedImages] = useState<{ [key: string]: File | undefined }>({});
   const toast = useToast();
+
 
   const teamTypeImageList =
     teamTypes?.map((teamType) => {
       return { objectId: teamType.teamTypeId, imageFileId: teamType.imageFileId };
     }) ?? [];
 
+
   const { data: imageUrlsList, isLoading, isError, error } = useGetImageUrls(teamTypeImageList);
   const { mutateAsync: setTeamTypeImage, isLoading: setTeamTypeIsLoading } = useSetTeamTypeImage();
+
 
   if (teamTypesIsError) {
     return <ErrorPage message={teamTypesError?.message} />;
   }
 
+
   if (isError) {
     return <ErrorPage message={error?.message} />;
   }
+
 
   if (!teamTypes || teamTypesIsLoading || setTeamTypeIsLoading || !imageUrlsList || isLoading) {
     return <LoadingIndicator />;
   }
 
+
   const imageUrlsMap: { [key: string]: string | undefined } = {};
   imageUrlsList.forEach((item) => {
     imageUrlsMap[item.id] = item.url;
   });
+
 
   const onSubmitTeamTypeImage = async (teamTypeId: string) => {
     const addedImage = addedImages[teamTypeId];
@@ -69,6 +78,7 @@ const TeamTypeTable: React.FC = () => {
     }
   };
 
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, teamTypeId: string) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -80,15 +90,28 @@ const TeamTypeTable: React.FC = () => {
     }
   };
 
-  const teamTypesTableRows = teamTypes.map((teamType) => {
+
+  const teamTypesTableRows = teamTypes.map((teamType, index) => {
     return (
       <TableRow>
-        <TableCell onClick={() => setEditingTeamType(teamType)} sx={{ cursor: 'pointer', border: '2px solid black' }}>
+        <TableCell
+          onClick={() => setEditingTeamType(teamType)}
+          sx={{
+            cursor: 'pointer',
+            borderRight: '1px solid',
+            borderBottom: index === teamTypes.length - 1 ? 'none' : '1px solid'
+          }}
+        >
           {teamType.name}
         </TableCell>
         <TableCell
           onClick={() => setEditingTeamType(teamType)}
-          sx={{ cursor: 'pointer', border: '2px solid black', verticalAlign: 'middle' }}
+          sx={{
+            cursor: 'pointer',
+            verticalAlign: 'middle',
+            borderRight: '1px solid',
+            borderBottom: index === teamTypes.length - 1 ? 'none' : '1px solid'
+          }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Icon>{teamType.iconName}</Icon>
@@ -101,9 +124,10 @@ const TeamTypeTable: React.FC = () => {
           onClick={() => setEditingTeamType(teamType)}
           sx={{
             cursor: 'pointer',
-            border: '2px solid black',
             verticalAlign: 'middle',
-            maxWidth: '15vw'
+            maxWidth: '15vw',
+            borderRight: '1px solid',
+            borderBottom: index === teamTypes.length - 1 ? 'none' : '1px solid'
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -112,7 +136,7 @@ const TeamTypeTable: React.FC = () => {
             </Typography>
           </Box>
         </TableCell>
-        <TableCell sx={{ border: '2px solid black' }}>
+        <TableCell sx={{ borderBottom: index === teamTypes.length - 1 ? 'none' : '1px solid' }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', mb: 1 }}>
             {teamType.imageFileId && !addedImages[teamType.teamTypeId] && (
               <Box
@@ -139,6 +163,7 @@ const TeamTypeTable: React.FC = () => {
     );
   });
 
+
   return (
     <Box>
       <CreateTeamTypeFormModal open={createModalShow} handleClose={() => setCreateModalShow(false)} />
@@ -154,6 +179,7 @@ const TeamTypeTable: React.FC = () => {
         rows={teamTypesTableRows}
       />
 
+
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         <NERButton
           variant="contained"
@@ -168,4 +194,7 @@ const TeamTypeTable: React.FC = () => {
   );
 };
 
+
 export default TeamTypeTable;
+
+

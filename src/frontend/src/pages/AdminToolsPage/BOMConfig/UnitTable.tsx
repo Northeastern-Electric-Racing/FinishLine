@@ -9,6 +9,7 @@ import CreateUnitFormModal from './CreateUnitFormModal';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useToast } from '../../../hooks/toasts.hooks';
 
+
 const UnitTypeTable: React.FC = () => {
   const {
     data: unitTypes,
@@ -20,12 +21,14 @@ const UnitTypeTable: React.FC = () => {
   const toast = useToast();
   const { mutateAsync: deleteUnit } = useDeleteUnit();
 
+
   if (!unitTypes || unitTypesIsLoading) {
     return <LoadingIndicator />;
   }
   if (unitTypesIsError) {
     return <ErrorPage message={unitTypesError?.message} />;
   }
+
 
   const handleDeleteUnit = (id: string) => {
     try {
@@ -37,12 +40,13 @@ const UnitTypeTable: React.FC = () => {
     }
   };
 
-  const unitTypesTableRows = unitTypes.map((unitType) => (
+
+  const unitTypesTableRows = unitTypes.map((unitType, index) => (
     <TableRow>
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
+      <TableCell align="left" sx={{ borderRight: '1px solid', borderBottom: index === unitTypes.length - 1 ? 'none' : '1px solid' }}>
         {unitType.name}
       </TableCell>
-      <TableCell align="center" sx={{ width: 10, border: '2px solid black' }}>
+      <TableCell align="center" sx={{ width: 10, borderBottom: index === unitTypes.length - 1 ? 'none' : '1px solid' }}>
         <IconButton
           type="button"
           sx={{
@@ -55,6 +59,7 @@ const UnitTypeTable: React.FC = () => {
       </TableCell>
     </TableRow>
   ));
+
 
   return (
     <Box>
@@ -74,4 +79,7 @@ const UnitTypeTable: React.FC = () => {
   );
 };
 
+
 export default UnitTypeTable;
+
+

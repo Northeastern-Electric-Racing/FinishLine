@@ -11,6 +11,7 @@ import { Box } from '@mui/system';
 import AdminToolTable from '../../AdminToolTable';
 import { NERButton } from '../../../../components/NERButton';
 
+
 const DescriptionBulletTypeTable = () => {
   const currentUser = useCurrentUser();
   const {
@@ -23,10 +24,12 @@ const DescriptionBulletTypeTable = () => {
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [clickeddescriptionBulletType, setClickeddescriptionBulletType] = useState<DescriptionBulletType>();
 
+
   if (!descriptionBulletTypes || descriptionBulletTypeIsLoading) return <LoadingIndicator />;
   if (descriptionBulletTypeIsError) return <ErrorPage message={descriptionBulletTypeError.message} />;
 
-  const descriptionBulletTypeTableRows = descriptionBulletTypes.map((descriptionBulletType) => (
+
+  const descriptionBulletTypeTableRows = descriptionBulletTypes.map((descriptionBulletType, index) => (
     <TableRow
       onClick={() => {
         setClickeddescriptionBulletType(descriptionBulletType);
@@ -34,17 +37,18 @@ const DescriptionBulletTypeTable = () => {
       }}
       sx={{ cursor: 'pointer' }}
     >
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
+      <TableCell align="left" sx={{ borderRight: '1px solid', borderBottom: index === descriptionBulletTypes.length - 1 ? 'none' : '1px solid' }}>
         {descriptionBulletType.name}
       </TableCell>
-      <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
+      <TableCell sx={{ borderRight: '1px solid', borderBottom: index === descriptionBulletTypes.length - 1 ? 'none' : '1px solid', verticalAlign: 'middle' }}>
         {descriptionBulletType.workPackageRequired ? 'Yes' : 'No'}
       </TableCell>
-      <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
+      <TableCell sx={{ borderBottom: index === descriptionBulletTypes.length - 1 ? 'none' : '1px solid', verticalAlign: 'middle' }}>
         {descriptionBulletType.projectRequired ? 'Yes' : 'No'}
       </TableCell>
     </TableRow>
   ));
+
 
   return (
     <Box>
@@ -85,4 +89,7 @@ const DescriptionBulletTypeTable = () => {
   );
 };
 
+
 export default DescriptionBulletTypeTable;
+
+
