@@ -1,15 +1,16 @@
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { Box, Stack } from '@mui/system';
-import { Grid, FormControlLabel, Typography, Autocomplete, TextField, Button, Chip } from '@mui/material';
+import { Grid, FormControlLabel, Autocomplete, TextField, Button, Chip, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { useAllUsers, useCurrentUser } from '../../../../hooks/users.hooks';
 import { Project, rankUserRole, Review_Status, wbsPipe } from 'shared';
 import NERSwitch from '../../../../components/NERSwitch';
-import CommonMistakes from './CommonMistakes';
+import PartDisplay from '../../../PartPage/PartPageComponents/PartDisplay';
 import { useGetAllPartTags, usePartsFromProject } from '../../../../hooks/part-review.hooks';
 import ErrorPage from '../../../ErrorPage';
-import PartReviewFAQs from './PartReviewFAQs';
+import { Link as RouterLink } from 'react-router-dom';
 import CreateMenu from './PartReviewComponents/PartFormModels/CreateMenu';
+import SubmissionGuide from './PartReviewComponents/SubmissionGuide';
 import { PartPreviewCard } from './PartReviewComponents/PartPreviewCard';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
@@ -273,26 +274,7 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
         <Grid item xs={12}>
           {/* The guide should be toggled off by default for admins, heads, and leads and toggled on for all other roles */}
           {showSubmissionGuide && (
-            <Grid item container direction="column" spacing={3} sx={{ paddingTop: '10px' }}>
-              <Typography variant="h4" sx={{ pl: 2 }}>
-                Submission Guide
-              </Typography>
-
-              <Grid container spacing={3} sx={{ paddingTop: '10px' }}>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="h6" sx={{ pl: 2 }}>
-                    Sample Drawing
-                  </Typography>
-                </Grid>
-
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={2}>
-                    <PartReviewFAQs />
-                    <CommonMistakes />
-                  </Stack>
-                </Grid>
-              </Grid>
-            </Grid>
+            <SubmissionGuide />
           )}
           <Typography variant="h4" sx={{ mb: 2 }}>
             {`${filteredParts?.length === parts.length ? 'All ' : ''} Parts for ${project.name}`}

@@ -8,12 +8,12 @@ import { useSingleProject } from '../../hooks/projects.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useEffect, useState } from 'react';
-import PDFViewer from './Components/PdfDisplay';
+import PDFViewer from './PartPageComponents/PdfDisplay';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import PartSubmissionDetails from './Components/PartSubmissionDetails';
-import PartOverview from './Components/PartOverview';
-import PartHistoryView from './Components/PartHistoryView';
-import ReviewSidebar from './Components/ReviewPage';
+import PartSubmissionDetails from './PartPageComponents/PartSubmissionDetails';
+import PartOverview from './PartPageComponents/PartOverview';
+import PartHistoryView from './PartPageComponents/PartHistoryView';
+import ReviewSidebar from './PartPageComponents/ReviewPage';
 
 const PartPage: React.FC = () => {
   interface ParamTypes {
