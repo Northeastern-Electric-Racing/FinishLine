@@ -1,6 +1,6 @@
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { Box, Stack } from '@mui/system';
-import { Grid, FormControlLabel, Typography, Autocomplete, TextField, Button } from '@mui/material';
+import { Grid, FormControlLabel, Typography, Autocomplete, TextField, Button, Chip } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { useAllUsers, useCurrentUser } from '../../../../hooks/users.hooks';
 import { Project, rankUserRole, Review_Status, wbsPipe } from 'shared';
@@ -34,16 +34,17 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
 
   const filteredParts = useMemo(() => {
     return parts?.filter((part) => {
-      if (statuses && !statuses.includes(part.status)) return false;
-      if (assigneeIds && !assigneeIds.some((id) => part.assignees.some((assignee) => assignee.userId === id))) return false;
+      if (statuses.length !== 0 && !statuses.includes(part.status)) return false;
+      if (assigneeIds.length !== 0 && !assigneeIds.some((id) => part.assignees.some((assignee) => assignee.userId === id)))
+        return false;
       if (
-        reviewerIds &&
+        reviewerIds.length !== 0 &&
         !reviewerIds.some((id) => part.reviewRequests.some((reviewRequest) => reviewRequest.reviewerRequested.userId === id))
       ) {
         return false;
       }
-      if (tagIds && !tagIds.some((id) => part.tags.some((tag) => tag.partTagId === id))) return false;
-      if (searchValue && !part.commonName.toLowerCase().includes(searchValue.toLowerCase())) return false;
+      if (tagIds.length !== 0 && !tagIds.some((id) => part.tags.some((tag) => tag.partTagId === id))) return false;
+      if (searchValue.length !== 0 && !part.commonName.toLowerCase().includes(searchValue.toLowerCase())) return false;
       return true;
     });
   }, [parts, statuses, assigneeIds, reviewerIds, tagIds, searchValue]);
@@ -121,7 +122,32 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
             renderInput={(params) => (
               <TextField {...params} variant="outlined" label="Status" placeholder="Filter by status" />
             )}
-            sx={{ width: '10rem' }}
+            renderTags={(value, getTagProps) => (
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexWrap: 'nowrap',
+                  overflowX: 'auto',
+                  maxWidth: '100%',
+                  gap: 0.5,
+                  '&::-webkit-scrollbar': {
+                    height: 8,
+                    background: 'transparent'
+                  }
+                }}
+              >
+                {value.map((option, index) => (
+                  <Chip
+                    size="small"
+                    label={option}
+                    {...getTagProps({ index })}
+                    key={option}
+                    sx={{ whiteSpace: 'nowrap', flexShrink: 0, fontSize: '0.75rem' }}
+                  />
+                ))}
+              </Box>
+            )}
+            sx={{ width: '20%' }}
           />
           <Autocomplete
             multiple
@@ -135,7 +161,32 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
             renderInput={(params) => (
               <TextField {...params} variant="outlined" label="Assignees" placeholder="Select Assignees" error={false} />
             )}
-            sx={{ width: '10rem' }}
+            renderTags={(value, getTagProps) => (
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexWrap: 'nowrap',
+                  overflowX: 'auto',
+                  maxWidth: '100%',
+                  gap: 0.5,
+                  '&::-webkit-scrollbar': {
+                    height: 8,
+                    background: 'transparent'
+                  }
+                }}
+              >
+                {value.map((option, index) => (
+                  <Chip
+                    size="small"
+                    label={`${option.firstName} ${option.lastName}`}
+                    {...getTagProps({ index })}
+                    key={option.userId}
+                    sx={{ whiteSpace: 'nowrap', flexShrink: 0, fontSize: '0.75rem' }}
+                  />
+                ))}
+              </Box>
+            )}
+            sx={{ width: '20%' }}
           />
           <Autocomplete
             multiple
@@ -149,7 +200,32 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
             renderInput={(params) => (
               <TextField {...params} variant="outlined" label="Reviewers" placeholder="Select Reviewers" error={false} />
             )}
-            sx={{ width: '10rem' }}
+            renderTags={(value, getTagProps) => (
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexWrap: 'nowrap',
+                  overflowX: 'auto',
+                  maxWidth: '100%',
+                  gap: 0.5,
+                  '&::-webkit-scrollbar': {
+                    height: 8,
+                    background: 'transparent'
+                  }
+                }}
+              >
+                {value.map((option, index) => (
+                  <Chip
+                    size="small"
+                    label={`${option.firstName} ${option.lastName}`}
+                    {...getTagProps({ index })}
+                    key={option.userId}
+                    sx={{ whiteSpace: 'nowrap', flexShrink: 0, fontSize: '0.75rem' }}
+                  />
+                ))}
+              </Box>
+            )}
+            sx={{ width: '20%' }}
           />
           <Autocomplete
             multiple
@@ -163,7 +239,32 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
             renderInput={(params) => (
               <TextField {...params} variant="outlined" label="Tags" placeholder="Select Tags" error={false} />
             )}
-            sx={{ width: '10rem' }}
+            renderTags={(value, getTagProps) => (
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexWrap: 'nowrap',
+                  overflowX: 'auto',
+                  maxWidth: '100%',
+                  gap: 0.5,
+                  '&::-webkit-scrollbar': {
+                    height: 8,
+                    background: 'transparent'
+                  }
+                }}
+              >
+                {value.map((option, index) => (
+                  <Chip
+                    size="small"
+                    label={option.name}
+                    {...getTagProps({ index })}
+                    key={option.partTagId}
+                    sx={{ whiteSpace: 'nowrap', flexShrink: 0, fontSize: '0.75rem' }}
+                  />
+                ))}
+              </Box>
+            )}
+            sx={{ width: '20%' }}
           />
         </Box>
       )}
