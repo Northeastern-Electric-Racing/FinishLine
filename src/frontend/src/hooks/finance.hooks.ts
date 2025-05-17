@@ -136,14 +136,10 @@ export interface SponsorTierPayload {
 }
 
 export interface SponsorTaskPayload {
-  dueDate?: Date;
+  dueDate: Date;
   notes: string;
   notifyDate?: Date;
   asigneeId?: string;
-}
-
-export interface EditableTask extends SponsorTaskPayload {
-  id?: string;
 }
 
 /**
@@ -238,13 +234,6 @@ export const useCreateReimbursementRequestComment = (reimbursementRequestId: str
 
 export interface IndexCodePayload {
   name: string;
-}
-
-export interface EditSponsorTaskPayload {
-  dueDate: Date;
-  notes: string;
-  notifyDate?: Date;
-  asigneeId?: string;
 }
 
 export interface EditOtherReimbursementProductReasonPayload {
@@ -878,9 +867,9 @@ export const useGetSponsorTasks = (sponsorId: string) => {
  */
 export const useEditSponsorTask = (sponsorTaskId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<SponsorTask, Error, EditSponsorTaskPayload>(
+  return useMutation<SponsorTask, Error, SponsorTaskPayload>(
     ['sponsor-task', 'edit'],
-    async (formData: EditSponsorTaskPayload) => {
+    async (formData: SponsorTaskPayload) => {
       const { data } = await editSponsorTask(sponsorTaskId, formData);
       queryClient.invalidateQueries(['sponsor-task']);
       return data;

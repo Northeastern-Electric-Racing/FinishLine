@@ -1,22 +1,22 @@
 import React, { useState } from 'react';
 import { TableRow, TableCell, Box, Table as MuiTable, TableHead, TableBody, Typography } from '@mui/material';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { EditableTask, useEditSponsorTask, useGetAllSponsors } from '../../hooks/finance.hooks';
+import { useGetAllSponsors } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
 import { NERButton } from '../../components/NERButton';
 import { datePipe } from '../../utils/pipes';
 import SponsorTierPill from '../../components/SponsorTierPill';
 import PaginationFooter from '../../components/PaginationFooter';
 import { Sponsor } from 'shared';
+import SponsorNotesModal from './FinanceComponents/SponsorNotesModal';
 import SidePagePopup from './FinanceComponents/SidePagePopup';
-import SponsorNotesForm from './FinanceComponents/SponsorNotesForm';
 
 const SponsorsTable = () => {
   const { data: sponsors, isLoading: sponsorIsLoading, isError: sponsorIsError, error: sponsorError } = useGetAllSponsors();
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(14);
-  const [openSponsorModal, setOpenSponsorModal] = useState(false);
   const [selectedSponsor, setSelectedSponsor] = useState<Sponsor | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   if (!sponsors || sponsorIsLoading) {
     return <LoadingIndicator />;
@@ -38,20 +38,14 @@ const SponsorsTable = () => {
     setCurrentPage(0);
   };
 
-  const handleSubmitTasks = (tasks: EditableTask[]) => {
-    const newTasks = tasks.filter((t) => !t.id);
-    const updates = tasks.filter((t) => t.id);
+  const openNotesModal = (sponsor: Sponsor) => {
+    setSelectedSponsor(sponsor);
+    setIsModalOpen(true);
+  };
 
-    if (newTasks.length > 0) {
-      useEditSponsor({ sponsorId: selectedSponsor?.sponsorId, tasks: newTasks });
-    }
-
-    updates.forEach((task) => {
-      useEditSponsorTask({ sponsorTaskId: task.id!, ...task });
-    });
-
-    setOpenSponsorModal(false);
+  const closeNotesModal = () => {
     setSelectedSponsor(null);
+    setIsModalOpen(false);
   };
 
   const sponsorTableRows = currentSponsors.map((sponsor, index) => (
@@ -147,13 +141,7 @@ const SponsorsTable = () => {
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <NERButton
-            variant="contained"
-            onClick={() => {
-              setSelectedSponsor(sponsor);
-              setOpenSponsorModal(true);
-            }}
-          >
+          <NERButton variant="contained" onClick={() => openNotesModal(sponsor)}>
             View Notes
           </NERButton>
         </Box>
@@ -307,25 +295,10 @@ const SponsorsTable = () => {
       />
       {selectedSponsor && (
         <SidePagePopup
-          showPage={openSponsorModal}
-          handleClose={() => {
-            setOpenSponsorModal(false);
-            setSelectedSponsor(null);
-          }}
-          title={selectedSponsor ? `Add Task: ${selectedSponsor.name}` : 'Add Task'}
-          component={
-            selectedSponsor && (
-              <SponsorNotesForm
-                sponsor={selectedSponsor}
-                onSubmit={handleSubmitTasks}
-                onClose={() => {
-                  setOpenSponsorModal(false);
-                  setSelectedSponsor(null);
-                }}
-                open={openSponsorModal}
-              />
-            )
-          }
+          showPage={isModalOpen}
+          handleClose={closeNotesModal}
+          title={`Notes for ${selectedSponsor?.name}`}
+          component={<SponsorNotesModal open={isModalOpen} onClose={closeNotesModal} sponsor={selectedSponsor} />}
         />
       )}
     </Box>

@@ -9,7 +9,6 @@ import {
   AccountCodePayload,
   RefundPayload,
   MarkDeliveredRequestPayload,
-  EditSponsorTaskPayload,
   SponsorPayload,
   SponsorTierPayload,
   SponsorTaskPayload,
@@ -528,7 +527,7 @@ export const deleteSponsor = (sponsorId: string) => {
  *
  * @returns the edited sponosor task
  */
-export const editSponsorTask = (sponsorTaskId: string, sponsorTaskData: EditSponsorTaskPayload) => {
+export const editSponsorTask = (sponsorTaskId: string, sponsorTaskData: SponsorTaskPayload) => {
   return axios.post(apiUrls.editSponsorTask(sponsorTaskId), sponsorTaskData);
 };
 

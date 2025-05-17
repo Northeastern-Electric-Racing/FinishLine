@@ -671,7 +671,7 @@ model Sponsor {
 
 model Sponsor_Task {
   sponsorTaskId  String    @id @default(uuid())
-  dueDate        DateTime?
+  dueDate        DateTime
   notifyDate     DateTime?
   assignee       User?     @relation(fields: [assigneeUserId], references: [userId], name: "assignedSponsorTasks")
   assigneeUserId String?
