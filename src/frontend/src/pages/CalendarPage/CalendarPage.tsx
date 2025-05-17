@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useState } from 'react';
-import { Box, Grid, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Grid, Stack, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { DesignReview, DesignReviewStatus } from 'shared';
 import MonthSelector from './CalendarComponents/MonthSelector';
@@ -18,6 +18,7 @@ import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import DRCSummaryModal from './DesignReviewSummaryModal';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
 const CalendarPage = () => {
   const theme = useTheme();
@@ -131,15 +132,19 @@ const CalendarPage = () => {
           teamTypes={allTeamTypes}
         />
       )}
-      <PageLayout
-        title="Design Review Calendar"
-        headerRight={
-          <Stack direction="row" justifyContent="flex-end">
+      <PageLayout hidePageTitle>
+        <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" sx={{ mt: 2, mb: 2 }}>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography variant="h4">Design Review Calendar</Typography>
+            <Tooltip title="Click on a day to schedule an event">
+              <HelpOutlineIcon fontSize="large" sx={{ position: 'relative', top: '3px' }} />
+            </Tooltip>
+          </Stack>
+          <Stack direction="row" spacing={1} alignItems="center">
             <MonthSelector displayMonth={displayMonthYear} setDisplayMonth={setDisplayMonthYear} />
             <Box marginLeft={1}>{unconfirmedDRSDropdown}</Box>
           </Stack>
-        }
-      >
+        </Stack>
         <Grid container>
           {EnumToArray(DAY_NAMES).map((day) => (
             <Grid item xs={12 / 7}>
