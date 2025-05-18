@@ -50,7 +50,7 @@ const sponsorSchema = yup.object().shape({
   sponsorTierId: yup.string().required('Sponsor tier is required'),
   vendorContact: yup.string().required('Vendor contact is required'),
   taxExempt: yup.boolean().required('Tax exempt is required'),
-  discountCode: yup.string(),
+  discountCode: yup.string().trim().optional(),
   sponsorTasks: yup
     .array()
     .of(
@@ -252,7 +252,7 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors }: Spo
             Vendor Contact:*
           </Typography>
           <ReactHookTextField name="vendorContact" control={control} sx={{ width: 1 }} placeholder="Enter Vendor Contact" />
-          <FormHelperText error> {errors.name?.message}</FormHelperText>
+          <FormHelperText error> {errors.vendorContact?.message}</FormHelperText>
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={6}>

@@ -44,7 +44,7 @@ const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProp
       sponsorTierId: sponsor.tier.sponsorTierId,
       vendorContact: sponsor.vendorContact,
       taxExempt: sponsor.taxExempt,
-      discountCode: sponsor.discountCode ?? '',
+      discountCode: sponsor.discountCode ?? undefined,
       sponsorTasks: defaultSponsorTasks
     }
   });
