@@ -12,7 +12,14 @@ import {
   resetUsers
 } from '../test-utils';
 import PartReviewService from '../../src/services/part-review.services';
-import { batmanAppAdmin, supermanAdmin, aquamanLeadership, flashAdmin, financeMember } from '../test-data/users.test-data';
+import {
+  batmanAppAdmin,
+  supermanAdmin,
+  aquamanLeadership,
+  flashAdmin,
+  financeMember,
+  wonderwomanGuest
+} from '../test-data/users.test-data';
 import prisma from '../../src/prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
@@ -23,6 +30,12 @@ import {
 import { validateWBS, WbsNumber } from 'shared';
 import { Review_Status } from 'shared';
 import ProjectsService from '../../src/services/projects.services';
+import { uploadFile } from '../../src/utils/google-integration.utils';
+import { Mock, vi } from 'vitest';
+
+vi.mock('../../src/utils/google-integration.utils', () => ({
+  uploadFile: vi.fn()
+}));
 
 describe('part review tests', () => {
   let orgId: string;
@@ -638,14 +651,7 @@ describe('part review tests', () => {
       expect(updatedCommonMistake?.description).toBe('some description2');
       expect(updatedCommonMistake?.starred).toBe(true);
 
-      const deletedCommonMistake = await PartReviewService.deleteCommonMistake(
-        commonMistake.partReviewCommonMistakeId,
-        superman,
-        orgId
-      );
-      expect(deletedCommonMistake?.title).toBe('some title2');
-      expect(deletedCommonMistake?.description).toBe('some description2');
-      expect(deletedCommonMistake?.starred).toBe(true);
+      await PartReviewService.deleteCommonMistake(commonMistake.partReviewCommonMistakeId, superman, orgId);
 
       const prismaDeletedMistake = await prisma.partReviewCommonMistake.findUnique({
         where: {
@@ -655,15 +661,15 @@ describe('part review tests', () => {
       expect(prismaDeletedMistake?.dateDeleted).toBeTruthy();
     });
 
-    it('does not let non-admins create, edit, or delete common mistakes', async () => {
+    it('does not let non-admins create, edit, or delete common mistakes if starred', async () => {
       await expect(
-        async () => await PartReviewService.createCommonMistake('some title', 'some description', false, nonAdmin, orgId)
+        async () => await PartReviewService.createCommonMistake('some title', 'some description', true, nonAdmin, orgId)
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create common mistake'));
 
       const commonMistake = await PartReviewService.createCommonMistake(
         'some title',
         'some description',
-        false,
+        true,
         batman,
         orgId
       );
@@ -1227,5 +1233,178 @@ describe('Part Review Popups', () => {
     await expect(
       PartReviewService.updatePartReviewPopup(orgId, popup.partReviewPopupId, 10, 10, 0, 'Should Fail', 'Nope', superman)
     ).rejects.toThrow(new NotFoundException('Pop Up', popup.partReviewPopupId));
+  });
+});
+
+describe('Set Part Review Sample Image', () => {
+  const file1 = { originalname: 'image1.png' } as Express.Multer.File;
+  const file2 = { originalname: 'image2.png' } as Express.Multer.File;
+
+  let orgId: string;
+  let organization: Organization;
+  let batman: User;
+
+  beforeEach(async () => {
+    await resetUsers();
+    organization = await createTestOrganization();
+    orgId = organization.organizationId;
+    batman = await createTestUser(batmanAppAdmin, orgId);
+  });
+
+  afterEach(async () => {
+    await resetUsers();
+  });
+
+  it('Fails if user is not an admin', async () => {
+    await expect(
+      PartReviewService.setPartReviewSampleImage(file1, await createTestUser(wonderwomanGuest, orgId), organization)
+    ).rejects.toThrow(new AccessDeniedAdminOnlyException('update part review sample image'));
+  });
+
+  it('Succeeds and updates the sample image', async () => {
+    (uploadFile as Mock).mockImplementation((file) => {
+      return Promise.resolve({ name: `${file.originalname}`, id: `uploaded-${file.originalname}` });
+    });
+
+    await PartReviewService.setPartReviewSampleImage(file1, batman, organization);
+
+    const oldOrganization = await prisma.organization.findUnique({
+      where: {
+        organizationId: orgId
+      }
+    });
+
+    expect(oldOrganization).not.toBeNull();
+    expect(oldOrganization?.partReviewSampleImageId).toBe('uploaded-image1.png');
+
+    await PartReviewService.setPartReviewSampleImage(file2, batman, organization);
+
+    const updatedOrganization = await prisma.organization.findUnique({
+      where: {
+        organizationId: orgId
+      }
+    });
+
+    expect(updatedOrganization?.partReviewSampleImageId).toBe('uploaded-image2.png');
+  });
+});
+
+describe('Get Part Review Sample Image', () => {
+  let orgId: string;
+  let organization: Organization;
+  let batman: User;
+  beforeEach(async () => {
+    await resetUsers();
+    organization = await createTestOrganization();
+    orgId = organization.organizationId;
+    batman = await createTestUser(batmanAppAdmin, orgId);
+  });
+
+  afterEach(async () => {
+    await resetUsers();
+  });
+
+  it('Fails if an organization does not exist', async () => {
+    await expect(async () => await PartReviewService.getPartReviewSampleImage('1')).rejects.toThrow(
+      new NotFoundException('Organization', '1')
+    );
+  });
+
+  it('Succeeds and gets the image', async () => {
+    await PartReviewService.setPartReviewSampleImage(
+      { originalname: 'image1.png' } as Express.Multer.File,
+      batman,
+      organization
+    );
+    const image = await PartReviewService.getPartReviewSampleImage(orgId);
+
+    expect(image).not.toBeNull();
+    expect(image).toBe('uploaded-image1.png');
+  });
+
+  describe('Set Part Review Sample Image', () => {
+    const file1 = { originalname: 'image1.png' } as Express.Multer.File;
+    const file2 = { originalname: 'image2.png' } as Express.Multer.File;
+
+    let orgId: string;
+    let organization: Organization;
+
+    beforeEach(async () => {
+      await resetUsers();
+      organization = await createTestOrganization();
+      orgId = organization.organizationId;
+      batman = await createTestUser(batmanAppAdmin, orgId);
+    });
+
+    afterEach(async () => {
+      await resetUsers();
+    });
+
+    it('Fails if user is not an admin', async () => {
+      await expect(
+        PartReviewService.setPartReviewSampleImage(file1, await createTestUser(wonderwomanGuest, orgId), organization)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('update part review sample image'));
+    });
+
+    it('Succeeds and updates the sample image', async () => {
+      (uploadFile as Mock).mockImplementation((file) => {
+        return Promise.resolve({ name: `${file.originalname}`, id: `uploaded-${file.originalname}` });
+      });
+
+      await PartReviewService.setPartReviewSampleImage(file1, batman, organization);
+
+      const oldOrganization = await prisma.organization.findUnique({
+        where: {
+          organizationId: orgId
+        }
+      });
+
+      expect(oldOrganization).not.toBeNull();
+      expect(oldOrganization?.partReviewSampleImageId).toBe('uploaded-image1.png');
+
+      await PartReviewService.setPartReviewSampleImage(file2, batman, organization);
+
+      const updatedOrganization = await prisma.organization.findUnique({
+        where: {
+          organizationId: orgId
+        }
+      });
+
+      expect(updatedOrganization?.partReviewSampleImageId).toBe('uploaded-image2.png');
+    });
+  });
+
+  describe('Get Part Review Sample Image', () => {
+    let orgId: string;
+    let organization: Organization;
+
+    beforeEach(async () => {
+      await resetUsers();
+      organization = await createTestOrganization();
+      orgId = organization.organizationId;
+      batman = await createTestUser(batmanAppAdmin, orgId);
+    });
+
+    afterEach(async () => {
+      await resetUsers();
+    });
+
+    it('Fails if an organization does not exist', async () => {
+      await expect(async () => await PartReviewService.getPartReviewSampleImage('1')).rejects.toThrow(
+        new NotFoundException('Organization', '1')
+      );
+    });
+
+    it('Succeeds and gets the image', async () => {
+      await PartReviewService.setPartReviewSampleImage(
+        { originalname: 'image1.png' } as Express.Multer.File,
+        batman,
+        organization
+      );
+      const image = await PartReviewService.getPartReviewSampleImage(orgId);
+
+      expect(image).not.toBeNull();
+      expect(image).toBe('uploaded-image1.png');
+    });
   });
 });

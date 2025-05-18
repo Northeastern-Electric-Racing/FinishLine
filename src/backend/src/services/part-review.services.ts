@@ -643,7 +643,7 @@ export default class PartReviewService {
    * @returns the delted part tag
    * @throws if there are existing parts with this tag
    */
-  static async deletePartTag(partTagId: string, deleter: User, organizationId: string): Promise<PartTag> {
+  static async deletePartTag(partTagId: string, deleter: User, organizationId: string) {
     if (!(await userHasPermission(deleter.userId, organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('delete part review tag');
     }
@@ -660,14 +660,14 @@ export default class PartReviewService {
     }
 
     if (
-      !partTagWithParts.parts.every((part) => {
-        return !part.dateDeleted;
+      partTagWithParts.parts.some((part) => {
+        return part.dateDeleted === null;
       })
     ) {
       throw new HttpException(409, `Cannot delete part tag ${partTagId} because it has associated parts`);
     }
 
-    const deletedPartTag = await prisma.partTag.update({
+    await prisma.partTag.update({
       where: {
         partTagId
       },
@@ -675,8 +675,6 @@ export default class PartReviewService {
         dateDeleted: new Date()
       }
     });
-
-    return deletedPartTag;
   }
 
   /**
@@ -840,7 +838,7 @@ export default class PartReviewService {
     creator: User,
     organizationId: string
   ): Promise<PartReviewCommonMistake> {
-    if (!(await userHasPermission(creator.userId, organizationId, isAdmin))) {
+    if (starred && !(await userHasPermission(creator.userId, organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create common mistake');
     }
 
@@ -922,11 +920,7 @@ export default class PartReviewService {
    * @param organizationId the orgainization
    * @returns the deleted common mistake
    */
-  static async deleteCommonMistake(
-    commonMistakeId: string,
-    deleter: User,
-    organizationId: string
-  ): Promise<PartReviewCommonMistake> {
+  static async deleteCommonMistake(commonMistakeId: string, deleter: User, organizationId: string) {
     const commonMistake = await prisma.partReviewCommonMistake.findUnique({
       where: {
         partReviewCommonMistakeId: commonMistakeId
@@ -941,7 +935,7 @@ export default class PartReviewService {
       throw new AccessDeniedAdminOnlyException('delete common mistake');
     }
 
-    const deletedCommonMistake = await prisma.partReviewCommonMistake.update({
+    await prisma.partReviewCommonMistake.update({
       where: {
         partReviewCommonMistakeId: commonMistakeId
       },
@@ -954,8 +948,6 @@ export default class PartReviewService {
         dateDeleted: new Date()
       }
     });
-
-    return partsReviewCommonMistakeTransformer(deletedCommonMistake);
   }
 
   /**
@@ -1196,5 +1188,55 @@ export default class PartReviewService {
 
     if (!fileData) throw new NotFoundException('File', fileId);
     return fileData;
+  }
+
+  /**
+   * Sets the part review sample image for an organization, User must be admin
+   * @param image the image which will be uploaded and have its id stored in the org
+   * @param submitter the user submitting the sample image
+   * @param organization the organization who's sample image is being set
+   * @returns the updated organization
+   * @throws if the user is not an admin
+   */
+  static async setPartReviewSampleImage(
+    image: Express.Multer.File,
+    submitter: User,
+    organization: Organization
+  ): Promise<Organization> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('update part review sample image');
+    }
+
+    const previewImageData = await uploadFile(image);
+
+    if (!previewImageData?.name) {
+      throw new HttpException(500, 'Image Name not found');
+    }
+
+    const updatedOrg = await prisma.organization.update({
+      where: { organizationId: organization.organizationId },
+      data: {
+        partReviewSampleImageId: previewImageData.id
+      }
+    });
+
+    return updatedOrg;
+  }
+
+  /**
+   * Gets the part review sample image of the organization
+   * @param organizationId the id of the organization
+   * @returns the id of the image
+   */
+  static async getPartReviewSampleImage(organizationId: string): Promise<string | null> {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId }
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+
+    return organization.partReviewSampleImageId;
   }
 }

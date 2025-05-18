@@ -73,7 +73,7 @@ partsRouter.get('/tags', PartReviewController.getAllPartTags);
 partsRouter.get('/faqs', PartReviewController.getAllPartReviewFAQS);
 
 partsRouter.post(
-  '/partTag/create',
+  '/tag/create',
   nonEmptyString(body('name')),
   nonEmptyString(body('colorHexCode')),
   validateInputs,
@@ -81,14 +81,14 @@ partsRouter.post(
 );
 
 partsRouter.post(
-  '/partTag/:partTagId/update',
+  '/tag/:partTagId/update',
   nonEmptyString(body('name')),
   nonEmptyString(body('colorHexCode')),
   validateInputs,
   PartReviewController.updatePartTag
 );
 
-partsRouter.post('/partTag/:partTagId/delete', PartReviewController.deletePartTag);
+partsRouter.post('/tag/:partTagId/delete', PartReviewController.deletePartTag);
 
 partsRouter.post(
   '/faqs/create',
@@ -150,6 +150,13 @@ partsRouter.post(
   validateInputs,
   PartReviewController.updatePartReviewPopup
 );
+
+partsRouter.post(
+  '/partReviewSampleImage/update',
+  upload.single('partReviewSampleImage'),
+  PartReviewController.setPartReviewSampleImage
+);
+partsRouter.get('/partReviewSampleImage', PartReviewController.getPartReviewSampleImage);
 
 partsRouter.post('/common-mistake/:commonMistakeId/delete', PartReviewController.deleteCommonMistake);
 partsRouter.post('/popup/:popupId/delete', PartReviewController.deletePartReviewPopup);

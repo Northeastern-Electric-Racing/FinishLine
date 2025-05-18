@@ -1,4 +1,5 @@
-import { Part, PartReview, PartReviewRequest, PartSubmission, User } from 'shared';
+import { Part, PartReview, PartReviewRequest, PartSubmission, Review_Status, User } from 'shared';
+import { yellow, blue, purple, green, grey } from '@mui/material/colors';
 
 type HistoryEntry = [Date, string];
 
@@ -130,4 +131,30 @@ export const completePartHistory = (part: Part): string[] => {
       result.push(`[${formattedDate}] - ${message}.`);
     });
   return result;
+};
+
+// converts statuses from ALL CAPS to Title Case
+export const formatPartStatus = (status: Review_Status): string => {
+  return status
+    .toLowerCase()
+    .split('_')
+    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+    .join(' ');
+};
+
+export const getStatusColor = (status: Review_Status): string => {
+  switch (status) {
+    case Review_Status.IN_PROGRESS:
+      return yellow[700];
+    case Review_Status.READY_FOR_REVIEW:
+      return blue[600];
+    case Review_Status.IN_REVIEW:
+      return purple[600];
+    case Review_Status.REVIEWED:
+      return green[600];
+    case Review_Status.APPROVED:
+      return green[800];
+    default:
+      return grey[600];
+  }
 };

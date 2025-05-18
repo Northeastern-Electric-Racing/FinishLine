@@ -33,7 +33,14 @@ import {
   createReviewPopup,
   updateReviewPopup,
   deleteReviewPopup,
-  uploadFile
+  uploadFile,
+  setPartReviewSampleImage,
+  getPartReviewSampleImage,
+  createCommonMistake,
+  updateCommonMistake,
+  deleteCommonMistake,
+  createPartTag,
+  deletePartTag
 } from '../apis/part-review.api';
 import { downloadGoogleImage } from '../apis/onboarding.api';
 
@@ -83,6 +90,17 @@ export interface PopupPayload {
   fileIndex: number;
   title: string;
   description?: string;
+}
+
+export interface PartReviewCommonMistakePayload {
+  title: string;
+  description: string;
+  starred: boolean;
+}
+
+export interface PartTagPayload {
+  name: string;
+  colorHexCode: string;
 }
 
 /**
@@ -391,16 +409,70 @@ export const useDeletePartReviewFaq = () => {
  * @returns a list of all common mistakes
  */
 export const useAllCommonMistakes = () => {
+  return useQuery<PartReviewCommonMistake[], Error>(['common-mistakes'], async () => {
+    const { data } = await getAllCommonMistakes();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to create a new common mistake
+ *
+ * @returns the created common mistake
+ */
+export const useCreateCommonMistake = () => {
   const queryClient = useQueryClient();
-  return useQuery<PartReviewCommonMistake[], Error>(
-    ['common mistakes'],
-    async () => {
-      const { data } = await getAllCommonMistakes();
+  return useMutation<PartReviewCommonMistake, Error, PartReviewCommonMistakePayload>(
+    ['common-mistakes', 'create'],
+    async (payload) => {
+      const { data } = await createCommonMistake(payload);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['common mistakes']);
+        queryClient.invalidateQueries(['common-mistakes']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to update a common mistake
+ *
+ * @returns the updated common mistake
+ */
+export const useUpdateCommonMistake = () => {
+  const queryClient = useQueryClient();
+  return useMutation<PartReviewCommonMistake, Error, { commonMistakeId: string; payload: PartReviewCommonMistakePayload }>(
+    ['common-mistakes', 'update'],
+    async ({ commonMistakeId, payload }) => {
+      const { data } = await updateCommonMistake(commonMistakeId, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['common-mistakes']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to delete a common mistake
+ *
+ * @returns the deleted common mistake
+ */
+export const useDeletePartReviewCommonMistake = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['common-mistakes', 'delete'],
+    async (partReviewCommonMistakeId: string) => {
+      const { data } = await deleteCommonMistake(partReviewCommonMistakeId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['common-mistakes']);
       }
     }
   );
@@ -412,10 +484,42 @@ export const useAllCommonMistakes = () => {
  * @returns a list of all part tags
  */
 export const useGetAllPartTags = () => {
-  return useQuery<PartTag[], Error>(['part tags'], async () => {
+  return useQuery<PartTag[], Error>(['partTags'], async () => {
     const { data } = await getAllPartTags();
     return data;
   });
+};
+
+export const useCreatePartTag = () => {
+  const queryClient = useQueryClient();
+  return useMutation<PartTag, Error, PartTagPayload>(
+    ['partTags', 'create'],
+    async (payload: PartTagPayload) => {
+      const { data } = await createPartTag(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['partTags']);
+      }
+    }
+  );
+};
+
+export const useDeletePartTag = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, string>(
+    ['partTags', 'delete'],
+    async (partTagId: string) => {
+      const { data } = await deletePartTag(partTagId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['partTags']);
+      }
+    }
+  );
 };
 
 /**
@@ -492,4 +596,34 @@ export const useDeleteReviewPopup = () => {
       }
     }
   );
+};
+
+/**
+ * Hook to set the part review sample image for the organization.
+ */
+export const useSetPartReviewSampleImage = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<any, unknown, File>(
+    ['part-review-sample-image', 'upload'],
+    async (file: File) => {
+      const { data } = await setPartReviewSampleImage(file);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['part-review-sample-image']);
+      }
+    }
+  );
+};
+
+/**
+ * Hook to get the part review sample image as a Blob
+ */
+export const usePartReviewSampleImageId = () => {
+  return useQuery<string | undefined, Error>(['part-review-sample-image'], async () => {
+    const { data: fileId } = await getPartReviewSampleImage();
+    return fileId;
+  });
 };
