@@ -187,7 +187,14 @@ const PartPage: React.FC = () => {
         { name: `${wbsPipe(project.wbsNum)} - ${project.name}`, route: `${routes.PROJECTS}/${wbsNum}` },
         { name: 'Files', route: `${routes.PROJECTS}/${wbsNum}/parts-review` }
       ]}
-      headerRight={<PartActionsMenu part={part} submissionIndex={subIndex} wbsNum={validateWBS(wbsNum)} />}
+      headerRight={
+        <PartActionsMenu
+          part={partWithAllReviews}
+          submissionIndex={subIndex}
+          reviewIndex={reviewIndex}
+          wbsNum={validateWBS(wbsNum)}
+        />
+      }
     >
       <Breadcrumbs sx={{ mb: 2 }}></Breadcrumbs>
       <Grid container px={2} gap={5}>

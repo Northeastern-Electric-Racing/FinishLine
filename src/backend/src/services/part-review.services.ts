@@ -213,6 +213,7 @@ export default class PartReviewService {
   }
 
   static async uploadFile(file: Express.Multer.File) {
+    console.log('Service Function file', file);
     const data = await uploadFile(file);
 
     if (!data?.id) {
@@ -248,8 +249,8 @@ export default class PartReviewService {
 
     if (!hasPermission) throw new AccessDeniedException('Only leadership and the part creator can update part data');
 
-    const edittedPart = await prisma.$transaction(async (tx) => {
-      const edittedPart = await tx.part.update({
+    const editedPart = await prisma.$transaction(async (tx) => {
+      const editedPart = await tx.part.update({
         where: { partId },
         data: {
           index,
@@ -267,7 +268,7 @@ export default class PartReviewService {
       });
 
       const reviewersToAdd = reviewerIds.filter(
-        (id) => !edittedPart.reviewRequests.some((reviewReq) => reviewReq.reviewerRequested.userId === id)
+        (id) => !editedPart.reviewRequests.some((reviewReq) => reviewReq.reviewerRequested.userId === id)
       );
 
       await Promise.all(
@@ -276,7 +277,7 @@ export default class PartReviewService {
             data: {
               part: {
                 connect: {
-                  partId: edittedPart.partId
+                  partId: editedPart.partId
                 }
               },
               requester: { connect: { userId: updater.userId } },
@@ -286,7 +287,7 @@ export default class PartReviewService {
         })
       );
 
-      const reviewRequestsToRemove = edittedPart.reviewRequests.filter(
+      const reviewRequestsToRemove = editedPart.reviewRequests.filter(
         (reviewReq) => !reviewerIds.includes(reviewReq.reviewerRequested.userId)
       );
 
@@ -301,10 +302,10 @@ export default class PartReviewService {
         })
       );
 
-      return edittedPart;
+      return editedPart;
     });
 
-    return partTransformer(edittedPart);
+    return partTransformer(editedPart);
   }
 
   static async deletePart(partId: string, deleter: User, organizationId: string) {

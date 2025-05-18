@@ -1,15 +1,21 @@
 import Edit from '@mui/icons-material/Edit';
 import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
-import { Part, RoleEnum, WbsNumber, isAtLeastRank, isNotLeadership, wbsPipe } from 'shared';
-import { Check, Collections, EditNote } from '@mui/icons-material';
+import { Part, Review_Status, RoleEnum, WbsNumber, isAtLeastRank, isNotLeadership, wbsPipe } from 'shared';
+import { AddPhotoAlternateOutlined, Check, Collections, EditNote } from '@mui/icons-material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useCurrentUser } from '../../../hooks/users.hooks';
-import { useState } from 'react';
-import { useHistory } from 'react-router-dom';
-import { routes } from '../../../utils/routes';
+import { useRef, useState } from 'react';
+import { useHistory, useLocation } from 'react-router-dom';
 import CreateSubmissionModal from '../../ProjectDetailPage/ProjectViewContainer/PartReview/PartReviewComponents/PartFormModels/CreateSubmissionModal';
 import SubmissionFormModal from '../../ProjectDetailPage/ProjectViewContainer/PartReview/PartReviewComponents/PartFormModels/SubmissionFormModal';
-import { useDeletePart, useEditPart, useEditPartSubmission, usePartsFromProject } from '../../../hooks/part-review.hooks';
+import {
+  useCreatePartReview,
+  useDeletePart,
+  useEditPart,
+  useEditPartSubmission,
+  usePartsFromProject,
+  useUploadPreviewImage
+} from '../../../hooks/part-review.hooks';
 import PartFormModal from '../../ProjectDetailPage/ProjectViewContainer/PartReview/PartReviewComponents/PartFormModels/PartFormModal';
 import { Typography } from '@mui/material';
 import NERModal from '../../../components/NERModal';
@@ -21,12 +27,19 @@ import ErrorPage from '../../ErrorPage';
 interface PartActionsMenuProps {
   part: Part;
   submissionIndex: number;
+  reviewIndex: number;
   wbsNum: WbsNumber;
 }
 
-const PartActionsMenu: React.FC<PartActionsMenuProps> = ({ part, submissionIndex, wbsNum }: PartActionsMenuProps) => {
+const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
+  part,
+  submissionIndex,
+  reviewIndex,
+  wbsNum
+}: PartActionsMenuProps) => {
   const user = useCurrentUser();
   const history = useHistory();
+  const location = useLocation();
   const toast = useToast();
   const [showEditPart, setShowEditPart] = useState(false);
   const [showAddSubmission, setShowAddSubmission] = useState(false);
@@ -34,8 +47,14 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({ part, submissionIndex
   const [showApproveSubmission, setShowApproveSubmission] = useState(false);
   const [showDeletePart, setShowDeletePart] = useState(false);
 
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [previewUploading, setPreviewUploading] = useState(false);
+
   const { mutateAsync: editPart } = useEditPart(part.partId);
   const { mutateAsync: deletePart } = useDeletePart(part.partId);
+  const { mutateAsync: createReview } = useCreatePartReview();
+  const { mutateAsync: uploadPreviewImage } = useUploadPreviewImage(part.partId);
+
   const {
     data: partsInProject,
     isLoading: partsLoading,
@@ -76,6 +95,31 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({ part, submissionIndex
     return part.reviewRequests.some((request) => request.reviewerRequested.userId === userId);
   };
 
+  const startReview = async (submission: { partSubmissionId: string; fileIds: string[] }) => {
+    if (!submission) {
+      toast.error('No submission found.');
+      return;
+    }
+
+    await createReview({
+      submissionId: submission.partSubmissionId,
+      status: Review_Status.IN_REVIEW,
+      fileIds: submission.fileIds
+    });
+
+    const reviewLink =
+      location.pathname +
+      `?submissionIndex=${submissionIndex}&` +
+      'reviewIndex=' +
+      (reviewIndex === -1 ? '0' : `${reviewIndex}`);
+    history.push(reviewLink);
+  };
+
+  const latestReview =
+    submission?.reviews && submission.reviews.length > 0
+      ? [...submission.reviews].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]
+      : null;
+
   const DeleteModal = () => {
     return (
       <NERModal
@@ -89,6 +133,10 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({ part, submissionIndex
         <Typography>Are you sure you want to delete this part?</Typography>
       </NERModal>
     );
+  };
+
+  const handleUploadPreview = () => {
+    fileInputRef.current?.click();
   };
 
   const buttons: ButtonInfo[] = [
@@ -116,7 +164,7 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({ part, submissionIndex
     },
     {
       title: 'Review',
-      onClick: () => history.push(`test`), // not entirely sure what this route should be...
+      onClick: () => startReview(submission),
       icon: <EditNote />,
       disabled: !isUserAReviewer(user.userId, part) || part.submissions.length === 0
     },
@@ -130,6 +178,12 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({ part, submissionIndex
       title: 'Delete',
       onClick: () => setShowDeletePart(true),
       icon: <DeleteIcon />,
+      disabled: isNotLeadership(user.role)
+    },
+    {
+      title: 'Upload Preview Image',
+      onClick: () => handleUploadPreview(),
+      icon: <AddPhotoAlternateOutlined />,
       disabled: isNotLeadership(user.role)
     }
   ];
@@ -157,13 +211,51 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({ part, submissionIndex
         onSubmit={onSubmitEditSubmission}
         partsInProject={partsInProject}
       />
-      <ApprovePartModal
-        open={showApproveSubmission}
-        handleClose={() => setShowApproveSubmission(false)}
-        onSubmit={editPart}
-        submissionsInPart={part.submissions}
-      />
+      {latestReview && (
+        <ApprovePartModal
+          open={showApproveSubmission}
+          handleClose={() => setShowApproveSubmission(false)}
+          part={part}
+          review={latestReview}
+          wbsNum={wbsPipe(wbsNum)}
+        />
+      )}
       <DeleteModal />
+      {/* for preview image upload button */}
+      <input
+        type="file"
+        accept="image/*"
+        hidden
+        ref={fileInputRef}
+        onChange={async (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+
+          if (file.size > 5 * 1024 * 1024) {
+            toast.error('Preview image must be less than 5MB');
+            return;
+          }
+
+          if (!/^[\w.]+$/.test(file.name)) {
+            toast.error('File name can only contain letters, numbers, underscores, and dots');
+            return;
+          }
+
+          if (file.name.length > 20) {
+            toast.error('File name must be 20 characters or less');
+            return;
+          }
+
+          setPreviewUploading(true);
+          try {
+            await uploadPreviewImage(file);
+            toast.success('Preview image uploaded successfully!');
+          } catch (err: unknown) {
+            toast.error('Failed to upload preview image');
+          }
+          setPreviewUploading(false);
+        }}
+      />
     </>
   );
 };
