@@ -175,7 +175,6 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors }: Spo
               />
             )}
           />
-          <FormHelperText error>{errors.joinDate?.message}</FormHelperText>
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={8}>
