@@ -8,7 +8,6 @@ interface BudgetDetailsProps {
 }
 
 const BudgetDetails: React.FC<BudgetDetailsProps> = ({ cr }) => {
-  console.log(cr);
   return (
     <Grid container rowSpacing="10px" mb="40px">
       <Grid item xs={12} md={7}>

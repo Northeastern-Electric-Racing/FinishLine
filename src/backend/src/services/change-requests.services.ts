@@ -800,7 +800,7 @@ export default class ChangeRequestsService {
   }
 
   /**
-   * Validates and creates a budget change request
+   * Validates and creates a budget change request for a category
    * @param submitter The user creating the cr
    * @param otherReasonId the id of the other reason/category to change budget of
    * @param type  the type of cr
@@ -816,7 +816,7 @@ export default class ChangeRequestsService {
     proposedBudget: number,
     organization: Organization
   ): Promise<string> {
-    // verify user is allowed to create stage gate change requests
+    // verify user is allowed to create budget change requests
     if (await userHasPermission(submitter.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('create budget change requests');
 

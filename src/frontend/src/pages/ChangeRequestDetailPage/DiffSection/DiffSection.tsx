@@ -5,6 +5,7 @@ import { displayEnum } from '../../../utils/pipes';
 import DiffSectionCreate from './DiffSectionCreate';
 import DiffSectionEdit from './DiffSectionEdit';
 import { projectProposedChangesToPreview, workPackageProposedChangesToPreview } from '../../../utils/diff-page.utils';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 
 interface DiffSectionProps {
   changeRequest: StandardChangeRequest;
@@ -52,7 +53,9 @@ const DiffSection: React.FC<DiffSectionProps> = ({ changeRequest }) => {
           originalWorkPackageData={originalWorkPackageData}
           wbsNum={wbsNum}
         />
-      ) : null}
+      ) : (
+        <LoadingIndicator />
+      )}
     </Box>
   );
 };
