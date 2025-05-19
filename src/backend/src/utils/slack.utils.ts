@@ -267,10 +267,10 @@ export const sendAndGetSlackCRNotifications = async (
   let message = '';
   switch (changeRequest.type) {
     case 'ACTIVATION':
-      message = `${submitter.firstName} ${submitter.lastName} wants to activate ${wbsElement.name} in ${projectWbsName}`;
+      message = `${submitter.firstName} ${submitter.lastName} is activating ${wbsElement.name} in ${projectWbsName}`;
       break;
     case 'STAGE_GATE':
-      message = `${submitter.firstName} ${submitter.lastName} wants to stage gate ${wbsElement.name} in ${projectWbsName}`;
+      message = `${submitter.firstName} ${submitter.lastName} is stage gating ${wbsElement.name} in ${projectWbsName}`;
       break;
     default:
       message = `${changeRequest.type} CR submitted by ${submitter.firstName} ${submitter.lastName} for the ${projectWbsName} project`;
