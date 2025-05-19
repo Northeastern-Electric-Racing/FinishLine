@@ -53,6 +53,8 @@ export const ChangeRequestTypeTextPipe: (type: ChangeRequestType) => string = (t
       return 'Issue';
     case ChangeRequestType.Other:
       return 'Other';
+    case ChangeRequestType.Budget:
+      return 'Budget';
   }
 };
 

@@ -81,16 +81,33 @@ export const updateProjectAndCreateChanges = async (
 
   const { wbsElementId } = originalProject;
 
-  const nameChangeJson = createChange('name', originalProject.wbsElement.name, name, crId, implementerId, wbsElementId);
-  const budgetChangeJson = createChange('budget', originalProject.budget, budget, crId, implementerId, wbsElementId);
-  const summaryChangeJson = createChange('summary', originalProject.summary, summary, crId, implementerId, wbsElementId);
+  const nameChangeJson = createChange(
+    'name',
+    originalProject.wbsElement.name,
+    name,
+    crId,
+    implementerId,
+    wbsElementId,
+    null
+  );
+  const budgetChangeJson = createChange('budget', originalProject.budget, budget, crId, implementerId, wbsElementId, null);
+  const summaryChangeJson = createChange(
+    'summary',
+    originalProject.summary,
+    summary,
+    crId,
+    implementerId,
+    wbsElementId,
+    null
+  );
   const managerChangeJson = createChange(
     'manager',
     await getUserFullName(originalProject.wbsElement.managerId),
     await getUserFullName(managerId),
     crId,
     implementerId,
-    wbsElementId
+    wbsElementId,
+    null
   );
   const leadChangeJson = createChange(
     'lead',
@@ -98,7 +115,8 @@ export const updateProjectAndCreateChanges = async (
     await getUserFullName(leadId),
     crId,
     implementerId,
-    wbsElementId
+    wbsElementId,
+    null
   );
 
   // Dealing with lists

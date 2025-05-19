@@ -25,7 +25,8 @@ import {
   requestCRReview,
   getToReviewChangeRequests,
   getUnreviewedChangeRequests,
-  getApprovedChangeRequests
+  getApprovedChangeRequests,
+  createBudgetChangeRequest
 } from '../apis/change-requests.api';
 
 /**
@@ -169,6 +170,13 @@ export interface CreateStageGateChangeRequestPayload {
   type: string;
 }
 
+export interface CreateBudgetChangeRequestPayload {
+  submitterId: string;
+  otherReasonId: string;
+  proposedBudget: number;
+  type: string;
+}
+
 export interface CreateProposedSolutionPayload {
   submitterId: string;
   crId: string;
@@ -206,6 +214,19 @@ export const useCreateStageGateChangeRequest = () => {
     ['change requests', 'create', 'stage gate'],
     async (payload: CreateStageGateChangeRequestPayload) => {
       const { data } = await createStageGateChangeRequest(payload.submitterId, payload.wbsNum, payload.confirmDone);
+      return data;
+    }
+  );
+};
+
+/**
+ * Custom React Hook to create a budget change request.
+ */
+export const useCreateBudgetChangeRequest = () => {
+  return useMutation<{ message: string }, Error, CreateBudgetChangeRequestPayload>(
+    ['change requests', 'create', 'budget'],
+    async (payload: CreateBudgetChangeRequestPayload) => {
+      const { data } = await createBudgetChangeRequest(payload.submitterId, payload.otherReasonId, payload.proposedBudget);
       return data;
     }
   );
