@@ -1,7 +1,7 @@
 import React from 'react';
 import ErrorPage from '../ErrorPage';
 import { useAllWorkPackageTemplates } from '../../hooks/projects.hooks';
-import { WorkPackageTemplateApiInputs } from '../../apis/work-packages.api';
+import { WorkPackageTemplateApiInputs } from '../../apis/wbs-templates.api';
 import WorkPackageTemplateFormView, { WorkPackageTemplateFormViewPayload } from './WorkPackageTemplateFormView';
 import { useHistory } from 'react-router-dom';
 import * as yup from 'yup';
@@ -12,6 +12,24 @@ interface WorkPackageTemplateFormProps {
   defaultValues?: WorkPackageTemplateFormViewPayload;
 }
 
+export const workPackageTemplateSchema = yup.object().shape({
+  workPackageName: yup
+    .string()
+    .transform((value) => (value ? value : undefined))
+    .optional(),
+  stage: yup.string().optional(),
+  duration: yup
+    .number()
+    .transform((value) => (isNaN(value) ? undefined : value))
+    .min(0, 'Duration cannot be negative!')
+    .integer()
+    .optional(),
+  templateName: yup.string().required('Template Name is required'),
+  templateNotes: yup.string(),
+  blockedBy: yup.array(),
+  descriptionBullets: yup.array()
+});
+
 const WorkPackageTemplateForm: React.FC<WorkPackageTemplateFormProps> = ({
   workPackageTemplateId,
   workPackageTemplateMutateAsync,
@@ -20,16 +38,6 @@ const WorkPackageTemplateForm: React.FC<WorkPackageTemplateFormProps> = ({
   const { data: workPackageTemplates, isError: wpIsError, error: wpError } = useAllWorkPackageTemplates();
 
   const history = useHistory();
-
-  const schema = yup.object().shape({
-    workPackageName: yup.string().optional(),
-    stage: yup.string().required('Stage is required'),
-    duration: yup.number().optional(),
-    templateName: yup.string().required('Template Name is required'),
-    templateNotes: yup.string(),
-    blockedBy: yup.array(),
-    descriptionBullets: yup.array()
-  });
 
   if (wpIsError) return <ErrorPage message={wpError.message} />;
 
@@ -47,7 +55,7 @@ const WorkPackageTemplateForm: React.FC<WorkPackageTemplateFormProps> = ({
       workPackageTemplateMutateAsync={workPackageTemplateMutateAsync}
       defaultValues={defaultValues}
       blockedByOptions={blockedByOptions}
-      schema={schema}
+      schema={workPackageTemplateSchema}
     />
   );
 };

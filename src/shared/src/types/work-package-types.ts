@@ -4,6 +4,7 @@
  */
 
 import { DescriptionBullet } from './project-types';
+import { TeamPreview } from './team-types';
 import { User } from './user-types';
 
 export enum TimelineStatus {
@@ -21,22 +22,34 @@ export enum WorkPackageStage {
   Testing = 'TESTING'
 }
 
+export interface WbsElementTemplate {
+  templateName: string;
+  templateNotes: string;
+  descriptionBullets: DescriptionBullet[];
+}
+
 export type WorkPackageTemplatePreview = Pick<
   WorkPackageTemplate,
   'workPackageTemplateId' | 'templateName' | 'stage' | 'templateNotes'
 >;
 
-export interface WorkPackageTemplate {
+export interface WorkPackageTemplate extends WbsElementTemplate {
   workPackageTemplateId: string;
-  templateName: string;
-  templateNotes: string;
   workPackageName?: string;
   stage?: WorkPackageStage;
   duration?: number;
   blockedBy: WorkPackageTemplatePreview[];
-  descriptionBullets: DescriptionBullet[];
   dateCreated: Date;
   userCreated: User;
   dateDeleted?: Date;
   userDeleted?: User;
+}
+
+export interface ProjectTemplate extends WbsElementTemplate {
+  projectTemplateId: string;
+  projectName?: string;
+  workPackageTemplates: WorkPackageTemplate[];
+  budget?: number;
+  teams: TeamPreview[];
+  summary?: string;
 }

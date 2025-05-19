@@ -9,7 +9,7 @@ import { createTestOrganization, createTestUser, createTestWorkPackageTemplate, 
 import { batmanAppAdmin, supermanAdmin, theVisitorGuest } from '../test-data/users.test-data';
 import { workPackageTemplateTransformer } from '../../src/transformers/work-package-template.transformer';
 import prisma from '../../src/prisma/prisma';
-import WorkPackageTemplatesService from '../../src/services/work-package-template.services';
+import WorkPackageTemplatesService from '../../src/services/wbs-element-templates.services';
 import { Organization } from '@prisma/client';
 
 describe('Work Package Template Tests', () => {
@@ -53,7 +53,7 @@ describe('Work Package Template Tests', () => {
 
       const recievedWorkPackageTemplate = await WorkPackageTemplatesService.getSingleWorkPackageTemplate(
         await createTestUser(supermanAdmin, orgId),
-        createdWorkPackageTemplate.workPackageTemplateId,
+        createdWorkPackageTemplate.wbsElementTemplateId,
         organization
       );
 
@@ -89,7 +89,7 @@ describe('Work Package Template Tests', () => {
       const testWorkPackageTemplate = await createTestWorkPackageTemplate(testSuperman, orgId);
       await WorkPackageTemplatesService.deleteWorkPackageTemplate(
         testSuperman,
-        testWorkPackageTemplate.workPackageTemplateId,
+        testWorkPackageTemplate.wbsElementTemplateId,
         organization
       );
 
@@ -97,10 +97,10 @@ describe('Work Package Template Tests', () => {
         async () =>
           await WorkPackageTemplatesService.deleteWorkPackageTemplate(
             testSuperman,
-            testWorkPackageTemplate.workPackageTemplateId,
+            testWorkPackageTemplate.wbsElementTemplateId,
             organization
           )
-      ).rejects.toThrow(new DeletedException('Work Package Template', testWorkPackageTemplate.workPackageTemplateId));
+      ).rejects.toThrow(new DeletedException('Work Package Template', testWorkPackageTemplate.wbsElementTemplateId));
     });
 
     it('succeeds and deletes all blocking templates', async () => {
@@ -113,12 +113,12 @@ describe('Work Package Template Tests', () => {
 
       await prisma.work_Package_Template.update({
         where: {
-          workPackageTemplateId: testWorkPackageTemplate3.workPackageTemplateId
+          wbsElementTemplateId: testWorkPackageTemplate3.wbsElementTemplateId
         },
         data: {
           blockedBy: {
             connect: {
-              workPackageTemplateId: testWorkPackageTemplate2.workPackageTemplateId
+              wbsElementTemplateId: testWorkPackageTemplate2.wbsElementTemplateId
             }
           }
         }
@@ -126,12 +126,12 @@ describe('Work Package Template Tests', () => {
 
       await prisma.work_Package_Template.update({
         where: {
-          workPackageTemplateId: testWorkPackageTemplate2.workPackageTemplateId
+          wbsElementTemplateId: testWorkPackageTemplate2.wbsElementTemplateId
         },
         data: {
           blockedBy: {
             connect: {
-              workPackageTemplateId: testWorkPackageTemplate1.workPackageTemplateId
+              wbsElementTemplateId: testWorkPackageTemplate1.wbsElementTemplateId
             }
           }
         }
@@ -139,24 +139,24 @@ describe('Work Package Template Tests', () => {
 
       await WorkPackageTemplatesService.deleteWorkPackageTemplate(
         testSuperman,
-        testWorkPackageTemplate1.workPackageTemplateId,
+        testWorkPackageTemplate1.wbsElementTemplateId,
         organization
       );
 
       const updatedTestWorkPackageTemplate1 = await WorkPackageTemplatesService.getSingleWorkPackageTemplate(
         testSuperman,
-        testWorkPackageTemplate1.workPackageTemplateId,
+        testWorkPackageTemplate1.wbsElementTemplateId,
         organization
       );
 
       const updatedTestWorkPackageTemplate2 = await WorkPackageTemplatesService.getSingleWorkPackageTemplate(
         testSuperman,
-        testWorkPackageTemplate2.workPackageTemplateId,
+        testWorkPackageTemplate2.wbsElementTemplateId,
         organization
       );
       const updatedTestWorkPackageTemplate3 = await WorkPackageTemplatesService.getSingleWorkPackageTemplate(
         testSuperman,
-        testWorkPackageTemplate3.workPackageTemplateId,
+        testWorkPackageTemplate3.wbsElementTemplateId,
         organization
       );
 

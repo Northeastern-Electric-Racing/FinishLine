@@ -3,11 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Organization, Prisma, User } from '@prisma/client';
-import { DescriptionBulletPreview, WbsElementStatus, WbsNumber } from 'shared';
+import { Organization, User } from '@prisma/client';
+import { DescriptionBulletPreview, WbsElementStatus, WbsNumber, WorkPackage } from 'shared';
 import { WorkPackageStage } from 'shared';
 import WorkPackagesService from '../../services/work-packages.services';
-import { WorkPackageQueryArgs } from '../../prisma-query-args/work-packages.query-args';
 
 /**
  * Creates a work package with the given data using service functions. This has to be done by:
@@ -31,7 +30,7 @@ export const seedWorkPackage = async (
   organization: Organization
 ): Promise<{
   workPackageWbsNumber: WbsNumber;
-  workPackage: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>;
+  workPackage: WorkPackage;
 }> => {
   const workPackage = await WorkPackagesService.createWorkPackage(
     creator,
@@ -48,8 +47,8 @@ export const seedWorkPackage = async (
 
   await WorkPackagesService.editWorkPackage(
     editor,
-    workPackage.workPackageId,
-    workPackage.wbsElement.name,
+    workPackage.id,
+    workPackage.name,
     changeRequestId,
     stage,
     workPackage.startDate.toString(),
@@ -61,5 +60,5 @@ export const seedWorkPackage = async (
     organization
   );
 
-  return { workPackageWbsNumber: { ...workPackage.wbsElement }, workPackage };
+  return { workPackageWbsNumber: workPackage.wbsNum, workPackage };
 };
