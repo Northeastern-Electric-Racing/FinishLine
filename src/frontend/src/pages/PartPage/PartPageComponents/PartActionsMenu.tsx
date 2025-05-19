@@ -80,6 +80,7 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
     try {
       await deletePart();
       history.goBack();
+      
       toast.success(`${part.commonName} Deleted Successfully!`);
     } catch (e: unknown) {
       if (e instanceof Error) {
