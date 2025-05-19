@@ -189,11 +189,11 @@ export default class WbsElementTemplatesService {
     workPackageTemplateId: string,
     templateName: string,
     templateNotes: string,
-    duration: number | undefined,
-    stage: WorkPackageStage | undefined,
+    duration: number | null,
+    stage: WorkPackageStage | null,
     blockedByIds: string[],
     descriptionBullets: DescriptionBulletPreview[],
-    workPackageName: string | undefined,
+    workPackageName: string | null,
     organization: Organization
   ): Promise<WorkPackageTemplate> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
@@ -500,7 +500,7 @@ export default class WbsElementTemplatesService {
         workPackageTemplate.templateName,
         workPackageTemplate.templateNotes,
         workPackageTemplate.workPackageName ? workPackageTemplate.workPackageName : null,
-        workPackageTemplate.stage ?? null,
+        workPackageTemplate.stage === 'NONE' || !workPackageTemplate.stage ? null : workPackageTemplate.stage,
         workPackageTemplate.duration ?? null,
         workPackageTemplate.descriptionBullets,
         workPackageTemplate.blockedBy,
@@ -596,7 +596,7 @@ export default class WbsElementTemplatesService {
         template.templateName,
         template.templateNotes,
         template.workPackageName ? template.workPackageName : null,
-        template.stage ?? null,
+        template.stage === 'NONE' || !template.stage ? null : template.stage,
         template.duration ?? null,
         template.descriptionBullets,
         template.blockedBy,
@@ -611,11 +611,11 @@ export default class WbsElementTemplatesService {
         template.workPackageTemplateId!,
         template.templateName,
         template.templateNotes,
-        template.duration,
-        template.stage,
+        template.duration ?? null,
+        template.stage === 'NONE' || !template.stage ? null : template.stage,
         template.blockedBy,
         template.descriptionBullets,
-        template.workPackageName ? template.workPackageName : undefined,
+        template.workPackageName ?? null,
         organization
       );
     }
@@ -624,6 +624,16 @@ export default class WbsElementTemplatesService {
       await this.deleteWorkPackageTemplate(submitter, templateId, organization);
     }
 
+    // Disconnect all existing teams before connecting the new ones
+    await prisma.project_Template.update({
+      where: { wbsElementTemplateId: projectTemplateId },
+      data: {
+        teams: {
+          set: []
+        }
+      }
+    });
+
     const updatedProjectTemplate = await prisma.project_Template.update({
       where: { wbsElementTemplateId: projectTemplateId },
       data: {
@@ -631,17 +641,17 @@ export default class WbsElementTemplatesService {
           update: {
             templateName,
             templateNotes,
-            wbsElementName: projectName ? projectName : undefined
+            wbsElementName: projectName ?? null
           }
         },
         workPackageTemplates: {
           connect: workPackageTemplateIds.map((id) => ({ wbsElementTemplateId: id }))
         },
-        budget: budget ?? undefined,
+        budget: budget ?? null,
         teams: {
           connect: teamIds.map((id) => ({ teamId: id }))
         },
-        summary: summary ?? undefined
+        summary: summary ?? null
       },
       ...getProjectTemplateQueryArgs(organization.organizationId)
     });

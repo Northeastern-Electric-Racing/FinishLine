@@ -13,9 +13,17 @@ interface WorkPackageTemplateFormProps {
 }
 
 export const workPackageTemplateSchema = yup.object().shape({
-  workPackageName: yup.string().optional(),
+  workPackageName: yup
+    .string()
+    .transform((value) => (value ? value : undefined))
+    .optional(),
   stage: yup.string().optional(),
-  duration: yup.number().min(0, 'Duration cannot be negative!').integer().optional(),
+  duration: yup
+    .number()
+    .transform((value) => (isNaN(value) ? undefined : value))
+    .min(0, 'Duration cannot be negative!')
+    .integer()
+    .optional(),
   templateName: yup.string().required('Template Name is required'),
   templateNotes: yup.string(),
   blockedBy: yup.array(),

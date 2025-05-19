@@ -145,7 +145,7 @@ const ProjectTemplateFormView: React.FC<ProjectTemplateFormViewProps> = ({
       toast.success(`Project template ${defaultValues ? 'edited' : 'created'} successfully`);
       history.push(routes.ADMIN_TOOLS + '/project-configuration/work-package-templates');
     } catch (error) {
-      toast.error(`Error ${defaultValues ? 'editing' : 'creating'} project template`);
+      toast.error((error as { message: string }).message);
     }
   };
 

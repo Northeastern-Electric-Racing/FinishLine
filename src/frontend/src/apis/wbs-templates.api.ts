@@ -10,7 +10,7 @@ export interface WorkPackageTemplateApiInputs {
   templateName: string;
   templateNotes: string;
   duration: number | undefined;
-  stage?: WorkPackageStage;
+  stage?: WorkPackageStage | 'NONE';
   blockedBy: string[];
   descriptionBullets: DescriptionBulletPreview[];
   workPackageName?: string;

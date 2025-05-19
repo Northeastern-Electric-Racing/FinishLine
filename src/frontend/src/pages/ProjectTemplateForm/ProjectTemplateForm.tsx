@@ -13,13 +13,22 @@ const ProjectTemplateForm: React.FC<ProjectTemplateFormProps> = ({ projectTempla
   const history = useHistory();
 
   const schema = yup.object().shape({
-    projectName: yup.string().optional(),
+    projectName: yup
+      .string()
+      .transform((value) => (value ? value : undefined))
+      .optional(),
     templateName: yup.string().required('Template Name is required'),
     templateNotes: yup.string().required('Template Notes are required'),
     workPackageTemplates: yup.array().of(workPackageTemplateSchema),
-    budget: yup.number().optional(),
+    budget: yup
+      .number()
+      .transform((value) => (isNaN(value) ? undefined : value))
+      .optional(),
     teams: yup.array().of(yup.string()).optional(),
-    summary: yup.string().optional()
+    summary: yup
+      .string()
+      .transform((value) => (value ? value : undefined))
+      .optional()
   });
 
   return (
