@@ -234,12 +234,8 @@ export default class PartReviewController {
   static async deletePartTag(req: Request, res: Response, next: NextFunction) {
     try {
       const { partTagId } = req.params;
-      const deletedPartTag = await PartReviewService.deletePartTag(
-        partTagId,
-        req.currentUser,
-        req.organization.organizationId
-      );
-      res.status(200).send(deletedPartTag);
+      await PartReviewService.deletePartTag(partTagId, req.currentUser, req.organization.organizationId);
+      res.status(200).send({ message: 'Successfully deleted part tag' });
     } catch (error: unknown) {
       next(error);
     }
@@ -328,12 +324,8 @@ export default class PartReviewController {
   static async deleteCommonMistake(req: Request, res: Response, next: NextFunction) {
     try {
       const { commonMistakeId } = req.params;
-      const commonMistake = await PartReviewService.deleteCommonMistake(
-        commonMistakeId,
-        req.currentUser,
-        req.organization.organizationId
-      );
-      res.status(200).json(commonMistake);
+      await PartReviewService.deleteCommonMistake(commonMistakeId, req.currentUser, req.organization.organizationId);
+      res.status(200).json({ message: 'Successfully deleted common mistake' });
     } catch (error: unknown) {
       next(error);
     }
@@ -436,6 +428,31 @@ export default class PartReviewController {
       res.send(fileData.buffer);
     } catch (error: unknown) {
       return next(error);
+    }
+  }
+
+  static async setPartReviewSampleImage(req: Request, res: Response, next: NextFunction) {
+    try {
+      if (!req.file) {
+        throw new HttpException(400, 'Invalid or undefined image data');
+      }
+
+      const updatedOrg = await PartReviewService.setPartReviewSampleImage(req.file, req.currentUser, req.organization);
+
+      res.status(200).json(updatedOrg);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getPartReviewSampleImage(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { organization } = req;
+
+      const partReviewSampleImageId = await PartReviewService.getPartReviewSampleImage(organization.organizationId);
+      res.status(200).json(partReviewSampleImageId);
+    } catch (error: unknown) {
+      next(error);
     }
   }
 }

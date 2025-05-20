@@ -52,7 +52,7 @@ const AbbreviationsTable: React.FC = () => {
           setOpenModal(false);
         }}
       />
-      <Typography variant="subtitle1">Project Name Abbreviations</Typography>
+      <Typography variant="h6">Project Name Abbreviations</Typography>
       <AdminToolTable columns={[{ name: 'Project Name' }, { name: 'Abbreviation' }, { name: '' }]} rows={projectTableRows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         <NERButton

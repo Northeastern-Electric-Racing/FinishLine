@@ -6,12 +6,17 @@ import { useDownloadFile } from '../hooks/part-review.hooks';
 interface DownloadButtonProps {
   fileId: string;
   filename: string;
+  stopPropagation?: boolean;
 }
 
-const DownloadButton: React.FC<DownloadButtonProps> = ({ fileId, filename = 'download' }) => {
+const DownloadButton: React.FC<DownloadButtonProps> = ({ fileId, filename = 'download', stopPropagation = false }) => {
   const { data: blobData } = useDownloadFile(fileId);
 
-  const handleDownload = () => {
+  const handleDownload = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (stopPropagation) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
     if (!blobData) return;
     const url = URL.createObjectURL(blobData);
     const link = document.createElement('a');

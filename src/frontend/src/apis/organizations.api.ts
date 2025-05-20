@@ -20,7 +20,7 @@ export const getFeaturedProjects = async () => {
 };
 
 export const getPartReviewGuideLink = async () => {
-  return axios.get<Organization>(apiUrls.organizationsGetPartReviewGuideLink(), {
+  return axios.get<string>(apiUrls.organizationsGetPartReviewGuideLink(), {
     transformResponse: (data) => JSON.parse(data)
   });
 };

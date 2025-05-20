@@ -62,12 +62,19 @@ const partsReviewFaqCreate = () => `${parts()}/faqs/create`;
 const partsReviewFaqEdit = (faqId: string) => `${parts()}/faqs/${faqId}/update`;
 const partsReviewFaqDelete = (faqId: string) => `${parts()}/faqs/${faqId}/delete`;
 const getAllPartCommonMistakes = () => `${parts()}/common-mistakes`;
+const partsCreateCommonMistake = () => `${parts()}/common-mistake/create`;
+const partsUpdateCommonMistake = (commonMistakeId: string) => `${parts()}/common-mistake/${commonMistakeId}/update`;
+const partsDeleteCommonMistake = (commonMistakeId: string) => `${parts()}/common-mistake/${commonMistakeId}/delete`;
 const uploadFile = () => `${parts()}/upload/file`;
 const downloadFile = (fileId: string) => `${parts()}/file/${fileId}/download`;
 const getAllPartTags = () => `${parts()}/tags`;
+const partTagCreate = () => `${parts()}/tag/create`;
+const partTagDelete = (partTagId: string) => `${parts()}/tag/${partTagId}/delete`;
 const createReviewPopup = (reviewId: string) => `${parts()}/review/${reviewId}/popup/create`;
 const updateReviewPopup = (popupId: string) => `${parts()}/popup/${popupId}/update`;
 const deleteReviewPopup = (popupId: string) => `${parts()}/popup/${popupId}/delete`;
+const getPartReviewSampleImage = () => `${parts()}/partReviewSampleImage`;
+const setPartReviewSampleImage = () => `${parts()}/partReviewSampleImage/update`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
@@ -327,12 +334,19 @@ export const apiUrls = {
   partsCreateReview,
   partsEditReview,
   getAllPartCommonMistakes,
+  partsCreateCommonMistake,
+  partsUpdateCommonMistake,
+  partsDeleteCommonMistake,
   downloadFile,
   uploadFile,
   getAllPartTags,
+  partTagCreate,
+  partTagDelete,
   createReviewPopup,
   updateReviewPopup,
   deleteReviewPopup,
+  setPartReviewSampleImage,
+  getPartReviewSampleImage,
 
   tasksCreate,
   tasks,

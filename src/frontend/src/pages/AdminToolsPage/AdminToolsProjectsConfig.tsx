@@ -7,6 +7,10 @@ import DescriptionBulletTypeTable from './ProjectsConfig/DescriptionBulletTypes/
 import CarsTable from './ProjectsConfig/CarsTable';
 import PartsReviewFAQTable from './ProjectsConfig/PartsReviewFAQ/PartsReviewFAQTable';
 import AbbreviationsTable from './ProjectsConfig/AbbreviationsTable';
+import ConfluenceLink from './ProjectsConfig/ConfluenceLink';
+import PartReviewSampleImage from './ProjectsConfig/PartReviewSampleImage';
+import CommonMistakesTable from './ProjectsConfig/CommonMistakesTable';
+import PartTagsTable from './ProjectsConfig/PartTagsTable';
 
 const AdminToolsProjectsConfig: React.FC = () => {
   return (
@@ -14,12 +18,16 @@ const AdminToolsProjectsConfig: React.FC = () => {
       <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
         Parts Review Config
       </Typography>
-      <Grid item container direction="row" spacing={2}>
+      <Grid container spacing={2}>
         <Grid item xs={12} md={6}>
           <AbbreviationsTable />
+          <ConfluenceLink />
+          <PartReviewSampleImage />
         </Grid>
         <Grid item xs={12} md={6}>
+          <PartTagsTable />
           <PartsReviewFAQTable />
+          <CommonMistakesTable />
         </Grid>
       </Grid>
       <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
