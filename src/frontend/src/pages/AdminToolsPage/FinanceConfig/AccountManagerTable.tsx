@@ -57,17 +57,18 @@ const AccountManagerTable = () => {
         <Typography>{accountCode.amount ? `$${accountCode.amount}` : ''}</Typography>
       </TableCell>
       <TableCell>
-        <Checkbox checked={accountCode.allowed} />
-        <IconButton
-          onClick={(e) => {
-            e.stopPropagation();
-            setAccountCodeToDelete(accountCode);
-          }}
-          aria-label="delete"
-          sx={{ ml: 4 }}
-        >
-          <DeleteIcon />
-        </IconButton>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Checkbox checked={accountCode.allowed} />
+          <IconButton
+            onClick={(e) => {
+              e.stopPropagation();
+              setAccountCodeToDelete(accountCode);
+            }}
+            aria-label="delete"
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Box>
       </TableCell>
     </TableRow>
   ));

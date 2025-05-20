@@ -55,17 +55,18 @@ const CategoriesTable = () => {
         <Typography>{displayEnum(category.name)}</Typography>
       </TableCell>
       <TableCell>
-        {`$${category.budget}`}
-        <IconButton
-          onClick={(e) => {
-            e.stopPropagation();
-            setCategoryToDelete(category);
-          }}
-          aria-label="delete"
-          sx={{ ml: 4 }}
-        >
-          <DeleteIcon />
-        </IconButton>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography>{`$${category.budget}`}</Typography>
+          <IconButton
+            onClick={(e) => {
+              e.stopPropagation();
+              setCategoryToDelete(category);
+            }}
+            aria-label="delete"
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Box>
       </TableCell>
     </TableRow>
   ));
