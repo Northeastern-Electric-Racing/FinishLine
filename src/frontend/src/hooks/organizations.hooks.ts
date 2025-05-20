@@ -213,7 +213,7 @@ export const useOrganizationLogo = () => {
  */
 
 export const useGetPartReviewGuideLink = () => {
-  return useQuery<Organization, Error>(['organizations', 'part-review-guide-link'], async () => {
+  return useQuery<string, Error>(['organizations', 'part-review-guide-link'], async () => {
     const { data } = await getPartReviewGuideLink();
     return data;
   });

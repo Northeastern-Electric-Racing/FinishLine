@@ -1,19 +1,24 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
-import { Part, Review_Status } from 'shared';
+import { Link, Box, Typography, Grid } from '@mui/material';
+import { Review_Status } from 'shared';
 import { fullNamePipe } from '../../../utils/pipes';
+import { useSinglePart } from '../../../hooks/part-review.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
+import { Link as RouterLink } from 'react-router-dom';
 
 interface PartDisplayProps {
-  part: Part;
-  contentAmount: 'compact' | 'standard' | 'full';
+  index: number;
+  wbsNum: string;
+  formatStyle: 'compact' | 'standard' | 'full';
 }
 
 const getReviewStatusColor = (status: Review_Status) => {
   return {
-    IN_PROGRESS: '#FF7700',
-    READY_FOR_REVIEW: '#FF5500',
+    IN_PROGRESS: '#959696',
+    READY_FOR_REVIEW: '#F61517',
     IN_REVIEW: '#F57600',
-    REVIEWED: '#3DA848',
+    REVIEWED: '#3CA848',
     APPROVED: '#D633FF',
     default: '#535151'
   }[status];
@@ -21,24 +26,13 @@ const getReviewStatusColor = (status: Review_Status) => {
 
 const getReviewStatusDisplayName = (status: Review_Status): string => {
   return {
-    IN_PROGRESS: 'Review In Progress',
+    IN_PROGRESS: 'In Progress',
     READY_FOR_REVIEW: 'Ready for Review',
-    IN_REVIEW: '#F57600',
-    REVIEWED: '#3DA848',
-    APPROVED: '#D633FF',
-    default: '#535151'
+    IN_REVIEW: 'In Review',
+    REVIEWED: 'Reviewed',
+    APPROVED: 'Approved',
+    default: 'Unknown'
   }[status];
-};
-
-const getBoxWidth = (contentAmount: String) => {
-  switch (contentAmount) {
-    case 'compact':
-      return '30%';
-    case 'standard':
-      return '50%';
-    default:
-      return 'NA';
-  }
 };
 
 // defined a Pill shape for the review status display
@@ -52,13 +46,11 @@ const Pill = ({ label = '', bgColor = 'background.paper' }) => {
         borderRadius: '16px',
         backgroundColor: bgColor,
         padding: '4px 12px',
-        marginRight: '20px',
         minHeight: '24px',
         fontSize: '0.75rem',
         fontWeight: 500,
         color: 'white',
-        userSelect: 'none',
-        width: '121px'
+        userSelect: 'none'
       }}
     >
       {label}
@@ -66,27 +58,38 @@ const Pill = ({ label = '', bgColor = 'background.paper' }) => {
   );
 };
 
-const PartDisplay: React.FC<PartDisplayProps> = ({ part, contentAmount }) => {
+const PartDisplay: React.FC<PartDisplayProps> = ({ index, wbsNum, formatStyle: contentAmount }) => {
+  const redirectUrl = `/projects/${wbsNum}/part/${index}`;
+  const { data: part, isLoading, isError, error } = useSinglePart(wbsNum, index);
+  if (isLoading || !part) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
+
   // Gets part name in the format shown in the ticket
-  const partName = `${part.projectId}_${part.commonName}_${part.partId}`;
+  const partName = `${part.commonName}_${part.index}`;
 
   //sorts submissions by date to help later with getting latest submission and latest reviewer
   const sortedSubmissions = part.submissions.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
   // latest submission as a formatted string
-  const latestSubmission = fullNamePipe(sortedSubmissions[0].userCreated);
+  const latestSubmission = sortedSubmissions.length !== 0 ? fullNamePipe(sortedSubmissions[0].userCreated) : '';
 
   // sorts reviews of the most recent submission by date
-  const sortedReviews = sortedSubmissions[0].reviews.sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
+  const sortedReviews =
+    sortedSubmissions.length !== 0
+      ? sortedSubmissions[0].reviews.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      : [];
 
   // latest reviewer
-  const latestReviewer = sortedSubmissions[0].reviews.length === 0 ? 'None' : fullNamePipe(sortedReviews[0].userCreated);
+  const latestReviewer =
+    sortedSubmissions.length !== 0 && sortedSubmissions[0].reviews.length !== 0
+      ? sortedSubmissions[0].reviews.length === 0
+        ? 'None'
+        : fullNamePipe(sortedReviews[0].userCreated)
+      : 'No Reviews Yet';
 
   // gets assignees as a formatted string
   const assigneesString =
-    part.assignees.length === 0 ? 'None' : part.assignees.map((assignee) => fullNamePipe(assignee)).join('\n');
+    part.assignees.length !== 0 ? part.assignees.map((assignee) => fullNamePipe(assignee)).join('\n') : 'None';
 
   // allReviewers is a set that collects every reviewer from every submission for the purpose of avoiding duplicates
   // because the same person could review two different submissions
@@ -113,57 +116,94 @@ const PartDisplay: React.FC<PartDisplayProps> = ({ part, contentAmount }) => {
   const allReviewersString = allReviewersSet.length === 0 ? 'None' : allReviewersSet.join('\n');
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        bgcolor: (theme) => theme.palette.grey[800],
-        borderRadius: 2,
-        p: 2,
-        mb: 1,
-        maxWidth: getBoxWidth(contentAmount),
-        width: '100%'
-      }}
-    >
-      <Box sx={{ width: '175px', display: 'flex' }}>
-        <Typography variant="subtitle1" fontWeight="bold">
-          {partName}
-        </Typography>
-      </Box>
-
-      {(contentAmount === 'standard' || contentAmount === 'full') && (
-        <Box sx={{ display: 'flex' }}>
-          <Typography variant="body2" whiteSpace="pre-line">
-            {assigneesString}
+    <Link component={RouterLink} to={redirectUrl} sx={{ textDecoration: 'none', color: 'inherit' }}>
+      <Grid
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          bgcolor: (theme) => theme.palette.grey[800],
+          borderRadius: 2,
+          p: 2,
+          mb: 1,
+          '&:hover': redirectUrl
+            ? {
+                boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+                transform: 'translateY(-2px)',
+                transition: 'all 0.2s ease-in-out'
+              }
+            : {}
+        }}
+      >
+        <Grid
+          sx={{
+            width: '175px'
+          }}
+        >
+          <Typography variant="subtitle1" fontWeight="bold">
+            {partName}
           </Typography>
-        </Box>
-      )}
+        </Grid>
 
-      {(contentAmount === 'standard' || contentAmount === 'full') && (
-        <Box sx={{ display: 'flex' }}>
-          <Typography variant="body2" whiteSpace="pre-line">
-            {allReviewersString}
-          </Typography>
-        </Box>
-      )}
+        {contentAmount !== 'compact' && (
+          <Grid
+            sx={{
+              width: `175px`,
+              display: 'flex',
+              justifyContent: 'center'
+            }}
+          >
+            <Typography variant="body2">{assigneesString}</Typography>
+          </Grid>
+        )}
 
-      {contentAmount === 'full' && (
-        <Box sx={{ display: 'flex' }}>
-          <Typography variant="body2">{latestReviewer}</Typography>
-        </Box>
-      )}
+        {contentAmount !== 'compact' && (
+          <Grid
+            sx={{
+              width: '175px',
+              display: 'flex',
+              justifyContent: 'center'
+            }}
+          >
+            <Typography variant="body2">{allReviewersString}</Typography>
+          </Grid>
+        )}
 
-      {contentAmount === 'full' && (
-        <Box sx={{ display: 'flex' }}>
-          <Typography variant="body2">{latestSubmission}</Typography>
-        </Box>
-      )}
+        {contentAmount === 'full' && (
+          <Grid
+            sx={{
+              width: `175px`,
+              display: 'flex',
+              justifyContent: 'center'
+            }}
+          >
+            <Typography variant="body2">{latestSubmission}</Typography>
+          </Grid>
+        )}
 
-      <Box sx={{ display: 'flex' }}>
-        <Pill label={getReviewStatusDisplayName(part.status)} bgColor={getReviewStatusColor(part.status)} />
-      </Box>
-    </Box>
+        {contentAmount === 'full' && (
+          <Grid
+            sx={{
+              width: `175px`,
+              display: 'flex',
+              justifyContent: 'center'
+            }}
+          >
+            <Typography variant="body2">{latestReviewer}</Typography>
+          </Grid>
+        )}
+
+        <Grid
+          sx={{
+            width: '125px',
+            display: 'flex',
+            justifyContent: 'center'
+          }}
+        >
+          <Pill label={getReviewStatusDisplayName(part.status)} bgColor={getReviewStatusColor(part.status)} />
+        </Grid>
+      </Grid>
+    </Link>
   );
 };
 
