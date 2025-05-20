@@ -15,7 +15,7 @@ import {
 } from '../apis/team-types.api';
 import { TeamType } from 'shared';
 
-export interface CreateDivisionPayload {
+export interface CreateTeamTypePayload {
   name: string;
   iconName: string;
   description: string;
@@ -27,7 +27,7 @@ export interface CreateDivisionPayload {
  *
  * @returns all the team types
  */
-export const useAllDivisions = () => {
+export const useAllTeamTypes = () => {
   return useQuery<TeamType[], Error>(['team types'], async () => {
     const { data } = await getAllTeamTypes();
     return data;
@@ -98,9 +98,9 @@ export const useCompleteOnboarding = () => {
  *
  * @returns the team type created
  */
-export const useCreateDivision = () => {
+export const useCreateTeamType = () => {
   const queryClient = useQueryClient();
-  return useMutation<TeamType, Error, CreateDivisionPayload>(
+  return useMutation<TeamType, Error, CreateTeamTypePayload>(
     ['team types', 'create'],
     async (teamTypePayload) => {
       const { data } = await createTeamType(teamTypePayload);
@@ -120,11 +120,11 @@ export const useCreateDivision = () => {
  * @param teamTypeId id of the team type to edit
  * @returns the updated team type
  */
-export const useEditDivision = (teamTypeId: string) => {
+export const useEditTeamType = (teamTypeId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<TeamType, Error, CreateDivisionPayload>(
+  return useMutation<TeamType, Error, CreateTeamTypePayload>(
     ['team types', 'edit'],
-    async (formData: CreateDivisionPayload) => {
+    async (formData: CreateTeamTypePayload) => {
       const { data } = await editTeamType(teamTypeId, formData);
       return data;
     },
@@ -136,7 +136,7 @@ export const useEditDivision = (teamTypeId: string) => {
   );
 };
 
-export const useSetDivisionImage = () => {
+export const useSetTeamTypeImage = () => {
   const queryClient = useQueryClient();
   return useMutation<TeamType, Error, { file: File; id: string }>(
     ['team types', 'set image'],

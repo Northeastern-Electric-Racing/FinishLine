@@ -7,7 +7,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import NERFormModal from '../../components/NERFormModal';
 import { FormControl, FormLabel, Select, MenuItem } from '@mui/material';
-import { useAllDivisions, useSetTeamType } from '../../hooks/team-types.hooks';
+import { useAllTeamTypes as useAllDivisions, useSetTeamType } from '../../hooks/team-types.hooks';
 
 interface SetTeamTypeInputs {
   teamId: string;

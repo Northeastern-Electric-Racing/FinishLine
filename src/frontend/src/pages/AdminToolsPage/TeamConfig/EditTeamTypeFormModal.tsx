@@ -2,7 +2,7 @@ import { TeamType as Division } from 'shared';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import DivisionFormModal from './TeamTypeFormModal';
-import { useEditDivision } from '../../../hooks/team-types.hooks';
+import { useEditTeamType as useEditDivision } from '../../../hooks/team-types.hooks';
 
 interface EditDivisionFormModalProps {
   open: boolean;
