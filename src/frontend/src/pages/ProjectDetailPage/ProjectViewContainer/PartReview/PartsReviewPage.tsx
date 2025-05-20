@@ -3,7 +3,7 @@ import { Box, Stack } from '@mui/system';
 import { Grid, FormGroup, FormControlLabel, Typography, Link } from '@mui/material';
 import { useState, useMemo } from 'react';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
-import { Project, rankUserRole, wbsPipe } from 'shared';
+import { Project, rankUserRole, Review_Status, wbsPipe } from 'shared';
 import NERSwitch from '../../../../components/NERSwitch';
 import CommonMistakes from './CommonMistakes';
 import { usePartsFromProject } from '../../../../hooks/part-review.hooks';
@@ -26,27 +26,19 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
     return parts?.filter(
       (part) =>
         part.reviewRequests.some((request) => request.reviewerRequested.userId === currentUser.userId) &&
-        // Right now, we have no way to access the reviews for the most recent submission -- thus, we can't check if
-        // the current user specifically reviewed the most recent submission (the part status does not tell us this)
-        // If we could modify the PartPreview type to include reviews for the most recent submission, the below check would work
-        // If that's too complicated, this list won't really be useful
-        // part.submissions[0].reviews.some(review => review.userCreated.userId === currentUser.userId) &&
-        (part.status === 'READY_FOR_REVIEW' || part.status === 'IN_REVIEW')
+        part.status === Review_Status.READY_FOR_REVIEW
     );
   }, [parts, currentUser]);
 
   const myPartsUnderReview = useMemo(() => {
     return parts?.filter(
-      (part) =>
-        part.assignees.some((assignee) => assignee.userId === currentUser.userId) &&
-        part.status !== 'APPROVED' &&
-        part.status !== 'IN_PROGRESS'
+      (part) => part.assignees.some((assignee) => assignee.userId === currentUser.userId) && part.status !== Review_Status.APPROVED
     );
   }, [parts, currentUser]);
 
   const allPartsUnderReview = useMemo(() => {
     return parts?.filter(
-      (part) => part.status !== 'APPROVED' && part.status !== 'IN_PROGRESS' && isAtLeastRank('LEADERSHIP', currentUser.role)
+      (part) => part.status !== Review_Status.APPROVED && part.status !== Review_Status.IN_PROGRESS && isAtLeastRank('LEADERSHIP', currentUser.role)
     );
   }, [parts, currentUser]);
 
@@ -64,9 +56,6 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
 
   return (
     <Box>
-      {/* <PartDisplay part={samplePart} contentAmount="full"></PartDisplay>
-      <PartDisplay part={samplePart} contentAmount="standard"></PartDisplay>
-      <PartDisplay part={samplePart} contentAmount="compact"></PartDisplay> */}
       <CreateMenu wbsNum={project.wbsNum} partsInProject={parts} />
       <Grid container spacing={3}>
         <Grid item xs={12}>
