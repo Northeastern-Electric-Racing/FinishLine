@@ -1,11 +1,9 @@
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useGetAllReimbursementRequestData, useGetSpendingBarCategoryData } from '../../../hooks/finance.hooks';
-import { Box, Grid, Tab, Tabs, Typography } from '@mui/material';
-import PieChart from '../FinanceComponents/PieChart';
-import { useState } from 'react';
+import { Grid } from '@mui/material';
 import SpendingAndAllocation from './SpendingAndAllocation';
-import { grey } from '@mui/material/colors';
+import AdminBalance from './AdminBalance';
 
 interface FinanceDashboardCategoryViewProps {
   startDate?: Date;
@@ -28,8 +26,6 @@ const FinanceDashboardCategoriesView: React.FC<FinanceDashboardCategoryViewProps
     error: spendingBarDataError
   } = useGetSpendingBarCategoryData({ startDate, endDate });
 
-  const [selectedTab, setSelectedTab] = useState('total');
-
   if (rrDataIsError) {
     return <ErrorPage error={rrDataError} />;
   }
@@ -47,65 +43,16 @@ const FinanceDashboardCategoriesView: React.FC<FinanceDashboardCategoryViewProps
   }
 
   return (
-    <Grid container columnSpacing={25} rowSpacing={2}>
-      <Grid item xs={12} md={4}>
-        <Box
-          sx={{
-            background: grey[900],
-            borderRadius: 2,
-            boxShadow: 2,
-            p: 2,
-            minHeight: '650px',
-            minWidth: '500px'
-          }}
-        >
-          <Typography variant="h6" fontWeight="bold" gutterBottom>
-            Balance
-          </Typography>
-          <Tabs
-            value={selectedTab}
-            onChange={(_event, newValue) => setSelectedTab(newValue)}
-            textColor="primary"
-            indicatorColor="primary"
-            variant="fullWidth"
-          >
-            <Tab label="Total" value="total" />
-            <Tab label="Budget" value="budget" />
-            <Tab label="Cash" value="cash" />
-          </Tabs>
-          {selectedTab === 'total' && (
-            <PieChart
-              totalBalance={rrData[0].totalBudget}
-              pendingFinance={rrData[0].pendingFinance}
-              pendingLeadership={rrData[0].pendingLeadership}
-              submittedToSABO={rrData[0].submittedToSabo}
-              reimbursed={rrData[0].reimbursed}
-              available={rrData[0].available}
-            />
-          )}
-          {selectedTab === 'budget' && (
-            <PieChart
-              totalBalance={rrData[1].totalBudget}
-              pendingFinance={rrData[1].pendingFinance}
-              pendingLeadership={rrData[1].pendingLeadership}
-              submittedToSABO={rrData[1].submittedToSabo}
-              reimbursed={rrData[1].reimbursed}
-              available={rrData[1].available}
-            />
-          )}
-          {selectedTab === 'cash' && (
-            <PieChart
-              totalBalance={rrData[2].totalBudget}
-              pendingFinance={rrData[2].pendingFinance}
-              pendingLeadership={rrData[2].pendingLeadership}
-              submittedToSABO={rrData[2].submittedToSabo}
-              reimbursed={rrData[2].reimbursed}
-              available={rrData[2].available}
-            />
-          )}
-        </Box>
+    <Grid
+      container
+      columnSpacing={{ xs: 1, sm: 2, md: 3 }}
+      rowSpacing={{ xs: 1, sm: 2 }}
+      sx={{ flexWrap: 'wrap', padding: { xs: 1, sm: 2 } }}
+    >
+      <Grid item xs={12} sm={6} md={4.5}>
+        <AdminBalance data={rrData} />
       </Grid>
-      <Grid item xs={12} md={8}>
+      <Grid item xs={12} sm={6} md={7.5}>
         <SpendingAndAllocation data={[spendingBarData]} />
       </Grid>
     </Grid>

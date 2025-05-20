@@ -27,8 +27,10 @@ import {
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import {
+  reimbursementRequestDataTransformer,
   reimbursementRequestTransformer,
   reimbursementTransformer,
+  spendingBarDataTransformer,
   vendorTransformer
 } from './transformers/reimbursement-requests.transformer';
 import { saveAs } from 'file-saver';
@@ -546,7 +548,7 @@ export const getReimbursementRequestProjectData = (payload: ReimbursementRequest
   return axios.get<ReimbursementRequestData>(
     apiUrls.getReimbursementRequestProjectData(payload.projectId, payload.startDate, payload.endDate),
     {
-      transformResponse: (data) => JSON.parse(data) as ReimbursementRequestData
+      transformResponse: (data) => reimbursementRequestDataTransformer(JSON.parse(data))
     }
   );
 };
@@ -555,7 +557,7 @@ export const getReimbursementRequestTeamData = (payload: ReimbursementRequestTea
   return axios.get<ReimbursementRequestData>(
     apiUrls.getReimbursementRequestTeamData(payload.teamId, payload.startDate, payload.endDate),
     {
-      transformResponse: (data) => JSON.parse(data) as ReimbursementRequestData
+      transformResponse: (data) => reimbursementRequestDataTransformer(JSON.parse(data))
     }
   );
 };
@@ -564,14 +566,14 @@ export const getReimbursementRequestCategoryData = (payload: ReimbursementReques
   return axios.get<ReimbursementRequestData>(
     apiUrls.getReimbursementRequestCategoryData(payload.otherReasonId, payload.startDate, payload.endDate),
     {
-      transformResponse: (data) => JSON.parse(data) as ReimbursementRequestData
+      transformResponse: (data) => reimbursementRequestDataTransformer(JSON.parse(data))
     }
   );
 };
 
 export const getAllReimbursementRequestData = (payload: ReimbursementRequestDataPayload) => {
   return axios.get<ReimbursementRequestData[]>(apiUrls.getAllReimbursementRequestData(payload.startDate, payload.endDate), {
-    transformResponse: (data) => JSON.parse(data) as ReimbursementRequestData[]
+    transformResponse: (data) => JSON.parse(data).map(reimbursementRequestDataTransformer)
   });
 };
 
@@ -579,14 +581,14 @@ export const getReimbursementRequestTeamTypeData = (payload: ReimbursementReques
   return axios.get<ReimbursementRequestData>(
     apiUrls.getReimbursementRequestTeamTypeData(payload.teamTypeId, payload.startDate, payload.endDate),
     {
-      transformResponse: (data) => JSON.parse(data) as ReimbursementRequestData
+      transformResponse: (data) => reimbursementRequestDataTransformer(JSON.parse(data))
     }
   );
 };
 
 export const getSpendingBarTeamData = (payload: SpendingBarTeamDataPayload) => {
   return axios.get<SpendingBarData>(apiUrls.getSpendingBarTeamData(payload.teamId, payload.startDate, payload.endDate), {
-    transformResponse: (data) => JSON.parse(data) as SpendingBarData
+    transformResponse: (data) => spendingBarDataTransformer(JSON.parse(data))
   });
 };
 
@@ -594,19 +596,19 @@ export const getSpendingBarTeamTypeData = (payload: SpendingBarTeamTypeDataPaylo
   return axios.get<SpendingBarData[]>(
     apiUrls.getSpendingBarTeamTypeData(payload.teamTypeId, payload.startDate, payload.endDate),
     {
-      transformResponse: (data) => JSON.parse(data) as SpendingBarData
+      transformResponse: (data) => JSON.parse(data).map(spendingBarDataTransformer)
     }
   );
 };
 
 export const getSpendingBarCategoryData = (payload: SpendingBarDataPayload) => {
   return axios.get<SpendingBarData>(apiUrls.getSpendingBarCategoryData(payload.startDate, payload.endDate), {
-    transformResponse: (data) => JSON.parse(data) as SpendingBarData
+    transformResponse: (data) => spendingBarDataTransformer(JSON.parse(data))
   });
 };
 
 export const getAllSpendingBarData = (payload: SpendingBarDataPayload) => {
   return axios.get<SpendingBarData[]>(apiUrls.getAllSpendingBarData(payload.startDate, payload.endDate), {
-    transformResponse: (data) => JSON.parse(data) as SpendingBarData[]
+    transformResponse: (data) => JSON.parse(data).map(spendingBarDataTransformer)
   });
 };

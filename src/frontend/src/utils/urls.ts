@@ -34,6 +34,7 @@ const projects = () => `${API_URL}/projects`;
 const allProjects = (includeDeleted: boolean) => `${projects()}/all/${includeDeleted ? 'true' : 'false'}`;
 const usersTeamsProjects = () => `${projects()}/users-teams`;
 const usersLeadingProjects = () => `${projects()}/leading`;
+const teamsProjects = (teamId: string) => `${projects()}/teams-projects/${teamId}`;
 const projectsByWbsNum = (wbsNum: string) => `${projects()}/${wbsNum}`;
 const projectsCreate = () => `${projects()}/create`;
 const projectsEdit = () => `${projects()}/edit`;
@@ -372,6 +373,7 @@ export const apiUrls = {
   projectsEditLinkTypes,
   usersLeadingProjects,
   usersTeamsProjects,
+  teamsProjects,
 
   tasksCreate,
   tasks,

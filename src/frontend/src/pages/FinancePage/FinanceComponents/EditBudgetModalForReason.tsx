@@ -8,6 +8,7 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { useGetAllIndexCodes, useGetAllOtherProductReason } from '../../../hooks/finance.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
+import { formatReasonName } from '../../../utils/reimbursement-request.utils';
 import { CreateBudgetChangeRequestPayload } from '../../../hooks/change-requests.hooks';
 import { createBudgetChangeRequest } from '../../../apis/change-requests.api';
 import { useAuth } from '../../../hooks/auth.hooks';
@@ -127,7 +128,7 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
                 renderValue={(selected) => {
                   const selectedReason = otherReasons.find((r) => r.otherProductReasonId === selected);
                   return selectedReason ? (
-                    selectedReason.name
+                    formatReasonName(selectedReason.name)
                   ) : (
                     <Typography sx={{ color: 'gray' }}>Select category to allocate to</Typography>
                   );
@@ -147,7 +148,7 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
               >
                 {otherReasons.map((reason) => (
                   <MenuItem key={reason.otherProductReasonId} value={reason.otherProductReasonId}>
-                    {reason.name}
+                    {formatReasonName(reason.name)}
                   </MenuItem>
                 ))}
               </Select>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PieChart, Pie, Tooltip, Legend, ResponsiveContainer, Label, Cell } from 'recharts';
+import { PieChart as RechartsPieChart, Pie, Tooltip, ResponsiveContainer, Label, Cell } from 'recharts';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUp from '@mui/icons-material/ArrowDropUp';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
@@ -24,7 +24,6 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
   available
 }) => {
   const [isLegendOpen, setIsLegendOpen] = useState(true);
-
   const [sectionStates, setSectionStates] = useState([
     { title: 'Pending Leadership', color: '#562016', expanded: false },
     { title: 'Pending Finance', color: '#8e3c2d', expanded: false },
@@ -43,20 +42,21 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
     { name: 'Available', value: available }
   ];
 
-  const totalValue = data.reduce((sum, entry) => sum + entry.value, 0);
+  const totalValue = data.reduce((sum, entry) => sum + Math.max(entry.value, 0), 0);
 
-  // Check if all data values are zero
-  const isDataEmpty = data.every((item) => item.value === 0);
+  // Check if all data values are zero or negative
+  const isDataEmpty = data.every((item) => item.value <= 0);
 
-  let adjustedData = data;
+  // Create adjusted data for pie chart (only non-negative values)
+  let adjustedData = data.filter((entry) => entry.value > 0);
   if (!isDataEmpty && totalValue > 0) {
     // Ensure minimum value for visible segments
     const minValue = Math.max(totalValue * MIN_PERCENTAGE, 1);
 
     // Adjust values to meet minimum threshold
-    adjustedData = data.map((entry) => ({
+    adjustedData = adjustedData.map((entry) => ({
       ...entry,
-      value: entry.value > 0 && entry.value < minValue ? minValue : entry.value
+      value: entry.value < minValue ? minValue : entry.value
     }));
 
     // Calculate total after adjustments
@@ -70,12 +70,6 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
         value: entry.value * scaleFactor
       }));
     }
-
-    // Ensure no negative values
-    adjustedData = adjustedData.map((entry) => ({
-      ...entry,
-      value: Math.max(entry.value, 0)
-    }));
   }
 
   const sectionColorMap = new Map([
@@ -90,10 +84,11 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: '192px',
-    padding: '8px 16px',
-    mb: 3,
-    fontSize: '18px',
+    width: '100%',
+    maxWidth: '200px',
+    padding: { xs: '6px 12px', sm: '8px 16px' },
+    mb: 2,
+    fontSize: { xs: '16px', sm: '18px' },
     color: 'white',
     backgroundColor: '#dd514c',
     border: 'none',
@@ -104,12 +99,11 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
   };
 
   const legendContainerStyle = {
-    position: 'absolute' as const,
-    right: '0px',
-    top: '-155px',
     display: 'flex',
     flexDirection: 'column' as const,
-    width: '192px'
+    width: '100%',
+    maxWidth: '200px',
+    mt: { xs: 1, sm: 2 }
   };
 
   const legendListStyle = {
@@ -130,7 +124,7 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
     return (
       <Box sx={legendContainerStyle}>
         <Button sx={buttonStyle} onClick={() => setIsLegendOpen((prev) => !prev)}>
-          <Typography fontSize="18px"> Total Balance </Typography>
+          <Typography fontSize={{ xs: '16px', sm: '18px' }}>Total Balance</Typography>
           {isLegendOpen ? <ArrowDropDownIcon /> : <ArrowDropUp />}
         </Button>
         {isLegendOpen && (
@@ -141,11 +135,12 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
-                    marginBottom: '16px',
+                    marginBottom: '12px',
                     color: 'white',
-                    fontSize: '16px',
+                    fontSize: { xs: '14px', sm: '16px' },
                     fontWeight: 'bold',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    padding: { xs: '4px 0', sm: '8px 0' }
                   }}
                   onClick={() => toggleItemExpand(index)}
                 >
@@ -163,16 +158,16 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
                   ) : (
                     <PlayArrowIcon sx={{ fontSize: 11, marginRight: 0.5, marginLeft: 0.4 }} />
                   )}
-                  <Typography sx={{ fontSize: '16px' }}>{section.title}</Typography>
+                  <Typography sx={{ fontSize: { xs: '14px', sm: '16px' } }}>{section.title}</Typography>
                 </ListItem>
                 {section.expanded && (
                   <Box
                     sx={{
-                      marginLeft: '60px',
+                      marginLeft: '30px',
                       marginBottom: '5px',
                       marginTop: '-8px',
                       color: 'white',
-                      fontSize: '16px'
+                      fontSize: { xs: '14px', sm: '16px' }
                     }}
                   >
                     {data[index].value < 0
@@ -193,79 +188,66 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
       sx={{
         background: 'transparent',
         display: 'flex',
-        gap: '20px',
-        padding: '10px',
-        minWidth: '600px',
-        flexWrap: 'wrap',
-        maxWidth: '900px'
+        flexDirection: { xs: 'column', sm: 'row' },
+        gap: { xs: 1, sm: 2 },
+        padding: { xs: '5px', sm: '10px' },
+        width: '100%',
+        alignItems: 'center'
       }}
     >
       {isDataEmpty ? (
-        <Box sx={{ width: '300px', minWidth: '200px' }}>
-          <Typography variant="h6" color="textSecondary" align="left" sx={{ flex: '1', marginTop: '20px' }}>
+        <Box sx={{ width: '100%', maxWidth: '300px' }}>
+          <Typography variant="h6" color="textSecondary" align="center" sx={{ marginTop: '20px' }}>
             No data available
           </Typography>
         </Box>
       ) : (
-        <ResponsiveContainer width="50%" height={400} style={{ background: 'transparent' }}>
-          <PieChart
-            margin={{ top: -30, right: 0, bottom: 60, left: 0 }}
-            style={{ background: 'transparent', minWidth: '450px', flex: '1' }}
-          >
-            <Pie
-              data={adjustedData}
-              dataKey="value"
-              nameKey="name"
-              cx="45%"
-              cy="50%"
-              innerRadius={80}
-              outerRadius={110}
-              strokeWidth={0}
-            >
-              {adjustedData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={sectionColorMap.get(entry.name) || '#afafaf'} stroke="none" />
-              ))}
-              <Label
-                value={`$${totalBalance}`}
-                position="center"
-                fill="#fff"
-                style={{
-                  fontSize: 24,
-                  fontWeight: 'bold',
-                  textAnchor: 'middle'
+        <>
+          <ResponsiveContainer width="100%" height={300} style={{ background: 'transparent' }}>
+            <RechartsPieChart margin={{ top: 0, right: 0, bottom: 20, left: 0 }} style={{ background: 'transparent' }}>
+              <Pie
+                data={adjustedData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                innerRadius={80}
+                outerRadius={110}
+                strokeWidth={0}
+              >
+                {adjustedData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={sectionColorMap.get(entry.name) || '#afafaf'} stroke="none" />
+                ))}
+                <Label
+                  value={`$${totalBalance}`}
+                  position="center"
+                  fill="#fff"
+                  style={{
+                    fontSize: 24,
+                    fontWeight: 'bold',
+                    textAnchor: 'middle'
+                  }}
+                />
+              </Pie>
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#333',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '6px'
+                }}
+                itemStyle={{
+                  color: '#fff'
+                }}
+                formatter={(_value: number, name: string) => {
+                  const originalValue = data.find((item) => item.name === name)?.value || 0;
+                  return [`$${originalValue.toLocaleString()}`, name];
                 }}
               />
-            </Pie>
-            <Tooltip
-              contentStyle={{
-                backgroundColor: '#333',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '6px'
-              }}
-              itemStyle={{
-                color: '#fff'
-              }}
-              formatter={(_value: number, name: string) => {
-                const originalValue = data.find((item) => item.name === name)?.value || 0;
-                return [`$${originalValue.toLocaleString()}`, name];
-              }}
-            />
-            <Legend
-              content={<CustomLegend />}
-              layout="vertical"
-              align="right"
-              verticalAlign="middle"
-              wrapperStyle={{
-                paddingRight: '30px',
-                paddingBottom: '0px',
-                minWidth: '200px',
-                maxWidth: '300px',
-                flex: '1'
-              }}
-            />
-          </PieChart>
-        </ResponsiveContainer>
+            </RechartsPieChart>
+          </ResponsiveContainer>
+          <CustomLegend />
+        </>
       )}
     </Box>
   );
