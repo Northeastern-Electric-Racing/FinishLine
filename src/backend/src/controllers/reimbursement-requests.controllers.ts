@@ -200,7 +200,7 @@ export default class ReimbursementRequestsController {
 
   static async createVendor(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, username, password, discountCode, twoFactorContact, notes, addedByUserId } = req.body;
+      const { name, username, password, discountCode, taxExempt, twoFactorContacts, notes } = req.body;
       const createdVendor = await ReimbursementRequestService.createVendor(
         req.currentUser,
         name,
@@ -208,9 +208,9 @@ export default class ReimbursementRequestsController {
         username,
         password,
         discountCode,
-        twoFactorContact,
-        notes,
-        addedByUserId
+        taxExempt,
+        twoFactorContacts,
+        notes
       );
       res.status(200).json(createdVendor);
     } catch (error: unknown) {
@@ -419,9 +419,20 @@ export default class ReimbursementRequestsController {
   static async editVendor(req: Request, res: Response, next: NextFunction) {
     try {
       const { vendorId } = req.params;
-      const { name } = req.body;
+      const { name, username, password, discountCode, taxExempt, twoFactorContacts, notes } = req.body;
 
-      const editedVendor = await ReimbursementRequestService.editVendor(name, vendorId, req.currentUser, req.organization);
+      const editedVendor = await ReimbursementRequestService.editVendor(
+        name,
+        vendorId,
+        username,
+        password,
+        discountCode,
+        taxExempt,
+        twoFactorContacts,
+        notes,
+        req.currentUser,
+        req.organization
+      );
       res.status(200).json(editedVendor);
     } catch (error: unknown) {
       next(error);

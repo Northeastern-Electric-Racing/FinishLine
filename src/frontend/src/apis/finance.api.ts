@@ -374,7 +374,7 @@ export const createAccountCode = async (accountCodeData: AccountCodePayload) => 
  * @param vendorData the data for the vendor
  * @returns the new vendor
  */
-export const createVendor = async (vendorData: { name: string }) => {
+export const createVendor = async (vendorData: EditVendorPayload) => {
   return axios.post(apiUrls.financeCreateVendor(), vendorData);
 };
 

@@ -5,9 +5,15 @@
 
 import { ReactElement, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { ActivationChangeRequest, ChangeRequest, ChangeRequestType, StandardChangeRequest } from 'shared';
+import {
+  ActivationChangeRequest,
+  BudgetChangeRequest,
+  ChangeRequest,
+  ChangeRequestType,
+  StandardChangeRequest
+} from 'shared';
 import { routes } from '../../utils/routes';
-import { datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
+import { datePipe, displayEnum, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import ActivationDetails from './ActivationDetails';
 import ImplementedChangesList from './ImplementedChangesList';
 import StandardDetails from './StandardDetails';
@@ -23,6 +29,7 @@ import ChangeRequestTypePill from '../../components/ChangeRequestTypePill';
 import ChangeRequestStatusPill from '../../components/ChangeRequestStatusPill';
 import DiffSection from './DiffSection/DiffSection';
 import { hasProposedChanges } from '../../utils/change-request.utils';
+import BudgetDetails from './BudgetDetails';
 
 const buildDetails = (cr: ChangeRequest): ReactElement => {
   switch (cr.type) {
@@ -30,6 +37,8 @@ const buildDetails = (cr: ChangeRequest): ReactElement => {
       return <ActivationDetails cr={cr as ActivationChangeRequest} />;
     case ChangeRequestType.StageGate:
       return <></>;
+    case ChangeRequestType.Budget:
+      return <BudgetDetails cr={cr as BudgetChangeRequest} />;
     default:
       return <StandardDetails cr={cr as StandardChangeRequest} />;
   }
@@ -55,7 +64,9 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const handleDeleteOpen = () => setDeleteModalShow(true);
 
   const isStandard =
-    changeRequest.type !== ChangeRequestType.Activation && changeRequest.type !== ChangeRequestType.StageGate;
+    changeRequest.type !== ChangeRequestType.Activation &&
+    changeRequest.type !== ChangeRequestType.StageGate &&
+    changeRequest.type !== ChangeRequestType.Budget;
 
   const isActivation = changeRequest.type === ChangeRequestType.Activation;
 
@@ -83,12 +94,20 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       <Grid container rowGap={3}>
         <Grid container columnSpacing={3}>
           <Grid item xs={'auto'}>
-            <Typography sx={{ fontWeight: 'normal', fontSize: '21px' }}>
-              <b>WBS: </b>
-              <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
-                {changeRequest.wbsName}
-              </Link>
-            </Typography>
+            {changeRequest.wbsNum && (
+              <Typography sx={{ fontWeight: 'normal', fontSize: '21px' }}>
+                <b>WBS: </b>
+                <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
+                  {changeRequest.wbsName}
+                </Link>
+              </Typography>
+            )}
+            {changeRequest.category && (
+              <Typography sx={{ fontWeight: 'normal', fontSize: '21px' }}>
+                <b>Category: </b>
+                {displayEnum(changeRequest.category.name)}
+              </Typography>
+            )}
           </Grid>
           <Grid item xs={'auto'}>
             <Typography sx={{ fontWeight: 'normal', fontSize: '21px' }}>
