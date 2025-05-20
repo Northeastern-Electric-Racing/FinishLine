@@ -6,17 +6,17 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Box } from '@mui/system';
 import HelpIcon from '@mui/icons-material/Help';
-import { TeamType } from 'shared';
-import { CreateTeamTypePayload } from '../../../hooks/team-types.hooks';
+import { TeamType as Division } from 'shared';
+import { CreateDivisionPayload } from '../../../hooks/team-types.hooks';
 import useFormPersist from 'react-hook-form-persist';
 import { FormStorageKey } from '../../../utils/form';
 import { useEffect } from 'react';
 
-interface TeamTypeFormModalProps {
+interface DivisionFormModalProps {
   open: boolean;
   handleClose: () => void;
-  defaultValues?: TeamType;
-  onSubmit: (data: CreateTeamTypePayload) => Promise<TeamType>;
+  defaultValues?: Division;
+  onSubmit: (data: CreateDivisionPayload) => Promise<Division>;
 }
 
 const schema = yup.object().shape({
@@ -25,8 +25,8 @@ const schema = yup.object().shape({
   description: yup.string().required('Description is Required')
 });
 
-const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose, defaultValues, onSubmit }) => {
-  const onFormSubmit = async (data: CreateTeamTypePayload) => {
+const DivisionFormModal: React.FC<DivisionFormModalProps> = ({ open, handleClose, defaultValues, onSubmit }) => {
+  const onFormSubmit = async (data: CreateDivisionPayload) => {
     await onSubmit(data);
     handleClose();
   };
@@ -118,4 +118,4 @@ const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose
   );
 };
 
-export default TeamTypeFormModal;
+export default DivisionFormModal;
