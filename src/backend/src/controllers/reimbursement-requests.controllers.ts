@@ -32,6 +32,18 @@ export default class ReimbursementRequestsController {
     }
   }
 
+  static async getCurrentUsersTeamsReimbursementRequests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userTeamsReimbursementRequests = await ReimbursementRequestService.getUsersTeamsReimbursementRequests(
+        req.currentUser,
+        req.organization
+      );
+      res.status(200).json(userTeamsReimbursementRequests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getAllReimbursements(req: Request, res: Response, next: NextFunction) {
     try {
       const reimbursements = await ReimbursementRequestService.getAllReimbursements(req.currentUser, req.organization);

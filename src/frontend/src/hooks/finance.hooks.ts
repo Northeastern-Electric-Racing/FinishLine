@@ -53,7 +53,8 @@ import {
   getSpendingBarCategoryData,
   getSpendingBarTeamTypeData,
   getAllSpendingBarData,
-  deleteVendor
+  deleteVendor,
+  getCurrentUsersTeamsReimbursementRequests
 } from '../apis/finance.api';
 import {
   IndexCode,
@@ -380,6 +381,16 @@ export const useGetAllAccountCodes = () => {
 export const useCurrentUserReimbursementRequests = () => {
   return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user'], async () => {
     const { data } = await getCurrentUserReimbursementRequests();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get the reimbursement requests for the current user's teams
+ */
+export const useCurrentUsersTeamsReimbursementRequests = () => {
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user'], async () => {
+    const { data } = await getCurrentUsersTeamsReimbursementRequests();
     return data;
   });
 };

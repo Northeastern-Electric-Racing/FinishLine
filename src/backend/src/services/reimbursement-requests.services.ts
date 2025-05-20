@@ -89,6 +89,64 @@ export default class ReimbursementRequestService {
   }
 
   /**
+   * Returns all reimbursement requests in the database that are created by any user in the given user's team and for the currently selected organization.
+   * @param recipient The user retrieving their teams reimbursement requests
+   * @param organizationId The organization the user is currently in
+   */
+  static async getUsersTeamsReimbursementRequests(
+    recipient: User,
+    organization: Organization
+  ): Promise<ReimbursementRequest[]> {
+    const teams = await prisma.team.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        OR: [
+          {
+            headId: recipient.userId
+          },
+          {
+            leads: {
+              some: {
+                userId: recipient.userId
+              }
+            }
+          },
+          {
+            members: {
+              some: {
+                userId: recipient.userId
+              }
+            }
+          }
+        ]
+      },
+      include: {
+        members: true,
+        leads: true
+      }
+    });
+
+    const teamUserIds = new Set<string>();
+
+    teams.forEach((team) => {
+      if (team.headId) teamUserIds.add(team.headId);
+      team.leads.forEach((lead) => teamUserIds.add(lead.userId));
+      team.members.forEach((member) => teamUserIds.add(member.userId));
+    });
+
+    const teamsReimbursementRequests = await prisma.reimbursement_Request.findMany({
+      where: {
+        dateDeleted: null,
+        recipientId: { in: Array.from(teamUserIds) },
+        organizationId: organization.organizationId
+      },
+      ...getReimbursementRequestQueryArgs(organization.organizationId)
+    });
+
+    return teamsReimbursementRequests.map(reimbursementRequestTransformer);
+  }
+
+  /**
    * Returns all reimbursements in the database that are created by the given user and for the currently selected organization.
    * @param user ther user retrieving the reimbursements
    * @param organizationId the organization the user is currently in

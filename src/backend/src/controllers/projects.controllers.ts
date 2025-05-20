@@ -352,7 +352,8 @@ export default class ProjectsController {
         price,
         subtotal,
         linkUrl,
-        notes
+        notes,
+        reimbursementRequestId
       } = req.body;
       const updatedMaterial = await BillOfMaterialsService.editMaterial(
         req.currentUser,
@@ -370,7 +371,8 @@ export default class ProjectsController {
         notes,
         unitName,
         assemblyId,
-        pdmFileName
+        pdmFileName,
+        reimbursementRequestId
       );
       res.status(200).json(updatedMaterial);
     } catch (error: unknown) {
