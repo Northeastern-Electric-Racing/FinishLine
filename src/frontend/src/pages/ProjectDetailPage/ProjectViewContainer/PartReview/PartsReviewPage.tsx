@@ -305,23 +305,6 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
         <Grid item xs={12}>
           {/* The guide should be toggled off by default for admins, heads, and leads and toggled on for all other roles */}
           {showSubmissionGuide && <SubmissionGuide />}
-          <Typography variant="h4" sx={{ mb: 2 }}>
-            {`${filteredParts?.length === parts.length ? 'All ' : ''} Parts for ${project.name}`}
-          </Typography>
-          <Grid item md={4} sm={6} xs={12}>
-            {/* sort parts by most recently created */}
-            {filteredParts
-              ?.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-              .map((part, _index) => (
-                <PartPreviewCard
-                  partPreview={part}
-                  projectName={project.abbreviation ?? project.name}
-                  redirectUrl={`/projects/${wbsPipe(project.wbsNum)}/part/${part.index}`}
-                />
-              ))}
-          </Grid>
-          {/* temporary test component to show that parts are being displayed */}
-
           <Grid container spacing={2}>
             {(partsForMeToReview ?? []).length > 0 && (
               <PartsToReview
@@ -347,6 +330,23 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
                 title={'All Parts Under Review'}
               />
             )}
+          </Grid>
+          <Typography variant="h4" sx={{ mb: 2 }}>
+            {`${filteredParts?.length === parts.length ? 'All ' : ''} Parts for ${project.name}`}
+          </Typography>
+          <Grid container spacing={2}>
+            {/* sort parts by most recently created */}
+            {filteredParts
+              ?.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+              .map((part, _index) => (
+                <Grid item md={4} sm={6} xs={12}>
+                  <PartPreviewCard
+                    partPreview={part}
+                    projectName={project.abbreviation ?? project.name}
+                    redirectUrl={`/projects/${wbsPipe(project.wbsNum)}/part/${part.index}`}
+                  />
+                </Grid>
+              ))}
           </Grid>
         </Grid>
       </Grid>
