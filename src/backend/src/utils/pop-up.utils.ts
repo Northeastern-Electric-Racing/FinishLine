@@ -78,13 +78,13 @@ export const sendCrRequestReviewPopUp = async (changeRequest: Change_Request, re
 export const sendPartReviewRequestPopUp = async (
   partLink: string,
   partName: string,
-  reviewer: User,
+  reviewerId: string,
   organizationId: string
 ) => {
   await PopUpService.sendPopUpToUsers(
     `Your review has been requested on ${partName}`,
     'edit_note',
-    [reviewer.userId],
+    [reviewerId],
     organizationId,
     partLink
   );
@@ -100,13 +100,13 @@ export const sendPartReviewRequestPopUp = async (
 export const sendPartAssignmentPopUp = async (
   partLink: string,
   partName: string,
-  assignee: User,
+  assigneeId: string,
   organizationId: string
 ) => {
   await PopUpService.sendPopUpToUsers(
     `You have been assigned to ${partName}`,
     'edit_note',
-    [assignee.userId],
+    [assigneeId],
     organizationId,
     partLink
   );

@@ -93,7 +93,7 @@ const PartOverview: React.FC<PartPageOverviewProps> = ({ part }: PartPageOvervie
   /**
    * returns the given user's name and a notification button
    */
-  function displayAssigneeOrReviewer(anyUser: User, isReviewer: boolean, status: Review_Status) {
+  function displayAssigneeOrReviewer(anyUser: User, isReviewer: boolean, status: Review_Status, partId: string) {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         {status !== Review_Status.APPROVED && (
@@ -101,9 +101,9 @@ const PartOverview: React.FC<PartPageOverviewProps> = ({ part }: PartPageOvervie
             size="small"
             onClick={() => {
               if (isReviewer) {
-                notifyPartReviewer({ partId: part.partId, reviewerId: anyUser.userId });
+                notifyPartReviewer({ partId, reviewerId: anyUser.userId });
               } else {
-                notifyPartAssignee({ partId: part.partId, assigneeId: anyUser.userId });
+                notifyPartAssignee({ partId, assigneeId: anyUser.userId });
               }
               setNotifiedUserIds((ids) => ids.add(anyUser.userId));
             }}
@@ -166,13 +166,13 @@ const PartOverview: React.FC<PartPageOverviewProps> = ({ part }: PartPageOvervie
       >
         <Stack direction={'column'} spacing={0.5} width="50%">
           <Typography>Assignees:</Typography>
-          {part.assignees.map((user) => displayAssigneeOrReviewer(user, false, part.status))}
+          {part.assignees.map((user) => displayAssigneeOrReviewer(user, false, part.status, part.partId))}
         </Stack>
         <Stack direction={'column'} spacing={0.5} width="50%">
           <Typography>Reviewers:</Typography>
           {part.reviewRequests.map((revReq) => (
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              {displayAssigneeOrReviewer(revReq.reviewerRequested, true, part.status)}
+              {displayAssigneeOrReviewer(revReq.reviewerRequested, true, part.status, part.partId)}
               {part.status !== Review_Status.APPROVED && (
                 <Box
                   sx={{

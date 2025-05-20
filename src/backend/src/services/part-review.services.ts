@@ -1012,7 +1012,7 @@ export default class PartReviewService {
    * @param creator id of the creator
    * @param organizationId id of the organization
    */
-  static async notifyReviewer(reviewerId: string, partId: string, creator: User, organizationId: string) {
+  static async notifyReviewer(reviewerId: string, partId: string, organizationId: string) {
     const part = await prisma.part.findUnique({
       where: { partId },
       include: {
@@ -1040,17 +1040,17 @@ export default class PartReviewService {
     const wbsNum = `${part.project.wbsElement.carNumber}.${part.project.wbsElement.projectNumber}.0`;
     const partLink = `/projects/${wbsNum}/part/${part.index}`;
 
-    await sendPartReviewRequestPopUp(partLink, part.commonName, creator, organizationId);
+    await sendPartReviewRequestPopUp(partLink, part.commonName, reviewerId, organizationId);
   }
 
   /**
    * Sends a notification to the assignee of a part
-   * @param partId id of the part
    * @param assigneeId id of the assignee
+   * @param partId id of the part
    * @param creator id of the creator
    * @param organizationId id of the organization
    */
-  static async notifyAssignee(partId: string, assigneeId: string, creator: User, organizationId: string) {
+  static async notifyAssignee(assigneeId: string, partId: string, organizationId: string) {
     const part = await prisma.part.findUnique({
       where: { partId },
       include: {
@@ -1078,7 +1078,7 @@ export default class PartReviewService {
     const wbsNum = `${part.project.wbsElement.carNumber}.${part.project.wbsElement.projectNumber}.0`;
     const partLink = `/projects/${wbsNum}/part/${part.index}`;
 
-    await sendPartAssignmentPopUp(partLink, part.commonName, creator, organizationId);
+    await sendPartAssignmentPopUp(partLink, part.commonName, assigneeId, organizationId);
   }
 
   /**
