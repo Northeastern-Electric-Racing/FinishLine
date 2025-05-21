@@ -2090,10 +2090,10 @@ const performSeed: () => Promise<void> = async () => {
 
   const budgetCR = await ChangeRequestsService.createBudgetChangeRequest(
     thomasEmrax,
-    otherProductReasonConsumables.otherProductReasonId,
     'BUDGET',
     50,
-    ner
+    ner,
+    otherProductReasonConsumables.otherProductReasonId
   );
 
   /**

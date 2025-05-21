@@ -19,6 +19,7 @@ export interface ChangeCreateArgs {
   implementerId: string;
   wbsElementId?: string;
   categoryId?: string;
+  accountCodeId?: string;
   detail: string;
 }
 
@@ -57,7 +58,8 @@ export const createChange = (
   crId: string | null,
   implementerId: string,
   wbsElementId: string | null,
-  categoryId: string | null
+  categoryId: string | null,
+  accountCodeId: string | null
 ): ChangeCreateArgs | undefined => {
   if (!crId) return undefined;
   if (oldValue == null && newValue !== null && wbsElementId !== null) {
@@ -74,6 +76,13 @@ export const createChange = (
       categoryId,
       detail: `Added ${nameOfField} "${newValue}"`
     };
+  } else if (oldValue == null && newValue !== null && accountCodeId !== null) {
+    return {
+      changeRequestId: crId,
+      implementerId,
+      accountCodeId,
+      detail: `Added ${nameOfField} "${newValue}"`
+    };
   } else if (oldValue !== null && newValue == null && wbsElementId !== null) {
     return {
       changeRequestId: crId,
@@ -88,6 +97,13 @@ export const createChange = (
       categoryId,
       detail: `Deleted ${nameOfField} "${oldValue}"`
     };
+  } else if (oldValue !== null && newValue == null && accountCodeId !== null) {
+    return {
+      changeRequestId: crId,
+      implementerId,
+      accountCodeId,
+      detail: `Deleted ${nameOfField} "${oldValue}"`
+    };
   } else if (oldValue !== newValue && wbsElementId !== null) {
     return {
       changeRequestId: crId,
@@ -100,6 +116,13 @@ export const createChange = (
       changeRequestId: crId,
       implementerId,
       categoryId,
+      detail: buildChangeDetail(nameOfField, `${oldValue}`, `${newValue}`)
+    };
+  } else if (oldValue !== newValue && accountCodeId !== null) {
+    return {
+      changeRequestId: crId,
+      implementerId,
+      accountCodeId,
       detail: buildChangeDetail(nameOfField, `${oldValue}`, `${newValue}`)
     };
   }
@@ -200,8 +223,8 @@ export const getWorkPackageChanges = async (
   submitterId: string
 ) => {
   let changes: ChangeCreateArgs[] = [];
-  const nameChangeJson = createChange('name', oldName, newName, crId, submitterId, wbsElementId, null);
-  const stageChangeJson = createChange('stage', oldStage, newStage, crId, submitterId, wbsElementId, null);
+  const nameChangeJson = createChange('name', oldName, newName, crId, submitterId, wbsElementId, null, null);
+  const stageChangeJson = createChange('stage', oldStage, newStage, crId, submitterId, wbsElementId, null, null);
   const startDateChangeJson = createChange(
     'start date',
     oldStartDate?.toDateString() || null,
@@ -209,9 +232,10 @@ export const getWorkPackageChanges = async (
     crId,
     submitterId,
     wbsElementId,
+    null,
     null
   );
-  const durationChangeJson = createChange('duration', oldDuration, newDuration, crId, submitterId, wbsElementId, null);
+  const durationChangeJson = createChange('duration', oldDuration, newDuration, crId, submitterId, wbsElementId, null, null);
   const blockedByChangeJson = createListChanges(
     'blocked by',
     oldBlockedBy.map(transformBlockedByToChangeListValue),
@@ -228,6 +252,7 @@ export const getWorkPackageChanges = async (
     crId,
     submitterId,
     wbsElementId,
+    null,
     null
   );
 
@@ -238,6 +263,7 @@ export const getWorkPackageChanges = async (
     crId,
     submitterId,
     wbsElementId,
+    null,
     null
   );
 

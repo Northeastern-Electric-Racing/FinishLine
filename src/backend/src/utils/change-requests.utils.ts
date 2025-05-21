@@ -321,7 +321,7 @@ export const validateNoUnreviewedOpenCRs = async (wbsElemId: string) => {
 };
 
 /**
- * throws an error if there are any other open unreviewed change requests for this wbs element
+ * throws an error if there are any other open unreviewed change requests for this other reason
  * @param otherReasonId the other reason Id to find CRs with
  * @throws if the Category has open unreviewed change requests
  *
@@ -329,6 +329,20 @@ export const validateNoUnreviewedOpenCRs = async (wbsElemId: string) => {
 export const validateNoUnreviewedOpenOtherReasonCRs = async (otherReasonId: string) => {
   const openCRs = await prisma.change_Request.findMany({
     where: { categoryId: otherReasonId, dateReviewed: null, dateDeleted: null }
+  });
+  if (openCRs.length > 1)
+    throw new HttpException(400, 'There are other open unreviewed change requests for this WBS element');
+};
+
+/**
+ * throws an error if there are any other open unreviewed change requests for this account code
+ * @param accountCodeId the account code id to find CRs with
+ * @throws if the Account Code has open unreviewed change requests
+ *
+ */
+export const validateNoUnreviewedOpenAccountCodeCRs = async (accoundCodeId: string) => {
+  const openCRs = await prisma.change_Request.findMany({
+    where: { accountCodeId: accoundCodeId, dateReviewed: null, dateDeleted: null }
   });
   if (openCRs.length > 1)
     throw new HttpException(400, 'There are other open unreviewed change requests for this WBS element');
@@ -496,7 +510,8 @@ export const reviewProposedSolution = async (
       foundCR.crId,
       reviewer.userId,
       foundCR.wbsElementId,
-      foundCR.categoryId
+      foundCR.categoryId,
+      foundCR.accountCodeId
     );
     await prisma.project.update({
       where: { projectId: foundCR.wbsElement.project.projectId },
@@ -528,7 +543,8 @@ export const reviewProposedSolution = async (
         foundCR.crId,
         reviewer.userId,
         foundCR.wbsElementId,
-        foundCR.categoryId
+        foundCR.categoryId,
+        foundCR.accountCodeId
       ),
       createChange(
         'Duration',
@@ -537,7 +553,8 @@ export const reviewProposedSolution = async (
         foundCR.crId,
         reviewer.userId,
         foundCR.wbsElementId,
-        foundCR.categoryId
+        foundCR.categoryId,
+        foundCR.accountCodeId
       )
     ];
 
