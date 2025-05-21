@@ -180,9 +180,10 @@ const CreateTeamForm = () => {
           />
         </FormControl>
         <Box sx={{ display: 'flex', justifyContent: 'right', marginBottom: '25px' }}>
-        <NERButton variant="contained" type="submit">
-          Create Team
-        </NERButton></Box>
+          <NERButton variant="contained" type="submit">
+            Create Team
+          </NERButton>
+        </Box>
       </Box>
     </form>
   );
