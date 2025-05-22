@@ -55,7 +55,7 @@ import {
   getAllSpendingBarData,
   deleteVendor,
   getAllSponsorTiers,
-  editSponsor
+  editSponsor,
   getCurrentUsersTeamsReimbursementRequests
 } from '../apis/finance.api';
 import {
