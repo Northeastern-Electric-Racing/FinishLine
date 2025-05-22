@@ -14,7 +14,10 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 const schema = yup.object().shape({
   code: yup.number().typeError('Account Code must be a number').required('Account Code is Required'),
   name: yup.string().required('Account Name is Required'),
-  amount: yup.number().optional(),
+  amount: yup
+    .number()
+    .transform((value, originalValue) => (originalValue === '' ? undefined : value))
+    .optional(),
   allowed: yup.boolean().required('Allowed is Required'),
   indexCodeIds: yup.array().of(yup.string().required()).required()
 });
@@ -74,7 +77,7 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
       open={showModal}
       onHide={handleClose}
       title={!!defaultValues ? 'Edit Account Code' : 'Add Account Code'}
-      reset={() => reset({ name: '', code: undefined, allowed: false, indexCodeIds: [] })}
+      reset={() => reset({ name: '', code: undefined, allowed: false, indexCodeIds: [], amount: undefined })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
       formId={!!defaultValues ? 'edit-account-code-form' : 'create-account-code-form'}

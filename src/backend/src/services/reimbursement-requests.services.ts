@@ -709,7 +709,7 @@ export default class ReimbursementRequestService {
         name,
         code,
         allowed,
-        amount,
+        amount: amount ?? null,
         indexCodes: { set: indexCodeIds.map((id) => ({ indexCodeId: id })) }
       },
       ...getAccountCodeQueryArgs(organization.organizationId)

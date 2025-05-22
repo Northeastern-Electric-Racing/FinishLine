@@ -219,7 +219,6 @@ export default class ReimbursementRequestsController {
   }
 
   static async createAccountCode(req: Request, res: Response, next: NextFunction) {
-    console.log('ehllo');
     try {
       const { name, code, allowed, amount, indexCodeIds } = req.body;
       const createdAccountCode = await ReimbursementRequestService.createAccountCode(
