@@ -120,7 +120,6 @@ export const getSpendingBarDataForProjectBudgetByTeam = async (
       spendingInfo: spendingInfos[index]
     }))
   };
-
   return data;
 };
 
@@ -188,9 +187,6 @@ export const getReimbursementRequestsForReimbursementRequestsByProject = async (
         organizationId,
         dateDeleted: null
       }
-    },
-    include: {
-      wbsElement: true
     }
   });
 
@@ -488,7 +484,7 @@ export const getAllReimbursementRequestData = async (
     }, 0) / 100;
 
   const budgetTotalBudget =
-    cashReimbursementRequests.reduce((reqAcc, rr) => {
+    budgetReimbursementRequests.reduce((reqAcc, rr) => {
       return reqAcc + rr.totalCost;
     }, 0) / 100;
 
@@ -567,7 +563,7 @@ export const getAllReimbursementRequestData = async (
   let budgetSubmittedToSabo = 0;
   let budgetReimbursed = 0;
 
-  cashReimbursementRequests.forEach((req) => {
+  budgetReimbursementRequests.forEach((req) => {
     const lastStatus = req.reimbursementStatuses.at(-1)?.type;
 
     switch (lastStatus) {

@@ -11,7 +11,7 @@ import { routes } from '../../utils/routes';
 import PageLayout from '../../components/PageLayout';
 import { NERButton } from '../../components/NERButton';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { isAdmin, isGuest, WbsElementStatus } from 'shared';
+import { isAdmin, isGuest, ReimbursementRequestData, WbsElementStatus } from 'shared';
 import React, { useState } from 'react';
 import DeleteTeamModal from './DeleteTeamModal';
 import SetTeamTypeModal from './SetTeamTypeModal';
@@ -22,10 +22,14 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ArchiveIcon from '@mui/icons-material/Archive';
 import SpendingBar from '../FinancePage/FinanceComponents/SpendingBar';
 import { useGetSpendingBarTeamData } from '../../hooks/finance.hooks';
+import WarningBanner from '../../components/WarningBanner';
 
 interface ParamTypes {
   teamId: string;
 }
+
+const getTotalMoneySpent = (data: ReimbursementRequestData) =>
+  data.pendingFinance + data.pendingLeadership + data.reimbursed + data.submittedToSabo;
 
 const TeamSpecificPage: React.FC = () => {
   const toast = useToast();
@@ -133,6 +137,13 @@ const TeamSpecificPage: React.FC = () => {
       </Menu>
     </Box>
   );
+  const totalBudget = data.projects.reduce((sum, project) => sum + (project.budget || 0), 0);
+
+  const amountUsed = spendingBar.data.reduce((sum, data) => sum + getTotalMoneySpent(data.spendingInfo), 0);
+
+  const overBudget = totalBudget < amountUsed;
+
+  const amountOver = amountUsed - totalBudget;
 
   return (
     <PageLayout
@@ -167,7 +178,8 @@ const TeamSpecificPage: React.FC = () => {
             </Grid>
           </PageBlock>
           <PageBlock title={'Budget'}>
-            <SpendingBar data={spendingBar.data} title={'Total Budget: $' + budget} />
+            <Box sx={{ width: 250 }}>{overBudget && <WarningBanner amount={amountOver} />}</Box>
+            <SpendingBar data={spendingBar.data} title={'Total Budget: $' + budget} edit={false} />
           </PageBlock>
           <PageBlock title={'All Projects'}>
             <Grid container spacing={2}>
