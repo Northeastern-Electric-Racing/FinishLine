@@ -19,14 +19,17 @@ import ReactHookTextField from '../../../components/ReactHookTextField';
 import { DatePicker } from '@mui/x-date-pickers';
 import { useAllUsers } from '../../../hooks/users.hooks';
 import React, { useState } from 'react';
-import { Box } from '@mui/system';
+import { Box, useTheme } from '@mui/system';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import NERAutocomplete from '../../../components/NERAutocomplete';
+import { Sponsor } from 'shared';
 
 interface SponsorFormProps {
   control: Control<SponsorPayload>;
   errors: FieldErrors<SponsorPayload>;
+  defaultValues?: Sponsor;
 }
 
 const getYears = (startYear = 1950) => {
@@ -64,7 +67,8 @@ const sponsorSchema = yup.object().shape({
     .required('Sponsor Tasks are Required')
 });
 
-export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors }: SponsorFormProps) => {
+export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, defaultValues }: SponsorFormProps) => {
+  const theme = useTheme();
   const yearsOptions = getYears();
 
   const [datePickerOpenNotify, setDatePickerOpenNotify] = useState(false);
@@ -121,7 +125,7 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors }: Spo
                 renderValue={(selected) => {
                   if (selected === true) return 'Active';
                   if (selected === false) return 'Inactive';
-                  return <Typography sx={{ color: 'gray' }}>Select status</Typography>;
+                  return <Typography sx={{ color: 'gray' }}>Select Status</Typography>;
                 }}
               >
                 <MenuItem value="true">Active</MenuItem>
@@ -129,7 +133,9 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors }: Spo
               </Select>
             )}
           ></Controller>
-          <FormHelperText>{errors.activeStatus?.message}</FormHelperText>
+          <Typography>
+            <FormHelperText sx={{ color: '#ef4345' }}>{errors.activeStatus?.message}</FormHelperText>
+          </Typography>
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={4}>
@@ -361,44 +367,27 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors }: Spo
                   <Typography variant="h6" color="#EF4345">
                     Assign To:
                   </Typography>
-
                   <Controller
                     control={control}
                     name={`sponsorTasks.${index}.assigneeUserId`}
-                    render={({ field: { onChange, value } }) => (
-                      <Select
-                        displayEmpty
-                        value={value !== undefined ? value : ''}
-                        onChange={onChange}
-                        renderValue={(selected) => {
-                          const assignee = users.find((u) => u.userId === selected);
-                          return assignee ? (
-                            assignee.firstName + ' ' + assignee.lastName
-                          ) : (
-                            <Typography sx={{ color: 'gray' }}>Select assignee</Typography>
-                          );
-                        }}
-                        sx={{ height: 56, width: '100%', textAlign: 'left' }}
-                        fullWidth
-                        MenuProps={{
-                          anchorOrigin: {
-                            vertical: 'bottom',
-                            horizontal: 'right'
-                          },
-                          transformOrigin: {
-                            vertical: 'top',
-                            horizontal: 'right'
-                          }
-                        }}
-                      >
-                        {users.map((user) => (
-                          <MenuItem key={user.userId} value={user.userId}>
-                            {user.firstName + ' ' + user.lastName}
-                          </MenuItem>
-                        ))}
-                      </Select>
+                    render={({ field: { onChange } }) => (
+                      <NERAutocomplete
+                        sx={{ width: '100%', backgroundColor: theme.palette.grey[750] }}
+                        id="sponsor-task-assignee-name-autocomplete"
+                        onChange={(_event, newValue) => onChange(newValue ? newValue.id : undefined)}
+                        options={members.map((m) => ({ label: m.firstName + ' ' + m.lastName, id: m.userId }))}
+                        size="small"
+                        placeholder={
+                          !!defaultValues?.sponsorTasks[index].assignee
+                            ? defaultValues.sponsorTasks[index].assignee.firstName +
+                              ' ' +
+                              defaultValues.sponsorTasks[index].assignee.lastName
+                            : 'Select Member'
+                        }
+                      ></NERAutocomplete>
                     )}
-                  />
+                  ></Controller>
+
                   <FormHelperText error>{errors.sponsorTasks?.[index]?.assigneeUserId?.message}</FormHelperText>
                 </FormControl>
               </Grid>
