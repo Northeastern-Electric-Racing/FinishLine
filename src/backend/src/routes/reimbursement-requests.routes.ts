@@ -156,6 +156,7 @@ reimbursementRequestsRouter.post(
   intMinZero(body('code')),
   body('allowed').isBoolean(),
   body('amount').isInt().optional(),
+  body('indexCodeIds').isArray(),
   validateInputs,
   ReimbursementRequestController.editAccountCode
 );

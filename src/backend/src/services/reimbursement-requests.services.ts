@@ -635,6 +635,7 @@ export default class ReimbursementRequestService {
    * @param allowed whether or not this Account Code is allowed
    * @param indexCodeIds an array of index code ids representing allowed refund sources
    * @param organizationId the organization the user is currently in
+   * @param amount the monetary amount in dollars for the Account Code
    * @returns the created Account Code
    */
   static async createAccountCode(
@@ -686,6 +687,7 @@ export default class ReimbursementRequestService {
    * @param submitter the person editing account code code number
    * @param indexCodeIds the new allowed refund sources
    * @param orgainzationId the organization the user is currently in
+   * @param amount the monetary amount in dollars for the Account Code
    * @returns the updated account code
    */
   static async editAccountCode(
@@ -1629,8 +1631,10 @@ export default class ReimbursementRequestService {
    * @param otherReimbursementProductReasonId id of the other reimbursement product reason being edited
    * @param org the organization the user is currently in
    * @param editor the user editing the reason
-   * @param updatedIndexCodeId the updated index code of the other reimbursement product reason
-   * @param updatedBudget the updated budget of the other reimbursement product reason
+   * @param name the updated name of the other reimbursement product reason
+   * @param budget the updated budget of the other reimbursement product reason
+   * @param indexCodeId the updated index code of the other reimbursement product reason
+   * @param accountCodeIds the updated account codes of the other reimbursement product reason
    * @returns the other reimbursement product reason with the given id
    */
 

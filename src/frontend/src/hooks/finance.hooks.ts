@@ -987,23 +987,6 @@ export const useDeleteSponsor = (sponsorId: string) => {
   );
 };
 
-/**
- * Custom React Hook to edit an other reimbursement product reason.
- *
- * @param otherReimbursementProductReasonId The id of the other reimbursement product reason
- */
-// export const useEditOtherReimbursementProductReason = (otherReimbursementProductReasonId: string) => {
-//   const queryClient = useQueryClient();
-//   return useMutation<{ message: string }, Error, EditOtherReimbursementProductReasonPayload>(
-//     ['other-reimbursement-product-reason', 'edit'],
-//     async (otherReasonData: EditOtherReimbursementProductReasonPayload) => {
-//       const { data } = await editOtherReimbursementProductReason(otherReimbursementProductReasonId, otherReasonData);
-//       queryClient.invalidateQueries(['other-reimbursement-product-reason']);
-//       return data;
-//     }
-//   );
-// };
-
 export const useGetReimbursementRequestTeamData = (reimbursementRequestData: ReimbursementRequestTeamDataPayload) =>
   useQuery<ReimbursementRequestData, Error>(
     [
