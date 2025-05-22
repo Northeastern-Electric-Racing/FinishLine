@@ -5,6 +5,7 @@ import { displayEnum } from '../../../utils/pipes';
 import DiffSectionCreate from './DiffSectionCreate';
 import DiffSectionEdit from './DiffSectionEdit';
 import { projectProposedChangesToPreview, workPackageProposedChangesToPreview } from '../../../utils/diff-page.utils';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 
 interface DiffSectionProps {
   changeRequest: StandardChangeRequest;
@@ -19,7 +20,7 @@ enum ChangeRequestAction {
 
 const DiffSection: React.FC<DiffSectionProps> = ({ changeRequest }) => {
   const { wbsNum, projectProposedChanges, workPackageProposedChanges } = changeRequest;
-  const isOnProject = isProject(wbsNum);
+  const isOnProject = wbsNum ? isProject(wbsNum) : false;
 
   const changeRequestAction: ChangeRequestAction =
     projectProposedChanges && projectProposedChanges.carNumber !== undefined
@@ -44,7 +45,7 @@ const DiffSection: React.FC<DiffSectionProps> = ({ changeRequest }) => {
           projectProposedChanges={projectProposedChangesPreview}
           workPackageProposedChanges={workPackageProposedChangesPreview}
         />
-      ) : (
+      ) : wbsNum ? (
         <DiffSectionEdit
           projectProposedChanges={projectProposedChangesPreview}
           workPackageProposedChanges={workPackageProposedChangesPreview}
@@ -52,6 +53,8 @@ const DiffSection: React.FC<DiffSectionProps> = ({ changeRequest }) => {
           originalWorkPackageData={originalWorkPackageData}
           wbsNum={wbsNum}
         />
+      ) : (
+        <LoadingIndicator />
       )}
     </Box>
   );

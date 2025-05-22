@@ -34,6 +34,7 @@ const projects = () => `${API_URL}/projects`;
 const allProjects = (includeDeleted: boolean) => `${projects()}/all/${includeDeleted ? 'true' : 'false'}`;
 const usersTeamsProjects = () => `${projects()}/users-teams`;
 const usersLeadingProjects = () => `${projects()}/leading`;
+const teamsProjects = (teamId: string) => `${projects()}/teams-projects/${teamId}`;
 const projectsByWbsNum = (wbsNum: string) => `${projects()}/${wbsNum}`;
 const projectsCreate = () => `${projects()}/create`;
 const projectsEdit = () => `${projects()}/edit`;
@@ -82,6 +83,7 @@ const changeRequestDelete = (id: string) => changeRequestsById(id) + '/delete';
 const changeRequestsCreate = () => `${changeRequests()}/new`;
 const changeRequestsCreateActivation = () => `${changeRequestsCreate()}/activation`;
 const changeRequestsCreateStageGate = () => `${changeRequestsCreate()}/stage-gate`;
+const changeRequestsCreateBudget = () => `${changeRequestsCreate()}/budget`;
 const changeRequestsCreateStandard = () => `${changeRequestsCreate()}/standard`;
 const changeRequestCreateProposeSolution = () => `${changeRequestsCreate()}/proposed-solution`;
 const changeRequestRequestReviewer = (id: string) => changeRequestsById(id) + '/request-review';
@@ -231,6 +233,7 @@ const getAllSpendingBarData = (startDate?: Date, endDate?: Date): string => {
 };
 const getAllSponsorTiers = () => `${financeRoutesEndpoints()}/sponsorTiers`;
 const editSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/edit`;
+const financeGetUsersTeamsReimbursementRequests = () => `${financeEndpoints()}/reimbursements/current-user-team`;
 
 /**************** Bill of Material Endpoints **************************/
 const bomEndpoints = () => `${API_URL}/projects/bom`;
@@ -373,6 +376,7 @@ export const apiUrls = {
   projectsEditLinkTypes,
   usersLeadingProjects,
   usersTeamsProjects,
+  teamsProjects,
 
   tasksCreate,
   tasks,
@@ -397,6 +401,7 @@ export const apiUrls = {
   changeRequestsCreate,
   changeRequestsCreateActivation,
   changeRequestsCreateStageGate,
+  changeRequestsCreateBudget,
   changeRequestsCreateStandard,
   changeRequestCreateProposeSolution,
   changeRequestRequestReviewer,
@@ -479,6 +484,7 @@ export const apiUrls = {
   getAllSpendingBarData,
   getAllSponsorTiers,
   editSponsor,
+  financeGetUsersTeamsReimbursementRequests,
 
   bomEndpoints,
   bomGetMaterialsByWbsNum,

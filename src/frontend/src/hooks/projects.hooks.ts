@@ -29,7 +29,8 @@ import {
   getAllUsefulLinks,
   setUsefulLinks,
   getUsersTeamsProjects,
-  getUsersLeadingProjects
+  getUsersLeadingProjects,
+  getTeamsProjects
 } from '../apis/projects.api';
 import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 import { useCurrentUser } from './users.hooks';
@@ -54,6 +55,13 @@ export const useGetUsersTeamsProjects = () => {
 export const useGetUsersLeadingProjects = () => {
   return useQuery<ProjectPreview[], Error>(['projects', 'leading'], async () => {
     const { data } = await getUsersLeadingProjects();
+    return data;
+  });
+};
+
+export const useGetTeamsProjects = (teamId: string) => {
+  return useQuery<Project[], Error>(['projects', 'teams'], async () => {
+    const { data } = await getTeamsProjects(teamId);
     return data;
   });
 };

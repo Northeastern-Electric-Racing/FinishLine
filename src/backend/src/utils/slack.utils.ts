@@ -1,5 +1,5 @@
 import { ChangeRequest, daysBetween, Task, UserPreview, wbsPipe, calculateEndDate, meetingStartTimePipe } from 'shared';
-import { User } from '@prisma/client';
+import { Reimbursement_Product_Other_Reason, User } from '@prisma/client';
 import {
   editMessage,
   getChannelName,
@@ -259,17 +259,21 @@ export const sendAndGetSlackCRNotifications = async (
   teams: Team[],
   changeRequest: Change_Request,
   submitter: User,
-  wbsElement: WBS_Element,
-  projectWbsName: string
+  wbsElement?: WBS_Element,
+  projectWbsName?: string,
+  category?: Reimbursement_Product_Other_Reason
 ) => {
   const notifications: { channelId: string; ts: string }[] = [];
   let message = '';
   switch (changeRequest.type) {
     case 'ACTIVATION':
-      message = `${submitter.firstName} ${submitter.lastName} wants to activate ${wbsElement.name} in ${projectWbsName}`;
+      message = `${submitter.firstName} ${submitter.lastName} wants to activate ${wbsElement?.name} in ${projectWbsName}`;
       break;
     case 'STAGE_GATE':
-      message = `${submitter.firstName} ${submitter.lastName} wants to stage gate ${wbsElement.name} in ${projectWbsName}`;
+      message = `${submitter.firstName} ${submitter.lastName} wants to stage gate ${wbsElement?.name} in ${projectWbsName}`;
+      break;
+    case 'BUDGET':
+      message = `${submitter.firstName} ${submitter.lastName} wants to change the budget of ${category?.name}`;
       break;
     default:
       message = `${changeRequest.type} CR submitted by ${submitter.firstName} ${submitter.lastName} for the ${projectWbsName} project`;
