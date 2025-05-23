@@ -18,8 +18,8 @@ const EditReimbursementRequestRenderedDefaultValues: React.FC<{
       title="Edit Reimbursement Request"
       previousPages={[
         {
-          name: 'Finance',
-          route: routes.FINANCE
+          name: 'Reimbursement Requests',
+          route: routes.REIMBURSEMENT_REQUESTS
         },
         {
           name: `${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request`,
@@ -49,7 +49,6 @@ const EditReimbursementRequestRenderedDefaultValues: React.FC<{
           }))
         }}
         onFormExit={onExitEditPage}
-        previousPage={previousPage}
       />
     </PageLayout>
   );

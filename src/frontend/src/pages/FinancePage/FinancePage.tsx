@@ -258,11 +258,7 @@ const FinancePage = () => {
         title={sidePageTitle}
         component={
           sidePageTitle === 'Create Reimbursement Request' ? (
-            <ReimbursementRequestForm
-              submitText="Submit"
-              submitData={onSubmit}
-              previousPage={routes.NEW_REIMBURSEMENT_REQUEST}
-            />
+            <ReimbursementRequestForm submitText="Submit" submitData={onSubmit} />
           ) : (
             <Typography>This is a side page</Typography>
           )

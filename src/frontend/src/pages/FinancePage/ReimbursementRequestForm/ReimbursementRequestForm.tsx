@@ -46,7 +46,6 @@ interface ReimbursementRequestFormProps {
   submitData: (data: ReimbursementRequestDataSubmission) => Promise<string>;
   onFormExit?: () => void;
   defaultValues?: ReimbursementRequestFormInput;
-  previousPage: string;
 }
 
 const RECEIPTS_REQUIRED = import.meta.env.VITE_RR_RECEIPT_REQUIREMENT || 'disabled';
@@ -130,8 +129,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
   submitText,
   defaultValues,
   submitData,
-  onFormExit,
-  previousPage
+  onFormExit
 }) => {
   const {
     handleSubmit,
@@ -294,7 +292,6 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       handleSubmit={handleSubmit}
       allWbsElements={allProjectWbsElements}
       submitText={submitText}
-      previousPage={previousPage}
       setValue={setValue}
       hasSecureSettingsSet={hasSecureSettingsSet}
       register={register}

@@ -418,12 +418,7 @@ const ReimbursementRequestInfo = ({
         handleClose={closeCreateSidePage}
         title={sidePageTitle}
         component={
-          <ReimbursementRequestForm
-            submitText="Submit"
-            submitData={onSubmitCreate}
-            onFormExit={closeCreateSidePage}
-            previousPage={routes.REIMBURSEMENT_REQUESTS}
-          />
+          <ReimbursementRequestForm submitText="Submit" submitData={onSubmitCreate} onFormExit={closeCreateSidePage} />
         }
       />
     </Box>

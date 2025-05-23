@@ -72,7 +72,6 @@ interface ReimbursementRequestFormViewProps {
   watch: UseFormWatch<ReimbursementRequestFormInput>;
   register: UseFormRegister<ReimbursementRequestFormInput>;
   submitText: 'Save' | 'Submit';
-  previousPage: string;
   setValue: UseFormSetValue<ReimbursementRequestFormInput>;
   hasSecureSettingsSet: boolean;
   onFormExit?: () => void;
@@ -95,7 +94,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   watch,
   register,
   submitText,
-  previousPage,
   setValue,
   hasSecureSettingsSet,
   onFormExit
