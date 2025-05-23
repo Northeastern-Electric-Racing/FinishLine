@@ -44,6 +44,7 @@ export interface ReimbursementRequestDataSubmission extends ReimbursementRequest
 interface ReimbursementRequestFormProps {
   submitText: 'Save' | 'Submit';
   submitData: (data: ReimbursementRequestDataSubmission) => Promise<string>;
+  onFormExit?: () => void;
   defaultValues?: ReimbursementRequestFormInput;
   previousPage: string;
 }
@@ -129,10 +130,12 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
   submitText,
   defaultValues,
   submitData,
+  onFormExit,
   previousPage
 }) => {
   const {
     handleSubmit,
+
     control,
     formState: { errors },
     watch,
@@ -295,6 +298,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       setValue={setValue}
       hasSecureSettingsSet={hasSecureSettingsSet}
       register={register}
+      onFormExit={onFormExit}
     />
   );
 };

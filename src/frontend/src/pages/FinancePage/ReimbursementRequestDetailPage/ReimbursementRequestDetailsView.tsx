@@ -540,7 +540,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
           showPage={showEditSidePage}
           handleClose={closeSidePage}
           title={''}
-          component={<EditReimbursementRequestPage onSubmitEditData={onSubmit} />}
+          component={<EditReimbursementRequestPage onExitEditPage={closeSidePage} onSubmitEditData={onSubmit} />}
         />
         <Box sx={{ display: 'flex', mt: 2 }}>
           <Box>

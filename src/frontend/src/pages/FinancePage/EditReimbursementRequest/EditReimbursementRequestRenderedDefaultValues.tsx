@@ -9,7 +9,8 @@ import { centsToDollar, fullNamePipe } from '../../../utils/pipes';
 const EditReimbursementRequestRenderedDefaultValues: React.FC<{
   reimbursementRequest: ReimbursementRequest;
   onSubmitData: (data: ReimbursementRequestDataSubmission) => Promise<string>;
-}> = ({ reimbursementRequest, onSubmitData }) => {
+  onExitEditPage: () => void;
+}> = ({ reimbursementRequest, onSubmitData, onExitEditPage }) => {
   const previousPage = `${routes.REIMBURSEMENT_REQUESTS}/my-requests/${reimbursementRequest.reimbursementRequestId}`;
 
   return (
@@ -47,6 +48,7 @@ const EditReimbursementRequestRenderedDefaultValues: React.FC<{
             googleFileId: receipt.googleFileId
           }))
         }}
+        onFormExit={onExitEditPage}
         previousPage={previousPage}
       />
     </PageLayout>

@@ -75,6 +75,7 @@ interface ReimbursementRequestFormViewProps {
   previousPage: string;
   setValue: UseFormSetValue<ReimbursementRequestFormInput>;
   hasSecureSettingsSet: boolean;
+  onFormExit?: () => void;
 }
 
 const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> = ({
@@ -96,7 +97,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   submitText,
   previousPage,
   setValue,
-  hasSecureSettingsSet
+  hasSecureSettingsSet,
+  onFormExit
 }) => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [showAddRefundSourceModal, setShowAddRefundSourceModal] = useState(false);
@@ -857,8 +859,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         </Box>
         <Box sx={{ display: 'flex', alignSelf: 'center' }}>
           <NERFailButton
+            onClick={() => onFormExit?.()}
             variant="contained"
-            href={previousPage}
             sx={{ mx: 1, background: '#dd524c', color: 'white', borderRadius: '10px' }}
           >
             Cancel
