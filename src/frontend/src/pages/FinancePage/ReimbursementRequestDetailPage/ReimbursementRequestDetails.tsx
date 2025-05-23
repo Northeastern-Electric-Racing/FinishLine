@@ -8,7 +8,11 @@ import { useParams } from 'react-router-dom';
 import ReimbursementRequestDetailsView from './ReimbursementRequestDetailsView';
 import ErrorPage from '../../ErrorPage';
 
-const ReimbursementRequestDetails: React.FC = () => {
+interface ReimbursementRequestDetailsProp {
+  onCloseEditPage: () => void;
+}
+
+const ReimbursementRequestDetails: React.FC<ReimbursementRequestDetailsProp> = ({ onCloseEditPage }) => {
   const { id } = useParams<{ id: string }>();
   const {
     data: reimbursementRequest,
@@ -28,6 +32,9 @@ const ReimbursementRequestDetails: React.FC = () => {
         // refresh the single instance of the reimbursement request,
         // not the entire dataset (seems better that way)
         refetchSingleReimbursementRequest();
+      }}
+      onCloseEditPage={() => {
+        onCloseEditPage();
       }}
     />
   );

@@ -67,12 +67,14 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
-  onCloseSidePage?: () => void;
+  onCloseSidePage: () => void;
+  onCloseEditPage: () => void;
 }
 
 const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewProps> = ({
   reimbursementRequest,
-  onCloseSidePage
+  onCloseSidePage,
+  onCloseEditPage
 }) => {
   const theme = useTheme();
   const user = useCurrentUser();
@@ -106,15 +108,16 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const isSaboSubmitted = isReimbursementRequestSaboSubmitted(reimbursementRequest);
   const isLeadershipApproved = isReimbursementRequestLeadershipApproved(reimbursementRequest);
   const isPendingFinance = isReimbursementRequestPendingFinance(reimbursementRequest);
-  const [showSidePage, setShowSidePage] = useState(false);
+  const [showEditSidePage, setShowEditSidePage] = useState(false);
 
   const openSidePage = () => {
-    setShowSidePage(true);
+    setShowEditSidePage(true);
   };
 
   const closeSidePage = () => {
-    setShowSidePage(false);
-    onCloseSidePage?.();
+    setShowEditSidePage(false);
+    onCloseSidePage();
+    onCloseEditPage();
   };
 
   const handleDelete = async () => {
@@ -534,7 +537,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
           reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
         />
         <SidePage
-          showPage={showSidePage}
+          showPage={showEditSidePage}
           handleClose={closeSidePage}
           title={''}
           component={<EditReimbursementRequestPage onSubmitEditData={onSubmit} />}

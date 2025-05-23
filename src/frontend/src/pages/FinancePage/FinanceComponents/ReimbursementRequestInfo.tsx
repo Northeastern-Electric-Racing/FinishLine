@@ -44,7 +44,7 @@ interface ReimbursementRequestInfoProps {
   statuses?: ReimbursementStatusType[];
   startDate?: Date | null;
   endDate?: Date | null;
-  onCloseSidePage?: () => void;
+  onCloseSidePage: () => void;
 }
 
 interface ReimbursementTableHeadCell {
@@ -203,12 +203,12 @@ const ReimbursementRequestInfo = ({
 
   const closeSidePage = () => {
     setShowSidePage(false);
-    onCloseSidePage?.();
+    onCloseSidePage();
   };
 
   const closeCreateSidePage = () => {
     setShowCreateSidePage(false);
-    onCloseSidePage?.();
+    onCloseSidePage();
   };
 
   const { isLoading: createReimbursementRequestIsLoading, mutateAsync: createReimbursementRequest } =
@@ -287,7 +287,7 @@ const ReimbursementRequestInfo = ({
                     showPage={showSidePage}
                     handleClose={closeSidePage}
                     title={''}
-                    component={<ReimbursementRequestDetails />}
+                    component={<ReimbursementRequestDetails onCloseEditPage={closeSidePage} />}
                   />
                   <TableCell align="center">
                     {
@@ -419,11 +419,11 @@ const ReimbursementRequestInfo = ({
         handleClose={closeCreateSidePage}
         title={sidePageTitle}
         component={
-          sidePageTitle === 'Create Reimbursement Request' ? (
-            <ReimbursementRequestForm submitText="Submit" submitData={onSubmitCreate} previousPage={routes.FINANCE} />
-          ) : (
-            <Typography>This is a side page</Typography>
-          )
+          <ReimbursementRequestForm
+            submitText="Submit"
+            submitData={onSubmitCreate}
+            previousPage={routes.REIMBURSEMENT_REQUESTS}
+          />
         }
       />
     </Box>

@@ -10,7 +10,7 @@ import ReimbursementRequestInfo from './FinanceComponents/ReimbursementRequestIn
 interface ReimbursementRequestTableProps {
   userReimbursementRequests: ReimbursementRequest[];
   allReimbursementRequests?: ReimbursementRequest[];
-  onCloseSidePage?: () => void;
+  onCloseSidePage: () => void;
   searchText?: string;
   statuses?: ReimbursementStatusType[];
   startDate?: Date | null;

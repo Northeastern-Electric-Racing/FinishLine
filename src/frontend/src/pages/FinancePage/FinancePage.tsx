@@ -43,12 +43,14 @@ const FinancePage = () => {
 
   const {
     data: userReimbursementRequests,
+    refetch: refetchUserReimbursementRequests,
     isLoading: userReimbursementRequestIsLoading,
     isError: userReimbursementRequestIsError,
     error: userReimbursementRequestError
   } = useCurrentUserReimbursementRequests();
   const {
     data: allReimbursementRequests,
+    refetch: refetchAllReimbursementRequests,
     isLoading: allReimbursementRequestsIsLoading,
     isError: allReimbursementRequestsIsError,
     error: allReimbursementRequestsError
@@ -234,6 +236,10 @@ const FinancePage = () => {
             <ReimbursementRequestTable
               userReimbursementRequests={userReimbursementRequests}
               allReimbursementRequests={allReimbursementRequests}
+              onCloseSidePage={() => {
+                refetchUserReimbursementRequests();
+                refetchAllReimbursementRequests();
+              }}
             />
           </Box>
         </Grid>
