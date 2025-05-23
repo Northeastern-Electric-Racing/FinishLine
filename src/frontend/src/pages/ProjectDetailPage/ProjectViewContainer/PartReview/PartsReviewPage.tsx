@@ -2,10 +2,11 @@ import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { Grid, Box, FormControlLabel, Autocomplete, TextField, Button, Chip, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { useAllUsers, useCurrentUser } from '../../../../hooks/users.hooks';
-import { Project, rankUserRole, Review_Status, wbsPipe } from 'shared';
+import { isAtLeastRank, Project, rankUserRole, Review_Status, wbsPipe } from 'shared';
 import NERSwitch from '../../../../components/NERSwitch';
 import { useGetAllPartTags, usePartsFromProject } from '../../../../hooks/part-review.hooks';
 import ErrorPage from '../../../ErrorPage';
+import PartsToReview from './PartsToReview';
 import CreateMenu from './PartReviewComponents/PartFormModels/CreateMenu';
 import SubmissionGuide from './PartReviewComponents/SubmissionGuide';
 import { PartPreviewCard } from './PartReviewComponents/PartPreviewCard';
@@ -19,6 +20,39 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
     return rankUserRole(userRole) < rankUserRole('LEADERSHIP');
   });
   const { data: parts, isLoading, isError, error } = usePartsFromProject(wbsPipe(project.wbsNum));
+
+  const partsForMeToReview = useMemo(() => {
+    return parts?.filter(
+      (part) =>
+        part.reviewRequests.some((request) => request.reviewerRequested.userId === currentUser.userId) &&
+        part.status === Review_Status.READY_FOR_REVIEW
+    );
+  }, [parts, currentUser]);
+
+  const myPartsUnderReview = useMemo(() => {
+    return parts?.filter(
+      (part) =>
+        part.assignees.some((assignee) => assignee.userId === currentUser.userId) && part.status !== Review_Status.APPROVED
+    );
+  }, [parts, currentUser]);
+
+  const allPartsUnderReview = useMemo(() => {
+    return parts?.filter(
+      (part) =>
+        part.status !== Review_Status.APPROVED &&
+        part.status !== Review_Status.IN_PROGRESS &&
+        isAtLeastRank('LEADERSHIP', currentUser.role)
+    );
+  }, [parts, currentUser]);
+
+  const formatStyle = useMemo(() => {
+    const nonEmptyCount = [partsForMeToReview, myPartsUnderReview, allPartsUnderReview].filter(
+      (partArr) => partArr?.length !== 0
+    ).length;
+    if (nonEmptyCount === 3) return 'compact';
+    if (nonEmptyCount === 2) return 'standard';
+    return 'full';
+  }, [partsForMeToReview, myPartsUnderReview, allPartsUnderReview]);
   const { data: tags, isLoading: tagsLoading, isError: tagsIsError, error: tagsError } = useGetAllPartTags();
   const { data: users, isLoading: usersLoading, isError: usersIsError, error: usersError } = useAllUsers();
 
@@ -271,10 +305,36 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
         <Grid item xs={12}>
           {/* The guide should be toggled off by default for admins, heads, and leads and toggled on for all other roles */}
           {showSubmissionGuide && <SubmissionGuide />}
+          <Grid container spacing={2}>
+            {(partsForMeToReview ?? []).length > 0 && (
+              <PartsToReview
+                project={project}
+                parts={partsForMeToReview}
+                formatStyle={formatStyle}
+                title={'Parts For Me To Review'}
+              />
+            )}
+            {(myPartsUnderReview ?? []).length > 0 && (
+              <PartsToReview
+                project={project}
+                parts={myPartsUnderReview}
+                formatStyle={formatStyle}
+                title={'My Parts Under Review'}
+              />
+            )}
+            {(allPartsUnderReview ?? []).length > 0 && (
+              <PartsToReview
+                project={project}
+                parts={allPartsUnderReview}
+                formatStyle={formatStyle}
+                title={'All Parts Under Review'}
+              />
+            )}
+          </Grid>
           <Typography variant="h4" sx={{ mb: 2 }}>
             {`${filteredParts?.length === parts.length ? 'All ' : ''} Parts for ${project.name}`}
           </Typography>
-          <Grid container spacing={3}>
+          <Grid container spacing={2}>
             {/* sort parts by most recently created */}
             {filteredParts
               ?.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())

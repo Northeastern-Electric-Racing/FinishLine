@@ -21,7 +21,7 @@ export function PartPreviewCard({ partPreview, projectName, redirectUrl }: PartP
     <Link component={RouterLink} to={redirectUrl} sx={{ textDecoration: 'none', color: 'inherit' }}>
       <Card
         sx={{
-          maxWidth: 400,
+          maxWidth: '30vw',
           border: '0.5px solid rgb(193, 193, 193)',
           borderRadius: '8px',
           bgcolor: grey[800],
@@ -61,7 +61,7 @@ export function PartPreviewCard({ partPreview, projectName, redirectUrl }: PartP
           ) : (
             <Box
               sx={{
-                height: 200,
+                height: '15vw',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',

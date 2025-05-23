@@ -584,7 +584,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Project 5 */
-  const { projectWbsNumber: project5WbsNumber } = await seedProject(
+  const { projectWbsNumber: project5WbsNumber, projectId: project5Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
     fergus.wbsElement.carNumber,
@@ -612,7 +612,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Project 6 */
-  const { projectWbsNumber: project6WbsNumber } = await seedProject(
+  const { projectWbsNumber: project6WbsNumber, projectId: project6Id } = await seedProject(
     aang,
     changeRequest1.crId,
     0,
@@ -640,7 +640,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Project 7 */
-  const { projectWbsNumber: project7WbsNumber } = await seedProject(
+  const { projectWbsNumber: project7WbsNumber, projectId: project7Id } = await seedProject(
     lexLuther,
     changeRequest1.crId,
     0,
@@ -2235,6 +2235,190 @@ const performSeed: () => Promise<void> = async () => {
       },
       userCreated: {
         connect: { userId: zuko.userId }
+      }
+    }
+  });
+
+  // const reviewRequest1 = await prisma.partReviewRequest.create({
+  //   data: {
+  //     partReviewRequestId: '001',
+  //     requesterId: hawkMan.userId,
+  //     reviewerId: batman.userId,
+
+  //   }
+  // });
+
+  const part4Example = await prisma.part.create({
+    data: {
+      partId: '004',
+      index: 100,
+      commonName: 'barrel',
+      status: 'IN_PROGRESS',
+      project: {
+        connect: { projectId: project7Id }
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      },
+      assignees: {
+        connect: { userId: hawkMan.userId }
+      },
+      reviewRequests: {
+        create: {
+          partReviewRequestId: '001',
+          requesterId: hawkMan.userId,
+          reviewerId: batman.userId
+        }
+      }
+    }
+  });
+
+  const part5Example = await prisma.part.create({
+    data: {
+      partId: '005',
+      index: 101,
+      commonName: 'particle accelerator',
+      status: 'READY_FOR_REVIEW',
+      project: {
+        connect: { projectId: project7Id }
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      },
+      assignees: {
+        connect: { userId: hawkMan.userId }
+      },
+      reviewRequests: {
+        create: {
+          partReviewRequestId: '002',
+          requesterId: hawkMan.userId,
+          reviewerId: batman.userId
+        }
+      }
+    }
+  });
+
+  const part6Example = await prisma.part.create({
+    data: {
+      partId: '006',
+      index: 102,
+      commonName: 'kill switch',
+      status: 'IN_REVIEW',
+      project: {
+        connect: { projectId: project7Id }
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      },
+      assignees: {
+        connect: { userId: hawkMan.userId }
+      },
+      reviewRequests: {
+        create: {
+          partReviewRequestId: '003',
+          requesterId: hawkMan.userId,
+          reviewerId: batman.userId
+        }
+      }
+    }
+  });
+
+  const part7Example = await prisma.part.create({
+    data: {
+      partId: '007',
+      index: 103,
+      commonName: 'self-destruct button',
+      status: 'REVIEWED',
+      project: {
+        connect: { projectId: project7Id }
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      },
+      assignees: {
+        connect: { userId: hawkMan.userId }
+      },
+      reviewRequests: {
+        create: {
+          partReviewRequestId: '004',
+          requesterId: hawkMan.userId,
+          reviewerId: batman.userId
+        }
+      }
+    }
+  });
+
+  const part8Example = await prisma.part.create({
+    data: {
+      partId: '008',
+      index: 104,
+      commonName: 'anti-jonkler serum',
+      status: 'APPROVED',
+      project: {
+        connect: { projectId: project7Id }
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      },
+      assignees: {
+        connect: { userId: hawkMan.userId }
+      },
+      reviewRequests: {
+        create: {
+          partReviewRequestId: '005',
+          requesterId: hawkMan.userId,
+          reviewerId: batman.userId
+        }
+      }
+    }
+  });
+
+  const part9Example = await prisma.part.create({
+    data: {
+      partId: '009',
+      index: 105,
+      commonName: 'huge battery',
+      status: 'IN_PROGRESS',
+      project: {
+        connect: { projectId: project7Id }
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      },
+      assignees: {
+        connect: { userId: flash.userId }
+      },
+      reviewRequests: {
+        create: {
+          partReviewRequestId: '006',
+          requesterId: hawkMan.userId,
+          reviewerId: batman.userId
+        }
+      }
+    }
+  });
+
+  const part10Example = await prisma.part.create({
+    data: {
+      partId: '010',
+      index: 106,
+      commonName: 'small battery',
+      status: 'APPROVED',
+      project: {
+        connect: { projectId: project7Id }
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      },
+      assignees: {
+        connect: { userId: flash.userId }
+      },
+      reviewRequests: {
+        create: {
+          partReviewRequestId: '007',
+          requesterId: hawkMan.userId,
+          reviewerId: batman.userId
+        }
       }
     }
   });
