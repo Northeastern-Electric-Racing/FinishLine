@@ -8,8 +8,7 @@ import {
   TableContainer,
   TableHead,
   TablePagination,
-  TableRow,
-  Typography
+  TableRow
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useState } from 'react';
