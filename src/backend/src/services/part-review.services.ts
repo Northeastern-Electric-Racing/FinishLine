@@ -258,10 +258,10 @@ export default class PartReviewService {
           description,
           status: reviewStatus,
           tags: {
-            connect: tagIds.map((partTagId) => ({ partTagId }))
+            set: tagIds.map((partTagId) => ({ partTagId }))
           },
           assignees: {
-            connect: assigneeIds.map((userId) => ({ userId }))
+            set: assigneeIds.map((userId) => ({ userId }))
           }
         },
         ...getPartQueryArgs(organizationId)
