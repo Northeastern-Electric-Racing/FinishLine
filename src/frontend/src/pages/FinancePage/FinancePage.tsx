@@ -24,7 +24,6 @@ import {
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageLayout from '../../components/PageLayout';
-import { routes } from '../../utils/routes';
 import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
 import PendingAdvisorModal from './FinanceComponents/PendingAdvisorListModal';
 import { isAdmin, isGuest } from 'shared';
