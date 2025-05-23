@@ -44,11 +44,22 @@ const WorkPackageTemplateTable = () => {
         {workPackageTemplate.templateName}
       </TableCell>
       <TableCell
-        sx={{ borderRight: '1px solid', borderBottom: index === workPackageTemplates.length - 1 ? 'none' : '1px solid', verticalAlign: 'middle' }}
+        sx={{
+          borderRight: '1px solid',
+          borderBottom: index === workPackageTemplates.length - 1 ? 'none' : '1px solid',
+          verticalAlign: 'middle'
+        }}
       >
         {workPackageTemplate.templateNotes}
       </TableCell>
-      <TableCell align="center" sx={{ border: 'transparent', verticalAlign: 'middle', borderBottom: index === workPackageTemplates.length - 1 ? 'none' : '1px solid'}}>
+      <TableCell
+        align="center"
+        sx={{
+          border: 'transparent',
+          verticalAlign: 'middle',
+          borderBottom: index === workPackageTemplates.length - 1 ? 'none' : '1px solid'
+        }}
+      >
         <IconButton
           onClick={(event) => {
             event.stopPropagation();
