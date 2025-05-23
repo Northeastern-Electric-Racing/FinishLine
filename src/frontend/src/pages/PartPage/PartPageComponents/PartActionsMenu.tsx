@@ -12,6 +12,7 @@ import {
   useCreatePartReview,
   useDeletePart,
   useEditPart,
+  useEditPartReview,
   useEditPartSubmission,
   usePartsFromProject,
   useUploadPreviewImage
@@ -23,6 +24,7 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import ApprovePartModal from '../../ProjectDetailPage/ProjectViewContainer/PartReview/PartReviewComponents/PartFormModels/ApprovePartModal';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
+import { NERButton } from '../../../components/NERButton';
 
 interface PartActionsMenuProps {
   part: Part;
@@ -46,6 +48,7 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
   const [showEditSubmission, setShowEditSubmission] = useState(false);
   const [showApproveSubmission, setShowApproveSubmission] = useState(false);
   const [showDeletePart, setShowDeletePart] = useState(false);
+  const [showReopenPart, setShowReopenPart] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [previewUploading, setPreviewUploading] = useState(false);
@@ -53,6 +56,7 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
   const { mutateAsync: editPart } = useEditPart(part.partId);
   const { mutateAsync: deletePart } = useDeletePart(part.partId);
   const { mutateAsync: createReview } = useCreatePartReview();
+  const { mutateAsync: updateReview } = useEditPartReview();
   const { mutateAsync: uploadPreviewImage } = useUploadPreviewImage(part.partId);
 
   const {
@@ -80,7 +84,6 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
     try {
       await deletePart();
       history.goBack();
-      
       toast.success(`${part.commonName} Deleted Successfully!`);
     } catch (e: unknown) {
       if (e instanceof Error) {
@@ -112,7 +115,7 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
       location.pathname +
       `?submissionIndex=${submissionIndex}&` +
       'reviewIndex=' +
-      (reviewIndex === -1 ? '0' : `${reviewIndex}`);
+      (reviewIndex === -1 ? '0' : `${1 + reviewIndex}`);
     history.push(reviewLink);
   };
 
@@ -120,6 +123,26 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
     submission?.reviews && submission.reviews.length > 0
       ? [...submission.reviews].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]
       : null;
+
+  const handleReopen = async () => {
+    if (!latestReview) {
+      toast.error('No review found.');
+      return;
+    }
+    try {
+      await updateReview({
+        partReviewId: latestReview.partReviewId,
+        notes: latestReview.notes,
+        status: Review_Status.IN_PROGRESS,
+        fileIds: latestReview.fileIds
+      });
+
+      toast.success('Part Reopened for Review!');
+      setShowReopenPart(false);
+    } catch (e) {
+      if (e instanceof Error) toast.error(e.message);
+    }
+  };
 
   const DeleteModal = () => {
     return (
@@ -132,6 +155,21 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
         onSubmit={handleDelete}
       >
         <Typography>Are you sure you want to delete this part?</Typography>
+      </NERModal>
+    );
+  };
+
+  const ReopenModal = () => {
+    return (
+      <NERModal
+        open={showReopenPart}
+        onHide={() => setShowReopenPart(false)}
+        title="Confirmation"
+        cancelText="No"
+        submitText="Yes"
+        onSubmit={handleReopen}
+      >
+        <Typography>Are you sure you want to reopen this part for review?</Typography>
       </NERModal>
     );
   };
@@ -164,7 +202,7 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
         submission.userCreated.userId !== user.userId
     },
     {
-      title: 'Review',
+      title: 'Review Submission',
       onClick: () => startReview(submission),
       icon: <EditNote />,
       disabled: !isUserAReviewer(user.userId, part) || part.submissions.length === 0
@@ -173,10 +211,11 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
       title: 'Approve',
       onClick: () => setShowApproveSubmission(true),
       icon: <Check />,
-      disabled: !isUserAReviewer(user.userId, part) || part.submissions.length === 0
+      disabled:
+        !isUserAReviewer(user.userId, part) || part.status === Review_Status.APPROVED || part.submissions.length === 0
     },
     {
-      title: 'Delete',
+      title: 'Delete Part',
       onClick: () => setShowDeletePart(true),
       icon: <DeleteIcon />,
       disabled: isNotLeadership(user.role)
@@ -185,11 +224,23 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
       title: 'Upload Preview Image',
       onClick: () => handleUploadPreview(),
       icon: <AddPhotoAlternateOutlined />,
-      disabled: isNotLeadership(user.role)
+      disabled: isNotLeadership(user.role) || previewUploading
     }
   ];
 
-  return (
+  return part.status === Review_Status.APPROVED ? (
+    <>
+      <NERButton
+        variant={'contained'}
+        startIcon={<Edit />}
+        onClick={() => setShowReopenPart(true)}
+        disabled={isNotLeadership(user.role)}
+      >
+        Reopen for Review
+      </NERButton>
+      <ReopenModal />
+    </>
+  ) : (
     <>
       <ActionsMenu buttons={buttons} />
       <PartFormModal
@@ -203,6 +254,7 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
       <CreateSubmissionModal
         open={showAddSubmission}
         handleClose={() => setShowAddSubmission(false)}
+        currentPart={part}
         partsInProject={partsInProject}
       />
       <SubmissionFormModal
@@ -216,9 +268,7 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
         <ApprovePartModal
           open={showApproveSubmission}
           handleClose={() => setShowApproveSubmission(false)}
-          part={part}
           review={latestReview}
-          wbsNum={wbsPipe(wbsNum)}
         />
       )}
       <DeleteModal />

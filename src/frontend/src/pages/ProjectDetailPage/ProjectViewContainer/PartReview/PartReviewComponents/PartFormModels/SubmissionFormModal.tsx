@@ -3,7 +3,7 @@ import { useToast } from '../../../../../../hooks/toasts.hooks';
 import * as yup from 'yup';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import NERFormModal from '../../../../../../components/NERFormModal';
 import { Autocomplete, Button, Grid, IconButton, List, ListItem, Typography } from '@mui/material';
 import { FormControl, FormHelperText, FormLabel, TextField } from '@mui/material';
@@ -27,7 +27,14 @@ const isPdf = (fileName: string) => {
   return extension === 'pdf';
 };
 
-const SubmissionFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProject }: SubmissionFormModalProps) => {
+const SubmissionFormModal = ({
+  open,
+  handleClose,
+  defaultValues,
+  currentPart,
+  onSubmit,
+  partsInProject
+}: SubmissionFormModalProps) => {
   const toast = useToast();
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -51,12 +58,23 @@ const SubmissionFormModal = ({ open, handleClose, defaultValues, onSubmit, parts
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      partId: defaultValues?.partId,
+      partId: defaultValues?.partId ?? currentPart?.partId,
       name: defaultValues?.name,
       notes: defaultValues?.notes,
       fileIds: defaultValues?.fileIds || []
     }
   });
+
+  useEffect(() => {
+    if (defaultValues) {
+      reset({
+        partId: defaultValues.partId,
+        name: defaultValues.name,
+        notes: defaultValues.notes ?? '',
+        fileIds: defaultValues.fileIds ?? []
+      });
+    }
+  }, [defaultValues, reset]);
 
   const {
     append: appendFileId,

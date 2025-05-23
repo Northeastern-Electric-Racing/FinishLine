@@ -4,26 +4,23 @@ import { Grid, FormControl, FormLabel, FormHelperText } from '@mui/material';
 import * as yup from 'yup';
 import { Review_Status, Part, PartReview } from 'shared';
 import { useToast } from '../../../../../../hooks/toasts.hooks';
-import { useEditPart, useEditPartReview } from '../../../../../../hooks/part-review.hooks';
+import { useEditPartReview } from '../../../../../../hooks/part-review.hooks';
 import NERFormModal from '../../../../../../components/NERFormModal';
 import ReactHookTextField from '../../../../../../components/ReactHookTextField';
 
 interface ApprovePartModalProps {
   open: boolean;
   handleClose: () => void;
-  part: Part;
   review: PartReview;
-  wbsNum: string;
 }
 
 const schema = yup.object().shape({
   notes: yup.string().optional()
 });
 
-const ApprovePartModal = ({ open, handleClose, part, review, wbsNum }: ApprovePartModalProps) => {
+const ApprovePartModal = ({ open, handleClose, review }: ApprovePartModalProps) => {
   const toast = useToast();
-  const { mutateAsync: editPart } = useEditPart(part.partId);
-  const { mutateAsync: editReview } = useEditPartReview();
+  const { mutateAsync: updateReview } = useEditPartReview();
 
   const {
     handleSubmit,
@@ -34,24 +31,14 @@ const ApprovePartModal = ({ open, handleClose, part, review, wbsNum }: ApprovePa
     resolver: yupResolver(schema)
   });
 
-  const onSubmit = async (data: { notes?: string }) => {
+  const onFormSubmit = async (data: { notes?: string }) => {
     try {
-      await Promise.all([
-        editPart({
-          wbsNum: wbsNum,
-          index: part.index,
-          commonName: part.commonName,
-          description: part.description,
-          reviewStatus: Review_Status.APPROVED,
-          tagIds: part.tags.map((tag) => tag.partTagId),
-          assigneeIds: part.assignees.map((a) => a.userId),
-          reviewerIds: part.reviewRequests.map((r) => r.reviewerRequested.userId)
-        }),
-        editReview({
-          partReviewId: review.partReviewId,
-          notes: data.notes
-        })
-      ]);
+      await updateReview({
+        partReviewId: review.partReviewId,
+        notes: data.notes,
+        status: Review_Status.APPROVED,
+        fileIds: review.fileIds
+      });
 
       toast.success('Part Approved!');
       handleClose();
@@ -68,7 +55,7 @@ const ApprovePartModal = ({ open, handleClose, part, review, wbsNum }: ApprovePa
       title="Approve Part"
       reset={() => reset()}
       handleUseFormSubmit={handleSubmit}
-      onFormSubmit={onSubmit}
+      onFormSubmit={onFormSubmit}
       formId="approve-part-form"
       showCloseButton
     >
