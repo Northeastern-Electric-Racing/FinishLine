@@ -12,7 +12,6 @@ import {
   useCreatePartReview,
   useDeletePart,
   useEditPart,
-  useEditPartReview,
   useEditPartSubmission,
   usePartsFromProject,
   useUploadPreviewImage
@@ -56,7 +55,6 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
   const { mutateAsync: editPart } = useEditPart(part.partId);
   const { mutateAsync: deletePart } = useDeletePart(part.partId);
   const { mutateAsync: createReview } = useCreatePartReview();
-  const { mutateAsync: updateReview } = useEditPartReview();
   const { mutateAsync: uploadPreviewImage } = useUploadPreviewImage(part.partId);
 
   const {
@@ -108,14 +106,10 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
     await createReview({
       submissionId: submission.partSubmissionId,
       status: Review_Status.IN_REVIEW,
-      fileIds: submission.fileIds
+      fileIds: []
     });
 
-    const reviewLink =
-      location.pathname +
-      `?submissionIndex=${submissionIndex}&` +
-      'reviewIndex=' +
-      (reviewIndex === -1 ? '0' : `${1 + reviewIndex}`);
+    const reviewLink = location.pathname + `?submissionIndex=${submissionIndex}&reviewIndex=` + (reviewIndex + 1);
     history.push(reviewLink);
   };
 
@@ -130,11 +124,14 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
       return;
     }
     try {
-      await updateReview({
-        partReviewId: latestReview.partReviewId,
-        notes: latestReview.notes,
-        status: Review_Status.IN_PROGRESS,
-        fileIds: latestReview.fileIds
+      await editPart({
+        reviewStatus: Review_Status.IN_PROGRESS,
+        wbsNum: wbsPipe(wbsNum),
+        tagIds: part.tags.map((tag) => tag.partTagId),
+        assigneeIds: part.assignees.map((assignee) => assignee.userId),
+        reviewerIds: part.reviewRequests.map((request) => request.reviewerRequested.userId),
+        index: part.index,
+        commonName: part.commonName
       });
 
       toast.success('Part Reopened for Review!');

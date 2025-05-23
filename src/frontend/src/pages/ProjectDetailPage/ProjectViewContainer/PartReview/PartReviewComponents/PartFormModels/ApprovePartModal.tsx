@@ -2,7 +2,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Grid, FormControl, FormLabel, FormHelperText } from '@mui/material';
 import * as yup from 'yup';
-import { Review_Status, Part, PartReview } from 'shared';
+import { Review_Status, PartReview } from 'shared';
 import { useToast } from '../../../../../../hooks/toasts.hooks';
 import { useEditPartReview } from '../../../../../../hooks/part-review.hooks';
 import NERFormModal from '../../../../../../components/NERFormModal';

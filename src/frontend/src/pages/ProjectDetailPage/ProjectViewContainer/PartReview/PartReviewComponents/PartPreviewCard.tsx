@@ -41,16 +41,19 @@ export function PartPreviewCard({ partPreview, projectName, redirectUrl }: PartP
             <Box
               sx={{
                 height: 200,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
                 border: '0.5px solid rgb(193, 193, 193)',
-                bgcolor: grey[600]
+                bgcolor: grey[600],
+                overflow: 'hidden'
               }}
             >
               <Box
                 component="img"
-                sx={{ display: 'block', maxWidth: '200px', mb: 1 }}
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  display: 'block'
+                }}
                 alt={`${commonName} Preview`}
                 src={previewUrl}
               />
