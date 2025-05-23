@@ -1,7 +1,7 @@
 import { Box, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
 import { getUniqueWbsElementsWithProductsFromReimbursementRequest } from '../../../utils/reimbursement-request.utils';
 import { ReimbursementRequest } from 'shared';
-import { centsToDollar, displayEnum } from '../../../utils/pipes';
+import { centsToDollar } from '../../../utils/pipes';
 
 interface ReimbursementRequestProductsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -70,7 +70,7 @@ const ReimbursementProductsView: React.FC<ReimbursementRequestProductsViewProps>
                         ?.map((product, index) => <div key={index}>{product.name}</div>)}
                     </Box>
                   </TableCell>
-                  {!allKeysAreSame && <TableCell>{displayEnum(key)}</TableCell>}
+                  {!allKeysAreSame && <TableCell>{key}</TableCell>}
                   <TableCell>
                     {uniqueWbsElementsWithProducts
                       .get(key)
