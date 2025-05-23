@@ -167,6 +167,16 @@ export const editPartReview = (payload: EditPartReviewPayload) => {
 };
 
 /**
+ * Deletes a part review
+ * 
+ * @param partReviewId the id of the part review to delete
+ * @returns
+ */
+export const deletePartReview = (partReviewId: string) => {
+  return axios.post<{ message: string }>(apiUrls.partsDeleteReview(partReviewId));
+};
+
+/**
  * Fetches all Part Review FAQs for the current organization.
  *
  * @returns A list of Part Review FAQs.

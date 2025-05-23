@@ -52,6 +52,11 @@ partsRouter.post(
 );
 
 partsRouter.post(
+  '/review/:reviewId/delete',
+  PartReviewController.deleteReview
+)
+
+partsRouter.post(
   '/submission/create',
   nonEmptyString(body('partId')),
   nonEmptyString(body('name')),

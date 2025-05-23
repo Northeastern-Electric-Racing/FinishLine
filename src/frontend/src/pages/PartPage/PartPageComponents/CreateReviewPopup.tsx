@@ -1,10 +1,11 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Autocomplete, Box, Button, FormControl, TextField } from '@mui/material';
+import { Autocomplete, Box, Button, FormControl, TextField, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { PartReviewCommonMistake } from 'shared';
+import AddIcon from '@mui/icons-material/Add';
 
 interface ReviewPopupProps {
   xCoord: number;
@@ -13,7 +14,7 @@ interface ReviewPopupProps {
   scale: number;
   commonMistakes: PartReviewCommonMistake[];
   onDelete: () => void;
-  createPopup: (xCoord: number, yCoord: number, title: string, description?: string) => void;
+  createPopup: (xCoord: number, yCoord: number, newCommonMistake: boolean, title: string, description?: string) => void;
   customComment: boolean;
 }
 
@@ -35,6 +36,7 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
   const [hovering, setHovering] = useState<boolean>(false);
   const [selected, setSelected] = useState<boolean>(true);
   const [showCustomTextField, setShowCustomTextField] = useState<boolean>(customComment);
+  const [newCommonMistake, setNewCommonMistake] = useState<boolean>(false);
   const toast = useToast();
 
   const {
@@ -57,11 +59,13 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
 
   const onSubmit = async (data: { title: string; description?: string }) => {
     try {
-      createPopup(xCoord, yCoord, data.title, data.description);
+      createPopup(xCoord, yCoord, newCommonMistake, data.title, data.description);
       reset({
         title: '',
         description: ''
       });
+      setNewCommonMistake(false);
+      setShowCustomTextField(customComment);
     } catch (err: unknown) {
       if (err instanceof Error) {
         toast.error(err.message);
@@ -72,6 +76,9 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
   const handleChange = (_event: React.SyntheticEvent, newValue: PartReviewCommonMistake | null) => {
     if (newValue) {
       setShowCustomTextField(true);
+      if (!newValue.partReviewCommonMistakeId) {
+        setNewCommonMistake(true);
+      }
       reset({
         title: newValue.title,
         description: newValue.description
@@ -127,6 +134,11 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
       >
         {showCustomTextField && (
           <Box component="form" onSubmit={handleSubmit(onSubmit)} zIndex={3}>
+            {newCommonMistake && (
+              <Typography mb={0} variant="h6">
+                New Common Mistake
+              </Typography>
+            )}
             <FormControl fullWidth sx={{ mb: 2 }}>
               <Controller
                 name="title"
@@ -174,6 +186,7 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
                     description: ''
                   });
                   setShowCustomTextField(customComment);
+                  setNewCommonMistake(false);
                   onDelete();
                 }}
                 sx={{ color: 'grey.500', borderColor: 'grey.500' }}
@@ -190,10 +203,31 @@ const ReviewPopup: React.FC<ReviewPopupProps> = ({
         )}
         {!showCustomTextField && (
           <Autocomplete
-            options={commonMistakes}
+            options={[
+              ...commonMistakes,
+              {
+                partReviewCommonMistakeId: '',
+                title: '',
+                starred: false,
+                description: '',
+                userCreatedId: ''
+              }
+            ]}
             getOptionLabel={(option) => option.title}
             renderInput={(params) => <TextField {...params} label="Select Common Mistake" variant="outlined" />}
             onChange={handleChange}
+            renderOption={(props, option) =>
+              option.partReviewCommonMistakeId ? (
+                <Typography {...props} variant="body2">
+                  {option.title}
+                </Typography>
+              ) : (
+                <Box component="li" {...props} display="flex" alignItems="center">
+                  <AddIcon sx={{ mr: 1 }} />
+                  <Typography variant="body2">New Common Mistake</Typography>
+                </Box>
+              )
+            }
             isOptionEqualToValue={(option, value) => option.partReviewCommonMistakeId === value.partReviewCommonMistakeId}
           />
         )}

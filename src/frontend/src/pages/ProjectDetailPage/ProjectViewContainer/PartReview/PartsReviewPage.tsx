@@ -331,7 +331,7 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
               />
             )}
           </Grid>
-          <Typography variant="h4" sx={{ mb: 2 }}>
+          <Typography variant="h4" sx={{ my: 2 }}>
             {`${filteredParts?.length === parts.length ? 'All ' : ''} Parts for ${project.name}`}
           </Typography>
           <Grid container spacing={2}>

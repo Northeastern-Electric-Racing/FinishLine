@@ -46,11 +46,13 @@ import ProjectsService from './projects.services';
 export default class PartReviewService {
   /**
    * Uses the given partId to get the specific part and all of its constituent data
+   * @param organization the organization to get the part for
+   * @param user the user requesting the part
    * @param wbsNumber the wbsNum of the project this part is under
    * @param indexNum the index number of the part on this project
    * @returns a single Part
    */
-  static async getPart(organization: Organization, wbsNumber: WbsNumber, indexNum: string) {
+  static async getPart(organization: Organization, user: User, wbsNumber: WbsNumber, indexNum: string) {
     const project: Project = await ProjectsService.getSingleProject(wbsNumber, organization);
     const index = Number(indexNum);
     const part = await prisma.part.findUnique({
@@ -65,6 +67,12 @@ export default class PartReviewService {
     });
 
     if (!part) throw new NotFoundException('Part', `projectId: ${project.id} and index number: ${indexNum}`);
+
+    part.submissions.forEach((submission) => {
+      submission.reviews = submission.reviews.filter((review) => {
+        return review.completedAt || user.userId === review.userCreatedId;
+      });
+    });
 
     return partTransformer(part);
   }
@@ -162,6 +170,8 @@ export default class PartReviewService {
           });
         })
       );
+
+      
 
       return part;
     });
@@ -412,6 +422,37 @@ export default class PartReviewService {
     });
 
     return partReviewTransformer(updatedReview);
+  }
+
+  /**
+   * Deletes a review
+   * @param reviewId the review being deleted
+   * @param deleter the user deleting (must be creator)
+   * @param organizationId the organization
+   */
+  static async deleteReview(reviewId: string, deleter: User, organizationId: string) {
+    const review = await prisma.partReview.findUnique({
+      where: { partReviewId: reviewId }
+    });
+
+    if (!review) throw new NotFoundException('Part Review', reviewId);
+    if (review.dateDeleted) throw new DeletedException('Part Review', reviewId);
+    if (review.completedAt) throw new HttpException(409, 'Cannot delete a completed review');
+
+    if (deleter.userId !== review.userCreatedId) throw new AccessDeniedException('only review creators can delete reviews');
+
+    await prisma.partReview.update({
+      where: { partReviewId: reviewId },
+      data: {
+        dateDeleted: new Date(),
+        userDeleted: {
+          connect: {
+            userId: deleter.userId
+          }
+        }
+      },
+      ...getPartReviewQueryArgs(organizationId)
+    });
   }
 
   /**
