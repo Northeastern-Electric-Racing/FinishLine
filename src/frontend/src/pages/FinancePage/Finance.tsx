@@ -9,6 +9,9 @@ import FinanceDashboard from './FinanceDashboard/FinanceDashboard';
 import ReimbursmentRequests from './ReimbursmentRequests';
 import CompaniesPage from './CompaniesPage';
 
+// Redirect is used since the default display page for the table should be 'my-requests'.
+// It also allows the side page to stay highlighted for both tabs of the table
+// by directing to just 'reimbursement-requests' and having the redirect occur
 const Finance: React.FC = () => {
   return (
     <Switch>
