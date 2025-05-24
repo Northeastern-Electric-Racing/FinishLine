@@ -1,5 +1,5 @@
 import { Part, PartReview, PartReviewRequest, PartSubmission, Review_Status, User } from 'shared';
-import { yellow,purple, green, grey, red } from '@mui/material/colors';
+import { yellow, purple, green, grey, red } from '@mui/material/colors';
 
 type HistoryEntry = [Date, string];
 
