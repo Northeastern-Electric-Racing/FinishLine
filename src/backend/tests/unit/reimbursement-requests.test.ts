@@ -108,7 +108,17 @@ describe('Reimbursement Requests', () => {
               projectNumber: 0,
               workPackageNumber: 0
             },
-            cost: 200000
+            cost: 200000,
+            refundSources: [
+              {
+                indexCode: createdIndexCode,
+                amount: 200
+              },
+              {
+                indexCode: createdIndexCode,
+                amount: 800
+              }
+            ]
           }
         ],
         createdAccountCode.accountCodeId,
@@ -149,7 +159,17 @@ describe('Reimbursement Requests', () => {
               projectNumber: 0,
               workPackageNumber: 0
             },
-            cost: 200000
+            cost: 200000,
+            refundSources: [
+              {
+                indexCode: createdIndexCode,
+                amount: 200
+              },
+              {
+                indexCode: createdIndexCode,
+                amount: 800
+              }
+            ]
           }
         ],
         createdAccountCode.accountCodeId,
@@ -219,7 +239,17 @@ describe('Reimbursement Requests', () => {
               projectNumber: 0,
               workPackageNumber: 0
             },
-            cost: 200000
+            cost: 200000,
+            refundSources: [
+              {
+                indexCode: createdIndexCode,
+                amount: 200
+              },
+              {
+                indexCode: createdIndexCode,
+                amount: 800
+              }
+            ]
           }
         ],
         reimbursementRequest.accountCode.accountCodeId,

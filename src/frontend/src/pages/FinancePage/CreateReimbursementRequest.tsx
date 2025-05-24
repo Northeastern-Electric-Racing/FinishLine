@@ -31,7 +31,7 @@ const CreateReimbursementRequestPage: React.FC = () => {
       title="Create Reimbursement Request"
       previousPages={[{ name: 'Reimbursement Requests', route: routes.FINANCE }]}
     >
-      <ReimbursementRequestForm submitText="Submit" submitData={onSubmit} previousPage={routes.FINANCE} />
+      <ReimbursementRequestForm submitText="Submit" submitData={onSubmit} />
     </PageLayout>
   );
 };
