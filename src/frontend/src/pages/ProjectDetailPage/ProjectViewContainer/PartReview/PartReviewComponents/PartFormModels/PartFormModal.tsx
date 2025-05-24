@@ -71,7 +71,7 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
         assigneeIds,
         reviewerIds
       });
-      toast.success('Part Successfully Created');
+      toast.success(!!defaultValues ? 'Part Successfully Edited' : 'Part Successfully Created');
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -101,7 +101,13 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
         <Grid item xs={3}>
           <FormControl fullWidth>
             <FormLabel>Index</FormLabel>
-            <ReactHookTextField name="index" type="number" control={control} placeholder="XXXXX" />
+            <ReactHookTextField
+              disabled={!!defaultValues}
+              name="index"
+              type="number"
+              control={control}
+              placeholder="XXXXX"
+            />
             <FormHelperText error>{errors.index?.message}</FormHelperText>
           </FormControl>
         </Grid>
@@ -133,6 +139,7 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
               multiple
               options={tags}
               getOptionLabel={(option) => option.name}
+              value={tags.filter((tag) => tagIds.includes(tag.partTagId))}
               onChange={(_event, value) => {
                 const selectedIds = value.map((tag) => tag.partTagId);
                 setTagIds(selectedIds);
@@ -148,6 +155,7 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
               multiple
               options={users.filter((user) => !reviewerIds.some((reviewerId) => reviewerId === user.userId))}
               getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
+              value={users.filter((user) => assigneeIds.includes(user.userId))}
               onChange={(_event, value) => {
                 const selectedIds = value.map((user) => user.userId);
                 setAssigneeIds(selectedIds);
@@ -165,6 +173,7 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
               multiple
               options={users.filter((user) => !assigneeIds.some((assigneeId) => assigneeId === user.userId))}
               getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
+              value={users.filter((user) => reviewerIds.includes(user.userId))}
               onChange={(_event, value) => {
                 const selectedIds = value.map((user) => user.userId);
                 setReviewerIds(selectedIds);

@@ -40,15 +40,23 @@ export function PartPreviewCard({ partPreview, projectName, redirectUrl }: PartP
           {previewImageId && previewUrl ? (
             <Box
               sx={{
-                height: '15vw',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                height: 200,
                 border: '0.5px solid rgb(193, 193, 193)',
-                bgcolor: grey[600]
+                bgcolor: grey[600],
+                overflow: 'hidden'
               }}
             >
-              <Box component="img" sx={{ display: 'block', mb: 1 }} alt={`${commonName} Preview`} src={previewUrl} />
+              <Box
+                component="img"
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  display: 'block'
+                }}
+                alt={`${commonName} Preview`}
+                src={previewUrl}
+              />
             </Box>
           ) : (
             <Box

@@ -14,6 +14,7 @@ import PartSubmissionDetails from './PartPageComponents/PartSubmissionDetails';
 import PartOverview from './PartPageComponents/PartOverview';
 import PartHistoryView from './PartPageComponents/PartHistoryView';
 import ReviewSidebar from './PartPageComponents/ReviewPage';
+import PartActionsMenu from './PartPageComponents/PartActionsMenu';
 
 const PartPage: React.FC = () => {
   interface ParamTypes {
@@ -186,6 +187,14 @@ const PartPage: React.FC = () => {
         { name: `${wbsPipe(project.wbsNum)} - ${project.name}`, route: `${routes.PROJECTS}/${wbsNum}` },
         { name: 'Files', route: `${routes.PROJECTS}/${wbsNum}/parts-review` }
       ]}
+      headerRight={
+        <PartActionsMenu
+          part={partWithAllReviews}
+          submissionIndex={subIndex}
+          reviewIndex={reviewIndex}
+          wbsNum={validateWBS(wbsNum)}
+        />
+      }
     >
       <Breadcrumbs sx={{ mb: 2 }}></Breadcrumbs>
       <Grid container px={2} gap={5}>

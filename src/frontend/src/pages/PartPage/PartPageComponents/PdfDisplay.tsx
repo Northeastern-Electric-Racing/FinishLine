@@ -111,6 +111,15 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
     setVariablePopups(varPopups);
   }, [review, submission, fileIdx]);
 
+  useEffect(() => {
+    return () => {
+      // Clean up worker when component unmounts
+      if (pdfjs.GlobalWorkerOptions.workerPort) {
+        pdfjs.GlobalWorkerOptions.workerPort.terminate();
+      }
+    };
+  }, []);
+
   const { mutateAsync: addPopupToDb } = useCreateReviewPopup();
   const { mutateAsync: deletePopupFromDb } = useDeleteReviewPopup();
 

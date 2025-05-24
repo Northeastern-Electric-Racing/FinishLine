@@ -61,6 +61,14 @@ partsRouter.post(
   PartReviewController.createSubmission
 );
 
+partsRouter.post(
+  '/submission/:submissionId/update',
+  nonEmptyString(body('name')),
+  body('notes').optional().isString(),
+  validateInputs,
+  PartReviewController.updateSubmission
+);
+
 partsRouter.get('/tags', PartReviewController.getAllPartTags);
 partsRouter.get('/faqs', PartReviewController.getAllPartReviewFAQS);
 
@@ -173,6 +181,7 @@ partsRouter.post(
   body('reviewStatus').custom((value) => Object.values(Review_Status).includes(value)),
   body('tagIds').isArray(),
   body('assigneeIds').isArray(),
+  body('reviewerIds').isArray(),
   validateInputs,
   PartReviewController.updatePart
 );

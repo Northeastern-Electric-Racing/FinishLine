@@ -190,7 +190,7 @@ export const useUploadPreviewImage = (partId: string) => {
  */
 export const useDeletePart = (partId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, void>(
     ['parts', 'delete'],
     async () => {
       const { data } = await deletePart(partId);

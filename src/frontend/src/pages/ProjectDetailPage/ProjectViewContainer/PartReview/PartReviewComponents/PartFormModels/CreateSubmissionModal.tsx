@@ -6,9 +6,10 @@ interface CreateSubmissionModalProps {
   open: boolean;
   handleClose: () => void;
   partsInProject: PartPreview[];
+  currentPart?: PartPreview;
 }
 
-const CreateSubmissionModal = ({ open, handleClose, partsInProject }: CreateSubmissionModalProps) => {
+const CreateSubmissionModal = ({ open, handleClose, partsInProject, currentPart }: CreateSubmissionModalProps) => {
   const { mutateAsync: createSubmission } = useCreatePartSubmission();
 
   const onSubmit = async (data: { partId: string; name: string; notes?: string; fileIds: string[] }) => {
@@ -20,7 +21,15 @@ const CreateSubmissionModal = ({ open, handleClose, partsInProject }: CreateSubm
     });
   };
 
-  return <SubmissionFormModal open={open} handleClose={handleClose} onSubmit={onSubmit} partsInProject={partsInProject} />;
+  return (
+    <SubmissionFormModal
+      open={open}
+      handleClose={handleClose}
+      onSubmit={onSubmit}
+      partsInProject={partsInProject}
+      currentPart={currentPart}
+    />
+  );
 };
 
 export default CreateSubmissionModal;
