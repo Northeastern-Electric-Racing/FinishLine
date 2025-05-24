@@ -83,7 +83,7 @@ export default class PartReviewController {
 
   static async updatePart(req: Request, res: Response, next: NextFunction) {
     try {
-      const { index, commonName, description, reviewStatus, tagIds, assigneeIds } = req.body;
+      const { index, commonName, description, reviewStatus, tagIds, assigneeIds, reviewerIds } = req.body;
       const { partId } = req.params;
       const part = await PartReviewService.updatePart(
         req.organization.organizationId,
@@ -94,7 +94,8 @@ export default class PartReviewController {
         description,
         reviewStatus,
         tagIds,
-        assigneeIds
+        assigneeIds,
+        reviewerIds
       );
       res.status(200).json(part);
     } catch (error: unknown) {

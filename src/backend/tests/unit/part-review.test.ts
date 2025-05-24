@@ -215,7 +215,8 @@ describe('part review tests', () => {
       'new description',
       Review_Status.IN_REVIEW,
       [tag2.partTagId],
-      [superman.userId, nonAdmin.userId]
+      [superman.userId, nonAdmin.userId],
+      [batman.userId]
     );
 
     expect(updatedPart.commonName).toBe('part2');
@@ -250,7 +251,8 @@ describe('part review tests', () => {
           'new description',
           Review_Status.IN_REVIEW,
           [tag2.partTagId],
-          [superman.userId, nonAdmin.userId]
+          [superman.userId, nonAdmin.userId],
+          [batman.userId]
         )
     ).rejects.toThrow(new DeletedException('Part', part.partId));
   });
@@ -307,7 +309,8 @@ describe('part review tests', () => {
           'new description',
           Review_Status.IN_REVIEW,
           [],
-          [superman.userId, nonAdmin.userId]
+          [superman.userId, nonAdmin.userId],
+          [batman.userId]
         )
     ).rejects.toThrow(new AccessDeniedException('Only leadership and the part creator can update part data'));
   });
