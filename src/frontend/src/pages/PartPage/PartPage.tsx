@@ -211,12 +211,7 @@ const PartPage: React.FC = () => {
         { name: 'Files', route: `${routes.PROJECTS}/${wbsNum}/parts-review` }
       ]}
       headerRight={
-        <PartActionsMenu
-          part={partWithAllReviews}
-          submissionIndex={subIndex}
-          reviewIndex={reviewIndex}
-          wbsNum={validateWBS(wbsNum)}
-        />
+        <PartActionsMenu part={part} submissionIndex={subIndex} reviewIndex={reviewIndex} wbsNum={validateWBS(wbsNum)} />
       }
     >
       <Breadcrumbs sx={{ mb: 2 }}></Breadcrumbs>

@@ -223,7 +223,6 @@ export default class PartReviewService {
   }
 
   static async uploadFile(file: Express.Multer.File) {
-    console.log('Service Function file', file);
     const data = await uploadFile(file);
 
     if (!data?.id) {

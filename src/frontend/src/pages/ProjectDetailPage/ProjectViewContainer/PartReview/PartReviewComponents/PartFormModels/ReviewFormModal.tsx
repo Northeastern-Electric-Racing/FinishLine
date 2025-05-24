@@ -234,7 +234,7 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
               name="status"
               control={control}
               render={({ field: { onChange, value } }) => {
-                const statusOptions = Object.values(Review_Status);
+                const statusOptions = [Review_Status.APPROVED, Review_Status.REVIEWED];
 
                 return (
                   <Autocomplete
@@ -267,6 +267,9 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
           </FormControl>
         </Grid>
       </Grid>
+      <Typography variant="body2" sx={{ mb: -2 }}>
+        To create a review with markups on a submission, visit the part's page
+      </Typography>
     </NERFormModal>
   );
 };

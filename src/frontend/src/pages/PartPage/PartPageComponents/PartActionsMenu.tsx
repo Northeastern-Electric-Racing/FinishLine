@@ -119,10 +119,6 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
       : null;
 
   const handleReopen = async () => {
-    if (!latestReview) {
-      toast.error('No review found.');
-      return;
-    }
     try {
       await editPart({
         reviewStatus: Review_Status.IN_PROGRESS,

@@ -2,27 +2,34 @@ import { Typography } from '@mui/material';
 import { Box, Stack } from '@mui/system';
 import { PartSubmission, PartReview } from 'shared';
 import DownloadButton from '../../../components/DownloadButton';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 
 interface PartSubmissionProps {
   submission: PartSubmission;
 }
 
 const PartSubmissionDetails = ({ submission }: PartSubmissionProps) => {
-  const reviewNotes = (reviews: PartReview[]): string => {
+  const reviewNotes = (reviews: PartReview[]) => {
     if (reviews.length === 0) {
-      return 'No Reviews Yet.';
+      return <Typography variant="body1">No Reviews Yet.</Typography>;
     }
     if (reviews.filter((review) => review.notes).length === 0) {
-      return 'There are no notes.';
+      return <Typography variant="body1">There are no notes.</Typography>;
     }
     return (
-      '\n' +
-      reviews
-        .filter((review) => review.notes)
-        .map((review) => '- ' + review.notes)
-        .join('\n')
+      <Box>
+        {reviews
+          .filter((review) => review.notes)
+          .map((review) => (
+            <Typography key={review.partReviewId} variant="body1">
+              - {review.notes}
+            </Typography>
+          ))}
+      </Box>
     );
   };
+
+  if (!submission) return <LoadingIndicator />;
 
   return (
     <Stack spacing={2} alignItems="left" width="100%">
@@ -58,7 +65,9 @@ const PartSubmissionDetails = ({ submission }: PartSubmissionProps) => {
       </Typography>
 
       <Typography variant="body1">
-        <b>Reviewer Notes: </b>
+        <b>
+          Reviewer Notes: <br />
+        </b>
         {reviewNotes(submission.reviews)}
       </Typography>
     </Stack>

@@ -145,9 +145,9 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
     data: pdf,
     isLoading: pdfLoading,
     isError: pdfIsError
-  } = useDownloadFile(review?.completedAt ? review.fileIds[fileIdx] : submission.fileIds[fileIdx]);
+  } = useDownloadFile(review?.completedAt ? review.fileIds[fileIdx] : submission?.fileIds[fileIdx]);
 
-  if (!mistakes || isLoadingCommonMistake) return <LoadingIndicator />;
+  if (!mistakes || isLoadingCommonMistake || !submission) return <LoadingIndicator />;
   if (isErrorCommonMistakes) return <ErrorPage error={errorCommonMistakes} />;
 
   //only enter review mode if this user is the creator of the non-complete review
@@ -314,6 +314,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
               sx={{ display: 'flex', height: '50%', transform: 'translateY(50%)' }}
               onClick={() => {
                 resetPos();
+                setFileIdx(0);
                 prev();
               }}
             >
@@ -329,6 +330,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
               sx={{ display: 'flex', height: '50%', transform: 'translateY(50%)' }}
               onClick={() => {
                 resetPos();
+                setFileIdx(0);
                 next();
               }}
             >

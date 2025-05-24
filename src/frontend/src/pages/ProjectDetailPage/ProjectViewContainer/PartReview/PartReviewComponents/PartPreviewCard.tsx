@@ -40,7 +40,7 @@ export function PartPreviewCard({ partPreview, projectName, redirectUrl }: PartP
           {previewImageId && previewUrl ? (
             <Box
               sx={{
-                height: 200,
+                height: '15vw',
                 border: '0.5px solid rgb(193, 193, 193)',
                 bgcolor: grey[600],
                 overflow: 'hidden'
