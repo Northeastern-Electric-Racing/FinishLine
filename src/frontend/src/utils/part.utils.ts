@@ -1,5 +1,5 @@
 import { Part, PartReview, PartReviewRequest, PartSubmission, Review_Status, User } from 'shared';
-import { yellow, blue, purple, green, grey } from '@mui/material/colors';
+import { yellow,purple, green, grey, red } from '@mui/material/colors';
 
 type HistoryEntry = [Date, string];
 
@@ -145,16 +145,27 @@ export const formatPartStatus = (status: Review_Status): string => {
 export const getStatusColor = (status: Review_Status): string => {
   switch (status) {
     case Review_Status.IN_PROGRESS:
-      return yellow[700];
+      return grey[600];
     case Review_Status.READY_FOR_REVIEW:
-      return blue[600];
+      return red[600];
     case Review_Status.IN_REVIEW:
-      return purple[600];
+      return yellow[700];
     case Review_Status.REVIEWED:
       return green[600];
     case Review_Status.APPROVED:
-      return green[800];
+      return purple[600];
     default:
       return grey[600];
   }
+};
+
+export const getReviewStatusDisplayName = (status: Review_Status): string => {
+  return {
+    IN_PROGRESS: 'In Progress',
+    READY_FOR_REVIEW: 'Ready for Review',
+    IN_REVIEW: 'In Review',
+    REVIEWED: 'Reviewed',
+    APPROVED: 'Approved',
+    default: 'Unknown'
+  }[status];
 };

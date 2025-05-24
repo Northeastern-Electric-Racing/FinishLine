@@ -1,53 +1,14 @@
 import { Box, Typography, IconButton, Chip, Stack } from '@mui/material';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import { Part, Review_Status, User } from 'shared';
-
-/**
- * gets the status color for each status case
- */
-const getReviewStatusColor = (status: Review_Status) => {
-  switch (status) {
-    case 'IN_PROGRESS':
-      return '#0000FF';
-    case 'READY_FOR_REVIEW':
-      return '#FF0000';
-    case 'IN_REVIEW':
-      return '#F57600';
-    case 'REVIEWED':
-      return '#3DA848';
-    case 'APPROVED':
-      return '#D633FF';
-    default:
-      return '#535151';
-  }
-};
-
-/**
- * converts a status to a string name format
- */
-const getReviewStatusDisplayName = (status: Review_Status) => {
-  switch (status) {
-    case 'IN_PROGRESS':
-      return 'Part In Progress';
-    case 'READY_FOR_REVIEW':
-      return 'Ready For Review';
-    case 'IN_REVIEW':
-      return 'In Review';
-    case 'REVIEWED':
-      return 'Reviewed';
-    case 'APPROVED':
-      return 'Approved';
-    default:
-      return 'N/A';
-  }
-};
+import { getReviewStatusDisplayName, getStatusColor } from '../../../utils/part.utils';
 
 const PartReviewStatusPill = (status: Review_Status) => {
   return (
     <Chip
       label={getReviewStatusDisplayName(status)}
       sx={{
-        backgroundColor: getReviewStatusColor(status),
+        backgroundColor: getStatusColor(status),
         ml: 1.5,
         width: 150
       }}

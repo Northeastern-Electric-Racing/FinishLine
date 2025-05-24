@@ -573,7 +573,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
                 file={pdf}
                 onLoadSuccess={({ numPages }) => {
                   setLoadSuccess(true);
-                  setNumPages(numPages);
+                  setNumPages(numPages ?? 0);
                 }}
                 onLoadError={() => {
                   setLoadSuccess(false);

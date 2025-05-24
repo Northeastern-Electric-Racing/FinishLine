@@ -1,39 +1,17 @@
 import React from 'react';
 import { Link, Box, Typography, Grid } from '@mui/material';
-import { Review_Status } from 'shared';
 import { fullNamePipe } from '../../../utils/pipes';
 import { useSinglePart } from '../../../hooks/part-review.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { Link as RouterLink } from 'react-router-dom';
+import { getReviewStatusDisplayName, getStatusColor } from '../../../utils/part.utils';
 
 interface PartDisplayProps {
   index: number;
   wbsNum: string;
   formatStyle: 'compact' | 'standard' | 'full';
 }
-
-const getReviewStatusColor = (status: Review_Status) => {
-  return {
-    IN_PROGRESS: '#959696',
-    READY_FOR_REVIEW: '#F61517',
-    IN_REVIEW: '#F57600',
-    REVIEWED: '#3CA848',
-    APPROVED: '#D633FF',
-    default: '#535151'
-  }[status];
-};
-
-const getReviewStatusDisplayName = (status: Review_Status): string => {
-  return {
-    IN_PROGRESS: 'In Progress',
-    READY_FOR_REVIEW: 'Ready for Review',
-    IN_REVIEW: 'In Review',
-    REVIEWED: 'Reviewed',
-    APPROVED: 'Approved',
-    default: 'Unknown'
-  }[status];
-};
 
 // defined a Pill shape for the review status display
 const Pill = ({ label = '', bgColor = 'background.paper' }) => {
@@ -200,7 +178,7 @@ const PartDisplay: React.FC<PartDisplayProps> = ({ index, wbsNum, formatStyle: c
             justifyContent: 'center'
           }}
         >
-          <Pill label={getReviewStatusDisplayName(part.status)} bgColor={getReviewStatusColor(part.status)} />
+          <Pill label={getReviewStatusDisplayName(part.status)} bgColor={getStatusColor(part.status)} />
         </Grid>
       </Grid>
     </Link>
