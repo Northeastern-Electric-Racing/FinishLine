@@ -51,10 +51,7 @@ partsRouter.post(
   PartReviewController.updateReview
 );
 
-partsRouter.post(
-  '/review/:reviewId/delete',
-  PartReviewController.deleteReview
-)
+partsRouter.post('/review/:reviewId/delete', PartReviewController.deleteReview);
 
 partsRouter.post(
   '/submission/create',

@@ -171,8 +171,6 @@ export default class PartReviewService {
         })
       );
 
-      
-
       return part;
     });
 

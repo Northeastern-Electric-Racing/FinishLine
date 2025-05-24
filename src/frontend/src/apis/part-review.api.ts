@@ -168,7 +168,7 @@ export const editPartReview = (payload: EditPartReviewPayload) => {
 
 /**
  * Deletes a part review
- * 
+ *
  * @param partReviewId the id of the part review to delete
  * @returns
  */
