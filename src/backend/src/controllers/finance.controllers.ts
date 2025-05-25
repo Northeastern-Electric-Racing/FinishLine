@@ -88,6 +88,16 @@ export default class FinanceController {
     }
   }
 
+  static async deleteSponsorTask(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { sponsorTaskId } = req.params;
+      const deleted = await FinanceServices.deleteSponsorTask(sponsorTaskId, req.currentUser, req.organization);
+      res.status(200).json({ message: 'Sponsor task deleted successfully', sponsorTask: deleted });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createSponsorTier(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, colorHexCode } = req.body;

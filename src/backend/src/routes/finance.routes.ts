@@ -45,6 +45,8 @@ financeRouter.post(
   FinanceController.editSponsorTask
 );
 
+financeRouter.delete('/sponsorTask/:sponsorTaskId', FinanceController.deleteSponsorTask);
+
 financeRouter.post(
   '/sponsor/:sponsorId/sponsorTasks',
   isDate(body('dueDate')),

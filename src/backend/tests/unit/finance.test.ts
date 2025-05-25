@@ -355,7 +355,8 @@ describe('Finance Tests', () => {
             dueDate: new Date(12, 1, 24),
             notifyDate: null,
             assigneeUserId: null,
-            notes: 'uhh nothing'
+            notes: 'uhh nothing',
+            dateDeleted: null
           },
           {
             sponsorId: '11',
@@ -363,7 +364,8 @@ describe('Finance Tests', () => {
             dueDate: new Date(12, 1, 24),
             notifyDate: null,
             assigneeUserId: null,
-            notes: 'probably nothing again'
+            notes: 'probably nothing again',
+            dateDeleted: null
           }
         ],
         organization,
@@ -461,6 +463,85 @@ describe('Finance Tests', () => {
       expect(result.notes).toEqual('hello notes');
       expect(result.dueDate).toEqual(new Date(1, 2, 3));
       expect(result.assignee?.userId).toEqual(user.userId);
+    });
+  });
+
+  describe('Test delete sponsor task', () => {
+    it('Successful deletion', async () => {
+      const user = await createTestUser(supermanAdmin, orgId);
+      const sponsor = await FinanceServices.createSponsor(
+        user,
+        'Telsa',
+        true,
+        5000,
+        new Date(12, 1, 24),
+        [2024],
+        sponsorTierId,
+        true,
+        'Bill Gates',
+        [],
+        organization,
+        'telsaCode'
+      );
+
+      const sponsorTask = await FinanceServices.createSponsorTask(
+        user,
+        organization,
+        new Date(1, 2, 3),
+        'hello notes',
+        sponsor.sponsorId,
+        new Date(1, 2, 3),
+        user.userId
+      );
+
+      const deletedSponsorTask = await FinanceServices.deleteSponsorTask(
+        sponsorTask.sponsorTaskId,
+        await createTestUser(batmanAppAdmin, orgId),
+        organization
+      );
+
+      expect(deletedSponsorTask).not.toBe(null);
+      expect(deletedSponsorTask.dateDeleted).not.toBe(null);
+    });
+    it('Delete fails if user is not head or above', async () => {
+      const user = await createTestUser(supermanAdmin, orgId);
+      const sponsor = await FinanceServices.createSponsor(
+        user,
+        'Telsa',
+        true,
+        5000,
+        new Date(12, 1, 24),
+        [2024],
+        sponsorTierId,
+        true,
+        'Bill Gates',
+        [],
+        organization,
+        'telsaCode'
+      );
+
+      const sponsorTask = await FinanceServices.createSponsorTask(
+        user,
+        organization,
+        new Date(1, 2, 3),
+        'hello notes',
+        sponsor.sponsorId,
+        new Date(1, 2, 3),
+        user.userId
+      );
+
+      await expect(async () =>
+        FinanceServices.deleteSponsorTask(
+          sponsorTask.sponsorTaskId,
+          await createTestUser(theVisitorGuest, orgId),
+          organization
+        )
+      ).rejects.toThrow(new AccessDeniedException('Only heads can delete sponsor tasks.'));
+    });
+    it('Delete fails if given sponsor task cannot be found', async () => {
+      await expect(async () =>
+        FinanceServices.deleteSponsorTask('123', await createTestUser(supermanAdmin, orgId), organization)
+      ).rejects.toThrow(new NotFoundException('SponsorTask', '123'));
     });
   });
 });
