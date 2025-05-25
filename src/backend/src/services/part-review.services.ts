@@ -534,6 +534,17 @@ export default class PartReviewService {
       ...getPartSubmissionQueryArgs(organizationId)
     });
 
+    if (!part.previewImageId && fileIds.length > 0) {
+      await prisma.part.update({
+        where: {
+          partId: part.partId
+        },
+        data: {
+          previewImageId: fileIds[0]
+        }
+      });
+    }
+
     return partSubmissionTransformer(submission);
   }
 
