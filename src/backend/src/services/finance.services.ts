@@ -239,7 +239,15 @@ export default class FinanceServices {
       throw new NotFoundException('Sponsor', sponsorId);
     }
 
-    return sponsor.sponsorTasks.map(sponsorTaskTransformer);
+    const sponsorTasks = await prisma.sponsor_Task.findMany({
+      where: {
+        sponsorId,
+        dateDeleted: null
+      },
+      ...getSponsorTaskQueryArgs(organizationId)
+    });
+
+    return sponsorTasks.map(sponsorTaskTransformer);
   }
 
   /**

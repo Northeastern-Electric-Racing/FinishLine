@@ -609,3 +609,15 @@ export const getAllSpendingBarData = (payload: SpendingBarDataPayload) => {
     transformResponse: (data) => JSON.parse(data) as SpendingBarData[]
   });
 };
+
+/**
+ * API call to delete a given sponsor task
+ *
+ * @param sponsorTaskId the id of the sponsor task to delete
+ *
+ * @returns the deleted sponsor task
+ */
+
+export const deleteSponsorTask = (sponsorTaskId: string) => {
+  return axios.delete(apiUrls.deleteSponsorTask(sponsorTaskId));
+};

@@ -2,7 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Box, Typography, TextField, IconButton, Button, Select, MenuItem } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AddCircle, RemoveCircle } from '@mui/icons-material';
-import { useCreateSponsorTask, useEditSponsorTask } from '../../../hooks/finance.hooks';
+import {
+  useCreateSponsorTask,
+  useDeleteSponsorTask,
+  useEditSponsorTask,
+  useGetSponsorTasks
+} from '../../../hooks/finance.hooks';
 import { Sponsor, SponsorTask } from 'shared';
 import { useAllUsers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -19,12 +24,15 @@ const SponsorNotesModal: React.FC<SponsorNotesModalProps> = ({ onClose, sponsor 
   const [taskForms, setTaskForms] = useState<SponsorTask[]>([]);
 
   const { mutate: createTask } = useCreateSponsorTask(sponsor.sponsorId);
-  const { mutate: editTask } = useEditSponsorTask(); // assuming this hook does not need the ID up front
+  const { mutate: editTask } = useEditSponsorTask();
+  const { mutate: deleteTask } = useDeleteSponsorTask();
+
+  const { data: sponsorTasks } = useGetSponsorTasks(sponsor.sponsorId);
 
   useEffect(() => {
-    if (sponsor.sponsorTasks) {
+    if (Array.isArray(sponsorTasks)) {
       setTaskForms(
-        sponsor.sponsorTasks.map((task) => ({
+        sponsorTasks.map((task) => ({
           dueDate: task.dueDate ? new Date(task.dueDate) : new Date(),
           notifyDate: task.notifyDate ? new Date(task.notifyDate) : undefined,
           assignee: task.assignee || undefined,
@@ -35,7 +43,7 @@ const SponsorNotesModal: React.FC<SponsorNotesModalProps> = ({ onClose, sponsor 
     } else {
       setTaskForms([{ dueDate: new Date(), notifyDate: undefined, assignee: undefined, sponsorTaskId: '', notes: '' }]);
     }
-  }, [sponsor]);
+  }, [sponsorTasks]);
 
   const handleChange = (index: number, field: keyof SponsorTask, value: any) => {
     setTaskForms((prev) => {
@@ -53,6 +61,10 @@ const SponsorNotesModal: React.FC<SponsorNotesModalProps> = ({ onClose, sponsor 
   };
 
   const removeTask = (index: number) => {
+    const taskToRemove = taskForms[index];
+    if (taskToRemove?.sponsorTaskId) {
+      deleteTask({ sponsorTaskId: taskToRemove.sponsorTaskId });
+    }
     setTaskForms((prev) => prev.filter((_, i) => i !== index));
   };
 

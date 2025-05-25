@@ -53,7 +53,8 @@ import {
   getSpendingBarCategoryData,
   getSpendingBarTeamTypeData,
   getAllSpendingBarData,
-  deleteVendor
+  deleteVendor,
+  deleteSponsorTask
 } from '../apis/finance.api';
 import {
   IndexCode,
@@ -145,6 +146,10 @@ export interface SponsorTaskPayload {
 export interface EditSponsorTaskPayload {
   sponsorTaskId: string;
   sponsorTaskData: SponsorTaskPayload;
+}
+
+export interface DeleteSponsorTaskPaylaod {
+  sponsorTaskId: string;
 }
 
 /**
@@ -1020,3 +1025,23 @@ export const useGetAllSpendingBarData = (spendingBarData: SpendingBarDataPayload
     const { data } = await getAllSpendingBarData(spendingBarData);
     return data;
   });
+
+/**
+ * Custom React Hook to delete a sponsor task
+ *
+ * @returns the deleted sponsor
+ */
+export const useDeleteSponsorTask = () => {
+  const queryClient = useQueryClient();
+  return useMutation<SponsorTask, Error, DeleteSponsorTaskPaylaod>(
+    async ({ sponsorTaskId }) => {
+      const { data } = await deleteSponsorTask(sponsorTaskId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['sponsor']);
+      }
+    }
+  );
+};
