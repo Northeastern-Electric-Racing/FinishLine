@@ -2,28 +2,24 @@ import React, { useEffect, useState } from 'react';
 import { Box, Typography, TextField, IconButton, Button, Select, MenuItem } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AddCircle, RemoveCircle } from '@mui/icons-material';
-import { useEditSponsorTask } from '../../../hooks/finance.hooks';
+import { useCreateSponsorTask, useEditSponsorTask } from '../../../hooks/finance.hooks';
 import { Sponsor, SponsorTask } from 'shared';
 import { useAllUsers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 
 interface SponsorNotesModalProps {
-  open: boolean;
   onClose: () => void;
   sponsor: Sponsor;
 }
 
-const style = {
-  backgroundColor: '#121212',
-  p: 4,
-  borderRadius: 2
-};
-
-const SponsorNotesModal: React.FC<SponsorNotesModalProps> = ({ open, onClose, sponsor }) => {
+const SponsorNotesModal: React.FC<SponsorNotesModalProps> = ({ onClose, sponsor }) => {
   const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
 
   const [taskForms, setTaskForms] = useState<SponsorTask[]>([]);
+
+  const { mutate: createTask } = useCreateSponsorTask(sponsor.sponsorId);
+  const { mutate: editTask } = useEditSponsorTask(); // assuming this hook does not need the ID up front
 
   useEffect(() => {
     if (sponsor.sponsorTasks) {
@@ -70,10 +66,8 @@ const SponsorNotesModal: React.FC<SponsorNotesModalProps> = ({ open, onClose, sp
       };
 
       if (form.sponsorTaskId) {
-        const { mutate: editTask } = useEditSponsorTask(form.sponsorTaskId);
-        editTask(payload);
+        editTask({ sponsorTaskId: form.sponsorTaskId, sponsorTaskData: payload });
       } else {
-        const { mutate: createTask } = useEditSponsorTask(sponsor.sponsorId);
         createTask(payload);
       }
     });
@@ -89,7 +83,8 @@ const SponsorNotesModal: React.FC<SponsorNotesModalProps> = ({ open, onClose, sp
   }
 
   return (
-    <Box sx={style}>
+    <Box>
+      {/* Header */}
       <Box sx={{ display: 'flex', mb: 1 }}>
         <Typography sx={{ flex: 1 }}>Due Date</Typography>
         <Typography sx={{ flex: 1 }}>Notify Date</Typography>
@@ -97,6 +92,8 @@ const SponsorNotesModal: React.FC<SponsorNotesModalProps> = ({ open, onClose, sp
         <Typography sx={{ flex: 1 }}>Notes</Typography>
         <Box sx={{ width: 40 }} />
       </Box>
+
+      {/* Task forms */}
       {taskForms.map((task, idx) => (
         <Box key={idx} sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}>
           <DatePicker
@@ -153,9 +150,13 @@ const SponsorNotesModal: React.FC<SponsorNotesModalProps> = ({ open, onClose, sp
           </IconButton>
         </Box>
       ))}
+
+      {/* Add Task Button */}
       <Button onClick={addTask} startIcon={<AddCircle />} sx={{ color: 'white', mb: 4 }}>
         Add Notes
       </Button>
+
+      {/* Action Buttons */}
       <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
         <Button onClick={onClose} sx={{ mr: 2, color: 'white', border: '1px solid white', borderRadius: 1, px: 2 }}>
           Cancel

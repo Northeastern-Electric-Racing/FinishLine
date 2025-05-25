@@ -142,6 +142,11 @@ export interface SponsorTaskPayload {
   asigneeId?: string;
 }
 
+export interface EditSponsorTaskPayload {
+  sponsorTaskId: string;
+  sponsorTaskData: SponsorTaskPayload;
+}
+
 /**
  * Custom React hook to create a sponsor
  *
@@ -178,7 +183,7 @@ export const useCreateSponsorTask = (sponsorId: string) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['sponsor-task']);
+        queryClient.invalidateQueries(['sponsor']);
       }
     }
   );
@@ -861,18 +866,20 @@ export const useGetSponsorTasks = (sponsorId: string) => {
 /**
  * Custom React Hook to edit a sponsor task
  *
- * @param sponsorTaskId the id of the sponsor task to be edited
- *
  * @returns the edited sponosor task
  */
-export const useEditSponsorTask = (sponsorTaskId: string) => {
+export const useEditSponsorTask = () => {
   const queryClient = useQueryClient();
-  return useMutation<SponsorTask, Error, SponsorTaskPayload>(
-    ['sponsor-task', 'edit'],
-    async (formData: SponsorTaskPayload) => {
-      const { data } = await editSponsorTask(sponsorTaskId, formData);
-      queryClient.invalidateQueries(['sponsor-task']);
+
+  return useMutation<SponsorTask, Error, EditSponsorTaskPayload>(
+    async ({ sponsorTaskId, sponsorTaskData }) => {
+      const { data } = await editSponsorTask(sponsorTaskId, sponsorTaskData);
       return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['sponsor']);
+      }
     }
   );
 };

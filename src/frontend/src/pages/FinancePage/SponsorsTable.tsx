@@ -298,7 +298,7 @@ const SponsorsTable = () => {
           showPage={isModalOpen}
           handleClose={closeNotesModal}
           title={`Notes for ${selectedSponsor?.name}`}
-          component={<SponsorNotesModal open={isModalOpen} onClose={closeNotesModal} sponsor={selectedSponsor} />}
+          component={<SponsorNotesModal onClose={closeNotesModal} sponsor={selectedSponsor} />}
         />
       )}
     </Box>
