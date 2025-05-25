@@ -678,6 +678,7 @@ model Sponsor_Task {
   notes          String
   sponsor        Sponsor   @relation(fields: [sponsorId], references: [sponsorId])
   sponsorId      String
+  dateDeleted    DateTime?
 }
 
 model Account_Code {
