@@ -13,6 +13,7 @@ export const prismaChangeRequest1: PrismaChangeRequest = {
   organizationId: '1',
   submitterId: '1',
   wbsElementId: '65',
+  categoryId: null,
   type: PrismaCRType.DEFINITION_CHANGE,
   dateSubmitted: new Date('11/24/2020'),
   dateReviewed: new Date('11/25/2020'),

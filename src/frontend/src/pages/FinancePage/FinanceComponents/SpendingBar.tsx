@@ -1,4 +1,4 @@
-import { Box, Typography } from '@mui/material';
+import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import {
   BarControllerChartOptions,
   CoreChartOptions,
@@ -11,9 +11,15 @@ import {
 import { _DeepPartialObject } from 'chart.js/dist/types/utils';
 import { Bar } from 'react-chartjs-2';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { ReimbursementRequestData, SpendingBarData } from 'shared';
+import { ReimbursementRequestData, SpendingBarData, Team } from 'shared';
 import { grey } from '@mui/material/colors';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import EditIcon from '@mui/icons-material/Edit';
+import { useAllTeams } from '../../../hooks/teams.hooks';
+import { EditProjectBudgetModal } from './EditProjectBudgetModal';
+import { EditBudgetModalForReason } from './EditBudgetModalForReason';
+import { displayEnum } from '../../../utils/pipes';
+import HelpIcon from '@mui/icons-material/Help';
 
 const getTotalMoneySpent = (data: ReimbursementRequestData) =>
   data.available + data.pendingFinance + data.pendingLeadership + data.reimbursed + data.submittedToSabo;
@@ -154,7 +160,9 @@ const SpendingBar = ({ data, title }: SpendingBarData) => {
 
           // Truncate the text with ellipsis if it exceeds the maximum length
           if (label && label.length > maxTextLength) {
-            label = label.slice(0, maxTextLength) + '...';
+            label = displayEnum(label).slice(0, maxTextLength) + '...';
+          } else if (label) {
+            label = displayEnum(label);
           }
 
           return [label, `$${realValue}`];
@@ -252,11 +260,40 @@ const SpendingBar = ({ data, title }: SpendingBarData) => {
     }
   };
 
+  const [openEditProjectModal, setOpenEditProjectModal] = useState(false);
+  const [openEditReasonModal, setOpenEditReasonModal] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState<Team | undefined>(undefined);
+  const { data: allTeams } = useAllTeams();
+
+  const handleEditClick = (title: string) => {
+    const matchTeam = allTeams?.find((u) => u.teamName === title);
+    const matchReason = 'Club Categories' === title;
+    if (matchTeam) {
+      setSelectedTeam(matchTeam);
+      setOpenEditProjectModal(true);
+    } else if (matchReason) {
+      setOpenEditReasonModal(true);
+    }
+  };
+
   return (
     <>
-      <Typography fontWeight={'bold'} variant="body1">
-        {title}
-      </Typography>
+      <Box display="flex" alignItems="center" gap={1}>
+        <Typography fontWeight="bold" variant="body1">
+          {title}
+        </Typography>
+        {title === 'Club Categories' && (
+          <Tooltip
+            title="A Club Category is another reason why a reimbursement request would be submitted if not on a project."
+            placement="right"
+          >
+            <HelpIcon style={{ fontSize: 'medium' }} />
+          </Tooltip>
+        )}
+        <IconButton size="small" onClick={() => handleEditClick(title)}>
+          <EditIcon fontSize="small" />
+        </IconButton>
+      </Box>
       {data.length > 0 ? (
         <Box ref={chartRef} height={100} sx={{ padding: 0, margin: 0 }}>
           <Bar data={barData} options={config} />
@@ -264,6 +301,14 @@ const SpendingBar = ({ data, title }: SpendingBarData) => {
       ) : (
         <Typography>No Spending Data Available</Typography>
       )}
+      {selectedTeam && (
+        <EditProjectBudgetModal
+          showModal={openEditProjectModal}
+          handleClose={() => setOpenEditProjectModal(false)}
+          teamId={selectedTeam.teamId}
+        />
+      )}
+      <EditBudgetModalForReason showModal={openEditReasonModal} handleClose={() => setOpenEditReasonModal(false)} />
     </>
   );
 };

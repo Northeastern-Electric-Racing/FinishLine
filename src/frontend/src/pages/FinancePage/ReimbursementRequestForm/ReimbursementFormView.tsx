@@ -29,6 +29,7 @@ import {
 } from 'react-hook-form';
 import {
   AccountCode,
+  CreateRefundSourceArgs,
   IndexCode,
   ReimbursementProductFormArgs,
   ReimbursementReceiptCreateArgs,
@@ -42,7 +43,7 @@ import ReimbursementProductTable from './ReimbursementProductTable';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
@@ -71,9 +72,9 @@ interface ReimbursementRequestFormViewProps {
   watch: UseFormWatch<ReimbursementRequestFormInput>;
   register: UseFormRegister<ReimbursementRequestFormInput>;
   submitText: 'Save' | 'Submit';
-  previousPage: string;
   setValue: UseFormSetValue<ReimbursementRequestFormInput>;
   hasSecureSettingsSet: boolean;
+  onFormExit?: () => void;
 }
 
 const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> = ({
@@ -93,32 +94,67 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   watch,
   register,
   submitText,
-  previousPage,
   setValue,
-  hasSecureSettingsSet
+  hasSecureSettingsSet,
+  onFormExit
 }) => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [showAddRefundSourceModal, setShowAddRefundSourceModal] = useState(false);
-  const [hasConfirmedFinance, setHasConfirmedFinance] = useState(false);
+
+  // to grab all the proper refund sources
+  const refundSources: CreateRefundSourceArgs[] = Array.from(
+    new Set(reimbursementProducts.flatMap((product) => product.refundSources).filter((source) => source.amount > 0))
+  );
+
+  const [hasConfirmedFinance, setHasConfirmedFinance] = useState(refundSources.length > 1);
   const toast = useToast();
   const theme = useTheme();
   const products = watch('reimbursementProducts') as ReimbursementProductFormArgs[];
   const accountCodeId = watch('accountCodeId');
+
   const selectedAccountCode = allAccountCodes.find((accountCode) => accountCode.accountCodeId === accountCodeId);
-  const refundSources: IndexCode[] = selectedAccountCode?.indexCodes || [];
+  const indexCodes: IndexCode[] = useMemo(() => selectedAccountCode?.indexCodes ?? [], [selectedAccountCode?.indexCodes]);
+
   const firstRefundSourceId = watch('indexCodeId');
   const secondRefundSourceId = watch('secondaryAccount');
+  const hasPreFilledData = useRef(true);
+
+  useEffect(() => {
+    if (!hasPreFilledData.current) return;
+
+    if (refundSources.length > 1 && refundSources[0].indexCode && refundSources[1].indexCode) {
+      setValue('indexCodeId', refundSources[0].indexCode.indexCodeId);
+      setValue('secondaryAccount', refundSources[1].indexCode.indexCodeId);
+    }
+
+    hasPreFilledData.current = false;
+  }, [hasPreFilledData, refundSources, setValue]);
 
   useEffect(() => {
     if (firstRefundSourceId) {
       if (secondRefundSourceId && firstRefundSourceId === secondRefundSourceId) {
         setValue('secondaryAccount', undefined);
+
         reimbursementProducts.forEach((_, index) => {
-          setValue(`reimbursementProducts.${index}.secondSourceAmount`, undefined);
+          setValue(`reimbursementProducts.${index}.refundSources.${0}.amount`, 0);
+          setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, 0);
+          setValue(`reimbursementProducts.${index}.cost`, 0);
         });
       }
     }
-  }, [firstRefundSourceId, secondRefundSourceId, reimbursementProducts, setValue]);
+  }, [firstRefundSourceId, secondRefundSourceId, reimbursementProducts, setValue, watch]);
+
+  // for setting the first refund source in the array
+  useEffect(() => {
+    if (!firstRefundSourceId || hasConfirmedFinance) return;
+
+    const firstCodeId = indexCodes.find((code) => code.indexCodeId === firstRefundSourceId);
+    if (!firstCodeId) return;
+
+    reimbursementProducts.forEach((_, index) => {
+      setValue(`reimbursementProducts.${index}.refundSources.${0}`, { indexCode: firstCodeId, amount: 0 });
+    });
+  }, [firstRefundSourceId, hasConfirmedFinance, indexCodes, reimbursementProducts, setValue, watch]);
 
   useEffect(() => {
     control._formValues.$hasConfirmedFinance = hasConfirmedFinance;
@@ -129,24 +165,46 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
     setValue('secondaryAccount', undefined);
 
     reimbursementProducts.forEach((_, index) => {
-      setValue(`reimbursementProducts.${index}.firstSourceAmount`, undefined);
-      setValue(`reimbursementProducts.${index}.secondSourceAmount`, undefined);
+      setValue(`reimbursementProducts.${index}.refundSources.${0}.amount`, 0);
+      setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, 0);
       setValue(`reimbursementProducts.${index}.cost`, 0);
     });
   };
 
-  const firstRefundSource = refundSources.find((source) => source.indexCodeId === firstRefundSourceId) || {
+  useEffect(() => {
+    const specificCode = indexCodes.find((code) => code.indexCodeId === secondRefundSourceId);
+    if (hasPreFilledData) return;
+    if (!specificCode) return;
+    reimbursementProducts.forEach((product, index) => {
+      setValue(`reimbursementProducts.${index}.refundSources`, [
+        product.refundSources[0],
+        { indexCode: specificCode, amount: 0 }
+      ]);
+    });
+  }, [hasPreFilledData, indexCodes, reimbursementProducts, secondRefundSourceId, setValue]);
+
+  const handleConfirmAddRefundSource = () => {
+    setHasConfirmedFinance(true);
+    setShowAddRefundSourceModal(false);
+  };
+
+  const firstRefundSource = indexCodes.find((indexCodes) => indexCodes.indexCodeId === firstRefundSourceId) || {
     name: 'First Source',
     code: '',
     indexCodeId: 'placeholder-1'
   };
-  const secondRefundSource = refundSources.find((source) => source.indexCodeId === secondRefundSourceId) || {
+
+  const firstRefundSourcePassed = indexCodes.find((code) => code.indexCodeId === firstRefundSourceId) || undefined;
+
+  const secondRefundSource = indexCodes.find((code) => code.indexCodeId === secondRefundSourceId) || {
     name: 'Second Source',
     code: '',
     indexCodeId: 'placeholder-2'
   };
 
-  const remainingRefundSources = refundSources.filter((source) => source.indexCodeId !== firstRefundSourceId);
+  const secondRefundSourcePassed = indexCodes.find((code) => code.indexCodeId === secondRefundSourceId) || undefined;
+
+  const remainingRefundSources = indexCodes.filter((code) => code.indexCodeId !== firstRefundSourceId);
   const calculatedTotalCost = products
     .reduce((acc: number, product: ReimbursementProductFormArgs) => acc + Number(product.cost), 0)
     .toFixed(2);
@@ -610,7 +668,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                           </Typography>
                         );
                       }
-                      const selectedIndexCode = refundSources.find((source) => source.indexCodeId === selected);
+                      const selectedIndexCode = indexCodes.find((code) => code.indexCodeId === selected);
                       return selectedIndexCode ? (
                         <Typography>{codeAndRefundSourceName(selectedIndexCode)}</Typography>
                       ) : (
@@ -620,9 +678,9 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                       );
                     }}
                   >
-                    {refundSources.map((refundSource) => (
-                      <MenuItem key={refundSource.indexCodeId} value={refundSource.indexCodeId}>
-                        {codeAndRefundSourceName(refundSource)}
+                    {indexCodes.map((code) => (
+                      <MenuItem key={code.indexCodeId} value={code.indexCodeId}>
+                        {codeAndRefundSourceName(code)}
                       </MenuItem>
                     ))}
                   </Select>
@@ -670,7 +728,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                           if (!selected) {
                             return <Typography style={{ color: 'gray' }}>Select Second Refund Source</Typography>;
                           }
-                          const selectedIndexCode = refundSources.find((source) => source.indexCodeId === selected);
+                          const selectedIndexCode = indexCodes.find((code) => code.indexCodeId === selected);
                           return selectedIndexCode ? (
                             <Typography>{codeAndRefundSourceName(selectedIndexCode)}</Typography>
                           ) : (
@@ -724,10 +782,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                       borderRadius: '10px',
                       padding: '0px 10px 0px 10px'
                     }}
-                    onClick={() => {
-                      setHasConfirmedFinance(true);
-                      setShowAddRefundSourceModal(false);
-                    }}
+                    onClick={handleConfirmAddRefundSource}
                   >
                     Yes
                   </Button>
@@ -775,6 +830,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               setValue={setValue}
               control={control}
               hasMultipleRefundSources={hasConfirmedFinance}
+              firstRefundSourceIndexCode={firstRefundSourcePassed}
+              secondRefundSourceIndexCode={secondRefundSourcePassed}
               firstRefundSourceName={firstRefundSource.name}
               secondRefundSourceName={secondRefundSource.name}
             />
@@ -800,8 +857,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         </Box>
         <Box sx={{ display: 'flex', alignSelf: 'center' }}>
           <NERFailButton
+            onClick={() => onFormExit?.()}
             variant="contained"
-            href={previousPage}
             sx={{ mx: 1, background: '#dd524c', color: 'white', borderRadius: '10px' }}
           >
             Cancel

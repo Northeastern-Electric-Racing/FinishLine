@@ -29,6 +29,11 @@ interface VendorTableProps {
   isHeadAndAbove?: boolean;
 }
 
+interface ScrollableCellProps {
+  children: React.ReactNode;
+  maxWidth?: number;
+}
+
 const VendorTable = ({ isHeadAndAbove = false }: VendorTableProps) => {
   const { data: vendors, isLoading: vendorIsLoading, isError: vendorIsError, error: vendorError } = useGetAllVendors();
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
@@ -44,6 +49,31 @@ const VendorTable = ({ isHeadAndAbove = false }: VendorTableProps) => {
   if (vendorIsError) {
     return <ErrorPage message={vendorError.message} />;
   }
+
+  const ScrollableCell = ({ children, maxWidth = 150 }: ScrollableCellProps) => (
+    <Box
+      sx={{
+        maxWidth,
+        overflow: 'hidden',
+        '&:hover': {
+          overflow: 'auto'
+        },
+        scrollbarColor: `#555 ${theme.palette.background.default}`,
+        scrollbarWidth: 'thin'
+      }}
+    >
+      <Typography
+        sx={{
+          textAlign: 'center',
+          fontSize: '1.5rem',
+          height: '1.5em',
+          whiteSpace: 'nowrap'
+        }}
+      >
+        {children}
+      </Typography>
+    </Box>
+  );
 
   vendors.sort((a, b) => a.name.localeCompare(b.name));
   const startIdx = currentPage * rowsPerPage;
@@ -67,9 +97,7 @@ const VendorTable = ({ isHeadAndAbove = false }: VendorTableProps) => {
           borderBottom: 'none'
         }}
       >
-        <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem', fontWeight: 'bold' }}>
-          {vendor.name}
-        </Typography>
+        <ScrollableCell children={vendor.name} />
       </TableCell>
       {isHeadAndAbove ? (
         <>
@@ -80,7 +108,7 @@ const VendorTable = ({ isHeadAndAbove = false }: VendorTableProps) => {
               borderBottom: 'none'
             }}
           >
-            <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>{vendor.username}</Typography>
+            <ScrollableCell children={vendor.username} />
           </TableCell>
           <TableCell
             align="center"
@@ -89,7 +117,7 @@ const VendorTable = ({ isHeadAndAbove = false }: VendorTableProps) => {
               borderBottom: 'none'
             }}
           >
-            <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>{vendor.password}</Typography>
+            <ScrollableCell children={vendor.password} />
           </TableCell>
 
           <TableCell
@@ -99,7 +127,7 @@ const VendorTable = ({ isHeadAndAbove = false }: VendorTableProps) => {
               borderBottom: 'none'
             }}
           >
-            <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>{vendor.discountCode}</Typography>
+            <ScrollableCell children={vendor.discountCode} />
           </TableCell>
           <TableCell
             align="center"
@@ -108,9 +136,7 @@ const VendorTable = ({ isHeadAndAbove = false }: VendorTableProps) => {
               borderBottom: 'none'
             }}
           >
-            <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>
-              {fullNamePipe(vendor.twoFactorContact)}
-            </Typography>
+            <ScrollableCell children={vendor.twoFactorContacts.map(fullNamePipe).join(', ')} />
           </TableCell>
           <TableCell
             align="center"
@@ -121,29 +147,7 @@ const VendorTable = ({ isHeadAndAbove = false }: VendorTableProps) => {
             }}
           >
             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Box
-                sx={{
-                  maxWidth: 400,
-                  width: '100%',
-                  overflow: 'hidden',
-                  '&:hover': {
-                    overflow: 'auto'
-                  },
-                  scrollbarColor: `#555 ${theme.palette.background.default}`,
-                  scrollbarWidth: 'thin'
-                }}
-              >
-                <Typography
-                  sx={{
-                    textAlign: 'left',
-                    fontSize: '1.5rem',
-                    height: '1.5em',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  {vendor.notes}
-                </Typography>
-              </Box>
+              <ScrollableCell children={vendor.notes} maxWidth={400} />
               <Box
                 sx={{
                   display: 'flex'
@@ -176,7 +180,7 @@ const VendorTable = ({ isHeadAndAbove = false }: VendorTableProps) => {
               minHeight: '50px'
             }}
           >
-            <Typography sx={{ fontSize: '1.5rem' }}>{datePipe(vendor.dateCreated)}</Typography>
+            <ScrollableCell children={datePipe(vendor.dateCreated)} />
           </TableCell>
           <TableCell
             align="center"
@@ -185,11 +189,7 @@ const VendorTable = ({ isHeadAndAbove = false }: VendorTableProps) => {
               borderBottom: 'none'
             }}
           >
-            <Box sx={{ display: 'flex', justifyContent: 'space-around' }}>
-              <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>
-                {fullNamePipe(vendor.addedBy)}
-              </Typography>
-            </Box>
+            <ScrollableCell children={fullNamePipe(vendor.addedBy)} />
           </TableCell>
         </>
       )}
@@ -198,7 +198,7 @@ const VendorTable = ({ isHeadAndAbove = false }: VendorTableProps) => {
 
   return (
     <Box sx={{ width: '100%', borderRadius: '8px 8px 0 0' }}>
-      <CreateVendorModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} vendors={vendors} />
+      <CreateVendorModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} />
       {vendorToEdit && (
         <EditVendorModal
           showModal={!!vendorToEdit}
@@ -206,7 +206,6 @@ const VendorTable = ({ isHeadAndAbove = false }: VendorTableProps) => {
             setVendorToEdit(undefined);
           }}
           vendor={vendorToEdit}
-          vendors={vendors}
         />
       )}
       {vendorToDelete && (
@@ -220,7 +219,7 @@ const VendorTable = ({ isHeadAndAbove = false }: VendorTableProps) => {
       <Box sx={{ paddingBottom: '100px' }}>
         <TableContainer
           {...(isHeadAndAbove ? { component: Paper } : {})}
-          sx={{ borderRadius: '8px', overflow: 'hidden', backgroundColor: theme.palette.background.default }}
+          sx={{ borderRadius: '8px', overflow: 'auto', backgroundColor: theme.palette.background.default }}
         >
           <MuiTable sx={{ ...(!isHeadAndAbove && { maxWidth: '800px' }) }}>
             <TableHead>
@@ -282,7 +281,7 @@ const VendorTable = ({ isHeadAndAbove = false }: VendorTableProps) => {
                         color: 'white'
                       }}
                     >
-                      2FA Contact
+                      2FA Contacts
                     </TableCell>
                     <TableCell
                       align="center"

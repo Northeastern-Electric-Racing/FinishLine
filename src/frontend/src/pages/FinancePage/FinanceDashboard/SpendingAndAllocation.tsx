@@ -10,18 +10,18 @@ const SpendingAndAllocation = ({ data }: { data: SpendingBarData[] }) => {
         background: grey[900],
         borderRadius: 2,
         boxShadow: 2,
-        p: 2,
-        minHeight: '650px',
-        minWidth: '500px'
+        p: { xs: 1, sm: 2 },
+        minHeight: { xs: 'auto', sm: '475px' },
+        width: '100%'
       }}
     >
-      <Typography variant="h6" fontWeight="bold" gutterBottom>
+      <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
         Spending & Allocation
       </Typography>
       {data
         .sort((a, b) => b.data.length - a.data.length)
-        .map((spendingData) => (
-          <SpendingBar data={spendingData.data} title={spendingData.title} />
+        .map((spendingData, index) => (
+          <SpendingBar key={index} data={spendingData.data} title={spendingData.title} />
         ))}
     </Box>
   );

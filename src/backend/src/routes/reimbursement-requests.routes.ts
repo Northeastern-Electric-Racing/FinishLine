@@ -67,11 +67,22 @@ reimbursementRequestsRouter.get('/current-user', ReimbursementRequestController.
 
 reimbursementRequestsRouter.get('/reimbursements/current-user', ReimbursementRequestController.getCurrentUserReimbursements);
 
+reimbursementRequestsRouter.get(
+  '/reimbursements/current-user-team',
+  ReimbursementRequestController.getCurrentUsersTeamsReimbursementRequests
+);
+
 reimbursementRequestsRouter.get('/reimbursements', ReimbursementRequestController.getAllReimbursements);
 
 reimbursementRequestsRouter.post(
   '/:vendorId/vendors/edit',
   nonEmptyString(body('name')),
+  nonEmptyString(body('username')),
+  nonEmptyString(body('password')),
+  nonEmptyString(body('discountCode')),
+  body('taxExempt').isBoolean(),
+  body('twoFactorContacts').isArray(),
+  nonEmptyString(body('notes')).optional(),
   validateInputs,
   ReimbursementRequestController.editVendor
 );
@@ -131,10 +142,10 @@ reimbursementRequestsRouter.post(
   nonEmptyString(body('name')),
   nonEmptyString(body('username')),
   nonEmptyString(body('password')),
-  nonEmptyString(body('discountCode')).optional(),
-  nonEmptyString(body('twoFactorContactId')).optional(),
-  nonEmptyString(body('note')).optional(),
-  nonEmptyString(body('addedByUserId')).optional(),
+  nonEmptyString(body('discountCode')),
+  body('taxExempt').isBoolean(),
+  body('twoFactorContacts').isArray(),
+  nonEmptyString(body('notes')).optional(),
   validateInputs,
   ReimbursementRequestController.createVendor
 );

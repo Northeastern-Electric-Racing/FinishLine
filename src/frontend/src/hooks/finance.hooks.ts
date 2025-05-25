@@ -54,6 +54,7 @@ import {
   getSpendingBarTeamTypeData,
   getAllSpendingBarData,
   deleteVendor,
+  getCurrentUsersTeamsReimbursementRequests,
   deleteSponsorTask
 } from '../apis/finance.api';
 import {
@@ -107,6 +108,12 @@ export interface AccountCodePayload {
 
 export interface EditVendorPayload {
   name: string;
+  username: string;
+  password: string;
+  discountCode: string;
+  taxExempt: boolean;
+  twoFactorContactIds: string[];
+  notes: string;
 }
 
 export interface RefundPayload {
@@ -377,6 +384,16 @@ export const useGetAllAccountCodes = () => {
 export const useCurrentUserReimbursementRequests = () => {
   return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user'], async () => {
     const { data } = await getCurrentUserReimbursementRequests();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get the reimbursement requests for the current user's teams
+ */
+export const useCurrentUsersTeamsReimbursementRequests = () => {
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user'], async () => {
+    const { data } = await getCurrentUsersTeamsReimbursementRequests();
     return data;
   });
 };
@@ -748,11 +765,14 @@ export const useCreateAccountCode = () => {
  */
 export const useCreateVendor = () => {
   const queryClient = useQueryClient();
-  return useMutation<Vendor, Error, { name: string }>(['vendors', 'create'], async (vendorData: { name: string }) => {
-    const { data } = await createVendor(vendorData);
-    queryClient.invalidateQueries(['vendors']);
-    return data;
-  });
+  return useMutation<{ message: string }, Error, EditVendorPayload>(
+    ['vendors', 'create'],
+    async (vendorData: EditVendorPayload) => {
+      const { data } = await createVendor(vendorData);
+      queryClient.invalidateQueries(['vendors']);
+      return data;
+    }
+  );
 };
 
 /**

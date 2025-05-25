@@ -29,12 +29,12 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
                 {
                   <Typography>
                     [
-                    {
+                    {ic.wbsNum && (
                       <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(ic.wbsNum)}`}>
                         {wbsPipe(ic.wbsNum)}
                       </Link>
-                    }
-                    ] {ic.detail}
+                    )}
+                    {ic.category && <Typography> {ic.category.name} </Typography>}] {ic.detail}
                   </Typography>
                 }
               </DynamicTooltip>

@@ -32,6 +32,16 @@ export default class ProjectsController {
     }
   }
 
+  static async getTeamsProjects(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamId } = req.params;
+      const projects: Project[] = await ProjectsService.getTeamsProjects(req.organization, teamId);
+      res.status(200).json(projects);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getSingleProject(req: Request, res: Response, next: NextFunction) {
     try {
       const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
@@ -342,7 +352,8 @@ export default class ProjectsController {
         price,
         subtotal,
         linkUrl,
-        notes
+        notes,
+        reimbursementRequestId
       } = req.body;
       const updatedMaterial = await BillOfMaterialsService.editMaterial(
         req.currentUser,
@@ -360,7 +371,8 @@ export default class ProjectsController {
         notes,
         unitName,
         assemblyId,
-        pdmFileName
+        pdmFileName,
+        reimbursementRequestId
       );
       res.status(200).json(updatedMaterial);
     } catch (error: unknown) {
