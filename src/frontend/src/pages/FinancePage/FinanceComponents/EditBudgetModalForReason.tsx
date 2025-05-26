@@ -10,6 +10,9 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { formatReasonName } from '../../../utils/reimbursement-request.utils';
 import { createBudgetChangeRequest } from '../../../apis/change-requests.api';
+import { useAuth } from '../../../hooks/auth.hooks';
+import { CreateBudgetChangeRequestPayload } from '../../../hooks/change-requests.hooks';
+import { ChangeRequestType } from 'shared';
 
 const schema = yup.object().shape({
   category: yup.string().required('Reason is required'),
@@ -49,6 +52,8 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
 
   const currentCategoryId = watch('category');
 
+  const auth = useAuth();
+
   const {
     data: indexCodes,
     isLoading: indexCodesIsLoading,
@@ -79,18 +84,19 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
 
   const onSubmit = async (data: EditBudgetInputs) => {
     if (!currentCategoryId) return;
+    if (auth.user?.userId === undefined) throw new Error('Cannot create budget change request without being logged in');
 
-    const selectedReason = otherReasons.find((r) => r.otherProductReasonId === currentCategoryId);
-    if (!selectedReason) return;
+    const currentCategory = otherReasons.find((reason) => reason.otherProductReasonId === currentCategoryId);
+    if (!currentCategory) return;
 
-    const payload = {
-      name: selectedReason.name,
-      accountCodeIds: selectedReason.accountCodes.map((accountCode) => accountCode.accountCodeId),
-      indexCodeId: data.updatedIndexCode,
-      budget: data.updatedBudget
+    const payload: CreateBudgetChangeRequestPayload = {
+      submitterId: auth.user?.userId,
+      otherReasonId: currentCategoryId,
+      proposedBudget: data.updatedBudget,
+      type: ChangeRequestType.Budget
     };
 
-    await createBudgetChangeRequest(selectedReason.userCreated.userId, selectedReason.otherProductReasonId, payload.budget);
+    await createBudgetChangeRequest(payload.submitterId, payload.otherReasonId, payload.proposedBudget);
 
     handleClose();
   };

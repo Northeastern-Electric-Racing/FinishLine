@@ -55,23 +55,23 @@ const CategoriesTable = () => {
         <Typography>{displayEnum(category.name)}</Typography>
       </TableCell>
       <TableCell>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography>{`$${category.budget}`}</Typography>
-          <IconButton
-            onClick={(e) => {
-              e.stopPropagation();
-              setCategoryToDelete(category);
-            }}
-            aria-label="delete"
-          >
-            <DeleteIcon />
-          </IconButton>
-        </Box>
+        <Typography>{`$${category.budget}`}</Typography>
+      </TableCell>
+      <TableCell>
+        <IconButton
+          onClick={(e) => {
+            e.stopPropagation();
+            setCategoryToDelete(category);
+          }}
+          aria-label="delete"
+        >
+          <DeleteIcon />
+        </IconButton>
       </TableCell>
     </TableRow>
   ));
 
-  const columns = ['Index Code', 'Account Code', 'Name', 'Budget'];
+  const columns = ['Index Code', 'Account Code', 'Name', 'Budget', 'Actions'];
 
   return (
     <Box>
