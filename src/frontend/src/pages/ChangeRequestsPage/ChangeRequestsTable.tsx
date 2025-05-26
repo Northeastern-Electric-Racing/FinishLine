@@ -8,14 +8,18 @@ import { Box, useTheme } from '@mui/system';
 import { DataGrid, GridColDef, GridFilterModel, GridRow, GridRowProps } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { ChangeRequest, ChangeRequestType, WbsNumber, validateWBS } from 'shared';
+import { ChangeRequest, ChangeRequestType, WbsElement } from 'shared';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
-import { datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
+import { datePipe, displayEnum, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { GridColDefStyle } from '../../utils/tables';
 import ErrorPage from '../ErrorPage';
 import TableCustomToolbar from '../../components/TableCustomToolbar';
+
+function isWBSElement(value: any): value is WbsElement {
+  return value && 'wbsNum' in value;
+}
 
 const ChangeRequestsTable: React.FC = () => {
   const [windowSize, setWindowSize] = useState(window.innerWidth);
@@ -69,26 +73,39 @@ const ChangeRequestsTable: React.FC = () => {
     maxWidth: 200
   };
 
-  const wbsColumn: GridColDef = {
+  const dynamicColumn: GridColDef = {
     ...baseColDef,
-    field: 'wbs',
-    headerName: 'WBS',
+    field: 'wbsOrCategory',
+    headerName: 'WBS / Category',
     filterable: true,
     sortable: true,
     maxWidth: 300,
-    valueGetter: (params) => `${wbsPipe(params.value.wbsNum)} - ${params.value.name}`,
+    valueGetter: (params) => {
+      const { value } = params;
+      if (isWBSElement(value)) {
+        return `${wbsPipe(value.wbsNum)} - ${value.name}`;
+      }
+      return `${value?.name ? displayEnum(value?.name) : ''}`;
+    },
     sortComparator: (_v1, _v2, param1, param2) => {
-      const wbs1: WbsNumber = validateWBS((param1.value as string).split(' ')[0]);
-      const wbs2: WbsNumber = validateWBS((param2.value as string).split(' ')[0]);
+      const val1 = param1.value;
+      const val2 = param2.value;
 
-      if (wbs1.carNumber !== wbs2.carNumber) {
-        return wbs1.carNumber - wbs2.carNumber;
-      } else if (wbs1.projectNumber !== wbs2.projectNumber) {
-        return wbs1.projectNumber - wbs2.projectNumber;
-      } else if (wbs1.workPackageNumber !== wbs2.workPackageNumber) {
+      if (isWBSElement(val1) && isWBSElement(val2)) {
+        const wbs1 = val1.wbsNum;
+        const wbs2 = val2.wbsNum;
+
+        if (wbs1.carNumber !== wbs2.carNumber) return wbs1.carNumber - wbs2.carNumber;
+        if (wbs1.projectNumber !== wbs2.projectNumber) return wbs1.projectNumber - wbs2.projectNumber;
         return wbs1.workPackageNumber - wbs2.workPackageNumber;
       }
-      return 0;
+
+      if (!isWBSElement(val1) && !isWBSElement(val2)) {
+        return val1.budget - val2.budget;
+      }
+
+      // Prefer WBS entries first, or reverse depending on your preference
+      return isWBSElement(val1) ? -1 : 1;
     }
   };
 
@@ -99,7 +116,7 @@ const ChangeRequestsTable: React.FC = () => {
     maxWidth: 200
   };
 
-  const smallColumns: GridColDef[] = [idColumn, dateReviewedColumn, wbsColumn, submitterColumn];
+  const smallColumns: GridColDef[] = [idColumn, dateReviewedColumn, dynamicColumn, submitterColumn];
 
   const columns: GridColDef[] = [
     idColumn,
@@ -112,7 +129,7 @@ const ChangeRequestsTable: React.FC = () => {
       maxWidth: 150
     },
     { ...baseColDef, field: 'carNumber', headerName: 'Car #', type: 'number', maxWidth: 50 },
-    wbsColumn,
+    dynamicColumn,
     {
       ...baseColDef,
       field: 'dateSubmitted',
@@ -189,11 +206,14 @@ const ChangeRequestsTable: React.FC = () => {
         loading={isLoading}
         error={error}
         rows={
-          // flatten some complex data to allow MUI to sort/filter yet preserve the original data being available to the front-end
           data.map((v) => ({
             ...v,
-            carNumber: v.wbsNum.carNumber,
-            wbs: { wbsNum: v.wbsNum, name: v.wbsName },
+            carNumber: v.wbsNum ? v.wbsNum.carNumber : undefined,
+            wbsOrCategory: v.wbsNum
+              ? { wbsNum: v.wbsNum, name: v.wbsName }
+              : v.category
+                ? { category: v.category, name: v.category.name }
+                : undefined,
             submitter: fullNamePipe(v.submitter),
             reviewer: fullNamePipe(v.reviewer)
           })) || []

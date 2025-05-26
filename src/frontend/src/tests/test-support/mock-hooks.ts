@@ -4,6 +4,7 @@ import {
   DescriptionBullet,
   Material,
   Project,
+  ReimbursementRequestData,
   Task,
   TaskPriority,
   TaskStatus,
@@ -140,3 +141,6 @@ export const mockManyWorkPackages = (workPackages: WorkPackage[]) =>
 
 export const mockManyMaterials = (materials: Material[]) =>
   mockUseQueryResult<Material[]>(false, false, materials, new Error());
+
+export const mockUseGetReimbursementRequestProjectData = (rrData: ReimbursementRequestData) =>
+  mockUseQueryResult<ReimbursementRequestData>(false, false, rrData, new Error());

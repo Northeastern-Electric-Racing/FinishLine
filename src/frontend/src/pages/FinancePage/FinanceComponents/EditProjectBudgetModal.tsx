@@ -2,52 +2,61 @@ import * as yup from 'yup';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import NERFormModal from '../../../components/NERFormModal';
-import { Box, FormControl, FormLabel, MenuItem, Select, Typography } from '@mui/material';
+import { Box, FormControl, FormHelperText, FormLabel, MenuItem, Select, Typography } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import { useGetAllIndexCodes, useGetAllOtherProductReason } from '../../../hooks/finance.hooks';
+import { useGetAllIndexCodes } from '../../../hooks/finance.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { formatReasonName } from '../../../utils/reimbursement-request.utils';
-import { createBudgetChangeRequest } from '../../../apis/change-requests.api';
+import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
+import { ChangeRequestType, Project } from 'shared';
+import { useGetTeamsProjects } from '../../../hooks/projects.hooks';
 
 const schema = yup.object().shape({
-  category: yup.string().required('Reason is required'),
-  updatedIndexCode: yup.string().required('Account is required'),
-  updatedBudget: yup.number().positive('Amount must be positive').required('Amount is required')
+  project: yup.string().required('Project is required'),
+  account: yup.string().required('Account is required'),
+  budget: yup
+    .number()
+    .typeError('Amount must be a number')
+    .positive('Amount must be positive')
+    .required('Amount is required')
 });
 
-interface EditBudgetInputs {
-  category: string;
-  updatedIndexCode: string;
-  updatedBudget: number;
+interface EditProjectBudgetModalInputs {
+  project: string;
+  account: string;
+  budget: number;
 }
 
-interface EditBudgetModalForReasonProps {
+interface EditProjectBudgetModalProps {
   showModal: boolean;
   handleClose: () => void;
+  teamId: string;
+  project?: Project;
 }
 
-export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> = ({
+export const EditProjectBudgetModal: React.FC<EditProjectBudgetModalProps> = ({
   showModal,
-  handleClose
-}: EditBudgetModalForReasonProps) => {
+  handleClose,
+  teamId,
+  project
+}: EditProjectBudgetModalProps) => {
   const {
     watch,
     handleSubmit,
     control,
     reset,
     formState: { errors }
-  } = useForm<EditBudgetInputs>({
+  } = useForm<EditProjectBudgetModalInputs>({
     resolver: yupResolver(schema),
     defaultValues: {
-      category: '',
-      updatedIndexCode: '',
-      updatedBudget: 0
+      project: project?.id || '',
+      account: '',
+      budget: project?.budget || 0
     }
   });
 
-  const currentCategoryId = watch('category')
+  const currentProjectId = watch('project');
 
   const {
     data: indexCodes,
@@ -56,41 +65,62 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
     error: indexCodeError
   } = useGetAllIndexCodes();
 
-  const {
-    data: otherReasons,
-    isLoading: otherReasonsIsLoading,
-    isError: otherReasonIsError,
-    error: otherReasonError
-  } = useGetAllOtherProductReason();
+  const { isLoading: crIsLoading, mutateAsync: createCR } = useCreateStandardChangeRequest();
 
-  if (!indexCodes || indexCodesIsLoading) {
+  const {
+    data: projects,
+    isLoading: projectsIsLoading,
+    isError: projectsIsError,
+    error: projectsError
+  } = useGetTeamsProjects(teamId);
+
+  if (!indexCodes || indexCodesIsLoading || crIsLoading) {
     return <LoadingIndicator />;
   }
   if (indexCodeIsError) {
     return <ErrorPage message={indexCodeError.message} />;
   }
 
-  if (!otherReasons || otherReasonsIsLoading) {
+  if (!projects || projectsIsLoading) {
     return <LoadingIndicator />;
   }
-  if (otherReasonIsError) {
-    return <ErrorPage message={otherReasonError.message} />;
+  if (projectsIsError) {
+    return <ErrorPage message={projectsError.message} />;
   }
 
-  const onSubmit = async (data: EditBudgetInputs) => {
-    if (!currentCategoryId) return;
+  const onSubmit = async (data: EditProjectBudgetModalInputs) => {
+    if (!currentProjectId) return;
+    const currentProject = projects.find((project) => project.id === currentProjectId);
+    if (!currentProject) return;
 
-    const selectedReason = otherReasons.find((r) => r.otherProductReasonId === currentCategoryId);
-    if (!selectedReason) return;
-
-    const payload = {
-      name: selectedReason.name,
-      accountCodeIds: selectedReason.accountCodes.map((accountCode) => accountCode.accountCodeId),
-      indexCodeId: data.updatedIndexCode,
-      budget: data.updatedBudget
+    const payload: CreateStandardChangeRequestPayload = {
+      wbsNum: currentProject.wbsNum,
+      type: ChangeRequestType.Other,
+      what: 'project',
+      why: [],
+      proposedSolutions: [],
+      projectProposedChanges: {
+        leadId: currentProject.lead?.userId,
+        managerId: currentProject.manager?.userId,
+        name: currentProject.name,
+        descriptionBullets: currentProject.descriptionBullets.map((bullet) => ({
+          id: bullet.id,
+          detail: bullet.detail,
+          type: bullet.type
+        })),
+        links: currentProject.links.map((link) => ({
+          linkTypeName: link.linkType.name,
+          url: link.url,
+          linkId: link.linkId
+        })),
+        budget: data.budget,
+        summary: currentProject.summary,
+        teamIds: currentProject.teams.map((team) => team.teamId),
+        workPackageProposedChanges: []
+      }
     };
 
-    await createBudgetChangeRequest(selectedReason.userCreated.userId, selectedReason.otherProductReasonId, payload.budget);
+    await createCR(payload);
 
     handleClose();
   };
@@ -99,7 +129,7 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
     <NERFormModal
       open={showModal}
       onHide={handleClose}
-      formId="edit-budget-form"
+      formId="edit-project-budget-form"
       title="Edit Budget"
       reset={() => reset()}
       handleUseFormSubmit={handleSubmit}
@@ -110,21 +140,24 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
     >
       <Box display="flex" flexDirection={'column'} minWidth={400}>
         <FormControl fullWidth>
-          <FormLabel sx={{ alignSelf: 'start' }}>Category</FormLabel>
+          <FormLabel sx={{ alignSelf: 'start' }}>Project</FormLabel>
           <Controller
             control={control}
-            name={'category'}
-            render={({ field: { onChange, value } }) => (
+            name={'project'}
+            render={({ field: { onChange, value, onBlur, ref } }) => (
               <Select
                 displayEmpty
                 value={value !== undefined ? value : ''}
                 onChange={onChange}
+                onBlur={onBlur}
+                inputRef={ref}
+                error={!!errors.project}
                 renderValue={(selected) => {
-                  const selectedReason = otherReasons.find((r) => r.otherProductReasonId === selected);
+                  const selectedReason = projects.find((project) => project.id === selected);
                   return selectedReason ? (
-                    formatReasonName(selectedReason.name)
+                    selectedReason.name
                   ) : (
-                    <Typography sx={{ color: 'gray' }}>Select category to allocate to</Typography>
+                    <Typography sx={{ color: 'gray' }}>Select project to allocate to</Typography>
                   );
                 }}
                 sx={{ height: 56, width: '100%', textAlign: 'left' }}
@@ -140,21 +173,22 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
                   }
                 }}
               >
-                {otherReasons.map((reason) => (
-                  <MenuItem key={reason.otherProductReasonId} value={reason.otherProductReasonId}>
-                    {formatReasonName(reason.name)}
+                {projects.map((project) => (
+                  <MenuItem key={project.id} value={project.id}>
+                    {project.name}
                   </MenuItem>
                 ))}
               </Select>
             )}
           />
+          <FormHelperText error>{errors.project?.message}</FormHelperText>
         </FormControl>
 
         <FormControl fullWidth>
           <FormLabel sx={{ alignSelf: 'start' }}>Account</FormLabel>
           <Controller
             control={control}
-            name={'updatedIndexCode'}
+            name={'account'}
             render={({ field: { onChange, value } }) => (
               <Select
                 displayEmpty
@@ -185,18 +219,19 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
               </Select>
             )}
           />
+          <FormHelperText error>{errors.account?.message}</FormHelperText>
         </FormControl>
 
         <FormControl>
           <FormLabel>Amount</FormLabel>
           <ReactHookTextField
             placeholder={'New Amount'}
-            name="updatedBudget"
+            name="budget"
             type="number"
             control={control}
             sx={{ width: 1 }}
             startAdornment={<AttachMoneyIcon />}
-            errorMessage={errors.updatedBudget}
+            errorMessage={errors.budget}
           />
         </FormControl>
       </Box>

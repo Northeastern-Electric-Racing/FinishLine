@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useGetAllReimbursementRequestData, useGetAllSpendingBarData } from '../../../hooks/finance.hooks';
-import { Box, Grid, Tab, Tabs, Typography } from '@mui/material';
-import PieChart from '../FinanceComponents/PieChart';
+import { Grid } from '@mui/material';
+import SpendingAndAllocation from './SpendingAndAllocation';
+import AdminBalance from './AdminBalance';
 
 interface FinanceDashboardAllViewProps {
   startDate?: Date;
@@ -27,98 +28,30 @@ const FinanceDashboardAllView: React.FC<FinanceDashboardAllViewProps> = ({ start
     error: spendingDataError
   } = useGetAllSpendingBarData(payload);
 
-  const [selectedTab, setSelectedTab] = useState('total');
-
   if (allRRDataIsError) {
     return <ErrorPage error={allRRDataError} />;
-  }
-
-  if (!allRRData || allRRDataIsLoading) {
-    return <LoadingIndicator />;
   }
 
   if (spendingDataIsError) {
     return <ErrorPage error={spendingDataError} />;
   }
 
-  if (!spendingData || spendingDataIsLoading) {
+  if (!allRRData || allRRDataIsLoading || !spendingData || spendingDataIsLoading) {
     return <LoadingIndicator />;
   }
 
   return (
-    <Grid container columnSpacing={25} rowSpacing={2}>
-      <Grid item xs={12} md={4}>
-        <Box
-          sx={{
-            background: '#424242',
-            borderRadius: 2,
-            boxShadow: 2,
-            p: 2,
-            minHeight: '650px',
-            minWidth: '500px'
-          }}
-        >
-          <Typography variant="h6" fontWeight="bold" gutterBottom>
-            Balance
-          </Typography>
-          <Tabs
-            value={selectedTab}
-            onChange={(_event, newValue) => setSelectedTab(newValue)}
-            textColor="primary"
-            indicatorColor="primary"
-            variant="fullWidth"
-          >
-            <Tab label="Total" value="total" />
-            <Tab label="Budget" value="budget" />
-            <Tab label="Cash" value="cash" />
-          </Tabs>
-          {selectedTab === 'total' && (
-            <PieChart
-              totalBalance={allRRData[0].totalBudget}
-              pendingFinance={allRRData[0].pendingFinance}
-              pendingLeadership={allRRData[0].pendingLeadership}
-              submittedToSABO={allRRData[0].submittedToSabo}
-              reimbursed={allRRData[0].reimbursed}
-              available={allRRData[0].available}
-            />
-          )}
-          {selectedTab === 'budget' && (
-            <PieChart
-              totalBalance={allRRData[1].totalBudget}
-              pendingFinance={allRRData[1].pendingFinance}
-              pendingLeadership={allRRData[1].pendingLeadership}
-              submittedToSABO={allRRData[1].submittedToSabo}
-              reimbursed={allRRData[1].reimbursed}
-              available={allRRData[1].available}
-            />
-          )}
-          {selectedTab === 'cash' && (
-            <PieChart
-              totalBalance={allRRData[2].totalBudget}
-              pendingFinance={allRRData[2].pendingFinance}
-              pendingLeadership={allRRData[2].pendingLeadership}
-              submittedToSABO={allRRData[2].submittedToSabo}
-              reimbursed={allRRData[2].reimbursed}
-              available={allRRData[2].available}
-            />
-          )}
-        </Box>
+    <Grid
+      container
+      columnSpacing={{ xs: 1, sm: 2, md: 3 }}
+      rowSpacing={{ xs: 1, sm: 2 }}
+      sx={{ flexWrap: 'wrap', padding: { xs: 1, sm: 2 } }}
+    >
+      <Grid item xs={12} sm={6} md={4.5}>
+        <AdminBalance data={allRRData} />
       </Grid>
-      <Grid item xs={12} md={8}>
-        <Box
-          sx={{
-            background: '#424242',
-            borderRadius: 2,
-            boxShadow: 2,
-            p: 2,
-            minHeight: '650px',
-            minWidth: '500px'
-          }}
-        >
-          <Typography variant="h6" fontWeight="bold" gutterBottom>
-            Spending & Allocation
-          </Typography>
-        </Box>
+      <Grid item xs={12} sm={6} md={7.5}>
+        <SpendingAndAllocation data={spendingData} />
       </Grid>
     </Grid>
   );
