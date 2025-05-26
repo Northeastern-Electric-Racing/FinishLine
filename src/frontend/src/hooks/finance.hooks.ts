@@ -147,7 +147,7 @@ export interface SponsorTaskPayload {
   dueDate: Date;
   notes: string;
   notifyDate?: Date;
-  asigneeId?: string;
+  assigneeUserId?: string;
 }
 
 export interface EditSponsorTaskPayload {
@@ -190,6 +190,7 @@ export const useCreateSponsorTask = (sponsorId: string) => {
   return useMutation<SponsorTask, Error, SponsorTaskPayload>(
     ['sponsor-task', 'create'],
     async (formData: SponsorTaskPayload) => {
+      console.log(formData.assigneeUserId);
       const { data } = await createSponsorTask(sponsorId, formData);
       return data;
     },
