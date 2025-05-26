@@ -264,7 +264,7 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, defau
       <Grid item xs={12} sm={6}>
         <FormControl fullWidth>
           <Typography variant="h5" color="#EF4345" sx={{ textAlign: 'left', mt: 1 }}>
-            Tax Exempt:*
+            Tax Exempt:
           </Typography>
           <Box sx={{ display: 'flex', mr: 30, justifyContent: 'center', mt: 2 }}>
             <Controller
@@ -298,7 +298,7 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, defau
       <Grid item xs={12} sm={12}>
         <FormControl fullWidth>
           <Typography variant="h5" color="#EF4345" sx={{ mb: 1 }}>
-            Notes on Sponsor:
+            Sponsor Tasks:
           </Typography>
           {fields.map((item, index) => (
             <Box key={item.id} sx={{ display: 'flex', mt: 1, flexWrap: 'wrap', gap: 0.5 }}>
@@ -378,7 +378,7 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, defau
                         options={members.map((m) => ({ label: m.firstName + ' ' + m.lastName, id: m.userId }))}
                         size="small"
                         placeholder={
-                          !!defaultValues?.sponsorTasks[index].assignee
+                          !!defaultValues?.sponsorTasks?.[index]?.assignee
                             ? defaultValues.sponsorTasks[index].assignee.firstName +
                               ' ' +
                               defaultValues.sponsorTasks[index].assignee.lastName
@@ -427,7 +427,7 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, defau
               }
             >
               <AddCircleOutlineIcon />
-              <Typography>Add Note</Typography>
+              <Typography>Add Sponsor Task</Typography>
             </IconButton>
           </Box>
         </FormControl>

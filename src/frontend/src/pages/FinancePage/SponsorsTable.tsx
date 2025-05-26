@@ -138,31 +138,40 @@ const SponsorsTable = () => {
       >
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <NERButton variant="contained" onClick={() => {}}>
-            View Notes
+            View Tasks
           </NERButton>
-          <Box
-            sx={{
-              display: 'flex'
+        </Box>
+      </TableCell>
+      <TableCell
+        align="center"
+        sx={{
+          alignItems: 'center',
+          borderBottom: 'none'
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            borderBottom: 'none'
+          }}
+        >
+          <Button
+            sx={{ p: 0.5, color: 'white' }}
+            onClick={() => {
+              setSponsorToEdit(sponsor);
             }}
           >
-            <Button
-              sx={{ p: 0.5, color: 'white' }}
-              onClick={() => {
-                setSponsorToEdit(sponsor);
-              }}
-            >
-              <EditIcon />
-            </Button>
-            <Button
-              sx={{ p: 0.5, color: 'white' }}
-              onClick={() => {
-                setSponsorToDelete(sponsor);
-                setShowDeleteModal(true);
-              }}
-            >
-              <DeleteIcon />
-            </Button>
-          </Box>
+            <EditIcon />
+          </Button>
+          <Button
+            sx={{ p: 0.5, color: 'white' }}
+            onClick={() => {
+              setSponsorToDelete(sponsor);
+              setShowDeleteModal(true);
+            }}
+          >
+            <DeleteIcon />
+          </Button>
         </Box>
       </TableCell>
     </TableRow>
@@ -297,12 +306,21 @@ const SponsorsTable = () => {
                   fontWeight: 'bold',
                   fontSize: '1.5em',
                   backgroundColor: '#ef4345',
+                  color: 'white'
+                }}
+              >
+                Sponsor Tasks
+              </TableCell>
+              <TableCell
+                align="center"
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '1.5em',
+                  backgroundColor: '#ef4345',
                   color: 'white',
                   borderRadius: '0px 10px 0px 0px'
                 }}
-              >
-                Notes
-              </TableCell>
+              ></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>{sponsorTableRows}</TableBody>
