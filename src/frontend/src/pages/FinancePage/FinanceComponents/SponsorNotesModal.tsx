@@ -96,17 +96,18 @@ const SponsorNotesModal: React.FC<SponsorNotesModalProps> = ({ onClose, sponsor 
 
   return (
     <Box>
-      {/* Header */}
-      <Box sx={{ display: 'flex', mb: 1, color: '#DD514D' }}>
+      <Box sx={{ display: 'flex', mb: 0.5, color: '#EF4345' }}>
         {['Due Date', 'Notify Date', 'Assign to', 'Notes'].map((label) => (
-          <Typography key={label} sx={{ flex: 1, textDecoration: 'underline', fontSize: '20px', fontWeight: 'bold' }}>
+          <Typography
+            key={label}
+            variant="h5"
+            sx={{ flex: 1, textDecoration: 'underline', fontSize: '23px', fontWeight: 'bold' }}
+          >
             {label}
           </Typography>
         ))}
         <Box sx={{ width: 40 }} />
       </Box>
-
-      {/* Task forms */}
       {taskForms.map((task, idx) => (
         <Box key={idx} sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}>
           <DatePicker
@@ -178,18 +179,14 @@ const SponsorNotesModal: React.FC<SponsorNotesModalProps> = ({ onClose, sponsor 
           </IconButton>
         </Box>
       ))}
-
-      {/* Add Task Button */}
-      <Button onClick={addTask} startIcon={<AddCircle />} sx={{ color: '#DD514D', mb: 4 }}>
+      <Button onClick={addTask} startIcon={<AddCircle />} sx={{ color: '#EF4345', mb: 4 }}>
         Add Notes
       </Button>
-
-      {/* Action Buttons */}
       <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
         <Button onClick={onClose} sx={{ mr: 2, color: 'white', border: '1px solid white', borderRadius: 1, px: 2 }}>
           Cancel
         </Button>
-        <Button onClick={handleSave} sx={{ backgroundColor: '#d32f2f', color: 'white', borderRadius: 1, px: 2 }}>
+        <Button onClick={handleSave} sx={{ backgroundColor: '#EF4345', color: 'white', borderRadius: 1, px: 2 }}>
           Save
         </Button>
       </Box>
