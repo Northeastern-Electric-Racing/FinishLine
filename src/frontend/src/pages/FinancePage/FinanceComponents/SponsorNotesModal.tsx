@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, TextField, IconButton, Button, Select, MenuItem } from '@mui/material';
+import { Box, Typography, TextField, IconButton, Button, Autocomplete } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AddCircle, RemoveCircle } from '@mui/icons-material';
 import {
@@ -74,7 +74,7 @@ const SponsorNotesModal: React.FC<SponsorNotesModalProps> = ({ onClose, sponsor 
         dueDate: form.dueDate,
         notes: form.notes,
         notifyDate: form.notifyDate,
-        assigneeId: form.assignee?.userId
+        assigneeUserId: form.assignee?.userId
       };
 
       if (form.sponsorTaskId) {
@@ -97,11 +97,12 @@ const SponsorNotesModal: React.FC<SponsorNotesModalProps> = ({ onClose, sponsor 
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ display: 'flex', mb: 1 }}>
-        <Typography sx={{ flex: 1 }}>Due Date</Typography>
-        <Typography sx={{ flex: 1 }}>Notify Date</Typography>
-        <Typography sx={{ flex: 1 }}>Assign to</Typography>
-        <Typography sx={{ flex: 1 }}>Notes</Typography>
+      <Box sx={{ display: 'flex', mb: 1, color: '#DD514D' }}>
+        {['Due Date', 'Notify Date', 'Assign to', 'Notes'].map((label) => (
+          <Typography key={label} sx={{ flex: 1, textDecoration: 'underline', fontSize: '20px', fontWeight: 'bold' }}>
+            {label}
+          </Typography>
+        ))}
         <Box sx={{ width: 40 }} />
       </Box>
 
@@ -136,23 +137,38 @@ const SponsorNotesModal: React.FC<SponsorNotesModalProps> = ({ onClose, sponsor 
               }
             }}
           />
-          <Select
-            value={task.assignee?.userId || ''}
-            onChange={(e) => handleChange(idx, 'assignee', users.find((u) => u.userId === e.target.value) || undefined)}
-            sx={{ flex: 1, color: 'white', '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'white' } } }}
-          >
-            {users.map((user) => (
-              <MenuItem key={user.userId} value={user.userId} sx={{ color: 'white' }}>
-                {user.firstName} {user.lastName}
-              </MenuItem>
-            ))}
-          </Select>
+          <Autocomplete
+            value={task.assignee || null}
+            onChange={(_, newValue) => handleChange(idx, 'assignee', newValue || undefined)}
+            options={users}
+            getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="outlined"
+                sx={{
+                  flex: 1,
+                  color: 'white',
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': { borderColor: 'white' },
+                    color: 'white'
+                  },
+                  '& .MuiInputLabel-root': { color: 'white' },
+                  '& .MuiInputBase-input': { color: 'white' }
+                }}
+              />
+            )}
+            sx={{ flex: 1 }}
+            isOptionEqualToValue={(option, value) => option.userId === value?.userId}
+          />
           <TextField
             value={task.notes || ''}
             onChange={(e) => handleChange(idx, 'notes', e.target.value)}
             InputProps={{ style: { color: 'white' } }}
             sx={{
               flex: 1,
+              fontWeight: 'bold',
+              fontSize: '20px',
               input: { color: 'white' },
               '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'white' } }
             }}
@@ -164,7 +180,7 @@ const SponsorNotesModal: React.FC<SponsorNotesModalProps> = ({ onClose, sponsor 
       ))}
 
       {/* Add Task Button */}
-      <Button onClick={addTask} startIcon={<AddCircle />} sx={{ color: 'white', mb: 4 }}>
+      <Button onClick={addTask} startIcon={<AddCircle />} sx={{ color: '#DD514D', mb: 4 }}>
         Add Notes
       </Button>
 
