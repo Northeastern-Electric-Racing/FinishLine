@@ -47,7 +47,7 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
     }
   });
 
-  const currentCategoryId = watch('category')
+  const currentCategoryId = watch('category');
 
   const {
     data: indexCodes,
