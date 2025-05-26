@@ -646,6 +646,16 @@ model Reimbursement_Product {
   reimbursementProductReason   Reimbursement_Product_Reason @relation(fields: [reimbursementProductReasonId], references: [reimbursementProductReasonId])
   reimbursementRequestId       String
   reimbursementRequest         Reimbursement_Request        @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
+  refundSources                Refund_Source[]
+}
+
+model Refund_Source {
+  refundSourceId         String                 @id @default(uuid())
+  indexCodeId            String
+  indexCode              Index_Code             @relation(fields: [indexCodeId], references: [indexCodeId])
+  amount                 Int
+  reimbursementProduct   Reimbursement_Product? @relation(fields: [reimbursementProductId], references: [reimbursementProductId])
+  reimbursementProductId String?
 }
 
 model Vendor {
@@ -1193,6 +1203,7 @@ model Index_Code {
   reimbursementRequests            Reimbursement_Request[]
   accountCodes                     Account_Code[]
   otherReimbursementProductReasons Reimbursement_Product_Other_Reason[]
+  refundSources                    Refund_Source[]
 }
 
 model Reimbursement_Product_Other_Reason {

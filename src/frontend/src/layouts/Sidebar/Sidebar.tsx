@@ -79,7 +79,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organ
           route: routes.FINANCE_DASHBOARD
         },
         {
-          name: 'Reimbursments',
+          name: 'Reimbursements',
           icon: <CurrencyExchangeIcon sx={{ fontSize: '20px' }} />,
           route: routes.REIMBURSEMENT_REQUESTS
         },
