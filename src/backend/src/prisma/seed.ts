@@ -2023,15 +2023,15 @@ const performSeed: () => Promise<void> = async () => {
           projectNumber: 1,
           workPackageNumber: 0
         },
-        cost: 10000,
+        cost: 200000,
         refundSources: [
           {
             indexCode: indexCodeBudget,
-            amount: 7000
+            amount: 150000
           },
           {
             indexCode: indexCodeCash,
-            amount: 3000
+            amount: 50000
           }
         ]
       }
@@ -2055,7 +2055,17 @@ const performSeed: () => Promise<void> = async () => {
           projectNumber: 1,
           workPackageNumber: 0
         },
-        cost: 10000
+        cost: 10000,
+        refundSources: [
+          {
+            indexCode: indexCodeBudget,
+            amount: 7000
+          },
+          {
+            indexCode: indexCodeCash,
+            amount: 3000
+          }
+        ]
       }
     ],
     accountCode.accountCodeId,
