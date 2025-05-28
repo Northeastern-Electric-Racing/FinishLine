@@ -255,7 +255,7 @@ const SponsorsTable = () => {
                   borderRadius: '0px 10px 0px 0px'
                 }}
               >
-                Notes
+                Tasks
               </TableCell>
             </TableRow>
           </TableHead>
