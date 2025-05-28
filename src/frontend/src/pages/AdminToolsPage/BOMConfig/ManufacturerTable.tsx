@@ -79,7 +79,7 @@ const ManufacturerTable: React.FC = () => {
       >
         {datePipe(manufacturer.dateCreated)}
       </TableCell>
-      <TableCell sx={{ borderRight: '1px solid', borderBottom: index === manufacturers.length - 1 ? 'none' : '1px solid' }}>
+      <TableCell sx={{ borderBottom: index === manufacturers.length - 1 ? 'none' : '1px solid' }}>
         {manufacturer.name}
       </TableCell>
       <TableCell align="center" sx={{ borderBottom: index === manufacturers.length - 1 ? 'none' : '1px solid' }}>

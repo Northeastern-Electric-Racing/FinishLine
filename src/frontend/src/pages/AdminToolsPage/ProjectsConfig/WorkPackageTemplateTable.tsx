@@ -45,7 +45,6 @@ const WorkPackageTemplateTable = () => {
       </TableCell>
       <TableCell
         sx={{
-          borderRight: '1px solid',
           borderBottom: index === workPackageTemplates.length - 1 ? 'none' : '1px solid',
           verticalAlign: 'middle'
         }}
