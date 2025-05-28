@@ -8,7 +8,7 @@ import { datePipe } from '../../utils/pipes';
 import SponsorTierPill from '../../components/SponsorTierPill';
 import PaginationFooter from '../../components/PaginationFooter';
 import { Sponsor } from 'shared';
-import SponsorNotesModal from './FinanceComponents/SponsorNotesModal';
+import SponsorTasksModal from './FinanceComponents/SponsorTasksModal';
 import SidePagePopup from './FinanceComponents/SidePagePopup';
 
 const SponsorsTable = () => {
@@ -38,12 +38,12 @@ const SponsorsTable = () => {
     setCurrentPage(0);
   };
 
-  const openNotesModal = (sponsor: Sponsor) => {
+  const openTasksModal = (sponsor: Sponsor) => {
     setSelectedSponsor(sponsor);
     setIsModalOpen(true);
   };
 
-  const closeNotesModal = () => {
+  const closeTasksModal = () => {
     setSelectedSponsor(null);
     setIsModalOpen(false);
   };
@@ -141,8 +141,8 @@ const SponsorsTable = () => {
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <NERButton variant="contained" onClick={() => openNotesModal(sponsor)}>
-            View Notes
+          <NERButton variant="contained" onClick={() => openTasksModal(sponsor)}>
+            View Tasks
           </NERButton>
         </Box>
       </TableCell>
@@ -296,9 +296,9 @@ const SponsorsTable = () => {
       {selectedSponsor && (
         <SidePagePopup
           showPage={isModalOpen}
-          handleClose={closeNotesModal}
-          title={`Notes for ${selectedSponsor?.name}`}
-          component={<SponsorNotesModal onClose={closeNotesModal} sponsor={selectedSponsor} />}
+          handleClose={closeTasksModal}
+          title={`Tasks for ${selectedSponsor?.name}`}
+          component={<SponsorTasksModal onClose={closeTasksModal} sponsor={selectedSponsor} />}
         />
       )}
     </Box>

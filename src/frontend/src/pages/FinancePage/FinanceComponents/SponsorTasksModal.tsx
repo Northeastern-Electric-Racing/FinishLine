@@ -13,12 +13,12 @@ import { useAllUsers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 
-interface SponsorNotesModalProps {
+interface SponsorTasksModalProps {
   onClose: () => void;
   sponsor: Sponsor;
 }
 
-const SponsorNotesModal: React.FC<SponsorNotesModalProps> = ({ onClose, sponsor }) => {
+const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, sponsor }) => {
   const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
 
   const [taskForms, setTaskForms] = useState<SponsorTask[]>([]);
@@ -180,7 +180,7 @@ const SponsorNotesModal: React.FC<SponsorNotesModalProps> = ({ onClose, sponsor 
         </Box>
       ))}
       <Button onClick={addTask} startIcon={<AddCircle />} sx={{ color: '#EF4345', mb: 4 }}>
-        Add Notes
+        Add Task
       </Button>
       <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
         <Button onClick={onClose} sx={{ mr: 2, color: 'white', border: '1px solid white', borderRadius: 1, px: 2 }}>
@@ -194,4 +194,4 @@ const SponsorNotesModal: React.FC<SponsorNotesModalProps> = ({ onClose, sponsor 
   );
 };
 
-export default SponsorNotesModal;
+export default SponsorTasksModal;
