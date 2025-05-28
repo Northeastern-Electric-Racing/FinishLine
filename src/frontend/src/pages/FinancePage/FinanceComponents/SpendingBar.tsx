@@ -25,6 +25,10 @@ interface SpendingBarProps extends SpendingBarData {
   edit: boolean;
 }
 
+const isAllUppercase = (label: string): boolean => {
+  return label.split('').every((char) => !/[a-z]/.test(char) && (/[A-Z]/.test(char) || !/[A-Za-z]/.test(char)));
+};
+
 const getTotalMoneySpent = (data: ReimbursementRequestData) =>
   data.available + data.pendingFinance + data.pendingLeadership + data.reimbursed + data.submittedToSabo;
 
@@ -166,10 +170,12 @@ const SpendingBar = ({ data, title, edit }: SpendingBarProps) => {
           const maxTextLength = Math.floor(barWidth / 8);
 
           // Truncate the text with ellipsis if it exceeds the maximum length
-          if (label && label.length > maxTextLength) {
+          if (label && label.length > maxTextLength && isAllUppercase(label)) {
             label = displayEnum(label).slice(0, maxTextLength) + '...';
-          } else if (label) {
+          } else if (label && isAllUppercase(label)) {
             label = displayEnum(label);
+          } else if (label && label.length > maxTextLength) {
+            label = label.slice(0, maxTextLength) + '...';
           }
 
           return [label, `$${realValue}`];
