@@ -195,7 +195,7 @@ export const useCreateSponsorTask = (sponsorId: string) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['sponsor']);
+        queryClient.invalidateQueries(['sponsor-task']);
       }
     }
   );
@@ -903,7 +903,7 @@ export const useEditSponsorTask = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['sponsor']);
+        queryClient.invalidateQueries(['sponsor-task']);
       }
     }
   );
@@ -1060,7 +1060,7 @@ export const useDeleteSponsorTask = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['sponsor']);
+        queryClient.invalidateQueries(['sponsor-task']);
       }
     }
   );

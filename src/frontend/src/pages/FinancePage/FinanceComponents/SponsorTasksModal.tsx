@@ -2,16 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { Box, Typography, TextField, IconButton, Button, Autocomplete } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AddCircle, RemoveCircle } from '@mui/icons-material';
-import {
-  useCreateSponsorTask,
-  useDeleteSponsorTask,
-  useEditSponsorTask,
-  useGetSponsorTasks
-} from '../../../hooks/finance.hooks';
+import { useCreateSponsorTask, useEditSponsorTask, useGetSponsorTasks } from '../../../hooks/finance.hooks';
 import { Sponsor, SponsorTask } from 'shared';
 import { useAllUsers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
+import DeleteSponsorTaskModal from './DeleteSponsorTaskModal';
+import { useToast } from '../../../hooks/toasts.hooks';
+import * as yup from 'yup';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
 
 interface SponsorTasksModalProps {
   onClose: () => void;
@@ -19,84 +19,87 @@ interface SponsorTasksModalProps {
 }
 
 const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, sponsor }) => {
+  const toast = useToast();
   const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
-
-  const [taskForms, setTaskForms] = useState<SponsorTask[]>([]);
-
+  const { data: sponsorTasks } = useGetSponsorTasks(sponsor.sponsorId);
   const { mutate: createTask } = useCreateSponsorTask(sponsor.sponsorId);
   const { mutate: editTask } = useEditSponsorTask();
-  const { mutate: deleteTask } = useDeleteSponsorTask();
 
-  const { data: sponsorTasks } = useGetSponsorTasks(sponsor.sponsorId);
+  const [sponsorTaskToDelete, setSponsorTaskToDelete] = useState<SponsorTask | undefined>(undefined);
+
+  const taskSchema = yup.object().shape({
+    sponsorTaskId: yup.string().optional(),
+    dueDate: yup.date().required('Due date is required'),
+    notifyDate: yup.date().nullable().optional(),
+    assignee: yup.string().nullable().optional(),
+    notes: yup.string().required('Notes is required')
+  });
+
+  const schema = yup.object().shape({
+    tasks: yup.array().of(taskSchema)
+  });
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors }
+  } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: { tasks: [] }
+  });
+
+  const { fields, append } = useFieldArray({ control, name: 'tasks' });
 
   useEffect(() => {
-    if (Array.isArray(sponsorTasks)) {
-      setTaskForms(
-        sponsorTasks.map((task) => ({
+    if (sponsorTasks) {
+      reset({
+        tasks: sponsorTasks.map((task) => ({
+          sponsorTaskId: task.sponsorTaskId,
           dueDate: task.dueDate ? new Date(task.dueDate) : new Date(),
           notifyDate: task.notifyDate ? new Date(task.notifyDate) : undefined,
-          assignee: task.assignee || undefined,
-          notes: task.notes || '',
-          sponsorTaskId: task.sponsorTaskId || ''
+          assignee: task.assignee?.userId || '',
+          notes: task.notes || ''
         }))
-      );
-    } else {
-      setTaskForms([{ dueDate: new Date(), notifyDate: undefined, assignee: undefined, sponsorTaskId: '', notes: '' }]);
+      });
     }
-  }, [sponsorTasks]);
+  }, [sponsorTasks, reset]);
 
-  const handleChange = (index: number, field: keyof SponsorTask, value: any) => {
-    setTaskForms((prev) => {
-      const updated = [...prev];
-      updated[index][field] = value;
-      return updated;
-    });
-  };
-
-  const addTask = () => {
-    setTaskForms((prev) => [
-      ...prev,
-      { dueDate: new Date(), notifyDate: undefined, assignee: undefined, sponsorTaskId: '', notes: '' }
-    ]);
-  };
-
-  const removeTask = (index: number) => {
-    const taskToRemove = taskForms[index];
-    if (taskToRemove?.sponsorTaskId) {
-      deleteTask({ sponsorTaskId: taskToRemove.sponsorTaskId });
-    }
-    setTaskForms((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleSave = () => {
-    taskForms.forEach((form) => {
+  const handleSave = handleSubmit(({ tasks }) => {
+    tasks?.forEach((task) => {
       const payload = {
-        dueDate: form.dueDate,
-        notes: form.notes,
-        notifyDate: form.notifyDate,
-        assigneeUserId: form.assignee?.userId
+        dueDate: task.dueDate,
+        notifyDate: task.notifyDate || undefined,
+        assigneeUserId: task.assignee || undefined,
+        notes: task.notes
       };
-
-      if (form.sponsorTaskId) {
-        editTask({ sponsorTaskId: form.sponsorTaskId, sponsorTaskData: payload });
+      if (task.sponsorTaskId) {
+        try {
+          editTask({ sponsorTaskId: task.sponsorTaskId, sponsorTaskData: payload });
+        } catch (error: unknown) {
+          if (error instanceof Error) {
+            toast.error(error.message);
+          }
+        }
       } else {
-        createTask(payload);
+        try {
+          createTask(payload);
+        } catch (error: unknown) {
+          if (error instanceof Error) {
+            toast.error(error.message);
+          }
+        }
       }
     });
     onClose();
-  };
+  });
 
-  if (!users || usersIsLoading) {
-    return <LoadingIndicator />;
-  }
-
-  if (usersIsError) {
-    return <ErrorPage message={usersError.message} />;
-  }
+  if (!users || usersIsLoading) return <LoadingIndicator />;
+  if (usersIsError) return <ErrorPage message={usersError.message} />;
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', mb: 0.5, color: '#EF4345' }}>
+      <Box sx={{ display: 'flex', color: '#EF4345' }}>
         {['Due Date', 'Notify Date', 'Assign to', 'Notes'].map((label) => (
           <Typography
             key={label}
@@ -108,78 +111,119 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, sponsor 
         ))}
         <Box sx={{ width: 40 }} />
       </Box>
-      {taskForms.map((task, idx) => (
-        <Box key={idx} sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}>
-          <DatePicker
-            value={task.dueDate || null}
-            onChange={(newValue) => handleChange(idx, 'dueDate', newValue)}
-            slotProps={{
-              textField: {
-                placeholder: 'MM/DD/YY',
-                sx: {
-                  flex: 1,
-                  input: { color: 'white' },
-                  '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'white' } }
-                }
-              }
-            }}
-          />
-          <DatePicker
-            value={task.notifyDate || null}
-            onChange={(newValue) => handleChange(idx, 'notifyDate', newValue)}
-            slotProps={{
-              textField: {
-                placeholder: 'MM/DD/YY',
-                sx: {
-                  flex: 1,
-                  input: { color: 'white' },
-                  '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'white' } }
-                }
-              }
-            }}
-          />
-          <Autocomplete
-            value={task.assignee || null}
-            onChange={(_, newValue) => handleChange(idx, 'assignee', newValue || undefined)}
-            options={users}
-            getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="outlined"
-                sx={{
-                  flex: 1,
-                  color: 'white',
-                  '& .MuiOutlinedInput-root': {
-                    '& fieldset': { borderColor: 'white' },
-                    color: 'white'
-                  },
-                  '& .MuiInputLabel-root': { color: 'white' },
-                  '& .MuiInputBase-input': { color: 'white' }
+
+      {fields.map((item, idx) => (
+        <Box
+          key={item.id}
+          sx={{
+            display: 'flex',
+            gap: 1,
+            mb: 0.5,
+            p: 1,
+            borderRadius: 1,
+            color: '#fff'
+          }}
+        >
+          <Controller
+            control={control}
+            name={`tasks.${idx}.dueDate`}
+            render={({ field }) => (
+              <DatePicker
+                {...field}
+                value={field.value || undefined}
+                onChange={field.onChange}
+                slotProps={{
+                  textField: {
+                    placeholder: 'MM/DD/YY',
+                    sx: {
+                      width: '155px'
+                    }
+                  }
                 }}
               />
             )}
-            sx={{ flex: 1 }}
-            isOptionEqualToValue={(option, value) => option.userId === value?.userId}
           />
-          <TextField
-            value={task.notes || ''}
-            onChange={(e) => handleChange(idx, 'notes', e.target.value)}
-            InputProps={{ style: { color: 'white' } }}
-            sx={{
-              flex: 1,
-              fontWeight: 'bold',
-              fontSize: '20px',
-              input: { color: 'white' },
-              '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'white' } }
+          <Controller
+            control={control}
+            name={`tasks.${idx}.notifyDate`}
+            render={({ field }) => (
+              <DatePicker
+                {...field}
+                value={field.value || undefined}
+                onChange={field.onChange}
+                slotProps={{
+                  textField: {
+                    placeholder: 'MM/DD/YY',
+                    sx: {
+                      width: '155px'
+                    }
+                  }
+                }}
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name={`tasks.${idx}.assignee`}
+            render={({ field }) => (
+              <Autocomplete
+                options={users}
+                getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
+                isOptionEqualToValue={(option, value) => option.userId === value.userId}
+                value={users.find((u) => u.userId === field.value) || undefined}
+                onChange={(_, newValue) => field.onChange(newValue?.userId || '')}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    sx={{
+                      width: '155px',
+                      input: { color: '#fff' },
+                      '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: '#555' } }
+                    }}
+                  />
+                )}
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name={`tasks.${idx}.notes`}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                error={!!errors.tasks?.[idx]?.notes}
+                helperText={errors.tasks?.[idx]?.notes?.message}
+                sx={{
+                  width: '155px',
+                  input: { color: '#fff' },
+                  '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: '#555' } },
+                  label: { color: '#fff' }
+                }}
+              />
+            )}
+          />
+          <IconButton
+            onClick={() => {
+              const fieldTask = fields[idx];
+              const taskToDelete: SponsorTask = {
+                ...fieldTask,
+                sponsorTaskId: fieldTask.sponsorTaskId || '',
+                assignee: fieldTask.assignee ? users.find((u) => u.userId === fieldTask.assignee) : undefined,
+                notifyDate: fieldTask.notifyDate ?? undefined
+              };
+              setSponsorTaskToDelete(taskToDelete);
             }}
-          />
-          <IconButton onClick={() => removeTask(idx)} sx={{ color: 'white' }}>
-            <RemoveCircle />
+          >
+            <RemoveCircle sx={{ width: '90%' }} />
           </IconButton>
         </Box>
       ))}
-      <Button onClick={addTask} startIcon={<AddCircle />} sx={{ color: '#EF4345', mb: 4 }}>
+      <Button
+        startIcon={<AddCircle />}
+        onClick={() =>
+          append({ dueDate: new Date(), notifyDate: undefined, assignee: '', notes: '', sponsorTaskId: undefined })
+        }
+      >
         Add Task
       </Button>
       <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -190,6 +234,9 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, sponsor 
           Save
         </Button>
       </Box>
+      {sponsorTaskToDelete && (
+        <DeleteSponsorTaskModal handleClose={() => setSponsorTaskToDelete(undefined)} sponsorTask={sponsorTaskToDelete} />
+      )}
     </Box>
   );
 };
