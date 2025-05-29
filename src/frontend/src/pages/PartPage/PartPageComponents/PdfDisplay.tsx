@@ -288,6 +288,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
     setIsDragging(false);
     setPosition({ x: 0, y: 0 });
     setScale(1);
+    setLoadSuccess(false);
   };
 
   return (

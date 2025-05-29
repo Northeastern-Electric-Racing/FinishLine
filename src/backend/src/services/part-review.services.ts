@@ -534,6 +534,11 @@ export default class PartReviewService {
       ...getPartSubmissionQueryArgs(organizationId)
     });
 
+    await prisma.part.update({
+      where: { partId },
+      data: { status: Review_Status.READY_FOR_REVIEW }
+    });
+
     if (!part.previewImageId && fileIds.length > 0) {
       await prisma.part.update({
         where: {

@@ -103,6 +103,7 @@ const ReviewSidebar: React.FC<ReviewSidebarProps> = ({ submission, review }) => 
         <Button
           onClick={onFormSubmit(Review_Status.IN_PROGRESS)}
           sx={{
+            minWidth: '5rem',
             variant: 'contained',
             textTransform: 'none',
             fontSize: 16,
@@ -118,10 +119,13 @@ const ReviewSidebar: React.FC<ReviewSidebarProps> = ({ submission, review }) => 
         >
           SAVE AS DRAFT
         </Button>
-        <NERSuccessButton onClick={onFormSubmit(Review_Status.REVIEWED)}>Request Changes</NERSuccessButton>
+        <NERSuccessButton onClick={onFormSubmit(Review_Status.REVIEWED)} sx={{ minWidth: '5rem' }}>
+          Request Changes
+        </NERSuccessButton>
         <Button
           onClick={onFormSubmit(Review_Status.APPROVED)}
           sx={{
+            minWidth: '5rem',
             variant: 'contained',
             textTransform: 'none',
             fontSize: 16,
