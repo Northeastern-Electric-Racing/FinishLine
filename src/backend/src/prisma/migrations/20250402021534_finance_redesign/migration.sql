@@ -330,3 +330,5 @@ ALTER TABLE "Change" ADD CONSTRAINT "Change_wbsElementId_fkey" FOREIGN KEY ("wbs
 -- AddForeignKey
 ALTER TABLE "Change" ADD CONSTRAINT "Change_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Reimbursement_Product_Other_Reason"("otherReimbursementProductReasonId") ON DELETE SET NULL ON UPDATE CASCADE;
 
+-- AlterTable
+ALTER TABLE "Sponsor_Task" ADD COLUMN     "dateDeleted" TIMESTAMP(3);

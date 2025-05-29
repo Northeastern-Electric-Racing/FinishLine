@@ -7,11 +7,16 @@ import { NERButton } from '../../components/NERButton';
 import { datePipe } from '../../utils/pipes';
 import SponsorTierPill from '../../components/SponsorTierPill';
 import PaginationFooter from '../../components/PaginationFooter';
+import { Sponsor } from 'shared';
+import SponsorTasksModal from './FinanceComponents/SponsorTasksModal';
+import SidePagePopup from './FinanceComponents/SidePagePopup';
 
 const SponsorsTable = () => {
   const { data: sponsors, isLoading: sponsorIsLoading, isError: sponsorIsError, error: sponsorError } = useGetAllSponsors();
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(14);
+  const [selectedSponsor, setSelectedSponsor] = useState<Sponsor | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   if (!sponsors || sponsorIsLoading) {
     return <LoadingIndicator />;
@@ -31,6 +36,16 @@ const SponsorsTable = () => {
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setCurrentPage(0);
+  };
+
+  const openTasksModal = (sponsor: Sponsor) => {
+    setSelectedSponsor(sponsor);
+    setIsModalOpen(true);
+  };
+
+  const closeTasksModal = () => {
+    setSelectedSponsor(null);
+    setIsModalOpen(false);
   };
 
   const sponsorTableRows = currentSponsors.map((sponsor, index) => (
@@ -126,8 +141,8 @@ const SponsorsTable = () => {
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <NERButton variant="contained" onClick={() => {}}>
-            View Notes
+          <NERButton variant="contained" onClick={() => openTasksModal(sponsor)}>
+            View Tasks
           </NERButton>
         </Box>
       </TableCell>
@@ -240,7 +255,7 @@ const SponsorsTable = () => {
                   borderRadius: '0px 10px 0px 0px'
                 }}
               >
-                Notes
+                Tasks
               </TableCell>
             </TableRow>
           </TableHead>
@@ -278,6 +293,14 @@ const SponsorsTable = () => {
         onRowsPerPageChange={handleChangeRowsPerPage}
         rowsPerPageOptions={[10, 14, 25, 50, 100]}
       />
+      {selectedSponsor && (
+        <SidePagePopup
+          showPage={isModalOpen}
+          handleClose={closeTasksModal}
+          title={`Tasks for ${selectedSponsor?.name}`}
+          component={<SponsorTasksModal onClose={closeTasksModal} sponsor={selectedSponsor} />}
+        />
+      )}
     </Box>
   );
 };

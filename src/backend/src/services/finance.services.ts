@@ -107,7 +107,7 @@ export default class FinanceServices {
    * @param sponsorId the id of the sponsor that is getting deleted
    * @param deleter the person deleting the sponsor
    * @param organization the organization the person deleting belongs to
-   * @returns
+   * @returns the deleted sponsor
    */
   static async deleteSponsor(sponsorId: string, deleter: User, organization: Organization): Promise<Sponsor> {
     const sponsor = await prisma.sponsor.findUnique({
@@ -222,6 +222,7 @@ export default class FinanceServices {
 
     return updatedSponsorTask;
   }
+
   /*
    * Gets the sponsor tasks for the given sponsor Id
    * @param sponsorId the id of the sponsor these tasks are tied to
@@ -238,7 +239,41 @@ export default class FinanceServices {
       throw new NotFoundException('Sponsor', sponsorId);
     }
 
-    return sponsor.sponsorTasks.map(sponsorTaskTransformer);
+    const sponsorTasks = await prisma.sponsor_Task.findMany({
+      where: {
+        sponsorId,
+        dateDeleted: null
+      },
+      ...getSponsorTaskQueryArgs(organizationId)
+    });
+
+    return sponsorTasks.map(sponsorTaskTransformer);
+  }
+
+  /**
+   * Soft deletes the sponsor task with the given id.
+   * @param sponsorTaskId id of the sponsor task to delete
+   * @param deleter user submitting the delete request
+   * @param organization current organization
+   * @returns the deleted sponsor task
+   */
+  static async deleteSponsorTask(sponsorTaskId: string, deleter: User, organization: Organization) {
+    const sponsorTask = await prisma.sponsor_Task.findUnique({
+      where: { sponsorTaskId, dateDeleted: null }
+    });
+
+    if (!(await userHasPermission(deleter.userId, organization.organizationId, isHead))) {
+      throw new AccessDeniedException('Only heads can delete sponsor tasks.');
+    }
+
+    if (!sponsorTask) throw new NotFoundException('SponsorTask', sponsorTaskId);
+
+    const deletedSponsorTask = await prisma.sponsor_Task.update({
+      where: { sponsorTaskId },
+      data: { dateDeleted: new Date() }
+    });
+
+    return deletedSponsorTask;
   }
 
   /**
