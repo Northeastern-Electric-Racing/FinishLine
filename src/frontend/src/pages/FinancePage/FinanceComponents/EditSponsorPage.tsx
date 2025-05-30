@@ -52,7 +52,7 @@ const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProp
   if (isLoading) return <LoadingIndicator />;
 
   const onSubmit = async (formData: SponsorPayload) => {
-    await mutateAsync({ sponsorId: sponsor.sponsorId, ...formData });
+    await mutateAsync({ ...formData });
     handleClose();
   };
 
