@@ -9,7 +9,6 @@ import {
   AccountCodePayload,
   RefundPayload,
   MarkDeliveredRequestPayload,
-  EditSponsorTaskPayload,
   SponsorPayload,
   SponsorTierPayload,
   SponsorTaskPayload,
@@ -43,7 +42,8 @@ import {
   Sponsor,
   SponsorTask,
   ReimbursementRequestData,
-  SpendingBarData
+  SpendingBarData,
+  SponsorTier
 } from 'shared';
 
 enum AllowedFileType {
@@ -581,7 +581,7 @@ export const deleteSponsor = (sponsorId: string) => {
  *
  * @returns the edited sponosor task
  */
-export const editSponsorTask = (sponsorTaskId: string, sponsorTaskData: EditSponsorTaskPayload) => {
+export const editSponsorTask = (sponsorTaskId: string, sponsorTaskData: SponsorTaskPayload) => {
   return axios.post(apiUrls.editSponsorTask(sponsorTaskId), sponsorTaskData);
 };
 
@@ -652,4 +652,28 @@ export const getAllSpendingBarData = (payload: SpendingBarDataPayload) => {
   return axios.get<SpendingBarData[]>(apiUrls.getAllSpendingBarData(payload.startDate, payload.endDate), {
     transformResponse: (data) => JSON.parse(data).map(spendingBarDataTransformer)
   });
+};
+
+export const getAllSponsorTiers = () => {
+  return axios.get(apiUrls.getAllSponsorTiers(), {
+    transformResponse: (data) => {
+      return JSON.parse(data) as SponsorTier[];
+    }
+  });
+};
+
+export const editSponsor = (id: string, formData: SponsorPayload) => {
+  return axios.post(apiUrls.editSponsor(id), formData);
+};
+
+/**
+ * API call to delete a given sponsor task
+ *
+ * @param sponsorTaskId the id of the sponsor task to delete
+ *
+ * @returns the deleted sponsor task
+ */
+
+export const deleteSponsorTask = (sponsorTaskId: string) => {
+  return axios.delete(apiUrls.deleteSponsorTask(sponsorTaskId));
 };

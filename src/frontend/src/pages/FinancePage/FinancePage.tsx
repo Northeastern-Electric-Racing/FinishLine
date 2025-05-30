@@ -24,7 +24,6 @@ import {
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageLayout from '../../components/PageLayout';
-import { routes } from '../../utils/routes';
 import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
 import PendingAdvisorModal from './FinanceComponents/PendingAdvisorListModal';
 import { isAdmin, isGuest } from 'shared';
@@ -43,12 +42,14 @@ const FinancePage = () => {
 
   const {
     data: userReimbursementRequests,
+    refetch: refetchUserReimbursementRequests,
     isLoading: userReimbursementRequestIsLoading,
     isError: userReimbursementRequestIsError,
     error: userReimbursementRequestError
   } = useCurrentUserReimbursementRequests();
   const {
     data: allReimbursementRequests,
+    refetch: refetchAllReimbursementRequests,
     isLoading: allReimbursementRequestsIsLoading,
     isError: allReimbursementRequestsIsError,
     error: allReimbursementRequestsError
@@ -234,6 +235,10 @@ const FinancePage = () => {
             <ReimbursementRequestTable
               userReimbursementRequests={userReimbursementRequests}
               allReimbursementRequests={allReimbursementRequests}
+              onCloseSidePage={() => {
+                refetchUserReimbursementRequests();
+                refetchAllReimbursementRequests();
+              }}
             />
           </Box>
         </Grid>
@@ -252,7 +257,7 @@ const FinancePage = () => {
         title={sidePageTitle}
         component={
           sidePageTitle === 'Create Reimbursement Request' ? (
-            <ReimbursementRequestForm submitText="Submit" submitData={onSubmit} previousPage={routes.FINANCE} />
+            <ReimbursementRequestForm submitText="Submit" submitData={onSubmit} />
           ) : (
             <Typography>This is a side page</Typography>
           )

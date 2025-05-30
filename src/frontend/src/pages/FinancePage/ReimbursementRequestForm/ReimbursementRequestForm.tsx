@@ -44,8 +44,8 @@ export interface ReimbursementRequestDataSubmission extends ReimbursementRequest
 interface ReimbursementRequestFormProps {
   submitText: 'Save' | 'Submit';
   submitData: (data: ReimbursementRequestDataSubmission) => Promise<string>;
+  onFormExit?: () => void;
   defaultValues?: ReimbursementRequestFormInput;
-  previousPage: string;
 }
 
 const RECEIPTS_REQUIRED = import.meta.env.VITE_RR_RECEIPT_REQUIREMENT || 'disabled';
@@ -63,19 +63,31 @@ const schema = yup.object().shape({
 
     const products = this.parent.reimbursementProducts || [];
     for (const product of this.parent.reimbursementProducts) {
-      if (product.firstSourceAmount === undefined) {
+      if (product.refundSources[0].amount === undefined) {
         return this.createError({
           message: 'Amount is required',
-          path: `reimbursementProducts.${products.indexOf(product)}.firstSourceAmount`
+          path: `reimbursementProducts.${products.indexOf(product)}.refundSources.${0}.amount`
+        });
+      } else if (product.refundSources[0].amount < 0.01) {
+        return this.createError({
+          message: 'Amount must be greater than 0.01',
+          path: `reimbursementProducts.${products.indexOf(product)}.refundSources.${0}.amount`
         });
       }
-      if (product.secondSourceAmount === undefined) {
+
+      if (product.refundSources[1].amount === undefined) {
         return this.createError({
           message: 'Amount is required',
-          path: `reimbursementProducts.${products.indexOf(product)}.secondSourceAmount`
+          path: `reimbursementProducts.${products.indexOf(product)}.refundSources.${1}.amount`
+        });
+      } else if (product.refundSources[1].amount < 0.01) {
+        return this.createError({
+          message: 'Amount must be greater than 0.01',
+          path: `reimbursementProducts.${products.indexOf(product)}.refundSources.${1}.amount`
         });
       }
     }
+
     return true;
   }),
   dateOfExpense: yup.date().optional(),
@@ -85,8 +97,15 @@ const schema = yup.object().shape({
     .of(
       yup.object().shape({
         name: yup.string().required('Description is required'),
-        firstSourceAmount: yup.number().typeError('Amount must be a number').min(0, 'Amount cannot be negative'),
-        secondSourceAmount: yup.number().typeError('Amount must be a number').min(0, 'Amount cannot be negative'),
+        refundSources: yup.array().of(
+          yup.object({
+            amount: yup
+              .number()
+              .typeError('Amount must be a number')
+              .min(0, 'Amount cannot be negative')
+              .required('Amount is required')
+          })
+        ),
         cost: yup
           .number()
           .required('Cost is required')
@@ -110,10 +129,11 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
   submitText,
   defaultValues,
   submitData,
-  previousPage
+  onFormExit
 }) => {
   const {
     handleSubmit,
+
     control,
     formState: { errors },
     watch,
@@ -199,12 +219,17 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       // For each product, if multiple refund sources are enabled, the `cost` field represents
       // the total amount from the first refund source amount (firstSourceAmount) and second refund source (secondSourceAmount) of that product.
       // If only one refund source is present, the `cost` reflects the refund source amount for that product, and firstSourceAmount and secondSourceAmount are left as 0 since they will not needed for this scenario.
+
       const reimbursementProducts = data.reimbursementProducts.map((product: ReimbursementProductFormArgs) => {
+        const anyNonZero = product.refundSources.some((rs) => Number(rs.amount) > 0);
+        const formattedRefundSources = anyNonZero ? product.refundSources : [];
         return {
           ...product,
           cost: Math.round(product.cost * 100),
-          firstSourceAmount: (product.firstSourceAmount ?? 0) * 100,
-          secondSourceAmount: (product.secondSourceAmount ?? 0) * 100
+          refundSources: formattedRefundSources.map((rs) => ({
+            ...rs,
+            amount: Math.round(Number(rs.amount) * 100)
+          }))
         };
       });
 
@@ -216,13 +241,15 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
           otherReimbursementProducts.push({
             reason: product.reason as OtherProductReason,
             cost: product.cost,
-            name: product.name
+            name: product.name,
+            refundSources: product.refundSources
           });
         } else {
           wbsReimbursementProducts.push({
             reason: product.reason as WbsNumber,
             cost: product.cost,
-            name: product.name
+            name: product.name,
+            refundSources: product.refundSources
           });
         }
       });
@@ -233,7 +260,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
         wbsReimbursementProducts,
         totalCost
       });
-      history.push(routes.FINANCE + '/' + reimbursementRequestId);
+      history.push(routes.REIMBURSEMENT_REQUESTS + '/my-requests/' + reimbursementRequestId);
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 5000);
@@ -265,10 +292,10 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       handleSubmit={handleSubmit}
       allWbsElements={allProjectWbsElements}
       submitText={submitText}
-      previousPage={previousPage}
       setValue={setValue}
       hasSecureSettingsSet={hasSecureSettingsSet}
       register={register}
+      onFormExit={onFormExit}
     />
   );
 };

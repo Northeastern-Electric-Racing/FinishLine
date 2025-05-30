@@ -143,6 +143,7 @@ export const resetUsers = async () => {
   await prisma.sponsor_Tier.deleteMany();
   await prisma.reimbursement_Product_Other_Reason.deleteMany();
   await prisma.account_Code.deleteMany();
+  await prisma.refund_Source.deleteMany();
   await prisma.index_Code.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
@@ -469,7 +470,13 @@ export const createTestReimbursementRequest = async () => {
           projectNumber: 0,
           workPackageNumber: 0
         },
-        cost: 200000
+        cost: 200000,
+        refundSources: [
+          {
+            indexCode,
+            amount: 200
+          }
+        ]
       }
     ],
     accountCode.accountCodeId,

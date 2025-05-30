@@ -158,8 +158,9 @@ const getAllIndexCodes = () => `${financeEndpoints()}/index-codes`;
 const getAllOtherProductReasons = () => `${financeEndpoints()}/other-reimbursement-product-reasons`;
 const financeCreateOtherProductReason = () => `${getAllOtherProductReasons()}/create`;
 const getAllSponsors = () => `${financeRoutesEndpoints()}/sponsors`;
-const getSponsorTasks = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsors/${sponsorId}/sponsorTasks`;
-const deleteSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsors/${sponsorId}/delete`;
+const getSponsorTasks = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/sponsorTasks`;
+const deleteSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/delete`;
+const deleteSponsorTask = (sponsorTaskId: string) => `${financeRoutesEndpoints()}/sponsorTask/${sponsorTaskId}`;
 const editSponsorTask = (sponsorTaskId: string) => `${financeRoutesEndpoints()}/sponsorTask/${sponsorTaskId}/edit`;
 const financeEditOtherReimbursementProductReason = (id: String) =>
   `${financeEndpoints()}/other-reimbursement-product-reasons/${id}/edit`;
@@ -235,6 +236,8 @@ const getAllSpendingBarData = (startDate?: Date, endDate?: Date): string => {
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
+const getAllSponsorTiers = () => `${financeRoutesEndpoints()}/sponsorTiers`;
+const editSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/edit`;
 const financeGetUsersTeamsReimbursementRequests = () => `${financeEndpoints()}/reimbursements/current-user-team`;
 
 /**************** Bill of Material Endpoints **************************/
@@ -475,6 +478,7 @@ export const apiUrls = {
   getAllSponsors,
   getSponsorTasks,
   deleteSponsor,
+  deleteSponsorTask,
   editSponsorTask,
   financeEditOtherReimbursementProductReason,
   financeDeleteOtherProductReason,
@@ -487,6 +491,8 @@ export const apiUrls = {
   getSpendingBarTeamTypeData,
   getSpendingBarCategoryData,
   getAllSpendingBarData,
+  getAllSponsorTiers,
+  editSponsor,
   financeGetUsersTeamsReimbursementRequests,
 
   bomEndpoints,

@@ -1,7 +1,11 @@
-import { isHead, ReimbursementRequestData, SpendingBarData } from 'shared';
-import { User, Organization, Sponsor_Task, Sponsor } from '@prisma/client';
+import { CreateSponsorTask, isHead, ReimbursementRequestData, SpendingBarData, Sponsor, SponsorTier } from 'shared';
+import { User, Organization, Sponsor_Task } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
-import { getSponsorQueryArgs, getSponsorTaskQueryArgs } from '../prisma-query-args/sponsor.query.args';
+import {
+  getSponsorQueryArgs,
+  getSponsorTaskQueryArgs,
+  getSponsorTierQueryArgs
+} from '../prisma-query-args/sponsor.query.args';
 import {
   AccessDeniedException,
   DeletedException,
@@ -54,7 +58,7 @@ export default class FinanceServices {
     sponsorTierId: string,
     taxExempt: boolean,
     vendorContact: string,
-    sponsorTasks: Sponsor_Task[],
+    sponsorTasks: CreateSponsorTask[],
     organization: Organization,
     discountCode?: string
   ) {
@@ -107,7 +111,7 @@ export default class FinanceServices {
    * @param sponsorId the id of the sponsor that is getting deleted
    * @param deleter the person deleting the sponsor
    * @param organization the organization the person deleting belongs to
-   * @returns
+   * @returns the deleted sponsor
    */
   static async deleteSponsor(sponsorId: string, deleter: User, organization: Organization): Promise<Sponsor> {
     const sponsor = await prisma.sponsor.findUnique({
@@ -126,10 +130,11 @@ export default class FinanceServices {
 
     const deletedSponsor = await prisma.sponsor.update({
       where: { sponsorId },
-      data: { dateDeleted: new Date() }
+      data: { dateDeleted: new Date() },
+      ...getSponsorQueryArgs(organization.organizationId)
     });
 
-    return deletedSponsor;
+    return sponsorTransformer(deletedSponsor);
   }
 
   /**
@@ -222,6 +227,7 @@ export default class FinanceServices {
 
     return updatedSponsorTask;
   }
+
   /*
    * Gets the sponsor tasks for the given sponsor Id
    * @param sponsorId the id of the sponsor these tasks are tied to
@@ -238,7 +244,41 @@ export default class FinanceServices {
       throw new NotFoundException('Sponsor', sponsorId);
     }
 
-    return sponsor.sponsorTasks.map(sponsorTaskTransformer);
+    const sponsorTasks = await prisma.sponsor_Task.findMany({
+      where: {
+        sponsorId,
+        dateDeleted: null
+      },
+      ...getSponsorTaskQueryArgs(organizationId)
+    });
+
+    return sponsorTasks.map(sponsorTaskTransformer);
+  }
+
+  /**
+   * Soft deletes the sponsor task with the given id.
+   * @param sponsorTaskId id of the sponsor task to delete
+   * @param deleter user submitting the delete request
+   * @param organization current organization
+   * @returns the deleted sponsor task
+   */
+  static async deleteSponsorTask(sponsorTaskId: string, deleter: User, organization: Organization) {
+    const sponsorTask = await prisma.sponsor_Task.findUnique({
+      where: { sponsorTaskId, dateDeleted: null }
+    });
+
+    if (!(await userHasPermission(deleter.userId, organization.organizationId, isHead))) {
+      throw new AccessDeniedException('Only heads can delete sponsor tasks.');
+    }
+
+    if (!sponsorTask) throw new NotFoundException('SponsorTask', sponsorTaskId);
+
+    const deletedSponsorTask = await prisma.sponsor_Task.update({
+      where: { sponsorTaskId },
+      data: { dateDeleted: new Date() }
+    });
+
+    return deletedSponsorTask;
   }
 
   /**
@@ -393,5 +433,123 @@ export default class FinanceServices {
 
   static async getSpendingBarCategoryData(organization: Organization): Promise<SpendingBarData> {
     return await getSpendingBarCategoryData(organization.organizationId);
+  }
+
+  /**
+   * Edits a sponsor.
+   * @param submitter The user submitting the request, who must have appropriate permissions to create a sponsor.
+   * @param sponsorId the id of the sponsor to be edited
+   * @param name The name of the sponsor.
+   * @param activeStatus The status indicating whether the sponsor is active or not.
+   * @param sponsorValue The financial value associated with the sponsor.
+   * @param joinDate The date when the sponsor joins.
+   * @param activeYears An array of years indicating the sponsor's active period.
+   * @param sponsorTierId The ID of the sponsor's tier.
+   * @param taxExempt Boolean indicating if the sponsor is tax-exempt.
+   * @param discountCode The discount code associated with the sponsor.
+   * @param vendorContact The contact information for the sponsor's vendor.
+   * @param sponsorTasks An array of sponsor tasks associated with the sponsor.
+   * @param organization The organization for which the sponsor is being edited.
+   * @returns the edited sponsor.
+   */
+
+  static async editSponsor(
+    submitter: User,
+    organization: Organization,
+    sponsorId: string,
+    name: string,
+    activeStatus: boolean,
+    sponsorValue: number,
+    joinDate: Date,
+    activeYears: number[],
+    sponsorTierId: string,
+    vendorContact: string,
+    taxExempt: boolean,
+    sponsorTasks: CreateSponsorTask[],
+    discountCode?: string
+  ): Promise<Sponsor> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
+      throw new AccessDeniedException('Only heads can edit sponsors.');
+
+    const oldSponsor = await prisma.sponsor.findUnique({
+      where: {
+        sponsorId,
+        organizationId: organization.organizationId
+      },
+      include: {
+        sponsorTasks: true
+      }
+    });
+
+    if (!oldSponsor) throw new NotFoundException('Sponsor', sponsorId);
+
+    await Promise.all(
+      oldSponsor.sponsorTasks.map((t) =>
+        prisma.sponsor_Task.deleteMany({
+          where: {
+            sponsorTaskId: t.sponsorTaskId
+          }
+        })
+      )
+    );
+
+    const tier = await prisma.sponsor_Tier.findUnique({
+      where: {
+        sponsorTierId,
+        organizationId: organization.organizationId
+      }
+    });
+
+    if (!tier) throw new NotFoundException('Sponsor Tier', sponsorTierId);
+
+    const updatedSponsor = await prisma.sponsor.update({
+      where: { sponsorId: oldSponsor.sponsorId },
+      data: {
+        name,
+        activeStatus,
+        sponsorValue,
+        joinDate,
+        activeYears,
+        tier: {
+          connect: { sponsorTierId }
+        },
+        sponsorTasks: {
+          connect: await Promise.all(
+            sponsorTasks.map(async (t) => {
+              const createdTask = await this.createSponsorTask(
+                submitter,
+                organization,
+                t.dueDate,
+                t.notes,
+                sponsorId,
+                t.notifyDate,
+                t.assigneeUserId
+              );
+              return { sponsorTaskId: createdTask.sponsorTaskId };
+            })
+          )
+        },
+        vendorContact,
+        taxExempt,
+        discountCode
+      },
+      ...getSponsorQueryArgs(organization.organizationId)
+    });
+
+    return sponsorTransformer(updatedSponsor);
+  }
+
+  /**
+   * Gets all sponsor tiers
+   * @param organization organization sponsor tiers belong to
+   * @returns all sponsor tiers
+   */
+  static async getAllSponsorTiers(organization: Organization): Promise<SponsorTier[]> {
+    const allSponsorTiers = await prisma.sponsor_Tier.findMany({
+      where: { organizationId: organization.organizationId },
+      ...getSponsorTierQueryArgs(organization.organizationId)
+    });
+
+    return allSponsorTiers;
   }
 }
