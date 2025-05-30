@@ -135,7 +135,10 @@ describe('Finance Tests', () => {
       );
 
       expect(deletedSponsor).not.toBe(null);
-      expect(deletedSponsor?.dateDeleted).not.toBe(null);
+      expect(deletedSponsor).toMatchObject({
+        ...deletedSponsor,
+        dateDeleted: expect.any(Date)
+      });
     });
     it('Delete fails if user is not head or above', async () => {
       const sponsor = await FinanceServices.createSponsor(
@@ -350,22 +353,16 @@ describe('Finance Tests', () => {
         'Bill Gates',
         [
           {
-            sponsorId: '1',
-            sponsorTaskId: '2',
             dueDate: new Date(12, 1, 24),
-            notifyDate: null,
-            assigneeUserId: null,
-            notes: 'uhh nothing',
-            dateDeleted: null
+            notifyDate: undefined,
+            assigneeUserId: undefined,
+            notes: 'uhh nothing'
           },
           {
-            sponsorId: '11',
-            sponsorTaskId: '22',
             dueDate: new Date(12, 1, 24),
-            notifyDate: null,
-            assigneeUserId: null,
-            notes: 'probably nothing again',
-            dateDeleted: null
+            notifyDate: undefined,
+            assigneeUserId: undefined,
+            notes: 'probably nothing again'
           }
         ],
         organization,
@@ -463,6 +460,163 @@ describe('Finance Tests', () => {
       expect(result.notes).toEqual('hello notes');
       expect(result.dueDate).toEqual(new Date(1, 2, 3));
       expect(result.assignee?.userId).toEqual(user.userId);
+    });
+  });
+
+  describe('Get all sponsor tiers', () => {
+    it('Successfully gets all sponsor tiers', async () => {
+      const result = await FinanceServices.getAllSponsorTiers(organization);
+      expect(result.length).toEqual(1);
+      expect(result[0].name).toEqual('Gold Tier');
+      expect(result[0].colorHexCode).toEqual('#FFFFFF');
+    });
+    it('Successfully gets all sponsor tiers after adding new tier', async () => {
+      const result1 = await FinanceServices.getAllSponsorTiers(organization);
+      expect(result1.length).toEqual(1);
+
+      await FinanceServices.createSponsorTier(await createTestUser(batmanAppAdmin, orgId), 'Silver', organization, 'C0C0C0');
+
+      const result2 = await FinanceServices.getAllSponsorTiers(organization);
+      expect(result2.length).toEqual(2);
+      expect(result2[0].name).toEqual('Gold Tier');
+      expect(result2[0].colorHexCode).toEqual('#FFFFFF');
+      expect(result2[1].name).toEqual('Silver');
+      expect(result2[1].colorHexCode).toEqual('C0C0C0');
+    });
+  });
+
+  describe('Edit Sponsor', () => {
+    it('Successfully edits sponsor', async () => {
+      const user = await createTestUser(batmanAppAdmin, orgId);
+      const oldSponsor = await FinanceServices.createSponsor(
+        user,
+        'Google',
+        true,
+        5000,
+        new Date(12, 1, 24),
+        [2024, 2025],
+        sponsorTierId,
+        true,
+        'Bill Gates',
+        [],
+        organization,
+        'googlecode'
+      );
+
+      const updatedSponsor = await FinanceServices.editSponsor(
+        user,
+        organization,
+        oldSponsor.sponsorId,
+        'newName',
+        false,
+        4000,
+        new Date(5, 11, 25),
+        [2024, 2025],
+        sponsorTierId,
+        'New Vendor Contact',
+        false,
+        [],
+        'New Discount code'
+      );
+
+      expect(updatedSponsor.name).toBe('newName');
+      expect(updatedSponsor.activeStatus).toBe(false);
+      expect(updatedSponsor.sponsorValue).toBe(4000);
+      expect(updatedSponsor.joinDate).toEqual(new Date(5, 11, 25));
+      expect(updatedSponsor.activeYears).toEqual([2024, 2025]);
+      expect(updatedSponsor.tier.sponsorTierId).toBe(sponsorTierId);
+      expect(updatedSponsor.vendorContact).toBe('New Vendor Contact');
+      expect(updatedSponsor.taxExempt).toBe(false);
+      expect(updatedSponsor.discountCode).toBe('New Discount code');
+    });
+    it('Edit sponsor fails when non head tries to edit', async () => {
+      const user = await createTestUser(batmanAppAdmin, orgId);
+      const nonHead = await createTestUser(theVisitorGuest, orgId);
+
+      const oldSponsor = await FinanceServices.createSponsor(
+        user,
+        'Google',
+        true,
+        5000,
+        new Date(12, 1, 24),
+        [2024, 2025],
+        sponsorTierId,
+        true,
+        'Bill Gates',
+        [],
+        organization,
+        'googlecode'
+      );
+      await expect(
+        async () =>
+          await FinanceServices.editSponsor(
+            nonHead,
+            organization,
+            oldSponsor.sponsorId,
+            'newName',
+            false,
+            4000,
+            new Date(5, 11, 25),
+            [2024, 2025],
+            sponsorTierId,
+            'New Vendor Contact',
+            false,
+            []
+          )
+      ).rejects.toThrow(new AccessDeniedException('Only heads can edit sponsors.'));
+    });
+    it('Edit sponsor fails with bad sponsorId', async () => {
+      await expect(
+        async () =>
+          await FinanceServices.editSponsor(
+            await createTestUser(batmanAppAdmin, orgId),
+            organization,
+            'badId',
+            'newName',
+            false,
+            4000,
+            new Date(5, 11, 25),
+            [2024, 2025],
+            sponsorTierId,
+            'New Vendor Contact',
+            false,
+            []
+          )
+      ).rejects.toThrow(new NotFoundException('Sponsor', 'badId'));
+    });
+    it('Edit sponsor fails with bad sponsorTierId', async () => {
+      const user = await createTestUser(batmanAppAdmin, orgId);
+      const oldSponsor = await FinanceServices.createSponsor(
+        user,
+        'Google',
+        true,
+        5000,
+        new Date(12, 1, 24),
+        [2024, 2025],
+        sponsorTierId,
+        true,
+        'Bill Gates',
+        [],
+        organization,
+        'googlecode'
+      );
+      await expect(
+        async () =>
+          await FinanceServices.editSponsor(
+            user,
+            organization,
+            oldSponsor.sponsorId,
+            'newName',
+            false,
+            4000,
+            new Date(5, 11, 25),
+            [2024, 2025],
+            'badId',
+            'New Vendor Contact',
+            false,
+            []
+          )
+      ).rejects.toThrow(new NotFoundException('Sponsor Tier', 'badId'));
     });
   });
 

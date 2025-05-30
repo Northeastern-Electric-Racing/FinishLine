@@ -81,4 +81,22 @@ financeRouter.get('/spending-bar-data', FinanceController.getAllSpendingBarData)
 
 financeRouter.get('/spending-bar-category-data/', FinanceController.getSpendingBarCategoryData);
 
+financeRouter.get('/sponsorTiers', FinanceController.getAllSponsorTiers);
+
+financeRouter.post(
+  '/sponsor/:sponsorId/edit',
+  nonEmptyString(body('name')),
+  body('activeStatus').isBoolean(),
+  body('sponsorValue').isInt(),
+  isDate(body('joinDate')),
+  body('activeYears').isArray(),
+  nonEmptyString(body('sponsorTierId')),
+  body('taxExempt').isBoolean(),
+  nonEmptyString(body('vendorContact')),
+  body('sponsorTasks').isArray(),
+  body('discountCode').optional(),
+  validateInputs,
+  FinanceController.editSponsor
+);
+
 export default financeRouter;

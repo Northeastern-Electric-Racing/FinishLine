@@ -135,7 +135,7 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
               }}
               variant="h5"
             >
-              Tax Exempt:*
+              Tax Exempt:
             </Typography>
             <Controller
               control={control}

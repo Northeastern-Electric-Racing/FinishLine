@@ -54,6 +54,8 @@ import {
   getSpendingBarTeamTypeData,
   getAllSpendingBarData,
   deleteVendor,
+  getAllSponsorTiers,
+  editSponsor,
   getCurrentUsersTeamsReimbursementRequests,
   deleteSponsorTask
 } from '../apis/finance.api';
@@ -74,7 +76,8 @@ import {
   SponsorTier,
   ReimbursementRequestComment,
   ReimbursementRequestData,
-  SpendingBarData
+  SpendingBarData,
+  CreateSponsorTask
 } from 'shared';
 import { fullNamePipe } from '../utils/pipes';
 
@@ -134,7 +137,7 @@ export interface SponsorPayload {
   sponsorTierId: string;
   taxExempt: boolean;
   vendorContact: string;
-  sponsorTasks: SponsorTask[];
+  sponsorTasks: CreateSponsorTask[];
   discountCode?: string;
 }
 
@@ -1045,6 +1048,27 @@ export const useGetAllSpendingBarData = (spendingBarData: SpendingBarDataPayload
     const { data } = await getAllSpendingBarData(spendingBarData);
     return data;
   });
+
+/**
+ * Custom react hook to get all sponsor tiers
+ *
+ * @returns all the sponsor tiers
+ */
+export const useGetAllSponsorTiers = () => {
+  return useQuery<SponsorTier[], Error>(['sponsor-tiers'], async () => {
+    const { data } = await getAllSponsorTiers();
+    return data;
+  });
+};
+
+export const useEditSponsor = (sponsorId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Sponsor, Error, SponsorPayload>(['sponsor', 'edit'], async (formData: SponsorPayload) => {
+    const { data } = await editSponsor(sponsorId, formData);
+    queryClient.invalidateQueries(['sponsor']);
+    return data;
+  });
+};
 
 /**
  * Custom React Hook to delete a sponsor task

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TableRow, TableCell, Box, Table as MuiTable, TableHead, TableBody, Typography } from '@mui/material';
+import { TableRow, TableCell, Box, Table as MuiTable, TableHead, TableBody, Typography, Button } from '@mui/material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useGetAllSponsors } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
@@ -7,6 +7,12 @@ import { NERButton } from '../../components/NERButton';
 import { datePipe } from '../../utils/pipes';
 import SponsorTierPill from '../../components/SponsorTierPill';
 import PaginationFooter from '../../components/PaginationFooter';
+import CreateSponsorPage from './FinanceComponents/CreateSponsorPage';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditSponsorModal from './FinanceComponents/EditSponsorPage';
+import DeleteSponsorModal from './FinanceComponents/DeleteSponsor';
+import SidePage from './FinanceComponents/SidePagePopup';
 import { Sponsor } from 'shared';
 import SponsorTasksModal from './FinanceComponents/SponsorTasksModal';
 import SidePagePopup from './FinanceComponents/SidePagePopup';
@@ -15,6 +21,10 @@ const SponsorsTable = () => {
   const { data: sponsors, isLoading: sponsorIsLoading, isError: sponsorIsError, error: sponsorError } = useGetAllSponsors();
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(14);
+  const [showAddSponsor, setShowAddSponsor] = useState(false);
+  const [sponsorToEdit, setSponsorToEdit] = useState<Sponsor | undefined>(undefined);
+  const [sponsorToDelete, setSponsorToDelete] = useState<Sponsor | undefined>(undefined);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedSponsor, setSelectedSponsor] = useState<Sponsor | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -146,11 +156,70 @@ const SponsorsTable = () => {
           </NERButton>
         </Box>
       </TableCell>
+      <TableCell
+        align="center"
+        sx={{
+          alignItems: 'center',
+          borderBottom: 'none'
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            borderBottom: 'none'
+          }}
+        >
+          <Button
+            sx={{ p: 0.5, color: 'white' }}
+            onClick={() => {
+              setSponsorToEdit(sponsor);
+            }}
+          >
+            <EditIcon />
+          </Button>
+          <Button
+            sx={{ p: 0.5, color: 'white' }}
+            onClick={() => {
+              setSponsorToDelete(sponsor);
+              setShowDeleteModal(true);
+            }}
+          >
+            <DeleteIcon />
+          </Button>
+        </Box>
+      </TableCell>
     </TableRow>
   ));
 
   return (
     <Box>
+      {sponsorToEdit && (
+        <SidePage
+          showPage={!!sponsorToEdit}
+          handleClose={() => {
+            setSponsorToEdit(undefined);
+          }}
+          title="Edit Sponsor"
+          component={
+            <EditSponsorModal
+              showPage={!!sponsorToEdit}
+              handleClose={() => {
+                setSponsorToEdit(undefined);
+              }}
+              sponsor={sponsorToEdit}
+            ></EditSponsorModal>
+          }
+        ></SidePage>
+      )}
+      {sponsorToDelete && (
+        <DeleteSponsorModal
+          showModal={showDeleteModal}
+          handleClose={() => {
+            setShowDeleteModal(false);
+          }}
+          sponsor={sponsorToDelete}
+        />
+      )}
       <Box sx={{ paddingBottom: '100px' }}>
         <MuiTable>
           <TableHead>
@@ -251,6 +320,17 @@ const SponsorsTable = () => {
                   fontWeight: 'bold',
                   fontSize: '1.5em',
                   backgroundColor: '#ef4345',
+                  color: 'white'
+                }}
+              >
+                Sponsor Tasks
+              </TableCell>
+              <TableCell
+                align="center"
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '1.5em',
+                  backgroundColor: '#ef4345',
                   color: 'white',
                   borderRadius: '0px 10px 0px 0px'
                 }}
@@ -262,37 +342,42 @@ const SponsorsTable = () => {
           <TableBody>{sponsorTableRows}</TableBody>
         </MuiTable>
       </Box>
-      <PaginationFooter
-        footerButton={
-          <NERButton
-            variant="contained"
-            onClick={() => console.log('create sponsor')}
-            sx={{
-              borderRadius: '8px',
-              color: '#ededed',
-              backgroundColor: '#ef4345',
-              padding: '2px 20px',
-              display: 'inline-flex',
-              fontSize: '20px',
-              fontWeight: 700,
-              textTransform: 'none',
-              marginBottom: '7px',
-              '&:hover': {
-                backgroundColor: '#c74340'
-              }
-            }}
-          >
-            Add Sponsor
-          </NERButton>
-        }
-        footerInfoBoxes={[<Box># of Sponsors: {sponsors.length}</Box>]}
-        totalItems={sponsors.length}
-        currentPage={currentPage}
-        rowsPerPage={rowsPerPage}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-        rowsPerPageOptions={[10, 14, 25, 50, 100]}
-      />
+      <Box>
+        <CreateSponsorPage showPage={showAddSponsor} handleClose={() => setShowAddSponsor(false)} />
+
+        <PaginationFooter
+          footerButton={
+            <NERButton
+              variant="contained"
+              onClick={() => setShowAddSponsor(true)}
+              sx={{
+                borderRadius: '8px',
+                color: '#ededed',
+                backgroundColor: '#ef4345',
+                padding: '2px 20px',
+                display: 'inline-flex',
+                fontSize: '20px',
+                fontWeight: 700,
+                textTransform: 'none',
+                marginBottom: '7px',
+                '&:hover': {
+                  backgroundColor: '#c74340'
+                }
+              }}
+            >
+              {' '}
+              Add Sponsor
+            </NERButton>
+          }
+          footerInfoBoxes={[<Box># of Sponsors: {sponsors.length}</Box>]}
+          totalItems={sponsors.length}
+          currentPage={currentPage}
+          rowsPerPage={rowsPerPage}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[10, 14, 25, 50, 100]}
+        />
+      </Box>
       {selectedSponsor && (
         <SidePagePopup
           showPage={isModalOpen}

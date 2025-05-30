@@ -277,4 +277,51 @@ export default class FinanceController {
       next(error);
     }
   }
+
+  static async getAllSponsorTiers(req: Request, res: Response, next: NextFunction) {
+    try {
+      const allSponsors = await FinanceServices.getAllSponsorTiers(req.organization);
+      res.status(200).json(allSponsors);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editSponsor(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { sponsorId } = req.params;
+      const {
+        name,
+        activeStatus,
+        sponsorValue,
+        joinDate,
+        activeYears,
+        sponsorTierId,
+        vendorContact,
+        taxExempt,
+        sponsorTasks,
+        discountCode
+      } = req.body;
+
+      const updatedSponsor = await FinanceServices.editSponsor(
+        req.currentUser,
+        req.organization,
+        sponsorId,
+        name,
+        activeStatus,
+        sponsorValue,
+        joinDate,
+        activeYears,
+        sponsorTierId,
+        vendorContact,
+        taxExempt,
+        sponsorTasks,
+        discountCode
+      );
+
+      res.status(200).json(updatedSponsor);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
