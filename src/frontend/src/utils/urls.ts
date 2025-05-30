@@ -154,8 +154,9 @@ const financeCreateReimbursementRequestComment = (id: string) => `${financeEndpo
 const getAllIndexCodes = () => `${financeEndpoints()}/index-codes`;
 const getAllOtherProductReasons = () => `${financeEndpoints()}/other-reimbursement-product-reasons`;
 const getAllSponsors = () => `${financeRoutesEndpoints()}/sponsors`;
-const getSponsorTasks = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsors/${sponsorId}/sponsorTasks`;
+const getSponsorTasks = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/sponsorTasks`;
 const deleteSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/delete`;
+const deleteSponsorTask = (sponsorTaskId: string) => `${financeRoutesEndpoints()}/sponsorTask/${sponsorTaskId}`;
 const editSponsorTask = (sponsorTaskId: string) => `${financeRoutesEndpoints()}/sponsorTask/${sponsorTaskId}/edit`;
 const financeEditOtherReimbursementProductReason = (id: String) =>
   `${financeEndpoints()}/other-reimbursement-product-reasons/${id}/edit`;
@@ -471,6 +472,7 @@ export const apiUrls = {
   getAllSponsors,
   getSponsorTasks,
   deleteSponsor,
+  deleteSponsorTask,
   editSponsorTask,
   financeEditOtherReimbursementProductReason,
   getReimbursementRequestProjectData,

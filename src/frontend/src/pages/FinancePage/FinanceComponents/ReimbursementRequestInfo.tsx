@@ -26,6 +26,13 @@ import {
 import { routes } from '../../../utils/routes';
 import ColumnHeader from './ColumnHeader';
 import { useCurrentUser } from '../../../hooks/users.hooks';
+import SidePage from './SidePagePopup';
+import ReimbursementRequestDetails from '../ReimbursementRequestDetailPage/ReimbursementRequestDetails';
+import ReimbursementRequestForm, {
+  ReimbursementRequestDataSubmission
+} from '../ReimbursementRequestForm/ReimbursementRequestForm';
+import { useCreateReimbursementRequest, useUploadManyReceipts } from '../../../hooks/finance.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 
 interface ReimbursementRequestInfoProps {
   userReimbursementRequests: ReimbursementRequest[];
@@ -36,6 +43,7 @@ interface ReimbursementRequestInfoProps {
   statuses?: ReimbursementStatusType[];
   startDate?: Date | null;
   endDate?: Date | null;
+  onCloseSidePage: () => void;
 }
 
 interface ReimbursementTableHeadCell {
@@ -51,13 +59,15 @@ const ReimbursementRequestInfo = ({
   searchText,
   statuses,
   startDate,
-  endDate
+  endDate,
+  onCloseSidePage
 }: ReimbursementRequestInfoProps) => {
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(100);
   const [isAscendingOrder, setAscendingOrder] = useState(true);
   const [orderBy, setOrderBy] = useState<keyof ReimbursementRequestRow>('identifier');
   const user = useCurrentUser();
+  const [sidePageTitle, setSidePageTitle] = useState('');
 
   const displayedReimbursementRequests =
     canViewAllReimbursementRequests && currentTab !== 0 && allReimbursementRequests
@@ -182,6 +192,38 @@ const ReimbursementRequestInfo = ({
   };
 
   const paginatedRows = rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  const [showSidePage, setShowSidePage] = useState(false);
+  const [showCreateSidePage, setShowCreateSidePage] = useState(false);
+  const { isLoading: receiptsIsLoading, mutateAsync: uploadReceipts } = useUploadManyReceipts();
+
+  const openSidePage = () => {
+    setShowSidePage(true);
+  };
+
+  const closeSidePage = () => {
+    setShowSidePage(false);
+    onCloseSidePage();
+  };
+
+  const closeCreateSidePage = () => {
+    setShowCreateSidePage(false);
+    onCloseSidePage();
+  };
+
+  const { isLoading: createReimbursementRequestIsLoading, mutateAsync: createReimbursementRequest } =
+    useCreateReimbursementRequest();
+
+  const onSubmitCreate = async (data: ReimbursementRequestDataSubmission): Promise<string> => {
+    const reimbursementRequest = await createReimbursementRequest({ ...data, indexCodeId: data.indexCodeId! });
+    await uploadReceipts({
+      id: reimbursementRequest.reimbursementRequestId,
+      files: data.receiptFiles.map((file) => file.file!)
+    });
+    closeCreateSidePage();
+    return reimbursementRequest.reimbursementRequestId;
+  };
+
+  if (createReimbursementRequestIsLoading || receiptsIsLoading) return <LoadingIndicator />;
 
   return (
     <Box sx={{ width: '100%', borderRadius: '8px 8px 0 0' }}>
@@ -210,61 +252,70 @@ const ReimbursementRequestInfo = ({
             </TableRow>
           </TableHead>
           <TableBody sx={{ backgroundColor: '#121313' }}>
-            {paginatedRows.map((row, index) => (
-              <TableRow
-                key={`$${row.amount}-${index}`}
-                sx={{
-                  textDecoration: 'none',
-                  '&:last-child td, &:last-child th': { border: 0 },
-                  '&:hover .viewButton': { opacity: 1 },
-                  '&:hover': { backgroundColor: '#5e5e5e' }
-                }}
-              >
-                <TableCell align="center">
-                  <Box
-                    sx={{
-                      padding: '3px 8px',
-                      display: 'inline-flex',
-                      borderRadius: '8px',
-                      backgroundColor: getStatusColor(row.status),
-                      fontWeight: 700
-                    }}
-                  >
-                    {cleanReimbursementRequestStatus(row.status)}
-                  </Box>
-                </TableCell>
-                {currentTab === 1 && <TableCell align="center">{fullNamePipe(row.submitter)}</TableCell>}
-                <TableCell align="center">{`$${centsToDollar(row.amount)}`}</TableCell>
-                <TableCell align="center">{undefinedPipe(row.identifier)}</TableCell>
-                <TableCell align="center">{undefinedPipe(row.saboId)}</TableCell>
-                <TableCell align="center">{datePipe(row.dateSubmitted)}</TableCell>
-                <TableCell align="center">{dateUndefinedPipe(row.dateSubmittedToSabo)}</TableCell>
-                <TableCell align="center">
-                  {
-                    <Button
-                      className="viewButton"
-                      size="small"
-                      variant="contained"
-                      component={RouterLink}
-                      to={`${routes.REIMBURSEMENT_REQUESTS}/view/${row.id}`}
+            {paginatedRows.map((row, index) => {
+              return (
+                <TableRow
+                  key={`$${row.amount}-${index}`}
+                  sx={{
+                    textDecoration: 'none',
+                    '&:last-child td, &:last-child th': { border: 0 },
+                    '&:hover .viewButton': { opacity: 1 },
+                    '&:hover': { backgroundColor: '#5e5e5e' }
+                  }}
+                >
+                  <TableCell align="center">
+                    <Box
                       sx={{
+                        padding: '3px 8px',
+                        display: 'inline-flex',
                         borderRadius: '8px',
-                        color: '#ededed',
-                        backgroundColor: '#dd514c',
-                        boxShadow: '0px 4px rgba(0,0,0,0.3)',
-                        padding: '2px 6px',
-                        opacity: 0,
-                        '&:hover': {
-                          backgroundColor: '#c74340'
-                        }
+                        backgroundColor: getStatusColor(row.status),
+                        fontWeight: 700
                       }}
                     >
-                      View RR
-                    </Button>
-                  }
-                </TableCell>
-              </TableRow>
-            ))}
+                      {cleanReimbursementRequestStatus(row.status)}
+                    </Box>
+                  </TableCell>
+                  {currentTab === 1 && <TableCell align="center">{fullNamePipe(row.submitter)}</TableCell>}
+                  <TableCell align="center">{`$${centsToDollar(row.amount)}`}</TableCell>
+                  <TableCell align="center">{undefinedPipe(row.identifier)}</TableCell>
+                  <TableCell align="center">{undefinedPipe(row.saboId)}</TableCell>
+                  <TableCell align="center">{datePipe(row.dateSubmitted)}</TableCell>
+                  <TableCell align="center">{dateUndefinedPipe(row.dateSubmittedToSabo)}</TableCell>
+                  <SidePage
+                    showPage={showSidePage}
+                    handleClose={closeSidePage}
+                    title={''}
+                    component={<ReimbursementRequestDetails onCloseEditPage={closeSidePage} />}
+                  />
+                  <TableCell align="center">
+                    {
+                      <Button
+                        className="viewButton"
+                        size="small"
+                        variant="contained"
+                        component={RouterLink}
+                        onClick={() => openSidePage()}
+                        to={`${routes.REIMBURSEMENT_REQUESTS}/my-requests/${row.id}`}
+                        sx={{
+                          borderRadius: '8px',
+                          color: '#ededed',
+                          backgroundColor: '#dd514c',
+                          boxShadow: '0px 4px rgba(0,0,0,0.3)',
+                          padding: '2px 6px',
+                          opacity: 0,
+                          '&:hover': {
+                            backgroundColor: '#c74340'
+                          }
+                        }}
+                      >
+                        View RR
+                      </Button>
+                    }
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </TableContainer>
@@ -289,6 +340,10 @@ const ReimbursementRequestInfo = ({
             className="viewButton"
             variant="contained"
             component={RouterLink}
+            onClick={() => {
+              setSidePageTitle('Create Reimbursement Request');
+              setShowCreateSidePage(true);
+            }}
             to={routes.NEW_REIMBURSEMENT_REQUEST}
             disabled={isGuest(user.role)}
             sx={{
@@ -358,6 +413,14 @@ const ReimbursementRequestInfo = ({
           labelDisplayedRows={({ page }) => `Page ${page + 1}`}
         />
       </Box>
+      <SidePage
+        showPage={showCreateSidePage}
+        handleClose={closeCreateSidePage}
+        title={sidePageTitle}
+        component={
+          <ReimbursementRequestForm submitText="Submit" submitData={onSubmitCreate} onFormExit={closeCreateSidePage} />
+        }
+      />
     </Box>
   );
 };

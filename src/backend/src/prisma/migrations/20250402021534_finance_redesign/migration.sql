@@ -258,6 +258,20 @@ ALTER TABLE "Reimbursement_Request_Comment" ADD CONSTRAINT "Reimbursement_Reques
 ALTER TABLE "Reimbursement_Request_Comment" ADD COLUMN     "dateDeleted" TIMESTAMP(3);
 
 -- CreateTable
+CREATE TABLE "Refund_Source" (
+    "refundSourceId" TEXT NOT NULL,
+    "indexCodeId" TEXT NOT NULL,
+    "amount" INTEGER NOT NULL,
+    "reimbursementProductId" TEXT,
+
+    CONSTRAINT "Refund_Source_pkey" PRIMARY KEY ("refundSourceId")
+);
+
+-- AddForeignKey
+ALTER TABLE "Refund_Source" ADD CONSTRAINT "Refund_Source_indexCodeId_fkey" FOREIGN KEY ("indexCodeId") REFERENCES "Index_Code"("indexCodeId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Refund_Source" ADD CONSTRAINT "Refund_Source_reimbursementProductId_fkey" FOREIGN KEY ("reimbursementProductId") REFERENCES "Reimbursement_Product"("reimbursementProductId") ON DELETE SET NULL ON UPDATE CASCADE;
 CREATE TABLE "_twoFactorContactVendors" (
     "A" TEXT NOT NULL,
     "B" TEXT NOT NULL,
@@ -316,3 +330,5 @@ ALTER TABLE "Change" ADD CONSTRAINT "Change_wbsElementId_fkey" FOREIGN KEY ("wbs
 -- AddForeignKey
 ALTER TABLE "Change" ADD CONSTRAINT "Change_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Reimbursement_Product_Other_Reason"("otherReimbursementProductReasonId") ON DELETE SET NULL ON UPDATE CASCADE;
 
+-- AlterTable
+ALTER TABLE "Sponsor_Task" ADD COLUMN     "dateDeleted" TIMESTAMP(3);

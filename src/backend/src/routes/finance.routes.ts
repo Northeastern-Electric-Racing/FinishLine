@@ -45,12 +45,14 @@ financeRouter.post(
   FinanceController.editSponsorTask
 );
 
+financeRouter.delete('/sponsorTask/:sponsorTaskId', FinanceController.deleteSponsorTask);
+
 financeRouter.post(
   '/sponsor/:sponsorId/sponsorTasks',
   isDate(body('dueDate')),
   nonEmptyString(body('notes')),
   isOptionalDate(body('notifyDate')),
-  nonEmptyString(body('assigneeId').optional()),
+  nonEmptyString(body('assigneeUserId').optional()),
   validateInputs,
   FinanceController.createSponsorTask
 );

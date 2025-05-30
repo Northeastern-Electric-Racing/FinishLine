@@ -9,7 +9,6 @@ import {
   AccountCodePayload,
   RefundPayload,
   MarkDeliveredRequestPayload,
-  EditSponsorTaskPayload,
   SponsorPayload,
   SponsorTierPayload,
   SponsorTaskPayload,
@@ -22,8 +21,7 @@ import {
   ReimbursementRequestProjectDataPayload,
   ReimbursementRequestDataPayload,
   SpendingBarDataPayload,
-  ReimbursementRequestCategoryDataPayload,
-  EditSponsorPayload
+  ReimbursementRequestCategoryDataPayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -541,7 +539,7 @@ export const deleteSponsor = (sponsorId: string) => {
  *
  * @returns the edited sponosor task
  */
-export const editSponsorTask = (sponsorTaskId: string, sponsorTaskData: EditSponsorTaskPayload) => {
+export const editSponsorTask = (sponsorTaskId: string, sponsorTaskData: SponsorTaskPayload) => {
   return axios.post(apiUrls.editSponsorTask(sponsorTaskId), sponsorTaskData);
 };
 
@@ -632,6 +630,18 @@ export const getAllSponsorTiers = () => {
   });
 };
 
-export const editSponsor = (id: string, formData: EditSponsorPayload) => {
+export const editSponsor = (id: string, formData: SponsorPayload) => {
   return axios.post(apiUrls.editSponsor(id), formData);
+};
+
+/**
+ * API call to delete a given sponsor task
+ *
+ * @param sponsorTaskId the id of the sponsor task to delete
+ *
+ * @returns the deleted sponsor task
+ */
+
+export const deleteSponsorTask = (sponsorTaskId: string) => {
+  return axios.delete(apiUrls.deleteSponsorTask(sponsorTaskId));
 };
