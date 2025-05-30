@@ -20,9 +20,13 @@ interface CategoryFormModalProps {
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is Required'),
-  budget: yup.number().required('Budget is Required'),
+  budget: yup.number().typeError('Budget must be a valid number').required('Budget is Required'),
   indexCodeId: yup.string().required('Index Code is Required'),
-  accountCodeIds: yup.array().of(yup.string().required()).required('Account Code is Required')
+  accountCodeIds: yup
+    .array()
+    .of(yup.string().required())
+    .required('Account Code is Required')
+    .length(1, 'Account Code is Required')
 });
 
 const CategoryFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: CategoryFormModalProps) => {
@@ -120,6 +124,7 @@ const CategoryFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: 
               </Select>
             )}
           />
+          <FormHelperText error>{errors.indexCodeId?.message}</FormHelperText>
         </FormControl>
         <FormControl fullWidth>
           <Typography color="#EF4345" variant="h5" sx={{ fontWeight: 'bold', fontSize: 20 }}>
@@ -152,6 +157,7 @@ const CategoryFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: 
               </Select>
             )}
           />
+          {errors.accountCodeIds && <FormHelperText error>{errors.accountCodeIds.message}</FormHelperText>}
         </FormControl>
         <FormControl fullWidth>
           <Typography color="#EF4345" variant="h5" sx={{ fontWeight: 'bold', fontSize: 20 }}>

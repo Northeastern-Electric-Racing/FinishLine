@@ -88,7 +88,7 @@ const CategoriesTable = () => {
       )}
       <Box sx={{ display: 'flex', justifyContent: 'left', marginTop: '20px', paddingBottom: '20px' }}>
         <Typography variant="h5" gutterBottom color="white" paddingRight={'20px'}>
-          Categories
+          Reimbursement Categories
         </Typography>
         <NERButton
           style={{ color: 'white' }}

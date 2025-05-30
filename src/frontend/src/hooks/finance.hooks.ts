@@ -173,13 +173,6 @@ export interface OtherProductReasonPayload {
   budget: number;
 }
 
-export interface OtherProductReasonPayload {
-  indexCodeId: string;
-  accountCodeIds: string[];
-  name: string;
-  budget: number;
-}
-
 /**
  * Custom React hook to create a sponsor
  *
