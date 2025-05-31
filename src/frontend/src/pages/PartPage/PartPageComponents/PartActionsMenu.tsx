@@ -121,7 +121,7 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
   const handleReopen = async () => {
     try {
       await editPart({
-        reviewStatus: part.status,
+        reviewStatus: Review_Status.IN_PROGRESS,
         wbsNum: wbsPipe(wbsNum),
         tagIds: part.tags.map((tag) => tag.partTagId),
         assigneeIds: part.assignees.map((assignee) => assignee.userId),

@@ -208,7 +208,7 @@ const PartPage: React.FC = () => {
       previousPages={[
         { name: 'Projects', route: routes.PROJECTS },
         { name: `${wbsPipe(project.wbsNum)} - ${project.name}`, route: `${routes.PROJECTS}/${wbsNum}` },
-        { name: 'Files', route: `${routes.PROJECTS}/${wbsNum}/parts-review` }
+        { name: 'Part Review', route: `${routes.PROJECTS}/${wbsNum}/parts-review` }
       ]}
       headerRight={
         <PartActionsMenu part={part} submissionIndex={subIndex} reviewIndex={reviewIndex} wbsNum={validateWBS(wbsNum)} />
