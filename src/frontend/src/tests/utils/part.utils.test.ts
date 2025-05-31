@@ -152,40 +152,29 @@ describe('Part Submission History', () => {
   it('User requested single review', () => {
     expect(completePartHistory(part1)[2]).toBe('[01/03/24] - Chris Pyle requested a review from Griffin Cooper.');
   });
-  it('Reviewer began reviewing submission', () => {
-    expect(completePartHistory(part1)[3]).toBe('[01/04/24] - Griffin Cooper began reviewing Submission #1.');
-  });
-  it('Reviewer finished reviewing submission', () => {
-    expect(completePartHistory(part1)[4]).toBe(
+  it('Reviewer reviewed submission (same day as created so only 1 note)', () => {
+    expect(completePartHistory(part1)[3]).toBe(
       '[01/05/24] - Griffin Cooper reviewed Submission #1 (in Submission #1 Review).'
     );
   });
   it('User uploaded second submission w/o part name', () => {
-    expect(completePartHistory(part1)[5]).toBe('[01/06/24] - Chris Pyle uploaded Submission #2.');
+    expect(completePartHistory(part1)[4]).toBe('[01/06/24] - Chris Pyle uploaded Submission #2.');
   });
   it('User requested review from two people combined', () => {
-    expect(completePartHistory(part1)[6]).toBe(
+    expect(completePartHistory(part1)[5]).toBe(
       '[01/07/24] - Chris Pyle re-requested a review from Griffin Cooper and requested a review from Zachary Wen.'
     );
   });
-  it('Reviewer began reviewing Submission #2', () => {
-    expect(completePartHistory(part1)[7]).toBe('[01/08/24] - Zachary Wen began reviewing Submission #2.');
+  it('User reviewed second submission', () => {
+    expect(completePartHistory(part1)[6]).toBe('[01/09/24] - Zachary Wen reviewed Submission #2 (in Submission #2 Review).');
   });
-  it('Reviewer finished reviewing Submission #2', () => {
-    expect(completePartHistory(part1)[8]).toBe('[01/09/24] - Zachary Wen reviewed Submission #2 (in Submission #2 Review).');
+  it('User uploaded third submission', () => {
+    expect(completePartHistory(part1)[7]).toBe('[01/10/24] - Chris Pyle uploaded Submission #3.');
   });
-  it('Submission 3', () => {
-    expect(completePartHistory(part1)[9]).toBe('[01/10/24] - Chris Pyle uploaded Submission #3.');
+  it('User re requests review', () => {
+    expect(completePartHistory(part1)[8]).toBe('[01/11/24] - Chris Pyle re-requested a review from Zachary Wen.');
   });
-  it('Re-Request Review', () => {
-    expect(completePartHistory(part1)[10]).toBe('[01/11/24] - Chris Pyle re-requested a review from Zachary Wen.');
-  });
-  it('Began Reviewing', () => {
-    expect(completePartHistory(part1)[11]).toBe('[01/12/24] - Zachary Wen began reviewing Submission #3.');
-  });
-  it('Last Review', () => {
-    expect(completePartHistory(part1)[12]).toBe(
-      '[01/13/24] - Zachary Wen reviewed Submission #3 (in Submission #3 Review).'
-    );
+  it('User approves part (last review and part status is approved)', () => {
+    expect(completePartHistory(part1)[9]).toBe('[01/13/24] - Zachary Wen approved Submission #3.');
   });
 });
