@@ -113,11 +113,6 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
     history.push(reviewLink);
   };
 
-  const latestReview =
-    submission?.reviews && submission.reviews.length > 0
-      ? [...submission.reviews].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]
-      : null;
-
   const handleReopen = async () => {
     try {
       await editPart({
@@ -257,13 +252,11 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
         onSubmit={onSubmitEditSubmission}
         partsInProject={partsInProject}
       />
-      {latestReview && (
-        <ApprovePartModal
-          open={showApproveSubmission}
-          handleClose={() => setShowApproveSubmission(false)}
-          review={latestReview}
-        />
-      )}
+      <ApprovePartModal
+        open={showApproveSubmission}
+        handleClose={() => setShowApproveSubmission(false)}
+        submission={submission}
+      />
       <DeleteModal />
       {/* for preview image upload button */}
       <input

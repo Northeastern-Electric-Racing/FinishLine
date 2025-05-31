@@ -67,7 +67,7 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
       handleClose();
       await onSubmit({
         ...data,
-        reviewStatus: Review_Status.IN_PROGRESS,
+        reviewStatus: defaultValues ? defaultValues.status : Review_Status.IN_PROGRESS,
         tagIds,
         assigneeIds,
         reviewerIds
