@@ -15,29 +15,34 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import NERSuccessButton from '../../../components/NERSuccessButton';
-import { useEditPartReview } from '../../../hooks/part-review.hooks';
-import { PartSubmission, Review_Status } from 'shared/src/types/part-review.types';
+import { useDeletePartReview, useEditPartReview } from '../../../hooks/part-review.hooks';
+import { PartReview, PartSubmission, Review_Status } from 'shared/src/types/part-review.types';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import DownloadButton from '../../../components/DownloadButton';
+import NERDeleteModal from '../../../components/NERDeleteModal';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface ReviewSidebarProps {
   submission: PartSubmission;
-  reviewIndex: number;
+  review: PartReview;
 }
 
-const ReviewSidebar: React.FC<ReviewSidebarProps> = ({ submission, reviewIndex }) => {
-  const [notes, setNotes] = useState(submission.reviews[reviewIndex].notes ?? '');
+const ReviewSidebar: React.FC<ReviewSidebarProps> = ({ submission, review }) => {
+  const toast = useToast();
+  const [notes, setNotes] = useState(review.notes ?? '');
+  const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false);
   const { mutateAsync: updateReview } = useEditPartReview();
+  const { mutateAsync: deleteReview } = useDeletePartReview();
 
   //Produces array of strings to be shown as bullet points on review that show number of markups on each file
   const markupsStrs = () => {
     const detailsStrs: string[] = [];
 
     for (let i = 0; i < submission.fileIds.length; i++) {
-      const numOnPage = submission.reviews[reviewIndex].popUps.filter((popup) => popup.fileIndex === i).length;
+      const numOnPage = review.popUps.filter((popup) => popup.fileIndex === i).length;
       if (numOnPage > 0) {
         detailsStrs.push(
-          `${submission.reviews[reviewIndex].popUps.filter((popup) => popup.fileIndex === i).length} comment${numOnPage !== 1 ? 's' : ''} left on Page ${i + 1}`
+          `${review.popUps.filter((popup) => popup.fileIndex === i).length} comment${numOnPage !== 1 ? 's' : ''} left on Page ${i + 1}`
         );
       }
     }
@@ -46,33 +51,59 @@ const ReviewSidebar: React.FC<ReviewSidebarProps> = ({ submission, reviewIndex }
 
   //curried onSubmit for different buttons to submit with different status
   const onFormSubmit = (status: Review_Status) => {
-    return () => {
-      updateReview({
-        partReviewId: submission.reviews[reviewIndex].partReviewId,
-        notes,
-        status,
-        fileIds: submission.reviews[reviewIndex].fileIds
-      });
+    return async () => {
+      try {
+        await updateReview({
+          partReviewId: review.partReviewId,
+          notes,
+          status,
+          fileIds: review.fileIds
+        });
+        switch (status) {
+          case Review_Status.IN_PROGRESS:
+            toast.success('Draft saved successfully!');
+            break;
+          case Review_Status.REVIEWED:
+            toast.success('Changes requested successfully!');
+            break;
+          case Review_Status.APPROVED:
+            toast.success('Submission approved successfully!');
+            break;
+        }
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          toast.error(error.message);
+        }
+      }
     };
   };
 
   //deletes file in db
   const handleDeleteFile = (fileIdToDelete: string) => {
     updateReview({
-      partReviewId: submission.reviews[reviewIndex].partReviewId,
-      notes: submission.reviews[reviewIndex].notes,
+      partReviewId: review.partReviewId,
+      notes: review.notes,
       status: Review_Status.IN_PROGRESS,
-      fileIds: submission.reviews[reviewIndex].fileIds.filter((id) => id !== fileIdToDelete)
+      fileIds: review.fileIds.filter((id) => id !== fileIdToDelete)
     });
   };
 
   return (
     <Box display="flex" width={'100%'} flexDirection="column" gap={2} p={2}>
+      <NERDeleteModal
+        open={showConfirmDeleteModal}
+        onHide={() => setShowConfirmDeleteModal(false)}
+        dataType={`Part Review`}
+        onFormSubmit={() => {
+          deleteReview(review.partReviewId);
+        }}
+      />
       {/* TOP BUTTONS */}
       <Box display="flex" justifyContent="flex-end" gap={2}>
         <Button
           onClick={onFormSubmit(Review_Status.IN_PROGRESS)}
           sx={{
+            minWidth: '5rem',
             variant: 'contained',
             textTransform: 'none',
             fontSize: 16,
@@ -88,10 +119,13 @@ const ReviewSidebar: React.FC<ReviewSidebarProps> = ({ submission, reviewIndex }
         >
           SAVE AS DRAFT
         </Button>
-        <NERSuccessButton onClick={onFormSubmit(Review_Status.REVIEWED)}>Request Changes</NERSuccessButton>
+        <NERSuccessButton onClick={onFormSubmit(Review_Status.REVIEWED)} sx={{ minWidth: '5rem' }}>
+          Request Changes
+        </NERSuccessButton>
         <Button
           onClick={onFormSubmit(Review_Status.APPROVED)}
           sx={{
+            minWidth: '5rem',
             variant: 'contained',
             textTransform: 'none',
             fontSize: 16,
@@ -152,8 +186,8 @@ const ReviewSidebar: React.FC<ReviewSidebarProps> = ({ submission, reviewIndex }
             <Typography variant="body2">File(s) Uploaded:</Typography>
 
             <Stack direction="column" spacing={1} mt={1}>
-              {submission.reviews[reviewIndex].fileIds.length ? (
-                submission.reviews[reviewIndex].fileIds.map((fileId, index) => (
+              {review.fileIds.length > 0 ? (
+                review.fileIds.map((fileId, index) => (
                   <Box key={fileId} display="flex" alignItems="center" gap={1}>
                     <Typography variant="body2">{`File #${index + 1}`}</Typography>
                     <DownloadButton fileId={fileId} filename={`Review_File${index + 1}`} />
@@ -187,6 +221,26 @@ const ReviewSidebar: React.FC<ReviewSidebarProps> = ({ submission, reviewIndex }
           multiline
           rows={4}
         />
+      </Box>
+      <Box display="flex" justifyContent="flex-end">
+        <Button
+          onClick={() => setShowConfirmDeleteModal(true)}
+          sx={{
+            variant: 'contained',
+            textTransform: 'none',
+            fontSize: 16,
+            borderColor: '#ef4345',
+            backgroundColor: '#ef4345',
+            color: 'white',
+            boxShadow: 'none',
+            '&:hover': {
+              backgroundColor: '#c62828',
+              color: 'white'
+            }
+          }}
+        >
+          DELETE REVIEW
+        </Button>
       </Box>
     </Box>
   );

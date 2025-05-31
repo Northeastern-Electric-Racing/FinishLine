@@ -47,11 +47,13 @@ import { sendPartAssignmentPopUp, sendPartReviewRequestPopUp } from '../utils/po
 export default class PartReviewService {
   /**
    * Uses the given partId to get the specific part and all of its constituent data
+   * @param organization the organization to get the part for
+   * @param user the user requesting the part
    * @param wbsNumber the wbsNum of the project this part is under
    * @param indexNum the index number of the part on this project
    * @returns a single Part
    */
-  static async getPart(organization: Organization, wbsNumber: WbsNumber, indexNum: string) {
+  static async getPart(organization: Organization, user: User, wbsNumber: WbsNumber, indexNum: string) {
     const project: Project = await ProjectsService.getSingleProject(wbsNumber, organization);
     const index = Number(indexNum);
     const part = await prisma.part.findUnique({
@@ -66,6 +68,12 @@ export default class PartReviewService {
     });
 
     if (!part) throw new NotFoundException('Part', `projectId: ${project.id} and index number: ${indexNum}`);
+
+    part.submissions.forEach((submission) => {
+      submission.reviews = submission.reviews.filter((review) => {
+        return review.completedAt || user.userId === review.userCreatedId;
+      });
+    });
 
     return partTransformer(part);
   }
@@ -232,7 +240,8 @@ export default class PartReviewService {
     description: string,
     reviewStatus: Review_Status,
     tagIds: string[],
-    assigneeIds: string[]
+    assigneeIds: string[],
+    reviewerIds: string[]
   ) {
     const part = await prisma.part.findUnique({
       where: { partId },
@@ -248,24 +257,63 @@ export default class PartReviewService {
 
     if (!hasPermission) throw new AccessDeniedException('Only leadership and the part creator can update part data');
 
-    const updatedPart = await prisma.part.update({
-      where: { partId },
-      data: {
-        index,
-        commonName,
-        description,
-        status: reviewStatus,
-        tags: {
-          set: tagIds.map((partTagId) => ({ partTagId }))
+    const editedPart = await prisma.$transaction(async (tx) => {
+      const editedPart = await tx.part.update({
+        where: { partId },
+        data: {
+          index,
+          commonName,
+          description,
+          status: reviewStatus,
+          tags: {
+            set: tagIds.map((partTagId) => ({ partTagId }))
+          },
+          assignees: {
+            set: assigneeIds.map((userId) => ({ userId }))
+          }
         },
-        assignees: {
-          set: assigneeIds.map((userId) => ({ userId }))
-        }
-      },
-      ...getPartQueryArgs(organizationId)
+        ...getPartQueryArgs(organizationId)
+      });
+
+      const reviewersToAdd = reviewerIds.filter(
+        (id) => !editedPart.reviewRequests.some((reviewReq) => reviewReq.reviewerRequested.userId === id)
+      );
+
+      await Promise.all(
+        reviewersToAdd.map(async (id) => {
+          return tx.partReviewRequest.create({
+            data: {
+              part: {
+                connect: {
+                  partId: editedPart.partId
+                }
+              },
+              requester: { connect: { userId: updater.userId } },
+              reviewerRequested: { connect: { userId: id } }
+            }
+          });
+        })
+      );
+
+      const reviewRequestsToRemove = editedPart.reviewRequests.filter(
+        (reviewReq) => !reviewerIds.includes(reviewReq.reviewerRequested.userId)
+      );
+
+      await Promise.all(
+        reviewRequestsToRemove.map(async (reviewReq) => {
+          return tx.partReviewRequest.update({
+            where: { partReviewRequestId: reviewReq.partReviewRequestId },
+            data: {
+              dateDeleted: new Date()
+            }
+          });
+        })
+      );
+
+      return editedPart;
     });
 
-    return partTransformer(updatedPart);
+    return partTransformer(editedPart);
   }
 
   static async deletePart(partId: string, deleter: User, organizationId: string) {
@@ -416,6 +464,37 @@ export default class PartReviewService {
   }
 
   /**
+   * Deletes a review
+   * @param reviewId the review being deleted
+   * @param deleter the user deleting (must be creator)
+   * @param organizationId the organization
+   */
+  static async deleteReview(reviewId: string, deleter: User, organizationId: string) {
+    const review = await prisma.partReview.findUnique({
+      where: { partReviewId: reviewId }
+    });
+
+    if (!review) throw new NotFoundException('Part Review', reviewId);
+    if (review.dateDeleted) throw new DeletedException('Part Review', reviewId);
+    if (review.completedAt) throw new HttpException(409, 'Cannot delete a completed review');
+
+    if (deleter.userId !== review.userCreatedId) throw new AccessDeniedException('only review creators can delete reviews');
+
+    await prisma.partReview.update({
+      where: { partReviewId: reviewId },
+      data: {
+        dateDeleted: new Date(),
+        userDeleted: {
+          connect: {
+            userId: deleter.userId
+          }
+        }
+      },
+      ...getPartReviewQueryArgs(organizationId)
+    });
+  }
+
+  /**
    * Creates a submission for a given part
    * @param partId the part that the submission will be added to
    * @param creator the creator
@@ -455,6 +534,22 @@ export default class PartReviewService {
       },
       ...getPartSubmissionQueryArgs(organizationId)
     });
+
+    await prisma.part.update({
+      where: { partId },
+      data: { status: Review_Status.READY_FOR_REVIEW }
+    });
+
+    if (!part.previewImageId && fileIds.length > 0) {
+      await prisma.part.update({
+        where: {
+          partId: part.partId
+        },
+        data: {
+          previewImageId: fileIds[0]
+        }
+      });
+    }
 
     return partSubmissionTransformer(submission);
   }

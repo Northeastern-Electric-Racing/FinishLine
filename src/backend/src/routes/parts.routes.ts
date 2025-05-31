@@ -51,6 +51,8 @@ partsRouter.post(
   PartReviewController.updateReview
 );
 
+partsRouter.post('/review/:reviewId/delete', PartReviewController.deleteReview);
+
 partsRouter.post(
   '/submission/create',
   nonEmptyString(body('partId')),
@@ -59,6 +61,14 @@ partsRouter.post(
   body('fileIds').isArray(),
   validateInputs,
   PartReviewController.createSubmission
+);
+
+partsRouter.post(
+  '/submission/:submissionId/update',
+  nonEmptyString(body('name')),
+  body('notes').optional().isString(),
+  validateInputs,
+  PartReviewController.updateSubmission
 );
 
 partsRouter.get('/tags', PartReviewController.getAllPartTags);

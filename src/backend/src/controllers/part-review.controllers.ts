@@ -9,7 +9,7 @@ export default class PartReviewController {
       const { wbsNum, indexNum } = req.params;
 
       const wbsNumber: WbsNumber = validateWBS(wbsNum);
-      const part = await PartReviewService.getPart(req.organization, wbsNumber, indexNum);
+      const part = await PartReviewService.getPart(req.organization, req.currentUser, wbsNumber, indexNum);
       res.status(200).json(part);
     } catch (error: unknown) {
       next(error);
@@ -83,7 +83,7 @@ export default class PartReviewController {
 
   static async updatePart(req: Request, res: Response, next: NextFunction) {
     try {
-      const { index, commonName, description, reviewStatus, tagIds, assigneeIds } = req.body;
+      const { index, commonName, description, reviewStatus, tagIds, assigneeIds, reviewerIds } = req.body;
       const { partId } = req.params;
       const part = await PartReviewService.updatePart(
         req.organization.organizationId,
@@ -94,7 +94,8 @@ export default class PartReviewController {
         description,
         reviewStatus,
         tagIds,
-        assigneeIds
+        assigneeIds,
+        reviewerIds
       );
       res.status(200).json(part);
     } catch (error: unknown) {
@@ -142,6 +143,16 @@ export default class PartReviewController {
         fileIds
       );
       res.status(200).json(updatedReview);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteReview(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { reviewId } = req.params;
+      await PartReviewService.deleteReview(reviewId, req.currentUser, req.organization.organizationId);
+      res.status(200).json({ message: 'Successfully deleted review' });
     } catch (error: unknown) {
       next(error);
     }

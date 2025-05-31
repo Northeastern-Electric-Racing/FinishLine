@@ -215,7 +215,8 @@ describe('part review tests', () => {
       'new description',
       Review_Status.IN_REVIEW,
       [tag2.partTagId],
-      [superman.userId, nonAdmin.userId]
+      [superman.userId, nonAdmin.userId],
+      [batman.userId]
     );
 
     expect(updatedPart.commonName).toBe('part2');
@@ -250,7 +251,8 @@ describe('part review tests', () => {
           'new description',
           Review_Status.IN_REVIEW,
           [tag2.partTagId],
-          [superman.userId, nonAdmin.userId]
+          [superman.userId, nonAdmin.userId],
+          [batman.userId]
         )
     ).rejects.toThrow(new DeletedException('Part', part.partId));
   });
@@ -307,7 +309,8 @@ describe('part review tests', () => {
           'new description',
           Review_Status.IN_REVIEW,
           [],
-          [superman.userId, nonAdmin.userId]
+          [superman.userId, nonAdmin.userId],
+          [batman.userId]
         )
     ).rejects.toThrow(new AccessDeniedException('Only leadership and the part creator can update part data'));
   });
@@ -1001,7 +1004,7 @@ describe('part review tests', () => {
 
       const part = await createTestPart(superman, 'door', '1', 1, project.projectId);
 
-      const testPart = await PartReviewService.getPart(organization, project1?.wbsElement as WbsNumber, '1');
+      const testPart = await PartReviewService.getPart(organization, batman, project1?.wbsElement as WbsNumber, '1');
 
       expect(testPart.userCreated.userId).toEqual(part.userCreatedId);
       expect(testPart.commonName).toBe(part.commonName);
@@ -1024,7 +1027,7 @@ describe('part review tests', () => {
       });
       const wbsNum = project1?.wbsElement as WbsNumber;
 
-      await expect(PartReviewService.getPart(organization, wbsNum, '1')).rejects.toThrow(
+      await expect(PartReviewService.getPart(organization, batman, wbsNum, '1')).rejects.toThrow(
         new NotFoundException('Part', `projectId: ${project.projectId} and index number: 1`)
       );
     });

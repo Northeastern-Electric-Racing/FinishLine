@@ -42,7 +42,8 @@ import {
   updateCommonMistake,
   deleteCommonMistake,
   createPartTag,
-  deletePartTag
+  deletePartTag,
+  deletePartReview
 } from '../apis/part-review.api';
 import { downloadGoogleImage } from '../apis/onboarding.api';
 
@@ -192,7 +193,7 @@ export const useUploadPreviewImage = (partId: string) => {
  */
 export const useDeletePart = (partId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, void>(
     ['parts', 'delete'],
     async () => {
       const { data } = await deletePart(partId);
@@ -327,6 +328,27 @@ export const useEditPartReview = () => {
     ['parts', 'editReview'],
     async (partReview: EditPartReviewPayload) => {
       const { data } = await editPartReview(partReview);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['parts']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to delete a part review
+ *
+ * @returns a success message
+ */
+export const useDeletePartReview = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['parts', 'deleteReview'],
+    async (partReviewId: string) => {
+      const { data } = await deletePartReview(partReviewId);
       return data;
     },
     {

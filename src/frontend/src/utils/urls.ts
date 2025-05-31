@@ -57,6 +57,7 @@ const partsCreateReviewRequest = (submissionId: string) => `${parts()}/reviewReq
 const partsDeleteReviewRequest = (reviewRequestId: string) => `${parts()}/reviewRequest/${reviewRequestId}/delete`;
 const partsCreateReview = () => `${parts()}/review/create`;
 const partsEditReview = (reviewId: string) => `${parts()}/review/${reviewId}/update`;
+const partsDeleteReview = (reviewId: string) => `${parts()}/review/${reviewId}/delete`;
 const partsReviewFaqs = () => `${parts()}/faqs`;
 const partsReviewFaqCreate = () => `${parts()}/faqs/create`;
 const partsReviewFaqEdit = (faqId: string) => `${parts()}/faqs/${faqId}/update`;
@@ -335,6 +336,7 @@ export const apiUrls = {
   partsDeleteReviewRequest,
   partsCreateReview,
   partsEditReview,
+  partsDeleteReview,
   getAllPartCommonMistakes,
   partsCreateCommonMistake,
   partsUpdateCommonMistake,

@@ -1,5 +1,5 @@
 import { Part, PartReview, PartReviewRequest, PartSubmission, Review_Status, User } from 'shared';
-import { yellow, blue, purple, green, grey } from '@mui/material/colors';
+import { yellow, purple, green, grey, red } from '@mui/material/colors';
 
 type HistoryEntry = [Date, string];
 
@@ -67,23 +67,23 @@ export const getReviewRequestHistory = (reviewRequests: PartReviewRequest[]): Hi
   return historyEntries.sort((a, b) => a[0].getTime() - b[0].getTime());
 };
 
-export const getReviewHistory = (submissions: PartSubmission[]): HistoryEntry[] => {
+export const getReviewHistory = (submissions: PartSubmission[], approved: boolean): HistoryEntry[] => {
   if (submissions.length === 0) return [];
   const historyEntries: HistoryEntry[] = [];
 
-  submissions.forEach((sub) => {
-    // Each reviewer gets a separate "began reviewing" and "reviewed"
-    const reviewsForReviewer = new Map<User, PartReview[]>();
-    sub.reviews.forEach((review) => {
-      const reviewer = review.userCreated;
-      if (!reviewsForReviewer.has(reviewer)) {
-        reviewsForReviewer.set(reviewer, []);
-      }
-      reviewsForReviewer.get(reviewer)!.push(review);
-    });
+  submissions.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
-    reviewsForReviewer.forEach((reviews, reviewer) => {
-      processReviewerHistory(reviews, reviewer, sub.name, historyEntries);
+  // if part is approved, the last review must have approved it, so change that one to say reviewed
+  submissions.forEach((sub, subIdx) => {
+    sub.reviews.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    sub.reviews.forEach((review, reviewIdx) => {
+      processReviewerHistory(
+        review,
+        review.userCreated,
+        sub.name,
+        historyEntries,
+        approved && subIdx === submissions.length - 1 && reviewIdx === sub.reviews.length - 1
+      );
     });
   });
   return historyEntries;
@@ -91,24 +91,22 @@ export const getReviewHistory = (submissions: PartSubmission[]): HistoryEntry[] 
 
 // Processes an individual reviewer's history in a submission
 export const processReviewerHistory = (
-  reviews: PartReview[],
+  review: PartReview,
   reviewer: User,
   subName: string,
-  historyEntries: HistoryEntry[]
+  historyEntries: HistoryEntry[],
+  approved: boolean
 ) => {
   const reviewerName = `${reviewer.firstName} ${reviewer.lastName}`;
-  reviews.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-  if (reviews.length === 0) return;
-
-  const [firstReview] = reviews;
-  historyEntries.push([new Date(firstReview.createdAt), `${reviewerName} began reviewing ${subName}`]);
-
-  reviews.forEach((review) => {
-    if (review.completedAt) {
-      const message = `${reviewerName} reviewed ${subName} (in ${subName} Review)`;
-      historyEntries.push([new Date(review.completedAt), message]);
-    }
-  });
+  if (review.createdAt.getDate !== review.completedAt?.getDate) {
+    historyEntries.push([new Date(review.createdAt), `${reviewerName} began reviewing ${subName}`]);
+  }
+  if (review.completedAt) {
+    const message = approved
+      ? `${reviewerName} approved ${subName}`
+      : `${reviewerName} reviewed ${subName} (in ${subName} Review)`;
+    historyEntries.push([new Date(review.completedAt), message]);
+  }
 };
 
 export const completePartHistory = (part: Part): string[] => {
@@ -116,7 +114,7 @@ export const completePartHistory = (part: Part): string[] => {
     ...getPartCreationHistory(part.createdAt, part.commonName),
     ...getSubmissionHistory(part.submissions, part.commonName),
     ...getReviewRequestHistory(part.reviewRequests),
-    ...getReviewHistory(part.submissions)
+    ...getReviewHistory(part.submissions, part.status === Review_Status.APPROVED)
   ];
   const result: string[] = [];
   history
@@ -145,16 +143,27 @@ export const formatPartStatus = (status: Review_Status): string => {
 export const getStatusColor = (status: Review_Status): string => {
   switch (status) {
     case Review_Status.IN_PROGRESS:
-      return yellow[700];
+      return grey[600];
     case Review_Status.READY_FOR_REVIEW:
-      return blue[600];
+      return red[600];
     case Review_Status.IN_REVIEW:
-      return purple[600];
+      return yellow[700];
     case Review_Status.REVIEWED:
       return green[600];
     case Review_Status.APPROVED:
-      return green[800];
+      return purple[600];
     default:
       return grey[600];
   }
+};
+
+export const getReviewStatusDisplayName = (status: Review_Status): string => {
+  return {
+    IN_PROGRESS: 'In Progress',
+    READY_FOR_REVIEW: 'Ready for Review',
+    IN_REVIEW: 'In Review',
+    REVIEWED: 'Reviewed',
+    APPROVED: 'Approved',
+    default: 'Unknown'
+  }[status];
 };
