@@ -342,3 +342,25 @@ export const setPartReviewSampleImage = async (file: File) => {
   formData.append('partReviewSampleImage', file);
   return axios.post(apiUrls.setPartReviewSampleImage(), formData, {});
 };
+
+/**
+ * Sends a notification to the assignee of a part
+ * @param partId id of the part
+ * @param assigneeId id of the assignee
+ */
+export const sendPartAssignmentNotification = (payload: { partId: string; assigneeId: string }) => {
+  return axios.post<{ message: string }>(apiUrls.notifyPartAssignee(), {
+    ...payload
+  });
+};
+
+/**
+ * Sends a notification to the reviewer of a part
+ * @param partId id of the part
+ * @param reviewerId id of the reviewer
+ */
+export const sendPartReviewRequestNotification = (payload: { partId: string; reviewerId: string }) => {
+  return axios.post<{ message: string }>(apiUrls.notifyPartReviewer(), {
+    ...payload
+  });
+};

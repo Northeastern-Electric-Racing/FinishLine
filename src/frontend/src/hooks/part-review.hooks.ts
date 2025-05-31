@@ -34,6 +34,8 @@ import {
   updateReviewPopup,
   deleteReviewPopup,
   uploadFile,
+  sendPartAssignmentNotification,
+  sendPartReviewRequestNotification,
   setPartReviewSampleImage,
   getPartReviewSampleImage,
   createCommonMistake,
@@ -648,4 +650,46 @@ export const usePartReviewSampleImageId = () => {
     const { data: fileId } = await getPartReviewSampleImage();
     return fileId;
   });
+};
+
+/**
+ * Custom React Hook to notify the assignee of a part
+ *
+ * @returns a success message
+ */
+export const useNotifyPartAssignee = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, { partId: string; assigneeId: string }>(
+    ['parts', 'notifyAssignee'],
+    async (notification) => {
+      const { data } = await sendPartAssignmentNotification(notification);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['pop-ups', 'current-user']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to notify the reviewer of a part
+ *
+ * @returns a success message
+ */
+export const useNotifyPartReviewer = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, { partId: string; reviewerId: string }>(
+    ['parts', 'notifyReviewer'],
+    async (notification) => {
+      const { data } = await sendPartReviewRequestNotification(notification);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['pop-ups', 'current-user']);
+      }
+    }
+  );
 };

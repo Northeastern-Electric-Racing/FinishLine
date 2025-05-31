@@ -74,6 +74,8 @@ const partTagDelete = (partTagId: string) => `${parts()}/tag/${partTagId}/delete
 const createReviewPopup = (reviewId: string) => `${parts()}/review/${reviewId}/popup/create`;
 const updateReviewPopup = (popupId: string) => `${parts()}/popup/${popupId}/update`;
 const deleteReviewPopup = (popupId: string) => `${parts()}/popup/${popupId}/delete`;
+const notifyPartAssignee = () => `${parts()}/notifyAssignee`;
+const notifyPartReviewer = () => `${parts()}/notifyReviewer`;
 const getPartReviewSampleImage = () => `${parts()}/partReviewSampleImage`;
 const setPartReviewSampleImage = () => `${parts()}/partReviewSampleImage/update`;
 
@@ -347,6 +349,8 @@ export const apiUrls = {
   createReviewPopup,
   updateReviewPopup,
   deleteReviewPopup,
+  notifyPartAssignee,
+  notifyPartReviewer,
   setPartReviewSampleImage,
   getPartReviewSampleImage,
 

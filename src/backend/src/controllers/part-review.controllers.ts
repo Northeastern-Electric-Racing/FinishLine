@@ -372,6 +372,26 @@ export default class PartReviewController {
     }
   }
 
+  static async notifyReviewer(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { reviewerId, partId } = req.body;
+      await PartReviewService.notifyReviewer(reviewerId, partId, req.organization.organizationId);
+      res.status(200).json({ message: 'Successfully notified reviewer' });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async notifyAssignee(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { assigneeId, partId } = req.body;
+      await PartReviewService.notifyAssignee(assigneeId, partId, req.organization.organizationId);
+      res.status(200).json({ message: 'Successfully notified assignee' });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async createPartReviewPopup(req: Request, res: Response, next: NextFunction) {
     try {
       const user = req.currentUser;

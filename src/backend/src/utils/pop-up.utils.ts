@@ -67,3 +67,47 @@ export const sendCrRequestReviewPopUp = async (changeRequest: Change_Request, re
     changeRequestLink
   );
 };
+
+/**
+ * Sends a finishline pop up to a user whose review was requested on a part
+ * @param partLink link to the part
+ * @param partName name of the part
+ * @param reviewer user whose review was requested
+ * @param organizationId id of the organization of the part
+ */
+export const sendPartReviewRequestPopUp = async (
+  partLink: string,
+  partName: string,
+  reviewerId: string,
+  organizationId: string
+) => {
+  await PopUpService.sendPopUpToUsers(
+    `Your review has been requested on ${partName}`,
+    'edit_note',
+    [reviewerId],
+    organizationId,
+    partLink
+  );
+};
+
+/**
+ * Sends a finishline pop up to a user who is assigned to a part
+ * @param partLink link to the part
+ * @param partName name of the part
+ * @param assignee user who is assigned to the part
+ * @param organizationId id of the organization of the part
+ */
+export const sendPartAssignmentPopUp = async (
+  partLink: string,
+  partName: string,
+  assigneeId: string,
+  organizationId: string
+) => {
+  await PopUpService.sendPopUpToUsers(
+    `You have been assigned to ${partName}`,
+    'edit_note',
+    [assigneeId],
+    organizationId,
+    partLink
+  );
+};
