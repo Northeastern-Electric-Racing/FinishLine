@@ -4,6 +4,7 @@
  */
 
 import { DescriptionBullet } from './project-types';
+import { DescriptionBulletPreview } from './change-request-types';
 import { TeamPreview } from './team-types';
 import { User } from './user-types';
 
@@ -43,6 +44,17 @@ export interface WorkPackageTemplate extends WbsElementTemplate {
   userCreated: User;
   dateDeleted?: Date;
   userDeleted?: User;
+}
+
+export interface WorkPackageTemplateApiInputs {
+  templateName: string;
+  templateNotes: string;
+  duration: number | undefined;
+  stage?: WorkPackageStage | 'NONE';
+  blockedBy: string[];
+  descriptionBullets: DescriptionBulletPreview[];
+  workPackageName?: string;
+  workPackageTemplateId?: string;
 }
 
 export interface ProjectTemplate extends WbsElementTemplate {
