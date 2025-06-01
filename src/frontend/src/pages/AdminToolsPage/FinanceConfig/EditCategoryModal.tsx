@@ -1,24 +1,24 @@
-// import { AccountCode } from 'shared';
-// import AccountCodeFormModal from './AccountCodeFormModal';
-// import { useEditAccountCode } from '../../../hooks/finance.hooks';
-// import ErrorPage from '../../ErrorPage';
-// import LoadingIndicator from '../../../components/LoadingIndicator';
+import CategoryFormModal from './CategoryFormModal';
+import { useEditOtherProductReason } from '../../../hooks/finance.hooks';
+import ErrorPage from '../../ErrorPage';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import { OtherProductReason } from 'shared';
 
-// interface EditCategoryModalProps {
-//   showModal: boolean;
-//   handleClose: () => void;
-//   accountCode: AccountCode;
-// }
+interface EditCategoryModalProps {
+  showModal: boolean;
+  handleClose: () => void;
+  category: OtherProductReason;
+}
 
-// const EditCategoryModal = ({ showModal, handleClose, accountCode }: EditCategoryModalProps) => {
-//   const { isLoading, isError, error, mutateAsync } = useEditAccountCode(accountCode.accountCodeId);
+const EditCategoryModal = ({ showModal, handleClose, category }: EditCategoryModalProps) => {
+  const { isLoading, isError, error, mutateAsync } = useEditOtherProductReason(category.otherProductReasonId);
 
-//   if (isError) return <ErrorPage message={error?.message} />;
-//   if (isLoading) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
+  if (isLoading) return <LoadingIndicator />;
 
-//   return (
-//     <IndexCodeFormModal showModal={showModal} handleClose={handleClose} onSubmit={mutateAsync} defaultValues={accountCode} />
-//   );
-// };
+  return (
+    <CategoryFormModal showModal={showModal} handleClose={handleClose} onSubmit={mutateAsync} defaultValues={category} />
+  );
+};
 
-// export default EditCategoryModal;
+export default EditCategoryModal;

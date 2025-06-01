@@ -8,7 +8,7 @@ const AdminToolsFinanceConfig: React.FC = () => {
       <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
         Finance Config
       </Typography>
-      <Grid container spacing="3%">
+      <Grid container spacing="2%">
         <Grid item direction="column" xs={12} md={6}>
           <AccountManagerTable />
         </Grid>

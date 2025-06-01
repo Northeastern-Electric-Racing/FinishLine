@@ -232,14 +232,15 @@ export default class ReimbursementRequestsController {
 
   static async createAccountCode(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, code, allowed, allowedRefundSources } = req.body;
+      const { name, code, allowed, amount, indexCodeIds } = req.body;
       const createdAccountCode = await ReimbursementRequestService.createAccountCode(
         req.currentUser,
         name,
         code,
         allowed,
-        allowedRefundSources,
-        req.organization
+        indexCodeIds,
+        req.organization,
+        amount
       );
       res.status(200).json(createdAccountCode);
     } catch (error: unknown) {
@@ -396,7 +397,7 @@ export default class ReimbursementRequestsController {
   static async editAccountCode(req: Request, res: Response, next: NextFunction) {
     try {
       const { accountCodeId } = req.params;
-      const { name, code, allowed, allowedRefundSources } = req.body;
+      const { name, code, allowed, amount, indexCodeIds } = req.body;
 
       const accountCodeUpdated = await ReimbursementRequestService.editAccountCode(
         accountCodeId,
@@ -404,8 +405,9 @@ export default class ReimbursementRequestsController {
         name,
         allowed,
         req.currentUser,
-        allowedRefundSources,
-        req.organization
+        indexCodeIds,
+        req.organization,
+        amount
       );
       res.status(200).json(accountCodeUpdated);
     } catch (error: unknown) {
@@ -540,12 +542,12 @@ export default class ReimbursementRequestsController {
 
   static async createOtherReimbursementProductReason(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, budget, indexCodeId, accountCodes } = req.body;
+      const { name, budget, indexCodeId, accountCodeIds } = req.body;
       const otherReimbursementProductReason = await ReimbursementRequestService.createOtherReimbursementProductReason(
         name,
         budget,
         indexCodeId,
-        accountCodes,
+        accountCodeIds,
         req.currentUser,
         req.organization
       );
@@ -640,14 +642,16 @@ export default class ReimbursementRequestsController {
   static async editOtherReimbursementProductReason(req: Request, res: Response, next: NextFunction) {
     try {
       const { otherReimbursementProductReasonId } = req.params;
-      const { updatedIndexCodeId, updatedBudget } = req.body;
+      const { name, budget, indexCodeId, accountCodeIds } = req.body;
 
       const updatedReason = await ReimbursementRequestService.editOtherReimbursementProductReason(
         otherReimbursementProductReasonId,
         req.organization,
         req.currentUser,
-        updatedIndexCodeId,
-        updatedBudget
+        name,
+        budget,
+        indexCodeId,
+        accountCodeIds
       );
 
       res.status(200).json(updatedReason);

@@ -26,6 +26,7 @@ import {
   uploadSingleReceipt,
   editAccountCode,
   createAccountCode,
+  createOtherProductReason,
   createVendor,
   editVendor,
   getAllAccountCodes,
@@ -43,7 +44,6 @@ import {
   editSponsorTask,
   deleteSponsor,
   createReimbursementRequestComment,
-  editOtherReimbursementProductReason,
   getReimbursementRequestTeamData,
   getReimbursementRequestTeamTypeData,
   getReimbursementRequestProjectData,
@@ -57,7 +57,10 @@ import {
   getAllSponsorTiers,
   editSponsor,
   getCurrentUsersTeamsReimbursementRequests,
-  deleteSponsorTask
+  deleteSponsorTask,
+  editOtherProductReason,
+  deleteAccountCode,
+  deleteOtherProductReason
 } from '../apis/finance.api';
 import {
   IndexCode,
@@ -106,6 +109,7 @@ export interface AccountCodePayload {
   code: number;
   name: string;
   allowed: boolean;
+  amount?: number;
   indexCodeIds: string[];
 }
 
@@ -160,6 +164,13 @@ export interface EditSponsorTaskPayload {
 
 export interface DeleteSponsorTaskPaylaod {
   sponsorTaskId: string;
+}
+
+export interface OtherProductReasonPayload {
+  indexCodeId: string;
+  accountCodeIds: string[];
+  name: string;
+  budget: number;
 }
 
 /**
@@ -254,11 +265,6 @@ export const useCreateReimbursementRequestComment = (reimbursementRequestId: str
 
 export interface IndexCodePayload {
   name: string;
-}
-
-export interface EditOtherReimbursementProductReasonPayload {
-  updatedIndexCodeId: string;
-  updatedBudget: number;
 }
 
 export interface ReimbursementRequestProjectDataPayload {
@@ -749,6 +755,27 @@ export const useEditAccountCode = (accountCodeId: string) => {
 };
 
 /**
+ * Hook to delete the given expense type
+ * @param accountCodeId expense type to be deleted
+ * @returns the deleted expense type
+ */
+export const useDeleteAccountCode = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ id: string }, Error, string>(
+    ['expense-types', 'delete'],
+    async (accountCodeId: string) => {
+      const { data } = await deleteAccountCode(accountCodeId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['expense-types']);
+      }
+    }
+  );
+};
+
+/**
  * Custom React Hook to create an expense type.
  */
 export const useCreateAccountCode = () => {
@@ -868,6 +895,60 @@ export const useGetAllOtherProductReason = () => {
 };
 
 /**
+ * Custom react hook to create an other reimbursement product reason
+ *
+ */
+export const useCreateOtherProductReason = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, OtherProductReasonPayload>(
+    ['other-reimbursement-product-reason', 'create'],
+    async (otherProductReasonData: OtherProductReasonPayload) => {
+      const { data } = await createOtherProductReason(otherProductReasonData);
+      queryClient.invalidateQueries(['other-reimbursement-product-reasons']);
+      return data;
+    }
+  );
+};
+
+/**
+ * Custom React Hook to edit an Other Product Reason
+ *
+ * @param otherProductReasonId The id of the other product reason
+ */
+export const useEditOtherProductReason = (otherProductReasonId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, OtherProductReasonPayload>(
+    ['other-reimbursement-product-reason', 'edit'],
+    async (otherProductReasonData: OtherProductReasonPayload) => {
+      const { data } = await editOtherProductReason(otherProductReasonId, otherProductReasonData);
+      queryClient.invalidateQueries(['other-reimbursement-product-reasons']);
+      return data;
+    }
+  );
+};
+
+/**
+ * Hook to delete the given other reimbursement product reason
+ * @param otherReasonId other reason to be deleted
+ * @returns the deleted other reason
+ */
+export const useDeleteOtherProductReason = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ id: string }, Error, string>(
+    ['other-reimbursement-product-reason', 'delete'],
+    async (otherReasonId: string) => {
+      const { data } = await deleteOtherProductReason(otherReasonId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['other-reimbursement-product-reasons']);
+      }
+    }
+  );
+};
+
+/**
  * custom React Hook to get all the sponsors
  *
  * @returns the list of all of the sponsors
@@ -930,23 +1011,6 @@ export const useDeleteSponsor = (sponsorId: string) => {
       onSuccess: () => {
         queryClient.invalidateQueries(['sponsor']);
       }
-    }
-  );
-};
-
-/**
- * Custom React Hook to edit an other reimbursement product reason.
- *
- * @param otherReimbursementProductReasonId The id of the other reimbursement product reason
- */
-export const useEditOtherReimbursementProductReason = (otherReimbursementProductReasonId: string) => {
-  const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, EditOtherReimbursementProductReasonPayload>(
-    ['other-reimbursement-product-reason', 'edit'],
-    async (otherReasonData: EditOtherReimbursementProductReasonPayload) => {
-      const { data } = await editOtherReimbursementProductReason(otherReimbursementProductReasonId, otherReasonData);
-      queryClient.invalidateQueries(['other-reimbursement-product-reason']);
-      return data;
     }
   );
 };

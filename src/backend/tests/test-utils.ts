@@ -453,7 +453,7 @@ export const createTestReimbursementRequest = async () => {
     'Equipment',
     123,
     true,
-    [indexCode],
+    [indexCode.indexCodeId],
     organization
   );
 
