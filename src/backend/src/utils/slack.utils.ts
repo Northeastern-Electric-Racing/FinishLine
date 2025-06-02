@@ -559,7 +559,7 @@ export const sendSlackPartReviewRequestNotif = async (
   partName: string,
   partLink: string
 ) => {
-  // if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
 
   const msg = `Your review has been requested on part: ${partName} for project ${projectName}`;
   const link = `https://finishlinebyner.com${partLink}`;
@@ -573,7 +573,7 @@ export const sendSlackPartAssignmentNotif = async (
   partName: string,
   partLink: string
 ) => {
-  // if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
 
   const msg = `You have been assigned to part: ${partName} on project ${projectName}`;
   const link = `https://finishlinebyner.com${partLink}`;
