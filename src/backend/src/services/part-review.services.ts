@@ -11,9 +11,7 @@ import {
   isAtLeastRank,
   RoleEnum,
   Review_Status,
-  validateWBS,
-  wbsNumComparator,
-  wbsNamePipe
+  validateWBS
 } from 'shared';
 import {
   AccessDeniedAdminOnlyException,
@@ -46,7 +44,6 @@ import { uploadFile, downloadFile } from '../utils/google-integration.utils';
 import ProjectsService from './projects.services';
 import { sendPartAssignmentPopUp, sendPartReviewRequestPopUp } from '../utils/pop-up.utils';
 import { sendSlackPartAssignmentNotif, sendSlackPartReviewRequestNotif } from '../utils/slack.utils';
-import { get } from 'http';
 import { getUserWithSettingsQueryArgs } from '../prisma-query-args/user.query-args';
 
 export default class PartReviewService {
@@ -924,9 +921,9 @@ export default class PartReviewService {
     if (reviewer.userSettings?.slackId) {
       await sendSlackPartReviewRequestNotif(
         reviewer.userSettings.slackId,
-        partLink,
+        part.project.wbsElement.name,
         part.commonName,
-        part.project.wbsElement.name
+        partLink
       );
     }
   }
@@ -971,9 +968,9 @@ export default class PartReviewService {
     if (assignee.userSettings?.slackId) {
       await sendSlackPartAssignmentNotif(
         assignee.userSettings.slackId,
-        partLink,
+        part.project.wbsElement.name,
         part.commonName,
-        part.project.wbsElement.name
+        partLink
       );
     }
   }

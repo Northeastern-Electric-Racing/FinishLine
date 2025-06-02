@@ -5,6 +5,7 @@ import { Part, Review_Status, User } from 'shared';
 import { getReviewStatusDisplayName, getStatusColor } from '../../../utils/part.utils';
 import { useNotifyPartAssignee, useNotifyPartReviewer } from '../../../hooks/part-review.hooks';
 import { useState } from 'react';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 const PartReviewStatusPill = (status: Review_Status) => {
   return (
@@ -46,8 +47,9 @@ interface PartPageOverviewProps {
 }
 
 const PartOverview: React.FC<PartPageOverviewProps> = ({ part }: PartPageOverviewProps) => {
-  const { mutate: notifyPartAssignee } = useNotifyPartAssignee();
-  const { mutate: notifyPartReviewer } = useNotifyPartReviewer();
+  const { mutateAsync: notifyPartAssignee } = useNotifyPartAssignee();
+  const { mutateAsync: notifyPartReviewer } = useNotifyPartReviewer();
+  const toast = useToast();
 
   const [notifiedUserIds, setNotifiedUserIds] = useState<Set<string>>(new Set());
 
@@ -60,13 +62,20 @@ const PartOverview: React.FC<PartPageOverviewProps> = ({ part }: PartPageOvervie
         {status !== Review_Status.APPROVED && (
           <IconButton
             size="small"
-            onClick={() => {
-              if (isReviewer) {
-                notifyPartReviewer({ partId, reviewerId: anyUser.userId });
-              } else {
-                notifyPartAssignee({ partId, assigneeId: anyUser.userId });
+            onClick={async () => {
+              try {
+                if (isReviewer) {
+                  await notifyPartReviewer({ partId, reviewerId: anyUser.userId });
+                } else {
+                  await notifyPartAssignee({ partId, assigneeId: anyUser.userId });
+                }
+                setNotifiedUserIds((ids) => ids.add(anyUser.userId));
+                toast.success('' + (isReviewer ? 'Reviewer' : 'Assignee') + ' notified');
+              } catch (error) {
+                if (error instanceof Error) {
+                  toast.error(error.message);
+                }
               }
-              setNotifiedUserIds((ids) => ids.add(anyUser.userId));
             }}
             sx={{
               backgroundColor: '#444444',
