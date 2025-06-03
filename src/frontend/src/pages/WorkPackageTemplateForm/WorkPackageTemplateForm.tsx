@@ -1,7 +1,7 @@
 import React from 'react';
 import ErrorPage from '../ErrorPage';
 import { useAllWorkPackageTemplates } from '../../hooks/projects.hooks';
-import { WorkPackageTemplateApiInputs } from '../../apis/wbs-templates.api';
+import { WorkPackageTemplateApiInputs } from 'shared';
 import WorkPackageTemplateFormView, { WorkPackageTemplateFormViewPayload } from './WorkPackageTemplateFormView';
 import { useHistory } from 'react-router-dom';
 import * as yup from 'yup';

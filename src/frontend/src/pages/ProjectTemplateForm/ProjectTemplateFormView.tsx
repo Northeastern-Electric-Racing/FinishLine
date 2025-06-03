@@ -3,7 +3,7 @@ import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import { Box, Stack } from '@mui/system';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
-import { ProjectTemplateApiInputs, WorkPackageTemplateApiInputs } from '../../apis/wbs-templates.api';
+import { ProjectTemplateApiInputs } from '../../apis/wbs-templates.api';
 import { NERButton } from '../../components/NERButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import PageLayout from '../../components/PageLayout';
@@ -18,6 +18,7 @@ import { AttachMoney } from '@mui/icons-material';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
+import { WorkPackageTemplateApiInputs } from 'shared';
 
 export interface ProjectTemplateFormViewProps {
   exitActiveMode: () => void;
