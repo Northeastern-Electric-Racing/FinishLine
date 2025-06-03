@@ -2010,6 +2010,38 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
+  const reimbursement3 = await ReimbursementRequestService.createReimbursementRequest(
+    thomasEmrax,
+    vendor.vendorId,
+    indexCodeBudget.indexCodeId,
+    [],
+    [
+      {
+        name: 'BOX',
+        reason: {
+          carNumber: 0,
+          projectNumber: 1,
+          workPackageNumber: 0
+        },
+        cost: 200000,
+        refundSources: [
+          {
+            indexCode: indexCodeBudget,
+            amount: 150000
+          },
+          {
+            indexCode: indexCodeCash,
+            amount: 50000
+          }
+        ]
+      }
+    ],
+    accountCode.accountCodeId,
+    200,
+    ner,
+    new Date()
+  );
+
   const reimbursement2 = await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
     vendor.vendorId,
@@ -2037,7 +2069,7 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     accountCode.accountCodeId,
-    200,
+    20000,
     ner,
     new Date()
   );

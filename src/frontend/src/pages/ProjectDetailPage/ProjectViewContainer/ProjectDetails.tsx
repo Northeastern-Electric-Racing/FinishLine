@@ -18,6 +18,8 @@ import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import PieChart from '../../FinancePage/FinanceComponents/PieChart';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import WarningBanner from '../../../components/WarningBanner';
+import { Box } from '@mui/system';
 
 export const getProjectTeamsName = (project: Project): string => {
   return project.teams.map((team) => team.teamName).join(', ');
@@ -28,14 +30,14 @@ interface ProjectDetailsProps {
 }
 
 const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
-  const { id: projectId, startDate, endDate } = project;
+  const { id: projectId } = project;
 
   const {
     data: rrData,
     isLoading: rrDataIsLoading,
     isError: rrDataIsError,
     error: rrDataError
-  } = useGetReimbursementRequestProjectData({ projectId, startDate, endDate });
+  } = useGetReimbursementRequestProjectData({ projectId });
 
   if (rrDataIsError) {
     return <ErrorPage error={rrDataError} />;
@@ -51,6 +53,12 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
     rrData.submittedToSabo === 0 &&
     rrData.reimbursed === 0 &&
     rrData.available === 0;
+
+  const amountUsed = rrData.pendingFinance + rrData.pendingLeadership + rrData.submittedToSabo + rrData.reimbursed;
+
+  const overBudget = project.budget < amountUsed;
+
+  const amountOver = amountUsed - project.budget;
 
   const detailGridSize = emptyRRData ? { sm: 12, md: 6 } : { xs: 12, md: 3 };
   const summaryGridSize = emptyRRData ? { sm: 12, md: 6 } : { xs: 12, md: 3 };
@@ -113,10 +121,13 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
         </Grid>
       </Grid>
       {!emptyRRData && (
-        <Grid item xs={12} md={3} sx={{ mb: 7, mr: 29 }}>
-          <Typography variant="h5" sx={{ cursor: 'pointer', mb: -4 }}>
-            Budget
-          </Typography>
+        <Grid item xs={12} md={4} sx={{ mr: 10 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Typography variant="h5" sx={{ cursor: 'pointer' }}>
+              Budget
+            </Typography>
+            {overBudget && <WarningBanner amount={amountOver} />}
+          </Box>
           <PieChart
             totalBalance={rrData.totalBudget}
             pendingLeadership={rrData.pendingLeadership}
