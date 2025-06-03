@@ -6,7 +6,7 @@ import AdminToolTable from '../AdminToolTable';
 import CreateDivisionFormModal from './CreateTeamTypeFormModal';
 import { TeamType as Division } from 'shared';
 import EditDivisionFormModal from './EditTeamTypeFormModal';
-import { useAllDivisions, useSetDivisionImage } from '../../../hooks/team-types.hooks';
+import { useAllTeamTypes as useAllDivisions, useSetTeamTypeImage } from '../../../hooks/team-types.hooks';
 import { useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import NERUploadButton from '../../../components/NERUploadButton';
@@ -31,7 +31,7 @@ const DivisionTable: React.FC = () => {
     }) ?? [];
 
   const { data: imageUrlsList, isLoading, isError, error } = useGetImageUrls(DivisionImageList);
-  const { mutateAsync: setDivisionImage, isLoading: setDivisionIsLoading } = useSetDivisionImage();
+  const { mutateAsync: setDivisionImage, isLoading: setDivisionIsLoading } = useSetTeamTypeImage();
 
   if (DivisionsIsError) {
     return <ErrorPage message={DivisionsError?.message} />;
