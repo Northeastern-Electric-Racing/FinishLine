@@ -1,5 +1,6 @@
 import { Control, Controller, FieldErrors, UseFieldArrayRemove, UseFormRegister } from 'react-hook-form';
-import { ProjectTemplateApiInputs, WorkPackageTemplateApiInputs } from '../../apis/wbs-templates.api';
+import { ProjectTemplateApiInputs } from '../../apis/wbs-templates.api';
+import { WorkPackageTemplateApiInputs } from 'shared';
 import { Stack } from '@mui/system';
 import { FormControl, IconButton, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
 import ReactHookTextField from '../../components/ReactHookTextField';

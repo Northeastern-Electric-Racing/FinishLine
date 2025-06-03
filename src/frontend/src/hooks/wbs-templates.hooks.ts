@@ -8,12 +8,12 @@ import {
   createSingleWorkPackageTemplate,
   getAllProjectTemplates,
   getSingleProjectTemplate,
-  WorkPackageTemplateApiInputs,
   ProjectTemplateApiInputs,
   editProjectTemplate,
   createProjectTemplate,
   deleteProjectTemplate
 } from '../apis/wbs-templates.api';
+import { WorkPackageTemplateApiInputs } from 'shared';
 
 /**
  * Custom React Hook to edit a work package.
