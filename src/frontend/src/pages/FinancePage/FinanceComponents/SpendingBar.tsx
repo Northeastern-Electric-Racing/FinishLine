@@ -21,8 +21,19 @@ import { EditBudgetModalForReason } from './EditBudgetModalForReason';
 import { displayEnum } from '../../../utils/pipes';
 import HelpIcon from '@mui/icons-material/Help';
 
+interface SpendingBarProps extends SpendingBarData {
+  edit: boolean;
+}
+
+const isAllUppercase = (label: string): boolean => {
+  return label.split('').every((char) => !/[a-z]/.test(char) && (/[A-Z]/.test(char) || !/[A-Za-z]/.test(char)));
+};
+
 const getTotalMoneySpent = (data: ReimbursementRequestData) =>
   data.available + data.pendingFinance + data.pendingLeadership + data.reimbursed + data.submittedToSabo;
+
+const getTotalMoneySpentNotAvailable = (data: ReimbursementRequestData) =>
+  data.pendingFinance + data.pendingLeadership + data.reimbursed + data.submittedToSabo;
 
 const transformReimbursementDataToBarData = (
   title: string,
@@ -58,7 +69,7 @@ const getBarData = (title: string, value: number, color: string, dataLength: num
   borderSkipped: false
 });
 
-const SpendingBar = ({ data, title }: SpendingBarData) => {
+const SpendingBar = ({ data, title, edit }: SpendingBarProps) => {
   Chart.register(ChartDataLabels);
   const chartRef = useRef<HTMLElement | null>(null);
 
@@ -139,7 +150,7 @@ const SpendingBar = ({ data, title }: SpendingBarData) => {
           if (
             dataset &&
             datasetIndex !== hoveredIndex &&
-            dataset.spendingInfo.totalBudget < getTotalMoneySpent(dataset.spendingInfo)
+            dataset.spendingInfo.totalBudget < getTotalMoneySpentNotAvailable(dataset.spendingInfo)
           ) {
             return '#ef4545';
           }
@@ -159,10 +170,12 @@ const SpendingBar = ({ data, title }: SpendingBarData) => {
           const maxTextLength = Math.floor(barWidth / 8);
 
           // Truncate the text with ellipsis if it exceeds the maximum length
-          if (label && label.length > maxTextLength) {
+          if (label && label.length > maxTextLength && isAllUppercase(label)) {
             label = displayEnum(label).slice(0, maxTextLength) + '...';
-          } else if (label) {
+          } else if (label && isAllUppercase(label)) {
             label = displayEnum(label);
+          } else if (label && label.length > maxTextLength) {
+            label = label.slice(0, maxTextLength) + '...';
           }
 
           return [label, `$${realValue}`];
@@ -179,7 +192,7 @@ const SpendingBar = ({ data, title }: SpendingBarData) => {
 
           const dataset = data[datasetIndex];
 
-          if (dataset && dataset.spendingInfo.totalBudget < getTotalMoneySpent(dataset.spendingInfo)) {
+          if (dataset && dataset.spendingInfo.totalBudget < getTotalMoneySpentNotAvailable(dataset.spendingInfo)) {
             return '#ef4545';
           }
           return undefined;
@@ -196,8 +209,8 @@ const SpendingBar = ({ data, title }: SpendingBarData) => {
 
             const value = context.parsed.x - average; // for horizontal bar, use .x — use .y for vertical
 
-            if (dataset.spendingInfo.totalBudget < getTotalMoneySpent(dataset.spendingInfo)) {
-              return `Spending is $${getTotalMoneySpent(dataset.spendingInfo) - dataset.spendingInfo.totalBudget} overbudget!`;
+            if (dataset.spendingInfo.totalBudget < getTotalMoneySpentNotAvailable(dataset.spendingInfo)) {
+              return `Spending is $${Math.abs(dataset.spendingInfo.available)} overbudget!`;
             }
 
             return `${title}: $${value}`;
@@ -210,7 +223,7 @@ const SpendingBar = ({ data, title }: SpendingBarData) => {
             }
             const dataset = data[datasetIndex];
 
-            if (dataset && dataset.spendingInfo.totalBudget < getTotalMoneySpent(dataset.spendingInfo)) {
+            if (dataset && dataset.spendingInfo.totalBudget < getTotalMoneySpentNotAvailable(dataset.spendingInfo)) {
               return [];
             }
             return dataset.title;
@@ -290,9 +303,11 @@ const SpendingBar = ({ data, title }: SpendingBarData) => {
             <HelpIcon style={{ fontSize: 'medium' }} />
           </Tooltip>
         )}
-        <IconButton size="small" onClick={() => handleEditClick(title)}>
-          <EditIcon fontSize="small" />
-        </IconButton>
+        {edit && (
+          <IconButton size="small" onClick={() => handleEditClick(title)}>
+            <EditIcon fontSize="small" />
+          </IconButton>
+        )}
       </Box>
       {data.length > 0 ? (
         <Box ref={chartRef} height={100} sx={{ padding: 0, margin: 0 }}>

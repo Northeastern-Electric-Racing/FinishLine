@@ -693,8 +693,9 @@ export default class ReimbursementRequestService {
    * @param name The name of the Account Code
    * @param code the Account Code's SABO code
    * @param allowed whether or not this Account Code is allowed
-   * @param allowedRefundSources an array of Index_Code representing allowed refund sources
+   * @param indexCodeIds an array of index code ids representing allowed refund sources
    * @param organizationId the organization the user is currently in
+   * @param amount the monetary amount in dollars for the Account Code
    * @returns the created Account Code
    */
   static async createAccountCode(
@@ -702,8 +703,9 @@ export default class ReimbursementRequestService {
     name: string,
     code: number,
     allowed: boolean,
-    allowedRefundSources: IndexCode[],
-    organization: Organization
+    indexCodeIds: string[],
+    organization: Organization,
+    amount?: number
   ): Promise<AccountCode> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create Account Codes');
@@ -726,7 +728,8 @@ export default class ReimbursementRequestService {
         name,
         allowed,
         code,
-        indexCodes: { connect: allowedRefundSources.map((indexCode) => ({ indexCodeId: indexCode.indexCodeId })) },
+        amount,
+        indexCodes: { connect: indexCodeIds.map((id) => ({ indexCodeId: id })) },
         organizationId: organization.organizationId
       },
       ...getAccountCodeQueryArgs(organization.organizationId)
@@ -742,8 +745,9 @@ export default class ReimbursementRequestService {
    * @param name the new Account Code code name
    * @param allowed the new Account Code allowed value
    * @param submitter the person editing account code code number
-   * @param allowedRefundSources the new allowed refund sources
+   * @param indexCodeIds the new allowed refund sources
    * @param orgainzationId the organization the user is currently in
+   * @param amount the monetary amount in dollars for the Account Code
    * @returns the updated account code
    */
   static async editAccountCode(
@@ -752,8 +756,9 @@ export default class ReimbursementRequestService {
     name: string,
     allowed: boolean,
     submitter: User,
-    allowedRefundSources: IndexCode[],
-    organization: Organization
+    indexCodeIds: string[],
+    organization: Organization,
+    amount?: number
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('Only the head or admin can update account code number and name');
@@ -766,11 +771,13 @@ export default class ReimbursementRequestService {
         name,
         code,
         allowed,
-        indexCodes: { connect: allowedRefundSources.map((indexCode) => ({ indexCodeId: indexCode.indexCodeId })) }
-      }
+        amount: amount ?? null,
+        indexCodes: { set: indexCodeIds.map((id) => ({ indexCodeId: id })) }
+      },
+      ...getAccountCodeQueryArgs(organization.organizationId)
     });
 
-    return accountCodeUpdated;
+    return accountCodeTransformer(accountCodeUpdated);
   }
 
   /**
@@ -1506,7 +1513,7 @@ export default class ReimbursementRequestService {
     name: string,
     budget: number,
     indexCodeId: string,
-    accountCodes: AccountCode[],
+    accountCodeIds: string[],
     user: User,
     organization: Organization
   ): Promise<OtherProductReason> {
@@ -1520,7 +1527,7 @@ export default class ReimbursementRequestService {
         budget,
         userCreated: { connect: { userId: user.userId } },
         indexCode: { connect: { indexCodeId: indexCode.indexCodeId } },
-        accountCodes: { connect: accountCodes.map((accountCode) => ({ accountCodeId: accountCode.accountCodeId })) }
+        accountCodes: { connect: accountCodeIds.map((accountCodeId) => ({ accountCodeId })) }
       },
       ...getReimbursementProductOtherReasonQueryArgs(organization.organizationId)
     });
@@ -1698,8 +1705,10 @@ export default class ReimbursementRequestService {
    * @param otherReimbursementProductReasonId id of the other reimbursement product reason being edited
    * @param org the organization the user is currently in
    * @param editor the user editing the reason
-   * @param updatedIndexCodeId the updated index code of the other reimbursement product reason
-   * @param updatedBudget the updated budget of the other reimbursement product reason
+   * @param name the updated name of the other reimbursement product reason
+   * @param budget the updated budget of the other reimbursement product reason
+   * @param indexCodeId the updated index code of the other reimbursement product reason
+   * @param accountCodeIds the updated account codes of the other reimbursement product reason
    * @returns the other reimbursement product reason with the given id
    */
 
@@ -1707,8 +1716,10 @@ export default class ReimbursementRequestService {
     otherReimbursementProductReasonId: string,
     org: Organization,
     editor: User,
-    updatedIndexCodeId: string,
-    updatedBudget: number
+    name: string,
+    budget: number,
+    indexCodeId: string,
+    accountCodeIds: string[]
   ): Promise<OtherProductReason> {
     if (!(await userHasPermission(editor.userId, org.organizationId, isHead))) {
       throw new AccessDeniedException('Only heads can edit other reimbursement product reasons.');
@@ -1725,15 +1736,20 @@ export default class ReimbursementRequestService {
       throw new DeletedException('Reimbursement Product Other Reason', otherReimbursementProductReasonId);
 
     const indexCode = await prisma.index_Code.findUnique({
-      where: { indexCodeId: updatedIndexCodeId }
+      where: { indexCodeId }
     });
 
-    if (!indexCode) throw new NotFoundException('Index Code', updatedIndexCodeId);
-    if (indexCode.dateDeleted) throw new DeletedException('Index Code', updatedIndexCodeId);
+    if (!indexCode) throw new NotFoundException('Index Code', indexCodeId);
+    if (indexCode.dateDeleted) throw new DeletedException('Index Code', indexCodeId);
 
     const editedReason = await prisma.reimbursement_Product_Other_Reason.update({
       where: { otherReimbursementProductReasonId },
-      data: { budget: updatedBudget, indexCodeId: indexCode.indexCodeId },
+      data: {
+        budget,
+        indexCodeId,
+        name,
+        accountCodes: { set: accountCodeIds.map((accountCodeId) => ({ accountCodeId })) }
+      },
       ...getReimbursementProductOtherReasonQueryArgs(org.organizationId)
     });
 

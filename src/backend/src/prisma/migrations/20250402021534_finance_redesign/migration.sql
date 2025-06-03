@@ -54,6 +54,7 @@ CREATE TABLE "Sponsor_Task" (
     "assigneeUserId" TEXT,
     "notes" TEXT NOT NULL,
     "sponsorId" TEXT NOT NULL,
+    "dateDeleted" TIMESTAMP(3),
 
     CONSTRAINT "Sponsor_Task_pkey" PRIMARY KEY ("sponsorTaskId")
 );
@@ -175,6 +176,9 @@ ALTER TABLE "Reimbursement_Product_Reason" DROP COLUMN "otherReason";
 
 -- AlterTable
 ALTER TABLE "Account_Code" DROP COLUMN "allowedRefundSources";
+
+-- AlterTable
+ALTER TABLE "Account_Code" ADD COLUMN     "amount" INTEGER;
 
 -- DropEnum
 DROP TYPE "Other_Reimbursement_Product_Reason";

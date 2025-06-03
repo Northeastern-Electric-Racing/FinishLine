@@ -141,6 +141,9 @@ const financeRequestChanges = (id: string) => `${financeEndpoints()}/${id}/reque
 const financeGetPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/list`;
 const financeSendPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/send`;
 const financeEditAccountCode = (accountCodeId: string) => `${getAllAccountCodes()}/${accountCodeId}/edit`;
+const financeDeleteAccountCode = (accountCodeId: string) => `${financeEndpoints()}/account-codes/${accountCodeId}/delete`;
+const financeDeleteOtherProductReason = (otherReasonId: string) =>
+  `${financeEndpoints()}/other-reimbursement-product-reasons/${otherReasonId}/delete`;
 const financeCreateAccountCode = () => `${getAllAccountCodes()}/create`;
 const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
 const financeEditVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/edit`;
@@ -153,9 +156,11 @@ const financeCreateSponsorTask = (sponsorId: string) => `${financeRoutesEndpoint
 const financeCreateReimbursementRequestComment = (id: string) => `${financeEndpoints()}/${id}/comments`;
 const getAllIndexCodes = () => `${financeEndpoints()}/index-codes`;
 const getAllOtherProductReasons = () => `${financeEndpoints()}/other-reimbursement-product-reasons`;
+const financeCreateOtherProductReason = () => `${getAllOtherProductReasons()}/create`;
 const getAllSponsors = () => `${financeRoutesEndpoints()}/sponsors`;
-const getSponsorTasks = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsors/${sponsorId}/sponsorTasks`;
-const deleteSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsors/${sponsorId}/delete`;
+const getSponsorTasks = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/sponsorTasks`;
+const deleteSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/delete`;
+const deleteSponsorTask = (sponsorTaskId: string) => `${financeRoutesEndpoints()}/sponsorTask/${sponsorTaskId}`;
 const editSponsorTask = (sponsorTaskId: string) => `${financeRoutesEndpoints()}/sponsorTask/${sponsorTaskId}/edit`;
 const financeEditOtherReimbursementProductReason = (id: String) =>
   `${financeEndpoints()}/other-reimbursement-product-reasons/${id}/edit`;
@@ -231,6 +236,8 @@ const getAllSpendingBarData = (startDate?: Date, endDate?: Date): string => {
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
+const getAllSponsorTiers = () => `${financeRoutesEndpoints()}/sponsorTiers`;
+const editSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/edit`;
 const financeGetUsersTeamsReimbursementRequests = () => `${financeEndpoints()}/reimbursements/current-user-team`;
 
 /**************** Bill of Material Endpoints **************************/
@@ -455,6 +462,7 @@ export const apiUrls = {
   financeGetPendingAdvisorList,
   financeSendPendingAdvisorList,
   financeEditAccountCode,
+  financeDeleteAccountCode,
   financeCreateAccountCode,
   financeCreateVendor,
   financeEditVendor,
@@ -466,11 +474,14 @@ export const apiUrls = {
   financeCreateReimbursementRequestComment,
   getAllIndexCodes,
   getAllOtherProductReasons,
+  financeCreateOtherProductReason,
   getAllSponsors,
   getSponsorTasks,
   deleteSponsor,
+  deleteSponsorTask,
   editSponsorTask,
   financeEditOtherReimbursementProductReason,
+  financeDeleteOtherProductReason,
   getReimbursementRequestProjectData,
   getReimbursementRequestTeamData,
   getAllReimbursementRequestData,
@@ -480,6 +491,8 @@ export const apiUrls = {
   getSpendingBarTeamTypeData,
   getSpendingBarCategoryData,
   getAllSpendingBarData,
+  getAllSponsorTiers,
+  editSponsor,
   financeGetUsersTeamsReimbursementRequests,
 
   bomEndpoints,

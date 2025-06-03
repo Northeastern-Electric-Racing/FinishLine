@@ -21,7 +21,7 @@ const SpendingAndAllocation = ({ data }: { data: SpendingBarData[] }) => {
       {data
         .sort((a, b) => b.data.length - a.data.length)
         .map((spendingData, index) => (
-          <SpendingBar key={index} data={spendingData.data} title={spendingData.title} />
+          <SpendingBar key={index} data={spendingData.data} title={spendingData.title} edit={true} />
         ))}
     </Box>
   );
