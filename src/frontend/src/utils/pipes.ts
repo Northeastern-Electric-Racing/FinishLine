@@ -202,6 +202,10 @@ export const meetingDatePipe = (date?: Date) => {
   });
 };
 
+export const emailPipe = (email: string) => {
+  return email.replace(/@husky\.neu\.edu$/, '@northeastern.edu');
+};
+
 export const labelPipe = (label: string) => {
   let result = '';
 
