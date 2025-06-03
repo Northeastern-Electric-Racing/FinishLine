@@ -2,25 +2,25 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Grid, FormControl, FormLabel, FormHelperText } from '@mui/material';
 import * as yup from 'yup';
-import { Review_Status, PartReview } from 'shared';
+import { Review_Status, PartSubmission } from 'shared';
 import { useToast } from '../../../../../../hooks/toasts.hooks';
-import { useEditPartReview } from '../../../../../../hooks/part-review.hooks';
+import { useCreatePartReview } from '../../../../../../hooks/part-review.hooks';
 import NERFormModal from '../../../../../../components/NERFormModal';
 import ReactHookTextField from '../../../../../../components/ReactHookTextField';
 
 interface ApprovePartModalProps {
   open: boolean;
   handleClose: () => void;
-  review: PartReview;
+  submission: PartSubmission;
 }
 
 const schema = yup.object().shape({
   notes: yup.string().optional()
 });
 
-const ApprovePartModal = ({ open, handleClose, review }: ApprovePartModalProps) => {
+const ApprovePartModal = ({ open, handleClose, submission }: ApprovePartModalProps) => {
   const toast = useToast();
-  const { mutateAsync: updateReview } = useEditPartReview();
+  const { mutateAsync: createReview } = useCreatePartReview();
 
   const {
     handleSubmit,
@@ -33,11 +33,11 @@ const ApprovePartModal = ({ open, handleClose, review }: ApprovePartModalProps) 
 
   const onFormSubmit = async (data: { notes?: string }) => {
     try {
-      await updateReview({
-        partReviewId: review.partReviewId,
-        notes: data.notes,
+      await createReview({
+        submissionId: submission.partSubmissionId,
         status: Review_Status.APPROVED,
-        fileIds: review.fileIds
+        fileIds: [],
+        notes: data.notes
       });
 
       toast.success('Part Approved!');

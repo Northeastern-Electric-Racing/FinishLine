@@ -36,6 +36,7 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
     wbsNum: yup.string().required(),
     index: yup
       .number()
+      .lessThan(99999, 'Index must be less than 5 digits')
       .required()
       .test({
         name: 'unique-index',
@@ -66,7 +67,7 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
       handleClose();
       await onSubmit({
         ...data,
-        reviewStatus: Review_Status.IN_PROGRESS,
+        reviewStatus: defaultValues ? defaultValues.status : Review_Status.IN_PROGRESS,
         tagIds,
         assigneeIds,
         reviewerIds

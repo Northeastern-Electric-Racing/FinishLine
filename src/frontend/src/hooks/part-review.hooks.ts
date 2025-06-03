@@ -34,13 +34,16 @@ import {
   updateReviewPopup,
   deleteReviewPopup,
   uploadFile,
+  sendPartAssignmentNotification,
+  sendPartReviewRequestNotification,
   setPartReviewSampleImage,
   getPartReviewSampleImage,
   createCommonMistake,
   updateCommonMistake,
   deleteCommonMistake,
   createPartTag,
-  deletePartTag
+  deletePartTag,
+  deletePartReview
 } from '../apis/part-review.api';
 import { downloadGoogleImage } from '../apis/onboarding.api';
 
@@ -325,6 +328,27 @@ export const useEditPartReview = () => {
     ['parts', 'editReview'],
     async (partReview: EditPartReviewPayload) => {
       const { data } = await editPartReview(partReview);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['parts']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to delete a part review
+ *
+ * @returns a success message
+ */
+export const useDeletePartReview = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['parts', 'deleteReview'],
+    async (partReviewId: string) => {
+      const { data } = await deletePartReview(partReviewId);
       return data;
     },
     {
@@ -626,4 +650,46 @@ export const usePartReviewSampleImageId = () => {
     const { data: fileId } = await getPartReviewSampleImage();
     return fileId;
   });
+};
+
+/**
+ * Custom React Hook to notify the assignee of a part
+ *
+ * @returns a success message
+ */
+export const useNotifyPartAssignee = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, { partId: string; assigneeId: string }>(
+    ['parts', 'notifyAssignee'],
+    async (notification) => {
+      const { data } = await sendPartAssignmentNotification(notification);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['pop-ups', 'current-user']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to notify the reviewer of a part
+ *
+ * @returns a success message
+ */
+export const useNotifyPartReviewer = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, { partId: string; reviewerId: string }>(
+    ['parts', 'notifyReviewer'],
+    async (notification) => {
+      const { data } = await sendPartReviewRequestNotification(notification);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['pop-ups', 'current-user']);
+      }
+    }
+  );
 };

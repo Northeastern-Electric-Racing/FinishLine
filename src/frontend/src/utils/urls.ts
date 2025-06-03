@@ -57,6 +57,7 @@ const partsCreateReviewRequest = (submissionId: string) => `${parts()}/reviewReq
 const partsDeleteReviewRequest = (reviewRequestId: string) => `${parts()}/reviewRequest/${reviewRequestId}/delete`;
 const partsCreateReview = () => `${parts()}/review/create`;
 const partsEditReview = (reviewId: string) => `${parts()}/review/${reviewId}/update`;
+const partsDeleteReview = (reviewId: string) => `${parts()}/review/${reviewId}/delete`;
 const partsReviewFaqs = () => `${parts()}/faqs`;
 const partsReviewFaqCreate = () => `${parts()}/faqs/create`;
 const partsReviewFaqEdit = (faqId: string) => `${parts()}/faqs/${faqId}/update`;
@@ -73,6 +74,8 @@ const partTagDelete = (partTagId: string) => `${parts()}/tag/${partTagId}/delete
 const createReviewPopup = (reviewId: string) => `${parts()}/review/${reviewId}/popup/create`;
 const updateReviewPopup = (popupId: string) => `${parts()}/popup/${popupId}/update`;
 const deleteReviewPopup = (popupId: string) => `${parts()}/popup/${popupId}/delete`;
+const notifyPartAssignee = () => `${parts()}/notifyAssignee`;
+const notifyPartReviewer = () => `${parts()}/notifyReviewer`;
 const getPartReviewSampleImage = () => `${parts()}/partReviewSampleImage`;
 const setPartReviewSampleImage = () => `${parts()}/partReviewSampleImage/update`;
 
@@ -333,6 +336,7 @@ export const apiUrls = {
   partsDeleteReviewRequest,
   partsCreateReview,
   partsEditReview,
+  partsDeleteReview,
   getAllPartCommonMistakes,
   partsCreateCommonMistake,
   partsUpdateCommonMistake,
@@ -345,6 +349,8 @@ export const apiUrls = {
   createReviewPopup,
   updateReviewPopup,
   deleteReviewPopup,
+  notifyPartAssignee,
+  notifyPartReviewer,
   setPartReviewSampleImage,
   getPartReviewSampleImage,
 

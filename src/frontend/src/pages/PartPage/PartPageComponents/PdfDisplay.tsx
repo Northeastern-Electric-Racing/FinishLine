@@ -13,6 +13,7 @@ import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import {
   useAllCommonMistakes,
+  useCreateCommonMistake,
   useCreateReviewPopup,
   useDeleteReviewPopup,
   useDownloadFile,
@@ -30,6 +31,11 @@ import { useToast } from '../../../hooks/toasts.hooks';
 pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+const isPdf = (fileName: string) => {
+  const extension = fileName.split('.').pop()?.toLowerCase();
+  return extension === 'pdf';
+};
 
 const pdfLoadingError = (child: JSX.Element) => {
   return (
@@ -102,12 +108,16 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
 
   //re-generates the popups when the review or submission changes
   useEffect(() => {
-    const varPopups = review
-      ? review.popUps.filter((popup) => popup.fileIndex === fileIdx)
-      : submission.reviews.reduce((aac: Part_Review_Popup[], review: PartReview) => {
-          if (review.completedAt) return aac.concat(review.popUps.filter((popup) => popup.fileIndex === fileIdx));
-          return aac;
-        }, []);
+    if (!submission) return;
+    let varPopups: Part_Review_Popup[] = [];
+    if (review && !review.completedAt) {
+      varPopups = review.popUps.filter((popup) => popup.fileIndex === fileIdx);
+    } else if (!review) {
+      varPopups = submission.reviews.reduce((aac: Part_Review_Popup[], singleReview: PartReview) => {
+        if (singleReview.completedAt) return aac.concat(singleReview.popUps.filter((popup) => popup.fileIndex === fileIdx));
+        return aac;
+      }, []);
+    }
     setVariablePopups(varPopups);
   }, [review, submission, fileIdx]);
 
@@ -121,6 +131,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
   }, []);
 
   const { mutateAsync: addPopupToDb } = useCreateReviewPopup();
+  const { mutateAsync: addCommonMistake } = useCreateCommonMistake();
   const { mutateAsync: deletePopupFromDb } = useDeleteReviewPopup();
 
   const {
@@ -130,9 +141,13 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
     error: errorCommonMistakes
   } = useAllCommonMistakes();
 
-  const { data: pdf, isLoading: pdfLoading, isError: pdfIsError } = useDownloadFile(submission.fileIds[fileIdx]);
+  const {
+    data: pdf,
+    isLoading: pdfLoading,
+    isError: pdfIsError
+  } = useDownloadFile(review?.completedAt ? review.fileIds[fileIdx] : submission?.fileIds[fileIdx]);
 
-  if (!mistakes || isLoadingCommonMistake) return <LoadingIndicator />;
+  if (!mistakes || isLoadingCommonMistake || !submission) return <LoadingIndicator />;
   if (isErrorCommonMistakes) return <ErrorPage error={errorCommonMistakes} />;
 
   //only enter review mode if this user is the creator of the non-complete review
@@ -154,20 +169,40 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
   };
 
   //creates a new popup
-  const createPopup = async (x: number, y: number, title: string, description?: string) => {
+  const createPopup = async (x: number, y: number, newCommonMistake: boolean, title: string, description?: string) => {
     if (!review || !reviewMode) return;
-    const newPopup = await addPopupToDb({
-      reviewId: review.partReviewId,
-      payload: {
-        xCoord: x,
-        yCoord: y,
-        fileIndex: fileIdx,
-        title,
-        description
+    try {
+      const newPopup = await addPopupToDb({
+        reviewId: review.partReviewId,
+        payload: {
+          xCoord: x,
+          yCoord: y,
+          fileIndex: fileIdx,
+          title,
+          description
+        }
+      });
+      setVariablePopups([...variablePopups, newPopup]);
+      setNewPopupCoords({ x: 5, y: 5 });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
       }
-    });
-    setVariablePopups([...variablePopups, newPopup]);
-    setNewPopupCoords({ x: 5, y: 5 });
+    }
+    if (newCommonMistake) {
+      try {
+        await addCommonMistake({
+          title,
+          description: description ?? '',
+          starred: false
+        });
+        toast.success('New Common Mistake Created');
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          toast.error(error.message);
+        }
+      }
+    }
   };
 
   const commentOnClick = () => {
@@ -253,6 +288,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
     setIsDragging(false);
     setPosition({ x: 0, y: 0 });
     setScale(1);
+    setLoadSuccess(false);
   };
 
   return (
@@ -260,7 +296,12 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
       <Grid display={'flex'} flexDirection={'row'} gap={2} justifyContent={'space-between'} width={'100%'}>
         {/* title and download */}
         <Box display="flex" alignItems="center">
-          {pdf && <DownloadButton fileId={submission.fileIds[fileIdx]} filename={`${submission.name}_${fileIdx + 1}`} />}
+          {pdf &&
+            (review?.completedAt ? (
+              <DownloadButton fileId={review.fileIds[fileIdx]} filename={`${submission.name}_review_${fileIdx + 1}`} />
+            ) : (
+              <DownloadButton fileId={submission.fileIds[fileIdx]} filename={`${submission.name}_${fileIdx + 1}`} />
+            ))}
           <Typography variant={'h4'}>
             {submission.name} {review ? ' Review' : ''}
           </Typography>
@@ -274,6 +315,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
               sx={{ display: 'flex', height: '50%', transform: 'translateY(50%)' }}
               onClick={() => {
                 resetPos();
+                setFileIdx(0);
                 prev();
               }}
             >
@@ -289,6 +331,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
               sx={{ display: 'flex', height: '50%', transform: 'translateY(50%)' }}
               onClick={() => {
                 resetPos();
+                setFileIdx(0);
                 next();
               }}
             >
@@ -393,6 +436,13 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
                         return;
                       }
 
+                      if (!isPdf(file.name)) {
+                        toast.warning(
+                          `Warning: "${file.name}" is not a PDF file, so will not be displayed. (Don't worry, users can still download it)`,
+                          5000
+                        );
+                      }
+
                       try {
                         const fileId = await uploadFile(file);
                         updateReview({
@@ -492,11 +542,16 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
                 setFileIdx((prev) => prev + 1);
               }}
               size="small"
-              disabled={fileIdx === submission.fileIds.length - 1}
+              disabled={fileIdx === (review?.completedAt ? review.fileIds.length - 1 : submission.fileIds.length - 1)}
             >
               <ArrowForwardIosIcon
                 fontSize="small"
-                sx={{ color: fileIdx !== submission.fileIds.length - 1 ? 'black' : 'grey' }}
+                sx={{
+                  color:
+                    fileIdx !== (review?.completedAt ? review.fileIds.length - 1 : submission.fileIds.length - 1)
+                      ? 'black'
+                      : 'grey'
+                }}
               />
             </IconButton>
           </Box>
@@ -519,7 +574,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
                 file={pdf}
                 onLoadSuccess={({ numPages }) => {
                   setLoadSuccess(true);
-                  setNumPages(numPages);
+                  setNumPages(numPages ?? 0);
                 }}
                 onLoadError={() => {
                   setLoadSuccess(false);
@@ -544,7 +599,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
             )}
 
             {/* display popups */}
-            {loadSuccess && (
+            {loadSuccess && !review?.completedAt && (
               <Box>
                 {variablePopups.map((popup: Part_Review_Popup) => (
                   <ReviewPopup

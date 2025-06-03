@@ -9,7 +9,7 @@ export default class PartReviewController {
       const { wbsNum, indexNum } = req.params;
 
       const wbsNumber: WbsNumber = validateWBS(wbsNum);
-      const part = await PartReviewService.getPart(req.organization, wbsNumber, indexNum);
+      const part = await PartReviewService.getPart(req.organization, req.currentUser, wbsNumber, indexNum);
       res.status(200).json(part);
     } catch (error: unknown) {
       next(error);
@@ -143,6 +143,16 @@ export default class PartReviewController {
         fileIds
       );
       res.status(200).json(updatedReview);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteReview(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { reviewId } = req.params;
+      await PartReviewService.deleteReview(reviewId, req.currentUser, req.organization.organizationId);
+      res.status(200).json({ message: 'Successfully deleted review' });
     } catch (error: unknown) {
       next(error);
     }
@@ -357,6 +367,26 @@ export default class PartReviewController {
       await PartReviewService.deletePartReviewRequest(reviewRequestId, req.currentUser, req.organization.organizationId);
 
       res.status(200).json({ message: 'Successfully deleted review request' });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async notifyReviewer(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { reviewerId, partId } = req.body;
+      await PartReviewService.notifyReviewer(reviewerId, partId, req.organization.organizationId);
+      res.status(200).json({ message: 'Successfully notified reviewer' });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async notifyAssignee(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { assigneeId, partId } = req.body;
+      await PartReviewService.notifyAssignee(assigneeId, partId, req.organization.organizationId);
+      res.status(200).json({ message: 'Successfully notified assignee' });
     } catch (error) {
       next(error);
     }

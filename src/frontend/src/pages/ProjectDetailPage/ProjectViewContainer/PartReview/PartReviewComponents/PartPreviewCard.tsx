@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { PartPreview } from 'shared';
 import { grey } from '@mui/material/colors';
 import { Card, CardContent, Typography, Box, Chip, Link } from '@mui/material';
@@ -6,6 +6,8 @@ import { useGetImageUrl } from '../../../../../hooks/onboarding.hook';
 import { Link as RouterLink } from 'react-router-dom';
 import DownloadButton from '../../../../../components/DownloadButton';
 import { formatPartStatus, getStatusColor } from '../../../../../utils/part.utils';
+import { Document, Page, pdfjs } from 'react-pdf';
+import { useDownloadFile } from '../../../../../hooks/part-review.hooks';
 
 interface PartPreviewCardProps {
   partPreview: PartPreview;
@@ -13,9 +15,22 @@ interface PartPreviewCardProps {
   redirectUrl: string;
 }
 
+pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
+
 export function PartPreviewCard({ partPreview, projectName, redirectUrl }: PartPreviewCardProps) {
   const { commonName, index, previewImageId, status, assignees, reviewRequests } = partPreview;
   const { data: previewUrl } = useGetImageUrl(previewImageId ?? null);
+  const { data: pdf } = useDownloadFile(previewImageId ?? '');
+  const [pdfLoadError, setPdfLoadError] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      // Clean up worker when component unmounts
+      if (pdfjs.GlobalWorkerOptions.workerPort) {
+        pdfjs.GlobalWorkerOptions.workerPort.terminate();
+      }
+    };
+  }, []);
 
   return (
     <Link component={RouterLink} to={redirectUrl} sx={{ textDecoration: 'none', color: 'inherit' }}>
@@ -37,26 +52,45 @@ export function PartPreviewCard({ partPreview, projectName, redirectUrl }: PartP
         }}
       >
         <Box sx={{ px: 2, pt: 2, bgcolor: grey[800] }}>
-          {previewImageId && previewUrl ? (
+          {previewImageId && (previewUrl || pdf?.type === 'application/pdf') ? (
             <Box
               sx={{
-                height: 200,
+                height: '15vw',
                 border: '0.5px solid rgb(193, 193, 193)',
                 bgcolor: grey[600],
                 overflow: 'hidden'
               }}
             >
-              <Box
-                component="img"
-                sx={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  display: 'block'
-                }}
-                alt={`${commonName} Preview`}
-                src={previewUrl}
-              />
+              {pdf && !pdfLoadError ? (
+                <Document
+                  file={pdf}
+                  onLoadError={() => {
+                    setPdfLoadError(true);
+                  }}
+                >
+                  <Page
+                    pageNumber={1}
+                    width={300}
+                    renderTextLayer={false}
+                    renderAnnotationLayer={false}
+                    onLoadSuccess={() => {
+                      setPdfLoadError(false);
+                    }}
+                  />
+                </Document>
+              ) : (
+                <Box
+                  component="img"
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    display: 'block'
+                  }}
+                  alt={`${commonName} Preview`}
+                  src={previewUrl}
+                />
+              )}
             </Box>
           ) : (
             <Box

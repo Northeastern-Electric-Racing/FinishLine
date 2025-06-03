@@ -167,6 +167,16 @@ export const editPartReview = (payload: EditPartReviewPayload) => {
 };
 
 /**
+ * Deletes a part review
+ *
+ * @param partReviewId the id of the part review to delete
+ * @returns
+ */
+export const deletePartReview = (partReviewId: string) => {
+  return axios.post<{ message: string }>(apiUrls.partsDeleteReview(partReviewId));
+};
+
+/**
  * Fetches all Part Review FAQs for the current organization.
  *
  * @returns A list of Part Review FAQs.
@@ -331,4 +341,26 @@ export const setPartReviewSampleImage = async (file: File) => {
   const formData = new FormData();
   formData.append('partReviewSampleImage', file);
   return axios.post(apiUrls.setPartReviewSampleImage(), formData, {});
+};
+
+/**
+ * Sends a notification to the assignee of a part
+ * @param partId id of the part
+ * @param assigneeId id of the assignee
+ */
+export const sendPartAssignmentNotification = (payload: { partId: string; assigneeId: string }) => {
+  return axios.post<{ message: string }>(apiUrls.notifyPartAssignee(), {
+    ...payload
+  });
+};
+
+/**
+ * Sends a notification to the reviewer of a part
+ * @param partId id of the part
+ * @param reviewerId id of the reviewer
+ */
+export const sendPartReviewRequestNotification = (payload: { partId: string; reviewerId: string }) => {
+  return axios.post<{ message: string }>(apiUrls.notifyPartReviewer(), {
+    ...payload
+  });
 };
