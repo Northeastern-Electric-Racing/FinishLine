@@ -5,7 +5,7 @@ import { OtherProductReason, ReimbursementRequest, WBSElementData, wbsPipe } fro
 import { useCurrentUser, useUserSecureSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { centsToDollar, datePipe } from '../../../utils/pipes';
+import { centsToDollar, datePipe, emailPipe } from '../../../utils/pipes';
 import DetailDisplay from '../../../components/DetailDisplay';
 import { imagePreviewUrl, isReimbursementRequestSaboSubmitted } from '../../../utils/reimbursement-request.utils';
 import { useToast } from '../../../hooks/toasts.hooks';
@@ -84,7 +84,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
           <DetailDisplay label={'Last Name'} content={recipient.lastName} copyButton />
         </Grid>
         <Grid item xs={8}>
-          <DetailDisplay label={'Email'} content={recipient.email} copyButton />
+          <DetailDisplay label={'Email'} content={emailPipe(recipient.email)} copyButton />
         </Grid>
       </Grid>
       <Grid container spacing={1} sx={{ marginTop: 2 }}>
