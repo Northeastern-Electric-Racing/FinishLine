@@ -22,7 +22,7 @@ import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import { Typography, useTheme, Link, IconButton } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useState } from 'react';
-import { useHistory, useParams } from 'react-router-dom';
+import { useHistory, useLocation, useParams } from 'react-router-dom';
 import { ReimbursementRequest, isAdmin, isHead } from 'shared';
 import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
 import NERModal from '../../../components/NERModal';
@@ -349,11 +349,14 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     !isSaboSubmitted &&
     !isReimbursementRequestReimbursed(reimbursementRequest);
 
+  const { pathname } = useLocation();
+  const urlTabInsert = pathname.includes('/all-requests') ? 'all-requests' : 'my-requests';
+
   const buttons: ButtonInfo[] = [
     {
       title: 'Edit',
       onClick: () => {
-        history.push(`${routes.REIMBURSEMENT_REQUESTS}/my-requests/${reimbursementRequest.reimbursementRequestId}/edit`);
+        history.push(`${routes.REIMBURSEMENT_REQUESTS}/${urlTabInsert}/${reimbursementRequest.reimbursementRequestId}/edit`);
         openSidePage();
       },
       icon: <Edit />,

@@ -19,7 +19,7 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import CreateReimbursementRequestFormView from './ReimbursementFormView';
 import { useAllProjects } from '../../../hooks/projects.hooks';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { useCurrentUserSecureSettings } from '../../../hooks/users.hooks';
 
@@ -152,6 +152,9 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     }
   });
 
+  const { pathname } = useLocation();
+  const urlTabInsert = pathname.includes('/all-requests') ? 'all-requests' : 'my-requests';
+
   const {
     fields: receiptFiles,
     prepend: receiptPrepend,
@@ -260,7 +263,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
         wbsReimbursementProducts,
         totalCost
       });
-      history.push(routes.REIMBURSEMENT_REQUESTS + '/my-requests/' + reimbursementRequestId);
+      history.push(`${routes.REIMBURSEMENT_REQUESTS}/${urlTabInsert}/${reimbursementRequestId}`);
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 5000);

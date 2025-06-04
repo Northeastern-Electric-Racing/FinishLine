@@ -22,7 +22,7 @@ const HOME_ONBOARDING = HOME + `/onboarding`;
 /**************** Finance Section ****************/
 const FINANCE = `/finance`;
 const REIMBURSEMENT_REQUESTS = FINANCE + '/reimbursement-requests';
-const REIMBURSEMENT_REQUEST_BY_ID = REIMBURSEMENT_REQUESTS + `/my-requests/:id`;
+const REIMBURSEMENT_REQUEST_BY_ID = REIMBURSEMENT_REQUESTS + `/:section/:id`;
 const REIMBURSEMENT_REQUEST_EDIT = REIMBURSEMENT_REQUEST_BY_ID + `/edit`;
 const NEW_REIMBURSEMENT_REQUEST = REIMBURSEMENT_REQUESTS + `/my-requests/new`;
 const FINANCE_DASHBOARD = FINANCE + `/dashboard`;
