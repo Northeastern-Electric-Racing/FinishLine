@@ -1,5 +1,5 @@
-import { financeMember, supermanAdmin } from '../test-data/users.test-data';
-import { HttpException } from '../../src/utils/errors.utils';
+import { financeMember, supermanAdmin, theVisitorGuest } from '../test-data/users.test-data';
+import { AccessDeniedException, HttpException } from '../../src/utils/errors.utils';
 import { createTestOrganization, createTestTask, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import TasksService from '../../src/services/tasks.services';
@@ -58,5 +58,14 @@ describe('Task Test', () => {
     await expect(async () =>
       TasksService.editTaskStatus(await createTestUser(financeMember, organizationId), badTask.taskId, 'IN_PROGRESS')
     ).rejects.toThrow(new HttpException(400, 'A task in progress must have a deadline and assignees!'));
+  });
+
+  test('Guests cannot edit tasks', async () => {
+    const guest = await createTestUser(theVisitorGuest, organizationId);
+    const admin = await createTestUser(supermanAdmin, organizationId);
+    const task = await createTestTask(admin, 'Test', '', [], 'HIGH', 'DONE', organizationId, new Date());
+    await expect(async () =>
+      TasksService.editTask(guest, task.taskId, 'Title', 'Notes', 'HIGH', new Date())
+    ).rejects.toThrow(new AccessDeniedException('Guests cannot edit tasks'));
   });
 });
