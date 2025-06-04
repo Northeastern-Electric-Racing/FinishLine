@@ -604,8 +604,7 @@ export default class ChangeRequestsService {
       implementerId: reviewer.userId,
       detail: buildChangeDetail(
         'budget',
-        '0',
-        //foundCR.accountCode.amount.toString(),
+        foundCR.accountCode.amount ? foundCR.accountCode.amount.toString() : '',
         budgetChangeRequest.proposedBudget.toString()
       )
     });
@@ -615,7 +614,7 @@ export default class ChangeRequestsService {
     await prisma.account_Code.update({
       where: { accountCodeId: foundCR.accountCodeId ?? '' },
       data: {
-        //amount: budgetChangeRequest.proposedBudget
+        amount: budgetChangeRequest.proposedBudget
       }
     });
   }
@@ -928,7 +927,7 @@ export default class ChangeRequestsService {
       if (!accountCode) throw new NotFoundException('Account Code', accountCodeId);
       if (accountCode.dateDeleted) throw new DeletedException('Account Code', accountCodeId);
 
-      // we don't want to have merge conflictS on the wbs element thus we check if there are unreviewed or open CRs on the category
+      // we don't want to have merge conflicts on the wbs element thus we check if there are unreviewed or open CRs on the category
       await validateNoUnreviewedOpenAccountCodeCRs(accountCode.accountCodeId);
 
       const { changeRequests } = accountCode;

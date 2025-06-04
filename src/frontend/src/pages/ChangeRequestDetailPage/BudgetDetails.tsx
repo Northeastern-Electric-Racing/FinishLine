@@ -1,7 +1,7 @@
 import { Box, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { BudgetChangeRequest } from 'shared';
-import { dollarsPipe } from '../../utils/pipes';
+import { centsToDollar } from '../../utils/pipes';
 
 interface BudgetDetailsProps {
   cr: BudgetChangeRequest;
@@ -13,8 +13,14 @@ const BudgetDetails: React.FC<BudgetDetailsProps> = ({ cr }) => {
       <Grid item xs={12} md={7}>
         {cr.category && (
           <Box display="flex" flexDirection="column" gap={1}>
-            <Typography fontSize={18}>Current Budget: {dollarsPipe(cr.category.budget)}</Typography>
-            <Typography fontSize={18}>Proposed Budget: {dollarsPipe(cr.proposedBudget)}</Typography>
+            <Typography fontSize={18}>Current Budget: {`$${centsToDollar(cr.category.budget)}`}</Typography>
+            <Typography fontSize={18}>Proposed Budget: {`$${centsToDollar(cr.proposedBudget)}`}</Typography>
+          </Box>
+        )}
+        {cr.accountCode && (
+          <Box display="flex" flexDirection="column" gap={1}>
+            <Typography fontSize={18}>Current Budget: {`$${centsToDollar(cr.accountCode.amount ?? 0)}`}</Typography>
+            <Typography fontSize={18}>Proposed Budget: {`$${centsToDollar(cr.proposedBudget)}`}</Typography>
           </Box>
         )}
       </Grid>

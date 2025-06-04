@@ -34,7 +34,9 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
                         {wbsPipe(ic.wbsNum)}
                       </Link>
                     )}
-                    {ic.category && <Typography> {ic.category.name} </Typography>}] {ic.detail}
+                    {ic.category && <Typography> {ic.category.name} </Typography>} {ic.detail}
+                    {ic.accountCode && <Typography> {`${ic.accountCode.code} - ${ic.accountCode.name}`} </Typography>}]
+                    {ic.detail}
                   </Typography>
                 }
               </DynamicTooltip>

@@ -695,7 +695,7 @@ export default class ReimbursementRequestService {
    * @param allowed whether or not this Account Code is allowed
    * @param indexCodeIds an array of index code ids representing allowed refund sources
    * @param organizationId the organization the user is currently in
-   * @param amount the monetary amount in dollars for the Account Code
+   * @param amount the monetary amount in cents for the Account Code
    * @returns the created Account Code
    */
   static async createAccountCode(
@@ -1504,7 +1504,7 @@ export default class ReimbursementRequestService {
   /**
    * Creates an other reimbursement product reason with the given name, budget and current user.
    * @param name name of the other reimbursement product reason
-   * @param budget budget of other reimbursement product reason
+   * @param budget budget of other reimbursement product reason in cents
    * @param indexCodeId index code id of the index code the other reimbursement product reason falls under
    * @param user the user creating the other reimbursement product reason
    * @returns transformed created other reimbursement product reason
