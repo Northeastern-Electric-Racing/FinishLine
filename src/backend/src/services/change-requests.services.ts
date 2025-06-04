@@ -933,10 +933,7 @@ export default class ChangeRequestsService {
       const { changeRequests } = accountCode;
       const nonDeletedChangeRequests = changeRequests.filter((changeRequest) => !changeRequest.dateDeleted);
       if (!allChangeRequestsReviewed(nonDeletedChangeRequests)) {
-        throw new HttpException(
-          400,
-          `Please resolve all change requests related to ${accountCodeId} - ${accountCode.name} before proceeding`
-        );
+        throw new HttpException(400, `Please resolve all change requests related to ${accountCode.name} before proceeding`);
       }
 
       const numChangeRequests = await prisma.change_Request.count({

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { Box, Button, Typography } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -56,9 +56,14 @@ const buttonStyle = {
 };
 
 const AccountAllocation: React.FC<AccountAllocationProps> = ({ accounts }) => {
-  const auth = useCurrentUser();
+  const user = useCurrentUser();
 
-  const defaultValues = Object.fromEntries(accounts.map((acc, i) => [`account-${i}`, (acc.amount ?? 0) / 100]));
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const defaultValues = useMemo(
+    () => Object.fromEntries(accounts.map((acc, i) => [`account-${i}`, ((acc.amount ?? 0) / 100.0).toFixed(2)])),
+    [accounts]
+  );
 
   const schema = yup
     .object()
@@ -66,12 +71,12 @@ const AccountAllocation: React.FC<AccountAllocationProps> = ({ accounts }) => {
       Object.fromEntries(
         accounts.map((_, i) => [
           `account-${i}`,
-          yup.number().required('Amount is required').min(0, 'Amount cannot be negative')
+          yup.string().required('Amount is required').min(0, 'Amount cannot be negative')
         ])
       )
     );
 
-  const { control, handleSubmit, reset, watch } = useForm<{ [key: string]: number }>({
+  const { control, handleSubmit, reset, watch } = useForm<{ [key: string]: string }>({
     defaultValues,
     mode: 'onChange',
     resolver: yupResolver(schema)
@@ -86,21 +91,29 @@ const AccountAllocation: React.FC<AccountAllocationProps> = ({ accounts }) => {
     reset(defaultValues);
   };
 
-  const onSubmit = async (data: { [key: string]: number }) => {
-    const submitterId = auth.userId;
-
-    const promises = accounts.map((account, index) => {
+  const onSubmit = async (data: { [key: string]: string }) => {
+    const submitterId = user.userId;
+    for (const [index, account] of accounts.entries()) {
       const originalAmount = (account.amount ?? 0) / 100;
-      const currentAmount = data[`account-${index}`];
+      const currentAmount = Number(data[`account-${index}`]);
 
-      if (originalAmount !== currentAmount) {
-        return createBudgetChangeRequest(submitterId, currentAmount, undefined, account.accountCodeId);
+      if (!account.accountCodeId || isNaN(currentAmount) || originalAmount === currentAmount) continue;
+
+      try {
+        setSubmitError(null);
+        await createBudgetChangeRequest(submitterId, Math.round(currentAmount * 100), undefined, account.accountCodeId);
+      } catch (error: any) {
+        setSubmitError(error.message);
       }
-      return null;
-    });
-
-    await Promise.all(promises.filter(Boolean));
+    }
+    handleReset();
   };
+
+  const hasChanges = accounts.some((account, index) => {
+    const original = (account.amount ?? 0) / 100;
+    const current = watchedValues[`account-${index}`];
+    return original !== Number(current);
+  });
 
   return (
     <Box sx={containerStyle}>
@@ -126,18 +139,40 @@ const AccountAllocation: React.FC<AccountAllocationProps> = ({ accounts }) => {
               name={`account-${index}`}
               control={control}
               render={({ field }) => (
-                <ReactHookTextField
-                  control={control}
-                  {...field}
-                  type="number"
-                  fullWidth
-                  placeholder="Enter amount"
-                  sx={inputStyle}
-                />
+                <Box sx={{ position: 'relative' }}>
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '12px',
+                      transform: 'translateY(-50%)',
+                      color: '#ccc',
+                      pointerEvents: 'none',
+                      fontSize: '16px',
+                      zIndex: 1
+                    }}
+                  >
+                    $
+                  </Box>
+                  <ReactHookTextField
+                    control={control}
+                    {...field}
+                    type="number"
+                    fullWidth
+                    placeholder="0.00"
+                    sx={{
+                      ...inputStyle,
+                      '& input': {
+                        paddingLeft: '24px' // to make room for the $
+                      }
+                    }}
+                  />
+                </Box>
               )}
             />
           </Box>
         ))}
+        {submitError && <Typography sx={{ color: '#ff4c4c', mb: 2, textAlign: 'center' }}>{submitError}</Typography>}
       </Box>
       <Box sx={{ display: 'flex', justifyContent: 'center' }}>
         <Button
@@ -150,7 +185,7 @@ const AccountAllocation: React.FC<AccountAllocationProps> = ({ accounts }) => {
         <Button
           sx={{ ...buttonStyle, backgroundColor: '#dd514c', color: 'white' }}
           onClick={handleSubmit(onSubmit)}
-          disabled={availableToAllocate < 0}
+          disabled={availableToAllocate < 0 || !hasChanges}
           aria-label="Submit budget change request"
         >
           Create Change Request

@@ -2169,24 +2169,6 @@ const performSeed: () => Promise<void> = async () => {
     otherProductReasonConsumables.otherProductReasonId
   );
 
-  const budgetCR2 = await ChangeRequestsService.createBudgetChangeRequest(
-    thomasEmrax,
-    'BUDGET',
-    50,
-    ner,
-    undefined,
-    accountCode2.accountCodeId
-  );
-
-  const budgetCR3 = await ChangeRequestsService.createBudgetChangeRequest(
-    thomasEmrax,
-    'BUDGET',
-    50,
-    ner,
-    undefined,
-    accountCode3.accountCodeId
-  );
-
   /**
    * Bill of Materials
    */
