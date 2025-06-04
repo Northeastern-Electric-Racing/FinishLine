@@ -10,7 +10,7 @@ import {
   TablePagination,
   TableRow
 } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { isGuest, ReimbursementRequest } from 'shared';
 import { ReimbursementRequestRow, ReimbursementStatusType } from 'shared/src/types/reimbursement-requests-types';
@@ -223,6 +223,9 @@ const ReimbursementRequestInfo = ({
     return reimbursementRequest.reimbursementRequestId;
   };
 
+  const { pathname } = useLocation();
+  const urlTabInsert = pathname.includes('/all-requests') ? 'all-requests' : 'my-requests';
+
   if (createReimbursementRequestIsLoading || receiptsIsLoading) return <LoadingIndicator />;
 
   return (
@@ -296,7 +299,7 @@ const ReimbursementRequestInfo = ({
                         variant="contained"
                         component={RouterLink}
                         onClick={() => openSidePage()}
-                        to={`${routes.REIMBURSEMENT_REQUESTS}/my-requests/${row.id}`}
+                        to={`${routes.REIMBURSEMENT_REQUESTS}/${urlTabInsert}/${row.id}`}
                         sx={{
                           borderRadius: '8px',
                           color: '#ededed',
