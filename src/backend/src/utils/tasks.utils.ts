@@ -1,5 +1,5 @@
 import { Task_Priority, Task_Status, User } from '@prisma/client';
-import { isHead, Task, TaskPriority, TaskStatus } from 'shared';
+import { notGuest, Task, TaskPriority, TaskStatus } from 'shared';
 import prisma from '../prisma/prisma';
 import { sendSlackTaskAssignedNotification } from './slack.utils';
 import { userHasPermission } from './users.utils';
@@ -56,33 +56,7 @@ export const hasPermissionToEditTask = async (user: User, taskId: string): Promi
 
   if (!task) return false;
 
-  if (await userHasPermission(user.userId, task.wbsElement.organizationId, isHead)) return true;
-
-  // Check if the user created the task
-  if (task.createdByUserId === user.userId) return true;
-
-  // Check if the task's wbsElement's lead or manager created the task
-  if (task.wbsElement.leadId === user.userId) return true;
-  if (task.wbsElement.managerId === user.userId) return true;
-
-  // Check if the user is one of the assignees
-  if (task.assignees.map((user) => user.userId).includes(user.userId)) return true;
-
-  // Check if the user is a project head, lead or on one of the project's teams
-  if (
-    task.wbsElement.project?.teams.map((team) => team.headId).includes(user.userId) ||
-    task.wbsElement.project?.teams.some((team) => team.leads.map((lead) => lead.userId).includes(user.userId))
-  )
-    return true;
-
-  // Do the same thing, but for the work package's project
-  if (
-    task.wbsElement.workPackage?.project?.teams.map((team) => team.headId).includes(user.userId) ||
-    task.wbsElement.workPackage?.project?.teams.some((team) => team.leads.map((lead) => lead.userId).includes(user.userId))
-  )
-    return true;
-
-  return false;
+  return await userHasPermission(user.userId, task.wbsElement.organizationId, notGuest);
 };
 
 /**
