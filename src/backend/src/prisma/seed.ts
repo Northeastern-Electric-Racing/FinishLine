@@ -1719,11 +1719,10 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'nershipping@gmail.com',
     'racecar228!',
-    false,
     'SAVE50!',
-    thomasEmrax.userId,
-    'Tax exemption status? This is a test i am writing alot of text ahhahahahahhaha this is more of a test i am going to write even more test hahahahah.',
-    thomasEmrax.userId
+    false,
+    [thomasEmrax.userId],
+    'Tax exemption status? This is a test i am writing alot of text ahhahahahahhaha this is more of a test i am going to write even more test hahahahah.'
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1731,11 +1730,10 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'amazon@gmail.com',
     'racecare228!',
-    true,
     'SAVE20!',
-    thomasEmrax.userId,
-    'They want updates on work',
-    thomasEmrax.userId
+    true,
+    [thomasEmrax.userId],
+    'They want updates on work'
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1743,11 +1741,10 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'google@gmail.com',
     'racecar228!',
-    false,
     'SAVE50!',
-    thomasEmrax.userId,
-    'Tax exemption ID NUMBER',
-    thomasEmrax.userId
+    false,
+    [thomasEmrax.userId],
+    'Tax exemption ID NUMBER'
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1755,11 +1752,10 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'microsoft@outlook.com',
     'secure123!',
-    true,
     'WELCOME10',
-    thomasEmrax.userId,
-    'Requires monthly invoicing',
-    thomasEmrax.userId
+    true,
+    [thomasEmrax.userId],
+    'Requires monthly invoicing'
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1767,11 +1763,10 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'apple@icloud.com',
     'appl3Secure!',
-    false,
     'APPLE30',
-    thomasEmrax.userId,
-    'Eco-friendly packaging preferred',
-    thomasEmrax.userId
+    false,
+    [thomasEmrax.userId],
+    'Eco-friendly packaging preferred'
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1779,11 +1774,10 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'costco@wholesale.com',
     'bulkBuy22!',
-    false,
     'BULKDEAL',
-    thomasEmrax.userId,
-    'Tax ID attached',
-    thomasEmrax.userId
+    false,
+    [thomasEmrax.userId],
+    'Tax ID attached'
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1791,11 +1785,10 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'support@walmart.com',
     'WalMartP@ss1',
-    true,
     'ROLLBACK15',
-    thomasEmrax.userId,
-    'Requires contact for all returns',
-    thomasEmrax.userId
+    true,
+    [thomasEmrax.userId],
+    'Requires contact for all returns'
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1803,11 +1796,10 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'vendors@target.com',
     'target321!',
-    true,
     'REDTAG10',
-    thomasEmrax.userId,
-    'Needs weekly usage reports',
-    thomasEmrax.userId
+    true,
+    [thomasEmrax.userId],
+    'Needs weekly usage reports'
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1815,11 +1807,10 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'support@ebay.com',
     'eBayS3ll3r!',
-    false,
     'FREESHIP',
-    thomasEmrax.userId,
-    'Verification required',
-    thomasEmrax.userId
+    false,
+    [thomasEmrax.userId],
+    'Verification required'
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1827,11 +1818,10 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'billing@netflix.com',
     'stream4life!',
-    false,
     'BINGE50',
-    thomasEmrax.userId,
-    'Subscription-based payments',
-    thomasEmrax.userId
+    false,
+    [thomasEmrax.userId],
+    'Subscription-based payments'
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1839,11 +1829,10 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'accounts@spotify.com',
     'listen2music!',
-    false,
     'MUSIC25',
-    thomasEmrax.userId,
-    'Requires invoice numbers on docs',
-    thomasEmrax.userId
+    false,
+    [thomasEmrax.userId],
+    'Requires invoice numbers on docs'
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1851,11 +1840,10 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'adobe@creative.com',
     'Cr3at1ve!',
-    true,
     'DESIGN10',
-    thomasEmrax.userId,
-    'Needs PO for every purchase',
-    thomasEmrax.userId
+    true,
+    [thomasEmrax.userId],
+    'Needs PO for every purchase'
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1863,11 +1851,10 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'orders@dell.com',
     'd3llP@ss!',
-    true,
     'TECH30',
-    thomasEmrax.userId,
-    'Requesting business license',
-    thomasEmrax.userId
+    true,
+    [thomasEmrax.userId],
+    'Requesting business license'
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1875,11 +1862,10 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'support@hp.com',
     'hpSecure12!',
-    false,
     'PRINT20',
-    thomasEmrax.userId,
-    'Needs signed agreement on file',
-    thomasEmrax.userId
+    false,
+    [thomasEmrax.userId],
+    'Needs signed agreement on file'
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1887,11 +1873,10 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'fb@meta.com',
     'm3taPass!',
-    true,
     'META15',
-    thomasEmrax.userId,
-    'Wants to be listed as priority',
-    thomasEmrax.userId
+    true,
+    [thomasEmrax.userId],
+    'Wants to be listed as priority'
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1899,11 +1884,10 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'contact@linkedin.com',
     'workN3tw0rk!',
-    false,
     'NETWORK25',
-    thomasEmrax.userId,
-    'Requires biannual contract renewal',
-    thomasEmrax.userId
+    false,
+    [thomasEmrax.userId],
+    'Requires biannual contract renewal'
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1911,11 +1895,10 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'sales@zoom.us',
     'z00mM33t!',
-    true,
     'VIDEO5',
-    thomasEmrax.userId,
-    'Asks for contact before upgrades',
-    thomasEmrax.userId
+    true,
+    [thomasEmrax.userId],
+    'Asks for contact before upgrades'
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1923,11 +1906,10 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'help@slack.com',
     'sl@ckwork!',
-    false,
     'COLLAB10',
-    thomasEmrax.userId,
-    'Needs project reference ID',
-    thomasEmrax.userId
+    false,
+    [thomasEmrax.userId],
+    'Needs project reference ID'
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1935,11 +1917,10 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'payments@stripe.com',
     'fintech123!',
-    false,
     'PAYSAFE',
-    thomasEmrax.userId,
-    'Bank info needed for setup',
-    thomasEmrax.userId
+    false,
+    [thomasEmrax.userId],
+    'Bank info needed for setup'
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1947,11 +1928,10 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'vendor@square.com',
     'squ@reRoot!',
-    true,
     'CASHAPP',
-    thomasEmrax.userId,
-    'Tax info must be updated yearly',
-    thomasEmrax.userId
+    true,
+    [thomasEmrax.userId],
+    'Tax info must be updated yearly'
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1959,11 +1939,10 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'support@notion.so',
     'not3sApp!',
-    false,
     'PLAN50',
-    thomasEmrax.userId,
-    'Requires shared workspace invite',
-    thomasEmrax.userId
+    false,
+    [thomasEmrax.userId],
+    'Requires shared workspace invite'
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1971,11 +1950,10 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'billing@github.com',
     'ghRepos!',
-    true,
     'DEV25',
-    thomasEmrax.userId,
-    'Open source licenses required',
-    thomasEmrax.userId
+    true,
+    [thomasEmrax.userId],
+    'Open source licenses required'
   );
   await ReimbursementRequestService.createVendor(
     thomasEmrax,
@@ -1983,11 +1961,10 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'boards@trello.com',
     'tr3ll0Board!',
-    false,
     'TASK15',
-    thomasEmrax.userId,
-    'Needs card for each request',
-    thomasEmrax.userId
+    false,
+    [thomasEmrax.userId],
+    'Needs card for each request'
   );
 
   const indexCodeCash = await ReimbursementRequestService.createIndexCode('CASH', '830667', thomasEmrax, ner);
@@ -1998,7 +1975,7 @@ const performSeed: () => Promise<void> = async () => {
     'Equipment',
     123,
     true,
-    [indexCodeCash, indexCodeBudget],
+    [indexCodeCash.indexCodeId, indexCodeBudget.indexCodeId],
     ner
   );
 
@@ -2015,12 +1992,54 @@ const performSeed: () => Promise<void> = async () => {
           projectNumber: 1,
           workPackageNumber: 0
         },
-        cost: 200000
+        cost: 200000,
+        refundSources: [
+          {
+            indexCode: indexCodeBudget,
+            amount: 150000
+          },
+          {
+            indexCode: indexCodeCash,
+            amount: 50000
+          }
+        ]
       }
     ],
     accountCode.accountCodeId,
     100,
     ner
+  );
+
+  const reimbursement3 = await ReimbursementRequestService.createReimbursementRequest(
+    thomasEmrax,
+    vendor.vendorId,
+    indexCodeBudget.indexCodeId,
+    [],
+    [
+      {
+        name: 'BOX',
+        reason: {
+          carNumber: 0,
+          projectNumber: 1,
+          workPackageNumber: 0
+        },
+        cost: 200000,
+        refundSources: [
+          {
+            indexCode: indexCodeBudget,
+            amount: 150000
+          },
+          {
+            indexCode: indexCodeCash,
+            amount: 50000
+          }
+        ]
+      }
+    ],
+    accountCode.accountCodeId,
+    200,
+    ner,
+    new Date()
   );
 
   const reimbursement2 = await ReimbursementRequestService.createReimbursementRequest(
@@ -2036,11 +2055,21 @@ const performSeed: () => Promise<void> = async () => {
           projectNumber: 1,
           workPackageNumber: 0
         },
-        cost: 10000
+        cost: 10000,
+        refundSources: [
+          {
+            indexCode: indexCodeBudget,
+            amount: 7000
+          },
+          {
+            indexCode: indexCodeCash,
+            amount: 3000
+          }
+        ]
       }
     ],
     accountCode.accountCodeId,
-    200,
+    20000,
     ner,
     new Date()
   );
@@ -2070,7 +2099,7 @@ const performSeed: () => Promise<void> = async () => {
     'CONSUMABLES',
     10,
     indexCodeCash.indexCodeId,
-    [accountCode],
+    [accountCode.accountCodeId],
     thomasEmrax,
     ner
   );
@@ -2088,7 +2117,7 @@ const performSeed: () => Promise<void> = async () => {
     'COMPETITION',
     10,
     indexCodeBudget.indexCodeId,
-    [accountCode],
+    [accountCode.accountCodeId],
     thomasEmrax,
     ner
   );
@@ -2108,6 +2137,14 @@ const performSeed: () => Promise<void> = async () => {
     indexCodeCash.indexCodeId,
     [],
     thomasEmrax,
+    ner
+  );
+
+  const budgetCR = await ChangeRequestsService.createBudgetChangeRequest(
+    thomasEmrax,
+    otherProductReasonConsumables.otherProductReasonId,
+    'BUDGET',
+    50,
     ner
   );
 

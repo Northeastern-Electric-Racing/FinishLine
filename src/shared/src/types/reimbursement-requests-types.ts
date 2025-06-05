@@ -80,6 +80,7 @@ export interface ReimbursementProduct {
   reimbursementProductId: string;
   name: string;
   cost: number;
+  refundSources: RefundSource[];
   reimbursementProductReason: ReimbursementProductReason;
 }
 
@@ -89,30 +90,42 @@ export interface Vendor {
   name: string;
   username: string;
   password: string;
-  discountCode?: string;
-  twoFactorContact?: User;
+  taxExempt: boolean;
+  twoFactorContacts: User[];
+  addedBy: User;
+  discountCode: string;
   notes?: string;
-  addedBy?: User;
 }
 
 export interface AccountCode {
   accountCodeId: string;
   name: string;
   code: number;
+  amount?: number;
   allowed: boolean;
   indexCodes: IndexCode[];
+}
+
+export interface RefundSource {
+  refundSourceId: string;
+  indexCode: IndexCode;
+  amount: number;
+}
+
+export interface CreateRefundSourceArgs {
+  indexCode: IndexCode;
+  amount: number;
 }
 
 export interface ReimbursementProductCreateArgs {
   id?: string;
   name: string;
   cost: number;
+  refundSources: CreateRefundSourceArgs[];
 }
 
 export interface ReimbursementProductFormArgs extends ReimbursementProductCreateArgs {
   reason: WbsNumber | OtherProductReason;
-  firstSourceAmount?: number;
-  secondSourceAmount?: number;
 }
 
 export interface OtherReimbursementProductCreateArgs extends ReimbursementProductCreateArgs {

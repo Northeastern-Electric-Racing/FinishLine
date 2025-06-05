@@ -1,12 +1,10 @@
 import { Box, Button, Menu, MenuItem, ListItemIcon, Typography, FormControlLabel, Checkbox } from '@mui/material';
 import { useState } from 'react';
-import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { SearchBar } from '../../components/SearchBar';
 import { NERButton } from '../../components/NERButton';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import WorkIcon from '@mui/icons-material/Work';
-import { routes } from '../../utils/routes';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { isAdmin, isGuest, isHead, isLead, ReimbursementStatusType } from 'shared';
@@ -18,7 +16,6 @@ import {
   useCurrentUserReimbursementRequests,
   useDownloadCSVFileOfReimbursementRequests
 } from '../../hooks/finance.hooks';
-import { useHistory } from 'react-router-dom';
 import { DatePicker } from '@mui/x-date-pickers';
 import ReportRefundModal from './FinanceComponents/ReportRefundModal';
 import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
@@ -30,15 +27,6 @@ const ReimbursementRequests: React.FC = () => {
   const [accountCreditModalShow, setAccountCreditModalShow] = useState<boolean>(false);
   const [showGenerateReceipts, setShowGenerateReceipts] = useState(false);
 
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleDropdownClose = () => {
-    setAnchorEl(null);
-  };
-
-  const history = useHistory();
   const user = useCurrentUser();
   const canViewAllReimbursementRequests = user.isFinance || isHead(user.role) || isLead(user.role);
   const toast = useToast();
@@ -53,6 +41,14 @@ const ReimbursementRequests: React.FC = () => {
         toast.error(error.message);
       }
     }
+  };
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleDropdownClose = () => {
+    setAnchorEl(null);
   };
 
   const tableOffset = canViewAllReimbursementRequests ? -70 : 0;
@@ -72,12 +68,6 @@ const ReimbursementRequests: React.FC = () => {
         Actions
       </NERButton>
       <Menu open={!!anchorEl} anchorEl={anchorEl} onClose={handleDropdownClose}>
-        <MenuItem onClick={() => history.push(routes.NEW_REIMBURSEMENT_REQUEST)} disabled={isGuest(user.role)}>
-          <ListItemIcon>
-            <NoteAddIcon fontSize="small" />
-          </ListItemIcon>
-          Create Reimbursement Request
-        </MenuItem>
         <MenuItem
           onClick={() => {
             setAccountCreditModalShow(true);
@@ -108,11 +98,13 @@ const ReimbursementRequests: React.FC = () => {
 
   const {
     data: userReimbursementRequests,
+    refetch: refetchUserReimbursementRequests,
     isError: userReimbursementRequestIsError,
     error: userReimbursementRequestError
   } = useCurrentUserReimbursementRequests();
   const {
     data: allReimbursementRequests,
+    refetch: refetchAllReimbursementRequests,
     isError: allReimbursementRequestsIsError,
     error: allReimbursementRequestsError
   } = useAllReimbursementRequests();
@@ -274,6 +266,10 @@ const ReimbursementRequests: React.FC = () => {
           statuses={selectedStatuses}
           startDate={startDate}
           endDate={endDate}
+          onCloseSidePage={() => {
+            refetchUserReimbursementRequests();
+            refetchAllReimbursementRequests();
+          }}
         />
       </Box>
     </Box>

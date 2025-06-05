@@ -64,7 +64,7 @@ import {
   sendReimbursementRequestPendingFinanceNotification,
   sendSubmittedToSaboNotification
 } from '../utils/slack.utils';
-import { userHasPermission } from '../utils/users.utils';
+import { getUsers, userHasPermission } from '../utils/users.utils';
 import { getReimbursementRequestQueryArgs } from '../prisma-query-args/reimbursement-requests.query-args';
 import { getReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
 import { getReimbursementStatusQueryArgs } from '../prisma-query-args/reimbursement-statuses.query-args';
@@ -87,6 +87,64 @@ export default class ReimbursementRequestService {
       ...getReimbursementRequestQueryArgs(organization.organizationId)
     });
     return userReimbursementRequests.map(reimbursementRequestTransformer);
+  }
+
+  /**
+   * Returns all reimbursement requests in the database that are created by any user in the given user's team and for the currently selected organization.
+   * @param recipient The user retrieving their teams reimbursement requests
+   * @param organizationId The organization the user is currently in
+   */
+  static async getUsersTeamsReimbursementRequests(
+    recipient: User,
+    organization: Organization
+  ): Promise<ReimbursementRequest[]> {
+    const teams = await prisma.team.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        OR: [
+          {
+            headId: recipient.userId
+          },
+          {
+            leads: {
+              some: {
+                userId: recipient.userId
+              }
+            }
+          },
+          {
+            members: {
+              some: {
+                userId: recipient.userId
+              }
+            }
+          }
+        ]
+      },
+      include: {
+        members: true,
+        leads: true
+      }
+    });
+
+    const teamUserIds = new Set<string>();
+
+    teams.forEach((team) => {
+      if (team.headId) teamUserIds.add(team.headId);
+      team.leads.forEach((lead) => teamUserIds.add(lead.userId));
+      team.members.forEach((member) => teamUserIds.add(member.userId));
+    });
+
+    const teamsReimbursementRequests = await prisma.reimbursement_Request.findMany({
+      where: {
+        dateDeleted: null,
+        recipientId: { in: Array.from(teamUserIds) },
+        organizationId: organization.organizationId
+      },
+      ...getReimbursementRequestQueryArgs(organization.organizationId)
+    });
+
+    return teamsReimbursementRequests.map(reimbursementRequestTransformer);
   }
 
   /**
@@ -312,10 +370,9 @@ export default class ReimbursementRequestService {
 
     const vendor = await ReimbursementRequestService.getSingleVendor(vendorId, organization);
     const accountCode = await ReimbursementRequestService.getSingleAccountCode(accountCodeId, organization);
-    const indexCode = await ReimbursementRequestService.getSingleIndexCode(indexCodeId, organization);
 
     if (!accountCode.allowed) throw new HttpException(400, 'Account Code Not Allowed');
-    if (!accountCode.indexCodes.includes(indexCode)) {
+    if (!accountCode.indexCodes.some((refundSource) => refundSource.indexCodeId === indexCodeId)) {
       throw new HttpException(400, 'The submitted refund source is not allowed to be used with the submitted Account Code');
     }
 
@@ -574,7 +631,7 @@ export default class ReimbursementRequestService {
    * @param password vendor password
    * @param notes vendor notes
    * @param addedByUserId userId that added the vendor
-   * @param twoFactorContactId two-factor contact id
+   * @param twoFactorContacts two-factor contact ids
    * @param discountCode vendor discount code
    * @returns
    */
@@ -584,11 +641,10 @@ export default class ReimbursementRequestService {
     organization: Organization,
     username: string,
     password: string,
+    discountCode: string,
     taxExempt: boolean,
-    discountCode?: string,
-    twoFactorContactId?: string,
-    notes?: string,
-    addedByUserId?: string
+    twoFactorContacts: string[],
+    notes?: string
   ) {
     const isAuthorized =
       (await userHasPermission(submitter.userId, organization.organizationId, isAdmin)) ||
@@ -600,7 +656,8 @@ export default class ReimbursementRequestService {
     }
 
     const existingVendor = await prisma.vendor.findUnique({
-      where: { uniqueVendor: { name, organizationId: organization.organizationId } }
+      where: { uniqueVendor: { name, organizationId: organization.organizationId } },
+      ...getVendorQueryArgs(organization.organizationId)
     });
 
     if (existingVendor && existingVendor.dateDeleted) {
@@ -611,6 +668,8 @@ export default class ReimbursementRequestService {
       return existingVendor;
     } else if (existingVendor) throw new HttpException(400, 'This vendor already exists');
 
+    const users = await getUsers(twoFactorContacts);
+
     const vendor = await prisma.vendor.create({
       data: {
         name,
@@ -619,10 +678,11 @@ export default class ReimbursementRequestService {
         password: encryptPassword(password),
         taxExempt,
         discountCode,
-        twoFactorContactId,
+        twoFactorContacts: { connect: users.map((user) => ({ userId: user.userId })) },
         notes,
-        addedByUserId
-      }
+        addedByUserId: submitter.userId
+      },
+      ...getVendorQueryArgs(organization.organizationId)
     });
 
     return vendor;
@@ -634,8 +694,9 @@ export default class ReimbursementRequestService {
    * @param name The name of the Account Code
    * @param code the Account Code's SABO code
    * @param allowed whether or not this Account Code is allowed
-   * @param allowedRefundSources an array of Index_Code representing allowed refund sources
+   * @param indexCodeIds an array of index code ids representing allowed refund sources
    * @param organizationId the organization the user is currently in
+   * @param amount the monetary amount in dollars for the Account Code
    * @returns the created Account Code
    */
   static async createAccountCode(
@@ -643,8 +704,9 @@ export default class ReimbursementRequestService {
     name: string,
     code: number,
     allowed: boolean,
-    allowedRefundSources: IndexCode[],
-    organization: Organization
+    indexCodeIds: string[],
+    organization: Organization,
+    amount?: number
   ): Promise<AccountCode> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create Account Codes');
@@ -667,7 +729,8 @@ export default class ReimbursementRequestService {
         name,
         allowed,
         code,
-        indexCodes: { connect: allowedRefundSources.map((indexCode) => ({ indexCodeId: indexCode.indexCodeId })) },
+        amount,
+        indexCodes: { connect: indexCodeIds.map((id) => ({ indexCodeId: id })) },
         organizationId: organization.organizationId
       },
       ...getAccountCodeQueryArgs(organization.organizationId)
@@ -683,8 +746,9 @@ export default class ReimbursementRequestService {
    * @param name the new Account Code code name
    * @param allowed the new Account Code allowed value
    * @param submitter the person editing account code code number
-   * @param allowedRefundSources the new allowed refund sources
+   * @param indexCodeIds the new allowed refund sources
    * @param orgainzationId the organization the user is currently in
+   * @param amount the monetary amount in dollars for the Account Code
    * @returns the updated account code
    */
   static async editAccountCode(
@@ -693,8 +757,9 @@ export default class ReimbursementRequestService {
     name: string,
     allowed: boolean,
     submitter: User,
-    allowedRefundSources: IndexCode[],
-    organization: Organization
+    indexCodeIds: string[],
+    organization: Organization,
+    amount?: number
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('Only the head or admin can update account code number and name');
@@ -707,11 +772,13 @@ export default class ReimbursementRequestService {
         name,
         code,
         allowed,
-        indexCodes: { connect: allowedRefundSources.map((indexCode) => ({ indexCodeId: indexCode.indexCodeId })) }
-      }
+        amount: amount ?? null,
+        indexCodes: { set: indexCodeIds.map((id) => ({ indexCodeId: id })) }
+      },
+      ...getAccountCodeQueryArgs(organization.organizationId)
     });
 
-    return accountCodeUpdated;
+    return accountCodeTransformer(accountCodeUpdated);
   }
 
   /**
@@ -1141,20 +1208,34 @@ export default class ReimbursementRequestService {
    * @param organizationId the organization the user is currently in
    * @returns the updated vendor
    */
-  static async editVendor(name: string, vendorId: string, submitter: User, organization: Organization) {
+  static async editVendor(
+    name: string,
+    vendorId: string,
+    username: string,
+    password: string,
+    discountCode: string,
+    taxExempt: boolean,
+    twoFactorContacts: string[],
+    notes: string,
+    submitter: User,
+    organization: Organization
+  ): Promise<Vendor> {
     await isUserHeadOrOnFinance(submitter, organization.organizationId);
 
-    const oldVendor = await ReimbursementRequestService.getSingleVendor(vendorId, organization);
-    if (oldVendor.name === name) throw new HttpException(400, 'Vendor name is the same as the current name');
-
-    const desiredName = await prisma.vendor.findUnique({
-      where: { uniqueVendor: { name, organizationId: organization.organizationId } }
-    });
-    if (desiredName) throw new HttpException(400, 'vendor name already exists');
+    const users = await getUsers(twoFactorContacts);
 
     const vendor = await prisma.vendor.update({
       where: { vendorId },
-      data: { name },
+      data: {
+        name,
+        organizationId: organization.organizationId,
+        username,
+        password: encryptPassword(password),
+        taxExempt,
+        discountCode,
+        twoFactorContacts: { connect: users.map((user) => ({ userId: user.userId })) },
+        notes
+      },
       ...getVendorQueryArgs(organization.organizationId)
     });
 
@@ -1433,7 +1514,7 @@ export default class ReimbursementRequestService {
     name: string,
     budget: number,
     indexCodeId: string,
-    accountCodes: AccountCode[],
+    accountCodeIds: string[],
     user: User,
     organization: Organization
   ): Promise<OtherProductReason> {
@@ -1447,7 +1528,7 @@ export default class ReimbursementRequestService {
         budget,
         userCreated: { connect: { userId: user.userId } },
         indexCode: { connect: { indexCodeId: indexCode.indexCodeId } },
-        accountCodes: { connect: accountCodes.map((accountCode) => ({ accountCodeId: accountCode.accountCodeId })) }
+        accountCodes: { connect: accountCodeIds.map((accountCodeId) => ({ accountCodeId })) }
       },
       ...getReimbursementProductOtherReasonQueryArgs(organization.organizationId)
     });
@@ -1708,8 +1789,10 @@ export default class ReimbursementRequestService {
    * @param otherReimbursementProductReasonId id of the other reimbursement product reason being edited
    * @param org the organization the user is currently in
    * @param editor the user editing the reason
-   * @param updatedIndexCodeId the updated index code of the other reimbursement product reason
-   * @param updatedBudget the updated budget of the other reimbursement product reason
+   * @param name the updated name of the other reimbursement product reason
+   * @param budget the updated budget of the other reimbursement product reason
+   * @param indexCodeId the updated index code of the other reimbursement product reason
+   * @param accountCodeIds the updated account codes of the other reimbursement product reason
    * @returns the other reimbursement product reason with the given id
    */
 
@@ -1717,8 +1800,10 @@ export default class ReimbursementRequestService {
     otherReimbursementProductReasonId: string,
     org: Organization,
     editor: User,
-    updatedIndexCodeId: string,
-    updatedBudget: number
+    name: string,
+    budget: number,
+    indexCodeId: string,
+    accountCodeIds: string[]
   ): Promise<OtherProductReason> {
     if (!(await userHasPermission(editor.userId, org.organizationId, isHead))) {
       throw new AccessDeniedException('Only heads can edit other reimbursement product reasons.');
@@ -1735,15 +1820,20 @@ export default class ReimbursementRequestService {
       throw new DeletedException('Reimbursement Product Other Reason', otherReimbursementProductReasonId);
 
     const indexCode = await prisma.index_Code.findUnique({
-      where: { indexCodeId: updatedIndexCodeId }
+      where: { indexCodeId }
     });
 
-    if (!indexCode) throw new NotFoundException('Index Code', updatedIndexCodeId);
-    if (indexCode.dateDeleted) throw new DeletedException('Index Code', updatedIndexCodeId);
+    if (!indexCode) throw new NotFoundException('Index Code', indexCodeId);
+    if (indexCode.dateDeleted) throw new DeletedException('Index Code', indexCodeId);
 
     const editedReason = await prisma.reimbursement_Product_Other_Reason.update({
       where: { otherReimbursementProductReasonId },
-      data: { budget: updatedBudget, indexCodeId: indexCode.indexCodeId },
+      data: {
+        budget,
+        indexCodeId,
+        name,
+        accountCodes: { set: accountCodeIds.map((accountCodeId) => ({ accountCodeId })) }
+      },
       ...getReimbursementProductOtherReasonQueryArgs(org.organizationId)
     });
 

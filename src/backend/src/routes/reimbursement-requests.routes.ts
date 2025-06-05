@@ -43,7 +43,7 @@ reimbursementRequestsRouter.post(
   nonEmptyString(body('name')),
   intMinZero(body('budget')),
   nonEmptyString(body('indexCodeId')),
-  body('accountCodes').isArray(),
+  body('accountCodeIds').isArray(),
   validateInputs,
   ReimbursementRequestController.createOtherReimbursementProductReason
 );
@@ -67,11 +67,22 @@ reimbursementRequestsRouter.get('/current-user', ReimbursementRequestController.
 
 reimbursementRequestsRouter.get('/reimbursements/current-user', ReimbursementRequestController.getCurrentUserReimbursements);
 
+reimbursementRequestsRouter.get(
+  '/reimbursements/current-user-team',
+  ReimbursementRequestController.getCurrentUsersTeamsReimbursementRequests
+);
+
 reimbursementRequestsRouter.get('/reimbursements', ReimbursementRequestController.getAllReimbursements);
 
 reimbursementRequestsRouter.post(
   '/:vendorId/vendors/edit',
   nonEmptyString(body('name')),
+  nonEmptyString(body('username')),
+  nonEmptyString(body('password')),
+  nonEmptyString(body('discountCode')),
+  body('taxExempt').isBoolean(),
+  body('twoFactorContacts').isArray(),
+  nonEmptyString(body('notes')).optional(),
   validateInputs,
   ReimbursementRequestController.editVendor
 );
@@ -131,10 +142,10 @@ reimbursementRequestsRouter.post(
   nonEmptyString(body('name')),
   nonEmptyString(body('username')),
   nonEmptyString(body('password')),
-  nonEmptyString(body('discountCode')).optional(),
-  nonEmptyString(body('twoFactorContactId')).optional(),
-  nonEmptyString(body('note')).optional(),
-  nonEmptyString(body('addedByUserId')).optional(),
+  nonEmptyString(body('discountCode')),
+  body('taxExempt').isBoolean(),
+  body('twoFactorContacts').isArray(),
+  nonEmptyString(body('notes')).optional(),
   validateInputs,
   ReimbursementRequestController.createVendor
 );
@@ -144,7 +155,8 @@ reimbursementRequestsRouter.post(
   nonEmptyString(body('name')),
   intMinZero(body('code')),
   body('allowed').isBoolean(),
-  body('allowedRefundSources').isArray(),
+  body('amount').isInt().optional(),
+  body('indexCodeIds').isArray(),
   validateInputs,
   ReimbursementRequestController.createAccountCode
 );
@@ -154,6 +166,8 @@ reimbursementRequestsRouter.post(
   nonEmptyString(body('name')),
   intMinZero(body('code')),
   body('allowed').isBoolean(),
+  body('amount').isInt().optional(),
+  body('indexCodeIds').isArray(),
   validateInputs,
   ReimbursementRequestController.editAccountCode
 );
@@ -230,8 +244,10 @@ reimbursementRequestsRouter.delete('/comments/:commentId', ReimbursementRequestC
 
 reimbursementRequestsRouter.post(
   '/other-reimbursement-product-reasons/:otherReimbursementProductReasonId/edit',
-  nonEmptyString(body('updatedIndexCodeId')),
-  body('updatedBudget').isInt(),
+  nonEmptyString(body('indexCodeId')),
+  body('accountCodeIds').isArray(),
+  nonEmptyString(body('name')),
+  intMinZero(body('budget')),
   validateInputs,
   ReimbursementRequestController.editOtherReimbursementProductReason
 );

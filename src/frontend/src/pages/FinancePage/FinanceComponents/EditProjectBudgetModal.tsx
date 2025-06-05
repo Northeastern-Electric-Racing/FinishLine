@@ -9,8 +9,8 @@ import { useGetAllIndexCodes } from '../../../hooks/finance.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
-import { useAllProjects } from '../../../hooks/projects.hooks';
 import { ChangeRequestType, Project } from 'shared';
+import { useGetTeamsProjects } from '../../../hooks/projects.hooks';
 
 const schema = yup.object().shape({
   project: yup.string().required('Project is required'),
@@ -31,12 +31,14 @@ interface EditProjectBudgetModalInputs {
 interface EditProjectBudgetModalProps {
   showModal: boolean;
   handleClose: () => void;
+  teamId: string;
   project?: Project;
 }
 
 export const EditProjectBudgetModal: React.FC<EditProjectBudgetModalProps> = ({
   showModal,
   handleClose,
+  teamId,
   project
 }: EditProjectBudgetModalProps) => {
   const {
@@ -65,7 +67,12 @@ export const EditProjectBudgetModal: React.FC<EditProjectBudgetModalProps> = ({
 
   const { isLoading: crIsLoading, mutateAsync: createCR } = useCreateStandardChangeRequest();
 
-  const { data: projects, isLoading: projectsIsLoading, isError: projectsIsError, error: projectsError } = useAllProjects();
+  const {
+    data: projects,
+    isLoading: projectsIsLoading,
+    isError: projectsIsError,
+    error: projectsError
+  } = useGetTeamsProjects(teamId);
 
   if (!indexCodes || indexCodesIsLoading || crIsLoading) {
     return <LoadingIndicator />;

@@ -120,7 +120,6 @@ export const getSpendingBarDataForProjectBudgetByTeam = async (
       spendingInfo: spendingInfos[index]
     }))
   };
-
   return data;
 };
 
@@ -188,9 +187,6 @@ export const getReimbursementRequestsForReimbursementRequestsByProject = async (
         organizationId,
         dateDeleted: null
       }
-    },
-    include: {
-      wbsElement: true
     }
   });
 
@@ -245,7 +241,12 @@ export const getReimbursementRequestsForReimbursementRequestsByProject = async (
     }
   });
 
-  const totalBalance = reimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0);
+  pendingFinance = pendingFinance / 100;
+  pendingLeadership = pendingLeadership / 100;
+  submittedToSabo = submittedToSabo / 100;
+  reimbursed = reimbursed / 100;
+
+  const totalBalance = reimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0) / 100;
 
   const available = project.budget - totalBalance;
 
@@ -339,7 +340,12 @@ export const getReimbursementRequestsForReimbursementRequestsByTeam = async (
     }
   });
 
-  const totalBalance = reimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0);
+  pendingFinance = pendingFinance / 100;
+  pendingLeadership = pendingLeadership / 100;
+  submittedToSabo = submittedToSabo / 100;
+  reimbursed = reimbursed / 100;
+
+  const totalBalance = reimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0) / 100;
 
   const available = totalBudget - totalBalance;
 
@@ -472,13 +478,15 @@ export const getAllReimbursementRequestData = async (
     return teamAcc + teamBudget;
   }, 0);
 
-  const cashTotalBudget = cashReimbursementRequests.reduce((reqAcc, rr) => {
-    return reqAcc + rr.totalCost;
-  }, 0);
+  const cashTotalBudget =
+    cashReimbursementRequests.reduce((reqAcc, rr) => {
+      return reqAcc + rr.totalCost;
+    }, 0) / 100;
 
-  const budgetTotalBudget = cashReimbursementRequests.reduce((reqAcc, rr) => {
-    return reqAcc + rr.totalCost;
-  }, 0);
+  const budgetTotalBudget =
+    budgetReimbursementRequests.reduce((reqAcc, rr) => {
+      return reqAcc + rr.totalCost;
+    }, 0) / 100;
 
   let allPendingFinance = 0;
   let allPendingLeadership = 0;
@@ -506,7 +514,12 @@ export const getAllReimbursementRequestData = async (
     }
   });
 
-  const allTotalBalance = allReimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0);
+  allPendingFinance = allPendingFinance / 100;
+  allPendingLeadership = allPendingLeadership / 100;
+  allSubmittedToSabo = allSubmittedToSabo / 100;
+  allReimbursed = allReimbursed / 100;
+
+  const allTotalBalance = allReimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0) / 100;
 
   const allAvailable = allTotalBudget - allTotalBalance;
 
@@ -536,7 +549,12 @@ export const getAllReimbursementRequestData = async (
     }
   });
 
-  const cashTotalBalance = cashReimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0);
+  cashPendingFinance = cashPendingFinance / 100;
+  cashPendingLeadership = cashPendingLeadership / 100;
+  cashSubmittedToSabo = cashSubmittedToSabo / 100;
+  cashReimbursed = cashReimbursed / 100;
+
+  const cashTotalBalance = cashReimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0) / 100;
 
   const cashAvailable = cashTotalBudget - cashTotalBalance;
 
@@ -545,7 +563,7 @@ export const getAllReimbursementRequestData = async (
   let budgetSubmittedToSabo = 0;
   let budgetReimbursed = 0;
 
-  cashReimbursementRequests.forEach((req) => {
+  budgetReimbursementRequests.forEach((req) => {
     const lastStatus = req.reimbursementStatuses.at(-1)?.type;
 
     switch (lastStatus) {
@@ -566,7 +584,12 @@ export const getAllReimbursementRequestData = async (
     }
   });
 
-  const budgetTotalBalance = budgetReimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0);
+  budgetPendingFinance = budgetPendingFinance / 100;
+  budgetPendingLeadership = budgetPendingLeadership / 100;
+  budgetSubmittedToSabo = budgetSubmittedToSabo / 100;
+  budgetReimbursed = budgetReimbursed / 100;
+
+  const budgetTotalBalance = budgetReimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0) / 100;
 
   const budgetAvailable = budgetTotalBudget - budgetTotalBalance;
 
@@ -629,9 +652,15 @@ export const getReimbursementRequestCategoryData = async (
     ...getReimbursementRequestQueryArgs(organizationId)
   });
 
-  const totalBudget = reimbursementRequests.reduce((reqAcc, rr) => {
-    return reqAcc + rr.totalCost;
-  }, 0);
+  const category = await prisma.reimbursement_Product_Other_Reason.findUnique({
+    where: {
+      otherReimbursementProductReasonId: otherReasonId
+    }
+  });
+
+  if (!category) throw new NotFoundException('Reimbursement Product Other Reason', otherReasonId);
+
+  const totalBudget = category.budget;
 
   let pendingFinance = 0;
   let pendingLeadership = 0;

@@ -117,6 +117,7 @@ export const resetUsers = async () => {
   await prisma.proposed_Solution.deleteMany();
   await prisma.scope_CR_Why.deleteMany();
   await prisma.scope_CR.deleteMany();
+  await prisma.budget_CR.deleteMany();
   await prisma.change_Request.deleteMany();
   await prisma.link.deleteMany();
   await prisma.link_Type.deleteMany();
@@ -142,6 +143,7 @@ export const resetUsers = async () => {
   await prisma.sponsor_Tier.deleteMany();
   await prisma.reimbursement_Product_Other_Reason.deleteMany();
   await prisma.account_Code.deleteMany();
+  await prisma.refund_Source.deleteMany();
   await prisma.index_Code.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
@@ -438,11 +440,10 @@ export const createTestReimbursementRequest = async () => {
     organization,
     'nershipping@gmail.com',
     'racecar228!',
-    true,
     'SAVE50!',
-    user.userId,
-    'Tax exemption status?',
-    user.userId
+    true,
+    [user.userId],
+    'Tax exemption status?'
   );
 
   const indexCode = await ReimbursementRequestService.createIndexCode('CASH', '830667', user, organization);
@@ -452,7 +453,7 @@ export const createTestReimbursementRequest = async () => {
     'Equipment',
     123,
     true,
-    [indexCode],
+    [indexCode.indexCodeId],
     organization
   );
 
@@ -469,7 +470,13 @@ export const createTestReimbursementRequest = async () => {
           projectNumber: 0,
           workPackageNumber: 0
         },
-        cost: 200000
+        cost: 200000,
+        refundSources: [
+          {
+            indexCode,
+            amount: 200
+          }
+        ]
       }
     ],
     accountCode.accountCodeId,

@@ -17,6 +17,7 @@ enum CR_Type {
   OTHER
   STAGE_GATE
   ACTIVATION
+  BUDGET
 }
 
 enum Task_Priority {
@@ -292,16 +293,20 @@ model Change_Request {
   dateSubmitted DateTime  @default(now())
   dateDeleted   DateTime?
 
-  organizationId           String
-  organization             Organization   @relation(fields: [organizationId], references: [organizationId])
-  wbsElementId             String
-  wbsElement               WBS_Element    @relation(fields: [wbsElementId], references: [wbsElementId])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+
+  // Can be either a WBS_Element or an Other_Reimbursement_Product_Reason, not both and not neither
+  wbsElementId             String?
+  wbsElement               WBS_Element?                        @relation(fields: [wbsElementId], references: [wbsElementId])
+  category                 Reimbursement_Product_Other_Reason? @relation(fields: [categoryId], references: [otherReimbursementProductReasonId])
+  categoryId               String?
   type                     CR_Type
   reviewerId               String?
-  reviewer                 User?          @relation(name: "reviewedChangeRequests", fields: [reviewerId], references: [userId])
-  requestedReviewers       User[]         @relation(name: "requestedChangeRequestReviewers")
+  reviewer                 User?                               @relation(name: "reviewedChangeRequests", fields: [reviewerId], references: [userId])
+  requestedReviewers       User[]                              @relation(name: "requestedChangeRequestReviewers")
   deletedByUserId          String?
-  deletedBy                User?          @relation(name: "deletedChangeRequests", fields: [deletedByUserId], references: [userId])
+  deletedBy                User?                               @relation(name: "deletedChangeRequests", fields: [deletedByUserId], references: [userId])
   dateReviewed             DateTime?
   accepted                 Boolean?
   reviewNotes              String?
@@ -309,6 +314,7 @@ model Change_Request {
   scopeChangeRequest       Scope_CR?
   stageGateChangeRequest   Stage_Gate_CR?
   activationChangeRequest  Activation_CR?
+  budgetChangeRequest      Budget_CR?
   notificationSlackThreads Message_Info[]
 
   @@unique([identifier, organizationId], name: "uniqueChangeRequest")
@@ -383,6 +389,13 @@ model Activation_CR {
   confirmDetails  Boolean
 }
 
+model Budget_CR {
+  budgetCrId      String         @id @default(uuid())
+  changeRequestId String         @unique
+  changeRequest   Change_Request @relation(fields: [changeRequestId], references: [crId])
+  proposedBudget  Int
+}
+
 model Change {
   changeId        String         @id @default(uuid())
   changeRequestId String
@@ -390,9 +403,13 @@ model Change {
   dateImplemented DateTime       @default(now())
   implementerId   String
   implementer     User           @relation(fields: [implementerId], references: [userId])
-  wbsElementId    String
-  wbsElement      WBS_Element    @relation(fields: [wbsElementId], references: [wbsElementId])
-  detail          String
+
+  // Can be either a WBS_Element or an Other_Reimbursement_Product_Reason, not both and not neither
+  wbsElementId String?
+  wbsElement   WBS_Element?                        @relation(fields: [wbsElementId], references: [wbsElementId])
+  categoryId   String?
+  category     Reimbursement_Product_Other_Reason? @relation(fields: [categoryId], references: [otherReimbursementProductReasonId])
+  detail       String
 }
 
 model WBS_Element {
@@ -625,6 +642,16 @@ model Reimbursement_Product {
   reimbursementProductReason   Reimbursement_Product_Reason @relation(fields: [reimbursementProductReasonId], references: [reimbursementProductReasonId])
   reimbursementRequestId       String
   reimbursementRequest         Reimbursement_Request        @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
+  refundSources                Refund_Source[]
+}
+
+model Refund_Source {
+  refundSourceId         String                 @id @default(uuid())
+  indexCodeId            String
+  indexCode              Index_Code             @relation(fields: [indexCodeId], references: [indexCodeId])
+  amount                 Int
+  reimbursementProduct   Reimbursement_Product? @relation(fields: [reimbursementProductId], references: [reimbursementProductId])
+  reimbursementProductId String?
 }
 
 model Vendor {
@@ -637,12 +664,11 @@ model Vendor {
   organization          Organization            @relation(fields: [organizationId], references: [organizationId])
   username              String
   password              String // password is encrypted  
-  discountCode          String?
-  twoFactorContact      User?                   @relation(fields: [twoFactorContactId], references: [userId], name: "twoFactorContactVendors")
-  twoFactorContactId    String?
+  discountCode          String
+  twoFactorContacts     User[]                  @relation(name: "twoFactorContactVendors")
   notes                 String?
-  addedBy               User?                   @relation(fields: [addedByUserId], references: [userId], name: "vendorsCreator")
-  addedByUserId         String?
+  addedBy               User                    @relation(fields: [addedByUserId], references: [userId], name: "vendorsCreator")
+  addedByUserId         String
   taxExempt             Boolean
 
   @@unique([name, organizationId], name: "uniqueVendor")
@@ -686,6 +712,7 @@ model Account_Code {
   name                             String
   code                             Int
   allowed                          Boolean
+  amount                           Int?
   indexCodes                       Index_Code[]
   requests                         Reimbursement_Request[]
   dateDeleted                      DateTime?
@@ -1173,6 +1200,7 @@ model Index_Code {
   reimbursementRequests            Reimbursement_Request[]
   accountCodes                     Account_Code[]
   otherReimbursementProductReasons Reimbursement_Product_Other_Reason[]
+  refundSources                    Refund_Source[]
 }
 
 model Reimbursement_Product_Other_Reason {
@@ -1189,6 +1217,8 @@ model Reimbursement_Product_Other_Reason {
   indexCode                         Index_Code                     @relation(fields: [indexCodeId], references: [indexCodeId])
   indexCodeId                       String
   accountCodes                      Account_Code[]
+  changeRequests                    Change_Request[]
+  changes                           Change[]
 }
 
 model Reimbursement_Request_Comment {

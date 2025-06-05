@@ -321,6 +321,20 @@ export const validateNoUnreviewedOpenCRs = async (wbsElemId: string) => {
 };
 
 /**
+ * throws an error if there are any other open unreviewed change requests for this wbs element
+ * @param otherReasonId the other reason Id to find CRs with
+ * @throws if the Category has open unreviewed change requests
+ *
+ */
+export const validateNoUnreviewedOpenOtherReasonCRs = async (otherReasonId: string) => {
+  const openCRs = await prisma.change_Request.findMany({
+    where: { categoryId: otherReasonId, dateReviewed: null, dateDeleted: null }
+  });
+  if (openCRs.length > 1)
+    throw new HttpException(400, 'There are other open unreviewed change requests for this WBS element');
+};
+
+/**
  * Applies the proposed changes by either creating a project if the newProject field is true or editing a project if the newProject field is false and there is an associated project
  * @param wbsProposedChanges the wbs proposed changes of the change request
  * @param projectProposedChanges  the project proposed changes of the change request
@@ -473,7 +487,7 @@ export const reviewProposedSolution = async (
   // automate the changes for the proposed solution
   // if cr is for a project: update the budget based off of the proposed solution
   // else if cr is for a wp: update the budget and duration based off of the proposed solution
-  if (!foundCR.wbsElement.workPackage && foundCR.wbsElement.project) {
+  if (!foundCR.wbsElement?.workPackage && foundCR.wbsElement?.project) {
     const newBudget = foundCR.wbsElement.project.budget + foundPs.budgetImpact;
     const change = createChange(
       'Budget',
@@ -481,7 +495,8 @@ export const reviewProposedSolution = async (
       newBudget,
       foundCR.crId,
       reviewer.userId,
-      foundCR.wbsElementId
+      foundCR.wbsElementId,
+      foundCR.categoryId
     );
     await prisma.project.update({
       where: { projectId: foundCR.wbsElement.project.projectId },
@@ -492,7 +507,7 @@ export const reviewProposedSolution = async (
 
     //Make the associated budget change if there was a change
     if (change) await prisma.change.create({ data: change });
-  } else if (foundCR.wbsElement.workPackage) {
+  } else if (foundCR.wbsElement?.workPackage) {
     // get the project for the work package
     const wpProj = await prisma.project.findUnique({
       where: { projectId: foundCR.wbsElement.workPackage.projectId },
@@ -506,14 +521,23 @@ export const reviewProposedSolution = async (
 
     // create changes that reflect the new budget and duration
     const changes = [
-      createChange('Budget', wpProj.budget, newBudget, foundCR.crId, reviewer.userId, foundCR.wbsElementId),
+      createChange(
+        'Budget',
+        wpProj.budget,
+        newBudget,
+        foundCR.crId,
+        reviewer.userId,
+        foundCR.wbsElementId,
+        foundCR.categoryId
+      ),
       createChange(
         'Duration',
         foundCR.wbsElement.workPackage.duration,
         updatedDuration,
         foundCR.crId,
         reviewer.userId,
-        foundCR.wbsElementId
+        foundCR.wbsElementId,
+        foundCR.categoryId
       )
     ];
 

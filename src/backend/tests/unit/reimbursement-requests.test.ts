@@ -29,7 +29,7 @@ describe('Reimbursement Requests', () => {
       'GENERAL STOCK',
       10,
       createdIndexCode.indexCodeId,
-      [createdAccountCode],
+      [createdAccountCode.accountCodeId],
       createdUser,
       org
     );
@@ -108,7 +108,17 @@ describe('Reimbursement Requests', () => {
               projectNumber: 0,
               workPackageNumber: 0
             },
-            cost: 200000
+            cost: 200000,
+            refundSources: [
+              {
+                indexCode: createdIndexCode,
+                amount: 200
+              },
+              {
+                indexCode: createdIndexCode,
+                amount: 800
+              }
+            ]
           }
         ],
         createdAccountCode.accountCodeId,
@@ -149,7 +159,17 @@ describe('Reimbursement Requests', () => {
               projectNumber: 0,
               workPackageNumber: 0
             },
-            cost: 200000
+            cost: 200000,
+            refundSources: [
+              {
+                indexCode: createdIndexCode,
+                amount: 200
+              },
+              {
+                indexCode: createdIndexCode,
+                amount: 800
+              }
+            ]
           }
         ],
         createdAccountCode.accountCodeId,
@@ -219,7 +239,17 @@ describe('Reimbursement Requests', () => {
               projectNumber: 0,
               workPackageNumber: 0
             },
-            cost: 200000
+            cost: 200000,
+            refundSources: [
+              {
+                indexCode: createdIndexCode,
+                amount: 200
+              },
+              {
+                indexCode: createdIndexCode,
+                amount: 800
+              }
+            ]
           }
         ],
         reimbursementRequest.accountCode.accountCodeId,
@@ -256,11 +286,10 @@ describe('Reimbursement Requests', () => {
         org,
         'nershipping@gmail.com',
         'rar',
-        false,
         '50!',
-        createdUser.userId,
-        'Tax exemption status?',
-        createdUser.userId
+        false,
+        [createdUser.userId],
+        'Tax exemption status?'
       );
       const vendorsAfterAddition = await ReimbursementRequestService.getAllVendors(org);
       expect(vendorsAfterAddition.length).toEqual(2);
@@ -281,6 +310,8 @@ describe('Reimbursement Requests', () => {
       expect(singleVendor.username).toEqual('nershipping@gmail.com');
       expect(singleVendor.password).toEqual('racecar228!');
       expect(singleVendor.discountCode).toEqual('SAVE50!');
+      expect(singleVendor.taxExempt).toEqual(true);
+      expect(singleVendor.twoFactorContacts).toHaveLength(1);
       expect(singleVendor.notes).toEqual('Tax exemption status?');
     });
 
@@ -315,6 +346,37 @@ describe('Reimbursement Requests', () => {
     });
   });
 
+  describe('Testing edit vendor', () => {
+    test('edits a single vendors that exists', async () => {
+      const singleVendor = await ReimbursementRequestService.getSingleVendor(createdVendor.vendorId, org);
+      expect(singleVendor.name).toEqual('Tesla');
+      expect(singleVendor.username).toEqual('nershipping@gmail.com');
+      expect(singleVendor.password).toEqual('racecar228!');
+      expect(singleVendor.discountCode).toEqual('SAVE50!');
+      expect(singleVendor.taxExempt).toEqual(true);
+      expect(singleVendor.twoFactorContacts).toHaveLength(1);
+      expect(singleVendor.notes).toEqual('Tax exemption status?');
+      const editedVendor = await ReimbursementRequestService.editVendor(
+        'Google',
+        createdVendor.vendorId,
+        'ner@gmail.com',
+        'racecar',
+        'DISCOUNT',
+        false,
+        [],
+        'no notes',
+        createdUser,
+        org
+      );
+      expect(editedVendor.name).toEqual('Google');
+      expect(editedVendor.username).toEqual('ner@gmail.com');
+      expect(editedVendor.password).toEqual('racecar');
+      expect(editedVendor.discountCode).toEqual('DISCOUNT');
+      expect(editedVendor.taxExempt).toEqual(false);
+      expect(editedVendor.notes).toEqual('no notes');
+    });
+  });
+
   describe('Testing encryption/decryption of vendor passwords', () => {
     test('creates a vendor (encrypts password), queries vendor (decryptes password)', async () => {
       const createdVendor = await ReimbursementRequestService.createVendor(
@@ -323,11 +385,10 @@ describe('Reimbursement Requests', () => {
         org,
         'nershipping@gmail.com',
         'ORGINAL-PASSWORD',
-        true,
         '50!',
-        createdUser.userId,
-        'Tax exemption status?',
-        createdUser.userId
+        true,
+        [createdUser.userId],
+        'Tax exemption status?'
       );
       expect(createdVendor.password.length).toEqual(64);
       // password encrypted, will look something like: 'U2FsdGVkX1/mQIqBjSMQ+7un24OuWs0wsCU4MiQNjLWgkAkxaMX9Zk1RDqKhrBI6'
@@ -470,7 +531,7 @@ describe('Reimbursement Requests', () => {
         'CONSUMABLES',
         100,
         createdIndexCode.indexCodeId,
-        [createdAccountCode],
+        [createdAccountCode.accountCodeId],
         createdUser,
         org
       );
@@ -489,7 +550,7 @@ describe('Reimbursement Requests', () => {
         'COMPETITION',
         125,
         createdIndexCode.indexCodeId,
-        [createdAccountCode],
+        [createdAccountCode.accountCodeId],
         createdUser,
         org
       );
@@ -653,7 +714,7 @@ describe('Reimbursement Requests', () => {
         'GENERAL STOCK',
         10,
         createdIndexCode.indexCodeId,
-        [createdAccountCode],
+        [createdAccountCode.accountCodeId],
         createdUser,
         org
       );
@@ -669,8 +730,10 @@ describe('Reimbursement Requests', () => {
         reason.otherProductReasonId,
         org,
         createdUser,
+        'indexCodeName',
+        5,
         newIndexCode.indexCodeId,
-        5
+        []
       );
 
       expect(editedReason.budget).toEqual(5);
@@ -683,7 +746,7 @@ describe('Reimbursement Requests', () => {
         'GENERAL STOCK',
         10,
         createdIndexCode.indexCodeId,
-        [createdAccountCode],
+        [createdAccountCode.accountCodeId],
         createdUser,
         org
       );
@@ -693,8 +756,10 @@ describe('Reimbursement Requests', () => {
           reason.otherProductReasonId,
           org,
           createdUser,
+          'new name',
+          10000,
           'bad index code',
-          10000
+          []
         )
       ).rejects.toThrow(new NotFoundException('Index Code', 'bad index code'));
     });
@@ -702,7 +767,15 @@ describe('Reimbursement Requests', () => {
       const newIndexCode = await ReimbursementRequestService.createIndexCode('x', 'newIndexCode', createdUser, org);
 
       await expect(
-        ReimbursementRequestService.editOtherReimbursementProductReason('bad id', org, createdUser, newIndexCode.code, 10000)
+        ReimbursementRequestService.editOtherReimbursementProductReason(
+          'bad id',
+          org,
+          createdUser,
+          'name',
+          50,
+          newIndexCode.code,
+          []
+        )
       ).rejects.toThrow(new NotFoundException('Reimbursement Product Other Reason', 'bad id'));
     });
   });

@@ -34,6 +34,7 @@ const projects = () => `${API_URL}/projects`;
 const allProjects = (includeDeleted: boolean) => `${projects()}/all/${includeDeleted ? 'true' : 'false'}`;
 const usersTeamsProjects = () => `${projects()}/users-teams`;
 const usersLeadingProjects = () => `${projects()}/leading`;
+const teamsProjects = (teamId: string) => `${projects()}/teams-projects/${teamId}`;
 const projectsByWbsNum = (wbsNum: string) => `${projects()}/${wbsNum}`;
 const projectsCreate = () => `${projects()}/create`;
 const projectsEdit = () => `${projects()}/edit`;
@@ -82,6 +83,7 @@ const changeRequestDelete = (id: string) => changeRequestsById(id) + '/delete';
 const changeRequestsCreate = () => `${changeRequests()}/new`;
 const changeRequestsCreateActivation = () => `${changeRequestsCreate()}/activation`;
 const changeRequestsCreateStageGate = () => `${changeRequestsCreate()}/stage-gate`;
+const changeRequestsCreateBudget = () => `${changeRequestsCreate()}/budget`;
 const changeRequestsCreateStandard = () => `${changeRequestsCreate()}/standard`;
 const changeRequestCreateProposeSolution = () => `${changeRequestsCreate()}/proposed-solution`;
 const changeRequestRequestReviewer = (id: string) => changeRequestsById(id) + '/request-review';
@@ -139,6 +141,9 @@ const financeRequestChanges = (id: string) => `${financeEndpoints()}/${id}/reque
 const financeGetPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/list`;
 const financeSendPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/send`;
 const financeEditAccountCode = (accountCodeId: string) => `${getAllAccountCodes()}/${accountCodeId}/edit`;
+const financeDeleteAccountCode = (accountCodeId: string) => `${financeEndpoints()}/account-codes/${accountCodeId}/delete`;
+const financeDeleteOtherProductReason = (otherReasonId: string) =>
+  `${financeEndpoints()}/other-reimbursement-product-reasons/${otherReasonId}/delete`;
 const financeCreateAccountCode = () => `${getAllAccountCodes()}/create`;
 const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
 const financeEditVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/edit`;
@@ -151,9 +156,11 @@ const financeCreateSponsorTask = (sponsorId: string) => `${financeRoutesEndpoint
 const financeCreateReimbursementRequestComment = (id: string) => `${financeEndpoints()}/${id}/comments`;
 const getAllIndexCodes = () => `${financeEndpoints()}/index-codes`;
 const getAllOtherProductReasons = () => `${financeEndpoints()}/other-reimbursement-product-reasons`;
+const financeCreateOtherProductReason = () => `${getAllOtherProductReasons()}/create`;
 const getAllSponsors = () => `${financeRoutesEndpoints()}/sponsors`;
-const getSponsorTasks = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsors/${sponsorId}/sponsorTasks`;
-const deleteSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsors/${sponsorId}/delete`;
+const getSponsorTasks = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/sponsorTasks`;
+const deleteSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/delete`;
+const deleteSponsorTask = (sponsorTaskId: string) => `${financeRoutesEndpoints()}/sponsorTask/${sponsorTaskId}`;
 const editSponsorTask = (sponsorTaskId: string) => `${financeRoutesEndpoints()}/sponsorTask/${sponsorTaskId}/edit`;
 const financeEditOtherReimbursementProductReason = (id: String) =>
   `${financeEndpoints()}/other-reimbursement-product-reasons/${id}/edit`;
@@ -229,6 +236,9 @@ const getAllSpendingBarData = (startDate?: Date, endDate?: Date): string => {
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
+const getAllSponsorTiers = () => `${financeRoutesEndpoints()}/sponsorTiers`;
+const editSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/edit`;
+const financeGetUsersTeamsReimbursementRequests = () => `${financeEndpoints()}/reimbursements/current-user-team`;
 
 /**************** Bill of Material Endpoints **************************/
 const bomEndpoints = () => `${API_URL}/projects/bom`;
@@ -372,6 +382,7 @@ export const apiUrls = {
   projectsEditLinkTypes,
   usersLeadingProjects,
   usersTeamsProjects,
+  teamsProjects,
 
   tasksCreate,
   tasks,
@@ -396,6 +407,7 @@ export const apiUrls = {
   changeRequestsCreate,
   changeRequestsCreateActivation,
   changeRequestsCreateStageGate,
+  changeRequestsCreateBudget,
   changeRequestsCreateStandard,
   changeRequestCreateProposeSolution,
   changeRequestRequestReviewer,
@@ -451,6 +463,7 @@ export const apiUrls = {
   financeGetPendingAdvisorList,
   financeSendPendingAdvisorList,
   financeEditAccountCode,
+  financeDeleteAccountCode,
   financeCreateAccountCode,
   financeCreateVendor,
   financeEditVendor,
@@ -462,11 +475,14 @@ export const apiUrls = {
   financeCreateReimbursementRequestComment,
   getAllIndexCodes,
   getAllOtherProductReasons,
+  financeCreateOtherProductReason,
   getAllSponsors,
   getSponsorTasks,
   deleteSponsor,
+  deleteSponsorTask,
   editSponsorTask,
   financeEditOtherReimbursementProductReason,
+  financeDeleteOtherProductReason,
   getReimbursementRequestProjectData,
   getReimbursementRequestTeamData,
   getAllReimbursementRequestData,
@@ -476,6 +492,9 @@ export const apiUrls = {
   getSpendingBarTeamTypeData,
   getSpendingBarCategoryData,
   getAllSpendingBarData,
+  getAllSponsorTiers,
+  editSponsor,
+  financeGetUsersTeamsReimbursementRequests,
 
   bomEndpoints,
   bomGetMaterialsByWbsNum,

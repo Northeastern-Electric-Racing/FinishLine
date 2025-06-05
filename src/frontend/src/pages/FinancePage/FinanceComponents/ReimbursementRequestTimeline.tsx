@@ -62,7 +62,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ comment, isLast }) =>
 
   return (
     <Stack direction="row" spacing={2}>
-      <Box sx={{ width: 'auto', textAlign: 'right' }}>
+      <Box sx={{ width: 'auto', textAlign: 'right', whiteSpace: 'nowrap' }}>
         <Typography fontWeight={'regular'} fontSize={18} variant="h1">
           {datePipe(comment.dateCreated)}
         </Typography>
@@ -104,7 +104,7 @@ const CreateNewCommentSection: React.FC<CreateNewCommentSectionProps> = ({ reimb
   const newCommentTime = commentTime.slice(0, -6) + commentTime.slice(-3);
   return (
     <Stack direction="row" spacing={2}>
-      <Box sx={{ width: 'auto', textAlign: 'right' }}>
+      <Box sx={{ width: 'auto', textAlign: 'right', whiteSpace: 'nowrap' }}>
         <Typography fontWeight={'regular'} fontSize={18} variant="h1">
           {datePipe(new Date())}
         </Typography>
@@ -118,14 +118,15 @@ const CreateNewCommentSection: React.FC<CreateNewCommentSectionProps> = ({ reimb
         <Box
           sx={{
             borderLeft: '4px dashed white',
-            height: '50px',
+            width: '4px',
+            minHeight: '50px',
+            flex: 1,
             mt: 0.5,
             mb: 0.5
           }}
         />
         {comments.length === 0 ? <Circle sx={{ fontSize: 20, mt: 0.5 }} /> : <></>}
       </Box>
-
       <Stack>
         <Typography fontWeight={'regular'}>
           <Link

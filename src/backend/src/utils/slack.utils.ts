@@ -1,5 +1,14 @@
-import { ChangeRequest, daysBetween, Task, UserPreview, wbsPipe, calculateEndDate, meetingStartTimePipe } from 'shared';
-import { Sponsor_Task, User } from '@prisma/client';
+import {
+  ChangeRequest,
+  daysBetween,
+  Task,
+  UserPreview,
+  wbsPipe,
+  calculateEndDate,
+  meetingStartTimePipe,
+  CreateSponsorTask
+} from 'shared';
+import { Reimbursement_Product_Other_Reason, Sponsor_Task, User } from '@prisma/client';
 import {
   editMessage,
   getChannelName,
@@ -259,17 +268,21 @@ export const sendAndGetSlackCRNotifications = async (
   teams: Team[],
   changeRequest: Change_Request,
   submitter: User,
-  wbsElement: WBS_Element,
-  projectWbsName: string
+  wbsElement?: WBS_Element,
+  projectWbsName?: string,
+  category?: Reimbursement_Product_Other_Reason
 ) => {
   const notifications: { channelId: string; ts: string }[] = [];
   let message = '';
   switch (changeRequest.type) {
     case 'ACTIVATION':
-      message = `${submitter.firstName} ${submitter.lastName} wants to activate ${wbsElement.name} in ${projectWbsName}`;
+      message = `${submitter.firstName} ${submitter.lastName} wants to activate ${wbsElement?.name} in ${projectWbsName}`;
       break;
     case 'STAGE_GATE':
-      message = `${submitter.firstName} ${submitter.lastName} wants to stage gate ${wbsElement.name} in ${projectWbsName}`;
+      message = `${submitter.firstName} ${submitter.lastName} wants to stage gate ${wbsElement?.name} in ${projectWbsName}`;
+      break;
+    case 'BUDGET':
+      message = `${submitter.firstName} ${submitter.lastName} wants to change the budget of ${category?.name}`;
       break;
     default:
       message = `${changeRequest.type} CR submitted by ${submitter.firstName} ${submitter.lastName} for the ${projectWbsName} project`;
@@ -592,12 +605,16 @@ export const sendReimbursementCommentNotification = async (comment: string, thre
  * @param sponsorTask the sponsor task to notify about
  * @param sponsor the name of the sponsor
  */
-export const notifySponsorTaskAssignee = async (assignee: UserWithSettings, sponsorTask: Sponsor_Task, sponsor: string) => {
+export const notifySponsorTaskAssignee = async (
+  assignee: UserWithSettings,
+  sponsorTask: Sponsor_Task | CreateSponsorTask,
+  sponsor: string
+) => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
   if (!assignee.userSettings?.slackId) return;
 
   const msg = `You have been assigned a task for ${sponsor}: ${sponsorTask.notes}`;
-  const link = `https://finishlinebyner.com/finance/companies/sponsors/${sponsorTask.sponsorId}`;
+  const link = `https://finishlinebyner.com/finance/companies/sponsors`;
   const linkButtonText = `View Tasks for ${sponsor}`;
   await sendMessage(assignee.userSettings?.slackId, msg, link, linkButtonText);
 };

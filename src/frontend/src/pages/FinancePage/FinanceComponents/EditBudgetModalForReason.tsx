@@ -8,7 +8,11 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { useGetAllIndexCodes, useGetAllOtherProductReason } from '../../../hooks/finance.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { useEditOtherReimbursementProductReason } from '../../../hooks/finance.hooks';
+import { formatReasonName } from '../../../utils/reimbursement-request.utils';
+import { createBudgetChangeRequest } from '../../../apis/change-requests.api';
+import { useAuth } from '../../../hooks/auth.hooks';
+import { CreateBudgetChangeRequestPayload } from '../../../hooks/change-requests.hooks';
+import { ChangeRequestType } from 'shared';
 
 const schema = yup.object().shape({
   category: yup.string().required('Reason is required'),
@@ -48,15 +52,14 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
 
   const currentCategoryId = watch('category');
 
+  const auth = useAuth();
+
   const {
     data: indexCodes,
     isLoading: indexCodesIsLoading,
     isError: indexCodeIsError,
     error: indexCodeError
   } = useGetAllIndexCodes();
-
-  const { isLoading: editReasonIsLoading, mutateAsync: editReason } =
-    useEditOtherReimbursementProductReason(currentCategoryId);
 
   const {
     data: otherReasons,
@@ -65,7 +68,7 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
     error: otherReasonError
   } = useGetAllOtherProductReason();
 
-  if (!indexCodes || indexCodesIsLoading || editReasonIsLoading) {
+  if (!indexCodes || indexCodesIsLoading) {
     return <LoadingIndicator />;
   }
   if (indexCodeIsError) {
@@ -81,12 +84,19 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
 
   const onSubmit = async (data: EditBudgetInputs) => {
     if (!currentCategoryId) return;
+    if (auth.user?.userId === undefined) throw new Error('Cannot create budget change request without being logged in');
 
-    const payload = {
-      updatedIndexCodeId: data.updatedIndexCode,
-      updatedBudget: data.updatedBudget
+    const currentCategory = otherReasons.find((reason) => reason.otherProductReasonId === currentCategoryId);
+    if (!currentCategory) return;
+
+    const payload: CreateBudgetChangeRequestPayload = {
+      submitterId: auth.user?.userId,
+      otherReasonId: currentCategoryId,
+      proposedBudget: data.updatedBudget,
+      type: ChangeRequestType.Budget
     };
-    await editReason(payload);
+
+    await createBudgetChangeRequest(payload.submitterId, payload.otherReasonId, payload.proposedBudget);
 
     handleClose();
   };
@@ -101,7 +111,7 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
       cancelText="Cancel"
-      submitText="Save"
+      submitText="Create Change Request"
       showCloseButton
     >
       <Box display="flex" flexDirection={'column'} minWidth={400}>
@@ -118,7 +128,7 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
                 renderValue={(selected) => {
                   const selectedReason = otherReasons.find((r) => r.otherProductReasonId === selected);
                   return selectedReason ? (
-                    selectedReason.name
+                    formatReasonName(selectedReason.name)
                   ) : (
                     <Typography sx={{ color: 'gray' }}>Select category to allocate to</Typography>
                   );
@@ -138,7 +148,7 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
               >
                 {otherReasons.map((reason) => (
                   <MenuItem key={reason.otherProductReasonId} value={reason.otherProductReasonId}>
-                    {reason.name}
+                    {formatReasonName(reason.name)}
                   </MenuItem>
                 ))}
               </Select>

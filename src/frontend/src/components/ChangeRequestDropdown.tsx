@@ -45,7 +45,7 @@ const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) =>
   const filteredRequests = getFilteredChangeRequests(changeRequests, user);
 
   const approvedChangeRequestOptions = filteredRequests.map((cr) => ({
-    label: `${cr.identifier} - ${wbsPipe(cr.wbsNum)} - ${cr.submitter.firstName} ${cr.submitter.lastName} - ${cr.type}`,
+    label: `${cr.identifier} - ${cr.wbsNum ? wbsPipe(cr.wbsNum) : cr.category ? cr.category.name : ''} - ${cr.submitter.firstName} ${cr.submitter.lastName} - ${cr.type}`,
     id: cr.crId
   }));
 
