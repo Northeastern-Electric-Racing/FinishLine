@@ -27,6 +27,7 @@ interface NERAutocompleteProps {
   filterSelectedOptions?: boolean;
   errorMessage?: FieldError;
   required?: boolean;
+  disabled?: boolean;
 }
 
 const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
@@ -40,7 +41,8 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
   listboxProps,
   filterSelectedOptions,
   errorMessage,
-  required = true
+  required = true,
+  disabled = false
 }) => {
   const theme = useTheme();
 
@@ -62,6 +64,7 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
         }}
         placeholder={placeholder}
         required={required}
+        error={!!errorMessage}
       />
     );
   };
@@ -75,6 +78,7 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
         onChange={onChange}
         options={options}
         sx={autocompleteStyle}
+        disabled={disabled}
         size={size}
         renderInput={autocompleteRenderInput}
         value={value}

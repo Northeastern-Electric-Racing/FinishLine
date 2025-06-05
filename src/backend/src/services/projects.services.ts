@@ -1,17 +1,18 @@
-import { Organization, User } from '@prisma/client';
+import { Organization, Prisma, User } from '@prisma/client';
 import {
   DescriptionBulletPreview,
   isAdmin,
   isGuest,
-  isProject,
+  isProjectWbs,
   LinkCreateArgs,
   LinkType,
   Project,
+  ProjectPreview,
   WbsNumber,
   wbsPipe
 } from 'shared';
 import prisma from '../prisma/prisma';
-import projectTransformer from '../transformers/projects.transformer';
+import projectTransformer, { projectPreviewTransformer } from '../transformers/projects.transformer';
 import { validateChangeRequestAccepted } from '../utils/change-requests.utils';
 import {
   AccessDeniedAdminOnlyException,
@@ -27,7 +28,7 @@ import { wbsNumOf } from '../utils/utils';
 import WorkPackagesService from './work-packages.services';
 import { linkTypeTransformer } from '../transformers/links.transformer';
 import { userHasPermission } from '../utils/users.utils';
-import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
+import { getProjectManyQueryArgs, getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
 import { getLinkTypeQueryArgs } from '../prisma-query-args/link-types.query-args';
@@ -39,17 +40,66 @@ export default class ProjectsService {
    * @param includeDeleted whether or not to include deleted projects
    * @returns all the projects
    */
-  static async getAllProjects(organization: Organization, includeDeleted: boolean): Promise<Project[]> {
+  static async getAllProjects(organization: Organization, includeDeleted: boolean): Promise<ProjectPreview[]> {
     const projects = includeDeleted
       ? await prisma.project.findMany({
           where: { wbsElement: { organizationId: organization.organizationId } },
-          ...getProjectQueryArgs(organization.organizationId)
+          ...getProjectManyQueryArgs(organization.organizationId)
         })
       : await prisma.project.findMany({
           where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId } },
-          ...getProjectQueryArgs(organization.organizationId)
+          ...getProjectManyQueryArgs(organization.organizationId)
         });
-    return projects.map(projectTransformer);
+
+    return projects.map(projectPreviewTransformer);
+  }
+
+  static async getUsersLeadingProjects(user: User, organization: Organization): Promise<ProjectPreview[]> {
+    const projects = await prisma.project.findMany({
+      where: {
+        wbsElement: {
+          organizationId: organization.organizationId,
+          dateDeleted: null,
+          OR: [{ leadId: user.userId }, { managerId: user.userId }]
+        }
+      },
+      ...getProjectManyQueryArgs(organization.organizationId)
+    });
+
+    return projects.map(projectPreviewTransformer);
+  }
+
+  static async getUsersTeamsProjects(user: User, organization: Organization): Promise<ProjectPreview[]> {
+    const projects = await prisma.project.findMany({
+      where: {
+        wbsElement: {
+          organizationId: organization.organizationId,
+          dateDeleted: null
+        },
+        teams: {
+          some: {
+            OR: [
+              {
+                headId: user.userId,
+                leads: {
+                  some: {
+                    userId: user.userId
+                  }
+                },
+                members: {
+                  some: {
+                    userId: user.userId
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      ...getProjectManyQueryArgs(organization.organizationId)
+    });
+
+    return projects.map(projectPreviewTransformer);
   }
 
   /**
@@ -60,37 +110,13 @@ export default class ProjectsService {
    * @throws if the wbsNumber is invalid, the project is not found, or the project is deleted
    */
   static async getSingleProject(wbsNumber: WbsNumber, organization: Organization): Promise<Project> {
-    if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
-
-    const { carNumber, projectNumber, workPackageNumber } = wbsNumber;
-
-    const wbsElement = await prisma.wBS_Element.findUnique({
-      where: {
-        wbsNumber: {
-          carNumber,
-          projectNumber,
-          workPackageNumber,
-          organizationId: organization.organizationId
-        }
-      },
-      include: {
-        project: {
-          ...getProjectQueryArgs(organization.organizationId)
-        }
-      }
-    });
-
-    const project = wbsElement?.project;
-
-    if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
-    if (project.wbsElement.dateDeleted) throw new DeletedException('Project', project.projectId);
-    if (project.wbsElement.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Project');
+    const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNumber, organization);
 
     return projectTransformer(project);
   }
 
   static async getSingleProjectWithQueryArgs(wbsNumber: WbsNumber, organization: Organization) {
-    if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
+    if (!isProjectWbs(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
 
     const { carNumber, projectNumber, workPackageNumber } = wbsNumber;
 
@@ -139,7 +165,7 @@ export default class ProjectsService {
    */
   static async createProject(
     user: User,
-    crId: string,
+    crId: string | null,
     carNumber: number,
     name: string,
     summary: string,
@@ -155,7 +181,9 @@ export default class ProjectsService {
     if (await userHasPermission(userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('create projects');
 
-    await validateChangeRequestAccepted(crId);
+    if (crId) {
+      await validateChangeRequestAccepted(crId);
+    }
 
     if (teamIds.length > 0) {
       for (const teamId of teamIds) {
@@ -175,6 +203,16 @@ export default class ProjectsService {
 
     const maxProjectNumber: number = await getHighestProjectNumber(carNumber);
 
+    const changes: Prisma.ChangeCreateManyWbsElementInput[] = crId
+      ? [
+          {
+            changeRequestId: crId,
+            implementerId: user.userId,
+            detail: 'New Project Created'
+          }
+        ]
+      : [];
+
     // create the wbs element and project as well as the associated change
     const createdWbsElement = await prisma.wBS_Element.create({
       data: {
@@ -191,13 +229,7 @@ export default class ProjectsService {
             carId: carWbs.car.carId
           }
         },
-        changes: {
-          create: {
-            changeRequestId: crId,
-            implementerId: user.userId,
-            detail: 'New Project Created'
-          }
-        },
+        changes: { createMany: { data: changes } },
         organizationId: carWbs.organizationId
       },
       include: {
@@ -314,7 +346,7 @@ export default class ProjectsService {
    * @throws if the project isn't found, the team isn't found, or the user doesn't have access
    */
   static async setProjectTeam(user: User, wbsNumber: WbsNumber, teamId: string, organization: Organization): Promise<void> {
-    if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
+    if (!isProjectWbs(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
 
     // find the associated project
     const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNumber, organization);
@@ -463,58 +495,6 @@ export default class ProjectsService {
   }
 
   /**
-   * Sets an abbreviation for this project
-   * @param wbsNum the project
-   * @param user the user making the change
-   * @param organization the organization
-   * @param abbreviation the new abbreviation
-   * @returns the updated project
-   */
-  static async setAbbreviation(wbsNum: WbsNumber, user: User, organization: Organization, abbreviation: string) {
-    const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNum, organization);
-
-    if (!project) throw new NotFoundException('Project', wbsPipe(wbsNum));
-
-    if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('set abbreviation');
-    }
-
-    const updatedProject = await prisma.project.update({
-      where: { projectId: project.projectId },
-      data: {
-        abbreviation
-      },
-      ...getProjectQueryArgs(organization.organizationId)
-    });
-
-    return projectTransformer(updatedProject);
-  }
-
-  /**
-   * Removes the abbreviation from a given project
-   * @param wbsNum the project
-   * @param user the user making the change
-   * @param organization the organization
-   * @returns the updated project
-   */
-  static async deleteAbbreviation(wbsNum: WbsNumber, user: User, organization: Organization) {
-    const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNum, organization);
-
-    if (!project) throw new NotFoundException('Project', wbsPipe(wbsNum));
-
-    if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('delete abbreviation');
-    }
-
-    await prisma.project.update({
-      where: { projectId: project.projectId },
-      data: {
-        abbreviation: null
-      }
-    });
-  }
-
-  /**
    * Gets all the link types in the users organization
    * @param organizationId The organization the user is currently in
    * @returns all the link types in the users organization
@@ -614,5 +594,56 @@ export default class ProjectsService {
       ...getLinkTypeQueryArgs(organization.organizationId)
     });
     return linkTypeTransformer(linkTypeUpdated);
+  }
+  /**
+   * Sets an abbreviation for this project
+   * @param wbsNum the project
+   * @param user the user making the change
+   * @param organization the organization
+   * @param abbreviation the new abbreviation
+   * @returns the updated project
+   */
+  static async setAbbreviation(wbsNum: WbsNumber, user: User, organization: Organization, abbreviation: string) {
+    const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNum, organization);
+
+    if (!project) throw new NotFoundException('Project', wbsPipe(wbsNum));
+
+    if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('set abbreviation');
+    }
+
+    const updatedProject = await prisma.project.update({
+      where: { projectId: project.projectId },
+      data: {
+        abbreviation
+      },
+      ...getProjectQueryArgs(organization.organizationId)
+    });
+
+    return projectTransformer(updatedProject);
+  }
+
+  /**
+   * Removes the abbreviation from a given project
+   * @param wbsNum the project
+   * @param user the user making the change
+   * @param organization the organization
+   * @returns the updated project
+   */
+  static async deleteAbbreviation(wbsNum: WbsNumber, user: User, organization: Organization) {
+    const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNum, organization);
+
+    if (!project) throw new NotFoundException('Project', wbsPipe(wbsNum));
+
+    if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('delete abbreviation');
+    }
+
+    await prisma.project.update({
+      where: { projectId: project.projectId },
+      data: {
+        abbreviation: null
+      }
+    });
   }
 }

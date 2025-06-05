@@ -2,17 +2,18 @@ import express from 'express';
 import { body } from 'express-validator';
 import {
   intMinZero,
-  decimalMinZero,
-  isMaterialStatus,
   nonEmptyString,
   projectValidators,
-  validateInputs
+  validateInputs,
+  materialValidators
 } from '../utils/validation.utils';
 import ProjectsController from '../controllers/projects.controllers';
 
 const projectRouter = express.Router();
 
 projectRouter.get('/all/:deleted', ProjectsController.getAllProjects);
+projectRouter.get('/users-teams', ProjectsController.getUsersTeamsProjects);
+projectRouter.get('/leading', ProjectsController.getUsersLeadingProjects);
 
 /* Link Types */
 projectRouter.get('/link-types', ProjectsController.getAllLinkTypes);
@@ -38,6 +39,7 @@ projectRouter.post(
   body('teamIds').isArray(),
   nonEmptyString(body('teamIds.*')),
   body('budget').optional().isInt({ min: 0 }).default(0),
+  nonEmptyString(body('crId').optional()),
   ...projectValidators,
   validateInputs,
   ProjectsController.createProject
@@ -46,6 +48,7 @@ projectRouter.post(
   '/edit',
   nonEmptyString(body('projectId')),
   intMinZero(body('budget')),
+  nonEmptyString(body('crId')),
   ...projectValidators,
   validateInputs,
   ProjectsController.editProject
@@ -55,14 +58,6 @@ projectRouter.get('/:wbsNum', ProjectsController.getSingleProject);
 projectRouter.post('/:wbsNum/set-team', nonEmptyString(body('teamId')), validateInputs, ProjectsController.setProjectTeam);
 projectRouter.delete('/:wbsNum/delete', ProjectsController.deleteProject);
 projectRouter.post('/:wbsNum/favorite', ProjectsController.toggleFavorite);
-projectRouter.post(
-  '/set-abbreviation',
-  nonEmptyString(body('wbsNum')),
-  nonEmptyString(body('abbreviation')),
-  validateInputs,
-  ProjectsController.setAbbreviation
-);
-projectRouter.post('/:wbsNum/delete-abbreviation', ProjectsController.deleteAbbreviation);
 
 /**************** BOM Section ****************/
 projectRouter.post(
@@ -93,42 +88,8 @@ projectRouter.post(
   validateInputs,
   ProjectsController.assignMaterialAssembly
 );
-projectRouter.post(
-  '/bom/material/:wbsNum/create',
-  nonEmptyString(body('name')),
-  nonEmptyString(body('assemblyId').optional()),
-  isMaterialStatus(body('status')),
-  nonEmptyString(body('materialTypeName')),
-  nonEmptyString(body('manufacturerName')),
-  nonEmptyString(body('manufacturerPartNumber')),
-  nonEmptyString(body('pdmFileName').optional()),
-  decimalMinZero(body('quantity')),
-  nonEmptyString(body('unitName')).optional(),
-  intMinZero(body('price')), // in cents
-  intMinZero(body('subtotal')), // in cents
-  nonEmptyString(body('linkUrl').isURL()),
-  body('notes').isString().optional(),
-  validateInputs,
-  ProjectsController.createMaterial
-);
-projectRouter.post(
-  '/bom/material/:materialId/edit',
-  nonEmptyString(body('name')),
-  nonEmptyString(body('assemblyId').optional()),
-  isMaterialStatus(body('status')),
-  nonEmptyString(body('materialTypeName')),
-  nonEmptyString(body('manufacturerName')),
-  nonEmptyString(body('manufacturerPartNumber')),
-  nonEmptyString(body('pdmFileName').optional()),
-  decimalMinZero(body('quantity')),
-  body('unitName').optional(),
-  intMinZero(body('price')), // in cents
-  intMinZero(body('subtotal')), // in cents
-  nonEmptyString(body('linkUrl').isURL()),
-  body('notes').isString(),
-  validateInputs,
-  ProjectsController.editMaterial
-);
+projectRouter.post('/bom/material/:wbsNum/create', ...materialValidators, validateInputs, ProjectsController.createMaterial);
+projectRouter.post('/bom/material/:materialId/edit', ...materialValidators, validateInputs, ProjectsController.editMaterial);
 
 projectRouter.post(
   '/bom/assembly/:assemblyId/edit',
@@ -147,5 +108,15 @@ projectRouter.post('/bom/units/create', nonEmptyString(body('name')), validateIn
 projectRouter.get('/bom/units', ProjectsController.getAllUnits);
 
 projectRouter.delete('/bom/units/:unitId/delete', ProjectsController.deleteUnit);
+projectRouter.get('/bom/:wbsNum/assemblies', ProjectsController.getAssembliesForWbsElement);
+projectRouter.get('/bom/:wbsNum/materials', ProjectsController.getMaterialsForWbsElement);
+projectRouter.post(
+  '/set-abbreviation',
+  nonEmptyString(body('wbsNum')),
+  nonEmptyString(body('abbreviation')),
+  validateInputs,
+  ProjectsController.setAbbreviation
+);
+projectRouter.post('/:wbsNum/delete-abbreviation', ProjectsController.deleteAbbreviation);
 
 export default projectRouter;

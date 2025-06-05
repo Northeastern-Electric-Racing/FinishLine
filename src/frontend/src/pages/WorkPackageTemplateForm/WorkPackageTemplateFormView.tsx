@@ -5,7 +5,7 @@ import { Box, TextField, Autocomplete, Typography, Stack, FormControl } from '@m
 import NERSuccessButton from '../../components/NERSuccessButton';
 import PageLayout from '../../components/PageLayout';
 import { useToast } from '../../hooks/toasts.hooks';
-import { WorkPackageTemplateApiInputs } from '../../apis/work-packages.api';
+import { WorkPackageTemplateApiInputs } from 'shared';
 import { DescriptionBulletPreview, WorkPackageStage } from 'shared';
 import { ObjectSchema } from 'yup';
 import { useHistory } from 'react-router-dom';

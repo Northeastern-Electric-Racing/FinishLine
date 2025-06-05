@@ -120,12 +120,13 @@ export const sendSlackTaskAssignedNotification = async (
  */
 export const sendReimbursementRequestCreatedNotificationAndCreateMessageInfo = async (
   requestId: string,
+  requestIdentifier: number,
   submitterId: string,
   organizationId: string
 ): Promise<void> => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
 
-  const msg = `${await getUserFullName(submitterId)} created a reimbursement request 💲`;
+  const msg = `${await getUserFullName(submitterId)} created a reimbursement request (ID#: ${requestIdentifier}) 💲`;
   const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
   const linkButtonText = 'View Reimbursement Request';
 
@@ -260,10 +261,10 @@ export const sendAndGetSlackCRNotifications = async (
   let message = '';
   switch (changeRequest.type) {
     case 'ACTIVATION':
-      message = `${submitter.firstName} ${submitter.lastName} wants to activate ${wbsElement.name} in ${projectWbsName}`;
+      message = `${submitter.firstName} ${submitter.lastName} is activating ${wbsElement.name} in ${projectWbsName}`;
       break;
     case 'STAGE_GATE':
-      message = `${submitter.firstName} ${submitter.lastName} wants to stage gate ${wbsElement.name} in ${projectWbsName}`;
+      message = `${submitter.firstName} ${submitter.lastName} is stage gating ${wbsElement.name} in ${projectWbsName}`;
       break;
     default:
       message = `${changeRequest.type} CR submitted by ${submitter.firstName} ${submitter.lastName} for the ${projectWbsName} project`;
@@ -401,7 +402,7 @@ export const sendSlackCRReviewedNotification = async (
   comments: string | null
 ) => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
-  const msgs = [];
+  const msgs: any[] = [];
   const fullMsg = `:tada: Your Change Request was just reviewed!${
     comments ? `\n Comments: ${comments}` : ''
   }\nClick the link to view! :tada:`;

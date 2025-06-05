@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { WorkPackage, WbsNumber, WorkPackageTemplate } from 'shared';
+import { WorkPackage, WbsNumber } from 'shared';
 import {
   createSingleWorkPackage,
   deleteWorkPackage,
@@ -14,13 +14,8 @@ import {
   getSingleWorkPackage,
   slackUpcomingDeadlines,
   getManyWorkPackages,
-  WorkPackageApiInputs,
-  WorkPackageTemplateApiInputs,
-  editWorkPackageTemplate,
-  getAllWorkPackageTemplates,
-  deleteWorkPackageTemplate,
-  getSingleWorkPackageTemplate,
-  createSingleWorkPackageTemplate
+  WorkPackageCreateArgs,
+  WorkPackageEditArgs
 } from '../apis/work-packages.api';
 
 /**
@@ -51,11 +46,18 @@ export const useSingleWorkPackage = (wbsNum: WbsNumber) => {
  * @param wpPayload Payload containing all information needed to create a work package.
  */
 export const useCreateSingleWorkPackage = () => {
-  return useMutation<{ message: string }, Error, WorkPackageApiInputs>(
+  const queryClient = useQueryClient();
+  return useMutation<WorkPackage, Error, WorkPackageCreateArgs>(
     ['work packages', 'create'],
-    async (wpPayload: WorkPackageApiInputs) => {
+    async (wpPayload: WorkPackageCreateArgs) => {
       const { data } = await createSingleWorkPackage(wpPayload);
       return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['teams', false]); //invalidations for gantt chart
+        queryClient.invalidateQueries(['projects']);
+      }
     }
   );
 };
@@ -67,36 +69,15 @@ export const useCreateSingleWorkPackage = () => {
  */
 export const useEditWorkPackage = (_wbsNum: WbsNumber) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, WorkPackageApiInputs>(
+  return useMutation<{ message: string }, Error, WorkPackageEditArgs>(
     ['work packages', 'edit'],
-    async (wpPayload: WorkPackageApiInputs) => {
+    async (wpPayload: WorkPackageEditArgs) => {
       const { data } = await editWorkPackage(wpPayload);
       return data;
     },
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['work packages']);
-      }
-    }
-  );
-};
-
-/**
- * Custom React Hook to edit a work package.
- *
- * @returns React-query utility functions exposed by the useMutation hook
- */
-export const useEditWorkPackageTemplate = (workPackageTemplateId: string) => {
-  const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, WorkPackageTemplateApiInputs>(
-    ['work package templates', 'edit'],
-    async (wptPayload: WorkPackageTemplateApiInputs) => {
-      const { data } = await editWorkPackageTemplate(workPackageTemplateId, wptPayload);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['work package templates']);
       }
     }
   );
@@ -149,56 +130,4 @@ export const useSlackUpcomingDeadlines = () => {
     const { data } = await slackUpcomingDeadlines(deadline);
     return data;
   });
-};
-
-/**
- * Custom React Hook to get all workpackage templates
- */
-export const useAllWorkPackageTemplates = () => {
-  return useQuery<WorkPackageTemplate[], Error>(['work package templates'], async () => {
-    const { data } = await getAllWorkPackageTemplates();
-    return data;
-  });
-};
-
-/**
- * Custom React Hook to delete a work package template.
- */
-export const useDeleteWorkPackageTemplate = () => {
-  const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, string>(
-    ['work package templates', 'delete'],
-    async (workPackageTemplateId: string) => {
-      const { data } = await deleteWorkPackageTemplate(workPackageTemplateId);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['work package templates']);
-      }
-    }
-  );
-};
-
-/*
- * Custom React Hook to get a single workpackage template
- */
-export const useSingleWorkPackageTemplate = (workPackageTemplateId: string) => {
-  return useQuery<WorkPackageTemplate, Error>(['work package templates', workPackageTemplateId], async () => {
-    const { data } = await getSingleWorkPackageTemplate(workPackageTemplateId);
-    return data;
-  });
-};
-
-/**
- * Custom React Hook to create a workpackage template
- */
-export const useCreateSingleWorkPackageTemplate = () => {
-  return useMutation<{ message: string }, Error, WorkPackageTemplateApiInputs>(
-    ['work package templates', 'create'],
-    async (wptPayload: WorkPackageTemplateApiInputs) => {
-      const { data } = await createSingleWorkPackageTemplate(wptPayload);
-      return data;
-    }
-  );
 };

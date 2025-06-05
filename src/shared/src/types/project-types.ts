@@ -7,7 +7,7 @@ import { User, UserPreview } from './user-types';
 import { ImplementedChange } from './change-request-types';
 import { WorkPackageStage } from './work-package-types';
 import { TeamPreview } from './team-types';
-import { Assembly, DesignReview, Material, Task, TeamType } from 'shared';
+import { DesignReviewPreview, Task, TeamType } from 'shared';
 
 export interface WbsNumber {
   carNumber: number;
@@ -27,10 +27,10 @@ export interface WbsElement {
   manager?: User;
   links: Link[];
   changes: ImplementedChange[];
-  materials: Material[];
-  assemblies: Assembly[];
   descriptionBullets: DescriptionBullet[];
 }
+
+export type WbsElementPreview = Omit<WbsElement, 'changes' | 'materials' | 'assemblies' | 'descriptionBullets'>;
 
 export enum WbsElementStatus {
   Inactive = 'INACTIVE',
@@ -51,10 +51,27 @@ export interface Project extends WbsElement {
   abbreviation?: string;
 }
 
-export type ProjectPreview = Pick<
-  Project,
-  'id' | 'name' | 'wbsNum' | 'status' | 'workPackages' | 'lead' | 'manager' | 'deleted'
->;
+export type RetrospectiveProjectPreview = Omit<ProjectPreview, 'workPackages'> & {
+  workPackages: RetrospectiveWorkPackage[];
+  originalStartDate?: Date;
+  originalEndDate?: Date;
+};
+
+export interface ProjectPreview extends WbsElementPreview {
+  startDate?: Date;
+  endDate?: Date;
+  budget: number;
+  teams: TeamPreview[];
+  workPackages: WorkPackage[];
+  tasks: Task[];
+  duration: number;
+  abbreviation?: string;
+}
+
+export interface RetrospectiveWorkPackage extends WorkPackage {
+  originalStartDate: Date;
+  originalDuration: number;
+}
 
 export interface WorkPackage extends WbsElement {
   orderInProject: number;
@@ -66,7 +83,17 @@ export interface WorkPackage extends WbsElement {
   projectName: string;
   stage?: WorkPackageStage;
   teamTypes: TeamType[];
-  designReviews: DesignReview[];
+  projectId: string;
+  designReviews: DesignReviewPreview[];
+}
+
+export interface WorkPackagePreview extends WbsElementPreview {
+  projectName: string;
+  projectId: string;
+  startDate: Date;
+  duration: number;
+  endDate: Date;
+  stage?: WorkPackageStage;
 }
 
 export interface DescriptionBullet {

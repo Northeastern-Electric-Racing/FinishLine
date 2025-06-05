@@ -1,5 +1,4 @@
-import { Box, Card, CardContent, Grid, IconButton, Link, Stack, Tooltip, Typography } from '@mui/material';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import { Box, Card, CardContent, Grid, Link, Stack, Tooltip, Typography, useTheme } from '@mui/material';
 import { DesignReview, DesignReviewStatus, TeamType } from 'shared';
 import { meetingStartTimePipe } from '../../../utils/pipes';
 import ConstructionIcon from '@mui/icons-material/Construction';
@@ -30,16 +29,18 @@ interface CalendarDayCardProps {
 
 const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, teamTypes }) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
+  const theme = useTheme();
   const DayCardTitle = () => (
     <Grid container alignItems="center" margin={0} padding={0}>
-      <Grid item>
-        <IconButton onClick={() => setIsCreateModalOpen(true)}>
-          <AddCircleOutlineIcon fontSize="small" />
-        </IconButton>
-      </Grid>
       <Grid item xs display="flex" justifyContent="flex-end">
-        <Typography variant="h6" marginRight={1} noWrap>
+        <Typography
+          variant="h6"
+          marginRight={1}
+          noWrap
+          sx={{
+            color: !(isFutureDay || isCurrentDay) ? theme.palette.grey[600] : 'inherit'
+          }}
+        >
           {cardDate.getDate()}
         </Typography>
       </Grid>
@@ -61,7 +62,19 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
           markedStatus={markedStatus}
           setMarkedStatus={setMarkedStatus}
         />
-        <Box marginLeft={0.5} marginBottom={0.5} onClick={() => setIsSummaryModalOpen(true)} sx={{ cursor: 'pointer' }}>
+        <Box
+          marginLeft={0.5}
+          marginBottom={0.5}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsSummaryModalOpen(true);
+          }}
+          sx={{
+            position: 'relative',
+            zIndex: 2,
+            cursor: 'pointer'
+          }}
+        >
           <Card
             sx={{
               backgroundColor: designReviewStatusColor(markedStatus),
@@ -122,7 +135,14 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
   const ExtraEventsCard = ({ extraEvents }: { extraEvents: DesignReview[] }) => {
     const [showTooltip, setShowTooltip] = useState(false);
     return (
-      <Box marginLeft={0.5} marginBottom={0.2}>
+      <Box
+        marginLeft={0.5}
+        marginBottom={0.2}
+        sx={{
+          position: 'relative',
+          zIndex: 2
+        }}
+      >
         <Card
           sx={{
             backgroundColor: 'grey',
@@ -180,6 +200,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
 
   const today = new Date().toDateString();
   const isCurrentDay = cardDate.toDateString() === today;
+  const isFutureDay = cardDate >= new Date();
 
   return (
     <>
@@ -193,13 +214,32 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
       />
       <Card
         sx={{
+          position: 'relative',
+          backgroundColor: !(isFutureDay || isCurrentDay) ? theme.palette.grey[900] : 'inherit',
           borderRadius: 2,
           width: { xs: '95%', md: '80%' },
           height: { xs: '10vh', sm: '15vh' },
           border: isCurrentDay ? '2px solid gray' : 'none',
-          boxShadow: isCurrentDay ? '0 0 10px rgba(255, 255, 255, 0.5)' : 'none'
+          boxShadow: isCurrentDay ? '0 0 10px rgba(255, 255, 255, 0.5)' : 'none',
+          cursor: isFutureDay || isCurrentDay ? 'pointer' : 'default',
+          transition: 'background 0.2s',
+          '&:hover': isFutureDay || isCurrentDay ? { background: '#232323' } : {}
         }}
       >
+        <Box
+          onClick={() => {
+            if (isFutureDay || isCurrentDay) {
+              setIsCreateModalOpen(true);
+            }
+          }}
+          sx={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            zIndex: 1,
+            pointerEvents: 'auto'
+          }}
+        />
         <CardContent sx={{ padding: 0 }}>
           <DayCardTitle />
           {events.length < 3 ? (

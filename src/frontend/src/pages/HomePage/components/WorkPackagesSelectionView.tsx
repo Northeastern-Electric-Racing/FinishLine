@@ -59,9 +59,8 @@ const WorkPackagesSelectionView: React.FC = () => {
   const WorkPackagesDisplay = (workPackages: WorkPackage[]) => (
     <Box
       sx={{
-        display: 'flex',
-        flexDirection: 'row',
-        flexWrap: 'wrap',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         overflow: 'auto',
         width: '100%',
         gap: 2

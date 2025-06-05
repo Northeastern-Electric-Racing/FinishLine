@@ -29,10 +29,16 @@ export const useProvideAuth = () => {
   };
 
   const devSignin = async (userId: string) => {
-    const user = await mutateAsyncDev(userId);
-    setUser(user);
-    localStorage.setItem('devUserId', userId.toString());
-    return user;
+    try {
+      const user = await mutateAsyncDev(userId);
+      setUser(user);
+      localStorage.setItem('devUserId', userId.toString());
+      return user;
+    } catch (error) {
+      console.log(error);
+      localStorage.removeItem('devUserId');
+      return;
+    }
   };
 
   const signin = async (id_token: string) => {

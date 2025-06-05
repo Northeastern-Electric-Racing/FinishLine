@@ -25,11 +25,14 @@ workPackagesRouter.post(
 workPackagesRouter.get('/:wbsNum', WorkPackagesController.getSingleWorkPackage);
 workPackagesRouter.post(
   '/create',
-  nonEmptyString(body('crId')),
+  nonEmptyString(body('crId').optional()),
   nonEmptyString(body('name')),
   isWorkPackageStageOrNone(body('stage')),
   isDate(body('startDate')),
   intMinZero(body('duration')),
+  intMinZero(body('projectWbsNum.carNumber')),
+  intMinZero(body('projectWbsNum.projectNumber')),
+  intMinZero(body('projectWbsNum.workPackageNumber')),
   ...blockedByValidators,
   ...descriptionBulletsValidators,
   validateInputs,

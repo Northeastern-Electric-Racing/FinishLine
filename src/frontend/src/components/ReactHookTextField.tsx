@@ -24,6 +24,7 @@ interface ReactHookTextFieldProps {
   maxLength?: number;
   required?: boolean;
   disabled?: boolean;
+  customOnChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
 
 const ReactHookTextField: React.FC<ReactHookTextFieldProps> = ({
@@ -43,7 +44,8 @@ const ReactHookTextField: React.FC<ReactHookTextFieldProps> = ({
   errorMessage,
   maxLength,
   required = true,
-  disabled = false
+  disabled = false,
+  customOnChange
 }) => {
   const defaultRules = { required: true };
 
@@ -68,8 +70,11 @@ const ReactHookTextField: React.FC<ReactHookTextFieldProps> = ({
           required={required}
           id={`${name}-input`}
           autoComplete="off"
-          onChange={onChange}
-          value={value}
+          onChange={(e) => {
+            onChange(e);
+            if (customOnChange) customOnChange(e);
+          }}
+          value={value ?? ''}
           fullWidth={fullWidth}
           label={label}
           placeholder={placeholder}

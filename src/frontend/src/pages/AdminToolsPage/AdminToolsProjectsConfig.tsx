@@ -2,6 +2,7 @@ import { Box } from '@mui/system';
 import { Grid } from '@mui/material';
 import { Typography } from '@mui/material';
 import WorkPackageTemplateTable from './ProjectsConfig/WorkPackageTemplateTable';
+import ProjectTemplateTable from './ProjectsConfig/ProjectTemplateTable';
 import LinkTypeTable from './ProjectsConfig/LinkTypes/LinkTypeTable';
 import DescriptionBulletTypeTable from './ProjectsConfig/DescriptionBulletTypes/DescriptionBulletTypeTable';
 import CarsTable from './ProjectsConfig/CarsTable';
@@ -46,6 +47,10 @@ const AdminToolsProjectsConfig: React.FC = () => {
         Work Package Templates
       </Typography>
       <WorkPackageTemplateTable />
+      <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
+        Project Templates
+      </Typography>
+      <ProjectTemplateTable />
     </Box>
   );
 };

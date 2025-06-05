@@ -9,7 +9,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import {
   ChangeRequestReason,
   ChangeRequestType,
-  Project,
+  ProjectPreview,
   ProposedSolutionFormInput,
   wbsNamePipe,
   wbsPipe,
@@ -139,7 +139,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
 
   const wbsDropdownOptions: { label: string; id: string }[] = [];
 
-  projects.forEach((project: Project) => {
+  projects.forEach((project: ProjectPreview) => {
     wbsDropdownOptions.push({
       label: `${wbsNamePipe(project)}`,
       id: wbsPipe(project.wbsNum)

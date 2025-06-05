@@ -1,10 +1,10 @@
 import { Prisma } from '@prisma/client';
-import { calculateEndDate, WorkPackage, WorkPackageStage } from 'shared';
+import { calculateEndDate, RetrospectiveWorkPackage, WorkPackage, WorkPackageStage } from 'shared';
 import descriptionBulletTransformer from '../transformers/description-bullets.transformer';
 import { convertStatus, wbsNumOf } from '../utils/utils';
 import { userTransformer } from './user.transformer';
 import { WorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
-import { designReviewTransformer } from './design-reviews.transformer';
+import { designReviewPreviewTransformer } from './design-reviews.transformer';
 import { teamTypeTransformer } from './team-types.transformer';
 
 const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>): WorkPackage => {
@@ -12,8 +12,7 @@ const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPacka
   return {
     wbsElementId: wpInput.wbsElementId,
     links: [],
-    materials: [],
-    assemblies: [],
+    projectId: wpInput.projectId,
     id: wpInput.workPackageId,
     dateCreated: wpInput.wbsElement.dateCreated,
     name: wpInput.wbsElement.name,
@@ -30,6 +29,7 @@ const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPacka
     changes: wpInput.wbsElement.changes.map((change) => ({
       wbsNum,
       changeId: change.changeId,
+      changeRequestIdentifier: change.changeRequest.identifier,
       changeRequestId: change.changeRequestId,
       implementer: userTransformer(change.implementer),
       detail: change.detail,
@@ -39,8 +39,20 @@ const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPacka
     projectName: wpInput.project.wbsElement.name,
     stage: (wpInput.stage as WorkPackageStage) || undefined,
     blocking: wpInput.wbsElement.blocking.map((wp) => wbsNumOf(wp.wbsElement)),
-    designReviews: wpInput.wbsElement.designReviews.map(designReviewTransformer),
+    designReviews: wpInput.wbsElement.designReviews.map((designReview) =>
+      designReviewPreviewTransformer(designReview, `${wpInput.project.wbsElement.name} - ${wpInput.wbsElement.name}`)
+    ),
     deleted: wpInput.wbsElement.dateDeleted !== null
+  };
+};
+
+export const retrospectiveWorkPackageTransformer = (
+  wpInput: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs> & { originalStartDate: Date; originalDuration: number }
+): RetrospectiveWorkPackage => {
+  return {
+    ...workPackageTransformer(wpInput),
+    originalStartDate: wpInput.originalStartDate,
+    originalDuration: wpInput.originalDuration
   };
 };
 

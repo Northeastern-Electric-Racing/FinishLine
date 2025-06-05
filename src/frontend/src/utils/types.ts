@@ -40,7 +40,7 @@ export interface EditSingleProjectPayload {
 }
 
 export interface CreateSingleProjectPayload {
-  crId: string;
+  crId?: string;
   name: string;
   carNumber: number;
   summary: string;

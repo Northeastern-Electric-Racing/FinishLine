@@ -17,7 +17,15 @@ import {
   useTheme
 } from '@mui/material';
 import { Box, Stack } from '@mui/system';
-import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
+import {
+  Control,
+  Controller,
+  FieldErrors,
+  UseFormHandleSubmit,
+  UseFormRegister,
+  UseFormSetValue,
+  UseFormWatch
+} from 'react-hook-form';
 import {
   ClubAccount,
   AccountCode,
@@ -62,6 +70,7 @@ interface ReimbursementRequestFormViewProps {
   handleSubmit: UseFormHandleSubmit<ReimbursementRequestFormInput>;
   errors: FieldErrors<ReimbursementRequestFormInput>;
   watch: UseFormWatch<ReimbursementRequestFormInput>;
+  register: UseFormRegister<ReimbursementRequestFormInput>;
   submitText: 'Save' | 'Submit';
   previousPage: string;
   setValue: UseFormSetValue<ReimbursementRequestFormInput>;
@@ -83,6 +92,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   handleSubmit,
   errors,
   watch,
+  register,
   submitText,
   previousPage,
   setValue,
@@ -408,7 +418,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               appendProduct={reimbursementProductAppend}
               removeProduct={reimbursementProductRemove}
               wbsElementAutocompleteOptions={wbsElementAutocompleteOptions}
-              control={control}
+              watch={watch}
+              register={register}
               setValue={setValue}
             />
             <FormHelperText error>{errors.reimbursementProducts?.message}</FormHelperText>

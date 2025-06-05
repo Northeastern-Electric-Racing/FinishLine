@@ -32,8 +32,9 @@ import FullPageTabs from '../../../components/FullPageTabs';
 import ChangesList from '../../../components/ChangesList';
 import BOMTab, { addMaterialCosts } from './BOMTab';
 import SavingsIcon from '@mui/icons-material/Savings';
-import ChangeRequestTab from './ChangeRequestTab';
 import { TaskList } from './TaskList/v2';
+import { useGetMaterialsForWbsElement } from '../../../hooks/bom.hooks';
+import ChangeRequestTab from '../../../components/ChangeRequestTab';
 import PartsReviewPage from './PartReview/PartsReviewPage';
 
 interface ProjectViewContainerProps {
@@ -47,6 +48,12 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   const history = useHistory();
   const { mutateAsync: mutateAsyncSetProjectTeam } = useSetProjectTeam(project.wbsNum);
   const { data: favoriteProjects, isLoading, isError, error } = useUsersFavoriteProjects(user.userId);
+  const {
+    data: materials,
+    isLoading: materialsIsLoading,
+    isError: materialsIsError,
+    error: materialsError
+  } = useGetMaterialsForWbsElement(project.wbsNum);
   const [deleteModalShow, setDeleteModalShow] = useState<boolean>(false);
   const handleDeleteClose = () => setDeleteModalShow(false);
   const handleClickDelete = () => {
@@ -56,8 +63,10 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   const [tab, setTab] = useState(0);
   const dropdownOpen = Boolean(anchorEl);
 
-  if (isLoading || !favoriteProjects) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error?.message} />;
+  if (isError) return <ErrorPage message={error.message} />;
+  if (materialsIsError) return <ErrorPage message={materialsError.message} />;
+
+  if (isLoading || !favoriteProjects || !materials || materialsIsLoading) return <LoadingIndicator />;
 
   project.workPackages.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
   const { teamAsHeadId } = user;
@@ -112,7 +121,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   );
 
   const SuggestBudgetIncreaseButton = () => {
-    const budgetIncrease = project.materials.reduce(addMaterialCosts, 0) - project.budget;
+    const budgetIncrease = materials.reduce(addMaterialCosts, 0) - project.budget;
     return (
       <MenuItem
         onClick={() =>
@@ -250,7 +259,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       ) : tab === 5 ? (
         <ProjectGantt workPackages={project.workPackages} />
       ) : tab === 6 ? (
-        <ChangeRequestTab project={project} />
+        <ChangeRequestTab wbsElement={project} />
       ) : (
         <PartsReviewPage project={project} />
       )}

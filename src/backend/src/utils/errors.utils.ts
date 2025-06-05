@@ -145,6 +145,7 @@ export type ExceptionObjectNames =
   | 'Announcement'
   | 'Graph'
   | 'Graph Collection'
+  | 'Project Template'
   | 'Part Review'
   | 'Part Submission'
   | 'Part'
