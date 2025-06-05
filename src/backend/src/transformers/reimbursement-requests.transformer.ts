@@ -126,8 +126,9 @@ export const vendorTransformer = (vendor: Prisma.VendorGetPayload<VendorQueryArg
   }
   return {
     ...vendor,
-    password: decryptPassword(vendor.password),
-    discountCode: vendor.discountCode ?? undefined,
+    password: vendor.password ? decryptPassword(vendor.password) : undefined,
+    discountCode: vendor.discountCode ? vendor.discountCode : undefined,
+    username: vendor.username ? vendor.username : undefined,
     twoFactorContacts: vendor.twoFactorContacts.map(userTransformer),
     notes: vendor.notes ?? undefined,
     addedBy: userTransformer(vendor.addedBy)

@@ -217,12 +217,12 @@ export default class ReimbursementRequestsController {
         req.currentUser,
         name,
         req.organization,
-        username,
-        password,
-        discountCode,
         taxExempt,
         twoFactorContacts,
-        notes
+        notes,
+        username,
+        password,
+        discountCode
       );
       res.status(200).json(createdVendor);
     } catch (error: unknown) {

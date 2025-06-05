@@ -638,12 +638,12 @@ export default class ReimbursementRequestService {
     submitter: User,
     name: string,
     organization: Organization,
-    username: string,
-    password: string,
-    discountCode: string,
     taxExempt: boolean,
     twoFactorContacts: string[],
-    notes?: string
+    notes?: string,
+    username?: string,
+    password?: string,
+    discountCode?: string
   ) {
     const isAuthorized =
       (await userHasPermission(submitter.userId, organization.organizationId, isAdmin)) ||
@@ -674,7 +674,7 @@ export default class ReimbursementRequestService {
         name,
         organizationId: organization.organizationId,
         username,
-        password: encryptPassword(password),
+        password: password ? encryptPassword(password) : undefined,
         taxExempt,
         discountCode,
         twoFactorContacts: { connect: users.map((user) => ({ userId: user.userId })) },

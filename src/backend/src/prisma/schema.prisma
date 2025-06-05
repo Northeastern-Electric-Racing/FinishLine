@@ -662,9 +662,9 @@ model Vendor {
   reimbursementRequests Reimbursement_Request[]
   organizationId        String
   organization          Organization            @relation(fields: [organizationId], references: [organizationId])
-  username              String
-  password              String // password is encrypted  
-  discountCode          String
+  username              String?
+  password              String? // password is encrypted  
+  discountCode          String?
   twoFactorContacts     User[]                  @relation(name: "twoFactorContactVendors")
   notes                 String?
   addedBy               User                    @relation(fields: [addedByUserId], references: [userId], name: "vendorsCreator")

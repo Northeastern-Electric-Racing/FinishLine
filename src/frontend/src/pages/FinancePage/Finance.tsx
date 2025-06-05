@@ -4,7 +4,6 @@
  */
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { routes } from '../../utils/routes';
-import FinancePage from './FinancePage';
 import FinanceDashboard from './FinanceDashboard/FinanceDashboard';
 import ReimbursmentRequests from './ReimbursmentRequests';
 import CompaniesPage from './CompaniesPage';
@@ -26,7 +25,6 @@ const Finance: React.FC = () => {
       />
       <Route path={routes.REIMBURSEMENT_REQUESTS} component={ReimbursmentRequests} />
       <Route path={routes.COMPANIES} component={CompaniesPage} />
-      <Route path={routes.FINANCE} component={FinancePage} />
     </Switch>
   );
 };

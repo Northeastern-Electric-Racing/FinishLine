@@ -284,12 +284,12 @@ describe('Reimbursement Requests', () => {
         createdUser,
         'Nasa',
         org,
-        'nershipping@gmail.com',
-        'rar',
-        '50!',
         false,
         [createdUser.userId],
-        'Tax exemption status?'
+        'Tax exemption status?',
+        'nershipping@gmail.com',
+        'rar',
+        '50!'
       );
       const vendorsAfterAddition = await ReimbursementRequestService.getAllVendors(org);
       expect(vendorsAfterAddition.length).toEqual(2);
@@ -383,14 +383,15 @@ describe('Reimbursement Requests', () => {
         createdUser,
         'Nasa',
         org,
-        'nershipping@gmail.com',
-        'ORGINAL-PASSWORD',
-        '50!',
         true,
         [createdUser.userId],
-        'Tax exemption status?'
+        'Tax exemption status?',
+        'nershipping@gmail.com',
+        'ORGINAL-PASSWORD',
+        '50!'
       );
-      expect(createdVendor.password.length).toEqual(64);
+
+      expect(createdVendor.password?.length).toEqual(64);
       // password encrypted, will look something like: 'U2FsdGVkX1/mQIqBjSMQ+7un24OuWs0wsCU4MiQNjLWgkAkxaMX9Zk1RDqKhrBI6'
 
       const returnedVendor = await ReimbursementRequestService.getSingleVendor(createdVendor.vendorId, org);
