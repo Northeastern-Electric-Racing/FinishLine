@@ -1,11 +1,12 @@
 import { Control, Controller, FieldErrors, UseFieldArrayRemove, UseFormRegister } from 'react-hook-form';
-import { ProjectTemplateApiInputs, WorkPackageTemplateApiInputs } from '../../apis/wbs-templates.api';
+import { ProjectTemplateApiInputs } from '../../apis/wbs-templates.api';
 import { Stack } from '@mui/system';
 import { FormControl, IconButton, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import { WorkPackageStage } from 'shared';
 import { displayEnum } from '../../utils/pipes';
 import { Delete } from '@mui/icons-material';
+import { WorkPackageTemplateApiInputs } from 'shared';
 
 interface ProjectTemplateWorkPackageSectionProps {
   workPackages: WorkPackageTemplateApiInputs[];
