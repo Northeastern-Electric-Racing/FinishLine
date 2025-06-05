@@ -128,7 +128,7 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({
                 <HelpIcon style={{ fontSize: 'medium', marginLeft: '5px', marginTop: '3px' }} />
               </Tooltip>
               <ExternalLink
-                link="https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0065760#:~:text=Sign%20in%20to%20the%20Zoom,Click%20Copy%20Invitation."
+                link="https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0066271"
                 description="(Find your Personal Zoom Link)"
               />
             </FormLabel>

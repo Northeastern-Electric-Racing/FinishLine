@@ -84,7 +84,8 @@ describe('Team Type Tests', () => {
         imageFileId: null,
         organizationId: orgId,
         teamTypeId: result.teamTypeId,
-        calendarId: 'mocked-calendar-id'
+        calendarId: null, // TODO NEEDS TO BE FIXED WHEN CALENDAR BUG IS FIXED
+        dateDeleted: undefined
       });
     });
   });

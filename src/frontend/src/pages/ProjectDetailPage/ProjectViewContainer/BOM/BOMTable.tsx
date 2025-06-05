@@ -20,7 +20,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
   const [draggedMaterial, setDraggedMaterial] = useState<Material | null>(null);
 
   const arrowSymbol = (rowId: string) => {
-    return openRows.includes(rowId) ? '⮝' : '⮟';
+    return openRows.includes(rowId) ? '▼' : '▶';
   };
 
   const noAssemblyMaterials = materials.filter((material) => !material.assembly);
@@ -89,7 +89,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, assignMaterial, colu
   return (
     <Box
       sx={{
-        height: 'calc(100vh - 180px)',
+        height: 'calc(100vh - 200px)',
         width: '100%',
         '& .super-app-theme--header': {
           backgroundColor: '#ef4345'

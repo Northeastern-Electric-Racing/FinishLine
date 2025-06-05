@@ -130,7 +130,9 @@ export const sendReimbursementRequestCreatedNotificationAndCreateMessageInfo = a
   const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
   const linkButtonText = 'View Reimbursement Request';
 
-  const financeTeam = await prisma.team.findFirst({ where: { financeTeam: true, organizationId } });
+  const financeTeam = await prisma.team.findFirst({
+    where: { financeTeam: true, organizationId }
+  });
 
   if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
 
@@ -139,7 +141,11 @@ export const sendReimbursementRequestCreatedNotificationAndCreateMessageInfo = a
     if (!messageInfo) return; // Not on prod
 
     await prisma.message_Info.create({
-      data: { reimbursementRequestId: requestId, channelId: messageInfo.channelId, timestamp: messageInfo.ts }
+      data: {
+        reimbursementRequestId: requestId,
+        channelId: messageInfo.channelId,
+        timestamp: messageInfo.ts
+      }
     });
   } catch (error: unknown) {
     if (error instanceof Error) {
@@ -317,8 +323,14 @@ export const sendSlackDRNotifications = async (
   const promises = notifications.map(
     async (notification) =>
       await prisma.message_Info.create({
-        data: { designReviewId: designReview.designReviewId, channelId: notification.channelId, timestamp: notification.ts },
-        include: { designReview: true }
+        data: {
+          designReviewId: designReview.designReviewId,
+          channelId: notification.channelId,
+          timestamp: notification.ts
+        },
+        include: {
+          designReview: true
+        }
       })
   );
   await Promise.all(promises);
@@ -402,7 +414,7 @@ export const sendSlackCRReviewedNotification = async (
   comments: string | null
 ) => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
-  const msgs: any[] = [];
+  const msgs = [];
   const fullMsg = `:tada: Your Change Request was just reviewed!${
     comments ? `\n Comments: ${comments}` : ''
   }\nClick the link to view! :tada:`;
@@ -457,8 +469,14 @@ export const sendSlackCRStatusToThread = async (
 export const addSlackThreadsToChangeRequest = async (crId: string, threads: { channelId: string; ts: string }[]) => {
   const promises = threads.map((notification) =>
     prisma.message_Info.create({
-      data: { changeRequestId: crId, channelId: notification.channelId, timestamp: notification.ts },
-      include: { changeRequest: true }
+      data: {
+        changeRequestId: crId,
+        channelId: notification.channelId,
+        timestamp: notification.ts
+      },
+      include: {
+        changeRequest: true
+      }
     })
   );
   await Promise.all(promises);
@@ -547,7 +565,13 @@ export const blockToMentionedUsers = async (
  * @returns the user id, or undefined if no users were found
  */
 export const getUserIdFromSlackId = async (slackId: string): Promise<string | undefined> => {
-  const user = await prisma.user.findFirst({ where: { userSettings: { slackId } } });
+  const user = await prisma.user.findFirst({
+    where: {
+      userSettings: {
+        slackId
+      }
+    }
+  });
 
   if (!user) return undefined;
 

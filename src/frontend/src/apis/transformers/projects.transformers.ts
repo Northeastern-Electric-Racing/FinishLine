@@ -90,3 +90,9 @@ export const projectPreviewTransformer = (project: ProjectPreview): ProjectPrevi
     workPackages: project.workPackages.map(workPackageTransformer)
   };
 };
+
+export const projectToProjectPreviewTransformer = (project: Project): ProjectPreview => {
+  return {
+    ...project
+  };
+};

@@ -1,5 +1,5 @@
 import { Organization, User } from '@prisma/client';
-import { LinkCreateArgs, isAdmin } from 'shared';
+import { LinkCreateArgs, ProjectPreview, isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
@@ -8,8 +8,8 @@ import { linkTransformer } from '../transformers/links.transformer';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
 import { uploadFile } from '../utils/google-integration.utils';
 import { getProjects } from '../utils/projects.utils';
-import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
-import projectTransformer from '../transformers/projects.transformer';
+import { getProjectManyQueryArgs } from '../prisma-query-args/projects.query-args';
+import { projectPreviewTransformer } from '../transformers/projects.transformer';
 
 export default class OrganizationsService {
   /**
@@ -376,17 +376,17 @@ export default class OrganizationsService {
    * @param organizationId the organization to get the projects for
    * @returns all the featured projects for the organization
    */
-  static async getOrganizationFeaturedProjects(organizationId: string) {
+  static async getOrganizationFeaturedProjects(organizationId: string): Promise<ProjectPreview[]> {
     const organization = await prisma.organization.findUnique({
       where: { organizationId },
-      include: { featuredProjects: getProjectQueryArgs(organizationId) }
+      include: { featuredProjects: getProjectManyQueryArgs(organizationId) }
     });
 
     if (!organization) {
       throw new NotFoundException('Organization', organizationId);
     }
 
-    return organization.featuredProjects.map(projectTransformer);
+    return organization.featuredProjects.map(projectPreviewTransformer);
   }
 
   /**
@@ -396,7 +396,7 @@ export default class OrganizationsService {
    * @param organizationId id of organization to update with workspace id
    * @returns updated organization
    */
-  static async setSlackWorkspaceId(workspaceId: string, submitter: User, organizationId: string) {
+  static async setSlackWorkspaceId(workspaceId: string, submitter: User, organizationId: string): Promise<Organization> {
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('set workspace id');
     }

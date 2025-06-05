@@ -15,7 +15,6 @@ import { isUnderWordCount } from 'shared';
 import { removeUsersFromList } from '../utils/teams.utils';
 import { getTeamPreviewQueryArgs, getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
 import { uploadFile } from '../utils/google-integration.utils';
-import { createCalendar } from '../utils/google-integration.utils';
 import { teamTypeTransformer } from '../transformers/team-types.transformer';
 import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
 import workPackageTransformer from '../transformers/work-packages.transformer';
@@ -420,14 +419,14 @@ export default class TeamsService {
       throw new HttpException(400, 'Cannot create a teamType with a name that already exists');
     }
 
-    const teamTypeCalendarId = await createCalendar(name);
+    // const teamTypeCalendarId = await createCalendar(name); TODO Fix unauthorized_client error this is throwing
     const teamType = await prisma.team_Type.create({
       data: {
         name,
         iconName,
         description,
         organizationId: organization.organizationId,
-        calendarId: teamTypeCalendarId
+        calendarId: null
       }
     });
 

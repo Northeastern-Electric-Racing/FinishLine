@@ -88,9 +88,7 @@ export const exampleProject1: Project = {
   startDate: new Date('01/01/21'),
   endDate: new Date('02/26/21'),
   workPackages: [exampleResearchWorkPackage, exampleDesignWorkPackage],
-  tasks: [],
-  materials: [],
-  assemblies: []
+  tasks: []
 };
 
 export const exampleProject2: Project = {
@@ -114,9 +112,7 @@ export const exampleProject2: Project = {
   endDate: undefined,
   workPackages: [],
   tasks: [],
-  teams: [],
-  materials: [],
-  assemblies: []
+  teams: []
 };
 
 export const exampleProject3: Project = {
@@ -140,9 +136,7 @@ export const exampleProject3: Project = {
   endDate: new Date('01/22/21'),
   workPackages: [exampleResearchWorkPackage],
   teams: [exampleTeam],
-  tasks: [exampleTask1],
-  materials: [],
-  assemblies: []
+  tasks: [exampleTask1]
 };
 
 export const exampleProject4: Project = {
@@ -166,9 +160,7 @@ export const exampleProject4: Project = {
   startDate: new Date('01/22/21'),
   endDate: new Date('02/26/21'),
   workPackages: [exampleDesignWorkPackage],
-  tasks: [],
-  materials: [],
-  assemblies: []
+  tasks: []
 };
 
 export const exampleProject5: Project = {
@@ -192,9 +184,7 @@ export const exampleProject5: Project = {
   startDate: new Date('01/01/21'),
   endDate: new Date('01/15/21'),
   workPackages: [exampleManufacturingWorkPackage],
-  tasks: [],
-  materials: [],
-  assemblies: []
+  tasks: []
 };
 
 export const exampleAllProjects: Project[] = [

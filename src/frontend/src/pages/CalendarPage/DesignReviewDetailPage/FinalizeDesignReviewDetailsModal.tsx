@@ -108,7 +108,7 @@ const FinalizeDesignReviewDetailsModal = ({
         <ReactHookTextField
           name="docTemplateLink"
           control={control}
-          sx={{ width: 0.5 }}
+          sx={{ width: 0.48 }}
           errorMessage={errors.docTemplateLink}
         />
       </Box>
@@ -124,7 +124,7 @@ const FinalizeDesignReviewDetailsModal = ({
       {meetingType.includes('inPerson') && (
         <Box style={{ display: 'flex', alignItems: 'center', marginBottom: 50 }}>
           <Typography style={{ fontSize: '1.2em', marginRight: 132 }}>Location:</Typography>
-          <ReactHookTextField name="location" control={control} sx={{ width: 0.49 }} errorMessage={errors.location} />
+          <ReactHookTextField name="location" control={control} sx={{ width: 0.48 }} errorMessage={errors.location} />
         </Box>
       )}
       <Grid container justifyContent="center" style={{ alignItems: 'center' }}>
