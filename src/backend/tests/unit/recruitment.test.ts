@@ -1,11 +1,7 @@
 import prisma from '../../src/prisma/prisma';
 import { Organization } from '@prisma/client';
 import RecruitmentServices from '../../src/services/recruitment.services';
-import {
-  AccessDeniedAdminOnlyException,
-  DeletedException,
-  NotFoundException
-} from '../../src/utils/errors.utils';
+import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../../src/utils/errors.utils';
 import {
   createTestMilestone,
   createTestFaq,
