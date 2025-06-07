@@ -898,7 +898,8 @@ export default class ChangeRequestsService {
 
       const teams = await prisma.team.findMany({
         where: {
-          financeTeam: true
+          financeTeam: true,
+          organizationId: organization.organizationId
         }
       });
 
@@ -958,7 +959,8 @@ export default class ChangeRequestsService {
 
       const teams = await prisma.team.findMany({
         where: {
-          financeTeam: true
+          financeTeam: true,
+          organizationId: organization.organizationId
         }
       });
 

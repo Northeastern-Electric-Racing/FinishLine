@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Box, Button, Typography } from '@mui/material';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { AccountCode } from 'shared';
@@ -61,7 +61,7 @@ const AccountAllocation: React.FC<AccountAllocationProps> = ({ accounts }) => {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const defaultValues = useMemo(
-    () => Object.fromEntries(accounts.map((acc, i) => [`account-${i}`, ((acc.amount ?? 0) / 100.0).toFixed(2)])),
+    () => Object.fromEntries(accounts.map((acc, i) => [`account-${i}`, (acc.amount ?? 0.0) / 100.0])),
     [accounts]
   );
 
@@ -71,12 +71,12 @@ const AccountAllocation: React.FC<AccountAllocationProps> = ({ accounts }) => {
       Object.fromEntries(
         accounts.map((_, i) => [
           `account-${i}`,
-          yup.string().required('Amount is required').min(0, 'Amount cannot be negative')
+          yup.number().required('Amount is required').min(0.0, 'Amount cannot be negative')
         ])
       )
     );
 
-  const { control, handleSubmit, reset, watch } = useForm<{ [key: string]: string }>({
+  const { control, handleSubmit, reset, watch } = useForm<{ [key: string]: number }>({
     defaultValues,
     mode: 'onChange',
     resolver: yupResolver(schema)
@@ -91,7 +91,7 @@ const AccountAllocation: React.FC<AccountAllocationProps> = ({ accounts }) => {
     reset(defaultValues);
   };
 
-  const onSubmit = async (data: { [key: string]: string }) => {
+  const onSubmit = async (data: { [key: string]: number }) => {
     const submitterId = user.userId;
     for (const [index, account] of accounts.entries()) {
       const originalAmount = (account.amount ?? 0) / 100;
@@ -135,41 +135,35 @@ const AccountAllocation: React.FC<AccountAllocationProps> = ({ accounts }) => {
             <Typography variant="subtitle1" sx={{ fontSize: '16px', color: '#eee', textAlign: 'left' }}>
               {`#${account.code}`}
             </Typography>
-            <Controller
-              name={`account-${index}`}
-              control={control}
-              render={({ field }) => (
-                <Box sx={{ position: 'relative' }}>
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: '50%',
-                      left: '12px',
-                      transform: 'translateY(-50%)',
-                      color: '#ccc',
-                      pointerEvents: 'none',
-                      fontSize: '16px',
-                      zIndex: 1
-                    }}
-                  >
-                    $
-                  </Box>
-                  <ReactHookTextField
-                    control={control}
-                    {...field}
-                    type="number"
-                    fullWidth
-                    placeholder="0.00"
-                    sx={{
-                      ...inputStyle,
-                      '& input': {
-                        paddingLeft: '24px' // to make room for the $
-                      }
-                    }}
-                  />
-                </Box>
-              )}
-            />
+            <Box sx={{ position: 'relative' }}>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '12px',
+                  transform: 'translateY(-50%)',
+                  color: '#ccc',
+                  pointerEvents: 'none',
+                  fontSize: '16px',
+                  zIndex: 1
+                }}
+              >
+                $
+              </Box>
+              <ReactHookTextField
+                name={`account-${index}`}
+                control={control}
+                type="number"
+                fullWidth
+                placeholder="0.00"
+                sx={{
+                  ...inputStyle,
+                  '& input': {
+                    paddingLeft: '24px'
+                  }
+                }}
+              />
+            </Box>
           </Box>
         ))}
         {submitError && <Typography sx={{ color: '#ff4c4c', mb: 2, textAlign: 'center' }}>{submitError}</Typography>}
