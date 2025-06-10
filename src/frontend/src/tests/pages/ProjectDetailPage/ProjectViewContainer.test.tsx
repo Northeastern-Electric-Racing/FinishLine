@@ -54,11 +54,11 @@ describe('Rendering Project View Container', () => {
 
     const editMenuItem = screen.getByText('Edit').closest('li');
     expect(editMenuItem).not.toBeNull();
-    expect(editMenuItem?.querySelector('svg')).toHaveAttribute('aria-hidden','true');
+    expect(editMenuItem?.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
 
     const reqChangeMenuItem = screen.getByText('Request Change');
     expect(reqChangeMenuItem).not.toBeNull();
-    expect(reqChangeMenuItem?.querySelector('svg')).toHaveAttribute('aria-hidden','true');
+    expect(reqChangeMenuItem?.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
   });
 
   it('enables the buttons for admin users', async () => {
