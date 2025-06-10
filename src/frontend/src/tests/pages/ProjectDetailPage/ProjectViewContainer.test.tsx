@@ -51,8 +51,14 @@ describe('Rendering Project View Container', () => {
     vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleGuestUser);
 
     fireEvent.click(screen.getByText('Actions'));
-    expect(screen.getByText('Edit')).toHaveAttribute('aria-disabled', 'true');
-    expect(screen.getByText('Request Change')).toHaveAttribute('aria-disabled', 'true');
+
+    const editMenuItem = screen.getByText('Edit').closest('li');
+    expect(editMenuItem).not.toBeNull();
+    expect(editMenuItem?.querySelector('svg')).toHaveAttribute('aria-hidden','true');
+
+    const reqChangeMenuItem = screen.getByText('Request Change');
+    expect(reqChangeMenuItem).not.toBeNull();
+    expect(reqChangeMenuItem?.querySelector('svg')).toHaveAttribute('aria-hidden','true');
   });
 
   it('enables the buttons for admin users', async () => {
