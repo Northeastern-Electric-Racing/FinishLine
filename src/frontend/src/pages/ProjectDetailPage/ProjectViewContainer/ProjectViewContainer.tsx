@@ -8,12 +8,9 @@ import { Project, isGuest, isAdmin, isLeadership } from 'shared';
 import { projectWbsPipe, wbsPipe } from '../../../utils/pipes';
 import ProjectDetails from './ProjectDetails';
 import { routes } from '../../../utils/routes';
-import { NERButton } from '../../../components/NERButton';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import EditIcon from '@mui/icons-material/Edit';
-import ListItemIcon from '@mui/material/ListItemIcon';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
-import { Box, Menu, MenuItem } from '@mui/material';
+import { Box } from '@mui/material';
 import { useState } from 'react';
 import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
@@ -35,6 +32,7 @@ import SavingsIcon from '@mui/icons-material/Savings';
 import { TaskList } from './TaskList/v2';
 import { useGetMaterialsForWbsElement } from '../../../hooks/bom.hooks';
 import ChangeRequestTab from '../../../components/ChangeRequestTab';
+import ActionsMenu from '../../../components/ActionsMenu';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -58,9 +56,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   const handleClickDelete = () => {
     setDeleteModalShow(true);
   };
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [_, setAnchorEl] = useState<null | HTMLElement>(null);
   const [tab, setTab] = useState(0);
-  const dropdownOpen = Boolean(anchorEl);
 
   if (isError) return <ErrorPage message={error.message} />;
   if (materialsIsError) return <ErrorPage message={materialsError.message} />;
@@ -70,10 +67,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   project.workPackages.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
   const { teamAsHeadId } = user;
   const projectIsFavorited = favoriteProjects.map((favoriteProject) => favoriteProject.id).includes(project.id);
-
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
 
   const handleDropdownClose = () => {
     setAnchorEl(null);
@@ -96,124 +89,73 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     }
   };
 
-  const EditButton = () => (
-    <MenuItem onClick={handleClickEdit} disabled={isGuest(user.role)}>
-      <ListItemIcon>
-        <EditIcon fontSize="small" />
-      </ListItemIcon>
-      Edit
-    </MenuItem>
-  );
-
-  const CreateChangeRequestButton = () => (
-    <MenuItem
-      component={Link}
-      to={routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(project.wbsNum)}
-      disabled={isGuest(user.role)}
-      onClick={handleDropdownClose}
-    >
-      <ListItemIcon>
-        <SyncAltIcon fontSize="small" />
-      </ListItemIcon>
-      Request Change
-    </MenuItem>
-  );
-
-  const SuggestBudgetIncreaseButton = () => {
-    const budgetIncrease = materials.reduce(addMaterialCosts, 0) - project.budget;
-    return (
-      <MenuItem
-        onClick={() =>
-          history.push(
-            `${routes.CHANGE_REQUESTS_NEW}?wbsNum=${projectWbsPipe(project.wbsNum)}&budgetChange=${budgetIncrease}`
-          )
-        }
-        disabled={!isLeadership(user.role) || budgetIncrease <= 0}
-      >
-        <ListItemIcon>
-          <SavingsIcon fontSize="small" />
-        </ListItemIcon>
-        Suggest Budget Increase
-      </MenuItem>
-    );
-  };
-
-  const AssignToMyTeamButton = () => {
-    const assignToTeamText = project.teams.map((team) => team.teamId).includes(teamAsHeadId!)
-      ? 'Unassign from My Team'
-      : 'Assign to My Team';
-
-    return (
-      <MenuItem onClick={handleAssignToMyTeam}>
-        <ListItemIcon>
-          <GroupIcon fontSize="small" />
-        </ListItemIcon>
-        {assignToTeamText}
-      </MenuItem>
-    );
-  };
-
-  const buildURLForCreateWorkPackage = () => {
-    return `${routes.WORK_PACKAGE_NEW}?wbs=${projectWbsPipe(project.wbsNum)}&crId=null`;
-  };
-  const CreateWorkPackageButton = () => {
-    return (
-      <MenuItem onClick={() => history.push(buildURLForCreateWorkPackage())} disabled={isGuest(user.role)}>
-        <ListItemIcon>
-          <ContentPasteIcon fontSize="small" />
-        </ListItemIcon>
-        Create New Work Package
-      </MenuItem>
-    );
-  };
-
-  const DeleteButton = () => (
-    <MenuItem onClick={handleClickDelete} disabled={!isAdmin(user.role)}>
-      <ListItemIcon>
-        <DeleteIcon fontSize="small" />
-      </ListItemIcon>
-      Delete
-    </MenuItem>
-  );
+  const budgetIncrease = materials.reduce(addMaterialCosts, 0) - project.budget;
+  const assignToTeamText = project.teams.map((team) => team.teamId).includes(teamAsHeadId!)
+    ? 'Unassign from My Team'
+    : 'Assign to My Team';
 
   const projectActionsDropdown = (
-    <Box ml={2}>
-      <NERButton
-        endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
-        variant="contained"
-        id="project-actions-dropdown"
-        onClick={handleClick}
-        disabled={isGuest(user.role)}
-      >
-        Actions
-      </NERButton>
-      <Menu
-        open={dropdownOpen}
-        anchorEl={anchorEl}
-        onClose={handleDropdownClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right'
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right'
-        }}
-      >
-        <EditButton />
-        <CreateChangeRequestButton />
-        <SuggestBudgetIncreaseButton />
-        {teamAsHeadId && <AssignToMyTeamButton />}
-        <CreateWorkPackageButton />
-        <DeleteButton />
-      </Menu>
-    </Box>
+    <div style={{ marginTop: '10px' }}>
+      <ActionsMenu
+        buttons={[
+          {
+            title: 'Edit',
+            onClick: handleClickEdit,
+            disabled: isGuest(user.role),
+            icon: <EditIcon fontSize="small" />
+          },
+          {
+            title: 'Request Change',
+            onClick: handleDropdownClose,
+            disabled: isGuest(user.role),
+            icon: <SyncAltIcon fontSize="small" />,
+            component: Link,
+            to: routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(project.wbsNum)
+          },
+          {
+            title: 'Suggest Budget Increase',
+            onClick: () => {
+              history.push(
+                `${routes.CHANGE_REQUESTS_NEW}?wbsNum=${projectWbsPipe(project.wbsNum)}&budgetChange=${budgetIncrease}`
+              );
+            },
+            disabled: !isLeadership(user.role) || budgetIncrease <= 0,
+            icon: <SavingsIcon fontSize="small" />
+          },
+          ...(teamAsHeadId
+            ? [
+                {
+                  title: assignToTeamText,
+                  onClick: handleAssignToMyTeam,
+                  disabled: false,
+                  icon: <GroupIcon fontSize="small" />
+                }
+              ]
+            : []),
+          {
+            title: 'Create New Work Package',
+            onClick: () => {
+              history.push(`${routes.WORK_PACKAGE_NEW}?wbs=${projectWbsPipe(project.wbsNum)}&crId=null`);
+            },
+            disabled: isGuest(user.role),
+            icon: <ContentPasteIcon fontSize="small" />
+          },
+          {
+            title: 'Delete',
+            onClick: handleClickDelete,
+            disabled: !isAdmin(user.role),
+            icon: <DeleteIcon fontSize="small" />,
+            dividerTop: true
+          }
+        ]}
+      />
+    </div>
   );
 
   const pageTitle = `${wbsPipe(project.wbsNum)} - ${project.name}`;
 
   const headerRight = (
-    <Box display="flex" justifyContent="flex-end">
+    <Box display="flex" justifyContent="flex-end" alignItems="Center">
       <FavoriteProjectButton wbsNum={project.wbsNum} projectIsFavorited={projectIsFavorited} />
       {projectActionsDropdown}
     </Box>

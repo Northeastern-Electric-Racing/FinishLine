@@ -12,11 +12,6 @@ import ActivateWorkPackageModalContainer from '../ActivateWorkPackageModalContai
 import WorkPackageDetails from './WorkPackageDetails';
 import ChangesList from '../../../components/ChangesList';
 import StageGateWorkPackageModalContainer from '../StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
-import { NERButton } from '../../../components/NERButton';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { Menu, MenuItem } from '@mui/material';
-import ContentPasteIcon from '@mui/icons-material/ContentPaste';
-import ListItemIcon from '@mui/material/ListItemIcon';
 import EditIcon from '@mui/icons-material/Edit';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp';
@@ -64,10 +59,6 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   if (!dependencies || isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
   const handleDropdownClose = () => {
     setAnchorEl(null);
   };
@@ -96,14 +87,14 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
     title: 'Stage Gate',
     onClick: handleClickStageGate,
     disabled: !allowStageGate,
-    icon: <DoneOutlineIcon fontSize="small" />,
+    icon: <DoneOutlineIcon fontSize="small" />
   };
 
   const activateButton: ButtonInfo = {
     title: 'Activate',
     onClick: handleClickActivate,
     disabled: !allowActivate,
-    icon: <KeyboardDoubleArrowUpIcon fontSize="small" />,
+    icon: <KeyboardDoubleArrowUpIcon fontSize="small" />
   };
 
   const projectActionsDropdown = (
@@ -124,7 +115,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
             to: routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(workPackage.wbsNum),
             onClick: handleDropdownClose,
             disabled: !allowRequestChange,
-            icon: <SyncAltIcon fontSize="small" />,
+            icon: <SyncAltIcon fontSize="small" />
           },
           {
             title: 'Delete',
