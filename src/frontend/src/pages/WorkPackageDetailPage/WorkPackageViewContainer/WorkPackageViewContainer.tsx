@@ -49,9 +49,8 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   const [showActivateModal, setShowActivateModal] = useState<boolean>(false);
   const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [, setAnchorEl] = useState<null | HTMLElement>(null);
   const { data: dependencies, isError, isLoading, error } = useGetManyWorkPackages(workPackage.blockedBy);
-  const dropdownOpen = Boolean(anchorEl);
   const wbsNum = wbsPipe(workPackage.wbsNum);
 
   const [tabValue, setTabValue] = useState<number>(0);

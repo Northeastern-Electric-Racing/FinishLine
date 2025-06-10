@@ -76,6 +76,7 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions' })
                 button.onClick();
               }}
               disabled={button.disabled}
+              aria-disabled={button.disabled}
             >
               {button.icon && <ListItemIcon>{button.icon}</ListItemIcon>}
               {button.title}

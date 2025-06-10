@@ -56,7 +56,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   const handleClickDelete = () => {
     setDeleteModalShow(true);
   };
-  const [_, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [, setAnchorEl] = useState<null | HTMLElement>(null);
   const [tab, setTab] = useState(0);
 
   if (isError) return <ErrorPage message={error.message} />;
