@@ -1219,7 +1219,7 @@ describe('Part Review Popups', () => {
 
     await expect(
       PartReviewService.updatePartReviewPopup(orgId, popup.partReviewPopupId, 10, 10, 0, 'Should Fail', 'Nope', superman)
-    ).rejects.toThrow(new NotFoundException('Pop Up', popup.partReviewPopupId));
+    ).rejects.toThrow(new DeletedException('Pop Up', popup.partReviewPopupId));
   });
 });
 
