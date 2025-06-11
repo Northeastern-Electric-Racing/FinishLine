@@ -1071,7 +1071,7 @@ export default class PartReviewService {
       }
     });
 
-    if (!popup || popup.review.submission.part.project.wbsElement.organizationId) {
+    if (!popup || popup.review.submission.part.project.wbsElement.organizationId !== organizationId) {
       throw new NotFoundException('Pop Up', popupId);
     }
 
@@ -1108,7 +1108,7 @@ export default class PartReviewService {
       }
     });
 
-    if (!popup || popup.review.submission.part.project.wbsElement.organizationId) {
+    if (!popup || popup.review.submission.part.project.wbsElement.organizationId !== organizationId) {
       throw new NotFoundException('Pop Up', popupId);
     }
 
