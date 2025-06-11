@@ -1,5 +1,5 @@
 import { Organization, User } from '@prisma/client';
-import { userHasPermission, getUserRole } from '../utils/users.utils';
+import { userHasPermission } from '../utils/users.utils';
 import {
   FrequentlyAskedQuestion,
   isAdmin,
@@ -857,7 +857,7 @@ export default class PartReviewService {
    * @returns the created and transformed PartReviewRequest
    */
   static async createPartReviewRequest(partId: string, requester: User, reviewerId: string, organizationId: string) {
-    const part = await PartReviewService.getPartWithQueryArgs(partId, requester.userId, organizationId);
+    await PartReviewService.getPartWithQueryArgs(partId, requester.userId, organizationId);
 
     if (!userHasPermission(requester.userId, organizationId, (role) => isAtLeastRank(RoleEnum.MEMBER, role))) {
       throw new AccessDeniedGuestException('Guests must be at least members to access this part.');

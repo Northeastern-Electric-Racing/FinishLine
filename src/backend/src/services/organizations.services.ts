@@ -1,5 +1,5 @@
 import { Organization, User } from '@prisma/client';
-import { LinkCreateArgs, ProjectPreview, isAdmin, isMember } from 'shared';
+import { LinkCreateArgs, ProjectPreview, RoleEnum, isAdmin, isAtLeastRank } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
@@ -424,7 +424,7 @@ export default class OrganizationsService {
     if (organization.dateDeleted) {
       throw new DeletedException('Organization', organizationId);
     }
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isMember))) {
+    if (!(await userHasPermission(submitter.userId, organizationId, (role) => isAtLeastRank(RoleEnum.MEMBER, role)))) {
       throw new AccessDeniedException("Only members of an organization can retrieve it's guide link");
     }
     return organization.partReviewGuideLink;
