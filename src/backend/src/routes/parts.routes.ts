@@ -1,5 +1,13 @@
 import express from 'express';
-import { intMinZero, nonEmptyString, validateInputs } from '../utils/validation.utils';
+import {
+  intMinZero,
+  nonEmptyString,
+  partCommonMistakeValidators,
+  partFaqValidators,
+  partPopupValidators,
+  partTagValidators,
+  validateInputs
+} from '../utils/validation.utils';
 import { body } from 'express-validator';
 import PartReviewController from '../controllers/part-review.controllers';
 import { Review_Status } from 'shared';
@@ -24,8 +32,11 @@ partsRouter.post(
   body('description').optional().isString(),
   body('reviewStatus').custom((value) => Object.values(Review_Status).includes(value)),
   body('tagIds').isArray(),
+  nonEmptyString(body('tagIds.*')),
   body('assigneeIds').isArray(),
+  nonEmptyString(body('assigneeIds.*')),
   body('reviewerIds').isArray(),
+  nonEmptyString(body('reviewerIds.*')),
   validateInputs,
   PartReviewController.createPart
 );
@@ -35,6 +46,7 @@ partsRouter.post(
   nonEmptyString(body('submissionId')),
   body('notes').optional().isString(),
   body('fileIds').isArray(),
+  nonEmptyString(body('fileIds.*')),
   body('status').custom((value) => Object.values<string>(Review_Status).includes(value)),
   validateInputs,
   PartReviewController.createReview
@@ -43,10 +55,11 @@ partsRouter.post(
 partsRouter.post(
   '/review/:reviewId/update',
   body('notes').optional().isString(),
-  body('fileIds').isArray().optional(),
+  body('fileIds').optional().isArray(),
+  nonEmptyString(body('fileIds.*')),
   body('status')
-    .custom((value) => Object.values<string>(Review_Status).includes(value))
-    .optional(),
+    .optional()
+    .custom((value) => Object.values<string>(Review_Status).includes(value)),
   validateInputs,
   PartReviewController.updateReview
 );
@@ -59,6 +72,7 @@ partsRouter.post(
   nonEmptyString(body('name')),
   body('notes').optional().isString(),
   body('fileIds').isArray(),
+  nonEmptyString(body('fileIds.*')),
   validateInputs,
   PartReviewController.createSubmission
 );
@@ -74,39 +88,15 @@ partsRouter.post(
 partsRouter.get('/tags', PartReviewController.getAllPartTags);
 partsRouter.get('/faqs', PartReviewController.getAllPartReviewFAQS);
 
-partsRouter.post(
-  '/tag/create',
-  nonEmptyString(body('name')),
-  nonEmptyString(body('colorHexCode')),
-  validateInputs,
-  PartReviewController.createPartTag
-);
+partsRouter.post('/tag/create', ...partTagValidators, validateInputs, PartReviewController.createPartTag);
 
-partsRouter.post(
-  '/tag/:partTagId/update',
-  nonEmptyString(body('name')),
-  nonEmptyString(body('colorHexCode')),
-  validateInputs,
-  PartReviewController.updatePartTag
-);
+partsRouter.post('/tag/:partTagId/update', ...partTagValidators, validateInputs, PartReviewController.updatePartTag);
 
 partsRouter.post('/tag/:partTagId/delete', PartReviewController.deletePartTag);
 
-partsRouter.post(
-  '/faqs/create',
-  nonEmptyString(body('question')),
-  nonEmptyString(body('answer')),
-  validateInputs,
-  PartReviewController.createFaq
-);
+partsRouter.post('/faqs/create', ...partFaqValidators, validateInputs, PartReviewController.createFaq);
 
-partsRouter.post(
-  '/faqs/:faqId/update',
-  nonEmptyString(body('question')),
-  nonEmptyString(body('answer')),
-  validateInputs,
-  PartReviewController.updateFaq
-);
+partsRouter.post('/faqs/:faqId/update', ...partFaqValidators, validateInputs, PartReviewController.updateFaq);
 
 partsRouter.post('/faqs/:faqId/delete', PartReviewController.deleteFaq);
 
@@ -114,41 +104,28 @@ partsRouter.get('/common-mistakes', PartReviewController.getAllCommonMistakes);
 
 partsRouter.post(
   '/common-mistake/create',
-  nonEmptyString(body('title')),
-  nonEmptyString(body('description')),
-  body('starred').isBoolean(),
+  ...partCommonMistakeValidators,
   validateInputs,
   PartReviewController.createCommonMistake
 );
 
 partsRouter.post(
   '/common-mistake/:commonMistakeId/update',
-  nonEmptyString(body('title')),
-  nonEmptyString(body('description')),
-  body('starred').isBoolean(),
+  ...partCommonMistakeValidators,
   validateInputs,
   PartReviewController.updateCommonMistake
 );
 
 partsRouter.post(
   '/review/:reviewId/popup/create',
-  body('xCoord').isFloat(),
-  body('yCoord').isFloat(),
-  intMinZero(body('fileIndex')),
-  nonEmptyString(body('title')),
-  body('description').optional().isString(),
-
+  ...partPopupValidators,
   validateInputs,
   PartReviewController.createPartReviewPopup
 );
 
 partsRouter.post(
   '/popup/:popupId/update',
-  body('xCoord').isFloat(),
-  body('yCoord').isFloat(),
-  intMinZero(body('fileIndex')),
-  nonEmptyString(body('title')),
-  body('description').optional().isString(),
+  ...partPopupValidators,
   validateInputs,
   PartReviewController.updatePartReviewPopup
 );
@@ -197,7 +174,9 @@ partsRouter.post(
   body('description').optional().isString(),
   body('reviewStatus').custom((value) => Object.values(Review_Status).includes(value)),
   body('tagIds').isArray(),
+  nonEmptyString(body('tagIds.*')),
   body('assigneeIds').isArray(),
+  nonEmptyString(body('assigneeIds.*')),
   validateInputs,
   PartReviewController.updatePart
 );

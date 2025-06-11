@@ -2,7 +2,7 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { CommonMistakeFormModal, CommonMistakeFormValues } from './CommonMistakeFormModal';
-import { useUpdateCommonMistake } from '../../../hooks/part-review.hooks';
+import { useEditCommonMistake } from '../../../hooks/part-review.hooks';
 import type { PartReviewCommonMistake } from 'shared';
 
 interface EditCommonMistakeModalProps {
@@ -13,7 +13,7 @@ interface EditCommonMistakeModalProps {
 
 const EditCommonMistakeModal: React.FC<EditCommonMistakeModalProps> = ({ showModal, handleClose, mistake }) => {
   const toast = useToast();
-  const { isLoading, isError, error, mutateAsync } = useUpdateCommonMistake();
+  const { isLoading, isError, error, mutateAsync } = useEditCommonMistake();
 
   const onSubmit = async (data: CommonMistakeFormValues) => {
     try {

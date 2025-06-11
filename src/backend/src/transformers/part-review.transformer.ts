@@ -7,7 +7,8 @@ import {
   PartReviewRequest,
   PartReview,
   PartPreview,
-  Part_Review_Popup
+  Part_Review_Popup,
+  PartTag
 } from 'shared';
 import {
   PartQueryArgs,
@@ -99,5 +100,13 @@ export const partReviewPopupTransformer = (popup: Prisma.Part_Review_PopupGetPay
     title: popup.title,
     description: popup.description ?? undefined,
     reviewId: popup.reviewId
+  };
+};
+
+export const partTagTransformer = (partTag: Prisma.PartTagGetPayload<null>): PartTag => {
+  return {
+    partTagId: partTag.partTagId,
+    name: partTag.name,
+    colorHexCode: partTag.colorHexCode
   };
 };

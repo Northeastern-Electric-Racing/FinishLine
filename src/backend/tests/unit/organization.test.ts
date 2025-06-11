@@ -333,7 +333,8 @@ describe('Organization Tests', () => {
 
   describe('Get Part Review Guide Link', () => {
     it('Fails if an organization does not exist', async () => {
-      await expect(async () => await OrganizationsService.getPartReviewGuideLink('1')).rejects.toThrow(
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      await expect(async () => await OrganizationsService.getPartReviewGuideLink('1', testBatman)).rejects.toThrow(
         new NotFoundException('Organization', '1')
       );
     });
@@ -341,7 +342,7 @@ describe('Organization Tests', () => {
     it('Succeeds and gets the part review guide link', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
       await OrganizationsService.setPartReviewGuideLink(testBatman, orgId, 'newlink');
-      const guideLink = await OrganizationsService.getPartReviewGuideLink(orgId);
+      const guideLink = await OrganizationsService.getPartReviewGuideLink(orgId, testBatman);
 
       expect(guideLink).not.toBeNull();
       expect(guideLink).toBe('newlink');

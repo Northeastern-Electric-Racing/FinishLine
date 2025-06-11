@@ -19,6 +19,12 @@ ADD COLUMN     "partReviewSampleImageId" TEXT;
 -- AlterTable
 ALTER TABLE "Project" ADD COLUMN     "abbreviation" TEXT;
 
+-- AlterTable
+ALTER TABLE "_Project_TemplateToTeam" ADD CONSTRAINT "_Project_TemplateToTeam_AB_pkey" PRIMARY KEY ("A", "B");
+
+-- DropIndex
+DROP INDEX "_Project_TemplateToTeam_AB_unique";
+
 -- CreateTable
 CREATE TABLE "Part" (
     "partId" TEXT NOT NULL,
@@ -33,7 +39,7 @@ CREATE TABLE "Part" (
     "dateDeleted" TIMESTAMP(3),
     "userCreatedId" TEXT NOT NULL,
     "userDeletedId" TEXT,
-    
+
     CONSTRAINT "Part_pkey" PRIMARY KEY ("partId")
 );
 
@@ -120,7 +126,7 @@ CREATE TABLE "PartReviewCommonMistake" (
     "userDeletedId" TEXT,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "dateDeleted" TIMESTAMP(3),
-    "organizationId" TEXT,
+    "organizationId" TEXT NOT NULL,
 
     CONSTRAINT "PartReviewCommonMistake_pkey" PRIMARY KEY ("partReviewCommonMistakeId")
 );
@@ -128,26 +134,24 @@ CREATE TABLE "PartReviewCommonMistake" (
 -- CreateTable
 CREATE TABLE "_PartToPartTag" (
     "A" TEXT NOT NULL,
-    "B" TEXT NOT NULL
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_PartToPartTag_AB_pkey" PRIMARY KEY ("A","B")
 );
 
 -- CreateTable
 CREATE TABLE "_partAssignees" (
     "A" TEXT NOT NULL,
-    "B" TEXT NOT NULL
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_partAssignees_AB_pkey" PRIMARY KEY ("A","B")
 );
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Part_projectId_index_key" ON "Part"("projectId", "index");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "_PartToPartTag_AB_unique" ON "_PartToPartTag"("A", "B");
-
--- CreateIndex
 CREATE INDEX "_PartToPartTag_B_index" ON "_PartToPartTag"("B");
-
--- CreateIndex
-CREATE UNIQUE INDEX "_partAssignees_AB_unique" ON "_partAssignees"("A", "B");
 
 -- CreateIndex
 CREATE INDEX "_partAssignees_B_index" ON "_partAssignees"("B");
@@ -207,7 +211,7 @@ ALTER TABLE "PartReviewCommonMistake" ADD CONSTRAINT "PartReviewCommonMistake_us
 ALTER TABLE "PartReviewCommonMistake" ADD CONSTRAINT "PartReviewCommonMistake_userDeletedId_fkey" FOREIGN KEY ("userDeletedId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PartReviewCommonMistake" ADD CONSTRAINT "PartReviewCommonMistake_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "PartReviewCommonMistake" ADD CONSTRAINT "PartReviewCommonMistake_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_PartToPartTag" ADD CONSTRAINT "_PartToPartTag_A_fkey" FOREIGN KEY ("A") REFERENCES "Part"("partId") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -47,7 +47,7 @@ const PartPage: React.FC = () => {
 
   //used to track pages to be displayed. An "isolated" review is one that has fileIds,
   //and therefore is displayed on its own page seperate from the submission
-  const [partWithIsolatedReviews, setPartWithIsolatedReviews] = useState<Part | null>(null);
+  const [partWithIsolatedReviews, setPartWithIsolatedReviews] = useState<Part>();
 
   useEffect(() => {
     if (!part) return;
@@ -72,7 +72,7 @@ const PartPage: React.FC = () => {
     const submissionParam = searchParams.get('submissionIndex');
     const reviewParam = searchParams.get('reviewIndex');
 
-    //indecies will refer to the part with isolated reviews
+    //indices will refer to the part with isolated reviews
     setSubIndex(partWithIsolatedReviews.submissions.length - 1);
     if (
       partWithIsolatedReviews.submissions.length > 0 &&

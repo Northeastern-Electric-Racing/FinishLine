@@ -1,10 +1,10 @@
-import { Part, Part_Review_Popup, PartPreview, PartReview, PartReviewRequest, PartSubmission, PartTag } from 'shared';
+import { Part, PartPreview, PartReview, PartReviewRequest, PartSubmission } from 'shared';
 import { userTransformer } from './users.transformers';
 
 export const partPreviewTransformer = (partPreview: PartPreview): PartPreview => {
   return {
     ...partPreview,
-    tags: partPreview.tags.map(partTagTransformer),
+    tags: partPreview.tags,
     assignees: partPreview.assignees.map(userTransformer),
     reviewRequests: partPreview.reviewRequests.map(partReviewRequestTransformer),
     userCreated: userTransformer(partPreview.userCreated),
@@ -40,21 +40,9 @@ export const partReviewRequestTransformer = (partReviewRequest: PartReviewReques
 export const partReviewTransformer = (partReview: PartReview): PartReview => {
   return {
     ...partReview,
-    popUps: partReview.popUps.map(partReviewPopupTransformer),
+    popUps: partReview.popUps,
     createdAt: new Date(partReview.createdAt),
     completedAt: partReview.completedAt ? new Date(partReview.completedAt) : undefined,
     userCreated: userTransformer(partReview.userCreated)
-  };
-};
-
-export const partReviewPopupTransformer = (partReviewPopup: Part_Review_Popup): Part_Review_Popup => {
-  return {
-    ...partReviewPopup
-  };
-};
-
-export const partTagTransformer = (partTag: PartTag): PartTag => {
-  return {
-    ...partTag
   };
 };

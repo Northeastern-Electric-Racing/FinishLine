@@ -61,7 +61,6 @@ const PartReviewFAQFormModal = ({ open, handleClose, defaultValues, onSubmit }: 
   };
 
   const onFormSubmit = async (data: { question: string; answer: string }) => {
-    console.log('Submitting form with:', data);
     try {
       await onSubmit(data);
       toast.success(creatingNew ? 'FAQ created successfully' : 'FAQ updated successfully');

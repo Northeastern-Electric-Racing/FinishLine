@@ -93,7 +93,7 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
   if (!partsInProject || partsLoading) return <LoadingIndicator />;
   if (partsIsError) return <ErrorPage message={partsError?.message} />;
 
-  const isUserAReviewer = (userId: string, part: Part): boolean => {
+  const userIsReviewer = (userId: string, part: Part): boolean => {
     return part.reviewRequests.some((request) => request.reviewerRequested.userId === userId);
   };
 
@@ -193,14 +193,13 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
       title: 'Review Submission',
       onClick: () => startReview(submission),
       icon: <EditNote />,
-      disabled: !isUserAReviewer(user.userId, part) || part.submissions.length === 0
+      disabled: !userIsReviewer(user.userId, part) || part.submissions.length === 0
     },
     {
       title: 'Approve',
       onClick: () => setShowApproveSubmission(true),
       icon: <Check />,
-      disabled:
-        !isUserAReviewer(user.userId, part) || part.status === Review_Status.APPROVED || part.submissions.length === 0
+      disabled: !userIsReviewer(user.userId, part) || part.status === Review_Status.APPROVED || part.submissions.length === 0
     },
     {
       title: 'Delete Part',

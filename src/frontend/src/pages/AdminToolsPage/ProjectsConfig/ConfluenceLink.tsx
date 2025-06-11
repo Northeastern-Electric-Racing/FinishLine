@@ -29,7 +29,9 @@ const ConfluenceLink: React.FC = () => {
       await setGuideLink(guideLinkValue);
       toast.success('Guide link updated successfully');
     } catch (err) {
-      toast.error('Failed to update guide link');
+      if (err instanceof Error) {
+        toast.error('Failed to update guide link' + err.message);
+      }
     }
   };
 

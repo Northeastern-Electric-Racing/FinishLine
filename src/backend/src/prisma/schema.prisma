@@ -257,7 +257,7 @@ model User {
   assignedParts                   Part[]                    @relation(name: "partAssignees")
   createdCommonMistakes           PartReviewCommonMistake[] @relation(name: "commonMistakeCreator")
   deletedCommonMistakes           PartReviewCommonMistake[] @relation(name: "commonMistakeDeleter")
-  partReviewRequests              PartReviewRequest[]       @relation(name: "PartReviewRequestor")
+  partReviewRequestCreator        PartReviewRequest[]       @relation(name: "PartReviewRequestor")
   partReviewRequested             PartReviewRequest[]       @relation(name: "PartReviewRequested")
 }
 
@@ -1009,7 +1009,7 @@ model Organization {
   reimbursementReqeusts    Reimbursement_Request[]
   usefulLinks              Link[]
   frequentlyAskedQuestions FrequentlyAskedQuestion[] @relation(name: "organizationFAQ")
-  partReviewFAQ            FrequentlyAskedQuestion[]
+  partReviewFAQ            FrequentlyAskedQuestion[] @relation(name: "partReviewFAQ")
   milestones               Milestone[]
   graphCollections         Graph_Collection[]
   graphs                   Graph[]
@@ -1036,7 +1036,7 @@ model FrequentlyAskedQuestion {
   regularFaqOrgId    String?
   regularFaqOrg      Organization? @relation(fields: [regularFaqOrgId], references: [organizationId], name: "organizationFAQ")
   partReviewFaqOrgId String?
-  partReviewFaqOrg   Organization? @relation(fields: [partReviewFaqOrgId], references: [organizationId])
+  partReviewFaqOrg   Organization? @relation(fields: [partReviewFaqOrgId], references: [organizationId], name: "partReviewFAQ")
 }
 
 model Milestone {
@@ -1248,16 +1248,16 @@ model Part_Review_Popup {
 }
 
 model PartReviewCommonMistake {
-  partReviewCommonMistakeId String        @id @default(uuid())
+  partReviewCommonMistakeId String       @id @default(uuid())
   title                     String
   description               String
   starred                   Boolean
-  userCreated               User          @relation(fields: [userCreatedId], references: [userId], name: "commonMistakeCreator")
+  userCreated               User         @relation(fields: [userCreatedId], references: [userId], name: "commonMistakeCreator")
   userCreatedId             String
-  userDeleted               User?         @relation(fields: [userDeletedId], references: [userId], name: "commonMistakeDeleter")
+  userDeleted               User?        @relation(fields: [userDeletedId], references: [userId], name: "commonMistakeDeleter")
   userDeletedId             String?
-  dateCreated               DateTime      @default(now())
+  dateCreated               DateTime     @default(now())
   dateDeleted               DateTime?
-  organization              Organization? @relation(fields: [organizationId], references: [organizationId])
-  organizationId            String?
+  organization              Organization @relation(fields: [organizationId], references: [organizationId])
+  organizationId            String
 }

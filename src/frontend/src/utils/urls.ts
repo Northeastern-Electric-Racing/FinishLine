@@ -67,7 +67,7 @@ const partsReviewFaqEdit = (faqId: string) => `${parts()}/faqs/${faqId}/update`;
 const partsReviewFaqDelete = (faqId: string) => `${parts()}/faqs/${faqId}/delete`;
 const getAllPartCommonMistakes = () => `${parts()}/common-mistakes`;
 const partsCreateCommonMistake = () => `${parts()}/common-mistake/create`;
-const partsUpdateCommonMistake = (commonMistakeId: string) => `${parts()}/common-mistake/${commonMistakeId}/update`;
+const partsEditCommonMistake = (commonMistakeId: string) => `${parts()}/common-mistake/${commonMistakeId}/update`;
 const partsDeleteCommonMistake = (commonMistakeId: string) => `${parts()}/common-mistake/${commonMistakeId}/delete`;
 const uploadFile = () => `${parts()}/upload/file`;
 const downloadFile = (fileId: string) => `${parts()}/file/${fileId}/download`;
@@ -350,7 +350,7 @@ export const apiUrls = {
   partsReviewFaqDelete,
   getAllPartCommonMistakes,
   partsCreateCommonMistake,
-  partsUpdateCommonMistake,
+  partsEditCommonMistake,
   partsDeleteCommonMistake,
   uploadFile,
   downloadFile,

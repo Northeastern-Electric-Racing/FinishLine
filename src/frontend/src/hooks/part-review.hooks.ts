@@ -39,7 +39,7 @@ import {
   setPartReviewSampleImage,
   getPartReviewSampleImage,
   createCommonMistake,
-  updateCommonMistake,
+  editCommonMistake,
   deleteCommonMistake,
   createPartTag,
   deletePartTag,
@@ -171,6 +171,10 @@ export const useEditPart = (partId: string) => {
   );
 };
 
+/**
+ * Uploads an image as the preview image for a given part
+ * @param partId the part whose preview image is being set
+ */
 export const useUploadPreviewImage = (partId: string) => {
   const queryClient = useQueryClient();
   return useMutation<any, unknown, File>(
@@ -207,6 +211,10 @@ export const useDeletePart = (partId: string) => {
   );
 };
 
+/**
+ * Uploads a file to the drive and returns the fileId
+ * @returns the fileId of the uploaded file
+ */
 export const useUploadFile = () => {
   return useMutation<string, Error, File>(['file', 'upload'], async (file: File) => {
     const { data } = await uploadFile(file);
@@ -385,9 +393,8 @@ export const useCreatePartReviewFaq = () => {
       return response.data;
     },
     {
-      onSuccess: async (createdFaq) => {
-        await queryClient.cancelQueries(['partReviewFaqs']);
-        queryClient.setQueryData<FrequentlyAskedQuestion[]>(['partReviewFaqs'], (old = []) => [...old, createdFaq]);
+      onSuccess: () => {
+        queryClient.invalidateQueries(['partReviewFaqs']);
       }
     }
   );
@@ -465,12 +472,12 @@ export const useCreateCommonMistake = () => {
  *
  * @returns the updated common mistake
  */
-export const useUpdateCommonMistake = () => {
+export const useEditCommonMistake = () => {
   const queryClient = useQueryClient();
   return useMutation<PartReviewCommonMistake, Error, { commonMistakeId: string; payload: PartReviewCommonMistakePayload }>(
     ['common-mistakes', 'update'],
     async ({ commonMistakeId, payload }) => {
-      const { data } = await updateCommonMistake(commonMistakeId, payload);
+      const { data } = await editCommonMistake(commonMistakeId, payload);
       return data;
     },
     {
@@ -658,17 +665,11 @@ export const usePartReviewSampleImageId = () => {
  * @returns a success message
  */
 export const useNotifyPartAssignee = () => {
-  const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, { partId: string; assigneeId: string }>(
     ['parts', 'notifyAssignee'],
     async (notification) => {
       const { data } = await sendPartAssignmentNotification(notification);
       return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['pop-ups', 'current-user']);
-      }
     }
   );
 };
@@ -679,17 +680,11 @@ export const useNotifyPartAssignee = () => {
  * @returns a success message
  */
 export const useNotifyPartReviewer = () => {
-  const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, { partId: string; reviewerId: string }>(
     ['parts', 'notifyReviewer'],
     async (notification) => {
       const { data } = await sendPartReviewRequestNotification(notification);
       return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['pop-ups', 'current-user']);
-      }
     }
   );
 };

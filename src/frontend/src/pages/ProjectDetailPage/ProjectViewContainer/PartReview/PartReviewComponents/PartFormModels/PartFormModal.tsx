@@ -12,6 +12,8 @@ import ReactHookTextField from '../../../../../../components/ReactHookTextField'
 import ErrorPage from '../../../../../ErrorPage';
 import LoadingIndicator from '../../../../../../components/LoadingIndicator';
 import { useAllUsers } from '../../../../../../hooks/users.hooks';
+import CreatePartTagModal from '../../../../../AdminToolsPage/ProjectsConfig/CreatePartTagModal';
+import AddIcon from '@mui/icons-material/Add';
 
 interface PartFormModalProps {
   open: boolean;
@@ -31,6 +33,7 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
   const [reviewerIds, setReviewerIds] = useState<string[]>(
     defaultValues ? defaultValues.reviewRequests.map((reviewReq) => reviewReq.reviewerRequested.userId) : []
   );
+  const [newPartTagModelOpen, setNewPartTagModelOpen] = useState(false);
 
   const schema = yup.object().shape({
     wbsNum: yup.string().required(),
@@ -46,6 +49,13 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
     commonName: yup.string().required(),
     description: yup.string().optional()
   });
+
+  const closeForm = () => {
+    handleClose();
+    setTagIds([]);
+    setAssigneeIds([]);
+    setReviewerIds([]);
+  };
 
   const {
     handleSubmit,
@@ -64,7 +74,7 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
 
   const onFormSubmit = async (data: PartPayload) => {
     try {
-      handleClose();
+      closeForm();
       await onSubmit({
         ...data,
         reviewStatus: defaultValues ? defaultValues.status : Review_Status.IN_PROGRESS,
@@ -90,7 +100,7 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
   return (
     <NERFormModal
       open={open}
-      onHide={handleClose}
+      onHide={closeForm}
       title={!!defaultValues ? 'Edit Part' : 'New Part'}
       reset={() => reset()}
       handleUseFormSubmit={handleSubmit}
@@ -98,6 +108,15 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
       formId={!!defaultValues ? 'edit-Part-form' : 'create-Part-form'}
       showCloseButton
     >
+      <CreatePartTagModal
+        showModal={newPartTagModelOpen}
+        handleClose={() => {
+          setNewPartTagModelOpen(false);
+        }}
+        tagCreated={(id: string) => {
+          setTagIds((prev) => [...prev, id]);
+        }}
+      />
       <Grid container spacing={2} alignItems="flex-start" maxWidth={'100%'}>
         <Grid item xs={3}>
           <FormControl fullWidth>
@@ -138,14 +157,32 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
             <FormLabel>Tags (Optional)</FormLabel>
             <Autocomplete
               multiple
-              options={tags}
+              options={[{ partTagId: 'add-new', name: 'Add New' }, ...tags]}
               getOptionLabel={(option) => option.name}
               value={tags.filter((tag) => tagIds.includes(tag.partTagId))}
               onChange={(_event, value) => {
-                const selectedIds = value.map((tag) => tag.partTagId);
-                setTagIds(selectedIds);
+                const addNewSelected = value.find((item) => item.partTagId === 'add-new');
+
+                if (addNewSelected) {
+                  setNewPartTagModelOpen(true);
+                  const realTags = value.filter((item) => !(item.partTagId === 'add-new'));
+                  const selectedIds = realTags.map((tag) => tag.partTagId);
+                  setTagIds(selectedIds);
+                } else {
+                  const selectedIds = value.map((tag) => tag.partTagId);
+                  setTagIds(selectedIds);
+                }
               }}
               renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Select tags" error={false} />}
+              renderOption={(props, option) => (
+                <li
+                  {...props}
+                  style={option.partTagId === 'add-new' ? { fontWeight: 'bold', borderBottom: '1px solid #ddd' } : {}}
+                >
+                  {option.partTagId === 'add-new' && <AddIcon style={{ marginRight: 8, fontSize: 16 }} />}
+                  {option.name}
+                </li>
+              )}
             />
           </FormControl>
         </Grid>

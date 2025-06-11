@@ -19,15 +19,19 @@ interface CreatePartTagProps {
   showModal: boolean;
   handleClose: () => void;
   defaultValues?: PartTag;
+  tagCreated?: (partTagId: string) => void;
 }
 
-const CreatePartTagModal: React.FC<CreatePartTagProps> = ({ showModal, handleClose, defaultValues }) => {
+const CreatePartTagModal: React.FC<CreatePartTagProps> = ({ showModal, handleClose, defaultValues, tagCreated }) => {
   const toast = useToast();
   const { isLoading, isError, error, mutateAsync } = useCreatePartTag();
 
   const onSubmit = async (data: PartTagPayload) => {
     try {
-      await mutateAsync(data);
+      const createdTag = await mutateAsync(data);
+      if (tagCreated) {
+        tagCreated(createdTag.partTagId);
+      }
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);

@@ -30,6 +30,7 @@ import { useToast } from '../../../hooks/toasts.hooks';
 //set up PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
 
+//no files greater than 5 mbs
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 const isPdf = (fileName: string) => {
@@ -125,6 +126,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
     return () => {
       // Clean up worker when component unmounts
       if (pdfjs.GlobalWorkerOptions.workerPort) {
+        setLoadSuccess(false);
         pdfjs.GlobalWorkerOptions.workerPort.terminate();
       }
     };

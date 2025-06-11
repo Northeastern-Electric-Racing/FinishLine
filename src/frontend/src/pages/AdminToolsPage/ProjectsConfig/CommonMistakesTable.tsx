@@ -10,7 +10,7 @@ import type { PartReviewCommonMistake } from 'shared';
 import {
   useAllCommonMistakes,
   useDeletePartReviewCommonMistake,
-  useUpdateCommonMistake
+  useEditCommonMistake
 } from '../../../hooks/part-review.hooks';
 import HelpIcon from '@mui/icons-material/Help';
 import CreateCommonMistakesModal from './CreateCommonMistakeModal';
@@ -18,12 +18,12 @@ import EditCommonMistakeModal from './EditCommonMistakeModal';
 
 const CommonMistakesTable: React.FC = () => {
   const [openCreateModal, setOpenCreateModal] = useState(false);
-  const [mistakeToEdit, setMistakeToEdit] = useState<PartReviewCommonMistake | null>(null);
-  const [mistakeToDelete, setMistakeToDelete] = useState<PartReviewCommonMistake | null>(null);
+  const [mistakeToEdit, setMistakeToEdit] = useState<PartReviewCommonMistake>();
+  const [mistakeToDelete, setMistakeToDelete] = useState<PartReviewCommonMistake>();
 
   const { data: commonMistakes, isLoading, isError, error } = useAllCommonMistakes();
-  const { mutateAsync: mutateDeleteAsync } = useDeletePartReviewCommonMistake();
-  const { mutateAsync: mutateEditAsync } = useUpdateCommonMistake();
+  const { mutateAsync: deleteCommonMistakeMutateAsync } = useDeletePartReviewCommonMistake();
+  const { mutateAsync: editCommonMistakeMutateAsync } = useEditCommonMistake();
   const toast = useToast();
 
   if (isLoading) {
@@ -42,14 +42,9 @@ const CommonMistakesTable: React.FC = () => {
     setMistakeToEdit(mistake);
   };
 
-  const handleCreate = () => {
-    setMistakeToEdit(null);
-    setOpenCreateModal(true);
-  };
-
   const handleToggleStar = async (mistake: PartReviewCommonMistake) => {
     try {
-      await mutateEditAsync({
+      await editCommonMistakeMutateAsync({
         commonMistakeId: mistake.partReviewCommonMistakeId,
         payload: {
           title: mistake.title,
@@ -75,21 +70,21 @@ const CommonMistakesTable: React.FC = () => {
       {mistakeToEdit && (
         <EditCommonMistakeModal
           showModal={!!mistakeToEdit}
-          handleClose={() => setMistakeToEdit(null)}
+          handleClose={() => setMistakeToEdit(undefined)}
           mistake={mistakeToEdit}
         />
       )}
 
       <NERDeleteModal
         open={!!mistakeToDelete}
-        onHide={() => setMistakeToDelete(null)}
+        onHide={() => setMistakeToDelete(undefined)}
         formId="delete-mistake-form"
         dataType="Common Mistake"
         onFormSubmit={async () => {
           if (mistakeToDelete) {
             try {
-              const message = await mutateDeleteAsync(mistakeToDelete.partReviewCommonMistakeId);
-              setMistakeToDelete(null);
+              const message = await deleteCommonMistakeMutateAsync(mistakeToDelete.partReviewCommonMistakeId);
+              setMistakeToDelete(undefined);
               toast.success(message.message);
             } catch (err) {
               if (err instanceof Error) {
@@ -127,7 +122,7 @@ const CommonMistakesTable: React.FC = () => {
         {/* Converts true to 1, and false to 0, and then compares the larger number to sort starred */}
         {commonMistakes &&
           commonMistakes
-            .sort((a, b) => Number(b.starred) - Number(a.starred))
+            .sort((_a, b) => (b.starred ? 1 : -1))
             .map((mistake) => (
               <Box
                 key={mistake.partReviewCommonMistakeId}
@@ -176,7 +171,7 @@ const CommonMistakesTable: React.FC = () => {
       </Box>
 
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: 2 }}>
-        <NERButton variant="contained" onClick={handleCreate}>
+        <NERButton variant="contained" onClick={() => setOpenCreateModal(true)}>
           New Common Mistake
         </NERButton>
       </Box>

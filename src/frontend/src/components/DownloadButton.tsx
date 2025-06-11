@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, IconButton, Tooltip } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import { useDownloadFile } from '../hooks/part-review.hooks';
+import { useToast } from '../hooks/toasts.hooks';
 
 interface DownloadButtonProps {
   fileId: string;
@@ -11,13 +12,17 @@ interface DownloadButtonProps {
 
 const DownloadButton: React.FC<DownloadButtonProps> = ({ fileId, filename = 'download', stopPropagation = false }) => {
   const { data: blobData } = useDownloadFile(fileId);
+  const toast = useToast();
 
   const handleDownload = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (stopPropagation) {
       e.stopPropagation();
       e.preventDefault();
     }
-    if (!blobData) return;
+    if (!blobData) {
+      toast.error('Could not find file');
+      return;
+    }
     const url = URL.createObjectURL(blobData);
     const link = document.createElement('a');
     link.href = url;

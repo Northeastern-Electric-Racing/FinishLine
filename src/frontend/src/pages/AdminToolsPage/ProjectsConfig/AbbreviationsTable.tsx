@@ -74,7 +74,7 @@ const AbbreviationsTable: React.FC = () => {
           setAbbreviationToDelete(undefined);
         }}
       >
-        <Typography gutterBottom>Are you sure you want to delete this project's abbreviaiton?</Typography>
+        <Typography gutterBottom>Are you sure you want to delete this project's Abbreviation?</Typography>
       </NERModal>
     </Box>
   );

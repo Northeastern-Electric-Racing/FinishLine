@@ -515,22 +515,6 @@ describe('part review tests', () => {
     expect(deletedPrismaTag?.dateDeleted).toBeTruthy();
   });
 
-  it('does not let non-admins create, edit, or delete part tags', async () => {
-    await expect(async () => await PartReviewService.createPartTag('name', '#000000', nonAdmin, orgId)).rejects.toThrow(
-      new AccessDeniedAdminOnlyException('create part review tag')
-    );
-
-    const partTag = await PartReviewService.createPartTag('practice', '#ad6454', batman, orgId);
-
-    await expect(
-      async () => await PartReviewService.updatePartTag(partTag.partTagId, 'some thing', 'some thing', nonAdmin, orgId)
-    ).rejects.toThrow(new AccessDeniedAdminOnlyException('update part review tag'));
-
-    await expect(async () => await PartReviewService.deletePartTag(partTag.partTagId, nonAdmin, orgId)).rejects.toThrow(
-      new AccessDeniedAdminOnlyException('delete part review tag')
-    );
-  });
-
   it('does not allow updating deleted part tags', async () => {
     const partTag = await PartReviewService.createPartTag('practice', '#ad6454', batman, orgId);
 
@@ -1044,7 +1028,7 @@ describe('part review tests', () => {
 
       const proj1WbsNum = validateWBS('0.4.0');
 
-      const parts = await PartReviewService.getAllPartsForProject(proj1WbsNum, organization);
+      const parts = await PartReviewService.getAllPartsForProject(proj1WbsNum, organization, batman);
 
       expect(parts).toBeInstanceOf(Array);
       expect(parts.length).toEqual(0);
@@ -1067,7 +1051,7 @@ describe('part review tests', () => {
 
       const part3 = await createTestPart(superman, 'part3', '3', 3, project2.projectId);
 
-      const parts1 = await PartReviewService.getAllPartsForProject(proj1WbsNum, organization);
+      const parts1 = await PartReviewService.getAllPartsForProject(proj1WbsNum, organization, batman);
       expect(parts1).toHaveLength(2);
       expect(parts1[0].userCreated.userId).toEqual(part1.userCreatedId);
       expect(parts1[0].commonName).toBe(part1.commonName);
@@ -1081,7 +1065,7 @@ describe('part review tests', () => {
       expect(parts1[1].index).toBe(part2.index);
       expect(parts1[1].projectId).toBe(part2.projectId);
 
-      const parts2 = await PartReviewService.getAllPartsForProject(proj2WbsNum, organization);
+      const parts2 = await PartReviewService.getAllPartsForProject(proj2WbsNum, organization, batman);
       expect(parts2).toHaveLength(1);
       expect(parts2[0].userCreated.userId).toEqual(part3.userCreatedId);
       expect(parts2[0].commonName).toBe(part3.commonName);

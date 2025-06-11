@@ -25,7 +25,7 @@ import { apiUrls } from '../utils/urls';
 import { partPreviewTransformer, partTransformer } from './transformers/part-review.transformers';
 
 /**
- * Fetches all parts acosiated with the given project as part previews
+ * Fetches all parts associated with the given project as part previews
  *
  * @param wbsNum the wbsNum of the project
  */
@@ -60,12 +60,12 @@ export const createPart = (payload: PartPayload) => {
 
 /**
  * Uploads a preview image for a given part
- * @param file the preview image
+ * @param image the preview image
  * @param partId the id of the part that will display this image
  */
-export const uploadPreviewImage = (file: File, partId: string) => {
+export const uploadPreviewImage = (image: File, partId: string) => {
   const formData = new FormData();
-  formData.append('image', file);
+  formData.append('image', image);
   return axios.post(apiUrls.partsUploadPreviewImage(partId), formData);
 };
 
@@ -241,13 +241,13 @@ export const createCommonMistake = (payload: PartReviewCommonMistakePayload) => 
 };
 
 /**
- * Updates a common mistake
+ * Edits a common mistake
  *
  * @param commonMistakeId the id of the common mistake to update
  * @param payload the payload of the common mistake
  */
-export const updateCommonMistake = (commonMistakeId: string, payload: PartReviewCommonMistakePayload) => {
-  return axios.post<PartReviewCommonMistake>(apiUrls.partsUpdateCommonMistake(commonMistakeId), { ...payload });
+export const editCommonMistake = (commonMistakeId: string, payload: PartReviewCommonMistakePayload) => {
+  return axios.post<PartReviewCommonMistake>(apiUrls.partsEditCommonMistake(commonMistakeId), { ...payload });
 };
 
 /**

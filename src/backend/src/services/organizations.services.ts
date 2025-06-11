@@ -1,7 +1,13 @@
 import { Organization, User } from '@prisma/client';
-import { LinkCreateArgs, ProjectPreview, isAdmin } from 'shared';
+import { LinkCreateArgs, ProjectPreview, isAdmin, isMember } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedException,
+  DeletedException,
+  HttpException,
+  NotFoundException
+} from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { createUsefulLinks } from '../utils/organizations.utils';
 import { linkTransformer } from '../transformers/links.transformer';
@@ -408,12 +414,18 @@ export default class OrganizationsService {
     return updatedOrg;
   }
 
-  static async getPartReviewGuideLink(organizationId: string) {
+  static async getPartReviewGuideLink(organizationId: string, submitter: User) {
     const organization = await prisma.organization.findUnique({
       where: { organizationId }
     });
     if (!organization) {
       throw new NotFoundException('Organization', organizationId);
+    }
+    if (organization.dateDeleted) {
+      throw new DeletedException('Organization', organizationId);
+    }
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isMember))) {
+      throw new AccessDeniedException("Only members of an organization can retrieve it's guide link");
     }
     return organization.partReviewGuideLink;
   }

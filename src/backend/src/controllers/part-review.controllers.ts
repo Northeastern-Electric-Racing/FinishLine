@@ -20,7 +20,7 @@ export default class PartReviewController {
     try {
       const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
 
-      const parts = await PartReviewService.getAllPartsForProject(wbsNumber, req.organization);
+      const parts = await PartReviewService.getAllPartsForProject(wbsNumber, req.organization, req.currentUser);
       res.status(200).json(parts);
     } catch (error: unknown) {
       next(error);
@@ -73,7 +73,7 @@ export default class PartReviewController {
         throw new HttpException(400, 'Invalid or undefined file data');
       }
 
-      const fileId = await PartReviewService.uploadFile(req.file);
+      const fileId = await PartReviewService.uploadFile(req.file, req.currentUser, req.organization);
 
       res.status(200).json(fileId);
     } catch (error: unknown) {
@@ -107,7 +107,7 @@ export default class PartReviewController {
     try {
       const { partId } = req.params;
       await PartReviewService.deletePart(partId, req.currentUser, req.organization.organizationId);
-      res.status(200).json({ message: `Successfully deleted part #${partId}` });
+      res.status(204).json({ message: `Successfully deleted part #${partId}` });
     } catch (error: unknown) {
       next(error);
     }
@@ -152,7 +152,7 @@ export default class PartReviewController {
     try {
       const { reviewId } = req.params;
       await PartReviewService.deleteReview(reviewId, req.currentUser, req.organization.organizationId);
-      res.status(200).json({ message: 'Successfully deleted review' });
+      res.status(204).json({ message: 'Successfully deleted review' });
     } catch (error: unknown) {
       next(error);
     }
@@ -246,7 +246,7 @@ export default class PartReviewController {
     try {
       const { partTagId } = req.params;
       await PartReviewService.deletePartTag(partTagId, req.currentUser, req.organization.organizationId);
-      res.status(200).send({ message: 'Successfully deleted part tag' });
+      res.status(204).send({ message: 'Successfully deleted part tag' });
     } catch (error: unknown) {
       next(error);
     }
@@ -283,7 +283,7 @@ export default class PartReviewController {
     try {
       const { faqId } = req.params;
       const deletedfaq = await PartReviewService.deleteFaq(faqId, req.currentUser, req.organization.organizationId);
-      res.status(200).json(deletedfaq);
+      res.status(204).json(deletedfaq);
     } catch (error: unknown) {
       next(error);
     }
@@ -336,7 +336,7 @@ export default class PartReviewController {
     try {
       const { commonMistakeId } = req.params;
       await PartReviewService.deleteCommonMistake(commonMistakeId, req.currentUser, req.organization.organizationId);
-      res.status(200).json({ message: 'Successfully deleted common mistake' });
+      res.status(204).json({ message: 'Successfully deleted common mistake' });
     } catch (error: unknown) {
       next(error);
     }
@@ -366,7 +366,7 @@ export default class PartReviewController {
 
       await PartReviewService.deletePartReviewRequest(reviewRequestId, req.currentUser, req.organization.organizationId);
 
-      res.status(200).json({ message: 'Successfully deleted review request' });
+      res.status(204).json({ message: 'Successfully deleted review request' });
     } catch (error) {
       next(error);
     }
@@ -375,7 +375,7 @@ export default class PartReviewController {
   static async notifyReviewer(req: Request, res: Response, next: NextFunction) {
     try {
       const { reviewerId, partId } = req.body;
-      await PartReviewService.notifyReviewer(reviewerId, partId, req.organization.organizationId);
+      await PartReviewService.notifyReviewer(reviewerId, partId, req.currentUser, req.organization.organizationId);
       res.status(200).json({ message: 'Successfully notified reviewer' });
     } catch (error) {
       next(error);
@@ -385,7 +385,7 @@ export default class PartReviewController {
   static async notifyAssignee(req: Request, res: Response, next: NextFunction) {
     try {
       const { assigneeId, partId } = req.body;
-      await PartReviewService.notifyAssignee(assigneeId, partId, req.organization.organizationId);
+      await PartReviewService.notifyAssignee(assigneeId, partId, req.currentUser, req.organization.organizationId);
       res.status(200).json({ message: 'Successfully notified assignee' });
     } catch (error) {
       next(error);
@@ -442,7 +442,7 @@ export default class PartReviewController {
       const { popupId } = req.params;
       const organizationID = req.organization.organizationId;
       await PartReviewService.deletePartReviewPopup(popupId, user, organizationID);
-      res.status(200).json({ message: 'Popup deleted successfully' });
+      res.status(204).json({ message: 'Popup deleted successfully' });
     } catch (error) {
       next(error);
     }
@@ -452,7 +452,7 @@ export default class PartReviewController {
     try {
       const { fileId } = req.params;
 
-      const fileData = await PartReviewService.downloadFile(fileId);
+      const fileData = await PartReviewService.downloadFile(fileId, req.currentUser, req.organization);
 
       res.setHeader('content-type', String(fileData.type));
       res.setHeader('content-disposition', `attachment; filename="file-${fileId}"`);

@@ -6,22 +6,26 @@ export type PartSubmissionQueryArgs = ReturnType<typeof getPartSubmissionQueryAr
 export type PartReviewQueryArgs = ReturnType<typeof getPartReviewQueryArgs>;
 export type PartReviewRequestQueryArgs = ReturnType<typeof getPartReviewRequestQueryArgs>;
 
-export const getPartQueryArgs = (organizationId: string) =>
+export const getPartQueryArgs = (organizationId: string, userId: string) =>
   Prisma.validator<Prisma.PartDefaultArgs>()({
     include: {
       tags: true,
-      submissions: { where: { dateDeleted: null }, ...getPartSubmissionQueryArgs(organizationId) },
+      submissions: { where: { dateDeleted: null }, ...getPartSubmissionQueryArgs(organizationId, userId) },
       reviewRequests: { where: { dateDeleted: null }, ...getPartReviewRequestQueryArgs(organizationId) },
       assignees: getUserQueryArgs(organizationId),
-      userCreated: getUserQueryArgs(organizationId)
+      userCreated: getUserQueryArgs(organizationId),
+      project: { include: { wbsElement: true } }
     }
   });
 
-export const getPartSubmissionQueryArgs = (organizationId: string) =>
+export const getPartSubmissionQueryArgs = (organizationId: string, userId: string) =>
   Prisma.validator<Prisma.PartSubmissionDefaultArgs>()({
     include: {
       userCreated: getUserQueryArgs(organizationId),
-      reviews: { where: { dateDeleted: null }, ...getPartReviewQueryArgs(organizationId) }
+      reviews: {
+        where: { dateDeleted: null, OR: [{ NOT: { completedAt: null } }, { userCreatedId: userId }] },
+        ...getPartReviewQueryArgs(organizationId)
+      }
     }
   });
 

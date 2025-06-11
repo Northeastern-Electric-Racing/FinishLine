@@ -182,7 +182,7 @@ export default class OrganizationsController {
 
   static async getPartReviewGuideLink(req: Request, res: Response, next: NextFunction) {
     try {
-      const guideLink = await OrganizationsService.getPartReviewGuideLink(req.organization.organizationId);
+      const guideLink = await OrganizationsService.getPartReviewGuideLink(req.organization.organizationId, req.currentUser);
       res.status(200).json(guideLink);
     } catch (error: unknown) {
       next(error);
