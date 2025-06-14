@@ -179,4 +179,19 @@ export default class OrganizationsController {
       next(error);
     }
   }
+
+  static async setSlackSponsorshipNotificationsSlackId(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { channelId } = req.body;
+
+      const updatedOrg = await OrganizationsService.setSlackSponsorshipNotificationSlackChannelId(
+        channelId,
+        req.currentUser,
+        req.organization.organizationId
+      );
+      res.status(200).json(updatedOrg);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

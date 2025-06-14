@@ -261,6 +261,9 @@ ALTER TABLE "Reimbursement_Request_Comment" ADD CONSTRAINT "Reimbursement_Reques
 -- AlterTable
 ALTER TABLE "Reimbursement_Request_Comment" ADD COLUMN     "dateDeleted" TIMESTAMP(3);
 
+-- AlterTable
+ALTER TABLE "Organization" ADD COLUMN     "sponsorshipNotificationsSlackChannelId" TEXT;
+
 -- CreateTable
 CREATE TABLE "Refund_Source" (
     "refundSourceId" TEXT NOT NULL,

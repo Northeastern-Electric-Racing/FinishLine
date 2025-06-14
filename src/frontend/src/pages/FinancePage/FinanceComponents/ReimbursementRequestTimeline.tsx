@@ -45,6 +45,21 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ comment, isLast }) =>
   // Reformatting time to remove seconds.
   let commentTime = new Date(comment.dateCreated).toLocaleTimeString();
   commentTime = commentTime.slice(0, -6) + commentTime.slice(-3);
+
+  const tagRegex = /@([A-Z][a-z'-]+(?:[A-Z][a-z'-]+)?)/gu;
+
+  const match = tagRegex.exec(comment.comment);
+
+  let formattedComment = comment.comment;
+
+  if (match) {
+    const [fullTag, tagName] = match;
+    const convertedName = tagName.replace(/([a-z'])([A-Z])/g, '$1 $2');
+
+    // Replace only the first occurrence in the string
+    formattedComment = comment.comment.replace(fullTag, convertedName);
+  }
+
   return (
     <Stack direction="row" spacing={2}>
       <Box sx={{ width: 'auto', textAlign: 'right', whiteSpace: 'nowrap' }}>
@@ -75,7 +90,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ comment, isLast }) =>
 
       <Box sx={{ maxWidth: '70%', wordBreak: 'break-word' }}>
         <Typography fontWeight={'regular'} fontSize={18} variant="h1" marginBottom={1}>
-          {comment.comment}
+          {formattedComment}
         </Typography>
       </Box>
     </Stack>
@@ -84,7 +99,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ comment, isLast }) =>
 
 const CreateNewCommentSection: React.FC<CreateNewCommentSectionProps> = ({ reimbursementRequestId, comments }) => {
   const { mutateAsync, isLoading } = useCreateReimbursementRequestComment(reimbursementRequestId);
-  const [timelineCommentModal, setTimelineCommentModalShow] = useState<boolean>(false);
+  const [showTimelineCommentModal, setShowTimelineCommentModal] = useState<boolean>(false);
   const commentTime = new Date().toLocaleTimeString();
   const newCommentTime = commentTime.slice(0, -6) + commentTime.slice(-3);
   return (
@@ -118,15 +133,15 @@ const CreateNewCommentSection: React.FC<CreateNewCommentSectionProps> = ({ reimb
             sx={{ cursor: 'pointer' }}
             color="primary"
             onClick={() => {
-              setTimelineCommentModalShow(true);
+              setShowTimelineCommentModal(true);
             }}
           >
             Send a Follow-Up Message!
           </Link>
         </Typography>
         <CreateRRCommentModal
-          showModal={timelineCommentModal}
-          handleClose={() => setTimelineCommentModalShow(false)}
+          showModal={showTimelineCommentModal}
+          handleClose={() => setShowTimelineCommentModal(false)}
           mutateAsync={mutateAsync}
           isLoading={isLoading}
           title="Create New Timeline Comment"

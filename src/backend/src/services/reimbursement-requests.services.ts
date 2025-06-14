@@ -56,6 +56,7 @@ import {
 } from '../transformers/reimbursement-requests.transformer';
 import { UserWithSecureSettings } from '../utils/auth.utils';
 import {
+  sendReimbursementCommentNotification,
   sendReimbursementRequestChangesRequestedNotification,
   sendReimbursementRequestCreatedNotificationAndCreateMessageInfo,
   sendReimbursementRequestDeniedNotification,
@@ -1622,7 +1623,8 @@ export default class ReimbursementRequestService {
     reimbursementRequestId: string
   ) {
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
-      where: { reimbursementRequestId, organizationId: organization.organizationId, dateDeleted: null }
+      where: { reimbursementRequestId, organizationId: organization.organizationId, dateDeleted: null },
+      include: { notificationSlackThreads: true }
     });
 
     if (!reimbursementRequest) {
@@ -1637,6 +1639,88 @@ export default class ReimbursementRequestService {
       },
       ...getReimbursementRequestCommentQueryArgs(organization.organizationId)
     });
+
+    // send slack notification
+    const tagRegex = /@([A-Z][a-z'-]+(?:[A-Z][a-z'-]+)?)/gu;
+
+    const taggedNames = [...comment.matchAll(tagRegex)].map((match) => match[1]);
+
+    const splitTaggedNames = taggedNames.map((name) => {
+      const match = name.match(/([A-Z][a-z'-]+)([A-Z][a-z'-]+)/);
+
+      if (match) {
+        return {
+          firstName: match[1],
+          lastName: match[2]
+        };
+      }
+
+      // possible for user to have one name
+      return {
+        firstName: name,
+        lastName: ''
+      };
+    });
+
+    const tags: string[] = [];
+
+    for (const taggedName of splitTaggedNames) {
+      const { firstName, lastName } = taggedName;
+
+      const taggedUser = await prisma.user.findFirst({
+        where: {
+          firstName: { equals: firstName, mode: 'insensitive' },
+          lastName: { equals: lastName, mode: 'insensitive' }
+        },
+        include: { userSettings: true }
+      });
+
+      tags.push(taggedUser?.userSettings?.slackId ? `<@${taggedUser.userSettings.slackId}>` : `${firstName} ${lastName}`);
+    }
+
+    let replacementIndex = 0;
+
+    comment = comment.replace(tagRegex, (_match, _group) => {
+      const replacement = tags[replacementIndex];
+
+      replacementIndex++;
+
+      return replacement;
+    });
+
+    // if there is no more than one tag, tag stakeholders
+    if (tags.length < 2) {
+      const stakeholders = await prisma.user.findMany({
+        where: {
+          organizations: {
+            some: {
+              organizationId: organization.organizationId
+            }
+          },
+          userSettings: { slackId: { not: '' } },
+          OR: [
+            { reimbursementRequestComments: { some: { reimbursementRequestId } } },
+            { reimbursementRequests: { some: { reimbursementRequestId } } }
+          ]
+        },
+        include: { userSettings: true }
+      });
+
+      tags.push(
+        ...stakeholders.map((user) =>
+          user.userSettings?.slackId && !tags.includes(`<@${user.userSettings.slackId}>`)
+            ? `<@${user.userSettings.slackId}>`
+            : ''
+        )
+      );
+
+      // dont retag the creator of the comment
+      const [, ...restOfTags] = tags;
+
+      comment += ` ${[...new Set(restOfTags)].join(' ')}`;
+    }
+
+    await sendReimbursementCommentNotification(comment, reimbursementRequest.notificationSlackThreads);
 
     return reimbursementRequestCommentTransformer(createdComment);
   }

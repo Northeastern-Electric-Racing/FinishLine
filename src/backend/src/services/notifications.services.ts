@@ -18,6 +18,7 @@ export default class NotificationsService {
     await NotificationsService.sendTaskDeadlineSlackNotifications();
     await NotificationsService.sendDesignReviewSlackNotifications();
     await NotificationsService.sendWorkPackageDeadlineSlackNotifications();
+    await NotificationsService.sendSponsorTaskNotifications();
   }
 
   /**
@@ -189,6 +190,56 @@ export default class NotificationsService {
       // messageBlock will be empty if there are design reviews with no attendees
       if (messageBlock !== '')
         await sendMessage(slackId, ':calendar: :clock9: Upcoming Design Reviews! :clock9: :calendar: \n\n\n' + messageBlock);
+    });
+
+    await Promise.all(promises);
+  }
+
+  /**
+   * Sends the sponsor task slack notifications for all tasks with a notify date of today
+   */
+  static async sendSponsorTaskNotifications() {
+    const startOfToday = startOfDay(new Date());
+    const endOfToday = startOfDayTomorrow();
+
+    const sponsorTasks = await prisma.sponsor_Task.findMany({
+      where: {
+        notifyDate: {
+          not: null,
+          gte: startOfToday,
+          lt: endOfToday
+        },
+        dateDeleted: null,
+        assigneeUserId: {
+          not: null
+        }
+      },
+      include: {
+        assignee: { include: { userSettings: true } }
+      }
+    });
+
+    const promises = sponsorTasks.map(async (sponsorTask) => {
+      const sponsor = await prisma.sponsor.findUnique({
+        where: { sponsorId: sponsorTask.sponsorId }
+      });
+
+      const organization = await prisma.organization.findUnique({
+        where: { organizationId: sponsor?.organizationId }
+      });
+
+      if (!sponsor || !organization) return;
+
+      const message = `${sponsorTask.assignee?.userSettings?.slackId ? `<@${sponsorTask.assignee?.userSettings?.slackId}>` : ''} Reminder for your task for ${sponsor.name}: ${sponsorTask.notes}`;
+
+      if (organization.sponsorshipNotificationsSlackChannelId) {
+        await sendMessage(
+          organization.sponsorshipNotificationsSlackChannelId,
+          message,
+          `finishlinebyner.com/finance/companies/sponsors/${sponsor.sponsorId}`,
+          `View Tasks for ${sponsor.name}`
+        );
+      }
     });
 
     await Promise.all(promises);
