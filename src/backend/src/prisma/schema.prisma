@@ -406,7 +406,7 @@ model Change {
   implementerId   String
   implementer     User           @relation(fields: [implementerId], references: [userId])
 
-  // Can be either a WBS_Element, Other_Reimbursement_Product_Reason or Account_Code, not all and not none
+  // Can be either a WBS_Element, Other_Reimbursement_Product_Reason or Account_Code, not a combination and not none
   wbsElementId  String?
   wbsElement    WBS_Element?                        @relation(fields: [wbsElementId], references: [wbsElementId])
   categoryId    String?
@@ -938,7 +938,7 @@ model Wbs_Proposed_Changes {
   proposedDescriptionBulletChanges Description_Bullet[]           @relation(name: "proposedDescriptionBulletChanges")
   dateDeleted                      DateTime?
 
-  // A Wbs Proposed Change can either be original data or a proposed change, not both and not neither
+  // A Wbs Proposed Change can either be original data or a proposed change, not a combination and not none
   scopeChangeRequestAsOriginalData   Scope_CR? @relation(name: "wbsOriginalData", fields: [scopeChangeRequestAsOriginalDataId], references: [scopeCrId])
   scopeChangeRequestAsOriginalDataId String?   @unique
   scopeChangeRequest                 Scope_CR? @relation(name: "wbsProposedChanges", fields: [scopeChangeRequestId], references: [scopeCrId])
