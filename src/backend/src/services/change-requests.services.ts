@@ -34,7 +34,8 @@ import {
   reviewProposedSolution,
   sendCRSubmitterReviewedNotification,
   validateWbsElement,
-  validateNoUnreviewedOpenOtherReasonCRs
+  validateNoUnreviewedOpenOtherReasonCRs,
+  validateNoUnreviewedOpenAccountCodeCRs
 } from '../utils/change-requests.utils';
 import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type, Prisma, Organization } from '@prisma/client';
 import { getUserFullName, getUsersWithSettings, userHasPermission } from '../utils/users.utils';
@@ -568,25 +569,52 @@ export default class ChangeRequestsService {
     foundCR: Prisma.Change_RequestGetPayload<ChangeRequestWithProjectAndWorkPackageQueryArgs>,
     reviewer: User
   ): Promise<void> {
-    if (!foundCR.category) {
-      throw new HttpException(400, 'Budget changes can only be made on categories!');
-    }
     const { budgetChangeRequest } = foundCR;
     if (!budgetChangeRequest) throw new HttpException(400, 'No activation change request found!');
+
+    if (foundCR.category) {
+      const changesList = [];
+      changesList.push({
+        changeRequestId: foundCR.crId,
+        implementerId: reviewer.userId,
+        detail: buildChangeDetail(
+          'budget',
+          foundCR.category.budget.toString(),
+          budgetChangeRequest.proposedBudget.toString()
+        )
+      });
+
+      await prisma.change.createMany({ data: changesList });
+
+      await prisma.reimbursement_Product_Other_Reason.update({
+        where: { otherReimbursementProductReasonId: foundCR.categoryId ?? '' },
+        data: {
+          budget: budgetChangeRequest.proposedBudget
+        }
+      });
+    }
+
+    if (!foundCR.accountCode) {
+      throw new HttpException(400, 'Budget changes can only be made on categories and account codes!');
+    }
 
     const changesList = [];
     changesList.push({
       changeRequestId: foundCR.crId,
       implementerId: reviewer.userId,
-      detail: buildChangeDetail('budget', foundCR.category.budget.toString(), budgetChangeRequest.proposedBudget.toString())
+      detail: buildChangeDetail(
+        'budget',
+        foundCR.accountCode.amount ? foundCR.accountCode.amount.toString() : '',
+        budgetChangeRequest.proposedBudget.toString()
+      )
     });
 
     await prisma.change.createMany({ data: changesList });
 
-    await prisma.reimbursement_Product_Other_Reason.update({
-      where: { otherReimbursementProductReasonId: foundCR.categoryId ?? '' },
+    await prisma.account_Code.update({
+      where: { accountCodeId: foundCR.accountCodeId ?? '' },
       data: {
-        budget: budgetChangeRequest.proposedBudget
+        amount: budgetChangeRequest.proposedBudget
       }
     });
   }
@@ -802,85 +830,158 @@ export default class ChangeRequestsService {
   /**
    * Validates and creates a budget change request for a category
    * @param submitter The user creating the cr
-   * @param otherReasonId the id of the other reason/category to change budget of
    * @param type  the type of cr
    * @param proposedBudget the proposed budget
    * @param organization the organization the user is currently in
+   * @param otherReasonId the id of the other reason/category to change budget of
+   * @param accountCodeId the id of the account code to change budget of
    * @returns the id of the created cr
    * @throws if user is not allowed to create crs, if other reason does not exist, or if the cr type is not budget
    */
   static async createBudgetChangeRequest(
     submitter: User,
-    otherReasonId: string,
     type: CR_Type,
     proposedBudget: number,
-    organization: Organization
+    organization: Organization,
+    otherReasonId?: string,
+    accountCodeId?: string
   ): Promise<string> {
     // verify user is allowed to create budget change requests
     if (await userHasPermission(submitter.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('create budget change requests');
 
-    // verify category exists
-    const category = await prisma.reimbursement_Product_Other_Reason.findUnique({
-      where: {
-        otherReimbursementProductReasonId: otherReasonId
-      },
-      include: { changeRequests: { include: { changes: true } } }
-    });
+    let createdChangeRequest;
 
-    if (!category) throw new NotFoundException('Reimbursement Product Other Reason', otherReasonId);
-    if (category.dateDeleted) throw new DeletedException('Reimbursement Product Other Reason', otherReasonId);
+    if (otherReasonId) {
+      // verify category exists
+      const category = await prisma.reimbursement_Product_Other_Reason.findUnique({
+        where: {
+          otherReimbursementProductReasonId: otherReasonId
+        },
+        include: { changeRequests: { include: { changes: true } } }
+      });
 
-    // we don't want to have merge conflictS on the wbs element thus we check if there are unreviewed or open CRs on the category
-    await validateNoUnreviewedOpenOtherReasonCRs(category.otherReimbursementProductReasonId);
+      if (!category) throw new NotFoundException('Reimbursement Product Other Reason', otherReasonId);
+      if (category.dateDeleted) throw new DeletedException('Reimbursement Product Other Reason', otherReasonId);
 
-    const { changeRequests } = category;
-    const nonDeletedChangeRequests = changeRequests.filter((changeRequest) => !changeRequest.dateDeleted);
-    if (!allChangeRequestsReviewed(nonDeletedChangeRequests)) {
-      throw new HttpException(
-        400,
-        `Please resolve all change requests related to ${otherReasonId} - ${category.name} before proceeding`
-      );
+      // we don't want to have merge conflictS on the wbs element thus we check if there are unreviewed or open CRs on the category
+      await validateNoUnreviewedOpenOtherReasonCRs(category.otherReimbursementProductReasonId);
+
+      const { changeRequests } = category;
+      const nonDeletedChangeRequests = changeRequests.filter((changeRequest) => !changeRequest.dateDeleted);
+      if (!allChangeRequestsReviewed(nonDeletedChangeRequests)) {
+        throw new HttpException(
+          400,
+          `Please resolve all change requests related to ${otherReasonId} - ${category.name} before proceeding`
+        );
+      }
+
+      const numChangeRequests = await prisma.change_Request.count({
+        where: { organizationId: organization.organizationId }
+      });
+
+      createdChangeRequest = await prisma.change_Request.create({
+        data: {
+          submitter: { connect: { userId: submitter.userId } },
+          category: { connect: { otherReimbursementProductReasonId: otherReasonId } },
+          type,
+          budgetChangeRequest: {
+            create: {
+              proposedBudget
+            }
+          },
+          organization: { connect: { organizationId: organization.organizationId } },
+          identifier: numChangeRequests + 1
+        },
+        ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
+      });
+
+      const teams = await prisma.team.findMany({
+        where: {
+          financeTeam: true,
+          organizationId: organization.organizationId
+        }
+      });
+
+      if (teams && teams.length > 0) {
+        const notifications: { channelId: string; ts: string }[] = await sendAndGetSlackCRNotifications(
+          teams,
+          createdChangeRequest,
+          submitter,
+          undefined,
+          undefined,
+          category
+        );
+
+        // save the slack references to the change request
+        await addSlackThreadsToChangeRequest(createdChangeRequest.crId, notifications);
+      }
+    } else if (accountCodeId) {
+      // verify account code exists
+      const accountCode = await prisma.account_Code.findUnique({
+        where: {
+          accountCodeId
+        },
+        include: { changeRequests: { include: { changes: true } } }
+      });
+
+      if (!accountCode) throw new NotFoundException('Account Code', accountCodeId);
+      if (accountCode.dateDeleted) throw new DeletedException('Account Code', accountCodeId);
+
+      // we don't want to have merge conflicts on the wbs element thus we check if there are unreviewed or open CRs on the category
+      await validateNoUnreviewedOpenAccountCodeCRs(accountCode.accountCodeId);
+
+      const { changeRequests } = accountCode;
+      const nonDeletedChangeRequests = changeRequests.filter((changeRequest) => !changeRequest.dateDeleted);
+      if (!allChangeRequestsReviewed(nonDeletedChangeRequests)) {
+        throw new HttpException(400, `Please resolve all change requests related to ${accountCode.name} before proceeding`);
+      }
+
+      const numChangeRequests = await prisma.change_Request.count({
+        where: { organizationId: organization.organizationId }
+      });
+
+      createdChangeRequest = await prisma.change_Request.create({
+        data: {
+          submitter: { connect: { userId: submitter.userId } },
+          accountCode: { connect: { accountCodeId } },
+          type,
+          budgetChangeRequest: {
+            create: {
+              proposedBudget
+            }
+          },
+          organization: { connect: { organizationId: organization.organizationId } },
+          identifier: numChangeRequests + 1
+        },
+        ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
+      });
+
+      const teams = await prisma.team.findMany({
+        where: {
+          financeTeam: true,
+          organizationId: organization.organizationId
+        }
+      });
+
+      if (teams && teams.length > 0) {
+        const notifications: { channelId: string; ts: string }[] = await sendAndGetSlackCRNotifications(
+          teams,
+          createdChangeRequest,
+          submitter,
+          undefined,
+          undefined,
+          undefined,
+          accountCode
+        );
+
+        // save the slack references to the change request
+        await addSlackThreadsToChangeRequest(createdChangeRequest.crId, notifications);
+      }
     }
 
-    const numChangeRequests = await prisma.change_Request.count({
-      where: { organizationId: organization.organizationId }
-    });
-
-    const createdChangeRequest = await prisma.change_Request.create({
-      data: {
-        submitter: { connect: { userId: submitter.userId } },
-        category: { connect: { otherReimbursementProductReasonId: otherReasonId } },
-        type,
-        budgetChangeRequest: {
-          create: {
-            proposedBudget
-          }
-        },
-        organization: { connect: { organizationId: organization.organizationId } },
-        identifier: numChangeRequests + 1
-      },
-      ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
-    });
-
-    const teams = await prisma.team.findMany({
-      where: {
-        financeTeam: true
-      }
-    });
-
-    if (teams && teams.length > 0) {
-      const notifications: { channelId: string; ts: string }[] = await sendAndGetSlackCRNotifications(
-        teams,
-        createdChangeRequest,
-        submitter,
-        undefined,
-        undefined,
-        category
-      );
-
-      // save the slack references to the change request
-      await addSlackThreadsToChangeRequest(createdChangeRequest.crId, notifications);
+    if (!createdChangeRequest) {
+      throw new HttpException(400, 'No account code or category provided');
     }
 
     return createdChangeRequest.crId;

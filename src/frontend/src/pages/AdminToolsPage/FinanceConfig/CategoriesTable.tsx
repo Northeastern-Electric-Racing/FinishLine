@@ -9,7 +9,7 @@ import CreateCategoryModal from './CreateCategoryModal';
 import EditCategoryModal from './EditCategoryModal';
 import DeleteCategoryModal from './DeleteCategoryModal';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { displayEnum } from '../../../utils/pipes';
+import { centsToDollar, displayEnum } from '../../../utils/pipes';
 
 const CategoriesTable = () => {
   const {
@@ -55,7 +55,7 @@ const CategoriesTable = () => {
         <Typography>{displayEnum(category.name)}</Typography>
       </TableCell>
       <TableCell>
-        <Typography>{`$${category.budget}`}</Typography>
+        <Typography>{`$${centsToDollar(category.budget)}`}</Typography>
       </TableCell>
       <TableCell>
         <IconButton

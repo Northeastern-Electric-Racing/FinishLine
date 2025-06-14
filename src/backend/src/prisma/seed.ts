@@ -1976,7 +1976,28 @@ const performSeed: () => Promise<void> = async () => {
     123,
     true,
     [indexCodeCash.indexCodeId, indexCodeBudget.indexCodeId],
-    ner
+    ner,
+    1050
+  );
+
+  const accountCode2 = await ReimbursementRequestService.createAccountCode(
+    thomasEmrax,
+    'Things',
+    456,
+    false,
+    [indexCodeBudget.indexCodeId],
+    ner,
+    2000
+  );
+
+  const accountCode3 = await ReimbursementRequestService.createAccountCode(
+    thomasEmrax,
+    'Stuff',
+    789,
+    true,
+    [indexCodeCash.indexCodeId],
+    ner,
+    3010
   );
 
   const reimbursement1 = await ReimbursementRequestService.createReimbursementRequest(
@@ -2142,10 +2163,10 @@ const performSeed: () => Promise<void> = async () => {
 
   const budgetCR = await ChangeRequestsService.createBudgetChangeRequest(
     thomasEmrax,
-    otherProductReasonConsumables.otherProductReasonId,
     'BUDGET',
     50,
-    ner
+    ner,
+    otherProductReasonConsumables.otherProductReasonId
   );
 
   /**

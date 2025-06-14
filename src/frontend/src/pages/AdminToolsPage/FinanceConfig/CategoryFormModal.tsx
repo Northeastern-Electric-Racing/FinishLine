@@ -40,13 +40,14 @@ const CategoryFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: 
     resolver: yupResolver(schema),
     defaultValues: {
       name: defaultValues?.name ? displayEnum(defaultValues?.name) : '',
-      budget: defaultValues?.budget ?? 0,
+      budget: defaultValues?.budget != null ? defaultValues.budget / 100 : 0.0,
       indexCodeId: defaultValues?.indexCode.indexCodeId ?? '',
       accountCodeIds: defaultValues?.accountCodes.map((accountCode) => accountCode.accountCodeId) ?? []
     }
   });
 
   const onFormSubmit = async (data: OtherProductReasonPayload) => {
+    data.budget = data.budget * 100;
     try {
       onSubmit(data);
     } catch (error: unknown) {

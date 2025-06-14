@@ -2,22 +2,19 @@ import { ChangeRequest } from 'shared';
 import ReviewChangeRequestsView from './ReviewChangeRequestView';
 import { FormInput } from './ReviewChangeRequest';
 
-interface ReviewChangeRequestViewCategoryWrapperProps {
+interface ReviewChangeRequestViewCategoryAccountCodeWrapperProps {
   cr: ChangeRequest;
   modalShow: boolean;
   onHide: () => void;
   onSubmit: (data: FormInput) => Promise<void>;
 }
 
-const ReviewChangeRequestsViewCategoryWrapper: React.FC<ReviewChangeRequestViewCategoryWrapperProps> = ({
-  cr,
-  modalShow,
-  onHide,
-  onSubmit
-}: ReviewChangeRequestViewCategoryWrapperProps) => {
+const ReviewChangeRequestsViewCategoryAccountCodeWrapper: React.FC<
+  ReviewChangeRequestViewCategoryAccountCodeWrapperProps
+> = ({ cr, modalShow, onHide, onSubmit }: ReviewChangeRequestViewCategoryAccountCodeWrapperProps) => {
   return (
     <ReviewChangeRequestsView cr={cr} modalShow={modalShow} onHide={onHide} onSubmit={onSubmit} blockingWorkPackages={[]} />
   );
 };
 
-export default ReviewChangeRequestsViewCategoryWrapper;
+export default ReviewChangeRequestsViewCategoryAccountCodeWrapper;

@@ -8,7 +8,7 @@ import {
   meetingStartTimePipe,
   CreateSponsorTask
 } from 'shared';
-import { Reimbursement_Product_Other_Reason, Sponsor_Task, User } from '@prisma/client';
+import { Account_Code, Reimbursement_Product_Other_Reason, Sponsor_Task, User } from '@prisma/client';
 import {
   editMessage,
   getChannelName,
@@ -270,7 +270,8 @@ export const sendAndGetSlackCRNotifications = async (
   submitter: User,
   wbsElement?: WBS_Element,
   projectWbsName?: string,
-  category?: Reimbursement_Product_Other_Reason
+  category?: Reimbursement_Product_Other_Reason,
+  accoundCode?: Account_Code
 ) => {
   const notifications: { channelId: string; ts: string }[] = [];
   let message = '';
@@ -282,7 +283,7 @@ export const sendAndGetSlackCRNotifications = async (
       message = `${submitter.firstName} ${submitter.lastName} wants to stage gate ${wbsElement?.name} in ${projectWbsName}`;
       break;
     case 'BUDGET':
-      message = `${submitter.firstName} ${submitter.lastName} wants to change the budget of ${category?.name}`;
+      message = `${submitter.firstName} ${submitter.lastName} wants to change the budget of ${category ? category.name : accoundCode?.name}`;
       break;
     default:
       message = `${changeRequest.type} CR submitted by ${submitter.firstName} ${submitter.lastName} for the ${projectWbsName} project`;

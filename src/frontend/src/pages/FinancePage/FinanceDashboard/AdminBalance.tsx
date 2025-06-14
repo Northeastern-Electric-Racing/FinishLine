@@ -3,9 +3,29 @@ import { ReimbursementRequestData } from 'shared';
 import { grey } from '@mui/material/colors';
 import PieChart from '../FinanceComponents/PieChart';
 import { useState } from 'react';
+import AccountAllocation from '../FinanceComponents/AccountAllocation';
+import { useGetAllAccountCodes } from '../../../hooks/finance.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
 
 const AdminBalance = ({ data }: { data: ReimbursementRequestData[] }) => {
+  const {
+    data: accounts,
+    isLoading: accountsIsLoading,
+    isError: accountsIsError,
+    error: accountsError
+  } = useGetAllAccountCodes();
+
   const [selectedTab, setSelectedTab] = useState('total');
+
+  if (accountsIsLoading || !accounts) {
+    return <LoadingIndicator />;
+  }
+
+  if (accountsIsError) {
+    return <ErrorPage message={accountsError?.message} />;
+  }
+
   return (
     <Box
       sx={{
@@ -56,6 +76,7 @@ const AdminBalance = ({ data }: { data: ReimbursementRequestData[] }) => {
             reimbursed={data[1].reimbursed}
             available={data[1].available}
           />
+          <AccountAllocation accounts={accounts} />
         </Box>
       )}
       {selectedTab === 'cash' && (

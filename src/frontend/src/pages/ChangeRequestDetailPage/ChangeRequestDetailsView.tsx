@@ -108,6 +108,12 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
                 {displayEnum(changeRequest.category.name)}
               </Typography>
             )}
+            {changeRequest.accountCode && (
+              <Typography sx={{ fontWeight: 'normal', fontSize: '21px' }}>
+                <b>Account Code: </b>
+                {`${changeRequest.accountCode.code} - ${changeRequest.accountCode.name}`}
+              </Typography>
+            )}
           </Grid>
           <Grid item xs={'auto'}>
             <Typography sx={{ fontWeight: 'normal', fontSize: '21px' }}>

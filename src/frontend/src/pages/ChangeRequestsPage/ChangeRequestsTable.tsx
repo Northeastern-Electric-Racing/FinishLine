@@ -75,8 +75,8 @@ const ChangeRequestsTable: React.FC = () => {
 
   const dynamicColumn: GridColDef = {
     ...baseColDef,
-    field: 'wbsOrCategory',
-    headerName: 'WBS / Category',
+    field: 'wbsOrCategoryOrAccountCode',
+    headerName: 'WBS / Category / AccountCode',
     filterable: true,
     sortable: true,
     maxWidth: 300,
@@ -209,11 +209,13 @@ const ChangeRequestsTable: React.FC = () => {
           data.map((v) => ({
             ...v,
             carNumber: v.wbsNum ? v.wbsNum.carNumber : undefined,
-            wbsOrCategory: v.wbsNum
+            wbsOrCategoryOrAccountCode: v.wbsNum
               ? { wbsNum: v.wbsNum, name: v.wbsName }
               : v.category
                 ? { category: v.category, name: v.category.name }
-                : undefined,
+                : v.accountCode
+                  ? { accountCode: v.accountCode, name: v.accountCode.name }
+                  : undefined,
             submitter: fullNamePipe(v.submitter),
             reviewer: fullNamePipe(v.reviewer)
           })) || []
