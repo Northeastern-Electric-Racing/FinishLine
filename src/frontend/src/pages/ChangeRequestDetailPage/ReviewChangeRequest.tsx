@@ -11,7 +11,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import { ChangeRequest } from 'shared';
 import { useToast } from '../../hooks/toasts.hooks';
 import ReviewChangeRequestsViewWBSWrapper from './ReviewChangeRequestsViewWBSWrapper';
-import ReviewChangeRequestsViewCategoryWrapper from './ReviewChangeRequestsViewCategoryWrapper';
+import ReviewChangeRequestsViewCategoryAccountCodeWrapper from './ReviewChangeRequestsViewCategoryAccountCodeWrapper';
 
 interface ReviewChangeRequestProps {
   modalShow: boolean;
@@ -67,7 +67,12 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
   }
 
   return (
-    <ReviewChangeRequestsViewCategoryWrapper cr={cr} modalShow={modalShow} onHide={handleClose} onSubmit={handleConfirm} />
+    <ReviewChangeRequestsViewCategoryAccountCodeWrapper
+      cr={cr}
+      modalShow={modalShow}
+      onHide={handleClose}
+      onSubmit={handleConfirm}
+    />
   );
 };
 

@@ -28,7 +28,7 @@ import {
   ChangeRequestManyQueryArgs,
   ChangeRequestWithProjectAndWorkPackageQueryArgs
 } from '../prisma-query-args/change-requests.query-args';
-import { otherProductReasonTransformer } from './reimbursement-requests.transformer';
+import { accountCodeTransformer, otherProductReasonTransformer } from './reimbursement-requests.transformer';
 
 const projectProposedChangesTransformer = (
   wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<WbsProposedChangeQueryArgs>
@@ -87,6 +87,7 @@ export const changeRequestManyTransformer = (
     wbsNum: changeRequest.wbsElement ? wbsNumOf(changeRequest.wbsElement) : undefined,
     wbsName: changeRequest.wbsElement?.name ?? undefined,
     category: changeRequest.category ? otherProductReasonTransformer(changeRequest.category) : undefined,
+    accountCode: changeRequest.accountCode ? accountCodeTransformer(changeRequest.accountCode) : undefined,
     submitter: userTransformer(changeRequest.submitter),
     dateSubmitted: changeRequest.dateSubmitted,
     type: changeRequest.type,
@@ -144,6 +145,7 @@ const changeRequestTransformer = (
     wbsNum: changeRequest.wbsElement ? wbsNumOf(changeRequest.wbsElement) : undefined,
     wbsName,
     category: changeRequest.category ? otherProductReasonTransformer(changeRequest.category) : undefined,
+    accountCode: changeRequest.accountCode ? accountCodeTransformer(changeRequest.accountCode) : undefined,
     submitter: userTransformer(changeRequest.submitter),
     dateSubmitted: changeRequest.dateSubmitted,
     type: changeRequest.type,
@@ -155,6 +157,7 @@ const changeRequestTransformer = (
     implementedChanges: changeRequest.changes.map((change) => ({
       wbsNum: change.wbsElement ? wbsNumOf(change.wbsElement) : undefined,
       category: change.category ? otherProductReasonTransformer(change.category) : undefined,
+      accountCode: change.accountCode ? accountCodeTransformer(change.accountCode) : undefined,
       changeId: change.changeId,
       changeRequestIdentifier: changeRequest.identifier,
       changeRequestId: change.changeRequestId,

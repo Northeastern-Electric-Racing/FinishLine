@@ -54,6 +54,7 @@ CREATE TABLE "Sponsor_Task" (
     "assigneeUserId" TEXT,
     "notes" TEXT NOT NULL,
     "sponsorId" TEXT NOT NULL,
+    "dateDeleted" TIMESTAMP(3),
 
     CONSTRAINT "Sponsor_Task_pkey" PRIMARY KEY ("sponsorTaskId")
 );
@@ -297,7 +298,8 @@ ALTER TABLE "Change_Request" DROP CONSTRAINT "Change_Request_wbsElementId_fkey";
 
 -- AlterTable
 ALTER TABLE "Change_Request" ADD COLUMN     "categoryId" TEXT,
-ALTER COLUMN "wbsElementId" DROP NOT NULL;
+ALTER COLUMN "wbsElementId" DROP NOT NULL,
+ADD COLUMN     "accountCodeId" TEXT;
 
 -- CreateTable
 CREATE TABLE "Budget_CR" (
@@ -318,6 +320,9 @@ ALTER TABLE "Change_Request" ADD CONSTRAINT "Change_Request_wbsElementId_fkey" F
 ALTER TABLE "Change_Request" ADD CONSTRAINT "Change_Request_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Reimbursement_Product_Other_Reason"("otherReimbursementProductReasonId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Change_Request" ADD CONSTRAINT "Change_Request_accountCodeId_fkey" FOREIGN KEY ("accountCodeId") REFERENCES "Account_Code"("accountCodeId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Budget_CR" ADD CONSTRAINT "Budget_CR_changeRequestId_fkey" FOREIGN KEY ("changeRequestId") REFERENCES "Change_Request"("crId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- DropForeignKey
@@ -325,7 +330,8 @@ ALTER TABLE "Change" DROP CONSTRAINT "Change_wbsElementId_fkey";
 
 -- AlterTable
 ALTER TABLE "Change" ADD COLUMN     "categoryId" TEXT,
-ALTER COLUMN "wbsElementId" DROP NOT NULL;
+ALTER COLUMN "wbsElementId" DROP NOT NULL,
+ADD COLUMN     "accountCodeId" TEXT;
 
 -- AddForeignKey
 ALTER TABLE "Change" ADD CONSTRAINT "Change_wbsElementId_fkey" FOREIGN KEY ("wbsElementId") REFERENCES "WBS_Element"("wbsElementId") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -333,5 +339,5 @@ ALTER TABLE "Change" ADD CONSTRAINT "Change_wbsElementId_fkey" FOREIGN KEY ("wbs
 -- AddForeignKey
 ALTER TABLE "Change" ADD CONSTRAINT "Change_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Reimbursement_Product_Other_Reason"("otherReimbursementProductReasonId") ON DELETE SET NULL ON UPDATE CASCADE;
 
--- AlterTable
-ALTER TABLE "Sponsor_Task" ADD COLUMN     "dateDeleted" TIMESTAMP(3);
+-- AddForeignKey
+ALTER TABLE "Change" ADD CONSTRAINT "Change_accountCodeId_fkey" FOREIGN KEY ("accountCodeId") REFERENCES "Account_Code"("accountCodeId") ON DELETE SET NULL ON UPDATE CASCADE;

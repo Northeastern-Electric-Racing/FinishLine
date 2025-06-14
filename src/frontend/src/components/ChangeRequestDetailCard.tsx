@@ -49,7 +49,7 @@ const CRCardDescription = ({ cr }: { cr: ChangeRequest }) => {
           </div>
         ) : isStageGate && cr.wbsNum ? (
           'Stage Gate ' + wbsPipe(cr.wbsNum) + ' - ' + cr.wbsName
-        ) : isBudget && cr.category ? (
+        ) : (isBudget && cr.category) || (isBudget && cr.accountCode) ? (
           'Change budget'
         ) : (
           'Standard Change Request (Click To view more details)'
@@ -101,6 +101,7 @@ const ChangeRequestDetailCard: React.FC<ChangeRequestDetailCardProps> = ({ chang
                   </Link>
                 )}
                 {changeRequest.category && displayEnum(changeRequest.category.name)}
+                {changeRequest.accountCode && changeRequest.accountCode.name}
               </Typography>
             </Stack>
           </Grid>

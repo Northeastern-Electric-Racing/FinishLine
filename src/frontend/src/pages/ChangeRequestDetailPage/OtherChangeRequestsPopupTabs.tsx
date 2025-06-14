@@ -49,6 +49,12 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
       return b.dateSubmitted.getTime() - a.dateSubmitted.getTime();
     });
 
+  const crsFromAccountCode = changeRequests
+    ?.filter((cr) => cr.accountCode?.name === changeRequest.accountCode?.name)
+    .sort((a: ChangeRequest, b: ChangeRequest) => {
+      return b.dateSubmitted.getTime() - a.dateSubmitted.getTime();
+    });
+
   const displayTab = (value: number, title: string) => (
     <Tab value={value} sx={{ borderRadius: '16px 16px 0 0' }} label={title} onClick={() => tab === value && setTab(0)} />
   );
@@ -115,11 +121,13 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
       >
         {changeRequest.wbsNum && displayTab(1, `Other CR's on ${wbsPipe(changeRequest.wbsNum)}`)}
         {changeRequest.category && displayTab(1, `Other CR's on ${displayEnum(changeRequest.category.name)}`)}
+        {changeRequest.accountCode &&
+          displayTab(1, `Other CR's on ${changeRequest.accountCode.code} - ${changeRequest.accountCode.name}`)}
         {displayTab(2, `Other CR's from ${fullNamePipe(changeRequest.submitter)}`)}
       </Tabs>
       <Collapse in={tab !== 0}>
         {tab === 1
-          ? displayCRCards(crsFromWbs || crsFromCategory || [])
+          ? displayCRCards(crsFromWbs || crsFromCategory || crsFromAccountCode || [])
           : tab === 2 && displayCRCards(crsFromSubmitter || [])}
       </Collapse>
     </Box>

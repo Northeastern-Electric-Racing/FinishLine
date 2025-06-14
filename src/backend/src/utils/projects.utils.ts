@@ -88,9 +88,19 @@ export const updateProjectAndCreateChanges = async (
     crId,
     implementerId,
     wbsElementId,
+    null,
     null
   );
-  const budgetChangeJson = createChange('budget', originalProject.budget, budget, crId, implementerId, wbsElementId, null);
+  const budgetChangeJson = createChange(
+    'budget',
+    originalProject.budget,
+    budget,
+    crId,
+    implementerId,
+    wbsElementId,
+    null,
+    null
+  );
   const summaryChangeJson = createChange(
     'summary',
     originalProject.summary,
@@ -98,6 +108,7 @@ export const updateProjectAndCreateChanges = async (
     crId,
     implementerId,
     wbsElementId,
+    null,
     null
   );
   const managerChangeJson = createChange(
@@ -107,6 +118,7 @@ export const updateProjectAndCreateChanges = async (
     crId,
     implementerId,
     wbsElementId,
+    null,
     null
   );
   const leadChangeJson = createChange(
@@ -116,6 +128,7 @@ export const updateProjectAndCreateChanges = async (
     crId,
     implementerId,
     wbsElementId,
+    null,
     null
   );
 
