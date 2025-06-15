@@ -6,17 +6,12 @@ import PartDisplay from '../../../PartPage/PartPageComponents/PartDisplay';
 
 interface PartsToReviewProps {
   project: Project;
-  parts: PartPreview[] | undefined;
+  parts: PartPreview[];
   formatStyle: 'compact' | 'standard' | 'full';
   title: string;
 }
 
 const MyPartsUnderReview: React.FC<PartsToReviewProps> = ({ project, parts, formatStyle, title }) => {
-  // Show the list only if there are items to show
-  if (!parts) {
-    return null;
-  }
-
   return (
     <Grid item xs={12} md={formatStyle === 'full' ? 12 : formatStyle === 'standard' ? 6 : 4}>
       <Typography variant="h5" sx={{ mb: 1 }}>

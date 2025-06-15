@@ -39,7 +39,9 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
     wbsNum: yup.string().required(),
     index: yup
       .number()
+      .integer()
       .lessThan(99999, 'Index must be less than 5 digits')
+      .positive()
       .required()
       .test({
         name: 'unique-index',
@@ -74,7 +76,6 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
 
   const onFormSubmit = async (data: PartPayload) => {
     try {
-      closeForm();
       await onSubmit({
         ...data,
         reviewStatus: defaultValues ? defaultValues.status : Review_Status.IN_PROGRESS,
@@ -82,6 +83,7 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
         assigneeIds,
         reviewerIds
       });
+      closeForm();
       toast.success(!!defaultValues ? 'Part Successfully Edited' : 'Part Successfully Created');
     } catch (error: unknown) {
       if (error instanceof Error) {

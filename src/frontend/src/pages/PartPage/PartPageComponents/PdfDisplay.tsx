@@ -130,7 +130,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
         pdfjs.GlobalWorkerOptions.workerPort.terminate();
       }
     };
-  }, []);
+  });
 
   const { mutateAsync: addPopupToDb } = useCreateReviewPopup();
   const { mutateAsync: addCommonMistake } = useCreateCommonMistake();

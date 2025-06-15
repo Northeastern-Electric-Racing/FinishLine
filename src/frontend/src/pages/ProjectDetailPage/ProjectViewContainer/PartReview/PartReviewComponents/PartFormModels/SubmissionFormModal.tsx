@@ -10,6 +10,7 @@ import { FormControl, FormHelperText, FormLabel, TextField } from '@mui/material
 import ReactHookTextField from '../../../../../../components/ReactHookTextField';
 import { Delete, FileUpload } from '@mui/icons-material';
 import { useUploadFile } from '../../../../../../hooks/part-review.hooks';
+import { getFileUploadDisplayName, MAX_PART_FILE_SIZE } from '../../../../../../utils/part.utils';
 
 interface SubmissionFormModalProps {
   open: boolean;
@@ -19,8 +20,6 @@ interface SubmissionFormModalProps {
   onSubmit: (data: { partId: string; name: string; notes?: string; fileIds: string[] }) => void;
   partsInProject: PartPreview[];
 }
-
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 const isPdf = (fileName: string) => {
   const extension = fileName.split('.').pop()?.toLowerCase();
@@ -100,10 +99,6 @@ const SubmissionFormModal = ({
     reset();
   };
 
-  const displayName = (name: string) => {
-    return name.length <= 15 ? name : name.slice(0, 14) + '...';
-  };
-
   return (
     <NERFormModal
       open={open}
@@ -148,7 +143,7 @@ const SubmissionFormModal = ({
                       fileIds.map((file, index) => {
                         return (
                           <ListItem key={file.id}>
-                            <Typography>{displayName(files[index].name)}</Typography>
+                            <Typography>{getFileUploadDisplayName(files[index].name)}</Typography>
                             <IconButton
                               onClick={() => {
                                 setFiles((prevFiles) => [...prevFiles.slice(0, index), ...prevFiles.slice(index + 1)]);
@@ -191,8 +186,10 @@ const SubmissionFormModal = ({
                           }
                           setUploading(true);
                           [...e.target.files]?.forEach(async (file, index) => {
-                            if (file.size > MAX_FILE_SIZE) {
-                              toast.error(`File "${file.name}" exceeds the maximum size limit of ${MAX_FILE_SIZE} bytes`);
+                            if (file.size > MAX_PART_FILE_SIZE) {
+                              toast.error(
+                                `File "${file.name}" exceeds the maximum size limit of ${MAX_PART_FILE_SIZE / (1024 * 1024)} mbs`
+                              );
                               checkLast(index);
                               return;
                             }

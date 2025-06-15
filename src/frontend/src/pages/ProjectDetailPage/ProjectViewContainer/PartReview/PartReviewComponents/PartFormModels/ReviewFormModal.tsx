@@ -10,6 +10,7 @@ import { FormControl, FormHelperText, FormLabel, TextField } from '@mui/material
 import ReactHookTextField from '../../../../../../components/ReactHookTextField';
 import { Delete, FileUpload } from '@mui/icons-material';
 import { useUploadFile } from '../../../../../../hooks/part-review.hooks';
+import { MAX_PART_FILE_SIZE } from '../../../../../../utils/part.utils';
 
 interface ReviewFormModalProps {
   open: boolean;
@@ -18,8 +19,6 @@ interface ReviewFormModalProps {
   onSubmit: (data: { submissionId: string; status: Review_Status; notes?: string; fileIds: string[] }) => void;
   partsInProject: PartPreview[];
 }
-
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProject }: ReviewFormModalProps) => {
   const toast = useToast();
@@ -57,7 +56,7 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
     name: 'fileIds'
   });
 
-  const [selectedPartIndex, setSelectedPartIndex] = useState<number | null>(null);
+  const [selectedPartIndex, setSelectedPartIndex] = useState<number>();
 
   const onFormSubmit = async (data: { submissionId: string; status: Review_Status; notes?: string; fileIds: string[] }) => {
     try {
@@ -109,7 +108,7 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
               renderInput={(params) => (
                 <TextField {...params} variant="outlined" placeholder="Select a Part" error={false} />
               )}
-              onChange={(_event, newValue) => setSelectedPartIndex(newValue ? newValue.index : null)}
+              onChange={(_event, newValue) => setSelectedPartIndex(newValue?.index)}
             />
           </FormControl>
         </Grid>
@@ -164,8 +163,10 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
                       }
                       setUploading(true);
                       [...e.target.files]?.forEach(async (file, index) => {
-                        if (file.size > MAX_FILE_SIZE) {
-                          toast.error(`File "${file.name}" exceeds the maximum size limit of ${MAX_FILE_SIZE} bytes`);
+                        if (file.size > MAX_PART_FILE_SIZE) {
+                          toast.error(
+                            `File "${file.name}" exceeds the maximum size limit of ${MAX_PART_FILE_SIZE / (1024 * 2014)} mbs`
+                          );
                           checkLast(index);
                           return;
                         }

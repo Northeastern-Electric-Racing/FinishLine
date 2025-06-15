@@ -13,7 +13,8 @@ import PartReviewController from '../controllers/part-review.controllers';
 import { Review_Status } from 'shared';
 import multer, { memoryStorage } from 'multer';
 
-const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage() });
+//limit uploads to 5 mb per file
+const upload = multer({ limits: { fileSize: 5 * 1024 * 1024 }, storage: memoryStorage() });
 
 const partsRouter = express.Router();
 

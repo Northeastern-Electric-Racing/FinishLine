@@ -59,7 +59,7 @@ const SubmissionGuide: React.FC = () => {
                 mx: 3,
                 my: 1
               }}
-              alt="Apply Interest"
+              alt="Part Submission Sample Image"
               src={sampleImageUrl}
             />
           ) : (

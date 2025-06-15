@@ -59,12 +59,14 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
   // filtering state
   const [showFilters, setShowFilters] = useState(false);
   const [searchValue, setSearchValue] = useState<string>('');
+  //empty array means filter is not in use, therefore every value should pass
   const [statuses, setStatuses] = useState<Review_Status[]>([]);
   const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
   const [reviewerIds, setReviewerIds] = useState<string[]>([]);
   const [tagIds, setTagIds] = useState<string[]>([]);
 
   const filteredParts = useMemo(() => {
+    //length checks ensure that non-used filters aren't checked against
     return parts?.filter((part) => {
       if (statuses.length !== 0 && !statuses.includes(part.status)) return false;
       if (assigneeIds.length !== 0 && !assigneeIds.some((id) => part.assignees.some((assignee) => assignee.userId === id)))
@@ -309,7 +311,7 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
             {(partsForMeToReview ?? []).length > 0 && (
               <PartsToReview
                 project={project}
-                parts={partsForMeToReview}
+                parts={partsForMeToReview ?? []}
                 formatStyle={formatStyle}
                 title={'Parts For Me To Review'}
               />
@@ -317,7 +319,7 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
             {(myPartsUnderReview ?? []).length > 0 && (
               <PartsToReview
                 project={project}
-                parts={myPartsUnderReview}
+                parts={myPartsUnderReview ?? []}
                 formatStyle={formatStyle}
                 title={'My Parts Under Review'}
               />
@@ -325,7 +327,7 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
             {(allPartsUnderReview ?? []).length > 0 && (
               <PartsToReview
                 project={project}
-                parts={allPartsUnderReview}
+                parts={allPartsUnderReview ?? []}
                 formatStyle={formatStyle}
                 title={'All Parts Under Review'}
               />
