@@ -296,11 +296,13 @@ model Change_Request {
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [organizationId])
 
-  // Can be either a WBS_Element or an Other_Reimbursement_Product_Reason, not both and not neither
+  // Can be either a WBS_Element, Other_Reimbursement_Product_Reason or Account_Code, not all and not none
   wbsElementId             String?
   wbsElement               WBS_Element?                        @relation(fields: [wbsElementId], references: [wbsElementId])
   category                 Reimbursement_Product_Other_Reason? @relation(fields: [categoryId], references: [otherReimbursementProductReasonId])
   categoryId               String?
+  accountCodeId            String?
+  accountCode              Account_Code?                       @relation(fields: [accountCodeId], references: [accountCodeId])
   type                     CR_Type
   reviewerId               String?
   reviewer                 User?                               @relation(name: "reviewedChangeRequests", fields: [reviewerId], references: [userId])
@@ -404,12 +406,14 @@ model Change {
   implementerId   String
   implementer     User           @relation(fields: [implementerId], references: [userId])
 
-  // Can be either a WBS_Element or an Other_Reimbursement_Product_Reason, not both and not neither
-  wbsElementId String?
-  wbsElement   WBS_Element?                        @relation(fields: [wbsElementId], references: [wbsElementId])
-  categoryId   String?
-  category     Reimbursement_Product_Other_Reason? @relation(fields: [categoryId], references: [otherReimbursementProductReasonId])
-  detail       String
+  // Can be either a WBS_Element, Other_Reimbursement_Product_Reason or Account_Code, not a combination and not none
+  wbsElementId  String?
+  wbsElement    WBS_Element?                        @relation(fields: [wbsElementId], references: [wbsElementId])
+  categoryId    String?
+  category      Reimbursement_Product_Other_Reason? @relation(fields: [categoryId], references: [otherReimbursementProductReasonId])
+  accountCodeId String?
+  accountCode   Account_Code?                       @relation(fields: [accountCodeId], references: [accountCodeId])
+  detail        String
 }
 
 model WBS_Element {
@@ -719,6 +723,8 @@ model Account_Code {
   organizationId                   String
   organization                     Organization                         @relation(fields: [organizationId], references: [organizationId])
   otherReimbursementProductReasons Reimbursement_Product_Other_Reason[]
+  changes                          Change[]
+  changeRequests                   Change_Request[]
 
   @@unique([name, organizationId], name: "uniqueExpenseType")
 }
@@ -932,7 +938,7 @@ model Wbs_Proposed_Changes {
   proposedDescriptionBulletChanges Description_Bullet[]           @relation(name: "proposedDescriptionBulletChanges")
   dateDeleted                      DateTime?
 
-  // A Wbs Proposed Change can either be original data or a proposed change, not both and not neither
+  // A Wbs Proposed Change can either be original data or a proposed change, not a combination and not none
   scopeChangeRequestAsOriginalData   Scope_CR? @relation(name: "wbsOriginalData", fields: [scopeChangeRequestAsOriginalDataId], references: [scopeCrId])
   scopeChangeRequestAsOriginalDataId String?   @unique
   scopeChangeRequest                 Scope_CR? @relation(name: "wbsProposedChanges", fields: [scopeChangeRequestId], references: [scopeCrId])
@@ -997,25 +1003,26 @@ model Car {
 }
 
 model Organization {
-  organizationId        String    @id @default(uuid())
-  name                  String
-  dateCreated           DateTime  @default(now())
-  userCreatedId         String
-  userCreated           User      @relation(fields: [userCreatedId], references: [userId], name: "organizationCreator")
-  dateDeleted           DateTime?
-  userDeletedId         String?
-  userDeleted           User?     @relation(fields: [userDeletedId], references: [userId], name: "organizationDeleter")
-  treasurerId           String?
-  treasurer             User?     @relation(name: "treasurer", fields: [treasurerId], references: [userId])
-  advisor               User?     @relation(name: "advisor", fields: [advisorId], references: [userId])
-  advisorId             String?
-  description           String    @default("")
-  applyInterestImageId  String?
-  exploreAsGuestImageId String?
-  logoImageId           String?
-  slackWorkspaceId      String?
-  applicationLink       String?
-  onboardingText        String?
+  organizationId                         String    @id @default(uuid())
+  name                                   String
+  dateCreated                            DateTime  @default(now())
+  userCreatedId                          String
+  userCreated                            User      @relation(fields: [userCreatedId], references: [userId], name: "organizationCreator")
+  dateDeleted                            DateTime?
+  userDeletedId                          String?
+  userDeleted                            User?     @relation(fields: [userDeletedId], references: [userId], name: "organizationDeleter")
+  treasurerId                            String?
+  treasurer                              User?     @relation(name: "treasurer", fields: [treasurerId], references: [userId])
+  advisor                                User?     @relation(name: "advisor", fields: [advisorId], references: [userId])
+  advisorId                              String?
+  description                            String    @default("")
+  applyInterestImageId                   String?
+  exploreAsGuestImageId                  String?
+  logoImageId                            String?
+  slackWorkspaceId                       String?
+  applicationLink                        String?
+  onboardingText                         String?
+  sponsorshipNotificationsSlackChannelId String?
 
   // Relation references
   wbsElements              WBS_Element[]

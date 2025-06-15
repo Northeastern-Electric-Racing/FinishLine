@@ -41,7 +41,7 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
     defaultValues: {
       code: defaultValues?.code,
       name: defaultValues?.name ?? '',
-      amount: defaultValues?.amount ?? undefined,
+      amount: (defaultValues?.amount ?? 0) / 100,
       allowed: defaultValues?.allowed ?? false,
       indexCodeIds: defaultValues?.indexCodes.map((indexCode) => indexCode.indexCodeId) ?? []
     }
@@ -49,6 +49,7 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
 
   const onFormSubmit = async (data: AccountCodePayload) => {
     try {
+      data.amount = data.amount ? data.amount * 100 : undefined;
       await onSubmit(data);
     } catch (error: unknown) {
       if (error instanceof Error) {

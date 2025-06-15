@@ -1,4 +1,12 @@
-import { CreateSponsorTask, isHead, ReimbursementRequestData, SpendingBarData, Sponsor, SponsorTier } from 'shared';
+import {
+  CreateSponsorTask,
+  isHead,
+  ReimbursementRequestData,
+  SpendingBarData,
+  Sponsor,
+  SponsorTask,
+  SponsorTier
+} from 'shared';
 import { User, Organization, Sponsor_Task } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
 import {
@@ -26,6 +34,7 @@ import {
   getSpendingBarDataForAdminFinance,
   getSpendingBarDataForNonAdminFinance
 } from '../utils/finance.utils';
+import { notifySponsorTaskAssignee } from '../utils/slack.utils';
 
 export default class FinanceServices {
   /**
@@ -87,6 +96,18 @@ export default class FinanceServices {
         organizationId: organization.organizationId
       },
       ...getSponsorQueryArgs(organization.organizationId)
+    });
+
+    sponsorTasks.forEach(async (sponsorTask) => {
+      if (!sponsorTask.assigneeUserId) return;
+
+      const assignee = await prisma.user.findUnique({
+        where: { userId: sponsorTask.assigneeUserId },
+        include: { userSettings: true }
+      });
+      if (!assignee) return;
+
+      await notifySponsorTaskAssignee(assignee, sponsorTask, sponsor.name);
     });
 
     return sponsorTransformer(sponsor);
@@ -225,6 +246,25 @@ export default class FinanceServices {
       }
     });
 
+    if (assigneeUserId && oldSponsorTask.assigneeUserId !== assigneeUserId) {
+      const assignee = await prisma.user.findUnique({
+        where: { userId: assigneeUserId },
+        include: { userSettings: true }
+      });
+
+      const sponsor = await prisma.sponsor.findUnique({
+        where: { sponsorId: updatedSponsorTask.sponsorId }
+      });
+
+      if (!sponsor) {
+        throw new NotFoundException('Sponsor', updatedSponsorTask.sponsorId);
+      }
+
+      if (assignee) {
+        await notifySponsorTaskAssignee(assignee, updatedSponsorTask, sponsor.name);
+      }
+    }
+
     return updatedSponsorTask;
   }
 
@@ -303,7 +343,7 @@ export default class FinanceServices {
     sponsorId: string,
     notifyDate?: Date,
     assigneeUserId?: string
-  ) {
+  ): Promise<SponsorTask> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
       throw new AccessDeniedException('Only heads can create a sponsor task');
     }
@@ -327,6 +367,16 @@ export default class FinanceServices {
       },
       ...getSponsorTaskQueryArgs(organization.organizationId)
     });
+
+    if (createdSponsorTask.assigneeUserId) {
+      const assignee = await prisma.user.findUnique({
+        where: { userId: createdSponsorTask.assigneeUserId },
+        include: { userSettings: true }
+      });
+      if (!assignee) throw new NotFoundException('User', createdSponsorTask.assigneeUserId);
+
+      await notifySponsorTaskAssignee(assignee, createdSponsorTask, sponsor.name);
+    }
 
     return sponsorTaskTransformer(createdSponsorTask);
   }

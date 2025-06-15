@@ -3,6 +3,7 @@ import { getScopeChangeRequestQueryArgs } from './scope-change-requests.query-ar
 import { getUserQueryArgs } from './user.query-args';
 import { getWorkPackageQueryArgs } from './work-packages.query-args';
 import { getReimbursementProductOtherReasonQueryArgs } from './reimbursement-product-other-reason.query-args';
+import { getAccountCodeQueryArgs } from './account-code.query-args';
 
 export type ChangeRequestQueryArgs = ReturnType<typeof getChangeRequestQueryArgs>;
 
@@ -18,6 +19,7 @@ export const getChangeRequestQueryArgs = (organizationId: string) =>
       submitter: getUserQueryArgs(organizationId),
       wbsElement: true,
       category: getReimbursementProductOtherReasonQueryArgs(organizationId),
+      accountCode: getAccountCodeQueryArgs(organizationId),
       reviewer: getUserQueryArgs(organizationId),
       changes: {
         where: {
@@ -47,6 +49,7 @@ export const getManyChangeRequestQueryArgs = (organizationId: string) =>
       submitter: getUserQueryArgs(organizationId),
       wbsElement: true,
       category: getReimbursementProductOtherReasonQueryArgs(organizationId),
+      accountCode: getAccountCodeQueryArgs(organizationId),
       reviewer: getUserQueryArgs(organizationId),
       stageGateChangeRequest: true,
       changes: true,
@@ -76,6 +79,7 @@ export const getChangeRequestWithProjectAndWorkPackageQueryArgs = (organizationI
         }
       },
       category: getReimbursementProductOtherReasonQueryArgs(organizationId),
+      accountCode: getAccountCodeQueryArgs(organizationId),
       reviewer: getUserQueryArgs(organizationId),
       changes: {
         where: {
@@ -86,7 +90,8 @@ export const getChangeRequestWithProjectAndWorkPackageQueryArgs = (organizationI
         include: {
           implementer: getUserQueryArgs(organizationId),
           wbsElement: true,
-          category: getReimbursementProductOtherReasonQueryArgs(organizationId)
+          category: getReimbursementProductOtherReasonQueryArgs(organizationId),
+          accountCode: getAccountCodeQueryArgs(organizationId)
         }
       },
       scopeChangeRequest: getScopeChangeRequestQueryArgs(organizationId),

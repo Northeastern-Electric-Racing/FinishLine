@@ -13,7 +13,8 @@ import {
   updateApplicationLink,
   setOnboardingText,
   updateOrganizationContacts,
-  setOrganizationImages
+  setOrganizationImages,
+  setSlackSponsorshipNotificationSlackChannelId
 } from '../apis/organizations.api';
 import { downloadGoogleImage } from '../apis/organizations.api';
 
@@ -32,6 +33,10 @@ export interface OnboardingTextPayload {
 
 export interface ApplicationLinkPayload {
   applicationLink: string;
+}
+
+export interface ChannelIdPayload {
+  channelId: string;
 }
 
 export const useCurrentOrganization = () => {
@@ -172,7 +177,7 @@ export const useSetFeaturedProjects = () => {
 export const useSetWorkspaceId = () => {
   const queryClient = useQueryClient();
   return useMutation<Organization, Error, string>(
-    ['organizations', 'featured-projects'],
+    ['organizations', 'workspace-id'],
     async (workspaceId: string) => {
       const { data } = await setOrganizationWorkspaceId(workspaceId);
       return data;
@@ -202,4 +207,20 @@ export const useOrganizationLogo = () => {
     }
     return await downloadGoogleImage(fileId);
   });
+};
+
+export const useSetSlackSponsorshipNotificationChannelId = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Organization, Error, string>(
+    ['organizations', 'sponsorship-channel'],
+    async (channelId: string) => {
+      const { data } = await setSlackSponsorshipNotificationSlackChannelId({ channelId });
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['organizations']);
+      }
+    }
+  );
 };

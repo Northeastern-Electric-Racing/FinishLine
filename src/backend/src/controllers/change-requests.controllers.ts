@@ -125,13 +125,14 @@ export default class ChangeRequestsController {
 
   static async createBudgetChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { otherReasonId, type, proposedBudget } = req.body;
+      const { otherReasonId, accountCodeId, type, proposedBudget } = req.body;
       const id = await ChangeRequestsService.createBudgetChangeRequest(
         req.currentUser,
-        otherReasonId,
         type,
         proposedBudget,
-        req.organization
+        req.organization,
+        otherReasonId,
+        accountCodeId
       );
       res.status(200).json({ message: `Successfully created stage gate request with id #${id}` });
     } catch (error: unknown) {

@@ -96,7 +96,7 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
       type: ChangeRequestType.Budget
     };
 
-    await createBudgetChangeRequest(payload.submitterId, payload.otherReasonId, payload.proposedBudget);
+    await createBudgetChangeRequest(payload.submitterId, payload.proposedBudget, payload.otherReasonId, undefined);
 
     handleClose();
   };

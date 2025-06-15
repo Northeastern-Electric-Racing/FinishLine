@@ -172,7 +172,8 @@ export interface CreateStageGateChangeRequestPayload {
 
 export interface CreateBudgetChangeRequestPayload {
   submitterId: string;
-  otherReasonId: string;
+  otherReasonId?: string;
+  accountCodeId?: string;
   proposedBudget: number;
   type: string;
 }
@@ -226,7 +227,12 @@ export const useCreateBudgetChangeRequest = () => {
   return useMutation<{ message: string }, Error, CreateBudgetChangeRequestPayload>(
     ['change requests', 'create', 'budget'],
     async (payload: CreateBudgetChangeRequestPayload) => {
-      const { data } = await createBudgetChangeRequest(payload.submitterId, payload.otherReasonId, payload.proposedBudget);
+      const { data } = await createBudgetChangeRequest(
+        payload.submitterId,
+        payload.proposedBudget,
+        payload.otherReasonId,
+        payload.accountCodeId
+      );
       return data;
     }
   );

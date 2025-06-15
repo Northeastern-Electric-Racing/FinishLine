@@ -9,6 +9,7 @@ import EditAccountCodeModal from './EditAccountCodeModal';
 import { NERButton } from '../../../components/NERButton';
 import DeleteAccountCodeModal from './DeleteAccountCodeModal';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { centsToDollar } from '../../../utils/pipes';
 
 const AccountManagerTable = () => {
   const {
@@ -54,7 +55,7 @@ const AccountManagerTable = () => {
         <Typography>{accountCode.name}</Typography>
       </TableCell>
       <TableCell>
-        <Typography>{accountCode.amount ? `$${accountCode.amount}` : ''}</Typography>
+        <Typography>{accountCode.amount ? `$${centsToDollar(accountCode.amount)}` : ''}</Typography>
       </TableCell>
       <TableCell>
         <Checkbox checked={accountCode.allowed} />
