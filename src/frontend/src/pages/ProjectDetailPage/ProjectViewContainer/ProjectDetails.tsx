@@ -115,13 +115,13 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
           {detailItems.map((item, index) => (
             <Grid item display="flex" alignItems="center" xs={12} sm={emptyRRData ? 6 : 12} key={index}>
               {item.icon}
-              <DetailDisplay label={item.label} content={item.content} paddingRight={1} />
+              <DetailDisplay label={item.label} content={item.content} />
             </Grid>
           ))}
         </Grid>
       </Grid>
       {!emptyRRData && (
-        <Grid item xs={12} md={4} sx={{ mr: 10 }}>
+        <Grid item xs={12} md={4} sx={{ mr: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Typography variant="h5" sx={{ cursor: 'pointer' }}>
               Budget
