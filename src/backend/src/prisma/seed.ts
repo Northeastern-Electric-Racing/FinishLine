@@ -16,7 +16,7 @@ import {
   Task_Priority,
   Task_Status,
   Team,
-  PartTag
+  Part_Tag
 } from '@prisma/client';
 import { createUser, dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
@@ -2191,9 +2191,9 @@ const performSeed: () => Promise<void> = async () => {
   }
 
   // Add part tags
-  const mechanicalPartTag: PartTag = await prisma.partTag.create(dbSeedAllPartTags.MechanicalPartTag(organizationId));
-  const electricalPartTag: PartTag = await prisma.partTag.create(dbSeedAllPartTags.ElectricalPartTag(organizationId));
-  const structuralPartTag: PartTag = await prisma.partTag.create(dbSeedAllPartTags.StructuralPartTag(organizationId));
+  const mechanicalPartTag: Part_Tag = await prisma.part_Tag.create(dbSeedAllPartTags.MechanicalPartTag(organizationId));
+  const electricalPartTag: Part_Tag = await prisma.part_Tag.create(dbSeedAllPartTags.ElectricalPartTag(organizationId));
+  const structuralPartTag: Part_Tag = await prisma.part_Tag.create(dbSeedAllPartTags.StructuralPartTag(organizationId));
 
   await CreatePartTag(organizationId, 'Practice', '#202025');
 
@@ -2460,7 +2460,7 @@ const performSeed: () => Promise<void> = async () => {
     }
   });
 
-  const partSubmissionExample1 = await prisma.partSubmission.create({
+  const partSubmissionExample1 = await prisma.part_Submission.create({
     data: {
       partSubmissionId: 'submissionId001',
       fileIds: ['file1', 'file2'],
@@ -2475,7 +2475,7 @@ const performSeed: () => Promise<void> = async () => {
     }
   });
 
-  const partSubmissionExample2 = await prisma.partSubmission.create({
+  const partSubmissionExample2 = await prisma.part_Submission.create({
     data: {
       partSubmissionId: 'submissionId002',
       fileIds: ['file3'],
@@ -2490,7 +2490,7 @@ const performSeed: () => Promise<void> = async () => {
     }
   });
 
-  const partSubmissionExample3 = await prisma.partSubmission.create({
+  const partSubmissionExample3 = await prisma.part_Submission.create({
     data: {
       partSubmissionId: 'submissionId003',
       fileIds: ['file4', 'file5', 'file6'],
@@ -2505,7 +2505,7 @@ const performSeed: () => Promise<void> = async () => {
     }
   });
 
-  const partReviewExample1 = await prisma.partReview.create({
+  const partReviewExample1 = await prisma.part_Review.create({
     data: {
       partReviewId: 'reviewId001',
       fileIds: ['file1', 'file2'],
@@ -2521,7 +2521,7 @@ const performSeed: () => Promise<void> = async () => {
     }
   });
 
-  const partReviewExample2 = await prisma.partReview.create({
+  const partReviewExample2 = await prisma.part_Review.create({
     data: {
       partReviewId: 'reviewId002',
       fileIds: ['file3'],
@@ -2537,7 +2537,7 @@ const performSeed: () => Promise<void> = async () => {
     }
   });
 
-  const partReviewExample3 = await prisma.partReview.create({
+  const partReviewExample3 = await prisma.part_Review.create({
     data: {
       partReviewId: 'reviewId003',
       fileIds: ['file5', 'file6'],

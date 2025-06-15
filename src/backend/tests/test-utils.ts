@@ -3,8 +3,8 @@ import {
   Club_Accounts,
   Organization,
   Part,
-  PartReview,
-  PartSubmission,
+  Part_Review,
+  Part_Submission,
   Part_Review_Popup,
   Project,
   Schedule_Settings,
@@ -103,18 +103,18 @@ export const createTestUser = async (
 
 export const resetUsers = async () => {
   await prisma.part_Review_Popup.deleteMany();
-  await prisma.partReviewRequest.deleteMany();
-  await prisma.partReview.deleteMany();
-  await prisma.partSubmission.deleteMany();
-  await prisma.partReviewCommonMistake.deleteMany();
-  await prisma.partTag.deleteMany();
+  await prisma.part_Review_Request.deleteMany();
+  await prisma.part_Review.deleteMany();
+  await prisma.part_Submission.deleteMany();
+  await prisma.part_Review_Common_Mistake.deleteMany();
+  await prisma.part_Tag.deleteMany();
   await prisma.part.deleteMany();
   await prisma.work_Package.deleteMany();
-  await prisma.partReviewCommonMistake.deleteMany();
-  await prisma.partTag.deleteMany();
+  await prisma.part_Review_Common_Mistake.deleteMany();
+  await prisma.part_Tag.deleteMany();
   await prisma.part_Review_Popup.deleteMany();
-  await prisma.partReview.deleteMany();
-  await prisma.partSubmission.deleteMany();
+  await prisma.part_Review.deleteMany();
+  await prisma.part_Submission.deleteMany();
   await prisma.part.deleteMany();
   await prisma.project.deleteMany();
   await prisma.frequentlyAskedQuestion.deleteMany();
@@ -745,7 +745,7 @@ export const createTestPart = async (
 };
 
 export const CreatePartTag = async (organizationId: string, name: string, colorHexCode: string) => {
-  return await prisma.partTag.create({
+  return await prisma.part_Tag.create({
     data: {
       name,
       organization: {
@@ -764,7 +764,7 @@ export const CreateCommonMistake = async (
   user: User,
   organizationId: string
 ) => {
-  return await prisma.partReviewCommonMistake.create({
+  return await prisma.part_Review_Common_Mistake.create({
     data: {
       title,
       description,
@@ -799,11 +799,11 @@ export const createTestPartReview = async (
   partReviewId: string,
   fileIds: string[],
   notes: string,
-  submission: PartSubmission,
+  submission: Part_Submission,
   popUps: Part_Review_Popup[],
   userCreatedId: string
 ) => {
-  const partReview = await prisma.partReview.create({
+  const partReview = await prisma.part_Review.create({
     data: {
       partReviewId,
       fileIds,
@@ -831,9 +831,9 @@ export const createTestPartSubmission = async (
   notes: string,
   partId: string,
   userCreatedId: string,
-  reviews: PartReview[]
+  reviews: Part_Review[]
 ) => {
-  const partSubmission = await prisma.partSubmission.create({
+  const partSubmission = await prisma.part_Submission.create({
     data: {
       partSubmissionId: id,
       fileIds,
@@ -853,7 +853,7 @@ export const createTestPartSubmission = async (
   return partSubmission;
 };
 
-export const createMinimalPartReview = async (user: User, orgId: string): Promise<PartReview> => {
+export const createMinimalPartReview = async (user: User, orgId: string): Promise<Part_Review> => {
   const car = await createTestCar(orgId, user.userId);
   const project = await createTestProject(user, orgId, undefined, car.carId);
 
@@ -885,7 +885,7 @@ export const createMinimalPartReview = async (user: User, orgId: string): Promis
 export const createMinimalPartReviewForReview = async (
   user: User,
   orgId: string
-): Promise<{ review: PartReview; partId: string }> => {
+): Promise<{ review: Part_Review; partId: string }> => {
   const car = await createTestCar(orgId, user.userId);
   const project = await createTestProject(user, orgId, undefined, car.carId);
 

@@ -367,7 +367,7 @@ export const dbSeedAllParts = {
   partLeapYearDate
 };
 
-export const MechanicalPartTag = (organizationId: string): Prisma.PartTagCreateArgs => {
+export const MechanicalPartTag = (organizationId: string): Prisma.Part_TagCreateArgs => {
   return {
     data: {
       partTagId: '001',
@@ -379,7 +379,7 @@ export const MechanicalPartTag = (organizationId: string): Prisma.PartTagCreateA
   };
 };
 
-export const ElectricalPartTag = (organizationId: string): Prisma.PartTagCreateArgs => {
+export const ElectricalPartTag = (organizationId: string): Prisma.Part_TagCreateArgs => {
   return {
     data: {
       partTagId: '002',
@@ -391,7 +391,7 @@ export const ElectricalPartTag = (organizationId: string): Prisma.PartTagCreateA
   };
 };
 
-export const StructuralPartTag = (organizationId: string): Prisma.PartTagCreateArgs => {
+export const StructuralPartTag = (organizationId: string): Prisma.Part_TagCreateArgs => {
   return {
     data: {
       partTagId: '003',

@@ -1,4 +1,4 @@
-import { PartReviewCommonMistake, Prisma } from '@prisma/client';
+import { Part_Review_Common_Mistake, Prisma } from '@prisma/client';
 import {
   PartReviewCommonMistake as SharedCommonMistake,
   Part,
@@ -18,7 +18,7 @@ import {
 } from '../prisma-query-args/part-review.query-args';
 import { userTransformer } from './user.transformer';
 
-export const partsReviewCommonMistakeTransformer = (commonMistake: PartReviewCommonMistake): SharedCommonMistake => {
+export const partsReviewCommonMistakeTransformer = (commonMistake: Part_Review_Common_Mistake): SharedCommonMistake => {
   return commonMistake;
 };
 
@@ -51,7 +51,7 @@ export const partPreviewTransformer = (part: Prisma.PartGetPayload<PartQueryArgs
 };
 
 export const partSubmissionTransformer = (
-  submission: Prisma.PartSubmissionGetPayload<PartSubmissionQueryArgs>
+  submission: Prisma.Part_SubmissionGetPayload<PartSubmissionQueryArgs>
 ): PartSubmission => {
   return {
     partSubmissionId: submission.partSubmissionId,
@@ -66,7 +66,7 @@ export const partSubmissionTransformer = (
 };
 
 export const partReviewRequestTransformer = (
-  reviewRequest: Prisma.PartReviewRequestGetPayload<PartReviewRequestQueryArgs>
+  reviewRequest: Prisma.Part_Review_RequestGetPayload<PartReviewRequestQueryArgs>
 ): PartReviewRequest => {
   return {
     partReviewRequestId: reviewRequest.partReviewRequestId,
@@ -78,7 +78,7 @@ export const partReviewRequestTransformer = (
   };
 };
 
-export const partReviewTransformer = (review: Prisma.PartReviewGetPayload<PartReviewQueryArgs>): PartReview => {
+export const partReviewTransformer = (review: Prisma.Part_ReviewGetPayload<PartReviewQueryArgs>): PartReview => {
   return {
     partReviewId: review.partReviewId,
     fileIds: review.fileIds,
@@ -103,7 +103,7 @@ export const partReviewPopupTransformer = (popup: Prisma.Part_Review_PopupGetPay
   };
 };
 
-export const partTagTransformer = (partTag: Prisma.PartTagGetPayload<null>): PartTag => {
+export const partTagTransformer = (partTag: Prisma.Part_TagGetPayload<null>): PartTag => {
   return {
     partTagId: partTag.partTagId,
     name: partTag.name,

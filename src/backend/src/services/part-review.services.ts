@@ -166,7 +166,7 @@ export default class PartReviewService {
 
       await Promise.all(
         reviewerIds.map(async (id) => {
-          return tx.partReviewRequest.create({
+          return tx.part_Review_Request.create({
             data: {
               part: { connect: { partId: part.partId } },
               requester: { connect: { userId: creator.userId } },
@@ -276,7 +276,7 @@ export default class PartReviewService {
 
       await Promise.all(
         reviewersToAdd.map(async (id) => {
-          return tx.partReviewRequest.create({
+          return tx.part_Review_Request.create({
             data: {
               part: { connect: { partId: editedPart.partId } },
               requester: { connect: { userId: updater.userId } },
@@ -292,7 +292,7 @@ export default class PartReviewService {
 
       await Promise.all(
         reviewRequestsToRemove.map(async (reviewReq) => {
-          return tx.partReviewRequest.update({
+          return tx.part_Review_Request.update({
             where: { partReviewRequestId: reviewReq.partReviewRequestId },
             data: { dateDeleted: new Date() }
           });
@@ -348,7 +348,7 @@ export default class PartReviewService {
     fileIds: string[],
     notes: string
   ) {
-    const submission = await prisma.partSubmission.findUnique({
+    const submission = await prisma.part_Submission.findUnique({
       where: { partSubmissionId: submissionId },
       include: { part: { include: { project: { include: { wbsElement: true } } } } }
     });
@@ -364,7 +364,7 @@ export default class PartReviewService {
 
     await prisma.part.update({ where: { partId: submission.partId }, data: { status: review_status } });
 
-    const review = await prisma.partReview.create({
+    const review = await prisma.part_Review.create({
       data: {
         submission: { connect: { partSubmissionId: submissionId } },
         userCreated: { connect: { userId: creator.userId } },
@@ -396,7 +396,7 @@ export default class PartReviewService {
     notes: string,
     fileIds: string[]
   ) {
-    const review = await prisma.partReview.findUnique({
+    const review = await prisma.part_Review.findUnique({
       where: { partReviewId: reviewId },
       include: { submission: { include: { part: { include: { project: { include: { wbsElement: true } } } } } } }
     });
@@ -412,7 +412,7 @@ export default class PartReviewService {
     const completedAt =
       review_status === Review_Status.APPROVED || review_status === Review_Status.REVIEWED ? new Date() : null;
 
-    const updatedReview = await prisma.partReview.update({
+    const updatedReview = await prisma.part_Review.update({
       where: { partReviewId: reviewId },
       data: { notes: notes ? notes : review.notes, completedAt, fileIds: fileIds ? fileIds : review.fileIds },
       ...getPartReviewQueryArgs(organizationId)
@@ -430,7 +430,7 @@ export default class PartReviewService {
    * @param organizationId the organization
    */
   static async deleteReview(reviewId: string, deleter: User, organizationId: string) {
-    const review = await prisma.partReview.findUnique({
+    const review = await prisma.part_Review.findUnique({
       where: { partReviewId: reviewId },
       include: { submission: { include: { part: { include: { project: { include: { wbsElement: true } } } } } } }
     });
@@ -447,7 +447,7 @@ export default class PartReviewService {
       throw new AccessDeniedException('only review creators and heads/admins can delete reviews');
     }
 
-    await prisma.partReview.update({
+    await prisma.part_Review.update({
       where: { partReviewId: reviewId },
       data: { dateDeleted: new Date(), userDeleted: { connect: { userId: deleter.userId } } },
       ...getPartReviewQueryArgs(organizationId)
@@ -474,7 +474,7 @@ export default class PartReviewService {
   ) {
     const part = await PartReviewService.getPartWithQueryArgs(partId, creator.userId, organizationId);
 
-    const submission = await prisma.partSubmission.create({
+    const submission = await prisma.part_Submission.create({
       data: { name, notes, fileIds, part: { connect: { partId } }, userCreated: { connect: { userId: creator.userId } } },
       ...getPartSubmissionQueryArgs(organizationId, creator.userId)
     });
@@ -498,7 +498,7 @@ export default class PartReviewService {
    * @returns the updated submission
    */
   static async updateSubmission(submissionId: string, updater: User, organizationId: string, name: string, notes?: string) {
-    const submission = await prisma.partSubmission.findUnique({
+    const submission = await prisma.part_Submission.findUnique({
       where: { partSubmissionId: submissionId },
       include: { part: { include: { project: { include: { wbsElement: true } } } } }
     });
@@ -510,7 +510,7 @@ export default class PartReviewService {
     if (updater.userId !== submission.userCreatedId)
       throw new AccessDeniedException('only submission creators can update submissions');
 
-    const updatedSubmission = await prisma.partSubmission.update({
+    const updatedSubmission = await prisma.part_Submission.update({
       where: { partSubmissionId: submissionId },
       data: { name, notes: notes ?? submission.notes },
       ...getPartSubmissionQueryArgs(organizationId, updater.userId)
@@ -525,7 +525,7 @@ export default class PartReviewService {
    * @returns an array of part tags
    */
   static async getAllPartTags(organizationId: string) {
-    const tags = await prisma.partTag.findMany({ where: { organizationId, dateDeleted: null } });
+    const tags = await prisma.part_Tag.findMany({ where: { organizationId, dateDeleted: null } });
     return tags.map(partTagTransformer);
   }
 
@@ -556,7 +556,7 @@ export default class PartReviewService {
       throw new AccessDeniedAdminOnlyException('create part review tag');
     }
 
-    const partTag = await prisma.partTag.create({
+    const partTag = await prisma.part_Tag.create({
       data: { name, colorHexCode, organization: { connect: { organizationId } } }
     });
 
@@ -583,7 +583,7 @@ export default class PartReviewService {
       throw new AccessDeniedAdminOnlyException('update part review tag');
     }
 
-    const partTag = await prisma.partTag.findUnique({ where: { partTagId } });
+    const partTag = await prisma.part_Tag.findUnique({ where: { partTagId } });
 
     if (!partTag || partTag.organizationId !== organizationId) {
       throw new NotFoundException('Part Tag', partTagId);
@@ -593,7 +593,7 @@ export default class PartReviewService {
       throw new DeletedException('Part Tag', partTagId);
     }
 
-    const updatedPartTag = await prisma.partTag.update({ where: { partTagId }, data: { name, colorHexCode } });
+    const updatedPartTag = await prisma.part_Tag.update({ where: { partTagId }, data: { name, colorHexCode } });
 
     return updatedPartTag;
   }
@@ -611,7 +611,7 @@ export default class PartReviewService {
       throw new AccessDeniedAdminOnlyException('delete part review tag');
     }
 
-    const partTagWithParts = await prisma.partTag.findUnique({ where: { partTagId }, include: { parts: true } });
+    const partTagWithParts = await prisma.part_Tag.findUnique({ where: { partTagId }, include: { parts: true } });
 
     if (!partTagWithParts || partTagWithParts.organizationId !== organizationId) {
       throw new NotFoundException('Part Tag', partTagId);
@@ -625,7 +625,7 @@ export default class PartReviewService {
       throw new HttpException(409, `Cannot delete part tag ${partTagId} because it has associated parts`);
     }
 
-    await prisma.partTag.update({ where: { partTagId }, data: { dateDeleted: new Date() } });
+    await prisma.part_Tag.update({ where: { partTagId }, data: { dateDeleted: new Date() } });
   }
 
   /**
@@ -735,7 +735,7 @@ export default class PartReviewService {
    * @returns an array of common mistakes
    */
   static async getAllCommonMistakes(organizationId: string): Promise<PartReviewCommonMistake[]> {
-    const commonMistakes = await prisma.partReviewCommonMistake.findMany({
+    const commonMistakes = await prisma.part_Review_Common_Mistake.findMany({
       where: { dateDeleted: null, organizationId },
       ...getFaqQueryArgs(organizationId)
     });
@@ -763,7 +763,7 @@ export default class PartReviewService {
       throw new AccessDeniedAdminOnlyException('create common mistake');
     }
 
-    const commonMistake = await prisma.partReviewCommonMistake.create({
+    const commonMistake = await prisma.part_Review_Common_Mistake.create({
       data: {
         title,
         description,
@@ -794,7 +794,7 @@ export default class PartReviewService {
     updater: User,
     organizationId: string
   ): Promise<PartReviewCommonMistake> {
-    const commonMistake = await prisma.partReviewCommonMistake.findUnique({
+    const commonMistake = await prisma.part_Review_Common_Mistake.findUnique({
       where: { partReviewCommonMistakeId: commonMistakeId }
     });
 
@@ -810,7 +810,7 @@ export default class PartReviewService {
       throw new AccessDeniedAdminOnlyException('update common mistake');
     }
 
-    const updatedCommonMistake = await prisma.partReviewCommonMistake.update({
+    const updatedCommonMistake = await prisma.part_Review_Common_Mistake.update({
       where: { partReviewCommonMistakeId: commonMistakeId },
       data: { title, description, starred }
     });
@@ -826,7 +826,7 @@ export default class PartReviewService {
    * @returns the deleted common mistake
    */
   static async deleteCommonMistake(commonMistakeId: string, deleter: User, organizationId: string) {
-    const commonMistake = await prisma.partReviewCommonMistake.findUnique({
+    const commonMistake = await prisma.part_Review_Common_Mistake.findUnique({
       where: { partReviewCommonMistakeId: commonMistakeId }
     });
 
@@ -842,7 +842,7 @@ export default class PartReviewService {
       throw new AccessDeniedAdminOnlyException('delete common mistake');
     }
 
-    await prisma.partReviewCommonMistake.update({
+    await prisma.part_Review_Common_Mistake.update({
       where: { partReviewCommonMistakeId: commonMistakeId },
       data: { userDeleted: { connect: { userId: deleter.userId } }, dateDeleted: new Date() }
     });
@@ -863,7 +863,7 @@ export default class PartReviewService {
       throw new AccessDeniedGuestException('Guests must be at least members to access this part.');
     }
 
-    const createdRequest = await prisma.partReviewRequest.create({
+    const createdRequest = await prisma.part_Review_Request.create({
       data: {
         part: { connect: { partId } },
         requester: { connect: { userId: requester.userId } },
@@ -883,7 +883,7 @@ export default class PartReviewService {
    * @returns the soft-deleted and transformed PartReviewRequest
    */
   static async deletePartReviewRequest(reviewRequestId: string, user: User, organizationId: string) {
-    const reviewRequest = await prisma.partReviewRequest.findUnique({
+    const reviewRequest = await prisma.part_Review_Request.findUnique({
       where: { partReviewRequestId: reviewRequestId },
       include: { part: { include: { project: { include: { wbsElement: true } } } } }
     });
@@ -904,7 +904,7 @@ export default class PartReviewService {
       throw new AccessDeniedException('Only the requester, reviewer, or leadership can delete a part review request.');
     }
 
-    const softDeletedRequest = await prisma.partReviewRequest.update({
+    const softDeletedRequest = await prisma.part_Review_Request.update({
       where: { partReviewRequestId: reviewRequest.partReviewRequestId },
       data: { dateDeleted: new Date() },
       ...getPartReviewRequestQueryArgs(organizationId)
@@ -1007,7 +1007,7 @@ export default class PartReviewService {
     description: string,
     creator: User
   ) {
-    const review = await prisma.partReview.findUnique({
+    const review = await prisma.part_Review.findUnique({
       where: { partReviewId: reviewId },
       include: { submission: { include: { part: { include: { project: { include: { wbsElement: true } } } } } } }
     });

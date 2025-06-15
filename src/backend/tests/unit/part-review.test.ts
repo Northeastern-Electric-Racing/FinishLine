@@ -380,7 +380,7 @@ describe('part review tests', () => {
       []
     );
 
-    const submission = await prisma.partSubmission.create({
+    const submission = await prisma.part_Submission.create({
       data: {
         part: { connect: { partId: part.partId } },
         userCreated: { connect: { userId: batman.userId } },
@@ -397,7 +397,7 @@ describe('part review tests', () => {
       'notes about review'
     );
 
-    const reviewWithProject = await prisma.partReview.findUnique({
+    const reviewWithProject = await prisma.part_Review.findUnique({
       where: { partReviewId: review.partReviewId },
       include: { submission: { include: { part: true } } }
     });
@@ -417,7 +417,7 @@ describe('part review tests', () => {
       'updated Notes',
       ['file2']
     );
-    const reviewWithProject2 = await prisma.partReview.findUnique({
+    const reviewWithProject2 = await prisma.part_Review.findUnique({
       where: { partReviewId: review.partReviewId },
       include: { submission: { include: { part: true } } }
     });
@@ -454,7 +454,7 @@ describe('part review tests', () => {
       []
     );
 
-    const submission = await prisma.partSubmission.create({
+    const submission = await prisma.part_Submission.create({
       data: {
         part: { connect: { partId: part.partId } },
         userCreated: { connect: { userId: batman.userId } },
@@ -487,7 +487,7 @@ describe('part review tests', () => {
   it('creates a part tag, edits it, and deletes it', async () => {
     const partTag = await PartReviewService.createPartTag('practice', '#ad6454', batman, orgId);
 
-    const prismaTag = await prisma.partTag.findUnique({
+    const prismaTag = await prisma.part_Tag.findUnique({
       where: { partTagId: partTag.partTagId }
     });
 
@@ -498,7 +498,7 @@ describe('part review tests', () => {
 
     const updatedPartTag = await PartReviewService.updatePartTag(partTag.partTagId, 'important', '#000000', superman, orgId);
 
-    const updatedPrismaTag = await prisma.partTag.findUnique({
+    const updatedPrismaTag = await prisma.part_Tag.findUnique({
       where: { partTagId: partTag.partTagId }
     });
 
@@ -508,7 +508,7 @@ describe('part review tests', () => {
     expect(updatedPrismaTag?.colorHexCode).toBe('#000000');
 
     await PartReviewService.deletePartTag(partTag.partTagId, batman, orgId);
-    const deletedPrismaTag = await prisma.partTag.findUnique({
+    const deletedPrismaTag = await prisma.part_Tag.findUnique({
       where: { partTagId: partTag.partTagId }
     });
 
@@ -598,7 +598,7 @@ describe('part review tests', () => {
         batman,
         orgId
       );
-      const prismaCommonMistake = await prisma.partReviewCommonMistake.findUnique({
+      const prismaCommonMistake = await prisma.part_Review_Common_Mistake.findUnique({
         where: {
           partReviewCommonMistakeId: commonMistake.partReviewCommonMistakeId
         }
@@ -622,7 +622,7 @@ describe('part review tests', () => {
         orgId
       );
 
-      const prismaCommonMistake2 = await prisma.partReviewCommonMistake.findUnique({
+      const prismaCommonMistake2 = await prisma.part_Review_Common_Mistake.findUnique({
         where: {
           partReviewCommonMistakeId: commonMistake.partReviewCommonMistakeId
         }
@@ -640,7 +640,7 @@ describe('part review tests', () => {
 
       await PartReviewService.deleteCommonMistake(commonMistake.partReviewCommonMistakeId, superman, orgId);
 
-      const prismaDeletedMistake = await prisma.partReviewCommonMistake.findUnique({
+      const prismaDeletedMistake = await prisma.part_Review_Common_Mistake.findUnique({
         where: {
           partReviewCommonMistakeId: commonMistake.partReviewCommonMistakeId
         }
@@ -733,7 +733,7 @@ describe('part review tests', () => {
         }
       });
 
-      await prisma.partTag.createMany({
+      await prisma.part_Tag.createMany({
         data: [
           {
             partTagId: '123',
@@ -747,7 +747,7 @@ describe('part review tests', () => {
       });
 
       // Create a partTag belonging to a different organization
-      await prisma.partTag.create({
+      await prisma.part_Tag.create({
         data: {
           partTagId: '973',
           name: 'Nut',
@@ -758,7 +758,7 @@ describe('part review tests', () => {
       });
 
       // Create a deleted partTag for the same organization
-      await prisma.partTag.create({
+      await prisma.part_Tag.create({
         data: {
           partTagId: '345',
           name: 'Washer',
@@ -915,7 +915,7 @@ describe('part review tests', () => {
     it('creates a review request successfully', async () => {
       const reviewRequest = await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
 
-      const prismaRequest = await prisma.partReviewRequest.findUnique({
+      const prismaRequest = await prisma.part_Review_Request.findUnique({
         where: { partReviewRequestId: reviewRequest.partReviewRequestId }
       });
 
@@ -935,7 +935,7 @@ describe('part review tests', () => {
     it('requester can delete their review request', async () => {
       const request = await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
       const deleted = await PartReviewService.deletePartReviewRequest(request.partReviewRequestId, batman, orgId);
-      const prismaDeleted = await prisma.partReviewRequest.findFirst({
+      const prismaDeleted = await prisma.part_Review_Request.findFirst({
         where: { partReviewRequestId: request.partReviewRequestId }
       });
       expect(deleted).toBeDefined();
@@ -945,7 +945,7 @@ describe('part review tests', () => {
     it('reviewer can delete the review request', async () => {
       const request = await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
       const deleted = await PartReviewService.deletePartReviewRequest(request.partReviewRequestId, superman, orgId);
-      const prismaDeleted = await prisma.partReviewRequest.findFirst({
+      const prismaDeleted = await prisma.part_Review_Request.findFirst({
         where: { partReviewRequestId: request.partReviewRequestId }
       });
       expect(deleted).toBeDefined();
@@ -956,7 +956,7 @@ describe('part review tests', () => {
       const flash = await createTestUser(flashAdmin, orgId);
       const request = await PartReviewService.createPartReviewRequest(partId, batman, superman.userId, orgId);
       const deleted = await PartReviewService.deletePartReviewRequest(request.partReviewRequestId, flash, orgId);
-      const prismaDeleted = await prisma.partReviewRequest.findFirst({
+      const prismaDeleted = await prisma.part_Review_Request.findFirst({
         where: { partReviewRequestId: request.partReviewRequestId }
       });
       expect(deleted).toBeDefined();

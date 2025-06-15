@@ -19,7 +19,7 @@ export const getPartQueryArgs = (organizationId: string, userId: string) =>
   });
 
 export const getPartSubmissionQueryArgs = (organizationId: string, userId: string) =>
-  Prisma.validator<Prisma.PartSubmissionDefaultArgs>()({
+  Prisma.validator<Prisma.Part_SubmissionDefaultArgs>()({
     include: {
       userCreated: getUserQueryArgs(organizationId),
       reviews: {
@@ -30,7 +30,7 @@ export const getPartSubmissionQueryArgs = (organizationId: string, userId: strin
   });
 
 export const getPartReviewRequestQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.PartReviewRequestDefaultArgs>()({
+  Prisma.validator<Prisma.Part_Review_RequestDefaultArgs>()({
     include: {
       requester: getUserQueryArgs(organizationId),
       reviewerRequested: getUserQueryArgs(organizationId)
@@ -38,7 +38,7 @@ export const getPartReviewRequestQueryArgs = (organizationId: string) =>
   });
 
 export const getPartReviewQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.PartReviewDefaultArgs>()({
+  Prisma.validator<Prisma.Part_ReviewDefaultArgs>()({
     include: {
       popUps: { where: { deletedAt: null } },
       userCreated: getUserQueryArgs(organizationId)
