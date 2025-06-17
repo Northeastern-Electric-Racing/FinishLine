@@ -54,7 +54,7 @@ const GanttChart = <E, T>({
       }}
     >
       <GanttChartTimeline start={startDate} end={endDate} />
-      <Box sx={{ width: 'fit-content' }}>
+      <Box>
         {collections.map((collection) => {
           return collection.tasks ? (
             <GanttChartCollectionSection

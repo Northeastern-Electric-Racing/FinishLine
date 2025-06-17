@@ -29,7 +29,8 @@ const GanttChartCollectionSection = <E, T>({
     mt: 1,
     py: 1,
     background: isEditMode ? theme.palette.divider : 'transparent',
-    borderRadius: '0.25rem'
+    borderRadius: '0.25rem',
+    width: 'fit-content'
   };
 
   const collectionDescriptionContainerStyle = {
