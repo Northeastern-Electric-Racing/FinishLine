@@ -1,21 +1,11 @@
 import axios from '../utils/axios';
-import { WorkPackageStage, DescriptionBulletPreview, ProjectTemplate, WorkPackageTemplate } from 'shared';
+import { DescriptionBulletPreview, ProjectTemplate, WorkPackageTemplate, WorkPackageTemplateApiInputs } from 'shared';
 import { apiUrls } from '../utils/urls';
 import {
   projectTemplateTransformer,
   workPackageTemplateTransformer
 } from './transformers/work-package-templates.transformer';
 
-export interface WorkPackageTemplateApiInputs {
-  templateName: string;
-  templateNotes: string;
-  duration: number | undefined;
-  stage?: WorkPackageStage | 'NONE';
-  blockedBy: string[];
-  descriptionBullets: DescriptionBulletPreview[];
-  workPackageName?: string;
-  workPackageTemplateId?: string;
-}
 export interface ProjectTemplateApiInputs {
   templateName: string;
   templateNotes: string;

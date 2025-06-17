@@ -1,5 +1,13 @@
 import { User, Organization } from '@prisma/client';
-import { DescriptionBulletPreview, isAdmin, isGuest, ProjectTemplate, WorkPackageStage, WorkPackageTemplate } from 'shared';
+import {
+  DescriptionBulletPreview,
+  isAdmin,
+  isGuest,
+  ProjectTemplate,
+  WorkPackageStage,
+  WorkPackageTemplate,
+  WorkPackageTemplateApiInputs
+} from 'shared';
 import prisma from '../prisma/prisma';
 import {
   NotFoundException,
@@ -30,7 +38,6 @@ import {
 } from '../prisma-query-args/wbs-element-template.query-args';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
 import { userHasPermission } from '../utils/users.utils';
-import { WorkPackageTemplateApiInputs } from '../../../frontend/src/apis/wbs-templates.api';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WbsElementTemplatesService {
