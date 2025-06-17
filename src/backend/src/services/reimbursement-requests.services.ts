@@ -1224,6 +1224,15 @@ export default class ReimbursementRequestService {
 
     const users = await getUsers(twoFactorContacts);
 
+    const existingVendor = await prisma.vendor.findUnique({
+      where: { vendorId },
+      select: { twoFactorContacts: { select: { userId: true } } }
+    });
+
+    const existingContactIds = existingVendor?.twoFactorContacts.map((contact) => ({ userId: contact.userId })) || [];
+
+    const newContactIds = users.map((user) => ({ userId: user.userId }));
+
     const vendor = await prisma.vendor.update({
       where: { vendorId },
       data: {
@@ -1233,7 +1242,10 @@ export default class ReimbursementRequestService {
         password: encryptPassword(password),
         taxExempt,
         discountCode,
-        twoFactorContacts: { connect: users.map((user) => ({ userId: user.userId })) },
+        twoFactorContacts: {
+          disconnect: existingContactIds,
+          connect: newContactIds
+        },
         notes
       },
       ...getVendorQueryArgs(organization.organizationId)

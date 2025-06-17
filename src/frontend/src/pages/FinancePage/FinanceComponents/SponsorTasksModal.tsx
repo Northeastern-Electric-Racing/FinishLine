@@ -202,20 +202,22 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, sponsor 
               />
             )}
           />
-          <IconButton
-            onClick={() => {
-              const fieldTask = fields[idx];
-              const taskToDelete: SponsorTask = {
-                ...fieldTask,
-                sponsorTaskId: fieldTask.sponsorTaskId || '',
-                assignee: fieldTask.assignee ? users.find((u) => u.userId === fieldTask.assignee) : undefined,
-                notifyDate: fieldTask.notifyDate ?? undefined
-              };
-              setSponsorTaskToDelete(taskToDelete);
-            }}
-          >
-            <RemoveCircle sx={{ width: '90%' }} />
-          </IconButton>
+          {fields[idx].sponsorTaskId && (
+            <IconButton
+              onClick={() => {
+                const fieldTask = fields[idx];
+                const taskToDelete: SponsorTask = {
+                  ...fieldTask,
+                  sponsorTaskId: fieldTask.sponsorTaskId || '',
+                  assignee: fieldTask.assignee ? users.find((u) => u.userId === fieldTask.assignee) : undefined,
+                  notifyDate: fieldTask.notifyDate ?? undefined
+                };
+                setSponsorTaskToDelete(taskToDelete);
+              }}
+            >
+              <RemoveCircle sx={{ width: '90%' }} />
+            </IconButton>
+          )}
         </Box>
       ))}
       <Button

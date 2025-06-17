@@ -1,13 +1,13 @@
 import { useForm } from 'react-hook-form';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { SponsorPayload, useCreateSponsor } from '../../../hooks/finance.hooks';
-import ErrorPage from '../../ErrorPage';
 import sponsorSchema, { SponsorForm } from './SponsorForm';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Box } from '@mui/system';
 import SidePage from './SidePagePopup';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
+import { useState } from 'react';
 
 interface CreateSponsorPageProps {
   showPage: boolean;
@@ -15,7 +15,7 @@ interface CreateSponsorPageProps {
 }
 
 const CreateSponsorPage = ({ showPage, handleClose }: CreateSponsorPageProps) => {
-  const { isLoading, isError, error, mutateAsync } = useCreateSponsor();
+  const { isLoading, mutateAsync } = useCreateSponsor();
 
   const {
     handleSubmit,
@@ -36,12 +36,19 @@ const CreateSponsorPage = ({ showPage, handleClose }: CreateSponsorPageProps) =>
     }
   });
 
-  if (isError) return <ErrorPage message={error?.message} />;
+  const [submitError, setSubmitError] = useState<string | null>(null);
   if (isLoading) return <LoadingIndicator />;
 
   const onFormSubmit = async (formData: SponsorPayload) => {
-    await mutateAsync({ ...formData });
-    handleClose();
+    try {
+      setSubmitError(null);
+      await mutateAsync({ ...formData });
+      handleClose();
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setSubmitError(err.message);
+      }
+    }
   };
 
   return (
@@ -52,6 +59,11 @@ const CreateSponsorPage = ({ showPage, handleClose }: CreateSponsorPageProps) =>
       component={
         <Box display="flex" flexDirection="column" alignItems="flex-end">
           <SponsorForm control={control} errors={errors} />
+          {submitError && (
+            <Box color="error.main" mb={2} fontWeight="bold">
+              {submitError}
+            </Box>
+          )}
           <Box mt={2}>
             <NERFailButton sx={{ mx: 1 }} onClick={handleClose}>
               CLOSE
