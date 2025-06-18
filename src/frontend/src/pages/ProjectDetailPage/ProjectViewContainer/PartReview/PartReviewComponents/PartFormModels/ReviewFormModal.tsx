@@ -149,35 +149,27 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
                   type="file"
                   hidden
                   multiple
-                  onChange={(e) => {
+                  onChange={async (e) => {
                     if (e.target.files) {
                       const numFiles = [...e.target.files]?.length;
-                      const checkLast = (index: number) => {
-                        if (index === numFiles - 1) {
-                          setUploading(false);
-                        }
-                      };
                       if (numFiles + files.length > 5) {
                         toast.error('cannot upload more than 5 files');
                         return;
                       }
                       setUploading(true);
-                      [...e.target.files]?.forEach(async (file, index) => {
+                      const uploadPromises = [...e.target.files]?.map(async (file) => {
                         if (file.size > MAX_PART_FILE_SIZE) {
                           toast.error(
                             `File "${file.name}" exceeds the maximum size limit of ${MAX_PART_FILE_SIZE / (1024 * 2014)} mbs`
                           );
-                          checkLast(index);
                           return;
                         }
                         if (!/^[\w.]+$/.test(file.name)) {
                           toast.error(`File names can only contain letters and numbers`);
-                          checkLast(index);
                           return;
                         }
                         if (file.name.length > 20) {
                           toast.error(`File names cannot be longer than 20 characters`);
-                          checkLast(index);
                           return;
                         }
 
@@ -188,8 +180,9 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
                         } catch (error: unknown) {
                           toast.error('file upload failed');
                         }
-                        checkLast(index);
                       });
+                      await Promise.all(uploadPromises);
+                      setUploading(false);
                     }
                   }}
                 />
