@@ -314,7 +314,7 @@ const SpendingBar = ({ data, title, edit }: SpendingBarProps) => {
           <Bar data={barData} options={config} />
         </Box>
       ) : (
-        <Typography>No Spending Data Available</Typography>
+        <Typography sx={{ mb: 1 }}>No Spending Data Available</Typography>
       )}
       {selectedTeam && (
         <EditProjectBudgetModal
