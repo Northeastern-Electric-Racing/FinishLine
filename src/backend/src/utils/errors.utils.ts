@@ -145,4 +145,12 @@ export type ExceptionObjectNames =
   | 'Announcement'
   | 'Graph'
   | 'Graph Collection'
-  | 'Project Template';
+  | 'Project Template'
+  | 'Part Review'
+  | 'Part Submission'
+  | 'Part'
+  | 'Part Submission'
+  | 'Part Tag'
+  | 'Common Mistake'
+  | 'Review Request'
+  | 'File';

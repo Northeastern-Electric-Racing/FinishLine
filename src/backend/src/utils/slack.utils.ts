@@ -577,3 +577,31 @@ export const getUserIdFromSlackId = async (slackId: string): Promise<string | un
 
   return user.userId;
 };
+
+export const sendSlackPartReviewRequestNotif = async (
+  slackId: string,
+  projectName: string,
+  partName: string,
+  partLink: string
+) => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+
+  const msg = `Your review has been requested on part: ${partName} for project: ${projectName}`;
+  const link = `https://finishlinebyner.com${partLink}`;
+  const linkButtonText = 'View Part';
+  await sendMessage(slackId, msg, link, linkButtonText);
+};
+
+export const sendSlackPartAssignmentNotif = async (
+  slackId: string,
+  projectName: string,
+  partName: string,
+  partLink: string
+) => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+
+  const msg = `You have been assigned to part: ${partName} on project: ${projectName}`;
+  const link = `https://finishlinebyner.com${partLink}`;
+  const linkButtonText = 'View Part';
+  await sendMessage(slackId, msg, link, linkButtonText);
+};
