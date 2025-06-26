@@ -118,6 +118,8 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
       <DatePicker
         label="Start Date"
         value={startDateState}
+        maxDate={endDateState || undefined}
+        shouldDisableDate={(date) => (endDateState ? date > endDateState : false)}
         slotProps={{
           textField: {
             size: 'small',
@@ -135,6 +137,8 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
       <DatePicker
         label="End Date"
         value={endDateState}
+        minDate={startDateState || undefined}
+        shouldDisableDate={(date) => (startDateState ? date < startDateState : false)}
         slotProps={{
           textField: {
             size: 'small',

@@ -88,12 +88,12 @@ export interface Vendor {
   vendorId: string;
   dateCreated: Date;
   name: string;
-  username: string;
-  password: string;
+  username?: string;
+  password?: string;
   taxExempt: boolean;
   twoFactorContacts: User[];
   addedBy: User;
-  discountCode: string;
+  discountCode?: string;
   notes?: string;
 }
 

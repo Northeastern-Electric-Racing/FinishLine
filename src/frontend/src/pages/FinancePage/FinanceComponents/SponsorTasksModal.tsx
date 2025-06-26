@@ -99,7 +99,7 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, sponsor 
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', color: '#EF4345' }}>
+      <Box sx={{ display: 'flex', p: '0px 8px 0px 14px', color: '#EF4345' }}>
         {['Due Date', 'Notify Date', 'Assign to', 'Notes'].map((label) => (
           <Typography
             key={label}
@@ -124,98 +124,111 @@ const SponsorTasksModal: React.FC<SponsorTasksModalProps> = ({ onClose, sponsor 
             color: '#fff'
           }}
         >
-          <Controller
-            control={control}
-            name={`tasks.${idx}.dueDate`}
-            render={({ field }) => (
-              <DatePicker
-                {...field}
-                value={field.value || undefined}
-                onChange={field.onChange}
-                slotProps={{
-                  textField: {
-                    placeholder: 'MM/DD/YY',
-                    sx: {
-                      width: '155px'
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Controller
+              control={control}
+              name={`tasks.${idx}.dueDate`}
+              render={({ field }) => (
+                <DatePicker
+                  {...field}
+                  value={field.value || undefined}
+                  onChange={field.onChange}
+                  slotProps={{
+                    textField: {
+                      placeholder: 'MM/DD/YY',
+                      sx: {
+                        width: '100%'
+                      }
                     }
-                  }
-                }}
-              />
-            )}
-          />
-          <Controller
-            control={control}
-            name={`tasks.${idx}.notifyDate`}
-            render={({ field }) => (
-              <DatePicker
-                {...field}
-                value={field.value || undefined}
-                onChange={field.onChange}
-                slotProps={{
-                  textField: {
-                    placeholder: 'MM/DD/YY',
-                    sx: {
-                      width: '155px'
+                  }}
+                />
+              )}
+            />
+          </Box>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Controller
+              control={control}
+              name={`tasks.${idx}.notifyDate`}
+              render={({ field }) => (
+                <DatePicker
+                  {...field}
+                  value={field.value || undefined}
+                  onChange={field.onChange}
+                  slotProps={{
+                    textField: {
+                      placeholder: 'MM/DD/YY',
+                      sx: {
+                        width: '100%'
+                      }
                     }
-                  }
+                  }}
+                />
+              )}
+            />
+          </Box>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Controller
+              control={control}
+              name={`tasks.${idx}.assignee`}
+              render={({ field }) => (
+                <Autocomplete
+                  options={users}
+                  getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
+                  isOptionEqualToValue={(option, value) => option.userId === value.userId}
+                  value={users.find((u) => u.userId === field.value) || undefined}
+                  onChange={(_, newValue) => field.onChange(newValue?.userId || '')}
+                  sx={{ width: '100%' }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      sx={{
+                        width: '100%',
+                        input: { color: '#fff' },
+                        '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: '#555' } }
+                      }}
+                    />
+                  )}
+                />
+              )}
+            />
+          </Box>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Controller
+              control={control}
+              name={`tasks.${idx}.notes`}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  error={!!errors.tasks?.[idx]?.notes}
+                  helperText={errors.tasks?.[idx]?.notes?.message}
+                  sx={{
+                    width: '100%',
+                    input: { color: '#fff' },
+                    '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: '#555' } },
+                    label: { color: '#fff' }
+                  }}
+                />
+              )}
+            />
+          </Box>
+          <Box sx={{ width: 40, display: 'flex', justifyContent: 'center' }}>
+            {fields[idx].sponsorTaskId && (
+              <IconButton
+                onClick={() => {
+                  const fieldTask = fields[idx];
+                  const taskToDelete: SponsorTask = {
+                    ...fieldTask,
+                    sponsorTaskId: fieldTask.sponsorTaskId || '',
+                    assignee: fieldTask.assignee ? users.find((u) => u.userId === fieldTask.assignee) : undefined,
+                    notifyDate: fieldTask.notifyDate ?? undefined
+                  };
+                  setSponsorTaskToDelete(taskToDelete);
                 }}
-              />
+              >
+                <RemoveCircle sx={{ width: '90%' }} />
+              </IconButton>
             )}
-          />
-          <Controller
-            control={control}
-            name={`tasks.${idx}.assignee`}
-            render={({ field }) => (
-              <Autocomplete
-                options={users}
-                getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
-                isOptionEqualToValue={(option, value) => option.userId === value.userId}
-                value={users.find((u) => u.userId === field.value) || undefined}
-                onChange={(_, newValue) => field.onChange(newValue?.userId || '')}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    sx={{
-                      width: '155px',
-                      input: { color: '#fff' },
-                      '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: '#555' } }
-                    }}
-                  />
-                )}
-              />
-            )}
-          />
-          <Controller
-            control={control}
-            name={`tasks.${idx}.notes`}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                error={!!errors.tasks?.[idx]?.notes}
-                helperText={errors.tasks?.[idx]?.notes?.message}
-                sx={{
-                  width: '155px',
-                  input: { color: '#fff' },
-                  '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: '#555' } },
-                  label: { color: '#fff' }
-                }}
-              />
-            )}
-          />
-          <IconButton
-            onClick={() => {
-              const fieldTask = fields[idx];
-              const taskToDelete: SponsorTask = {
-                ...fieldTask,
-                sponsorTaskId: fieldTask.sponsorTaskId || '',
-                assignee: fieldTask.assignee ? users.find((u) => u.userId === fieldTask.assignee) : undefined,
-                notifyDate: fieldTask.notifyDate ?? undefined
-              };
-              setSponsorTaskToDelete(taskToDelete);
-            }}
-          >
-            <RemoveCircle sx={{ width: '90%' }} />
-          </IconButton>
+          </Box>
         </Box>
       ))}
       <Button

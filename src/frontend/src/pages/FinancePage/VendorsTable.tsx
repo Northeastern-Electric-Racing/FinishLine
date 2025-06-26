@@ -65,7 +65,7 @@ const VendorTable = ({ isHeadAndAbove = false }: VendorTableProps) => {
       <Typography
         sx={{
           textAlign: 'center',
-          fontSize: '1.5rem',
+          fontSize: '1.25rem',
           height: '1.5em',
           whiteSpace: 'nowrap'
         }}

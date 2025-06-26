@@ -67,7 +67,7 @@ const SponsorsTable = () => {
           borderBottom: 'none'
         }}
       >
-        <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem', fontWeight: 'bold' }}>
+        <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.25rem', fontWeight: 'bold' }}>
           {sponsor.name}
         </Typography>
       </TableCell>
@@ -81,7 +81,7 @@ const SponsorsTable = () => {
           minHeight: '50px'
         }}
       >
-        <Typography sx={{ fontSize: '1.5rem' }}>{sponsor.activeStatus ? 'Active' : 'Inactive'}</Typography>
+        <Typography sx={{ fontSize: '1.25rem' }}>{sponsor.activeStatus ? 'Active' : 'Inactive'}</Typography>
       </TableCell>
       <TableCell
         align="center"
@@ -90,7 +90,7 @@ const SponsorsTable = () => {
           borderBottom: 'none'
         }}
       >
-        <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>{sponsor.vendorContact}</Typography>
+        <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.25rem' }}>{sponsor.vendorContact}</Typography>
       </TableCell>
 
       <TableCell
@@ -100,7 +100,7 @@ const SponsorsTable = () => {
           borderBottom: 'none'
         }}
       >
-        <Box sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>
+        <Box sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.25rem' }}>
           <SponsorTierPill tier={sponsor.tier} />
         </Box>
       </TableCell>
@@ -111,7 +111,9 @@ const SponsorsTable = () => {
           borderBottom: 'none'
         }}
       >
-        <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>{`$${sponsor.sponsorValue}`}</Typography>
+        <Typography
+          sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.25rem' }}
+        >{`$${sponsor.sponsorValue}`}</Typography>
       </TableCell>
       <TableCell
         align="center"
@@ -120,7 +122,9 @@ const SponsorsTable = () => {
           borderBottom: 'none'
         }}
       >
-        <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>{datePipe(sponsor.joinDate)}</Typography>
+        <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.25rem' }}>
+          {datePipe(sponsor.joinDate)}
+        </Typography>
       </TableCell>
       <TableCell
         align="center"
@@ -129,7 +133,7 @@ const SponsorsTable = () => {
           borderBottom: 'none'
         }}
       >
-        <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>{sponsor.discountCode}</Typography>
+        <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.25rem' }}>{sponsor.discountCode}</Typography>
       </TableCell>
       <TableCell
         align="center"
@@ -138,7 +142,7 @@ const SponsorsTable = () => {
           borderBottom: 'none'
         }}
       >
-        <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.5rem' }}>
+        <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.25rem' }}>
           {sponsor.taxExempt ? 'Yes' : 'No'}
         </Typography>
       </TableCell>

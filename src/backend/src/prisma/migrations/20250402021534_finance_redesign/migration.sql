@@ -1,12 +1,3 @@
-/*
-  Warnings:
-
-  - You are about to drop the column `allowedRefundSources` on the `Account_Code` table. All the data in the column will be lost.
-  - You are about to drop the column `otherReason` on the `Reimbursement_Product_Reason` table. All the data in the column will be lost.
-  - You are about to drop the column `account` on the `Reimbursement_Request` table. All the data in the column will be lost.
-  - Added the required column `indexCodeId` to the `Reimbursement_Request` table without a default value. This is not possible if the table is not empty.
-*/
-
 -- AlterEnum
 ALTER TYPE "CR_Type" ADD VALUE 'BUDGET';
 
@@ -21,11 +12,11 @@ ALTER TABLE "Reimbursement_Request" ADD COLUMN "indexCodeId" TEXT;
 
 -- AlterTable
 ALTER TABLE "Vendor" ADD COLUMN     "addedByUserId" TEXT NOT NULL,
-ADD COLUMN     "discountCode" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "discountCode" TEXT,
 ADD COLUMN     "notes" TEXT,
-ADD COLUMN     "password" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "password" TEXT,
 ADD COLUMN     "taxExempt" BOOLEAN NOT NULL DEFAULT FALSE,
-ADD COLUMN     "username" TEXT NOT NULL DEFAULT '';
+ADD COLUMN     "username" TEXT;
 
 -- CreateTable
 CREATE TABLE "Sponsor" (

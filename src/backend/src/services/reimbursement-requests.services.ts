@@ -639,12 +639,12 @@ export default class ReimbursementRequestService {
     submitter: User,
     name: string,
     organization: Organization,
-    username: string,
-    password: string,
-    discountCode: string,
     taxExempt: boolean,
     twoFactorContacts: string[],
-    notes?: string
+    notes?: string,
+    username?: string,
+    password?: string,
+    discountCode?: string
   ) {
     const isAuthorized =
       (await userHasPermission(submitter.userId, organization.organizationId, isAdmin)) ||
@@ -675,7 +675,7 @@ export default class ReimbursementRequestService {
         name,
         organizationId: organization.organizationId,
         username,
-        password: encryptPassword(password),
+        password: password ? encryptPassword(password) : undefined,
         taxExempt,
         discountCode,
         twoFactorContacts: { connect: users.map((user) => ({ userId: user.userId })) },
@@ -850,6 +850,17 @@ export default class ReimbursementRequestService {
       throw new HttpException(500, 'Image Name not found');
     }
 
+    const comment = `${submitter.firstName}  ${submitter.lastName} Uploaded Receipt`;
+
+    await prisma.reimbursement_Request_Comment.create({
+      data: {
+        userCreatedId: submitter.userId,
+        reimbursementRequestId,
+        comment
+      },
+      ...getReimbursementRequestCommentQueryArgs(organization.organizationId)
+    });
+
     const receipt = await prisma.receipt.create({
       data: {
         googleFileId: imageData.id,
@@ -928,6 +939,17 @@ export default class ReimbursementRequestService {
     if (startOfDay(dateDelivered) > startOfDay(new Date()))
       throw new HttpException(400, 'Delivery date cannot be in the future.');
 
+    const comment = `${submitter.firstName}  ${submitter.lastName} Marked As Delivered`;
+
+    await prisma.reimbursement_Request_Comment.create({
+      data: {
+        userCreatedId: submitter.userId,
+        reimbursementRequestId,
+        comment
+      },
+      ...getReimbursementRequestCommentQueryArgs(organization.organizationId)
+    });
+
     const reimbursementRequestDelivered = await prisma.reimbursement_Request.update({
       where: { reimbursementRequestId },
       data: { dateDelivered }
@@ -974,6 +996,17 @@ export default class ReimbursementRequestService {
     if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.DENIED)) {
       throw new HttpException(400, 'This reimbursement request has already been denied');
     }
+
+    const comment = `${submitter.firstName}  ${submitter.lastName} Marked As Reimbursed`;
+
+    await prisma.reimbursement_Request_Comment.create({
+      data: {
+        userCreatedId: submitter.userId,
+        reimbursementRequestId,
+        comment
+      },
+      ...getReimbursementRequestCommentQueryArgs(organization.organizationId)
+    });
 
     const reimbursementStatus = await prisma.reimbursement_Status.create({
       data: {
@@ -1055,6 +1088,17 @@ export default class ReimbursementRequestService {
     )
       throw new HttpException(400, 'This reimbursement request has already been approved by leadership');
 
+    const comment = `${submitter.firstName}  ${submitter.lastName} Leadership Approved`;
+
+    await prisma.reimbursement_Request_Comment.create({
+      data: {
+        userCreatedId: submitter.userId,
+        reimbursementRequestId,
+        comment
+      },
+      ...getReimbursementRequestCommentQueryArgs(organization.organizationId)
+    });
+
     const reimbursementStatus = await prisma.reimbursement_Status.create({
       data: {
         type: ReimbursementStatusType.LEADERSHIP_APPROVED,
@@ -1110,6 +1154,17 @@ export default class ReimbursementRequestService {
       throw new HttpException(400, 'This reimbursement request has already been denied');
     }
 
+    const comment = `${submitter.firstName}  ${submitter.lastName} Submitted To SABO`;
+
+    await prisma.reimbursement_Request_Comment.create({
+      data: {
+        userCreatedId: submitter.userId,
+        reimbursementRequestId,
+        comment
+      },
+      ...getReimbursementRequestCommentQueryArgs(organization.organizationId)
+    });
+
     const reimbursementStatus = await prisma.reimbursement_Status.create({
       data: {
         type: ReimbursementStatusType.SABO_SUBMITTED,
@@ -1157,6 +1212,17 @@ export default class ReimbursementRequestService {
     if (submitter.userId !== reimbursementRequest.recipientId) {
       await validateUserIsPartOfFinanceTeamOrHead(submitter, organization.organizationId);
     }
+
+    const comment = `${submitter.firstName}  ${submitter.lastName} Denied This Request`;
+
+    await prisma.reimbursement_Request_Comment.create({
+      data: {
+        userCreatedId: submitter.userId,
+        reimbursementRequestId,
+        comment
+      },
+      ...getReimbursementRequestCommentQueryArgs(organization.organizationId)
+    });
 
     const reimbursementStatus = await prisma.reimbursement_Status.create({
       data: {
@@ -1224,6 +1290,15 @@ export default class ReimbursementRequestService {
 
     const users = await getUsers(twoFactorContacts);
 
+    const existingVendor = await prisma.vendor.findUnique({
+      where: { vendorId },
+      select: { twoFactorContacts: { select: { userId: true } } }
+    });
+
+    const existingContactIds = existingVendor?.twoFactorContacts.map((contact) => ({ userId: contact.userId })) || [];
+
+    const newContactIds = users.map((user) => ({ userId: user.userId }));
+
     const vendor = await prisma.vendor.update({
       where: { vendorId },
       data: {
@@ -1233,7 +1308,10 @@ export default class ReimbursementRequestService {
         password: encryptPassword(password),
         taxExempt,
         discountCode,
-        twoFactorContacts: { connect: users.map((user) => ({ userId: user.userId })) },
+        twoFactorContacts: {
+          disconnect: existingContactIds,
+          connect: newContactIds
+        },
         notes
       },
       ...getVendorQueryArgs(organization.organizationId)
@@ -1351,6 +1429,17 @@ export default class ReimbursementRequestService {
     if (!reimbursementRequest.dateOfExpense) {
       throw new HttpException(400, 'Date of expense is required to mark a reimbursement request as pending finance');
     }
+
+    const comment = `${user.firstName}  ${user.lastName} Marked Pending Finance`;
+
+    await prisma.reimbursement_Request_Comment.create({
+      data: {
+        userCreatedId: user.userId,
+        reimbursementRequestId,
+        comment
+      },
+      ...getReimbursementRequestCommentQueryArgs(organization.organizationId)
+    });
 
     const updatedReimbursementStatus = await prisma.reimbursement_Status.create({
       data: {

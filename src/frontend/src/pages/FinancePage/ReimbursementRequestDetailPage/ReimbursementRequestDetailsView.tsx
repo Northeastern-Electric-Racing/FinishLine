@@ -123,7 +123,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const handleDelete = async () => {
     try {
       await deleteReimbursementRequest();
-      history.push(routes.FINANCE);
+      closeSidePage();
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 3000);

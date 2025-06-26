@@ -87,12 +87,6 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organ
           name: 'Companies',
           icon: <ShoppingCartIcon sx={{ fontSize: '20px' }} />,
           route: routes.COMPANIES
-        },
-        {
-          /* FOR REFRENCE (TO BE REMOVED) */
-          name: 'Original Page',
-          icon: <AttachMoneyIcon sx={{ fontSize: '20px' }} />,
-          route: routes.FINANCE
         }
       ]
     },

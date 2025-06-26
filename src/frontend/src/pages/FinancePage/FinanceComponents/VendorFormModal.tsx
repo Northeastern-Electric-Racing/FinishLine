@@ -33,9 +33,9 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
 
   const schema = yup.object().shape({
     name: yup.string().required('Vendor Name is Required'),
-    username: yup.string().required('Username is Required'),
-    password: yup.string().required('Password is Required'),
-    discountCode: yup.string().required('Discount is Required'),
+    username: yup.string().optional(),
+    password: yup.string().optional(),
+    discountCode: yup.string().optional(),
     taxExempt: yup.boolean().required('Tax Exemption Status is Required'),
     twoFactorContacts: yup.array(),
     note: yup.string().optional()
@@ -50,9 +50,9 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
     resolver: yupResolver(schema),
     defaultValues: {
       name: defaultValues?.name ?? '',
-      username: defaultValues?.username ?? '',
-      password: defaultValues?.password ?? '',
-      discountCode: defaultValues?.discountCode ?? '',
+      username: defaultValues?.username ?? undefined,
+      password: defaultValues?.password ?? undefined,
+      discountCode: defaultValues?.discountCode ?? undefined,
       taxExempt: defaultValues?.taxExempt,
       twoFactorContacts: defaultValues?.twoFactorContacts.map((user) => user.userId) ?? [],
       note: defaultValues?.notes ?? ''
@@ -100,14 +100,14 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
         </FormControl>
         <FormControl sx={{ paddingBottom: 2 }}>
           <Typography sx={{ fontWeight: 'bold', fontSize: 22, color: '#EF4345' }} variant="h5">
-            Username:*
+            Username:
           </Typography>
           <ReactHookTextField name="username" placeholder="Add Username Here" control={control} sx={{ width: 1 }} />
           <FormHelperText error>{errors.username?.message}</FormHelperText>
         </FormControl>
         <FormControl sx={{ paddingBottom: 2 }}>
           <Typography sx={{ fontWeight: 'bold', fontSize: 22, color: '#EF4345' }} variant="h5">
-            Password:*
+            Password:
           </Typography>
           <ReactHookTextField name="password" placeholder="Add Password Here" control={control} sx={{ width: 1 }} />
           <FormHelperText error>{errors.password?.message}</FormHelperText>
@@ -152,7 +152,7 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
           </FormControl>
           <FormControl sx={{ paddingBottom: 2, flex: 3 }}>
             <Typography sx={{ fontWeight: 'bold', fontSize: 22, color: '#EF4345' }} variant="h5">
-              Discount Code:*
+              Discount Code:
             </Typography>
             <ReactHookTextField
               name="discountCode"

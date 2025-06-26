@@ -1,7 +1,6 @@
 import { CreateSponsorTask, Sponsor } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { SponsorPayload, useEditSponsor } from '../../../hooks/finance.hooks';
-import ErrorPage from '../../ErrorPage';
 import SidePage from './SidePagePopup';
 import sponsorSchema, { SponsorForm } from './SponsorForm';
 
@@ -10,6 +9,7 @@ import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useState } from 'react';
 
 interface EditSponsorPageProps {
   showPage: boolean;
@@ -18,7 +18,7 @@ interface EditSponsorPageProps {
 }
 
 const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProps) => {
-  const { isLoading, isError, error, mutateAsync } = useEditSponsor(sponsor.sponsorId);
+  const { isLoading, mutateAsync } = useEditSponsor(sponsor.sponsorId);
 
   const defaultSponsorTasks: CreateSponsorTask[] =
     sponsor.sponsorTasks?.map((task) => ({
@@ -48,12 +48,19 @@ const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProp
       sponsorTasks: defaultSponsorTasks
     }
   });
-  if (isError) return <ErrorPage message={error?.message} />;
+  const [submitError, setSubmitError] = useState<string | null>(null);
   if (isLoading) return <LoadingIndicator />;
 
   const onSubmit = async (formData: SponsorPayload) => {
-    await mutateAsync({ ...formData });
-    handleClose();
+    try {
+      setSubmitError(null);
+      await mutateAsync({ ...formData });
+      handleClose();
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setSubmitError(err.message);
+      }
+    }
   };
 
   return (
@@ -64,6 +71,11 @@ const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProp
       component={
         <Box display="flex" flexDirection="column" alignItems="flex-end">
           <SponsorForm control={control} errors={errors} defaultValues={sponsor}></SponsorForm>
+          {submitError && (
+            <Box color="error.main" mb={2} fontWeight="bold">
+              {submitError}
+            </Box>
+          )}
           <Box mt={2}>
             <NERFailButton sx={{ mx: 1 }} onClick={handleClose}>
               CLOSE

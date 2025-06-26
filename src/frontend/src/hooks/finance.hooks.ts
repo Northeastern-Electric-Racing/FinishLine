@@ -115,9 +115,9 @@ export interface AccountCodePayload {
 
 export interface EditVendorPayload {
   name: string;
-  username: string;
-  password: string;
-  discountCode: string;
+  username?: string;
+  password?: string;
+  discountCode?: string;
   taxExempt: boolean;
   twoFactorContactIds: string[];
   notes: string;

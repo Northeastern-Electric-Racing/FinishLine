@@ -17,6 +17,7 @@ import {
 import {
   AccessDeniedException,
   DeletedException,
+  HttpException,
   InvalidOrganizationException,
   NotFoundException
 } from '../utils/errors.utils';
@@ -73,6 +74,17 @@ export default class FinanceServices {
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('Only heads can create a sponsor');
+
+    const existingSponsor = await prisma.sponsor.findFirst({
+      where: {
+        name,
+        organizationId: organization.organizationId
+      }
+    });
+
+    if (existingSponsor) {
+      throw new HttpException(400, `A sponsor with the name "${name}" already exists.`);
+    }
 
     const sponsor = await prisma.sponsor.create({
       data: {
@@ -551,6 +563,17 @@ export default class FinanceServices {
     });
 
     if (!tier) throw new NotFoundException('Sponsor Tier', sponsorTierId);
+
+    const existingSponsor = await prisma.sponsor.findFirst({
+      where: {
+        name,
+        organizationId: organization.organizationId
+      }
+    });
+
+    if (existingSponsor) {
+      throw new HttpException(400, `A sponsor with the name "${name}" already exists.`);
+    }
 
     const updatedSponsor = await prisma.sponsor.update({
       where: { sponsorId: oldSponsor.sponsorId },
