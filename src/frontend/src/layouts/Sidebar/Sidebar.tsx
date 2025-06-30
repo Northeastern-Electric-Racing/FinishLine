@@ -20,7 +20,7 @@ import NavPageLink from './NavPageLink';
 import NERDrawer from '../../components/NERDrawer';
 import NavUserMenu from '../PageTitle/NavUserMenu';
 import DrawerHeader from '../../components/DrawerHeader';
-import { ChevronLeft, ChevronRight } from '@mui/icons-material';
+import { Cached, ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useHomePageContext } from '../../app/HomePageContext';
 import SidebarButton from './SidebarButton';
 import { isGuest, Organization } from 'shared';
@@ -99,6 +99,11 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organ
       name: 'Calendar',
       icon: <CalendarTodayIcon />,
       route: routes.CALENDAR
+    },
+    {
+      name: 'Retrospective',
+      icon: <Cached />,
+      route: routes.RETROSPECTIVE
     },
     {
       name: 'Info',

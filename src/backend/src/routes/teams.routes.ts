@@ -86,4 +86,6 @@ teamsRouter.post(
 
 teamsRouter.delete('teamType/:teamTypeId/delete', TeamsController.deleteTeamType);
 
+teamsRouter.get('/my-teams-work-packages', TeamsController.getMyTeamsWorkpackages);
+
 export default teamsRouter;

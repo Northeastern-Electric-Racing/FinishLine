@@ -48,17 +48,6 @@ const AdminToolsPage: React.FC = () => {
     tabs.push({ tabUrlValue: 'miscellaneous', tabName: 'Miscellaneous' });
   }
 
-  const ProjectConfigurationTab = () => {
-    return isUserAdmin ? (
-      <>
-        <AdminToolsProjectsConfig />
-        <AdminToolsBOMConfig />
-      </>
-    ) : (
-      <AdminToolsProjectsConfig />
-    );
-  };
-
   return (
     <PageLayout
       title="Admin Tools"
@@ -81,7 +70,10 @@ const AdminToolsPage: React.FC = () => {
           {isUserAdmin && <TeamsTools />}
         </>
       ) : tabIndex === 1 ? (
-        <ProjectConfigurationTab />
+        <Box>
+          <AdminToolsProjectsConfig />
+          {isUserAdmin && <AdminToolsBOMConfig />}
+        </Box>
       ) : tabIndex === 2 ? (
         <AdminToolsFinanceConfig />
       ) : tabIndex === 3 ? (

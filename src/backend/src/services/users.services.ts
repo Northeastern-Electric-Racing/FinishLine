@@ -234,12 +234,16 @@ export default class UsersService {
       const firstName = payload['given_name'] ?? payload['email']!.split('@')[0]; // Defaults to id of email
       const lastName = payload['family_name'] ?? ''; // Defaults to no last name
 
+      const nonHuskyEmail = payload['email']!.includes('@husky.neu.edu')
+        ? payload['email'].replace(/@husky\.neu\.edu/i, '@northeastern.edu')
+        : payload['email'];
+
       const createdUser = await prisma.user.create({
         data: {
           firstName,
           lastName,
           googleAuthId: userId,
-          email: payload['email'],
+          email: nonHuskyEmail,
           emailId,
           userSettings: { create: {} }
         },
@@ -470,14 +474,6 @@ export default class UsersService {
     zipcode: string,
     phoneNumber: string
   ): Promise<string> {
-    const existingUser = await prisma.user_Secure_Settings.findFirst({
-      where: { phoneNumber, userId: { not: user.userId } } // excludes the current user from check
-    });
-
-    if (existingUser) {
-      throw new HttpException(400, 'Phone number already in use');
-    }
-
     const newUserSecureSettings = await prisma.user_Secure_Settings.upsert({
       where: { userId: user.userId },
       update: {

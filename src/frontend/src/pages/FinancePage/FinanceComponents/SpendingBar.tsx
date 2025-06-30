@@ -11,7 +11,7 @@ import {
 import { _DeepPartialObject } from 'chart.js/dist/types/utils';
 import { Bar } from 'react-chartjs-2';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { ReimbursementRequestData, SpendingBarData, Team } from 'shared';
+import { ReimbursementRequestData, SpendingBarData, TeamPreview } from 'shared';
 import { grey } from '@mui/material/colors';
 import React, { useEffect, useRef, useState } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
@@ -275,7 +275,7 @@ const SpendingBar = ({ data, title, edit }: SpendingBarProps) => {
 
   const [openEditProjectModal, setOpenEditProjectModal] = useState(false);
   const [openEditReasonModal, setOpenEditReasonModal] = useState(false);
-  const [selectedTeam, setSelectedTeam] = useState<Team | undefined>(undefined);
+  const [selectedTeam, setSelectedTeam] = useState<TeamPreview | undefined>(undefined);
   const { data: allTeams } = useAllTeams();
 
   const handleEditClick = (title: string) => {

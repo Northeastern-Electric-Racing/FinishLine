@@ -217,3 +217,21 @@ export const validateInputs = (req: Request, res: Response, next: Function): voi
     next();
   }
 };
+
+export const partTagValidators = [nonEmptyString(body('name')), nonEmptyString(body('colorHexCode'))];
+
+export const partFaqValidators = [nonEmptyString(body('question')), nonEmptyString(body('answer'))];
+
+export const partCommonMistakeValidators = [
+  nonEmptyString(body('title')),
+  nonEmptyString(body('description')),
+  body('starred').isBoolean()
+];
+
+export const partPopupValidators = [
+  body('xCoord').isFloat(),
+  body('yCoord').isFloat(),
+  intMinZero(body('fileIndex')),
+  nonEmptyString(body('title')),
+  body('description').optional().isString()
+];

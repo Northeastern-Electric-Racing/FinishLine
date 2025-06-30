@@ -5,7 +5,8 @@
 
 import { Construction, Work } from '@mui/icons-material';
 import ScheduleIcon from '@mui/icons-material/Schedule';
-import { Project, wbsPipe } from 'shared';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import { Project, ProjectPreview, WorkPackage, wbsPipe } from 'shared';
 import { datePipe, dollarsPipe, fullNamePipe, weeksPipe } from '../../../utils/pipes';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
@@ -17,11 +18,12 @@ import { useGetReimbursementRequestProjectData } from '../../../hooks/finance.ho
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import PieChart from '../../FinancePage/FinanceComponents/PieChart';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import WarningBanner from '../../../components/WarningBanner';
 import { Box } from '@mui/system';
 
-export const getProjectTeamsName = (project: Project): string => {
+
+
+export const getProjectTeamsName = (project: ProjectPreview): string => {
   return project.teams.map((team) => team.teamName).join(', ');
 };
 

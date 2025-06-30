@@ -6,8 +6,7 @@ import {
   PotentialChangeType,
   changeBulletDetailText,
   getPotentialChangeBackground,
-  ProposedChangeValue,
-  workPackageProposedChangesToPreview
+  ProposedChangeValue
 } from '../../../utils/diff-page.utils';
 import { labelPipe } from '../../../utils/pipes';
 

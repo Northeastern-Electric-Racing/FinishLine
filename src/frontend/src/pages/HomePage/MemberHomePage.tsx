@@ -45,7 +45,7 @@ const MemberHomePage = ({ user }: MemberHomePageProps) => {
               <GeneralAnnouncements />
             </Box>
             <Box height={'49%'}>
-              <TeamWorkPackageDisplay user={user} />
+              <TeamWorkPackageDisplay />
             </Box>
           </Box>
         </Grid>

@@ -1,11 +1,11 @@
-import { Organization, Prisma, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
+import { Organization, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
 import {
   calculateEndDate,
   DescriptionBulletPreview,
   getDay,
   isAdmin,
   isGuest,
-  isWorkPackage,
+  isWorkPackageWbs,
   WbsElementStatus,
   WbsNumber,
   wbsPipe,
@@ -21,7 +21,7 @@ import {
   DeletedException,
   InvalidOrganizationException
 } from '../utils/errors.utils';
-import { WorkPackageQueryArgs, getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
+import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
 import workPackageTransformer from '../transformers/work-packages.transformer';
 import { updateBlocking, validateChangeRequestAccepted } from '../utils/change-requests.utils';
 import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils';
@@ -80,7 +80,7 @@ export default class WorkPackagesService {
    * @throws if the work package with the desired WBS number is not found, is deleted or is not part of the given organization
    */
   static async getSingleWorkPackage(parsedWbs: WbsNumber, organization: Organization): Promise<WorkPackage> {
-    if (!isWorkPackage(parsedWbs)) {
+    if (!isWorkPackageWbs(parsedWbs)) {
       throw new HttpException(404, 'WBS Number ' + wbsPipe(parsedWbs) + ' is a not a work package WBS#');
     }
 
@@ -118,7 +118,7 @@ export default class WorkPackagesService {
    */
   static async getManyWorkPackages(wbsNums: WbsNumber[], organization: Organization): Promise<WorkPackage[]> {
     wbsNums.forEach((wbsNum) => {
-      if (!isWorkPackage(wbsNum)) {
+      if (!isWorkPackageWbs(wbsNum)) {
         throw new HttpException(
           404,
           `WBS Number ${wbsNum.carNumber}.${wbsNum.projectNumber}.${wbsNum.workPackageNumber} is not a Work Package WBS#`
@@ -159,7 +159,7 @@ export default class WorkPackagesService {
     descriptionBullets: DescriptionBulletPreview[],
     projectWbsNum: WbsNumber,
     organization: Organization
-  ): Promise<Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>> {
+  ): Promise<WorkPackage> {
     if (await userHasPermission(user.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('create work packages');
 
@@ -253,7 +253,7 @@ export default class WorkPackagesService {
 
     await prisma.change.createMany({ data: changes.changes });
 
-    return created;
+    return workPackageTransformer(created);
   }
 
   /**
@@ -479,7 +479,7 @@ export default class WorkPackagesService {
     const { carNumber, projectNumber, workPackageNumber } = wbsNum;
 
     // is a project or car so just return empty array until we implement blocking projects/cars
-    if (!isWorkPackage(wbsNum)) return [];
+    if (!isWorkPackageWbs(wbsNum)) return [];
 
     const wbsElement = await prisma.wBS_Element.findUnique({
       where: {

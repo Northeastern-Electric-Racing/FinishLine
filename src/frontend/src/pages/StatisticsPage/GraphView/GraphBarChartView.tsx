@@ -7,16 +7,21 @@ interface GraphBarChartViewProps {
   cars: Car[];
 }
 
+const colors = ['#DE1515', '#1515DE', '#15DE15'];
+
 const GraphBarChartView = ({ graph, height, cars }: GraphBarChartViewProps) => {
   return (
     <StatsBarChart
       graphTitle={`${displayEnum(graph.measure)} ${graph.title} - ${displayEnum(graph.graphType)} ${
         cars.length > 0 ? `(${cars.map((car) => car.name).join(',')})` : ''
       }`}
-      xAxisData={graph.graphData.map((data) => data.label)}
-      yAxisData={graph.graphData.map((data) => data.value)}
+      datasets={graph.graphData.map((data, index) => ({
+        yAxisData: data.values.map((data) => data.value),
+        yAxisLabel: data.tipLabel,
+        color: colors[index]
+      }))}
+      xAxisData={graph.graphData[0].values.map((data) => data.label)}
       xAxisLabel={graph.xAxisLabel}
-      yAxisLabel={graph.yAxisLabel}
       height={height}
     />
   );

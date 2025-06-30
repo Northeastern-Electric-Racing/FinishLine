@@ -64,6 +64,10 @@ organizationRouter.post(
   OrganizationsController.setSlackWorkspaceId
 );
 
+organizationRouter.get('/part-review-guide-link/get', OrganizationsController.getPartReviewGuideLink);
+organizationRouter.post('/part-review-guide-link/set', OrganizationsController.setPartReviewGuideLink);
+
+
 organizationRouter.post(
   '/sponsorshipChannelId/set',
   nonEmptyString(body('channelId')),

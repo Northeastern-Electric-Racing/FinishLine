@@ -48,7 +48,14 @@ export interface Project extends WbsElement {
   teams: TeamPreview[];
   tasks: Task[];
   favoritedBy: UserPreview[];
+  abbreviation?: string;
 }
+
+export type RetrospectiveProjectPreview = Omit<ProjectPreview, 'workPackages'> & {
+  workPackages: RetrospectiveWorkPackage[];
+  originalStartDate?: Date;
+  originalEndDate?: Date;
+};
 
 export interface ProjectPreview extends WbsElementPreview {
   startDate?: Date;
@@ -58,6 +65,12 @@ export interface ProjectPreview extends WbsElementPreview {
   workPackages: WorkPackage[];
   tasks: Task[];
   duration: number;
+  abbreviation?: string;
+}
+
+export interface RetrospectiveWorkPackage extends WorkPackage {
+  originalStartDate: Date;
+  originalDuration: number;
 }
 
 export interface WorkPackage extends WbsElement {
@@ -70,11 +83,13 @@ export interface WorkPackage extends WbsElement {
   projectName: string;
   stage?: WorkPackageStage;
   teamTypes: TeamType[];
+  projectId: string;
   designReviews: DesignReviewPreview[];
 }
 
 export interface WorkPackagePreview extends WbsElementPreview {
   projectName: string;
+  projectId: string;
   startDate: Date;
   duration: number;
   endDate: Date;
