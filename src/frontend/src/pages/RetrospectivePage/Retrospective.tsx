@@ -2,7 +2,7 @@ import { useGetRetrospectiveTimelines } from '../../hooks/retrospective.hooks';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import { useHistory } from 'react-router-dom';
 import { useGetAllCars } from '../../hooks/cars.hooks';
-import { useAllTeamTypes } from '../../hooks/team-types.hooks';
+import { useAllDivisions as useAllTeamTypes } from '../../hooks/team-types.hooks';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { RetrospectiveProjectPreview, TeamPreview, TeamType, WbsElementPreview } from 'shared';
 import {

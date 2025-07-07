@@ -41,7 +41,7 @@ import {
 } from 'shared';
 import { useAllTeams } from '../../../hooks/teams.hooks';
 import { useGetAllCars } from '../../../hooks/cars.hooks';
-import { useAllTeamTypes } from '../../../hooks/team-types.hooks';
+import { useAllDivisions } from '../../../hooks/team-types.hooks';
 import AddGanttProjectModal from './AddGanttProjectModal';
 import AddGanttWorkPackageModal from './AddGanttWorkPackageModal';
 import { GanttRequestChangeModal } from './ProjectGanttChangeModals/GanttRequestChangeModal';
@@ -61,7 +61,7 @@ const ProjectGanttChartPage: FC = () => {
     isError: teamTypesIsError,
     data: teamTypes,
     error: teamTypesError
-  } = useAllTeamTypes();
+  } = useAllDivisions();
 
   const { isLoading: carsIsLoading, isError: carsIsError, data: cars, error: carsError } = useGetAllCars();
 

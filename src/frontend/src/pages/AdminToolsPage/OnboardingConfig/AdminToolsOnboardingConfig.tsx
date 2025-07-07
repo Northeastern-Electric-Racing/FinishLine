@@ -2,7 +2,7 @@ import { Typography, Grid } from '@mui/material';
 import { Box } from '@mui/system';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useAllChecklists } from '../../../hooks/onboarding.hook';
-import { useAllTeamTypes } from '../../../hooks/team-types.hooks';
+import { useAllDivisions as useAllTeamTypes } from '../../../hooks/team-types.hooks';
 import { groupChecklists, sortGroupNames } from '../../../utils/onboarding.utils';
 import ErrorPage from '../../ErrorPage';
 import { AdminChecklist } from './Checklists/AdminChecklist';

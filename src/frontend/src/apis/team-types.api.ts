@@ -6,7 +6,7 @@
 import { TeamType } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { CreateTeamTypePayload } from '../hooks/team-types.hooks';
+import { CreateDivisionPayload as CreateTeamTypePayload } from '../hooks/team-types.hooks';
 
 export const getAllTeamTypes = () => {
   return axios.get(apiUrls.allTeamTypes(), {

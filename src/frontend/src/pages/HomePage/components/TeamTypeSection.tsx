@@ -2,7 +2,7 @@ import { Box, Grid, Typography } from '@mui/material';
 import { TeamType } from 'shared';
 import { useGetImageUrl } from '../../../hooks/onboarding.hook';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useAllTeamTypes, useSetOnboardingUser } from '../../../hooks/team-types.hooks';
+import { useAllDivisions as useAllTeamTypes, useSetOnboardingUser } from '../../../hooks/team-types.hooks';
 import ErrorPage from '../../ErrorPage';
 import { useState } from 'react';
 import Tabs from '../../../components/Tabs';
