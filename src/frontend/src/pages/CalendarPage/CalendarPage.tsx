@@ -17,7 +17,7 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import DRCSummaryModal from './DesignReviewSummaryModal';
-import { useAllTeamTypes } from '../../hooks/team-types.hooks';
+import { useAllDivisions as useAllTeamTypes } from '../../hooks/team-types.hooks';
 
 const CalendarPage = () => {
   const theme = useTheme();
