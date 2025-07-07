@@ -92,4 +92,7 @@ const SetTeamTypeModal: React.FC<SetTeamTypeModelProps> = ({ teamId, showModal, 
   );
 };
 
+/**
+ * test.
+ */
 export default SetTeamTypeModal;
