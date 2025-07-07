@@ -7,7 +7,8 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import NERFormModal from '../../components/NERFormModal';
 import { FormControl, FormLabel, Select, MenuItem } from '@mui/material';
-import { useAllTeamTypes as useAllDivisions, useSetTeamType } from '../../hooks/team-types.hooks';
+import { useAllDivisions, useSetDivision } from '../../hooks/team-types.hooks';
+import { TeamType } from 'shared';
 
 interface SetTeamTypeInputs {
   teamId: string;
@@ -22,7 +23,7 @@ interface SetTeamTypeModelProps {
 
 const SetTeamTypeModal: React.FC<SetTeamTypeModelProps> = ({ teamId, showModal, onHide }: SetTeamTypeModelProps) => {
   const { data: team, isLoading: teamIsLoading, isError: teamIsError, error: teamError } = useSingleTeam(teamId);
-  const { isLoading, isError: deleteIsError, error: deleteError, mutateAsync } = useSetTeamType(teamId);
+  const { isLoading, isError: deleteIsError, error: deleteError, mutateAsync } = useSetDivision(teamId);
   const { data: teamTypeOptions } = useAllDivisions();
   const toast = useToast();
   const schema = yup.object().shape({
@@ -77,8 +78,8 @@ const SetTeamTypeModal: React.FC<SetTeamTypeModelProps> = ({ teamId, showModal, 
           render={({ field: { onChange, value } }) => (
             <Select value={value} onChange={(event) => onChange(event.target.value)}>
               {teamTypeOptions
-                ?.filter((teamType) => teamType.name)
-                .map((teamType) => (
+                ?.filter((teamType: TeamType) => teamType.name)
+                .map((teamType: TeamType) => (
                   <MenuItem key={teamType.teamTypeId} value={teamType.teamTypeId}>
                     {teamType.name}
                   </MenuItem>
