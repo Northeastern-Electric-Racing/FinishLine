@@ -47,6 +47,7 @@ import {
   ReimbursementStatusType
 } from 'shared';
 import { fullNamePipe } from '../utils/pipes';
+import { getCurrentReimbursementStatus } from '../utils/reimbursement-request.utils';
 
 export interface CreateReimbursementRequestPayload {
   vendorId: string;
@@ -405,7 +406,7 @@ export const useDownloadCSVFileOfReimbursementRequests = () => {
         .map(
           (rr) =>
             `${rr.saboId},${rr.identifier},${fullNamePipe(rr.recipient)},${rr.totalCost},${
-              rr.reimbursementStatuses[rr.reimbursementStatuses.length - 1].type
+              getCurrentReimbursementStatus(rr.reimbursementStatuses).type
             },${rr.account},${rr.accountCode.code},${rr.dateCreated},${rr.dateDelivered ?? ''},${
               rr.reimbursementStatuses.find((rs) => rs.type === ReimbursementStatusType.SABO_SUBMITTED)?.dateCreated ?? ''
             },${rr.vendor.name}`

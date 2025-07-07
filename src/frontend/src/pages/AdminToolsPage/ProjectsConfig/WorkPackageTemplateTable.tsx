@@ -8,10 +8,11 @@ import ErrorPage from '../../ErrorPage';
 import { WorkPackageTemplate } from 'shared';
 import { routes } from '../../../utils/routes';
 import { Delete } from '@mui/icons-material';
-import { useAllWorkPackageTemplates, useDeleteWorkPackageTemplate } from '../../../hooks/work-packages.hooks';
 import { useHistory } from 'react-router-dom';
 import { useState } from 'react';
 import NERModal from '../../../components/NERModal';
+import { useAllWorkPackageTemplates } from '../../../hooks/projects.hooks';
+import { useDeleteWorkPackageTemplate } from '../../../hooks/wbs-templates.hooks';
 
 const WorkPackageTemplateTable = () => {
   const currentUser = useCurrentUser();
@@ -56,7 +57,7 @@ const WorkPackageTemplateTable = () => {
 
   return (
     <Box>
-      <AdminToolTable columns={[{ name: 'Name' }, { name: 'Description' }]} rows={workPackageTemplateRows} />
+      <AdminToolTable columns={[{ name: 'Name' }, { name: 'Description' }, { name: '' }]} rows={workPackageTemplateRows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         {isAdmin(currentUser.role) && (
           <NERButton variant="contained" size="small" onClick={() => history.push(routes.WORK_PACKAGE_TEMPLATE_NEW)}>

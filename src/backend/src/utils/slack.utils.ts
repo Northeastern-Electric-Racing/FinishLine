@@ -267,10 +267,10 @@ export const sendAndGetSlackCRNotifications = async (
   let message = '';
   switch (changeRequest.type) {
     case 'ACTIVATION':
-      message = `${submitter.firstName} ${submitter.lastName} wants to activate ${wbsElement.name} in ${projectWbsName}`;
+      message = `${submitter.firstName} ${submitter.lastName} is activating ${wbsElement.name} in ${projectWbsName}`;
       break;
     case 'STAGE_GATE':
-      message = `${submitter.firstName} ${submitter.lastName} wants to stage gate ${wbsElement.name} in ${projectWbsName}`;
+      message = `${submitter.firstName} ${submitter.lastName} is stage gating ${wbsElement.name} in ${projectWbsName}`;
       break;
     default:
       message = `${changeRequest.type} CR submitted by ${submitter.firstName} ${submitter.lastName} for the ${projectWbsName} project`;
@@ -576,4 +576,32 @@ export const getUserIdFromSlackId = async (slackId: string): Promise<string | un
   if (!user) return undefined;
 
   return user.userId;
+};
+
+export const sendSlackPartReviewRequestNotif = async (
+  slackId: string,
+  projectName: string,
+  partName: string,
+  partLink: string
+) => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+
+  const msg = `Your review has been requested on part: ${partName} for project: ${projectName}`;
+  const link = `https://finishlinebyner.com${partLink}`;
+  const linkButtonText = 'View Part';
+  await sendMessage(slackId, msg, link, linkButtonText);
+};
+
+export const sendSlackPartAssignmentNotif = async (
+  slackId: string,
+  projectName: string,
+  partName: string,
+  partLink: string
+) => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+
+  const msg = `You have been assigned to part: ${partName} on project: ${projectName}`;
+  const link = `https://finishlinebyner.com${partLink}`;
+  const linkButtonText = 'View Part';
+  await sendMessage(slackId, msg, link, linkButtonText);
 };

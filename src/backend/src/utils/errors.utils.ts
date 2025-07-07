@@ -144,4 +144,13 @@ export type ExceptionObjectNames =
   | 'Pop Up'
   | 'Announcement'
   | 'Graph'
-  | 'Graph Collection';
+  | 'Graph Collection'
+  | 'Project Template'
+  | 'Part Review'
+  | 'Part Submission'
+  | 'Part'
+  | 'Part Submission'
+  | 'Part Tag'
+  | 'Common Mistake'
+  | 'Review Request'
+  | 'File';

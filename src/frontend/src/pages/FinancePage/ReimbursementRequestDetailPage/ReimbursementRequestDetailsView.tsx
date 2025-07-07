@@ -46,7 +46,8 @@ import {
   isReimbursementRequestSaboSubmitted,
   isReimbursementRequestDenied,
   isReimbursementRequestLeadershipApproved,
-  isReimbursementRequestPendingFinance
+  isReimbursementRequestPendingFinance,
+  getCurrentReimbursementStatus
 } from '../../../utils/reimbursement-request.utils';
 import { routes } from '../../../utils/routes';
 import AddSABONumberModal from './AddSABONumberModal';
@@ -469,15 +470,16 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     }
   ];
 
-  const sortedStatus = reimbursementRequest.reimbursementStatuses.sort((a) => a.dateCreated.getDate());
-  const statusTypes = sortedStatus.map((status) => status.type);
-  const recentStatus = statusTypes[statusTypes.length - 1];
   return (
     <PageLayout
       title={`Reimbursement Request #${reimbursementRequest.identifier} (${fullNamePipe(reimbursementRequest.recipient)})`}
       chips={
         <Box id="status" display="flex">
-          {statusTypes.length > 0 && <ReimbursementRequestStatusPill status={recentStatus} />}
+          {reimbursementRequest.reimbursementStatuses.length > 0 && (
+            <ReimbursementRequestStatusPill
+              status={getCurrentReimbursementStatus(reimbursementRequest.reimbursementStatuses).type}
+            />
+          )}
         </Box>
       }
       previousPages={[
