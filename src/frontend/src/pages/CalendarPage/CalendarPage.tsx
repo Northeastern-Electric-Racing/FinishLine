@@ -17,7 +17,6 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import DRCSummaryModal from './DesignReviewSummaryModal';
-rename-team-type-to-subteam-from-develop
 import { useAllDivisions as useAllTeamTypes } from '../../hooks/team-types.hooks';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
