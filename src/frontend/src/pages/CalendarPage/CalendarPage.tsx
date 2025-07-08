@@ -20,7 +20,6 @@ import DRCSummaryModal from './DesignReviewSummaryModal';
 import { useAllDivisions as useAllTeamTypes } from '../../hooks/team-types.hooks';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
-
 const CalendarPage = () => {
   const theme = useTheme();
   const {
