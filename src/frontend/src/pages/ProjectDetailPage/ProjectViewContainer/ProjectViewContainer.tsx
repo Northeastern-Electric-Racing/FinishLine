@@ -35,6 +35,7 @@ import SavingsIcon from '@mui/icons-material/Savings';
 import { TaskList } from './TaskList/v2';
 import { useGetMaterialsForWbsElement } from '../../../hooks/bom.hooks';
 import ChangeRequestTab from '../../../components/ChangeRequestTab';
+import PartsReviewPage from './PartReview/PartsReviewPage';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -235,7 +236,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
             { tabUrlValue: 'scope', tabName: 'Scope' },
             { tabUrlValue: 'changes', tabName: 'Changes' },
             { tabUrlValue: 'gantt', tabName: 'Gantt' },
-            { tabUrlValue: 'change-requests', tabName: 'Change Requests' }
+            { tabUrlValue: 'change-requests', tabName: 'Change Requests' },
+            { tabUrlValue: 'parts-review', tabName: 'Parts Review' }
           ]}
           baseUrl={`${routes.PROJECTS}/${wbsNum}`}
           defaultTab="overview"
@@ -256,8 +258,10 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         <ChangesList changes={project.changes} />
       ) : tab === 5 ? (
         <ProjectGantt workPackages={project.workPackages} />
-      ) : (
+      ) : tab === 6 ? (
         <ChangeRequestTab wbsElement={project} />
+      ) : (
+        <PartsReviewPage project={project} />
       )}
       {deleteModalShow && (
         <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={project.wbsNum} />

@@ -922,7 +922,7 @@ export default class ChangeRequestsService {
           proposedDescriptionBulletChanges: {
             create: validationResult.descriptionBullets.map((bullet) => ({
               detail: bullet.detail,
-              descriptionBulletTypeId: bullet.descriptionBulletType.id
+              descriptionBulletType: { connect: { id: bullet.descriptionBulletType.id } }
             }))
           },
           projectProposedChanges: {
@@ -939,7 +939,7 @@ export default class ChangeRequestsService {
                       proposedDescriptionBulletChanges: {
                         create: workPackage.descriptionBullets.map((bullet) => ({
                           detail: bullet.detail,
-                          descriptionBulletTypeId: bullet.descriptionBulletType.id
+                          descriptionBulletType: { connect: { id: bullet.descriptionBulletType.id } }
                         }))
                       },
                       leadId: workPackage.originalElement.leadId,
@@ -1002,7 +1002,7 @@ export default class ChangeRequestsService {
           proposedDescriptionBulletChanges: {
             create: validationResult.descriptionBullets.map((bullet) => ({
               detail: bullet.detail,
-              descriptionBulletTypeId: bullet.descriptionBulletType.id
+              descriptionBulletType: { connect: { id: bullet.descriptionBulletType.id } }
             }))
           },
           lead: {
