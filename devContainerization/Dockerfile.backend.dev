@@ -1,5 +1,4 @@
 FROM node:20
-WORKDIR /base
 
 COPY package.json tsconfig.build.json ./
 COPY ./src/backend/package.json ./src/backend/tsconfig.json src/backend/
@@ -15,4 +14,5 @@ COPY ./src/shared src/shared
 RUN yarn prisma:generate
 
 EXPOSE 3001
-CMD [ "sh", "-c", "cd src/backend; npx prisma migrate reset --force & yarn workspace backend dev" ]
+# CMD [ "sh", "-c", "cd src/backend && npx prisma migrate deploy && npx prisma db seed & yarn workspace backend dev" ]
+CMD [ "sh", "-c", "yarn workspace backend dev" ]
