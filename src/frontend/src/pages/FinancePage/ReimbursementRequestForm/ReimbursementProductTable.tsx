@@ -138,7 +138,11 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                             <FormControl fullWidth margin="dense" variant="outlined" size="small">
                               <TextField
                                 {...register(`reimbursementProducts.${product.index}.cost`, { required: true })}
-                                value={watch(`reimbursementProducts.${product.index}.cost`)}
+                                value={
+                                  Number(watch(`reimbursementProducts.${product.index}.cost`)) === 0
+                                    ? ''
+                                    : watch(`reimbursementProducts.${product.index}.cost`)
+                                }
                                 placeholder={'Cost'}
                                 variant={'outlined'}
                                 type="number"
