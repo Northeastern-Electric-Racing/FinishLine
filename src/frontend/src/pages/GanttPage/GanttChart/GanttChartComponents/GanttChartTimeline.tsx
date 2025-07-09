@@ -6,6 +6,7 @@
 import { Box, Typography, Card, useTheme } from '@mui/material';
 import { eachDayOfInterval, isMonday, format, getDate } from 'date-fns';
 import { GANTT_CHART_CELL_SIZE, GANTT_CHART_GAP_SIZE } from '../../../../utils/gantt.utils';
+import { dateToString, getMonday } from '../../../../utils/datetime.utils';
 
 interface GanttChartTimelineProps {
   start: Date;
@@ -74,6 +75,8 @@ export function GanttChartTimeline({ start, end }: GanttChartTimelineProps) {
               key={day.toISOString()}
               sx={{
                 display: 'flex',
+                backgroundColor:
+                  dateToString(day) === dateToString(getMonday(new Date())) ? theme.palette.info.main : 'transparent',
                 justifyContent: 'center',
                 alignItems: 'center',
                 borderRadius: '0.25rem',

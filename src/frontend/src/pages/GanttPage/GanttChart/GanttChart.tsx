@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Box, useTheme } from '@mui/material';
 import {
   GanttChange,
   GanttCollection,
@@ -8,7 +8,9 @@ import {
 } from '../../../utils/gantt.utils';
 import GanttChartCollectionSection from './GanttChartCollectionSection';
 import { GanttChartTimeline } from './GanttChartComponents/GanttChartTimeline';
-
+import { eachDayOfInterval, isMonday } from 'date-fns';
+import { dateToString, getMonday } from '../../../utils/datetime.utils';
+import { GANTT_CHART_CELL_SIZE, GANTT_CHART_GAP_SIZE } from '../../../utils/gantt.utils';
 export interface GanttEditability<E, T> {
   highlightTaskComparator: HighlightTaskComparator<T>;
   highlightSubtaskComparator: HighlightTaskComparator<T>;
@@ -40,12 +42,17 @@ const GanttChart = <E, T>({
   onShowChildrenToggle,
   editability
 }: GanttChartProps<E, T>) => {
+  const theme = useTheme();
+  const days = eachDayOfInterval({ start: startDate, end: endDate }).filter((day) => isMonday(day));
+  const currentDayCol = days.findIndex((day) => dateToString(day) === dateToString(getMonday(new Date()))) + 1;
+
   return (
     <Box
       sx={{
         width: '100%',
         height: { xs: 'calc(100vh - 9.5rem )', md: 'calc(100vh - 6.25rem)' },
         overflow: 'scroll',
+        position: 'relative',
         '&::-webkit-scrollbar': {
           display: 'none'
         },
@@ -70,6 +77,21 @@ const GanttChart = <E, T>({
           );
         })}
       </Box>
+
+      {currentDayCol > 0 && (
+        <Box
+          sx={{
+            position: 'absolute',
+            left: `calc(${currentDayCol - 1} * (${GANTT_CHART_CELL_SIZE} + ${GANTT_CHART_GAP_SIZE}) + 2rem)`,
+            top: '5rem',
+            width: '1px',
+            backgroundColor: theme.palette.info.main,
+            zIndex: 3,
+            pointerEvents: 'none',
+            height: '150%'
+          }}
+        />
+      )}
     </Box>
   );
 };
