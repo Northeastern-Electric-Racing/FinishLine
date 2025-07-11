@@ -1,4 +1,4 @@
-import { AES, enc } from 'crypto-js';
+import CryptoJS from 'crypto-js';
 
 const { ENCRYPTION_KEY } = process.env;
 
@@ -8,7 +8,7 @@ const { ENCRYPTION_KEY } = process.env;
  * @returns encrypted password
  */
 export const encryptPassword = (password: string) => {
-  return AES.encrypt(password, ENCRYPTION_KEY).toString();
+  return CryptoJS.AES.encrypt(password, ENCRYPTION_KEY!).toString();
 };
 
 /**
@@ -17,6 +17,6 @@ export const encryptPassword = (password: string) => {
  * @returns orginal password
  */
 export const decryptPassword = (encryptedPassword: string) => {
-  const bytes = AES.decrypt(encryptedPassword, ENCRYPTION_KEY);
-  return bytes.toString(enc.Utf8);
+  const bytes = CryptoJS.AES.decrypt(encryptedPassword, ENCRYPTION_KEY!);
+  return bytes.toString(CryptoJS.enc.Utf8);
 };

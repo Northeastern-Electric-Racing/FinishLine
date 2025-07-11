@@ -4792,6 +4792,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/crypto-js@npm:^4.2.2":
+  version: 4.2.2
+  resolution: "@types/crypto-js@npm:4.2.2"
+  checksum: 727daa0d2db35f0abefbab865c23213b6ee6a270e27e177939bbe4b70d1e84c2202d9fac4ea84859c4b4d49a4ee50f948f601327a39b69ec013288018ba07ca5
+  languageName: node
+  linkType: hard
+
 "@types/d3-array@npm:^3.0.3":
   version: 3.2.1
   resolution: "@types/d3-array@npm:3.2.1"
@@ -6978,9 +6985,9 @@ __metadata:
   linkType: hard
 
 "bignumber.js@npm:^9.0.0":
-  version: 9.3.0
-  resolution: "bignumber.js@npm:9.3.0"
-  checksum: 580d783d60246e758e527fa879ae0d282d8f250f555dd0fcee1227d680186ceba49ed7964c6d14e2e8d8eac7a2f4dd6ef1b7925dc52f5fc28a5a87639dd2dbd1
+  version: 9.3.1
+  resolution: "bignumber.js@npm:9.3.1"
+  checksum: 6ab100271a23a75bb8b99a4b1a34a1a94967ac0b9a52a198147607bd91064e72c6f356380d7a09cd687bf50d81ad2ed1a0a8edfaa90369c9003ed8bb2440d7f0
   languageName: node
   linkType: hard
 
@@ -10644,6 +10651,7 @@ __metadata:
     "@babel/plugin-transform-object-assign": ^7.18.6
     "@babel/preset-react": ^7.18.6
     "@babel/preset-typescript": ^7.18.6
+    "@types/crypto-js": ^4.2.2
     "@types/jest": ^29.5.14
     "@types/multer": ^1.4.12
     "@types/node": 20.0.0
