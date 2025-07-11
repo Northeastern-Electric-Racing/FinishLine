@@ -16,7 +16,7 @@ import {
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { useToast } from '../../hooks/toasts.hooks';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   TeamType,
   WbsElementStatus,
@@ -91,6 +91,20 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
 
   const { mutateAsync, isLoading } = useCreateDesignReviews();
 
+  const defaultFormData = {
+    date: defaultDate,
+    startTime: 0,
+    endTime: 1,
+    teamTypeId: '',
+    wbsNum: defaultWbsNum ? wbsPipe(defaultWbsNum) : query.get('wbsNum') || '',
+    requiredMemberIds: [],
+    optionalMemberIds: []
+  };
+
+  useEffect(() => {
+    reset(defaultFormData);
+  }, [defaultDate]);
+
   const onSubmit = async (data: CreateDesignReviewFormInput) => {
     try {
       await mutateAsync({
@@ -117,15 +131,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
     formState: { errors }
   } = useForm<CreateDesignReviewFormInput>({
     resolver: yupResolver(schema),
-    defaultValues: {
-      date: defaultDate,
-      startTime: 0,
-      endTime: 1,
-      teamTypeId: '',
-      wbsNum: defaultWbsNum ? wbsPipe(defaultWbsNum) : query.get('wbsNum') || '',
-      requiredMemberIds: [],
-      optionalMemberIds: []
-    }
+    defaultValues: defaultFormData
   });
 
   if (allUsersIsError) return <ErrorPage error={allUsersError} message={allUsersError?.message} />;
