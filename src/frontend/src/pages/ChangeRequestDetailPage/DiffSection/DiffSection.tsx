@@ -1,6 +1,6 @@
 import { Box } from '@mui/system';
 import InfoBlock from '../../../components/InfoBlock';
-import { isProjectWbs, StandardChangeRequest } from 'shared';
+import { StandardChangeRequest } from 'shared';
 import ProjectDiffSection from './ProjectDiffSection';
 import WorkPackageDiffSection from './WorkPackageDiffSection';
 import LoadingIndicator from '../../../components/LoadingIndicator';

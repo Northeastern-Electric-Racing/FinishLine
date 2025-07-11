@@ -83,7 +83,6 @@ import {
   CreateSponsorTask
 } from 'shared';
 import { fullNamePipe } from '../utils/pipes';
-import { getCurrentReimbursementStatus } from '../utils/reimbursement-request.utils';
 
 export interface CreateReimbursementRequestPayload {
   vendorId: string;

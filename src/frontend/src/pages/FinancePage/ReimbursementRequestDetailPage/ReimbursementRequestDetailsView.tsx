@@ -439,7 +439,6 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
 
   const sortedStatus = reimbursementRequest.reimbursementStatuses.sort((a) => a.dateCreated.getDate());
   const statusTypes = sortedStatus.map((status) => status.type);
-  const recentStatus = statusTypes[statusTypes.length - 1];
 
   const uniqueWbsElementsWithProducts = getUniqueWbsElementsWithProductsFromReimbursementRequest(reimbursementRequest);
   const keys: string[] = [];
