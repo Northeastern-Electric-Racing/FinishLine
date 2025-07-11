@@ -21,8 +21,6 @@ import PieChart from '../../FinancePage/FinanceComponents/PieChart';
 import WarningBanner from '../../../components/WarningBanner';
 import { Box } from '@mui/system';
 
-
-
 export const getProjectTeamsName = (project: ProjectPreview): string => {
   return project.teams.map((team) => team.teamName).join(', ');
 };
