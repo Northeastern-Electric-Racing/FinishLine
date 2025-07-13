@@ -102,7 +102,14 @@ const WorkPackageFormDetails: React.FC<Props> = ({
                 <>
                   <DatePicker
                     format="MM/dd/yyyy"
-                    onChange={(date) => onChange(date ?? new Date())}
+                    onChange={(date) => {
+                      if (date) {
+                        const utcDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0));
+                        onChange(utcDate);
+                      } else {
+                        onChange(date);
+                      }
+                    }}
                     className={'padding: 10'}
                     value={value}
                     shouldDisableDate={disableStartDate}

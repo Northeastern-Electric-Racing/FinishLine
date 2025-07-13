@@ -50,13 +50,12 @@ export const useCreateSingleWorkPackage = () => {
   return useMutation<WorkPackage, Error, WorkPackageCreateArgs>(
     ['work packages', 'create'],
     async (wpPayload: WorkPackageCreateArgs) => {
-      const utcDate = new Date(wpPayload.startDate);
-      const localDate = new Date(utcDate.getFullYear(), utcDate.getMonth(), utcDate.getDate());
       const updatedPayload = {
         ...wpPayload,
-        startDate: localDate.toISOString(),
         duration: Number(wpPayload.duration)
       };
+
+      console.log('Payload: ', updatedPayload);
 
       const { data } = await createSingleWorkPackage(updatedPayload);
       return data;

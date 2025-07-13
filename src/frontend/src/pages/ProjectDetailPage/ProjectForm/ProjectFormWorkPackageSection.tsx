@@ -144,10 +144,19 @@ const ProjectFormWorkPackageSection: React.FC<ProjectFormWorkPackageSectionProps
                   shouldDisableDate={(day) => shouldDisableDate(day, index)}
                   sx={{ width: '100%' }}
                   label="Start Date *"
-                  value={wp.startDate}
+                  value={(() => {
+                    if (wp.startDate) {
+                      const date = new Date(wp.startDate);
+                      return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0);
+                    }
+                    return null;
+                  })()}
                   onChange={(date) => {
                     setStartDatesUpdatedAt(new Date());
-                    workPackages[index].startDate = date!;
+                    if (date) {
+                      const utcDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0));
+                      workPackages[index].startDate = utcDate;
+                    }
                   }}
                   slotProps={{
                     textField: {
@@ -177,10 +186,12 @@ const ProjectFormWorkPackageSection: React.FC<ProjectFormWorkPackageSectionProps
                 fullWidth
                 disabled
                 label="Calculated End Date"
-                value={dayjs(workPackages[index].startDate)
-                  .add(7 * workPackages[index].duration, 'day')
-                  .toDate()
-                  .toLocaleDateString()}
+                value={(() => {
+                  const date = workPackages[index].startDate.toISOString().split('T')[0];
+                  return dayjs(date)
+                    .add(7 * workPackages[index].duration, 'day')
+                    .format('M/D/YYYY');
+                })()}
               ></TextField>
             </Grid>
           </Grid>

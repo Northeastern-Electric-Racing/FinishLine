@@ -11,6 +11,16 @@ export const getMonday = (date: Date) => {
   return new Date(newDate.setDate(diff));
 };
 
+export const getMondayUTC = (date: Date) => {
+  const day = date.getUTCDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  const monday = new Date(date);
+  monday.setUTCDate(date.getUTCDate() + diff);
+  monday.setUTCHours(0, 0, 0, 0);
+
+  return monday;
+};
+
 export const dateToString = (date: Date) => {
   return dayjs(date).format('YYYY-MM-DD');
 };
