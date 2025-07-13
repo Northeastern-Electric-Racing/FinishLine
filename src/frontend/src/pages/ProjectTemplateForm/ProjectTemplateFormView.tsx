@@ -19,6 +19,7 @@ import { AttachMoney } from '@mui/icons-material';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
+import { WorkPackageTemplateApiInputs } from 'shared';
 
 export interface ProjectTemplateFormViewProps {
   exitActiveMode: () => void;

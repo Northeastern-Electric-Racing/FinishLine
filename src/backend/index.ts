@@ -23,6 +23,7 @@ import onboardingRouter from './src/routes/onboarding.routes';
 import popUpsRouter from './src/routes/pop-up.routes';
 import statisticsRouter from './src/routes/statistics.routes';
 import retrospectiveRouter from './src/routes/retrospective.routes';
+import partsRouter from './src/routes/parts.routes';
 
 const app = express();
 
@@ -83,6 +84,7 @@ app.use('/announcements', announcementsRouter);
 app.use('/onboarding', onboardingRouter);
 app.use('/statistics', statisticsRouter);
 app.use('/retrospective', retrospectiveRouter);
+app.use('/parts', partsRouter);
 app.use('/', (_req, res) => {
   res.status(200).json('Welcome to FinishLine');
 });
