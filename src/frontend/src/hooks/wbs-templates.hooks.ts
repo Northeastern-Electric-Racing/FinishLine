@@ -15,8 +15,6 @@ import {
 } from '../apis/wbs-templates.api';
 import { WorkPackageTemplateApiInputs } from 'shared';
 
-import { WorkPackageTemplateApiInputs } from 'shared';
-
 /**
  * Custom React Hook to edit a work package.
  *

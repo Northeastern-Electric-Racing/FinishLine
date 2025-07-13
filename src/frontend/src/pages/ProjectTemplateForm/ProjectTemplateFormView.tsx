@@ -4,7 +4,6 @@ import { Box, Stack } from '@mui/system';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import { ProjectTemplateApiInputs } from '../../apis/wbs-templates.api';
-import { WorkPackageTemplateApiInputs } from 'shared';
 import { NERButton } from '../../components/NERButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import PageLayout from '../../components/PageLayout';

@@ -7,7 +7,6 @@ import ReactHookTextField from '../../components/ReactHookTextField';
 import { WorkPackageStage } from 'shared';
 import { displayEnum } from '../../utils/pipes';
 import { Delete } from '@mui/icons-material';
-import { WorkPackageTemplateApiInputs } from 'shared';
 
 interface ProjectTemplateWorkPackageSectionProps {
   workPackages: WorkPackageTemplateApiInputs[];
