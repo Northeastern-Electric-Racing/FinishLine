@@ -1,4 +1,4 @@
-import { useEditWorkPackageTemplate, useSingleWorkPackageTemplate } from '../../hooks/work-packages.hooks';
+import { useEditWorkPackageTemplate, useSingleWorkPackageTemplate } from '../../hooks/wbs-templates.hooks';
 import WorkPackageTemplateForm from './WorkPackageTemplateForm';
 import { useQuery } from '../../hooks/utils.hooks';
 import { WorkPackageTemplateFormViewPayload as WorkPackageTemplateFormInputs } from './WorkPackageTemplateFormView';

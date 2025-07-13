@@ -1,7 +1,7 @@
 import { Organization } from '@prisma/client';
 import { batmanAppAdmin } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
-import AnnouncementService from '../../src/services/announcement.service';
+import AnnouncementService from '../../src/services/announcement.services';
 import { Announcement } from 'shared';
 
 describe('Announcemnts Tests', () => {

@@ -111,5 +111,13 @@ projectRouter.get('/bom/units', ProjectsController.getAllUnits);
 projectRouter.delete('/bom/units/:unitId/delete', ProjectsController.deleteUnit);
 projectRouter.get('/bom/:wbsNum/assemblies', ProjectsController.getAssembliesForWbsElement);
 projectRouter.get('/bom/:wbsNum/materials', ProjectsController.getMaterialsForWbsElement);
+projectRouter.post(
+  '/set-abbreviation',
+  nonEmptyString(body('wbsNum')),
+  nonEmptyString(body('abbreviation')),
+  validateInputs,
+  ProjectsController.setAbbreviation
+);
+projectRouter.post('/:wbsNum/delete-abbreviation', ProjectsController.deleteAbbreviation);
 
 export default projectRouter;

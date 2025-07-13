@@ -66,7 +66,7 @@ const getComparator = <Key extends keyof any>(
 const columnHeaders = [
   {
     id: 'date',
-    label: 'Date Recevied'
+    label: 'Date Received'
   },
   {
     id: 'amount',

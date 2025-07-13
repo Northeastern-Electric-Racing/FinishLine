@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { DescriptionBulletPreview, LinkCreateArgs, Project } from 'shared';
+import { DescriptionBulletPreview, LinkCreateArgs, Project, ProjectTemplate } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useFieldArray, useForm } from 'react-hook-form';
@@ -19,11 +19,17 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import CreateChangeRequestModal from '../../CreateChangeRequestPage/CreateChangeRequestModal';
 import { ProjectCreateChangeRequestFormInput } from './ProjectEditContainer';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequest';
 import { NERButton } from '../../../components/NERButton';
 import HelpIcon from '@mui/icons-material/Help';
 import DescriptionBulletsEditView from '../../../components/DescriptionBulletEditView';
+import ProjectTemplateSection from './ProjectTemplateSection';
+import { WorkPackageFormViewPayload } from '../../WorkPackageForm/WorkPackageFormView';
+import ProjectFormWorkPackageSection from './ProjectFormWorkPackageSection';
+import { useToast } from '../../../hooks/toasts.hooks';
+import { generateUUID } from '../../../utils/form';
+import { getMonday } from '../../../utils/datetime.utils';
 
 export interface ProjectFormInput {
   name: string;
@@ -34,6 +40,7 @@ export interface ProjectFormInput {
   carNumber: number | undefined;
   teamIds: string[];
   descriptionBullets: DescriptionBulletPreview[];
+  workPackages: WorkPackageFormViewPayload[];
 }
 
 interface ProjectFormContainerProps {
@@ -65,13 +72,16 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   let changeRequestFormInput: ChangeRequestFormInput | undefined = undefined;
 
+  const toast = useToast();
+
   const allUsers = useAllUsers();
   const {
     register,
     handleSubmit,
     control,
     watch,
-    formState: { errors }
+    formState: { errors },
+    setValue
   } = useForm<ProjectFormInput>({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -94,6 +104,52 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
 
   const { fields: links, append: appendLink, remove: removeLink } = useFieldArray({ control, name: 'links' });
 
+  const {
+    fields: workPackages,
+    append: appendWorkPackage,
+    remove: removeWorkPackage
+  } = useFieldArray({ control, name: 'workPackages' });
+
+  const [selectedProjectTemplate, setSelectedProjectTemplate] = useState<ProjectTemplate>();
+
+  const watchedName = watch('name');
+  const watchedTeams = watch('teamIds');
+  const watchedBudget = watch('budget');
+  const watchedSummary = watch('summary');
+  const watchedDescriptionBullets = watch('descriptionBullets');
+
+  useEffect(() => {
+    if (selectedProjectTemplate) {
+      setValue('crId', '');
+
+      let { projectName, teams, budget, descriptionBullets, summary } = selectedProjectTemplate;
+
+      projectName = projectName || '';
+      budget = budget || 0;
+      teams = teams || [];
+      descriptionBullets = descriptionBullets || [];
+      summary = summary || '';
+
+      if (
+        watchedName !== projectName ||
+        watchedBudget !== budget ||
+        JSON.stringify(watchedTeams) !== JSON.stringify(teams.map((t) => t.teamId)) ||
+        watchedSummary !== summary ||
+        JSON.stringify(watchedDescriptionBullets) !== JSON.stringify(descriptionBullets)
+      ) {
+        setSelectedProjectTemplate(undefined);
+      }
+    }
+  }, [
+    selectedProjectTemplate,
+    watchedName,
+    watchedBudget,
+    watchedTeams,
+    watchedDescriptionBullets,
+    watchedSummary,
+    setValue
+  ]);
+
   if (allUsers.isLoading || !allUsers.data) return <LoadingIndicator />;
   if (allUsers.isError) {
     return <ErrorPage message={allUsers.error?.message} />;
@@ -106,11 +162,37 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
 
   const handleCreateChangeRequest = async (data: ProjectFormInput) => {
     if (onSubmitChangeRequest && changeRequestFormInput) {
-      onSubmitChangeRequest({
-        ...changeRequestFormInput,
-        ...data
-      });
+      onSubmitChangeRequest({ ...changeRequestFormInput, ...data });
     }
+  };
+
+  const detectCycle = (workPackages: WorkPackageFormViewPayload[]): boolean => {
+    const visited = new Set<string>();
+    const stack = new Set<string>();
+
+    const hasCycle = (wpId: string): boolean => {
+      if (stack.has(wpId)) return true;
+      if (visited.has(wpId)) return false;
+
+      visited.add(wpId);
+      stack.add(wpId);
+
+      const workPackage = workPackages.find((wp) => wp.workPackageId === wpId);
+      if (workPackage) {
+        for (const blockedById of workPackage.blockedBy) {
+          if (hasCycle(blockedById)) return true;
+        }
+      }
+
+      stack.delete(wpId);
+      return false;
+    };
+
+    for (const wp of workPackages) {
+      if (hasCycle(wp.workPackageId)) return true;
+    }
+
+    return false;
   };
 
   return (
@@ -120,6 +202,10 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
+        if (detectCycle(watch('workPackages'))) {
+          toast.error('Error: Circular blocker relationship detected in work packages');
+          return;
+        }
         handleSubmit(onSubmit)(e);
       }}
       onKeyPress={(e) => {
@@ -169,6 +255,43 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           </Box>
         }
       >
+        {!project && (
+          <ProjectTemplateSection
+            selectedProjectTemplate={selectedProjectTemplate}
+            setSelectedProjectTemplate={(template) => {
+              setValue('name', template?.projectName || '');
+              setValue('budget', template?.budget || 0);
+              setValue('summary', template?.summary || '');
+              setValue('descriptionBullets', template?.descriptionBullets || []);
+              setValue(
+                'teamIds',
+                (template?.teams || []).map((t) => t.teamId)
+              );
+
+              const templateToIdMap = new Map<string, string>();
+              template?.workPackageTemplates?.forEach((wp) => {
+                const id = generateUUID();
+                templateToIdMap.set(wp.workPackageTemplateId, id);
+              });
+
+              const workPackages = (template?.workPackageTemplates || []).map((wp) => {
+                return {
+                  ...wp,
+                  name: wp.workPackageName ?? '',
+                  stage: wp.stage ?? 'NONE',
+                  startDate: getMonday(new Date()),
+                  workPackageId: templateToIdMap.get(wp.workPackageTemplateId)!,
+                  duration: wp.duration ?? 0,
+                  blockedBy: wp.blockedBy.map((blocker) => templateToIdMap.get(blocker.workPackageTemplateId)!)
+                };
+              });
+
+              setValue('workPackages', workPackages);
+
+              setSelectedProjectTemplate(template);
+            }}
+          />
+        )}
         <ProjectFormDetails
           users={users}
           control={control}
@@ -205,6 +328,19 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
               remove={removeDescriptionBullet}
             />
           </Box>
+          {!project && (
+            <Box>
+              <ProjectFormWorkPackageSection
+                workPackages={workPackages ?? []}
+                watch={watch}
+                register={register}
+                append={appendWorkPackage}
+                remove={removeWorkPackage}
+                control={control}
+                errors={errors}
+              />
+            </Box>
+          )}
         </Stack>
       </PageLayout>
       {onSubmitChangeRequest && (

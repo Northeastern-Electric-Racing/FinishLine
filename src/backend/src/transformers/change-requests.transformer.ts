@@ -8,7 +8,7 @@ import {
   WbsElementStatus,
   WorkPackageProposedChanges,
   WorkPackageStage,
-  isProject,
+  isProjectWbs,
   BudgetChangeRequest
 } from 'shared';
 import { wbsNumOf } from '../utils/utils';
@@ -133,7 +133,7 @@ const changeRequestTransformer = (
   const status = calculateChangeRequestStatus(changeRequest);
 
   const wbsName = changeRequest.wbsElement
-    ? isProject(changeRequest.wbsElement)
+    ? isProjectWbs(changeRequest.wbsElement)
       ? changeRequest.wbsElement?.name
       : `${changeRequest.wbsElement?.workPackage?.project.wbsElement.name} - ${changeRequest.wbsElement?.name}`
     : undefined;

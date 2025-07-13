@@ -25,6 +25,18 @@ import { exampleRRData } from '../../test-support/test-data/finance.stubs';
 
 vi.mock('../../../utils/axios');
 vi.mock('../../../hooks/toasts.hooks');
+vi.mock('react-pdf', () => {
+  return {
+    __esModule: true,
+    Document: () => <div>Document Mock</div>,
+    Page: () => <div>Page Mock</div>,
+    pdfjs: {
+      GlobalWorkerOptions: {
+        workerSrc: ''
+      }
+    }
+  };
+});
 
 // Sets up the component under test with the desired values and renders it.
 const renderComponent = () => {

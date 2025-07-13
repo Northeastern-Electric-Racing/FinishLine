@@ -5,12 +5,13 @@
     "target": "ES2019",
     "outDir": "./dist",
     "noEmit": false,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "types": ["multer"]
   },
   "ts-node": {
     "files": true
   },
   "exclude": ["node_modules", "dist"],
-  "include": ["./index.ts", "./src/**/*.ts"],
+  "include": ["./src/backend/index.ts", "./src/backend/src/**/*.ts"],
   "files": ["./custom.d.ts"]
 }

@@ -23,8 +23,8 @@ import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/t
  * Fetches all projects.
  */
 export const getAllProjects = (includeDeleted: boolean) => {
-  return axios.get<Project[]>(apiUrls.allProjects(includeDeleted), {
-    transformResponse: (data) => JSON.parse(data).map(projectTransformer)
+  return axios.get<ProjectPreview[]>(apiUrls.allProjects(includeDeleted), {
+    transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer)
   });
 };
 
@@ -171,4 +171,20 @@ export const getAllUsefulLinks = () => {
  */
 export const setUsefulLinks = (linksObject: { links: LinkCreateArgs[] }) => {
   return axios.post<Link[]>(apiUrls.organizationsSetUsefulLinks(), linksObject);
+};
+
+/**
+ * Set the abbreviation of a project
+ */
+export const setAbbreviation = (payload: { wbsNum: string; abbreviation: string }) => {
+  return axios.post<Project>(apiUrls.projectsSetAbbreviation(), {
+    ...payload
+  });
+};
+
+/**
+ * Delete the abbreviation of a project
+ */
+export const deleteAbbreviation = (wbsNum: string) => {
+  return axios.post<{ message: string }>(apiUrls.projectsDeleteAbbreviation(wbsNum));
 };

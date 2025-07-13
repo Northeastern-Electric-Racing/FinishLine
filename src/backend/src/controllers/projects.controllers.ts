@@ -454,4 +454,25 @@ export default class ProjectsController {
       next(error);
     }
   }
+
+  static async setAbbreviation(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { abbreviation } = req.body;
+      const wbsNum: WbsNumber = validateWBS(req.body.wbsNum);
+      const updatedProject = await ProjectsService.setAbbreviation(wbsNum, req.currentUser, req.organization, abbreviation);
+      res.status(200).json(updatedProject);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteAbbreviation(req: Request, res: Response, next: NextFunction) {
+    try {
+      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
+      await ProjectsService.deleteAbbreviation(wbsNum, req.currentUser, req.organization);
+      res.status(200).json({ message: `Project ${wbsPipe(wbsNum)}'s abbreviation was successfully deleted.` });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

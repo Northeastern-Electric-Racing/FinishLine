@@ -1,5 +1,14 @@
 import { Prisma } from '@prisma/client';
-import { Project, calculateProjectEndDate, calculateDuration, calculateProjectStartDate, ProjectPreview } from 'shared';
+import {
+  Project,
+  calculateProjectEndDate,
+  calculateDuration,
+  calculateProjectStartDate,
+  ProjectPreview,
+  RetrospectiveProjectPreview,
+  calculateProjectOriginalEndDate,
+  calculateProjectOriginalStartDate
+} from 'shared';
 import { wbsNumOf } from '../utils/utils';
 import taskTransformer from './tasks.transformer';
 import { calculateProjectStatus } from '../utils/projects.utils';
@@ -8,7 +17,8 @@ import { descBulletConverter } from '../utils/description-bullets.utils';
 import { userTransformer } from './user.transformer';
 import { ProjectManyQueryArgs, ProjectQueryArgs } from '../prisma-query-args/projects.query-args';
 import { teamPreviewTransformer } from './teams.transformer';
-import workPackageTransformer from './work-packages.transformer';
+import workPackageTransformer, { retrospectiveWorkPackageTransformer } from './work-packages.transformer';
+import { WorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
 
 const projectTransformer = (project: Prisma.ProjectGetPayload<ProjectQueryArgs>): Project => {
   const { wbsElement } = project;
@@ -45,7 +55,8 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<ProjectQueryArgs>)
     endDate: calculateProjectEndDate(project.workPackages),
     descriptionBullets: wbsElement.descriptionBullets.map(descBulletConverter),
     tasks: wbsElement.tasks.map(taskTransformer),
-    workPackages: project.workPackages.map(workPackageTransformer)
+    workPackages: project.workPackages.map(workPackageTransformer),
+    abbreviation: project.abbreviation ?? undefined
   };
 };
 
@@ -71,7 +82,28 @@ export const projectPreviewTransformer = (project: Prisma.ProjectGetPayload<Proj
     duration: calculateDuration(project.workPackages),
     startDate: calculateProjectStartDate(project.workPackages),
     tasks: project.wbsElement.tasks.map(taskTransformer),
-    workPackages: project.workPackages.map(workPackageTransformer)
+    workPackages: project.workPackages.map(workPackageTransformer),
+    abbreviation: project.abbreviation ?? undefined
+  };
+};
+
+export type RetrospectiveWorkPackageQueryArgs = Prisma.Work_PackageGetPayload<WorkPackageQueryArgs> & {
+  originalStartDate: Date;
+  originalDuration: number;
+};
+
+export type RetrospectiveProjectPreviewQueryArgs = Omit<Prisma.ProjectGetPayload<ProjectManyQueryArgs>, 'workPackages'> & {
+  workPackages: RetrospectiveWorkPackageQueryArgs[];
+};
+
+export const retrospectiveProjectPreviewTransformer = (
+  project: RetrospectiveProjectPreviewQueryArgs
+): RetrospectiveProjectPreview => {
+  return {
+    ...projectPreviewTransformer(project),
+    workPackages: project.workPackages.map(retrospectiveWorkPackageTransformer),
+    originalStartDate: calculateProjectOriginalStartDate(project.workPackages),
+    originalEndDate: calculateProjectOriginalEndDate(project.workPackages)
   };
 };
 

@@ -1,4 +1,4 @@
-import { useCreateSingleWorkPackageTemplate } from '../../hooks/work-packages.hooks';
+import { useCreateSingleWorkPackageTemplate } from '../../hooks/wbs-templates.hooks';
 import WorkPackageTemplateForm from './WorkPackageTemplateForm';
 
 const CreateWorkPackageTemplate: React.FC = () => {

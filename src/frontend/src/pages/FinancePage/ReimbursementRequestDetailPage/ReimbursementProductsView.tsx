@@ -65,26 +65,22 @@ const ReimbursementProductsView: React.FC<ReimbursementRequestProductsViewProps>
                         whiteSpace: 'normal'
                       }}
                     >
-                      {uniqueWbsElementsWithProducts
-                        .get(key)
-                        ?.map((product, index) => <div key={index}>{product.name}</div>)}
+                      {uniqueWbsElementsWithProducts.get(key)?.map((product, index) => (
+                        <div key={index}>{product.name}</div>
+                      ))}
                     </Box>
                   </TableCell>
                   {!allKeysAreSame && <TableCell>{key}</TableCell>}
                   <TableCell>
-                    {uniqueWbsElementsWithProducts
-                      .get(key)
-                      ?.map((product, index) => <div key={index}>${centsToDollar(product.cost)}</div>)}
+                    {uniqueWbsElementsWithProducts.get(key)?.map((product, index) => (
+                      <div key={index}>${centsToDollar(product.cost)}</div>
+                    ))}
                   </TableCell>
                   {multipleRefundSources && (
                     <TableCell>
-                      {uniqueWbsElementsWithProducts
-                        .get(key)
-                        ?.map((product, index) => (
-                          <div key={index}>
-                            {product.refundSources.map((rs) => `$${centsToDollar(rs.amount)}`).join('/')}
-                          </div>
-                        ))}
+                      {uniqueWbsElementsWithProducts.get(key)?.map((product, index) => (
+                        <div key={index}>{product.refundSources.map((rs) => `$${centsToDollar(rs.amount)}`).join('/')}</div>
+                      ))}
                     </TableCell>
                   )}
                 </TableRow>

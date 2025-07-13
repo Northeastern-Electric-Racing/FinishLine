@@ -2,11 +2,13 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Autocomplete, FormControl, FormHelperText, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
-import { countWords, isGuest, isUnderWordCount, Task, TaskPriority, TeamPreview } from 'shared';
-import { useCurrentUser } from '../../../../hooks/users.hooks';
+import { countWords, isGuest, isUnderWordCount, notGuest, Task, TaskPriority, TeamPreview } from 'shared';
+import { useAllUsers, useCurrentUser } from '../../../../hooks/users.hooks';
 import * as yup from 'yup';
-import { getTaskAssigneeOptions, taskUserToAutocompleteOption } from '../../../../utils/task.utils';
+import { taskUserToAutocompleteOption } from '../../../../utils/task.utils';
 import NERFormModal from '../../../../components/NERFormModal';
+import LoadingIndicator from '../../../../components/LoadingIndicator';
+import ErrorPage from '../../../ErrorPage';
 
 const schema = yup.object().shape({
   notes: yup.string().optional(),
@@ -35,10 +37,10 @@ interface TaskFormModalProps {
   onReset?: () => void;
 }
 
-const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow, onHide, teams, onReset }) => {
+const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow, onHide, onReset }) => {
   const user = useCurrentUser();
 
-  const options: { label: string; id: string }[] = getTaskAssigneeOptions(teams).map(taskUserToAutocompleteOption);
+  const { data: users, isLoading, isError, error } = useAllUsers();
 
   const {
     handleSubmit,
@@ -56,6 +58,13 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
       assignees: task?.assignees.map((assignee) => assignee.userId) ?? []
     }
   });
+
+  if (isError) return <ErrorPage error={error} />;
+  if (isLoading || !users) return <LoadingIndicator />;
+
+  const options: { label: string; id: string }[] = users
+    .filter((user) => notGuest(user.role))
+    .map(taskUserToAutocompleteOption);
 
   const unUpperCase = (str: string) => str.charAt(0) + str.slice(1).toLowerCase();
 

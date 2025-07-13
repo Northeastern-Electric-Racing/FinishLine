@@ -24,6 +24,18 @@ export const getFeaturedProjects = async () => {
   });
 };
 
+export const getPartReviewGuideLink = async () => {
+  return axios.get<string>(apiUrls.organizationsGetPartReviewGuideLink(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+export const setPartReviewGuideLink = async (guideLink: string) => {
+  return axios.post<Organization>(apiUrls.organizationsSetPartReviewGuideLink(), {
+    guideLink
+  });
+};
+
 export const setOrganizationDescription = async (description: string) => {
   return axios.post<Organization>(apiUrls.organizationsSetDescription(), {
     description

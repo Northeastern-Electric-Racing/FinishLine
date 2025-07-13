@@ -1,4 +1,4 @@
-import { default as axiosStatic } from 'axios';
+import axiosStatic from 'axios';
 
 const axios = axiosStatic.create({
   withCredentials: import.meta.env.MODE !== 'development' ? true : undefined

@@ -33,6 +33,12 @@ const NERFormModal = ({
     reset();
   };
 
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    e.stopPropagation(); // Prevent event bubbling
+    handleUseFormSubmit(onSubmitWrapper)(e);
+  };
+
   return (
     <NERModal
       open={open}
@@ -48,7 +54,7 @@ const NERFormModal = ({
       showCloseButton={showCloseButton}
       hideBackDrop={hideBackDrop}
     >
-      <form id={formId} onSubmit={handleUseFormSubmit(onSubmitWrapper)} noValidate>
+      <form id={formId} onSubmit={handleFormSubmit} noValidate>
         {children}
       </form>
     </NERModal>
