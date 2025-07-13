@@ -187,7 +187,7 @@ const ProjectFormWorkPackageSection: React.FC<ProjectFormWorkPackageSectionProps
                 disabled
                 label="Calculated End Date"
                 value={(() => {
-                  const date = workPackages[index].startDate.toISOString().split('T')[0];
+                  const [date] = workPackages[index].startDate.toISOString().split('T');
                   return dayjs(date)
                     .add(7 * workPackages[index].duration, 'day')
                     .format('M/D/YYYY');
