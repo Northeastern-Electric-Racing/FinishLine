@@ -1,4 +1,4 @@
-import { Car, Project, User } from 'shared';
+import { Project, User } from 'shared';
 import { Box, FormControl, FormLabel, Grid, MenuItem, Select, Typography } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { fullNamePipe } from '../../../utils/pipes';
