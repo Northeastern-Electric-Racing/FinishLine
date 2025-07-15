@@ -101,10 +101,6 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
     optionalMemberIds: []
   };
 
-  useEffect(() => {
-    reset(defaultFormData);
-  }, [defaultDate]);
-
   const onSubmit = async (data: CreateDesignReviewFormInput) => {
     try {
       await mutateAsync({
@@ -133,6 +129,10 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
     resolver: yupResolver(schema),
     defaultValues: defaultFormData
   });
+
+  useEffect(() => {
+    reset(defaultFormData);
+  }, [defaultDate, reset]);
 
   if (allUsersIsError) return <ErrorPage error={allUsersError} message={allUsersError?.message} />;
   if (allWorkPackagesIsError) return <ErrorPage error={allWorkPackagesError} message={allWorkPackagesError?.message} />;
