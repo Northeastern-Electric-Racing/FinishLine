@@ -32,7 +32,8 @@ export const TaskCard = ({
   const toast = useToast();
   const [showModal, setShowModal] = useState(false);
 
-  const handleDelete = async () => {
+  const handleDelete = async (e) => {
+    e.stopPropagation();
     try {
       await deleteTask({ taskId: task.taskId });
       onDeleteTask(task.taskId);
