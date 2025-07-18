@@ -32,7 +32,7 @@ export const TaskCard = ({
   const toast = useToast();
   const [showModal, setShowModal] = useState(false);
 
-  const handleDelete = async (e) => {
+  const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
       await deleteTask({ taskId: task.taskId });
