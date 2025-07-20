@@ -646,6 +646,7 @@ describe('Reimbursement Requests', () => {
         reimbursementRequest.reimbursementRequestId
       );
       const editedComment = await ReimbursementRequestService.editReimbursementRequestComment(
+        createdUser,
         org,
         'Edited',
         comment.reimbursementRequestCommentId
@@ -657,7 +658,8 @@ describe('Reimbursement Requests', () => {
     });
     test('Fails when RRComment id is not found', async () => {
       await expect(
-        async () => await ReimbursementRequestService.editReimbursementRequestComment(org, 'Test comment!', 'bad ID')
+        async () =>
+          await ReimbursementRequestService.editReimbursementRequestComment(createdUser, org, 'Test comment!', 'bad ID')
       ).rejects.toThrow(new NotFoundException('Reimbursement Request Comment', 'bad ID'));
     });
     test('Fails when new comment is the same as existing comment', async () => {
@@ -670,6 +672,7 @@ describe('Reimbursement Requests', () => {
       await expect(
         async () =>
           await ReimbursementRequestService.editReimbursementRequestComment(
+            createdUser,
             org,
             'Test comment!',
             comment.reimbursementRequestCommentId
@@ -687,6 +690,7 @@ describe('Reimbursement Requests', () => {
         reimbursementRequest.reimbursementRequestId
       );
       const deletedComment = await ReimbursementRequestService.deleteReimbursementRequestComment(
+        createdUser,
         org,
         comment.reimbursementRequestCommentId
       );
@@ -694,6 +698,7 @@ describe('Reimbursement Requests', () => {
       await expect(
         async () =>
           await ReimbursementRequestService.editReimbursementRequestComment(
+            createdUser,
             org,
             'Test comment!',
             deletedComment.reimbursementRequestCommentId
@@ -704,7 +709,7 @@ describe('Reimbursement Requests', () => {
     });
     test('Fails when RRComment id is not found', async () => {
       await expect(
-        async () => await ReimbursementRequestService.deleteReimbursementRequestComment(org, 'bad ID')
+        async () => await ReimbursementRequestService.deleteReimbursementRequestComment(createdUser, org, 'bad ID')
       ).rejects.toThrow(new NotFoundException('Reimbursement Request Comment', 'bad ID'));
     });
   });
