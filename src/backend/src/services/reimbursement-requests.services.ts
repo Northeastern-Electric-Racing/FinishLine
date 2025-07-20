@@ -1305,7 +1305,7 @@ export default class ReimbursementRequestService {
         name,
         organizationId: organization.organizationId,
         username,
-        password,
+        password: password ? encrypt(password) : undefined,
         taxExempt,
         discountCode,
         twoFactorContacts: {
