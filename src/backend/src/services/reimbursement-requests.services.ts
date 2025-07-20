@@ -655,10 +655,6 @@ export default class ReimbursementRequestService {
       (await isUserLeadOrHeadOfFinanceTeam(submitter, organization.organizationId));
     if (!isAuthorized) throw new AccessDeniedException('Only admins, finance leads, and finance heads can create vendors.');
 
-    if (!process.env.ENCRYPTION_KEY) {
-      throw new NotFoundException('Encryption Key', 'Encryption key not found in environment variables');
-    }
-
     const existingVendor = await prisma.vendor.findUnique({
       where: { uniqueVendor: { name, organizationId: organization.organizationId } },
       ...getVendorQueryArgs(organization.organizationId)
