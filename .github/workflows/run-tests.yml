@@ -28,10 +28,7 @@ jobs:
           node-version: 20.18.1
           cache: 'yarn'
       - name: Add Env Variables
-        run: |
-          cd src/backend 
-          echo "DATABASE_URL=\"postgresql://postgres:docker@localhost:5432/nerpm?schema=public\"" >> .env
-          echo "ENCRYPTION_KEY=\"e4416f4086e08ec8974fb59f6ad3426d64ee5dac92f4b0c349552e21f7aa32a3\"" >> .env
+        run: cd src/backend && echo "DATABASE_URL=\"postgresql://postgres:docker@localhost:5432/nerpm?schema=public\"" >> .env
       - name: Pull Docker Image
         run: docker run --name finishline -e POSTGRES_PASSWORD=docker -p 5432:5432 -d postgres
       - name: Wait for Postgres to start

@@ -319,7 +319,7 @@ model Change_Request {
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [organizationId])
 
-  // Can be either a WBS_Element, Other_Reimbursement_Product_Reason or Account_Code, not all and not none
+  // Can be either a WBS_Element, Other_Reimbursement_Product_Reason or Account_Code, not a combination and not none
   wbsElementId             String?
   wbsElement               WBS_Element?                        @relation(fields: [wbsElementId], references: [wbsElementId])
   category                 Reimbursement_Product_Other_Reason? @relation(fields: [categoryId], references: [otherReimbursementProductReasonId])

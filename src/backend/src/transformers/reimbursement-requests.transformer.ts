@@ -32,12 +32,11 @@ import {
 } from '../prisma-query-args/reimbursement-products.query-args';
 import { ReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
 import { VendorQueryArgs } from '../prisma-query-args/vendor.query-args';
-import { decryptPassword } from '../utils/encryption.utils';
-import { NotFoundException } from '../utils/errors.utils';
 import { AccountCodeQueryArgs } from '../prisma-query-args/account-code.query-args';
 import { IndexCodeQueryArgs } from '../prisma-query-args/index-code.query-args';
 import { ReimbursementProductOtherReasonQueryArgs } from '../prisma-query-args/reimbursement-product-other-reason.query-args';
 import { ReimbursementRequestCommentQueryArgs } from '../prisma-query-args/reimbursement-comment.query-args';
+import { decrypt } from '../utils/encryption.utils';
 
 export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<ReceiptQueryArgs>): Receipt => {
   return { receiptId: receipt.receiptId, googleFileId: receipt.googleFileId, name: receipt.name };
@@ -121,12 +120,9 @@ export const accountCodeTransformer = (accountCode: Prisma.Account_CodeGetPayloa
 };
 
 export const vendorTransformer = (vendor: Prisma.VendorGetPayload<VendorQueryArgs>): Vendor => {
-  if (!process.env.ENCRYPTION_KEY) {
-    throw new NotFoundException('Encryption Key', 'Encryption key not found in environment variables');
-  }
   return {
     ...vendor,
-    password: vendor.password ? decryptPassword(vendor.password) : undefined,
+    password: vendor.password ? decrypt(vendor.password) : undefined,
     discountCode: vendor.discountCode ? vendor.discountCode : undefined,
     username: vendor.username ? vendor.username : undefined,
     twoFactorContacts: vendor.twoFactorContacts.map(userTransformer),

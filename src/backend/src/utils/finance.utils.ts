@@ -5,10 +5,10 @@ import { getReimbursementRequestQueryArgs } from '../prisma-query-args/reimburse
 import { NotFoundException } from './errors.utils';
 import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
 
-const getProjectSegmentedWhereInput = (
+export const getProjectSegmentedWhereInput = (
   organizationId: string,
-  startDate: Date | null = null,
-  endDate: Date | null = null
+  startDate?: Date,
+  endDate?: Date
 ): {
   where: {
     wbsElement: { organizationId: string; dateDeleted: null; dateCreated?: { gte?: Date; lte?: Date } };
@@ -41,8 +41,8 @@ const getProjectSegmentedWhereInput = (
 };
 
 const getReimbursementRequestWhereInput = (
-  startDate: Date | null = null,
-  endDate: Date | null = null
+  startDate?: Date,
+  endDate?: Date
 ): {
   dateCreated?: {
     gte?: Date;
@@ -86,8 +86,8 @@ const getReimbursementRequestWhereInput = (
 export const getSpendingBarDataForProjectBudgetByTeam = async (
   teamId: string,
   organizationId: string,
-  startDate: Date | null,
-  endDate: Date | null
+  startDate?: Date,
+  endDate?: Date
 ): Promise<SpendingBarData> => {
   const team = await prisma.team.findUnique({
     where: {
@@ -126,8 +126,8 @@ export const getSpendingBarDataForProjectBudgetByTeam = async (
 export const getSpendingBarDataForProjectBudgetByDivision = async (
   teamTypeId: string,
   organizationId: string,
-  startDate: Date | null,
-  endDate: Date | null
+  startDate?: Date,
+  endDate?: Date
 ): Promise<SpendingBarData[]> => {
   const division = await prisma.team_Type.findUnique({
     where: {
@@ -177,8 +177,8 @@ export const getSpendingBarDataForProjectBudgetByDivision = async (
 export const getReimbursementRequestsForReimbursementRequestsByProject = async (
   projectId: string,
   organizationId: string,
-  startDate: Date | null,
-  endDate: Date | null
+  startDate?: Date,
+  endDate?: Date
 ): Promise<ReimbursementRequestData> => {
   const project = await prisma.project.findFirst({
     where: {
@@ -264,8 +264,8 @@ export const getReimbursementRequestsForReimbursementRequestsByProject = async (
 export const getReimbursementRequestsForReimbursementRequestsByTeam = async (
   teamId: string,
   organizationId: string,
-  startDate: Date | null,
-  endDate: Date | null
+  startDate?: Date,
+  endDate?: Date
 ): Promise<ReimbursementRequestData> => {
   const team = await prisma.team.findUnique({
     where: {
@@ -363,8 +363,8 @@ export const getReimbursementRequestsForReimbursementRequestsByTeam = async (
 export const getReimbursementRequestsForReimbursementRequestsByDivision = async (
   teamTypeId: string,
   organizationId: string,
-  startDate: Date | null,
-  endDate: Date | null
+  startDate?: Date,
+  endDate?: Date
 ): Promise<ReimbursementRequestData> => {
   const division = await prisma.team_Type.findUnique({
     where: {
@@ -420,8 +420,8 @@ export const getReimbursementRequestsForReimbursementRequestsByDivision = async 
 
 export const getAllReimbursementRequestData = async (
   organizationId: string,
-  startDate: Date | null,
-  endDate: Date | null
+  startDate?: Date,
+  endDate?: Date
 ): Promise<ReimbursementRequestData[]> => {
   const cashReimbursementRequests = await prisma.reimbursement_Request.findMany({
     where: {
@@ -628,8 +628,8 @@ export const getAllReimbursementRequestData = async (
 export const getReimbursementRequestCategoryData = async (
   otherReasonId: string,
   organizationId: string,
-  startDate: Date | null,
-  endDate: Date | null
+  startDate?: Date,
+  endDate?: Date
 ): Promise<ReimbursementRequestData> => {
   const reimbursementRequests = await prisma.reimbursement_Request.findMany({
     where: {
@@ -715,7 +715,7 @@ export const getSpendingBarCategoryData = async (organizationId: string): Promis
   });
 
   const spendingInfoPromises = otherReasons.map((r) =>
-    getReimbursementRequestCategoryData(r.otherReimbursementProductReasonId, organizationId, null, null)
+    getReimbursementRequestCategoryData(r.otherReimbursementProductReasonId, organizationId)
   );
   const spendingInfos = await Promise.all(spendingInfoPromises);
 
@@ -732,8 +732,8 @@ export const getSpendingBarCategoryData = async (organizationId: string): Promis
 
 export const getAllSpendingBarData = async (
   organizationId: string,
-  startDate: Date | null,
-  endDate: Date | null
+  startDate?: Date,
+  endDate?: Date
 ): Promise<SpendingBarData[]> => {
   const teams = await prisma.team.findMany({
     where: {
@@ -768,40 +768,4 @@ export const getAllSpendingBarData = async (
   const data: SpendingBarData[] = await Promise.all(teamDataPromises);
 
   return data;
-};
-
-export const getReimbursementRequestDataForAdminFinance = (
-  teamTypeId: string,
-  organizationId: string,
-  startDate: Date | null,
-  endDate: Date | null
-): Promise<ReimbursementRequestData> => {
-  return getReimbursementRequestsForReimbursementRequestsByDivision(teamTypeId, organizationId, startDate, endDate);
-};
-
-export const getReimbursementRequestDataForNonAdminFinance = (
-  teamId: string,
-  organizationId: string,
-  startDate: Date | null,
-  endDate: Date | null
-): Promise<ReimbursementRequestData> => {
-  return getReimbursementRequestsForReimbursementRequestsByTeam(teamId, organizationId, startDate, endDate);
-};
-
-export const getSpendingBarDataForAdminFinance = (
-  teamTypeId: string,
-  organizationId: string,
-  startDate: Date | null,
-  endDate: Date | null
-): Promise<SpendingBarData[]> => {
-  return getSpendingBarDataForProjectBudgetByDivision(teamTypeId, organizationId, startDate, endDate);
-};
-
-export const getSpendingBarDataForNonAdminFinance = (
-  teamId: string,
-  organizationId: string,
-  startDate: Date | null,
-  endDate: Date | null
-): Promise<SpendingBarData> => {
-  return getSpendingBarDataForProjectBudgetByTeam(teamId, organizationId, startDate, endDate);
 };

@@ -1,6 +1,6 @@
 import { Design_Review_Status, Graph_Display_Type, Graph_Type, Measure, Special_Permission } from '@prisma/client';
 import { Request, Response } from 'express';
-import { body, ValidationChain, validationResult } from 'express-validator';
+import { body, query, ValidationChain, validationResult } from 'express-validator';
 import { MaterialStatus, TaskPriority, TaskStatus, WorkPackageStage, RoleEnum, WbsElementStatus } from 'shared';
 
 export const intMinZero = (validationObject: ValidationChain): ValidationChain => {
@@ -234,4 +234,9 @@ export const partPopupValidators = [
   intMinZero(body('fileIndex')),
   nonEmptyString(body('title')),
   body('description').optional().isString()
+];
+
+export const startEndDateValidators = [
+  nonEmptyString(query('startDate')).optional(),
+  nonEmptyString(query('endDate')).optional()
 ];

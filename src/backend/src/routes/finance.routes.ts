@@ -1,5 +1,5 @@
 import express from 'express';
-import { nonEmptyString, validateInputs, isDate, isOptionalDate } from '../utils/validation.utils';
+import { nonEmptyString, validateInputs, isDate, isOptionalDate, startEndDateValidators } from '../utils/validation.utils';
 import { body } from 'express-validator';
 import FinanceController from '../controllers/finance.controllers';
 
@@ -12,10 +12,15 @@ financeRouter.post(
   body('sponsorValue').isInt(),
   isDate(body('joinDate')),
   body('activeYears').isArray(),
+  body('activeYears.*').isInt(),
   nonEmptyString(body('sponsorTierId')),
   body('taxExempt').isBoolean(),
   nonEmptyString(body('vendorContact')),
   body('sponsorTasks').isArray(),
+  isDate(body('sponsorTasks.*.dueDate')),
+  isDate(body('sponsorTasks.*.notifyDate')),
+  nonEmptyString(body('sponsorTasks.*.assigneeUserId')),
+  nonEmptyString(body('sponsorTasks.*.notes')),
   nonEmptyString(body('discountCode')).optional(),
   validateInputs,
   FinanceController.createSponsor
@@ -25,7 +30,7 @@ financeRouter.get('/sponsors', FinanceController.getAllSponsors);
 
 financeRouter.get('/sponsor/:sponsorId/sponsorTasks', FinanceController.getSponsorTasks);
 
-financeRouter.delete('/sponsor/:sponsorId/delete', FinanceController.deleteSponsor);
+financeRouter.post('/sponsor/:sponsorId/delete', FinanceController.deleteSponsor);
 
 financeRouter.post(
   '/sponsorTier/create',
@@ -45,7 +50,7 @@ financeRouter.post(
   FinanceController.editSponsorTask
 );
 
-financeRouter.delete('/sponsorTask/:sponsorTaskId', FinanceController.deleteSponsorTask);
+financeRouter.post('/sponsorTask/:sponsorTaskId', FinanceController.deleteSponsorTask);
 
 financeRouter.post(
   '/sponsor/:sponsorId/sponsorTasks',
@@ -57,27 +62,56 @@ financeRouter.post(
   FinanceController.createSponsorTask
 );
 
-financeRouter.get('/reimbursement-request-project-data/:projectId', FinanceController.getReimbursementRequestProjectData);
+financeRouter.get(
+  '/reimbursement-request-project-data/:projectId',
+  startEndDateValidators,
+  validateInputs,
+  FinanceController.getReimbursementRequestProjectData
+);
 
-financeRouter.get('/reimbursement-request-team-data/:teamId', FinanceController.getReimbursementRequestTeamData);
+financeRouter.get(
+  '/reimbursement-request-team-data/:teamId',
+  startEndDateValidators,
+  validateInputs,
+  FinanceController.getReimbursementRequestTeamData
+);
 
-financeRouter.get('/reimbursement-request-data', FinanceController.getAllReimbursementRequestData);
+financeRouter.get(
+  '/reimbursement-request-data',
+  startEndDateValidators,
+  validateInputs,
+  FinanceController.getAllReimbursementRequestData
+);
 
 financeRouter.get(
   '/reimbursement-request-category-data/:otherReasonId',
+  startEndDateValidators,
+  validateInputs,
   FinanceController.getReimbursementRequestCategoryData
 );
 
 financeRouter.get(
   '/reimbursement-request-team-type-data/:teamTypeId',
+  startEndDateValidators,
+  validateInputs,
   FinanceController.getReimbursementRequestTeamTypeData
 );
 
-financeRouter.get('/spending-bar-team-data/:teamId', FinanceController.getSpendingBarTeamData);
+financeRouter.get(
+  '/spending-bar-team-data/:teamId',
+  startEndDateValidators,
+  validateInputs,
+  FinanceController.getSpendingBarTeamData
+);
 
-financeRouter.get('/spending-bar-team-type-data/:teamTypeId', FinanceController.getSpendingBarTeamTypeData);
+financeRouter.get(
+  '/spending-bar-team-type-data/:teamTypeId',
+  startEndDateValidators,
+  validateInputs,
+  FinanceController.getSpendingBarTeamTypeData
+);
 
-financeRouter.get('/spending-bar-data', FinanceController.getAllSpendingBarData);
+financeRouter.get('/spending-bar-data', startEndDateValidators, validateInputs, FinanceController.getAllSpendingBarData);
 
 financeRouter.get('/spending-bar-category-data/', FinanceController.getSpendingBarCategoryData);
 
@@ -90,10 +124,15 @@ financeRouter.post(
   body('sponsorValue').isInt(),
   isDate(body('joinDate')),
   body('activeYears').isArray(),
+  body('activeYears.*').isInt(),
   nonEmptyString(body('sponsorTierId')),
   body('taxExempt').isBoolean(),
   nonEmptyString(body('vendorContact')),
   body('sponsorTasks').isArray(),
+  isDate(body('sponsorTasks.*.dueDate')),
+  isDate(body('sponsorTasks.*.notifyDate')),
+  nonEmptyString(body('sponsorTasks.*.assigneeUserId')),
+  nonEmptyString(body('sponsorTasks.*.notes')),
   body('discountCode').optional(),
   validateInputs,
   FinanceController.editSponsor

@@ -9,11 +9,7 @@ export const getAccountCodeQueryArgs = (organizationId: string) =>
       indexCodes: {
         include: {
           userCreated: {
-            ...getUserQueryArgs(organizationId),
-            include: {
-              organizations: true,
-              roles: true
-            }
+            ...getUserQueryArgs(organizationId)
           }
         }
       }

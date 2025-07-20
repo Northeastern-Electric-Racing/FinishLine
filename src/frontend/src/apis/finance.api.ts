@@ -111,7 +111,7 @@ export const editReimbursementRequest = (id: string, formData: EditReimbursement
  * @returns the deleted reimbursement request
  */
 export const deleteReimbursementRequest = (id: string) => {
-  return axios.delete(apiUrls.financeDeleteReimbursement(id));
+  return axios.post(apiUrls.financeDeleteReimbursement(id));
 };
 
 /**
@@ -532,7 +532,7 @@ export const editOtherProductReason = (id: string, otherProductReasonData: Other
  * @returns the deleted other reason
  */
 export const deleteOtherProductReason = async (id: string) => {
-  return axios.delete(apiUrls.financeDeleteOtherProductReason(id));
+  return axios.post(apiUrls.financeDeleteOtherProductReason(id));
 };
 
 /**
@@ -570,7 +570,7 @@ export const getSponsorTasks = (sponsorId: string) => {
  */
 
 export const deleteSponsor = (sponsorId: string) => {
-  return axios.delete(apiUrls.deleteSponsor(sponsorId));
+  return axios.post(apiUrls.deleteSponsor(sponsorId));
 };
 
 /**
@@ -675,5 +675,5 @@ export const editSponsor = (id: string, formData: SponsorPayload) => {
  */
 
 export const deleteSponsorTask = (sponsorTaskId: string) => {
-  return axios.delete(apiUrls.deleteSponsorTask(sponsorTaskId));
+  return axios.post(apiUrls.deleteSponsorTask(sponsorTaskId));
 };

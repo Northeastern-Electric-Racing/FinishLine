@@ -167,7 +167,7 @@ export default class ReimbursementRequestsController {
         req.currentUser,
         req.organization
       );
-      res.status(200).json(deletedReimbursementRequest);
+      res.status(204).json(deletedReimbursementRequest);
     } catch (error: unknown) {
       next(error);
     }
@@ -424,7 +424,7 @@ export default class ReimbursementRequestsController {
         req.currentUser,
         req.organization
       );
-      res.status(200).json(deletedAccountCode);
+      res.status(204).json(deletedAccountCode);
     } catch (error: unknown) {
       next(error);
     }
@@ -458,7 +458,7 @@ export default class ReimbursementRequestsController {
       const { vendorId } = req.params;
 
       const deletedVendor = await ReimbursementRequestService.deleteVendor(vendorId, req.currentUser, req.organization);
-      res.status(200).json(deletedVendor);
+      res.status(204).json(deletedVendor);
     } catch (error: unknown) {
       next(error);
     }
@@ -534,7 +534,7 @@ export default class ReimbursementRequestsController {
         req.currentUser,
         req.organization
       );
-      res.status(200).json(deletedIndexCode);
+      res.status(204).json(deletedIndexCode);
     } catch (error: unknown) {
       next(error);
     }
@@ -590,7 +590,7 @@ export default class ReimbursementRequestsController {
         req.currentUser,
         req.organization
       );
-      res.status(200).json(deletedOtherProductReason);
+      res.status(204).json(deletedOtherProductReason);
     } catch (error: unknown) {
       next(error);
     }
@@ -619,6 +619,7 @@ export default class ReimbursementRequestsController {
       const { commentId } = req.params;
 
       const editedComment = await ReimbursementRequestService.editReimbursementRequestComment(
+        req.currentUser,
         req.organization,
         comment,
         commentId
@@ -632,8 +633,8 @@ export default class ReimbursementRequestsController {
   static async deleteReimbursementRequestComment(req: Request, res: Response, next: NextFunction) {
     try {
       const { commentId } = req.params;
-      await ReimbursementRequestService.deleteReimbursementRequestComment(req.organization, commentId);
-      res.status(200).json({ message: `Successfully deleted Comment with id ${commentId}` });
+      await ReimbursementRequestService.deleteReimbursementRequestComment(req.currentUser, req.organization, commentId);
+      res.status(204).json({ message: `Successfully deleted Comment with id ${commentId}` });
     } catch (error: unknown) {
       next(error);
     }

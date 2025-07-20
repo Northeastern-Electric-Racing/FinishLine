@@ -511,7 +511,7 @@ export default class ChangeRequestsService {
       changes.push({
         changeRequestId: foundCR.crId,
         implementerId: reviewer.userId,
-        wbsElementId: foundCR.wbsElementId ?? '',
+        wbsElementId: foundCR.wbsElementId,
         detail: buildChangeDetail('Project Lead', oldPL, newPL)
       });
     }
@@ -522,7 +522,7 @@ export default class ChangeRequestsService {
       changes.push({
         changeRequestId: foundCR.crId,
         implementerId: reviewer.userId,
-        wbsElementId: foundCR.wbsElementId ?? '',
+        wbsElementId: foundCR.wbsElementId,
         detail: buildChangeDetail('Project Manager', oldPM, newPM)
       });
     }
@@ -531,7 +531,7 @@ export default class ChangeRequestsService {
       changes.push({
         changeRequestId: foundCR.crId,
         implementerId: reviewer.userId,
-        wbsElementId: foundCR.wbsElementId ?? '',
+        wbsElementId: foundCR.wbsElementId,
         detail: buildChangeDetail(
           'Start Date',
           foundCR.wbsElement?.workPackage?.startDate.toLocaleDateString() || 'null',
@@ -543,7 +543,7 @@ export default class ChangeRequestsService {
     changes.push({
       changeRequestId: foundCR.crId,
       implementerId: reviewer.userId,
-      wbsElementId: foundCR.wbsElementId ?? '',
+      wbsElementId: foundCR.wbsElementId,
       detail: buildChangeDetail('status', foundCR.wbsElement?.status ?? '', WBS_Element_Status.ACTIVE)
     });
 

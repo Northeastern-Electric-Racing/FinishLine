@@ -184,7 +184,7 @@ export const sendReimbursementRequestDeniedNotification = async (slackId: string
   }
 };
 
-const sendThreadResponse = async (threads: SlackMessageThread[], message: string) => {
+export const sendThreadResponse = async (threads: SlackMessageThread[], message: string) => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
   try {
     if (threads && threads.length !== 0) {
@@ -619,15 +619,6 @@ export const sendSlackPartAssignmentNotif = async (
   const link = `https://finishlinebyner.com${partLink}`;
   const linkButtonText = 'View Part';
   await sendMessage(slackId, msg, link, linkButtonText);
-};
-
-/**
- * Sends a comment to the slack thread of a reimbursement request
- * @param comment the comment to send
- * @param threads the threads to send the comment to
- */
-export const sendReimbursementCommentNotification = async (comment: string, threads: SlackMessageThread[]) => {
-  await sendThreadResponse(threads, comment);
 };
 
 /**

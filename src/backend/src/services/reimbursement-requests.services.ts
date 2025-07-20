@@ -20,7 +20,10 @@ import {
   ReimbursementStatus,
   startOfDay,
   IndexCode,
-  OtherProductReason
+  OtherProductReason,
+  isAtLeastRank,
+  RoleEnum,
+  notGuest
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -56,24 +59,24 @@ import {
 } from '../transformers/reimbursement-requests.transformer';
 import { UserWithSecureSettings } from '../utils/auth.utils';
 import {
-  sendReimbursementCommentNotification,
   sendReimbursementRequestChangesRequestedNotification,
   sendReimbursementRequestCreatedNotificationAndCreateMessageInfo,
   sendReimbursementRequestDeniedNotification,
   sendReimbursementRequestLeadershipApprovedNotification,
   sendReimbursementRequestPendingFinanceNotification,
-  sendSubmittedToSaboNotification
+  sendSubmittedToSaboNotification,
+  sendThreadResponse
 } from '../utils/slack.utils';
-import { getUsers, userHasPermission } from '../utils/users.utils';
+import { getUsers, userHasPermission, userHasPermissionNew } from '../utils/users.utils';
 import { getReimbursementRequestQueryArgs } from '../prisma-query-args/reimbursement-requests.query-args';
 import { getReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
 import { getReimbursementStatusQueryArgs } from '../prisma-query-args/reimbursement-statuses.query-args';
 import { getVendorQueryArgs } from '../prisma-query-args/vendor.query-args';
-import { encryptPassword } from '../utils/encryption.utils';
 import { getAccountCodeQueryArgs } from '../prisma-query-args/account-code.query-args';
 import { getIndexCodeQueryArgs } from '../prisma-query-args/index-code.query-args';
 import { getReimbursementProductOtherReasonQueryArgs } from '../prisma-query-args/reimbursement-product-other-reason.query-args';
 import { getReimbursementRequestCommentQueryArgs } from '../prisma-query-args/reimbursement-comment.query-args';
+import { encrypt } from '../utils/encryption.utils';
 
 export default class ReimbursementRequestService {
   /**
@@ -676,7 +679,7 @@ export default class ReimbursementRequestService {
         name,
         organizationId: organization.organizationId,
         username,
-        password: password ? encryptPassword(password) : undefined,
+        password: password ? encrypt(password) : undefined,
         taxExempt,
         discountCode,
         twoFactorContacts: { connect: users.map((user) => ({ userId: user.userId })) },
@@ -1306,7 +1309,7 @@ export default class ReimbursementRequestService {
         name,
         organizationId: organization.organizationId,
         username,
-        password: encryptPassword(password),
+        password,
         taxExempt,
         discountCode,
         twoFactorContacts: {
@@ -1810,7 +1813,7 @@ export default class ReimbursementRequestService {
       comment += ` ${[...new Set(restOfTags)].join(' ')}`;
     }
 
-    await sendReimbursementCommentNotification(comment, reimbursementRequest.notificationSlackThreads);
+    await sendThreadResponse(reimbursementRequest.notificationSlackThreads, comment);
 
     return reimbursementRequestCommentTransformer(createdComment);
   }
@@ -1818,6 +1821,7 @@ export default class ReimbursementRequestService {
   /**
    * Updates the comment for an existing new comment on a reimbursement request
    *
+   * @param editer The user updating the comment
    * @param organization The organization context for the request
    * @param comment The comment text content
    * @param commentId The ID of the reimbursement request comment
@@ -1825,10 +1829,19 @@ export default class ReimbursementRequestService {
    * @throws NotFoundException if the comment doesn't exist
    * @throws HttpException if the comment is the same as the current comment
    */
-  static async editReimbursementRequestComment(organization: Organization, comment: string, commentId: string) {
+  static async editReimbursementRequestComment(
+    editer: User,
+    organization: Organization,
+    comment: string,
+    commentId: string
+  ) {
     const reimbursementRequestComment = await prisma.reimbursement_Request_Comment.findUnique({
       where: { reimbursementRequestCommentId: commentId, dateDeleted: null }
     });
+
+    if (!(await userHasPermission(editer.userId, organization.organizationId, notGuest))) {
+      throw new AccessDeniedException('Only members of an organization can edit comments');
+    }
 
     if (!reimbursementRequestComment) {
       throw new NotFoundException('Reimbursement Request Comment', commentId);
@@ -1850,15 +1863,20 @@ export default class ReimbursementRequestService {
   /**
    * Deletes the comment for an existing comment on a reimbursement request
    *
+   * @param deleter the user deleting the comment
    * @param organization The organization context for the request
    * @param commentId The ID of the reimbursement request comment
    * @returns The deleted reimbursement request comment
    * @throws NotFoundException if the comment doesn't exist
    */
-  static async deleteReimbursementRequestComment(organization: Organization, commentId: string) {
+  static async deleteReimbursementRequestComment(deleter: User, organization: Organization, commentId: string) {
     const reimbursementRequestComment = await prisma.reimbursement_Request_Comment.findUnique({
       where: { reimbursementRequestCommentId: commentId, dateDeleted: null }
     });
+
+    if (!(await userHasPermission(deleter.userId, organization.organizationId, notGuest))) {
+      throw new AccessDeniedException('Only members of an organization can delete comments');
+    }
 
     if (!reimbursementRequestComment) {
       throw new NotFoundException('Reimbursement Request Comment', commentId);

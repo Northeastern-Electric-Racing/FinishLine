@@ -36,7 +36,7 @@ reimbursementRequestsRouter.get('/index-codes/:indexCodeId', ReimbursementReques
 
 reimbursementRequestsRouter.get('/index-codes', ReimbursementRequestController.getAllIndexCodes);
 
-reimbursementRequestsRouter.delete('/index-codes/:indexCodeId/delete', ReimbursementRequestController.deleteIndexCode);
+reimbursementRequestsRouter.post('/index-codes/:indexCodeId/delete', ReimbursementRequestController.deleteIndexCode);
 
 reimbursementRequestsRouter.post(
   '/other-reimbursement-product-reasons/create',
@@ -58,7 +58,7 @@ reimbursementRequestsRouter.get(
   ReimbursementRequestController.getSingleOtherReimbursementProductReason
 );
 
-reimbursementRequestsRouter.delete(
+reimbursementRequestsRouter.post(
   '/other-reimbursement-product-reasons/:otherReimbursementProductReasonId/delete',
   ReimbursementRequestController.deleteOtherReimbursementProductReason
 );
@@ -201,7 +201,7 @@ reimbursementRequestsRouter.post(
   '/:requestId/leadership-approve',
   ReimbursementRequestController.leadershipApproveReimbursementRequest
 );
-reimbursementRequestsRouter.delete('/:requestId/delete', ReimbursementRequestController.deleteReimbursementRequest);
+reimbursementRequestsRouter.post('/:requestId/delete', ReimbursementRequestController.deleteReimbursementRequest);
 reimbursementRequestsRouter.post('/:requestId/deny', ReimbursementRequestController.denyReimbursementRequest);
 
 reimbursementRequestsRouter.post(
@@ -240,7 +240,7 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.editReimbursementRequestComment
 );
 
-reimbursementRequestsRouter.delete('/comments/:commentId', ReimbursementRequestController.deleteReimbursementRequestComment);
+reimbursementRequestsRouter.post('/comments/:commentId', ReimbursementRequestController.deleteReimbursementRequestComment);
 
 reimbursementRequestsRouter.post(
   '/other-reimbursement-product-reasons/:otherReimbursementProductReasonId/edit',

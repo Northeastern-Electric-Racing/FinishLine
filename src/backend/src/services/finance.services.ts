@@ -28,12 +28,12 @@ import {
   getAllReimbursementRequestData,
   getAllSpendingBarData,
   getReimbursementRequestCategoryData,
-  getReimbursementRequestDataForAdminFinance,
-  getReimbursementRequestDataForNonAdminFinance,
+  getReimbursementRequestsForReimbursementRequestsByDivision,
   getReimbursementRequestsForReimbursementRequestsByProject,
+  getReimbursementRequestsForReimbursementRequestsByTeam,
   getSpendingBarCategoryData,
-  getSpendingBarDataForAdminFinance,
-  getSpendingBarDataForNonAdminFinance
+  getSpendingBarDataForProjectBudgetByDivision,
+  getSpendingBarDataForProjectBudgetByTeam
 } from '../utils/finance.utils';
 import { notifySponsorTaskAssignee } from '../utils/slack.utils';
 
@@ -402,8 +402,8 @@ export default class FinanceServices {
     return await getReimbursementRequestsForReimbursementRequestsByProject(
       projectId,
       organization.organizationId,
-      startDate ?? null,
-      endDate ?? null
+      startDate,
+      endDate
     );
   }
 
@@ -413,11 +413,11 @@ export default class FinanceServices {
     startDate?: Date,
     endDate?: Date
   ): Promise<ReimbursementRequestData> {
-    return await getReimbursementRequestDataForNonAdminFinance(
+    return await getReimbursementRequestsForReimbursementRequestsByTeam(
       teamId,
       organization.organizationId,
-      startDate ?? null,
-      endDate ?? null
+      startDate,
+      endDate
     );
   }
 
@@ -427,11 +427,11 @@ export default class FinanceServices {
     startDate?: Date,
     endDate?: Date
   ): Promise<ReimbursementRequestData> {
-    return await getReimbursementRequestDataForAdminFinance(
+    return await getReimbursementRequestsForReimbursementRequestsByDivision(
       teamTypeId,
       organization.organizationId,
-      startDate ?? null,
-      endDate ?? null
+      startDate,
+      endDate
     );
   }
 
@@ -441,12 +441,7 @@ export default class FinanceServices {
     startDate?: Date,
     endDate?: Date
   ): Promise<SpendingBarData> {
-    return await getSpendingBarDataForNonAdminFinance(
-      teamId,
-      organization.organizationId,
-      startDate ?? null,
-      endDate ?? null
-    );
+    return await getSpendingBarDataForProjectBudgetByTeam(teamId, organization.organizationId, startDate, endDate);
   }
 
   static async getSpendingBarTeamTypeData(
@@ -455,12 +450,7 @@ export default class FinanceServices {
     startDate?: Date,
     endDate?: Date
   ): Promise<SpendingBarData[]> {
-    return await getSpendingBarDataForAdminFinance(
-      teamTypeId,
-      organization.organizationId,
-      startDate ?? null,
-      endDate ?? null
-    );
+    return await getSpendingBarDataForProjectBudgetByDivision(teamTypeId, organization.organizationId, startDate, endDate);
   }
 
   static async getAllReimbursementRequestData(
@@ -468,7 +458,7 @@ export default class FinanceServices {
     startDate?: Date,
     endDate?: Date
   ): Promise<ReimbursementRequestData[]> {
-    return await getAllReimbursementRequestData(organization.organizationId, startDate ?? null, endDate ?? null);
+    return await getAllReimbursementRequestData(organization.organizationId, startDate, endDate);
   }
 
   static async getReimbursementRequestCategoryData(
@@ -477,12 +467,7 @@ export default class FinanceServices {
     startDate?: Date,
     endDate?: Date
   ): Promise<ReimbursementRequestData> {
-    return await getReimbursementRequestCategoryData(
-      otherReasonId,
-      organization.organizationId,
-      startDate ?? null,
-      endDate ?? null
-    );
+    return await getReimbursementRequestCategoryData(otherReasonId, organization.organizationId, startDate, endDate);
   }
 
   static async getAllSpendingBarData(
@@ -490,7 +475,7 @@ export default class FinanceServices {
     startDate?: Date,
     endDate?: Date
   ): Promise<SpendingBarData[]> {
-    return await getAllSpendingBarData(organization.organizationId, startDate ?? null, endDate ?? null);
+    return await getAllSpendingBarData(organization.organizationId, startDate, endDate);
   }
 
   static async getSpendingBarCategoryData(organization: Organization): Promise<SpendingBarData> {
