@@ -15,7 +15,6 @@ import { RadioGroup } from '@mui/material';
 import { FormControlLabel } from '@mui/material';
 import { Radio } from '@mui/material';
 import NERAutocomplete from '../../../components/NERAutocomplete';
-import { startDateTester } from '../../../utils/form';
 import NERFormModal from '../../../components/NERFormModal';
 
 interface ActivateWorkPackageModalProps {
@@ -29,8 +28,7 @@ interface ActivateWorkPackageModalProps {
 const schema = yup.object().shape({
   startDate: yup
     .date()
-    .required('Start Date is required')
-    .test('start-date-valid', 'start date is not valid', startDateTester),
+    .required('Start Date is required'),
   confirmDetails: yup
     .boolean()
     .required('Please confirm project details are correct')
@@ -86,10 +84,6 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
       managerId
     });
     reset(defaultValues);
-  };
-
-  const isStartDateDisabled = (startDate: Date) => {
-    return startDate.getDay() !== 1;
   };
 
   return (
@@ -157,7 +151,6 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
                 onChange={(date) => onChange(date ?? new Date())}
                 className={'padding: 10'}
                 value={value}
-                shouldDisableDate={isStartDateDisabled}
                 slotProps={{ textField: { autoComplete: 'off' } }}
               />
             )}

@@ -5,7 +5,6 @@ import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import { projectWbsNamePipe, projectWbsPipe } from '../../utils/pipes';
-import { startDateTester } from '../../utils/form';
 import * as yup from 'yup';
 import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -32,8 +31,7 @@ const CreateWorkPackageForm: React.FC = () => {
     name: yup.string().required('Name is required!'),
     startDate: yup
       .date()
-      .required('Start Date is required!')
-      .test('start-date-valid', 'Start Date Must be a Monday', startDateTester),
+      .required('Start Date is required!'),
     duration: yup.number().required()
   });
 
