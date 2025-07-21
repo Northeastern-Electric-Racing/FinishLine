@@ -132,7 +132,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
 
   useEffect(() => {
     reset(defaultFormData);
-  }, [defaultDate, reset]);
+  }, [defaultDate, reset, defaultFormData]);
 
   if (allUsersIsError) return <ErrorPage error={allUsersError} message={allUsersError?.message} />;
   if (allWorkPackagesIsError) return <ErrorPage error={allWorkPackagesError} message={allWorkPackagesError?.message} />;
