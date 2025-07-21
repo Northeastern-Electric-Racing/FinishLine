@@ -159,7 +159,6 @@ const CalendarPage = () => {
             {startOfEachWeek.map((week) => (
               <Grid container>
                 {daysThisMonth.slice(week, week + 7).map((day) => {
-                  // const cardDate = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth(), day);
                   const cardDate = new Date(
                     displayMonthYear.getFullYear(),
                     displayMonthYear.getMonth() + (isDayInDifferentMonth(day, week) ? (day > 15 ? -1 : 1) : 0),
