@@ -11,7 +11,7 @@ import { PageNotFound } from '../pages/PageNotFound';
 import Home from '../pages/HomePage/Home';
 import Settings from '../pages/SettingsPage/SettingsPage';
 import InfoPage from '../pages/InfoPage';
-import GanttChartPage from '../pages/GanttPage/GanttChartPage';
+import GanttChartPage from '../pages/GanttPage/ProjectGanttChart/ProjectGanttChartPage';
 import Teams from '../pages/TeamsPage/Teams';
 import AdminTools from '../pages/AdminToolsPage/AdminTools';
 import Credits from '../pages/CreditsPage/Credits';
@@ -33,6 +33,7 @@ import HiddenContentMargin from '../components/HiddenContentMargin';
 import { useHomePageContext } from './HomePageContext';
 import { useCurrentOrganization } from '../hooks/organizations.hooks';
 import Statistics from '../pages/StatisticsPage/Statistics';
+import RetrospectiveGanttChartPage from '../pages/RetrospectivePage/Retrospective';
 
 interface AppAuthenticatedProps {
   userId: string;
@@ -129,6 +130,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             <Route path={routes.CALENDAR} component={Calendar} />
             <Route path={routes.STATISTICS} component={Statistics} />
             <Route path={routes.HOME} component={Home} />
+            <Route path={routes.RETROSPECTIVE} component={RetrospectiveGanttChartPage} />
             <Redirect from={routes.BASE} to={routes.HOME} />
             <Route path="*" component={PageNotFound} />
           </Switch>

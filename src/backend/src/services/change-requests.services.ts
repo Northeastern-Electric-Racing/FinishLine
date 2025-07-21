@@ -4,7 +4,7 @@ import {
   isGuest,
   isLeadership,
   isNotLeadership,
-  isProject,
+  isProjectWbs,
   ProjectProposedChangesCreateArgs,
   ProposedSolution,
   ProposedSolutionCreateArgs,
@@ -827,7 +827,7 @@ export default class ChangeRequestsService {
     if (
       projectNumber !== 0 && // Excluding Cars
       !(projectProposedChanges && projectProposedChanges.workPackageProposedChanges.length === 0) && // Excluding new projects with work packages
-      !(isProject(wbsElement) && workPackageProposedChanges) // Excluding Creating Work Package on Project
+      !(isProjectWbs(wbsElement) && workPackageProposedChanges) // Excluding Creating Work Package on Project
     ) {
       await validateNoUnreviewedOpenCRs(wbsElement.wbsElementId);
     }
@@ -922,7 +922,7 @@ export default class ChangeRequestsService {
           proposedDescriptionBulletChanges: {
             create: validationResult.descriptionBullets.map((bullet) => ({
               detail: bullet.detail,
-              descriptionBulletTypeId: bullet.descriptionBulletType.id
+              descriptionBulletType: { connect: { id: bullet.descriptionBulletType.id } }
             }))
           },
           projectProposedChanges: {
@@ -939,9 +939,11 @@ export default class ChangeRequestsService {
                       proposedDescriptionBulletChanges: {
                         create: workPackage.descriptionBullets.map((bullet) => ({
                           detail: bullet.detail,
-                          descriptionBulletTypeId: bullet.descriptionBulletType.id
+                          descriptionBulletType: { connect: { id: bullet.descriptionBulletType.id } }
                         }))
-                      }
+                      },
+                      leadId: workPackage.originalElement.leadId,
+                      managerId: workPackage.originalElement.managerId
                     }
                   },
                   duration: workPackage.originalElement.duration,
@@ -1000,8 +1002,18 @@ export default class ChangeRequestsService {
           proposedDescriptionBulletChanges: {
             create: validationResult.descriptionBullets.map((bullet) => ({
               detail: bullet.detail,
-              descriptionBulletTypeId: bullet.descriptionBulletType.id
+              descriptionBulletType: { connect: { id: bullet.descriptionBulletType.id } }
             }))
+          },
+          lead: {
+            connect: {
+              userId: leadId
+            }
+          },
+          manager: {
+            connect: {
+              userId: managerId
+            }
           },
           workPackageProposedChanges: {
             create: {

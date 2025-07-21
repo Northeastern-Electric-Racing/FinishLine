@@ -38,32 +38,47 @@ const ReimbursementRequestInfo = ({
   allReimbursementRequests,
   canViewAllReimbursementRequests = false
 }: ReimbursementRequestInfoProps) => {
-  const [isAscendingOrder, setAscendingOrder] = useState(true);
-  const [orderBy, setOrderBy] = useState<keyof ReimbursementRequestRow>('identifier');
+  // set default values for orderBy and sortBy
+  if (!localStorage.getItem('orderBy')) localStorage.setItem('orderBy', 'identifier');
+  if (!localStorage.getItem('RRsortDirection')) localStorage.setItem('RRsortDirection', 'descending');
+
+  // get orderBy and RRsortDirection from local storage
+  const [isAscendingOrder, setAscendingOrder] = useState(localStorage.getItem('RRsortDirection') === 'ascending');
+  const [orderBy, setOrderBy] = useState<keyof ReimbursementRequestRow>(
+    localStorage.getItem('orderBy') as keyof ReimbursementRequestRow
+  );
 
   const displayedReimbursementRequests =
     canViewAllReimbursementRequests && allReimbursementRequests ? allReimbursementRequests : userReimbursementRequests;
 
+  // set orderBy and RRsortDirection in local storage
+  localStorage.setItem('orderBy', orderBy);
+  localStorage.setItem('RRsortDirection', isAscendingOrder ? 'ascending' : 'descending');
+
   const rows = displayedReimbursementRequests.map(createReimbursementRequestRowData).sort((a, b) => {
-    if (orderBy === 'vendor') {
-      return !isAscendingOrder
-        ? vendorDescendingComparator(a.vendor, b.vendor)
-        : -vendorDescendingComparator(a.vendor, b.vendor);
+    // create a map of comparators
+    const comparators: { [key: string]: (a: any, b: any) => number } = {
+      vendor: vendorDescendingComparator,
+      status: statusDescendingComparator,
+      submitter: submitterDescendingComparator
+    };
+
+    // if user is in the 'My Requests' tab and the orderBy was set to 'submitter' or 'refundSource', sort by 'identifier'
+    if (!canViewAllReimbursementRequests && (orderBy === 'submitter' || orderBy === 'refundSource')) {
+      return descendingComparator(a, b, 'identifier');
     }
-    if (orderBy === 'status') {
-      return !isAscendingOrder
-        ? statusDescendingComparator(a.status, b.status)
-        : -statusDescendingComparator(a.status, b.status);
+
+    // if orderBy is in comparators, use that comparator
+    if (orderBy in comparators) {
+      return isAscendingOrder ? -comparators[orderBy](a[orderBy], b[orderBy]) : comparators[orderBy](a[orderBy], b[orderBy]);
     }
-    if (orderBy === 'submitter') {
-      return !isAscendingOrder
-        ? submitterDescendingComparator(a.submitter, b.submitter)
-        : -submitterDescendingComparator(a.submitter, b.submitter);
-    }
+
     if (b[orderBy] === undefined) {
       return -1;
     }
-    return !isAscendingOrder ? descendingComparator(a, b, orderBy) : -descendingComparator(a, b, orderBy);
+
+    // else use default descending comparator
+    return isAscendingOrder ? -descendingComparator(a, b, orderBy) : descendingComparator(a, b, orderBy);
   });
 
   const headCells: readonly ReimbursementTableHeadCell[] = [

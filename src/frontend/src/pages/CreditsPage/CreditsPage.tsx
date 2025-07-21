@@ -15,11 +15,7 @@ const CreditsPage: React.FC = () => {
   // 'name' and 'color', and optionally 'sx' if you want to use a special style
   // the type notation tells us that name is a string and color is a string
   // think of JSON like a map with keys and values
-  const names: {
-    name: string;
-    color: string;
-    sx?: {};
-  }[] = [
+  const names: { name: string; color: string; sx?: {} }[] = [
     { name: 'Anthony Bernardi', color: '#566bd4' },
     { name: 'Reid Chandler', color: '#e53774' },
     {
@@ -178,13 +174,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Jesse Garcia', color: '#3BB143' },
     { name: 'Emma Shum', color: '#d4878f' },
     { name: 'Matthew Egg', color: '#7E1B2F' },
-    {
-      name: 'Wyatt Bracy',
-      color: '#080808',
-      sx: {
-        textShadow: '0 0 2px rgba(0,0,0), 0 0 20px rgba(220,220,220,1)'
-      }
-    },
+    { name: 'Wyatt Bracy', color: '#080808', sx: { textShadow: '0 0 2px rgba(0,0,0), 0 0 20px rgba(220,220,220,1)' } },
     { name: 'Xavier Galanes', color: '#6c25be' },
     { name: 'Jaden Zhou', color: '#34568B' },
     { name: 'Alexander Kylander-Kreiner', color: '#82EEFD' },
@@ -231,9 +221,7 @@ const CreditsPage: React.FC = () => {
     {
       name: 'Tanisha Rajgor',
       color: '#e3ddfb',
-      sx: {
-        textShadow: '0 0 2px rgba(0, 0, 0, 0.4), 0 0 5px rgba(180, 160, 255, 0.8)'
-      }
+      sx: { textShadow: '0 0 2px rgba(0, 0, 0, 0.4), 0 0 5px rgba(180, 160, 255, 0.8)' }
     },
     { name: 'Jhonyel Galvis', color: '#00FFF' },
     { name: 'Arav Goyal', color: '#6223de' },
@@ -255,6 +243,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Jason Kuo', color: '#a200ff' },
     { name: 'Wilson Wei', color: '#008000' },
     { name: 'Thanin Kongkiatsophon', color: '#15B392' },
+    { name: 'Abhinav Gonthina', color: '#6495ED' },
     { name: 'Aryan Gupta', color: '#5a4094' },
     { name: 'Lisa Wan', color: '#CCCCFF' },
     { name: 'Aidan Wong', color: '#4284f5' },
@@ -263,6 +252,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Shrey Agarwal', color: '#800080' },
     { name: 'Amber Friar', color: '#F5A9B8' },
     { name: 'Kaung Mo', color: '#9a1115' },
+    { name: 'Mae Balesterri', color: '#7fb2bc' },
     {
       name: 'Joshua Goldberg',
       color: 'transparent',
@@ -280,8 +270,34 @@ const CreditsPage: React.FC = () => {
     {
       name: 'Christopher DiCono',
       color: '#00FF00',
+      sx: { textShadow: '0 0 5px #00FF00, 0 0 10px #00FF00, 0 0 20px #00FF00' }
+    },
+    { name: 'Ricardo Landeros', color: '#3221ed' },
+    { name: 'Mihika Chalasani', color: '#a2d2ff' },
+    {
+      name: 'Edison Kwok',
+      color: 'transparent',
       sx: {
-        textShadow: '0 0 5px #00FF00, 0 0 10px #00FF00, 0 0 20px #00FF00'
+        background: 'linear-gradient(45deg,rgb(115, 255, 232) 0%,rgb(45, 94, 255) 11%,rgb(211, 89, 255) 80%)',
+        '-webkit-background-clip': 'text'
+      }
+    },
+    { name: 'Maddy Nenninger', color: '#70d489' },
+    { name: 'Gauri Rajesh', color: '#94C973' },
+    { name: 'Steph Sayegh', color: '#006400' },
+    {
+      name: 'Mardan Mahmut',
+      color: 'transparent',
+      sx: {
+        textShadow: '0 0 5px rgba(255, 60, 255, 1), 0 0 10px rgb(25, 169, 202), 0 0 20px rgba(60, 255, 255, 1)',
+        background: 'linear-gradient(90deg, white, pink, red, violet, blue, violet, red, pink, white)',
+        '-webkit-background-clip': 'text',
+        backgroundSize: '400% 400%',
+        animation: 'gradient 10s infinite linear',
+        '@keyframes gradient': {
+          '0%': { backgroundPosition: '400% 200%' },
+          '100%': { backgroundPosition: '0% 200%' }
+        }
       }
     }
   ];

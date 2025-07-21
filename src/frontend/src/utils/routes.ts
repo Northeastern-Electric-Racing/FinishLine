@@ -33,6 +33,7 @@ const PROJECTS_ALL = PROJECTS + '/all';
 const PROJECTS_BY_WBS = PROJECTS + `/:wbsNum`;
 const PROJECTS_NEW = PROJECTS + `/new`;
 const WORK_PACKAGE_NEW = PROJECTS + `/work-package/new`;
+const PROJECT_PART = PROJECTS_BY_WBS + '/part/:indexNum';
 
 /**************** Teams Section ****************/
 const TEAMS = `/teams`;
@@ -57,6 +58,10 @@ const ADMIN_TOOLS = `/admin-tools`;
 const WORK_PACKAGE_TEMPLATES = ADMIN_TOOLS + '/templates';
 const WORK_PACKAGE_TEMPLATE_NEW = WORK_PACKAGE_TEMPLATES + `/new`;
 const WORK_PACKAGE_TEMPLATE_EDIT = WORK_PACKAGE_TEMPLATES + '/edit';
+const PROJECT_TEMPLATES = WORK_PACKAGE_TEMPLATES + '/project';
+const PROJECT_TEMPLATE_NEW = PROJECT_TEMPLATES + `/new`;
+const PROJECT_TEMPLATE_EDIT = PROJECT_TEMPLATES + '/edit';
+
 /**************** Design Review Calendar ****************/
 const CALENDAR = `/design-review-calendar`;
 const DESIGN_REVIEW_BY_ID = CALENDAR + `/:id`;
@@ -68,8 +73,10 @@ const ORGANIZATIONS = `/organizations`;
 const STATISTICS = `/statistics`;
 const CREATE_GRAPH = `/statistics/graph-collections/:graphCollectionId/graph/create`;
 const EDIT_GRAPH = `/statistics/graph-collections/:graphCollectionId/graph/:graphId/edit`;
-
 const GRAPH_COLLECTION_BY_ID = '/statistics/graph-collections/:graphCollectionId';
+
+/**************** Retrospective ****************/
+const RETROSPECTIVE = `/retrospective`;
 
 export const routes = {
   BASE,
@@ -96,6 +103,7 @@ export const routes = {
   PROJECTS_BY_WBS,
   PROJECTS_NEW,
   WORK_PACKAGE_NEW,
+  PROJECT_PART,
 
   CHANGE_REQUESTS,
   ALL_CHANGE_REQUESTS,
@@ -119,6 +127,9 @@ export const routes = {
   WORK_PACKAGE_TEMPLATE_NEW,
   WORK_PACKAGE_TEMPLATE_EDIT,
   WORK_PACKAGE_TEMPLATES,
+  PROJECT_TEMPLATES,
+  PROJECT_TEMPLATE_NEW,
+  PROJECT_TEMPLATE_EDIT,
 
   CALENDAR,
   DESIGN_REVIEW_BY_ID,
@@ -128,5 +139,7 @@ export const routes = {
   STATISTICS,
   CREATE_GRAPH,
   EDIT_GRAPH,
-  GRAPH_COLLECTION_BY_ID
+  GRAPH_COLLECTION_BY_ID,
+
+  RETROSPECTIVE
 };

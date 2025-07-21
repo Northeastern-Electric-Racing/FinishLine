@@ -29,7 +29,9 @@ import {
   getAllUsefulLinks,
   setUsefulLinks,
   getUsersTeamsProjects,
-  getUsersLeadingProjects
+  getUsersLeadingProjects,
+  setAbbreviation,
+  deleteAbbreviation
 } from '../apis/projects.api';
 import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 import { useCurrentUser } from './users.hooks';
@@ -38,7 +40,7 @@ import { useCurrentUser } from './users.hooks';
  * Custom React Hook to supply all projects.
  */
 export const useAllProjects = (includeDeleted: boolean = false) => {
-  return useQuery<Project[], Error>(['projects'], async () => {
+  return useQuery<ProjectPreview[], Error>(['projects'], async () => {
     const { data } = await getAllProjects(includeDeleted);
     return data;
   });
@@ -262,6 +264,44 @@ export const useSetUsefulLinks = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['useful links']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom react hook to set the abbreviation of a project
+ */
+export const useSetProjectAbbreviation = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Project, Error, any>(
+    ['projects', 'abbreviation', 'set'],
+    async (payload: { wbsNum: string; abbreviation: string }) => {
+      const { data } = await setAbbreviation(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['projects']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom react hook to delete the abbreviation of a project
+ */
+export const useDeleteProjectAbbreviation = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['projects', 'abbreviation', 'delete'],
+    async (wbsNumber: string) => {
+      const { data } = await deleteAbbreviation(wbsNumber);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['projects']);
       }
     }
   );

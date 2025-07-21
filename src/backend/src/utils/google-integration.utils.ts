@@ -87,7 +87,6 @@ interface GoogleDriveError {
 export const uploadFile = async (fileObject: Express.Multer.File) => {
   const bufferStream = new stream.PassThrough();
   bufferStream.end(fileObject.buffer);
-  console.log(fileObject.filename);
   if (
     (fileObject.filename && fileObject.filename?.length > 20) ||
     (!fileObject.filename && fileObject.originalname.length > 20)
@@ -155,8 +154,8 @@ const readableToBuffer = async (readable: Readable): Promise<Buffer> => {
   });
 };
 
-//given the google file id, downloads the image data and return it as a Buffer along with the image type
-export const downloadImageFile = async (fileId: string) => {
+//given the google file id, downloads the file data and return it as a Buffer along with the file type
+export const downloadFile = async (fileId: string) => {
   oauth2Client.setCredentials({
     refresh_token: DRIVE_REFRESH_TOKEN
   });
@@ -173,7 +172,7 @@ export const downloadImageFile = async (fileId: string) => {
     return { buffer: bufferData, type: res.headers['content-type'] };
   } catch (error: unknown) {
     if (error instanceof Error) {
-      throw new HttpException(500, `Failed to Download Image(${fileId}): ${error.message}`);
+      throw new HttpException(500, `Failed to Download File(${fileId}): ${error.message}`);
     }
     throw error;
   }
@@ -187,7 +186,6 @@ export const downloadImageFile = async (fileId: string) => {
 export const createCalendar = async (name: string) => {
   if (process.env.NODE_ENV !== 'production') return;
   try {
-    console.log(CALENDAR_REFRESH_TOKEN);
     oauth2Client.setCredentials({
       refresh_token: CALENDAR_REFRESH_TOKEN
     });

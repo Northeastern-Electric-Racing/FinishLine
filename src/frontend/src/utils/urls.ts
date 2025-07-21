@@ -43,6 +43,44 @@ const projectsToggleFavorite = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/
 const projectsLinkTypes = () => `${projects()}/link-types`;
 const projectsCreateLinkTypes = () => `${projects()}/link-types/create`;
 const projectsEditLinkTypes = (linkTypeName: string) => `${projects()}/link-types/${linkTypeName}/edit`;
+const projectsSetAbbreviation = () => `${projects()}/set-abbreviation`;
+const projectsDeleteAbbreviation = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/delete-abbreviation';
+
+/**************** Part Review Endpoints ********************/
+const parts = () => `${API_URL}/parts`;
+const partsByProject = (wbsNum: string) => `${parts()}/by-project/${wbsNum}`;
+const partByIndex = (wbsNum: string, partIndex: number) => `${parts()}/by-index/${wbsNum}/${partIndex}`;
+const partsCreate = () => `${parts()}/create`;
+const partsUploadPreviewImage = (partId: string) => `${parts()}/${partId}/upload-preview`;
+const partsEdit = (partId: string) => `${parts()}/${partId}/update`;
+const partsDelete = (partId: string) => `${parts()}/${partId}/delete`;
+const partsCreateSubmission = () => `${parts()}/submission/create`;
+const partsEditSubmission = (submissionId: string) => `${parts()}/submission/${submissionId}/update`;
+const partsCreateReviewRequest = (submissionId: string) => `${parts()}/reviewRequest/${submissionId}/create`;
+const partsDeleteReviewRequest = (reviewRequestId: string) => `${parts()}/reviewRequest/${reviewRequestId}/delete`;
+const partsCreateReview = () => `${parts()}/review/create`;
+const partsEditReview = (reviewId: string) => `${parts()}/review/${reviewId}/update`;
+const partsDeleteReview = (reviewId: string) => `${parts()}/review/${reviewId}/delete`;
+const partsReviewFaqs = () => `${parts()}/faqs`;
+const partsReviewFaqCreate = () => `${parts()}/faqs/create`;
+const partsReviewFaqEdit = (faqId: string) => `${parts()}/faqs/${faqId}/update`;
+const partsReviewFaqDelete = (faqId: string) => `${parts()}/faqs/${faqId}/delete`;
+const getAllPartCommonMistakes = () => `${parts()}/common-mistakes`;
+const partsCreateCommonMistake = () => `${parts()}/common-mistake/create`;
+const partsEditCommonMistake = (commonMistakeId: string) => `${parts()}/common-mistake/${commonMistakeId}/update`;
+const partsDeleteCommonMistake = (commonMistakeId: string) => `${parts()}/common-mistake/${commonMistakeId}/delete`;
+const uploadFile = () => `${parts()}/upload/file`;
+const downloadFile = (fileId: string) => `${parts()}/file/${fileId}/download`;
+const getAllPartTags = () => `${parts()}/tags`;
+const partTagCreate = () => `${parts()}/tag/create`;
+const partTagDelete = (partTagId: string) => `${parts()}/tag/${partTagId}/delete`;
+const createReviewPopup = (reviewId: string) => `${parts()}/review/${reviewId}/popup/create`;
+const updateReviewPopup = (popupId: string) => `${parts()}/popup/${popupId}/update`;
+const deleteReviewPopup = (popupId: string) => `${parts()}/popup/${popupId}/delete`;
+const notifyPartAssignee = () => `${parts()}/notifyAssignee`;
+const notifyPartReviewer = () => `${parts()}/notifyReviewer`;
+const getPartReviewSampleImage = () => `${parts()}/partReviewSampleImage`;
+const setPartReviewSampleImage = () => `${parts()}/partReviewSampleImage/update`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
@@ -104,6 +142,7 @@ const allTeamTypes = () => `${teamTypes()}/all`;
 const teamTypesCreate = () => `${teamTypes()}/create`;
 const teamTypeEdit = (id: string) => `${teamTypes()}/${id}/edit`;
 const teamTypeSetImage = (id: string) => `${teamTypes()}/${id}/set-image`;
+const myTeamsWorkpackages = () => `${teams()}/my-teams-work-packages`;
 
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
@@ -174,15 +213,20 @@ const designReviewDelete = (id: string) => `${designReviewById(id)}/delete`;
 const designReviewMarkUserConfirmed = (id: string) => `${designReviewById(id)}/confirm-schedule`;
 const designReviewSetStatus = (id: string) => `${designReviewById(id)}/set-status`;
 
-/******************* Work Package Template Endpoints ********************/
+/******************* WBS Element Template Endpoints ********************/
 
 const workPackageTemplates = () => `${API_URL}/templates`;
 const workPackageTemplatesById = (workPackageTemplateId: string) => `${workPackageTemplates()}/${workPackageTemplateId}`;
+const projectTemplatesById = (projectTemplateId: string) => `${workPackageTemplates()}/project/${projectTemplateId}`;
 const workPackageTemplatesEdit = (workPackageTemplateId: string) =>
   `${workPackageTemplatesById(workPackageTemplateId)}/edit`;
 const workPackageTemplatesCreate = () => `${workPackageTemplates()}/create`;
 const workPackageTemplateDelete = (workPackageTemplateId: string) =>
   `${workPackageTemplatesById(workPackageTemplateId)}/delete`;
+const projectTemplates = () => `${API_URL}/templates/project`;
+const projectTemplateDelete = (projectTemplateId: string) => `${projectTemplatesById(projectTemplateId)}/delete`;
+const projectTemplatesEdit = (projectTemplateId: string) => `${projectTemplatesById(projectTemplateId)}/edit`;
+const projectTemplatesCreate = () => `${projectTemplates()}/create`;
 
 /******************* Organizations Endpoints ********************/
 const organizations = () => `${API_URL}/organizations`;
@@ -199,6 +243,8 @@ const organizationsLogoImage = () => `${organizations()}/logo`;
 const organizationsSetLogoImage = () => `${organizations()}/logo/update`;
 const organizationsSetFeaturedProjects = () => `${organizationsFeaturedProjects()}/set`;
 const organizationsSetWorkspaceId = () => `${organizations()}/workspaceId/set`;
+const organizationsGetPartReviewGuideLink = () => `${organizations()}/part-review-guide-link/get`;
+const organizationsSetPartReviewGuideLink = () => `${organizations()}/part-review-guide-link/set`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
@@ -250,6 +296,13 @@ const removeGraphFromGraphCollection = (graphCollectionId: string, graphId: stri
   `${graphCollectionById(graphCollectionId)}/remove/${graphId}`;
 const deleteGraphCollection = (id: string) => `${graphCollectionById(id)}/delete`;
 
+/************** Retrospective Endpoints ***************/
+const retrospectiveTimelines = (startDate?: Date, endDate?: Date) =>
+  `${API_URL}/retrospective/timelines?` +
+  (startDate ? `start=${encodeURIComponent(startDate.toISOString())}` : '') +
+  (endDate ? `end=${encodeURIComponent(endDate.toISOString())}` : '');
+const retrospectiveBudgets = () => `${API_URL}/retrospective/budgets`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -284,6 +337,43 @@ export const apiUrls = {
   projectsEditLinkTypes,
   usersLeadingProjects,
   usersTeamsProjects,
+  projectsSetAbbreviation,
+  projectsDeleteAbbreviation,
+  partsCreateReviewRequest,
+  partsDeleteReviewRequest,
+  partsCreateReview,
+  partsEditReview,
+  partsDeleteReview,
+  partsReviewFaqs,
+  partsReviewFaqCreate,
+  partsReviewFaqEdit,
+  partsReviewFaqDelete,
+  getAllPartCommonMistakes,
+  partsCreateCommonMistake,
+  partsEditCommonMistake,
+  partsDeleteCommonMistake,
+  uploadFile,
+  downloadFile,
+  getAllPartTags,
+  partTagCreate,
+  partTagDelete,
+  createReviewPopup,
+  updateReviewPopup,
+  deleteReviewPopup,
+  notifyPartAssignee,
+  notifyPartReviewer,
+  getPartReviewSampleImage,
+  setPartReviewSampleImage,
+
+  parts,
+  partsByProject,
+  partByIndex,
+  partsCreate,
+  partsUploadPreviewImage,
+  partsEdit,
+  partsDelete,
+  partsCreateSubmission,
+  partsEditSubmission,
 
   tasksCreate,
   tasks,
@@ -331,6 +421,7 @@ export const apiUrls = {
   teamTypesCreate,
   teamTypeEdit,
   teamTypeSetImage,
+  myTeamsWorkpackages,
 
   descriptionBulletsCheck,
   descriptionBulletTypes,
@@ -399,6 +490,11 @@ export const apiUrls = {
   workPackageTemplatesEdit,
   workPackageTemplatesCreate,
   workPackageTemplateDelete,
+  projectTemplates,
+  projectTemplatesById,
+  projectTemplateDelete,
+  projectTemplatesEdit,
+  projectTemplatesCreate,
 
   currentOrganization,
   organizationsUsefulLinks,
@@ -413,6 +509,8 @@ export const apiUrls = {
   organizationsSetLogoImage,
   organizationsSetFeaturedProjects,
   organizationsSetWorkspaceId,
+  organizationsGetPartReviewGuideLink,
+  organizationsSetPartReviewGuideLink,
 
   cars,
   carsCreate,
@@ -456,6 +554,9 @@ export const apiUrls = {
   createChecklist,
   editChecklist,
   checklistDelete,
+
+  retrospectiveTimelines,
+  retrospectiveBudgets,
 
   version
 };

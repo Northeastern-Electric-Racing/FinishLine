@@ -7,7 +7,6 @@ import { Dispatch, MouseEventHandler, SetStateAction } from 'react';
 import { Project, Task, TaskPriority, TaskStatus, TeamPreview, User, UserPreview } from 'shared';
 import { EditTaskFormInput } from '../pages/ProjectDetailPage/ProjectViewContainer/TaskList/TaskFormModal';
 import { fullNamePipe } from './pipes';
-import { makeTeamList } from './teams.utils';
 import { daysOverdue } from './datetime.utils';
 
 //this is needed to fix some weird bug with getActions()
@@ -64,10 +63,6 @@ export interface TaskListDataGridProps {
 
 export const taskUserToAutocompleteOption = (user: User): { label: string; id: string } => {
   return { label: `${fullNamePipe(user)} (${user.email})`, id: user.userId };
-};
-
-export const getTaskAssigneeOptions = (teams: TeamPreview[]): User[] => {
-  return teams.map((team) => makeTeamList(team)).flat();
 };
 
 export const taskPriorityColor = (task: Task) => {

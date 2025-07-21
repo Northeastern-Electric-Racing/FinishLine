@@ -4,7 +4,8 @@
  */
 
 import * as yup from 'yup';
-import { FormControl, FormLabel, Grid, TextField, Typography } from '@mui/material';
+import { FormControl, FormLabel, Grid, TextField, Typography, Tooltip } from '@mui/material';
+import HelpIcon from '@mui/icons-material/Help';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { NERButton } from '../../../components/NERButton';
@@ -120,6 +121,12 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({
           <FormControl fullWidth>
             <FormLabel sx={{ display: 'flex' }}>
               <Typography sx={{ whiteSpace: 'nowrap' }}>Personal Zoom Link</Typography>
+              <Tooltip
+                title="Ensure your Zoom Link is Publicly Accessible and Does Not Require a Password."
+                placement="right"
+              >
+                <HelpIcon style={{ fontSize: 'medium', marginLeft: '5px', marginTop: '3px' }} />
+              </Tooltip>
               <ExternalLink
                 link="https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0066271"
                 description="(Find your Personal Zoom Link)"

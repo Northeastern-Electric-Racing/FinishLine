@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useQueryClient, useMutation } from 'react-query';
-import { Team } from 'shared';
+import { Team, TeamPreview, WorkPackage } from 'shared';
 import {
   getAllTeams,
   getSingleTeam,
@@ -15,7 +15,8 @@ import {
   createTeam,
   setTeamLeads,
   archiveTeam,
-  getAllArchivedTeams
+  getAllArchivedTeams,
+  getMyTeamsWorkpackages
 } from '../apis/teams.api';
 
 export interface CreateTeamPayload {
@@ -27,14 +28,14 @@ export interface CreateTeamPayload {
 }
 
 export const useAllTeams = () => {
-  return useQuery<Team[], Error>(['teams', false], async () => {
+  return useQuery<TeamPreview[], Error>(['teams', false], async () => {
     const { data } = await getAllTeams();
     return data;
   });
 };
 
 export const useAllArchivedTeams = () => {
-  return useQuery<Team[], Error>(['teams', true], async () => {
+  return useQuery<TeamPreview[], Error>(['teams', true], async () => {
     const { data } = await getAllArchivedTeams();
     return data;
   });
@@ -157,4 +158,11 @@ export const useSetTeamLeads = (teamId: string) => {
       }
     }
   );
+};
+
+export const useMyTeamsWorkpackages = () => {
+  return useQuery<WorkPackage[], Error>(['teams', 'work-packages'], async () => {
+    const { data } = await getMyTeamsWorkpackages();
+    return data;
+  });
 };

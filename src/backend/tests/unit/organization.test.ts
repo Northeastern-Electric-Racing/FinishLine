@@ -330,4 +330,33 @@ describe('Organization Tests', () => {
       expect(updatedOrganization.slackWorkspaceId).toBe('1234');
     });
   });
+
+  describe('Get Part Review Guide Link', () => {
+    it('Fails if an organization does not exist', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      await expect(async () => await OrganizationsService.getPartReviewGuideLink('1', testBatman)).rejects.toThrow(
+        new NotFoundException('Organization', '1')
+      );
+    });
+
+    it('Succeeds and gets the part review guide link', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      await OrganizationsService.setPartReviewGuideLink(testBatman, orgId, 'newlink');
+      const guideLink = await OrganizationsService.getPartReviewGuideLink(orgId, testBatman);
+
+      expect(guideLink).not.toBeNull();
+      expect(guideLink).toBe('newlink');
+    });
+  });
+
+  describe('Set Part Review Guide Link', () => {
+    it('Succeeds and updates part review guide link', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+
+      const updatedOrganization = await OrganizationsService.setPartReviewGuideLink(testBatman, orgId, 'newlink');
+
+      expect(updatedOrganization).not.toBeNull();
+      expect(updatedOrganization.partReviewGuideLink).toBe('newlink');
+    });
+  });
 });
