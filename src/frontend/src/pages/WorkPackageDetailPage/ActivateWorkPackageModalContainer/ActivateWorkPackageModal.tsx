@@ -26,9 +26,7 @@ interface ActivateWorkPackageModalProps {
 }
 
 const schema = yup.object().shape({
-  startDate: yup
-    .date()
-    .required('Start Date is required'),
+  startDate: yup.date().required('Start Date is required'),
   confirmDetails: yup
     .boolean()
     .required('Please confirm project details are correct')

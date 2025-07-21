@@ -29,9 +29,7 @@ const CreateWorkPackageForm: React.FC = () => {
 
   const schema = yup.object().shape({
     name: yup.string().required('Name is required!'),
-    startDate: yup
-      .date()
-      .required('Start Date is required!'),
+    startDate: yup.date().required('Start Date is required!'),
     duration: yup.number().required()
   });
 
