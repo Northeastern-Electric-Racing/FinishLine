@@ -8,7 +8,7 @@ import {
 } from '../../../utils/gantt.utils';
 import GanttChartCollectionSection from './GanttChartCollectionSection';
 import { GanttChartTimeline } from './GanttChartComponents/GanttChartTimeline';
-import { eachDayOfInterval, isMonday } from 'date-fns';
+import { eachDayOfInterval, isMonday, differenceInDays } from 'date-fns';
 import { dateToString, getMonday } from '../../../utils/datetime.utils';
 import { GANTT_CHART_CELL_SIZE, GANTT_CHART_GAP_SIZE } from '../../../utils/gantt.utils';
 export interface GanttEditability<E, T> {
@@ -44,7 +44,12 @@ const GanttChart = <E, T>({
 }: GanttChartProps<E, T>) => {
   const theme = useTheme();
   const days = eachDayOfInterval({ start: startDate, end: endDate }).filter((day) => isMonday(day));
-  const currentDayCol = days.findIndex((day) => dateToString(day) === dateToString(getMonday(new Date()))) + 1;
+
+  const today = new Date(new Date().setHours(0, 0, 0, 0));
+  const currentWeekCol = days.findIndex((day) => dateToString(day) === dateToString(getMonday(today))) + 1;
+
+  const daysIntoWeek = differenceInDays(today, getMonday(today));
+  const dailyOffset = daysIntoWeek * (parseFloat(GANTT_CHART_CELL_SIZE) / 7);
 
   return (
     <Box
@@ -78,11 +83,11 @@ const GanttChart = <E, T>({
         })}
       </Box>
 
-      {currentDayCol > 0 && (
+      {currentWeekCol > 0 && (
         <Box
           sx={{
             position: 'absolute',
-            left: `calc(${currentDayCol - 1} * (${GANTT_CHART_CELL_SIZE} + ${GANTT_CHART_GAP_SIZE}) + 2rem)`,
+            left: `calc(${currentWeekCol - 1} * (${GANTT_CHART_CELL_SIZE} + ${GANTT_CHART_GAP_SIZE}) + 1.1rem + ${dailyOffset}rem)`,
             top: '5rem',
             width: '1px',
             backgroundColor: theme.palette.info.main,
