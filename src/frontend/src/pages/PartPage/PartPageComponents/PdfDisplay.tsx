@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { Box, Typography, IconButton, Grid, Button, Tooltip } from '@mui/material';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
@@ -24,6 +24,9 @@ import DownloadButton from '../../../components/DownloadButton';
 import { NERButton } from '../../../components/NERButton';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import FullscreenIcon from '@mui/icons-material/Fullscreen';
+import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
+import HelpIcon from '@mui/icons-material/Help';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 
@@ -82,6 +85,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+  const [fullscreen, setFullscreen] = useState(false);
 
   //popups to be displayed (all on submissions, only ones in review on reviews)
   const [variablePopups, setVariablePopups] = useState<Part_Review_Popup[]>([]);
@@ -106,6 +110,71 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
   const { mutateAsync: uploadFile } = useUploadFile();
 
   const { mutateAsync: updateReview } = useEditPartReview();
+
+  const handleZoomIn = useCallback(() => {
+    if (!loadSuccess) return;
+    setScale((prev) => prev * 1.2);
+  }, [loadSuccess]);
+
+  const handleZoomOut = useCallback(() => {
+    if (!loadSuccess) return;
+    setScale((prev) => prev / 1.2);
+  }, [loadSuccess]);
+
+  const toggleFullscreen = useCallback(() => {
+    if (!loadSuccess) return;
+    setScale((prev) => prev * (fullscreen ? 0.5 : 2));
+    setFullscreen((prev) => !prev);
+    setPosition((prev) => {
+      return { x: prev.x + (fullscreen ? -pdfDimensions.width / 2 : pdfDimensions.width / 2), y: prev.y };
+    });
+  }, [fullscreen, loadSuccess, pdfDimensions.width]);
+
+  const commentOnClick = useCallback(() => {
+    setEditMode(editMode === 1 ? 0 : 1);
+    setCustomComment(true);
+    setNewPopupCoords({ x: 5, y: 5 });
+  }, [editMode]);
+
+  const commonMistakeOnClick = useCallback(() => {
+    setEditMode(editMode === 2 ? 0 : 2);
+    setCustomComment(false);
+    setNewPopupCoords({ x: 5, y: 5 });
+  }, [editMode]);
+
+  let reviewMode = false;
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent): void => {
+      if ((e.metaKey || e.ctrlKey) && (e.key === '+' || e.key === '=' || e.key === '-')) {
+        e.preventDefault();
+
+        if (e.key === '+' || e.key === '=') {
+          handleZoomIn();
+        } else if (e.key === '-') {
+          handleZoomOut();
+        }
+      }
+
+      if (e.key === 'f' || e.key === 'F') {
+        toggleFullscreen();
+      }
+
+      if (reviewMode && (e.key === 'c' || e.key === 'C')) {
+        commentOnClick();
+      }
+
+      if (reviewMode && (e.key === 'm' || e.key === 'M')) {
+        commonMistakeOnClick();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleZoomIn, handleZoomOut, fullscreen, toggleFullscreen, commentOnClick, commonMistakeOnClick, reviewMode]);
 
   //re-generates the popups when the review or submission changes
   useEffect(() => {
@@ -153,7 +222,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
   if (isErrorCommonMistakes) return <ErrorPage error={errorCommonMistakes} />;
 
   //only enter review mode if this user is the creator of the non-complete review
-  const reviewMode = review?.userCreated.userId === user.userId && !review.completedAt;
+  reviewMode = review?.userCreated.userId === user.userId && !review.completedAt;
 
   const reviewerNameFromPopup = (popup: Part_Review_Popup) => {
     const review = submission.reviews.find((review) => review.partReviewId === popup.reviewId);
@@ -205,28 +274,6 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
         }
       }
     }
-  };
-
-  const commentOnClick = () => {
-    setEditMode(editMode === 1 ? 0 : 1);
-    setCustomComment(true);
-    setNewPopupCoords({ x: 5, y: 5 });
-  };
-
-  const commonMistakeOnClick = () => {
-    setEditMode(editMode === 2 ? 0 : 2);
-    setCustomComment(false);
-    setNewPopupCoords({ x: 5, y: 5 });
-  };
-
-  const handleZoomIn = () => {
-    if (!loadSuccess) return;
-    setScale((prev) => prev * 1.2);
-  };
-
-  const handleZoomOut = () => {
-    if (!loadSuccess) return;
-    setScale((prev) => prev / 1.2);
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -347,139 +394,44 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
       </Grid>
 
       <Box display={'flex'} flexDirection={'row'}>
-        {/* custom comment, common mistake, and file upload buttons for reviews*/}
-        {reviewMode && (
-          <Box display={'flex'} flexDirection={'column'}>
-            <Box
-              sx={{
-                width: '4rem',
-                height: '4rem',
-                bgcolor: editMode === 1 ? 'red' : 'rgba(0,0,0,0.2)',
-                marginRight: '2rem',
-                border: 2,
-                borderColor: 'white',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                cursor: 'pointer'
-              }}
-              onClick={commentOnClick}
-            >
-              <Tooltip title={'Add Custom Comment'}>
-                <AddCommentRoundedIcon sx={{ width: '60%', height: '60%' }} />
-              </Tooltip>
-            </Box>
-            <Box
-              sx={{
-                width: '4rem',
-                height: '4rem',
-                bgcolor: editMode === 2 ? 'red' : 'rgba(0,0,0,0.2)',
-                marginRight: '2rem',
-                border: 2,
-                borderColor: 'white',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                cursor: 'pointer'
-              }}
-              onClick={commonMistakeOnClick}
-            >
-              <Tooltip title={'Add Common Mistake'}>
-                <CommentRoundedIcon sx={{ width: '60%', height: '60%' }} />
-              </Tooltip>
-            </Box>
-            <Button
-              variant="contained"
-              color="success"
-              component="label"
-              sx={{
-                width: '4rem',
-                height: '4rem',
-                bgcolor: editMode === 3 ? 'red' : 'rgba(0,0,0,0.2)',
-                marginRight: '2rem',
-                border: 2,
-                borderColor: 'white',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                cursor: 'pointer'
-              }}
-            >
-              <Tooltip title={'Upload Review File'}>
-                <UploadFileRoundedIcon sx={{ color: 'white', fontSize: '2rem' }} />
-              </Tooltip>
-              {/* Position the input absolutely but keep it invisible */}
-              <input
-                id="fileUploadInput"
-                type="file"
-                style={{
-                  position: 'absolute',
-                  width: '0',
-                  height: '0',
-                  padding: '0',
-                  border: 'none',
-                  overflow: 'hidden',
-                  clip: 'rect(0, 0, 0, 0)'
-                }}
-                onChange={(e) => {
-                  if (e.target.files) {
-                    [...e.target.files]?.forEach(async (file) => {
-                      //validate each file
-                      if (file.size > MAX_FILE_SIZE) {
-                        toast.error(`File "${file.name}" exceeds the maximum size limit of ${MAX_FILE_SIZE} bytes`);
-                        return;
-                      }
-                      if (!/^[\w.]+$/.test(file.name)) {
-                        toast.error(`File names can only contain letters and numbers`);
-                        return;
-                      }
-                      if (file.name.length > 20) {
-                        toast.error(`File names cannot be longer than 20 characters`);
-                        return;
-                      }
-
-                      if (!isPdf(file.name)) {
-                        toast.warning(
-                          `Warning: "${file.name}" is not a PDF file, so will not be displayed. (Don't worry, users can still download it)`,
-                          5000
-                        );
-                      }
-
-                      try {
-                        const fileId = await uploadFile(file);
-                        updateReview({
-                          partReviewId: review.partReviewId,
-                          fileIds: [...review.fileIds, fileId]
-                        });
-                      } catch (error: unknown) {
-                        toast.error('file upload failing');
-                      }
-                    });
-                  }
-                }}
-              />
-            </Button>
-          </Box>
-        )}
         {/* pdf display box */}
         <Box
           sx={{
-            width: '75vh',
-            height: '75vh',
+            width: fullscreen ? '95vw' : '75vh',
+            height: fullscreen ? '95vh' : '75vh',
             border: 2,
             borderColor: 'grey.400',
             borderRadius: 1,
             overflow: 'hidden',
-            position: 'relative',
+            position: fullscreen ? 'absolute' : 'relative',
+            top: fullscreen ? '2.5vh' : undefined,
+            left: fullscreen ? '2.5vw' : undefined,
             bgcolor: 'grey.50',
             cursor:
-              editMode === 0 ? (isDragging ? 'grabbing' : 'grab') : editMode === 1 || editMode === 2 ? 'crosshair' : 'auto'
+              editMode === 0 ? (isDragging ? 'grabbing' : 'grab') : editMode === 1 || editMode === 2 ? 'crosshair' : 'auto',
+            zIndex: 10
           }}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
         >
+          {/* Top Right Help Icon */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              zIndex: 1
+            }}
+          >
+            <Tooltip
+              title="Press 'f' to toggle full screen, cmd or ctrl +/- to zoom in/out, 'c' to enter common mistake mode, and 'm' to enter common mistake mode"
+              placement="right"
+            >
+              <HelpIcon style={{ fontSize: 'large', color: 'black' }} />
+            </Tooltip>
+          </Box>
           {/* Zoom controls */}
           <Box
             sx={{
@@ -492,14 +444,161 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
               bgcolor: 'background.paper',
               borderRadius: 1,
               p: 0.5,
+              boxShadow: 1,
+              maxHeight: '8vh'
+            }}
+          >
+            <Box>
+              <IconButton onClick={handleZoomIn} size="small">
+                <ZoomInIcon fontSize="small" />
+              </IconButton>
+              <IconButton onClick={handleZoomOut} size="small">
+                <ZoomOutIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          </Box>
+          {/* custom comment, common mistake, and file upload buttons for reviews*/}
+          {reviewMode && (
+            <Box
+              flexDirection={'column'}
+              sx={{
+                position: 'absolute',
+                zIndex: 11,
+                top: '8vh',
+                left: 8
+              }}
+            >
+              <Box
+                sx={{
+                  width: '4rem',
+                  height: '4rem',
+                  bgcolor: editMode === 1 ? 'red' : 'background.paper',
+                  marginRight: '2rem',
+                  border: 2,
+                  borderColor: 'white',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  cursor: 'pointer'
+                }}
+                onClick={commentOnClick}
+              >
+                <Tooltip title={'Add Custom Comment'}>
+                  <AddCommentRoundedIcon sx={{ width: '60%', height: '60%' }} />
+                </Tooltip>
+              </Box>
+              <Box
+                sx={{
+                  width: '4rem',
+                  height: '4rem',
+                  bgcolor: editMode === 2 ? 'red' : 'background.paper',
+                  marginRight: '2rem',
+                  border: 2,
+                  borderColor: 'white',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  cursor: 'pointer'
+                }}
+                onClick={commonMistakeOnClick}
+              >
+                <Tooltip title={'Add Common Mistake'}>
+                  <CommentRoundedIcon sx={{ width: '60%', height: '60%' }} />
+                </Tooltip>
+              </Box>
+              <Button
+                variant="contained"
+                color="success"
+                component="label"
+                sx={{
+                  width: '4rem',
+                  height: '4rem',
+                  bgcolor: editMode === 3 ? 'red' : 'background.paper',
+                  marginRight: '2rem',
+                  border: 2,
+                  borderColor: 'white',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  cursor: 'pointer'
+                }}
+              >
+                <Tooltip title={'Upload Review File'}>
+                  <UploadFileRoundedIcon sx={{ color: 'white', fontSize: '2rem' }} />
+                </Tooltip>
+                {/* Position the input absolutely but keep it invisible */}
+                <input
+                  id="fileUploadInput"
+                  type="file"
+                  style={{
+                    position: 'absolute',
+                    width: '0',
+                    height: '0',
+                    padding: '0',
+                    border: 'none',
+                    overflow: 'hidden',
+                    clip: 'rect(0, 0, 0, 0)'
+                  }}
+                  onChange={(e) => {
+                    if (e.target.files) {
+                      [...e.target.files]?.forEach(async (file) => {
+                        //validate each file
+                        if (file.size > MAX_FILE_SIZE) {
+                          toast.error(`File "${file.name}" exceeds the maximum size limit of ${MAX_FILE_SIZE} bytes`);
+                          return;
+                        }
+                        if (!/^[\w.]+$/.test(file.name)) {
+                          toast.error(`File names can only contain letters and numbers`);
+                          return;
+                        }
+                        if (file.name.length > 20) {
+                          toast.error(`File names cannot be longer than 20 characters`);
+                          return;
+                        }
+
+                        if (!isPdf(file.name)) {
+                          toast.warning(
+                            `Warning: "${file.name}" is not a PDF file, so will not be displayed. (Don't worry, users can still download it)`,
+                            5000
+                          );
+                        }
+
+                        try {
+                          if (!review) {
+                            toast.error('file upload failing');
+                            return;
+                          }
+                          const fileId = await uploadFile(file);
+                          updateReview({
+                            partReviewId: review.partReviewId,
+                            fileIds: [...review.fileIds, fileId]
+                          });
+                        } catch (error: unknown) {
+                          toast.error('file upload failing');
+                        }
+                      });
+                    }
+                  }}
+                />
+              </Button>
+            </Box>
+          )}
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: 8,
+              right: 8,
+              zIndex: 1,
+              display: 'flex',
+              gap: 1,
+              bgcolor: 'background.paper',
+              borderRadius: 1,
+              p: 0.5,
               boxShadow: 1
             }}
           >
-            <IconButton onClick={handleZoomIn} size="small">
-              <ZoomInIcon fontSize="small" />
-            </IconButton>
-            <IconButton onClick={handleZoomOut} size="small">
-              <ZoomOutIcon fontSize="small" />
+            <IconButton onClick={toggleFullscreen} size="small">
+              {fullscreen ? <FullscreenExitIcon fontSize="small" /> : <FullscreenIcon fontSize="small" />}
             </IconButton>
           </Box>
           {/* Cycle submission files */}
