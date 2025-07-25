@@ -167,7 +167,7 @@ export default class ReimbursementRequestsController {
         req.currentUser,
         req.organization
       );
-      res.status(204).json(deletedReimbursementRequest);
+      res.status(200).json(deletedReimbursementRequest);
     } catch (error: unknown) {
       next(error);
     }
@@ -424,7 +424,7 @@ export default class ReimbursementRequestsController {
         req.currentUser,
         req.organization
       );
-      res.status(204).json(deletedAccountCode);
+      res.status(200).json(deletedAccountCode);
     } catch (error: unknown) {
       next(error);
     }
@@ -458,7 +458,7 @@ export default class ReimbursementRequestsController {
       const { vendorId } = req.params;
 
       const deletedVendor = await ReimbursementRequestService.deleteVendor(vendorId, req.currentUser, req.organization);
-      res.status(204).json(deletedVendor);
+      res.status(200).json(deletedVendor);
     } catch (error: unknown) {
       next(error);
     }
@@ -534,16 +534,16 @@ export default class ReimbursementRequestsController {
         req.currentUser,
         req.organization
       );
-      res.status(204).json(deletedIndexCode);
+      res.status(200).json(deletedIndexCode);
     } catch (error: unknown) {
       next(error);
     }
   }
 
-  static async createOtherReimbursementProductReason(req: Request, res: Response, next: NextFunction) {
+  static async createOtherReasonReimbursementProduct(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, budget, indexCodeId, accountCodeIds } = req.body;
-      const otherReimbursementProductReason = await ReimbursementRequestService.createOtherReimbursementProductReason(
+      const otherReimbursementProductReason = await ReimbursementRequestService.createOtherReasonReimbursementProduct(
         name,
         budget,
         indexCodeId,
@@ -590,7 +590,7 @@ export default class ReimbursementRequestsController {
         req.currentUser,
         req.organization
       );
-      res.status(204).json(deletedOtherProductReason);
+      res.status(200).json(deletedOtherProductReason);
     } catch (error: unknown) {
       next(error);
     }

@@ -188,6 +188,7 @@ const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
 const financeEditVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/edit`;
 const financeDeleteVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/delete`;
 const financeLeadershipApprove = (id: string) => `${financeEndpoints()}/${id}/leadership-approve`;
+
 const financeRoutesEndpoints = () => `${API_URL}/finance`;
 const financeCreateSponsor = () => `${financeRoutesEndpoints()}/sponsor/create`;
 const financeCreateSponsorTier = () => `${financeRoutesEndpoints()}/sponsorTier/create`;
@@ -199,7 +200,7 @@ const financeCreateOtherProductReason = () => `${getAllOtherProductReasons()}/cr
 const getAllSponsors = () => `${financeRoutesEndpoints()}/sponsors`;
 const getSponsorTasks = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/sponsorTasks`;
 const deleteSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/delete`;
-const deleteSponsorTask = (sponsorTaskId: string) => `${financeRoutesEndpoints()}/sponsorTask/${sponsorTaskId}`;
+const deleteSponsorTask = (sponsorTaskId: string) => `${financeRoutesEndpoints()}/sponsorTask/${sponsorTaskId}/delete`;
 const editSponsorTask = (sponsorTaskId: string) => `${financeRoutesEndpoints()}/sponsorTask/${sponsorTaskId}/edit`;
 const financeEditOtherReimbursementProductReason = (id: String) =>
   `${financeEndpoints()}/other-reimbursement-product-reasons/${id}/edit`;

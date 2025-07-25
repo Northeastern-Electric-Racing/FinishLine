@@ -25,7 +25,7 @@ describe('Reimbursement Requests', () => {
     createdIndexCode = result.indexCode;
     createdAccountCode = result.accountCode;
     createdUser = result.user;
-    createdOtherProductReason = await ReimbursementRequestService.createOtherReimbursementProductReason(
+    createdOtherProductReason = await ReimbursementRequestService.createOtherReasonReimbursementProduct(
       'GENERAL STOCK',
       10,
       createdIndexCode.indexCodeId,
@@ -528,7 +528,7 @@ describe('Reimbursement Requests', () => {
       expect(otherProductReasons[0].budget).toEqual(10);
       expect(otherProductReasons[0].indexCode.indexCodeId).toEqual(createdIndexCode.indexCodeId);
       expect(otherProductReasons[0].userCreated.userId).toEqual(createdUser.userId);
-      await ReimbursementRequestService.createOtherReimbursementProductReason(
+      await ReimbursementRequestService.createOtherReasonReimbursementProduct(
         'CONSUMABLES',
         100,
         createdIndexCode.indexCodeId,
@@ -547,7 +547,7 @@ describe('Reimbursement Requests', () => {
 
   describe('Testing create other product reason', () => {
     test('Creating an other product reason succeeds', async () => {
-      const otherProductReason = await ReimbursementRequestService.createOtherReimbursementProductReason(
+      const otherProductReason = await ReimbursementRequestService.createOtherReasonReimbursementProduct(
         'COMPETITION',
         125,
         createdIndexCode.indexCodeId,
@@ -716,7 +716,7 @@ describe('Reimbursement Requests', () => {
 
   describe('Editing an other reimbursement product reason', () => {
     test('Successfully editing a other reimbursement product reason', async () => {
-      const reason = await ReimbursementRequestService.createOtherReimbursementProductReason(
+      const reason = await ReimbursementRequestService.createOtherReasonReimbursementProduct(
         'GENERAL STOCK',
         10,
         createdIndexCode.indexCodeId,
@@ -748,7 +748,7 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Throws with invalid index code', async () => {
-      const reason = await ReimbursementRequestService.createOtherReimbursementProductReason(
+      const reason = await ReimbursementRequestService.createOtherReasonReimbursementProduct(
         'GENERAL STOCK',
         10,
         createdIndexCode.indexCodeId,

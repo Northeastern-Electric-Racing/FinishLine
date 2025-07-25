@@ -2128,7 +2128,7 @@ const performSeed: () => Promise<void> = async () => {
     reimbursement1.reimbursementRequestId
   );
 
-  const otherProductReasonConsumables = await ReimbursementRequestService.createOtherReimbursementProductReason(
+  const otherProductReasonConsumables = await ReimbursementRequestService.createOtherReasonReimbursementProduct(
     'CONSUMABLES',
     10,
     indexCodeCash.indexCodeId,
@@ -2137,7 +2137,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  const otherProductReasonTools = await ReimbursementRequestService.createOtherReimbursementProductReason(
+  const otherProductReasonTools = await ReimbursementRequestService.createOtherReasonReimbursementProduct(
     'TOOLS_AND_EQUIPMENT',
     10,
     indexCodeCash.indexCodeId,
@@ -2146,7 +2146,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  const otherProductReasonComp = await ReimbursementRequestService.createOtherReimbursementProductReason(
+  const otherProductReasonComp = await ReimbursementRequestService.createOtherReasonReimbursementProduct(
     'COMPETITION',
     10,
     indexCodeBudget.indexCodeId,
@@ -2155,7 +2155,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  const otherProductReasonGeneral = await ReimbursementRequestService.createOtherReimbursementProductReason(
+  const otherProductReasonGeneral = await ReimbursementRequestService.createOtherReasonReimbursementProduct(
     'GENERAL_STOCK',
     10,
     indexCodeBudget.indexCodeId,
@@ -2164,7 +2164,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  const otherProductReasonSub = await ReimbursementRequestService.createOtherReimbursementProductReason(
+  const otherProductReasonSub = await ReimbursementRequestService.createOtherReasonReimbursementProduct(
     'SUBSCRIPTIONS_AND_MEMBERSHIP',
     10,
     indexCodeCash.indexCodeId,

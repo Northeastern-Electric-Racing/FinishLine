@@ -45,7 +45,7 @@ reimbursementRequestsRouter.post(
   nonEmptyString(body('indexCodeId')),
   body('accountCodeIds').isArray(),
   validateInputs,
-  ReimbursementRequestController.createOtherReimbursementProductReason
+  ReimbursementRequestController.createOtherReasonReimbursementProduct
 );
 
 reimbursementRequestsRouter.get(
@@ -77,11 +77,12 @@ reimbursementRequestsRouter.get('/reimbursements', ReimbursementRequestControlle
 reimbursementRequestsRouter.post(
   '/:vendorId/vendors/edit',
   nonEmptyString(body('name')),
-  body('username').optional(),
-  body('password').optional(),
-  body('discountCode').optional(),
+  nonEmptyString(body('username')).optional(),
+  nonEmptyString(body('password')).optional(),
+  nonEmptyString(body('discountCode')).optional(),
   body('taxExempt').isBoolean(),
   body('twoFactorContacts').isArray(),
+  nonEmptyString(body('twoFactorContacts.*')),
   nonEmptyString(body('notes')).optional(),
   validateInputs,
   ReimbursementRequestController.editVendor
@@ -145,6 +146,7 @@ reimbursementRequestsRouter.post(
   nonEmptyString(body('discountCode')).optional(),
   body('taxExempt').isBoolean(),
   body('twoFactorContacts').isArray(),
+  nonEmptyString(body('twoFactorContacts.*')),
   nonEmptyString(body('notes')).optional(),
   validateInputs,
   ReimbursementRequestController.createVendor
@@ -155,8 +157,9 @@ reimbursementRequestsRouter.post(
   nonEmptyString(body('name')),
   intMinZero(body('code')),
   body('allowed').isBoolean(),
-  body('amount').isInt().optional(),
+  intMinZero(body('amount')).optional(),
   body('indexCodeIds').isArray(),
+  nonEmptyString(body('indexCodeIds.*')),
   validateInputs,
   ReimbursementRequestController.createAccountCode
 );
@@ -166,8 +169,9 @@ reimbursementRequestsRouter.post(
   nonEmptyString(body('name')),
   intMinZero(body('code')),
   body('allowed').isBoolean(),
-  body('amount').isInt().optional(),
+  intMinZero(body('amount')).optional(),
   body('indexCodeIds').isArray(),
+  nonEmptyString(body('indexCodeIds.*')),
   validateInputs,
   ReimbursementRequestController.editAccountCode
 );
@@ -246,6 +250,7 @@ reimbursementRequestsRouter.post(
   '/other-reimbursement-product-reasons/:otherReimbursementProductReasonId/edit',
   nonEmptyString(body('indexCodeId')),
   body('accountCodeIds').isArray(),
+  nonEmptyString(body("accountCodeIds.*")),
   nonEmptyString(body('name')),
   intMinZero(body('budget')),
   validateInputs,

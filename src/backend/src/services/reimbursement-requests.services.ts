@@ -21,8 +21,6 @@ import {
   startOfDay,
   IndexCode,
   OtherProductReason,
-  isAtLeastRank,
-  RoleEnum,
   notGuest
 } from 'shared';
 import prisma from '../prisma/prisma';
@@ -67,7 +65,7 @@ import {
   sendSubmittedToSaboNotification,
   sendThreadResponse
 } from '../utils/slack.utils';
-import { getUsers, userHasPermission, userHasPermissionNew } from '../utils/users.utils';
+import { getUsers, userHasPermission } from '../utils/users.utils';
 import { getReimbursementRequestQueryArgs } from '../prisma-query-args/reimbursement-requests.query-args';
 import { getReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
 import { getReimbursementStatusQueryArgs } from '../prisma-query-args/reimbursement-statuses.query-args';
@@ -1599,7 +1597,7 @@ export default class ReimbursementRequestService {
    * @param user the user creating the other reimbursement product reason
    * @returns transformed created other reimbursement product reason
    */
-  static async createOtherReimbursementProductReason(
+  static async createOtherReasonReimbursementProduct(
     name: string,
     budget: number,
     indexCodeId: string,

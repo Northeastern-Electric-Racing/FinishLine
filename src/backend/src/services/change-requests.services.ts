@@ -1,4 +1,6 @@
 import {
+  ActivationChangeRequest,
+  BudgetChangeRequest,
   ChangeRequest,
   isAdmin,
   isGuest,
@@ -8,6 +10,7 @@ import {
   ProjectProposedChangesCreateArgs,
   ProposedSolution,
   ProposedSolutionCreateArgs,
+  StageGateChangeRequest,
   StandardChangeRequest,
   WbsNumber,
   wbsPipe,
@@ -845,7 +848,9 @@ export default class ChangeRequestsService {
     organization: Organization,
     otherReasonId?: string,
     accountCodeId?: string
-  ): Promise<string> {
+  ): Promise<
+    ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest | BudgetChangeRequest
+  > {
     // verify user is allowed to create budget change requests
     if (await userHasPermission(submitter.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('create budget change requests');
@@ -984,7 +989,7 @@ export default class ChangeRequestsService {
       throw new HttpException(400, 'No account code or category provided');
     }
 
-    return createdChangeRequest.crId;
+    return changeRequestTransformer(createdChangeRequest);
   }
 
   /**

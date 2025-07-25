@@ -1,5 +1,12 @@
 import express from 'express';
-import { nonEmptyString, validateInputs, isDate, isOptionalDate, startEndDateValidators } from '../utils/validation.utils';
+import {
+  nonEmptyString,
+  validateInputs,
+  isDate,
+  isOptionalDate,
+  startEndDateValidators,
+  intMinZero
+} from '../utils/validation.utils';
 import { body } from 'express-validator';
 import FinanceController from '../controllers/finance.controllers';
 
@@ -12,7 +19,7 @@ financeRouter.post(
   body('sponsorValue').isInt(),
   isDate(body('joinDate')),
   body('activeYears').isArray(),
-  body('activeYears.*').isInt(),
+  intMinZero(body('activeYears.*')),
   nonEmptyString(body('sponsorTierId')),
   body('taxExempt').isBoolean(),
   nonEmptyString(body('vendorContact')),
@@ -50,7 +57,7 @@ financeRouter.post(
   FinanceController.editSponsorTask
 );
 
-financeRouter.post('/sponsorTask/:sponsorTaskId', FinanceController.deleteSponsorTask);
+financeRouter.post('/sponsorTask/:sponsorTaskId/delete', FinanceController.deleteSponsorTask);
 
 financeRouter.post(
   '/sponsor/:sponsorId/sponsorTasks',
@@ -124,7 +131,7 @@ financeRouter.post(
   body('sponsorValue').isInt(),
   isDate(body('joinDate')),
   body('activeYears').isArray(),
-  body('activeYears.*').isInt(),
+  intMinZero(body('activeYears.*')),
   nonEmptyString(body('sponsorTierId')),
   body('taxExempt').isBoolean(),
   nonEmptyString(body('vendorContact')),

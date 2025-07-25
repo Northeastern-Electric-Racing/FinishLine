@@ -64,7 +64,7 @@ changeRequestsRouter.post(
   nonEmptyString(body('otherReasonId')).optional(),
   nonEmptyString(body('accountCodeId')).optional(),
   body('type').custom((value) => value === ChangeRequestType.Budget),
-  body('proposedBudget').isInt(),
+  intMinZero(body('proposedBudget')),
   validateInputs,
   ChangeRequestsController.createBudgetChangeRequest
 );

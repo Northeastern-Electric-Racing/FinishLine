@@ -62,7 +62,7 @@ export default class FinanceController {
     try {
       const { sponsorId } = req.params;
       const deletedSponsor = await FinanceServices.deleteSponsor(sponsorId, req.currentUser, req.organization);
-      res.status(204).json(deletedSponsor);
+      res.status(200).json(deletedSponsor);
     } catch (error: unknown) {
       next(error);
     }
@@ -92,7 +92,7 @@ export default class FinanceController {
     try {
       const { sponsorTaskId } = req.params;
       const deleted = await FinanceServices.deleteSponsorTask(sponsorTaskId, req.currentUser, req.organization);
-      res.status(204).json(deleted);
+      res.status(200).json(deleted);
     } catch (error: unknown) {
       next(error);
     }
