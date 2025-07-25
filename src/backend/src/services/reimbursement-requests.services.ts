@@ -666,7 +666,7 @@ export default class ReimbursementRequestService {
       return existingVendor;
     } else if (existingVendor) throw new HttpException(400, 'This vendor already exists');
 
-    const users = await getUsers(twoFactorContacts);
+    const twoFactorContactUsers = await getUsers(twoFactorContacts);
 
     const vendor = await prisma.vendor.create({
       data: {
@@ -676,7 +676,7 @@ export default class ReimbursementRequestService {
         password: password ? encrypt(password) : undefined,
         taxExempt,
         discountCode,
-        twoFactorContacts: { connect: users.map((user) => ({ userId: user.userId })) },
+        twoFactorContacts: { connect: twoFactorContactUsers.map((user) => ({ userId: user.userId })) },
         notes,
         addedByUserId: submitter.userId
       },
@@ -1292,6 +1292,10 @@ export default class ReimbursementRequestService {
       where: { vendorId },
       select: { twoFactorContacts: { select: { userId: true } } }
     });
+
+    if (!existingVendor) {
+      throw new NotFoundException('Vendor', vendorId);
+    }
 
     const existingContactIds = existingVendor?.twoFactorContacts.map((contact) => ({ userId: contact.userId })) || [];
 

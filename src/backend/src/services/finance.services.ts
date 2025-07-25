@@ -540,15 +540,6 @@ export default class FinanceServices {
       )
     );
 
-    const tier = await prisma.sponsor_Tier.findUnique({
-      where: {
-        sponsorTierId,
-        organizationId: organization.organizationId
-      }
-    });
-
-    if (!tier) throw new NotFoundException('Sponsor Tier', sponsorTierId);
-
     const existingSponsor = await prisma.sponsor.findFirst({
       where: {
         name,

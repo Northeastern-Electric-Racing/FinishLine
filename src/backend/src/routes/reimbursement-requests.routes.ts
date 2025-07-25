@@ -250,7 +250,7 @@ reimbursementRequestsRouter.post(
   '/other-reimbursement-product-reasons/:otherReimbursementProductReasonId/edit',
   nonEmptyString(body('indexCodeId')),
   body('accountCodeIds').isArray(),
-  nonEmptyString(body("accountCodeIds.*")),
+  nonEmptyString(body('accountCodeIds.*')),
   nonEmptyString(body('name')),
   intMinZero(body('budget')),
   validateInputs,

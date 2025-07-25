@@ -573,7 +573,10 @@ export default class ChangeRequestsService {
     reviewer: User
   ): Promise<void> {
     const { budgetChangeRequest } = foundCR;
-    if (!budgetChangeRequest) throw new HttpException(400, 'No activation change request found!');
+    if (!budgetChangeRequest) throw new HttpException(400, 'No budget change request found!');
+    if (!foundCR.accountCode) {
+      throw new HttpException(400, 'Budget changes can only be made on categories and account codes!');
+    }
 
     if (foundCR.category) {
       const changesList = [];
@@ -595,10 +598,6 @@ export default class ChangeRequestsService {
           budget: budgetChangeRequest.proposedBudget
         }
       });
-    }
-
-    if (!foundCR.accountCode) {
-      throw new HttpException(400, 'Budget changes can only be made on categories and account codes!');
     }
 
     const changesList = [];
@@ -665,6 +664,11 @@ export default class ChangeRequestsService {
       },
       include: {
         changeRequests: {
+          where: {
+            dateDeleted: {
+              not: null
+            }
+          },
           include: {
             changes: true
           }
@@ -679,8 +683,7 @@ export default class ChangeRequestsService {
     await validateNoUnreviewedOpenCRs(wbsElement.wbsElementId);
 
     const { changeRequests } = wbsElement;
-    const nonDeletedChangeRequests = changeRequests.filter((changeRequest) => !changeRequest.dateDeleted);
-    if (!allChangeRequestsReviewed(nonDeletedChangeRequests)) {
+    if (!allChangeRequestsReviewed(changeRequests)) {
       throw new HttpException(
         400,
         `Please resolve all change requests related to ${wbsPipe({ carNumber, projectNumber, workPackageNumber })} - ${
@@ -766,7 +769,18 @@ export default class ChangeRequestsService {
           organizationId: organization.organizationId
         }
       },
-      include: { workPackage: true, descriptionBullets: true, changeRequests: { include: { changes: true } } }
+      include: {
+        workPackage: true,
+        descriptionBullets: true,
+        changeRequests: {
+          where: {
+            dateDeleted: {
+              not: null
+            }
+          },
+          include: { changes: true }
+        }
+      }
     });
 
     if (!wbsElement) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
@@ -780,8 +794,7 @@ export default class ChangeRequestsService {
     }
 
     const { changeRequests } = wbsElement;
-    const nonDeletedChangeRequests = changeRequests.filter((changeRequest) => !changeRequest.dateDeleted);
-    if (!allChangeRequestsReviewed(nonDeletedChangeRequests)) {
+    if (!allChangeRequestsReviewed(changeRequests)) {
       throw new HttpException(
         400,
         `Please resolve all change requests related to ${wbsPipe({ carNumber, projectNumber, workPackageNumber })} - ${
@@ -863,18 +876,17 @@ export default class ChangeRequestsService {
         where: {
           otherReimbursementProductReasonId: otherReasonId
         },
-        include: { changeRequests: { include: { changes: true } } }
+        include: { changeRequests: { where: { dateDeleted: { not: null } }, include: { changes: true } } }
       });
 
       if (!category) throw new NotFoundException('Reimbursement Product Other Reason', otherReasonId);
       if (category.dateDeleted) throw new DeletedException('Reimbursement Product Other Reason', otherReasonId);
 
-      // we don't want to have merge conflictS on the wbs element thus we check if there are unreviewed or open CRs on the category
+      // we don't want to have merge conflictS on the category element thus we check if there are unreviewed or open CRs on the category
       await validateNoUnreviewedOpenOtherReasonCRs(category.otherReimbursementProductReasonId);
 
       const { changeRequests } = category;
-      const nonDeletedChangeRequests = changeRequests.filter((changeRequest) => !changeRequest.dateDeleted);
-      if (!allChangeRequestsReviewed(nonDeletedChangeRequests)) {
+      if (!allChangeRequestsReviewed(changeRequests)) {
         throw new HttpException(
           400,
           `Please resolve all change requests related to ${otherReasonId} - ${category.name} before proceeding`
@@ -901,16 +913,16 @@ export default class ChangeRequestsService {
         ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
       });
 
-      const teams = await prisma.team.findMany({
+      const financeTeams = await prisma.team.findMany({
         where: {
           financeTeam: true,
           organizationId: organization.organizationId
         }
       });
 
-      if (teams && teams.length > 0) {
+      if (financeTeams && financeTeams.length > 0) {
         const notifications: { channelId: string; ts: string }[] = await sendAndGetSlackCRNotifications(
-          teams,
+          financeTeams,
           createdChangeRequest,
           submitter,
           undefined,
@@ -927,18 +939,17 @@ export default class ChangeRequestsService {
         where: {
           accountCodeId
         },
-        include: { changeRequests: { include: { changes: true } } }
+        include: { changeRequests: { where: { dateDeleted: { not: null } }, include: { changes: true } } }
       });
 
       if (!accountCode) throw new NotFoundException('Account Code', accountCodeId);
       if (accountCode.dateDeleted) throw new DeletedException('Account Code', accountCodeId);
 
-      // we don't want to have merge conflicts on the wbs element thus we check if there are unreviewed or open CRs on the category
+      // we don't want to have merge conflicts on the account codes thus we check if there are unreviewed or open CRs on the category
       await validateNoUnreviewedOpenAccountCodeCRs(accountCode.accountCodeId);
 
       const { changeRequests } = accountCode;
-      const nonDeletedChangeRequests = changeRequests.filter((changeRequest) => !changeRequest.dateDeleted);
-      if (!allChangeRequestsReviewed(nonDeletedChangeRequests)) {
+      if (!allChangeRequestsReviewed(changeRequests)) {
         throw new HttpException(400, `Please resolve all change requests related to ${accountCode.name} before proceeding`);
       }
 
@@ -962,16 +973,16 @@ export default class ChangeRequestsService {
         ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
       });
 
-      const teams = await prisma.team.findMany({
+      const financeTeams = await prisma.team.findMany({
         where: {
           financeTeam: true,
           organizationId: organization.organizationId
         }
       });
 
-      if (teams && teams.length > 0) {
+      if (financeTeams && financeTeams.length > 0) {
         const notifications: { channelId: string; ts: string }[] = await sendAndGetSlackCRNotifications(
-          teams,
+          financeTeams,
           createdChangeRequest,
           submitter,
           undefined,
