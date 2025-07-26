@@ -16,11 +16,10 @@
     "start": "yarn workspace shared build; concurrently --kill-others-on-fail \"yarn backend:dev\"  \"yarn frontend\"",
     "prisma:seed": "cd src/backend; npx prisma db seed",
     "prisma:reset:force": "yarn workspace shared build; cd src/backend; npx prisma migrate reset --force",
-    "docker:prisma:reset:force": "cd devContainerization && docker-compose -f docker-compose.dev.yml exec -T backend sh -c \"cd /src/backend && npx prisma migrate reset --force\"",
     "prisma:reset": "yarn workspace shared build; cd src/backend; npx prisma migrate reset",
-    "docker:prisma:reset": "cd devContainerization && docker-compose -f docker-compose.dev.yml exec -T backend sh -c \"cd /src/backend && npx prisma migrate reset\"",
+    "docker:prisma:reset": "cd devContainerization && docker-compose -f docker-compose.dev.yml exec -T backend sh -c \"cd /src/backend && npx prisma migrate reset --force\"",
     "prisma:migrate": "yarn prisma:migrate:dev",
-    "docker:prisma:migrate": "cd devContainerization && docker-compose -f docker-compose.dev.yml exec -T backend sh -c \"cd /src/backend && npx prisma migrate dev\"",
+    "docker:prisma:migrate": "cd devContainerization && docker-compose -f docker-compose.dev.yml exec -it -w /src/backend backend npx prisma migrate dev",
     "prisma:migrate:dev": "cd src/backend; npx prisma migrate dev",
     "prisma:migrate:prod": "cd src/backend; npx prisma migrate deploy",
     "prisma:generate": "cd src/backend; npx prisma generate",
@@ -56,7 +55,8 @@
     "exec:frontend": "docker exec -it frontend /bin/sh",
     "exec:backend": "docker exec -it backend /bin/sh",
     "docker:ps": "docker compose -f devContainerization/docker-compose.dev.yml ps",
-    "docker:start": "cd devContainerization && node start-containers.js"
+    "docker:start": "yarn database:setup:script && cd devContainerization && node start-containers.js",
+    "docker:i": "cd devContainerization && docker-compose -f docker-compose.dev.yml exec -T backend sh -c \"yarn install && cd src/backend && npx prisma generate\" && docker-compose -f docker-compose.dev.yml exec -T frontend sh -c \"yarn install\""
   },
   "resolutions": {
     "@types/react": "17.0.1",

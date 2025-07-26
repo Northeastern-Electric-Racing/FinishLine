@@ -1,12 +1,15 @@
 const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
+const fs = require('fs');
 
 const execAsync = promisify(exec);
 const COMPOSE_FILE = 'docker-compose.dev.yml';
+const envPath = './src/backend/.env';
+const dbEnvLine = 'DATABASE_URL="postgresql://postgres:docker@localhost:5432/nerpm?schema=public"';
 
 async function getContainerStatus() {
   try {
-    // Get all containers from the compose file (running and stopped)
+    //get all containers from the compose file (running and stopped)
     const { stdout } = await execAsync(`docker-compose -f ${COMPOSE_FILE} ps -a -q`);
     const containerIds = stdout
       .trim()
@@ -17,7 +20,7 @@ async function getContainerStatus() {
       return { status: 'not_created', running: 0, total: 0 };
     }
 
-    // Check which ones are running
+    //check which ones are running
     const runningCheck = await execAsync(`echo "${containerIds.join('\n')}" | xargs docker inspect -f '{{.State.Running}}'`);
     const runningStatuses = runningCheck.stdout.trim().split('\n');
     const runningCount = runningStatuses.filter((status) => status === 'true').length;
@@ -29,6 +32,13 @@ async function getContainerStatus() {
     };
   } catch (error) {
     return { status: 'not_created', running: 0, total: 0 };
+  }
+}
+
+function checkEnv() {
+  if (!fs.existsSync(envPath)) {
+    fs.writeFileSync(envPath, dbEnvLine, 'utf8');
+    return;
   }
 }
 
@@ -51,18 +61,17 @@ function runCommand(command, options = {}) {
 async function waitForBackendReady() {
   console.log('Waiting for backend container to be ready...');
   let attempts = 0;
-  const maxAttempts = 30; // Wait up to 30 seconds
+  const maxAttempts = 30; //wait up to 30 seconds
 
   while (attempts < maxAttempts) {
     try {
-      // Try to execute a simple command to check if container is responsive
       await execAsync(`docker-compose -f ${COMPOSE_FILE} exec -T backend echo "ready"`);
       console.log('Backend container is ready.');
       return;
     } catch (error) {
       attempts++;
       console.log(`Waiting for backend... (${attempts}/${maxAttempts})`);
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   }
 
