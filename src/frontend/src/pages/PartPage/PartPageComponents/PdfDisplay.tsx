@@ -93,7 +93,8 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
   const [newPopupCoords, setNewPopupCoords] = useState<{ x: number; y: number }>({ x: -5, y: -5 });
 
   //what mode is the user in. 0 for dragging, 1 for custom comment, 2 for common mistake
-  const [editMode, setEditMode] = useState<number>(0);
+  type editModeType = 'pan' | 'comment' | 'mistake';
+  const [editMode, setEditMode] = useState<editModeType>('pan');
 
   //pdf loading states
   const [pdfDimensions, setPdfDimensions] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
@@ -131,13 +132,13 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
   }, [fullscreen, loadSuccess, pdfDimensions.width]);
 
   const commentOnClick = useCallback(() => {
-    setEditMode(editMode === 1 ? 0 : 1);
+    setEditMode(editMode === 'comment' ? 'pan' : 'comment');
     setCustomComment(true);
     setNewPopupCoords({ x: 5, y: 5 });
   }, [editMode]);
 
   const commonMistakeOnClick = useCallback(() => {
-    setEditMode(editMode === 2 ? 0 : 2);
+    setEditMode(editMode === 'mistake' ? 'pan' : 'mistake');
     setCustomComment(false);
     setNewPopupCoords({ x: 5, y: 5 });
   }, [editMode]);
@@ -146,6 +147,12 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
+      const { activeElement } = document;
+      const isTyping = activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA');
+
+      // If typing, don't process shortcuts
+      if (isTyping) return;
+
       if ((e.metaKey || e.ctrlKey) && (e.key === '+' || e.key === '=' || e.key === '-')) {
         e.preventDefault();
 
@@ -169,10 +176,10 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, [handleZoomIn, handleZoomOut, fullscreen, toggleFullscreen, commentOnClick, commonMistakeOnClick, reviewMode]);
 
@@ -279,7 +286,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!loadSuccess) return;
 
-    if (editMode === 1 || editMode === 2) {
+    if (editMode === 'comment' || editMode === 'mistake') {
       //panning logic
       const container = e.currentTarget.getBoundingClientRect();
 
@@ -297,10 +304,10 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
 
       setNewPopupCoords({ x: normalizedX, y: normalizedY });
 
-      setEditMode(0);
+      setEditMode('pan');
     }
 
-    if (editMode === 0) {
+    if (editMode === 'pan') {
       setIsDragging(true);
     }
 
@@ -408,7 +415,13 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
             left: fullscreen ? '2.5vw' : undefined,
             bgcolor: 'grey.50',
             cursor:
-              editMode === 0 ? (isDragging ? 'grabbing' : 'grab') : editMode === 1 || editMode === 2 ? 'crosshair' : 'auto',
+              editMode === 'pan'
+                ? isDragging
+                  ? 'grabbing'
+                  : 'grab'
+                : editMode === 'comment' || editMode === 'mistake'
+                  ? 'crosshair'
+                  : 'auto',
             zIndex: 10
           }}
           onMouseDown={handleMouseDown}
@@ -426,7 +439,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
             }}
           >
             <Tooltip
-              title="Press 'f' to toggle full screen, cmd or ctrl +/- to zoom in/out, 'c' to enter common mistake mode, and 'm' to enter common mistake mode"
+              title="Press 'f' to toggle full screen, cmd or ctrl +/- to zoom in/out, 'c' to enter comment mode, and 'm' to enter common mistake mode"
               placement="right"
             >
               <HelpIcon style={{ fontSize: 'large', color: 'black' }} />
@@ -472,7 +485,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
                 sx={{
                   width: '4rem',
                   height: '4rem',
-                  bgcolor: editMode === 1 ? 'red' : 'background.paper',
+                  bgcolor: editMode === 'comment' ? 'red' : 'background.paper',
                   marginRight: '2rem',
                   border: 2,
                   borderColor: 'white',
@@ -491,7 +504,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
                 sx={{
                   width: '4rem',
                   height: '4rem',
-                  bgcolor: editMode === 2 ? 'red' : 'background.paper',
+                  bgcolor: editMode === 'mistake' ? 'red' : 'background.paper',
                   marginRight: '2rem',
                   border: 2,
                   borderColor: 'white',
@@ -513,7 +526,7 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
                 sx={{
                   width: '4rem',
                   height: '4rem',
-                  bgcolor: editMode === 3 ? 'red' : 'background.paper',
+                  bgcolor: 'background.paper',
                   marginRight: '2rem',
                   border: 2,
                   borderColor: 'white',
