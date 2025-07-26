@@ -85,7 +85,7 @@ describe('Announcemnts Tests', () => {
       );
 
       expect(updatedAnnouncements).toHaveLength(1);
-      expect(updatedAnnouncements[0].text).toBe('test2');
+      expect(updatedAnnouncements[0].text).toBe(announcements[1].text);
     });
   });
 });
