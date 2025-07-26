@@ -18,6 +18,7 @@ fs.readFile(filePath, 'utf8', (err, data) => {
     const lines = data.trim().split('\n');
 
     for (const line of lines) {
+        //db url already exists, no need to add it
         if (line.startsWith("DATABASE_URL=")) return;
     }
 

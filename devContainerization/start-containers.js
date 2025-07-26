@@ -1,11 +1,8 @@
 const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
-const fs = require('fs');
 
 const execAsync = promisify(exec);
 const COMPOSE_FILE = 'docker-compose.dev.yml';
-const envPath = './src/backend/.env';
-const dbEnvLine = 'DATABASE_URL="postgresql://postgres:docker@localhost:5432/nerpm?schema=public"';
 
 async function getContainerStatus() {
   try {
@@ -32,13 +29,6 @@ async function getContainerStatus() {
     };
   } catch (error) {
     return { status: 'not_created', running: 0, total: 0 };
-  }
-}
-
-function checkEnv() {
-  if (!fs.existsSync(envPath)) {
-    fs.writeFileSync(envPath, dbEnvLine, 'utf8');
-    return;
   }
 }
 
@@ -120,6 +110,10 @@ async function main() {
       await runMigrations();
       console.log('Setup complete. Following logs...');
       await runCommand(`docker-compose -f ${COMPOSE_FILE} logs --follow`);
+      break;
+
+    default:
+      console.error('Unexpected container state. Please delete existing finishline containers.');
       break;
   }
 }
