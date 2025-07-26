@@ -14,5 +14,4 @@ COPY ./src/shared src/shared
 RUN yarn prisma:generate
 
 EXPOSE 3001
-# CMD [ "sh", "-c", "cd src/backend && npx prisma migrate deploy && npx prisma db seed & yarn workspace backend dev" ]
 CMD [ "sh", "-c", "yarn workspace backend dev" ]
