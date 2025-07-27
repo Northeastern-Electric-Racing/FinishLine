@@ -1732,10 +1732,13 @@ export default class ReimbursementRequestService {
     });
 
     // send slack notification
+
     const tagRegex = /@([A-Z][a-z'-]+(?:[A-Z][a-z'-]+)?)/gu;
 
+    // find all names that have been tagged in the @FirstLast format
     const taggedNames = [...comment.matchAll(tagRegex)].map((match) => match[1]);
 
+    // spliot the tagged names into first and last names
     const splitTaggedNames = taggedNames.map((name) => {
       const match = name.match(/([A-Z][a-z'-]+)([A-Z][a-z'-]+)/);
 
@@ -1753,6 +1756,7 @@ export default class ReimbursementRequestService {
       };
     });
 
+    // create slack-formatted tags for each tagged user
     const tags: string[] = [];
 
     for (const taggedName of splitTaggedNames) {
@@ -1761,7 +1765,12 @@ export default class ReimbursementRequestService {
       const taggedUser = await prisma.user.findFirst({
         where: {
           firstName: { equals: firstName, mode: 'insensitive' },
-          lastName: { equals: lastName, mode: 'insensitive' }
+          lastName: { equals: lastName, mode: 'insensitive' },
+          organizations: {
+            some: {
+              organizationId: organization.organizationId
+            }
+          }
         },
         include: { userSettings: true }
       });
@@ -1771,6 +1780,7 @@ export default class ReimbursementRequestService {
 
     let replacementIndex = 0;
 
+    // replace the @FirstLast tags with the slack tags
     comment = comment.replace(tagRegex, (_match, _group) => {
       const replacement = tags[replacementIndex];
 
@@ -1779,7 +1789,7 @@ export default class ReimbursementRequestService {
       return replacement;
     });
 
-    // if there is no more than one tag, tag stakeholders
+    // if there is no more than one tag (the creator), tag stakeholders
     if (tags.length < 2) {
       const stakeholders = await prisma.user.findMany({
         where: {
