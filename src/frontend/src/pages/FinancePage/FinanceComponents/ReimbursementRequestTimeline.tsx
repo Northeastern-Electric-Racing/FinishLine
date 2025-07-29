@@ -46,6 +46,8 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ comment, isLast }) =>
   let commentTime = new Date(comment.dateCreated).toLocaleTimeString();
   commentTime = commentTime.slice(0, -6) + commentTime.slice(-3);
 
+  // find the first tag (name of person who made the comment) and convert it to a more readable format
+  // e.g. @TagName followed up -> Tag Name followed up
   const tagRegex = /@([A-Z][a-z'-]+(?:[A-Z][a-z'-]+)?)/gu;
 
   const match = tagRegex.exec(comment.comment);
