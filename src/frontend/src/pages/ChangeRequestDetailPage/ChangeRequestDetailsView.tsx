@@ -38,7 +38,7 @@ const buildDetails = (cr: ChangeRequest): ReactElement => {
     case ChangeRequestType.StageGate:
       return <></>;
     case ChangeRequestType.Budget:
-      return <BudgetDetails cr={cr as BudgetChangeRequest} />;
+      return <BudgetDetails budgetChangeRequest={cr as BudgetChangeRequest} />;
     default:
       return <StandardDetails cr={cr as StandardChangeRequest} />;
   }

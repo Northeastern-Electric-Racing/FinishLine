@@ -7,7 +7,7 @@ import AdminFinanceDashboard from './AdminFinanceDashboard';
 const FinanceDashboard = () => {
   const user = useCurrentUser();
 
-  return <>{isAdmin(user.role) || user.isFinance ? <AdminFinanceDashboard /> : <GeneralFinanceDashboard />}</>;
+  return isAdmin(user.role) || user.isFinance ? <AdminFinanceDashboard /> : <GeneralFinanceDashboard />;
 };
 
 export default FinanceDashboard;

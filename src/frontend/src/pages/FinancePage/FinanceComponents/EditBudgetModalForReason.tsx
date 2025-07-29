@@ -10,9 +10,10 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { formatReasonName } from '../../../utils/reimbursement-request.utils';
 import { createBudgetChangeRequest } from '../../../apis/change-requests.api';
-import { useAuth } from '../../../hooks/auth.hooks';
 import { CreateBudgetChangeRequestPayload } from '../../../hooks/change-requests.hooks';
 import { ChangeRequestType } from 'shared';
+import { useCurrentUser } from '../../../hooks/users.hooks';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 const schema = yup.object().shape({
   category: yup.string().required('Reason is required'),
@@ -52,7 +53,8 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
 
   const currentCategoryId = watch('category');
 
-  const auth = useAuth();
+  const user = useCurrentUser();
+  const toast = useToast();
 
   const {
     data: indexCodes,
@@ -83,14 +85,19 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
   }
 
   const onSubmit = async (data: EditBudgetInputs) => {
-    if (!currentCategoryId) return;
-    if (auth.user?.userId === undefined) throw new Error('Cannot create budget change request without being logged in');
+    if (!currentCategoryId) {
+      toast.error('Could not find current category id');
+      return;
+    }
 
     const currentCategory = otherReasons.find((reason) => reason.otherProductReasonId === currentCategoryId);
-    if (!currentCategory) return;
+    if (!currentCategory) {
+      toast.error('Could not find current category');
+      return;
+    }
 
     const payload: CreateBudgetChangeRequestPayload = {
-      submitterId: auth.user?.userId,
+      submitterId: user.userId,
       otherReasonId: currentCategoryId,
       proposedBudget: data.updatedBudget,
       type: ChangeRequestType.Budget

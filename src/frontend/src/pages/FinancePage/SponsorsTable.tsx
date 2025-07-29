@@ -26,7 +26,7 @@ const SponsorsTable = () => {
   const [sponsorToDelete, setSponsorToDelete] = useState<Sponsor | undefined>(undefined);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedSponsor, setSelectedSponsor] = useState<Sponsor | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isTasksModalOpen, setIsTasksModalOpen] = useState(false);
 
   if (!sponsors || sponsorIsLoading) {
     return <LoadingIndicator />;
@@ -50,12 +50,12 @@ const SponsorsTable = () => {
 
   const openTasksModal = (sponsor: Sponsor) => {
     setSelectedSponsor(sponsor);
-    setIsModalOpen(true);
+    setIsTasksModalOpen(true);
   };
 
   const closeTasksModal = () => {
     setSelectedSponsor(null);
-    setIsModalOpen(false);
+    setIsTasksModalOpen(false);
   };
 
   const sponsorTableRows = currentSponsors.map((sponsor, index) => (
@@ -384,7 +384,7 @@ const SponsorsTable = () => {
       </Box>
       {selectedSponsor && (
         <SidePagePopup
-          showPage={isModalOpen}
+          showPage={isTasksModalOpen}
           handleClose={closeTasksModal}
           title={`Tasks for ${selectedSponsor?.name}`}
           component={<SponsorTasksModal onClose={closeTasksModal} sponsor={selectedSponsor} />}

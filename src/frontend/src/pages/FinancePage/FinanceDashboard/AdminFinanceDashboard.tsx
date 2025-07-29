@@ -59,23 +59,22 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
     return <ErrorPage error={allTeamTypesError} />;
   }
 
-  if (!allTeamTypes || allTeamTypesIsLoading) {
-    return <LoadingIndicator />;
-  }
-
   if (allReimbursementRequestsIsError) {
     return <ErrorPage error={allReimbursementRequestsError} />;
-  }
-
-  if (!allReimbursementRequests || allReimbursementRequestsIsLoading) {
-    return <LoadingIndicator />;
   }
 
   if (allPendingAdvisorListIsError) {
     return <ErrorPage error={allPendingAdvisorListError} />;
   }
 
-  if (!allPendingAdvisorList || allPendingAdvisorListIsLoading) {
+  if (
+    !allTeamTypes ||
+    allTeamTypesIsLoading ||
+    !allReimbursementRequests ||
+    allReimbursementRequestsIsLoading ||
+    !allPendingAdvisorList ||
+    allPendingAdvisorListIsLoading
+  ) {
     return <LoadingIndicator />;
   }
 

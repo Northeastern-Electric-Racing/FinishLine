@@ -70,7 +70,7 @@ const schema = yup.object().shape({
         });
       } else if (product.refundSources[0].amount < 0.01) {
         return this.createError({
-          message: 'Amount must be greater than 0.01',
+          message: 'Amount must be positive',
           path: `reimbursementProducts.${products.indexOf(product)}.refundSources.${0}.amount`
         });
       }
@@ -82,7 +82,7 @@ const schema = yup.object().shape({
         });
       } else if (product.refundSources[1].amount < 0.01) {
         return this.createError({
-          message: 'Amount must be greater than 0.01',
+          message: 'Amount must be positive',
           path: `reimbursementProducts.${products.indexOf(product)}.refundSources.${1}.amount`
         });
       }

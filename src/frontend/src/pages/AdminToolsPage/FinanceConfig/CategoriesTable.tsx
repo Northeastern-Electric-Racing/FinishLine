@@ -19,7 +19,6 @@ const CategoriesTable = () => {
     error: categoriesError
   } = useGetAllOtherProductReason();
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
-  const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [clickedCategory, setClickedCategory] = useState<OtherProductReason>();
   const [categoryToDelete, setCategoryToDelete] = useState<OtherProductReason | undefined>(undefined);
 
@@ -40,7 +39,6 @@ const CategoriesTable = () => {
     <TableRow
       onClick={() => {
         setClickedCategory(category);
-        setShowEditModal(true);
       }}
       key={`category-${index}`}
       sx={{ cursor: 'pointer' }}
@@ -78,9 +76,8 @@ const CategoriesTable = () => {
       <CreateCategoryModal showModal={showCreateModal} handleClose={() => setShowCreateModal(false)} />
       {clickedCategory && (
         <EditCategoryModal
-          showModal={showEditModal}
+          showModal={!!clickedCategory}
           handleClose={() => {
-            setShowEditModal(false);
             setClickedCategory(undefined);
           }}
           category={clickedCategory}

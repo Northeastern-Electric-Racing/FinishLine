@@ -81,7 +81,7 @@ const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProp
               CLOSE
             </NERFailButton>
             <NERSuccessButton sx={{ mx: 1 }} onClick={handleSubmit(onSubmit)}>
-              Submit
+              SUBMIT
             </NERSuccessButton>
           </Box>
         </Box>

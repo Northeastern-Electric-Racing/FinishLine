@@ -108,7 +108,7 @@ export const getSpendingBarDataForProjectBudgetByTeam = async (
   if (!team) throw new NotFoundException('Team', teamId);
 
   const spendingInfoPromises = team.projects.map((project) =>
-    getReimbursementRequestsForReimbursementRequestsByProject(project.projectId, organizationId, startDate, endDate)
+    getReimbursementRequestsByProject(project.projectId, organizationId, startDate, endDate)
   );
 
   const spendingInfos = await Promise.all(spendingInfoPromises);
@@ -156,7 +156,7 @@ export const getSpendingBarDataForProjectBudgetByDivision = async (
 
   const teamDataPromises = division.teams.map(async (team) => {
     const spendingInfoPromises = team.projects.map((project) =>
-      getReimbursementRequestsForReimbursementRequestsByProject(project.projectId, organizationId, startDate, endDate)
+      getReimbursementRequestsByProject(project.projectId, organizationId, startDate, endDate)
     );
     const spendingInfos = await Promise.all(spendingInfoPromises);
 
@@ -174,7 +174,7 @@ export const getSpendingBarDataForProjectBudgetByDivision = async (
   return data;
 };
 
-export const getReimbursementRequestsForReimbursementRequestsByProject = async (
+export const getReimbursementRequestsByProject = async (
   projectId: string,
   organizationId: string,
   startDate?: Date,
@@ -261,7 +261,7 @@ export const getReimbursementRequestsForReimbursementRequestsByProject = async (
   return data;
 };
 
-export const getReimbursementRequestsForReimbursementRequestsByTeam = async (
+export const getReimbursementRequestsByTeam = async (
   teamId: string,
   organizationId: string,
   startDate?: Date,
@@ -360,7 +360,7 @@ export const getReimbursementRequestsForReimbursementRequestsByTeam = async (
   return data;
 };
 
-export const getReimbursementRequestsForReimbursementRequestsByDivision = async (
+export const getReimbursementRequestsByDivision = async (
   teamTypeId: string,
   organizationId: string,
   startDate?: Date,
@@ -400,7 +400,7 @@ export const getReimbursementRequestsForReimbursementRequestsByDivision = async 
   };
 
   for (const team of division.teams) {
-    const data: ReimbursementRequestData = await getReimbursementRequestsForReimbursementRequestsByTeam(
+    const data: ReimbursementRequestData = await getReimbursementRequestsByTeam(
       team.teamId,
       organizationId,
       startDate,
@@ -752,7 +752,7 @@ export const getAllSpendingBarData = async (
 
   const teamDataPromises = teams.map(async (team) => {
     const spendingInfoPromises = team.projects.map((project) =>
-      getReimbursementRequestsForReimbursementRequestsByProject(project.projectId, organizationId, startDate, endDate)
+      getReimbursementRequestsByProject(project.projectId, organizationId, startDate, endDate)
     );
     const spendingInfos = await Promise.all(spendingInfoPromises);
 

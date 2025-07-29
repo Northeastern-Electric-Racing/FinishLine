@@ -340,9 +340,9 @@ export const validateNoUnreviewedOpenOtherReasonCRs = async (otherReasonId: stri
  * @throws if the Account Code has open unreviewed change requests
  *
  */
-export const validateNoUnreviewedOpenAccountCodeCRs = async (accoundCodeId: string) => {
+export const validateNoUnreviewedOpenAccountCodeCRs = async (accountCodeId: string) => {
   const openCRs = await prisma.change_Request.findMany({
-    where: { accountCodeId: accoundCodeId, dateReviewed: null, dateDeleted: null }
+    where: { accountCodeId, dateReviewed: null, dateDeleted: null }
   });
   if (openCRs.length > 1)
     throw new HttpException(400, 'There are other open unreviewed change requests for this WBS element');

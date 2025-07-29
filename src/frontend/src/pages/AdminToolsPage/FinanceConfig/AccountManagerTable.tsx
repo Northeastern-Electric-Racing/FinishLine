@@ -19,7 +19,6 @@ const AccountManagerTable = () => {
     error: accountCodesError
   } = useGetAllAccountCodes();
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
-  const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [clickedAccountCode, setClickedAccountCode] = useState<AccountCode>();
   const [accountCodeToDelete, setAccountCodeToDelete] = useState<AccountCode | undefined>(undefined);
 
@@ -40,7 +39,6 @@ const AccountManagerTable = () => {
     <TableRow
       onClick={() => {
         setClickedAccountCode(accountCode);
-        setShowEditModal(true);
       }}
       key={`account-code-${index}`}
       sx={{ cursor: 'pointer' }}
@@ -103,9 +101,8 @@ const AccountManagerTable = () => {
       <CreateAccountCodeModal showModal={showCreateModal} handleClose={() => setShowCreateModal(false)} />
       {clickedAccountCode && (
         <EditAccountCodeModal
-          showModal={showEditModal}
+          showModal={!!clickedAccountCode}
           handleClose={() => {
-            setShowEditModal(false);
             setClickedAccountCode(undefined);
           }}
           accountCode={clickedAccountCode}

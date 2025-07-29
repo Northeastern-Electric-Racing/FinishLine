@@ -250,7 +250,7 @@ export interface ReimbursementRequestCommentPayload {
 export const useCreateReimbursementRequestComment = (reimbursementRequestId: string) => {
   const queryClient = useQueryClient();
   return useMutation<ReimbursementRequestComment, Error, ReimbursementRequestCommentPayload>(
-    ['reimbursement-requests', 'create'],
+    ['reimbursement-requests', 'create', 'comment'],
     async (formData: ReimbursementRequestCommentPayload) => {
       const { data } = await createReimbursementRequestComment(reimbursementRequestId, formData);
       return data;
@@ -813,7 +813,7 @@ export const useCreateVendor = () => {
 export const useDeleteVendor = () => {
   const queryClient = useQueryClient();
   return useMutation<{ id: string }, Error, string>(
-    ['vendor', 'delete'],
+    ['vendors', 'delete'],
     async (vendorId: string) => {
       const { data } = await deleteVendor(vendorId);
       return data;
@@ -1127,11 +1127,18 @@ export const useGetAllSponsorTiers = () => {
 
 export const useEditSponsor = (sponsorId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<Sponsor, Error, SponsorPayload>(['sponsor', 'edit'], async (formData: SponsorPayload) => {
-    const { data } = await editSponsor(sponsorId, formData);
-    queryClient.invalidateQueries(['sponsor']);
-    return data;
-  });
+  return useMutation<Sponsor, Error, SponsorPayload>(
+    ['sponsor', 'edit'],
+    async (formData: SponsorPayload) => {
+      const { data } = await editSponsor(sponsorId, formData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['sponsor']);
+      }
+    }
+  );
 };
 
 /**

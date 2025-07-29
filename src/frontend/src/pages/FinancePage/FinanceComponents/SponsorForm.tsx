@@ -255,9 +255,14 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ control, errors, defau
       <Grid item xs={12} sm={6}>
         <FormControl fullWidth>
           <Typography variant="h5" color="#EF4345">
-            Vendor Contact:*
+            Sponsor Contact:*
           </Typography>
-          <ReactHookTextField name="vendorContact" control={control} sx={{ width: 1 }} placeholder="Enter Vendor Contact" />
+          <ReactHookTextField
+            name="sponsorContact"
+            control={control}
+            sx={{ width: 1 }}
+            placeholder="Enter Sponsor Contact"
+          />
           <FormHelperText error> {errors.vendorContact?.message}</FormHelperText>
         </FormControl>
       </Grid>

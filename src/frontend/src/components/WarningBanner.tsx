@@ -3,11 +3,10 @@ import React from 'react';
 
 interface WarningBannerProps {
   amount: number;
-  message?: string;
 }
 
-const WarningBanner: React.FC<WarningBannerProps> = ({ amount, message = 'Spending is $X over budget!' }) => {
-  const formattedMessage = message.replace('$X', `$${amount}`);
+const WarningBanner: React.FC<WarningBannerProps> = ({ amount }) => {
+  const formattedMessage = `Spending is $${amount} over budget!`;
 
   return (
     <Box

@@ -28,9 +28,9 @@ import {
   getAllReimbursementRequestData,
   getAllSpendingBarData,
   getReimbursementRequestCategoryData,
-  getReimbursementRequestsForReimbursementRequestsByDivision,
-  getReimbursementRequestsForReimbursementRequestsByProject,
-  getReimbursementRequestsForReimbursementRequestsByTeam,
+  getReimbursementRequestsByDivision,
+  getReimbursementRequestsByProject,
+  getReimbursementRequestsByTeam,
   getSpendingBarCategoryData,
   getSpendingBarDataForProjectBudgetByDivision,
   getSpendingBarDataForProjectBudgetByTeam
@@ -399,12 +399,7 @@ export default class FinanceServices {
     startDate?: Date,
     endDate?: Date
   ): Promise<ReimbursementRequestData> {
-    return await getReimbursementRequestsForReimbursementRequestsByProject(
-      projectId,
-      organization.organizationId,
-      startDate,
-      endDate
-    );
+    return await getReimbursementRequestsByProject(projectId, organization.organizationId, startDate, endDate);
   }
 
   static async getReimbursementRequestTeamData(
@@ -413,12 +408,7 @@ export default class FinanceServices {
     startDate?: Date,
     endDate?: Date
   ): Promise<ReimbursementRequestData> {
-    return await getReimbursementRequestsForReimbursementRequestsByTeam(
-      teamId,
-      organization.organizationId,
-      startDate,
-      endDate
-    );
+    return await getReimbursementRequestsByTeam(teamId, organization.organizationId, startDate, endDate);
   }
 
   static async getReimbursementRequestTeamTypeData(
@@ -427,12 +417,7 @@ export default class FinanceServices {
     startDate?: Date,
     endDate?: Date
   ): Promise<ReimbursementRequestData> {
-    return await getReimbursementRequestsForReimbursementRequestsByDivision(
-      teamTypeId,
-      organization.organizationId,
-      startDate,
-      endDate
-    );
+    return await getReimbursementRequestsByDivision(teamTypeId, organization.organizationId, startDate, endDate);
   }
 
   static async getSpendingBarTeamData(
