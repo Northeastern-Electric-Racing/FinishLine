@@ -249,7 +249,7 @@ ALTER TABLE "_Account_CodeToReimbursement_Product_Other_Reason" ADD CONSTRAINT "
 ALTER TABLE "Reimbursement_Request_Comment" ADD CONSTRAINT "Reimbursement_Request_Comment_userCreatedId_fkey" FOREIGN KEY ("userCreatedId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Reimbursement_Request_Comment" ADD CONSTRAINT "Reimbursement_Request_Comment_userDeletedId_fkey" FOREIGN KEY ("userDeletedId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Reimbursement_Request_Comment" ADD CONSTRAINT "Reimbursement_Request_Comment_userDeletedId_fkey" FOREIGN KEY ("userDeletedId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Reimbursement_Request_Comment" ADD CONSTRAINT "Reimbursement_Request_Comment_reimbursementRequestId_fkey" FOREIGN KEY ("reimbursementRequestId") REFERENCES "Reimbursement_Request"("reimbursementRequestId") ON DELETE RESTRICT ON UPDATE CASCADE;

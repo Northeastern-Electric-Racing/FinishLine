@@ -699,7 +699,7 @@ model Vendor {
   notes                 String?
   addedBy               User                    @relation(fields: [addedByUserId], references: [userId], name: "vendorsCreator")
   addedByUserId         String
-  taxExempt             Boolean
+  taxExempt             Boolean                 @default(false)
 
   @@unique([name, organizationId], name: "uniqueVendor")
 }
