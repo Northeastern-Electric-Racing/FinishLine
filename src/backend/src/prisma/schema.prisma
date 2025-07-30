@@ -255,6 +255,7 @@ model User {
   createdOtherReimbursementProductReasons Reimbursement_Product_Other_Reason[] @relation(name: "createdOtherReimbursementProductReasons")
   deletedOtherReimbursementProductReasons Reimbursement_Product_Other_Reason[] @relation(name: "deletedOtherReimbursementProductReasons")
   reimbursementRequestComments            Reimbursement_Request_Comment[]      @relation(name: "createdReimbursementRequestComments")
+  deletedReimbursementRequestComments     Reimbursement_Request_Comment[]      @relation(name: "deletedReimbursementRequestComments")
 }
 
 model Role {
@@ -1392,6 +1393,8 @@ model Reimbursement_Request_Comment {
   reimbursementRequestCommentId String                @id @default(uuid())
   dateCreated                   DateTime              @default(now())
   dateDeleted                   DateTime?
+  userDeleted                   User?                 @relation(fields: [userDeletedId], references: [userId], name: "deletedReimbursementRequestComments")
+  userDeletedId                 String?
   userCreated                   User                  @relation(fields: [userCreatedId], references: [userId], name: "createdReimbursementRequestComments")
   userCreatedId                 String
   comment                       String

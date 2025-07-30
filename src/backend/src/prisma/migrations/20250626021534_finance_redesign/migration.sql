@@ -95,6 +95,8 @@ CREATE TABLE "Reimbursement_Request_Comment" (
     "userCreatedId" TEXT NOT NULL,
     "comment" TEXT NOT NULL,
     "reimbursementRequestId" TEXT NOT NULL,
+    "dateDeleted" TIMESTAMP(3),
+    "userDeletedId" TEXT,
 
     CONSTRAINT "Reimbursement_Request_Comment_pkey" PRIMARY KEY ("reimbursementRequestCommentId")
 );
@@ -247,10 +249,10 @@ ALTER TABLE "_Account_CodeToReimbursement_Product_Other_Reason" ADD CONSTRAINT "
 ALTER TABLE "Reimbursement_Request_Comment" ADD CONSTRAINT "Reimbursement_Request_Comment_userCreatedId_fkey" FOREIGN KEY ("userCreatedId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Reimbursement_Request_Comment" ADD CONSTRAINT "Reimbursement_Request_Comment_reimbursementRequestId_fkey" FOREIGN KEY ("reimbursementRequestId") REFERENCES "Reimbursement_Request"("reimbursementRequestId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Reimbursement_Request_Comment" ADD CONSTRAINT "Reimbursement_Request_Comment_userDeletedId_fkey" FOREIGN KEY ("userDeletedId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
--- AlterTable
-ALTER TABLE "Reimbursement_Request_Comment" ADD COLUMN     "dateDeleted" TIMESTAMP(3);
+-- AddForeignKey
+ALTER TABLE "Reimbursement_Request_Comment" ADD CONSTRAINT "Reimbursement_Request_Comment_reimbursementRequestId_fkey" FOREIGN KEY ("reimbursementRequestId") REFERENCES "Reimbursement_Request"("reimbursementRequestId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AlterTable
 ALTER TABLE "Organization" ADD COLUMN     "sponsorshipNotificationsSlackChannelId" TEXT;

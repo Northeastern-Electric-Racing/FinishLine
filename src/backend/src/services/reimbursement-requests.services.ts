@@ -1892,7 +1892,7 @@ export default class ReimbursementRequestService {
 
     const deletedComment = await prisma.reimbursement_Request_Comment.update({
       where: { reimbursementRequestCommentId: commentId },
-      data: { dateDeleted: new Date() },
+      data: { dateDeleted: new Date(), userDeletedId: deleter.userId },
       ...getReimbursementRequestCommentQueryArgs(organization.organizationId)
     });
 

@@ -76,7 +76,6 @@ const ReimbursementRequestInfo = ({
 
   const rows = displayedReimbursementRequests
     .map(createReimbursementRequestRowData)
-    // NOTE : Look into backend filtering
     .filter((row) => {
       const submitted = new Date(row.dateSubmitted);
 

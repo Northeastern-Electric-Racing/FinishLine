@@ -140,7 +140,7 @@ export default class BillOfMaterialsService {
         notes,
         dateCreated: new Date(),
         wbsElementId: project.wbsElementId,
-        reimbursementRequestId: reimbursementRequestId ?? undefined
+        reimbursementRequestId
       },
       ...getMaterialQueryArgs(organization.organizationId)
     });

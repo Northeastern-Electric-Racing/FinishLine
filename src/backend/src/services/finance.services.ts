@@ -231,8 +231,10 @@ export default class FinanceServices {
 
     if (!oldSponsorTask) throw new NotFoundException('SponsorTask', sponsorTaskId);
 
+    let assignee;
+
     if (assigneeUserId) {
-      const assignee = await prisma.user.findUnique({
+      assignee = await prisma.user.findUnique({
         where: {
           userId: assigneeUserId,
           organizations: {
@@ -240,7 +242,8 @@ export default class FinanceServices {
               organizationId: org.organizationId
             }
           }
-        }
+        },
+        include: { userSettings: true }
       });
 
       if (!assignee) {
@@ -258,12 +261,7 @@ export default class FinanceServices {
       }
     });
 
-    if (assigneeUserId && oldSponsorTask.assigneeUserId !== assigneeUserId) {
-      const assignee = await prisma.user.findUnique({
-        where: { userId: assigneeUserId },
-        include: { userSettings: true }
-      });
-
+    if (assignee && oldSponsorTask.assigneeUserId !== assigneeUserId) {
       const sponsor = await prisma.sponsor.findUnique({
         where: { sponsorId: updatedSponsorTask.sponsorId }
       });
