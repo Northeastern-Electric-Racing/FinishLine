@@ -1,10 +1,12 @@
-import { Grid } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { HeatmapColors, EnumToArray, REVIEW_TIMES, ExistingMeetingData } from '../../../../utils/design-review.utils';
 import TimeSlot from '../../../../components/TimeSlot';
 import { addDaysToDate, Availability, getDayOfWeek, getMostRecentAvailabilities } from 'shared';
 import { datePipe } from '../../../../utils/pipes';
 import NERArrows from '../../../../components/NERArrows';
+import { NERButton } from '../../../../components/NERButton';
+import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 
 interface EditAvailabilityProps {
   editedAvailabilities: Map<number, Availability>;
@@ -83,6 +85,14 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     };
   }, []);
 
+  const invertAvailabilities = () => {
+    currentlyDisplayedAvailabilities.map((availability) => {
+      EnumToArray(REVIEW_TIMES).map((_time, timeIndex) => {
+        toggleTimeSlot(availability, timeIndex);
+      });
+    });
+  };
+
   const toggleTimeSlot = (availability: Availability, selectedTime: number) => {
     availability.availability.includes(selectedTime)
       ? availability.availability.splice(availability.availability.indexOf(selectedTime), 1)
@@ -96,6 +106,14 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
 
   return (
     <Grid container>
+      <Grid container justifyContent="space-between" mb={1}>
+        <Typography display={'flex'} justifyContent={'flex-start'} mt={1} variant="subtitle1">
+          Available times in red
+        </Typography>
+        <NERButton variant="outlined" sx={{ display: 'flex', justifyContent: 'flex-end' }} onClick={invertAvailabilities}>
+          Invert Availability
+        </NERButton>
+      </Grid>
       <TimeSlot backgroundColor={HeatmapColors[0]} small={true} heightOverride="40px" />
       {currentlyDisplayedAvailabilities.map((availability) => (
         <TimeSlot
