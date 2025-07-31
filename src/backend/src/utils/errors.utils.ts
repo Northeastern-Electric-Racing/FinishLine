@@ -153,4 +153,12 @@ export type ExceptionObjectNames =
   | 'Part Tag'
   | 'Common Mistake'
   | 'Review Request'
-  | 'File';
+  | 'File'
+  | 'Graph Collection'
+  | 'Sponsor'
+  | 'SponsorTask'
+  | 'Sponsor Tier'
+  | 'Index Code'
+  | 'Reimbursement Product Other Reason'
+  | 'Encryption Key'
+  | 'Reimbursement Request Comment';

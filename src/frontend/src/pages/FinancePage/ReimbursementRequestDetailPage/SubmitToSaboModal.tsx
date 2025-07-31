@@ -31,7 +31,6 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
   const filteredProductsNames = reimbursementProducts
-    .filter((product) => !product.dateDeleted)
     .map((product) =>
       !!(product.reimbursementProductReason as WBSElementData).wbsNum
         ? wbsPipe((product.reimbursementProductReason as WBSElementData).wbsNum) +
@@ -119,7 +118,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
         <Grid item xs={7}>
           <DetailDisplay
             label={'SABO Form Index'}
-            content={codeAndRefundSourceName(reimbursementRequest.account)}
+            content={codeAndRefundSourceName(reimbursementRequest.indexCode)}
             copyButton
           />
         </Grid>

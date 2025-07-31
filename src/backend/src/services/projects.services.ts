@@ -80,12 +80,16 @@ export default class ProjectsService {
           some: {
             OR: [
               {
-                headId: user.userId,
+                headId: user.userId
+              },
+              {
                 leads: {
                   some: {
                     userId: user.userId
                   }
-                },
+                }
+              },
+              {
                 members: {
                   some: {
                     userId: user.userId
@@ -100,6 +104,25 @@ export default class ProjectsService {
     });
 
     return projects.map(projectPreviewTransformer);
+  }
+
+  static async getTeamsProjects(organization: Organization, teamId: string): Promise<Project[]> {
+    const projects = await prisma.project.findMany({
+      where: {
+        wbsElement: {
+          organizationId: organization.organizationId,
+          dateDeleted: null
+        },
+        teams: {
+          some: {
+            teamId
+          }
+        }
+      },
+      ...getProjectQueryArgs(organization.organizationId)
+    });
+
+    return projects.map(projectTransformer);
   }
 
   /**

@@ -11,12 +11,14 @@ import { useToast } from '../../../../hooks/toasts.hooks';
 import { useAssignMaterialToAssembly, useDeleteAssembly, useDeleteMaterial } from '../../../../hooks/bom.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import EditMaterialModal from './MaterialForm/EditMaterialModal';
-import { Typography } from '@mui/material';
+import { Link, Typography } from '@mui/material';
 import { bomBaseColDef } from '../../../../utils/bom.utils';
 import NERModal from '../../../../components/NERModal';
 import { renderStatusBOM } from './BOMTableCustomCells';
 import LinkIcon from '@mui/icons-material/Link';
 import NotesIcon from '@mui/icons-material/Notes';
+import { routes } from '../../../../utils/routes';
+import { Link as RouterLink } from 'react-router-dom';
 
 interface BOMTableWrapperProps {
   project: Project;
@@ -202,9 +204,36 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
     }
     return actions;
   };
-
   //Try to have the updated column created in BOMTable stored here, and then look at if the name of the column appears here, if it does then we dont hide, else we hide.
   const columns: GridColumns<any> = [
+    {
+      ...bomBaseColDef,
+      flex: 1,
+      field: 'reimbursementRequestId',
+      headerName: 'RR#',
+      type: 'string',
+      sortable: false,
+      filterable: false,
+      hide: hideColumn[0],
+      renderCell: (params) => {
+        const material = materials.find((m) => m.materialId === params.row.materialId);
+        const reimbursementRequest = material?.reimbursementRequest;
+
+        if (!reimbursementRequest) return null;
+
+        return (
+          <Link
+            component={RouterLink}
+            to={`${routes.REIMBURSEMENT_REQUESTS}/view/${reimbursementRequest.reimbursementRequestId}`}
+            underline="hover"
+            sx={{ color: '#dd514c', fontWeight: 'bold', cursor: 'pointer' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {reimbursementRequest.identifier}
+          </Link>
+        );
+      }
+    },
     {
       ...bomBaseColDef,
       flex: 1.2,
@@ -213,7 +242,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       renderCell: renderStatusBOM,
       sortable: false,
       filterable: false,
-      hide: hideColumn[0]
+      hide: hideColumn[1]
     },
     {
       ...bomBaseColDef,
@@ -222,7 +251,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       type: 'string',
       sortable: false,
       filterable: false,
-      hide: hideColumn[1]
+      hide: hideColumn[2]
     },
     {
       ...bomBaseColDef,
@@ -232,7 +261,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       type: 'string',
       sortable: false,
       filterable: false,
-      hide: hideColumn[2]
+      hide: hideColumn[3]
     },
     {
       ...bomBaseColDef,
@@ -242,7 +271,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       type: 'string',
       sortable: false,
       filterable: false,
-      hide: hideColumn[3]
+      hide: hideColumn[4]
     },
     {
       ...bomBaseColDef,
@@ -258,7 +287,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
         }
         return 1;
       },
-      hide: hideColumn[4]
+      hide: hideColumn[5]
     },
     {
       ...bomBaseColDef,
@@ -268,7 +297,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       type: 'string',
       sortable: false,
       filterable: false,
-      hide: hideColumn[5]
+      hide: hideColumn[6]
     },
     {
       ...bomBaseColDef,
@@ -277,7 +306,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       type: 'number',
       sortable: false,
       filterable: false,
-      hide: hideColumn[6]
+      hide: hideColumn[7]
     },
     {
       ...bomBaseColDef,
@@ -286,7 +315,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       type: 'number',
       sortable: false,
       filterable: false,
-      hide: hideColumn[7]
+      hide: hideColumn[8]
     },
     {
       ...bomBaseColDef,
@@ -295,7 +324,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       type: 'number',
       sortable: false,
       filterable: false,
-      hide: hideColumn[8]
+      hide: hideColumn[9]
     },
     {
       ...bomBaseColDef,
@@ -306,7 +335,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
       getActions,
       sortable: false,
       filterable: false,
-      hide: hideColumn[11]
+      hide: hideColumn[12]
     }
   ];
 
