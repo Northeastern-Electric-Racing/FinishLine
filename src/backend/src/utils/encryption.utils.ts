@@ -22,9 +22,8 @@ function normalizeKey(key: string): Buffer {
       paddedKey[i] = keyBuffer[i];
     }
     return paddedKey;
-  } else {
-    return keyBuffer.slice(0, 32);
   }
+  return keyBuffer.slice(0, 32);
 }
 
 /**

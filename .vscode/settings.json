@@ -24,6 +24,5 @@
     "editor.defaultFormatter": "Prisma.prisma"
   },
   "editor.formatOnSave": true,
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "idf.pythonInstallPath": "/opt/homebrew/bin/python3"
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
