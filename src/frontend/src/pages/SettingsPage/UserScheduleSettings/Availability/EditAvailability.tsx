@@ -6,7 +6,6 @@ import { addDaysToDate, Availability, getDayOfWeek, getMostRecentAvailabilities 
 import { datePipe } from '../../../../utils/pipes';
 import NERArrows from '../../../../components/NERArrows';
 import { NERButton } from '../../../../components/NERButton';
-import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 
 interface EditAvailabilityProps {
   editedAvailabilities: Map<number, Availability>;
@@ -86,11 +85,9 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
   }, []);
 
   const invertAvailabilities = () => {
-    currentlyDisplayedAvailabilities.map((availability) => {
-      EnumToArray(REVIEW_TIMES).map((_time, timeIndex) => {
-        toggleTimeSlot(availability, timeIndex);
-      });
-    });
+    currentlyDisplayedAvailabilities.map((availability) =>
+      EnumToArray(REVIEW_TIMES).map((_time, timeIndex) => toggleTimeSlot(availability, timeIndex))
+    );
   };
 
   const toggleTimeSlot = (availability: Availability, selectedTime: number) => {
