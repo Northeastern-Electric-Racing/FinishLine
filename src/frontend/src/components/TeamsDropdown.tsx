@@ -33,7 +33,6 @@ const TeamDropdown = ({ control, name, multiselect = false }: TeamDropdownProps)
               value={value}
               onChange={(event: SelectChangeEvent<number>) => onChange(event.target.value)}
               size={'small'}
-              label={'Change Team'}
               sx={{ height: 56, width: '100%', textAlign: 'left' }}
               MenuProps={{
                 anchorOrigin: {
