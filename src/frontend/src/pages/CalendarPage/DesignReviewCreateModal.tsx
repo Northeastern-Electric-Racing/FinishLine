@@ -38,13 +38,24 @@ import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 
 const schema = yup.object().shape({
   date: yup.date().required('Date is required'),
+  startTime: yup.number().required('Start time is required'),
   teamTypeId: yup.string().required('Team Type is required'),
-  wbsNum: yup.string().required('Work Package is required')
+  endTime: yup
+    .number()
+    .moreThan(yup.ref('startTime'), `End time must be after the start time`)
+    .required('End time is required'),
+  wbsNum: yup.string().required('Work Package is required'),
+  optionalMemberIds: yup.array().of(yup.string().required()).required(),
+  requiredMemberIds: yup.array().of(yup.string().required()).required()
 });
 
 interface CreateDesignReviewFormInput {
   date: Date;
+  startTime: number;
+  endTime: number;
   teamTypeId: string;
+  requiredMemberIds: string[];
+  optionalMemberIds: string[];
   wbsNum: string;
 }
 
@@ -108,8 +119,12 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
     resolver: yupResolver(schema),
     defaultValues: {
       date: defaultDate,
+      startTime: 0,
+      endTime: 1,
       teamTypeId: '',
-      wbsNum: defaultWbsNum ? wbsPipe(defaultWbsNum) : query.get('wbsNum') || ''
+      wbsNum: defaultWbsNum ? wbsPipe(defaultWbsNum) : query.get('wbsNum') || '',
+      requiredMemberIds: [],
+      optionalMemberIds: []
     }
   });
 
