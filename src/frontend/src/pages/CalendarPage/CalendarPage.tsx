@@ -8,7 +8,6 @@ import PageLayout from '../../components/PageLayout';
 import { DesignReview, DesignReviewStatus } from 'shared';
 import MonthSelector from './CalendarComponents/MonthSelector';
 import CalendarDayCard, { getTeamTypeIcon } from './CalendarComponents/CalendarDayCard';
-import FillerCalendarDayCard from './CalendarComponents/FillerCalendarDayCard';
 import { DAY_NAMES, EnumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
 import ActionsMenu from '../../components/ActionsMenu';
 import { useAllDesignReviews } from '../../hooks/design-reviews.hooks';
@@ -160,23 +159,22 @@ const CalendarPage = () => {
             {startOfEachWeek.map((week) => (
               <Grid container>
                 {daysThisMonth.slice(week, week + 7).map((day) => {
-                  const cardDate = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth(), day);
+                  const cardDate = new Date(
+                    displayMonthYear.getFullYear(),
+                    displayMonthYear.getMonth() + (isDayInDifferentMonth(day, week) ? (day > 15 ? -1 : 1) : 0),
+                    day
+                  );
                   return (
                     <Grid item xs={12 / 7}>
                       <Box marginTop={2} sx={{ justifyContent: 'center', display: 'flex' }}>
-                        {isDayInDifferentMonth(day, week) ? (
-                          <FillerCalendarDayCard day={day} />
-                        ) : (
-                          <CalendarDayCard
-                            cardDate={cardDate}
-                            events={
-                              eventDict.get(
-                                datePipe(new Date(cardDate.getTime() - cardDate.getTimezoneOffset() * -60000))
-                              ) ?? []
-                            }
-                            teamTypes={allTeamTypes}
-                          />
-                        )}
+                        <CalendarDayCard
+                          cardDate={cardDate}
+                          events={
+                            eventDict.get(datePipe(new Date(cardDate.getTime() - cardDate.getTimezoneOffset() * -60000))) ??
+                            []
+                          }
+                          teamTypes={allTeamTypes}
+                        />
                       </Box>
                     </Grid>
                   );
