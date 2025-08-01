@@ -1,7 +1,7 @@
 import { Design_Review_Status, Graph_Display_Type, Graph_Type, Measure, Special_Permission } from '@prisma/client';
 import { Request, Response } from 'express';
-import { body, ValidationChain, validationResult } from 'express-validator';
-import { ClubAccount, MaterialStatus, TaskPriority, TaskStatus, WorkPackageStage, RoleEnum, WbsElementStatus } from 'shared';
+import { body, query, ValidationChain, validationResult } from 'express-validator';
+import { MaterialStatus, TaskPriority, TaskStatus, WorkPackageStage, RoleEnum, WbsElementStatus } from 'shared';
 
 export const intMinZero = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.isInt({ min: 0 }).not().isString();
@@ -82,8 +82,9 @@ export const validateReimbursementProducts = () => {
   return [
     body('otherReimbursementProducts').isArray(),
     nonEmptyString(body('otherReimbursementProducts.*.name')),
+    nonEmptyString(body('otherReimbursementProducts.*.reason.otherProductReasonId')),
+    nonEmptyString(body('otherReimbursementProducts.*.reason.name')),
     intMinZero(body('otherReimbursementProducts.*.cost')),
-    nonEmptyString(body('otherReimbursementProducts.*.reason')),
     body('wbsReimbursementProducts').isArray(),
     nonEmptyString(body('wbsReimbursementProducts.*.name')),
     intMinZero(body('wbsReimbursementProducts.*.cost')),
@@ -138,10 +139,6 @@ export const isTaskPriority = (validationObject: ValidationChain): ValidationCha
 
 export const isTaskStatus = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.isString().isIn([TaskStatus.DONE, TaskStatus.IN_BACKLOG, TaskStatus.IN_PROGRESS]);
-};
-
-export const isAccount = (validationObject: ValidationChain): ValidationChain => {
-  return validationObject.isString().isIn([ClubAccount.BUDGET, ClubAccount.CASH]);
 };
 
 export const isMaterialStatus = (validationObject: ValidationChain): ValidationChain => {
@@ -209,6 +206,7 @@ export const materialValidators = [
   intMinZero(body('price')), // in cents
   intMinZero(body('subtotal')), // in cents
   nonEmptyString(body('linkUrl')),
+  nonEmptyString(body('reimbursementRequestId')).optional(),
   body('notes').isString().optional()
 ];
 export const validateInputs = (req: Request, res: Response, next: Function): void => {
@@ -236,4 +234,9 @@ export const partPopupValidators = [
   intMinZero(body('fileIndex')),
   nonEmptyString(body('title')),
   body('description').optional().isString()
+];
+
+export const startEndDateValidators = [
+  nonEmptyString(query('startDate')).optional(),
+  nonEmptyString(query('endDate')).optional()
 ];

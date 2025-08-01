@@ -8,9 +8,10 @@ import { useAuth } from '../../hooks/auth.hooks';
 import { useReviewChangeRequest } from '../../hooks/change-requests.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import ReviewChangeRequestsView from './ReviewChangeRequestView';
 import { ChangeRequest } from 'shared';
 import { useToast } from '../../hooks/toasts.hooks';
+import ReviewChangeRequestsViewWBSWrapper from './ReviewChangeRequestsViewWBSWrapper';
+import ReviewChangeRequestsViewCategoryAccountCodeWrapper from './ReviewChangeRequestsViewCategoryAccountCodeWrapper';
 
 interface ReviewChangeRequestProps {
   modalShow: boolean;
@@ -59,7 +60,20 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
 
   if (isError) return <ErrorPage message={error?.message} />;
 
-  return <ReviewChangeRequestsView cr={cr} modalShow={modalShow} onHide={handleClose} onSubmit={handleConfirm} />;
+  if (cr.wbsNum) {
+    return (
+      <ReviewChangeRequestsViewWBSWrapper cr={cr} modalShow={modalShow} onHide={handleClose} onSubmit={handleConfirm} />
+    );
+  }
+
+  return (
+    <ReviewChangeRequestsViewCategoryAccountCodeWrapper
+      cr={cr}
+      modalShow={modalShow}
+      onHide={handleClose}
+      onSubmit={handleConfirm}
+    />
+  );
 };
 
 export default ReviewChangeRequest;

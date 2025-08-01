@@ -56,6 +56,8 @@
   "dependencies": {
     "@types/multer": "^1.4.12",
     "mitt": "^3.0.1",
+    "react-hook-form-persist": "^3.0.0",
+    "recharts": "^2.15.3",
     "typescript": "^5.7.3"
   },
   "devDependencies": {
@@ -71,7 +73,7 @@
     "eslint": "^7.0.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-config-react-app": "^7.0.1",
-    "eslint-plugin-cypress": "latest",
+    "eslint-plugin-cypress": "4.3.0",
     "eslint-plugin-prettier": "^5.2.2",
     "prettier": "^3.4.2",
     "rimraf": "^6.0.1",
