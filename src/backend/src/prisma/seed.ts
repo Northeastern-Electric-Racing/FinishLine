@@ -27,6 +27,7 @@ import {
   RoleEnum,
   SpecialPermission,
   StandardChangeRequest,
+  User,
   WbsElementStatus,
   WorkPackageStage
 } from 'shared';
@@ -48,10 +49,65 @@ import { seedGraph } from './seed-data/statistics.seed';
 import AnnouncementService from '../services/announcement.services';
 import OnboardingServices from '../services/onboarding.services';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
-import { CreatePartTag, CreateCommonMistake, CreatePartReviewFAQ } from '../../tests/test-utils';
 import FinanceServices from '../services/finance.services';
 
 const prisma = new PrismaClient();
+
+export const CreatePartTag = async (organizationId: string, name: string, colorHexCode: string) => {
+  return await prisma.part_Tag.create({
+    data: {
+      name,
+      organization: {
+        connect: { organizationId }
+      },
+      colorHexCode,
+      dateCreated: new Date()
+    }
+  });
+};
+
+export const CreateCommonMistake = async (
+  title: string,
+  description: string,
+  starred: boolean,
+  user: { userId: string },
+  organizationId: string
+) => {
+  return await prisma.part_Review_Common_Mistake.create({
+    data: {
+      title,
+      description,
+      starred,
+      dateCreated: new Date(),
+      organization: {
+        connect: { organizationId }
+      },
+      userCreated: {
+        connect: { userId: user.userId }
+      }
+    }
+  });
+};
+
+export const CreatePartReviewFAQ = async (
+  question: string,
+  answer: string,
+  organizationId: string,
+  user: { userId: string }
+) => {
+  return await prisma.frequentlyAskedQuestion.create({
+    data: {
+      question,
+      answer,
+      partReviewFaqOrg: {
+        connect: { organizationId }
+      },
+      userCreated: {
+        connect: { userId: user.userId }
+      }
+    }
+  });
+};
 
 const performSeed: () => Promise<void> = async () => {
   const thomasEmrax = await prisma.user.create({
