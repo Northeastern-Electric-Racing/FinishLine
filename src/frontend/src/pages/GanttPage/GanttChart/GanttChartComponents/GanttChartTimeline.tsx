@@ -7,6 +7,7 @@ import { Box, Typography, Card, useTheme } from '@mui/material';
 import { eachDayOfInterval, isMonday, format, getDate } from 'date-fns';
 import { GANTT_CHART_CELL_SIZE, GANTT_CHART_GAP_SIZE } from '../../../../utils/gantt.utils';
 import { dateToString, getMonday } from '../../../../utils/datetime.utils';
+import { useEffect, useRef } from 'react';
 
 interface GanttChartTimelineProps {
   start: Date;
@@ -16,6 +17,17 @@ interface GanttChartTimelineProps {
 export function GanttChartTimeline({ start, end }: GanttChartTimelineProps) {
   const theme = useTheme();
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
+  const currentWeekRef = useRef<HTMLDivElement>();
+
+  useEffect(() => {
+    if (currentWeekRef.current) {
+      currentWeekRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center'
+      });
+    }
+  }, []);
 
   return (
     <Box
@@ -40,6 +52,7 @@ export function GanttChartTimeline({ start, end }: GanttChartTimelineProps) {
         {days.map((day, index) => {
           // displays the month and year for the first monday of a month;
           // displays the month and year for the first date on the calendar if it's the first or second monday
+          const isCurrentWeek = dateToString(day) === dateToString(getMonday(new Date()));
           const monthDisplay = (index === 0 && getDate(day) <= 14) || getDate(day) <= 7 ? format(day, 'MMM y') : '';
           return (
             <Box
@@ -52,6 +65,7 @@ export function GanttChartTimeline({ start, end }: GanttChartTimelineProps) {
                 minWidth: GANTT_CHART_CELL_SIZE,
                 maxWidth: GANTT_CHART_CELL_SIZE
               }}
+              ref={isCurrentWeek ? currentWeekRef : null}
             >
               <Typography fontWeight="bold" variant="h6">
                 {monthDisplay}
