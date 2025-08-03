@@ -344,8 +344,8 @@ export default class DesignReviewsService {
       originaldesignReview.confirmedMembers.map((user) => user.userId).includes(member.userId)
     );
 
-    if (status === Design_Review_Status.SCHEDULED && allRequiredMembersConfirmed) {
-      status = Design_Review_Status.CONFIRMED;
+    if (status === Design_Review_Status.CONFIRMED && allRequiredMembersConfirmed) {
+      status = Design_Review_Status.SCHEDULED;
     }
 
     // actually try to update the design review
