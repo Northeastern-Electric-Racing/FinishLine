@@ -85,8 +85,8 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
   }, []);
 
   const invertAvailabilities = () => {
-    currentlyDisplayedAvailabilities.map((availability) =>
-      EnumToArray(REVIEW_TIMES).map((_time, timeIndex) => toggleTimeSlot(availability, timeIndex))
+    currentlyDisplayedAvailabilities.forEach((availability) =>
+      EnumToArray(REVIEW_TIMES).forEach((_time, timeIndex) => toggleTimeSlot(availability, timeIndex))
     );
   };
 
