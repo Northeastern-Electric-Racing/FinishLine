@@ -1,6 +1,6 @@
 import { Grid, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { HeatmapColors, EnumToArray, REVIEW_TIMES, ExistingMeetingData } from '../../../../utils/design-review.utils';
+import { HeatmapColors, enumToArray, REVIEW_TIMES, ExistingMeetingData } from '../../../../utils/design-review.utils';
 import TimeSlot from '../../../../components/TimeSlot';
 import { addDaysToDate, Availability, getDayOfWeek, getMostRecentAvailabilities } from 'shared';
 import { datePipe } from '../../../../utils/pipes';
@@ -86,7 +86,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
 
   const invertAvailabilities = () => {
     currentlyDisplayedAvailabilities.forEach((availability) =>
-      EnumToArray(REVIEW_TIMES).forEach((_time, timeIndex) => toggleTimeSlot(availability, timeIndex))
+      enumToArray(REVIEW_TIMES).forEach((_time, timeIndex) => toggleTimeSlot(availability, timeIndex))
     );
   };
 
@@ -122,14 +122,14 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
           fontSize={'12px'}
         />
       ))}
-      {EnumToArray(REVIEW_TIMES).map((time, timeIndex) => (
+      {enumToArray(REVIEW_TIMES).map((time, timeIndex) => (
         <Grid container item>
           <TimeSlot backgroundColor={HeatmapColors[0]} small={true} text={time} fontSize={'13px'} />
           {currentlyDisplayedAvailabilities.map((availability, dayIndex) => {
             const backgroundColor = availability.availability.includes(timeIndex) ? HeatmapColors[3] : HeatmapColors[0];
             return (
               <TimeSlot
-                key={timeIndex * EnumToArray(REVIEW_TIMES).length + dayIndex}
+                key={timeIndex * enumToArray(REVIEW_TIMES).length + dayIndex}
                 backgroundColor={backgroundColor}
                 small={true}
                 onMouseDown={(e) => handleMouseDown(e, availability, timeIndex)}

@@ -9,7 +9,7 @@ import { DesignReview, DesignReviewStatus } from 'shared';
 import MonthSelector from './CalendarComponents/MonthSelector';
 import CalendarDayCard, { getTeamTypeIcon } from './CalendarComponents/CalendarDayCard';
 import FillerCalendarDayCard from './CalendarComponents/FillerCalendarDayCard';
-import { DAY_NAMES, EnumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
+import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
 import ActionsMenu from '../../components/ActionsMenu';
 import { useAllDesignReviews } from '../../hooks/design-reviews.hooks';
 import ErrorPage from '../ErrorPage';
@@ -144,7 +144,7 @@ const CalendarPage = () => {
           </Stack>
         </Stack>
         <Grid container>
-          {EnumToArray(DAY_NAMES).map((day) => (
+          {enumToArray(DAY_NAMES).map((day) => (
             <Grid item xs={12 / 7}>
               <Typography align={'center'} sx={{ fontWeight: 'bold', fontSize: 18 }}>
                 {
