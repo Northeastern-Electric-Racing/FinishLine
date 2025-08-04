@@ -3,12 +3,11 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useState } from 'react';
-import { Box, Grid, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Grid, Stack, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { DesignReview, DesignReviewStatus } from 'shared';
 import MonthSelector from './CalendarComponents/MonthSelector';
 import CalendarDayCard, { getTeamTypeIcon } from './CalendarComponents/CalendarDayCard';
-import FillerCalendarDayCard from './CalendarComponents/FillerCalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
 import ActionsMenu from '../../components/ActionsMenu';
 import { useAllDesignReviews } from '../../hooks/design-reviews.hooks';
@@ -18,6 +17,7 @@ import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import DRCSummaryModal from './DesignReviewSummaryModal';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
 const CalendarPage = () => {
   const theme = useTheme();
@@ -131,15 +131,17 @@ const CalendarPage = () => {
           teamTypes={allTeamTypes}
         />
       )}
-      <PageLayout
-        title="Design Review Calendar"
-        headerRight={
-          <Stack direction="row" justifyContent="flex-end">
+      <PageLayout hidePageTitle>
+        <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" sx={{ mt: 2, mb: 2 }}>
+          <Typography variant="h4">Design Review Calendar</Typography>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Tooltip title="Click on a day to schedule an event">
+              <HelpOutlineIcon fontSize="medium" sx={{ position: 'relative' }} />
+            </Tooltip>
             <MonthSelector displayMonth={displayMonthYear} setDisplayMonth={setDisplayMonthYear} />
             <Box marginLeft={1}>{unconfirmedDRSDropdown}</Box>
           </Stack>
-        }
-      >
+        </Stack>
         <Grid container>
           {enumToArray(DAY_NAMES).map((day) => (
             <Grid item xs={12 / 7}>
@@ -157,23 +159,22 @@ const CalendarPage = () => {
             {startOfEachWeek.map((week) => (
               <Grid container>
                 {daysThisMonth.slice(week, week + 7).map((day) => {
-                  const cardDate = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth(), day);
+                  const cardDate = new Date(
+                    displayMonthYear.getFullYear(),
+                    displayMonthYear.getMonth() + (isDayInDifferentMonth(day, week) ? (day > 15 ? -1 : 1) : 0),
+                    day
+                  );
                   return (
                     <Grid item xs={12 / 7}>
                       <Box marginTop={2} sx={{ justifyContent: 'center', display: 'flex' }}>
-                        {isDayInDifferentMonth(day, week) ? (
-                          <FillerCalendarDayCard day={day} />
-                        ) : (
-                          <CalendarDayCard
-                            cardDate={cardDate}
-                            events={
-                              eventDict.get(
-                                datePipe(new Date(cardDate.getTime() - cardDate.getTimezoneOffset() * -60000))
-                              ) ?? []
-                            }
-                            teamTypes={allTeamTypes}
-                          />
-                        )}
+                        <CalendarDayCard
+                          cardDate={cardDate}
+                          events={
+                            eventDict.get(datePipe(new Date(cardDate.getTime() - cardDate.getTimezoneOffset() * -60000))) ??
+                            []
+                          }
+                          teamTypes={allTeamTypes}
+                        />
                       </Box>
                     </Grid>
                   );
