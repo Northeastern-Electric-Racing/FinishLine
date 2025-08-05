@@ -11,6 +11,7 @@ import {
   GanttWorkPackageTextColor
 } from '../../../utils/gantt.utils';
 import { DesignReviewStatusTextPipe, WbsElementStatusTextPipe, WorkPackageStageTextPipe } from '../../../utils/enum-pipes';
+import { grey } from '@mui/material/colors';
 
 const LEGEND_POPUPS_MAP = new Map<WorkPackageStage, JSX.Element>();
 
@@ -110,13 +111,7 @@ const GanttChartColorLegend = () => {
           return (
             <Box
               sx={{
-                background: `linear-gradient(90deg, ${ganttWorkPackageStageColorPipe(
-                  stage,
-                  WbsElementStatus.Inactive
-                )} 0%, ${ganttWorkPackageStageColorPipe(
-                  stage,
-                  WbsElementStatus.Active
-                )} 50%, ${ganttWorkPackageStageColorPipe(stage, WbsElementStatus.Complete)} 100%)`,
+                background: ganttWorkPackageStageColorPipe(stage, WbsElementStatus.Active),
                 display: 'flex',
                 flexDirection: 'column',
                 height: '2rem',
@@ -146,9 +141,7 @@ const GanttChartColorLegend = () => {
       }
       <Box
         sx={{
-          background: `linear-gradient(90deg, ${ganttDesignReviewStatusColorPipe(
-            DesignReviewStatus.UNCONFIRMED
-          )} 0%, ${ganttDesignReviewStatusColorPipe(DesignReviewStatus.CONFIRMED)} 100%)`,
+          background: ganttDesignReviewStatusColorPipe(DesignReviewStatus.CONFIRMED),
           display: 'flex',
           flexDirection: 'column',
           height: '2rem',
@@ -169,6 +162,23 @@ const GanttChartColorLegend = () => {
             Design Review
           </Typography>
         </Tooltip>
+      </Box>
+      <Box
+        sx={{
+          background: grey[500],
+          display: 'flex',
+          flexDirection: 'column',
+          height: '2rem',
+          width: '8.25rem',
+          borderRadius: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          px: 1
+        }}
+      >
+        <Typography variant="body2" sx={{ color: 'white', overflow: 'hidden', textWrap: 'nowrap' }}>
+          None
+        </Typography>
       </Box>
     </Box>
   );
