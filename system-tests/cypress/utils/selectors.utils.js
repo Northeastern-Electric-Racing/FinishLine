@@ -18,8 +18,6 @@ const SELECTORS = {
   TEAMS: 'Teams',
   OVERDUE: 'All Overdue Work Packages',
 
-
-
   // Change Request
   CR_ROW: (title) => testIdBuilder(`${title}crRow`),
   NEW_CHANGE_REQUEST_BUTTON: 'New Change Request',
