@@ -1,7 +1,7 @@
 import { Grid } from '@mui/material';
 import { Availability, DesignReview, getDayOfWeek, getNextSevenDays, User } from 'shared';
 import {
-  EnumToArray,
+  enumToArray,
   REVIEW_TIMES,
   HeatmapColors,
   getBackgroundColor,
@@ -72,9 +72,9 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
     let i = 0;
     availabilities.forEach((availability) => {
       availability.availability.forEach((time) => {
-        const usersAtTime = availableUsers.get(EnumToArray(REVIEW_TIMES).length * i + time) || [];
+        const usersAtTime = availableUsers.get(enumToArray(REVIEW_TIMES).length * i + time) || [];
         usersAtTime.push(user);
-        availableUsers.set(EnumToArray(REVIEW_TIMES).length * i + time, usersAtTime);
+        availableUsers.set(enumToArray(REVIEW_TIMES).length * i + time, usersAtTime);
       });
       i++;
     });
@@ -94,11 +94,11 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
       {potentialDays.map((day) => (
         <TimeSlot backgroundColor={HeatmapColors[0]} text={getDayOfWeek(day) + ' ' + datePipe(day)} fontSize={'1em'} />
       ))}
-      {EnumToArray(REVIEW_TIMES).map((time, timeIndex) => (
+      {enumToArray(REVIEW_TIMES).map((time, timeIndex) => (
         <Grid container onMouseLeave={handleOnMouseLeave}>
           <TimeSlot backgroundColor={HeatmapColors[0]} text={time} fontSize={'1em'} />
           {potentialDays.map((day, dayIndex) => {
-            const index = dayIndex * EnumToArray(REVIEW_TIMES).length + timeIndex;
+            const index = dayIndex * enumToArray(REVIEW_TIMES).length + timeIndex;
             return (
               <TimeSlot
                 key={index}

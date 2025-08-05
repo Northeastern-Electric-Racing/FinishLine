@@ -43,22 +43,22 @@ const AccountManagerTable = () => {
       key={`account-code-${index}`}
       sx={{ cursor: 'pointer' }}
     >
-      <TableCell>
+      <TableCell sx={{ borderBottom: index === accountCodes.length - 1 ? 'none' : 'default' }}>
         <Typography>{uniqueIndexCodeNames(accountCode)}</Typography>
       </TableCell>
-      <TableCell>
+      <TableCell sx={{ borderBottom: index === accountCodes.length - 1 ? 'none' : 'default' }}>
         <Typography>{accountCode.code}</Typography>
       </TableCell>
-      <TableCell>
+      <TableCell sx={{ borderBottom: index === accountCodes.length - 1 ? 'none' : 'default' }}>
         <Typography>{accountCode.name}</Typography>
       </TableCell>
-      <TableCell>
+      <TableCell sx={{ borderBottom: index === accountCodes.length - 1 ? 'none' : 'default' }}>
         <Typography>{accountCode.amount ? `$${centsToDollar(accountCode.amount)}` : ''}</Typography>
       </TableCell>
-      <TableCell>
+      <TableCell sx={{ borderBottom: index === accountCodes.length - 1 ? 'none' : 'default' }}>
         <Checkbox checked={accountCode.allowed} />
       </TableCell>
-      <TableCell>
+      <TableCell sx={{ borderBottom: index === accountCodes.length - 1 ? 'none' : 'default' }}>
         <IconButton
           onClick={(e) => {
             e.stopPropagation();
@@ -115,7 +115,6 @@ const AccountManagerTable = () => {
               <TableCell
                 key={`account-code-column-${index}`}
                 sx={{
-                  borderBottom: '2px solid white',
                   fontWeight: 'bold',
                   fontSize: '1em',
                   backgroundColor: '#ef4345',

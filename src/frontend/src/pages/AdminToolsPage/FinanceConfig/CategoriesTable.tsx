@@ -43,19 +43,19 @@ const CategoriesTable = () => {
       key={`category-${index}`}
       sx={{ cursor: 'pointer' }}
     >
-      <TableCell>
+      <TableCell sx={{ borderBottom: index === categories.length - 1 ? 'none' : 'default' }}>
         <Typography>{category.indexCode.name}</Typography>
       </TableCell>
-      <TableCell>
+      <TableCell sx={{ borderBottom: index === categories.length - 1 ? 'none' : 'default' }}>
         <Typography>{uniqueAccountCodeNames(category)}</Typography>
       </TableCell>
-      <TableCell>
+      <TableCell sx={{ borderBottom: index === categories.length - 1 ? 'none' : 'default' }}>
         <Typography>{displayEnum(category.name)}</Typography>
       </TableCell>
-      <TableCell>
+      <TableCell sx={{ borderBottom: index === categories.length - 1 ? 'none' : 'default' }}>
         <Typography>{`$${centsToDollar(category.budget)}`}</Typography>
       </TableCell>
-      <TableCell>
+      <TableCell sx={{ borderBottom: index === categories.length - 1 ? 'none' : 'default' }}>
         <IconButton
           onClick={(e) => {
             e.stopPropagation();
