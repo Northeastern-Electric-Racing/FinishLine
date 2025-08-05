@@ -26,13 +26,10 @@ const MaterialTypeTable: React.FC = () => {
 
   const materialTypesTableRows = materialTypes.map((materialType, index) => (
     <TableRow>
-      <TableCell
-        align="left"
-        sx={{ borderRight: '1px solid', borderBottom: index === materialTypes.length - 1 ? 'none' : '1px solid' }}
-      >
+      <TableCell align="left" sx={{ borderBottom: index === materialTypes.length - 1 ? 'none' : 'default' }}>
         {datePipe(materialType.dateCreated)}
       </TableCell>
-      <TableCell sx={{ borderBottom: index === materialTypes.length - 1 ? 'none' : '1px solid' }}>
+      <TableCell sx={{ borderBottom: index === materialTypes.length - 1 ? 'none' : 'default' }}>
         {materialType.name}
       </TableCell>
     </TableRow>

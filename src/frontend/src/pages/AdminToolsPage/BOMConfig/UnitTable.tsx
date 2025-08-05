@@ -39,13 +39,10 @@ const UnitTypeTable: React.FC = () => {
 
   const unitTypesTableRows = unitTypes.map((unitType, index) => (
     <TableRow>
-      <TableCell
-        align="left"
-        sx={{ borderRight: '1px solid', borderBottom: index === unitTypes.length - 1 ? 'none' : '1px solid' }}
-      >
+      <TableCell align="left" sx={{ borderBottom: index === unitTypes.length - 1 ? 'none' : 'default' }}>
         {unitType.name}
       </TableCell>
-      <TableCell align="center" sx={{ width: 10, borderBottom: index === unitTypes.length - 1 ? 'none' : '1px solid' }}>
+      <TableCell align="center" sx={{ borderBottom: index === unitTypes.length - 1 ? 'none' : 'default' }}>
         <IconButton
           type="button"
           sx={{

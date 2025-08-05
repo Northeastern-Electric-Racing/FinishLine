@@ -33,19 +33,10 @@ const LinkTypeTable = () => {
       }}
       sx={{ cursor: 'pointer' }}
     >
-      <TableCell
-        align="left"
-        sx={{ borderRight: '1px solid', borderBottom: index === linkTypes.length - 1 ? 'none' : '1px solid' }}
-      >
+      <TableCell align="left" sx={{ borderBottom: index === linkTypes.length - 1 ? 'none' : 'default' }}>
         {linkType.name}
       </TableCell>
-      <TableCell
-        sx={{
-          borderRight: '1px solid',
-          borderBottom: index === linkTypes.length - 1 ? 'none' : '1px solid',
-          verticalAlign: 'middle'
-        }}
-      >
+      <TableCell sx={{ borderBottom: index === linkTypes.length - 1 ? 'none' : 'default', verticalAlign: 'middle' }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Icon>{linkType.iconName}</Icon>
           <Typography variant="body1" sx={{ marginLeft: 1 }}>
@@ -53,7 +44,7 @@ const LinkTypeTable = () => {
           </Typography>
         </Box>
       </TableCell>
-      <TableCell sx={{ borderBottom: index === linkTypes.length - 1 ? 'none' : '1px solid' }}>
+      <TableCell sx={{ borderBottom: index === linkTypes.length - 1 ? 'none' : 'default' }}>
         {linkType.required ? 'Yes' : 'No'}
       </TableCell>
     </TableRow>

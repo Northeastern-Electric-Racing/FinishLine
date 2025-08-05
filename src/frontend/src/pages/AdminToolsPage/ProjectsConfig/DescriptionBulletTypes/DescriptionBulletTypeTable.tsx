@@ -34,23 +34,16 @@ const DescriptionBulletTypeTable = () => {
       }}
       sx={{ cursor: 'pointer' }}
     >
-      <TableCell
-        align="left"
-        sx={{ borderRight: '1px solid', borderBottom: index === descriptionBulletTypes.length - 1 ? 'none' : '1px solid' }}
-      >
+      <TableCell align="left" sx={{ borderBottom: index === descriptionBulletTypes.length - 1 ? 'none' : 'default' }}>
         {descriptionBulletType.name}
       </TableCell>
       <TableCell
-        sx={{
-          borderRight: '1px solid',
-          borderBottom: index === descriptionBulletTypes.length - 1 ? 'none' : '1px solid',
-          verticalAlign: 'middle'
-        }}
+        sx={{ borderBottom: index === descriptionBulletTypes.length - 1 ? 'none' : 'default', verticalAlign: 'middle' }}
       >
         {descriptionBulletType.workPackageRequired ? 'Yes' : 'No'}
       </TableCell>
       <TableCell
-        sx={{ borderBottom: index === descriptionBulletTypes.length - 1 ? 'none' : '1px solid', verticalAlign: 'middle' }}
+        sx={{ borderBottom: index === descriptionBulletTypes.length - 1 ? 'none' : 'default', verticalAlign: 'middle' }}
       >
         {descriptionBulletType.projectRequired ? 'Yes' : 'No'}
       </TableCell>

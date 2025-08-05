@@ -22,13 +22,9 @@ const CarsTable: React.FC = () => {
 
   const carsTableRows = cars.map((car, index) => (
     <TableRow>
-      <TableCell sx={{ borderRight: '1px solid', borderBottom: index === cars.length - 1 ? 'none' : '1px solid' }}>
-        {car.wbsNum.carNumber}
-      </TableCell>
-      <TableCell sx={{ borderRight: '1px solid', borderBottom: index === cars.length - 1 ? 'none' : '1px solid' }}>
-        {car.name}
-      </TableCell>
-      <TableCell align="left" sx={{ borderBottom: index === cars.length - 1 ? 'none' : '1px solid' }}>
+      <TableCell sx={{ borderBottom: index === cars.length - 1 ? 'none' : 'default' }}>{car.wbsNum.carNumber}</TableCell>
+      <TableCell sx={{ borderBottom: index === cars.length - 1 ? 'none' : 'default' }}>{car.name}</TableCell>
+      <TableCell sx={{ borderBottom: index === cars.length - 1 ? 'none' : 'default' }}>
         {datePipe(car.dateCreated)}
       </TableCell>
     </TableRow>

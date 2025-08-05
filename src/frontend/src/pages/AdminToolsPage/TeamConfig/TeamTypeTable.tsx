@@ -87,8 +87,7 @@ const TeamTypeTable: React.FC = () => {
           onClick={() => setEditingTeamType(teamType)}
           sx={{
             cursor: 'pointer',
-            borderRight: '1px solid',
-            borderBottom: index === teamTypes.length - 1 ? 'none' : '1px solid'
+            borderBottom: index === teamTypes.length - 1 ? 'none' : 'default'
           }}
         >
           {teamType.name}
@@ -98,8 +97,7 @@ const TeamTypeTable: React.FC = () => {
           sx={{
             cursor: 'pointer',
             verticalAlign: 'middle',
-            borderRight: '1px solid',
-            borderBottom: index === teamTypes.length - 1 ? 'none' : '1px solid'
+            borderBottom: index === teamTypes.length - 1 ? 'none' : 'default'
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -115,8 +113,7 @@ const TeamTypeTable: React.FC = () => {
             cursor: 'pointer',
             verticalAlign: 'middle',
             maxWidth: '15vw',
-            borderRight: '1px solid',
-            borderBottom: index === teamTypes.length - 1 ? 'none' : '1px solid'
+            borderBottom: index === teamTypes.length - 1 ? 'none' : 'default'
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -125,7 +122,7 @@ const TeamTypeTable: React.FC = () => {
             </Typography>
           </Box>
         </TableCell>
-        <TableCell sx={{ borderBottom: index === teamTypes.length - 1 ? 'none' : '1px solid' }}>
+        <TableCell sx={{ borderBottom: index === teamTypes.length - 1 ? 'none' : 'default' }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', mb: 1 }}>
             {teamType.imageFileId && !addedImages[teamType.teamTypeId] && (
               <Box

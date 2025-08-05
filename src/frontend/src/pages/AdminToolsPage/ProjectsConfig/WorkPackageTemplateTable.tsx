@@ -37,27 +37,17 @@ const WorkPackageTemplateTable = () => {
       onClick={() => history.push(`${routes.WORK_PACKAGE_TEMPLATE_EDIT}?id=${workPackageTemplate.workPackageTemplateId}`)}
       sx={{ cursor: 'pointer' }}
     >
-      <TableCell
-        align="left"
-        sx={{ borderRight: '1px solid', borderBottom: index === workPackageTemplates.length - 1 ? 'none' : '1px solid' }}
-      >
+      <TableCell align="left" sx={{ borderBottom: index === workPackageTemplates.length - 1 ? 'none' : 'default' }}>
         {workPackageTemplate.templateName}
       </TableCell>
       <TableCell
-        sx={{
-          borderBottom: index === workPackageTemplates.length - 1 ? 'none' : '1px solid',
-          verticalAlign: 'middle'
-        }}
+        sx={{ borderBottom: index === workPackageTemplates.length - 1 ? 'none' : 'default', verticalAlign: 'middle' }}
       >
         {workPackageTemplate.templateNotes}
       </TableCell>
       <TableCell
         align="center"
-        sx={{
-          border: 'transparent',
-          verticalAlign: 'middle',
-          borderBottom: index === workPackageTemplates.length - 1 ? 'none' : '1px solid'
-        }}
+        sx={{ borderBottom: index === workPackageTemplates.length - 1 ? 'none' : 'default', verticalAlign: 'middle' }}
       >
         <IconButton
           onClick={(event) => {

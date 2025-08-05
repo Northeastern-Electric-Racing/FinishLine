@@ -73,16 +73,13 @@ const ManufacturerTable: React.FC = () => {
 
   const manufacturersTableRows = manufacturers.map((manufacturer, index) => (
     <TableRow>
-      <TableCell
-        align="left"
-        sx={{ borderRight: '1px solid', borderBottom: index === manufacturers.length - 1 ? 'none' : '1px solid' }}
-      >
+      <TableCell align="left" sx={{ borderBottom: index === manufacturers.length - 1 ? 'none' : 'default' }}>
         {datePipe(manufacturer.dateCreated)}
       </TableCell>
-      <TableCell sx={{ borderBottom: index === manufacturers.length - 1 ? 'none' : '1px solid' }}>
+      <TableCell sx={{ borderBottom: index === manufacturers.length - 1 ? 'none' : 'default' }}>
         {manufacturer.name}
       </TableCell>
-      <TableCell align="center" sx={{ borderBottom: index === manufacturers.length - 1 ? 'none' : '1px solid' }}>
+      <TableCell align="center" sx={{ borderBottom: index === manufacturers.length - 1 ? 'none' : 'default' }}>
         <ManufacturerDeleteButton name={manufacturer.name} onDelete={handleDeleteManufacturer} />
       </TableCell>
     </TableRow>
