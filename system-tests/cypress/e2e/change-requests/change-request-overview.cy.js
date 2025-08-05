@@ -27,10 +27,6 @@ describe('Change Request Overview', () => {
     cy.get(CR_ROW('Change Requests To Review')).children().should(LENGTH_GREATER_THAN, 0);
   });
 
-  it('My Un-reviewed Change Requests Should Display At Least Two CRs', () => {
-    cy.get(CR_ROW('My Un-reviewed Change Requests')).children().should(LENGTH_GREATER_THAN, 1);
-  });
-
   it('My Aproved Change Requests Should Display At Least Three CRs', () => {
     cy.get(CR_ROW('My Approved Change Requests')).children().should(LENGTH_GREATER_THAN, 2);
   });

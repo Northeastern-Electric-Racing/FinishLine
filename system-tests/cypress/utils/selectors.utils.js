@@ -15,6 +15,10 @@ const SELECTORS = {
   USEFUL_LINKS: 'Useful Links',
   ABOUT_NER: 'About NER',
   SIDEBAR: idBuilder('sidebar-button'),
+  TEAMS: 'Teams',
+  OVERDUE: 'All Overdue Work Packages',
+
+
 
   // Change Request
   CR_ROW: (title) => testIdBuilder(`${title}crRow`),

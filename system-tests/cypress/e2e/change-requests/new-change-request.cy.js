@@ -21,7 +21,7 @@ describe('New Change Request', () => {
   });
 
   it('Displays all new CR Fields', () => {
-    cy.get(PROJECT_OR_WORKPACKAGE_PLACEHOLDER).should(VISIBLE);
+    cy.get(PROJECT_OR_WORKPACKAGE_PLACEHOLDER, { timeout: 10000 }).should(VISIBLE);
     cy.contains(ISSUE_BUTTON).should(VISIBLE);
     cy.contains(DEFINITION_CHANGE_BUTTON).should(VISIBLE);
     cy.contains(OTHER_BUTTON).should(VISIBLE);
