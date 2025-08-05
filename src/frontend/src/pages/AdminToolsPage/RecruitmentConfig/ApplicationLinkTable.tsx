@@ -1,4 +1,4 @@
-import { TableCell, TableRow, Box, Typography, Table as MuiTable, TableHead, TableBody, Link, Button } from '@mui/material';
+import { TableCell, TableRow, Box, Typography, Link, Button } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import EditIcon from '@mui/icons-material/Edit';
 import ErrorPage from '../../ErrorPage';
