@@ -11,6 +11,12 @@ services:
       - '5432:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d finishline_database']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   backend:
     container_name: backend
@@ -20,10 +26,11 @@ services:
     ports:
       - '3001:3001'
     volumes:
-      - ../src/backend:/base/src/backend
-      - ../src/shared:/base/src/shared
+      - ../src/backend:/src/backend
+      - ../src/shared:/src/shared
     depends_on:
-      - database
+      database:
+        condition: service_healthy
     env_file:
       - ../src/backend/.env
     environment:
@@ -37,8 +44,8 @@ services:
     ports:
       - '3000:3000'
     volumes:
-      - ../src/frontend:/base/src/frontend
-      - ../src/shared:/base/src/shared
+      - ../src/frontend:/src/frontend
+      - ../src/shared:/src/shared
     depends_on:
       - backend
 
