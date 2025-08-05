@@ -96,7 +96,7 @@ const GanttChartColorLegend = () => {
       sx={{
         display: 'flex',
         width: '100%',
-        gap: 1,
+        gap: 0.9,
         overflowX: 'scroll',
         '&::-webkit-scrollbar': {
           display: 'none'
@@ -119,7 +119,7 @@ const GanttChartColorLegend = () => {
                 borderRadius: 1,
                 justifyContent: 'center',
                 alignItems: 'center',
-                px: 1
+                px: 0.8
               }}
             >
               <Tooltip
@@ -149,7 +149,7 @@ const GanttChartColorLegend = () => {
           borderRadius: 1,
           justifyContent: 'center',
           alignItems: 'center',
-          px: 1
+          px: 0.8
         }}
       >
         <Tooltip
@@ -173,7 +173,7 @@ const GanttChartColorLegend = () => {
           borderRadius: 1,
           justifyContent: 'center',
           alignItems: 'center',
-          px: 1
+          px: 0.8
         }}
       >
         <Typography variant="body2" sx={{ color: 'white', overflow: 'hidden', textWrap: 'nowrap' }}>
