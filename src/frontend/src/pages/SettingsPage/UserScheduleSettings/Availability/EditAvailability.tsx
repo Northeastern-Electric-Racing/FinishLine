@@ -1,10 +1,11 @@
-import { Grid } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { HeatmapColors, EnumToArray, REVIEW_TIMES, ExistingMeetingData } from '../../../../utils/design-review.utils';
+import { HeatmapColors, enumToArray, REVIEW_TIMES, ExistingMeetingData } from '../../../../utils/design-review.utils';
 import TimeSlot from '../../../../components/TimeSlot';
 import { addDaysToDate, Availability, getDayOfWeek, getMostRecentAvailabilities } from 'shared';
 import { datePipe } from '../../../../utils/pipes';
 import NERArrows from '../../../../components/NERArrows';
+import { NERButton } from '../../../../components/NERButton';
 
 interface EditAvailabilityProps {
   editedAvailabilities: Map<number, Availability>;
@@ -83,6 +84,12 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     };
   }, []);
 
+  const invertAvailabilities = () => {
+    currentlyDisplayedAvailabilities.forEach((availability) =>
+      enumToArray(REVIEW_TIMES).forEach((_time, timeIndex) => toggleTimeSlot(availability, timeIndex))
+    );
+  };
+
   const toggleTimeSlot = (availability: Availability, selectedTime: number) => {
     availability.availability.includes(selectedTime)
       ? availability.availability.splice(availability.availability.indexOf(selectedTime), 1)
@@ -96,6 +103,14 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
 
   return (
     <Grid container>
+      <Grid container justifyContent="space-between" mb={1}>
+        <Typography display={'flex'} justifyContent={'flex-start'} mt={1} variant="subtitle1">
+          Available times in red
+        </Typography>
+        <NERButton variant="outlined" sx={{ display: 'flex', justifyContent: 'flex-end' }} onClick={invertAvailabilities}>
+          Invert Availability
+        </NERButton>
+      </Grid>
       <TimeSlot backgroundColor={HeatmapColors[0]} small={true} heightOverride="40px" />
       {currentlyDisplayedAvailabilities.map((availability) => (
         <TimeSlot
@@ -107,14 +122,14 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
           fontSize={'12px'}
         />
       ))}
-      {EnumToArray(REVIEW_TIMES).map((time, timeIndex) => (
+      {enumToArray(REVIEW_TIMES).map((time, timeIndex) => (
         <Grid container item>
           <TimeSlot backgroundColor={HeatmapColors[0]} small={true} text={time} fontSize={'13px'} />
           {currentlyDisplayedAvailabilities.map((availability, dayIndex) => {
             const backgroundColor = availability.availability.includes(timeIndex) ? HeatmapColors[3] : HeatmapColors[0];
             return (
               <TimeSlot
-                key={timeIndex * EnumToArray(REVIEW_TIMES).length + dayIndex}
+                key={timeIndex * enumToArray(REVIEW_TIMES).length + dayIndex}
                 backgroundColor={backgroundColor}
                 small={true}
                 onMouseDown={(e) => handleMouseDown(e, availability, timeIndex)}

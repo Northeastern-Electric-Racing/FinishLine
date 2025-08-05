@@ -23,26 +23,28 @@ const AbbreviationsTable: React.FC = () => {
     return <ErrorPage message={projectsError?.message} />;
   }
 
-  const projectTableRows = projects
-    .filter((project) => !!project.abbreviation)
-    .map((project) => (
-      <TableRow>
-        <TableCell align="left" sx={{ border: '2px solid black' }}>
-          {`${wbsPipe(project.wbsNum)} - ${project.name}`}
-        </TableCell>
-        <TableCell sx={{ border: '2px solid black' }}>{project.abbreviation}</TableCell>
-        <TableCell align="center" sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
-          <IconButton
-            onClick={(event) => {
-              event.stopPropagation();
-              setAbbreviationToDelete(project);
-            }}
-          >
-            <Delete />
-          </IconButton>
-        </TableCell>
-      </TableRow>
-    ));
+  const projectsWithAbbreviations = projects.filter((project) => !!project.abbreviation);
+
+  const projectTableRows = projectsWithAbbreviations.map((project, index) => (
+    <TableRow>
+      <TableCell
+        sx={{ borderBottom: index === projectsWithAbbreviations.length - 1 ? 'none' : 'default' }}
+      >{`${wbsPipe(project.wbsNum)} - ${project.name}`}</TableCell>
+      <TableCell sx={{ borderBottom: index === projectsWithAbbreviations.length - 1 ? 'none' : 'default' }}>
+        {project.abbreviation}
+      </TableCell>
+      <TableCell sx={{ borderBottom: index === projectsWithAbbreviations.length - 1 ? 'none' : 'default' }}>
+        <IconButton
+          onClick={(event) => {
+            event.stopPropagation();
+            setAbbreviationToDelete(project);
+          }}
+        >
+          <Delete />
+        </IconButton>
+      </TableCell>
+    </TableRow>
+  ));
 
   return (
     <Box>

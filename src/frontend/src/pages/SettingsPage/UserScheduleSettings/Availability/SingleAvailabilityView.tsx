@@ -1,5 +1,5 @@
 import { Box, Grid } from '@mui/material';
-import { HeatmapColors, EnumToArray, REVIEW_TIMES, ExistingMeetingData } from '../../../../utils/design-review.utils';
+import { HeatmapColors, enumToArray, REVIEW_TIMES, ExistingMeetingData } from '../../../../utils/design-review.utils';
 import TimeSlot from '../../../../components/TimeSlot';
 import { Availability, getDayOfWeek, getMostRecentAvailabilities } from 'shared';
 import { datePipe } from '../../../../utils/pipes';
@@ -35,14 +35,14 @@ const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ totalAv
           fontSize={'12px'}
         />
       ))}
-      {EnumToArray(REVIEW_TIMES).map((time, timeIndex) => (
+      {enumToArray(REVIEW_TIMES).map((time, timeIndex) => (
         <Grid container item>
           <TimeSlot backgroundColor={HeatmapColors[0]} small={true} text={time} fontSize={'13px'} />
           {selectedTimes.map((availability, dayIndex) => {
             const backgroundColor = availability.availability.includes(timeIndex) ? HeatmapColors[3] : HeatmapColors[0];
             return (
               <TimeSlot
-                key={timeIndex * EnumToArray(REVIEW_TIMES).length + dayIndex}
+                key={timeIndex * enumToArray(REVIEW_TIMES).length + dayIndex}
                 backgroundColor={backgroundColor}
                 small={true}
                 icon={existingMeetingData.get(dayIndex)?.iconMap.get(timeIndex)}

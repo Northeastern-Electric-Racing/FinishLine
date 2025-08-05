@@ -45,21 +45,10 @@ const MilestoneTable = () => {
   const sortedMilestones = milestones.sort((a, b) => new Date(a.dateOfEvent).getTime() - new Date(b.dateOfEvent).getTime());
   const milestoneRows = sortedMilestones.map((milestone, index) => (
     <TableRow>
-      <TableCell
-        align="left"
-        sx={{
-          borderRight: '1px solid',
-          borderBottom: index === milestones.length - 1 ? 'none' : '1px solid'
-        }}
-      >
+      <TableCell align="left" sx={{ borderBottom: index === sortedMilestones.length - 1 ? 'none' : 'default' }}>
         <Typography>{new Date(milestone.dateOfEvent).toDateString()}</Typography>
       </TableCell>
-      <TableCell
-        sx={{
-          borderRight: '1px solid',
-          borderBottom: index === milestones.length - 1 ? 'none' : '1px solid'
-        }}
-      >
+      <TableCell sx={{ borderBottom: index === sortedMilestones.length - 1 ? 'none' : 'default' }}>
         <Typography>{milestone.name}</Typography>
       </TableCell>
       <TableCell
@@ -67,7 +56,7 @@ const MilestoneTable = () => {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          borderBottom: index === milestones.length - 1 ? 'none' : '1px solid',
+          borderBottom: index === milestones.length - 1 ? 'none' : 'default',
           minHeight: '50px'
         }}
       >

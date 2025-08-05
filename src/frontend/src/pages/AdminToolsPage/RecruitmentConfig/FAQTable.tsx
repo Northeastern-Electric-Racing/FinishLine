@@ -38,14 +38,7 @@ const FAQsTable = () => {
 
   const FAQsRows = faqs.map((faq: FrequentlyAskedQuestion, index: number) => (
     <TableRow key={faq.faqId}>
-      <TableCell
-        align="left"
-        sx={{
-          borderRight: '1px solid',
-          borderBottom: index === faqs.length - 1 ? 'none' : '1px solid',
-          alignItems: 'center'
-        }}
-      >
+      <TableCell align="left" sx={{ borderBottom: index === faqs.length - 1 ? 'none' : 'default', alignItems: 'center' }}>
         <Typography>{faq.question}</Typography>
       </TableCell>
       <TableCell
@@ -53,7 +46,7 @@ const FAQsTable = () => {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          borderBottom: index === faqs.length - 1 ? 'none' : '1px solid',
+          borderBottom: index === faqs.length - 1 ? 'none' : 'default',
           minHeight: '50px'
         }}
       >
