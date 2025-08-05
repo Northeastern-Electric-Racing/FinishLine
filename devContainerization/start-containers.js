@@ -7,7 +7,7 @@ const COMPOSE_FILE = 'docker-compose.dev.yml';
 async function getContainerStatus() {
   try {
     //get all containers from the compose file (running and stopped)
-    const { stdout } = await execAsync(`docker-compose -f ${COMPOSE_FILE} ps -a -q`);
+    const { stdout } = await execAsync(`docker compose -f ${COMPOSE_FILE} ps -a -q`);
     const containerIds = stdout
       .trim()
       .split('\n')
@@ -55,7 +55,7 @@ async function waitForBackendReady() {
 
   while (attempts < maxAttempts) {
     try {
-      await execAsync(`docker-compose -f ${COMPOSE_FILE} exec -T backend echo "ready"`);
+      await execAsync(`docker compose -f ${COMPOSE_FILE} exec -T backend echo "ready"`);
       console.log('Backend container is ready.');
       return;
     } catch (error) {
@@ -72,7 +72,7 @@ async function runMigrations() {
   console.log('Running database migrations and seed...');
   try {
     await runCommand(
-      `docker-compose -f ${COMPOSE_FILE} exec -T backend sh -c "cd /src/backend && npx prisma migrate reset --force"`
+      `docker compose -f ${COMPOSE_FILE} exec -T backend sh -c "cd /src/backend && npx prisma migrate reset --force"`
     );
     console.log('Database migrations and seeding completed successfully.');
   } catch (error) {
@@ -89,27 +89,27 @@ async function main() {
   switch (containerStatus.status) {
     case 'all_running':
       console.log('All 3 containers are running. Following logs...');
-      await runCommand(`docker-compose -f ${COMPOSE_FILE} logs --follow`);
+      await runCommand(`docker compose -f ${COMPOSE_FILE} logs --follow`);
       break;
 
     case 'some_stopped':
       console.log(
         `Found ${containerStatus.running}/${containerStatus.total} containers running. Starting all containers...`
       );
-      await runCommand(`docker-compose -f ${COMPOSE_FILE} up -d`);
+      await runCommand(`docker compose -f ${COMPOSE_FILE} up -d`);
       console.log('Containers started. Following logs...');
-      await runCommand(`docker-compose -f ${COMPOSE_FILE} logs --follow`);
+      await runCommand(`docker compose -f ${COMPOSE_FILE} logs --follow`);
       break;
 
     case 'not_created':
       console.log('Containers not found. Building and starting...');
-      await runCommand(`docker-compose -f ${COMPOSE_FILE} up --build -d`);
+      await runCommand(`docker compose -f ${COMPOSE_FILE} up --build -d`);
       console.log('Containers built and started. Waiting for backend...');
       await waitForBackendReady();
       console.log('Running migrations...');
       await runMigrations();
       console.log('Setup complete. Following logs...');
-      await runCommand(`docker-compose -f ${COMPOSE_FILE} logs --follow`);
+      await runCommand(`docker compose -f ${COMPOSE_FILE} logs --follow`);
       break;
 
     default:
