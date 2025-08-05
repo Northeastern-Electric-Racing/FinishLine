@@ -45,6 +45,16 @@ export const getUsersLeadingProjects = () => {
     transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer)
   });
 };
+
+/**
+ * Fetches all projects that are on that team.
+ */
+export const getTeamsProjects = (teamId: string) => {
+  return axios.get<Project[]>(apiUrls.teamsProjects(teamId), {
+    transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer)
+  });
+};
+
 /**
  * Fetches a single project.
  *

@@ -26,16 +26,44 @@ import {
   uploadSingleReceipt,
   editAccountCode,
   createAccountCode,
+  createOtherProductReason,
   createVendor,
   editVendor,
   getAllAccountCodes,
   editRefund,
   leadershipApproveReimbursementRequest,
   requestReimbursementRequestChanges,
-  markPendingFinance
+  markPendingFinance,
+  createSponsor,
+  createSponsorTask,
+  createSponsorTier,
+  getAllIndexCodes,
+  getAllOtherProductReason,
+  getAllSponsors,
+  getSponsorTasks,
+  editSponsorTask,
+  deleteSponsor,
+  createReimbursementRequestComment,
+  getReimbursementRequestTeamData,
+  getReimbursementRequestTeamTypeData,
+  getReimbursementRequestProjectData,
+  getReimbursementRequestCategoryData,
+  getAllReimbursementRequestData,
+  getSpendingBarTeamData,
+  getSpendingBarCategoryData,
+  getSpendingBarTeamTypeData,
+  getAllSpendingBarData,
+  deleteVendor,
+  getAllSponsorTiers,
+  editSponsor,
+  getCurrentUsersTeamsReimbursementRequests,
+  deleteSponsorTask,
+  editOtherProductReason,
+  deleteAccountCode,
+  deleteOtherProductReason
 } from '../apis/finance.api';
 import {
-  ClubAccount,
+  IndexCode,
   AccountCode,
   Reimbursement,
   ReimbursementReceiptCreateArgs,
@@ -44,10 +72,17 @@ import {
   ReimbursementStatus,
   OtherReimbursementProductCreateArgs,
   WbsReimbursementProductCreateArgs,
-  ReimbursementStatusType
+  ReimbursementStatusType,
+  OtherProductReason,
+  Sponsor,
+  SponsorTask,
+  SponsorTier,
+  ReimbursementRequestComment,
+  ReimbursementRequestData,
+  SpendingBarData,
+  CreateSponsorTask
 } from 'shared';
 import { fullNamePipe } from '../utils/pipes';
-import { getCurrentReimbursementStatus } from '../utils/reimbursement-request.utils';
 
 export interface CreateReimbursementRequestPayload {
   vendorId: string;
@@ -56,7 +91,7 @@ export interface CreateReimbursementRequestPayload {
   otherReimbursementProducts: OtherReimbursementProductCreateArgs[];
   wbsReimbursementProducts: WbsReimbursementProductCreateArgs[];
   totalCost: number;
-  account: ClubAccount;
+  indexCodeId: string;
 }
 
 export interface EditReimbursementRequestPayload extends CreateReimbursementRequestPayload {
@@ -74,11 +109,18 @@ export interface AccountCodePayload {
   code: number;
   name: string;
   allowed: boolean;
-  allowedRefundSources: ClubAccount[];
+  amount?: number;
+  indexCodeIds: string[];
 }
 
 export interface EditVendorPayload {
   name: string;
+  username?: string;
+  password?: string;
+  discountCode?: string;
+  taxExempt: boolean;
+  twoFactorContactIds: string[];
+  notes: string;
 }
 
 export interface RefundPayload {
@@ -88,6 +130,187 @@ export interface RefundPayload {
 
 export interface MarkDeliveredRequestPayload {
   dateDelivered: Date;
+}
+
+export interface SponsorPayload {
+  name: string;
+  activeStatus: boolean;
+  sponsorValue: number;
+  joinDate: Date;
+  activeYears: number[];
+  sponsorTierId: string;
+  taxExempt: boolean;
+  vendorContact: string;
+  sponsorTasks: CreateSponsorTask[];
+  discountCode?: string;
+}
+
+export interface SponsorTierPayload {
+  name: string;
+  colorHexCode: string;
+}
+
+export interface SponsorTaskPayload {
+  dueDate: Date;
+  notes: string;
+  notifyDate?: Date;
+  assigneeUserId?: string;
+}
+
+export interface EditSponsorTaskPayload {
+  sponsorTaskId: string;
+  sponsorTaskData: SponsorTaskPayload;
+}
+
+export interface DeleteSponsorTaskPaylaod {
+  sponsorTaskId: string;
+}
+
+export interface OtherProductReasonPayload {
+  indexCodeId: string;
+  accountCodeIds: string[];
+  name: string;
+  budget: number;
+}
+
+/**
+ * Custom React hook to create a sponsor
+ *
+ * @returns the created sponsor
+ */
+export const useCreateSponsor = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Sponsor, Error, SponsorPayload>(
+    ['sponsor', 'create'],
+    async (formData: SponsorPayload) => {
+      const { data } = await createSponsor(formData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['sponsor']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React hook to create a sponsor task
+ *
+ * @returns the created sponsor task
+ */
+export const useCreateSponsorTask = (sponsorId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<SponsorTask, Error, SponsorTaskPayload>(
+    ['sponsor-task', 'create'],
+    async (formData: SponsorTaskPayload) => {
+      const { data } = await createSponsorTask(sponsorId, formData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['sponsor-task']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React hook to create a sponsor tier
+ *
+ * @returns the created sponsor tier
+ */
+export const useCreateSponsorTier = () => {
+  const queryClient = useQueryClient();
+  return useMutation<SponsorTier, Error, SponsorTierPayload>(
+    ['sponsor-tier', 'create'],
+    async (formData: SponsorTierPayload) => {
+      const { data } = await createSponsorTier(formData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['sponsor-tier']);
+      }
+    }
+  );
+};
+
+export interface ReimbursementRequestCommentPayload {
+  reimbursementRequestId: string;
+  dateCreated: Date;
+  comment: string;
+}
+
+/**
+ * Custom React hook to create a reimbursement request comment
+ *
+ * @returns the created comment
+ */
+export const useCreateReimbursementRequestComment = (reimbursementRequestId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ReimbursementRequestComment, Error, ReimbursementRequestCommentPayload>(
+    ['reimbursement-requests', 'create', 'comment'],
+    async (formData: ReimbursementRequestCommentPayload) => {
+      const { data } = await createReimbursementRequestComment(reimbursementRequestId, formData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests']);
+      }
+    }
+  );
+};
+
+export interface IndexCodePayload {
+  name: string;
+}
+
+export interface ReimbursementRequestProjectDataPayload {
+  projectId: string;
+  startDate?: Date;
+  endDate?: Date;
+}
+
+export interface ReimbursementRequestTeamDataPayload {
+  teamId: string;
+  startDate?: Date;
+  endDate?: Date;
+}
+
+export interface ReimbursementRequestDataPayload {
+  startDate?: Date;
+  endDate?: Date;
+}
+
+export interface ReimbursementRequestCategoryDataPayload {
+  otherReasonId: string;
+  startDate?: Date;
+  endDate?: Date;
+}
+
+export interface ReimbursementRequestTeamTypeDataPayload {
+  teamTypeId: string;
+  startDate?: Date;
+  endDate?: Date;
+}
+
+export interface SpendingBarTeamDataPayload {
+  teamId: string;
+  startDate?: Date;
+  endDate?: Date;
+}
+
+export interface SpendingBarTeamTypeDataPayload {
+  teamTypeId: string;
+  startDate?: Date;
+  endDate?: Date;
+}
+
+export interface SpendingBarDataPayload {
+  startDate?: Date;
+  endDate?: Date;
 }
 
 /**
@@ -170,6 +393,16 @@ export const useGetAllAccountCodes = () => {
 export const useCurrentUserReimbursementRequests = () => {
   return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user'], async () => {
     const { data } = await getCurrentUserReimbursementRequests();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get the reimbursement requests for the current user's teams
+ */
+export const useCurrentUsersTeamsReimbursementRequests = () => {
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user'], async () => {
+    const { data } = await getCurrentUsersTeamsReimbursementRequests();
     return data;
   });
 };
@@ -406,8 +639,8 @@ export const useDownloadCSVFileOfReimbursementRequests = () => {
         .map(
           (rr) =>
             `${rr.saboId},${rr.identifier},${fullNamePipe(rr.recipient)},${rr.totalCost},${
-              getCurrentReimbursementStatus(rr.reimbursementStatuses).type
-            },${rr.account},${rr.accountCode.code},${rr.dateCreated},${rr.dateDelivered ?? ''},${
+              rr.reimbursementStatuses[rr.reimbursementStatuses.length - 1].type
+            },${rr.indexCode},${rr.accountCode.code},${rr.dateCreated},${rr.dateDelivered ?? ''},${
               rr.reimbursementStatuses.find((rs) => rs.type === ReimbursementStatusType.SABO_SUBMITTED)?.dateCreated ?? ''
             },${rr.vendor.name}`
         )
@@ -522,6 +755,27 @@ export const useEditAccountCode = (accountCodeId: string) => {
 };
 
 /**
+ * Hook to delete the given expense type
+ * @param accountCodeId expense type to be deleted
+ * @returns the deleted expense type
+ */
+export const useDeleteAccountCode = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ id: string }, Error, string>(
+    ['expense-types', 'delete'],
+    async (accountCodeId: string) => {
+      const { data } = await deleteAccountCode(accountCodeId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['expense-types']);
+      }
+    }
+  );
+};
+
+/**
  * Custom React Hook to create an expense type.
  */
 export const useCreateAccountCode = () => {
@@ -541,11 +795,35 @@ export const useCreateAccountCode = () => {
  */
 export const useCreateVendor = () => {
   const queryClient = useQueryClient();
-  return useMutation<Vendor, Error, { name: string }>(['vendors', 'create'], async (vendorData: { name: string }) => {
-    const { data } = await createVendor(vendorData);
-    queryClient.invalidateQueries(['vendors']);
-    return data;
-  });
+  return useMutation<{ message: string }, Error, EditVendorPayload>(
+    ['vendors', 'create'],
+    async (vendorData: EditVendorPayload) => {
+      const { data } = await createVendor(vendorData);
+      queryClient.invalidateQueries(['vendors']);
+      return data;
+    }
+  );
+};
+
+/**
+ * Hook to delete the given vendor
+ * @param vendorId vendor to be deleted
+ * @returns the deleted vendor
+ */
+export const useDeleteVendor = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ id: string }, Error, string>(
+    ['vendors', 'delete'],
+    async (vendorId: string) => {
+      const { data } = await deleteVendor(vendorId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['vendors']);
+      }
+    }
+  );
 };
 
 /**
@@ -587,6 +865,297 @@ export const useRequestReimbursementRequestChanges = (id: string) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['reimbursement-requests', id]);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to get all IndexCodes
+ *
+ * @returns all the IndexCodes
+ */
+export const useGetAllIndexCodes = () => {
+  return useQuery<IndexCode[], Error>(['index-codes'], async () => {
+    const { data } = await getAllIndexCodes();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get all Other Product Reasons
+ *
+ * @returns all the other product reasons
+ */
+export const useGetAllOtherProductReason = () => {
+  return useQuery<OtherProductReason[], Error>(['other-reimbursement-product-reasons'], async () => {
+    const { data } = await getAllOtherProductReason();
+    return data;
+  });
+};
+
+/**
+ * Custom react hook to create an other reimbursement product reason
+ *
+ */
+export const useCreateOtherProductReason = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, OtherProductReasonPayload>(
+    ['other-reimbursement-product-reason', 'create'],
+    async (otherProductReasonData: OtherProductReasonPayload) => {
+      const { data } = await createOtherProductReason(otherProductReasonData);
+      queryClient.invalidateQueries(['other-reimbursement-product-reasons']);
+      return data;
+    }
+  );
+};
+
+/**
+ * Custom React Hook to edit an Other Product Reason
+ *
+ * @param otherProductReasonId The id of the other product reason
+ */
+export const useEditOtherProductReason = (otherProductReasonId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, OtherProductReasonPayload>(
+    ['other-reimbursement-product-reason', 'edit'],
+    async (otherProductReasonData: OtherProductReasonPayload) => {
+      const { data } = await editOtherProductReason(otherProductReasonId, otherProductReasonData);
+      queryClient.invalidateQueries(['other-reimbursement-product-reasons']);
+      return data;
+    }
+  );
+};
+
+/**
+ * Hook to delete the given other reimbursement product reason
+ * @param otherReasonId other reason to be deleted
+ * @returns the deleted other reason
+ */
+export const useDeleteOtherProductReason = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ id: string }, Error, string>(
+    ['other-reimbursement-product-reason', 'delete'],
+    async (otherReasonId: string) => {
+      const { data } = await deleteOtherProductReason(otherReasonId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['other-reimbursement-product-reasons']);
+      }
+    }
+  );
+};
+
+/**
+ * custom React Hook to get all the sponsors
+ *
+ * @returns the list of all of the sponsors
+ */
+export const useGetAllSponsors = () => {
+  return useQuery<Sponsor[], Error>(['sponsor'], async () => {
+    const { data } = await getAllSponsors();
+    return data;
+  });
+};
+
+/**
+ * custom react hook to get all of the sponsor tasks for a given sponsor
+ *
+ * @returns the list of all of the sponsor tasks for a given sponsor
+ */
+export const useGetSponsorTasks = (sponsorId: string) => {
+  return useQuery<SponsorTask[], Error>(['sponsor-task'], async () => {
+    const { data } = await getSponsorTasks(sponsorId);
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to edit a sponsor task
+ *
+ * @returns the edited sponosor task
+ */
+export const useEditSponsorTask = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<SponsorTask, Error, EditSponsorTaskPayload>(
+    async ({ sponsorTaskId, sponsorTaskData }) => {
+      const { data } = await editSponsorTask(sponsorTaskId, sponsorTaskData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['sponsor-task']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to delete a sponsor
+ *
+ * @param sponsorId the id of the sponsor to be deleted
+ * @returns the deleted sponsor
+ */
+export const useDeleteSponsor = (sponsorId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Sponsor, Error>(
+    ['sponsor', 'delete'],
+    async () => {
+      const { data } = await deleteSponsor(sponsorId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['sponsor']);
+      }
+    }
+  );
+};
+
+export const useGetReimbursementRequestTeamData = (reimbursementRequestData: ReimbursementRequestTeamDataPayload) =>
+  useQuery<ReimbursementRequestData, Error>(
+    [
+      'reimbursement-request-team-data',
+      reimbursementRequestData.endDate,
+      reimbursementRequestData.startDate,
+      reimbursementRequestData.teamId
+    ],
+    async () => {
+      const { data } = await getReimbursementRequestTeamData(reimbursementRequestData);
+      return data;
+    }
+  );
+
+export const useGetReimbursementRequestTeamTypeData = (reimbursementRequestData: ReimbursementRequestTeamTypeDataPayload) =>
+  useQuery<ReimbursementRequestData, Error>(
+    [
+      'reimbursement-request-team-type-data',
+      reimbursementRequestData.endDate,
+      reimbursementRequestData.startDate,
+      reimbursementRequestData.teamTypeId
+    ],
+    async () => {
+      const { data } = await getReimbursementRequestTeamTypeData(reimbursementRequestData);
+      return data;
+    }
+  );
+
+export const useGetReimbursementRequestProjectData = (reimbursementRequestData: ReimbursementRequestProjectDataPayload) =>
+  useQuery<ReimbursementRequestData, Error>(
+    [
+      'reimbursement-request-project-data',
+      reimbursementRequestData.endDate,
+      reimbursementRequestData.startDate,
+      reimbursementRequestData.projectId
+    ],
+    async () => {
+      const { data } = await getReimbursementRequestProjectData(reimbursementRequestData);
+      return data;
+    }
+  );
+
+export const useGetReimbursementRequestCategoryData = (reimbursementRequestData: ReimbursementRequestCategoryDataPayload) =>
+  useQuery<ReimbursementRequestData, Error>(
+    [
+      'reimbursement-request-category-data',
+      reimbursementRequestData.endDate,
+      reimbursementRequestData.startDate,
+      reimbursementRequestData.otherReasonId
+    ],
+    async () => {
+      const { data } = await getReimbursementRequestCategoryData(reimbursementRequestData);
+      return data;
+    }
+  );
+
+export const useGetAllReimbursementRequestData = (reimbursementRequestData: ReimbursementRequestDataPayload) =>
+  useQuery<ReimbursementRequestData[], Error>(
+    ['reimbursement-request-data', reimbursementRequestData.endDate, reimbursementRequestData.startDate],
+    async () => {
+      const { data } = await getAllReimbursementRequestData(reimbursementRequestData);
+      return data;
+    }
+  );
+
+export const useGetSpendingBarTeamData = (spendingBarData: SpendingBarTeamDataPayload) =>
+  useQuery<SpendingBarData, Error>(
+    ['spending-bar-team-data', spendingBarData.endDate, spendingBarData.startDate, spendingBarData.teamId],
+    async () => {
+      const { data } = await getSpendingBarTeamData(spendingBarData);
+      return data;
+    }
+  );
+
+export const useGetSpendingBarTeamTypeData = (spendingBarData: SpendingBarTeamTypeDataPayload) =>
+  useQuery<SpendingBarData[], Error>(
+    ['spending-bar-team-type-data', spendingBarData.endDate, spendingBarData.startDate, spendingBarData.teamTypeId],
+    async () => {
+      const { data } = await getSpendingBarTeamTypeData(spendingBarData);
+      return data;
+    }
+  );
+
+export const useGetSpendingBarCategoryData = (spendingBarData: SpendingBarDataPayload) =>
+  useQuery<SpendingBarData, Error>(
+    ['spending-bar-category-data', spendingBarData.endDate, spendingBarData.startDate],
+    async () => {
+      const { data } = await getSpendingBarCategoryData(spendingBarData);
+      return data;
+    }
+  );
+
+export const useGetAllSpendingBarData = (spendingBarData: SpendingBarDataPayload) =>
+  useQuery<SpendingBarData[], Error>(['spending-bar-data', spendingBarData.endDate, spendingBarData.startDate], async () => {
+    const { data } = await getAllSpendingBarData(spendingBarData);
+    return data;
+  });
+
+/**
+ * Custom react hook to get all sponsor tiers
+ *
+ * @returns all the sponsor tiers
+ */
+export const useGetAllSponsorTiers = () => {
+  return useQuery<SponsorTier[], Error>(['sponsor-tiers'], async () => {
+    const { data } = await getAllSponsorTiers();
+    return data;
+  });
+};
+
+export const useEditSponsor = (sponsorId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Sponsor, Error, SponsorPayload>(
+    ['sponsor', 'edit'],
+    async (formData: SponsorPayload) => {
+      const { data } = await editSponsor(sponsorId, formData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['sponsor']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to delete a sponsor task
+ *
+ * @returns the deleted sponsor
+ */
+export const useDeleteSponsorTask = () => {
+  const queryClient = useQueryClient();
+  return useMutation<SponsorTask, Error, DeleteSponsorTaskPaylaod>(
+    async ({ sponsorTaskId }) => {
+      const { data } = await deleteSponsorTask(sponsorTaskId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['sponsor-task']);
       }
     }
   );

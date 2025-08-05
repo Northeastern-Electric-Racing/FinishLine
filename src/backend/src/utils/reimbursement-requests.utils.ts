@@ -246,15 +246,23 @@ export const createReimbursementProducts = async (
   const otherReimbursementProductPromises = validatedOtherReimbursementProducts.map(async (product) => {
     const reimbursementProductReason = await prisma.reimbursement_Product_Reason.create({
       data: {
-        otherReason: product.reason
+        otherReason: { connect: { otherReimbursementProductReasonId: product.reason.otherProductReasonId } }
       }
     });
+
+    const refundSources = product.refundSources.map((rs) => ({
+      indexCode: { connect: { indexCodeId: rs.indexCode.indexCodeId } },
+      amount: rs.amount
+    }));
 
     return await prisma.reimbursement_Product.create({
       data: {
         name: product.name,
         cost: product.cost,
         reimbursementRequestId,
+        refundSources: {
+          create: refundSources
+        },
         reimbursementProductReasonId: reimbursementProductReason.reimbursementProductReasonId
       }
     });
@@ -271,11 +279,19 @@ export const createReimbursementProducts = async (
       }
     });
 
+    const refundSources = product.refundSources.map((rs) => ({
+      indexCode: { connect: { indexCodeId: rs.indexCode.indexCodeId } },
+      amount: rs.amount
+    }));
+
     return await prisma.reimbursement_Product.create({
       data: {
         name: product.name,
         cost: product.cost,
         reimbursementRequestId,
+        refundSources: {
+          create: refundSources
+        },
         reimbursementProductReasonId: reimbursementProductReason.reimbursementProductReasonId
       }
     });

@@ -68,7 +68,7 @@ const ProjectFormWorkPackageSection: React.FC<ProjectFormWorkPackageSectionProps
     const possibleDates = [...blockedBy.filter((id) => idToEndDateMap[id]).map((id) => idToEndDateMap[id].toDate())];
     const latestEndDate = max(possibleDates);
 
-    return day.getDay() !== 1 || (latestEndDate && dayjs(day).isBefore(latestEndDate));
+    return latestEndDate && dayjs(day).isBefore(latestEndDate);
   };
 
   const getNewStartDate = useCallback(
@@ -134,11 +134,7 @@ const ProjectFormWorkPackageSection: React.FC<ProjectFormWorkPackageSectionProps
             </Grid>
           </Grid>
           <Grid container direction="row">
-            <Tooltip
-              placement="top"
-              arrow
-              title="Start date must be a Monday and not before the end dates of the blocking work packages"
-            >
+            <Tooltip placement="top" arrow title="Start date must be not before the end dates of the blocking work packages">
               <Grid size={4}>
                 <DatePicker
                   shouldDisableDate={(day) => shouldDisableDate(day, index)}

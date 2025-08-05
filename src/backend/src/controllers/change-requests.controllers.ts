@@ -123,6 +123,23 @@ export default class ChangeRequestsController {
     }
   }
 
+  static async createBudgetChangeRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { otherReasonId, accountCodeId, type, proposedBudget } = req.body;
+      const cr = await ChangeRequestsService.createBudgetChangeRequest(
+        req.currentUser,
+        type,
+        proposedBudget,
+        req.organization,
+        otherReasonId,
+        accountCodeId
+      );
+      res.status(200).json(cr);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createStandardChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const { wbsNum, type, what, why, proposedSolutions, projectProposedChanges, workPackageProposedChanges } = req.body;

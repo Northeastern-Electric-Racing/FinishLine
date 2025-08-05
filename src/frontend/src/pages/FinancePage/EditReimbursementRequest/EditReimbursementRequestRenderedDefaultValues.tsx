@@ -9,16 +9,17 @@ import { centsToDollar, fullNamePipe } from '../../../utils/pipes';
 const EditReimbursementRequestRenderedDefaultValues: React.FC<{
   reimbursementRequest: ReimbursementRequest;
   onSubmitData: (data: ReimbursementRequestDataSubmission) => Promise<string>;
-}> = ({ reimbursementRequest, onSubmitData }) => {
-  const previousPage = `${routes.REIMBURSEMENT_REQUESTS}/${reimbursementRequest.reimbursementRequestId}`;
+  onExitEditPage: () => void;
+}> = ({ reimbursementRequest, onSubmitData, onExitEditPage }) => {
+  const previousPage = `${routes.REIMBURSEMENT_REQUESTS}/my-requests/${reimbursementRequest.reimbursementRequestId}`;
 
   return (
     <PageLayout
       title="Edit Reimbursement Request"
       previousPages={[
         {
-          name: 'Finance',
-          route: routes.FINANCE
+          name: 'Reimbursement Requests',
+          route: routes.REIMBURSEMENT_REQUESTS
         },
         {
           name: `${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request`,
@@ -31,7 +32,7 @@ const EditReimbursementRequestRenderedDefaultValues: React.FC<{
         submitData={onSubmitData}
         defaultValues={{
           vendorId: reimbursementRequest.vendor.vendorId,
-          account: reimbursementRequest.account,
+          indexCodeId: reimbursementRequest.indexCode.indexCodeId,
           dateOfExpense: reimbursementRequest.dateOfExpense ? new Date(reimbursementRequest.dateOfExpense) : undefined,
           accountCodeId: reimbursementRequest.accountCode.accountCodeId,
           reimbursementProducts: reimbursementRequest.reimbursementProducts.map((product) => ({
@@ -39,6 +40,7 @@ const EditReimbursementRequestRenderedDefaultValues: React.FC<{
               ? (product.reimbursementProductReason as WBSElementData).wbsNum
               : (product.reimbursementProductReason as OtherProductReason),
             name: product.name,
+            refundSources: product.refundSources,
             cost: Number(centsToDollar(product.cost))
           })),
           receiptFiles: reimbursementRequest.receiptPictures.map((receipt) => ({
@@ -46,7 +48,7 @@ const EditReimbursementRequestRenderedDefaultValues: React.FC<{
             googleFileId: receipt.googleFileId
           }))
         }}
-        previousPage={previousPage}
+        onFormExit={onExitEditPage}
       />
     </PageLayout>
   );

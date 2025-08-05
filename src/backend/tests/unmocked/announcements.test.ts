@@ -2,8 +2,20 @@ import { Organization } from '@prisma/client';
 import { batmanAppAdmin } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import AnnouncementService from '../../src/services/announcement.services';
+import { Announcement } from 'shared';
 
 describe('Announcemnts Tests', () => {
+  const announcementComparator = (a: Announcement, b: Announcement) => {
+    // findMany does not guarantee order, so let's sort
+    if (a.text < b.text) {
+      return -1;
+    }
+    if (a.text > b.text) {
+      return 1;
+    }
+    return 0;
+  };
+
   let orgId: string;
   let organization: Organization;
   beforeEach(async () => {
@@ -40,6 +52,7 @@ describe('Announcemnts Tests', () => {
         testBatman.userId,
         organization.organizationId
       );
+      announcements.sort(announcementComparator);
 
       expect(announcements).toHaveLength(2);
       expect(announcements[0].text).toBe('test1');
@@ -73,6 +86,7 @@ describe('Announcemnts Tests', () => {
         testBatman.userId,
         organization.organizationId
       );
+      announcements.sort(announcementComparator);
 
       expect(announcements).toHaveLength(2);
       expect(announcements.some((announcement) => announcement.text === 'test1')).toBe(true);
@@ -83,6 +97,7 @@ describe('Announcemnts Tests', () => {
         announcements[0].announcementId,
         organization.organizationId
       );
+      updatedAnnouncements.sort(announcementComparator);
 
       expect(updatedAnnouncements).toHaveLength(1);
       expect(updatedAnnouncements[0].text).toBe(announcements[1].text);

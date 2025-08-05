@@ -55,6 +55,8 @@ interface ProjectFormContainerProps {
   leadId?: string;
   managerId?: string;
   onSubmitChangeRequest?: (data: ProjectCreateChangeRequestFormInput) => void;
+  setCarNumber: (carNumber: number) => void;
+  carNumber?: number;
 }
 
 const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
@@ -67,7 +69,8 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   schema,
   leadId,
   managerId,
-  onSubmitChangeRequest
+  onSubmitChangeRequest,
+  setCarNumber
 }) => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   let changeRequestFormInput: ChangeRequestFormInput | undefined = undefined;
@@ -301,6 +304,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           leadId={leadId}
           managerId={managerId}
           project={project}
+          setCarNumber={setCarNumber}
         />
         <Stack spacing={4}>
           <Box>

@@ -1,0 +1,148 @@
+import express from 'express';
+import {
+  nonEmptyString,
+  validateInputs,
+  isDate,
+  isOptionalDate,
+  startEndDateValidators,
+  intMinZero
+} from '../utils/validation.utils';
+import { body } from 'express-validator';
+import FinanceController from '../controllers/finance.controllers';
+
+const financeRouter = express.Router();
+
+financeRouter.post(
+  '/sponsor/create',
+  nonEmptyString(body('name')),
+  body('activeStatus').isBoolean(),
+  body('sponsorValue').isInt(),
+  isDate(body('joinDate')),
+  body('activeYears').isArray(),
+  intMinZero(body('activeYears.*')),
+  nonEmptyString(body('sponsorTierId')),
+  body('taxExempt').isBoolean(),
+  nonEmptyString(body('vendorContact')),
+  body('sponsorTasks').isArray(),
+  isDate(body('sponsorTasks.*.dueDate')),
+  isDate(body('sponsorTasks.*.notifyDate')),
+  nonEmptyString(body('sponsorTasks.*.assigneeUserId')),
+  nonEmptyString(body('sponsorTasks.*.notes')),
+  nonEmptyString(body('discountCode')).optional(),
+  validateInputs,
+  FinanceController.createSponsor
+);
+
+financeRouter.get('/sponsors', FinanceController.getAllSponsors);
+
+financeRouter.get('/sponsor/:sponsorId/sponsorTasks', FinanceController.getSponsorTasks);
+
+financeRouter.post('/sponsor/:sponsorId/delete', FinanceController.deleteSponsor);
+
+financeRouter.post(
+  '/sponsorTier/create',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('colorHexCode')),
+  validateInputs,
+  FinanceController.createSponsorTier
+);
+
+financeRouter.post(
+  '/sponsorTask/:sponsorTaskId/edit',
+  isDate(body('dueDate')),
+  nonEmptyString(body('notes')),
+  isDate(body('notifyDate')).optional(),
+  nonEmptyString(body('assigneeUserId')).optional(),
+  validateInputs,
+  FinanceController.editSponsorTask
+);
+
+financeRouter.post('/sponsorTask/:sponsorTaskId/delete', FinanceController.deleteSponsorTask);
+
+financeRouter.post(
+  '/sponsor/:sponsorId/sponsorTasks',
+  isDate(body('dueDate')),
+  nonEmptyString(body('notes')),
+  isOptionalDate(body('notifyDate')),
+  nonEmptyString(body('assigneeUserId').optional()),
+  validateInputs,
+  FinanceController.createSponsorTask
+);
+
+financeRouter.get(
+  '/reimbursement-request-project-data/:projectId',
+  startEndDateValidators,
+  validateInputs,
+  FinanceController.getReimbursementRequestProjectData
+);
+
+financeRouter.get(
+  '/reimbursement-request-team-data/:teamId',
+  startEndDateValidators,
+  validateInputs,
+  FinanceController.getReimbursementRequestTeamData
+);
+
+financeRouter.get(
+  '/reimbursement-request-data',
+  startEndDateValidators,
+  validateInputs,
+  FinanceController.getAllReimbursementRequestData
+);
+
+financeRouter.get(
+  '/reimbursement-request-category-data/:otherReasonId',
+  startEndDateValidators,
+  validateInputs,
+  FinanceController.getReimbursementRequestCategoryData
+);
+
+financeRouter.get(
+  '/reimbursement-request-team-type-data/:teamTypeId',
+  startEndDateValidators,
+  validateInputs,
+  FinanceController.getReimbursementRequestTeamTypeData
+);
+
+financeRouter.get(
+  '/spending-bar-team-data/:teamId',
+  startEndDateValidators,
+  validateInputs,
+  FinanceController.getSpendingBarTeamData
+);
+
+financeRouter.get(
+  '/spending-bar-team-type-data/:teamTypeId',
+  startEndDateValidators,
+  validateInputs,
+  FinanceController.getSpendingBarTeamTypeData
+);
+
+financeRouter.get('/spending-bar-data', startEndDateValidators, validateInputs, FinanceController.getAllSpendingBarData);
+
+financeRouter.get('/spending-bar-category-data/', FinanceController.getSpendingBarCategoryData);
+
+financeRouter.get('/sponsorTiers', FinanceController.getAllSponsorTiers);
+
+financeRouter.post(
+  '/sponsor/:sponsorId/edit',
+  nonEmptyString(body('name')),
+  body('activeStatus').isBoolean(),
+  body('sponsorValue').isInt(),
+  isDate(body('joinDate')),
+  body('activeYears').isArray(),
+  intMinZero(body('activeYears.*')),
+  nonEmptyString(body('sponsorTierId')),
+  body('taxExempt').isBoolean(),
+  nonEmptyString(body('vendorContact')),
+  body('sponsorTasks').isArray(),
+  isDate(body('sponsorTasks.*.dueDate')),
+  isDate(body('sponsorTasks.*.notifyDate')),
+  nonEmptyString(body('sponsorTasks.*.assigneeUserId')),
+  nonEmptyString(body('sponsorTasks.*.notes')),
+  body('discountCode').optional(),
+  validateInputs,
+  FinanceController.editSponsor
+);
+
+export default financeRouter;

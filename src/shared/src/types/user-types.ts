@@ -63,6 +63,7 @@ export interface Organization {
   contacts: Contact[];
   slackWorkspaceId?: string;
   partReviewGuideLink?: string;
+  sponsorshipNotificationsSlackChannelId?: string;
 }
 
 /**

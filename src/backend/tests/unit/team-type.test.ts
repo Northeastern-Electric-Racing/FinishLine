@@ -2,7 +2,7 @@ import { Organization } from '@prisma/client';
 import TeamsService from '../../src/services/teams.services';
 import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
 import { batmanAppAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
-import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
+import { createTestOrganization, createTestTeam, createTestTeamType, createTestUser, resetUsers } from '../test-utils';
 
 describe('Team Type Tests', () => {
   let orgId: string;
@@ -112,6 +112,20 @@ describe('Team Type Tests', () => {
       await expect(async () => TeamsService.getSingleTeamType(nonExistingTeamTypeId, organization)).rejects.toThrow(
         new NotFoundException('Team Type', nonExistingTeamTypeId)
       );
+    });
+  });
+
+  describe('Get users teams', () => {
+    it('Get users teams works', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const superman = await createTestUser(supermanAdmin, orgId);
+      const teamType = await createTestTeamType('electrical', organization.organizationId);
+      await createTestTeam(batman.userId, teamType.teamTypeId, organization.organizationId);
+      await createTestTeam(superman.userId, teamType.teamTypeId, organization.organizationId);
+      const resultBat = await TeamsService.getUsersTeams(batman, organization);
+      const resultSuper = await TeamsService.getUsersTeams(superman, organization);
+      expect(resultBat.length).toStrictEqual(1);
+      expect(resultSuper.length).toStrictEqual(1);
     });
   });
 });
