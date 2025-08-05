@@ -1,7 +1,10 @@
 /* eslint-disable prefer-destructuring */
 import {
-  Club_Accounts,
   Organization,
+  Part,
+  Part_Review,
+  Part_Submission,
+  Part_Review_Popup,
   Project,
   Schedule_Settings,
   Task_Priority,
@@ -15,7 +18,7 @@ import prisma from '../src/prisma/prisma';
 import { dbSeedAllUsers } from '../src/prisma/seed-data/users.seed';
 import TeamsService from '../src/services/teams.services';
 import ReimbursementRequestService from '../src/services/reimbursement-requests.services';
-import { ClubAccount, Permission, RoleEnum, TaskPriority, TaskStatus } from 'shared';
+import { Permission, RoleEnum, TaskPriority, TaskStatus } from 'shared';
 import {
   batmanAppAdmin,
   batmanScheduleSettings,
@@ -23,7 +26,10 @@ import {
   batmanSettings,
   supermanAdmin
 } from './test-data/users.test-data';
-import { getWorkPackageTemplateQueryArgs } from '../src/prisma-query-args/work-package-template.query-args';
+import {
+  getProjectTemplateQueryArgs,
+  getWorkPackageTemplateQueryArgs
+} from '../src/prisma-query-args/wbs-element-template.query-args';
 import DesignReviewsService from '../src/services/design-reviews.services';
 import TasksService from '../src/services/tasks.services';
 import ProjectsService from '../src/services/projects.services';
@@ -95,9 +101,22 @@ export const createTestUser = async (
 };
 
 export const resetUsers = async () => {
-  await prisma.frequentlyAskedQuestion.deleteMany();
+  await prisma.part_Review_Popup.deleteMany();
+  await prisma.part_Review_Request.deleteMany();
+  await prisma.part_Review.deleteMany();
+  await prisma.part_Submission.deleteMany();
+  await prisma.part_Review_Common_Mistake.deleteMany();
+  await prisma.part_Tag.deleteMany();
+  await prisma.part.deleteMany();
   await prisma.work_Package.deleteMany();
+  await prisma.part_Review_Common_Mistake.deleteMany();
+  await prisma.part_Tag.deleteMany();
+  await prisma.part_Review_Popup.deleteMany();
+  await prisma.part_Review.deleteMany();
+  await prisma.part_Submission.deleteMany();
+  await prisma.part.deleteMany();
   await prisma.project.deleteMany();
+  await prisma.frequentlyAskedQuestion.deleteMany();
   await prisma.material.deleteMany();
   await prisma.manufacturer.deleteMany();
   await prisma.material_Type.deleteMany();
@@ -106,6 +125,7 @@ export const resetUsers = async () => {
   await prisma.user_Secure_Settings.deleteMany();
   await prisma.reimbursement_Product.deleteMany();
   await prisma.reimbursement_Status.deleteMany();
+  await prisma.reimbursement_Request_Comment.deleteMany();
   await prisma.reimbursement_Request.deleteMany();
   await prisma.vendor.deleteMany();
   await prisma.account_Code.deleteMany();
@@ -117,10 +137,13 @@ export const resetUsers = async () => {
   await prisma.proposed_Solution.deleteMany();
   await prisma.scope_CR_Why.deleteMany();
   await prisma.scope_CR.deleteMany();
+  await prisma.budget_CR.deleteMany();
   await prisma.change_Request.deleteMany();
   await prisma.link.deleteMany();
   await prisma.link_Type.deleteMany();
   await prisma.work_Package_Template.deleteMany();
+  await prisma.project_Template.deleteMany();
+  await prisma.wBS_Element_Template.deleteMany();
   await prisma.user_Settings.deleteMany();
   await prisma.session.deleteMany();
   await prisma.user_Secure_Settings.deleteMany();
@@ -130,13 +153,19 @@ export const resetUsers = async () => {
   await prisma.team_Type.deleteMany();
   await prisma.wBS_Element.deleteMany();
   await prisma.milestone.deleteMany();
-  await prisma.frequentlyAskedQuestion.deleteMany();
   await prisma.checklist.deleteMany();
   await prisma.contact.deleteMany();
   await prisma.graph.deleteMany();
   await prisma.graph_Collection.deleteMany();
   await prisma.announcement.deleteMany();
   await prisma.popUp.deleteMany();
+  await prisma.sponsor_Task.deleteMany();
+  await prisma.sponsor.deleteMany();
+  await prisma.sponsor_Tier.deleteMany();
+  await prisma.reimbursement_Product_Other_Reason.deleteMany();
+  await prisma.account_Code.deleteMany();
+  await prisma.refund_Source.deleteMany();
+  await prisma.index_Code.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
 };
@@ -198,7 +227,7 @@ export const createTestFAQ = async (orgId: string, faqId: string) => {
           userId: user.userId
         }
       },
-      organization: {
+      regularFaqOrg: {
         connect: {
           organizationId: orgId
         }
@@ -237,17 +266,42 @@ export const createTestWorkPackageTemplate = async (user: User, organizationId?:
 
   const workPackageTemplate = await prisma.work_Package_Template.create({
     data: {
-      workPackageName: 'Work Package 1',
-      templateName: 'Template 1',
-      templateNotes: 'This is a new work package template',
-      dateCreated: new Date('03/25/2024'),
-      userCreatedId: user.userId,
-      organizationId
+      wbsElementTemplate: {
+        create: {
+          templateName: 'Template 1',
+          templateNotes: 'This is a new work package template',
+          organization: { connect: { organizationId } },
+          userCreated: { connect: { userId: user.userId } },
+          wbsElementName: 'Work Package 1',
+          dateCreated: new Date('03/25/2024')
+        }
+      }
     },
     ...getWorkPackageTemplateQueryArgs(organizationId)
   });
 
   return workPackageTemplate;
+};
+
+export const createTestProjectTemplate = async (user: User, organizationId?: string) => {
+  if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
+  if (!organizationId) throw new Error('Failed to create organization');
+
+  const projectTemplate = await prisma.project_Template.create({
+    data: {
+      wbsElementTemplate: {
+        create: {
+          templateName: 'Template 1',
+          templateNotes: 'This is a new project template',
+          organization: { connect: { organizationId } },
+          userCreated: { connect: { userId: user.userId } }
+        }
+      }
+    },
+    ...getProjectTemplateQueryArgs(organizationId)
+  });
+
+  return projectTemplate;
 };
 
 export const createTestFaq = async (user: User, organizationId: string) => {
@@ -258,7 +312,7 @@ export const createTestFaq = async (user: User, organizationId: string) => {
     data: {
       question: 'Who is Chief Software Engineer of NER?',
       answer: 'Peyton McKee!',
-      organizationId,
+      regularFaqOrgId: organizationId,
       userCreatedId: user.userId
     }
   });
@@ -426,21 +480,33 @@ export const createTestReimbursementRequest = async () => {
 
   const project = await createTestProject(user, organization.organizationId);
 
-  const vendor = await ReimbursementRequestService.createVendor(user, 'Tesla', organization);
+  const vendor = await ReimbursementRequestService.createVendor(
+    user,
+    'Tesla',
+    organization,
+    true,
+    [user.userId],
+    'Tax exemption status?',
+    'nershipping@gmail.com',
+    'racecar228!',
+    'SAVE50!'
+  );
+
+  const indexCode = await ReimbursementRequestService.createIndexCode('CASH', '830667', user, organization);
 
   const accountCode = await ReimbursementRequestService.createAccountCode(
     user,
     'Equipment',
     123,
     true,
-    [Club_Accounts.CASH, Club_Accounts.BUDGET],
+    [indexCode.indexCodeId],
     organization
   );
 
   const rr = await ReimbursementRequestService.createReimbursementRequest(
     user,
     vendor.vendorId,
-    ClubAccount.CASH,
+    indexCode.indexCodeId,
     [],
     [
       {
@@ -450,7 +516,13 @@ export const createTestReimbursementRequest = async () => {
           projectNumber: 0,
           workPackageNumber: 0
         },
-        cost: 200000
+        cost: 200000,
+        refundSources: [
+          {
+            indexCode,
+            amount: 200
+          }
+        ]
       }
     ],
     accountCode.accountCodeId,
@@ -461,7 +533,7 @@ export const createTestReimbursementRequest = async () => {
 
   if (!rr) throw new Error('Failed to create reimbursement request');
 
-  return { rr, organization, vendor, accountCode, project, user };
+  return { rr, organization, vendor, indexCode, accountCode, project, user };
 };
 
 // Always creates a new design review
@@ -670,4 +742,200 @@ export const createSlackMessageEvent = (
       }
     ]
   };
+};
+
+export const createTestPart = async (
+  user: User,
+  name: string,
+  partId: string,
+  index: number,
+  projectId?: string,
+  dateDeleted?: Date
+): Promise<Part> => {
+  const part = await prisma.part.create({
+    data: {
+      partId,
+      index,
+      commonName: name,
+      project: {
+        connect: { projectId }
+      },
+      userCreated: {
+        connect: { userId: user.userId }
+      },
+      dateDeleted: dateDeleted ?? null
+    }
+  });
+
+  return part;
+};
+
+export const CreatePartTag = async (organizationId: string, name: string, colorHexCode: string) => {
+  return await prisma.part_Tag.create({
+    data: {
+      name,
+      organization: {
+        connect: { organizationId }
+      },
+      colorHexCode,
+      dateCreated: new Date()
+    }
+  });
+};
+
+export const CreateCommonMistake = async (
+  title: string,
+  description: string,
+  starred: boolean,
+  user: User,
+  organizationId: string
+) => {
+  return await prisma.part_Review_Common_Mistake.create({
+    data: {
+      title,
+      description,
+      starred,
+      dateCreated: new Date(),
+      organization: {
+        connect: { organizationId }
+      },
+      userCreated: {
+        connect: { userId: user.userId }
+      }
+    }
+  });
+};
+
+export const CreatePartReviewFAQ = async (question: string, answer: string, organizationId: string, user: User) => {
+  return await prisma.frequentlyAskedQuestion.create({
+    data: {
+      question,
+      answer,
+      partReviewFaqOrg: {
+        connect: { organizationId }
+      },
+      userCreated: {
+        connect: { userId: user.userId }
+      }
+    }
+  });
+};
+
+export const createTestPartReview = async (
+  partReviewId: string,
+  fileIds: string[],
+  notes: string,
+  submission: Part_Submission,
+  popUps: Part_Review_Popup[],
+  userCreatedId: string
+) => {
+  const partReview = await prisma.part_Review.create({
+    data: {
+      partReviewId,
+      fileIds,
+      notes,
+      submission: {
+        connect: {
+          partSubmissionId: submission.partSubmissionId
+        }
+      },
+      popUps: {
+        connect: popUps.map((popup) => ({ partReviewPopupId: popup.partReviewPopupId }))
+      },
+      userCreated: {
+        connect: { userId: userCreatedId }
+      }
+    }
+  });
+  return partReview;
+};
+
+export const createTestPartSubmission = async (
+  id: string,
+  fileIds: string[],
+  name: string,
+  notes: string,
+  partId: string,
+  userCreatedId: string,
+  reviews: Part_Review[]
+) => {
+  const partSubmission = await prisma.part_Submission.create({
+    data: {
+      partSubmissionId: id,
+      fileIds,
+      name,
+      notes,
+      part: {
+        connect: { partId }
+      },
+      userCreated: {
+        connect: { userId: userCreatedId }
+      },
+      reviews: {
+        connect: reviews.map((review) => ({ partReviewId: review.partReviewId }))
+      }
+    }
+  });
+  return partSubmission;
+};
+
+export const createMinimalPartReview = async (user: User, orgId: string): Promise<Part_Review> => {
+  const car = await createTestCar(orgId, user.userId);
+  const project = await createTestProject(user, orgId, undefined, car.carId);
+
+  const part = await prisma.part.create({
+    data: {
+      index: 1,
+      commonName: 'Test Part',
+      description: 'For testing popups',
+      projectId: project.projectId,
+      userCreatedId: user.userId
+    }
+  });
+
+  const submission = await createTestPartSubmission(
+    'sub-id',
+    [],
+    'Submission Name',
+    'Some notes',
+    part.partId,
+    user.userId,
+    []
+  );
+
+  const review = await createTestPartReview('review-id', [], 'Review notes', submission, [], user.userId);
+
+  return review;
+};
+
+export const createMinimalPartReviewForReview = async (
+  user: User,
+  orgId: string
+): Promise<{ review: Part_Review; partId: string }> => {
+  const car = await createTestCar(orgId, user.userId);
+  const project = await createTestProject(user, orgId, undefined, car.carId);
+
+  const part = await prisma.part.create({
+    data: {
+      index: 1,
+      commonName: 'Test Part',
+      description: 'For testing popups',
+      projectId: project.projectId,
+      userCreatedId: user.userId
+    }
+  });
+
+  const submission = await createTestPartSubmission(
+    'sub-id',
+    [],
+    'Submission Name',
+    'Some notes',
+    part.partId,
+    user.userId,
+    []
+  );
+
+  const review = await createTestPartReview('review-id', [], 'Review notes', submission, [], user.userId);
+
+  return { review, partId: part.partId };
 };

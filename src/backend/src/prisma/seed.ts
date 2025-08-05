@@ -7,8 +7,6 @@
 
 import {
   CR_Type,
-  Club_Accounts,
-  Graph,
   Graph_Display_Type,
   Graph_Type,
   Measure,
@@ -16,14 +14,14 @@ import {
   Scope_CR_Why_Type,
   Task_Priority,
   Task_Status,
-  Team
+  Team,
+  Part_Tag
 } from '@prisma/client';
 import { createUser, dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
 import ChangeRequestsService from '../services/change-requests.services';
 import TeamsService from '../services/teams.services';
 import {
-  ClubAccount,
   DesignReviewStatus,
   MaterialStatus,
   RoleEnum,
@@ -43,14 +41,15 @@ import BillOfMaterialsService from '../services/boms.services';
 import UsersService from '../services/users.services';
 import { transformDate } from '../utils/datetime.utils';
 import { writeFileSync } from 'fs';
-import WorkPackageTemplatesService from '../services/work-package-template.services';
+import WbsElementTemplatesService from '../services/wbs-element-templates.services';
 import RecruitmentServices from '../services/recruitment.services';
 import OrganizationsService from '../services/organizations.services';
-import StatisticsService from '../services/statistics.services';
 import { seedGraph } from './seed-data/statistics.seed';
-import { graphCollectionTransformer } from '../transformers/statistics-graph-collection.transformer';
 import AnnouncementService from '../services/announcement.services';
 import OnboardingServices from '../services/onboarding.services';
+import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
+import { CreatePartTag, CreateCommonMistake, CreatePartReviewFAQ } from '../../tests/test-utils';
+import FinanceServices from '../services/finance.services';
 
 const prisma = new PrismaClient();
 
@@ -387,7 +386,8 @@ const performSeed: () => Promise<void> = async () => {
       kyleHamilton,
       marcusWilliams,
       roquanSmith,
-      justinTucker
+      justinTucker,
+      regina
     ].map((user) => user.userId),
     ner
   );
@@ -473,7 +473,12 @@ const performSeed: () => Promise<void> = async () => {
    */
 
   /** Project 1 */
-  const { projectWbsNumber: project1WbsNumber, projectId: project1Id } = await seedProject(
+  const {
+    projectWbsNumber: project1WbsNumber,
+    projectId: project1Id,
+    leadId: project1LeadId,
+    managerId: project1ManagerId
+  } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
     fergus.wbsElement.carNumber,
@@ -585,7 +590,11 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Project 5 */
-  const { projectWbsNumber: project5WbsNumber } = await seedProject(
+  const {
+    projectWbsNumber: project5WbsNumber,
+    leadId: project5LeadId,
+    managerId: project5ManagerId
+  } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
     fergus.wbsElement.carNumber,
@@ -613,7 +622,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Project 6 */
-  const { projectWbsNumber: project6WbsNumber } = await seedProject(
+  const { projectWbsNumber: project6WbsNumber, projectId: project6Id } = await seedProject(
     aang,
     changeRequest1.crId,
     0,
@@ -641,7 +650,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Project 7 */
-  const { projectWbsNumber: project7WbsNumber } = await seedProject(
+  const { projectWbsNumber: project7WbsNumber, projectId: project7Id } = await seedProject(
     lexLuther,
     changeRequest1.crId,
     0,
@@ -1055,12 +1064,12 @@ const performSeed: () => Promise<void> = async () => {
 
   const workPackage1ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
     thomasEmrax,
-    workPackage1.wbsElement.carNumber,
-    workPackage1.wbsElement.projectNumber,
-    workPackage1.wbsElement.workPackageNumber,
+    workPackage1.wbsNum.carNumber,
+    workPackage1.wbsNum.projectNumber,
+    workPackage1.wbsNum.workPackageNumber,
     'ACTIVATION',
-    workPackage1.project.wbsElement.leadId!,
-    workPackage1.project.wbsElement.managerId!,
+    thomasEmrax.userId,
+    joeShmoe.userId,
     new Date('2024-03-25T04:00:00.000Z'),
     true,
     ner
@@ -1123,8 +1132,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage3WbsNumber.projectNumber,
     workPackage3WbsNumber.workPackageNumber,
     CR_Type.ACTIVATION,
-    workPackage3.project.wbsElement.leadId!,
-    workPackage3.project.wbsElement.managerId!,
+    regina.userId,
+    janis.userId,
     new Date('2023-08-21T04:00:00.000Z'),
     true,
     ner
@@ -1156,8 +1165,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage4WbsNumber.projectNumber,
     workPackage4WbsNumber.workPackageNumber,
     CR_Type.ACTIVATION,
-    workPackage4.project.wbsElement.leadId!,
-    workPackage4.project.wbsElement.managerId!,
+    joeShmoe.userId,
+    thomasEmrax.userId,
     new Date('2023-10-02T04:00:00.000Z'),
     true,
     ner
@@ -1189,8 +1198,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage5WbsNumber.projectNumber,
     workPackage5WbsNumber.workPackageNumber,
     CR_Type.ACTIVATION,
-    workPackage5.project.wbsElement.leadId!,
-    workPackage5.project.wbsElement.managerId!,
+    katara.userId,
+    aang.userId,
     new Date('2023-05-08T04:00:00.000Z'),
     true,
     ner
@@ -1222,8 +1231,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage6WbsNumber.projectNumber,
     workPackage6WbsNumber.workPackageNumber,
     CR_Type.ACTIVATION,
-    workPackage6.project.wbsElement.leadId!,
-    workPackage6.project.wbsElement.managerId!,
+    katara.userId,
+    aang.userId,
     new Date('2023-07-31T04:00:00.000Z'),
     true,
     ner
@@ -1255,8 +1264,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage7WbsNumber.projectNumber,
     workPackage7WbsNumber.workPackageNumber,
     CR_Type.ACTIVATION,
-    workPackage7.project.wbsElement.leadId!,
-    workPackage7.project.wbsElement.managerId!,
+    katara.userId,
+    aang.userId,
     new Date('2023-10-09T04:00:00.000Z'),
     true,
     ner
@@ -1285,12 +1294,12 @@ const performSeed: () => Promise<void> = async () => {
 
   const project3WP1ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
     lexLuther,
-    project3WP1.wbsElement.carNumber,
-    project3WP1.wbsElement.projectNumber,
-    project3WP1.wbsElement.workPackageNumber,
+    project3WP1.wbsNum.carNumber,
+    project3WP1.wbsNum.projectNumber,
+    project3WP1.wbsNum.workPackageNumber,
     CR_Type.ACTIVATION,
-    project3WP1.project.wbsElement.leadId!,
-    project3WP1.project.wbsElement.managerId!,
+    zatanna.userId,
+    lexLuther.userId,
     new Date('2024-03-25T04:00:00.000Z'),
     true,
     ner
@@ -1355,12 +1364,12 @@ const performSeed: () => Promise<void> = async () => {
 
   const project4WP1ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
     ryanGiggs,
-    project4WP1.wbsElement.carNumber,
-    project4WP1.wbsElement.projectNumber,
-    project4WP1.wbsElement.workPackageNumber,
+    project4WP1.wbsNum.carNumber,
+    project4WP1.wbsNum.projectNumber,
+    project4WP1.wbsNum.workPackageNumber,
     CR_Type.ACTIVATION,
-    project4WP1.project.wbsElement.leadId!,
-    project4WP1.project.wbsElement.managerId!,
+    mikeMacdonald.userId,
+    ryanGiggs.userId,
     new Date('2023-08-21T04:00:00.000Z'),
     true,
     ner
@@ -1716,24 +1725,297 @@ const performSeed: () => Promise<void> = async () => {
   /**
    * Reimbursements
    */
+  const vendor = await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Tesla',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Tax exemption status? This is a test i am writing alot of text ahhahahahahhaha this is more of a test i am going to write even more test hahahahah.',
+    'nershipping@gmail.com',
+    'racecar228!',
+    'SAVE50!'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Amazon',
+    ner,
+    true,
+    [thomasEmrax.userId],
+    'They want updates on work',
+    'amazon@gmail.com',
+    'racecare228!',
+    'SAVE20!'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Google',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Tax exemption ID NUMBER',
+    'google@gmail.com',
+    'racecar228!',
+    'SAVE50!'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Microsoft',
+    ner,
+    true,
+    [thomasEmrax.userId],
+    'Requires monthly invoicing',
+    'microsoft@outlook.com',
+    'secure123!',
+    'WELCOME10'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Apple',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Eco-friendly packaging preferred',
+    'apple@icloud.com',
+    'appl3Secure!',
+    'APPLE30'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Costco',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Tax ID attached',
+    'costco@wholesale.com',
+    'bulkBuy22!',
+    'BULKDEAL'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Walmart',
+    ner,
+    true,
+    [thomasEmrax.userId],
+    'Requires contact for all returns',
+    'support@walmart.com',
+    'WalMartP@ss1',
+    'ROLLBACK15'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Target',
+    ner,
+    true,
+    [thomasEmrax.userId],
+    'Needs weekly usage reports',
+    'vendors@target.com',
+    'target321!',
+    'REDTAG10'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'eBay',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Verification required',
+    'support@ebay.com',
+    'eBayS3ll3r!',
+    'FREESHIP'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Netflix',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Subscription-based payments',
+    'billing@netflix.com',
+    'stream4life!',
+    'BINGE50'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Spotify',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Requires invoice numbers on docs',
+    'accounts@spotify.com',
+    'listen2music!',
+    'MUSIC25'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Adobe',
+    ner,
+    true,
+    [thomasEmrax.userId],
+    'Needs PO for every purchase',
+    'adobe@creative.com',
+    'Cr3at1ve!',
+    'DESIGN10'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Dell',
+    ner,
+    true,
+    [thomasEmrax.userId],
+    'Requesting business license',
+    'orders@dell.com',
+    'd3llP@ss!',
+    'TECH30'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'HP',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Needs signed agreement on file',
+    'support@hp.com',
+    'hpSecure12!',
+    'PRINT20'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Facebook',
+    ner,
+    true,
+    [thomasEmrax.userId],
+    'Wants to be listed as priority',
+    'fb@meta.com',
+    'm3taPass!',
+    'META15'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'LinkedIn',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Requires biannual contract renewal',
+    'contact@linkedin.com',
+    'workN3tw0rk!',
+    'NETWORK25'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Zoom',
+    ner,
+    true,
+    [thomasEmrax.userId],
+    'Asks for contact before upgrades',
+    'sales@zoom.us',
+    'z00mM33t!',
+    'VIDEO5'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Slack',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Needs project reference ID',
+    'help@slack.com',
+    'sl@ckwork!',
+    'COLLAB10'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Stripe',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Bank info needed for setup',
+    'payments@stripe.com',
+    'fintech123!',
+    'PAYSAFE'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Square',
+    ner,
+    true,
+    [thomasEmrax.userId],
+    'Tax info must be updated yearly',
+    'vendor@square.com',
+    'squ@reRoot!',
+    'CASHAPP'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Notion',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Requires shared workspace invite',
+    'support@notion.so',
+    'not3sApp!',
+    'PLAN50'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'GitHub',
+    ner,
+    true,
+    [thomasEmrax.userId],
+    'Open source licenses required',
+    'billing@github.com',
+    'ghRepos!',
+    'DEV25'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Trello',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Needs card for each request',
+    'boards@trello.com',
+    'tr3ll0Board!',
+    'TASK15'
+  );
 
-  const vendor = await ReimbursementRequestService.createVendor(thomasEmrax, 'Tesla', ner);
-  await ReimbursementRequestService.createVendor(thomasEmrax, 'Amazon', ner);
-  await ReimbursementRequestService.createVendor(thomasEmrax, 'Google', ner);
+  const indexCodeCash = await ReimbursementRequestService.createIndexCode('CASH', '830667', thomasEmrax, ner);
+  const indexCodeBudget = await ReimbursementRequestService.createIndexCode('BUDGET', '800462', thomasEmrax, ner);
 
   const accountCode = await ReimbursementRequestService.createAccountCode(
     thomasEmrax,
     'Equipment',
     123,
     true,
-    [Club_Accounts.CASH, Club_Accounts.BUDGET],
-    ner
+    [indexCodeCash.indexCodeId, indexCodeBudget.indexCodeId],
+    ner,
+    1050
   );
 
-  await ReimbursementRequestService.createReimbursementRequest(
+  const accountCode2 = await ReimbursementRequestService.createAccountCode(
+    thomasEmrax,
+    'Things',
+    456,
+    false,
+    [indexCodeBudget.indexCodeId],
+    ner,
+    2000
+  );
+
+  const accountCode3 = await ReimbursementRequestService.createAccountCode(
+    thomasEmrax,
+    'Stuff',
+    789,
+    true,
+    [indexCodeCash.indexCodeId],
+    ner,
+    3010
+  );
+
+  const reimbursement1 = await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
     vendor.vendorId,
-    ClubAccount.CASH,
+    indexCodeCash.indexCodeId,
     [],
     [
       {
@@ -1743,7 +2025,17 @@ const performSeed: () => Promise<void> = async () => {
           projectNumber: 1,
           workPackageNumber: 0
         },
-        cost: 200000
+        cost: 200000,
+        refundSources: [
+          {
+            indexCode: indexCodeBudget,
+            amount: 150000
+          },
+          {
+            indexCode: indexCodeCash,
+            amount: 50000
+          }
+        ]
       }
     ],
     accountCode.accountCodeId,
@@ -1751,10 +2043,10 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await ReimbursementRequestService.createReimbursementRequest(
+  const reimbursement3 = await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
     vendor.vendorId,
-    ClubAccount.BUDGET,
+    indexCodeBudget.indexCodeId,
     [],
     [
       {
@@ -1764,13 +2056,129 @@ const performSeed: () => Promise<void> = async () => {
           projectNumber: 1,
           workPackageNumber: 0
         },
-        cost: 10000
+        cost: 200000,
+        refundSources: [
+          {
+            indexCode: indexCodeBudget,
+            amount: 150000
+          },
+          {
+            indexCode: indexCodeCash,
+            amount: 50000
+          }
+        ]
       }
     ],
     accountCode.accountCodeId,
     200,
     ner,
     new Date()
+  );
+
+  const reimbursement2 = await ReimbursementRequestService.createReimbursementRequest(
+    thomasEmrax,
+    vendor.vendorId,
+    indexCodeBudget.indexCodeId,
+    [],
+    [
+      {
+        name: 'BOX',
+        reason: {
+          carNumber: 0,
+          projectNumber: 1,
+          workPackageNumber: 0
+        },
+        cost: 10000,
+        refundSources: [
+          {
+            indexCode: indexCodeBudget,
+            amount: 7000
+          },
+          {
+            indexCode: indexCodeCash,
+            amount: 3000
+          }
+        ]
+      }
+    ],
+    accountCode.accountCodeId,
+    20000,
+    ner,
+    new Date()
+  );
+
+  ReimbursementRequestService.createReimbursementRequestComment(
+    thomasEmrax,
+    ner,
+    'Thomas Followed up - "Please upload reciept"',
+    reimbursement1.reimbursementRequestId
+  );
+
+  ReimbursementRequestService.createReimbursementRequestComment(
+    batman,
+    ner,
+    'Batman Uploaded Receipt',
+    reimbursement1.reimbursementRequestId
+  );
+
+  ReimbursementRequestService.createReimbursementRequestComment(
+    thomasEmrax,
+    ner,
+    'Thomas Submmited to SABO',
+    reimbursement1.reimbursementRequestId
+  );
+
+  const otherProductReasonConsumables = await ReimbursementRequestService.createOtherReasonReimbursementProduct(
+    'CONSUMABLES',
+    10,
+    indexCodeCash.indexCodeId,
+    [accountCode.accountCodeId],
+    thomasEmrax,
+    ner
+  );
+
+  const otherProductReasonTools = await ReimbursementRequestService.createOtherReasonReimbursementProduct(
+    'TOOLS_AND_EQUIPMENT',
+    10,
+    indexCodeCash.indexCodeId,
+    [],
+    thomasEmrax,
+    ner
+  );
+
+  const otherProductReasonComp = await ReimbursementRequestService.createOtherReasonReimbursementProduct(
+    'COMPETITION',
+    10,
+    indexCodeBudget.indexCodeId,
+    [accountCode.accountCodeId],
+    thomasEmrax,
+    ner
+  );
+
+  const otherProductReasonGeneral = await ReimbursementRequestService.createOtherReasonReimbursementProduct(
+    'GENERAL_STOCK',
+    10,
+    indexCodeBudget.indexCodeId,
+    [],
+    thomasEmrax,
+    ner
+  );
+
+  const otherProductReasonSub = await ReimbursementRequestService.createOtherReasonReimbursementProduct(
+    'SUBSCRIPTIONS_AND_MEMBERSHIP',
+    10,
+    indexCodeCash.indexCodeId,
+    [],
+    thomasEmrax,
+    ner
+  );
+
+  const budgetCR = await ChangeRequestsService.createBudgetChangeRequest(
+    thomasEmrax,
+    'BUDGET',
+    50,
+    ner,
+    otherProductReasonConsumables.otherProductReasonId
   );
 
   /**
@@ -1827,8 +2235,31 @@ const performSeed: () => Promise<void> = async () => {
       workPackageNumber: 0
     },
     ner,
-    'Here are some more notes',
-    assembly1.assemblyId
+    'Here are some more notes'
+  );
+
+  await BillOfMaterialsService.createMaterial(
+    thomasEmrax,
+    '100k Resistor',
+    MaterialStatus.ReadyToOrder,
+    'Resistor',
+    'Digikey',
+    'lalsd',
+    new Decimal(5),
+    10,
+    50,
+    'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    {
+      carNumber: 0,
+      projectNumber: 1,
+      workPackageNumber: 0
+    },
+    ner,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    reimbursement1.reimbursementRequestId
   );
 
   // Need to do this because the design review cannot be scheduled for a past day
@@ -1934,7 +2365,7 @@ const performSeed: () => Promise<void> = async () => {
     }
   );
 
-  await WorkPackageTemplatesService.createWorkPackageTemplate(
+  await WbsElementTemplatesService.createWorkPackageTemplate(
     batman,
     'Batmobile Config 1',
     'This is the first Batmobile configuration',
@@ -1946,7 +2377,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  const schematicWpTemplate = await WorkPackageTemplatesService.createWorkPackageTemplate(
+  const schematicWpTemplate = await WbsElementTemplatesService.createWorkPackageTemplate(
     batman,
     'Schematic',
     'This is the schematic template',
@@ -1958,7 +2389,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await WorkPackageTemplatesService.createWorkPackageTemplate(
+  await WbsElementTemplatesService.createWorkPackageTemplate(
     batman,
     'Layout ',
     'This is the Layout  template',
@@ -1971,6 +2402,19 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   await OrganizationsService.setFeaturedProjects([project1Id, project2Id, project3Id, project4Id], ner, thomasEmrax);
+
+  await WbsElementTemplatesService.createProjectTemplate(
+    batman,
+    'Project Template 1',
+    'This is the first project template',
+    [],
+    ner,
+    [],
+    [],
+    'This project is very cool',
+    undefined,
+    'Awesome Project'
+  );
 
   await OrganizationsService.setUsefulLinks(batman, organizationId, [
     {
@@ -2012,9 +2456,30 @@ const performSeed: () => Promise<void> = async () => {
   await RecruitmentServices.createMilestone(batman, 'Applications Close', '', new Date('11/27/24'), ner);
   await RecruitmentServices.createMilestone(batman, 'Decision Day!', '', new Date('12/4/24'), ner);
 
-  await RecruitmentServices.createFaq(batman, 'Who is the Chief Software Engineer?', 'Peyton McKee', ner);
-  await RecruitmentServices.createFaq(batman, 'When was FinishLine created?', 'FinishLine was created in 2019', ner);
-  await RecruitmentServices.createFaq(batman, 'How many developers are working on FinishLine?', '178 as of 2024', ner);
+  await RecruitmentServices.createOrganizationFaq(batman, 'Who is the Chief Software Engineer?', 'Peyton McKee', ner);
+  await RecruitmentServices.createOrganizationFaq(
+    batman,
+    'When was FinishLine created?',
+    'FinishLine was created in 2019',
+    ner
+  );
+  await RecruitmentServices.createOrganizationFaq(
+    batman,
+    'How many developers are working on FinishLine?',
+    '178 as of 2024',
+    ner
+  );
+
+  await prisma.frequentlyAskedQuestion.create({
+    data: {
+      faqId: '1',
+      question: 'question',
+      answer: 'answer',
+      userCreated: { connect: { userId: batman.userId } },
+      dateCreated: new Date(),
+      partReviewFaqOrg: { connect: { organizationId: ner.organizationId } }
+    }
+  });
 
   await AnnouncementService.createAnnouncement(
     'Welcome to Finishline!',
@@ -2134,6 +2599,411 @@ const performSeed: () => Promise<void> = async () => {
     learnGitChecklist.checklistId,
     ner,
     false
+  );
+
+  /**
+   * PARTS
+   */
+  let i = 0;
+  for (const testPart of Object.values(dbSeedAllParts)) {
+    const requester = i % 2 === 0 ? batman.userId : thomasEmrax.userId;
+    const partArgs = testPart(project2Id, requester, [hawkMan.userId]);
+    await prisma.part.create({ data: partArgs.data });
+    i++;
+  }
+
+  // Add part tags
+  const mechanicalPartTag: Part_Tag = await prisma.part_Tag.create(dbSeedAllPartTags.MechanicalPartTag(organizationId));
+  const electricalPartTag: Part_Tag = await prisma.part_Tag.create(dbSeedAllPartTags.ElectricalPartTag(organizationId));
+  const structuralPartTag: Part_Tag = await prisma.part_Tag.create(dbSeedAllPartTags.StructuralPartTag(organizationId));
+
+  await CreatePartTag(organizationId, 'Practice', '#202025');
+
+  await CreatePartTag(organizationId, 'Complex', '#142099');
+
+  await CreatePartTag(organizationId, 'Expensive', '#FF0000');
+
+  await CreateCommonMistake(
+    'Stubbing Toes in the Bay',
+    'This is a common mistake. In order to prevent this, it is important to wear closed toed shoes and make sure all parts handled with care.',
+    false,
+    batman,
+    organizationId
+  );
+
+  await CreateCommonMistake(
+    'Not wearing PPE',
+    'This is another common mistake. Ensuring that you have proper PPE coverage is essential when doing any work in the bay. If you are unsure about any PPE requirements, dont hesitate to reach out to a team lead. ',
+    true,
+    superman,
+    organizationId
+  );
+
+  await CreatePartReviewFAQ(
+    'What is a part review?',
+    'A Part review allows for your team lead to ensure that your part is designed correctly and meets your specified restrictions.',
+    organizationId,
+    batman
+  );
+
+  await CreatePartReviewFAQ(
+    'How do I upload for a part review?',
+    'First, click the button to upload your file. After uploading your file it is important to make sure that you tag it correctly, and that all fields are filled out in a way that makes sense to your part. After that, click submit and let your team lead know!',
+    organizationId,
+    superman
+  );
+
+  // example part for a tire
+  const part1Example = await prisma.part.create({
+    data: {
+      partId: '001',
+      index: 100,
+      commonName: 'tire',
+      project: {
+        connect: { projectId: project1Id }
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      }
+    }
+  });
+
+  // example part for an engine
+  const part2Example = await prisma.part.create({
+    data: {
+      partId: '002',
+      index: 100,
+      commonName: 'engine',
+      project: {
+        connect: { projectId: project2Id }
+      },
+      userCreated: {
+        connect: { userId: flash.userId }
+      }
+    }
+  });
+
+  // example part for a door
+  const part3Example = await prisma.part.create({
+    data: {
+      partId: '003',
+      index: 100,
+      commonName: 'door',
+      project: {
+        connect: { projectId: project3Id }
+      },
+      userCreated: {
+        connect: { userId: zuko.userId }
+      }
+    }
+  });
+
+  // const reviewRequest1 = await prisma.partReviewRequest.create({
+  //   data: {
+  //     partReviewRequestId: '001',
+  //     requesterId: hawkMan.userId,
+  //     reviewerId: batman.userId,
+
+  //   }
+  // });
+
+  const part4Example = await prisma.part.create({
+    data: {
+      partId: '004',
+      index: 100,
+      commonName: 'barrel',
+      status: 'IN_PROGRESS',
+      project: {
+        connect: { projectId: project7Id }
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      },
+      assignees: {
+        connect: { userId: hawkMan.userId }
+      },
+      reviewRequests: {
+        create: {
+          partReviewRequestId: '001',
+          requesterId: hawkMan.userId,
+          reviewerId: batman.userId
+        }
+      }
+    }
+  });
+
+  const part5Example = await prisma.part.create({
+    data: {
+      partId: '005',
+      index: 101,
+      commonName: 'particle accelerator',
+      status: 'READY_FOR_REVIEW',
+      project: {
+        connect: { projectId: project7Id }
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      },
+      assignees: {
+        connect: { userId: hawkMan.userId }
+      },
+      reviewRequests: {
+        create: {
+          partReviewRequestId: '002',
+          requesterId: hawkMan.userId,
+          reviewerId: batman.userId
+        }
+      }
+    }
+  });
+
+  const part6Example = await prisma.part.create({
+    data: {
+      partId: '006',
+      index: 102,
+      commonName: 'kill switch',
+      status: 'IN_REVIEW',
+      project: {
+        connect: { projectId: project7Id }
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      },
+      assignees: {
+        connect: { userId: hawkMan.userId }
+      },
+      reviewRequests: {
+        create: {
+          partReviewRequestId: '003',
+          requesterId: hawkMan.userId,
+          reviewerId: batman.userId
+        }
+      }
+    }
+  });
+
+  const part7Example = await prisma.part.create({
+    data: {
+      partId: '007',
+      index: 103,
+      commonName: 'self-destruct button',
+      status: 'REVIEWED',
+      project: {
+        connect: { projectId: project7Id }
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      },
+      assignees: {
+        connect: { userId: hawkMan.userId }
+      },
+      reviewRequests: {
+        create: {
+          partReviewRequestId: '004',
+          requesterId: hawkMan.userId,
+          reviewerId: batman.userId
+        }
+      }
+    }
+  });
+
+  const part8Example = await prisma.part.create({
+    data: {
+      partId: '008',
+      index: 104,
+      commonName: 'anti-jonkler serum',
+      status: 'APPROVED',
+      project: {
+        connect: { projectId: project7Id }
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      },
+      assignees: {
+        connect: { userId: hawkMan.userId }
+      },
+      reviewRequests: {
+        create: {
+          partReviewRequestId: '005',
+          requesterId: hawkMan.userId,
+          reviewerId: batman.userId
+        }
+      }
+    }
+  });
+
+  const part9Example = await prisma.part.create({
+    data: {
+      partId: '009',
+      index: 105,
+      commonName: 'huge battery',
+      status: 'IN_PROGRESS',
+      project: {
+        connect: { projectId: project7Id }
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      },
+      assignees: {
+        connect: { userId: flash.userId }
+      },
+      reviewRequests: {
+        create: {
+          partReviewRequestId: '006',
+          requesterId: hawkMan.userId,
+          reviewerId: batman.userId
+        }
+      }
+    }
+  });
+
+  const part10Example = await prisma.part.create({
+    data: {
+      partId: '010',
+      index: 106,
+      commonName: 'small battery',
+      status: 'APPROVED',
+      project: {
+        connect: { projectId: project7Id }
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      },
+      assignees: {
+        connect: { userId: flash.userId }
+      },
+      reviewRequests: {
+        create: {
+          partReviewRequestId: '007',
+          requesterId: hawkMan.userId,
+          reviewerId: batman.userId
+        }
+      }
+    }
+  });
+
+  const partSubmissionExample1 = await prisma.part_Submission.create({
+    data: {
+      partSubmissionId: 'submissionId001',
+      fileIds: ['file1', 'file2'],
+      name: 'tire',
+      notes: 'black, round',
+      part: {
+        connect: { partId: part1Example.partId }
+      },
+      userCreated: {
+        connect: { userId: batman.userId }
+      }
+    }
+  });
+
+  const partSubmissionExample2 = await prisma.part_Submission.create({
+    data: {
+      partSubmissionId: 'submissionId002',
+      fileIds: ['file3'],
+      name: 'engine',
+      notes: 'this is the car engine',
+      part: {
+        connect: { partId: part2Example.partId }
+      },
+      userCreated: {
+        connect: { userId: flash.userId }
+      }
+    }
+  });
+
+  const partSubmissionExample3 = await prisma.part_Submission.create({
+    data: {
+      partSubmissionId: 'submissionId003',
+      fileIds: ['file4', 'file5', 'file6'],
+      name: 'door',
+      notes: 'car door',
+      part: {
+        connect: { partId: part3Example.partId }
+      },
+      userCreated: {
+        connect: { userId: zuko.userId }
+      }
+    }
+  });
+
+  const partReviewExample1 = await prisma.part_Review.create({
+    data: {
+      partReviewId: 'reviewId001',
+      fileIds: ['file1', 'file2'],
+      notes: 'this part submission sucks!!',
+      submission: {
+        connect: {
+          partSubmissionId: partSubmissionExample1.partSubmissionId
+        }
+      },
+      userCreated: {
+        connect: { userId: appa.userId }
+      }
+    }
+  });
+
+  const partReviewExample2 = await prisma.part_Review.create({
+    data: {
+      partReviewId: 'reviewId002',
+      fileIds: ['file3'],
+      notes: 'this part submission rocks!!',
+      submission: {
+        connect: {
+          partSubmissionId: partSubmissionExample2.partSubmissionId
+        }
+      },
+      userCreated: {
+        connect: { userId: joeShmoe.userId }
+      }
+    }
+  });
+
+  const partReviewExample3 = await prisma.part_Review.create({
+    data: {
+      partReviewId: 'reviewId003',
+      fileIds: ['file5', 'file6'],
+      notes: 'this part submission is decent!!',
+      submission: {
+        connect: {
+          partSubmissionId: partSubmissionExample3.partSubmissionId
+        }
+      },
+      userCreated: {
+        connect: { userId: lamarJackson.userId }
+      }
+    }
+  });
+
+  const goldSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Gold', ner, '#9F9156');
+  await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, '#C0C0C0');
+  await FinanceServices.createSponsorTier(thomasEmrax, 'Bronze', ner, '#CD7F32');
+
+  const sponsor = await FinanceServices.createSponsor(
+    thomasEmrax,
+    'Google',
+    true,
+    5000,
+    new Date(12, 1, 24),
+    [2024, 2025],
+    goldSponsorTier.sponsorTierId,
+    true,
+    'Bill Gates',
+    [],
+    ner,
+    'googlecode'
+  );
+
+  await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, 'C0C0C0');
+
+  await FinanceServices.createSponsorTask(
+    thomasEmrax,
+    ner,
+    new Date(12, 1, 25),
+    'notes...',
+    sponsor.sponsorId,
+    new Date(7, 5, 25),
+    thomasEmrax.userId
   );
 };
 

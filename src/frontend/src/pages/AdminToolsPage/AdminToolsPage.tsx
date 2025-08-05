@@ -19,7 +19,7 @@ import { routes } from '../../utils/routes';
 import { Box } from '@mui/system';
 import AdminToolsRecruitmentConfig from './RecruitmentConfig/AdminToolsRecruitmentConfig';
 import GuestViewConfig from './EditGuestView/GuestViewConfig';
-import AdminToolsWorkspaceId from './AdminToolsSlackWorkspaceId';
+import AdminToolsSlackIds from './AdminToolsSlackIds';
 import AdminToolsOnboardingConfig from './OnboardingConfig/AdminToolsOnboardingConfig';
 
 const AdminToolsPage: React.FC = () => {
@@ -48,17 +48,6 @@ const AdminToolsPage: React.FC = () => {
     tabs.push({ tabUrlValue: 'miscellaneous', tabName: 'Miscellaneous' });
   }
 
-  const ProjectConfigurationTab = () => {
-    return isUserAdmin ? (
-      <>
-        <AdminToolsProjectsConfig />
-        <AdminToolsBOMConfig />
-      </>
-    ) : (
-      <AdminToolsProjectsConfig />
-    );
-  };
-
   return (
     <PageLayout
       title="Admin Tools"
@@ -81,7 +70,10 @@ const AdminToolsPage: React.FC = () => {
           {isUserAdmin && <TeamsTools />}
         </>
       ) : tabIndex === 1 ? (
-        <ProjectConfigurationTab />
+        <Box>
+          <AdminToolsProjectsConfig />
+          {isUserAdmin && <AdminToolsBOMConfig />}
+        </Box>
       ) : tabIndex === 2 ? (
         <AdminToolsFinanceConfig />
       ) : tabIndex === 3 ? (
@@ -95,7 +87,7 @@ const AdminToolsPage: React.FC = () => {
           <Box pb={2}>
             <AdminToolsSlackUpcomingDeadlines />
           </Box>
-          <AdminToolsWorkspaceId />
+          <AdminToolsSlackIds />
           <AdminToolsAttendeeDesignReviewInfo />
         </Box>
       )}

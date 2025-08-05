@@ -13,7 +13,7 @@ import tasksRouter from './src/routes/tasks.routes';
 import reimbursementRequestsRouter from './src/routes/reimbursement-requests.routes';
 import notificationsRouter from './src/routes/notifications.routes';
 import designReviewsRouter from './src/routes/design-reviews.routes';
-import workPackageTemplatesRouter from './src/routes/work-package-templates.routes';
+import wbsElementTemplatesRouter from './src/routes/wbs-element-templates.routes';
 import carsRouter from './src/routes/cars.routes';
 import organizationRouter from './src/routes/organizations.routes';
 import recruitmentRouter from './src/routes/recruitment.routes';
@@ -23,6 +23,8 @@ import onboardingRouter from './src/routes/onboarding.routes';
 import popUpsRouter from './src/routes/pop-up.routes';
 import statisticsRouter from './src/routes/statistics.routes';
 import retrospectiveRouter from './src/routes/retrospective.routes';
+import partsRouter from './src/routes/parts.routes';
+import financeRouter from './src/routes/finance.routes';
 
 const app = express();
 
@@ -74,7 +76,7 @@ app.use('/tasks', tasksRouter);
 app.use('/reimbursement-requests', reimbursementRequestsRouter);
 app.use('/design-reviews', designReviewsRouter);
 app.use('/notifications', notificationsRouter);
-app.use('/templates', workPackageTemplatesRouter);
+app.use('/templates', wbsElementTemplatesRouter);
 app.use('/cars', carsRouter);
 app.use('/organizations', organizationRouter);
 app.use('/recruitment', recruitmentRouter);
@@ -83,6 +85,8 @@ app.use('/announcements', announcementsRouter);
 app.use('/onboarding', onboardingRouter);
 app.use('/statistics', statisticsRouter);
 app.use('/retrospective', retrospectiveRouter);
+app.use('/parts', partsRouter);
+app.use('/finance', financeRouter);
 app.use('/', (_req, res) => {
   res.status(200).json('Welcome to FinishLine');
 });

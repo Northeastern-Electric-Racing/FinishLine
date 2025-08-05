@@ -1,6 +1,6 @@
 import prisma from '../prisma/prisma';
 import { DescriptionBullet, DescriptionBulletPreview, isLeadership } from 'shared';
-import { Description_Bullet, Prisma } from '@prisma/client';
+import { Description_Bullet, Prisma, User } from '@prisma/client';
 import { HttpException, NotFoundException } from './errors.utils';
 import { ChangeListValue } from './changes.utils';
 import { userHasPermission } from './users.utils';
@@ -20,11 +20,7 @@ export const separateDescriptionBulletsByType = (descriptionBullets: Description
   return descriptionBulletsSeparatedByType;
 };
 
-export const hasBulletCheckingPermissions = async (userId: string, descriptionId: string, organizationId: string) => {
-  const user = await prisma.user.findUnique({ where: { userId } });
-
-  if (!user) return false;
-
+export const hasBulletCheckingPermissions = async (user: User, descriptionId: string, organizationId: string) => {
   const descriptionBullet = await prisma.description_Bullet.findUnique({
     where: { descriptionId },
     include: {
@@ -37,14 +33,13 @@ export const hasBulletCheckingPermissions = async (userId: string, descriptionId
     }
   });
 
-  if (!descriptionBullet) return false;
-  if (!descriptionBullet.wbsElement) return false;
+  if (!user || !descriptionBullet || !descriptionBullet.wbsElement) return false;
 
   const leader = descriptionBullet.wbsElement.lead;
   const { manager } = descriptionBullet.wbsElement;
 
   return (
-    (await userHasPermission(userId, organizationId, isLeadership)) ||
+    (await userHasPermission(user.userId, organizationId, isLeadership)) ||
     (leader && leader.userId === user.userId) ||
     (manager && manager.userId === user.userId)
   );
@@ -129,13 +124,13 @@ export const addDescriptionBulletsToWbsElement = async (
   }
 };
 
-export const addDescriptionBulletsToTemplate = async (
+export const addDescriptionBulletsToWorkPackageTemplate = async (
   addedDetails: string[],
   templateId: string,
   typeName: string,
   organizationId: string
 ) => {
-  const template = await prisma.work_Package_Template.findUnique({ where: { workPackageTemplateId: templateId } });
+  const template = await prisma.work_Package_Template.findUnique({ where: { wbsElementTemplateId: templateId } });
   if (!template) throw new NotFoundException('Work Package Template', templateId);
 
   const foundType = await validateDescriptionBulletType(typeName, organizationId);
@@ -153,9 +148,34 @@ export const addDescriptionBulletsToTemplate = async (
   }
 };
 
+export const addDescriptionBulletsToProjectTemplate = async (
+  addedDetails: string[],
+  templateId: string,
+  typeName: string,
+  organizationId: string
+) => {
+  const template = await prisma.project_Template.findUnique({ where: { wbsElementTemplateId: templateId } });
+  if (!template) throw new NotFoundException('Project Template', templateId);
+
+  const foundType = await validateDescriptionBulletType(typeName, organizationId);
+
+  if (addedDetails.length > 0) {
+    await prisma.description_Bullet.createMany({
+      data: addedDetails.map((element) => {
+        return {
+          detail: element,
+          projectTemplateId: templateId,
+          descriptionBulletTypeId: foundType.id
+        };
+      })
+    });
+  }
+};
+
 export enum DescriptionBulletDestination {
   WBS_ELEMENT,
-  TEMPLATE,
+  WORK_PACKAGE_TEMPLATE,
+  PROJECT_TEMPLATE,
   PROPOSED_CHANGES
 }
 
@@ -179,9 +199,19 @@ export const addRawDescriptionBullets = async (
           )
         );
         break;
-      case DescriptionBulletDestination.TEMPLATE:
+      case DescriptionBulletDestination.WORK_PACKAGE_TEMPLATE:
         promises.concat(
-          addDescriptionBulletsToTemplate(
+          addDescriptionBulletsToWorkPackageTemplate(
+            bullets.map((bullet) => bullet.detail),
+            destinationId,
+            type,
+            organizationId
+          )
+        );
+        break;
+      case DescriptionBulletDestination.PROJECT_TEMPLATE:
+        promises.concat(
+          addDescriptionBulletsToProjectTemplate(
             bullets.map((bullet) => bullet.detail),
             destinationId,
             type,

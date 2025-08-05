@@ -45,6 +45,16 @@ export const getUsersLeadingProjects = () => {
     transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer)
   });
 };
+
+/**
+ * Fetches all projects that are on that team.
+ */
+export const getTeamsProjects = (teamId: string) => {
+  return axios.get<Project[]>(apiUrls.teamsProjects(teamId), {
+    transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer)
+  });
+};
+
 /**
  * Fetches a single project.
  *
@@ -161,4 +171,20 @@ export const getAllUsefulLinks = () => {
  */
 export const setUsefulLinks = (linksObject: { links: LinkCreateArgs[] }) => {
   return axios.post<Link[]>(apiUrls.organizationsSetUsefulLinks(), linksObject);
+};
+
+/**
+ * Set the abbreviation of a project
+ */
+export const setAbbreviation = (payload: { wbsNum: string; abbreviation: string }) => {
+  return axios.post<Project>(apiUrls.projectsSetAbbreviation(), {
+    ...payload
+  });
+};
+
+/**
+ * Delete the abbreviation of a project
+ */
+export const deleteAbbreviation = (wbsNum: string) => {
+  return axios.post<{ message: string }>(apiUrls.projectsDeleteAbbreviation(wbsNum));
 };

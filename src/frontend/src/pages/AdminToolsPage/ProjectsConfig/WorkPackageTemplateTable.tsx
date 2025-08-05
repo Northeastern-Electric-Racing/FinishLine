@@ -8,7 +8,7 @@ import ErrorPage from '../../ErrorPage';
 import { WorkPackageTemplate } from 'shared';
 import { routes } from '../../../utils/routes';
 import { Delete } from '@mui/icons-material';
-import { useAllWorkPackageTemplates, useDeleteWorkPackageTemplate } from '../../../hooks/work-packages.hooks';
+import { useAllWorkPackageTemplates, useDeleteWorkPackageTemplate } from '../../../hooks/wbs-templates.hooks';
 import { useHistory } from 'react-router-dom';
 import { useState } from 'react';
 import NERModal from '../../../components/NERModal';
