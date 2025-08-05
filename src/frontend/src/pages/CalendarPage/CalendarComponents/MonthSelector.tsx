@@ -1,6 +1,6 @@
 import { Box, MenuItem, TextField } from '@mui/material';
 import { Dispatch, SetStateAction } from 'react';
-import { EnumToArray, MONTH_NAMES } from '../../../utils/design-review.utils';
+import { enumToArray, MONTH_NAMES } from '../../../utils/design-review.utils';
 
 interface MonthSelectorProps {
   displayMonth: Date;
@@ -22,7 +22,7 @@ const MonthSelector: React.FC<MonthSelectorProps> = ({ displayMonth, setDisplayM
           setDisplayMonth(new Date(displayMonth));
         }}
       >
-        {EnumToArray(MONTH_NAMES).map((month, index) => {
+        {enumToArray(MONTH_NAMES).map((month, index) => {
           return (
             <MenuItem key={month} value={index}>
               {month}
