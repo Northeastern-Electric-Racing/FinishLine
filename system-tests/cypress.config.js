@@ -7,7 +7,8 @@ module.exports = {
           return null;
         }
       });
-    }
+    },
+    defaultCommandTimeout: 10000
   },
   env: {
     base_url: 'http://localhost:3000'

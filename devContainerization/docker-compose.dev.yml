@@ -1,7 +1,7 @@
 name: finishline-development
 services:
   database:
-    container_name: database
+    container_name: database-dev
     image: postgres
     environment:
       POSTGRES_USER: postgres
@@ -19,7 +19,7 @@ services:
       start_period: 30s
 
   backend:
-    container_name: backend
+    container_name: backend-dev
     build:
       context: ../
       dockerfile: devContainerization/Dockerfile.backend.dev
@@ -37,7 +37,7 @@ services:
       DATABASE_URL: 'postgresql://postgres:docker@database:5432/finishline_database'
 
   frontend:
-    container_name: frontend
+    container_name: frontend-dev
     build:
       context: ../
       dockerfile: devContainerization/Dockerfile.frontend.dev
