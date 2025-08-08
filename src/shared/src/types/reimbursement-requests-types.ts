@@ -61,6 +61,7 @@ export interface ReimbursementRequest {
   dateDelivered?: Date;
   accountCode: AccountCode;
   comments: ReimbursementRequestComment[];
+  summary?: string;
 }
 
 export interface OtherProductReason {

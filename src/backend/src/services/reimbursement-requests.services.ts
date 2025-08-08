@@ -215,7 +215,8 @@ export default class ReimbursementRequestService {
     acccountCodeId: string,
     totalCost: number,
     organization: Organization,
-    dateOfExpense?: Date
+    dateOfExpense?: Date,
+    summary?: string
   ): Promise<ReimbursementRequest> {
     if (await userHasPermission(recipient.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('Guests cannot create a reimbursement request');
@@ -256,7 +257,8 @@ export default class ReimbursementRequestService {
           }
         },
         identifier: numReimbursementRequests + 1,
-        organization: { connect: { organizationId: organization.organizationId } }
+        organization: { connect: { organizationId: organization.organizationId } },
+        summary: summary ?? ''
       }
     });
 
@@ -338,6 +340,7 @@ export default class ReimbursementRequestService {
    * @param receiptPictures the old receipts that haven't been deleted (new receipts must be separately uploaded)
    * @param submitter the person editing the reimbursement request
    * @param organizationId the organization the user is currently in
+   * @param summary the updated summary
    * @returns the edited reimbursement request
    */
   static async editReimbursementRequest(
@@ -351,7 +354,8 @@ export default class ReimbursementRequestService {
     receiptPictures: ReimbursementReceiptCreateArgs[],
     submitter: User,
     organization: Organization,
-    dateOfExpense?: Date
+    dateOfExpense?: Date,
+    summary?: string
   ): Promise<Reimbursement_Request> {
     const oldReimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId: requestId },
@@ -393,7 +397,8 @@ export default class ReimbursementRequestService {
         indexCodeId,
         totalCost,
         accountCodeId: accountCode.accountCodeId,
-        vendorId: vendor.vendorId
+        vendorId: vendor.vendorId,
+        summary: summary ?? ''
       }
     });
 

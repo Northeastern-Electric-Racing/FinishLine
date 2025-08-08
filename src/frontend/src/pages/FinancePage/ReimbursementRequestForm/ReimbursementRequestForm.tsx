@@ -30,6 +30,7 @@ export interface ReimbursementRequestInformation {
   receiptFiles: ReimbursementReceiptUploadArgs[];
   indexCodeId: string;
   secondaryAccount?: string;
+  summary?: string;
 }
 export interface ReimbursementRequestFormInput extends ReimbursementRequestInformation {
   reimbursementProducts: ReimbursementProductFormArgs[];
@@ -148,7 +149,8 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       dateOfExpense: defaultValues?.dateOfExpense,
       accountCodeId: defaultValues?.accountCodeId ?? '',
       reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductFormArgs[]),
-      receiptFiles: defaultValues?.receiptFiles ?? ([] as ReimbursementReceiptUploadArgs[])
+      receiptFiles: defaultValues?.receiptFiles ?? ([] as ReimbursementReceiptUploadArgs[]),
+      summary: defaultValues?.summary ?? ''
     }
   });
 

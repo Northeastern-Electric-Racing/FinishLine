@@ -51,6 +51,7 @@ import { wbsNumComparator } from 'shared/src/validate-wbs';
 import { codeAndRefundSourceName, accountCodePipe } from '../../../utils/pipes';
 import NERModal from '../../../components/NERModal';
 import CheckList from '../../../components/CheckList';
+import ReactHookTextField from '../../../components/ReactHookTextField';
 
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
@@ -837,6 +838,27 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
             />
             <FormHelperText error>{errors.reimbursementProducts?.message}</FormHelperText>
           </FormControl>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Grid item lg={12} md={12} xs={12}>
+            <FormControl fullWidth>
+              <FormLabel>Summary</FormLabel>
+              <Controller
+                name="summary"
+                control={control}
+                render={({ field }) => (
+                  <ReactHookTextField
+                    {...field}
+                    control={control}
+                    multiline
+                    rows={4}
+                    placeholder="Enter a brief summary of the reimbursement request"
+                    errorMessage={errors.summary}
+                  />
+                )}
+              />
+            </FormControl>
+          </Grid>
         </Grid>
       </Grid>
       <Box

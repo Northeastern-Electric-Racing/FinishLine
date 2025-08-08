@@ -648,6 +648,7 @@ model Reimbursement_Request {
   notificationSlackThreads Message_Info[]
   materials                Material[]
   reimbursementComments    Reimbursement_Request_Comment[]
+  summary                  String?
 
   @@unique([identifier, organizationId], name: "uniqueReimbursementRequest")
 }

@@ -92,6 +92,7 @@ export interface CreateReimbursementRequestPayload {
   wbsReimbursementProducts: WbsReimbursementProductCreateArgs[];
   totalCost: number;
   indexCodeId: string;
+  summary?: string;
 }
 
 export interface EditReimbursementRequestPayload extends CreateReimbursementRequestPayload {

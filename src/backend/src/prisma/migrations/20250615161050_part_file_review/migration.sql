@@ -225,3 +225,7 @@ ALTER TABLE "_partAssignees" ADD CONSTRAINT "_partAssignees_A_fkey" FOREIGN KEY 
 
 -- AddForeignKey
 ALTER TABLE "_partAssignees" ADD CONSTRAINT "_partAssignees_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("userId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AlterTable
+ALTER TABLE "Reimbursement_Request" ADD COLUMN     "summary" TEXT NOT NULL DEFAULT '';
+

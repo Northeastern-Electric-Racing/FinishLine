@@ -18,6 +18,7 @@ import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import StoreIcon from '@mui/icons-material/Store';
 import SellIcon from '@mui/icons-material/Sell';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
+import DescriptionIcon from '@mui/icons-material/Description';
 
 import { Typography, useTheme, Link, IconButton } from '@mui/material';
 import { Box } from '@mui/system';
@@ -454,7 +455,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     { label: 'Purchased From', icon: <StoreIcon fontSize="small" /> },
     { label: 'SABO Number', icon: <SellIcon fontSize="small" /> },
     { label: 'Refund Source', icon: <CurrencyExchangeIcon fontSize="small" /> },
-    { label: 'Expense Type', icon: <CurrencyExchangeIcon fontSize="small" /> }
+    { label: 'Expense Type', icon: <CurrencyExchangeIcon fontSize="small" /> },
+    { label: 'Summary', icon: <DescriptionIcon fontSize="small" /> }
   ];
 
   // grab all unique refund source names
@@ -488,7 +490,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     {
       content: refundSourceNames.join(', ')
     },
-    { content: accountCodePipe(reimbursementRequest.accountCode) }
+    { content: accountCodePipe(reimbursementRequest.accountCode) },
+    { content: reimbursementRequest.summary ?? '' }
   ];
 
   const { id } = useParams<{ id: string }>();
