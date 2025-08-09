@@ -6,11 +6,11 @@ import AdminToolTable from '../AdminToolTable';
 import CreateDivisionFormModal from './CreateTeamTypeFormModal';
 import { TeamType as Division } from 'shared';
 import EditDivisionFormModal from './EditTeamTypeFormModal';
-import { useAllDivisions, useSetDivisionImage } from '../../../hooks/team-types.hooks';
 import { useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import NERUploadButton from '../../../components/NERUploadButton';
 import { useGetImageUrls } from '../../../hooks/onboarding.hook';
+import { useAllTeamTypes, useSetTeamTypeImage } from '../../../hooks/team-types.hooks';
 
 const DivisionTable: React.FC = () => {
   const {
@@ -18,7 +18,7 @@ const DivisionTable: React.FC = () => {
     isLoading: divisionsIsLoading,
     isError: divisionsIsError,
     error: divisionsError
-  } = useAllDivisions();
+  } = useAllTeamTypes();
 
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
   const [editingDivision, setEditingDivision] = useState<Division | undefined>(undefined);
@@ -31,7 +31,7 @@ const DivisionTable: React.FC = () => {
     }) ?? [];
 
   const { data: imageUrlsList, isLoading, isError, error } = useGetImageUrls(DivisionImageList);
-  const { mutateAsync: setDivisionImage, isLoading: setDivisionIsLoading } = useSetDivisionImage();
+  const { mutateAsync: setDivisionImage, isLoading: setDivisionIsLoading } = useSetTeamTypeImage();
 
   if (divisionsIsError) {
     return <ErrorPage message={divisionsError?.message} />;

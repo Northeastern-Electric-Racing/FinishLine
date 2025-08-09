@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useAllDivisions } from '../../../hooks/team-types.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import PageLayout from '../../../components/PageLayout';
@@ -20,6 +19,7 @@ import { DatePicker } from '@mui/x-date-pickers';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import WorkIcon from '@mui/icons-material/Work';
 import { isAdmin } from 'shared';
+import { useAllTeamTypes } from '../../../hooks/team-types.hooks';
 
 interface AdminFinanceDashboardProps {
   startDate?: Date;
@@ -41,7 +41,7 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
     isLoading: allDivisionsIsLoading,
     isError: allDivisionsIsError,
     error: allDivisionsError
-  } = useAllDivisions();
+  } = useAllTeamTypes();
   const {
     data: allReimbursementRequests,
     isLoading: allReimbursementRequestsIsLoading,

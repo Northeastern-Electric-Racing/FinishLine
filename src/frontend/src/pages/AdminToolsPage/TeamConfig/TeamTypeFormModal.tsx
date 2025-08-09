@@ -7,16 +7,16 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Box } from '@mui/system';
 import HelpIcon from '@mui/icons-material/Help';
 import { TeamType as Division } from 'shared';
-import { CreateDivisionPayload } from '../../../hooks/team-types.hooks';
 import useFormPersist from 'react-hook-form-persist';
 import { FormStorageKey } from '../../../utils/form';
 import { useEffect } from 'react';
+import { CreateTeamTypePayload } from '../../../hooks/team-types.hooks';
 
 interface DivisionFormModalProps {
   open: boolean;
   handleClose: () => void;
   defaultValues?: Division;
-  onSubmit: (data: CreateDivisionPayload) => Promise<Division>;
+  onSubmit: (data: CreateTeamTypePayload) => Promise<Division>;
 }
 
 const schema = yup.object().shape({
@@ -26,7 +26,7 @@ const schema = yup.object().shape({
 });
 
 const DivisionFormModal: React.FC<DivisionFormModalProps> = ({ open, handleClose, defaultValues, onSubmit }) => {
-  const onFormSubmit = async (data: CreateDivisionPayload) => {
+  const onFormSubmit = async (data: CreateTeamTypePayload) => {
     await onSubmit(data);
     handleClose();
   };

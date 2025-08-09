@@ -7,8 +7,8 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import NERFormModal from '../../components/NERFormModal';
 import { FormControl, FormLabel, Select, MenuItem } from '@mui/material';
-import { useAllDivisions, useSetDivision } from '../../hooks/team-types.hooks';
 import { TeamType } from 'shared';
+import { useAllTeamTypes, useSetTeamType } from '../../hooks/team-types.hooks';
 
 interface SetTeamTypeInputs {
   teamId: string;
@@ -23,8 +23,8 @@ interface SetTeamTypeModelProps {
 
 const SetTeamTypeModal: React.FC<SetTeamTypeModelProps> = ({ teamId, showModal, onHide }: SetTeamTypeModelProps) => {
   const { data: team, isLoading: teamIsLoading, isError: teamIsError, error: teamError } = useSingleTeam(teamId);
-  const { isLoading, isError: deleteIsError, error: deleteError, mutateAsync } = useSetDivision(teamId);
-  const { data: teamTypeOptions } = useAllDivisions();
+  const { isLoading, isError: deleteIsError, error: deleteError, mutateAsync } = useSetTeamType(teamId);
+  const { data: teamTypeOptions } = useAllTeamTypes();
   const toast = useToast();
   const schema = yup.object().shape({
     teamType: yup.string().required()

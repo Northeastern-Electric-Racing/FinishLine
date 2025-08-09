@@ -41,7 +41,6 @@ import {
 } from 'shared';
 import { useAllTeams } from '../../../hooks/teams.hooks';
 import { useGetAllCars } from '../../../hooks/cars.hooks';
-import { useAllDivisions } from '../../../hooks/team-types.hooks';
 import AddGanttProjectModal from './AddGanttProjectModal';
 import AddGanttWorkPackageModal from './AddGanttWorkPackageModal';
 import { GanttRequestChangeModal } from './ProjectGanttChangeModals/GanttRequestChangeModal';
@@ -49,6 +48,7 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { v4 as uuidv4 } from 'uuid';
 import { projectWbsPipe } from '../../../utils/pipes';
 import { projectPreviewTransformer } from '../../../apis/transformers/projects.transformers';
+import { useAllTeamTypes } from '../../../hooks/team-types.hooks';
 
 const ProjectGanttChartPage: FC = () => {
   const history = useHistory();
@@ -61,7 +61,7 @@ const ProjectGanttChartPage: FC = () => {
     isError: teamTypesIsError,
     data: teamTypes,
     error: teamTypesError
-  } = useAllDivisions();
+  } = useAllTeamTypes();
 
   const { isLoading: carsIsLoading, isError: carsIsError, data: cars, error: carsError } = useGetAllCars();
 
