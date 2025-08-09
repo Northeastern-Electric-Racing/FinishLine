@@ -26,7 +26,7 @@ describe('Task Test', () => {
       organizationId,
       new Date('01/23/2023')
     );
-    await TasksService.editTaskStatus(user, correctTask.taskId, 'IN_PROGRESS');
+    await TasksService.editTaskStatus(user, organizationId, correctTask.taskId, 'IN_PROGRESS');
     const updatedTask = await prisma.task.findUnique({
       where: {
         taskId: correctTask.taskId
@@ -40,7 +40,12 @@ describe('Task Test', () => {
     const user = await createTestUser(supermanAdmin, organizationId);
     const badTask = await createTestTask(user, 'Test', '', [], 'HIGH', 'DONE', organizationId);
     await expect(async () =>
-      TasksService.editTaskStatus(await createTestUser(financeMember, organizationId), badTask.taskId, 'IN_PROGRESS')
+      TasksService.editTaskStatus(
+        await createTestUser(financeMember, organizationId),
+        organizationId,
+        badTask.taskId,
+        'IN_PROGRESS'
+      )
     ).rejects.toThrow(new HttpException(400, 'A task in progress must have a deadline and assignees!'));
   });
 
@@ -48,7 +53,12 @@ describe('Task Test', () => {
     const user = await createTestUser(supermanAdmin, organizationId);
     const badTask = await createTestTask(user, 'Test', '', [user], 'HIGH', 'IN_BACKLOG', organizationId);
     await expect(async () =>
-      TasksService.editTaskStatus(await createTestUser(financeMember, organizationId), badTask.taskId, 'IN_PROGRESS')
+      TasksService.editTaskStatus(
+        await createTestUser(financeMember, organizationId),
+        organizationId,
+        badTask.taskId,
+        'IN_PROGRESS'
+      )
     ).rejects.toThrow(new HttpException(400, 'A task in progress must have a deadline and assignees!'));
   });
 
@@ -56,7 +66,12 @@ describe('Task Test', () => {
     const user = await createTestUser(supermanAdmin, organizationId);
     const badTask = await createTestTask(user, 'Test', '', [], 'HIGH', 'DONE', organizationId, new Date());
     await expect(async () =>
-      TasksService.editTaskStatus(await createTestUser(financeMember, organizationId), badTask.taskId, 'IN_PROGRESS')
+      TasksService.editTaskStatus(
+        await createTestUser(financeMember, organizationId),
+        organizationId,
+        badTask.taskId,
+        'IN_PROGRESS'
+      )
     ).rejects.toThrow(new HttpException(400, 'A task in progress must have a deadline and assignees!'));
   });
 
@@ -65,7 +80,7 @@ describe('Task Test', () => {
     const admin = await createTestUser(supermanAdmin, organizationId);
     const task = await createTestTask(admin, 'Test', '', [], 'HIGH', 'DONE', organizationId, new Date());
     await expect(async () =>
-      TasksService.editTask(guest, task.taskId, 'Title', 'Notes', 'HIGH', new Date())
+      TasksService.editTask(guest, organizationId, task.taskId, 'Title', 'Notes', 'HIGH', new Date())
     ).rejects.toThrow(new AccessDeniedException('Guests cannot edit tasks'));
   });
 });
