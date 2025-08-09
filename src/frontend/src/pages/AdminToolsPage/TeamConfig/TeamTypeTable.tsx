@@ -160,7 +160,7 @@ const TeamTypeTable: React.FC = () => {
         />
       )}
       <AdminToolTable
-        columns={[{ name: 'Team Type Name' }, { name: 'Icon' }, { name: 'Description' }, { name: 'Image' }]}
+        columns={[{ name: 'Division Name' }, { name: 'Icon' }, { name: 'Description' }, { name: 'Image' }]}
         rows={teamTypesTableRows}
       />
 
@@ -171,7 +171,7 @@ const TeamTypeTable: React.FC = () => {
             setCreateModalShow(true);
           }}
         >
-          New Team Type
+          New Division
         </NERButton>
       </Box>
     </Box>
