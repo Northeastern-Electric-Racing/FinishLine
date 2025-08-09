@@ -55,6 +55,12 @@ const FinalizeDesignReviewDetailsModal = ({
     setOpen(false);
   };
 
+  const defaultValues = {
+    docTemplateLink: designReview.docTemplateLink ?? '',
+    zoomLink: designReview.zoomLink ?? undefined,
+    location: designReview.location ?? undefined
+  };
+
   const {
     handleSubmit,
     control,
@@ -62,11 +68,7 @@ const FinalizeDesignReviewDetailsModal = ({
     formState: { errors }
   } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: {
-      docTemplateLink: '',
-      zoomLink: undefined,
-      location: undefined
-    }
+    defaultValues
   });
 
   return (
@@ -74,7 +76,7 @@ const FinalizeDesignReviewDetailsModal = ({
       open={open}
       onHide={() => setOpen(false)}
       title={title}
-      reset={() => reset({ docTemplateLink: '', zoomLink: undefined, location: undefined })}
+      reset={() => reset(defaultValues)}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
       submitText="Schedule"
