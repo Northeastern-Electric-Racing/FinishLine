@@ -60,7 +60,7 @@ const CreateCarModal: React.FC<CreateCarModalProps> = ({ showModal, handleClose 
       showCloseButton
     >
       <FormControl>
-        <FormLabel>Car</FormLabel>
+        <FormLabel>Car Name</FormLabel>
         <ReactHookTextField name="name" control={control} sx={{ width: 1 }} />
         <FormHelperText error>{errors.name?.message}</FormHelperText>
       </FormControl>

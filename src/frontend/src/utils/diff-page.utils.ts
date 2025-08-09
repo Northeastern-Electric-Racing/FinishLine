@@ -128,12 +128,12 @@ export const genListChange = <T extends DisplayableObejct>(
   newValues: T[],
   comparator: (a: T, b: T) => boolean
 ): ComparableLine => {
-  const isOriginalLarger = originalValues.length > newValues.length ? originalValues : newValues;
+  const isOriginalLarger = originalValues.length > newValues.length;
   return {
     original: {
       key,
       changed: false,
-      value: (isOriginalLarger ? originalValues : newValues).map((_, i) => ({
+      value: (isOriginalLarger ? newValues : originalValues).map((_, i) => ({
         key,
         changed: comparator(originalValues[i], newValues[i]),
         value: originalValues[i].value ?? defaultValue
@@ -142,7 +142,7 @@ export const genListChange = <T extends DisplayableObejct>(
     new: {
       key,
       changed: false,
-      value: (isOriginalLarger ? originalValues : newValues).map((_, i) => ({
+      value: (isOriginalLarger ? newValues : originalValues).map((_, i) => ({
         key,
         changed: comparator(originalValues[i], newValues[i]),
         value: newValues[i].value ?? defaultValue

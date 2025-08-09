@@ -260,4 +260,29 @@ describe('Organization Tests', () => {
       expect(allContacts.some((contact) => contact.userId === testSuperman.userId)).toBeTruthy();
     });
   });
+
+  describe('Update Organization Sponsorship Notification Channel ID', () => {
+    it('Fails if user is not admin', async () => {
+      await expect(
+        async () =>
+          await OrganizationsService.setSlackSponsorshipNotificationSlackChannelId(
+            'dummy',
+            await createTestUser(wonderwomanGuest, orgId),
+            orgId
+          )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('set sponsorship notification channel id'));
+    });
+
+    it('Succeeds and sets the channel ID', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+
+      const updatedOrg = await OrganizationsService.setSlackSponsorshipNotificationSlackChannelId(
+        'sponsorshipNotifId',
+        testBatman,
+        orgId
+      );
+
+      expect(updatedOrg.sponsorshipNotificationsSlackChannelId).toEqual('sponsorshipNotifId');
+    });
+  });
 });

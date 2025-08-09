@@ -14,6 +14,7 @@ const projectRouter = express.Router();
 projectRouter.get('/all/:deleted', ProjectsController.getAllProjects);
 projectRouter.get('/users-teams', ProjectsController.getUsersTeamsProjects);
 projectRouter.get('/leading', ProjectsController.getUsersLeadingProjects);
+projectRouter.get('/teams-projects/:teamId', ProjectsController.getTeamsProjects);
 
 /* Link Types */
 projectRouter.get('/link-types', ProjectsController.getAllLinkTypes);

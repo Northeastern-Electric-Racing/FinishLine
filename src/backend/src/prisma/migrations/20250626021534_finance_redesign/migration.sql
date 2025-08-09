@@ -1,0 +1,339 @@
+-- AlterEnum
+ALTER TYPE "CR_Type" ADD VALUE 'BUDGET';
+
+-- AlterTable
+ALTER TABLE "Material" ADD COLUMN     "reimbursementRequestId" TEXT;
+
+-- AlterTable
+ALTER TABLE "Reimbursement_Product_Reason" ADD COLUMN "otherReasonId" TEXT;
+
+-- AlterTable
+ALTER TABLE "Reimbursement_Request" ADD COLUMN "indexCodeId" TEXT;
+
+-- AlterTable
+ALTER TABLE "Vendor" ADD COLUMN     "addedByUserId" TEXT NOT NULL,
+ADD COLUMN     "discountCode" TEXT,
+ADD COLUMN     "notes" TEXT,
+ADD COLUMN     "password" TEXT,
+ADD COLUMN     "taxExempt" BOOLEAN NOT NULL DEFAULT FALSE,
+ADD COLUMN     "username" TEXT;
+
+-- CreateTable
+CREATE TABLE "Sponsor" (
+    "sponsorId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "organizationId" TEXT NOT NULL,
+    "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "dateDeleted" TIMESTAMP(3),
+    "activeStatus" BOOLEAN NOT NULL,
+    "vendorContact" TEXT NOT NULL,
+    "sponsorTierId" TEXT NOT NULL,
+    "sponsorValue" INTEGER NOT NULL,
+    "joinDate" TIMESTAMP(3) NOT NULL,
+    "discountCode" TEXT,
+    "activeYears" INTEGER[],
+    "taxExempt" BOOLEAN NOT NULL,
+
+    CONSTRAINT "Sponsor_pkey" PRIMARY KEY ("sponsorId")
+);
+
+-- CreateTable
+CREATE TABLE "Sponsor_Task" (
+    "sponsorTaskId" TEXT NOT NULL,
+    "dueDate" TIMESTAMP(3) NOT NULL,
+    "notifyDate" TIMESTAMP(3),
+    "assigneeUserId" TEXT,
+    "notes" TEXT NOT NULL,
+    "sponsorId" TEXT NOT NULL,
+    "dateDeleted" TIMESTAMP(3),
+
+    CONSTRAINT "Sponsor_Task_pkey" PRIMARY KEY ("sponsorTaskId")
+);
+
+-- CreateTable
+CREATE TABLE "Sponsor_Tier" (
+    "sponsorTierId" TEXT NOT NULL,
+    "organizationId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "colorHexCode" TEXT NOT NULL,
+
+    CONSTRAINT "Sponsor_Tier_pkey" PRIMARY KEY ("sponsorTierId")
+);
+
+-- CreateTable
+CREATE TABLE "Index_Code" (
+    "indexCodeId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "dateDeleted" TIMESTAMP(3),
+    "userCreatedId" TEXT NOT NULL,
+    "organizationId" TEXT NOT NULL,
+    "userDeletedId" TEXT,
+
+    CONSTRAINT "Index_Code_pkey" PRIMARY KEY ("indexCodeId")
+);
+
+-- CreateTable
+CREATE TABLE "Reimbursement_Product_Other_Reason" (
+    "otherReimbursementProductReasonId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "dateDeleted" TIMESTAMP(3),
+    "userCreatedId" TEXT NOT NULL,
+    "userDeletedId" TEXT,
+    "budget" INTEGER NOT NULL,
+    "indexCodeId" TEXT NOT NULL,
+
+    CONSTRAINT "Reimbursement_Product_Other_Reason_pkey" PRIMARY KEY ("otherReimbursementProductReasonId")
+);
+
+-- CreateTable
+CREATE TABLE "Reimbursement_Request_Comment" (
+    "reimbursementRequestCommentId" TEXT NOT NULL,
+    "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "userCreatedId" TEXT NOT NULL,
+    "comment" TEXT NOT NULL,
+    "reimbursementRequestId" TEXT NOT NULL,
+    "dateDeleted" TIMESTAMP(3),
+    "userDeletedId" TEXT,
+
+    CONSTRAINT "Reimbursement_Request_Comment_pkey" PRIMARY KEY ("reimbursementRequestCommentId")
+);
+
+-- CreateTable
+CREATE TABLE "_Account_CodeToIndex_Code" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_Account_CodeToIndex_Code_AB_pkey" PRIMARY KEY ("A","B")
+);
+
+-- CreateTable
+CREATE TABLE "_Account_CodeToReimbursement_Product_Other_Reason" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_Account_CodeToReimbursement_Product_Other_Reason_AB_pkey" PRIMARY KEY ("A","B")
+);
+
+-- CreateAdminUser
+INSERT INTO "User" ("userId", "firstName", "lastName", "googleAuthId", "email") VALUES ('0', 'Admin', 'User', 'admin', 'admin@gmail.com');
+
+-- Ensure every organization gets its own CASH and BUDGET index codes
+WITH orgs AS (
+    SELECT "organizationId" FROM "Organization"
+),
+inserted AS (
+    INSERT INTO "Index_Code" ("indexCodeId", "name", "userCreatedId", "code", "organizationId")
+    SELECT gen_random_uuid(), 'CASH', '0', '830667', o."organizationId" FROM orgs o
+    UNION ALL
+    SELECT gen_random_uuid(), 'BUDGET', '0', '800462', o."organizationId" FROM orgs o
+    RETURNING "indexCodeId", "name", "organizationId"
+)
+
+-- Insert into Reimbursement_Product_Other_Reason using the correct indexCodeId per organization
+INSERT INTO "Reimbursement_Product_Other_Reason" ("otherReimbursementProductReasonId", "name", "userCreatedId", "budget", "indexCodeId")
+SELECT 
+    gen_random_uuid(), 
+    reason.name, 
+    '0', 
+    0, 
+    i."indexCodeId"
+FROM (
+    VALUES 
+        ('TOOLS_AND_EQUIPMENT', 'CASH'),
+        ('COMPETITION', 'BUDGET'),
+        ('CONSUMABLES', 'CASH'),
+        ('GENERAL_STOCK', 'BUDGET'),
+        ('SUBSCRIPTIONS_AND_MEMBERSHIPS', 'CASH')
+) AS reason(name, index_name)
+JOIN inserted i ON reason.index_name = i."name";
+
+UPDATE "Reimbursement_Request" rr
+SET "indexCodeId" = ic."indexCodeId"
+FROM "Index_Code" ic
+WHERE rr."account"::TEXT = ic."name"
+AND rr."organizationId" = ic."organizationId";
+
+UPDATE "Reimbursement_Product_Reason" rpr 
+SET "otherReasonId" = orpr."otherReimbursementProductReasonId"
+FROM "Reimbursement_Product_Other_Reason" orpr 
+WHERE rpr."otherReason"::TEXT = orpr."name";
+
+ALTER TABLE "Reimbursement_Request" ALTER COLUMN "indexCodeId" SET NOT NULL;
+
+ALTER TABLE "Reimbursement_Request" DROP COLUMN "account";
+
+ALTER TABLE "Reimbursement_Product_Reason" DROP COLUMN "otherReason";
+
+-- AlterTable
+ALTER TABLE "Account_Code" DROP COLUMN "allowedRefundSources";
+
+-- AlterTable
+ALTER TABLE "Account_Code" ADD COLUMN     "amount" INTEGER;
+
+-- DropEnum
+DROP TYPE "Other_Reimbursement_Product_Reason";
+
+-- DropEnum
+DROP TYPE "Club_Accounts";
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Sponsor_name_organizationId_key" ON "Sponsor"("name", "organizationId");
+
+-- CreateIndex
+CREATE INDEX "_Account_CodeToIndex_Code_B_index" ON "_Account_CodeToIndex_Code"("B");
+
+-- CreateIndex
+CREATE INDEX "_Account_CodeToReimbursement_Product_Other_Reason_B_index" ON "_Account_CodeToReimbursement_Product_Other_Reason"("B");
+
+-- AddForeignKey
+ALTER TABLE "Reimbursement_Request" ADD CONSTRAINT "Reimbursement_Request_indexCodeId_fkey" FOREIGN KEY ("indexCodeId") REFERENCES "Index_Code"("indexCodeId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Reimbursement_Product_Reason" ADD CONSTRAINT "Reimbursement_Product_Reason_otherReasonId_fkey" FOREIGN KEY ("otherReasonId") REFERENCES "Reimbursement_Product_Other_Reason"("otherReimbursementProductReasonId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Vendor" ADD CONSTRAINT "Vendor_addedByUserId_fkey" FOREIGN KEY ("addedByUserId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Sponsor" ADD CONSTRAINT "Sponsor_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Sponsor" ADD CONSTRAINT "Sponsor_sponsorTierId_fkey" FOREIGN KEY ("sponsorTierId") REFERENCES "Sponsor_Tier"("sponsorTierId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Sponsor_Task" ADD CONSTRAINT "Sponsor_Task_assigneeUserId_fkey" FOREIGN KEY ("assigneeUserId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Sponsor_Task" ADD CONSTRAINT "Sponsor_Task_sponsorId_fkey" FOREIGN KEY ("sponsorId") REFERENCES "Sponsor"("sponsorId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Material" ADD CONSTRAINT "Material_reimbursementRequestId_fkey" FOREIGN KEY ("reimbursementRequestId") REFERENCES "Reimbursement_Request"("reimbursementRequestId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Sponsor_Tier" ADD CONSTRAINT "Sponsor_Tier_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Index_Code" ADD CONSTRAINT "Index_Code_userCreatedId_fkey" FOREIGN KEY ("userCreatedId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Index_Code" ADD CONSTRAINT "Index_Code_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Index_Code" ADD CONSTRAINT "Index_Code_userDeletedId_fkey" FOREIGN KEY ("userDeletedId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Reimbursement_Product_Other_Reason" ADD CONSTRAINT "Reimbursement_Product_Other_Reason_userCreatedId_fkey" FOREIGN KEY ("userCreatedId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Reimbursement_Product_Other_Reason" ADD CONSTRAINT "Reimbursement_Product_Other_Reason_userDeletedId_fkey" FOREIGN KEY ("userDeletedId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Reimbursement_Product_Other_Reason" ADD CONSTRAINT "Reimbursement_Product_Other_Reason_indexCodeId_fkey" FOREIGN KEY ("indexCodeId") REFERENCES "Index_Code"("indexCodeId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_Account_CodeToIndex_Code" ADD CONSTRAINT "_Account_CodeToIndex_Code_A_fkey" FOREIGN KEY ("A") REFERENCES "Account_Code"("accountCodeId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_Account_CodeToIndex_Code" ADD CONSTRAINT "_Account_CodeToIndex_Code_B_fkey" FOREIGN KEY ("B") REFERENCES "Index_Code"("indexCodeId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_Account_CodeToReimbursement_Product_Other_Reason" ADD CONSTRAINT "_Account_CodeToReimbursement_Product_Other_Reason_A_fkey" FOREIGN KEY ("A") REFERENCES "Account_Code"("accountCodeId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_Account_CodeToReimbursement_Product_Other_Reason" ADD CONSTRAINT "_Account_CodeToReimbursement_Product_Other_Reason_B_fkey" FOREIGN KEY ("B") REFERENCES "Reimbursement_Product_Other_Reason"("otherReimbursementProductReasonId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Reimbursement_Request_Comment" ADD CONSTRAINT "Reimbursement_Request_Comment_userCreatedId_fkey" FOREIGN KEY ("userCreatedId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Reimbursement_Request_Comment" ADD CONSTRAINT "Reimbursement_Request_Comment_userDeletedId_fkey" FOREIGN KEY ("userDeletedId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Reimbursement_Request_Comment" ADD CONSTRAINT "Reimbursement_Request_Comment_reimbursementRequestId_fkey" FOREIGN KEY ("reimbursementRequestId") REFERENCES "Reimbursement_Request"("reimbursementRequestId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AlterTable
+ALTER TABLE "Organization" ADD COLUMN     "sponsorshipNotificationsSlackChannelId" TEXT;
+
+-- CreateTable
+CREATE TABLE "Refund_Source" (
+    "refundSourceId" TEXT NOT NULL,
+    "indexCodeId" TEXT NOT NULL,
+    "amount" INTEGER NOT NULL,
+    "reimbursementProductId" TEXT,
+
+    CONSTRAINT "Refund_Source_pkey" PRIMARY KEY ("refundSourceId")
+);
+
+-- AddForeignKey
+ALTER TABLE "Refund_Source" ADD CONSTRAINT "Refund_Source_indexCodeId_fkey" FOREIGN KEY ("indexCodeId") REFERENCES "Index_Code"("indexCodeId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Refund_Source" ADD CONSTRAINT "Refund_Source_reimbursementProductId_fkey" FOREIGN KEY ("reimbursementProductId") REFERENCES "Reimbursement_Product"("reimbursementProductId") ON DELETE SET NULL ON UPDATE CASCADE;
+CREATE TABLE "_twoFactorContactVendors" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_twoFactorContactVendors_AB_pkey" PRIMARY KEY ("A","B")
+);
+
+-- CreateIndex
+CREATE INDEX "_twoFactorContactVendors_B_index" ON "_twoFactorContactVendors"("B");
+
+-- AddForeignKey
+ALTER TABLE "_twoFactorContactVendors" ADD CONSTRAINT "_twoFactorContactVendors_A_fkey" FOREIGN KEY ("A") REFERENCES "User"("userId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_twoFactorContactVendors" ADD CONSTRAINT "_twoFactorContactVendors_B_fkey" FOREIGN KEY ("B") REFERENCES "Vendor"("vendorId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+
+-- DropForeignKey
+ALTER TABLE "Change_Request" DROP CONSTRAINT "Change_Request_wbsElementId_fkey";
+
+-- AlterTable
+ALTER TABLE "Change_Request" ADD COLUMN     "categoryId" TEXT,
+ALTER COLUMN "wbsElementId" DROP NOT NULL,
+ADD COLUMN     "accountCodeId" TEXT;
+
+-- CreateTable
+CREATE TABLE "Budget_CR" (
+    "budgetCrId" TEXT NOT NULL,
+    "changeRequestId" TEXT NOT NULL,
+    "proposedBudget" INTEGER NOT NULL,
+
+    CONSTRAINT "Budget_CR_pkey" PRIMARY KEY ("budgetCrId")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Budget_CR_changeRequestId_key" ON "Budget_CR"("changeRequestId");
+
+-- AddForeignKey
+ALTER TABLE "Change_Request" ADD CONSTRAINT "Change_Request_wbsElementId_fkey" FOREIGN KEY ("wbsElementId") REFERENCES "WBS_Element"("wbsElementId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Change_Request" ADD CONSTRAINT "Change_Request_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Reimbursement_Product_Other_Reason"("otherReimbursementProductReasonId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Change_Request" ADD CONSTRAINT "Change_Request_accountCodeId_fkey" FOREIGN KEY ("accountCodeId") REFERENCES "Account_Code"("accountCodeId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Budget_CR" ADD CONSTRAINT "Budget_CR_changeRequestId_fkey" FOREIGN KEY ("changeRequestId") REFERENCES "Change_Request"("crId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- DropForeignKey
+ALTER TABLE "Change" DROP CONSTRAINT "Change_wbsElementId_fkey";
+
+-- AlterTable
+ALTER TABLE "Change" ADD COLUMN     "categoryId" TEXT,
+ALTER COLUMN "wbsElementId" DROP NOT NULL,
+ADD COLUMN     "accountCodeId" TEXT;
+
+-- AddForeignKey
+ALTER TABLE "Change" ADD CONSTRAINT "Change_wbsElementId_fkey" FOREIGN KEY ("wbsElementId") REFERENCES "WBS_Element"("wbsElementId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Change" ADD CONSTRAINT "Change_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Reimbursement_Product_Other_Reason"("otherReimbursementProductReasonId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Change" ADD CONSTRAINT "Change_accountCodeId_fkey" FOREIGN KEY ("accountCodeId") REFERENCES "Account_Code"("accountCodeId") ON DELETE SET NULL ON UPDATE CASCADE;

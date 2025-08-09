@@ -14,10 +14,10 @@ import { useGetImageUrls } from '../../../hooks/onboarding.hook';
 
 const DivisionTable: React.FC = () => {
   const {
-    data: Divisions,
-    isLoading: DivisionsIsLoading,
-    isError: DivisionsIsError,
-    error: DivisionsError
+    data: divisions,
+    isLoading: divisionsIsLoading,
+    isError: divisionsIsError,
+    error: divisionsError
   } = useAllDivisions();
 
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
@@ -26,22 +26,22 @@ const DivisionTable: React.FC = () => {
   const toast = useToast();
 
   const DivisionImageList =
-    Divisions?.map((Division) => {
+    divisions?.map((Division) => {
       return { objectId: Division.teamTypeId, imageFileId: Division.imageFileId };
     }) ?? [];
 
   const { data: imageUrlsList, isLoading, isError, error } = useGetImageUrls(DivisionImageList);
   const { mutateAsync: setDivisionImage, isLoading: setDivisionIsLoading } = useSetDivisionImage();
 
-  if (DivisionsIsError) {
-    return <ErrorPage message={DivisionsError?.message} />;
+  if (divisionsIsError) {
+    return <ErrorPage message={divisionsError?.message} />;
   }
 
   if (isError) {
     return <ErrorPage message={error?.message} />;
   }
 
-  if (!Divisions || DivisionsIsLoading || setDivisionIsLoading || !imageUrlsList || isLoading) {
+  if (!divisions || divisionsIsLoading || setDivisionIsLoading || !imageUrlsList || isLoading) {
     return <LoadingIndicator />;
   }
 
@@ -80,56 +80,66 @@ const DivisionTable: React.FC = () => {
     }
   };
 
-  const DivisionsTableRows = Divisions?.map((Division) => {
+  const DivisionsTableRows = divisions.map((division, index) => {
     return (
       <TableRow>
-        <TableCell onClick={() => setEditingDivision(Division)} sx={{ cursor: 'pointer', border: '2px solid black' }}>
-          {Division.name}
+        <TableCell
+          onClick={() => setEditingDivision(division)}
+          sx={{
+            cursor: 'pointer',
+            borderBottom: index === divisions.length - 1 ? 'none' : 'default'
+          }}
+        >
+          {division.name}
         </TableCell>
         <TableCell
-          onClick={() => setEditingDivision(Division)}
-          sx={{ cursor: 'pointer', border: '2px solid black', verticalAlign: 'middle' }}
+          onClick={() => setEditingDivision(division)}
+          sx={{
+            cursor: 'pointer',
+            verticalAlign: 'middle',
+            borderBottom: index === divisions.length - 1 ? 'none' : 'default'
+          }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Icon>{Division.iconName}</Icon>
+            <Icon>{division.iconName}</Icon>
             <Typography variant="body1" sx={{ marginLeft: 1 }}>
-              {Division.iconName}
+              {division.iconName}
             </Typography>
           </Box>
         </TableCell>
         <TableCell
-          onClick={() => setEditingDivision(Division)}
+          onClick={() => setEditingDivision(division)}
           sx={{
             cursor: 'pointer',
-            border: '2px solid black',
             verticalAlign: 'middle',
-            maxWidth: '15vw'
+            maxWidth: '15vw',
+            borderBottom: index === divisions.length - 1 ? 'none' : 'default'
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Typography variant="body1" sx={{ marginLeft: 1 }}>
-              {Division.description}
+              {division.description}
             </Typography>
           </Box>
         </TableCell>
-        <TableCell sx={{ border: '2px solid black' }}>
+        <TableCell sx={{ borderBottom: index === divisions.length - 1 ? 'none' : 'default' }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', mb: 1 }}>
-            {Division.imageFileId && !addedImages[Division.teamTypeId] && (
+            {division.imageFileId && !addedImages[division.teamTypeId] && (
               <Box
                 component="img"
-                src={imageUrlsMap[Division.teamTypeId]}
+                src={imageUrlsMap[division.teamTypeId]}
                 alt="Image Preview"
                 sx={{ maxWidth: '100px', mt: 1, mb: 1 }}
               />
             )}
             <NERUploadButton
-              dataTypeId={Division.teamTypeId}
-              handleFileChange={(e) => handleFileChange(e, Division.teamTypeId)}
+              dataTypeId={division.teamTypeId}
+              handleFileChange={(e) => handleFileChange(e, division.teamTypeId)}
               onSubmit={onSubmitDivisionImage}
-              addedImage={addedImages[Division.teamTypeId]}
+              addedImage={addedImages[division.teamTypeId]}
               setAddedImage={(newImage) =>
                 setAddedImages((prev) => {
-                  return { ...prev, [Division.teamTypeId]: newImage } as { [key: string]: File | undefined };
+                  return { ...prev, [division.teamTypeId]: newImage } as { [key: string]: File | undefined };
                 })
               }
             />

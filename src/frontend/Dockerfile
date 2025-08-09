@@ -7,10 +7,12 @@ COPY package.json .yarn tsconfig.build.json ./
 COPY ./src/frontend src/frontend
 COPY ./src/shared src/shared
 
+RUN rm -rf src/frontend/src/tests
+
 RUN yarn install;
 
 RUN yarn build:shared
-RUN yarn build:frontend:dev
+RUN export NODE_OPTIONS=--max_old_space_size=4096 && yarn build:frontend:dev
 
 FROM nginx:alpine
 

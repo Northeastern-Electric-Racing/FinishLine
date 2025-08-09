@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import { Assembly, AssemblyPreview, Material, MaterialPreview, MaterialStatus } from 'shared';
 import { AssemblyQueryArgs, MaterialPreviewQueryArgs, MaterialQueryArgs } from '../prisma-query-args/bom.query-args';
 import { userTransformer } from './user.transformer';
+import { reimbursementRequestTransformer } from './reimbursement-requests.transformer';
 
 export const assemblyTransformer = (assembly: Prisma.AssemblyGetPayload<AssemblyQueryArgs>): Assembly => {
   return {
@@ -45,7 +46,10 @@ export const materialTransformer = (material: Prisma.MaterialGetPayload<Material
     unitName: material.unit?.name ?? undefined,
     materialType: { ...material.materialType, dateDeleted: material.materialType.dateDeleted ?? undefined },
     manufacturer: { ...material.manufacturer, dateDeleted: material.manufacturer.dateDeleted ?? undefined },
-    notes: material.notes ?? undefined
+    notes: material.notes ?? undefined,
+    reimbursementRequest: material.reimbursementRequest
+      ? reimbursementRequestTransformer(material.reimbursementRequest)
+      : undefined
   };
 };
 
@@ -61,6 +65,9 @@ export const materialPreviewTransformer = (
     status: material.status as MaterialStatus,
     unitName: material.unit?.name ?? undefined,
     materialTypeName: material.materialType.name,
-    manufacturerName: material.manufacturer.name
+    manufacturerName: material.manufacturer.name,
+    reimbursementRequest: material.reimbursementRequest
+      ? reimbursementRequestTransformer(material.reimbursementRequest)
+      : undefined
   };
 };

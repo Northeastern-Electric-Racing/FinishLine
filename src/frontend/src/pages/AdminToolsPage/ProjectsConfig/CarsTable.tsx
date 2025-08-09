@@ -20,11 +20,11 @@ const CarsTable: React.FC = () => {
     return <ErrorPage message={carsError?.message} />;
   }
 
-  const carsTableRows = cars.map((car) => (
+  const carsTableRows = cars.map((car, index) => (
     <TableRow>
-      <TableCell sx={{ border: '2px solid black' }}>{car.wbsNum.carNumber}</TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>{car.name}</TableCell>
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
+      <TableCell sx={{ borderBottom: index === cars.length - 1 ? 'none' : 'default' }}>{car.wbsNum.carNumber}</TableCell>
+      <TableCell sx={{ borderBottom: index === cars.length - 1 ? 'none' : 'default' }}>{car.name}</TableCell>
+      <TableCell sx={{ borderBottom: index === cars.length - 1 ? 'none' : 'default' }}>
         {datePipe(car.dateCreated)}
       </TableCell>
     </TableRow>

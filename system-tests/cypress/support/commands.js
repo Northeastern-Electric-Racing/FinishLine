@@ -25,7 +25,7 @@ Cypress.Commands.add('login', (username = 'Thomas Emrax', redirect = '/home') =>
 Cypress.Commands.add('waitForLoading', () => {
   cy.ifElementExists(LOADING_INDICATOR).then((spinner) => {
     if (spinner) {
-      cy.get(LOADING_INDICATOR).should('not.exist');
+      cy.get(LOADING_INDICATOR, { timeout: 10000 }).should('not.exist');
     }
   });
 });

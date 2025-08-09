@@ -284,7 +284,22 @@ const CreditsPage: React.FC = () => {
     },
     { name: 'Maddy Nenninger', color: '#70d489' },
     { name: 'Gauri Rajesh', color: '#94C973' },
-    { name: 'Steph Sayegh', color: '#006400' }
+    { name: 'Steph Sayegh', color: '#006400' },
+    {
+      name: 'Mardan Mahmut',
+      color: 'transparent',
+      sx: {
+        textShadow: '0 0 5px rgba(255, 60, 255, 1), 0 0 10px rgb(25, 169, 202), 0 0 20px rgba(60, 255, 255, 1)',
+        background: 'linear-gradient(90deg, white, pink, red, violet, blue, violet, red, pink, white)',
+        '-webkit-background-clip': 'text',
+        backgroundSize: '400% 400%',
+        animation: 'gradient 10s infinite linear',
+        '@keyframes gradient': {
+          '0%': { backgroundPosition: '400% 200%' },
+          '100%': { backgroundPosition: '0% 200%' }
+        }
+      }
+    }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];

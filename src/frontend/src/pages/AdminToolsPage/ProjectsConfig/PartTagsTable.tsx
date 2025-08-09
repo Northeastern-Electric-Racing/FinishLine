@@ -78,9 +78,9 @@ const PartTagsTable: React.FC = () => {
     );
   };
 
-  const partTagTableRows = partTags.map((partTag) => (
+  const partTagTableRows = partTags.map((partTag, index) => (
     <TableRow>
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
+      <TableCell sx={{ borderBottom: index === partTags.length - 1 ? 'none' : 'default' }}>
         <Box
           sx={{
             display: 'inline-block',
@@ -94,7 +94,7 @@ const PartTagsTable: React.FC = () => {
           {partTag.name}
         </Box>
       </TableCell>
-      <TableCell align="center" sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
+      <TableCell sx={{ borderBottom: index === partTags.length - 1 ? 'none' : 'default' }}>
         <PartTagDeleteButton
           partTagId={partTag.partTagId}
           name={partTag.name}

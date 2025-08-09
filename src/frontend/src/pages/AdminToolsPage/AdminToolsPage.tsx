@@ -19,7 +19,7 @@ import { routes } from '../../utils/routes';
 import { Box } from '@mui/system';
 import AdminToolsRecruitmentConfig from './RecruitmentConfig/AdminToolsRecruitmentConfig';
 import GuestViewConfig from './EditGuestView/GuestViewConfig';
-import AdminToolsWorkspaceId from './AdminToolsSlackWorkspaceId';
+import AdminToolsSlackIds from './AdminToolsSlackIds';
 import AdminToolsOnboardingConfig from './OnboardingConfig/AdminToolsOnboardingConfig';
 
 const AdminToolsPage: React.FC = () => {
@@ -87,7 +87,7 @@ const AdminToolsPage: React.FC = () => {
           <Box pb={2}>
             <AdminToolsSlackUpcomingDeadlines />
           </Box>
-          <AdminToolsWorkspaceId />
+          <AdminToolsSlackIds />
           <AdminToolsAttendeeDesignReviewInfo />
         </Box>
       )}

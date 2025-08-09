@@ -30,6 +30,7 @@ const renderComponent = (modalShow: boolean) => {
         modalShow={modalShow}
         onHide={mockHandleHide}
         onSubmit={mockHandleSubmit}
+        blockingWorkPackages={[]}
       />
     </RouterWrapper>
   );

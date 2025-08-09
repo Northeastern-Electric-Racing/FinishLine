@@ -19,11 +19,13 @@ const TeamsTools = () => {
     return <ErrorPage message={allTeamsError.message} />;
   }
 
-  const teamTableRows = allTeams.map((team) => (
+  const teamTableRows = allTeams.map((team, index) => (
     <TableRow component={RouterLink} to={`${routes.TEAMS}/${team.teamId}`} sx={{ color: 'inherit', textDecoration: 'none' }}>
-      <TableCell sx={{ border: '2px solid black' }}>{team.teamName}</TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>{fullNamePipe(team.head)}</TableCell>
-      <TableCell align="center" sx={{ border: '2px solid black' }}>
+      <TableCell sx={{ borderBottom: index === allTeams.length - 1 ? 'none' : 'default' }}>{team.teamName}</TableCell>
+      <TableCell sx={{ borderBottom: index === allTeams.length - 1 ? 'none' : 'default' }}>
+        {fullNamePipe(team.head)}
+      </TableCell>
+      <TableCell align="center" sx={{ borderBottom: index === allTeams.length - 1 ? 'none' : 'default' }}>
         {team.members.length}
       </TableCell>
     </TableRow>

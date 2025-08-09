@@ -6,12 +6,15 @@
 import { User } from './user-types';
 import { LinkCreateArgs, ProjectProposedChanges, WbsNumber, WorkPackageProposedChanges } from './project-types';
 import { WorkPackageStage } from './work-package-types';
+import { AccountCode, OtherProductReason } from './reimbursement-requests-types';
 
 export interface ChangeRequest {
   crId: string;
   identifier: number;
-  wbsNum: WbsNumber;
-  wbsName: string;
+  wbsNum?: WbsNumber;
+  wbsName?: string;
+  category?: OtherProductReason;
+  accountCode?: AccountCode;
   submitter: User;
   dateSubmitted: Date;
   type: ChangeRequestType;
@@ -30,7 +33,8 @@ export const ChangeRequestType = {
   Redefinition: 'DEFINITION_CHANGE',
   Other: 'OTHER',
   StageGate: 'STAGE_GATE',
-  Activation: 'ACTIVATION'
+  Activation: 'ACTIVATION',
+  Budget: 'BUDGET'
 } as const;
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type ChangeRequestType = (typeof ChangeRequestType)[keyof typeof ChangeRequestType];
@@ -71,6 +75,10 @@ export interface StageGateChangeRequest extends ChangeRequest {
   confirmDone: boolean;
 }
 
+export interface BudgetChangeRequest extends ChangeRequest {
+  proposedBudget: number;
+}
+
 export interface ChangeRequestExplanation {
   type: ChangeRequestReason;
   explain: string;
@@ -100,7 +108,9 @@ export interface ImplementedChange {
   changeId: string;
   changeRequestId: string;
   changeRequestIdentifier: number;
-  wbsNum: WbsNumber;
+  wbsNum?: WbsNumber;
+  category?: OtherProductReason;
+  accountCode?: AccountCode;
   implementer: User;
   detail: string;
   dateImplemented: Date;

@@ -1,13 +1,16 @@
 import { Project, User } from 'shared';
-import { Box, FormControl, FormLabel, Grid, Typography } from '@mui/material';
+import { Box, FormControl, FormLabel, Grid, MenuItem, Select, Typography } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { fullNamePipe } from '../../../utils/pipes';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 import { ProjectFormInput } from './ProjectForm';
-import { Control, FieldErrorsImpl } from 'react-hook-form';
+import { Control, Controller, FieldErrorsImpl } from 'react-hook-form';
 import { AttachMoney } from '@mui/icons-material';
 import TeamDropdown from '../../../components/TeamsDropdown';
 import ChangeRequestDropdown from '../../../components/ChangeRequestDropdown';
+import { useGetAllCars } from '../../../hooks/cars.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
 
 interface ProjectEditDetailsProps {
   users: User[];
@@ -19,7 +22,7 @@ interface ProjectEditDetailsProps {
   setManagerId: (id?: string) => void;
   setLeadId: (id?: string) => void;
   setcrId?: (crId?: number) => void;
-  setCarNumber?: (carNumber?: number) => void;
+  setCarNumber: (carNumber: number) => void;
 }
 
 const userToAutocompleteOption = (user?: User): { label: string; id: string } => {
@@ -35,8 +38,19 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
   managerId,
   leadId,
   setLeadId,
-  setManagerId
+  setManagerId,
+  setCarNumber
 }) => {
+  const { data: cars, isLoading, isError, error } = useGetAllCars();
+
+  if (isLoading || !cars) {
+    return <LoadingIndicator />;
+  }
+
+  if (isError) {
+    return <ErrorPage message={error.message} />;
+  }
+
   return (
     <Box>
       <Typography variant="h5" sx={{ marginBottom: '10px' }}>
@@ -58,13 +72,31 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
           <>
             <Grid item lg={2.4} md={6} xs={12} sx={{ display: 'flex' }}>
               <FormControl fullWidth>
-                <FormLabel>Car Number</FormLabel>
-                <ReactHookTextField
+                <FormLabel>Car</FormLabel>
+                <Controller
                   name="carNumber"
                   control={control}
-                  placeholder="Enter a car number..."
-                  errorMessage={errors.crId}
-                />
+                  defaultValue={cars.length - 1}
+                  render={({ field: { onChange, value } }) => (
+                    <Select
+                      error={!!errors.carNumber}
+                      value={value}
+                      onChange={(e) => {
+                        setCarNumber(e.target.value as number);
+                        onChange(e);
+                      }}
+                    >
+                      {
+                        // reverse to show most recent cars first
+                        cars.toReversed().map((car) => (
+                          <MenuItem key={car.wbsElementId} value={car.wbsNum.carNumber}>
+                            {car.name}
+                          </MenuItem>
+                        ))
+                      }
+                    </Select>
+                  )}
+                ></Controller>
               </FormControl>
             </Grid>
             <Grid item lg={2.4} md={6} xs={12}>
