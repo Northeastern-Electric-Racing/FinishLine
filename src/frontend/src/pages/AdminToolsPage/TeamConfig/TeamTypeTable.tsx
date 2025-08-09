@@ -3,45 +3,45 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { NERButton } from '../../../components/NERButton';
 import AdminToolTable from '../AdminToolTable';
-import CreateDivisionFormModal from './CreateTeamTypeFormModal';
-import { TeamType as Division } from 'shared';
-import EditDivisionFormModal from './EditTeamTypeFormModal';
+import CreateTeamTypeFormModal from './CreateTeamTypeFormModal';
+import { TeamType } from 'shared';
+import EditTeamTypeFormModal from './EditTeamTypeFormModal';
+import { useAllTeamTypes, useSetTeamTypeImage } from '../../../hooks/team-types.hooks';
 import { useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import NERUploadButton from '../../../components/NERUploadButton';
 import { useGetImageUrls } from '../../../hooks/onboarding.hook';
-import { useAllTeamTypes, useSetTeamTypeImage } from '../../../hooks/team-types.hooks';
 
-const DivisionTable: React.FC = () => {
+const TeamTypeTable: React.FC = () => {
   const {
-    data: divisions,
-    isLoading: divisionsIsLoading,
-    isError: divisionsIsError,
-    error: divisionsError
+    data: teamTypes,
+    isLoading: teamTypesIsLoading,
+    isError: teamTypesIsError,
+    error: teamTypesError
   } = useAllTeamTypes();
 
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
-  const [editingDivision, setEditingDivision] = useState<Division | undefined>(undefined);
+  const [editingTeamType, setEditingTeamType] = useState<TeamType | undefined>(undefined);
   const [addedImages, setAddedImages] = useState<{ [key: string]: File | undefined }>({});
   const toast = useToast();
 
-  const DivisionImageList =
-    divisions?.map((Division) => {
-      return { objectId: Division.teamTypeId, imageFileId: Division.imageFileId };
+  const teamTypeImageList =
+    teamTypes?.map((teamType) => {
+      return { objectId: teamType.teamTypeId, imageFileId: teamType.imageFileId };
     }) ?? [];
 
-  const { data: imageUrlsList, isLoading, isError, error } = useGetImageUrls(DivisionImageList);
-  const { mutateAsync: setDivisionImage, isLoading: setDivisionIsLoading } = useSetTeamTypeImage();
+  const { data: imageUrlsList, isLoading, isError, error } = useGetImageUrls(teamTypeImageList);
+  const { mutateAsync: setTeamTypeImage, isLoading: setTeamTypeIsLoading } = useSetTeamTypeImage();
 
-  if (divisionsIsError) {
-    return <ErrorPage message={divisionsError?.message} />;
+  if (teamTypesIsError) {
+    return <ErrorPage message={teamTypesError?.message} />;
   }
 
   if (isError) {
     return <ErrorPage message={error?.message} />;
   }
 
-  if (!divisions || divisionsIsLoading || setDivisionIsLoading || !imageUrlsList || isLoading) {
+  if (!teamTypes || teamTypesIsLoading || setTeamTypeIsLoading || !imageUrlsList || isLoading) {
     return <LoadingIndicator />;
   }
 
@@ -50,13 +50,13 @@ const DivisionTable: React.FC = () => {
     imageUrlsMap[item.id] = item.url;
   });
 
-  const onSubmitDivisionImage = async (DivisionId: string) => {
-    const addedImage = addedImages[DivisionId];
+  const onSubmitTeamTypeImage = async (teamTypeId: string) => {
+    const addedImage = addedImages[teamTypeId];
     if (addedImage) {
       try {
-        await setDivisionImage({ file: addedImage, id: DivisionId });
+        await setTeamTypeImage({ file: addedImage, id: teamTypeId });
         toast.success('Image uploaded successfully!', 5000);
-        setAddedImages((prev) => ({ ...prev, [DivisionId]: undefined }));
+        setAddedImages((prev) => ({ ...prev, [teamTypeId]: undefined }));
       } catch (error) {
         if (error instanceof Error) {
           toast.error('Failed to set team image: ' + error.message);
@@ -69,77 +69,77 @@ const DivisionTable: React.FC = () => {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, DivisionId: string) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, teamTypeId: string) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size < 1000000) {
-        setAddedImages((prev) => ({ ...prev, [DivisionId]: file }));
+        setAddedImages((prev) => ({ ...prev, [teamTypeId]: file }));
       } else {
         toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
       }
     }
   };
 
-  const DivisionsTableRows = divisions.map((division, index) => {
+  const teamTypesTableRows = teamTypes.map((teamType, index) => {
     return (
       <TableRow>
         <TableCell
-          onClick={() => setEditingDivision(division)}
+          onClick={() => setEditingTeamType(teamType)}
           sx={{
             cursor: 'pointer',
-            borderBottom: index === divisions.length - 1 ? 'none' : 'default'
+            borderBottom: index === teamTypes.length - 1 ? 'none' : 'default'
           }}
         >
-          {division.name}
+          {teamType.name}
         </TableCell>
         <TableCell
-          onClick={() => setEditingDivision(division)}
+          onClick={() => setEditingTeamType(teamType)}
           sx={{
             cursor: 'pointer',
             verticalAlign: 'middle',
-            borderBottom: index === divisions.length - 1 ? 'none' : 'default'
+            borderBottom: index === teamTypes.length - 1 ? 'none' : 'default'
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Icon>{division.iconName}</Icon>
+            <Icon>{teamType.iconName}</Icon>
             <Typography variant="body1" sx={{ marginLeft: 1 }}>
-              {division.iconName}
+              {teamType.iconName}
             </Typography>
           </Box>
         </TableCell>
         <TableCell
-          onClick={() => setEditingDivision(division)}
+          onClick={() => setEditingTeamType(teamType)}
           sx={{
             cursor: 'pointer',
             verticalAlign: 'middle',
             maxWidth: '15vw',
-            borderBottom: index === divisions.length - 1 ? 'none' : 'default'
+            borderBottom: index === teamTypes.length - 1 ? 'none' : 'default'
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Typography variant="body1" sx={{ marginLeft: 1 }}>
-              {division.description}
+              {teamType.description}
             </Typography>
           </Box>
         </TableCell>
-        <TableCell sx={{ borderBottom: index === divisions.length - 1 ? 'none' : 'default' }}>
+        <TableCell sx={{ borderBottom: index === teamTypes.length - 1 ? 'none' : 'default' }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', mb: 1 }}>
-            {division.imageFileId && !addedImages[division.teamTypeId] && (
+            {teamType.imageFileId && !addedImages[teamType.teamTypeId] && (
               <Box
                 component="img"
-                src={imageUrlsMap[division.teamTypeId]}
+                src={imageUrlsMap[teamType.teamTypeId]}
                 alt="Image Preview"
                 sx={{ maxWidth: '100px', mt: 1, mb: 1 }}
               />
             )}
             <NERUploadButton
-              dataTypeId={division.teamTypeId}
-              handleFileChange={(e) => handleFileChange(e, division.teamTypeId)}
-              onSubmit={onSubmitDivisionImage}
-              addedImage={addedImages[division.teamTypeId]}
+              dataTypeId={teamType.teamTypeId}
+              handleFileChange={(e) => handleFileChange(e, teamType.teamTypeId)}
+              onSubmit={onSubmitTeamTypeImage}
+              addedImage={addedImages[teamType.teamTypeId]}
               setAddedImage={(newImage) =>
                 setAddedImages((prev) => {
-                  return { ...prev, [division.teamTypeId]: newImage } as { [key: string]: File | undefined };
+                  return { ...prev, [teamType.teamTypeId]: newImage } as { [key: string]: File | undefined };
                 })
               }
             />
@@ -151,17 +151,17 @@ const DivisionTable: React.FC = () => {
 
   return (
     <Box>
-      <CreateDivisionFormModal open={createModalShow} handleClose={() => setCreateModalShow(false)} />
-      {editingDivision && (
-        <EditDivisionFormModal
-          open={!!editingDivision}
-          handleClose={() => setEditingDivision(undefined)}
-          Division={editingDivision}
+      <CreateTeamTypeFormModal open={createModalShow} handleClose={() => setCreateModalShow(false)} />
+      {editingTeamType && (
+        <EditTeamTypeFormModal
+          open={!!editingTeamType}
+          handleClose={() => setEditingTeamType(undefined)}
+          teamType={editingTeamType}
         />
       )}
       <AdminToolTable
         columns={[{ name: 'Team Type Name' }, { name: 'Icon' }, { name: 'Description' }, { name: 'Image' }]}
-        rows={DivisionsTableRows}
+        rows={teamTypesTableRows}
       />
 
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
@@ -178,4 +178,4 @@ const DivisionTable: React.FC = () => {
   );
 };
 
-export default DivisionTable;
+export default TeamTypeTable;

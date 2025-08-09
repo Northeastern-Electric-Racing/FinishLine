@@ -1,20 +1,20 @@
-import DivisionFormModal from './TeamTypeFormModal';
+import TeamTypeFormModal from './TeamTypeFormModal';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useCreateTeamType } from '../../../hooks/team-types.hooks';
 
-interface CreateDivisionFormModalProps {
+interface CreateTeamTypeFormModalProps {
   open: boolean;
   handleClose: () => void;
 }
 
-const CreateDivisionFormModal = ({ open, handleClose }: CreateDivisionFormModalProps) => {
+const CreateTeamTypeFormModal = ({ open, handleClose }: CreateTeamTypeFormModalProps) => {
   const { isLoading, isError, error, mutateAsync } = useCreateTeamType();
 
   if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading) return <LoadingIndicator />;
 
-  return <DivisionFormModal open={open} handleClose={handleClose} onSubmit={mutateAsync} />;
+  return <TeamTypeFormModal open={open} handleClose={handleClose} onSubmit={mutateAsync} />;
 };
 
-export default CreateDivisionFormModal;
+export default CreateTeamTypeFormModal;

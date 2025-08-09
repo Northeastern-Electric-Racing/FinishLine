@@ -1,22 +1,22 @@
-import { TeamType as Division } from 'shared';
+import { TeamType } from 'shared';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import DivisionFormModal from './TeamTypeFormModal';
-import { useEditTeamType as useEditDivision } from '../../../hooks/team-types.hooks';
+import TeamTypeFormModal from './TeamTypeFormModal';
+import { useEditTeamType } from '../../../hooks/team-types.hooks';
 
-interface EditDivisionFormModalProps {
+interface EditTeamTypeFormModalProps {
   open: boolean;
   handleClose: () => void;
-  Division: Division;
+  teamType: TeamType;
 }
 
-const EditDivisionFormModal = ({ open, handleClose, Division }: EditDivisionFormModalProps) => {
-  const { isLoading, isError, error, mutateAsync } = useEditDivision(Division.teamTypeId);
+const EditTeamTypeFormModal = ({ open, handleClose, teamType }: EditTeamTypeFormModalProps) => {
+  const { isLoading, isError, error, mutateAsync } = useEditTeamType(teamType.teamTypeId);
 
   if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading) return <LoadingIndicator />;
 
-  return <DivisionFormModal open={open} handleClose={handleClose} onSubmit={mutateAsync} defaultValues={Division} />;
+  return <TeamTypeFormModal open={open} handleClose={handleClose} onSubmit={mutateAsync} defaultValues={teamType} />;
 };
 
-export default EditDivisionFormModal;
+export default EditTeamTypeFormModal;

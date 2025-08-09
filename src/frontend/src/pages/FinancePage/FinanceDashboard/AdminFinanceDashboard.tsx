@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAllTeamTypes } from '../../../hooks/team-types.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import PageLayout from '../../../components/PageLayout';
@@ -19,7 +20,6 @@ import { DatePicker } from '@mui/x-date-pickers';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import WorkIcon from '@mui/icons-material/Work';
 import { isAdmin } from 'shared';
-import { useAllTeamTypes } from '../../../hooks/team-types.hooks';
 
 interface AdminFinanceDashboardProps {
   startDate?: Date;
@@ -37,10 +37,10 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
   const [endDateState, setEndDateState] = useState<Date | undefined>(endDate);
 
   const {
-    data: allDivisions,
-    isLoading: allDivisionsIsLoading,
-    isError: allDivisionsIsError,
-    error: allDivisionsError
+    data: allTeamTypes,
+    isLoading: allTeamTypesIsLoading,
+    isError: allTeamTypesIsError,
+    error: allTeamTypesError
   } = useAllTeamTypes();
   const {
     data: allReimbursementRequests,
@@ -55,8 +55,8 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
     error: allPendingAdvisorListError
   } = useGetPendingAdvisorList();
 
-  if (allDivisionsIsError) {
-    return <ErrorPage error={allDivisionsError} />;
+  if (allTeamTypesIsError) {
+    return <ErrorPage error={allTeamTypesError} />;
   }
 
   if (allReimbursementRequestsIsError) {
@@ -68,8 +68,8 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
   }
 
   if (
-    !allDivisions ||
-    allDivisionsIsLoading ||
+    !allTeamTypes ||
+    allTeamTypesIsLoading ||
     !allReimbursementRequests ||
     allReimbursementRequestsIsLoading ||
     !allPendingAdvisorList ||
@@ -81,7 +81,7 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
   const tabs = [];
 
   tabs.push({ tabUrlValue: 'all', tabName: 'All' });
-  allDivisions.forEach((team) => {
+  allTeamTypes.forEach((team) => {
     tabs.push({
       tabUrlValue: team.teamTypeId,
       tabName: team.name

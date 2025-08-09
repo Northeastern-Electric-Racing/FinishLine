@@ -8,7 +8,7 @@ import AdminToolTable from '../AdminToolTable';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import CreateTeamForm from './CreateTeamForm';
-import DivisionTable from './TeamTypeTable';
+import TeamTypeTable from './TeamTypeTable';
 
 const TeamsTools = () => {
   const { data: allTeams, isLoading: allTeamsIsLoading, isError: allTeamsIsError, error: allTeamsError } = useAllTeams();
@@ -47,7 +47,7 @@ const TeamsTools = () => {
           />
         </Grid>
         <Grid item xs={12} sx={{ marginTop: '24px', marginBottom: '24px' }}>
-          <DivisionTable />
+          <TeamTypeTable />
         </Grid>
       </Grid>
     </Box>

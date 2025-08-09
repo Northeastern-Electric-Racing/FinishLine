@@ -188,7 +188,4 @@ const CalendarPage = () => {
   );
 };
 
-/**
- * test
- */
 export default CalendarPage;
