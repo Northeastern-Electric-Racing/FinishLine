@@ -1,7 +1,12 @@
 import axios from '../utils/axios';
 import { Organization, ProjectPreview } from 'shared';
 import { apiUrls } from '../utils/urls';
-import { ApplicationLinkPayload, OnboardingTextPayload, UpdateContactsPayload } from '../hooks/organizations.hooks';
+import {
+  ApplicationLinkPayload,
+  OnboardingTextPayload,
+  UpdateContactsPayload,
+  ChannelIdPayload
+} from '../hooks/organizations.hooks';
 
 /**
  * Create a design review
@@ -16,6 +21,18 @@ export const getCurrentOrganization = async () => {
 export const getFeaturedProjects = async () => {
   return axios.get<ProjectPreview[]>(apiUrls.organizationsFeaturedProjects(), {
     transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+export const getPartReviewGuideLink = async () => {
+  return axios.get<string>(apiUrls.organizationsGetPartReviewGuideLink(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+export const setPartReviewGuideLink = async (guideLink: string) => {
+  return axios.post<Organization>(apiUrls.organizationsSetPartReviewGuideLink(), {
+    guideLink
   });
 };
 
@@ -99,6 +116,16 @@ export const setOnboardingText = (payload: OnboardingTextPayload) => {
  */
 export const updateApplicationLink = (payload: ApplicationLinkPayload) => {
   return axios.post(apiUrls.organizationsUpdateApplicationLink(), {
+    ...payload
+  });
+};
+
+/**
+ * Sets the channel id to which to send sponsorship notifications
+ * @param payload contains the channel id
+ */
+export const setSlackSponsorshipNotificationSlackChannelId = (payload: ChannelIdPayload) => {
+  return axios.post(apiUrls.organizationsSetSlackSponsorshipNotificationChannelId(), {
     ...payload
   });
 };

@@ -26,7 +26,7 @@ const DescriptionBulletTypeTable = () => {
   if (!descriptionBulletTypes || descriptionBulletTypeIsLoading) return <LoadingIndicator />;
   if (descriptionBulletTypeIsError) return <ErrorPage message={descriptionBulletTypeError.message} />;
 
-  const descriptionBulletTypeTableRows = descriptionBulletTypes.map((descriptionBulletType) => (
+  const descriptionBulletTypeTableRows = descriptionBulletTypes.map((descriptionBulletType, index) => (
     <TableRow
       onClick={() => {
         setClickeddescriptionBulletType(descriptionBulletType);
@@ -34,13 +34,17 @@ const DescriptionBulletTypeTable = () => {
       }}
       sx={{ cursor: 'pointer' }}
     >
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
+      <TableCell align="left" sx={{ borderBottom: index === descriptionBulletTypes.length - 1 ? 'none' : 'default' }}>
         {descriptionBulletType.name}
       </TableCell>
-      <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
+      <TableCell
+        sx={{ borderBottom: index === descriptionBulletTypes.length - 1 ? 'none' : 'default', verticalAlign: 'middle' }}
+      >
         {descriptionBulletType.workPackageRequired ? 'Yes' : 'No'}
       </TableCell>
-      <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
+      <TableCell
+        sx={{ borderBottom: index === descriptionBulletTypes.length - 1 ? 'none' : 'default', verticalAlign: 'middle' }}
+      >
         {descriptionBulletType.projectRequired ? 'Yes' : 'No'}
       </TableCell>
     </TableRow>

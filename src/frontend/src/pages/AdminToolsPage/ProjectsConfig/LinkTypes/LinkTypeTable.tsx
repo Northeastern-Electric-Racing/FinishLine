@@ -25,7 +25,7 @@ const LinkTypeTable = () => {
   if (!linkTypes || linkTypeIsLoading) return <LoadingIndicator />;
   if (linkTypeIsError) return <ErrorPage message={linkTypeError.message} />;
 
-  const linkTypeTableRows = linkTypes.map((linkType) => (
+  const linkTypeTableRows = linkTypes.map((linkType, index) => (
     <TableRow
       onClick={() => {
         setClickedLinkType(linkType);
@@ -33,10 +33,10 @@ const LinkTypeTable = () => {
       }}
       sx={{ cursor: 'pointer' }}
     >
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
+      <TableCell align="left" sx={{ borderBottom: index === linkTypes.length - 1 ? 'none' : 'default' }}>
         {linkType.name}
       </TableCell>
-      <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
+      <TableCell sx={{ borderBottom: index === linkTypes.length - 1 ? 'none' : 'default', verticalAlign: 'middle' }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Icon>{linkType.iconName}</Icon>
           <Typography variant="body1" sx={{ marginLeft: 1 }}>
@@ -44,7 +44,9 @@ const LinkTypeTable = () => {
           </Typography>
         </Box>
       </TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>{linkType.required ? 'Yes' : 'No'}</TableCell>
+      <TableCell sx={{ borderBottom: index === linkTypes.length - 1 ? 'none' : 'default' }}>
+        {linkType.required ? 'Yes' : 'No'}
+      </TableCell>
     </TableRow>
   ));
 

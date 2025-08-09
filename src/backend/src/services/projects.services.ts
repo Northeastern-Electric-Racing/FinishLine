@@ -80,12 +80,16 @@ export default class ProjectsService {
           some: {
             OR: [
               {
-                headId: user.userId,
+                headId: user.userId
+              },
+              {
                 leads: {
                   some: {
                     userId: user.userId
                   }
-                },
+                }
+              },
+              {
                 members: {
                   some: {
                     userId: user.userId
@@ -100,6 +104,25 @@ export default class ProjectsService {
     });
 
     return projects.map(projectPreviewTransformer);
+  }
+
+  static async getTeamsProjects(organization: Organization, teamId: string): Promise<Project[]> {
+    const projects = await prisma.project.findMany({
+      where: {
+        wbsElement: {
+          organizationId: organization.organizationId,
+          dateDeleted: null
+        },
+        teams: {
+          some: {
+            teamId
+          }
+        }
+      },
+      ...getProjectQueryArgs(organization.organizationId)
+    });
+
+    return projects.map(projectTransformer);
   }
 
   /**
@@ -594,5 +617,56 @@ export default class ProjectsService {
       ...getLinkTypeQueryArgs(organization.organizationId)
     });
     return linkTypeTransformer(linkTypeUpdated);
+  }
+  /**
+   * Sets an abbreviation for this project
+   * @param wbsNum the project
+   * @param user the user making the change
+   * @param organization the organization
+   * @param abbreviation the new abbreviation
+   * @returns the updated project
+   */
+  static async setAbbreviation(wbsNum: WbsNumber, user: User, organization: Organization, abbreviation: string) {
+    const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNum, organization);
+
+    if (!project) throw new NotFoundException('Project', wbsPipe(wbsNum));
+
+    if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('set abbreviation');
+    }
+
+    const updatedProject = await prisma.project.update({
+      where: { projectId: project.projectId },
+      data: {
+        abbreviation
+      },
+      ...getProjectQueryArgs(organization.organizationId)
+    });
+
+    return projectTransformer(updatedProject);
+  }
+
+  /**
+   * Removes the abbreviation from a given project
+   * @param wbsNum the project
+   * @param user the user making the change
+   * @param organization the organization
+   * @returns the updated project
+   */
+  static async deleteAbbreviation(wbsNum: WbsNumber, user: User, organization: Organization) {
+    const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNum, organization);
+
+    if (!project) throw new NotFoundException('Project', wbsPipe(wbsNum));
+
+    if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('delete abbreviation');
+    }
+
+    await prisma.project.update({
+      where: { projectId: project.projectId },
+      data: {
+        abbreviation: null
+      }
+    });
   }
 }

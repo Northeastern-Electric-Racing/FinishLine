@@ -12,6 +12,6 @@
     "files": true
   },
   "exclude": ["node_modules", "dist"],
-  "include": ["./src/backend/index.ts", "./src/backend/src/**/*.ts"],
+  "include": ["./index.ts", "./src/**/*.ts"],
   "files": ["./custom.d.ts"]
 }

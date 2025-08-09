@@ -40,7 +40,7 @@ export default class DescriptionBulletsService {
     if (wbsElement.status !== WBS_Element_Status.ACTIVE)
       throw new HttpException(400, 'Cannot check a description bullet on an inactive work package!');
 
-    const hasPerms = await hasBulletCheckingPermissions(user.userId, descriptionId, organization.organizationId);
+    const hasPerms = await hasBulletCheckingPermissions(user, descriptionId, organization.organizationId);
 
     if (!hasPerms) throw new AccessDeniedException('You do not have permission to check this description bullet!');
 

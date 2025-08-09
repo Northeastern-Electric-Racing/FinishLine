@@ -10,14 +10,33 @@ import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data
 import ProjectViewContainer from '../../../pages/ProjectDetailPage/ProjectViewContainer/ProjectViewContainer';
 import { WorkPackageStage } from 'shared/src/types/work-package-types';
 import * as userHooks from '../../../hooks/users.hooks';
+import * as financeHooks from '../../../hooks/finance.hooks';
 import * as authHooks from '../../../hooks/auth.hooks';
 import * as wpHooks from '../../../hooks/work-packages.hooks';
 import * as bomHooks from '../../../hooks/bom.hooks';
-import { mockManyMaterials, mockManyWorkPackages, mockUseUsersFavoriteProjects } from '../../test-support/mock-hooks';
+import {
+  mockManyMaterials,
+  mockManyWorkPackages,
+  mockUseGetReimbursementRequestProjectData,
+  mockUseUsersFavoriteProjects
+} from '../../test-support/mock-hooks';
 import { exampleAllWorkPackages } from '../../test-support/test-data/work-packages.stub';
+import { exampleRRData } from '../../test-support/test-data/finance.stubs';
 
 vi.mock('../../../utils/axios');
 vi.mock('../../../hooks/toasts.hooks');
+vi.mock('react-pdf', () => {
+  return {
+    __esModule: true,
+    Document: () => <div>Document Mock</div>,
+    Page: () => <div>Page Mock</div>,
+    pdfjs: {
+      GlobalWorkerOptions: {
+        workerSrc: ''
+      }
+    }
+  };
+});
 
 // Sets up the component under test with the desired values and renders it.
 const renderComponent = () => {
@@ -31,15 +50,24 @@ const renderComponent = () => {
 
 describe('Rendering Project View Container', () => {
   beforeEach(() => {
+    global.ResizeObserver = vi.fn().mockImplementation(() => ({
+      observe: vi.fn(),
+      unobserve: vi.fn(),
+      disconnect: vi.fn()
+    }));
     vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
     vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
     vi.spyOn(userHooks, 'useUsersFavoriteProjects').mockReturnValue(mockUseUsersFavoriteProjects());
     vi.spyOn(wpHooks, 'useGetManyWorkPackages').mockReturnValue(mockManyWorkPackages(exampleAllWorkPackages));
     vi.spyOn(bomHooks, 'useGetMaterialsForWbsElement').mockReturnValue(mockManyMaterials([]));
+    vi.spyOn(financeHooks, 'useGetReimbursementRequestProjectData').mockReturnValue(
+      mockUseGetReimbursementRequestProjectData(exampleRRData)
+    );
   });
 
-  it('renders the provided project', () => {
+  it('renders the provided project', async () => {
     renderComponent();
+    await screen.findAllByText('1.1.0 - Impact Attenuator');
     expect(screen.getAllByText('1.1.0 - Impact Attenuator').length).toEqual(2);
     expect(screen.getByText('Details')).toBeInTheDocument();
     expect(screen.getByText('Work Packages')).toBeInTheDocument();

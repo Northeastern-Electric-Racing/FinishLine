@@ -8,18 +8,43 @@ import {
   EditVendorPayload,
   AccountCodePayload,
   RefundPayload,
-  MarkDeliveredRequestPayload
+  MarkDeliveredRequestPayload,
+  SponsorPayload,
+  SponsorTierPayload,
+  SponsorTaskPayload,
+  ReimbursementRequestCommentPayload,
+  ReimbursementRequestTeamDataPayload,
+  ReimbursementRequestTeamTypeDataPayload,
+  SpendingBarTeamDataPayload,
+  SpendingBarTeamTypeDataPayload,
+  ReimbursementRequestProjectDataPayload,
+  ReimbursementRequestDataPayload,
+  SpendingBarDataPayload,
+  ReimbursementRequestCategoryDataPayload,
+  OtherProductReasonPayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import {
+  reimbursementRequestDataTransformer,
   reimbursementRequestTransformer,
   reimbursementTransformer,
+  spendingBarDataTransformer,
   vendorTransformer
 } from './transformers/reimbursement-requests.transformer';
 import { saveAs } from 'file-saver';
 import { PDFDocument, PDFImage } from 'pdf-lib';
-import { AccountCode, ReimbursementRequest } from 'shared';
+import {
+  IndexCode,
+  AccountCode,
+  ReimbursementRequest,
+  OtherProductReason,
+  Sponsor,
+  SponsorTask,
+  ReimbursementRequestData,
+  SpendingBarData,
+  SponsorTier
+} from 'shared';
 
 enum AllowedFileType {
   JPEG = 'image/jpeg',
@@ -86,7 +111,7 @@ export const editReimbursementRequest = (id: string, formData: EditReimbursement
  * @returns the deleted reimbursement request
  */
 export const deleteReimbursementRequest = (id: string) => {
-  return axios.delete(apiUrls.financeDeleteReimbursement(id));
+  return axios.post(apiUrls.financeDeleteReimbursement(id));
 };
 
 /**
@@ -130,6 +155,15 @@ export const getSingleReimbursementRequest = (id: string) => {
  */
 export const getCurrentUserReimbursementRequests = () => {
   return axios.get(apiUrls.financeGetUserReimbursementRequest(), {
+    transformResponse: (data) => JSON.parse(data).map(reimbursementRequestTransformer)
+  });
+};
+
+/**
+ * Get the reimbursement requests for the current user's teams
+ */
+export const getCurrentUsersTeamsReimbursementRequests = () => {
+  return axios.get(apiUrls.financeGetUsersTeamsReimbursementRequests(), {
     transformResponse: (data) => JSON.parse(data).map(reimbursementRequestTransformer)
   });
 };
@@ -336,6 +370,17 @@ export const editAccountCode = async (id: string, accountCodeData: AccountCodePa
 };
 
 /**
+ * API call to delete a given expense type
+ *
+ * @param expenseId the id of the expense type to delete
+ *
+ * @returns the deleted expense type
+ */
+export const deleteAccountCode = async (id: string) => {
+  return axios.post(apiUrls.financeDeleteAccountCode(id));
+};
+
+/**
  * Creates an expense type in the database
  * @param accountCodeData the data for the expense type
  * @returns the new expense type
@@ -349,7 +394,7 @@ export const createAccountCode = async (accountCodeData: AccountCodePayload) => 
  * @param vendorData the data for the vendor
  * @returns the new vendor
  */
-export const createVendor = async (vendorData: { name: string }) => {
+export const createVendor = async (vendorData: EditVendorPayload) => {
   return axios.post(apiUrls.financeCreateVendor(), vendorData);
 };
 
@@ -361,6 +406,18 @@ export const createVendor = async (vendorData: { name: string }) => {
  */
 export const editVendor = async (id: string, vendorData: EditVendorPayload) => {
   return axios.post(apiUrls.financeEditVendor(id), vendorData);
+};
+
+/**
+ * API call to delete a given vendor
+ *
+ * @param vendorId the id of the vendor to delete
+ *
+ * @returns the deleted vendor
+ */
+
+export const deleteVendor = (vendorId: string) => {
+  return axios.post(apiUrls.financeDeleteVendor(vendorId));
 };
 
 /**
@@ -381,4 +438,242 @@ export const markPendingFinance = async (id: string) => {
  */
 export const requestReimbursementRequestChanges = async (id: string) => {
   return axios.post(apiUrls.financeRequestChanges(id));
+};
+
+/**
+ * Creates a sponsor in the database
+ *
+ * @param sponsorData the data for the sponsor
+ * @returns the new sponsor
+ */
+export const createSponsor = async (sponsorData: SponsorPayload) => {
+  return axios.post(apiUrls.financeCreateSponsor(), sponsorData);
+};
+
+/**
+ * Creates a sponsor tier in the database
+ *
+ * @param sponsorTierData the data for the sponsor tier
+ * @returns the new sponsor tier
+ */
+export const createSponsorTier = async (sponsorTierData: SponsorTierPayload) => {
+  return axios.post(apiUrls.financeCreateSponsorTier(), sponsorTierData);
+};
+
+/**
+ * Creates a sponsor task in the database
+ *
+ * @param id The id of the sponsor
+ * @param sponsorTaskData the data for sponsor task
+ * @returns the new sponsor task
+ */
+export const createSponsorTask = async (sponsorId: string, sponsorTaskData: SponsorTaskPayload) => {
+  return axios.post(apiUrls.financeCreateSponsorTask(sponsorId), sponsorTaskData);
+};
+
+/**
+ * Creates a reimbursement request comment in the database
+ *
+ * @param commentData the data for the comment
+ * @param id the reimbursment request id
+ * @returns the new comment
+ */
+export const createReimbursementRequestComment = async (id: string, commentData: ReimbursementRequestCommentPayload) => {
+  return axios.post(apiUrls.financeCreateReimbursementRequestComment(id), commentData);
+};
+
+/**
+ * API call to get the list of all IndexCodes
+ *
+ * @returns The list of IndexCodes
+ */
+export const getAllIndexCodes = () => {
+  return axios.get<IndexCode[]>(apiUrls.getAllIndexCodes(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
+ * API call to get the list of all Other Product Reason
+ *
+ * @returns The list of OtherProductReasons
+ */
+export const getAllOtherProductReason = () => {
+  return axios.get<OtherProductReason[]>(apiUrls.getAllOtherProductReasons(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
+ * API call to create an Other Product Reason
+ *
+ * @param otherProductReasonData the data for the other product reason
+ * @returns the new other product reason
+ */
+export const createOtherProductReason = async (otherProductReasonData: OtherProductReasonPayload) => {
+  return axios.post(apiUrls.financeCreateOtherProductReason(), otherProductReasonData);
+};
+
+/**
+ * Edits a reimbursement request in the database
+ * @param id the id of the other reimbursement product reason
+ * @param otherProductReasonData the data expected from the form
+ * @returns the updated other reimbursement product reason
+ */
+export const editOtherProductReason = (id: string, otherProductReasonData: OtherProductReasonPayload) => {
+  return axios.post(apiUrls.financeEditOtherReimbursementProductReason(id), otherProductReasonData);
+};
+
+/**
+ * API call to delete a given other reimbursement product reason
+ *
+ * @param otherReasonId the id of the other reason to delete
+ *
+ * @returns the deleted other reason
+ */
+export const deleteOtherProductReason = async (id: string) => {
+  return axios.post(apiUrls.financeDeleteOtherProductReason(id));
+};
+
+/**
+ * API call to get the list of all sponsors
+ *
+ * @returns the list of all sponsors
+ */
+
+export const getAllSponsors = () => {
+  return axios.get<Sponsor[]>(apiUrls.getAllSponsors(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
+ * API call to the sponsor tasks for a given sponsor
+ *
+ * @param sponsorId the id of the sponsor which tasks are retrieved
+ *
+ * @returns the list of tasks for a given sponsor
+ */
+
+export const getSponsorTasks = (sponsorId: string) => {
+  return axios.get<SponsorTask[]>(apiUrls.getSponsorTasks(sponsorId), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
+ * API call to delete a given sponsor
+ *
+ * @param sponsorId the id of the sponsor to delete
+ *
+ * @returns the deleted sponsor
+ */
+
+export const deleteSponsor = (sponsorId: string) => {
+  return axios.post(apiUrls.deleteSponsor(sponsorId));
+};
+
+/**
+ * API call to edit a sponsor task
+ *
+ * @param sponsorTaskData the edited data of the sponsor task
+ * @param sponsorTaskId the id of the sponsor task to be edited
+ *
+ * @returns the edited sponosor task
+ */
+export const editSponsorTask = (sponsorTaskId: string, sponsorTaskData: SponsorTaskPayload) => {
+  return axios.post(apiUrls.editSponsorTask(sponsorTaskId), sponsorTaskData);
+};
+
+export const getReimbursementRequestProjectData = (payload: ReimbursementRequestProjectDataPayload) => {
+  return axios.get<ReimbursementRequestData>(
+    apiUrls.getReimbursementRequestProjectData(payload.projectId, payload.startDate, payload.endDate),
+    {
+      transformResponse: (data) => reimbursementRequestDataTransformer(JSON.parse(data))
+    }
+  );
+};
+
+export const getReimbursementRequestTeamData = (payload: ReimbursementRequestTeamDataPayload) => {
+  return axios.get<ReimbursementRequestData>(
+    apiUrls.getReimbursementRequestTeamData(payload.teamId, payload.startDate, payload.endDate),
+    {
+      transformResponse: (data) => reimbursementRequestDataTransformer(JSON.parse(data))
+    }
+  );
+};
+
+export const getReimbursementRequestCategoryData = (payload: ReimbursementRequestCategoryDataPayload) => {
+  return axios.get<ReimbursementRequestData>(
+    apiUrls.getReimbursementRequestCategoryData(payload.otherReasonId, payload.startDate, payload.endDate),
+    {
+      transformResponse: (data) => reimbursementRequestDataTransformer(JSON.parse(data))
+    }
+  );
+};
+
+export const getAllReimbursementRequestData = (payload: ReimbursementRequestDataPayload) => {
+  return axios.get<ReimbursementRequestData[]>(apiUrls.getAllReimbursementRequestData(payload.startDate, payload.endDate), {
+    transformResponse: (data) => JSON.parse(data).map(reimbursementRequestDataTransformer)
+  });
+};
+
+export const getReimbursementRequestTeamTypeData = (payload: ReimbursementRequestTeamTypeDataPayload) => {
+  return axios.get<ReimbursementRequestData>(
+    apiUrls.getReimbursementRequestTeamTypeData(payload.teamTypeId, payload.startDate, payload.endDate),
+    {
+      transformResponse: (data) => reimbursementRequestDataTransformer(JSON.parse(data))
+    }
+  );
+};
+
+export const getSpendingBarTeamData = (payload: SpendingBarTeamDataPayload) => {
+  return axios.get<SpendingBarData>(apiUrls.getSpendingBarTeamData(payload.teamId, payload.startDate, payload.endDate), {
+    transformResponse: (data) => spendingBarDataTransformer(JSON.parse(data))
+  });
+};
+
+export const getSpendingBarTeamTypeData = (payload: SpendingBarTeamTypeDataPayload) => {
+  return axios.get<SpendingBarData[]>(
+    apiUrls.getSpendingBarTeamTypeData(payload.teamTypeId, payload.startDate, payload.endDate),
+    {
+      transformResponse: (data) => JSON.parse(data).map(spendingBarDataTransformer)
+    }
+  );
+};
+
+export const getSpendingBarCategoryData = (payload: SpendingBarDataPayload) => {
+  return axios.get<SpendingBarData>(apiUrls.getSpendingBarCategoryData(payload.startDate, payload.endDate), {
+    transformResponse: (data) => spendingBarDataTransformer(JSON.parse(data))
+  });
+};
+
+export const getAllSpendingBarData = (payload: SpendingBarDataPayload) => {
+  return axios.get<SpendingBarData[]>(apiUrls.getAllSpendingBarData(payload.startDate, payload.endDate), {
+    transformResponse: (data) => JSON.parse(data).map(spendingBarDataTransformer)
+  });
+};
+
+export const getAllSponsorTiers = () => {
+  return axios.get(apiUrls.getAllSponsorTiers(), {
+    transformResponse: (data) => {
+      return JSON.parse(data) as SponsorTier[];
+    }
+  });
+};
+
+export const editSponsor = (id: string, formData: SponsorPayload) => {
+  return axios.post(apiUrls.editSponsor(id), formData);
+};
+
+/**
+ * API call to delete a given sponsor task
+ *
+ * @param sponsorTaskId the id of the sponsor task to delete
+ *
+ * @returns the deleted sponsor task
+ */
+
+export const deleteSponsorTask = (sponsorTaskId: string) => {
+  return axios.post(apiUrls.deleteSponsorTask(sponsorTaskId));
 };

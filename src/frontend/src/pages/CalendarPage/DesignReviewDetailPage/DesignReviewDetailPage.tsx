@@ -3,7 +3,6 @@ import {
   Box,
   Checkbox,
   Grid,
-  IconButton,
   MenuItem,
   Select,
   SelectChangeEvent,
@@ -13,7 +12,7 @@ import {
 } from '@mui/material';
 import PageLayout from '../../../components/PageLayout';
 import AvailabilityView from './AvailabilityView';
-import { useAllUsers, useCurrentUser } from '../../../hooks/users.hooks';
+import { useAllUsers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { userToAutocompleteOption } from '../../../utils/teams.utils';
@@ -21,20 +20,13 @@ import { useState } from 'react';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import { DatePicker } from '@mui/x-date-pickers';
-import { DesignReview, DesignReviewStatus, isAdmin } from 'shared';
-import {
-  EditDesignReviewPayload,
-  useAllDesignReviews,
-  useDeleteDesignReview,
-  useEditDesignReview
-} from '../../../hooks/design-reviews.hooks';
+import { DesignReview, DesignReviewStatus } from 'shared';
+import { EditDesignReviewPayload, useAllDesignReviews, useEditDesignReview } from '../../../hooks/design-reviews.hooks';
 import { designReviewNamePipe, meetingStartTimePipe } from '../../../utils/pipes';
 import { HOURS } from '../../../utils/design-review.utils';
 import { useHistory } from 'react-router-dom';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { routes } from '../../../utils/routes';
-import NERModal from '../../../components/NERModal';
-import DeleteIcon from '@mui/icons-material/Delete';
 
 export interface DesignReviewEditData {
   requiredUserIds: string[];
@@ -61,7 +53,6 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
   const [date, setDate] = useState(
     new Date(designReview.dateScheduled.getTime() - designReview.dateScheduled.getTimezoneOffset() * -60000)
   );
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [startTime, setStateTime] = useState(designReview.meetingTimes[0] % 12);
   const [endTime, setEndTime] = useState((designReview.meetingTimes[designReview.meetingTimes.length - 1] % 12) + 1);
   const { mutateAsync: editDesignReview } = useEditDesignReview(designReview.designReviewId);
@@ -73,10 +64,8 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
     error: allDesignReviewsError,
     isLoading: allDesignReviewsIsLoading
   } = useAllDesignReviews();
-  const { mutateAsync: deleteDesignReview } = useDeleteDesignReview(designReview.designReviewId);
   const history = useHistory();
   const toast = useToast();
-  const user = useCurrentUser();
 
   if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
   if (allDesignReviewsIsError) return <ErrorPage message={allDesignReviewsError?.message} />;
@@ -89,17 +78,6 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
       const updatedDateTime = new Date();
       updatedDateTime.setFullYear(newDate.getFullYear(), newDate.getMonth(), newDate.getDate());
       setDate(updatedDateTime);
-    }
-  };
-
-  const handleDelete = async () => {
-    try {
-      await deleteDesignReview();
-      history.push(routes.CALENDAR);
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        toast.error(e.message, 3000);
-      }
     }
   };
 
@@ -141,21 +119,6 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
     }
   };
 
-  const DeleteModal = () => {
-    return (
-      <NERModal
-        open={showDeleteModal}
-        onHide={() => setShowDeleteModal(false)}
-        title="Warning!"
-        cancelText="No"
-        submitText="Yes"
-        onSubmit={handleDelete}
-      >
-        <Typography>Are you sure you want to delete this design review?</Typography>
-      </NERModal>
-    );
-  };
-
   const DateField = () => {
     return <DatePicker value={date} onChange={handleDateChange} sx={EditableFieldStyle} />;
   };
@@ -183,20 +146,8 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
     border: 'none'
   };
 
-  const hasDeletePerms = user.userId === designReview.userCreated.userId || isAdmin(user.role);
-
   return (
-    <PageLayout
-      title="Scheduling"
-      headerRight={
-        hasDeletePerms && (
-          <IconButton onClick={() => setShowDeleteModal(true)}>
-            <DeleteIcon />
-          </IconButton>
-        )
-      }
-    >
-      <DeleteModal />
+    <PageLayout title="Scheduling">
       <Grid container spacing={3} display={'flex'} paddingBottom={2}>
         <Grid item xs={1}>
           <Box sx={NonEditableFieldStyle}>Name</Box>

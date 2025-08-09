@@ -14,6 +14,7 @@ const projectRouter = express.Router();
 projectRouter.get('/all/:deleted', ProjectsController.getAllProjects);
 projectRouter.get('/users-teams', ProjectsController.getUsersTeamsProjects);
 projectRouter.get('/leading', ProjectsController.getUsersLeadingProjects);
+projectRouter.get('/teams-projects/:teamId', ProjectsController.getTeamsProjects);
 
 /* Link Types */
 projectRouter.get('/link-types', ProjectsController.getAllLinkTypes);
@@ -110,5 +111,13 @@ projectRouter.get('/bom/units', ProjectsController.getAllUnits);
 projectRouter.delete('/bom/units/:unitId/delete', ProjectsController.deleteUnit);
 projectRouter.get('/bom/:wbsNum/assemblies', ProjectsController.getAssembliesForWbsElement);
 projectRouter.get('/bom/:wbsNum/materials', ProjectsController.getMaterialsForWbsElement);
+projectRouter.post(
+  '/set-abbreviation',
+  nonEmptyString(body('wbsNum')),
+  nonEmptyString(body('abbreviation')),
+  validateInputs,
+  ProjectsController.setAbbreviation
+);
+projectRouter.post('/:wbsNum/delete-abbreviation', ProjectsController.deleteAbbreviation);
 
 export default projectRouter;

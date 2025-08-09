@@ -2,6 +2,8 @@ import { Prisma } from '@prisma/client';
 import { getScopeChangeRequestQueryArgs } from './scope-change-requests.query-args';
 import { getUserQueryArgs } from './user.query-args';
 import { getWorkPackageQueryArgs } from './work-packages.query-args';
+import { getReimbursementProductOtherReasonQueryArgs } from './reimbursement-product-other-reason.query-args';
+import { getAccountCodeQueryArgs } from './account-code.query-args';
 
 export type ChangeRequestQueryArgs = ReturnType<typeof getChangeRequestQueryArgs>;
 
@@ -16,6 +18,8 @@ export const getChangeRequestQueryArgs = (organizationId: string) =>
     include: {
       submitter: getUserQueryArgs(organizationId),
       wbsElement: true,
+      category: getReimbursementProductOtherReasonQueryArgs(organizationId),
+      accountCode: getAccountCodeQueryArgs(organizationId),
       reviewer: getUserQueryArgs(organizationId),
       changes: {
         where: {
@@ -33,6 +37,7 @@ export const getChangeRequestQueryArgs = (organizationId: string) =>
       activationChangeRequest: {
         include: { lead: getUserQueryArgs(organizationId), manager: getUserQueryArgs(organizationId) }
       },
+      budgetChangeRequest: true,
       deletedBy: getUserQueryArgs(organizationId),
       requestedReviewers: getUserQueryArgs(organizationId)
     }
@@ -43,12 +48,15 @@ export const getManyChangeRequestQueryArgs = (organizationId: string) =>
     include: {
       submitter: getUserQueryArgs(organizationId),
       wbsElement: true,
+      category: getReimbursementProductOtherReasonQueryArgs(organizationId),
+      accountCode: getAccountCodeQueryArgs(organizationId),
       reviewer: getUserQueryArgs(organizationId),
       stageGateChangeRequest: true,
       changes: true,
       activationChangeRequest: {
         include: { lead: getUserQueryArgs(organizationId), manager: getUserQueryArgs(organizationId) }
       },
+      budgetChangeRequest: true,
       deletedBy: getUserQueryArgs(organizationId),
       requestedReviewers: getUserQueryArgs(organizationId)
     }
@@ -70,6 +78,8 @@ export const getChangeRequestWithProjectAndWorkPackageQueryArgs = (organizationI
           links: { where: { dateDeleted: null } }
         }
       },
+      category: getReimbursementProductOtherReasonQueryArgs(organizationId),
+      accountCode: getAccountCodeQueryArgs(organizationId),
       reviewer: getUserQueryArgs(organizationId),
       changes: {
         where: {
@@ -79,7 +89,9 @@ export const getChangeRequestWithProjectAndWorkPackageQueryArgs = (organizationI
         },
         include: {
           implementer: getUserQueryArgs(organizationId),
-          wbsElement: true
+          wbsElement: true,
+          category: getReimbursementProductOtherReasonQueryArgs(organizationId),
+          accountCode: getAccountCodeQueryArgs(organizationId)
         }
       },
       scopeChangeRequest: getScopeChangeRequestQueryArgs(organizationId),
@@ -87,6 +99,7 @@ export const getChangeRequestWithProjectAndWorkPackageQueryArgs = (organizationI
       activationChangeRequest: {
         include: { lead: getUserQueryArgs(organizationId), manager: getUserQueryArgs(organizationId) }
       },
+      budgetChangeRequest: true,
       deletedBy: getUserQueryArgs(organizationId),
       requestedReviewers: getUserQueryArgs(organizationId)
     }

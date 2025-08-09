@@ -92,7 +92,7 @@ export const createChangeRequest = ({
     cy.contains(argument.timelineImpact + ' weeks');
   });
 
-  const crId = 21; // Get this value from the UI. Could not figure out the CRID for some reason
+  const crId = 22; // Get this value from the UI. Could not figure out the CRID for some reason
 
   cy.contains(ACTIONS_BUTTON).click();
   cy.contains(ACTIONS_BUTTON_DELETE).click();

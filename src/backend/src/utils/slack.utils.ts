@@ -1,5 +1,14 @@
-import { ChangeRequest, daysBetween, Task, UserPreview, wbsPipe, calculateEndDate, meetingStartTimePipe } from 'shared';
-import { User } from '@prisma/client';
+import {
+  ChangeRequest,
+  daysBetween,
+  Task,
+  UserPreview,
+  wbsPipe,
+  calculateEndDate,
+  meetingStartTimePipe,
+  CreateSponsorTask
+} from 'shared';
+import { Account_Code, Reimbursement_Product_Other_Reason, Sponsor_Task, User } from '@prisma/client';
 import {
   editMessage,
   getChannelName,
@@ -175,7 +184,7 @@ export const sendReimbursementRequestDeniedNotification = async (slackId: string
   }
 };
 
-const sendThreadResponse = async (threads: SlackMessageThread[], message: string) => {
+export const sendThreadResponse = async (threads: SlackMessageThread[], message: string) => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
   try {
     if (threads && threads.length !== 0) {
@@ -260,17 +269,22 @@ export const sendAndGetSlackCRNotifications = async (
   teams: Team[],
   changeRequest: Change_Request,
   submitter: User,
-  wbsElement: WBS_Element,
-  projectWbsName: string
+  wbsElement?: WBS_Element,
+  projectWbsName?: string,
+  category?: Reimbursement_Product_Other_Reason,
+  accoundCode?: Account_Code
 ) => {
   const notifications: { channelId: string; ts: string }[] = [];
   let message = '';
   switch (changeRequest.type) {
     case 'ACTIVATION':
-      message = `${submitter.firstName} ${submitter.lastName} is activating ${wbsElement.name} in ${projectWbsName}`;
+      message = `${submitter.firstName} ${submitter.lastName} is activating ${wbsElement?.name} in ${projectWbsName}`;
       break;
     case 'STAGE_GATE':
-      message = `${submitter.firstName} ${submitter.lastName} is stage gating ${wbsElement.name} in ${projectWbsName}`;
+      message = `${submitter.firstName} ${submitter.lastName} is stage gating ${wbsElement?.name} in ${projectWbsName}`;
+      break;
+    case 'BUDGET':
+      message = `${submitter.firstName} ${submitter.lastName} wants to change the budget of ${category ? category.name : accoundCode?.name}`;
       break;
     default:
       message = `${changeRequest.type} CR submitted by ${submitter.firstName} ${submitter.lastName} for the ${projectWbsName} project`;
@@ -414,13 +428,14 @@ export const sendSlackCRReviewedNotification = async (
   comments: string | null
 ) => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
-  const msgs = [];
+  const msgs: { channelId: string; ts: string }[] = [];
   const fullMsg = `:tada: Your Change Request was just reviewed!${
     comments ? `\n Comments: ${comments}` : ''
   }\nClick the link to view! :tada:`;
   const fullLink = `https://finishlinebyner.com/cr/${crId}`;
   const btnText = `View CR#${identifier}`;
-  msgs.push(sendMessage(slackId, fullMsg, fullLink, btnText));
+  const notification = await sendMessage(slackId, fullMsg, fullLink, btnText);
+  if (notification) msgs.push(notification);
 
   return Promise.all(msgs);
 };
@@ -576,4 +591,52 @@ export const getUserIdFromSlackId = async (slackId: string): Promise<string | un
   if (!user) return undefined;
 
   return user.userId;
+};
+
+export const sendSlackPartReviewRequestNotif = async (
+  slackId: string,
+  projectName: string,
+  partName: string,
+  partLink: string
+) => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+
+  const msg = `Your review has been requested on part: ${partName} for project: ${projectName}`;
+  const link = `https://finishlinebyner.com${partLink}`;
+  const linkButtonText = 'View Part';
+  await sendMessage(slackId, msg, link, linkButtonText);
+};
+
+export const sendSlackPartAssignmentNotif = async (
+  slackId: string,
+  projectName: string,
+  partName: string,
+  partLink: string
+) => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+
+  const msg = `You have been assigned to part: ${partName} on project: ${projectName}`;
+  const link = `https://finishlinebyner.com${partLink}`;
+  const linkButtonText = 'View Part';
+  await sendMessage(slackId, msg, link, linkButtonText);
+};
+
+/**
+ * Sends a notification to the assignee of a sponsor task
+ * @param assignee the user to notify
+ * @param sponsorTask the sponsor task to notify about
+ * @param sponsor the name of the sponsor
+ */
+export const notifySponsorTaskAssignee = async (
+  assignee: UserWithSettings,
+  sponsorTask: Sponsor_Task | CreateSponsorTask,
+  sponsor: string
+) => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  if (!assignee.userSettings?.slackId) return;
+
+  const msg = `You have been assigned a task for ${sponsor}: ${sponsorTask.notes}`;
+  const link = `https://finishlinebyner.com/finance/companies/sponsors`;
+  const linkButtonText = `View Tasks for ${sponsor}`;
+  await sendMessage(assignee.userSettings?.slackId, msg, link, linkButtonText);
 };
