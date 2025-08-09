@@ -364,12 +364,6 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       disabled: !allowEdit && !user.isFinance
     },
     {
-      title: 'Delete',
-      onClick: () => setShowDeleteModal(true),
-      icon: <DeleteIcon />,
-      disabled: !allowEdit
-    },
-    {
       title: 'Mark Delivered',
       onClick: () => setShowMarkDelivered(true),
       icon: <LocalShippingIcon />,
@@ -434,6 +428,13 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         (!isAdmin(user.role) && !user.isFinance && user.userId !== reimbursementRequest.recipient.userId) ||
         isReimbursementRequestReimbursed(reimbursementRequest) ||
         isReimbursementRequestDenied(reimbursementRequest)
+    },
+    {
+      title: 'Delete',
+      onClick: () => setShowDeleteModal(true),
+      icon: <DeleteIcon />,
+      disabled: !allowEdit,
+      dividerTop: true
     }
   ];
 

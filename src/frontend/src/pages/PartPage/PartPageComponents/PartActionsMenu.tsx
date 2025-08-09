@@ -202,16 +202,17 @@ const PartActionsMenu: React.FC<PartActionsMenuProps> = ({
       disabled: !userIsReviewer(user.userId, part) || part.status === Review_Status.APPROVED || part.submissions.length === 0
     },
     {
-      title: 'Delete Part',
-      onClick: () => setShowDeletePart(true),
-      icon: <DeleteIcon />,
-      disabled: isNotLeadership(user.role)
-    },
-    {
       title: 'Upload Preview Image',
       onClick: () => handleUploadPreview(),
       icon: <AddPhotoAlternateOutlined />,
       disabled: isNotLeadership(user.role) || previewUploading
+    },
+    {
+      title: 'Delete Part',
+      onClick: () => setShowDeletePart(true),
+      icon: <DeleteIcon />,
+      disabled: isNotLeadership(user.role),
+      dividerTop: true
     }
   ];
 
