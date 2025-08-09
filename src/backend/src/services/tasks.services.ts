@@ -1,10 +1,15 @@
 import { Task_Priority, Task_Status, User, Organization } from '@prisma/client';
-import { isAdmin, isLeadership, isUnderWordCount, Task, WbsNumber, wbsPipe } from 'shared';
+import { isAdmin, isUnderWordCount, notGuest, Task, WbsNumber, wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
 import taskTransformer from '../transformers/tasks.transformer';
-import { NotFoundException, AccessDeniedException, HttpException, DeletedException } from '../utils/errors.utils';
-import { hasPermissionToEditTask, sendSlackTaskAssignedNotificationToUsers } from '../utils/tasks.utils';
-import { isUserOnTeam } from '../utils/teams.utils';
+import {
+  NotFoundException,
+  AccessDeniedException,
+  HttpException,
+  DeletedException,
+  InvalidOrganizationException
+} from '../utils/errors.utils';
+import { sendSlackTaskAssignedNotificationToUsers } from '../utils/tasks.utils';
 import { getUsers, userHasPermission } from '../utils/users.utils';
 import { wbsNumOf } from '../utils/utils';
 import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
@@ -63,24 +68,8 @@ export default class TasksService {
     if (!teams || teams.length === 0)
       throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
 
-    const isLeadOrManager =
-      createdBy.userId === requestedWbsElement.leadId || createdBy.userId === requestedWbsElement.managerId;
-
-    const curWorkPackages = project.workPackages;
-
-    const isWorkPackageLeadOrManager = curWorkPackages.some((workPackage) => {
-      return workPackage.wbsElement.leadId === createdBy.userId || workPackage.wbsElement.managerId === createdBy.userId;
-    });
-
-    if (
-      !(await userHasPermission(createdBy.userId, organization.organizationId, isLeadership)) &&
-      !isLeadOrManager &&
-      !isWorkPackageLeadOrManager &&
-      !teams.some((team) => isUserOnTeam(team, createdBy))
-    ) {
-      throw new AccessDeniedException(
-        'Only admins, app-admins, project leads, project managers, work package leads, work package managers, or current team users can create tasks'
-      );
+    if (await !userHasPermission(createdBy.userId, organization.organizationId, notGuest)) {
+      throw new AccessDeniedException('Guests cannot create tasks');
     }
 
     const users = await getUsers(assignees); // this throws if any of the users aren't found
@@ -123,6 +112,7 @@ export default class TasksService {
   /**
    * Edits a Task in the database
    * @param user the user editing the task
+   * @param organizationId the organization id
    * @param taskId the task that is being edited
    * @param title the new title for the task
    * @param notes the new notes for the task
@@ -130,15 +120,22 @@ export default class TasksService {
    * @param deadline the new deadline for the task
    * @returns the sucessfully edited task
    */
-  static async editTask(user: User, taskId: string, title: string, notes: string, priority: Task_Priority, deadline: Date) {
-    const hasPermission = await hasPermissionToEditTask(user, taskId);
-    if (!hasPermission)
-      throw new AccessDeniedException(
-        'Only admins, app admins, heads, task creators, project leads, project managers, or project assignees can edit a task'
-      );
+  static async editTask(
+    user: User,
+    organizationId: string,
+    taskId: string,
+    title: string,
+    notes: string,
+    priority: Task_Priority,
+    deadline: Date
+  ) {
+    const hasPermission = await userHasPermission(user.userId, organizationId, notGuest);
+    if (!hasPermission) throw new AccessDeniedException('Guests cannot edit tasks');
 
     const originalTask = await prisma.task.findUnique({ where: { taskId }, include: { wbsElement: true } });
+
     if (!originalTask) throw new NotFoundException('Task', taskId);
+    if (originalTask.wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('Task');
     if (originalTask.dateDeleted) throw new DeletedException('Task', taskId);
 
     if (!isUnderWordCount(title, 15)) throw new HttpException(400, 'Title must be less than 15 words');
@@ -156,26 +153,25 @@ export default class TasksService {
   /**
    * Edits the status of a task in the database
    * @param user the user editing the task
+   * @param organizationId the organizqtion Id
    * @param taskId the id of the task
    * @param status the new status
    * @returns the updated task
    * @throws if the task does not exist, the task is already deleted, or if the user does not have permissions
    */
-  static async editTaskStatus(user: User, taskId: string, status: Task_Status) {
+  static async editTaskStatus(user: User, organizationId: string, taskId: string, status: Task_Status) {
     // Get the original task and check if it exists
     const originalTask = await prisma.task.findUnique({ where: { taskId }, include: { assignees: true, wbsElement: true } });
     if (!originalTask) throw new NotFoundException('Task', taskId);
+    if (organizationId !== originalTask.wbsElement.organizationId) throw new InvalidOrganizationException('Task');
     if (originalTask.dateDeleted) throw new DeletedException('Task', taskId);
 
     if (status === 'IN_PROGRESS' && (!originalTask.deadline || originalTask.assignees.length === 0)) {
       throw new HttpException(400, 'A task in progress must have a deadline and assignees!');
     }
 
-    const hasPermission = await hasPermissionToEditTask(user, taskId);
-    if (!hasPermission)
-      throw new AccessDeniedException(
-        'Only admins, app admins, heads, task creators, project leads, project managers, or project assignees can edit a task'
-      );
+    const hasPermission = await userHasPermission(user.userId, organizationId, notGuest);
+    if (!hasPermission) throw new AccessDeniedException('Guests cannot edit tasks');
 
     const updatedTask = await prisma.task.update({
       where: { taskId },
@@ -190,7 +186,7 @@ export default class TasksService {
    * @param user the user editing the task
    * @param taskId the id of the task
    * @param assignees the new assignees
-   * @param organizationId the organization that the user is currently in
+   * @param organization the organization that the user is currently in
    * @returns the updated task
    * @throws if the task does not exist, the task is already deleted, any of the assignees don't exist, or if the user does not have permissions
    */
@@ -214,11 +210,8 @@ export default class TasksService {
     const originalAssigneeIds = originalTask.assignees.map((assignee) => assignee.userId);
     const newAssigneeIds = assignees.filter((userId) => !originalAssigneeIds.includes(userId));
 
-    const hasPermission = await hasPermissionToEditTask(user, taskId);
-    if (!hasPermission)
-      throw new AccessDeniedException(
-        'Only admins, app admins, heads, task creators, project leads, project managers, or project assignees can edit a task'
-      );
+    const hasPermission = await userHasPermission(user.userId, organization.organizationId, notGuest);
+    if (!hasPermission) throw new AccessDeniedException('Guests cannot edit tasks');
 
     // this throws if any of the users aren't found
     const assigneeUsers = await getUsers(assignees);

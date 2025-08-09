@@ -2,12 +2,11 @@ import { Draggable } from '@hello-pangea/dnd';
 import { Construction, Delete, Schedule } from '@mui/icons-material';
 import { Box, Card, CardContent, Chip, Grid, Typography } from '@mui/material';
 import { useState } from 'react';
-import { isLeadership, Project, Task } from 'shared';
+import { notGuest, Project, Task } from 'shared';
 import { useDeleteTask, useEditTask, useEditTaskAssignees } from '../../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../../../hooks/users.hooks';
 import { datePipe, fullNamePipe } from '../../../../../utils/pipes';
-import { isUserOnTeam } from '../../../../../utils/teams.utils';
 import { EditTaskFormInput } from '../TaskFormModal';
 import TaskModal from '../TaskModal';
 
@@ -33,7 +32,8 @@ export const TaskCard = ({
   const toast = useToast();
   const [showModal, setShowModal] = useState(false);
 
-  const handleDelete = async () => {
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     try {
       await deleteTask({ taskId: task.taskId });
       onDeleteTask(task.taskId);
@@ -68,18 +68,6 @@ export const TaskCard = ({
     setShowModal(false);
   };
 
-  const editTaskPermissions = (task: Task): boolean => {
-    return (
-      (isLeadership(user.role) ||
-        project.teams.some((team) => isUserOnTeam(team, user)) ||
-        project.lead?.userId === user.userId ||
-        project.manager?.userId === user.userId ||
-        task.assignees.map((u) => u.userId).includes(user.userId) ||
-        task.createdBy.userId === user.userId) ??
-      false
-    );
-  };
-
   const priorityColor = task.priority === 'HIGH' ? '#ef4345' : task.priority === 'LOW' ? '#00ab41' : '#FFA500';
 
   return (
@@ -90,7 +78,7 @@ export const TaskCard = ({
         teams={project.teams}
         onHide={() => setShowModal(false)}
         onSubmit={handleEditTask}
-        hasEditPermissions={editTaskPermissions(task)}
+        hasEditPermissions={notGuest(user.role)}
       />
       <Draggable draggableId={String(task.taskId)} index={index}>
         {(provided, snapshot) => (
