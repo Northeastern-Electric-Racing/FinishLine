@@ -7,7 +7,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { FormInput } from './ReviewChangeRequest';
-import { ChangeRequest, ProposedSolution, StandardChangeRequest } from 'shared';
+import { ChangeRequest, ProposedSolution, StandardChangeRequest, WorkPackage } from 'shared';
 import { useState } from 'react';
 import ProposedSolutionSelectItem from './ProposedSolutionSelectItem';
 import {
@@ -25,10 +25,7 @@ import { useToast } from '../../hooks/toasts.hooks';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import NERFailButton from '../../components/NERFailButton';
 import CloseIcon from '@mui/icons-material/Close';
-import { useGetBlockingWorkPackages } from '../../hooks/work-packages.hooks';
 import ChangeRequestBlockerWarning from '../../components/ChangeRequestBlockerWarning';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import ErrorPage from '../ErrorPage';
 import { hasProposedChanges } from '../../utils/change-request.utils';
 
 interface ReviewChangeRequestViewProps {
@@ -36,6 +33,7 @@ interface ReviewChangeRequestViewProps {
   modalShow: boolean;
   onHide: () => void;
   onSubmit: (data: FormInput) => Promise<void>;
+  blockingWorkPackages: WorkPackage[];
 }
 
 const schema = yup.object().shape({
@@ -48,19 +46,16 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
   cr,
   modalShow,
   onHide,
-  onSubmit
+  onSubmit,
+  blockingWorkPackages
 }: ReviewChangeRequestViewProps) => {
   const [selected, setSelected] = useState(-1);
   const [selectedTimelineImpact, setSelectedTimelineImpact] = useState(-1);
   const toast = useToast();
-  const { isLoading, isError, error, data: blockingWorkPackages } = useGetBlockingWorkPackages(cr.wbsNum);
   const [showWarning, setShowWarning] = useState(false);
   const { register, setValue, getFieldState, reset, handleSubmit, control, getValues } = useForm<FormInput>({
     resolver: yupResolver(schema)
   });
-
-  if (isLoading) return <LoadingIndicator />;
-  if (isError) return <ErrorPage error={error} />;
 
   /**
    * Register (or set registered field) to the appropriate boolean based on which action button was clicked
@@ -300,7 +295,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
           onHide={() => setShowWarning(false)}
           open={showWarning}
           onSubmit={() => onSubmitWrapper(getValues())}
-          blockingWorkPackages={blockingWorkPackages ?? []}
+          blockingWorkPackages={blockingWorkPackages}
         />
       }
     </>

@@ -19,6 +19,7 @@ import { ProjectCreateChangeRequestFormInput } from './ProjectEditContainer';
 import { ProjectProposedChangesCreateArgs, WbsNumber, WorkPackageStage } from 'shared';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
 import { useCreateSingleWorkPackage } from '../../../hooks/work-packages.hooks';
+import { useGetAllCars } from '../../../hooks/cars.hooks';
 
 const ProjectCreateContainer: React.FC = () => {
   const toast = useToast();
@@ -27,6 +28,8 @@ const ProjectCreateContainer: React.FC = () => {
 
   const [managerId, setManagerId] = useState<string | undefined>();
   const [leadId, setLeadId] = useState<string | undefined>();
+  const [carNumber, setCarNumber] = useState<number | undefined>();
+  const { data: cars, isLoading: carsIsLoading, isError: carsIsError, error: carsError } = useGetAllCars();
 
   const { mutateAsync: createProjectMutateAsync, isLoading: createProjectIsLoading } = useCreateSingleProject();
   const { mutateAsync: mutateCRAsync, isLoading: isCRHookLoading } = useCreateStandardChangeRequest();
@@ -39,18 +42,27 @@ const ProjectCreateContainer: React.FC = () => {
     error: allLinkTypesError
   } = useAllLinkTypes();
 
-  if (createProjectIsLoading || isCRHookLoading || createWpIsLoading || !allLinkTypes || allLinkTypesIsLoading)
+  if (
+    createProjectIsLoading ||
+    isCRHookLoading ||
+    createWpIsLoading ||
+    !allLinkTypes ||
+    allLinkTypesIsLoading ||
+    carsIsLoading ||
+    !cars
+  )
     return <LoadingIndicator />;
   if (allLinkTypesIsError) return <ErrorPage message={allLinkTypesError.message} />;
 
-  const requiredLinkTypeNames = getRequiredLinkTypeNames(allLinkTypes);
+  if (carsIsError) return <ErrorPage message={carsError.message} />;
 
+  const requiredLinkTypeNames = getRequiredLinkTypeNames(allLinkTypes);
   const defaultValues = {
     name: '',
     budget: 0,
     summary: '',
     teamIds: [],
-    carNumber: 0,
+    carNumber,
     links: [],
     crId: query.get('crId') || undefined,
     descriptionBullets: [],
@@ -61,8 +73,7 @@ const ProjectCreateContainer: React.FC = () => {
 
   const schema = yup.object().shape({
     name: yup.string().required('Name is required!'),
-    // TODO update upper bound here once new car model is made
-    carNumber: yup.number().min(0).required('A car number is required!'),
+    carNumber: yup.number().min(0).required('A car selection is required'),
     teamIds: yup.array().of(yup.string()).required('Teams are required'),
     budget: yup.number().optional(),
     summary: yup.string().required('Summary is required!'),
@@ -182,7 +193,7 @@ const ProjectCreateContainer: React.FC = () => {
         const created = await createWpMutateAsync({
           name: wp.name,
           startDate: wp.startDate.toISOString(),
-          duration: wp.duration,
+          duration: Number(wp.duration),
           blockedBy: wp.blockedBy.map((blocker) => idToWbs.get(blocker)!),
           projectWbsNum: project.wbsNum,
           stage: wp.stage as WorkPackageStage | 'NONE',
@@ -212,6 +223,7 @@ const ProjectCreateContainer: React.FC = () => {
       leadId={leadId}
       managerId={managerId}
       onSubmitChangeRequest={onSubmitChangeRequest}
+      setCarNumber={setCarNumber}
     />
   );
 };

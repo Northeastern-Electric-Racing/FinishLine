@@ -25,6 +25,19 @@ vi.mock('../../../pages/WBSDetails', () => {
   };
 });
 
+vi.mock('react-pdf', () => {
+  return {
+    __esModule: true,
+    Document: () => <div>Document Mock</div>,
+    Page: () => <div>Page Mock</div>,
+    pdfjs: {
+      GlobalWorkerOptions: {
+        workerSrc: ''
+      }
+    }
+  };
+});
+
 /**
  * Sets up the component under test with the desired values and renders it.
  */

@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Box, useTheme } from '@mui/material';
 import {
   GanttChange,
   GanttCollection,
@@ -8,7 +8,9 @@ import {
 } from '../../../utils/gantt.utils';
 import GanttChartCollectionSection from './GanttChartCollectionSection';
 import { GanttChartTimeline } from './GanttChartComponents/GanttChartTimeline';
-
+import { eachDayOfInterval, isMonday, differenceInDays } from 'date-fns';
+import { dateToString, getMonday } from '../../../utils/datetime.utils';
+import { GANTT_CHART_CELL_SIZE, GANTT_CHART_GAP_SIZE } from '../../../utils/gantt.utils';
 export interface GanttEditability<E, T> {
   highlightTaskComparator: HighlightTaskComparator<T>;
   highlightSubtaskComparator: HighlightTaskComparator<T>;
@@ -40,12 +42,22 @@ const GanttChart = <E, T>({
   onShowChildrenToggle,
   editability
 }: GanttChartProps<E, T>) => {
+  const theme = useTheme();
+  const days = eachDayOfInterval({ start: startDate, end: endDate }).filter((day) => isMonday(day));
+
+  const today = new Date(new Date().setHours(0, 0, 0, 0));
+  const currentWeekCol = days.findIndex((day) => dateToString(day) === dateToString(getMonday(today))) + 1;
+
+  const daysIntoWeek = differenceInDays(today, getMonday(today));
+  const dailyOffset = daysIntoWeek * (parseFloat(GANTT_CHART_CELL_SIZE) / 7);
+
   return (
     <Box
       sx={{
         width: '100%',
         height: { xs: 'calc(100vh - 9.5rem )', md: 'calc(100vh - 6.25rem)' },
         overflow: 'scroll',
+        position: 'relative',
         '&::-webkit-scrollbar': {
           display: 'none'
         },
@@ -70,6 +82,21 @@ const GanttChart = <E, T>({
           );
         })}
       </Box>
+
+      {currentWeekCol > 0 && (
+        <Box
+          sx={{
+            position: 'absolute',
+            left: `calc(${currentWeekCol - 1} * (${GANTT_CHART_CELL_SIZE} + ${GANTT_CHART_GAP_SIZE}) + 1.1rem + ${dailyOffset}rem)`,
+            top: '5rem',
+            width: '1px',
+            backgroundColor: theme.palette.info.main,
+            zIndex: 3,
+            pointerEvents: 'none',
+            height: '150%'
+          }}
+        />
+      )}
     </Box>
   );
 };

@@ -9,7 +9,7 @@ import { Link } from '@mui/material';
 import { ActivationChangeRequest, ChangeRequest, ChangeRequestStatus, ChangeRequestType, wbsPipe } from 'shared';
 import { routes } from '../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
-import { fullNamePipe } from '../utils/pipes';
+import { displayEnum, fullNamePipe } from '../utils/pipes';
 import ChangeRequestTypePill from './ChangeRequestTypePill';
 import ChangeRequestStatusPill from './ChangeRequestStatusPill';
 
@@ -17,6 +17,7 @@ const CRCardDescription = ({ cr }: { cr: ChangeRequest }) => {
   const theme = useTheme();
   const isAccepted = cr.status === ChangeRequestStatus.Implemented || cr.status === ChangeRequestStatus.Accepted;
   const isStageGate = cr.type === ChangeRequestType.StageGate;
+  const isBudget = cr.type === ChangeRequestType.Budget;
   const isActivation = cr.type === ChangeRequestType.Activation;
   return (
     <Box
@@ -46,8 +47,10 @@ const CRCardDescription = ({ cr }: { cr: ChangeRequest }) => {
               Manager: {fullNamePipe((cr as ActivationChangeRequest).manager)}
             </Typography>
           </div>
-        ) : isStageGate ? (
+        ) : isStageGate && cr.wbsNum ? (
           'Stage Gate ' + wbsPipe(cr.wbsNum) + ' - ' + cr.wbsName
+        ) : (isBudget && cr.category) || (isBudget && cr.accountCode) ? (
+          'Change budget'
         ) : (
           'Standard Change Request (Click To view more details)'
         )}
@@ -92,9 +95,13 @@ const ChangeRequestDetailCard: React.FC<ChangeRequestDetailCardProps> = ({ chang
                 From: {fullNamePipe(changeRequest.submitter)}
               </Typography>
               <Typography fontWeight={'bold'} fontSize={12} noWrap>
-                <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
-                  {wbsPipe(changeRequest.wbsNum)} {changeRequest.wbsName}
-                </Link>
+                {changeRequest.wbsNum && (
+                  <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
+                    {wbsPipe(changeRequest.wbsNum)} {changeRequest.wbsName}
+                  </Link>
+                )}
+                {changeRequest.category && displayEnum(changeRequest.category.name)}
+                {changeRequest.accountCode && changeRequest.accountCode.name}
               </Typography>
             </Stack>
           </Grid>

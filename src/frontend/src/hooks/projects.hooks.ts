@@ -29,7 +29,10 @@ import {
   getAllUsefulLinks,
   setUsefulLinks,
   getUsersTeamsProjects,
-  getUsersLeadingProjects
+  getUsersLeadingProjects,
+  setAbbreviation,
+  deleteAbbreviation,
+  getTeamsProjects
 } from '../apis/projects.api';
 import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 import { useCurrentUser } from './users.hooks';
@@ -54,6 +57,13 @@ export const useGetUsersTeamsProjects = () => {
 export const useGetUsersLeadingProjects = () => {
   return useQuery<ProjectPreview[], Error>(['projects', 'leading'], async () => {
     const { data } = await getUsersLeadingProjects();
+    return data;
+  });
+};
+
+export const useGetTeamsProjects = (teamId: string) => {
+  return useQuery<Project[], Error>(['projects', 'teams'], async () => {
+    const { data } = await getTeamsProjects(teamId);
     return data;
   });
 };
@@ -262,6 +272,44 @@ export const useSetUsefulLinks = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['useful links']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom react hook to set the abbreviation of a project
+ */
+export const useSetProjectAbbreviation = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Project, Error, any>(
+    ['projects', 'abbreviation', 'set'],
+    async (payload: { wbsNum: string; abbreviation: string }) => {
+      const { data } = await setAbbreviation(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['projects']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom react hook to delete the abbreviation of a project
+ */
+export const useDeleteProjectAbbreviation = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['projects', 'abbreviation', 'delete'],
+    async (wbsNumber: string) => {
+      const { data } = await deleteAbbreviation(wbsNumber);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['projects']);
       }
     }
   );

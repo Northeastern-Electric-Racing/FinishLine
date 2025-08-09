@@ -5,20 +5,71 @@
 
 import { NavLink } from 'react-router-dom';
 import { LinkItem } from '../../utils/types';
-import { Typography, useTheme } from '@mui/material';
+import { routes } from '../../utils/routes';
+import { Box, Typography, useTheme, Collapse } from '@mui/material';
 
 export interface NavPageLinkItemProps extends LinkItem {
-  open?: boolean;
+  isSubmenuOpen?: boolean;
+  onSubmenuHover?: () => void;
+  onSubmenuCollapse?: () => void;
+  isSubItem?: boolean;
 }
 
-const NavPageLink: React.FC<NavPageLinkItemProps> = ({ name, route, icon }) => {
+const NavPageLink: React.FC<NavPageLinkItemProps> = ({
+  name,
+  route,
+  icon,
+  subItems,
+  isSubmenuOpen,
+  onSubmenuHover,
+  onSubmenuCollapse,
+  isSubItem = false
+}) => {
   const theme = useTheme();
-  return (
-    <NavLink
-      key={name}
-      to={route}
-      style={(isActive) => {
-        return {
+
+  const renderLink = () => {
+    const content = (
+      <>
+        {icon}
+        <Typography
+          sx={{
+            fontSize: isSubItem ? '0.8rem' : '1rem'
+          }}
+        >
+          {name}
+        </Typography>
+      </>
+    );
+
+    if (subItems) {
+      return (
+        <Box
+          onMouseEnter={onSubmenuHover}
+          sx={{
+            textDecoration: 'none',
+            color: theme.palette.text.primary,
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            gap: '8px',
+            borderRadius: '8px',
+            padding: '8px',
+            margin: '8px',
+            cursor: 'pointer'
+          }}
+        >
+          {content}
+        </Box>
+      );
+    }
+
+    return (
+      <NavLink
+        to={route}
+        exact={route === routes.HOME}
+        onClick={onSubmenuCollapse}
+        style={(isActive) => ({
           textDecoration: 'none',
           color: isActive ? '#ef4345' : theme.palette.text.primary,
           backgroundColor: isActive ? 'white' : 'transparent',
@@ -27,14 +78,27 @@ const NavPageLink: React.FC<NavPageLinkItemProps> = ({ name, route, icon }) => {
           justifyContent: 'flex-start',
           gap: '8px',
           borderRadius: '8px',
-          padding: '8px',
-          margin: '8px'
-        };
-      }}
-    >
-      {icon}
-      <Typography>{name}</Typography>
-    </NavLink>
+          padding: isSubItem ? '2px' : '8px',
+          margin: isSubItem ? '2px' : '8px',
+          marginLeft: isSubItem ? '28px' : '8px'
+        })}
+      >
+        {content}
+      </NavLink>
+    );
+  };
+
+  return (
+    <Box>
+      {renderLink()}
+      {subItems && (
+        <Collapse in={isSubmenuOpen} timeout="auto" unmountOnExit>
+          {subItems.map((subItem) => (
+            <NavPageLink {...subItem} isSubItem={true} />
+          ))}
+        </Collapse>
+      )}
+    </Box>
   );
 };
 

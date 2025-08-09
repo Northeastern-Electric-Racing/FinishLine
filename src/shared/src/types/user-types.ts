@@ -62,6 +62,8 @@ export interface Organization {
   onboardingText?: string;
   contacts: Contact[];
   slackWorkspaceId?: string;
+  partReviewGuideLink?: string;
+  sponsorshipNotificationsSlackChannelId?: string;
 }
 
 /**

@@ -36,17 +36,19 @@ const ProjectTemplateTable: React.FC = () => {
     projectTemplates = [data];
   }
 
-  const projectTemplateRows = projectTemplates.map((template) => (
+  const projectTemplateRows = projectTemplates.map((template, index) => (
     <TableRow
       key={template.projectTemplateId}
       onClick={() => history.push(`${routes.PROJECT_TEMPLATE_EDIT}?id=${template.projectTemplateId}`)}
       sx={{ cursor: 'pointer' }}
     >
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
+      <TableCell sx={{ borderBottom: index === projectTemplates.length - 1 ? 'none' : 'default' }}>
         {template.templateName}
       </TableCell>
-      <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>{template.templateNotes}</TableCell>
-      <TableCell align="center" sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
+      <TableCell sx={{ borderBottom: index === projectTemplates.length - 1 ? 'none' : 'default' }}>
+        {template.templateNotes}
+      </TableCell>
+      <TableCell sx={{ borderBottom: index === projectTemplates.length - 1 ? 'none' : 'default' }}>
         <IconButton
           onClick={(event) => {
             event.stopPropagation();
@@ -61,7 +63,7 @@ const ProjectTemplateTable: React.FC = () => {
 
   return (
     <Box>
-      <AdminToolTable columns={[{ name: 'Name' }, { name: 'Description' }]} rows={projectTemplateRows} />
+      <AdminToolTable columns={[{ name: 'Name' }, { name: 'Description' }, { name: '' }]} rows={projectTemplateRows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         {isAdmin(currentUser.role) && (
           <NERButton variant="contained" size="small" onClick={() => history.push(routes.PROJECT_TEMPLATE_NEW)}>

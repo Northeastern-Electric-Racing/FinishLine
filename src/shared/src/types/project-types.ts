@@ -48,6 +48,7 @@ export interface Project extends WbsElement {
   teams: TeamPreview[];
   tasks: Task[];
   favoritedBy: UserPreview[];
+  abbreviation?: string;
 }
 
 export type RetrospectiveProjectPreview = Omit<ProjectPreview, 'workPackages'> & {
@@ -64,6 +65,7 @@ export interface ProjectPreview extends WbsElementPreview {
   workPackages: WorkPackage[];
   tasks: Task[];
   duration: number;
+  abbreviation?: string;
 }
 
 export interface RetrospectiveWorkPackage extends WorkPackage {

@@ -1,6 +1,6 @@
 import prisma from '../prisma/prisma';
 import { DescriptionBullet, DescriptionBulletPreview, isLeadership } from 'shared';
-import { Description_Bullet, Prisma } from '@prisma/client';
+import { Description_Bullet, Prisma, User } from '@prisma/client';
 import { HttpException, NotFoundException } from './errors.utils';
 import { ChangeListValue } from './changes.utils';
 import { userHasPermission } from './users.utils';
@@ -20,11 +20,7 @@ export const separateDescriptionBulletsByType = (descriptionBullets: Description
   return descriptionBulletsSeparatedByType;
 };
 
-export const hasBulletCheckingPermissions = async (userId: string, descriptionId: string, organizationId: string) => {
-  const user = await prisma.user.findUnique({ where: { userId } });
-
-  if (!user) return false;
-
+export const hasBulletCheckingPermissions = async (user: User, descriptionId: string, organizationId: string) => {
   const descriptionBullet = await prisma.description_Bullet.findUnique({
     where: { descriptionId },
     include: {
@@ -37,14 +33,13 @@ export const hasBulletCheckingPermissions = async (userId: string, descriptionId
     }
   });
 
-  if (!descriptionBullet) return false;
-  if (!descriptionBullet.wbsElement) return false;
+  if (!user || !descriptionBullet || !descriptionBullet.wbsElement) return false;
 
   const leader = descriptionBullet.wbsElement.lead;
   const { manager } = descriptionBullet.wbsElement;
 
   return (
-    (await userHasPermission(userId, organizationId, isLeadership)) ||
+    (await userHasPermission(user.userId, organizationId, isLeadership)) ||
     (leader && leader.userId === user.userId) ||
     (manager && manager.userId === user.userId)
   );

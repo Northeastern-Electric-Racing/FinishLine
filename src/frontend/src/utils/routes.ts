@@ -22,9 +22,11 @@ const HOME_ONBOARDING = HOME + `/onboarding`;
 /**************** Finance Section ****************/
 const FINANCE = `/finance`;
 const REIMBURSEMENT_REQUESTS = FINANCE + '/reimbursement-requests';
-const REIMBURSEMENT_REQUEST_BY_ID = REIMBURSEMENT_REQUESTS + `/:id`;
+const REIMBURSEMENT_REQUEST_BY_ID = REIMBURSEMENT_REQUESTS + `/:section/:id`;
 const REIMBURSEMENT_REQUEST_EDIT = REIMBURSEMENT_REQUEST_BY_ID + `/edit`;
-const NEW_REIMBURSEMENT_REQUEST = REIMBURSEMENT_REQUESTS + `/new`;
+const NEW_REIMBURSEMENT_REQUEST = REIMBURSEMENT_REQUESTS + `/my-requests/new`;
+const FINANCE_DASHBOARD = FINANCE + `/dashboard`;
+const COMPANIES = FINANCE + `/companies`;
 
 /**************** Projects Section ****************/
 const PROJECTS = `/projects`;
@@ -33,6 +35,7 @@ const PROJECTS_ALL = PROJECTS + '/all';
 const PROJECTS_BY_WBS = PROJECTS + `/:wbsNum`;
 const PROJECTS_NEW = PROJECTS + `/new`;
 const WORK_PACKAGE_NEW = PROJECTS + `/work-package/new`;
+const PROJECT_PART = PROJECTS_BY_WBS + '/part/:indexNum';
 
 /**************** Teams Section ****************/
 const TEAMS = `/teams`;
@@ -102,6 +105,7 @@ export const routes = {
   PROJECTS_BY_WBS,
   PROJECTS_NEW,
   WORK_PACKAGE_NEW,
+  PROJECT_PART,
 
   CHANGE_REQUESTS,
   ALL_CHANGE_REQUESTS,
@@ -116,6 +120,8 @@ export const routes = {
   REIMBURSEMENT_REQUESTS,
   REIMBURSEMENT_REQUEST_BY_ID,
   REIMBURSEMENT_REQUEST_EDIT,
+  FINANCE_DASHBOARD,
+  COMPANIES,
 
   SETTINGS,
   SETTINGS_DETAILS,

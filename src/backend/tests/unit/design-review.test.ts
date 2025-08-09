@@ -47,7 +47,7 @@ describe('Design Reviews', () => {
     expect(requiredMembers.length).toBe(2);
     expect(confirmedMembers.length).toBe(1);
 
-    await DesignReviewsService.setStatus(user, designReview.designReviewId, DesignReviewStatus.SCHEDULED, organization);
+    await DesignReviewsService.setStatus(user, designReview.designReviewId, DesignReviewStatus.CONFIRMED, organization);
 
     const updatedDesignReview = await DesignReviewsService.editDesignReview(
       user,
@@ -61,13 +61,13 @@ describe('Design Reviews', () => {
       null,
       null,
       '',
-      DesignReviewStatus.SCHEDULED,
+      DesignReviewStatus.CONFIRMED,
       [],
       [0, 1],
       organization
     );
 
-    expect(updatedDesignReview.status).toBe(DesignReviewStatus.CONFIRMED);
+    expect(updatedDesignReview.status).toBe(DesignReviewStatus.SCHEDULED);
   });
 
   // change with admin who is not creator

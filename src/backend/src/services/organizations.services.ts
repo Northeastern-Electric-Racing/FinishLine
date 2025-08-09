@@ -1,7 +1,13 @@
 import { Organization, User } from '@prisma/client';
-import { LinkCreateArgs, ProjectPreview, isAdmin } from 'shared';
+import { LinkCreateArgs, ProjectPreview, RoleEnum, isAdmin, isAtLeastRank } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedException,
+  DeletedException,
+  HttpException,
+  NotFoundException
+} from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { createUsefulLinks } from '../utils/organizations.utils';
 import { linkTransformer } from '../transformers/links.transformer';
@@ -403,6 +409,70 @@ export default class OrganizationsService {
     const updatedOrg = await prisma.organization.update({
       where: { organizationId },
       data: { slackWorkspaceId: workspaceId }
+    });
+
+    return updatedOrg;
+  }
+
+  static async getPartReviewGuideLink(organizationId: string, submitter: User) {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId }
+    });
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+    if (organization.dateDeleted) {
+      throw new DeletedException('Organization', organizationId);
+    }
+    if (!(await userHasPermission(submitter.userId, organizationId, (role) => isAtLeastRank(RoleEnum.MEMBER, role)))) {
+      throw new AccessDeniedException("Only members of an organization can retrieve it's guide link");
+    }
+    return organization.partReviewGuideLink;
+  }
+
+  static async setPartReviewGuideLink(submitter: User, organizationId: string, guideLink: string) {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId }
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+
+    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('update part review guide links');
+
+    const updatedOrg = await prisma.organization.update({
+      where: {
+        organizationId: organization.organizationId
+      },
+      data: {
+        partReviewGuideLink: guideLink
+      }
+    });
+
+    return updatedOrg;
+  }
+
+  /**
+   * Sets the channel to which sponsorship notifications will be sent
+   * @param channelId the slack id of the channel
+   * @param submitter the user making the change
+   * @param organizationId the organization to update
+   * @returns the update orgization
+   */
+  static async setSlackSponsorshipNotificationSlackChannelId(
+    channelId: string,
+    submitter: User,
+    organizationId: string
+  ): Promise<Organization> {
+    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('set sponsorship notification channel id');
+    }
+
+    const updatedOrg = await prisma.organization.update({
+      where: { organizationId },
+      data: { sponsorshipNotificationsSlackChannelId: channelId }
     });
 
     return updatedOrg;

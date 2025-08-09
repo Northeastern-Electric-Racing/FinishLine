@@ -133,6 +133,28 @@ export const createStageGateChangeRequest = (submitterId: string, wbsNum: WbsNum
 };
 
 /**
+ * Create a budget change request.
+ * @param submitterId The ID of the user creating the change request.
+ * @param otherReasonId the other reason id the change request is for.
+ * @param accountCodeId the account code id the change request is for.
+ * @param proposedBudget the new budget
+ */
+export const createBudgetChangeRequest = (
+  submitterId: string,
+  proposedBudget: number,
+  otherReasonId?: string,
+  accountCodeId?: string
+) => {
+  return axios.post<{ message: string }>(apiUrls.changeRequestsCreateBudget(), {
+    submitterId,
+    otherReasonId,
+    accountCodeId,
+    type: ChangeRequestType.Budget,
+    proposedBudget
+  });
+};
+
+/**
  * Create a propose solution
  * @param submitterId The ID of the user creating the change request.
  * @param crId The ID of the associated change request.

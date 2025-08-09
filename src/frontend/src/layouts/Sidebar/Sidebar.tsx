@@ -27,6 +27,10 @@ import { isGuest, Organization } from 'shared';
 import { useHistory } from 'react-router-dom';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import { useCurrentUser } from '../../hooks/users.hooks';
+import QueryStatsIcon from '@mui/icons-material/QueryStats';
+import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import { useState } from 'react';
 
 interface SidebarProps {
   drawerOpen: boolean;
@@ -37,6 +41,7 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organization }: SidebarProps) => {
+  const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
   const { onPNMHomePage, onOnboardingHomePage } = useHomePageContext();
   const theme = useTheme();
   const history = useHistory();
@@ -64,6 +69,28 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organ
       route: routes.CHANGE_REQUESTS
     },
     {
+      name: 'Finance',
+      icon: <AttachMoneyIcon />,
+      route: routes.FINANCE,
+      subItems: [
+        {
+          name: 'Finance Dashboard',
+          icon: <QueryStatsIcon sx={{ fontSize: '20px' }} />,
+          route: routes.FINANCE_DASHBOARD
+        },
+        {
+          name: 'Reimbursements',
+          icon: <CurrencyExchangeIcon sx={{ fontSize: '20px' }} />,
+          route: routes.REIMBURSEMENT_REQUESTS
+        },
+        {
+          name: 'Companies',
+          icon: <ShoppingCartIcon sx={{ fontSize: '20px' }} />,
+          route: routes.COMPANIES
+        }
+      ]
+    },
+    {
       name: 'Teams',
       icon: <GroupIcon />,
       route: routes.TEAMS
@@ -86,20 +113,11 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organ
   ];
 
   if (!isGuest(user.role)) {
-    memberLinkItems.splice(
-      6,
-      0,
-      {
-        name: 'Finance',
-        icon: <AttachMoneyIcon />,
-        route: routes.FINANCE
-      },
-      {
-        name: 'Statistics',
-        icon: <BarChartIcon />,
-        route: routes.STATISTICS
-      }
-    );
+    memberLinkItems.splice(6, 0, {
+      name: 'Statistics',
+      icon: <BarChartIcon />,
+      route: routes.STATISTICS
+    });
   }
 
   const onboardingLinkItems: LinkItem[] = [
@@ -124,6 +142,14 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organ
     setMoveContent(!moveContent);
   };
 
+  const handleOpenSubmenu = (name: string) => {
+    setOpenSubmenu(name);
+  };
+
+  const handleCloseSubmenu = () => {
+    setOpenSubmenu(null);
+  };
+
   return (
     <NERDrawer
       open={drawerOpen}
@@ -146,7 +172,12 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organ
       >
         <Box>
           {linkItems.map((linkItem) => (
-            <NavPageLink {...linkItem} />
+            <NavPageLink
+              {...linkItem}
+              isSubmenuOpen={openSubmenu === linkItem.name}
+              onSubmenuHover={() => handleOpenSubmenu(linkItem.name)}
+              onSubmenuCollapse={() => handleCloseSubmenu()}
+            />
           ))}
           {onPNMHomePage && (
             // Apply button

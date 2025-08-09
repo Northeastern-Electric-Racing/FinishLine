@@ -24,12 +24,14 @@ const MaterialTypeTable: React.FC = () => {
     return <ErrorPage message={materialTypesError?.message} />;
   }
 
-  const materialTypesTableRows = materialTypes.map((materialType) => (
+  const materialTypesTableRows = materialTypes.map((materialType, index) => (
     <TableRow>
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
+      <TableCell align="left" sx={{ borderBottom: index === materialTypes.length - 1 ? 'none' : 'default' }}>
         {datePipe(materialType.dateCreated)}
       </TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>{materialType.name}</TableCell>
+      <TableCell sx={{ borderBottom: index === materialTypes.length - 1 ? 'none' : 'default' }}>
+        {materialType.name}
+      </TableCell>
     </TableRow>
   ));
 
