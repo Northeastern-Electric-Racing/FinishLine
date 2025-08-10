@@ -38,7 +38,8 @@ const FavoriteProjectButton = ({ wbsNum, projectIsFavorited }: FavoriteProjectBu
       sx={{
         color: projectIsFavorited ? 'Gold' : 'lightgray',
         ml: 2,
-        mt: '3px',
+        mt: '10px',
+        mr: 2,
         maxHeight: '37.05px',
         maxWidth: '37.05px'
       }}

@@ -1,5 +1,4 @@
 FROM node:20-alpine
-WORKDIR /base
 
 COPY package.json tsconfig.build.json ./
 COPY ./src/frontend/package.json ./src/frontend/tsconfig.json src/frontend/

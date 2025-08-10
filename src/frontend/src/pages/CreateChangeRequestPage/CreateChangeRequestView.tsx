@@ -129,7 +129,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   const { isLoading, isError, error, data: projects } = useAllProjects();
 
   const permittedTypes = Object.values(ChangeRequestType).filter(
-    (t) => t !== ChangeRequestType.Activation && t !== ChangeRequestType.StageGate
+    (t) => t !== ChangeRequestType.Activation && t !== ChangeRequestType.StageGate && t !== ChangeRequestType.Budget
   );
 
   if (isLoading || !projects) return <LoadingIndicator />;

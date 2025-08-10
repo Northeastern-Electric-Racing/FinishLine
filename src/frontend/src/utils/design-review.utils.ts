@@ -1,6 +1,6 @@
 import { DesignReview, DesignReviewStatus } from 'shared';
 
-export const EnumToArray = (en: { [key: number]: string | number }) => {
+export const enumToArray = (en: { [key: number]: string | number }) => {
   return Object.keys(en).filter((value: string) => isNaN(Number(value)) === true);
 };
 
@@ -52,7 +52,7 @@ export const HOURS: number[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
 export const HeatmapColors = ['#D9D9D9', '#E0C0C1', '#E89A9B', '#E4797A', '#EF4345', '#D70C0F'];
 
-export const NUMBER_OF_TIME_SLOTS = EnumToArray(REVIEW_TIMES).length * EnumToArray(DAY_NAMES).length;
+export const NUMBER_OF_TIME_SLOTS = enumToArray(REVIEW_TIMES).length * enumToArray(DAY_NAMES).length;
 
 export const getBackgroundColor = (frequency: number = 0, totalUsers: number): string => {
   if (frequency === 0) return HeatmapColors[0];

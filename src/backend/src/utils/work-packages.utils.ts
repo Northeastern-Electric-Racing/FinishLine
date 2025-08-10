@@ -62,11 +62,11 @@ interface WorkPackageTemplateWithBlocking extends Work_Package_Template {
 }
 
 export const deleteBlockingTemplates = async (workPackageTemplate: WorkPackageTemplateWithBlocking, submitter: User) => {
-  const seenWorkPackageTemplateIds: Set<string> = new Set<string>(workPackageTemplate.workPackageTemplateId);
+  const seenWorkPackageTemplateIds: Set<string> = new Set<string>(workPackageTemplate.wbsElementTemplateId);
 
   // blocking ids that still need to be updated
   const blockingIdUpdateQueue: string[] = workPackageTemplate.blocking.map(
-    (blocking: Work_Package_Template) => blocking.workPackageTemplateId
+    (blocking: Work_Package_Template) => blocking.wbsElementTemplateId
   );
 
   while (blockingIdUpdateQueue.length > 0) {
@@ -80,20 +80,21 @@ export const deleteBlockingTemplates = async (workPackageTemplate: WorkPackageTe
     // gets the current blocking work package template
     const currentBlocking = await prisma.work_Package_Template.findUnique({
       where: {
-        workPackageTemplateId: currentBlockingId
+        wbsElementTemplateId: currentBlockingId
       },
       include: {
-        blocking: true
+        blocking: true,
+        wbsElementTemplate: true
       }
     });
 
-    if (currentBlocking?.workPackageTemplateId === workPackageTemplate.workPackageTemplateId) {
+    if (currentBlocking?.wbsElementTemplateId === workPackageTemplate.wbsElementTemplateId) {
       throw new HttpException(400, 'Circular dependency detected');
     }
 
     if (!currentBlocking) throw new NotFoundException('Work Package Template', currentBlockingId);
-    if (currentBlocking.dateDeleted) continue; // skip if this work package template has been deleted
-    const newBlocking: string[] = currentBlocking.blocking.map((blocking) => blocking.workPackageTemplateId);
+    if (currentBlocking.wbsElementTemplate.dateDeleted) continue; // skip if this work package template has been deleted
+    const newBlocking: string[] = currentBlocking.blocking.map((blocking) => blocking.wbsElementTemplateId);
     blockingIdUpdateQueue.push(...newBlocking);
 
     const dateDeleted = new Date();
@@ -101,13 +102,17 @@ export const deleteBlockingTemplates = async (workPackageTemplate: WorkPackageTe
     // delete the work package template
     await prisma.work_Package_Template.update({
       where: {
-        workPackageTemplateId: currentBlockingId
+        wbsElementTemplateId: currentBlockingId
       },
       data: {
-        dateDeleted,
-        userDeleted: {
-          connect: {
-            userId: submitter.userId
+        wbsElementTemplate: {
+          update: {
+            dateDeleted,
+            userDeleted: {
+              connect: {
+                userId: submitter.userId
+              }
+            }
           }
         }
       }
@@ -158,7 +163,7 @@ export const validateBlockedByTemplates = async (
 ): Promise<Work_Package_Template[]> => {
   const blockedByTemplates = await prisma.work_Package_Template.findMany({
     where: {
-      workPackageTemplateId: {
+      wbsElementTemplateId: {
         in: blockedByIds
       }
     }

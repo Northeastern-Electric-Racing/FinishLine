@@ -8,7 +8,7 @@ import ErrorPage from '../../ErrorPage';
 import { WorkPackageTemplate } from 'shared';
 import { routes } from '../../../utils/routes';
 import { Delete } from '@mui/icons-material';
-import { useAllWorkPackageTemplates, useDeleteWorkPackageTemplate } from '../../../hooks/work-packages.hooks';
+import { useAllWorkPackageTemplates, useDeleteWorkPackageTemplate } from '../../../hooks/wbs-templates.hooks';
 import { useHistory } from 'react-router-dom';
 import { useState } from 'react';
 import NERModal from '../../../components/NERModal';
@@ -31,17 +31,24 @@ const WorkPackageTemplateTable = () => {
   if (!workPackageTemplates || workPackageTemplatesIsLoading) return <LoadingIndicator />;
   if (workPackageTemplatesIsError) return <ErrorPage message={workPackageTemplatesError.message} />;
 
-  const workPackageTemplateRows = workPackageTemplates.map((workPackageTemplate) => (
+  const workPackageTemplateRows = workPackageTemplates.map((workPackageTemplate, index) => (
     <TableRow
       key={workPackageTemplate.workPackageTemplateId}
       onClick={() => history.push(`${routes.WORK_PACKAGE_TEMPLATE_EDIT}?id=${workPackageTemplate.workPackageTemplateId}`)}
       sx={{ cursor: 'pointer' }}
     >
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
+      <TableCell align="left" sx={{ borderBottom: index === workPackageTemplates.length - 1 ? 'none' : 'default' }}>
         {workPackageTemplate.templateName}
       </TableCell>
-      <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>{workPackageTemplate.templateNotes}</TableCell>
-      <TableCell align="center" sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
+      <TableCell
+        sx={{ borderBottom: index === workPackageTemplates.length - 1 ? 'none' : 'default', verticalAlign: 'middle' }}
+      >
+        {workPackageTemplate.templateNotes}
+      </TableCell>
+      <TableCell
+        align="center"
+        sx={{ borderBottom: index === workPackageTemplates.length - 1 ? 'none' : 'default', verticalAlign: 'middle' }}
+      >
         <IconButton
           onClick={(event) => {
             event.stopPropagation();
@@ -56,7 +63,10 @@ const WorkPackageTemplateTable = () => {
 
   return (
     <Box>
-      <AdminToolTable columns={[{ name: 'Name' }, { name: 'Description' }]} rows={workPackageTemplateRows} />
+      <AdminToolTable
+        columns={[{ name: 'Name' }, { name: 'Description' }, { name: '', width: '10%' }]}
+        rows={workPackageTemplateRows}
+      />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         {isAdmin(currentUser.role) && (
           <NERButton variant="contained" size="small" onClick={() => history.push(routes.WORK_PACKAGE_TEMPLATE_NEW)}>

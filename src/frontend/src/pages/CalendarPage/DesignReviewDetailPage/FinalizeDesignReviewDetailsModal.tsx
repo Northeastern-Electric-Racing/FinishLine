@@ -55,6 +55,12 @@ const FinalizeDesignReviewDetailsModal = ({
     setOpen(false);
   };
 
+  const defaultValues = {
+    docTemplateLink: designReview.docTemplateLink ?? '',
+    zoomLink: designReview.zoomLink ?? undefined,
+    location: designReview.location ?? undefined
+  };
+
   const {
     handleSubmit,
     control,
@@ -62,11 +68,7 @@ const FinalizeDesignReviewDetailsModal = ({
     formState: { errors }
   } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: {
-      docTemplateLink: '',
-      zoomLink: undefined,
-      location: undefined
-    }
+    defaultValues
   });
 
   return (
@@ -74,7 +76,7 @@ const FinalizeDesignReviewDetailsModal = ({
       open={open}
       onHide={() => setOpen(false)}
       title={title}
-      reset={() => reset({ docTemplateLink: '', zoomLink: undefined, location: undefined })}
+      reset={() => reset(defaultValues)}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
       submitText="Schedule"
@@ -97,7 +99,7 @@ const FinalizeDesignReviewDetailsModal = ({
         <Box>
           <Typography style={{ fontSize: '1.2em', marginRight: 90 }}>Question Doc:</Typography>
           <Link
-            href="https://docs.google.com/document/d/1Rr2R6m6gr1hg1cjqkEmRg1Kk1-t1-SRPpso-CT_s3bg/edit#heading=h.yy87wzv6zqbj"
+            href="https://docs.google.com/document/d/1DtbMNPUs0PMUI3D3UC-1ZpUXu3CvNoFzFvrypapg3os/edit?usp=sharing"
             target="_blank"
             underline="hover"
             fontSize={16}

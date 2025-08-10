@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { getUserQueryArgs } from './user.query-args';
 import { getTeamQueryArgs } from './teams.query-args';
+import { getReimbursementRequestQueryArgs } from './reimbursement-requests.query-args';
 
 export type AssemblyQueryArgs = ReturnType<typeof getAssemblyQueryArgs>;
 
@@ -42,17 +43,19 @@ export const getMaterialQueryArgs = (organizationId: string) =>
       userDeleted: getUserQueryArgs(organizationId),
       materialType: true,
       unit: true,
-      manufacturer: true
+      manufacturer: true,
+      reimbursementRequest: getReimbursementRequestQueryArgs(organizationId)
     }
   });
 
 export type MaterialPreviewQueryArgs = ReturnType<typeof getMaterialPreviewQueryArgs>;
 
-export const getMaterialPreviewQueryArgs = (_organizationId: string) =>
+export const getMaterialPreviewQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.MaterialDefaultArgs>()({
     include: {
       unit: true,
       manufacturer: true,
-      materialType: true
+      materialType: true,
+      reimbursementRequest: getReimbursementRequestQueryArgs(organizationId)
     }
   });

@@ -1,4 +1,5 @@
 import {
+  OtherProductReason,
   Project,
   Reimbursement,
   ReimbursementProduct,
@@ -22,7 +23,7 @@ export const getUniqueWbsElementsWithProductsFromReimbursementRequest = (
       ? `${wbsPipe((product.reimbursementProductReason as WBSElementData).wbsNum)} - ${
           (product.reimbursementProductReason as WBSElementData).wbsName
         }`
-      : (product.reimbursementProductReason as string);
+      : (product.reimbursementProductReason as OtherProductReason).name;
     if (uniqueWbsElementsWithProducts.has(wbs)) {
       const products = uniqueWbsElementsWithProducts.get(wbs);
       products?.push(product);
@@ -39,6 +40,9 @@ export const descendingComparator = <T>(a: T, b: T, orderBy: keyof T) => {
   }
   if (b[orderBy] > a[orderBy]) {
     return 1;
+  }
+  if (b[orderBy] === undefined) {
+    return -1;
   }
   return 0;
 };
@@ -192,6 +196,13 @@ export const createReimbursementRequestRowData = (reimbursementRequest: Reimburs
     dateSubmittedToSabo: getReimbursementRequestDateSubmittedToSabo(reimbursementRequest),
     submitter: reimbursementRequest.recipient,
     vendor: reimbursementRequest.vendor,
-    refundSource: reimbursementRequest.account
+    refundSource: reimbursementRequest.indexCode
   };
+};
+
+export const formatReasonName = (name: string) => {
+  return name
+    .toLowerCase()
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 };

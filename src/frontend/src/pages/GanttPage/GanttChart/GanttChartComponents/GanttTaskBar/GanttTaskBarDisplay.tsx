@@ -7,7 +7,9 @@ import {
   HighlightTaskComparator,
   isHighlightedChangeOnGanttTask,
   OnMouseOverOptions,
-  RequestEventChange
+  RequestEventChange,
+  GANTT_CHART_CELL_SIZE,
+  GANTT_CHART_GAP_SIZE
 } from '../../../../../utils/gantt.utils';
 import { addWeeksToDate } from 'shared';
 import {
@@ -58,8 +60,7 @@ const GanttTaskBarDisplay = <T,>({
     borderRadius: '0.25rem',
     backgroundColor: task.styles ? task.styles.backgroundColor : theme.palette.background.paper,
     cursor: 'pointer',
-    gridRow: 1,
-    zIndex: 1
+    gridRow: 1
   };
 
   const ganttTaskBarDetailsBoxStyles: CSSProperties = {
@@ -72,13 +73,16 @@ const GanttTaskBarDisplay = <T,>({
     marginTop: hasOverlays ? '-10px' : undefined,
     marginBottom: hasOverlays ? '-10px' : undefined,
     cursor: 'pointer',
-    width: hasOverlays ? 'fit-content' : '100%'
+    position: 'sticky',
+    left: 0,
+    width: hasChildren ? 'fit-content' : '100%'
   };
 
   const ganttTaskBarChildOverlayStyles = (child: GanttTask<T>): CSSProperties => {
     return {
-      gridColumnStart: getStartCol(child.start),
-      gridColumnEnd: getEndCol(child.end),
+      position: 'absolute',
+      left: `calc(${getStartCol(child.start) - 1} * (${GANTT_CHART_CELL_SIZE} + ${GANTT_CHART_GAP_SIZE}))`,
+      width: `calc(${getEndCol(child.end) - getStartCol(child.start)} * (${GANTT_CHART_CELL_SIZE} + ${GANTT_CHART_GAP_SIZE}) - ${GANTT_CHART_GAP_SIZE})`,
       height: '2rem',
       border: `1px solid ${theme.palette.divider}`,
       borderRadius: '0.25rem',
@@ -99,7 +103,7 @@ const GanttTaskBarDisplay = <T,>({
       backgroundColor: event.color,
       cursor: 'pointer',
       gridRow: 1,
-      zIndex: 2
+      zIndex: 5
     };
   };
 
@@ -164,46 +168,50 @@ const GanttTaskBarDisplay = <T,>({
             onClick={task.onClick}
           >
             <Box sx={webKitBoxContainerStyles()}>
+              <div
+                style={ganttTaskBarDetailsBoxStyles}
+                onMouseOver={(e) => handleOnMouseOver(e, task)}
+                onMouseLeave={handleOnMouseLeave}
+                onClick={task.onClick}
+              >
+                {hasChildren && (
+                  <IconButton
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onShowChildrenToggle();
+                    }}
+                    sx={{ marginRight: '-15px', marginLeft: '-5px' }}
+                  >
+                    {showChildren ? (
+                      <ArrowDropDownIcon fontSize="large" />
+                    ) : (
+                      <ArrowDropDownIcon fontSize="large" sx={{ transform: `rotate(270deg)` }} />
+                    )}
+                  </IconButton>
+                )}
+                <Typography variant="body1" sx={taskNameContainerStyles(task)} onClick={onShowChildrenToggle}>
+                  {task.name}
+                </Typography>
+              </div>
+              {hasChildren &&
+                task.children.map((childTask) => {
+                  return (
+                    <div
+                      style={ganttTaskBarChildOverlayStyles(childTask)}
+                      onMouseOver={(e) => {
+                        e.stopPropagation();
+                        handleOnMouseOver(e, childTask);
+                      }}
+                      onMouseLeave={handleOnMouseLeave}
+                      onClick={childTask.onClick}
+                    />
+                  );
+                })}
               <Box sx={webKitBoxStyles()} />
             </Box>
           </div>
         </ArcherElement>
-        <div
-          style={ganttTaskBarDetailsBoxStyles}
-          onMouseOver={(e) => handleOnMouseOver(e, task)}
-          onMouseLeave={handleOnMouseLeave}
-          onClick={task.onClick}
-        >
-          {hasOverlays && (
-            <IconButton
-              onClick={(e) => {
-                e.stopPropagation();
-                onShowChildrenToggle();
-              }}
-              sx={{ marginRight: '-15px', marginLeft: '-5px' }}
-            >
-              {showChildren ? (
-                <ArrowDropDownIcon fontSize="large" />
-              ) : (
-                <ArrowDropDownIcon fontSize="large" sx={{ transform: `rotate(270deg)` }} />
-              )}
-            </IconButton>
-          )}
-          <Typography variant="body1" sx={taskNameContainerStyles(task)} onClick={onShowChildrenToggle}>
-            {task.name}
-          </Typography>
-        </div>
-        {hasOverlays &&
-          task.overlays.map((childTask) => {
-            return (
-              <div
-                style={ganttTaskBarChildOverlayStyles(childTask)}
-                onMouseOver={(e) => handleOnMouseOver(e, childTask)}
-                onMouseLeave={handleOnMouseLeave}
-                onClick={childTask.onClick}
-              />
-            );
-          })}
+
         {task.events.map((event) => {
           return (
             <div

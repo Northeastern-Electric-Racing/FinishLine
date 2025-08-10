@@ -59,6 +59,17 @@ changeRequestsRouter.post(
 );
 
 changeRequestsRouter.post(
+  '/new/budget',
+  nonEmptyString(body('submitterId')),
+  nonEmptyString(body('otherReasonId')).optional(),
+  nonEmptyString(body('accountCodeId')).optional(),
+  body('type').custom((value) => value === ChangeRequestType.Budget),
+  intMinZero(body('proposedBudget')),
+  validateInputs,
+  ChangeRequestsController.createBudgetChangeRequest
+);
+
+changeRequestsRouter.post(
   '/new/standard',
   nonEmptyString(body('what')),
   intMinZero(body('wbsNum.carNumber')),

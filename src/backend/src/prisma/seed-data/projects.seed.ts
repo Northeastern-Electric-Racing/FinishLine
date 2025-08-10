@@ -26,7 +26,7 @@ export const seedProject = async (
   leadId: string | null,
   managerId: string | null,
   organization: Organization
-): Promise<{ projectWbsNumber: WbsNumber; projectId: string }> => {
+): Promise<{ projectWbsNumber: WbsNumber; projectId: string; leadId?: string; managerId?: string }> => {
   const project = await ProjectsService.createProject(
     creator,
     changeRequestId,
@@ -56,5 +56,10 @@ export const seedProject = async (
     organization
   );
 
-  return { projectWbsNumber: project.wbsNum, projectId: project.id };
+  return {
+    projectWbsNumber: project.wbsNum,
+    projectId: project.id,
+    leadId: project.lead?.userId,
+    managerId: project.manager?.userId
+  };
 };

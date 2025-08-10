@@ -13,12 +13,14 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import EditReimbursementRequestRenderedDefaultValues from './EditReimbursementRequestRenderedDefaultValues';
 
-const EditReimbursementRequestPage: React.FC = () => {
+const EditReimbursementRequestPage: React.FC<{
+  onSubmitEditData: (data: ReimbursementRequestDataSubmission) => Promise<string>;
+  onExitEditPage: () => void;
+}> = ({ onSubmitEditData, onExitEditPage }) => {
   const { id } = useParams<{ id: string }>();
 
-  const { isLoading: editReimbursementRequestIsLoading, mutateAsync: editReimbursementRequest } =
-    useEditReimbursementRequest(id);
-  const { isLoading: uploadReceiptsIsLoading, mutateAsync: uploadReceipts } = useUploadManyReceipts();
+  const { isLoading: editReimbursementRequestIsLoading } = useEditReimbursementRequest(id);
+  const { isLoading: uploadReceiptsIsLoading } = useUploadManyReceipts();
   const { isLoading: getIsLoading, isError, error, data: reimbursementRequest } = useSingleReimbursementRequest(id);
 
   if (isError) return <ErrorPage error={error} />;
@@ -26,20 +28,12 @@ const EditReimbursementRequestPage: React.FC = () => {
   if (getIsLoading || editReimbursementRequestIsLoading || uploadReceiptsIsLoading || !reimbursementRequest)
     return <LoadingIndicator />;
 
-  const onSubmit = async (data: ReimbursementRequestDataSubmission): Promise<string> => {
-    const filesToKeep = data.receiptFiles.filter((file) => file.googleFileId !== '');
-
-    await editReimbursementRequest({ ...data, receiptPictures: filesToKeep, account: data.account! });
-    await uploadReceipts({
-      id: reimbursementRequest.reimbursementRequestId,
-      files: data.receiptFiles.filter((receipt) => receipt.googleFileId === '').map((file) => file.file!)
-    });
-
-    return reimbursementRequest.reimbursementRequestId;
-  };
-
   return (
-    <EditReimbursementRequestRenderedDefaultValues reimbursementRequest={reimbursementRequest} onSubmitData={onSubmit} />
+    <EditReimbursementRequestRenderedDefaultValues
+      reimbursementRequest={reimbursementRequest}
+      onSubmitData={onSubmitEditData}
+      onExitEditPage={onExitEditPage}
+    />
   );
 };
 

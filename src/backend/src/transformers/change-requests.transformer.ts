@@ -8,7 +8,8 @@ import {
   WbsElementStatus,
   WorkPackageProposedChanges,
   WorkPackageStage,
-  isProjectWbs
+  isProjectWbs,
+  BudgetChangeRequest
 } from 'shared';
 import { wbsNumOf } from '../utils/utils';
 import { calculateChangeRequestStatus, convertCRScopeWhyType } from '../utils/change-requests.utils';
@@ -27,6 +28,7 @@ import {
   ChangeRequestManyQueryArgs,
   ChangeRequestWithProjectAndWorkPackageQueryArgs
 } from '../prisma-query-args/change-requests.query-args';
+import { accountCodeTransformer, otherProductReasonTransformer } from './reimbursement-requests.transformer';
 
 const projectProposedChangesTransformer = (
   wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<WbsProposedChangeQueryArgs>
@@ -75,15 +77,17 @@ const workPackageProposedChangesTransformer = (
 
 export const changeRequestManyTransformer = (
   changeRequest: Prisma.Change_RequestGetPayload<ChangeRequestManyQueryArgs>
-): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest => {
+): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest | BudgetChangeRequest => {
   const status = calculateChangeRequestStatus(changeRequest);
 
   return {
     // all cr fields
     crId: changeRequest.crId,
     identifier: changeRequest.identifier,
-    wbsNum: wbsNumOf(changeRequest.wbsElement),
-    wbsName: changeRequest.wbsElement.name,
+    wbsNum: changeRequest.wbsElement ? wbsNumOf(changeRequest.wbsElement) : undefined,
+    wbsName: changeRequest.wbsElement?.name ?? undefined,
+    category: changeRequest.category ? otherProductReasonTransformer(changeRequest.category) : undefined,
+    accountCode: changeRequest.accountCode ? accountCodeTransformer(changeRequest.accountCode) : undefined,
     submitter: userTransformer(changeRequest.submitter),
     dateSubmitted: changeRequest.dateSubmitted,
     type: changeRequest.type,
@@ -117,25 +121,31 @@ export const changeRequestManyTransformer = (
     // stage gate cr fields
     leftoverBudget: changeRequest.stageGateChangeRequest?.leftoverBudget ?? undefined,
     confirmDone: changeRequest.stageGateChangeRequest?.confirmDone ?? undefined,
-    requestedReviewers: changeRequest.requestedReviewers.map(userTransformer) ?? []
+    requestedReviewers: changeRequest.requestedReviewers.map(userTransformer) ?? [],
+    //budget cr fields
+    proposedBudget: changeRequest.budgetChangeRequest?.proposedBudget ?? undefined
   };
 };
 
 const changeRequestTransformer = (
   changeRequest: Prisma.Change_RequestGetPayload<ChangeRequestWithProjectAndWorkPackageQueryArgs>
-): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest => {
+): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest | BudgetChangeRequest => {
   const status = calculateChangeRequestStatus(changeRequest);
 
-  const wbsName = isProjectWbs(changeRequest.wbsElement)
-    ? changeRequest.wbsElement.name
-    : `${changeRequest.wbsElement.workPackage?.project.wbsElement.name} - ${changeRequest.wbsElement.name}`;
+  const wbsName = changeRequest.wbsElement
+    ? isProjectWbs(changeRequest.wbsElement)
+      ? changeRequest.wbsElement?.name
+      : `${changeRequest.wbsElement?.workPackage?.project.wbsElement.name} - ${changeRequest.wbsElement?.name}`
+    : undefined;
 
   return {
     // all cr fields
     crId: changeRequest.crId,
     identifier: changeRequest.identifier,
-    wbsNum: wbsNumOf(changeRequest.wbsElement),
+    wbsNum: changeRequest.wbsElement ? wbsNumOf(changeRequest.wbsElement) : undefined,
     wbsName,
+    category: changeRequest.category ? otherProductReasonTransformer(changeRequest.category) : undefined,
+    accountCode: changeRequest.accountCode ? accountCodeTransformer(changeRequest.accountCode) : undefined,
     submitter: userTransformer(changeRequest.submitter),
     dateSubmitted: changeRequest.dateSubmitted,
     type: changeRequest.type,
@@ -145,7 +155,9 @@ const changeRequestTransformer = (
     reviewNotes: changeRequest.reviewNotes ?? undefined,
     dateImplemented: getDateImplemented(changeRequest),
     implementedChanges: changeRequest.changes.map((change) => ({
-      wbsNum: wbsNumOf(change.wbsElement),
+      wbsNum: change.wbsElement ? wbsNumOf(change.wbsElement) : undefined,
+      category: change.category ? otherProductReasonTransformer(change.category) : undefined,
+      accountCode: change.accountCode ? accountCodeTransformer(change.accountCode) : undefined,
       changeId: change.changeId,
       changeRequestIdentifier: changeRequest.identifier,
       changeRequestId: change.changeRequestId,
@@ -190,7 +202,9 @@ const changeRequestTransformer = (
     // stage gate cr fields
     leftoverBudget: changeRequest.stageGateChangeRequest?.leftoverBudget ?? undefined,
     confirmDone: changeRequest.stageGateChangeRequest?.confirmDone ?? undefined,
-    requestedReviewers: changeRequest.requestedReviewers.map(userTransformer) ?? []
+    requestedReviewers: changeRequest.requestedReviewers.map(userTransformer) ?? [],
+    //budget cr fields
+    proposedBudget: changeRequest.budgetChangeRequest?.proposedBudget ?? undefined
   };
 };
 

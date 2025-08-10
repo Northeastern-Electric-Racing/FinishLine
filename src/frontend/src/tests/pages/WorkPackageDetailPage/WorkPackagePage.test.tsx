@@ -123,6 +123,6 @@ describe('work package container', () => {
 
     fireEvent.click(screen.getByText('Actions'));
 
-    expect(screen.getByText('Edit')).toHaveAttribute('aria-disabled');
+    expect(screen.queryByText('Edit')).toBeNull();
   });
 });

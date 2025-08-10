@@ -31,7 +31,15 @@ export default class TasksController {
       const { title, notes, priority, deadline } = req.body;
       const { taskId } = req.params;
 
-      const updateTask = await TasksService.editTask(req.currentUser, taskId, title, notes, priority, deadline);
+      const updateTask = await TasksService.editTask(
+        req.currentUser,
+        req.organization.organizationId,
+        taskId,
+        title,
+        notes,
+        priority,
+        deadline
+      );
 
       res.status(200).json(updateTask);
     } catch (error: unknown) {
@@ -44,7 +52,12 @@ export default class TasksController {
       const { status } = req.body;
       const { taskId } = req.params;
 
-      const updatedTask = await TasksService.editTaskStatus(req.currentUser, taskId, status);
+      const updatedTask = await TasksService.editTaskStatus(
+        req.currentUser,
+        req.organization.organizationId,
+        taskId,
+        status
+      );
 
       res.status(200).json(updatedTask);
     } catch (error: unknown) {

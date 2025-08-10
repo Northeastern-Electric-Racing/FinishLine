@@ -57,19 +57,19 @@ export default class RecruitmentController {
     }
   }
 
-  static async getAllFaqs(req: Request, res: Response, next: NextFunction) {
+  static async getAllOrganizationFaqs(req: Request, res: Response, next: NextFunction) {
     try {
-      const allFaqs = await RecruitmentServices.getAllFaqs(req.organization);
+      const allFaqs = await RecruitmentServices.getAllOrganizationFaqs(req.organization);
       res.status(200).json(allFaqs);
     } catch (error: unknown) {
       next(error);
     }
   }
 
-  static async createFaq(req: Request, res: Response, next: NextFunction) {
+  static async createOrganizationFaq(req: Request, res: Response, next: NextFunction) {
     try {
       const { question, answer } = req.body;
-      const faq = await RecruitmentServices.createFaq(req.currentUser, question, answer, req.organization);
+      const faq = await RecruitmentServices.createOrganizationFaq(req.currentUser, question, answer, req.organization);
       res.status(200).json(faq);
     } catch (error: unknown) {
       next(error);

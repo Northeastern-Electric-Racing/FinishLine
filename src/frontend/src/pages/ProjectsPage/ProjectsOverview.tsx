@@ -9,6 +9,7 @@ import ErrorPage from '../ErrorPage';
 import { useCurrentUser, useUsersFavoriteProjects } from '../../hooks/users.hooks';
 import ProjectsOverviewCards from './ProjectsOverviewCards';
 import { useGetUsersLeadingProjects, useGetUsersTeamsProjects } from '../../hooks/projects.hooks';
+import { WbsElementStatus } from 'shared';
 
 /**
  * Cards of all projects this user has favorited
@@ -47,6 +48,14 @@ const ProjectsOverview: React.FC = () => {
 
   const favoriteProjectsSet: Set<string> = new Set(favoriteProjects.map((project) => project.id));
 
+  // Keeps only favorite team/leading projects (even when completed) or incomplete projects
+  const filteredTeamsProjects = teamsProjects.filter(
+    (project) => project.status !== WbsElementStatus.Complete || favoriteProjectsSet.has(project.id)
+  );
+  const filteredLeadingProjects = leadingProjects.filter(
+    (project) => project.status !== WbsElementStatus.Complete || favoriteProjectsSet.has(project.id)
+  );
+
   return (
     <Box>
       <ProjectsOverviewCards
@@ -56,16 +65,16 @@ const ProjectsOverview: React.FC = () => {
         emptyMessage="You have no favorite projects. Click the star on a project's page to add one!"
       />
 
-      {teamsProjects.length > 0 && (
+      {filteredTeamsProjects.length > 0 && (
         <ProjectsOverviewCards
-          projects={teamsProjects}
+          projects={filteredTeamsProjects}
           title="My Team's Projects"
           favoriteProjectsSet={favoriteProjectsSet}
         />
       )}
-      {leadingProjects.length > 0 && (
+      {filteredLeadingProjects.length > 0 && (
         <ProjectsOverviewCards
-          projects={leadingProjects}
+          projects={filteredLeadingProjects}
           title="Projects I'm Leading"
           favoriteProjectsSet={favoriteProjectsSet}
         />

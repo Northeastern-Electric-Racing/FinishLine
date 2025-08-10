@@ -21,6 +21,7 @@ export interface LinkItem {
   name: string;
   icon?: JSX.Element;
   route: string;
+  subItems?: LinkItem[];
 }
 
 export interface VersionObject {

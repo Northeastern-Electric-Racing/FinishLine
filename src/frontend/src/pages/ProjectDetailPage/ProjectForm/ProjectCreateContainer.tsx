@@ -16,8 +16,10 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useQuery } from '../../../hooks/utils.hooks';
 import * as yup from 'yup';
 import { ProjectCreateChangeRequestFormInput } from './ProjectEditContainer';
-import { ProjectProposedChangesCreateArgs } from 'shared';
+import { ProjectProposedChangesCreateArgs, WbsNumber, WorkPackageStage } from 'shared';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
+import { useCreateSingleWorkPackage } from '../../../hooks/work-packages.hooks';
+import { useGetAllCars } from '../../../hooks/cars.hooks';
 
 const ProjectCreateContainer: React.FC = () => {
   const toast = useToast();
@@ -26,9 +28,12 @@ const ProjectCreateContainer: React.FC = () => {
 
   const [managerId, setManagerId] = useState<string | undefined>();
   const [leadId, setLeadId] = useState<string | undefined>();
+  const [carNumber, setCarNumber] = useState<number | undefined>();
+  const { data: cars, isLoading: carsIsLoading, isError: carsIsError, error: carsError } = useGetAllCars();
 
-  const { mutateAsync, isLoading } = useCreateSingleProject();
+  const { mutateAsync: createProjectMutateAsync, isLoading: createProjectIsLoading } = useCreateSingleProject();
   const { mutateAsync: mutateCRAsync, isLoading: isCRHookLoading } = useCreateStandardChangeRequest();
+  const { mutateAsync: createWpMutateAsync, isLoading: createWpIsLoading } = useCreateSingleWorkPackage();
 
   const {
     data: allLinkTypes,
@@ -37,29 +42,38 @@ const ProjectCreateContainer: React.FC = () => {
     error: allLinkTypesError
   } = useAllLinkTypes();
 
-  if (isLoading || isCRHookLoading) return <LoadingIndicator />;
-  if (!allLinkTypes || allLinkTypesIsLoading) return <LoadingIndicator />;
+  if (
+    createProjectIsLoading ||
+    isCRHookLoading ||
+    createWpIsLoading ||
+    !allLinkTypes ||
+    allLinkTypesIsLoading ||
+    carsIsLoading ||
+    !cars
+  )
+    return <LoadingIndicator />;
   if (allLinkTypesIsError) return <ErrorPage message={allLinkTypesError.message} />;
 
-  const requiredLinkTypeNames = getRequiredLinkTypeNames(allLinkTypes);
+  if (carsIsError) return <ErrorPage message={carsError.message} />;
 
+  const requiredLinkTypeNames = getRequiredLinkTypeNames(allLinkTypes);
   const defaultValues = {
     name: '',
     budget: 0,
     summary: '',
     teamIds: [],
-    carNumber: 0,
+    carNumber,
     links: [],
     crId: query.get('crId') || undefined,
     descriptionBullets: [],
     leadId,
-    managerId
+    managerId,
+    workPackages: []
   };
 
   const schema = yup.object().shape({
     name: yup.string().required('Name is required!'),
-    // TODO update upper bound here once new car model is made
-    carNumber: yup.number().min(0).required('A car number is required!'),
+    carNumber: yup.number().min(0).required('A car selection is required'),
     teamIds: yup.array().of(yup.string()).required('Teams are required'),
     budget: yup.number().optional(),
     summary: yup.string().required('Summary is required!'),
@@ -68,12 +82,8 @@ const ProjectCreateContainer: React.FC = () => {
     links: yup
       .array()
       .optional()
-      .of(
-        yup.object().shape({
-          linkTypeName: yup.string(),
-          url: yup.string().url('Invalid URL')
-        })
-      )
+      .of(yup.object().shape({ linkTypeName: yup.string(), url: yup.string().url('Invalid URL') })),
+    workPackages: yup.array()
   });
 
   const onSubmitChangeRequest = async (data: ProjectCreateChangeRequestFormInput) => {
@@ -96,11 +106,7 @@ const ProjectCreateContainer: React.FC = () => {
         workPackageProposedChanges: []
       };
       const changeRequestPayload: CreateStandardChangeRequestPayload = {
-        wbsNum: {
-          carNumber,
-          projectNumber: 0,
-          workPackageNumber: 0
-        },
+        wbsNum: { carNumber, projectNumber: 0, workPackageNumber: 0 },
         type,
         what,
         why,
@@ -117,14 +123,14 @@ const ProjectCreateContainer: React.FC = () => {
   };
 
   const onSubmit = async (data: ProjectFormInput) => {
-    const { name, budget, summary, links, crId, teamIds, carNumber, descriptionBullets } = data;
+    const { name, budget, summary, links, crId, teamIds, carNumber, descriptionBullets, workPackages } = data;
 
     // Car number could be zero and a truthy check would fail
     if (carNumber === undefined) throw new Error('Car number is required!');
 
     try {
       const payload: CreateSingleProjectPayload = {
-        crId,
+        crId: crId || undefined,
         name,
         carNumber,
         summary,
@@ -135,7 +141,68 @@ const ProjectCreateContainer: React.FC = () => {
         leadId,
         managerId
       };
-      await mutateAsync(payload);
+      const project = await createProjectMutateAsync(payload);
+
+      // Topologically sort the work packages by blocking relationships
+      const sortedWorkPackages = (() => {
+        const workPackageMap = new Map<string, (typeof workPackages)[0]>();
+        const inDegree = new Map<string, number>();
+        const result: typeof workPackages = [];
+
+        // Initialize the maps
+        workPackages.forEach((wp) => {
+          workPackageMap.set(wp.workPackageId, wp);
+          inDegree.set(wp.workPackageId, 0);
+        });
+
+        // Calculate in-degrees
+        workPackages.forEach((wp) => {
+          wp.blockedBy.forEach((blockerId) => {
+            inDegree.set(blockerId, (inDegree.get(blockerId) || 0) + 1);
+          });
+        });
+
+        // Collect work packages with no blockers
+        const queue = workPackages.filter((wp) => inDegree.get(wp.workPackageId) === 0);
+
+        // Process the queue
+        while (queue.length > 0) {
+          const wp = queue.shift()!;
+          result.push(wp);
+
+          wp.blockedBy.forEach((blockerId) => {
+            const degree = inDegree.get(blockerId)! - 1;
+            inDegree.set(blockerId, degree);
+            if (degree === 0) {
+              queue.push(workPackageMap.get(blockerId)!);
+            }
+          });
+        }
+
+        // Check for cycles
+        if (result.length !== workPackages.length) {
+          throw new Error('Cycle detected in work packages');
+        }
+
+        return result;
+      })().reverse();
+
+      const idToWbs = new Map<string, WbsNumber>();
+
+      for (const wp of sortedWorkPackages) {
+        const created = await createWpMutateAsync({
+          name: wp.name,
+          startDate: wp.startDate.toISOString(),
+          duration: Number(wp.duration),
+          blockedBy: wp.blockedBy.map((blocker) => idToWbs.get(blocker)!),
+          projectWbsNum: project.wbsNum,
+          stage: wp.stage as WorkPackageStage | 'NONE',
+          descriptionBullets: wp.descriptionBullets
+        });
+
+        idToWbs.set(wp.workPackageId, created.wbsNum);
+      }
+
       history.push(routes.PROJECTS_ALL);
     } catch (e) {
       if (e instanceof Error) {
@@ -156,6 +223,7 @@ const ProjectCreateContainer: React.FC = () => {
       leadId={leadId}
       managerId={managerId}
       onSubmitChangeRequest={onSubmitChangeRequest}
+      setCarNumber={setCarNumber}
     />
   );
 };

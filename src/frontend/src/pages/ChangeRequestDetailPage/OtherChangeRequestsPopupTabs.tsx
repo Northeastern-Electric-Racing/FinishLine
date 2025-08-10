@@ -10,7 +10,7 @@ import ChangeRequestDetailCard from '../../components/ChangeRequestDetailCard';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { fullNamePipe } from '../../utils/pipes';
+import { displayEnum, fullNamePipe } from '../../utils/pipes';
 
 interface OtherChangeRequestsPopupTabsProps {
   changeRequest: ChangeRequest;
@@ -39,6 +39,18 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
 
   const crsFromWbs = changeRequests
     ?.filter((cr) => cr.wbsName === changeRequest.wbsName)
+    .sort((a: ChangeRequest, b: ChangeRequest) => {
+      return b.dateSubmitted.getTime() - a.dateSubmitted.getTime();
+    });
+
+  const crsFromCategory = changeRequests
+    ?.filter((cr) => cr.category?.name === changeRequest.category?.name)
+    .sort((a: ChangeRequest, b: ChangeRequest) => {
+      return b.dateSubmitted.getTime() - a.dateSubmitted.getTime();
+    });
+
+  const crsFromAccountCode = changeRequests
+    ?.filter((cr) => cr.accountCode?.name === changeRequest.accountCode?.name)
     .sort((a: ChangeRequest, b: ChangeRequest) => {
       return b.dateSubmitted.getTime() - a.dateSubmitted.getTime();
     });
@@ -107,11 +119,16 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
           mb: '-1px'
         }}
       >
-        {displayTab(1, `Other CR's on ${wbsPipe(changeRequest.wbsNum)}`)}
+        {changeRequest.wbsNum && displayTab(1, `Other CR's on ${wbsPipe(changeRequest.wbsNum)}`)}
+        {changeRequest.category && displayTab(1, `Other CR's on ${displayEnum(changeRequest.category.name)}`)}
+        {changeRequest.accountCode &&
+          displayTab(1, `Other CR's on ${changeRequest.accountCode.code} - ${changeRequest.accountCode.name}`)}
         {displayTab(2, `Other CR's from ${fullNamePipe(changeRequest.submitter)}`)}
       </Tabs>
       <Collapse in={tab !== 0}>
-        {tab === 1 ? displayCRCards(crsFromWbs || []) : tab === 2 && displayCRCards(crsFromSubmitter || [])}
+        {tab === 1
+          ? displayCRCards(crsFromWbs || crsFromCategory || crsFromAccountCode || [])
+          : tab === 2 && displayCRCards(crsFromSubmitter || [])}
       </Collapse>
     </Box>
   );

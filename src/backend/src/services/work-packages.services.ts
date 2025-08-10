@@ -1,4 +1,4 @@
-import { Organization, Prisma, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
+import { Organization, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
 import {
   calculateEndDate,
   DescriptionBulletPreview,
@@ -21,7 +21,7 @@ import {
   DeletedException,
   InvalidOrganizationException
 } from '../utils/errors.utils';
-import { WorkPackageQueryArgs, getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
+import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
 import workPackageTransformer from '../transformers/work-packages.transformer';
 import { updateBlocking, validateChangeRequestAccepted } from '../utils/change-requests.utils';
 import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils';
@@ -159,7 +159,7 @@ export default class WorkPackagesService {
     descriptionBullets: DescriptionBulletPreview[],
     projectWbsNum: WbsNumber,
     organization: Organization
-  ): Promise<Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>> {
+  ): Promise<WorkPackage> {
     if (await userHasPermission(user.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('create work packages');
 
@@ -253,7 +253,7 @@ export default class WorkPackagesService {
 
     await prisma.change.createMany({ data: changes.changes });
 
-    return created;
+    return workPackageTransformer(created);
   }
 
   /**

@@ -78,7 +78,7 @@ const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose
     <NERFormModal
       open={open}
       onHide={handleCancel}
-      title="New Team Type"
+      title="New Division"
       reset={() => reset({ name: '', iconName: '', description: '' })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
@@ -86,7 +86,7 @@ const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose
       showCloseButton
     >
       <FormControl>
-        <FormLabel>Team Type</FormLabel>
+        <FormLabel>Division</FormLabel>
         <ReactHookTextField name="name" control={control} sx={{ width: 1 }} />
         <FormHelperText error>{errors.name?.message}</FormHelperText>
       </FormControl>

@@ -1,9 +1,12 @@
 import { WbsNumber } from './project-types';
 import { User } from './user-types';
 
-export enum ClubAccount {
-  CASH = 'CASH',
-  BUDGET = 'BUDGET'
+export interface IndexCode {
+  indexCodeId: string;
+  name: string;
+  code: string;
+  userCreated: User;
+  dateCreated: Date;
 }
 
 export interface ReimbursementRequestRow {
@@ -16,7 +19,7 @@ export interface ReimbursementRequestRow {
   dateSubmittedToSabo: Date | undefined;
   submitter: User;
   vendor: Vendor;
-  refundSource: ClubAccount;
+  refundSource: IndexCode;
 }
 
 export enum ReimbursementStatusType {
@@ -40,8 +43,6 @@ export interface Receipt {
   receiptId: string;
   googleFileId: string;
   name: string;
-  dateDeleted?: Date;
-  deletedBy?: User;
 }
 
 export interface ReimbursementRequest {
@@ -49,25 +50,27 @@ export interface ReimbursementRequest {
   identifier: number;
   saboId?: number;
   dateCreated: Date;
-  dateDeleted?: Date;
   dateOfExpense?: Date;
   reimbursementStatuses: ReimbursementStatus[];
   recipient: User;
   vendor: Vendor;
-  account: ClubAccount;
+  indexCode: IndexCode;
   totalCost: number;
   receiptPictures: Receipt[];
   reimbursementProducts: ReimbursementProduct[];
   dateDelivered?: Date;
   accountCode: AccountCode;
+  comments: ReimbursementRequestComment[];
 }
 
-export enum OtherProductReason {
-  ToolsAndEquipment = 'TOOLS_AND_EQUIPMENT',
-  Competition = 'COMPETITION',
-  Consumables = 'CONSUMABLES',
-  GeneralStock = 'GENERAL_STOCK',
-  SubscriptionsAndMemberships = 'SUBSCRIPTIONS_AND_MEMBERSHIPS'
+export interface OtherProductReason {
+  otherProductReasonId: string;
+  name: string;
+  userCreated: User;
+  dateCreated: Date;
+  budget: number;
+  indexCode: IndexCode;
+  accountCodes: AccountCode[];
 }
 
 export type WBSElementData = { wbsNum: WbsNumber; wbsName: string };
@@ -76,31 +79,49 @@ export type ReimbursementProductReason = WBSElementData | OtherProductReason;
 export interface ReimbursementProduct {
   reimbursementProductId: string;
   name: string;
-  dateDeleted?: Date;
   cost: number;
+  refundSources: RefundSource[];
   reimbursementProductReason: ReimbursementProductReason;
 }
 
 export interface Vendor {
   vendorId: string;
   dateCreated: Date;
-  dateDeleted?: Date;
   name: string;
+  username?: string;
+  password?: string;
+  taxExempt: boolean;
+  twoFactorContacts: User[];
+  addedBy: User;
+  discountCode?: string;
+  notes?: string;
 }
 
 export interface AccountCode {
   accountCodeId: string;
   name: string;
   code: number;
+  amount?: number;
   allowed: boolean;
-  allowedRefundSources: ClubAccount[];
-  dateDeleted?: Date;
+  indexCodes: IndexCode[];
+}
+
+export interface RefundSource {
+  refundSourceId: string;
+  indexCode: IndexCode;
+  amount: number;
+}
+
+export interface CreateRefundSourceArgs {
+  indexCode: IndexCode;
+  amount: number;
 }
 
 export interface ReimbursementProductCreateArgs {
   id?: string;
   name: string;
   cost: number;
+  refundSources: CreateRefundSourceArgs[];
 }
 
 export interface ReimbursementProductFormArgs extends ReimbursementProductCreateArgs {
@@ -134,4 +155,12 @@ export interface Reimbursement {
   dateCreated: Date;
   amount: number;
   userSubmitted: User;
+}
+
+export interface ReimbursementRequestComment {
+  reimbursementRequestCommentId: string;
+  reimbursementRequestId: string;
+  dateCreated: Date;
+  comment: string;
+  userCreated: User;
 }

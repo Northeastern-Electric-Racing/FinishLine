@@ -7,6 +7,8 @@ COPY package.json .yarn tsconfig.build.json ./
 COPY ./src/backend src/backend
 COPY ./src/shared src/shared
 
+RUN rm -rf src/backend/tests
+
 RUN yarn install --prod;
 
 RUN echo DATABASE_URL=\"postgresql://postgres:docker@database:5432/nerpm?schema=public\" > ./src/backend/.env

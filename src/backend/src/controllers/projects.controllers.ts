@@ -32,6 +32,16 @@ export default class ProjectsController {
     }
   }
 
+  static async getTeamsProjects(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamId } = req.params;
+      const projects: Project[] = await ProjectsService.getTeamsProjects(req.organization, teamId);
+      res.status(200).json(projects);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getSingleProject(req: Request, res: Response, next: NextFunction) {
     try {
       const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
@@ -179,7 +189,8 @@ export default class ProjectsController {
         price,
         subtotal,
         linkUrl,
-        notes
+        notes,
+        reimbursementRequestId
       } = req.body;
       const wbsNum = validateWBS(req.params.wbsNum);
       const material = await BillOfMaterialsService.createMaterial(
@@ -198,7 +209,8 @@ export default class ProjectsController {
         notes,
         assemblyId,
         pdmFileName,
-        unitName
+        unitName,
+        reimbursementRequestId
       );
       res.status(200).json(material);
     } catch (error: unknown) {
@@ -340,7 +352,8 @@ export default class ProjectsController {
         price,
         subtotal,
         linkUrl,
-        notes
+        notes,
+        reimbursementRequestId
       } = req.body;
       const updatedMaterial = await BillOfMaterialsService.editMaterial(
         req.currentUser,
@@ -358,7 +371,8 @@ export default class ProjectsController {
         notes,
         unitName,
         assemblyId,
-        pdmFileName
+        pdmFileName,
+        reimbursementRequestId
       );
       res.status(200).json(updatedMaterial);
     } catch (error: unknown) {
@@ -436,6 +450,27 @@ export default class ProjectsController {
 
       const assemblies = await BillOfMaterialsService.getMaterialsForWbsElement(wbsNumber, req.organization);
       res.status(200).json(assemblies);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async setAbbreviation(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { abbreviation } = req.body;
+      const wbsNum: WbsNumber = validateWBS(req.body.wbsNum);
+      const updatedProject = await ProjectsService.setAbbreviation(wbsNum, req.currentUser, req.organization, abbreviation);
+      res.status(200).json(updatedProject);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteAbbreviation(req: Request, res: Response, next: NextFunction) {
+    try {
+      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
+      await ProjectsService.deleteAbbreviation(wbsNum, req.currentUser, req.organization);
+      res.status(200).json({ message: `Project ${wbsPipe(wbsNum)}'s abbreviation was successfully deleted.` });
     } catch (error: unknown) {
       next(error);
     }
