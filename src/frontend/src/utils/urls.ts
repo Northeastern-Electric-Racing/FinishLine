@@ -34,6 +34,7 @@ const projects = () => `${API_URL}/projects`;
 const allProjects = (includeDeleted: boolean) => `${projects()}/all/${includeDeleted ? 'true' : 'false'}`;
 const usersTeamsProjects = () => `${projects()}/users-teams`;
 const usersLeadingProjects = () => `${projects()}/leading`;
+const teamsProjects = (teamId: string) => `${projects()}/teams-projects/${teamId}`;
 const projectsByWbsNum = (wbsNum: string) => `${projects()}/${wbsNum}`;
 const projectsCreate = () => `${projects()}/create`;
 const projectsEdit = () => `${projects()}/edit`;
@@ -120,6 +121,7 @@ const changeRequestDelete = (id: string) => changeRequestsById(id) + '/delete';
 const changeRequestsCreate = () => `${changeRequests()}/new`;
 const changeRequestsCreateActivation = () => `${changeRequestsCreate()}/activation`;
 const changeRequestsCreateStageGate = () => `${changeRequestsCreate()}/stage-gate`;
+const changeRequestsCreateBudget = () => `${changeRequestsCreate()}/budget`;
 const changeRequestsCreateStandard = () => `${changeRequestsCreate()}/standard`;
 const changeRequestCreateProposeSolution = () => `${changeRequestsCreate()}/proposed-solution`;
 const changeRequestRequestReviewer = (id: string) => changeRequestsById(id) + '/request-review';
@@ -137,6 +139,7 @@ const teamsArchive = (id: string) => `${teamsById(id)}/archive`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
 const teamsCreate = () => `${teams()}/create`;
 const teamsSetLeads = (id: string) => `${teamsById(id)}/set-leads`;
+const usersTeams = () => `${teams()}/users-teams`;
 const teamTypes = () => `${teams()}/teamType`;
 const allTeamTypes = () => `${teamTypes()}/all`;
 const teamTypesCreate = () => `${teamTypes()}/create`;
@@ -177,10 +180,105 @@ const financeRequestChanges = (id: string) => `${financeEndpoints()}/${id}/reque
 const financeGetPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/list`;
 const financeSendPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/send`;
 const financeEditAccountCode = (accountCodeId: string) => `${getAllAccountCodes()}/${accountCodeId}/edit`;
+const financeDeleteAccountCode = (accountCodeId: string) => `${financeEndpoints()}/account-codes/${accountCodeId}/delete`;
+const financeDeleteOtherProductReason = (otherReasonId: string) =>
+  `${financeEndpoints()}/other-reimbursement-product-reasons/${otherReasonId}/delete`;
 const financeCreateAccountCode = () => `${getAllAccountCodes()}/create`;
 const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
 const financeEditVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/edit`;
+const financeDeleteVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/delete`;
 const financeLeadershipApprove = (id: string) => `${financeEndpoints()}/${id}/leadership-approve`;
+
+const financeRoutesEndpoints = () => `${API_URL}/finance`;
+const financeCreateSponsor = () => `${financeRoutesEndpoints()}/sponsor/create`;
+const financeCreateSponsorTier = () => `${financeRoutesEndpoints()}/sponsorTier/create`;
+const financeCreateSponsorTask = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/sponsorTasks`;
+const financeCreateReimbursementRequestComment = (id: string) => `${financeEndpoints()}/${id}/comments`;
+const getAllIndexCodes = () => `${financeEndpoints()}/index-codes`;
+const getAllOtherProductReasons = () => `${financeEndpoints()}/other-reimbursement-product-reasons`;
+const financeCreateOtherProductReason = () => `${getAllOtherProductReasons()}/create`;
+const getAllSponsors = () => `${financeRoutesEndpoints()}/sponsors`;
+const getSponsorTasks = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/sponsorTasks`;
+const deleteSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/delete`;
+const deleteSponsorTask = (sponsorTaskId: string) => `${financeRoutesEndpoints()}/sponsorTask/${sponsorTaskId}/delete`;
+const editSponsorTask = (sponsorTaskId: string) => `${financeRoutesEndpoints()}/sponsorTask/${sponsorTaskId}/edit`;
+const financeEditOtherReimbursementProductReason = (id: String) =>
+  `${financeEndpoints()}/other-reimbursement-product-reasons/${id}/edit`;
+const getReimbursementRequestProjectData = (projectId: string, startDate?: Date, endDate?: Date): string => {
+  const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-project-data/${projectId}`);
+  const params = new URLSearchParams();
+  if (startDate) params.set('startDate', startDate.toISOString());
+  if (endDate) params.set('endDate', endDate.toISOString());
+  const queryString = params.toString();
+  return queryString ? `${url.toString()}?${queryString}` : url.toString();
+};
+const getReimbursementRequestTeamData = (teamId: string, startDate?: Date, endDate?: Date): string => {
+  const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-team-data/${teamId}`);
+  const params = new URLSearchParams();
+  if (startDate) params.set('startDate', startDate.toISOString());
+  if (endDate) params.set('endDate', endDate.toISOString());
+  const queryString = params.toString();
+  return queryString ? `${url.toString()}?${queryString}` : url.toString();
+};
+const getReimbursementRequestCategoryData = (otherReasonId: string, startDate?: Date, endDate?: Date): string => {
+  const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-category-data/${otherReasonId}`);
+  const params = new URLSearchParams();
+  if (startDate) params.set('startDate', startDate.toISOString());
+  if (endDate) params.set('endDate', endDate.toISOString());
+  const queryString = params.toString();
+  return queryString ? `${url.toString()}?${queryString}` : url.toString();
+};
+const getAllReimbursementRequestData = (startDate?: Date, endDate?: Date): string => {
+  const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-data`);
+  const params = new URLSearchParams();
+  if (startDate) params.set('startDate', startDate.toISOString());
+  if (endDate) params.set('endDate', endDate.toISOString());
+  const queryString = params.toString();
+  return queryString ? `${url.toString()}?${queryString}` : url.toString();
+};
+const getReimbursementRequestTeamTypeData = (teamTypeId: string, startDate?: Date, endDate?: Date): string => {
+  const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-team-type-data/${teamTypeId}`);
+  const params = new URLSearchParams();
+  if (startDate) params.set('startDate', startDate.toISOString());
+  if (endDate) params.set('endDate', endDate.toISOString());
+  const queryString = params.toString();
+  return queryString ? `${url.toString()}?${queryString}` : url.toString();
+};
+const getSpendingBarTeamData = (teamId: string, startDate?: Date, endDate?: Date): string => {
+  const url = new URL(`${financeRoutesEndpoints()}/spending-bar-team-data/${teamId}`);
+  const params = new URLSearchParams();
+  if (startDate) params.set('startDate', startDate.toISOString());
+  if (endDate) params.set('endDate', endDate.toISOString());
+  const queryString = params.toString();
+  return queryString ? `${url.toString()}?${queryString}` : url.toString();
+};
+const getSpendingBarTeamTypeData = (teamTypeId: string, startDate?: Date, endDate?: Date): string => {
+  const url = new URL(`${financeRoutesEndpoints()}/spending-bar-team-type-data/${teamTypeId}`);
+  const params = new URLSearchParams();
+  if (startDate) params.set('startDate', startDate.toISOString());
+  if (endDate) params.set('endDate', endDate.toISOString());
+  const queryString = params.toString();
+  return queryString ? `${url.toString()}?${queryString}` : url.toString();
+};
+const getSpendingBarCategoryData = (startDate?: Date, endDate?: Date): string => {
+  const url = new URL(`${financeRoutesEndpoints()}/spending-bar-category-data`);
+  const params = new URLSearchParams();
+  if (startDate) params.set('startDate', startDate.toISOString());
+  if (endDate) params.set('endDate', endDate.toISOString());
+  const queryString = params.toString();
+  return queryString ? `${url.toString()}?${queryString}` : url.toString();
+};
+const getAllSpendingBarData = (startDate?: Date, endDate?: Date): string => {
+  const url = new URL(`${financeRoutesEndpoints()}/spending-bar-data`);
+  const params = new URLSearchParams();
+  if (startDate) params.set('startDate', startDate.toISOString());
+  if (endDate) params.set('endDate', endDate.toISOString());
+  const queryString = params.toString();
+  return queryString ? `${url.toString()}?${queryString}` : url.toString();
+};
+const getAllSponsorTiers = () => `${financeRoutesEndpoints()}/sponsorTiers`;
+const editSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/edit`;
+const financeGetUsersTeamsReimbursementRequests = () => `${financeEndpoints()}/reimbursements/current-user-team`;
 
 /**************** Bill of Material Endpoints **************************/
 const bomEndpoints = () => `${API_URL}/projects/bom`;
@@ -245,6 +343,7 @@ const organizationsSetFeaturedProjects = () => `${organizationsFeaturedProjects(
 const organizationsSetWorkspaceId = () => `${organizations()}/workspaceId/set`;
 const organizationsGetPartReviewGuideLink = () => `${organizations()}/part-review-guide-link/get`;
 const organizationsSetPartReviewGuideLink = () => `${organizations()}/part-review-guide-link/set`;
+const organizationsSetSlackSponsorshipNotificationChannelId = () => `${organizations()}/sponsorshipChannelId/set`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
@@ -374,6 +473,7 @@ export const apiUrls = {
   partsDelete,
   partsCreateSubmission,
   partsEditSubmission,
+  teamsProjects,
 
   tasksCreate,
   tasks,
@@ -398,6 +498,7 @@ export const apiUrls = {
   changeRequestsCreate,
   changeRequestsCreateActivation,
   changeRequestsCreateStageGate,
+  changeRequestsCreateBudget,
   changeRequestsCreateStandard,
   changeRequestCreateProposeSolution,
   changeRequestRequestReviewer,
@@ -414,6 +515,7 @@ export const apiUrls = {
   teamsSetDescription,
   teamsCreate,
   teamsSetLeads,
+  usersTeams,
   allTeamTypes,
   teamsSetTeamType,
   setOnboardingUser,
@@ -453,10 +555,38 @@ export const apiUrls = {
   financeGetPendingAdvisorList,
   financeSendPendingAdvisorList,
   financeEditAccountCode,
+  financeDeleteAccountCode,
   financeCreateAccountCode,
   financeCreateVendor,
   financeEditVendor,
+  financeDeleteVendor,
   financeLeadershipApprove,
+  financeCreateSponsor,
+  financeCreateSponsorTier,
+  financeCreateSponsorTask,
+  financeCreateReimbursementRequestComment,
+  getAllIndexCodes,
+  getAllOtherProductReasons,
+  financeCreateOtherProductReason,
+  getAllSponsors,
+  getSponsorTasks,
+  deleteSponsor,
+  deleteSponsorTask,
+  editSponsorTask,
+  financeEditOtherReimbursementProductReason,
+  financeDeleteOtherProductReason,
+  getReimbursementRequestProjectData,
+  getReimbursementRequestTeamData,
+  getAllReimbursementRequestData,
+  getReimbursementRequestCategoryData,
+  getReimbursementRequestTeamTypeData,
+  getSpendingBarTeamData,
+  getSpendingBarTeamTypeData,
+  getSpendingBarCategoryData,
+  getAllSpendingBarData,
+  getAllSponsorTiers,
+  editSponsor,
+  financeGetUsersTeamsReimbursementRequests,
 
   bomEndpoints,
   bomGetMaterialsByWbsNum,
@@ -511,6 +641,7 @@ export const apiUrls = {
   organizationsSetWorkspaceId,
   organizationsGetPartReviewGuideLink,
   organizationsSetPartReviewGuideLink,
+  organizationsSetSlackSponsorshipNotificationChannelId,
 
   cars,
   carsCreate,

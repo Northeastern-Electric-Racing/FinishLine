@@ -1,6 +1,7 @@
+import React from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
-import { Assembly, MaterialStatus } from 'shared';
+import { Assembly, MaterialStatus, RoleEnum } from 'shared';
 import * as yup from 'yup';
 import LoadingIndicator from '../../../../../components/LoadingIndicator';
 import {
@@ -10,8 +11,11 @@ import {
   useGetAllUnits
 } from '../../../../../hooks/bom.hooks';
 import ErrorPage from '../../../../ErrorPage';
-import MaterialFormView from './MaterialFormView';
 import { Decimal } from 'decimal.js';
+import { useCurrentUser } from '../../../../../hooks/users.hooks';
+import MaterialAdminWrapper from './MaterialAdminWrapper';
+import MaterialHeadWrapper from './MaterialHeadWrapper';
+import MaterialMemberWrapper from './MaterialMemberWrapper';
 
 const schema = yup.object().shape({
   name: yup.string().required('Enter a name!'),
@@ -25,7 +29,8 @@ const schema = yup.object().shape({
   linkUrl: yup.string().required('URL is required!'),
   notes: yup.string().optional(),
   pdmFileName: yup.string().optional(),
-  assemblyId: yup.string().optional()
+  assemblyId: yup.string().optional(),
+  reimbursementRequestId: yup.string().optional()
 });
 
 export interface MaterialFormInput {
@@ -41,6 +46,7 @@ export interface MaterialFormInput {
   linkUrl: string;
   notes?: string;
   assemblyId?: string;
+  reimbursementRequestId?: string;
 }
 
 export interface MaterialDataSubmission {
@@ -57,6 +63,7 @@ export interface MaterialDataSubmission {
   notes?: string;
   assemblyId?: string;
   subtotal: number;
+  reimbursementRequestId?: string;
 }
 
 export interface MaterialFormProps {
@@ -88,10 +95,13 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, assemblies, onS
       unitName: defaultValues?.unitName,
       linkUrl: defaultValues?.linkUrl ?? '',
       notes: defaultValues?.notes,
-      assemblyId: defaultValues?.assemblyId
+      assemblyId: defaultValues?.assemblyId,
+      reimbursementRequestId: defaultValues?.reimbursementRequestId
     },
     resolver: yupResolver(schema)
   });
+
+  const user = useCurrentUser();
 
   const { mutateAsync: createManufacturer, isLoading: isLoadingCreateManufacturer } = useCreateManufacturer();
 
@@ -114,6 +124,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, assemblies, onS
   if (materialTypesIsError) return <ErrorPage message={materialTypesError.message} />;
   if (unitsIsError) return <ErrorPage message={unitsError.message} />;
   if (manufacturersIsError) return <ErrorPage message={manufacturersError.message} />;
+
   if (
     isLoadingManufactuers ||
     isLoadingMaterialTypes ||
@@ -143,24 +154,30 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, assemblies, onS
     }
   };
 
-  return (
-    <MaterialFormView
-      assemblies={assemblies}
-      allManufacturers={manufactuers}
-      allMaterialTypes={materialTypes}
-      allUnits={units}
-      onSubmit={onSubmitWrapper}
-      handleSubmit={handleSubmit}
-      submitText={submitText}
-      onHide={onHide}
-      control={control}
-      errors={errors}
-      open={open}
-      watch={watch}
-      createManufacturer={createManufacturerWrapper}
-      setValue={setValue}
-    />
-  );
+  const sharedProps = {
+    assemblies,
+    allManufacturers: manufactuers,
+    allMaterialTypes: materialTypes,
+    allUnits: units,
+    onSubmit: onSubmitWrapper,
+    handleSubmit,
+    submitText,
+    onHide,
+    control,
+    errors,
+    open,
+    watch,
+    createManufacturer: createManufacturerWrapper,
+    setValue
+  };
+
+  if (user.role === RoleEnum.APP_ADMIN || user.role === RoleEnum.ADMIN) {
+    return <MaterialAdminWrapper {...sharedProps} />;
+  }
+  if (user.role === RoleEnum.HEAD || user.role === RoleEnum.LEADERSHIP) {
+    return <MaterialHeadWrapper {...sharedProps} />;
+  }
+  return <MaterialMemberWrapper {...sharedProps} />;
 };
 
 export default MaterialForm;

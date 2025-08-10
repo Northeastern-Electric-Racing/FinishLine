@@ -4,7 +4,6 @@
  */
 import { useFieldArray, useForm } from 'react-hook-form';
 import {
-  ClubAccount,
   OtherProductReason,
   OtherReimbursementProductCreateArgs,
   ReimbursementProductFormArgs,
@@ -20,7 +19,7 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import CreateReimbursementRequestFormView from './ReimbursementFormView';
 import { useAllProjects } from '../../../hooks/projects.hooks';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { useCurrentUserSecureSettings } from '../../../hooks/users.hooks';
 
@@ -29,7 +28,8 @@ export interface ReimbursementRequestInformation {
   dateOfExpense?: Date;
   accountCodeId: string;
   receiptFiles: ReimbursementReceiptUploadArgs[];
-  account: ClubAccount;
+  indexCodeId: string;
+  secondaryAccount?: string;
 }
 export interface ReimbursementRequestFormInput extends ReimbursementRequestInformation {
   reimbursementProducts: ReimbursementProductFormArgs[];
@@ -44,15 +44,52 @@ export interface ReimbursementRequestDataSubmission extends ReimbursementRequest
 interface ReimbursementRequestFormProps {
   submitText: 'Save' | 'Submit';
   submitData: (data: ReimbursementRequestDataSubmission) => Promise<string>;
+  onFormExit?: () => void;
   defaultValues?: ReimbursementRequestFormInput;
-  previousPage: string;
 }
 
 const RECEIPTS_REQUIRED = import.meta.env.VITE_RR_RECEIPT_REQUIREMENT || 'disabled';
 
 const schema = yup.object().shape({
   vendorId: yup.string().required('Vendor is required'),
-  account: yup.mixed<ClubAccount>().oneOf(Object.values(ClubAccount)).required('Account is required'),
+  indexCodeId: yup.string().required('Refund source is required'),
+  secondaryAccount: yup.string().test('required-if-split', 'Second refund source is required', function (value) {
+    if (!this.parent.$hasConfirmedFinance) return true;
+    if (!value) {
+      return this.createError({
+        message: 'Second refund source is required'
+      });
+    }
+
+    const products = this.parent.reimbursementProducts || [];
+    for (const product of this.parent.reimbursementProducts) {
+      if (product.refundSources[0].amount === undefined) {
+        return this.createError({
+          message: 'Amount is required',
+          path: `reimbursementProducts.${products.indexOf(product)}.refundSources.${0}.amount`
+        });
+      } else if (product.refundSources[0].amount < 0.01) {
+        return this.createError({
+          message: 'Amount must be positive',
+          path: `reimbursementProducts.${products.indexOf(product)}.refundSources.${0}.amount`
+        });
+      }
+
+      if (product.refundSources[1].amount === undefined) {
+        return this.createError({
+          message: 'Amount is required',
+          path: `reimbursementProducts.${products.indexOf(product)}.refundSources.${1}.amount`
+        });
+      } else if (product.refundSources[1].amount < 0.01) {
+        return this.createError({
+          message: 'Amount must be positive',
+          path: `reimbursementProducts.${products.indexOf(product)}.refundSources.${1}.amount`
+        });
+      }
+    }
+
+    return true;
+  }),
   dateOfExpense: yup.date().optional(),
   accountCodeId: yup.string().required('Account code is required'),
   reimbursementProducts: yup
@@ -60,15 +97,23 @@ const schema = yup.object().shape({
     .of(
       yup.object().shape({
         name: yup.string().required('Description is required'),
+        refundSources: yup.array().of(
+          yup.object({
+            amount: yup
+              .number()
+              .typeError('Amount must be a number')
+              .min(0, 'Amount cannot be negative')
+              .required('Amount is required')
+          })
+        ),
         cost: yup
           .number()
-          .typeError('Amount is required')
-          .required('Amount is required')
-          .min(0.01, 'Amount must be greater than 0'),
-        reason: yup.mixed<OtherProductReason | WbsNumber>().required()
+          .required('Cost is required')
+          .typeError('Amount must be a number')
+          .min(0.01, 'Amount cannot be negative or less than zero')
       })
     )
-    .required('reimbursement products required')
+    .required('Reimbursement products required')
     .min(1, 'At least one Reimbursement Product is required'),
   receiptFiles:
     // The requirements for receipt uploads is disabled by default on development to make testing easier;
@@ -84,10 +129,11 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
   submitText,
   defaultValues,
   submitData,
-  previousPage
+  onFormExit
 }) => {
   const {
     handleSubmit,
+
     control,
     formState: { errors },
     watch,
@@ -97,13 +143,17 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     resolver: yupResolver(schema as any), // Typing any because its difficult to get around the env variable for the reimbursement files
     defaultValues: {
       vendorId: defaultValues?.vendorId ?? '',
-      account: defaultValues?.account,
+      indexCodeId: defaultValues?.indexCodeId,
+      secondaryAccount: defaultValues?.secondaryAccount,
       dateOfExpense: defaultValues?.dateOfExpense,
       accountCodeId: defaultValues?.accountCodeId ?? '',
       reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductFormArgs[]),
       receiptFiles: defaultValues?.receiptFiles ?? ([] as ReimbursementReceiptUploadArgs[])
     }
   });
+
+  const { pathname } = useLocation();
+  const urlTabInsert = pathname.includes('/all-requests') ? 'all-requests' : 'my-requests';
 
   const {
     fields: receiptFiles,
@@ -165,30 +215,44 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     checkSecureSettingsIsLoading
   )
     return <LoadingIndicator />;
-
   const onSubmitWrapper = async (data: ReimbursementRequestFormInput) => {
     try {
-      //total cost is tracked in cents
+      //total cost, firstSourceAmount and secondSourceAmount is tracked in cents
       const totalCost = Math.round(data.reimbursementProducts.reduce((acc, curr) => acc + curr.cost, 0) * 100);
+      // For each product, if multiple refund sources are enabled, the `cost` field represents
+      // the total amount from the first refund source amount (firstSourceAmount) and second refund source (secondSourceAmount) of that product.
+      // If only one refund source is present, the `cost` reflects the refund source amount for that product, and firstSourceAmount and secondSourceAmount are left as 0 since they will not needed for this scenario.
+
       const reimbursementProducts = data.reimbursementProducts.map((product: ReimbursementProductFormArgs) => {
-        return { ...product, cost: Math.round(product.cost * 100) };
+        const anyNonZero = product.refundSources.some((rs) => Number(rs.amount) > 0);
+        const formattedRefundSources = anyNonZero ? product.refundSources : [];
+        return {
+          ...product,
+          cost: Math.round(product.cost * 100),
+          refundSources: formattedRefundSources.map((rs) => ({
+            ...rs,
+            amount: Math.round(Number(rs.amount) * 100)
+          }))
+        };
       });
 
       const otherReimbursementProducts: OtherReimbursementProductCreateArgs[] = [];
       const wbsReimbursementProducts: WbsReimbursementProductCreateArgs[] = [];
 
       reimbursementProducts.forEach((product) => {
-        if (product.reason instanceof Object) {
-          wbsReimbursementProducts.push({
-            reason: product.reason as WbsNumber,
-            cost: product.cost,
-            name: product.name
-          });
-        } else {
+        if (product.reason && 'otherProductReasonId' in product.reason) {
           otherReimbursementProducts.push({
             reason: product.reason as OtherProductReason,
             cost: product.cost,
-            name: product.name
+            name: product.name,
+            refundSources: product.refundSources
+          });
+        } else {
+          wbsReimbursementProducts.push({
+            reason: product.reason as WbsNumber,
+            cost: product.cost,
+            name: product.name,
+            refundSources: product.refundSources
           });
         }
       });
@@ -199,7 +263,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
         wbsReimbursementProducts,
         totalCost
       });
-      history.push(routes.FINANCE + '/' + reimbursementRequestId);
+      history.push(`${routes.REIMBURSEMENT_REQUESTS}/${urlTabInsert}/${reimbursementRequestId}`);
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 5000);
@@ -231,10 +295,10 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       handleSubmit={handleSubmit}
       allWbsElements={allProjectWbsElements}
       submitText={submitText}
-      previousPage={previousPage}
       setValue={setValue}
       hasSecureSettingsSet={hasSecureSettingsSet}
       register={register}
+      onFormExit={onFormExit}
     />
   );
 };

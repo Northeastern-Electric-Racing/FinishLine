@@ -453,4 +453,28 @@ export default class OrganizationsService {
 
     return updatedOrg;
   }
+
+  /**
+   * Sets the channel to which sponsorship notifications will be sent
+   * @param channelId the slack id of the channel
+   * @param submitter the user making the change
+   * @param organizationId the organization to update
+   * @returns the update orgization
+   */
+  static async setSlackSponsorshipNotificationSlackChannelId(
+    channelId: string,
+    submitter: User,
+    organizationId: string
+  ): Promise<Organization> {
+    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('set sponsorship notification channel id');
+    }
+
+    const updatedOrg = await prisma.organization.update({
+      where: { organizationId },
+      data: { sponsorshipNotificationsSlackChannelId: channelId }
+    });
+
+    return updatedOrg;
+  }
 }

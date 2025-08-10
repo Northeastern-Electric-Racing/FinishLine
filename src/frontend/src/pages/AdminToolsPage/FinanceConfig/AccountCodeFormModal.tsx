@@ -1,23 +1,25 @@
-import { ClubAccount, AccountCode } from 'shared';
-import { AccountCodePayload } from '../../../hooks/finance.hooks';
+import { IndexCode, AccountCode } from 'shared';
+import { AccountCodePayload, useGetAllIndexCodes } from '../../../hooks/finance.hooks';
 import { Controller, useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
-import { Checkbox, FormControl, FormLabel, FormHelperText, Select, MenuItem, OutlinedInput } from '@mui/material';
+import { Checkbox, FormControl, FormHelperText, Select, MenuItem, OutlinedInput, Box, Typography } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { codeAndRefundSourceName } from '../../../utils/pipes';
-import { useTheme } from '@mui/material/styles';
+import ErrorPage from '../../ErrorPage';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 
 const schema = yup.object().shape({
   code: yup.number().typeError('Account Code must be a number').required('Account Code is Required'),
   name: yup.string().required('Account Name is Required'),
+  amount: yup
+    .number()
+    .transform((value, originalValue) => (originalValue === '' ? undefined : value))
+    .optional(),
   allowed: yup.boolean().required('Allowed is Required'),
-  allowedRefundSources: yup
-    .array()
-    .of(yup.mixed<ClubAccount>().oneOf(Object.values(ClubAccount)).required())
-    .required()
+  indexCodeIds: yup.array().of(yup.string().required()).required()
 });
 
 interface AccountCodeFormModalProps {
@@ -39,14 +41,15 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
     defaultValues: {
       code: defaultValues?.code,
       name: defaultValues?.name ?? '',
+      amount: (defaultValues?.amount ?? 0) / 100,
       allowed: defaultValues?.allowed ?? false,
-      allowedRefundSources: defaultValues?.allowedRefundSources ?? []
+      indexCodeIds: defaultValues?.indexCodes.map((indexCode) => indexCode.indexCodeId) ?? []
     }
   });
-  const theme = useTheme();
 
   const onFormSubmit = async (data: AccountCodePayload) => {
     try {
+      data.amount = data.amount ? data.amount * 100 : undefined;
       await onSubmit(data);
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -56,65 +59,111 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
     handleClose();
   };
 
+  const {
+    data: indexCodes,
+    isLoading: indexCodesIsLoading,
+    isError: indexCodeIsError,
+    error: indexCodeError
+  } = useGetAllIndexCodes();
+
+  if (!indexCodes || indexCodesIsLoading) {
+    return <LoadingIndicator />;
+  }
+  if (indexCodeIsError) {
+    return <ErrorPage message={indexCodeError.message} />;
+  }
+
   return (
     <NERFormModal
       open={showModal}
       onHide={handleClose}
-      title={!!defaultValues ? 'Edit Account Code' : 'Create Account Code'}
-      reset={() => reset({ name: '', code: undefined, allowed: false, allowedRefundSources: [] })}
+      title={!!defaultValues ? 'Edit Account Code' : 'Add Account Code'}
+      reset={() => reset({ name: '', code: undefined, allowed: false, indexCodeIds: [], amount: undefined })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
       formId={!!defaultValues ? 'edit-account-code-form' : 'create-account-code-form'}
       showCloseButton
     >
-      <FormControl fullWidth>
-        <FormLabel>Account Name</FormLabel>
-        <ReactHookTextField name="name" control={control} fullWidth />
-        <FormHelperText error>{errors.name?.message}</FormHelperText>
-      </FormControl>
-      <FormControl fullWidth>
-        <FormLabel>Allowed Refund Source</FormLabel>
-        <Controller
-          name="allowedRefundSources"
-          control={control}
-          render={({ field: { onChange, value: formValue } }) => (
-            <Select
-              multiple
-              value={formValue}
-              onChange={(e) => onChange(e.target.value as ClubAccount[])}
-              input={<OutlinedInput />}
-            >
-              {Object.values(ClubAccount).map((refundSource) => (
-                <MenuItem key={refundSource} value={refundSource}>
-                  {codeAndRefundSourceName(refundSource)}
-                </MenuItem>
-              ))}
-            </Select>
-          )}
-        />
-      </FormControl>
-      <FormControl fullWidth>
-        <FormLabel>Account Code</FormLabel>
-        <ReactHookTextField name="code" control={control} fullWidth />
-        <FormHelperText error>{errors.code?.message}</FormHelperText>
-      </FormControl>
-      <FormControl>
-        <FormLabel
-          sx={{
-            '&.Mui-focused': { color: theme.palette.text.secondary }
-          }}
-        >
-          Allowed?
-        </FormLabel>
-        <Controller
-          name="allowed"
-          control={control}
-          rules={{ required: true }}
-          render={({ field: { onChange, value } }) => {
-            return <Checkbox onChange={onChange} checked={value} />;
-          }}
-        />
-      </FormControl>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, width: 350 }}>
+        <FormControl fullWidth>
+          <Typography color="#EF4345" variant="h5" sx={{ fontWeight: 'bold', fontSize: 20 }}>
+            Index Code(s):*
+          </Typography>
+          <Controller
+            name="indexCodeIds"
+            control={control}
+            render={({ field: { onChange, value: formValue } }) => (
+              <Select
+                multiple
+                value={formValue}
+                onChange={({ target: { value } }) => {
+                  onChange(typeof value === 'string' ? value.split(',') : value);
+                }}
+                input={<OutlinedInput />}
+                displayEmpty
+                renderValue={(selected) => {
+                  if (!selected || selected.length === 0) {
+                    return (
+                      <Typography component="span" sx={{ color: '#aaa' }}>
+                        Select Index Code(s)
+                      </Typography>
+                    );
+                  }
+
+                  const selectedLabels = indexCodes
+                    .filter((code) => selected.includes(code.indexCodeId))
+                    .map((code) => codeAndRefundSourceName(code))
+                    .join(', ');
+
+                  return selectedLabels;
+                }}
+              >
+                {indexCodes.map((refundSource: IndexCode) => (
+                  <MenuItem key={refundSource.indexCodeId} value={refundSource.indexCodeId}>
+                    {codeAndRefundSourceName(refundSource)}
+                  </MenuItem>
+                ))}
+              </Select>
+            )}
+          />
+        </FormControl>
+        <FormControl fullWidth>
+          <Typography color="#EF4345" variant="h5" sx={{ fontWeight: 'bold', fontSize: 20 }}>
+            Account Code:*
+          </Typography>
+          <ReactHookTextField name="code" control={control} placeholder="Enter Account Code" fullWidth />
+          <FormHelperText error>{errors.code?.message}</FormHelperText>
+        </FormControl>
+        <FormControl fullWidth>
+          <Typography color="#EF4345" variant="h5" sx={{ fontWeight: 'bold', fontSize: 20 }}>
+            Description:*
+          </Typography>
+          <ReactHookTextField name="name" control={control} placeholder="Enter Description" fullWidth />
+          <FormHelperText error>{errors.name?.message}</FormHelperText>
+        </FormControl>
+        <FormControl fullWidth>
+          <Typography color="#EF4345" variant="h5" sx={{ fontWeight: 'bold', fontSize: 20 }}>
+            Amount:
+          </Typography>
+          <ReactHookTextField name="amount" control={control} placeholder="Enter Amount" fullWidth />
+          <FormHelperText error>{errors.amount?.message}</FormHelperText>
+        </FormControl>
+        <FormControl fullWidth>
+          <Box display="flex" flexDirection="row" alignItems="center" gap={1}>
+            <Typography color="#EF4345" variant="h5" sx={{ fontWeight: 'bold', fontSize: 20 }}>
+              Allowed?
+            </Typography>
+            <Controller
+              name="allowed"
+              control={control}
+              rules={{ required: true }}
+              render={({ field: { onChange, value } }) => {
+                return <Checkbox onChange={onChange} checked={value} />;
+              }}
+            />
+          </Box>
+        </FormControl>
+      </Box>
     </NERFormModal>
   );
 };

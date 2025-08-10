@@ -7,7 +7,6 @@
 
 import {
   CR_Type,
-  Club_Accounts,
   Graph_Display_Type,
   Graph_Type,
   Measure,
@@ -23,12 +22,12 @@ import { dbSeedAllTeams } from './seed-data/teams.seed';
 import ChangeRequestsService from '../services/change-requests.services';
 import TeamsService from '../services/teams.services';
 import {
-  ClubAccount,
   DesignReviewStatus,
   MaterialStatus,
   RoleEnum,
   SpecialPermission,
   StandardChangeRequest,
+  User,
   WbsElementStatus,
   WorkPackageStage
 } from 'shared';
@@ -47,12 +46,68 @@ import WbsElementTemplatesService from '../services/wbs-element-templates.servic
 import RecruitmentServices from '../services/recruitment.services';
 import OrganizationsService from '../services/organizations.services';
 import { seedGraph } from './seed-data/statistics.seed';
-import { graphCollectionTransformer } from '../transformers/statistics-graph-collection.transformer';
 import AnnouncementService from '../services/announcement.services';
 import OnboardingServices from '../services/onboarding.services';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
-import { CreatePartTag, CreateCommonMistake, CreatePartReviewFAQ } from '../../tests/test-utils';
+import FinanceServices from '../services/finance.services';
+
 const prisma = new PrismaClient();
+
+export const CreatePartTag = async (organizationId: string, name: string, colorHexCode: string) => {
+  return await prisma.part_Tag.create({
+    data: {
+      name,
+      organization: {
+        connect: { organizationId }
+      },
+      colorHexCode,
+      dateCreated: new Date()
+    }
+  });
+};
+
+export const CreateCommonMistake = async (
+  title: string,
+  description: string,
+  starred: boolean,
+  user: { userId: string },
+  organizationId: string
+) => {
+  return await prisma.part_Review_Common_Mistake.create({
+    data: {
+      title,
+      description,
+      starred,
+      dateCreated: new Date(),
+      organization: {
+        connect: { organizationId }
+      },
+      userCreated: {
+        connect: { userId: user.userId }
+      }
+    }
+  });
+};
+
+export const CreatePartReviewFAQ = async (
+  question: string,
+  answer: string,
+  organizationId: string,
+  user: { userId: string }
+) => {
+  return await prisma.frequentlyAskedQuestion.create({
+    data: {
+      question,
+      answer,
+      partReviewFaqOrg: {
+        connect: { organizationId }
+      },
+      userCreated: {
+        connect: { userId: user.userId }
+      }
+    }
+  });
+};
 
 const performSeed: () => Promise<void> = async () => {
   const thomasEmrax = await prisma.user.create({
@@ -387,7 +442,8 @@ const performSeed: () => Promise<void> = async () => {
       kyleHamilton,
       marcusWilliams,
       roquanSmith,
-      justinTucker
+      justinTucker,
+      regina
     ].map((user) => user.userId),
     ner
   );
@@ -1725,24 +1781,297 @@ const performSeed: () => Promise<void> = async () => {
   /**
    * Reimbursements
    */
+  const vendor = await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Tesla',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Tax exemption status? This is a test i am writing alot of text ahhahahahahhaha this is more of a test i am going to write even more test hahahahah.',
+    'nershipping@gmail.com',
+    'racecar228!',
+    'SAVE50!'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Amazon',
+    ner,
+    true,
+    [thomasEmrax.userId],
+    'They want updates on work',
+    'amazon@gmail.com',
+    'racecare228!',
+    'SAVE20!'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Google',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Tax exemption ID NUMBER',
+    'google@gmail.com',
+    'racecar228!',
+    'SAVE50!'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Microsoft',
+    ner,
+    true,
+    [thomasEmrax.userId],
+    'Requires monthly invoicing',
+    'microsoft@outlook.com',
+    'secure123!',
+    'WELCOME10'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Apple',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Eco-friendly packaging preferred',
+    'apple@icloud.com',
+    'appl3Secure!',
+    'APPLE30'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Costco',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Tax ID attached',
+    'costco@wholesale.com',
+    'bulkBuy22!',
+    'BULKDEAL'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Walmart',
+    ner,
+    true,
+    [thomasEmrax.userId],
+    'Requires contact for all returns',
+    'support@walmart.com',
+    'WalMartP@ss1',
+    'ROLLBACK15'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Target',
+    ner,
+    true,
+    [thomasEmrax.userId],
+    'Needs weekly usage reports',
+    'vendors@target.com',
+    'target321!',
+    'REDTAG10'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'eBay',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Verification required',
+    'support@ebay.com',
+    'eBayS3ll3r!',
+    'FREESHIP'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Netflix',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Subscription-based payments',
+    'billing@netflix.com',
+    'stream4life!',
+    'BINGE50'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Spotify',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Requires invoice numbers on docs',
+    'accounts@spotify.com',
+    'listen2music!',
+    'MUSIC25'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Adobe',
+    ner,
+    true,
+    [thomasEmrax.userId],
+    'Needs PO for every purchase',
+    'adobe@creative.com',
+    'Cr3at1ve!',
+    'DESIGN10'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Dell',
+    ner,
+    true,
+    [thomasEmrax.userId],
+    'Requesting business license',
+    'orders@dell.com',
+    'd3llP@ss!',
+    'TECH30'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'HP',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Needs signed agreement on file',
+    'support@hp.com',
+    'hpSecure12!',
+    'PRINT20'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Facebook',
+    ner,
+    true,
+    [thomasEmrax.userId],
+    'Wants to be listed as priority',
+    'fb@meta.com',
+    'm3taPass!',
+    'META15'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'LinkedIn',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Requires biannual contract renewal',
+    'contact@linkedin.com',
+    'workN3tw0rk!',
+    'NETWORK25'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Zoom',
+    ner,
+    true,
+    [thomasEmrax.userId],
+    'Asks for contact before upgrades',
+    'sales@zoom.us',
+    'z00mM33t!',
+    'VIDEO5'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Slack',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Needs project reference ID',
+    'help@slack.com',
+    'sl@ckwork!',
+    'COLLAB10'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Stripe',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Bank info needed for setup',
+    'payments@stripe.com',
+    'fintech123!',
+    'PAYSAFE'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Square',
+    ner,
+    true,
+    [thomasEmrax.userId],
+    'Tax info must be updated yearly',
+    'vendor@square.com',
+    'squ@reRoot!',
+    'CASHAPP'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Notion',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Requires shared workspace invite',
+    'support@notion.so',
+    'not3sApp!',
+    'PLAN50'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'GitHub',
+    ner,
+    true,
+    [thomasEmrax.userId],
+    'Open source licenses required',
+    'billing@github.com',
+    'ghRepos!',
+    'DEV25'
+  );
+  await ReimbursementRequestService.createVendor(
+    thomasEmrax,
+    'Trello',
+    ner,
+    false,
+    [thomasEmrax.userId],
+    'Needs card for each request',
+    'boards@trello.com',
+    'tr3ll0Board!',
+    'TASK15'
+  );
 
-  const vendor = await ReimbursementRequestService.createVendor(thomasEmrax, 'Tesla', ner);
-  await ReimbursementRequestService.createVendor(thomasEmrax, 'Amazon', ner);
-  await ReimbursementRequestService.createVendor(thomasEmrax, 'Google', ner);
+  const indexCodeCash = await ReimbursementRequestService.createIndexCode('CASH', '830667', thomasEmrax, ner);
+  const indexCodeBudget = await ReimbursementRequestService.createIndexCode('BUDGET', '800462', thomasEmrax, ner);
 
   const accountCode = await ReimbursementRequestService.createAccountCode(
     thomasEmrax,
     'Equipment',
     123,
     true,
-    [Club_Accounts.CASH, Club_Accounts.BUDGET],
-    ner
+    [indexCodeCash.indexCodeId, indexCodeBudget.indexCodeId],
+    ner,
+    1050
   );
 
-  await ReimbursementRequestService.createReimbursementRequest(
+  const accountCode2 = await ReimbursementRequestService.createAccountCode(
+    thomasEmrax,
+    'Things',
+    456,
+    false,
+    [indexCodeBudget.indexCodeId],
+    ner,
+    2000
+  );
+
+  const accountCode3 = await ReimbursementRequestService.createAccountCode(
+    thomasEmrax,
+    'Stuff',
+    789,
+    true,
+    [indexCodeCash.indexCodeId],
+    ner,
+    3010
+  );
+
+  const reimbursement1 = await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
     vendor.vendorId,
-    ClubAccount.CASH,
+    indexCodeCash.indexCodeId,
     [],
     [
       {
@@ -1752,7 +2081,17 @@ const performSeed: () => Promise<void> = async () => {
           projectNumber: 1,
           workPackageNumber: 0
         },
-        cost: 200000
+        cost: 200000,
+        refundSources: [
+          {
+            indexCode: indexCodeBudget,
+            amount: 150000
+          },
+          {
+            indexCode: indexCodeCash,
+            amount: 50000
+          }
+        ]
       }
     ],
     accountCode.accountCodeId,
@@ -1760,10 +2099,10 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await ReimbursementRequestService.createReimbursementRequest(
+  const reimbursement3 = await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
     vendor.vendorId,
-    ClubAccount.BUDGET,
+    indexCodeBudget.indexCodeId,
     [],
     [
       {
@@ -1773,13 +2112,129 @@ const performSeed: () => Promise<void> = async () => {
           projectNumber: 1,
           workPackageNumber: 0
         },
-        cost: 10000
+        cost: 200000,
+        refundSources: [
+          {
+            indexCode: indexCodeBudget,
+            amount: 150000
+          },
+          {
+            indexCode: indexCodeCash,
+            amount: 50000
+          }
+        ]
       }
     ],
     accountCode.accountCodeId,
     200,
     ner,
     new Date()
+  );
+
+  const reimbursement2 = await ReimbursementRequestService.createReimbursementRequest(
+    thomasEmrax,
+    vendor.vendorId,
+    indexCodeBudget.indexCodeId,
+    [],
+    [
+      {
+        name: 'BOX',
+        reason: {
+          carNumber: 0,
+          projectNumber: 1,
+          workPackageNumber: 0
+        },
+        cost: 10000,
+        refundSources: [
+          {
+            indexCode: indexCodeBudget,
+            amount: 7000
+          },
+          {
+            indexCode: indexCodeCash,
+            amount: 3000
+          }
+        ]
+      }
+    ],
+    accountCode.accountCodeId,
+    20000,
+    ner,
+    new Date()
+  );
+
+  ReimbursementRequestService.createReimbursementRequestComment(
+    thomasEmrax,
+    ner,
+    'Thomas Followed up - "Please upload reciept"',
+    reimbursement1.reimbursementRequestId
+  );
+
+  ReimbursementRequestService.createReimbursementRequestComment(
+    batman,
+    ner,
+    'Batman Uploaded Receipt',
+    reimbursement1.reimbursementRequestId
+  );
+
+  ReimbursementRequestService.createReimbursementRequestComment(
+    thomasEmrax,
+    ner,
+    'Thomas Submmited to SABO',
+    reimbursement1.reimbursementRequestId
+  );
+
+  const otherProductReasonConsumables = await ReimbursementRequestService.createOtherReasonReimbursementProduct(
+    'CONSUMABLES',
+    10,
+    indexCodeCash.indexCodeId,
+    [accountCode.accountCodeId],
+    thomasEmrax,
+    ner
+  );
+
+  const otherProductReasonTools = await ReimbursementRequestService.createOtherReasonReimbursementProduct(
+    'TOOLS_AND_EQUIPMENT',
+    10,
+    indexCodeCash.indexCodeId,
+    [],
+    thomasEmrax,
+    ner
+  );
+
+  const otherProductReasonComp = await ReimbursementRequestService.createOtherReasonReimbursementProduct(
+    'COMPETITION',
+    10,
+    indexCodeBudget.indexCodeId,
+    [accountCode.accountCodeId],
+    thomasEmrax,
+    ner
+  );
+
+  const otherProductReasonGeneral = await ReimbursementRequestService.createOtherReasonReimbursementProduct(
+    'GENERAL_STOCK',
+    10,
+    indexCodeBudget.indexCodeId,
+    [],
+    thomasEmrax,
+    ner
+  );
+
+  const otherProductReasonSub = await ReimbursementRequestService.createOtherReasonReimbursementProduct(
+    'SUBSCRIPTIONS_AND_MEMBERSHIP',
+    10,
+    indexCodeCash.indexCodeId,
+    [],
+    thomasEmrax,
+    ner
+  );
+
+  const budgetCR = await ChangeRequestsService.createBudgetChangeRequest(
+    thomasEmrax,
+    'BUDGET',
+    50,
+    ner,
+    otherProductReasonConsumables.otherProductReasonId
   );
 
   /**
@@ -1836,8 +2291,31 @@ const performSeed: () => Promise<void> = async () => {
       workPackageNumber: 0
     },
     ner,
-    'Here are some more notes',
-    assembly1.assemblyId
+    'Here are some more notes'
+  );
+
+  await BillOfMaterialsService.createMaterial(
+    thomasEmrax,
+    '100k Resistor',
+    MaterialStatus.ReadyToOrder,
+    'Resistor',
+    'Digikey',
+    'lalsd',
+    new Decimal(5),
+    10,
+    50,
+    'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    {
+      carNumber: 0,
+      projectNumber: 1,
+      workPackageNumber: 0
+    },
+    ner,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    reimbursement1.reimbursementRequestId
   );
 
   // Need to do this because the design review cannot be scheduled for a past day
@@ -2552,6 +3030,37 @@ const performSeed: () => Promise<void> = async () => {
       }
     }
   });
+
+  const goldSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Gold', ner, '#9F9156');
+  await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, '#C0C0C0');
+  await FinanceServices.createSponsorTier(thomasEmrax, 'Bronze', ner, '#CD7F32');
+
+  const sponsor = await FinanceServices.createSponsor(
+    thomasEmrax,
+    'Google',
+    true,
+    5000,
+    new Date(12, 1, 24),
+    [2024, 2025],
+    goldSponsorTier.sponsorTierId,
+    true,
+    'Bill Gates',
+    [],
+    ner,
+    'googlecode'
+  );
+
+  await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, 'C0C0C0');
+
+  await FinanceServices.createSponsorTask(
+    thomasEmrax,
+    ner,
+    new Date(12, 1, 25),
+    'notes...',
+    sponsor.sponsorId,
+    new Date(7, 5, 25),
+    thomasEmrax.userId
+  );
 };
 
 performSeed()

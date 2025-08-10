@@ -44,10 +44,6 @@ const WorkPackageFormDetails: React.FC<Props> = ({
     return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
   };
 
-  const disableStartDate = (startDate: Date) => {
-    return startDate.getDay() !== 1;
-  };
-
   const StageSelect = () => (
     <FormControl fullWidth>
       <FormLabel>Work Package Stage</FormLabel>
@@ -105,7 +101,6 @@ const WorkPackageFormDetails: React.FC<Props> = ({
                     onChange={(date) => onChange(date ?? new Date())}
                     className={'padding: 10'}
                     value={value}
-                    shouldDisableDate={disableStartDate}
                     slotProps={{
                       textField: { autoComplete: 'off', error: !!errors.startDate, helperText: errors.startDate?.message }
                     }}

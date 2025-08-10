@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { accountCodePipe } from '../../../utils/pipes';
+import { accountCodePipe, displayEnum } from '../../../utils/pipes';
 import { Assignment, ChangeCircle, Edit, Pending } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
@@ -11,33 +11,35 @@ import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import DeleteIcon from '@mui/icons-material/Delete';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import { Grid, Typography, useTheme, Link, IconButton } from '@mui/material';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import SpeedIcon from '@mui/icons-material/Speed';
+import LocalAtmIcon from '@mui/icons-material/LocalAtm';
+import StoreIcon from '@mui/icons-material/Store';
+import SellIcon from '@mui/icons-material/Sell';
+import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
+
+import { Typography, useTheme, Link, IconButton } from '@mui/material';
 import { Box } from '@mui/system';
-import { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useHistory, useLocation, useParams } from 'react-router-dom';
 import { ReimbursementRequest, isAdmin, isHead } from 'shared';
 import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
 import NERModal from '../../../components/NERModal';
 import PageLayout from '../../../components/PageLayout';
-import VerticalDetailDisplay from '../../../components/VerticalDetailDisplay';
 import {
   useDeleteReimbursementRequest,
   useDenyReimbursementRequest,
+  useEditReimbursementRequest,
   useLeadershipApproveReimbursementRequest,
   useMarkPendingFinance,
   useMarkReimbursementRequestAsReimbursed,
-  useRequestReimbursementRequestChanges
+  useRequestReimbursementRequestChanges,
+  useUploadManyReceipts
 } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
-import {
-  centsToDollar,
-  codeAndRefundSourceName,
-  datePipe,
-  dateUndefinedPipe,
-  fullNamePipe,
-  undefinedPipe
-} from '../../../utils/pipes';
+import { centsToDollar, fullNamePipe, undefinedPipe } from '../../../utils/pipes';
 import {
   imageDownloadUrl,
   imageFileUrl,
@@ -47,6 +49,7 @@ import {
   isReimbursementRequestDenied,
   isReimbursementRequestLeadershipApproved,
   isReimbursementRequestPendingFinance,
+  getUniqueWbsElementsWithProductsFromReimbursementRequest,
   getCurrentReimbursementStatus
 } from '../../../utils/reimbursement-request.utils';
 import { routes } from '../../../utils/routes';
@@ -54,17 +57,27 @@ import AddSABONumberModal from './AddSABONumberModal';
 import ReimbursementProductsView from './ReimbursementProductsView';
 import SubmitToSaboModal from './SubmitToSaboModal';
 import DownloadIcon from '@mui/icons-material/Download';
-import ReimbursementRequestStatusPill from '../../../components/ReimbursementRequestStatusPill';
 import CheckList from '../../../components/CheckList';
 import MarkDeliveredModal from './MarkDeliveredModal';
+import ReimbursementRequestTimeline from '../FinanceComponents/ReimbursementRequestTimeline';
+import ReimbursementRequestStatusPill from '../../../components/ReimbursementRequestStatusPill';
+import SidePage from '../FinanceComponents/SidePagePopup';
+import EditReimbursementRequestPage from '../EditReimbursementRequest/EditReimbursementRequest';
+import { ReimbursementRequestDataSubmission } from '../ReimbursementRequestForm/ReimbursementRequestForm';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
+  onCloseSidePage: () => void;
+  onCloseEditPage: () => void;
 }
 
-const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewProps> = ({ reimbursementRequest }) => {
+const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewProps> = ({
+  reimbursementRequest,
+  onCloseSidePage,
+  onCloseEditPage
+}) => {
   const theme = useTheme();
-  const totalCostBackgroundColor = theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200];
   const user = useCurrentUser();
   const history = useHistory();
   const [addSaboNumberModalShow, setAddSaboNumberModalShow] = useState<boolean>(false);
@@ -96,11 +109,22 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const isSaboSubmitted = isReimbursementRequestSaboSubmitted(reimbursementRequest);
   const isLeadershipApproved = isReimbursementRequestLeadershipApproved(reimbursementRequest);
   const isPendingFinance = isReimbursementRequestPendingFinance(reimbursementRequest);
+  const [showEditSidePage, setShowEditSidePage] = useState(false);
+
+  const openSidePage = () => {
+    setShowEditSidePage(true);
+  };
+
+  const closeSidePage = () => {
+    setShowEditSidePage(false);
+    onCloseSidePage();
+    onCloseEditPage();
+  };
 
   const handleDelete = async () => {
     try {
       await deleteReimbursementRequest();
-      history.push(routes.FINANCE);
+      closeSidePage();
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 3000);
@@ -297,69 +321,6 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     </NERModal>
   );
 
-  const BasicInformationView = () => {
-    return (
-      <>
-        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginBottom: '5px' }}>
-          <Typography variant="h5">Details</Typography>
-          <Typography variant="h5" fontSize={24}>{`${
-            reimbursementRequest.dateOfExpense ? datePipe(new Date(reimbursementRequest.dateOfExpense)) : '-'
-          }`}</Typography>
-        </Box>
-        <Grid container spacing={2}>
-          <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Purchased From" content={reimbursementRequest.vendor.name} />
-          </Grid>
-          <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="SABO Number" content={`${undefinedPipe(reimbursementRequest.saboId)}`} />
-          </Grid>
-          <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Refund Source" content={codeAndRefundSourceName(reimbursementRequest.account)} />
-          </Grid>
-          <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Expense Type" content={accountCodePipe(reimbursementRequest.accountCode)} />
-          </Grid>
-          <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay
-              label="Date Item Delivered"
-              content={dateUndefinedPipe(reimbursementRequest.dateDelivered)}
-            />
-          </Grid>
-          <Grid
-            item
-            xs={12}
-            container
-            mt={2}
-            ml={2}
-            sx={{ backgroundColor: totalCostBackgroundColor, borderRadius: '10px', boxShadow: 1 }}
-          >
-            <Grid item xs={6} textAlign={'center'} mt={-2}>
-              <Typography fontSize={50}>Total Cost</Typography>
-            </Grid>
-            <Grid xs={6} mt={-2} sx={{ display: 'flex', alignItems: 'center' }}>
-              <Typography fontSize={50}>{`$${centsToDollar(reimbursementRequest.totalCost)}`}</Typography>
-            </Grid>
-          </Grid>
-        </Grid>
-      </>
-    );
-  };
-
-  const GridDivider = () => {
-    return (
-      <Box
-        sx={{
-          height: '100%',
-          borderColor: theme.palette.divider,
-          borderWidth: '2px',
-          borderStyle: 'solid',
-          width: '0px',
-          textAlign: 'center'
-        }}
-      />
-    );
-  };
-
   const ReceiptsView = () => {
     return (
       <Box sx={{ maxHeight: `250px`, overflow: reimbursementRequest.receiptPictures.length > 0 ? 'auto' : 'none' }}>
@@ -389,18 +350,18 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     !isSaboSubmitted &&
     !isReimbursementRequestReimbursed(reimbursementRequest);
 
+  const { pathname } = useLocation();
+  const urlTabInsert = pathname.includes('/all-requests') ? 'all-requests' : 'my-requests';
+
   const buttons: ButtonInfo[] = [
     {
       title: 'Edit',
-      onClick: () => history.push(`${routes.REIMBURSEMENT_REQUESTS}/${reimbursementRequest.reimbursementRequestId}/edit`),
+      onClick: () => {
+        history.push(`${routes.REIMBURSEMENT_REQUESTS}/${urlTabInsert}/${reimbursementRequest.reimbursementRequestId}/edit`);
+        openSidePage();
+      },
       icon: <Edit />,
       disabled: !allowEdit && !user.isFinance
-    },
-    {
-      title: 'Delete',
-      onClick: () => setShowDeleteModal(true),
-      icon: <DeleteIcon />,
-      disabled: !allowEdit
     },
     {
       title: 'Mark Delivered',
@@ -467,13 +428,48 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         (!isAdmin(user.role) && !user.isFinance && user.userId !== reimbursementRequest.recipient.userId) ||
         isReimbursementRequestReimbursed(reimbursementRequest) ||
         isReimbursementRequestDenied(reimbursementRequest)
+    },
+    {
+      title: 'Delete',
+      onClick: () => setShowDeleteModal(true),
+      icon: <DeleteIcon />,
+      disabled: !allowEdit,
+      dividerTop: true
     }
   ];
 
-  return (
-    <PageLayout
-      title={`Reimbursement Request #${reimbursementRequest.identifier} (${fullNamePipe(reimbursementRequest.recipient)})`}
-      chips={
+  const sortedStatus = reimbursementRequest.reimbursementStatuses.sort((a) => a.dateCreated.getDate());
+  const statusTypes = sortedStatus.map((status) => status.type);
+
+  const uniqueWbsElementsWithProducts = getUniqueWbsElementsWithProductsFromReimbursementRequest(reimbursementRequest);
+  const keys: string[] = [];
+  for (const key of uniqueWbsElementsWithProducts.keys()) {
+    keys.push(key);
+  }
+
+  const detailItems = [
+    { label: 'Status', icon: <SpeedIcon fontSize="small" /> },
+    { label: 'Created by', icon: <PersonOutlineIcon fontSize="small" /> },
+    { label: 'Project/Category', icon: <FolderOpenIcon fontSize="small" /> },
+    { label: 'Total Cost', icon: <LocalAtmIcon fontSize="small" /> },
+    { label: 'Purchased From', icon: <StoreIcon fontSize="small" /> },
+    { label: 'SABO Number', icon: <SellIcon fontSize="small" /> },
+    { label: 'Refund Source', icon: <CurrencyExchangeIcon fontSize="small" /> },
+    { label: 'Expense Type', icon: <CurrencyExchangeIcon fontSize="small" /> }
+  ];
+
+  // grab all unique refund source names
+  const refundSourceNames: string[] = Array.from(
+    new Set(
+      reimbursementRequest.reimbursementProducts.flatMap((product) =>
+        product.refundSources.map((rs) => rs.indexCode.code + '-' + rs.indexCode.name)
+      )
+    )
+  );
+
+  const contentItems = [
+    {
+      content: statusTypes.length > 0 && (
         <Box id="status" display="flex">
           {reimbursementRequest.reimbursementStatuses.length > 0 && (
             <ReimbursementRequestStatusPill
@@ -481,53 +477,117 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             />
           )}
         </Box>
-      }
-      previousPages={[
-        {
-          name: 'Finance',
-          route: routes.FINANCE
+      )
+    },
+    { content: fullNamePipe(reimbursementRequest.recipient) },
+    {
+      content: keys.map((key) => displayEnum(key)).join(', ')
+    },
+    { content: `$${centsToDollar(reimbursementRequest.totalCost)}` },
+    { content: reimbursementRequest.vendor.name },
+    { content: `${undefinedPipe(reimbursementRequest.saboId)}` },
+    {
+      content: refundSourceNames.join(', ')
+    },
+    { content: accountCodePipe(reimbursementRequest.accountCode) }
+  ];
+
+  const { id } = useParams<{ id: string }>();
+
+  const { isLoading: editReimbursementRequestIsLoading, mutateAsync: editReimbursementRequest } =
+    useEditReimbursementRequest(id);
+  const { isLoading: uploadReceiptsIsLoading, mutateAsync: uploadReceipts } = useUploadManyReceipts();
+
+  if (editReimbursementRequestIsLoading || uploadReceiptsIsLoading || !reimbursementRequest) return <LoadingIndicator />;
+
+  const onSubmit = async (data: ReimbursementRequestDataSubmission): Promise<string> => {
+    const filesToKeep = data.receiptFiles.filter((file) => file.googleFileId !== '');
+
+    await editReimbursementRequest({ ...data, receiptPictures: filesToKeep, indexCodeId: data.indexCodeId! });
+    await uploadReceipts({
+      id: reimbursementRequest.reimbursementRequestId,
+      files: data.receiptFiles.filter((receipt) => receipt.googleFileId === '').map((file) => file.file!)
+    });
+
+    closeSidePage();
+    return reimbursementRequest.reimbursementRequestId;
+  };
+
+  return (
+    <Box sx={{ ml: 2 }}>
+      <PageLayout
+        title={`Reimbursement Request #${reimbursementRequest.identifier}`}
+        headerRight={
+          <Box sx={{ mr: 6 }}>
+            <ActionsMenu buttons={buttons} />
+          </Box>
         }
-      ]}
-      headerRight={<ActionsMenu buttons={buttons} />}
-    >
-      <DeleteModal />
-      <DenyModal />
-      <MarkDeliveredModal
-        modalShow={showMarkDelivered}
-        onHide={() => setShowMarkDelivered(false)}
-        reimbursementRequest={reimbursementRequest}
-      />
-      <MarkReimbursedModal />
-      <LeadershipApproveModal />
-      <MarkPendingFinanceModal />
-      <RequestChangesModal />
-      <SubmitToSaboModal
-        open={showSubmitToSaboModal}
-        setOpen={setShowSubmitToSaboModal}
-        reimbursementRequest={reimbursementRequest}
-      />
-      <AddSABONumberModal
-        modalShow={addSaboNumberModalShow}
-        onHide={() => setAddSaboNumberModalShow(false)}
-        reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
-      />
-      <Grid container spacing={2} mt={2}>
-        <Grid item lg={6} xs={12}>
-          <BasicInformationView />
-        </Grid>
-        <Grid item lg={1} xs={0} justifyContent={'center'} display={'flex'}>
-          <GridDivider />
-        </Grid>
-        <Grid item lg={5} xs={12} rowSpacing={5} container>
-          <Grid item xs={12}>
-            <ReceiptsView />
-          </Grid>
-          <Grid item xs={12}>
+      >
+        <DeleteModal />
+        <DenyModal />
+        <MarkDeliveredModal
+          modalShow={showMarkDelivered}
+          onHide={() => setShowMarkDelivered(false)}
+          reimbursementRequest={reimbursementRequest}
+        />
+        <MarkReimbursedModal />
+        <LeadershipApproveModal />
+        <MarkPendingFinanceModal />
+        <RequestChangesModal />
+        <SubmitToSaboModal
+          open={showSubmitToSaboModal}
+          setOpen={setShowSubmitToSaboModal}
+          reimbursementRequest={reimbursementRequest}
+        />
+        <AddSABONumberModal
+          modalShow={addSaboNumberModalShow}
+          onHide={() => setAddSaboNumberModalShow(false)}
+          reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
+        />
+        <SidePage
+          showPage={showEditSidePage}
+          handleClose={closeSidePage}
+          title={''}
+          component={<EditReimbursementRequestPage onExitEditPage={closeSidePage} onSubmitEditData={onSubmit} />}
+        />
+        <Box sx={{ display: 'flex', mt: 2 }}>
+          <Box>
+            {detailItems.map(({ label, icon }) => (
+              <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, fontWeight: 'bold' }}>
+                <Box sx={{ display: 'flex', mr: 2 }}>{icon}</Box> {label}
+              </Box>
+            ))}
+          </Box>
+          <Box sx={{ ml: 16 }}>
+            {contentItems.map(({ content }) => (
+              <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, fontWeight: 'bold' }}>{content}</Box>
+            ))}
+          </Box>
+        </Box>
+        <Box
+          sx={{
+            borderBottom: '2px solid white',
+            mt: 2,
+            mb: 2,
+            width: 'calc(100% - 40px)'
+          }}
+        />
+        <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+          <Box sx={{ width: '900px', mt: -3, maxWidth: 400 }}>
+            <ReimbursementRequestTimeline
+              reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
+              reimbursementRequestComments={reimbursementRequest.comments}
+            />
+          </Box>
+          <Box sx={{ mt: 2, ml: 2, whiteSpace: 'nowrap' }}>
             <ReimbursementProductsView reimbursementRequest={reimbursementRequest} />
-          </Grid>
-        </Grid>
-      </Grid>
-    </PageLayout>
+            <Box sx={{ mt: 2 }}>
+              <ReceiptsView />
+            </Box>
+          </Box>
+        </Box>
+      </PageLayout>
+    </Box>
   );
 };
 

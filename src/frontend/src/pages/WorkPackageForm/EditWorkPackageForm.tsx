@@ -3,7 +3,6 @@ import WorkPackageForm from './WorkPackageForm';
 import { useEditWorkPackage } from '../../hooks/work-packages.hooks';
 import { useHistory } from 'react-router-dom';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { startDateTester } from '../../utils/form';
 import * as yup from 'yup';
 import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
 import { routes } from '../../utils/routes';
@@ -26,10 +25,7 @@ const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, workP
 
   const schema = yup.object().shape({
     name: yup.string().required('Name is required!'),
-    startDate: yup
-      .date()
-      .required('Start Date is required!')
-      .test('start-date-valid', 'Start Date Must be a Monday', startDateTester),
+    startDate: yup.date().required('Start Date is required!'),
     duration: yup.number().required()
   });
 

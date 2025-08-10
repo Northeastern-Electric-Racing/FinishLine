@@ -80,15 +80,25 @@ const TeamTypeTable: React.FC = () => {
     }
   };
 
-  const teamTypesTableRows = teamTypes.map((teamType) => {
+  const teamTypesTableRows = teamTypes.map((teamType, index) => {
     return (
       <TableRow>
-        <TableCell onClick={() => setEditingTeamType(teamType)} sx={{ cursor: 'pointer', border: '2px solid black' }}>
+        <TableCell
+          onClick={() => setEditingTeamType(teamType)}
+          sx={{
+            cursor: 'pointer',
+            borderBottom: index === teamTypes.length - 1 ? 'none' : 'default'
+          }}
+        >
           {teamType.name}
         </TableCell>
         <TableCell
           onClick={() => setEditingTeamType(teamType)}
-          sx={{ cursor: 'pointer', border: '2px solid black', verticalAlign: 'middle' }}
+          sx={{
+            cursor: 'pointer',
+            verticalAlign: 'middle',
+            borderBottom: index === teamTypes.length - 1 ? 'none' : 'default'
+          }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Icon>{teamType.iconName}</Icon>
@@ -101,9 +111,9 @@ const TeamTypeTable: React.FC = () => {
           onClick={() => setEditingTeamType(teamType)}
           sx={{
             cursor: 'pointer',
-            border: '2px solid black',
             verticalAlign: 'middle',
-            maxWidth: '15vw'
+            maxWidth: '15vw',
+            borderBottom: index === teamTypes.length - 1 ? 'none' : 'default'
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -112,7 +122,7 @@ const TeamTypeTable: React.FC = () => {
             </Typography>
           </Box>
         </TableCell>
-        <TableCell sx={{ border: '2px solid black' }}>
+        <TableCell sx={{ borderBottom: index === teamTypes.length - 1 ? 'none' : 'default' }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', mb: 1 }}>
             {teamType.imageFileId && !addedImages[teamType.teamTypeId] && (
               <Box
@@ -150,7 +160,7 @@ const TeamTypeTable: React.FC = () => {
         />
       )}
       <AdminToolTable
-        columns={[{ name: 'Team Type Name' }, { name: 'Icon' }, { name: 'Description' }, { name: 'Image' }]}
+        columns={[{ name: 'Division Name' }, { name: 'Icon' }, { name: 'Description' }, { name: 'Image' }]}
         rows={teamTypesTableRows}
       />
 
@@ -161,7 +171,7 @@ const TeamTypeTable: React.FC = () => {
             setCreateModalShow(true);
           }}
         >
-          New Team Type
+          New Division
         </NERButton>
       </Box>
     </Box>

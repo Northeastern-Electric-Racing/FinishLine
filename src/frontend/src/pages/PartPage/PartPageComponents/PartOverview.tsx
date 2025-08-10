@@ -84,6 +84,7 @@ const PartOverview: React.FC<PartPageOverviewProps> = ({ part }: PartPageOvervie
               '&:hover': {
                 backgroundColor: '#555555'
               },
+              zIndex: 1,
               mr: 1
             }}
           >
