@@ -75,7 +75,7 @@ const GanttTaskBarDisplay = <T,>({
     cursor: 'pointer',
     position: 'sticky',
     left: 0,
-    width: hasChildren ? 'fit-content' : '100%'
+    width: hasOverlays ? 'fit-content' : '100%'
   };
 
   const ganttTaskBarChildOverlayStyles = (child: GanttTask<T>): CSSProperties => {
@@ -174,7 +174,7 @@ const GanttTaskBarDisplay = <T,>({
                 onMouseLeave={handleOnMouseLeave}
                 onClick={task.onClick}
               >
-                {hasChildren && (
+                {hasOverlays && (
                   <IconButton
                     onClick={(e) => {
                       e.stopPropagation();
@@ -193,7 +193,7 @@ const GanttTaskBarDisplay = <T,>({
                   {task.name}
                 </Typography>
               </div>
-              {hasChildren &&
+              {hasOverlays &&
                 task.children.map((childTask) => {
                   return (
                     <div
