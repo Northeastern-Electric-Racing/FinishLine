@@ -3998,18 +3998,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@prisma/client@npm:^6.2.1":
-  version: 6.13.0
-  resolution: "@prisma/client@npm:6.13.0"
+"@prisma/client@npm:6.2.1":
+  version: 6.2.1
+  resolution: "@prisma/client@npm:6.2.1"
   peerDependencies:
     prisma: "*"
-    typescript: ">=5.1.0"
   peerDependenciesMeta:
     prisma:
       optional: true
-    typescript:
-      optional: true
-  checksum: 4e3cfde37a13208190e764e0d45887501c2f67c49081747dba626c04d3d53f04e0aaae34a329f5218fdf1627cbe2e8ccd6a01fb5cf175b53f2610425d449e1d3
+  checksum: ef2e0989a2a1a66881da3e4284e4e0e9af2aa46961db1a8214456c3b7307afb545ac89e100948f82cb1f7957b61bb692752a777d5f7eae5b1f46528ff33a73da
   languageName: node
   linkType: hard
 
@@ -6901,7 +6898,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backend@workspace:src/backend"
   dependencies:
-    "@prisma/client": ^6.2.1
+    "@prisma/client": 6.2.1
     "@slack/events-api": ^3.0.1
     "@slack/web-api": ^7.8.0
     "@types/concat-stream": ^2.0.0
