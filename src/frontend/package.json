@@ -71,8 +71,8 @@
   },
   "scripts": {
     "start": "vite --force",
-    "build": "vite build",
-    "build:dev": "vite build --mode development",
+    "build": "NODE_OPTIONS='--max-old-space-size=4096' vite build",
+    "build:dev": "NODE_OPTIONS='--max-old-space-size=4096' vite build --mode development",
     "test": "vitest"
   },
   "browserslist": {
