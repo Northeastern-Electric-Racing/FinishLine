@@ -6,7 +6,7 @@ COPY ./src/backend ./src/backend
 COPY ./src/shared ./src/shared
 
 # Install dependencies
-RUN yarn install --prod;
+RUN yarn install --force --prod;
 
 # Run all build and preparation steps in a single RUN command
 RUN yarn prisma:generate && yarn build:backend && yarn build:shared
