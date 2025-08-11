@@ -212,7 +212,10 @@ export const getReimbursementRequestsByProject = async (
       },
       ...getReimbursementRequestWhereInput(startDate, endDate)
     },
-    ...getReimbursementRequestQueryArgs(organizationId)
+    select: {
+      reimbursementStatuses: true,
+      totalCost: true,
+    }
   });
 
   let pendingFinance = 0;
@@ -309,7 +312,10 @@ export const getReimbursementRequestsByTeam = async (
       },
       ...getReimbursementRequestWhereInput(startDate, endDate)
     },
-    ...getReimbursementRequestQueryArgs(organizationId)
+    select: {
+      reimbursementStatuses: true,
+      totalCost: true,
+    }
   });
 
   const totalBudget = team.projects.reduce((acc, curr) => acc + curr.budget, 0);
@@ -435,7 +441,10 @@ export const getAllReimbursementRequestData = async (
       },
       ...getReimbursementRequestWhereInput(startDate, endDate)
     },
-    ...getReimbursementRequestQueryArgs(organizationId)
+    select: {
+      reimbursementStatuses: true,
+      totalCost: true
+    }
   });
 
   const budgetReimbursementRequests = await prisma.reimbursement_Request.findMany({
@@ -450,7 +459,10 @@ export const getAllReimbursementRequestData = async (
       },
       ...getReimbursementRequestWhereInput(startDate, endDate)
     },
-    ...getReimbursementRequestQueryArgs(organizationId)
+    select: {
+      reimbursementStatuses: true,
+      totalCost: true
+    }
   });
 
   const allReimbursementRequests = await prisma.reimbursement_Request.findMany({
@@ -465,12 +477,17 @@ export const getAllReimbursementRequestData = async (
       },
       ...getReimbursementRequestWhereInput(startDate, endDate)
     },
-    ...getReimbursementRequestQueryArgs(organizationId)
+    select: {
+      reimbursementStatuses: true,
+      totalCost: true
+    }
   });
 
   const teams = await prisma.team.findMany({
     where: { dateArchived: null, organizationId },
-    ...getTeamQueryArgs(organizationId)
+    select: {
+      projects: true
+    }
   });
 
   const allTotalBudget = teams.reduce((teamAcc, team) => {
@@ -649,7 +666,10 @@ export const getReimbursementRequestCategoryData = async (
       },
       ...getReimbursementRequestWhereInput(startDate, endDate)
     },
-    ...getReimbursementRequestQueryArgs(organizationId)
+    select: {
+      reimbursementStatuses: true,
+      totalCost: true,
+    }
   });
 
   const category = await prisma.reimbursement_Product_Other_Reason.findUnique({
