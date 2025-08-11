@@ -160,7 +160,7 @@ const SpendingBar = ({ data, title, edit }: SpendingBarProps) => {
         align: 'center',
         textAlign: 'center',
         formatter: (value, context) => {
-          const realValue = value - average;
+          const realValue = Math.round((value - average) * 100) / 100;
           let { label } = context.dataset;
           const datasetMeta = context.chart.getDatasetMeta(context.datasetIndex);
           const bar: any = datasetMeta.data[context.dataIndex];
@@ -207,10 +207,10 @@ const SpendingBar = ({ data, title, edit }: SpendingBarProps) => {
 
             const title = context.dataset.label;
 
-            const value = context.parsed.x - average; // for horizontal bar, use .x — use .y for vertical
+            const value = Math.round((context.parsed.x - average) * 100) / 100; // for horizontal bar, use .x — use .y for vertical
 
             if (dataset.spendingInfo.totalBudget < getTotalMoneySpentNotAvailable(dataset.spendingInfo)) {
-              return `Spending is $${Math.abs(dataset.spendingInfo.available)} overbudget!`;
+              return `Spending is $${Math.abs(Math.round(dataset.spendingInfo.available * 100) / 100)} overbudget!`;
             }
 
             return `${title}: $${value}`;

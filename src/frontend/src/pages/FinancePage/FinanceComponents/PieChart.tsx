@@ -203,7 +203,7 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
         </Box>
       ) : (
         <>
-          <ResponsiveContainer width="100%" height={300} style={{ background: 'transparent' }}>
+          <ResponsiveContainer width={250} height={250} style={{ background: 'transparent' }}>
             <RechartsPieChart margin={{ top: 0, right: 0, bottom: 20, left: 0 }} style={{ background: 'transparent' }}>
               <Pie
                 data={adjustedData}
