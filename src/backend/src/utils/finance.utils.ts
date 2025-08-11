@@ -1,9 +1,7 @@
 import { Prisma, Reimbursement_Status_Type } from '@prisma/client';
 import { wbsPipe, SpendingBarData, ReimbursementRequestData } from 'shared';
 import prisma from '../prisma/prisma';
-import { getReimbursementRequestQueryArgs } from '../prisma-query-args/reimbursement-requests.query-args';
 import { NotFoundException } from './errors.utils';
-import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
 
 export const getProjectSegmentedWhereInput = (
   organizationId: string,
@@ -212,7 +210,10 @@ export const getReimbursementRequestsByProject = async (
       },
       ...getReimbursementRequestWhereInput(startDate, endDate)
     },
-    ...getReimbursementRequestQueryArgs(organizationId)
+    select: {
+      reimbursementStatuses: true,
+      totalCost: true
+    }
   });
 
   let pendingFinance = 0;
@@ -309,7 +310,10 @@ export const getReimbursementRequestsByTeam = async (
       },
       ...getReimbursementRequestWhereInput(startDate, endDate)
     },
-    ...getReimbursementRequestQueryArgs(organizationId)
+    select: {
+      reimbursementStatuses: true,
+      totalCost: true
+    }
   });
 
   const totalBudget = team.projects.reduce((acc, curr) => acc + curr.budget, 0);
@@ -435,7 +439,10 @@ export const getAllReimbursementRequestData = async (
       },
       ...getReimbursementRequestWhereInput(startDate, endDate)
     },
-    ...getReimbursementRequestQueryArgs(organizationId)
+    select: {
+      reimbursementStatuses: true,
+      totalCost: true
+    }
   });
 
   const budgetReimbursementRequests = await prisma.reimbursement_Request.findMany({
@@ -450,7 +457,10 @@ export const getAllReimbursementRequestData = async (
       },
       ...getReimbursementRequestWhereInput(startDate, endDate)
     },
-    ...getReimbursementRequestQueryArgs(organizationId)
+    select: {
+      reimbursementStatuses: true,
+      totalCost: true
+    }
   });
 
   const allReimbursementRequests = await prisma.reimbursement_Request.findMany({
@@ -465,12 +475,17 @@ export const getAllReimbursementRequestData = async (
       },
       ...getReimbursementRequestWhereInput(startDate, endDate)
     },
-    ...getReimbursementRequestQueryArgs(organizationId)
+    select: {
+      reimbursementStatuses: true,
+      totalCost: true
+    }
   });
 
   const teams = await prisma.team.findMany({
     where: { dateArchived: null, organizationId },
-    ...getTeamQueryArgs(organizationId)
+    select: {
+      projects: true
+    }
   });
 
   const allTotalBudget = teams.reduce((teamAcc, team) => {
@@ -649,7 +664,10 @@ export const getReimbursementRequestCategoryData = async (
       },
       ...getReimbursementRequestWhereInput(startDate, endDate)
     },
-    ...getReimbursementRequestQueryArgs(organizationId)
+    select: {
+      reimbursementStatuses: true,
+      totalCost: true
+    }
   });
 
   const category = await prisma.reimbursement_Product_Other_Reason.findUnique({

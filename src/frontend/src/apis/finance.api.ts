@@ -293,10 +293,10 @@ export const downloadBlobsToPdf = async (blobData: Blob[], filename: string) => 
   await Promise.all(promises);
 
   // Save the PDF as an ArrayBuffer
-  const pdfBytes = await pdfDoc.save();
+  const pdfBytes: Uint8Array = await pdfDoc.save();
 
   // Convert the ArrayBuffer to a Blob
-  const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+  const pdfBlob = new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' });
 
   // Save the Blob as a file using file-saver
   saveAs(pdfBlob, filename);

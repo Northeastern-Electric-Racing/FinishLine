@@ -12,7 +12,7 @@ RUN rm -rf src/frontend/src/tests
 RUN yarn install;
 
 RUN yarn build:shared
-RUN export NODE_OPTIONS=--max_old_space_size=4096 && yarn build:frontend:dev
+RUN yarn build:frontend:dev
 
 FROM nginx:alpine
 

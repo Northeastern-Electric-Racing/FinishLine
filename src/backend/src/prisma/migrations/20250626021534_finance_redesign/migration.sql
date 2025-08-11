@@ -10,8 +10,11 @@ ALTER TABLE "Reimbursement_Product_Reason" ADD COLUMN "otherReasonId" TEXT;
 -- AlterTable
 ALTER TABLE "Reimbursement_Request" ADD COLUMN "indexCodeId" TEXT;
 
+-- CreateAdminUser
+INSERT INTO "User" ("userId", "firstName", "lastName", "googleAuthId", "email") VALUES ('0', 'Admin', 'User', 'admin', 'admin@gmail.com');
+
 -- AlterTable
-ALTER TABLE "Vendor" ADD COLUMN     "addedByUserId" TEXT NOT NULL,
+ALTER TABLE "Vendor" ADD COLUMN     "addedByUserId" TEXT NOT NULL DEFAULT '0',
 ADD COLUMN     "discountCode" TEXT,
 ADD COLUMN     "notes" TEXT,
 ADD COLUMN     "password" TEXT,
@@ -116,9 +119,6 @@ CREATE TABLE "_Account_CodeToReimbursement_Product_Other_Reason" (
 
     CONSTRAINT "_Account_CodeToReimbursement_Product_Other_Reason_AB_pkey" PRIMARY KEY ("A","B")
 );
-
--- CreateAdminUser
-INSERT INTO "User" ("userId", "firstName", "lastName", "googleAuthId", "email") VALUES ('0', 'Admin', 'User', 'admin', 'admin@gmail.com');
 
 -- Ensure every organization gets its own CASH and BUDGET index codes
 WITH orgs AS (

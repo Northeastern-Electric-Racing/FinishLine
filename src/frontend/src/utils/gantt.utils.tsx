@@ -87,6 +87,7 @@ interface GanttTaskData<T> {
   blocking: GanttTaskData<T>[];
   children: GanttTaskData<T>[];
   events: GanttEvent[];
+  overlays: GanttTaskData<T>[];
 
   // Optional Values
   styles?: GanttTaskStyles;
@@ -388,6 +389,7 @@ export const transformWorkPackageToGanttTask = <T extends WorkPackage>(
     events: workPackage.designReviews.map(transformDesignReviewToGanttEvent),
     blocking: getBlockingGanttTasks(workPackage, allWorkPackages, transformWorkPackageToGanttTask),
     children: [],
+    overlays: [],
 
     tooltip: {
       upperRightDisplay: <UserDisplay user={workPackage.lead} label="Lead" />,
@@ -418,6 +420,7 @@ export const transformProjectToGanttTask = (project: ProjectPreview): GanttTask<
     children: project.workPackages
       .filter((workPackage) => workPackage.blockedBy.length === 0)
       .map((workPackage) => transformWorkPackageToGanttTask(workPackage, project.workPackages)),
+    overlays: project.workPackages.map((wp) => transformWorkPackageToGanttTask(wp, project.workPackages)),
     events: [],
     tooltip: {
       upperRightDisplay: <UserDisplay user={project.lead} label="Lead" />,
