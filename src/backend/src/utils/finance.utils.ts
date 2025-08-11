@@ -1,9 +1,7 @@
 import { Prisma, Reimbursement_Status_Type } from '@prisma/client';
 import { wbsPipe, SpendingBarData, ReimbursementRequestData } from 'shared';
 import prisma from '../prisma/prisma';
-import { getReimbursementRequestQueryArgs } from '../prisma-query-args/reimbursement-requests.query-args';
 import { NotFoundException } from './errors.utils';
-import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
 
 export const getProjectSegmentedWhereInput = (
   organizationId: string,
@@ -214,7 +212,7 @@ export const getReimbursementRequestsByProject = async (
     },
     select: {
       reimbursementStatuses: true,
-      totalCost: true,
+      totalCost: true
     }
   });
 
@@ -314,7 +312,7 @@ export const getReimbursementRequestsByTeam = async (
     },
     select: {
       reimbursementStatuses: true,
-      totalCost: true,
+      totalCost: true
     }
   });
 
@@ -668,7 +666,7 @@ export const getReimbursementRequestCategoryData = async (
     },
     select: {
       reimbursementStatuses: true,
-      totalCost: true,
+      totalCost: true
     }
   });
 
