@@ -1,9 +1,7 @@
 import { FormControl, FormHelperText, FormLabel, Box } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
-import ErrorPage from '../../ErrorPage';
 import { useForm } from 'react-hook-form';
 import { useToast } from '../../../hooks/toasts.hooks';
-import LoadingIndicator from '../../../components/LoadingIndicator';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { SponsorTier } from 'shared';
