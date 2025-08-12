@@ -357,6 +357,9 @@ model Message_Info {
   designReview           Design_Review?         @relation(fields: [designReviewId], references: [designReviewId])
   reimbursementRequestId String?
   reimbursementRequest   Reimbursement_Request? @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
+
+  @@index([reimbursementRequestId])
+  @@index([designReviewId])
 }
 
 model Scope_CR {
@@ -371,6 +374,8 @@ model Scope_CR {
   proposedSolutions  Proposed_Solution[]
   wbsProposedChanges Wbs_Proposed_Changes? @relation(name: "wbsProposedChanges")
   wbsOriginalData    Wbs_Proposed_Changes? @relation(name: "wbsOriginalData")
+
+  @@index([changeRequestId])
 }
 
 model Proposed_Solution {
@@ -385,6 +390,8 @@ model Proposed_Solution {
   createdBy            User     @relation(fields: [createdByUserId], references: [userId])
   dateCreated          DateTime @default(now())
   approved             Boolean  @default(false)
+
+  @@index([scopeChangeRequestId])
 }
 
 model Scope_CR_Why {
@@ -393,6 +400,8 @@ model Scope_CR_Why {
   scopeCr      Scope_CR          @relation(fields: [scopeCrId], references: [scopeCrId])
   type         Scope_CR_Why_Type
   explain      String
+
+  @@index([scopeCrId])
 }
 
 model Stage_Gate_CR {
@@ -401,6 +410,8 @@ model Stage_Gate_CR {
   changeRequest   Change_Request @relation(fields: [changeRequestId], references: [crId])
   leftoverBudget  Int
   confirmDone     Boolean
+
+  @@index([changeRequestId])
 }
 
 model Activation_CR {
@@ -413,6 +424,8 @@ model Activation_CR {
   manager         User           @relation(name: "markAsManager", fields: [managerId], references: [userId])
   startDate       DateTime
   confirmDetails  Boolean
+
+  @@index([changeRequestId])
 }
 
 model Budget_CR {
@@ -420,6 +433,8 @@ model Budget_CR {
   changeRequestId String         @unique
   changeRequest   Change_Request @relation(fields: [changeRequestId], references: [crId])
   proposedBudget  Int
+
+  @@index([changeRequestId])
 }
 
 model Change {
@@ -438,6 +453,8 @@ model Change {
   accountCodeId String?
   accountCode   Account_Code?                       @relation(fields: [accountCodeId], references: [accountCodeId])
   detail        String
+
+  @@index([wbsElementId])
 }
 
 model WBS_Element {
@@ -506,6 +523,8 @@ model Work_Package {
   duration       Int
   blockedBy      WBS_Element[]       @relation(name: "blockedBy")
   stage          Work_Package_Stage?
+
+  @@index([projectId])
 }
 
 model Link_Type {
@@ -540,6 +559,9 @@ model Link {
   wbsProposedChanges   Wbs_Proposed_Changes? @relation(name: "proposedChangeLinks", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
   organization         Organization?         @relation(fields: [organizationId], references: [organizationId])
   organizationId       String?
+
+  @@index([wbsElementId])
+  @@index([wbsProposedChangesId])
 }
 
 model Description_Bullet_Type {
@@ -579,6 +601,10 @@ model Description_Bullet {
   proposedChange       Wbs_Proposed_Changes? @relation(fields: [proposedChangeId], references: [wbsProposedChangesId], name: "proposedDescriptionBulletChanges")
   wbsElementTemplate   WBS_Element_Template? @relation(fields: [wbsElementTemplateId], references: [wbsElementTemplateId])
   wbsElementTemplateId String?
+
+  @@index([wbsElementId])
+  @@index([proposedChangeId])
+  @@index([wbsElementTemplateId])
 }
 
 model Task {
@@ -597,6 +623,8 @@ model Task {
   dateCreated     DateTime      @default(now())
   wbsElement      WBS_Element   @relation(fields: [wbsElementId], references: [wbsElementId])
   wbsElementId    String
+
+  @@index([wbsElementId])
 }
 
 model Reimbursement_Status {
@@ -607,6 +635,8 @@ model Reimbursement_Status {
   dateCreated            DateTime                  @default(now())
   reimbursementRequestId String
   reimbursementRequest   Reimbursement_Request     @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
+
+  @@index([reimbursementRequestId])
 }
 
 model Receipt {
@@ -621,6 +651,8 @@ model Receipt {
   dateCreated            DateTime              @default(now())
   reimbursementRequestId String
   reimbursementRequest   Reimbursement_Request @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
+
+  @@index([reimbursementRequestId])
 }
 
 model Reimbursement_Request {
@@ -673,6 +705,8 @@ model Reimbursement_Product {
   reimbursementRequestId       String
   reimbursementRequest         Reimbursement_Request        @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
   refundSources                Refund_Source[]
+
+  @@index([reimbursementRequestId])
 }
 
 model Refund_Source {
@@ -682,6 +716,8 @@ model Refund_Source {
   amount                 Int
   reimbursementProduct   Reimbursement_Product? @relation(fields: [reimbursementProductId], references: [reimbursementProductId])
   reimbursementProductId String?
+
+  @@index([reimbursementProductId])
 }
 
 model Vendor {
@@ -723,6 +759,7 @@ model Sponsor {
   sponsorTasks   Sponsor_Task[]
 
   @@unique([name, organizationId], name: "uniqueSponsor")
+  @@index([sponsorTierId])
 }
 
 model Sponsor_Task {
@@ -735,6 +772,8 @@ model Sponsor_Task {
   sponsor        Sponsor   @relation(fields: [sponsorId], references: [sponsorId])
   sponsorId      String
   dateDeleted    DateTime?
+
+  @@index([sponsorId])
 }
 
 model Account_Code {
@@ -836,6 +875,10 @@ model Material {
   notes                  String?
   reimbursementRequest   Reimbursement_Request? @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
   reimbursementRequestId String?
+
+  @@index([assemblyId])
+  @@index([materialTypeId])
+  @@index([manufacturerId])
 }
 
 model Material_Type {
@@ -927,6 +970,8 @@ model Availability {
   // Availibilies are integers between 0 and 11 from 10am - 10pm for a given day at hour intervals see meetingTime field in Design_Review
   availability Int[]
   dateSet      DateTime
+
+  @@index([scheduleSettingsId])
 }
 
 model Schedule_Settings {
@@ -969,6 +1014,9 @@ model Wbs_Proposed_Changes {
   scopeChangeRequestAsOriginalDataId String?   @unique
   scopeChangeRequest                 Scope_CR? @relation(name: "wbsProposedChanges", fields: [scopeChangeRequestId], references: [scopeCrId])
   scopeChangeRequestId               String?   @unique
+
+  @@index([scopeChangeRequestAsOriginalDataId])
+  @@index([scopeChangeRequestId])
 }
 
 model Project_Proposed_Changes {
@@ -982,6 +1030,8 @@ model Project_Proposed_Changes {
   workPackageProposedChanges Work_Package_Proposed_Changes[]
   carId                      String?
   car                        Car?                            @relation(fields: [carId], references: [carId])
+
+  @@index([wbsProposedChangesId])
 }
 
 model Work_Package_Proposed_Changes {
@@ -994,6 +1044,8 @@ model Work_Package_Proposed_Changes {
   wbsProposedChangesId         String                    @unique
   projectProposedChanges       Project_Proposed_Changes? @relation(fields: [projectProposedChangesId], references: [projectProposedChangesId])
   projectProposedChangesId     String?
+
+  @@index([wbsProposedChangesId])
 }
 
 model WBS_Element_Template {
@@ -1032,6 +1084,8 @@ model Work_Package_Template {
   blocking             Work_Package_Template[] @relation("blocking")
   projectTemplate      Project_Template?       @relation(fields: [projectTemplateId], references: [wbsElementTemplateId])
   projectTemplateId    String?
+
+  @@index([projectTemplateId])
 }
 
 model Car {
@@ -1158,6 +1212,8 @@ model Graph {
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [organizationId])
   cars           Car[]        @relation(name: "graphCars")
+
+  @@index([graphCollectionId])
 }
 
 model Graph_Collection {
@@ -1283,6 +1339,8 @@ model Part_Submission {
   userDeletedId    String?
   userDeleted      User?         @relation(fields: [userDeletedId], references: [userId], name: "partsSubmissionDeleter")
   reviews          Part_Review[]
+
+  @@index([partId])
 }
 
 model Part_Review_Request {
@@ -1295,6 +1353,8 @@ model Part_Review_Request {
   reviewerRequested   User      @relation(fields: [reviewerId], references: [userId], name: "PartReviewRequested")
   createdAt           DateTime  @default(now())
   dateDeleted         DateTime?
+
+  @@index([partId])
 }
 
 model Part_Review {
@@ -1313,6 +1373,8 @@ model Part_Review {
   deletedAt     DateTime?
   userDeletedId String?
   userDeleted   User?               @relation(fields: [userDeletedId], references: [userId], name: "partsReviewDeleter")
+
+  @@index([submissionId])
 }
 
 model Part_Review_Popup {
@@ -1327,6 +1389,8 @@ model Part_Review_Popup {
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
   deletedAt         DateTime?
+
+  @@index([reviewId])
 }
 
 model Part_Review_Common_Mistake {
@@ -1400,4 +1464,6 @@ model Reimbursement_Request_Comment {
   comment                       String
   reimbursementRequestId        String
   reimbursementRequest          Reimbursement_Request @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
+
+  @@index([reimbursementRequestId])
 }
