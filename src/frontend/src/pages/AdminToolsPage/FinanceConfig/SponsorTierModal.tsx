@@ -11,11 +11,11 @@ import { AttachMoney } from '@mui/icons-material';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
-  threshold: yup
+  minSupportValue: yup
     .number()
-    .min(0, 'Threshold must be at least 0')
-    .typeError('Threshold must be a number')
-    .required('Threshold is required'),
+    .min(0, 'Mininum support value must be at least 0')
+    .typeError('Mininum support value must be a number')
+    .required('Mininum support value is required'),
   colorHexCode: yup.string().default('#FF0000')
 });
 
@@ -51,7 +51,7 @@ const SponsorTierModal: React.FC<SponsorTierModalProps> = ({ showModal, handleCl
     resolver: yupResolver(schema),
     defaultValues: {
       name: defaultValues?.name ?? '',
-      threshold: defaultValues?.threshold ?? 0,
+      minSupportValue: defaultValues?.minSupportValue ?? 0,
       colorHexCode: defaultValues?.colorHexCode ?? '#FF0000'
     }
   });
@@ -73,15 +73,15 @@ const SponsorTierModal: React.FC<SponsorTierModalProps> = ({ showModal, handleCl
         <FormLabel>Tier Name</FormLabel>
         <ReactHookTextField name="name" control={control} sx={{ width: 1 }} />
         <FormHelperText error>{errors.name?.message}</FormHelperText>
-        <FormLabel>Support Threshold</FormLabel>
+        <FormLabel>Minimum Support Value</FormLabel>
         <ReactHookTextField
           startAdornment={<AttachMoney />}
-          name="threshold"
+          name="minSupportValue"
           control={control}
           type="number"
           sx={{ width: 1 }}
         />
-        <FormHelperText error>{errors.threshold?.message}</FormHelperText>
+        <FormHelperText error>{errors.minSupportValue?.message}</FormHelperText>
         <FormLabel>Color</FormLabel>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
           <ReactHookTextField name="colorHexCode" control={control} sx={{ width: 1 }} placeholder="#FF0000" />

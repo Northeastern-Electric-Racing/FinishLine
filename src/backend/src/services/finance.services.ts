@@ -178,7 +178,7 @@ export default class FinanceServices {
    * @param name tier name
    * @param organization current organization of the current user
    * @param colorHexCode tier color
-   * @param threshold support threshold ($)
+   * @param minSupportValue minimum support value for the tier
    * @returns newly created sponsor tier
    */
   static async createSponsorTier(
@@ -186,7 +186,7 @@ export default class FinanceServices {
     name: string,
     organization: Organization,
     colorHexCode: string,
-    threshold: number
+    minSupportValue: number
   ): Promise<SponsorTier> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('Only heads can create a sponsor tier');
@@ -196,7 +196,7 @@ export default class FinanceServices {
         name,
         organizationId: organization.organizationId,
         colorHexCode,
-        threshold
+        minSupportValue
       },
       include: {
         organization: true
@@ -598,7 +598,7 @@ export default class FinanceServices {
   static async getAllSponsorTiers(organization: Organization): Promise<SponsorTier[]> {
     const allSponsorTiers = await prisma.sponsor_Tier.findMany({
       where: { organizationId: organization.organizationId, dateDeleted: null },
-      orderBy: { threshold: 'asc' },
+      orderBy: { minSupportValue: 'asc' },
       ...getSponsorTierQueryArgs(organization.organizationId)
     });
 
@@ -652,7 +652,7 @@ export default class FinanceServices {
    * @param sponsorTierId id of the sponsor tier to be edited
    * @param name updated tier name
    * @param colorHexCode updated tier color
-   * @param threshold updated support threshold ($)
+   * @param minSupportValue updated minimum support value for the tier
    * @returns the updated sponsor tier
    * @throws AccessDeniedAdminOnlyException if the user lacks permissions.
    * @throws NotFoundException if the sponsor tier is not found.
@@ -663,7 +663,7 @@ export default class FinanceServices {
     sponsorTierId: string,
     name: string,
     colorHexCode: string,
-    threshold: number
+    minSupportValue: number
   ): Promise<SponsorTier> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('edit a sponsor tier');
@@ -683,7 +683,7 @@ export default class FinanceServices {
       data: {
         name,
         colorHexCode,
-        threshold
+        minSupportValue
       },
       ...getSponsorTierQueryArgs(organization.organizationId)
     });

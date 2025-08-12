@@ -116,7 +116,7 @@ const SponsorTierTable: React.FC = () => {
           setTierToEdit(sponsorTier);
         }}
       >
-        <Typography>{`$${sponsorTier.threshold.toLocaleString()}`}</Typography>
+        <Typography>{`$${sponsorTier.minSupportValue.toLocaleString()}`}</Typography>
       </TableCell>
       <TableCell sx={{ borderBottom: index === sponsorTiers.length - 1 ? 'none' : 'default' }}>
         <SponsorTierDeleteButton
@@ -151,8 +151,8 @@ const SponsorTierTable: React.FC = () => {
       )}
       <AdminToolTable
         columns={[
-          { name: 'Tag Name', width: '40%' },
-          { name: 'Support Threshold', width: '40%' },
+          { name: 'Tier Name', width: '40%' },
+          { name: 'Minimum Support Value', width: '40%' },
           { name: 'Actions', width: '20%' }
         ]}
         rows={sponsorTierTableRows}

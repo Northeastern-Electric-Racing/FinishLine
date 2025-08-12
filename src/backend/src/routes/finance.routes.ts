@@ -151,7 +151,7 @@ financeRouter.post(
   '/sponsorTier/:sponsorTierId/edit',
   nonEmptyString(body('name')),
   nonEmptyString(body('colorHexCode')),
-  intMinZero(body('threshold')),
+  intMinZero(body('minSupportValue')),
   validateInputs,
   FinanceController.editSponsorTier
 );

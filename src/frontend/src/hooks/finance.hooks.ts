@@ -149,7 +149,7 @@ export interface SponsorPayload {
 
 export interface SponsorTierPayload {
   name: string;
-  threshold: number;
+  minSupportValue: number;
   colorHexCode: string;
 }
 

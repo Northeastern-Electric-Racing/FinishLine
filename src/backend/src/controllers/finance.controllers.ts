@@ -100,14 +100,14 @@ export default class FinanceController {
 
   static async createSponsorTier(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, colorHexCode, threshold } = req.body;
+      const { name, colorHexCode, minSupportValue } = req.body;
 
       const sponsor = await FinanceServices.createSponsorTier(
         req.currentUser,
         name,
         req.organization,
         colorHexCode,
-        threshold
+        minSupportValue
       );
       res.status(200).json(sponsor);
     } catch (error: unknown) {
@@ -344,7 +344,7 @@ export default class FinanceController {
   static async editSponsorTier(req: Request, res: Response, next: NextFunction) {
     try {
       const { sponsorTierId } = req.params;
-      const { name, colorHexCode, threshold } = req.body;
+      const { name, colorHexCode, minSupportValue } = req.body;
 
       const updatedSponsorTier = await FinanceServices.editSponsorTier(
         req.currentUser,
@@ -352,7 +352,7 @@ export default class FinanceController {
         sponsorTierId,
         name,
         colorHexCode,
-        threshold
+        minSupportValue
       );
       res.status(200).json(updatedSponsorTier);
     } catch (error: unknown) {

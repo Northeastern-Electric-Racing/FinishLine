@@ -26,7 +26,7 @@ export interface SponsorTier {
   sponsorTierId: string;
   name: string;
   colorHexCode: string;
-  threshold: number;
+  minSupportValue: number;
 }
 
 export interface SpendingBarData {

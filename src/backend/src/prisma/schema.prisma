@@ -1346,16 +1346,16 @@ model Part_Review_Common_Mistake {
 }
 
 model Sponsor_Tier {
-  sponsorTierId  String       @id @default(uuid())
-  organization   Organization @relation(fields: [organizationId], references: [organizationId])
-  organizationId String
-  name           String
-  colorHexCode   String
-  sponsors       Sponsor[]
-  dateDeleted    DateTime?
-  deleter        User?        @relation(fields: [deleterId], references: [userId])
-  deleterId      String?
-  threshold      Int          @default(0)
+  sponsorTierId   String       @id @default(uuid())
+  organization    Organization @relation(fields: [organizationId], references: [organizationId])
+  organizationId  String
+  name            String
+  colorHexCode    String
+  sponsors        Sponsor[]
+  dateDeleted     DateTime?
+  deleter         User?        @relation(fields: [deleterId], references: [userId])
+  deleterId       String?
+  minSupportValue Int          @default(0)
 }
 
 model Index_Code {
