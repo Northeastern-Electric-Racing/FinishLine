@@ -677,3 +677,25 @@ export const editSponsor = (id: string, formData: SponsorPayload) => {
 export const deleteSponsorTask = (sponsorTaskId: string) => {
   return axios.post(apiUrls.deleteSponsorTask(sponsorTaskId));
 };
+
+/**
+ * API call to delete a given sponsor tier
+ *
+ * @param sponsorTierId the id of the sponsor tier to delete
+ *
+ * @returns the deleted sponsor tier
+ */
+export const deleteSponsorTier = (sponsorTierId: string) => {
+  return axios.delete(apiUrls.deleteSponsorTier(sponsorTierId));
+};
+
+/**
+ * Edits a sponsor tier in the database
+ * @param sponsorTierId the id of the sponsor tier
+ * @param formData the data expected from the form
+ * @return the updated sponsor tier
+ */
+
+export const editSponsorTier = (sponsorTierId: string, formData: SponsorTierPayload) => {
+  return axios.post(apiUrls.editSponsorTier(sponsorTierId), formData);
+};

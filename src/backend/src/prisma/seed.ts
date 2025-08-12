@@ -3031,9 +3031,9 @@ const performSeed: () => Promise<void> = async () => {
     }
   });
 
-  const goldSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Gold', ner, '#9F9156');
-  await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, '#C0C0C0');
-  await FinanceServices.createSponsorTier(thomasEmrax, 'Bronze', ner, '#CD7F32');
+  const goldSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Gold', ner, '#9F9156', 3000);
+  await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, '#C0C0C0', 200);
+  await FinanceServices.createSponsorTier(thomasEmrax, 'Bronze', ner, '#CD7F32', 10);
 
   const sponsor = await FinanceServices.createSponsor(
     thomasEmrax,
@@ -3049,8 +3049,6 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'googlecode'
   );
-
-  await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, 'C0C0C0');
 
   await FinanceServices.createSponsorTask(
     thomasEmrax,

@@ -6,7 +6,7 @@ interface WarningBannerProps {
 }
 
 const WarningBanner: React.FC<WarningBannerProps> = ({ amount }) => {
-  const formattedMessage = `Spending is $${amount} over budget!`;
+  const formattedMessage = `Spending is $${Math.round(amount * 100) / 100} over budget!`;
 
   return (
     <Box

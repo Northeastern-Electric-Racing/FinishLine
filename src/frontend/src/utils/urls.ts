@@ -279,6 +279,8 @@ const getAllSpendingBarData = (startDate?: Date, endDate?: Date): string => {
 const getAllSponsorTiers = () => `${financeRoutesEndpoints()}/sponsorTiers`;
 const editSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/edit`;
 const financeGetUsersTeamsReimbursementRequests = () => `${financeEndpoints()}/reimbursements/current-user-team`;
+const deleteSponsorTier = (sponsorTierId: string) => `${financeRoutesEndpoints()}/sponsorTier/${sponsorTierId}`;
+const editSponsorTier = (sponsorTierId: string) => `${financeRoutesEndpoints()}/sponsorTier/${sponsorTierId}/edit`;
 
 /**************** Bill of Material Endpoints **************************/
 const bomEndpoints = () => `${API_URL}/projects/bom`;
@@ -587,6 +589,8 @@ export const apiUrls = {
   getAllSponsorTiers,
   editSponsor,
   financeGetUsersTeamsReimbursementRequests,
+  deleteSponsorTier,
+  editSponsorTier,
 
   bomEndpoints,
   bomGetMaterialsByWbsNum,
