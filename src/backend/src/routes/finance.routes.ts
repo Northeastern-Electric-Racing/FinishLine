@@ -145,4 +145,15 @@ financeRouter.post(
   FinanceController.editSponsor
 );
 
+financeRouter.delete('/sponsorTier/:sponsorTierId', FinanceController.deleteSponsorTier);
+
+financeRouter.post(
+  '/sponsorTier/:sponsorTierId/edit',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('colorHexCode')),
+  intMinZero(body('threshold')),
+  validateInputs,
+  FinanceController.editSponsorTier
+);
+
 export default financeRouter;

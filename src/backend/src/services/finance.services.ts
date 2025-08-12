@@ -1,5 +1,6 @@
 import {
   CreateSponsorTask,
+  isAdmin,
   isHead,
   ReimbursementRequestData,
   SpendingBarData,
@@ -15,6 +16,7 @@ import {
   getSponsorTierQueryArgs
 } from '../prisma-query-args/sponsor.query.args';
 import {
+  AccessDeniedAdminOnlyException,
   AccessDeniedException,
   DeletedException,
   HttpException,
@@ -176,9 +178,16 @@ export default class FinanceServices {
    * @param name tier name
    * @param organization current organization of the current user
    * @param colorHexCode tier color
+   * @param threshold support threshold ($)
    * @returns newly created sponsor tier
    */
-  static async createSponsorTier(submitter: User, name: string, organization: Organization, colorHexCode: string) {
+  static async createSponsorTier(
+    submitter: User,
+    name: string,
+    organization: Organization,
+    colorHexCode: string,
+    threshold: number
+  ): Promise<SponsorTier> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('Only heads can create a sponsor tier');
 
@@ -186,7 +195,8 @@ export default class FinanceServices {
       data: {
         name,
         organizationId: organization.organizationId,
-        colorHexCode
+        colorHexCode,
+        threshold
       },
       include: {
         organization: true
@@ -587,10 +597,97 @@ export default class FinanceServices {
    */
   static async getAllSponsorTiers(organization: Organization): Promise<SponsorTier[]> {
     const allSponsorTiers = await prisma.sponsor_Tier.findMany({
-      where: { organizationId: organization.organizationId },
+      where: { organizationId: organization.organizationId, dateDeleted: null },
+      orderBy: { threshold: 'asc' },
       ...getSponsorTierQueryArgs(organization.organizationId)
     });
 
     return allSponsorTiers;
+  }
+
+  /**
+   * Soft deletes a given sponsor tier
+   * @param sponsorTierId the id of the sponsor tier that is getting deleted
+   * @param deleter the person deleting the sponsor tier
+   * @param organization the organization the person deleting belongs to
+   * @returns the deleted sponsor tier
+   */
+  static async deleteSponsorTier(sponsorTierId: string, deleter: User, organization: Organization): Promise<SponsorTier> {
+    const sponsorTier = await prisma.sponsor_Tier.findUnique({
+      where: { sponsorTierId }
+    });
+
+    if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('delete a sponsor tier');
+    }
+
+    if (!sponsorTier) throw new NotFoundException('Sponsor Tier', sponsorTierId);
+    if (sponsorTier.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Sponsor Tier');
+    if (sponsorTier.dateDeleted) throw new DeletedException('Sponsor Tier', sponsorTierId);
+
+    const associatedSponsors = await prisma.sponsor.count({
+      where: { sponsorTierId: sponsorTier.sponsorTierId, dateDeleted: null }
+    });
+
+    if (associatedSponsors > 0) {
+      throw new HttpException(
+        400,
+        `Cannot delete Sponsor Tier "${sponsorTier.name}" because it is associated with existing sponsors.`
+      );
+    }
+
+    const deletedSponsorTier = await prisma.sponsor_Tier.update({
+      where: { sponsorTierId },
+      data: { dateDeleted: new Date(), deleter: { connect: { userId: deleter.userId } } },
+      ...getSponsorTierQueryArgs(organization.organizationId)
+    });
+
+    return deletedSponsorTier;
+  }
+
+  /**
+   * Edits a sponsor tier.
+   * @param submitter current user editing the sponsor tier
+   * @param organization current organization of the current user
+   * @param sponsorTierId id of the sponsor tier to be edited
+   * @param name updated tier name
+   * @param colorHexCode updated tier color
+   * @param threshold updated support threshold ($)
+   * @returns the updated sponsor tier
+   * @throws AccessDeniedAdminOnlyException if the user lacks permissions.
+   * @throws NotFoundException if the sponsor tier is not found.
+   */
+  static async editSponsorTier(
+    submitter: User,
+    organization: Organization,
+    sponsorTierId: string,
+    name: string,
+    colorHexCode: string,
+    threshold: number
+  ): Promise<SponsorTier> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('edit a sponsor tier');
+
+    const oldSponsorTier = await prisma.sponsor_Tier.findUnique({
+      where: {
+        sponsorTierId,
+        organizationId: organization.organizationId
+      }
+    });
+
+    if (!oldSponsorTier) throw new NotFoundException('Sponsor Tier', sponsorTierId);
+    if (oldSponsorTier.dateDeleted) throw new DeletedException('Sponsor Tier', sponsorTierId);
+
+    const updatedSponsorTier = await prisma.sponsor_Tier.update({
+      where: { sponsorTierId: oldSponsorTier.sponsorTierId },
+      data: {
+        name,
+        colorHexCode,
+        threshold
+      },
+      ...getSponsorTierQueryArgs(organization.organizationId)
+    });
+
+    return updatedSponsorTier;
   }
 }

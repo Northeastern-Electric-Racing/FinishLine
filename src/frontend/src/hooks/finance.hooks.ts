@@ -60,7 +60,9 @@ import {
   deleteSponsorTask,
   editOtherProductReason,
   deleteAccountCode,
-  deleteOtherProductReason
+  deleteOtherProductReason,
+  deleteSponsorTier,
+  editSponsorTier
 } from '../apis/finance.api';
 import {
   IndexCode,
@@ -147,6 +149,7 @@ export interface SponsorPayload {
 
 export interface SponsorTierPayload {
   name: string;
+  threshold: number;
   colorHexCode: string;
 }
 
@@ -230,7 +233,7 @@ export const useCreateSponsorTier = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['sponsor-tier']);
+        queryClient.invalidateQueries(['sponsor-tiers']);
       }
     }
   );
@@ -1156,6 +1159,48 @@ export const useDeleteSponsorTask = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['sponsor-task']);
+      }
+    }
+  );
+};
+
+/**
+ * Hook to delete the given sponsor tier
+ * @param sponsorTierId sponsor tier to be deleted
+ * @returns the deleted sponsor tier
+ */
+export const useDeleteSponsorTier = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ id: string }, Error, string>(
+    ['sponsor-tier', 'delete'],
+    async (sponsorTierId: string) => {
+      const { data } = await deleteSponsorTier(sponsorTierId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['sponsor-tiers']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to edit a sponsor tier
+ *
+ * @returns the edited sponsor tier
+ */
+export const useEditSponsorTier = (sponsorTierId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<SponsorTier, Error, SponsorTierPayload>(
+    ['sponsor-tier', 'edit'],
+    async (formData: SponsorTierPayload) => {
+      const { data } = await editSponsorTier(sponsorTierId, formData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['sponsor-tiers']);
       }
     }
   );

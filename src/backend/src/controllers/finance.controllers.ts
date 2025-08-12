@@ -100,9 +100,15 @@ export default class FinanceController {
 
   static async createSponsorTier(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, colorHexCode } = req.body;
+      const { name, colorHexCode, threshold } = req.body;
 
-      const sponsor = await FinanceServices.createSponsorTier(req.currentUser, name, req.organization, colorHexCode);
+      const sponsor = await FinanceServices.createSponsorTier(
+        req.currentUser,
+        name,
+        req.organization,
+        colorHexCode,
+        threshold
+      );
       res.status(200).json(sponsor);
     } catch (error: unknown) {
       next(error);
@@ -320,6 +326,35 @@ export default class FinanceController {
       );
 
       res.status(200).json(updatedSponsor);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteSponsorTier(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { sponsorTierId } = req.params;
+      const deletedSponsorTier = await FinanceServices.deleteSponsorTier(sponsorTierId, req.currentUser, req.organization);
+      res.status(200).json(deletedSponsorTier);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editSponsorTier(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { sponsorTierId } = req.params;
+      const { name, colorHexCode, threshold } = req.body;
+
+      const updatedSponsorTier = await FinanceServices.editSponsorTier(
+        req.currentUser,
+        req.organization,
+        sponsorTierId,
+        name,
+        colorHexCode,
+        threshold
+      );
+      res.status(200).json(updatedSponsorTier);
     } catch (error: unknown) {
       next(error);
     }

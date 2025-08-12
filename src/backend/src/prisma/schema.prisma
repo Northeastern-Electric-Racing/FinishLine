@@ -256,6 +256,7 @@ model User {
   deletedOtherReimbursementProductReasons Reimbursement_Product_Other_Reason[] @relation(name: "deletedOtherReimbursementProductReasons")
   reimbursementRequestComments            Reimbursement_Request_Comment[]      @relation(name: "createdReimbursementRequestComments")
   deletedReimbursementRequestComments     Reimbursement_Request_Comment[]      @relation(name: "deletedReimbursementRequestComments")
+  deletedSponsorTiers                     Sponsor_Tier[]
 }
 
 model Role {
@@ -1351,6 +1352,10 @@ model Sponsor_Tier {
   name           String
   colorHexCode   String
   sponsors       Sponsor[]
+  dateDeleted    DateTime?
+  deleter        User?        @relation(fields: [deleterId], references: [userId])
+  deleterId      String?
+  threshold      Int          @default(0)
 }
 
 model Index_Code {
