@@ -44,4 +44,4 @@ const baseClient = new PrismaClient({
 
 const prisma = baseClient.$extends(queryLoggerExtension);
 
-export default prisma;
+export default baseClient;

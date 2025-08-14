@@ -58,7 +58,8 @@
     "docker:start": "yarn database:setup:script && cd devContainerization && node start-containers.js",
     "docker:i": "cd devContainerization && docker compose -f docker-compose.dev.yml exec -T backend sh -c \"yarn install && cd src/backend && npx prisma generate\" && docker compose -f docker-compose.dev.yml exec -T frontend sh -c \"yarn install\"",
     "docker:test": "yarn test:setup && cd devContainerization && docker compose -f docker-compose.dev.yml exec backend bash -c \"yarn test:backend\" && docker compose -f docker-compose.dev.yml exec frontend sh -c \"yarn test:frontend\" && yarn test:teardown",
-    "docker:rebuild": "docker compose -f devContainerization/docker-compose.dev.yml rm -f -s && yarn docker:start"
+    "docker:rebuild": "docker compose -f devContainerization/docker-compose.dev.yml rm -f -s && yarn docker:start",
+    "benchmark": "ts-node ./src/backend/src/diagnostics/run.ts"
   },
   "resolutions": {
     "@types/react": "17.0.1",
