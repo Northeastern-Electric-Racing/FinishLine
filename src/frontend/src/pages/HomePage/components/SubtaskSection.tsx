@@ -7,6 +7,7 @@ import { GridDragIcon } from '@mui/x-data-grid';
 import { useToggleChecklist } from '../../../hooks/onboarding.hook';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { isChecklistChecked } from '../../../utils/onboarding.utils';
+import Markdown from 'react-markdown';
 
 interface SubtaskSectionProps {
   parentTask: Checklist;
@@ -89,7 +90,7 @@ const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChec
               borderRadius: 2
             }}
           >
-            <Typography color={theme.palette.common.white}>{parentTask.descriptions[0]}</Typography>
+            <Markdown>{parentTask.descriptions[0]}</Markdown>
           </Grid>
         </Grid>
       ) : (
@@ -113,7 +114,7 @@ const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChec
                   margin: 'auto'
                 }}
               >
-                <Typography color={theme.palette.common.white}>{description}</Typography>
+                <Markdown>{description}</Markdown>
               </Grid>
             );
           })}

@@ -11,6 +11,7 @@ import NERDeleteModal from '../../../../components/NERDeleteModal';
 import { useToast } from '../../../../hooks/toasts.hooks';
 import { useDeleteChecklist } from '../../../../hooks/onboarding.hook';
 import EditSubtaskModal from './EditSubtaskModal';
+import Markdown from 'react-markdown';
 
 interface AdminSubtaskSectionProps {
   parentTask: Checklist;
@@ -88,7 +89,7 @@ const AdminSubtaskSection: React.FC<AdminSubtaskSectionProps> = ({ parentTask })
             marginBottom: 1
           }}
         >
-          <Typography color={theme.palette.text.primary}>{description}</Typography>
+          <Markdown>{description}</Markdown>
         </Box>
       ))}
       <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: -1 }}>
