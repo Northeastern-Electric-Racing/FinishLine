@@ -49,7 +49,7 @@ const NERModal = ({
       onClose={onHide}
       PaperProps={{
         style: paperProps
-          ? { ...paperProps, borderRadius: '10px', maxWidth: '700px' }
+          ? { borderRadius: '10px', maxWidth: '700px', ...paperProps }
           : { borderRadius: '10px', maxWidth: '700px' }
       }}
     >

@@ -8,6 +8,7 @@ interface NERFormModalProps<T extends FieldValues> extends NERModalProps {
   onFormSubmit: (data: T) => void;
   formId: string;
   children?: ReactNode;
+  paperProps?: any;
 }
 
 const NERFormModal = ({
@@ -23,7 +24,8 @@ const NERFormModal = ({
   disabled,
   children,
   showCloseButton,
-  hideBackDrop = false
+  hideBackDrop = false,
+  paperProps
 }: NERFormModalProps<any>) => {
   /**
    * Wrapper function for onSubmit so that form data is reset after submit
@@ -53,6 +55,7 @@ const NERFormModal = ({
       disabled={disabled}
       showCloseButton={showCloseButton}
       hideBackDrop={hideBackDrop}
+      paperProps={paperProps}
     >
       <form id={formId} onSubmit={handleFormSubmit} noValidate>
         {children}
