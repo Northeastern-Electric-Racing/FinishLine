@@ -21,7 +21,7 @@ import NERFormModal from '../../../../components/NERFormModal';
 import * as yup from 'yup';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import Markdown from 'react-markdown';
+import NERMarkdown from '../../../../components/NERMarkdown';
 
 interface CreateChecklistModalProps {
   open: boolean;
@@ -147,6 +147,7 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
       onFormSubmit={onFormSubmit}
       formId={'create-task-form'}
       showCloseButton
+      paperProps={{ maxWidth: '80vw' }}
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         <FormControl fullWidth>
@@ -277,7 +278,7 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
                 <Box
                   sx={{
                     display: 'flex',
-                    minWidth: '600px',
+                    width: '30vw',
                     alignItems: 'stretch'
                   }}
                 >
@@ -288,7 +289,7 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
                     render={({ field }) => (
                       <TextField
                         {...field}
-                        placeholder="Enter description..."
+                        placeholder="Enter description markdown..."
                         fullWidth
                         multiline
                         variant="outlined"
@@ -328,7 +329,7 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
                   sx={{
                     backgroundColor: theme.palette.background.paper,
                     borderRadius: 3,
-                    minWidth: '600px',
+                    width: '30vw',
                     padding: 2,
                     display: 'flex',
                     flexDirection: 'column',
@@ -354,42 +355,11 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
                   <Box
                     sx={{
                       flex: 1,
-                      overflow: 'auto',
-                      wordBreak: 'break-word',
-                      whiteSpace: 'pre-wrap',
-                      fontSize: '1.1rem',
-                      lineHeight: 1.6,
-                      '& h1, & h2, & h3, & h4, & h5, & h6': {
-                        margin: '0.5em 0 0.25em 0',
-                        color: theme.palette.text.primary
-                      },
-                      '& p': {
-                        margin: '0.25em 0',
-                        color: theme.palette.text.primary
-                      },
-                      '& ul, & ol': {
-                        margin: '0.25em 0',
-                        paddingLeft: '1.5em'
-                      },
-                      '& li': {
-                        margin: '0.1em 0'
-                      },
-                      '& code': {
-                        backgroundColor: theme.palette.action.hover,
-                        padding: '2px 4px',
-                        borderRadius: 1,
-                        fontSize: '0.95em'
-                      },
-                      '& pre': {
-                        backgroundColor: theme.palette.action.hover,
-                        padding: 1,
-                        borderRadius: 1,
-                        overflow: 'auto'
-                      }
+                      overflow: 'auto'
                     }}
                   >
                     {watch(`descriptions.${index}.name`) ? (
-                      <Markdown>{watch(`descriptions.${index}.name`)}</Markdown>
+                      <NERMarkdown markdown={watch(`descriptions.${index}.name`)} />
                     ) : (
                       <Typography
                         variant="body2"
@@ -398,7 +368,7 @@ const CreateChecklistModal = ({ open, handleClose, teamId, teamTypeId }: CreateC
                           fontStyle: 'italic'
                         }}
                       >
-                        Start typing to see preview...
+                        Start typing to see formatted markdown...
                       </Typography>
                     )}
                   </Box>

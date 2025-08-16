@@ -118,7 +118,7 @@ const OnboardingHomePage = () => {
           <Grid
             item
             xs={12}
-            md={7}
+            md={8}
             sx={{
               maxHeight: '82vh',
               overflow: 'auto',
@@ -129,7 +129,7 @@ const OnboardingHomePage = () => {
           >
             <ChecklistSection usersChecklists={usersChecklists} checkedChecklists={checkedChecklists} />
           </Grid>
-          <Grid container item xs={12} md={5} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 4 }}>
+          <Grid container item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 4 }}>
             <Grid item>
               <OnboardingInfoSection />
             </Grid>

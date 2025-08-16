@@ -30,12 +30,11 @@ const ParentTask: React.FC<ParentTaskProps> = ({ parentTask, checkedChecklists }
   };
 
   return (
-    <Box sx={{ width: '85%' }}>
+    <Box sx={{ width: '100%' }}>
       <Box
         sx={{
           backgroundColor: showSubtasks ? 'white' : '#CECECE',
           borderRadius: 2,
-          padding: 1.5,
           alignContent: 'center',
           position: 'relative',
           boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)',
