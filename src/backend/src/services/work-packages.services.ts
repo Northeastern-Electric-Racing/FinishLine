@@ -34,7 +34,6 @@ import {
 import { getBlockingWorkPackages, validateBlockedBys } from '../utils/work-packages.utils';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
 import { userHasPermission } from '../utils/users.utils';
-import ProjectsService from './projects.services';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
@@ -178,7 +177,8 @@ export default class WorkPackagesService {
         wbsElement: {
           carNumber,
           projectNumber,
-          organizationId: organization.organizationId
+          organizationId: organization.organizationId,
+          dateDeleted: null
         }
       },
       include: {
