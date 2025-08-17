@@ -173,13 +173,36 @@ export default class WorkPackagesService {
     // and what number work package this should be
     const { carNumber, projectNumber } = projectWbsNum;
 
-    const project = await ProjectsService.getSingleProject(projectWbsNum, organization);
+    const project = await prisma.project.findFirst({
+      where: {
+        wbsElement: {
+          carNumber,
+          projectNumber,
+          organizationId: organization.organizationId
+        }
+      },
+      include: {
+        workPackages: {
+          where: { wbsElement: { dateDeleted: null } },
+          include: {
+            wbsElement: true
+          }
+        },
+        wbsElement: true
+      }
+    });
 
-    const { id: projectId } = project;
+    if (!project) {
+      throw new NotFoundException('Project', `${carNumber}.${projectNumber}.0`);
+    }
+
+    const { projectId } = project;
+
+    const { leadId, managerId } = project.wbsElement;
 
     const newWorkPackageNumber: number =
       project.workPackages
-        .map((element) => element.wbsNum.workPackageNumber)
+        .map((element) => element.wbsElement.workPackageNumber)
         .reduce((prev, curr) => Math.max(prev, curr), 0) + 1;
 
     // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
@@ -208,7 +231,9 @@ export default class WorkPackagesService {
             changes: {
               createMany: { data: changesToCreate }
             },
-            organizationId: organization.organizationId
+            organizationId: organization.organizationId,
+            leadId,
+            managerId
           }
         },
         stage,
@@ -233,9 +258,9 @@ export default class WorkPackagesService {
       [],
       blockedByElements,
       null,
+      leadId,
       null,
-      null,
-      null,
+      managerId,
       [],
       descriptionBullets,
       crId,
