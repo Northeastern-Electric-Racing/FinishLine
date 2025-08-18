@@ -2,24 +2,29 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-
-import { Project, ProjectProposedChangesCreateArgs } from 'shared';
+import { ChangeRequestReason, ChangeRequestType, Project, ProjectProposedChangesCreateArgs } from 'shared';
 import { useAllLinkTypes, useEditSingleProject } from '../../../hooks/projects.hooks';
-import { bulletsToObject } from '../../../utils/form';
+import { bulletsToObject, wbsTester } from '../../../utils/form';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { EditSingleProjectPayload } from '../../../utils/types';
-import { useState } from 'react';
-import ProjectFormContainer from './ProjectForm';
+import { useMemo, useState } from 'react';
 import { ProjectFormInput } from './ProjectForm';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { getRequiredLinkTypeNames } from '../../../utils/link.utils';
 import { useQuery } from '../../../hooks/utils.hooks';
 import * as yup from 'yup';
-import { FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequest';
+import {
+  FormInput as ChangeRequestFormInput,
+  FormInput,
+  StandardChangeRequestType
+} from '../../CreateChangeRequestPage/CreateChangeRequest';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
 import { routes } from '../../../utils/routes';
 import { useHistory } from 'react-router-dom';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { useForm } from 'react-hook-form';
+import ProjectEditFormContainer from './ProjectEditForm';
 
 interface ProjectEditContainerProps {
   project: Project;
@@ -32,7 +37,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const toast = useToast();
   const query = useQuery();
   const history = useHistory();
-
   const { name, budget, summary, workPackages } = project;
   const [managerId, setManagerId] = useState<string | undefined>(project.manager?.userId.toString());
   const [leadId, setLeadId] = useState<string | undefined>(project.lead?.userId.toString());
@@ -56,6 +60,143 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     };
   });
 
+  // cache default values between rerenders
+  const defaultValues = useMemo(() => {
+    return {
+      name,
+      leadId,
+      managerId,
+      budget,
+      summary,
+      crId: query.get('crId') || '',
+      carNumber,
+      links,
+      descriptionBullets,
+      teamIds: [],
+      workPackages: workPackages.map((wp) => {
+        return {
+          workPackageId: wp.id,
+          name: wp.name,
+          startDate: wp.startDate,
+          duration: wp.duration,
+          blockedBy: wp.blockedBy.map((id) => id.toString()),
+          descriptionBullets: bulletsToObject(wp.descriptionBullets),
+          stage: wp.stage ?? 'NONE'
+        };
+      })
+    };
+  }, [budget, carNumber, descriptionBullets, leadId, links, managerId, name, query, summary, workPackages]);
+
+  // update default values when additional links are loaded
+  /*
+  useEffect(() => {
+    resetProjectForm({ ...defaultValues, links });
+  }, [links]);*/
+
+  const descriptionBulletsSchema = yup.object().shape({
+    id: yup.string().required(),
+    detail: yup.string().required(),
+    type: yup.string().required()
+  });
+
+  const workPackageSchema = yup.object().shape({
+    name: yup.string().required(),
+    workPackageId: yup.string().required(),
+    startDate: yup.date().required(),
+    duration: yup.number().required(),
+    crId: yup.string().optional(),
+    stage: yup.string().required(),
+    blockedBy: yup.array().of(yup.string().required()).required(),
+    descriptionBullets: yup.array().of(descriptionBulletsSchema).required()
+  });
+
+  const schema = yup.object().shape({
+    name: yup.string().required('Name is required!'),
+    budget: yup.number().required('Budget is required!').min(0).integer('Budget must be an even dollar amount!'),
+    summary: yup.string().required('Summary is required!'),
+    leadId: yup.string().optional(),
+    managerId: yup.string().optional(),
+    links: yup
+      .array()
+      .of(
+        yup.object().shape({
+          linkId: yup.string().required(),
+          linkTypeName: yup.string().required('Link Type is required!'),
+          url: yup.string().required('URL is required!').url('Invalid URL')
+        })
+      )
+      .required(),
+    carNumber: yup.number().optional(),
+    teamIds: yup.array().of(yup.string().required()).required(),
+    descriptionBullets: yup.array().of(descriptionBulletsSchema).required(),
+    workPackages: yup.array().of(workPackageSchema).required()
+  });
+
+  // project form
+  const { reset: resetProjectForm, ...projectFormMethods } = useForm<ProjectFormInput, any, ProjectFormInput>({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      name: defaultValues.name,
+      budget: defaultValues.budget,
+      summary: defaultValues.summary,
+      crId: defaultValues.crId,
+      carNumber: defaultValues.carNumber,
+      links: defaultValues.links,
+      descriptionBullets: defaultValues.descriptionBullets,
+      teamIds: defaultValues.teamIds
+    }
+  });
+
+  const changeRequestSchema = yup.object().shape({
+    type: yup.mixed<StandardChangeRequestType>().required('Type is required'),
+    what: yup.string().required('What is required'),
+    why: yup
+      .array()
+      .min(1, 'At least one Why is required')
+      .required('Why is required')
+      .of(
+        yup.object().shape({
+          type: yup.mixed<ChangeRequestReason>().required('Why Type is required'),
+          explain: yup
+            .string()
+            .required('Why Explain is required')
+            .when('type', ([type], schema) =>
+              type === ChangeRequestReason.OtherProject
+                ? schema.required().test('wbs-num-valid', 'WBS Number is not valid', wbsTester)
+                : yup.string()
+            )
+        })
+      )
+  });
+
+  // change request form
+  const { reset: resetChangeRequestForm, ...changeRequestFormMethods } = useForm<FormInput>({
+    resolver: yupResolver(changeRequestSchema),
+    defaultValues: query.get('budgetChange')
+      ? {
+          what: 'Increase the budget to account for the cost of materials',
+          why: [{ type: ChangeRequestReason.Other, explain: 'The cost of materials ended up exceeding the initial budget' }],
+          type: ChangeRequestType.Issue
+        }
+      : query.get('timelineDelay')
+        ? {
+            what: 'Timeline delay',
+            why: [{ type: ChangeRequestReason.Other, explain: 'Decided to extend timeline after design review' }],
+            type: ChangeRequestType.Redefinition
+          }
+        : query.get('createWP')
+          ? {
+              what: '',
+              why: [{ type: ChangeRequestReason.Initialization, explain: 'Creating a Work Package on this Project' }],
+              type: ChangeRequestType.Redefinition
+            }
+          : {
+              what: '',
+              why: [{ type: ChangeRequestReason.Other, explain: '' }],
+              type: ChangeRequestType.Issue
+            }
+  });
+
   if (isLoading || isCRHookLoading) return <LoadingIndicator />;
   if (!allLinkTypes || allLinkTypesIsLoading) return <LoadingIndicator />;
   if (allLinkTypesIsError) return <ErrorPage message={allLinkTypesError.message} />;
@@ -73,45 +214,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         linkTypeName: name
       });
     });
-
-  const defaultValues = {
-    name,
-    budget,
-    summary,
-    // teamId and carNumber aren't used for projectEdit
-    teamIds: [],
-    carNumber,
-    links,
-    crId: query.get('crId') || '',
-    descriptionBullets,
-    leadId,
-    managerId,
-    workPackages: workPackages.map((wp) => {
-      return {
-        workPackageId: wp.id,
-        name: wp.name,
-        startDate: wp.startDate,
-        duration: wp.duration,
-        blockedBy: wp.blockedBy.map((id) => id.toString()),
-        descriptionBullets: bulletsToObject(wp.descriptionBullets),
-        stage: wp.stage ?? 'NONE'
-      };
-    })
-  };
-
-  const schema = yup.object().shape({
-    name: yup.string().required('Name is required!'),
-    budget: yup.number().required('Budget is required!').min(0).integer('Budget must be an even dollar amount!'),
-    summary: yup.string().required('Summary is required!'),
-    leadId: yup.string().optional(),
-    managerId: yup.string().optional(),
-    links: yup.array().of(
-      yup.object().shape({
-        linkTypeName: yup.string().required('Link Type is required!'),
-        url: yup.string().required('URL is required!').url('Invalid URL')
-      })
-    )
-  });
 
   const onSubmitChangeRequest = async (data: ProjectCreateChangeRequestFormInput) => {
     const { name, budget, summary, links, type, what, why, descriptionBullets } = data;
@@ -172,15 +274,15 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   };
 
   return (
-    <ProjectFormContainer
+    <ProjectEditFormContainer
       requiredLinkTypeNames={requiredLinkTypeNames}
       exitEditMode={exitEditMode}
       project={project}
       onSubmit={onSubmit}
       setManagerId={setManagerId}
       setLeadId={setLeadId}
-      schema={schema}
-      defaultValues={defaultValues}
+      projectFormReturn={projectFormMethods}
+      changeRequestFormReturn={changeRequestFormMethods}
       leadId={leadId}
       managerId={managerId}
       onSubmitChangeRequest={onSubmitChangeRequest}

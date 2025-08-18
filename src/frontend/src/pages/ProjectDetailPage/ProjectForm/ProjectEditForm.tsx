@@ -2,12 +2,18 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { DescriptionBulletPreview, LinkCreateArgs, Project, ProjectTemplate } from 'shared';
+import { Project, ProjectTemplate } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
-import { useFieldArray, useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+import {
+  Control,
+  FormState,
+  useFieldArray,
+  UseFormHandleSubmit,
+  UseFormRegister,
+  UseFormSetValue,
+  UseFormWatch
+} from 'react-hook-form';
 import { Box, Stack, Tooltip, Typography } from '@mui/material';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
@@ -17,7 +23,6 @@ import ProjectFormDetails from './ProjectFormDetails';
 import { useAllUsers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import CreateChangeRequestModal from '../../CreateChangeRequestPage/CreateChangeRequestModal';
 import { ProjectCreateChangeRequestFormInput } from './ProjectEditContainer';
 import { useEffect, useState } from 'react';
 import { FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequest';
@@ -30,28 +35,27 @@ import ProjectFormWorkPackageSection from './ProjectFormWorkPackageSection';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { generateUUID } from '../../../utils/form';
 import { getMonday } from '../../../utils/datetime.utils';
+import { ProjectFormInput } from './ProjectForm';
+import EditChangeRequestModal, { ChangeRequestFormReturn } from '../../CreateChangeRequestPage/EditChangeRequestModal';
 
-export interface ProjectFormInput {
-  name: string;
-  budget: number;
-  summary: string;
-  links: LinkCreateArgs[];
-  crId?: string;
-  carNumber?: number;
-  teamIds: string[];
-  descriptionBullets: DescriptionBulletPreview[];
-  workPackages: WorkPackageFormViewPayload[];
+export interface ProjectFormReturn {
+  register: UseFormRegister<ProjectFormInput>;
+  handleSubmit: UseFormHandleSubmit<ProjectFormInput, ProjectFormInput>;
+  control: Control<ProjectFormInput, any, ProjectFormInput>;
+  watch: UseFormWatch<ProjectFormInput>;
+  formState: FormState<ProjectFormInput>;
+  setValue: UseFormSetValue<ProjectFormInput>;
 }
 
-interface ProjectFormContainerProps {
+interface ProjectEditFormContainerProps {
   requiredLinkTypeNames: string[];
   exitEditMode: () => void;
   project?: Project;
   onSubmit: (data: ProjectFormInput) => void;
-  defaultValues: ProjectFormInput;
+  projectFormReturn: ProjectFormReturn;
+  changeRequestFormReturn: ChangeRequestFormReturn;
   setManagerId: (id?: string) => void;
   setLeadId: (id?: string) => void;
-  schema: yup.ObjectSchema<any>;
   leadId?: string;
   managerId?: string;
   onSubmitChangeRequest?: (data: ProjectCreateChangeRequestFormInput) => void;
@@ -59,14 +63,14 @@ interface ProjectFormContainerProps {
   carNumber?: number;
 }
 
-const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
+const ProjectEditFormContainer: React.FC<ProjectEditFormContainerProps> = ({
   exitEditMode,
   project,
   onSubmit,
-  defaultValues,
   setLeadId,
   setManagerId,
-  schema,
+  projectFormReturn,
+  changeRequestFormReturn,
   leadId,
   managerId,
   onSubmitChangeRequest,
@@ -85,19 +89,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
     watch,
     formState: { errors },
     setValue
-  } = useForm<ProjectFormInput>({
-    resolver: yupResolver(schema),
-    defaultValues: {
-      name: defaultValues?.name,
-      budget: defaultValues?.budget,
-      summary: defaultValues?.summary,
-      crId: defaultValues?.crId,
-      carNumber: defaultValues?.carNumber,
-      links: defaultValues?.links,
-      descriptionBullets: defaultValues?.descriptionBullets ?? [],
-      teamIds: defaultValues?.teamIds
-    }
-  });
+  } = projectFormReturn;
 
   const {
     fields: descriptionBullets,
@@ -348,18 +340,22 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
         </Stack>
       </PageLayout>
       {onSubmitChangeRequest && (
-        <CreateChangeRequestModal
-          onConfirm={async (crFormInput: ChangeRequestFormInput) => {
-            changeRequestFormInput = crFormInput;
-            await handleSubmit(handleCreateChangeRequest)();
-          }}
-          onHide={() => setIsModalOpen(false)}
-          wbsNum={project ? wbsPipe(project!.wbsNum) : '0.0.0'}
-          open={isModalOpen}
-        />
+        <>
+          <EditChangeRequestModal
+            onConfirm={async (crFormInput: ChangeRequestFormInput) => {
+              changeRequestFormInput = crFormInput;
+              await handleSubmit(handleCreateChangeRequest)();
+            }}
+            onHide={() => setIsModalOpen(false)}
+            wbsNum={project ? wbsPipe(project!.wbsNum) : '0.0.0'}
+            open={isModalOpen}
+            projectFormReturn={projectFormReturn}
+            changeRequestFormReturn={changeRequestFormReturn}
+          />
+        </>
       )}
     </form>
   );
 };
 
-export default ProjectFormContainer;
+export default ProjectEditFormContainer;
