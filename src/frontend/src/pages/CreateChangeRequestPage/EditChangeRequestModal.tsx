@@ -1,6 +1,5 @@
 import { FormInput } from './CreateChangeRequest';
 import NERModal from '../../components/NERModal';
-import { ProjectFormReturn } from '../ProjectDetailPage/ProjectForm/ProjectEditForm';
 import EditChangeRequestsView from './EditChangeRequestsView';
 import { Control, FormState, UseFormHandleSubmit, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { FormInput as ChangeRequestFormInput } from './CreateChangeRequest';
@@ -10,7 +9,6 @@ interface EditChangeRequestModalProps {
   onHide: () => void;
   wbsNum: string;
   open: boolean;
-  projectFormReturn: ProjectFormReturn;
   changeRequestFormReturn: ChangeRequestFormReturn;
 }
 

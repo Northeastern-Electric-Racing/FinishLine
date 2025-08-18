@@ -132,7 +132,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     workPackages: yup.array().of(workPackageSchema).required()
   });
 
-  // project form
   const { reset: resetProjectForm, ...projectFormMethods } = useForm<ProjectFormInput, any, ProjectFormInput>({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -169,7 +168,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       )
   });
 
-  // change request form
   const { reset: resetChangeRequestForm, ...changeRequestFormMethods } = useForm<FormInput>({
     resolver: yupResolver(changeRequestSchema),
     defaultValues: query.get('budgetChange')

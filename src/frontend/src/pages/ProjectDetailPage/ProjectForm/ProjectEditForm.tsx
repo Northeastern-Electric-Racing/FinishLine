@@ -349,7 +349,6 @@ const ProjectEditFormContainer: React.FC<ProjectEditFormContainerProps> = ({
             onHide={() => setIsModalOpen(false)}
             wbsNum={project ? wbsPipe(project!.wbsNum) : '0.0.0'}
             open={isModalOpen}
-            projectFormReturn={projectFormReturn}
             changeRequestFormReturn={changeRequestFormReturn}
           />
         </>
