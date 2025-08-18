@@ -53,7 +53,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
       title: task?.title ?? '',
       taskId: task?.taskId ?? '-1',
       notes: task?.notes ?? '',
-      deadline: task?.deadline ?? undefined,
+      deadline: task?.deadline ? new Date(task.deadline.getTime() + task.deadline.getTimezoneOffset() * 60000) : undefined,
       priority: task?.priority ?? TaskPriority.Low,
       assignees: task?.assignees.map((assignee) => assignee.userId) ?? []
     }
