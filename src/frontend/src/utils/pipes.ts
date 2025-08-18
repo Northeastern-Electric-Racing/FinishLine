@@ -69,13 +69,13 @@ export const emDashPipe = (str: string) => {
  * Return a given date as a string in the local en-US format,
  * with single digit numbers starting with a zero.
  *
- * Prisma sends date in UTC but TypeScript assumes it's in your local time,
- * so to get around that we do the toDateString() of the time and pass it into the Date constructor
- * where the constructor assumes it's in UTC and makes the correct Date object finally
+ * Prisma sends dates in UTC but TypeScript assumes it's in your local time,
+ * so to get around that we convert string dates to Date objects and use timeZone: 'UTC'
+ * in toLocaleDateString where the display assumes UTC and shows the correct date consistently
  */
 export const datePipe = (date?: Date, includeYear = true) => {
   if (!date) return '';
-  date = typeof date == 'string' ? new Date(date) : new Date(date.toDateString());
+  date = typeof date == 'string' ? new Date(date) : date;
   return date.toLocaleDateString('en-US', {
     day: '2-digit',
     month: '2-digit',
