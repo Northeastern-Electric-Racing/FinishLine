@@ -17,7 +17,8 @@ import {
   archiveTeam,
   getAllArchivedTeams,
   getMyTeamsWorkpackages,
-  getUsersTeams
+  getUsersTeams,
+  setTeamSlackId
 } from '../apis/teams.api';
 
 export interface CreateTeamPayload {
@@ -110,6 +111,22 @@ export const useEditTeamDescription = (teamId: string) => {
     ['teams', 'edit'],
     async (description: string) => {
       const { data } = await setTeamDescription(teamId, description);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['teams']);
+      }
+    }
+  );
+};
+
+export const useEditTeamSlackId = (teamId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<TeamPreview, Error, string>(
+    ['teams', 'edit'],
+    async (slackId: string) => {
+      const { data } = await setTeamSlackId(teamId, slackId);
       return data;
     },
     {
