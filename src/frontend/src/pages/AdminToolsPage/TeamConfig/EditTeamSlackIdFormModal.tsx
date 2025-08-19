@@ -4,12 +4,7 @@ import { FormControl, FormLabel, FormHelperText, Tooltip, Typography, Link } fro
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Box } from '@mui/system';
-import HelpIcon from '@mui/icons-material/Help';
-import { TeamPreview, TeamType } from 'shared';
-import { CreateTeamTypePayload } from '../../../hooks/team-types.hooks';
-import useFormPersist from 'react-hook-form-persist';
-import { FormStorageKey } from '../../../utils/form';
+import { TeamPreview } from 'shared';
 import { useEffect } from 'react';
 import { useEditTeamSlackId } from '../../../hooks/teams.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';

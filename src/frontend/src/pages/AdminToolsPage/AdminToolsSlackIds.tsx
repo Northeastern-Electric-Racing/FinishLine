@@ -59,7 +59,7 @@ const AdminToolsSlackIdsView: React.FC<AdminToolsWorkspaceIdViewProps> = ({ orga
         setClickedTeam(team);
         setShowEditModal(true);
       }}
-      sx={{ color: 'inherit', textDecoration: 'none' }}
+      sx={{ cursor: 'pointer', color: 'inherit', textDecoration: 'none' }}
     >
       <TableCell sx={{ borderBottom: index === allTeams.length - 1 ? 'none' : 'default' }}>{team.teamName}</TableCell>
       <TableCell sx={{ borderBottom: index === allTeams.length - 1 ? 'none' : 'default' }}>{team.slackId}</TableCell>
