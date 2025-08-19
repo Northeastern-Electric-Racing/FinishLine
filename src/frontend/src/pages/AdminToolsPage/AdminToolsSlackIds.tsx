@@ -17,7 +17,6 @@ import ErrorPage from '../ErrorPage';
 import { Organization, TeamPreview } from 'shared';
 import HelpIcon from '@mui/icons-material/Help';
 import { useAllTeams } from '../../hooks/teams.hooks';
-import { fullNamePipe } from '../../utils/pipes';
 import AdminToolTable from './AdminToolTable';
 import EditTeamSlackIdFormModal from './TeamConfig/EditTeamSlackIdFormModal';
 
@@ -43,7 +42,6 @@ const AdminToolsSlackIdsView: React.FC<AdminToolsWorkspaceIdViewProps> = ({ orga
   );
   const { data: allTeams, isLoading: allTeamsIsLoading, isError: allTeamsIsError, error: allTeamsError } = useAllTeams();
   const [clickedTeam, setClickedTeam] = useState<TeamPreview>();
-  const [showEditModal, setShowEditModal] = useState<boolean>(false);
 
   if (!allTeams || allTeamsIsLoading) return <LoadingIndicator />;
 
@@ -57,7 +55,6 @@ const AdminToolsSlackIdsView: React.FC<AdminToolsWorkspaceIdViewProps> = ({ orga
     <TableRow
       onClick={() => {
         setClickedTeam(team);
-        setShowEditModal(true);
       }}
       sx={{ cursor: 'pointer', color: 'inherit', textDecoration: 'none' }}
     >

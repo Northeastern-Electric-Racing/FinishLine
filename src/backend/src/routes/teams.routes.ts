@@ -33,12 +33,7 @@ teamsRouter.post(
   TeamsController.editDescription
 );
 
-teamsRouter.post(
-  '/:teamId/edit-slackid',
-  nonEmptyString(body('slackId')),
-  validateInputs,
-  TeamsController.editSlackId
-)
+teamsRouter.post('/:teamId/edit-slackid', nonEmptyString(body('slackId')), validateInputs, TeamsController.editSlackId);
 
 teamsRouter.post('/:teamId/set-head', nonEmptyString(body('userId')), validateInputs, TeamsController.setTeamHead);
 teamsRouter.post('/:teamId/delete', TeamsController.deleteTeam);
