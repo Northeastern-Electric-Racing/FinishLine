@@ -284,12 +284,6 @@ const ReimbursementRequestInfo = ({
                   <TableCell align="center">{undefinedPipe(row.saboId)}</TableCell>
                   <TableCell align="center">{datePipe(row.dateSubmitted)}</TableCell>
                   <TableCell align="center">{dateUndefinedPipe(row.dateSubmittedToSabo)}</TableCell>
-                  <SidePage
-                    showPage={showSidePage}
-                    handleClose={closeSidePage}
-                    title={''}
-                    component={<ReimbursementRequestDetails onCloseEditPage={closeSidePage} />}
-                  />
                   <TableCell align="center">
                     {
                       <Button
@@ -321,6 +315,12 @@ const ReimbursementRequestInfo = ({
           </TableBody>
         </Table>
       </TableContainer>
+      <SidePage
+        showPage={showSidePage}
+        handleClose={closeSidePage}
+        title={''}
+        component={<ReimbursementRequestDetails onCloseEditPage={closeSidePage} />}
+      />
       <Box
         sx={{
           backgroundColor: '#121313',
