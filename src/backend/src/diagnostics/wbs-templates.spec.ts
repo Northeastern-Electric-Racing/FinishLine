@@ -17,7 +17,7 @@ export const wbsTemplateSpecs: BenchSpec<any>[] = [
   },
   // Work Package Templates — writes
   {
-    name: 'wbs-templates.work-packages.createWorkPackageTemplate',
+    name: 'wbs-templates.wps.createWPTemplate',
     tags: ['wbs-templates', 'write'],
     async prepare(ctx) {
       const admin = await prisma.user.findUnique({ where: { userId: ctx.adminUser.userId } });
@@ -46,7 +46,7 @@ export const wbsTemplateSpecs: BenchSpec<any>[] = [
     }
   },
   {
-    name: 'wbs-templates.work-packages.editWorkPackageTemplate',
+    name: 'wbs-templates.wps.editWPTemplate',
     tags: ['wbs-templates', 'write'],
     async prepare(ctx) {
       const admin = await prisma.user.findUnique({ where: { userId: ctx.adminUser.userId } });
@@ -79,7 +79,7 @@ export const wbsTemplateSpecs: BenchSpec<any>[] = [
     }
   },
   {
-    name: 'wbs-templates.work-packages.deleteWorkPackageTemplate',
+    name: 'wbs-templates.wps.deleteWPTemplate',
     tags: ['wbs-templates', 'write'],
     async prepare(ctx) {
       const admin = await prisma.user.findUnique({ where: { userId: ctx.adminUser.userId } });
@@ -239,7 +239,7 @@ export const wbsTemplateSpecs: BenchSpec<any>[] = [
 
   // Work Package Templates — reads
   {
-    name: 'wbs-templates.work-packages.getAllWorkPackageTemplates',
+    name: 'wbs-templates.wps.getAllWPTemplates',
     tags: ['wbs-templates', 'read'],
     async prepare(ctx) {
       const submitter = await prisma.user.findUnique({ where: { userId: ctx.memberUser.userId } });
@@ -251,7 +251,7 @@ export const wbsTemplateSpecs: BenchSpec<any>[] = [
     }
   },
   {
-    name: 'wbs-templates.work-packages.getSingleWorkPackageTemplate',
+    name: 'wbs-templates.wps.getSingleWPTemplate',
     tags: ['wbs-templates', 'read'],
     async prepare(ctx) {
       const submitter = await prisma.user.findUnique({ where: { userId: ctx.memberUser.userId } });

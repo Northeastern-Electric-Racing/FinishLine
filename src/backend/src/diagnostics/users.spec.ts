@@ -48,7 +48,6 @@ export const userSpecs: BenchSpec<any>[] = [
     async prepare(ctx) {
       const prismaUser = await prisma.user.findUnique({ where: { userId: ctx.memberUser.userId } });
       if (!prismaUser) return { skip: 'could not find member user' };
-      await UsersService.updateUserSettings(prismaUser, 'DARK', 'bench');
       return { inputs: { userId: ctx.memberUser.userId } };
     },
     async run({ userId }) {
@@ -63,21 +62,6 @@ export const userSpecs: BenchSpec<any>[] = [
     },
     async run({ user, theme, slackId }) {
       await UsersService.updateUserSettings(user, theme, slackId);
-    }
-  },
-  {
-    name: 'users.getCurrentUserSecureSettings',
-    tags: ['users', 'read'],
-    async prepare(ctx) {
-      const prismaUser = await prisma.user.findUnique({ where: { userId: ctx.memberUser.userId } });
-      if (!prismaUser) return { skip: 'could not find member user' };
-      await UsersService.setUserSecureSettings(prismaUser, '00000000', '1 Main', 'Boston', 'MA', '02115', '5551234567');
-      const user = await prisma.user.findUnique({ where: { userId: ctx.memberUser.userId } });
-      if (!user) return { skip: 'no member user' };
-      return { inputs: { user } };
-    },
-    async run({ user }) {
-      await UsersService.getCurrentUserSecureSettings(user);
     }
   },
   {
@@ -105,23 +89,6 @@ export const userSpecs: BenchSpec<any>[] = [
     },
     async run({ user, personalGmail, personalZoomLink, availabilities }) {
       await UsersService.setUserScheduleSettings(user, personalGmail, personalZoomLink, availabilities);
-    }
-  },
-  {
-    name: 'users.getUserScheduleSettings',
-    tags: ['users', 'read'],
-    async prepare(ctx) {
-      const user = await prisma.user.findUnique({ where: { userId: ctx.memberUser.userId } });
-      if (!user) return { skip: 'no member user' };
-      await UsersService.setUserScheduleSettings(user, 'bench@example.com', 'https://zoom.us/j/bench', [
-        { availability: [2, 4, 6], dateSet: new Date() }
-      ]);
-      return { inputs: { userId: ctx.memberUser.userId } };
-    },
-    async run({ userId }, ctx) {
-      const prismaUser = await prisma.user.findUnique({ where: { userId: ctx.memberUser.userId } });
-      if (!prismaUser) return;
-      await UsersService.getUserScheduleSettings(userId, prismaUser);
     }
   },
   {
@@ -208,12 +175,6 @@ export const userSpecs: BenchSpec<any>[] = [
           where: { userId: ctx.memberUser.userId, favoriteProjects: { some: { projectId: project.projectId } } },
           select: { userId: true }
         });
-        if (!memberHasFav) {
-          await prisma.user.update({
-            where: { userId: ctx.memberUser.userId },
-            data: { favoriteProjects: { connect: { projectId: project.projectId } } }
-          });
-        }
         favUser = { userId: ctx.memberUser.userId };
       }
       if (!favUser) return { skip: 'no favorite user found' };

@@ -197,7 +197,7 @@ export const organizationSpecs: BenchSpec<any>[] = [
     }
   },
   {
-    name: 'organizations.setSlackSponsorshipNotificationSlackChannelId',
+    name: 'organizations.setSlackSponsorNotifSlackId',
     tags: ['organizations', 'write'],
     async prepare(ctx) {
       const submitter = await prisma.user.findUnique({ where: { userId: ctx.adminUser.userId } });

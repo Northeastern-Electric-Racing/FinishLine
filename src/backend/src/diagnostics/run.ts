@@ -29,12 +29,89 @@ const parseCSV = (s?: string) =>
         .filter(Boolean)
     : [];
 
+if (ns.some((arg) => arg === '-h' || arg === '--help')) {
+  console.log(`
+Backend Benchmarking Tool
+
+USAGE:
+  yarn benchmark [OPTIONS]
+
+OPTIONS:
+  -h, --help              Show this help message and exit
+
+  --grep <pattern>        Filter benchmarks by name pattern
+                          Example: --grep "user" runs only benchmarks with "user" in the name
+
+  --groups <group1,group2>  Run only benchmarks in specified groups (comma-separated)
+                          Example: --groups auth,database
+
+  --runs <number>         Number of times to run each benchmark (default: 3)
+                          Higher values provide more reliable statistics
+                          Example: --runs 10
+
+  --warms <number>      Number of warmup runs before measuring (default: 1)
+                          Warmups help stabilize performance by priming caches
+                          Example: --warmups 3
+
+  --per-test              Show individual test statistics
+                          Example: --per-test
+
+  --print-samples         Print raw sample times for each test
+                          Example: --print-samples
+
+  -r, --read              Run only read benchmarks
+                          Cannot be used with --write
+
+  -w, --write             Run only write benchmarks
+                          Cannot be used with --read
+
+EXAMPLES:
+  # Run all benchmarks with default settings
+  npm run benchmark
+
+  # Run benchmarks 5 times with 2 warmups
+  npm run benchmark --runs 5 --warmups 2
+
+  # Run only database-related benchmarks
+  npm run benchmark --groups database
+
+  # Run only read operations for auth group
+  npm run benchmark --groups auth --read
+
+  # Filter benchmarks by name and show detailed stats
+  npm run benchmark --grep "login" --per-test 1 --runs 10
+
+OUTPUT:
+  The tool displays:
+  - Progress bar during execution
+  - Summary statistics table by group (Total, Avg, P50, P90, P99)
+  - Overall suite statistics
+  - Optional per-test results (with --per-test)
+  - Optional raw samples (with --print-samples)
+
+STATISTICS:
+  - Count: Number of samples
+  - Total: Sum of all sample times
+  - Avg: Mean execution time
+  - P50: Median (50th percentile)
+  - P90: 90th percentile
+  - P99: 99th percentile
+`);
+  process.exit(0);
+}
+
 const GREP = arg('--grep');
 const GROUPS = parseCSV(arg('--groups'));
 const RUNS = Number(arg('--runs', '3'));
-const WARMS = Number(arg('--warmups', '1'));
-const PER_TEST = arg('--per-test', '0') === '1';
-const PRINT_SAMPLES = arg('--print-samples', '0') === '1';
+const WARMS = Number(arg('--warms', '1'));
+const PER_TEST = ns.some((arg) => arg === '--per-test');
+const PRINT_SAMPLES = ns.some((arg) => arg === '--print-samples');
+const READ_ONLY = ns.some((arg) => arg === '--read' || arg === '-r');
+const WRITE_ONLY = ns.some((arg) => arg === '--write' || arg === 'w');
+
+if (READ_ONLY && WRITE_ONLY) {
+  throw new Error('Cannot run benchmarks with both read only (--read) and write only (--write) flags');
+}
 
 const computeStats = (samples: number[]): StatSummary => {
   const sorted = [...samples].sort((a, b) => a - b);
@@ -94,6 +171,14 @@ const main = async () => {
       `No benchmarks matched the filters. Use --groups <group> or --grep <name>. Available groups: ${allGroups.join(', ')}`
     );
     return;
+  }
+
+  if (READ_ONLY) {
+    selected = selected.filter((spec) => spec.tags.some((tag) => tag === 'read'));
+  }
+
+  if (WRITE_ONLY) {
+    selected = selected.filter((spec) => spec.tags.some((tag) => tag === 'write'));
   }
 
   const totalTests = selected.length;
@@ -188,7 +273,7 @@ const main = async () => {
       if (r.tags.includes('write')) writeSamples.push(...r.samples);
     }
 
-    if (domainSamples.length) {
+    if (domainSamples.length && !READ_ONLY && !WRITE_ONLY) {
       const s = computeStats(domainSamples);
       const total = domainSamples.reduce((a, b) => a + b, 0);
       rows.push([
@@ -206,7 +291,7 @@ const main = async () => {
       const s = computeStats(readSamples);
       const total = readSamples.reduce((a, b) => a + b, 0);
       rows.push([
-        '',
+        READ_ONLY ? domain : '',
         'read',
         String(s.count),
         formatMs(total),
@@ -220,7 +305,7 @@ const main = async () => {
       const s = computeStats(writeSamples);
       const total = writeSamples.reduce((a, b) => a + b, 0);
       rows.push([
-        '',
+        WRITE_ONLY ? domain : '',
         'write',
         String(s.count),
         formatMs(total),
@@ -239,19 +324,24 @@ const main = async () => {
     printTable(header, rows);
   }
 
+  console.log(`Warms on each test: ${WARMS}`);
+  console.log(`Runs for each test: ${RUNS}`);
+
   // Print suite stats as a small table, plus read/write aggregates
   if (suite.stats) {
     const total = allSamples.reduce((a, b) => a + b, 0);
-    const rows: string[][] = [
-      [
+    const rows: string[][] = [];
+
+    if (!READ_ONLY && !WRITE_ONLY) {
+      rows.push([
         'suite',
         String(suite.stats.count),
         formatMs(total),
         formatMs(suite.stats.mean),
         formatMs(suite.stats.p50),
         formatMs(suite.stats.p95)
-      ]
-    ];
+      ]);
+    }
     if (allReadSamples.length) {
       const s = computeStats(allReadSamples);
       rows.push([

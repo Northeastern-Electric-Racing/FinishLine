@@ -437,53 +437,5 @@ export const wbsSpecs: BenchSpec<any>[] = [
         organization
       );
     }
-  },
-  {
-    name: 'wbs.work-packages.deleteWorkPackage',
-    tags: ['wbs', 'write'],
-    async prepare(ctx) {
-      const admin = await prisma.user.findUnique({ where: { userId: ctx.adminUser.userId } });
-      const proj = await prisma.project.findFirst({
-        where: { wbsElement: { organizationId: ctx.organization.organizationId, dateDeleted: null } },
-        include: { wbsElement: true }
-      });
-      if (!admin || !proj) return { skip: 'missing admin or project' };
-      const projectWbsNum = {
-        carNumber: proj.wbsElement.carNumber,
-        projectNumber: proj.wbsElement.projectNumber,
-        workPackageNumber: proj.wbsElement.workPackageNumber
-      };
-      return { inputs: { admin, organization: ctx.organization, projectWbsNum } };
-    },
-    async run({ admin, organization, projectWbsNum }) {
-      // create a temp project to host the WP to delete
-      const hostProj = await ProjectsService.createProject(
-        admin,
-        null,
-        projectWbsNum.carNumber,
-        `WP Delete Host ${Date.now()}`,
-        's',
-        [],
-        0,
-        null,
-        [],
-        null,
-        null,
-        organization
-      );
-      const created = await WorkPackagesService.createWorkPackage(
-        admin,
-        `Temp WP ${Date.now()}`,
-        null,
-        null,
-        new Date(Date.now() + 86400000).toISOString(),
-        1,
-        [],
-        [],
-        hostProj.wbsNum,
-        organization
-      );
-      await WorkPackagesService.deleteWorkPackage(admin, created.wbsNum, organization);
-    }
   }
 ];
