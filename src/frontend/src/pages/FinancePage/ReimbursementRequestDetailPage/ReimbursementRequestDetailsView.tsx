@@ -330,8 +330,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         {reimbursementRequest.receiptPictures.map((receipt) => {
           return (
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Link href={imageFileUrl(receipt.googleFileId)} target="_blank" underline="hover" sx={{ mr: 1, fontSize: 30 }}>
-                {receipt.name}
+              <Link href={imageFileUrl(receipt.googleFileId)} target="_blank" underline="hover" sx={{ mr: 1, fontSize: 20 }}>
+                {receipt.name.length > 20 ? receipt.name.slice(0, 30) + '...' : receipt.name}
               </Link>
               <IconButton href={imageDownloadUrl(receipt.googleFileId)}>
                 <DownloadIcon sx={{ fontSize: 30 }} />
@@ -573,7 +573,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
           }}
         />
         <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-          <Box sx={{ width: '900px', mt: -3, maxWidth: 400 }}>
+          <Box sx={{ mt: -3 }}>
             <ReimbursementRequestTimeline
               reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
               reimbursementRequestComments={reimbursementRequest.comments}
