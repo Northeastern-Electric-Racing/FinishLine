@@ -494,6 +494,9 @@ model Project {
   featuredByOrganization   Organization?  @relation(fields: [featuredByOrganizationId], references: [organizationId])
   abbreviation             String?
   parts                    Part[]
+  Ruleset                  Ruleset[]
+  RulesetFile              RulesetFile[]
+  Rule                     Rule[]
 }
 
 model Work_Package {
@@ -1045,6 +1048,7 @@ model Car {
   wbsElementId           String                     @unique
   wbsElement             WBS_Element                @relation(fields: [wbsElementId], references: [wbsElementId])
   linkedGraphs           Graph[]                    @relation(name: "graphCars")
+  RulesetFile            RulesetFile[]
 }
 
 model Organization {
@@ -1405,4 +1409,81 @@ model Reimbursement_Request_Comment {
   comment                       String
   reimbursementRequestId        String
   reimbursementRequest          Reimbursement_Request @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
+}
+
+enum RuleCompletion {
+  COMPLETED
+  INCOMPLETE
+  REVIEW
+}
+
+model Ruleset {
+  rulesetId                String              @id @default(uuid())
+  name                     String
+  lastUpdated              DateTime            @updatedAt
+  revisionsCount           Int                 @default(0)
+  revisionFiles            RulesetFile[]
+  projectId                String
+  project                  Project             @relation(fields: [projectId], references: [projectId])
+}
+
+model RulesetFile {
+  rulesetFileId            String       @id @default(uuid())
+  name                     String
+  uploadedAt               DateTime     @default(now())
+
+  rulesetId                String
+  ruleset                  Ruleset      @relation(fields: [rulesetId], references: [rulesetId])
+
+  sections                 RuleSection[]
+  rules                    Rule[]
+
+  projectId                String?
+  project                  Project?     @relation(fields: [projectId], references: [projectId])
+
+  carId                    String?
+  car                      Car?         @relation(fields: [carId], references: [carId])
+}
+
+model Rule {
+  ruleId                   String       @id @default(uuid())
+  ruleContent              String
+  ruleCode                 String
+
+  sectionId                String?
+  section                  RuleSection? @relation(fields: [sectionId], references: [ruleSectionId])
+
+  rulesetFileId            String
+  rulesetFile              RulesetFile  @relation(fields: [rulesetFileId], references: [rulesetFileId])
+
+  referencedRuleId         String?
+  referencedRule           Rule?        @relation(fields: [referencedRuleId], references: [ruleId])
+
+  projectId                String?
+  project                  Project?     @relation(fields: [projectId], references: [projectId])
+
+  completion               RuleCompletion?
+  histories                RuleHistory[]
+}
+
+model RuleSection {
+  ruleSectionId            String          @id @default(uuid())
+  name                     String
+
+  subSections              RuleSection[]
+
+  rulesetFileId            String
+  rulesetFile              RulesetFile     @relation(fields: [rulesetFileId], references: [rulesetFileId])
+  rules                    Rule[]
+  completion               RuleCompletion?
+  ruleSectionRuleSectionId String?
+}
+
+model RuleHistory {
+  id                       String       @id @default(uuid())
+  ruleId                   String
+  rule                     Rule         @relation(fields: [ruleId], references: [ruleId])
+
+  date                     DateTime     @default(now())
+  note                     String
 }
