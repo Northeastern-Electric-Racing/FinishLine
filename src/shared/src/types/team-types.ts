@@ -21,4 +21,4 @@ export interface Team {
   teamType?: TeamType;
 }
 
-export type TeamPreview = Pick<Team, 'teamId' | 'teamName' | 'members' | 'head' | 'leads' | 'teamType'>;
+export type TeamPreview = Pick<Team, 'teamId' | 'teamName' | 'members' | 'head' | 'leads' | 'teamType' | 'slackId'>;

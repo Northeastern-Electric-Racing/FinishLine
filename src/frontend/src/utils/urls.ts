@@ -137,6 +137,7 @@ const completeOnboarding = () => `${teams()}/teamType/complete-onboarding`;
 const teamsSetHead = (id: string) => `${teamsById(id)}/set-head`;
 const teamsArchive = (id: string) => `${teamsById(id)}/archive`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
+const teamsSetSlackId = (id: string) => `${teamsById(id)}/edit-slackid`;
 const teamsCreate = () => `${teams()}/create`;
 const teamsSetLeads = (id: string) => `${teamsById(id)}/set-leads`;
 const usersTeams = () => `${teams()}/users-teams`;
@@ -515,6 +516,7 @@ export const apiUrls = {
   teamsArchive,
   teamsSetHead,
   teamsSetDescription,
+  teamsSetSlackId,
   teamsCreate,
   teamsSetLeads,
   usersTeams,

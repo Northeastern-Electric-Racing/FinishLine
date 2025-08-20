@@ -71,6 +71,17 @@ export default class TeamsController {
     }
   }
 
+  static async editSlackId(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { slackId } = req.body;
+
+      const team = await TeamsService.editSlackId(req.currentUser, req.organization, req.params.teamId, slackId);
+      res.status(200).json(team);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async setTeamHead(req: Request, res: Response, next: NextFunction) {
     try {
       const { userId } = req.body;
