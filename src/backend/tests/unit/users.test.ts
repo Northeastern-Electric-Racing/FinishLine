@@ -1,8 +1,9 @@
 import { Organization } from '@prisma/client';
 import { createTestOrganization, createTestTaskWithOrganization, createTestUser, resetUsers } from '../test-utils';
-import { batmanAppAdmin } from '../test-data/users.test-data';
+import { batmanAppAdmin, aquamanLeadership, wonderwomanGuest, member, greenlanternHead } from '../test-data/users.test-data';
 import UsersService from '../../src/services/users.services';
-import { NotFoundException } from '../../src/utils/errors.utils';
+import { NotFoundException, AccessDeniedException } from '../../src/utils/errors.utils';
+import { RoleEnum } from 'shared';
 
 describe('User Tests', () => {
   let orgId: string;
@@ -46,6 +47,70 @@ describe('User Tests', () => {
       const userTasks = await UsersService.getManyUserTasks([testBatman.userId, testBatman.userId], organization);
 
       expect(userTasks).toStrictEqual([batmanTask, batmanTask]);
+    });
+  });
+
+  describe('Update User Role', () => {
+    it('allows leadership to promote guest to member', async () => {
+      const leadership = await createTestUser(aquamanLeadership, orgId);
+      const guest = await createTestUser(wonderwomanGuest, orgId);
+
+      const updatedUser = await UsersService.updateUserRole(guest.userId, leadership, RoleEnum.MEMBER, organization);
+
+      expect(updatedUser.role).toBe(RoleEnum.MEMBER);
+    });
+
+    it('prevents leadership from promoting guest to head', async () => {
+      const leadership = await createTestUser(aquamanLeadership, orgId);
+      const guest = await createTestUser(wonderwomanGuest, orgId);
+
+      await expect(
+        async () => await UsersService.updateUserRole(guest.userId, leadership, RoleEnum.HEAD, organization)
+      ).rejects.toThrow(new AccessDeniedException('Guests, members, and leadership cannot update user roles!'));
+    });
+
+    it('prevents leadership from promoting member to higher role', async () => {
+      const leadership = await createTestUser(aquamanLeadership, orgId);
+      const memberUser = await createTestUser(member, orgId);
+
+      await expect(
+        async () => await UsersService.updateUserRole(memberUser.userId, leadership, RoleEnum.HEAD, organization)
+      ).rejects.toThrow(new AccessDeniedException('Guests, members, and leadership cannot update user roles!'));
+    });
+
+    it('allows head to promote guest to member (existing functionality)', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+      const guest = await createTestUser(wonderwomanGuest, orgId);
+
+      const updatedUser = await UsersService.updateUserRole(guest.userId, head, RoleEnum.MEMBER, organization);
+
+      expect(updatedUser.role).toBe(RoleEnum.MEMBER);
+    });
+
+    it('prevents guest from updating any user role', async () => {
+      const guest1 = await createTestUser(wonderwomanGuest, orgId);
+      const guest2 = await createTestUser(
+        {
+          ...wonderwomanGuest,
+          googleAuthId: 'guest2',
+          email: 'guest2@test.com',
+          emailId: 'guest2'
+        },
+        orgId
+      );
+
+      await expect(
+        async () => await UsersService.updateUserRole(guest2.userId, guest1, RoleEnum.MEMBER, organization)
+      ).rejects.toThrow(new AccessDeniedException('Guests, members, and leadership cannot update user roles!'));
+    });
+
+    it('prevents member from updating any user role', async () => {
+      const memberUser = await createTestUser(member, orgId);
+      const guest = await createTestUser(wonderwomanGuest, orgId);
+
+      await expect(
+        async () => await UsersService.updateUserRole(guest.userId, memberUser, RoleEnum.MEMBER, organization)
+      ).rejects.toThrow(new AccessDeniedException('Guests, members, and leadership cannot update user roles!'));
     });
   });
 });
