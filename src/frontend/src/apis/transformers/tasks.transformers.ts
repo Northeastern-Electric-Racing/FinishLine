@@ -7,7 +7,6 @@ import { Task } from 'shared';
  * @returns Properly transformed task object.
  */
 export const taskTransformer = (task: Task): Task => {
-  console.log('This is the task deadline from backend', task.deadline);
   let transformedDeadline: Date | undefined;
   if (task.deadline) {
     const [year, month, day] = task.deadline.toString().split('T')[0].split('-').map(Number);
