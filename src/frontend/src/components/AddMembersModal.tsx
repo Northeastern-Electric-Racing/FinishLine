@@ -74,7 +74,7 @@ const AddMembersModal: React.FC<AddMembersModalProps> = ({ open, onHide }) => {
     >
       <Box sx={{ minWidth: 400, p: 2 }}>
         <Typography variant="body1" sx={{ mb: 3, color: theme.palette.text.secondary }}>
-          Select a guest user to promote to member status. As a leadership member, you can only promote guests to members.
+          Select a guest user to promote to member status. As leadership, you can only promote guests to members.
         </Typography>
 
         {guestUsers.length === 0 ? (

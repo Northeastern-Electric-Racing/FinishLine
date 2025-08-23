@@ -16,7 +16,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import { canAccessAdminTools, canAddMembers } from '../../utils/users';
+import { canAccessAdminTools } from '../../utils/users';
 import { Stack, useTheme } from '@mui/system';
 import { Typography } from '@mui/material';
 import { useHomePageContext } from '../../app/HomePageContext';
@@ -24,6 +24,7 @@ import { googleLogout } from '@react-oauth/google';
 import { useLogUserOut } from '../../hooks/users.hooks';
 import { useToast } from '../../hooks/toasts.hooks';
 import AddMembersModal from '../../components/AddMembersModal';
+import { isLeadership } from 'shared';
 
 interface NavUserMenuProps {
   open?: boolean;
@@ -168,7 +169,7 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
           </MenuItem>
         )}
         {canAccessAdminTools(auth.user) && <AdminTools />}
-        {canAddMembers(auth.user) && <AddMembers />}
+        {auth.user && isLeadership(auth.user.role) && !canAccessAdminTools(auth.user) && <AddMembers />}
         {import.meta.env.MODE === 'development' ? <DevLogout /> : <ProdLogout />}
       </Menu>
       <AddMembersModal open={showAddMembersModal} onHide={() => setShowAddMembersModal(false)} />

@@ -1,4 +1,4 @@
-import { AuthenticatedUser, User, isHead, isLeadership } from 'shared';
+import { AuthenticatedUser, User, isHead } from 'shared';
 import { fullNamePipe } from './pipes';
 
 /**
@@ -19,15 +19,4 @@ export const userToAutocompleteOption = (user: User): { label: string; id: strin
 export const canAccessAdminTools = (user?: AuthenticatedUser): boolean => {
   if (!user || user.isAtLeastFinanceLead === undefined) return false;
   return isHead(user.role) || user.isAtLeastFinanceLead;
-};
-
-/**
- * Determines whether a user can promote guests to members.
- *
- * @param user the user to check
- * @returns whether they can add members (leadership role)
- */
-export const canAddMembers = (user?: AuthenticatedUser): boolean => {
-  if (!user) return false;
-  return isLeadership(user.role);
 };
