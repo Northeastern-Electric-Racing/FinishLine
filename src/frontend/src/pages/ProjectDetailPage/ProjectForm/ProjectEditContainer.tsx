@@ -87,12 +87,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     };
   }, [budget, carNumber, descriptionBullets, leadId, links, managerId, name, query, summary, workPackages]);
 
-  // update default values when additional links are loaded
-  /*
-  useEffect(() => {
-    resetProjectForm({ ...defaultValues, links });
-  }, [links]);*/
-
   const descriptionBulletsSchema = yup.object().shape({
     id: yup.string().required(),
     detail: yup.string().required(),
