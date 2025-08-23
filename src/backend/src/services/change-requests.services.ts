@@ -1150,7 +1150,7 @@ export default class ChangeRequestsService {
             }
           },
           name,
-          status: WBS_Element_Status.ACTIVE,
+          status: wbsElement.status,
           links: {
             create: validationResult.links.map((linkInfo) => ({
               url: linkInfo.url,
