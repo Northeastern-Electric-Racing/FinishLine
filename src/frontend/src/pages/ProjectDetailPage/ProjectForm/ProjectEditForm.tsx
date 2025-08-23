@@ -76,7 +76,7 @@ const ProjectEditFormContainer: React.FC<ProjectEditFormContainerProps> = ({
   onSubmitChangeRequest,
   setCarNumber
 }) => {
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   let changeRequestFormInput: ChangeRequestFormInput | undefined = undefined;
 
   const toast = useToast();
