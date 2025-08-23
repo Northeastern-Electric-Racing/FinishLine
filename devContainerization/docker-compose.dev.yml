@@ -49,5 +49,48 @@ services:
     depends_on:
       - backend
 
+  postgres-exporter:
+    container_name: postgres-exporter-dev
+    image: prometheuscommunity/postgres-exporter
+    environment:
+      DATA_SOURCE_NAME: 'postgresql://postgres:docker@database:5432/finishline_database?sslmode=disable'
+    ports:
+      - '9187:9187'
+    depends_on:
+      database:
+        condition: service_healthy
+
+  prometheus:
+    container_name: prometheus-dev
+    image: prom/prometheus
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    depends_on:
+      - postgres-exporter
+
+  grafana:
+    container_name: grafana-dev
+    image: grafana/grafana
+    ports:
+      - '4000:3000' # Grafana on host port 4000, since 3000 is taken by frontend
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+    depends_on:
+      - prometheus
+      - database
+
 volumes:
   pgdata:
+  prometheus-data:
+  grafana-data:
