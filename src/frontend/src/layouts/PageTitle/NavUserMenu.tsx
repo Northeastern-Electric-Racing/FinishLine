@@ -15,13 +15,15 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
-import { canAccessAdminTools } from '../../utils/users';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import { canAccessAdminTools, canAddMembers } from '../../utils/users';
 import { Stack, useTheme } from '@mui/system';
 import { Typography } from '@mui/material';
 import { useHomePageContext } from '../../app/HomePageContext';
 import { googleLogout } from '@react-oauth/google';
 import { useLogUserOut } from '../../hooks/users.hooks';
 import { useToast } from '../../hooks/toasts.hooks';
+import AddMembersModal from '../../components/AddMembersModal';
 
 interface NavUserMenuProps {
   open?: boolean;
@@ -29,6 +31,7 @@ interface NavUserMenuProps {
 
 const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [showAddMembersModal, setShowAddMembersModal] = useState(false);
   const history = useHistory();
   const auth = useAuth();
   const { onPNMHomePage } = useHomePageContext();
@@ -82,6 +85,21 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
         <HomeRepairServiceIcon fontSize="small" />
       </ListItemIcon>
       <ListItemText>Admin Tools</ListItemText>
+    </MenuItem>
+  );
+
+  const AddMembers = () => (
+    <MenuItem
+      onClick={() => {
+        setShowAddMembersModal(true);
+        handleClose();
+      }}
+      sx={{ py: 0 }}
+    >
+      <ListItemIcon>
+        <PersonAddIcon fontSize="small" />
+      </ListItemIcon>
+      <ListItemText>Add Members</ListItemText>
     </MenuItem>
   );
 
@@ -150,8 +168,10 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
           </MenuItem>
         )}
         {canAccessAdminTools(auth.user) && <AdminTools />}
+        {canAddMembers(auth.user) && <AddMembers />}
         {import.meta.env.MODE === 'development' ? <DevLogout /> : <ProdLogout />}
       </Menu>
+      <AddMembersModal open={showAddMembersModal} onHide={() => setShowAddMembersModal(false)} />
     </Stack>
   );
 };
