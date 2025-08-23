@@ -383,6 +383,7 @@ export default class UsersService {
     role: Role,
     organization: Organization
   ): Promise<SharedUser> {
+    // First, validate the target user exists and is in the organization
     const targetUser = await prisma.user.findUnique({
       where: { userId: targetUserId },
       ...getUserQueryArgs(organization.organizationId)
@@ -392,18 +393,18 @@ export default class UsersService {
     if (!targetUser.organizations.map((org) => org.organizationId).includes(organization.organizationId))
       throw new InvalidOrganizationException('User');
 
+    // Get current roles for permission checks
     const userRole = await getUserRole(user.userId, organization.organizationId);
     const targetUserRole = await getUserRole(targetUserId, organization.organizationId);
     const userRankedRole = rankUserRole(userRole);
     const targetUserRankedRole = rankUserRole(targetUserRole);
 
-    if (userRole === RoleEnum.LEADERSHIP && targetUserRole === RoleEnum.GUEST && role === RoleEnum.MEMBER) {
-      await prisma.role.upsert({
-        where: { uniqueRole: { userId: targetUserId, organizationId: organization.organizationId } },
-        update: { roleType: role },
-        create: { userId: targetUserId, organizationId: organization.organizationId, roleType: role }
-      });
-    } else {
+    // Perform all permission checks before making any database changes
+    const isLeadershipPromotingGuestToMember =
+      userRole === RoleEnum.LEADERSHIP && targetUserRole === RoleEnum.GUEST && role === RoleEnum.MEMBER;
+
+    if (!isLeadershipPromotingGuestToMember) {
+      // Standard permission checks for non-Leadership users
       if (!isHead(userRole)) {
         throw new AccessDeniedException('Guests, members, and leadership cannot update user roles!');
       }
@@ -414,28 +415,20 @@ export default class UsersService {
 
       if (userRole === RoleEnum.HEAD && rankUserRole(role) >= userRankedRole) {
         throw new AccessDeniedException('Heads can only promote to leadership or below');
-      } else {
-        if (rankUserRole(role) > userRankedRole) {
-          throw new AccessDeniedException('Cannot promote user to a higher role than yourself');
-        }
+      }
 
-        await prisma.role.upsert({
-          where: { uniqueRole: { userId: targetUserId, organizationId: organization.organizationId } },
-          update: { roleType: role },
-          create: { userId: targetUserId, organizationId: organization.organizationId, roleType: role }
-        });
+      if (rankUserRole(role) > userRankedRole) {
+        throw new AccessDeniedException('Cannot promote user to a higher role than yourself');
       }
     }
 
-    // Fetch the updated user with the new role
-    const updatedUser = await prisma.user.findUnique({
-      where: { userId: targetUserId },
-      ...getUserQueryArgs(organization.organizationId)
+    await prisma.role.upsert({
+      where: { uniqueRole: { userId: targetUserId, organizationId: organization.organizationId } },
+      update: { roleType: role },
+      create: { userId: targetUserId, organizationId: organization.organizationId, roleType: role }
     });
 
-    if (!updatedUser) throw new NotFoundException('User', targetUserId);
-
-    return userTransformer(updatedUser);
+    return userTransformer({ ...targetUser, roles: [{ ...targetUser.roles[0], roleType: role }] });
   }
 
   /**
