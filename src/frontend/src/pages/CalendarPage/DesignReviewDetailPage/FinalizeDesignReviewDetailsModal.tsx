@@ -10,22 +10,16 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { FinalizeReviewInformation } from './DesignReviewDetailPage';
 import { useCurrentUser, useUserScheduleSettings } from '../../../hooks/users.hooks';
+import { useToast } from '../../../hooks/toasts.hooks';
 
-// Create dynamic schema based on meeting type
-const createValidationSchema = (isVirtual: boolean) =>
-  yup.object().shape({
-    zoomLink: isVirtual
-      ? yup
-          .string()
-          .required('Zoom link is required for virtual meetings')
-          .test('zoom-link', 'Must be a valid zoom link', (value) => (value ? value.includes('zoom.us/') : false))
-      : yup
-          .string()
-          .optional()
-          .test('zoom-link', 'Must be a valid zoom link', (value) => (value ? value.includes('zoom.us/') : true)),
-    location: yup.string().optional(),
-    docTemplateLink: yup.string().required('Question Doc is Required')
-  });
+const validationSchema = yup.object().shape({
+  zoomLink: yup
+    .string()
+    .optional()
+    .test('zoom-link', 'Must be a valid zoom link', (value) => (value ? value.includes('zoom.us/') : true)),
+  location: yup.string().optional(),
+  docTemplateLink: yup.string().required('Question Doc is Required')
+});
 
 interface FinalizeDesignReviewProps {
   open: boolean;
@@ -49,6 +43,7 @@ const FinalizeDesignReviewDetailsModal = ({
   const [meetingType, setMeetingType] = useState<string[]>([]);
   const currentUser = useCurrentUser();
   const { data: userScheduleSettings } = useUserScheduleSettings(currentUser.userId);
+  const toast = useToast();
 
   const title = `Finalize Design Review for ${designReview.wbsName}`;
 
@@ -58,18 +53,24 @@ const FinalizeDesignReviewDetailsModal = ({
 
   const handleMeetingTypeChange = (_event: any, newMeetingType: string[]) => {
     setMeetingType(newMeetingType);
-    // Clear zoom link errors when switching away from virtual meetings
-    if (!newMeetingType.includes('virtual')) {
-      clearErrors('zoomLink');
-    }
   };
 
   const onSubmit = async (data: { docTemplateLink: string; zoomLink?: string; location?: string }) => {
+    if (meetingType.includes('virtual')) {
+      if (!data.zoomLink?.trim()) {
+        toast.error('Zoom link is required for virtual meetings');
+        return;
+      }
+      if (!data.zoomLink.includes('zoom.us/')) {
+        toast.error('Must be a valid zoom link');
+        return;
+      }
+    }
+
     finalizeDesignReview({ ...data, meetingType });
     setOpen(false);
   };
 
-  // Create default values with personal zoom link if available
   const createDefaultValues = () => ({
     docTemplateLink: designReview.docTemplateLink ?? '',
     zoomLink: designReview.zoomLink ?? userScheduleSettings?.personalZoomLink ?? '',
@@ -82,21 +83,12 @@ const FinalizeDesignReviewDetailsModal = ({
     handleSubmit,
     control,
     reset,
-    clearErrors,
-    trigger,
     formState: { errors }
   } = useForm({
-    resolver: yupResolver(createValidationSchema(meetingType.includes('virtual'))),
+    resolver: yupResolver(validationSchema),
     defaultValues
   });
 
-  // Update validation schema when meeting type changes
-  useEffect(() => {
-    // Re-trigger validation with the current form values
-    trigger();
-  }, [meetingType, trigger]);
-
-  // Update form when user schedule settings are loaded
   useEffect(() => {
     if (userScheduleSettings && !designReview.zoomLink) {
       reset({
