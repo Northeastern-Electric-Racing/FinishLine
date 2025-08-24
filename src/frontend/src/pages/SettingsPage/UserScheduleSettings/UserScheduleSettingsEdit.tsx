@@ -26,7 +26,10 @@ interface UserScheduleSettingsEditProps {
 
 const schema = yup.object().shape({
   personalGmail: yup.string().email('Must be an email address').optional(),
-  personalZoomLink: yup.string().optional()
+  personalZoomLink: yup
+    .string()
+    .optional()
+    .test('zoom-link', 'Must be a valid zoom link', (value) => (value && value.trim() ? value.includes('zoom.us/') : true))
 });
 
 const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({
@@ -39,9 +42,9 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({
   const toast = useToast();
 
   const onFormSubmit = (data: ScheduleSettingsFormInput) => {
-    if (data.personalZoomLink && data.personalZoomLink !== '') {
-      if (!data.personalZoomLink.startsWith('https://')) {
-        toast.error('Invalid Zoom Link Format. Link must start with "https://".');
+    if (data.personalZoomLink && data.personalZoomLink.trim()) {
+      if (!data.personalZoomLink.includes('zoom.us/')) {
+        toast.error('Invalid Zoom Link Format. Must be a valid zoom.us link.');
         return;
       }
     }
