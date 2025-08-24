@@ -10,16 +10,6 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { FinalizeReviewInformation } from './DesignReviewDetailPage';
 import { useCurrentUser, useUserScheduleSettings } from '../../../hooks/users.hooks';
-import { useToast } from '../../../hooks/toasts.hooks';
-
-const schema = yup.object().shape({
-  zoomLink: yup
-    .string()
-    .optional()
-    .test('zoom-link', 'Must be a valid zoom link', (value) => (value ? value.includes('zoom.us/') : true)),
-  location: yup.string().optional(),
-  docTemplateLink: yup.string().required('Question Doc is Required')
-});
 
 interface FinalizeDesignReviewProps {
   open: boolean;
@@ -43,7 +33,21 @@ const FinalizeDesignReviewDetailsModal = ({
   const [meetingType, setMeetingType] = useState<string[]>([]);
   const currentUser = useCurrentUser();
   const { data: userScheduleSettings } = useUserScheduleSettings(currentUser.userId);
-  const toast = useToast();
+
+  const createValidationSchema = () =>
+    yup.object().shape({
+      zoomLink: meetingType.includes('virtual')
+        ? yup
+            .string()
+            .required('Zoom link is required for virtual meetings')
+            .test('zoom-link', 'Must be a valid zoom link', (value) => (value ? value.includes('zoom.us/') : false))
+        : yup
+            .string()
+            .optional()
+            .test('zoom-link', 'Must be a valid zoom link', (value) => (value ? value.includes('zoom.us/') : true)),
+      location: yup.string().optional(),
+      docTemplateLink: yup.string().required('Question Doc is Required')
+    });
 
   const title = `Finalize Design Review for ${designReview.wbsName}`;
 
@@ -51,22 +55,14 @@ const FinalizeDesignReviewDetailsModal = ({
     (designReview) => `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName} at ${meetingStartTimePipe([startTime])}`
   );
 
+  const [formKey, setFormKey] = useState(0);
+
   const handleMeetingTypeChange = (_event: any, newMeetingType: string[]) => {
     setMeetingType(newMeetingType);
+    setFormKey((prev) => prev + 1);
   };
 
   const onSubmit = async (data: { docTemplateLink: string; zoomLink?: string; location?: string }) => {
-    if (meetingType.includes('virtual')) {
-      if (!data.zoomLink?.trim()) {
-        toast.error('Zoom link is required for virtual meetings');
-        return;
-      }
-      if (!data.zoomLink.includes('zoom.us/')) {
-        toast.error('Must be a valid zoom link');
-        return;
-      }
-    }
-
     finalizeDesignReview({ ...data, meetingType });
     setOpen(false);
   };
@@ -85,8 +81,9 @@ const FinalizeDesignReviewDetailsModal = ({
     reset,
     formState: { errors }
   } = useForm({
-    resolver: yupResolver(schema),
-    defaultValues
+    resolver: yupResolver(createValidationSchema()),
+    defaultValues,
+    mode: 'onChange'
   });
 
   useEffect(() => {
@@ -100,91 +97,92 @@ const FinalizeDesignReviewDetailsModal = ({
   }, [userScheduleSettings, designReview, reset]);
 
   return (
-    <NERFormModal
-      open={open}
-      onHide={() => setOpen(false)}
-      title={title}
-      reset={() => reset(defaultValues)}
-      handleUseFormSubmit={handleSubmit}
-      onFormSubmit={onSubmit}
-      submitText="Schedule"
-      formId="finalize-design-review-form"
-    >
-      <Box style={{ display: 'flex', marginBottom: 20 }}>
-        <Typography style={{ fontSize: '1.2em', marginRight: 90 }}>Meeting Time:</Typography>
-        <Typography style={{ fontSize: '1.2em' }}>{`${meetingStartTimePipe([
-          startTime
-        ])} - ${selectedDate.toDateString()}`}</Typography>
-      </Box>
-      <Box style={{ display: 'flex', marginBottom: 20 }}>
-        <Typography style={{ fontSize: '1.2em', marginRight: 97 }}>Meeting Type:</Typography>
-        <ToggleButtonGroup color="primary" value={meetingType} onChange={handleMeetingTypeChange}>
-          <ToggleButton value="virtual">Virtual</ToggleButton>
-          <ToggleButton value="inPerson">In-person</ToggleButton>
-        </ToggleButtonGroup>
-      </Box>
-      <Box style={{ display: 'flex', marginBottom: 20 }}>
-        <Box>
-          <Typography style={{ fontSize: '1.2em', marginRight: 90 }}>Question Doc:</Typography>
-          <Link
-            href="https://docs.google.com/document/d/1DtbMNPUs0PMUI3D3UC-1ZpUXu3CvNoFzFvrypapg3os/edit?usp=sharing"
-            target="_blank"
-            underline="hover"
-            fontSize={16}
-          >
-            Doc Template
-          </Link>
+    <div key={formKey}>
+      <NERFormModal
+        open={open}
+        onHide={() => setOpen(false)}
+        title={title}
+        reset={() => reset(defaultValues)}
+        handleUseFormSubmit={handleSubmit}
+        onFormSubmit={onSubmit}
+        submitText="Schedule"
+        formId="finalize-design-review-form"
+      >
+        <Box style={{ display: 'flex', marginBottom: 20 }}>
+          <Typography style={{ fontSize: '1.2em', marginRight: 90 }}>Meeting Time:</Typography>
+          <Typography style={{ fontSize: '1.2em' }}>{`${meetingStartTimePipe([
+            startTime
+          ])} - ${selectedDate.toDateString()}`}</Typography>
         </Box>
-        <ReactHookTextField
-          name="docTemplateLink"
-          control={control}
-          sx={{ width: 0.48 }}
-          errorMessage={errors.docTemplateLink}
-        />
-      </Box>
-      {meetingType.includes('virtual') && (
-        <Box style={{ display: 'flex', marginBottom: 20, alignItems: 'center' }}>
-          <Typography style={{ fontSize: '1.2em', marginRight: 5 }}>Zoom Link:</Typography>
-          <Tooltip title="Ensure your Zoom Link is Publicly Accessible and Does Not Require a Password." placement="right">
-            <HelpIcon style={{ fontSize: 'medium', marginRight: 96 }} />
-          </Tooltip>
-          <ReactHookTextField name="zoomLink" control={control} sx={{ width: 0.48 }} errorMessage={errors.zoomLink} />
+        <Box style={{ display: 'flex', marginBottom: 20 }}>
+          <Typography style={{ fontSize: '1.2em', marginRight: 97 }}>Meeting Type:</Typography>
+          <ToggleButtonGroup color="primary" value={meetingType} onChange={handleMeetingTypeChange}>
+            <ToggleButton value="virtual">Virtual</ToggleButton>
+            <ToggleButton value="inPerson">In-person</ToggleButton>
+          </ToggleButtonGroup>
         </Box>
-      )}
-      {meetingType.includes('inPerson') && (
-        <Box style={{ display: 'flex', alignItems: 'center', marginBottom: 50 }}>
-          <Typography style={{ fontSize: '1.2em', marginRight: 132 }}>Location:</Typography>
-          <ReactHookTextField name="location" control={control} sx={{ width: 0.48 }} errorMessage={errors.location} />
+        <Box style={{ display: 'flex', marginBottom: 20 }}>
+          <Box>
+            <Typography style={{ fontSize: '1.2em', marginRight: 90 }}>Question Doc:</Typography>
+            <Link
+              href="https://docs.google.com/document/d/1DtbMNPUs0PMUI3D3UC-1ZpUXu3CvNoFzFvrypapg3os/edit?usp=sharing"
+              target="_blank"
+              underline="hover"
+              fontSize={16}
+            >
+              Doc Template
+            </Link>
+          </Box>
+          <ReactHookTextField
+            name="docTemplateLink"
+            control={control}
+            sx={{ width: 0.48 }}
+            errorMessage={errors.docTemplateLink}
+          />
         </Box>
-      )}
-      <Grid container justifyContent="center" style={{ alignItems: 'center' }}>
-        {designReviewConflicts && designReviewConflicts.length > 0 && (
-          <Grid item container justifyContent="center" style={{ alignItems: 'center' }}>
-            <Box sx={{ backgroundColor: '#ef4345', width: '70%', padding: 0.5 }}>
-              <Typography>Design Review Conflicts</Typography>
-            </Box>
-            <Grid item container justifyContent="center" style={{ marginBottom: 20 }}>
-              <Box
-                sx={{
-                  width: '70%',
-                  height: '90px',
-                  overflowY: 'auto',
-                  backgroundColor: 'grey',
-                  padding: 1
-                }}
-              >
-                {designReviewConflicts.map((conflictDesign, index) => (
-                  <Typography key={index} style={{ color: 'black', borderTop: '1px solid black' }}>
-                    {conflictDesign}
-                  </Typography>
-                ))}
-              </Box>
-            </Grid>
-          </Grid>
+        {meetingType.includes('virtual') && (
+          <Box style={{ display: 'flex', marginBottom: 20, alignItems: 'center' }}>
+            <Typography style={{ fontSize: '1.2em', marginRight: 5 }}>Zoom Link:</Typography>
+            <Tooltip title="Ensure your Zoom Link is Publicly Accessible and Does Not Require a Password." placement="right">
+              <HelpIcon style={{ fontSize: 'medium', marginRight: 96 }} />
+            </Tooltip>
+            <ReactHookTextField name="zoomLink" control={control} sx={{ width: 0.48 }} errorMessage={errors.zoomLink} />
+          </Box>
         )}
-      </Grid>
-    </NERFormModal>
+        {meetingType.includes('inPerson') && (
+          <Box style={{ display: 'flex', alignItems: 'center', marginBottom: 50 }}>
+            <Typography style={{ fontSize: '1.2em', marginRight: 132 }}>Location:</Typography>
+            <ReactHookTextField name="location" control={control} sx={{ width: 0.48 }} errorMessage={errors.location} />
+          </Box>
+        )}
+        <Grid container justifyContent="center" style={{ alignItems: 'center' }}>
+          {designReviewConflicts && designReviewConflicts.length > 0 && (
+            <Grid item container justifyContent="center" style={{ alignItems: 'center' }}>
+              <Box sx={{ backgroundColor: '#ef4345', width: '70%', padding: 0.5 }}>
+                <Typography>Design Review Conflicts</Typography>
+              </Box>
+              <Grid item container justifyContent="center" style={{ marginBottom: 20 }}>
+                <Box
+                  sx={{
+                    width: '70%',
+                    height: '90px',
+                    overflowY: 'auto',
+                    backgroundColor: 'grey',
+                    padding: 1
+                  }}
+                >
+                  {designReviewConflicts.map((conflictDesign, index) => (
+                    <Typography key={index} style={{ color: 'black', borderTop: '1px solid black' }}>
+                      {conflictDesign}
+                    </Typography>
+                  ))}
+                </Box>
+              </Grid>
+            </Grid>
+          )}
+        </Grid>
+      </NERFormModal>
+    </div>
   );
 };
-
 export default FinalizeDesignReviewDetailsModal;
