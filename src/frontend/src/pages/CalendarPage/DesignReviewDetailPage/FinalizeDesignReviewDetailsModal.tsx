@@ -12,7 +12,7 @@ import { FinalizeReviewInformation } from './DesignReviewDetailPage';
 import { useCurrentUser, useUserScheduleSettings } from '../../../hooks/users.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 
-const validationSchema = yup.object().shape({
+const schema = yup.object().shape({
   zoomLink: yup
     .string()
     .optional()
@@ -85,7 +85,7 @@ const FinalizeDesignReviewDetailsModal = ({
     reset,
     formState: { errors }
   } = useForm({
-    resolver: yupResolver(validationSchema),
+    resolver: yupResolver(schema),
     defaultValues
   });
 
