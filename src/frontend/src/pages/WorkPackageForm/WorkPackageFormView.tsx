@@ -38,7 +38,8 @@ import { WorkPackageStage } from 'shared';
 import { ObjectSchema } from 'yup';
 import { getMonday, transformDate } from '../../utils/datetime.utils';
 import { CreateStandardChangeRequestPayload } from '../../hooks/change-requests.hooks';
-import { FormInput, StandardChangeRequestType } from '../CreateChangeRequestPage/CreateChangeRequest';
+import { StandardChangeRequestType } from '../CreateChangeRequestPage/CreateChangeRequestView';
+import { FormInput } from '../CreateChangeRequestPage/CreateChangeRequestView';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import HelpIcon from '@mui/icons-material/Help';
@@ -49,10 +50,10 @@ import { useAllWorkPackageTemplates } from '../../hooks/wbs-templates.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { WorkPackageTemplateSection } from './WorkPackageTemplateSection';
-import EditChangeRequestModal from '../CreateChangeRequestPage/EditChangeRequestModal';
 import { useQuery } from '../../hooks/utils.hooks';
 import { wbsTester } from '../../utils/form';
 import * as yup from 'yup';
+import CreateChangeRequestModal from '../CreateChangeRequestPage/CreateChangeRequestModal';
 
 export interface WorkPackageFormReturn {
   register: UseFormRegister<WorkPackageFormViewPayload>;
@@ -392,7 +393,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           type="workPackage"
         />
       </PageLayout>
-      <EditChangeRequestModal
+      <CreateChangeRequestModal
         onConfirm={async (crFormInput: FormInput) => {
           changeRequestFormInput = crFormInput;
           await handleSubmit(onSubmit)();

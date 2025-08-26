@@ -20,7 +20,7 @@ import ErrorPage from '../../ErrorPage';
 import CreateChangeRequestModal from '../../CreateChangeRequestPage/CreateChangeRequestModal';
 import { ProjectCreateChangeRequestFormInput } from './ProjectEditContainer';
 import { useEffect, useState } from 'react';
-import { FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequest';
+import { FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequestView';
 import { NERButton } from '../../../components/NERButton';
 import HelpIcon from '@mui/icons-material/Help';
 import DescriptionBulletsEditView from '../../../components/DescriptionBulletEditView';
@@ -30,6 +30,7 @@ import ProjectFormWorkPackageSection from './ProjectFormWorkPackageSection';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { generateUUID } from '../../../utils/form';
 import { getMonday } from '../../../utils/datetime.utils';
+import { ChangeRequestFormReturn } from '../../CreateChangeRequestPage/CreateChangeRequestView';
 
 export interface ProjectFormInput {
   name: string;
@@ -57,6 +58,7 @@ interface ProjectFormContainerProps {
   onSubmitChangeRequest?: (data: ProjectCreateChangeRequestFormInput) => void;
   setCarNumber: (carNumber: number) => void;
   carNumber?: number;
+  changeRequestFormReturn: ChangeRequestFormReturn;
 }
 
 const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
@@ -70,7 +72,8 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   leadId,
   managerId,
   onSubmitChangeRequest,
-  setCarNumber
+  setCarNumber,
+  changeRequestFormReturn
 }) => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   let changeRequestFormInput: ChangeRequestFormInput | undefined = undefined;
@@ -356,6 +359,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           onHide={() => setIsModalOpen(false)}
           wbsNum={project ? wbsPipe(project!.wbsNum) : '0.0.0'}
           open={isModalOpen}
+          changeRequestFormReturn={changeRequestFormReturn}
         />
       )}
     </form>

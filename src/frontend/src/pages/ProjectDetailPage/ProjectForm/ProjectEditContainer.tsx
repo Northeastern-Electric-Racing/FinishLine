@@ -7,24 +7,21 @@ import { useAllLinkTypes, useEditSingleProject } from '../../../hooks/projects.h
 import { bulletsToObject, wbsTester } from '../../../utils/form';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { EditSingleProjectPayload } from '../../../utils/types';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { ProjectFormInput } from './ProjectForm';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { getRequiredLinkTypeNames } from '../../../utils/link.utils';
 import { useQuery } from '../../../hooks/utils.hooks';
 import * as yup from 'yup';
-import {
-  FormInput as ChangeRequestFormInput,
-  FormInput,
-  StandardChangeRequestType
-} from '../../CreateChangeRequestPage/CreateChangeRequest';
+import { StandardChangeRequestType } from '../../CreateChangeRequestPage/CreateChangeRequestView';
+import { FormInput, FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequestView';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
 import { routes } from '../../../utils/routes';
 import { useHistory } from 'react-router-dom';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
-import ProjectEditFormContainer from './ProjectEditForm';
+import ProjectFormContainer from './ProjectForm';
 
 interface ProjectEditContainerProps {
   project: Project;
@@ -58,86 +55,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       url: link.url,
       linkTypeName: link.linkType.name
     };
-  });
-
-  // cache default values between rerenders
-  const defaultValues = useMemo(() => {
-    return {
-      name,
-      leadId,
-      managerId,
-      budget,
-      summary,
-      crId: query.get('crId') || '',
-      carNumber,
-      links,
-      descriptionBullets,
-      teamIds: [],
-      workPackages: workPackages.map((wp) => {
-        return {
-          workPackageId: wp.id,
-          name: wp.name,
-          startDate: wp.startDate,
-          duration: wp.duration,
-          blockedBy: wp.blockedBy.map((id) => id.toString()),
-          descriptionBullets: bulletsToObject(wp.descriptionBullets),
-          stage: wp.stage ?? 'NONE'
-        };
-      })
-    };
-  }, [budget, carNumber, descriptionBullets, leadId, links, managerId, name, query, summary, workPackages]);
-
-  const descriptionBulletsSchema = yup.object().shape({
-    id: yup.string().required(),
-    detail: yup.string().required(),
-    type: yup.string().required()
-  });
-
-  const workPackageSchema = yup.object().shape({
-    name: yup.string().required(),
-    workPackageId: yup.string().required(),
-    startDate: yup.date().required(),
-    duration: yup.number().required(),
-    crId: yup.string().optional(),
-    stage: yup.string().required(),
-    blockedBy: yup.array().of(yup.string().required()).required(),
-    descriptionBullets: yup.array().of(descriptionBulletsSchema).required()
-  });
-
-  const schema = yup.object().shape({
-    name: yup.string().required('Name is required!'),
-    budget: yup.number().required('Budget is required!').min(0).integer('Budget must be an even dollar amount!'),
-    summary: yup.string().required('Summary is required!'),
-    leadId: yup.string().optional(),
-    managerId: yup.string().optional(),
-    links: yup
-      .array()
-      .of(
-        yup.object().shape({
-          linkId: yup.string().required(),
-          linkTypeName: yup.string().required('Link Type is required!'),
-          url: yup.string().required('URL is required!').url('Invalid URL')
-        })
-      )
-      .required(),
-    carNumber: yup.number().optional(),
-    teamIds: yup.array().of(yup.string().required()).required(),
-    descriptionBullets: yup.array().of(descriptionBulletsSchema).required(),
-    workPackages: yup.array().of(workPackageSchema).required()
-  });
-
-  const { reset: resetProjectForm, ...projectFormMethods } = useForm<ProjectFormInput, any, ProjectFormInput>({
-    resolver: yupResolver(schema),
-    defaultValues: {
-      name: defaultValues.name,
-      budget: defaultValues.budget,
-      summary: defaultValues.summary,
-      crId: defaultValues.crId,
-      carNumber: defaultValues.carNumber,
-      links: defaultValues.links,
-      descriptionBullets: defaultValues.descriptionBullets,
-      teamIds: defaultValues.teamIds
-    }
   });
 
   const changeRequestSchema = yup.object().shape({
@@ -207,6 +124,45 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       });
     });
 
+  const defaultValues = {
+    name,
+    budget,
+    summary,
+    // teamId and carNumber aren't used for projectEdit
+    teamIds: [],
+    carNumber,
+    links,
+    crId: query.get('crId') || '',
+    descriptionBullets,
+    leadId,
+    managerId,
+    workPackages: workPackages.map((wp) => {
+      return {
+        workPackageId: wp.id,
+        name: wp.name,
+        startDate: wp.startDate,
+        duration: wp.duration,
+        blockedBy: wp.blockedBy.map((id) => id.toString()),
+        descriptionBullets: bulletsToObject(wp.descriptionBullets),
+        stage: wp.stage ?? 'NONE'
+      };
+    })
+  };
+
+  const schema = yup.object().shape({
+    name: yup.string().required('Name is required!'),
+    budget: yup.number().required('Budget is required!').min(0).integer('Budget must be an even dollar amount!'),
+    summary: yup.string().required('Summary is required!'),
+    leadId: yup.string().optional(),
+    managerId: yup.string().optional(),
+    links: yup.array().of(
+      yup.object().shape({
+        linkTypeName: yup.string().required('Link Type is required!'),
+        url: yup.string().required('URL is required!').url('Invalid URL')
+      })
+    )
+  });
+
   const onSubmitChangeRequest = async (data: ProjectCreateChangeRequestFormInput) => {
     const { name, budget, summary, links, type, what, why, descriptionBullets } = data;
 
@@ -266,14 +222,15 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   };
 
   return (
-    <ProjectEditFormContainer
+    <ProjectFormContainer
       requiredLinkTypeNames={requiredLinkTypeNames}
       exitEditMode={exitEditMode}
       project={project}
       onSubmit={onSubmit}
       setManagerId={setManagerId}
       setLeadId={setLeadId}
-      projectFormReturn={projectFormMethods}
+      defaultValues={defaultValues}
+      schema={schema}
       changeRequestFormReturn={changeRequestFormMethods}
       leadId={leadId}
       managerId={managerId}
