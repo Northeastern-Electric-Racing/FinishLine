@@ -713,7 +713,7 @@ model Sponsor {
   dateCreated    DateTime       @default(now())
   dateDeleted    DateTime?
   activeStatus   Boolean
-  vendorContact  String
+  sponsorContact String
   tier           Sponsor_Tier   @relation(fields: [sponsorTierId], references: [sponsorTierId])
   sponsorTierId  String
   sponsorValue   Int
