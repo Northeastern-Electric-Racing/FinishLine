@@ -924,8 +924,8 @@ model Event {
   shopId               String?
   machineryId          String?
   Machinery            Machinery?     @relation(fields: [machineryId], references: [id])
-  workPackagaeId       String?
-  workPackage          Work_Package?  @relation(fields: [workPackagaeId], references: [workPackageId])
+  workPackageId        String?
+  workPackage          Work_Package?  @relation(fields: [workPackageId], references: [workPackageId])
   description          String?
 }
 
