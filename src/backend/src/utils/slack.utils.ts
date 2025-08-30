@@ -224,7 +224,7 @@ export const sendSlackDesignReviewConfirmNotification = async (
   projectName: string
 ) => {
   const isProduction = process.env.NODE_ENV === 'production';
-  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  if (!isProduction) return; // don't send msgs unless in prod
   const msg = `You have been invited to the ${designReviewName} Design Review in project ${projectName}!`;
   const fullLink = isProduction
     ? `https://finishlinebyner.com/settings/preferences?drId=${designReviewId}`
