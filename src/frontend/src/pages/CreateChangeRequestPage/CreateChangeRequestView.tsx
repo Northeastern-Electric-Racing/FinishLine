@@ -2,10 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-
-import * as yup from 'yup';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
+import { Controller, useFieldArray } from 'react-hook-form';
 import {
   ChangeRequestReason,
   ChangeRequestType,
@@ -34,96 +31,64 @@ import {
   RadioGroup,
   Select
 } from '@mui/material';
-import { FormInput, StandardChangeRequestType } from './CreateChangeRequest';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { wbsTester } from '../../utils/form';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import PageLayout from '../../components/PageLayout';
 import { wbsNumComparator } from 'shared/src/validate-wbs';
 import { ChangeEvent } from 'react';
 import { NERButton } from '../../components/NERButton';
-import { useQuery } from '../../hooks/utils.hooks';
+import { UseFormRegister, UseFormHandleSubmit, UseFormWatch, UseFormSetValue, FormState, Control } from 'react-hook-form';
+
+export type StandardChangeRequestType = Exclude<ChangeRequestType, 'STAGE_GATE' | 'ACTIVATION'>;
+
+export interface FormInput {
+  type: StandardChangeRequestType;
+  what: string;
+  why: { type: ChangeRequestReason; explain: string }[];
+}
+
+export interface ChangeRequestFormReturn {
+  register: UseFormRegister<FormInput>;
+  handleSubmit: UseFormHandleSubmit<FormInput, FormInput>;
+  control: Control<FormInput, any, FormInput>;
+  watch: UseFormWatch<FormInput>;
+  formState: FormState<FormInput>;
+  setValue: UseFormSetValue<FormInput>;
+}
 
 interface CreateChangeRequestViewProps {
   wbsNum: string;
   setWbsNum: (val: string) => void;
-  crDesc: string;
   onSubmit: (data: FormInput) => Promise<void>;
   proposedSolutions: ProposedSolutionFormInput[];
   setProposedSolutions: (ps: ProposedSolutionFormInput[]) => void;
   handleCancel: () => void;
   modalView?: boolean;
+  changeRequestFormReturn: ChangeRequestFormReturn;
 }
-
-const schema = yup.object().shape({
-  type: yup.mixed<StandardChangeRequestType>().required('Type is required'),
-  what: yup.string().required('What is required'),
-  why: yup
-    .array()
-    .min(1, 'At least one Why is required')
-    .required('Why is required')
-    .of(
-      yup.object().shape({
-        type: yup.mixed<ChangeRequestReason>().required('Why Type is required'),
-        explain: yup
-          .string()
-          .required('Why Explain is required')
-          .when('type', ([type], schema) =>
-            type === ChangeRequestReason.OtherProject
-              ? schema.required().test('wbs-num-valid', 'WBS Number is not valid', wbsTester)
-              : yup.string()
-          )
-      })
-    )
-});
 
 const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   wbsNum,
   setWbsNum,
-  crDesc,
   onSubmit,
   proposedSolutions,
   setProposedSolutions,
   handleCancel,
-  modalView = false
+  modalView = false,
+  changeRequestFormReturn
 }) => {
-  const query = useQuery();
   const {
     handleSubmit,
     control,
     formState: { errors },
     register,
     watch
-  } = useForm<FormInput>({
-    resolver: yupResolver(schema),
-    defaultValues: query.get('budgetChange')
-      ? {
-          what: 'Increase the budget to account for the cost of materials',
-          why: [{ type: ChangeRequestReason.Other, explain: 'The cost of materials ended up exceeding the initial budget' }],
-          type: ChangeRequestType.Issue
-        }
-      : query.get('timelineDelay')
-        ? {
-            what: 'Timeline delay',
-            why: [{ type: ChangeRequestReason.Other, explain: 'Decided to extend timeline after design review' }],
-            type: ChangeRequestType.Redefinition
-          }
-        : query.get('createWP')
-          ? {
-              what: crDesc,
-              why: [{ type: ChangeRequestReason.Initialization, explain: 'Creating a Work Package on this Project' }],
-              type: ChangeRequestType.Redefinition
-            }
-          : {
-              what: crDesc,
-              why: [{ type: ChangeRequestReason.Other, explain: '' }],
-              type: ChangeRequestType.Issue
-            }
-  });
+  } = changeRequestFormReturn;
+
   const { fields: whys, append: appendWhy, remove: removeWhy } = useFieldArray({ control, name: 'why' });
 
   const { isLoading, isError, error, data: projects } = useAllProjects();
