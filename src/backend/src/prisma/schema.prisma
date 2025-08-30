@@ -938,6 +938,7 @@ model Event {
   machinery            Machinery?     @relation(fields: [machineryId], references: [machineryId])
   workPackageId        String?
   workPackage          Work_Package?  @relation(fields: [workPackageId], references: [workPackageId])
+  documents            String[]
   description          String?
 }
 
