@@ -904,6 +904,8 @@ model Machinery {
 
 model Event {
   id                   String         @id @default(uuid())
+  dateCreated          DateTime       @default(now())
+  dateDeleted          DateTime?
   title                String
   eventTypeId          String
   type                 EventType      @relation(fields: [eventTypeId], references: [id])
@@ -932,16 +934,20 @@ model Event {
 model Calendar {
   id           String      @id @default(uuid())
   name         String
+  dateCreated  DateTime    @default(now())
+  dateDeleted  DateTime?
   description  String      @default("")
   colorHexCode String
   eventTypes   EventType[]
 }
 
 model EventType {
-  id                   String   @id @default(uuid())
+  id                   String    @id @default(uuid())
   name                 String
+  dateCreated          DateTime  @default(now())
+  dateDeleted          DateTime?
   calendarId           String
-  calendar             Calendar @relation(fields: [calendarId], references: [id])
+  calendar             Calendar  @relation(fields: [calendarId], references: [id])
   // Meeting times are an integer between 0 and 11 from 10am - 10pm for the date scheduled at hour intervals
   meetingTimes         Boolean?
   initialDateScheduled Boolean?
