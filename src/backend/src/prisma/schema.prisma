@@ -908,13 +908,14 @@ model Machinery {
 }
 
 model ShopMachinery {
-  shopId      String
-  machineryId String
-  quantity    Int       @default(0)
-  shop        Shop      @relation(fields: [shopId], references: [shopId])
-  machinery   Machinery @relation(fields: [machineryId], references: [machineryId])
+  shopMachineryId String
+  shopId          String
+  machineryId     String
+  quantity        Int       @default(0)
+  shop            Shop      @relation(fields: [shopId], references: [shopId])
+  machinery       Machinery @relation(fields: [machineryId], references: [machineryId])
 
-  @@id([shopId, machineryId])
+  @@unique([shopId, machineryId], name: "uniqueShopMachinery")
 }
 
 model Event {

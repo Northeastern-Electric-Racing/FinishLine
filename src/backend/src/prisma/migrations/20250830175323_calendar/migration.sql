@@ -28,11 +28,10 @@ CREATE TABLE "public"."Machinery" (
 
 -- CreateTable
 CREATE TABLE "public"."ShopMachinery" (
+    "shopMachineryId" TEXT NOT NULL,
     "shopId" TEXT NOT NULL,
     "machineryId" TEXT NOT NULL,
-    "quantity" INTEGER NOT NULL DEFAULT 0,
-
-    CONSTRAINT "ShopMachinery_pkey" PRIMARY KEY ("shopId","machineryId")
+    "quantity" INTEGER NOT NULL DEFAULT 0
 );
 
 -- CreateTable
@@ -108,6 +107,9 @@ CREATE TABLE "public"."_eventAttender" (
 
     CONSTRAINT "_eventAttender_AB_pkey" PRIMARY KEY ("A","B")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ShopMachinery_shopId_machineryId_key" ON "public"."ShopMachinery"("shopId", "machineryId");
 
 -- CreateIndex
 CREATE INDEX "_eventAttender_B_index" ON "public"."_eventAttender"("B");
