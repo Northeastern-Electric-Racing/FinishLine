@@ -31,7 +31,9 @@ CREATE TABLE "public"."ShopMachinery" (
     "shopMachineryId" TEXT NOT NULL,
     "shopId" TEXT NOT NULL,
     "machineryId" TEXT NOT NULL,
-    "quantity" INTEGER NOT NULL DEFAULT 0
+    "quantity" INTEGER NOT NULL DEFAULT 0,
+
+    CONSTRAINT "ShopMachinery_pkey" PRIMARY KEY ("shopMachineryId")
 );
 
 -- CreateTable

@@ -908,7 +908,7 @@ model Machinery {
 }
 
 model ShopMachinery {
-  shopMachineryId String
+  shopMachineryId String    @id @default(uuid())
   shopId          String
   machineryId     String
   quantity        Int       @default(0)
