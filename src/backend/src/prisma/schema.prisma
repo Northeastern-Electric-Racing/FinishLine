@@ -881,31 +881,40 @@ model Manufacturer {
 }
 
 model Shop {
-  shopId        String      @id @default(uuid())
+  shopId        String          @id @default(uuid())
   name          String
-  dateCreated   DateTime    @default(now())
+  dateCreated   DateTime        @default(now())
   dateDeleted   DateTime?
   userCreatedId String
-  userCreated   User        @relation(name: "shopCreator", fields: [userCreatedId], references: [userId])
+  userCreated   User            @relation(name: "shopCreator", fields: [userCreatedId], references: [userId])
   userDeletedId String?
-  userDeleted   User?       @relation(fields: [userDeletedId], references: [userId], name: "shopDeleter")
-  machinery     Machinery[]
-  description   String      @default("")
+  userDeleted   User?           @relation(fields: [userDeletedId], references: [userId], name: "shopDeleter")
+  machinery     ShopMachinery[]
+  description   String          @default("")
   events        Event[]
 }
 
 model Machinery {
-  machineryId   String    @id @default(uuid())
+  machineryId   String          @id @default(uuid())
   name          String
-  dateCreated   DateTime  @default(now())
+  dateCreated   DateTime        @default(now())
   dateDeleted   DateTime?
   userCreatedId String
-  userCreated   User      @relation(name: "machineryCreator", fields: [userCreatedId], references: [userId])
+  userCreated   User            @relation(name: "machineryCreator", fields: [userCreatedId], references: [userId])
   userDeletedId String?
-  userDeleted   User?     @relation(fields: [userDeletedId], references: [userId], name: "machineryDeleter")
-  quantity      Int       @default(0)
-  shops         Shop[]
+  userDeleted   User?           @relation(fields: [userDeletedId], references: [userId], name: "machineryDeleter")
+  shops         ShopMachinery[]
   events        Event[]
+}
+
+model ShopMachinery {
+  shopId      String
+  machineryId String
+  quantity    Int       @default(0)
+  shop        Shop      @relation(fields: [shopId], references: [shopId])
+  machinery   Machinery @relation(fields: [machineryId], references: [machineryId])
+
+  @@id([shopId, machineryId])
 }
 
 model Event {
@@ -927,7 +936,6 @@ model Event {
   initialDateScheduled DateTime       @db.Date
   allDay               Boolean        @default(false)
   recurringInterval    Int // the number of days between each meeting (0 = no recurring)
-  memberId             String?
   members              User[]         @relation(name: "eventAttender")
   location             String?
   zoomLink             String?
