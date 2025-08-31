@@ -890,7 +890,7 @@ model Shop {
   userDeletedId String?
   userDeleted   User?           @relation(fields: [userDeletedId], references: [userId], name: "shopDeleter")
   machinery     ShopMachinery[]
-  description   String          @default("")
+  description   String
   events        Event[]
 }
 
@@ -960,7 +960,7 @@ model Calendar {
   userCreated   User        @relation(name: "calendarCreator", fields: [userCreatedId], references: [userId])
   userDeletedId String?
   userDeleted   User?       @relation(fields: [userDeletedId], references: [userId], name: "calendarDeleter")
-  description   String      @default("")
+  description   String
   colorHexCode  String
   eventTypes    EventType[]
 }

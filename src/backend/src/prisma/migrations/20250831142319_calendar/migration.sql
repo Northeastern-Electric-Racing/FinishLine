@@ -9,7 +9,7 @@ CREATE TABLE "public"."Shop" (
     "dateDeleted" TIMESTAMP(3),
     "userCreatedId" TEXT NOT NULL,
     "userDeletedId" TEXT,
-    "description" TEXT NOT NULL DEFAULT '',
+    "description" TEXT NOT NULL,
 
     CONSTRAINT "Shop_pkey" PRIMARY KEY ("shopId")
 );
@@ -70,7 +70,7 @@ CREATE TABLE "public"."Calendar" (
     "dateDeleted" TIMESTAMP(3),
     "userCreatedId" TEXT NOT NULL,
     "userDeletedId" TEXT,
-    "description" TEXT NOT NULL DEFAULT '',
+    "description" TEXT NOT NULL,
     "colorHexCode" TEXT NOT NULL,
 
     CONSTRAINT "Calendar_pkey" PRIMARY KEY ("calendarId")
