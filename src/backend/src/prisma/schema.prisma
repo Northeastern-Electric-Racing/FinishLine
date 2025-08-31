@@ -941,9 +941,9 @@ model Event {
   location             String?
   zoomLink             String?
   availabilities       Availability[]
-  shop                 Shop[]
+  shops                Shop[]
   machinery            Machinery[]
-  workPackage          Work_Package[]
+  workPackages         Work_Package[]
   documentIds          String[]
   description          String?
 }
@@ -963,16 +963,15 @@ model Calendar {
 }
 
 model EventType {
-  eventTypeId          String    @id @default(uuid())
+  eventTypeId          String     @id @default(uuid())
   name                 String
-  dateCreated          DateTime  @default(now())
+  dateCreated          DateTime   @default(now())
   dateDeleted          DateTime?
   userCreatedId        String
-  userCreated          User      @relation(name: "eventTypeCreator", fields: [userCreatedId], references: [userId])
+  userCreated          User       @relation(name: "eventTypeCreator", fields: [userCreatedId], references: [userId])
   userDeletedId        String?
-  userDeleted          User?     @relation(fields: [userDeletedId], references: [userId], name: "eventTypeDeleter")
-  calendarId           String
-  calendar             Calendar  @relation(fields: [calendarId], references: [calendarId])
+  userDeleted          User?      @relation(fields: [userDeletedId], references: [userId], name: "eventTypeDeleter")
+  calendars            Calendar[]
   meetingTimes         Boolean?
   initialDateScheduled Boolean?
   allDay               Boolean?
