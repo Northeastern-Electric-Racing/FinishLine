@@ -882,7 +882,7 @@ model Manufacturer {
 
 model Shop {
   shopId        String          @id @default(uuid())
-  name          String
+  name          String          @unique
   dateCreated   DateTime        @default(now())
   dateDeleted   DateTime?
   userCreatedId String
@@ -908,14 +908,16 @@ model Machinery {
 }
 
 model ShopMachinery {
+  description     String?
   shopMachineryId String    @id @default(uuid())
   shopId          String
   machineryId     String
-  quantity        Int       @default(0)
+  quantity        Int       @default(1)
   shop            Shop      @relation(fields: [shopId], references: [shopId])
   machinery       Machinery @relation(fields: [machineryId], references: [machineryId])
 
   @@unique([shopId, machineryId], name: "uniqueShopMachinery")
+  @@index([machineryId])
 }
 
 model Event {
