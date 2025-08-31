@@ -97,7 +97,7 @@ const StatsPieChart: React.FC<StatsPieChartProps> = ({ xAxisData, yAxisData, wid
   };
 
   return (
-    <Box style={{ height, width: '100%', maxWidth: width }}>
+    <Box style={{ height, width, maxWidth: '100%', maxHeight: '100%' }}>
       <Pie data={data} options={options} />
     </Box>
   );
