@@ -973,7 +973,6 @@ model EventType {
   userDeleted          User?     @relation(fields: [userDeletedId], references: [userId], name: "eventTypeDeleter")
   calendarId           String
   calendar             Calendar  @relation(fields: [calendarId], references: [calendarId])
-  // Meeting times are an integer between 0 and 11 from 10am - 10pm for the date scheduled at hour intervals
   meetingTimes         Boolean?
   initialDateScheduled Boolean?
   allDay               Boolean?
