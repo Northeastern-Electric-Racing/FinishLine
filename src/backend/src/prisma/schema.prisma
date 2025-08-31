@@ -972,7 +972,6 @@ model EventType {
   userDeletedId        String?
   userDeleted          User?      @relation(fields: [userDeletedId], references: [userId], name: "eventTypeDeleter")
   calendars            Calendar[]
-  meetingTimes         Boolean?
   initialDateScheduled Boolean?
   allDay               Boolean?
   recurring            Boolean?
