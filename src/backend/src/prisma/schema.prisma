@@ -941,12 +941,9 @@ model Event {
   location             String?
   zoomLink             String?
   availabilities       Availability[]
-  shop                 Shop?          @relation(fields: [shopId], references: [shopId])
-  shopId               String?
-  machineryId          String?
-  machinery            Machinery?     @relation(fields: [machineryId], references: [machineryId])
-  workPackageId        String?
-  workPackage          Work_Package?  @relation(fields: [workPackageId], references: [workPackageId])
+  shop                 Shop[]
+  machinery            Machinery[]
+  workPackage          Work_Package[]
   documentIds          String[]
   description          String?
 }
