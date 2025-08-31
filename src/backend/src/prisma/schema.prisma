@@ -920,6 +920,23 @@ model ShopMachinery {
   @@index([machineryId])
 }
 
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+model ScheduleSlot {
+  id              String    @id @default(uuid())
+  day             DayOfWeek
+  time            DateTime // time of day (just use a DateTime, ignore the date portion)
+  ScheduledEvents Event[]
+}
+
 model Event {
   eventId              String         @id @default(uuid())
   dateCreated          DateTime       @default(now())
@@ -934,11 +951,10 @@ model Event {
   approved             Boolean?
   approvedByUserId     String?
   approvedBy           User?          @relation(fields: [approvedByUserId], references: [userId], name: "eventApprover")
-  // Meeting times are an integer between 0 and 11 from 10am - 10pm for the date scheduled at hour intervals
-  meetingTimes         Int[]
   initialDateScheduled DateTime       @db.Date
   allDay               Boolean        @default(false)
-  recurringInterval    Int // the number of days between each meeting (0 = no recurring)
+  recurringInterval    ScheduleSlot[]
+  recurrenceNumber     Int
   members              User[]         @relation(name: "eventAttender")
   location             String?
   zoomLink             String?

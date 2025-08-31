@@ -1,3 +1,6 @@
+-- CreateEnum
+CREATE TYPE "public"."DayOfWeek" AS ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY');
+
 -- AlterTable
 ALTER TABLE "public"."Availability" ADD COLUMN     "eventId" TEXT;
 
@@ -28,12 +31,22 @@ CREATE TABLE "public"."Machinery" (
 
 -- CreateTable
 CREATE TABLE "public"."ShopMachinery" (
+    "description" TEXT,
     "shopMachineryId" TEXT NOT NULL,
     "shopId" TEXT NOT NULL,
     "machineryId" TEXT NOT NULL,
-    "quantity" INTEGER NOT NULL DEFAULT 0,
+    "quantity" INTEGER NOT NULL DEFAULT 1,
 
     CONSTRAINT "ShopMachinery_pkey" PRIMARY KEY ("shopMachineryId")
+);
+
+-- CreateTable
+CREATE TABLE "public"."ScheduleSlot" (
+    "id" TEXT NOT NULL,
+    "day" "public"."DayOfWeek" NOT NULL,
+    "time" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "ScheduleSlot_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -47,15 +60,11 @@ CREATE TABLE "public"."Event" (
     "eventTypeId" TEXT NOT NULL,
     "approved" BOOLEAN,
     "approvedByUserId" TEXT,
-    "meetingTimes" INTEGER[],
     "initialDateScheduled" DATE NOT NULL,
     "allDay" BOOLEAN NOT NULL DEFAULT false,
-    "recurringInterval" INTEGER NOT NULL,
+    "recurrenceNumber" INTEGER NOT NULL,
     "location" TEXT,
     "zoomLink" TEXT,
-    "shopId" TEXT,
-    "machineryId" TEXT,
-    "workPackageId" TEXT,
     "documentIds" TEXT[],
     "description" TEXT,
 
@@ -84,8 +93,6 @@ CREATE TABLE "public"."EventType" (
     "dateDeleted" TIMESTAMP(3),
     "userCreatedId" TEXT NOT NULL,
     "userDeletedId" TEXT,
-    "calendarId" TEXT NOT NULL,
-    "meetingTimes" BOOLEAN,
     "initialDateScheduled" BOOLEAN,
     "allDay" BOOLEAN,
     "recurring" BOOLEAN,
@@ -103,6 +110,14 @@ CREATE TABLE "public"."EventType" (
 );
 
 -- CreateTable
+CREATE TABLE "public"."_EventToScheduleSlot" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_EventToScheduleSlot_AB_pkey" PRIMARY KEY ("A","B")
+);
+
+-- CreateTable
 CREATE TABLE "public"."_eventAttender" (
     "A" TEXT NOT NULL,
     "B" TEXT NOT NULL,
@@ -110,11 +125,64 @@ CREATE TABLE "public"."_eventAttender" (
     CONSTRAINT "_eventAttender_AB_pkey" PRIMARY KEY ("A","B")
 );
 
+-- CreateTable
+CREATE TABLE "public"."_EventToShop" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_EventToShop_AB_pkey" PRIMARY KEY ("A","B")
+);
+
+-- CreateTable
+CREATE TABLE "public"."_EventToMachinery" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_EventToMachinery_AB_pkey" PRIMARY KEY ("A","B")
+);
+
+-- CreateTable
+CREATE TABLE "public"."_EventToWork_Package" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_EventToWork_Package_AB_pkey" PRIMARY KEY ("A","B")
+);
+
+-- CreateTable
+CREATE TABLE "public"."_CalendarToEventType" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_CalendarToEventType_AB_pkey" PRIMARY KEY ("A","B")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Shop_name_key" ON "public"."Shop"("name");
+
+-- CreateIndex
+CREATE INDEX "ShopMachinery_machineryId_idx" ON "public"."ShopMachinery"("machineryId");
+
 -- CreateIndex
 CREATE UNIQUE INDEX "ShopMachinery_shopId_machineryId_key" ON "public"."ShopMachinery"("shopId", "machineryId");
 
 -- CreateIndex
+CREATE INDEX "_EventToScheduleSlot_B_index" ON "public"."_EventToScheduleSlot"("B");
+
+-- CreateIndex
 CREATE INDEX "_eventAttender_B_index" ON "public"."_eventAttender"("B");
+
+-- CreateIndex
+CREATE INDEX "_EventToShop_B_index" ON "public"."_EventToShop"("B");
+
+-- CreateIndex
+CREATE INDEX "_EventToMachinery_B_index" ON "public"."_EventToMachinery"("B");
+
+-- CreateIndex
+CREATE INDEX "_EventToWork_Package_B_index" ON "public"."_EventToWork_Package"("B");
+
+-- CreateIndex
+CREATE INDEX "_CalendarToEventType_B_index" ON "public"."_CalendarToEventType"("B");
 
 -- AddForeignKey
 ALTER TABLE "public"."Shop" ADD CONSTRAINT "Shop_userCreatedId_fkey" FOREIGN KEY ("userCreatedId") REFERENCES "public"."User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -147,15 +215,6 @@ ALTER TABLE "public"."Event" ADD CONSTRAINT "Event_eventTypeId_fkey" FOREIGN KEY
 ALTER TABLE "public"."Event" ADD CONSTRAINT "Event_approvedByUserId_fkey" FOREIGN KEY ("approvedByUserId") REFERENCES "public"."User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Event" ADD CONSTRAINT "Event_shopId_fkey" FOREIGN KEY ("shopId") REFERENCES "public"."Shop"("shopId") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."Event" ADD CONSTRAINT "Event_machineryId_fkey" FOREIGN KEY ("machineryId") REFERENCES "public"."Machinery"("machineryId") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."Event" ADD CONSTRAINT "Event_workPackageId_fkey" FOREIGN KEY ("workPackageId") REFERENCES "public"."Work_Package"("workPackageId") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "public"."Calendar" ADD CONSTRAINT "Calendar_userCreatedId_fkey" FOREIGN KEY ("userCreatedId") REFERENCES "public"."User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -168,13 +227,40 @@ ALTER TABLE "public"."EventType" ADD CONSTRAINT "EventType_userCreatedId_fkey" F
 ALTER TABLE "public"."EventType" ADD CONSTRAINT "EventType_userDeletedId_fkey" FOREIGN KEY ("userDeletedId") REFERENCES "public"."User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."EventType" ADD CONSTRAINT "EventType_calendarId_fkey" FOREIGN KEY ("calendarId") REFERENCES "public"."Calendar"("calendarId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."Availability" ADD CONSTRAINT "Availability_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "public"."Event"("eventId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Availability" ADD CONSTRAINT "Availability_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "public"."Event"("eventId") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."_EventToScheduleSlot" ADD CONSTRAINT "_EventToScheduleSlot_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."Event"("eventId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."_EventToScheduleSlot" ADD CONSTRAINT "_EventToScheduleSlot_B_fkey" FOREIGN KEY ("B") REFERENCES "public"."ScheduleSlot"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."_eventAttender" ADD CONSTRAINT "_eventAttender_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."Event"("eventId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."_eventAttender" ADD CONSTRAINT "_eventAttender_B_fkey" FOREIGN KEY ("B") REFERENCES "public"."User"("userId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."_EventToShop" ADD CONSTRAINT "_EventToShop_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."Event"("eventId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."_EventToShop" ADD CONSTRAINT "_EventToShop_B_fkey" FOREIGN KEY ("B") REFERENCES "public"."Shop"("shopId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."_EventToMachinery" ADD CONSTRAINT "_EventToMachinery_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."Event"("eventId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."_EventToMachinery" ADD CONSTRAINT "_EventToMachinery_B_fkey" FOREIGN KEY ("B") REFERENCES "public"."Machinery"("machineryId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."_EventToWork_Package" ADD CONSTRAINT "_EventToWork_Package_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."Event"("eventId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."_EventToWork_Package" ADD CONSTRAINT "_EventToWork_Package_B_fkey" FOREIGN KEY ("B") REFERENCES "public"."Work_Package"("workPackageId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."_CalendarToEventType" ADD CONSTRAINT "_CalendarToEventType_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."Calendar"("calendarId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."_CalendarToEventType" ADD CONSTRAINT "_CalendarToEventType_B_fkey" FOREIGN KEY ("B") REFERENCES "public"."EventType"("eventTypeId") ON DELETE CASCADE ON UPDATE CASCADE;
