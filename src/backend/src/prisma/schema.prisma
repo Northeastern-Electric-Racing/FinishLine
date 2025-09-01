@@ -1426,30 +1426,32 @@ model Ruleset {
 }
 
 model RulesetFile {
-  rulesetFileId String        @id @default(uuid())
+  rulesetFileId String   @id @default(uuid())
   name          String
-  uploadedAt    DateTime      @default(now())
+  uploadedAt    DateTime @default(now())
   rulesetId     String
-  ruleset       Ruleset       @relation(fields: [rulesetId], references: [rulesetId])
+  ruleset       Ruleset  @relation(fields: [rulesetId], references: [rulesetId])
   rule          Rule[]
   carId         String
-  car           Car           @relation(fields: [carId], references: [carId])
+  car           Car      @relation(fields: [carId], references: [carId])
 }
 
 model Rule {
-  ruleId        String        @id @default(uuid())
-  ruleCode      String
-  ruleContent   String
-  imageFileIds  String[]
-  rulesetFileId String?
-  rulesetFile   RulesetFile?  @relation(fields: [rulesetFileId], references: [rulesetFileId])
-  parentRuleId  String?
-  parentRule    Rule?         @relation("SubRules", fields: [parentRuleId], references: [ruleId])
-  subRules      Rule[]        @relation("SubRules")
+  ruleId           String        @id @default(uuid())
+  ruleCode         String
+  ruleContent      String
+  imageFileIds     String[]
+  rulesetFileId    String?
+  rulesetFile      RulesetFile?  @relation(fields: [rulesetFileId], references: [rulesetFileId])
+  parentRuleId     String?
+  parentRule       Rule?         @relation("SubRules", fields: [parentRuleId], references: [ruleId])
+  subRules         Rule[]        @relation("SubRules")
   referencedRuleId String?
-  referencedRule   Rule?      @relation("ReferencedRules", fields: [referencedRuleId], references: [ruleId])
-  referencedBy     Rule[]     @relation("ReferencedRules")
+  referencedRule   Rule?         @relation("ReferencedRules", fields: [referencedRuleId], references: [ruleId])
+  referencedBy     Rule[]        @relation("ReferencedRules")
   ruleStatuses     ProjectRule[]
+  dateCreated      DateTime      @default(now())
+  dateDeleted      DateTime?
 
   @@index([parentRuleId])
 }
