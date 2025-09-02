@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAllTeamTypes } from '../../../hooks/team-types.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -60,6 +60,12 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
   } = useGetPendingAdvisorList();
 
   const { data: allCars, isLoading: allCarsIsLoading, isError: allCarsIsError, error: allCarsError } = useGetAllCars();
+
+  useEffect(() => {
+    if (carNumberState === undefined && allCars && allCars.length > 0) {
+      setCarNumberState(allCars[allCars.length - 1].wbsNum.carNumber);
+    }
+  }, [allCars]);
 
   if (allCarsIsError) {
     return <ErrorPage error={allCarsError} />;
