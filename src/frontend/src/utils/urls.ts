@@ -213,67 +213,85 @@ const getReimbursementRequestProjectData = (projectId: string, startDate?: Date,
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
-const getReimbursementRequestTeamData = (teamId: string, startDate?: Date, endDate?: Date): string => {
+const getReimbursementRequestTeamData = (teamId: string, startDate?: Date, endDate?: Date, carNumber?: number): string => {
   const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-team-data/${teamId}`);
   const params = new URLSearchParams();
   if (startDate) params.set('startDate', startDate.toISOString());
   if (endDate) params.set('endDate', endDate.toISOString());
+  if (carNumber !== undefined) params.set('carNumber', carNumber.toString());
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
-const getReimbursementRequestCategoryData = (otherReasonId: string, startDate?: Date, endDate?: Date): string => {
+const getReimbursementRequestCategoryData = (
+  otherReasonId: string,
+  startDate?: Date,
+  endDate?: Date,
+  carNumber?: number
+): string => {
   const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-category-data/${otherReasonId}`);
   const params = new URLSearchParams();
   if (startDate) params.set('startDate', startDate.toISOString());
   if (endDate) params.set('endDate', endDate.toISOString());
+  if (carNumber !== undefined) params.set('carNumber', carNumber.toString());
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
-const getAllReimbursementRequestData = (startDate?: Date, endDate?: Date): string => {
+const getAllReimbursementRequestData = (startDate?: Date, endDate?: Date, carNumber?: number): string => {
   const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-data`);
   const params = new URLSearchParams();
   if (startDate) params.set('startDate', startDate.toISOString());
   if (endDate) params.set('endDate', endDate.toISOString());
+  if (carNumber !== undefined) params.set('carNumber', carNumber.toString());
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
-const getReimbursementRequestTeamTypeData = (teamTypeId: string, startDate?: Date, endDate?: Date): string => {
+const getReimbursementRequestTeamTypeData = (
+  teamTypeId: string,
+  startDate?: Date,
+  endDate?: Date,
+  carNumber?: number
+): string => {
   const url = new URL(`${financeRoutesEndpoints()}/reimbursement-request-team-type-data/${teamTypeId}`);
   const params = new URLSearchParams();
   if (startDate) params.set('startDate', startDate.toISOString());
   if (endDate) params.set('endDate', endDate.toISOString());
+  if (carNumber !== undefined) params.set('carNumber', carNumber.toString());
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
-const getSpendingBarTeamData = (teamId: string, startDate?: Date, endDate?: Date): string => {
+const getSpendingBarTeamData = (teamId: string, startDate?: Date, endDate?: Date, carNumber?: number): string => {
   const url = new URL(`${financeRoutesEndpoints()}/spending-bar-team-data/${teamId}`);
   const params = new URLSearchParams();
   if (startDate) params.set('startDate', startDate.toISOString());
   if (endDate) params.set('endDate', endDate.toISOString());
+  if (carNumber !== undefined) params.set('carNumber', carNumber.toString());
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
-const getSpendingBarTeamTypeData = (teamTypeId: string, startDate?: Date, endDate?: Date): string => {
+const getSpendingBarTeamTypeData = (teamTypeId: string, startDate?: Date, endDate?: Date, carNumber?: number): string => {
   const url = new URL(`${financeRoutesEndpoints()}/spending-bar-team-type-data/${teamTypeId}`);
   const params = new URLSearchParams();
   if (startDate) params.set('startDate', startDate.toISOString());
   if (endDate) params.set('endDate', endDate.toISOString());
+  if (carNumber !== undefined) params.set('carNumber', carNumber.toString());
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
-const getSpendingBarCategoryData = (startDate?: Date, endDate?: Date): string => {
+const getSpendingBarCategoryData = (startDate?: Date, endDate?: Date, carNumber?: number): string => {
   const url = new URL(`${financeRoutesEndpoints()}/spending-bar-category-data`);
   const params = new URLSearchParams();
   if (startDate) params.set('startDate', startDate.toISOString());
   if (endDate) params.set('endDate', endDate.toISOString());
+  if (carNumber !== undefined) params.set('carNumber', carNumber.toString());
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
-const getAllSpendingBarData = (startDate?: Date, endDate?: Date): string => {
+const getAllSpendingBarData = (startDate?: Date, endDate?: Date, carNumber?: number): string => {
   const url = new URL(`${financeRoutesEndpoints()}/spending-bar-data`);
   const params = new URLSearchParams();
   if (startDate) params.set('startDate', startDate.toISOString());
   if (endDate) params.set('endDate', endDate.toISOString());
+  if (carNumber !== undefined) params.set('carNumber', carNumber.toString());
   const queryString = params.toString();
   return queryString ? `${url.toString()}?${queryString}` : url.toString();
 };
