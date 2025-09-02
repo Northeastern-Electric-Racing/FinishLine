@@ -281,7 +281,6 @@ export default class FinanceController {
   static async getAllSpendingBarData(req: Request, res: Response, next: NextFunction) {
     try {
       const { startDate, endDate, carNumber } = req.query;
-      console.log(carNumber);
       const parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : undefined;
       const parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : undefined;
       const parsedCarNumber = typeof carNumber === 'string' ? Number(carNumber) : undefined;
