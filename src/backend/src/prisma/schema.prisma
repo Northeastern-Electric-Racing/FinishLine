@@ -931,39 +931,40 @@ enum DayOfWeek {
 }
 
 model ScheduleSlot {
-  id              String    @id @default(uuid())
-  day             DayOfWeek
-  time            DateTime // time of day (just use a DateTime, ignore the date portion)
-  ScheduledEvents Event[]
+  id                   String    @id @default(uuid())
+  day                  DayOfWeek
+  startTime            DateTime // time of day (just use a DateTime, ignore the date portion)
+  endTime              DateTime // time of day (just use a DateTime, ignore the date portion)
+  recurrenceNumber     Int
+  initialDateScheduled DateTime  @db.Date
+  allDay               Boolean   @default(false)
+  ScheduledEvents      Event[]
 }
 
 model Event {
-  eventId              String         @id @default(uuid())
-  dateCreated          DateTime       @default(now())
-  dateDeleted          DateTime?
-  title                String
-  userCreatedId        String
-  userCreated          User           @relation(name: "eventCreator", fields: [userCreatedId], references: [userId])
-  userDeletedId        String?
-  userDeleted          User?          @relation(fields: [userDeletedId], references: [userId], name: "eventDeleter")
-  eventTypeId          String
-  eventType            EventType      @relation(fields: [eventTypeId], references: [eventTypeId])
-  approved             Boolean?
-  approvedByUserId     String?
-  approvedBy           User?          @relation(fields: [approvedByUserId], references: [userId], name: "eventApprover")
-  initialDateScheduled DateTime       @db.Date
-  allDay               Boolean        @default(false)
-  recurringInterval    ScheduleSlot[]
-  recurrenceNumber     Int
-  members              User[]         @relation(name: "eventAttender")
-  location             String?
-  zoomLink             String?
-  availabilities       Availability[]
-  shops                Shop[]
-  machinery            Machinery[]
-  workPackages         Work_Package[]
-  documentIds          String[]
-  description          String?
+  eventId          String         @id @default(uuid())
+  dateCreated      DateTime       @default(now())
+  dateDeleted      DateTime?
+  title            String
+  userCreatedId    String
+  userCreated      User           @relation(name: "eventCreator", fields: [userCreatedId], references: [userId])
+  userDeletedId    String?
+  userDeleted      User?          @relation(fields: [userDeletedId], references: [userId], name: "eventDeleter")
+  eventTypeId      String
+  eventType        EventType      @relation(fields: [eventTypeId], references: [eventTypeId])
+  approved         Boolean?
+  approvedByUserId String?
+  approvedBy       User?          @relation(fields: [approvedByUserId], references: [userId], name: "eventApprover")
+  scheduledTimes   ScheduleSlot[]
+  members          User[]         @relation(name: "eventAttender")
+  location         String?
+  zoomLink         String?
+  availabilities   Availability[]
+  shops            Shop[]
+  machinery        Machinery[]
+  workPackages     Work_Package[]
+  documentIds      String[]
+  description      String?
 }
 
 model Calendar {
