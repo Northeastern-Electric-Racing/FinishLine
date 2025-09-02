@@ -12,7 +12,12 @@ interface FinanceDashboardTeamTypeViewProps {
   carNumber?: number;
 }
 
-const FinanceDashboardTeamView: React.FC<FinanceDashboardTeamTypeViewProps> = ({ teamTypeId, startDate, endDate, carNumber }) => {
+const FinanceDashboardTeamView: React.FC<FinanceDashboardTeamTypeViewProps> = ({
+  teamTypeId,
+  startDate,
+  endDate,
+  carNumber
+}) => {
   const {
     data: rrData,
     isLoading: rrDataIsLoading,
