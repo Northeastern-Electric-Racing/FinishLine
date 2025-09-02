@@ -9,21 +9,22 @@ interface FinanceDashboardTeamTypeViewProps {
   teamTypeId: string;
   startDate?: Date;
   endDate?: Date;
+  carNumber?: number;
 }
 
-const FinanceDashboardTeamView: React.FC<FinanceDashboardTeamTypeViewProps> = ({ teamTypeId, startDate, endDate }) => {
+const FinanceDashboardTeamView: React.FC<FinanceDashboardTeamTypeViewProps> = ({ teamTypeId, startDate, endDate, carNumber }) => {
   const {
     data: rrData,
     isLoading: rrDataIsLoading,
     isError: rrDataIsError,
     error: rrDataError
-  } = useGetReimbursementRequestTeamTypeData({ teamTypeId, startDate, endDate });
+  } = useGetReimbursementRequestTeamTypeData({ teamTypeId, startDate, endDate, carNumber });
   const {
     data: spendingBarData,
     isLoading: spendingBarDataIsLoading,
     isError: spendingBarDataIsError,
     error: spendingBarDataError
-  } = useGetSpendingBarTeamTypeData({ teamTypeId, startDate, endDate });
+  } = useGetSpendingBarTeamTypeData({ teamTypeId, startDate, endDate, carNumber });
 
   if (rrDataIsError) {
     return <ErrorPage error={rrDataError} />;
