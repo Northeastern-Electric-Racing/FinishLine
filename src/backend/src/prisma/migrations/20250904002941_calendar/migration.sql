@@ -44,7 +44,11 @@ CREATE TABLE "public"."ShopMachinery" (
 CREATE TABLE "public"."ScheduleSlot" (
     "id" TEXT NOT NULL,
     "day" "public"."DayOfWeek" NOT NULL,
-    "time" TIMESTAMP(3) NOT NULL,
+    "startTime" TIMESTAMP(3) NOT NULL,
+    "endTime" TIMESTAMP(3) NOT NULL,
+    "recurrenceNumber" INTEGER NOT NULL,
+    "initialDateScheduled" DATE NOT NULL,
+    "allDay" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "ScheduleSlot_pkey" PRIMARY KEY ("id")
 );
@@ -60,9 +64,6 @@ CREATE TABLE "public"."Event" (
     "eventTypeId" TEXT NOT NULL,
     "approved" BOOLEAN,
     "approvedByUserId" TEXT,
-    "initialDateScheduled" DATE NOT NULL,
-    "allDay" BOOLEAN NOT NULL DEFAULT false,
-    "recurrenceNumber" INTEGER NOT NULL,
     "location" TEXT,
     "zoomLink" TEXT,
     "documentIds" TEXT[],
