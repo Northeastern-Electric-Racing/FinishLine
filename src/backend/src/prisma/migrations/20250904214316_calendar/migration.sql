@@ -43,9 +43,9 @@ CREATE TABLE "public"."ShopMachinery" (
 -- CreateTable
 CREATE TABLE "public"."ScheduleSlot" (
     "id" TEXT NOT NULL,
-    "day" "public"."DayOfWeek" NOT NULL,
-    "startTime" TIMESTAMP(3) NOT NULL,
-    "endTime" TIMESTAMP(3) NOT NULL,
+    "days" "public"."DayOfWeek"[],
+    "startTime" TIMESTAMP(3),
+    "endTime" TIMESTAMP(3),
     "recurrenceNumber" INTEGER NOT NULL,
     "initialDateScheduled" DATE NOT NULL,
     "allDay" BOOLEAN NOT NULL DEFAULT false,
