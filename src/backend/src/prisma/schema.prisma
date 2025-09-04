@@ -256,6 +256,18 @@ model User {
   deletedOtherReimbursementProductReasons Reimbursement_Product_Other_Reason[] @relation(name: "deletedOtherReimbursementProductReasons")
   reimbursementRequestComments            Reimbursement_Request_Comment[]      @relation(name: "createdReimbursementRequestComments")
   deletedReimbursementRequestComments     Reimbursement_Request_Comment[]      @relation(name: "deletedReimbursementRequestComments")
+  createdMachinery                        Machinery[]                          @relation(name: "machineryCreator")
+  deletedMachinery                        Machinery[]                          @relation(name: "machineryDeleter")
+  createdShops                            Shop[]                               @relation(name: "shopCreator")
+  deletedShops                            Shop[]                               @relation(name: "shopDeleter")
+  approvedEvents                          Event[]                              @relation(name: "eventApprover")
+  eventsAttended                          Event[]                              @relation(name: "eventAttender")
+  createdEvents                           Event[]                              @relation(name: "eventCreator")
+  deletedEvents                           Event[]                              @relation(name: "eventDeleter")
+  createdCalendars                        Calendar[]                           @relation(name: "calendarCreator")
+  deletedCalendars                        Calendar[]                           @relation(name: "calendarDeleter")
+  createdEventTypes                       EventType[]                          @relation(name: "eventTypeCreator")
+  deletedEventTypes                       EventType[]                          @relation(name: "eventTypeDeleter")
   deletedSponsorTiers                     Sponsor_Tier[]
 }
 
@@ -507,6 +519,7 @@ model Work_Package {
   duration       Int
   blockedBy      WBS_Element[]       @relation(name: "blockedBy")
   stage          Work_Package_Stage?
+  events         Event[]
 }
 
 model Link_Type {
@@ -867,6 +880,132 @@ model Manufacturer {
   @@unique([name, organizationId], name: "uniqueManufacturer")
 }
 
+model Shop {
+  shopId        String          @id @default(uuid())
+  name          String          @unique
+  dateCreated   DateTime        @default(now())
+  dateDeleted   DateTime?
+  userCreatedId String
+  userCreated   User            @relation(name: "shopCreator", fields: [userCreatedId], references: [userId])
+  userDeletedId String?
+  userDeleted   User?           @relation(fields: [userDeletedId], references: [userId], name: "shopDeleter")
+  machinery     ShopMachinery[]
+  description   String
+  events        Event[]
+}
+
+model Machinery {
+  machineryId   String          @id @default(uuid())
+  name          String
+  dateCreated   DateTime        @default(now())
+  dateDeleted   DateTime?
+  userCreatedId String
+  userCreated   User            @relation(name: "machineryCreator", fields: [userCreatedId], references: [userId])
+  userDeletedId String?
+  userDeleted   User?           @relation(fields: [userDeletedId], references: [userId], name: "machineryDeleter")
+  shops         ShopMachinery[]
+  events        Event[]
+}
+
+model ShopMachinery {
+  description     String?
+  shopMachineryId String    @id @default(uuid())
+  shopId          String
+  machineryId     String
+  quantity        Int       @default(1)
+  shop            Shop      @relation(fields: [shopId], references: [shopId])
+  machinery       Machinery @relation(fields: [machineryId], references: [machineryId])
+
+  @@unique([shopId, machineryId], name: "uniqueShopMachinery")
+  @@index([machineryId])
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+model ScheduleSlot {
+  id                   String      @id @default(uuid())
+  days                 DayOfWeek[]
+  startTime            DateTime? // time of day (just use a DateTime, ignore the date portion)
+  endTime              DateTime? // time of day (just use a DateTime, ignore the date portion)
+  recurrenceNumber     Int
+  initialDateScheduled DateTime    @db.Date
+  allDay               Boolean     @default(false)
+  ScheduledEvents      Event[]
+}
+
+model Event {
+  eventId          String         @id @default(uuid())
+  dateCreated      DateTime       @default(now())
+  dateDeleted      DateTime?
+  title            String
+  userCreatedId    String
+  userCreated      User           @relation(name: "eventCreator", fields: [userCreatedId], references: [userId])
+  userDeletedId    String?
+  userDeleted      User?          @relation(fields: [userDeletedId], references: [userId], name: "eventDeleter")
+  eventTypeId      String
+  eventType        EventType      @relation(fields: [eventTypeId], references: [eventTypeId])
+  approved         Boolean?
+  approvedByUserId String?
+  approvedBy       User?          @relation(fields: [approvedByUserId], references: [userId], name: "eventApprover")
+  scheduledTimes   ScheduleSlot[]
+  members          User[]         @relation(name: "eventAttender")
+  location         String?
+  zoomLink         String?
+  availabilities   Availability[]
+  shops            Shop[]
+  machinery        Machinery[]
+  workPackages     Work_Package[]
+  documentIds      String[]
+  description      String?
+}
+
+model Calendar {
+  calendarId    String      @id @default(uuid())
+  name          String
+  dateCreated   DateTime    @default(now())
+  dateDeleted   DateTime?
+  userCreatedId String
+  userCreated   User        @relation(name: "calendarCreator", fields: [userCreatedId], references: [userId])
+  userDeletedId String?
+  userDeleted   User?       @relation(fields: [userDeletedId], references: [userId], name: "calendarDeleter")
+  description   String
+  colorHexCode  String
+  eventTypes    EventType[]
+}
+
+model EventType {
+  eventTypeId          String     @id @default(uuid())
+  name                 String
+  dateCreated          DateTime   @default(now())
+  dateDeleted          DateTime?
+  userCreatedId        String
+  userCreated          User       @relation(name: "eventTypeCreator", fields: [userCreatedId], references: [userId])
+  userDeletedId        String?
+  userDeleted          User?      @relation(fields: [userDeletedId], references: [userId], name: "eventTypeDeleter")
+  calendars            Calendar[]
+  initialDateScheduled Boolean?
+  allDay               Boolean?
+  recurring            Boolean?
+  members              Boolean?
+  location             Boolean?
+  zoomLink             Boolean?
+  availabilities       Boolean?
+  shop                 Boolean?
+  machinery            Boolean?
+  workPackage          Boolean?
+  documents            Boolean?
+  description          Boolean?
+  events               Event[]
+}
+
 model Team_Type {
   teamTypeId      String          @id @default(uuid())
   name            String
@@ -924,6 +1063,8 @@ model Availability {
   availabilityId     String            @id @default(uuid())
   scheduleSettingsId String
   scheduleSettings   Schedule_Settings @relation(fields: [scheduleSettingsId], references: [drScheduleSettingsId])
+  eventId            String?
+  event              Event?            @relation(fields: [eventId], references: [eventId])
 
   // Availibilies are integers between 0 and 11 from 10am - 10pm for a given day at hour intervals see meetingTime field in Design_Review
   availability Int[]
