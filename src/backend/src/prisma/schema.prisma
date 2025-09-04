@@ -931,13 +931,13 @@ enum DayOfWeek {
 }
 
 model ScheduleSlot {
-  id                   String    @id @default(uuid())
-  day                  DayOfWeek
-  startTime            DateTime // time of day (just use a DateTime, ignore the date portion)
-  endTime              DateTime // time of day (just use a DateTime, ignore the date portion)
+  id                   String      @id @default(uuid())
+  days                 DayOfWeek[]
+  startTime            DateTime? // time of day (just use a DateTime, ignore the date portion)
+  endTime              DateTime? // time of day (just use a DateTime, ignore the date portion)
   recurrenceNumber     Int
-  initialDateScheduled DateTime  @db.Date
-  allDay               Boolean   @default(false)
+  initialDateScheduled DateTime    @db.Date
+  allDay               Boolean     @default(false)
   ScheduledEvents      Event[]
 }
 
