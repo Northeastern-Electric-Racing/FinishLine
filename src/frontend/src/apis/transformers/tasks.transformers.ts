@@ -9,8 +9,11 @@ import { Task } from 'shared';
 export const taskTransformer = (task: Task): Task => {
   let transformedDeadline: Date | undefined;
   if (task.deadline) {
-    const [year, month, day] = task.deadline.toString().split('T')[0].split('-').map(Number);
-    transformedDeadline = new Date(year, month - 1, day);
+    const date = new Date(task.deadline);
+    const year = date.getUTCFullYear();
+    const month = date.getUTCMonth();
+    const day = date.getUTCDate();
+    transformedDeadline = new Date(year, month, day);
   }
   return {
     ...task,
