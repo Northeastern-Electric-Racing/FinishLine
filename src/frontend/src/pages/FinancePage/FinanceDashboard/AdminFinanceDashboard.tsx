@@ -65,7 +65,7 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
     if (carNumberState === undefined && allCars && allCars.length > 0) {
       setCarNumberState(allCars[allCars.length - 1].wbsNum.carNumber);
     }
-  }, [allCars]);
+  }, [allCars, carNumberState]);
 
   if (allCarsIsError) {
     return <ErrorPage error={allCarsError} />;
@@ -125,7 +125,7 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
   };
 
   const datePickerStyle = {
-    width: 180,
+    width: 150,
     height: 36,
     color: 'white',
     fontSize: '13px',
@@ -198,11 +198,15 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
     <Box
       sx={{
         display: 'flex',
-        justifyContent: 'flex-end',
+        flexDirection: 'row',
         alignItems: 'center',
-        mb: 2,
-        gap: 2,
-        flexWrap: 'wrap'
+        gap: 1,
+        flexWrap: 'nowrap',
+        width: 'auto',
+        maxWidth: '100%',
+        flexShrink: 1,
+        justifyContent: 'flex-end',
+        ml: 'auto'
       }}
     >
       <NERAutocomplete
