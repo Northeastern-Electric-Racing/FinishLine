@@ -1453,7 +1453,7 @@ model Ruleset {
 
 model Rule {
   ruleId          String         @id @default(uuid())
-  ruleCode        String
+  ruleCode        String?
   ruleContent     String
   imageFileIds    String[]
   rulesetId       String
