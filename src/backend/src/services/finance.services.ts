@@ -27,7 +27,7 @@ import {
 import prisma from '../prisma/prisma';
 import { sponsorTransformer } from '../transformers/finance.transformer';
 import sponsorTaskTransformer from '../transformers/sponsor-task.transformer';
-import { getProjectSegmentedWhereInput, getReimbursementRequestWhereInput } from '../utils/finance.utils';
+import { computeRRTotals, getProjectSegmentedWhereInput, getReimbursementRequestWhereInput } from '../utils/finance.utils';
 import { notifySponsorTaskAssignee } from '../utils/slack.utils';
 
 export default class FinanceServices {
@@ -437,36 +437,7 @@ export default class FinanceServices {
       }
     });
 
-    let pendingFinance = 0;
-    let pendingLeadership = 0;
-    let submittedToSabo = 0;
-    let reimbursed = 0;
-
-    reimbursementRequests.forEach((req) => {
-      const lastStatus = req.reimbursementStatuses.at(-1)?.type;
-
-      switch (lastStatus) {
-        case Reimbursement_Status_Type.PENDING_FINANCE:
-          pendingFinance += req.totalCost;
-          break;
-        case Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL:
-          pendingLeadership += req.totalCost;
-          break;
-        case Reimbursement_Status_Type.SABO_SUBMITTED:
-          submittedToSabo += req.totalCost;
-          break;
-        case Reimbursement_Status_Type.REIMBURSED:
-          reimbursed += req.totalCost;
-          break;
-        default:
-          break;
-      }
-    });
-
-    pendingFinance = pendingFinance / 100;
-    pendingLeadership = pendingLeadership / 100;
-    submittedToSabo = submittedToSabo / 100;
-    reimbursed = reimbursed / 100;
+    const { pendingFinance, pendingLeadership, submittedToSabo, reimbursed } = computeRRTotals(reimbursementRequests);
 
     const totalBalance = reimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0) / 100;
 
@@ -541,36 +512,7 @@ export default class FinanceServices {
 
     const totalBudget = team.projects.reduce((acc, curr) => acc + curr.budget, 0);
 
-    let pendingFinance = 0;
-    let pendingLeadership = 0;
-    let submittedToSabo = 0;
-    let reimbursed = 0;
-
-    reimbursementRequests.forEach((req) => {
-      const lastStatus = req.reimbursementStatuses.at(-1)?.type;
-
-      switch (lastStatus) {
-        case Reimbursement_Status_Type.PENDING_FINANCE:
-          pendingFinance += req.totalCost;
-          break;
-        case Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL:
-          pendingLeadership += req.totalCost;
-          break;
-        case Reimbursement_Status_Type.SABO_SUBMITTED:
-          submittedToSabo += req.totalCost;
-          break;
-        case Reimbursement_Status_Type.REIMBURSED:
-          reimbursed += req.totalCost;
-          break;
-        default:
-          break;
-      }
-    });
-
-    pendingFinance = pendingFinance / 100;
-    pendingLeadership = pendingLeadership / 100;
-    submittedToSabo = submittedToSabo / 100;
-    reimbursed = reimbursed / 100;
+    const { pendingFinance, pendingLeadership, submittedToSabo, reimbursed } = computeRRTotals(reimbursementRequests);
 
     const totalBalance = reimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0) / 100;
 
@@ -840,106 +782,34 @@ export default class FinanceServices {
         return reqAcc + rr.totalCost;
       }, 0) / 100;
 
-    let allPendingFinance = 0;
-    let allPendingLeadership = 0;
-    let allSubmittedToSabo = 0;
-    let allReimbursed = 0;
-
-    allReimbursementRequests.forEach((req) => {
-      const lastStatus = req.reimbursementStatuses.at(-1)?.type;
-
-      switch (lastStatus) {
-        case Reimbursement_Status_Type.PENDING_FINANCE:
-          allPendingFinance += req.totalCost;
-          break;
-        case Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL:
-          allPendingLeadership += req.totalCost;
-          break;
-        case Reimbursement_Status_Type.SABO_SUBMITTED:
-          allSubmittedToSabo += req.totalCost;
-          break;
-        case Reimbursement_Status_Type.REIMBURSED:
-          allReimbursed += req.totalCost;
-          break;
-        default:
-          break;
-      }
-    });
-
-    allPendingFinance = allPendingFinance / 100;
-    allPendingLeadership = allPendingLeadership / 100;
-    allSubmittedToSabo = allSubmittedToSabo / 100;
-    allReimbursed = allReimbursed / 100;
+    const {
+      pendingFinance: allPendingFinance,
+      pendingLeadership: allPendingLeadership,
+      submittedToSabo: allSubmittedToSabo,
+      reimbursed: allReimbursed
+    } = computeRRTotals(allReimbursementRequests);
 
     const allTotalBalance = allReimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0) / 100;
 
     const allAvailable = allTotalBudget - allTotalBalance;
 
-    let cashPendingFinance = 0;
-    let cashPendingLeadership = 0;
-    let cashSubmittedToSabo = 0;
-    let cashReimbursed = 0;
-
-    cashReimbursementRequests.forEach((req) => {
-      const lastStatus = req.reimbursementStatuses.at(-1)?.type;
-
-      switch (lastStatus) {
-        case Reimbursement_Status_Type.PENDING_FINANCE:
-          cashPendingFinance += req.totalCost;
-          break;
-        case Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL:
-          cashPendingLeadership += req.totalCost;
-          break;
-        case Reimbursement_Status_Type.SABO_SUBMITTED:
-          cashSubmittedToSabo += req.totalCost;
-          break;
-        case Reimbursement_Status_Type.REIMBURSED:
-          cashReimbursed += req.totalCost;
-          break;
-        default:
-          break;
-      }
-    });
-
-    cashPendingFinance = cashPendingFinance / 100;
-    cashPendingLeadership = cashPendingLeadership / 100;
-    cashSubmittedToSabo = cashSubmittedToSabo / 100;
-    cashReimbursed = cashReimbursed / 100;
+    const {
+      pendingFinance: cashPendingFinance,
+      pendingLeadership: cashPendingLeadership,
+      submittedToSabo: cashSubmittedToSabo,
+      reimbursed: cashReimbursed
+    } = computeRRTotals(cashReimbursementRequests);
 
     const cashTotalBalance = cashReimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0) / 100;
 
     const cashAvailable = cashTotalBudget - cashTotalBalance;
 
-    let budgetPendingFinance = 0;
-    let budgetPendingLeadership = 0;
-    let budgetSubmittedToSabo = 0;
-    let budgetReimbursed = 0;
-
-    budgetReimbursementRequests.forEach((req) => {
-      const lastStatus = req.reimbursementStatuses.at(-1)?.type;
-
-      switch (lastStatus) {
-        case Reimbursement_Status_Type.PENDING_FINANCE:
-          budgetPendingFinance += req.totalCost;
-          break;
-        case Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL:
-          budgetPendingLeadership += req.totalCost;
-          break;
-        case Reimbursement_Status_Type.SABO_SUBMITTED:
-          budgetSubmittedToSabo += req.totalCost;
-          break;
-        case Reimbursement_Status_Type.REIMBURSED:
-          budgetReimbursed += req.totalCost;
-          break;
-        default:
-          break;
-      }
-    });
-
-    budgetPendingFinance = budgetPendingFinance / 100;
-    budgetPendingLeadership = budgetPendingLeadership / 100;
-    budgetSubmittedToSabo = budgetSubmittedToSabo / 100;
-    budgetReimbursed = budgetReimbursed / 100;
+    const {
+      pendingFinance: budgetPendingFinance,
+      pendingLeadership: budgetPendingLeadership,
+      submittedToSabo: budgetSubmittedToSabo,
+      reimbursed: budgetReimbursed
+    } = computeRRTotals(budgetReimbursementRequests);
 
     const budgetTotalBalance = budgetReimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0) / 100;
 
@@ -987,7 +857,7 @@ export default class FinanceServices {
     const { organizationId } = organization;
 
     //if a car is specified but not the date ranges, use the car to determine the date ranges
-    if (carNumber !== undefined && (!startDate || !endDate)) {
+    if (carNumber !== undefined) {
       const car = await prisma.car.findFirst({
         where: {
           wbsElement: {
@@ -1008,13 +878,13 @@ export default class FinanceServices {
         }
       });
 
-      //if no start date, set it to the creation of the selected car
-      if (!startDate) {
+      //use latest of start date and car creation date for intersection
+      if (!startDate || startDate.valueOf() < car.dateCreated.valueOf()) {
         startDate = car.dateCreated;
       }
 
-      //if no end date, set it to the creation of the next car if it exists
-      if (!endDate && nextCar) {
+      //use earliest of end date and next car creation date for intersection
+      if (nextCar && (!endDate || endDate.valueOf() > nextCar.dateCreated.valueOf())) {
         endDate = nextCar.dateCreated;
       }
     }
@@ -1053,31 +923,25 @@ export default class FinanceServices {
 
     const totalBudget = category.budget;
 
-    let pendingFinance = 0;
-    let pendingLeadership = 0;
-    let submittedToSabo = 0;
-    let reimbursed = 0;
+    const totals: Partial<Record<Reimbursement_Status_Type, number>> = {
+      [Reimbursement_Status_Type.PENDING_FINANCE]: 0,
+      [Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL]: 0,
+      [Reimbursement_Status_Type.SABO_SUBMITTED]: 0,
+      [Reimbursement_Status_Type.REIMBURSED]: 0
+    };
 
     reimbursementRequests.forEach((req) => {
       const lastStatus = req.reimbursementStatuses.at(-1)?.type;
 
-      switch (lastStatus) {
-        case Reimbursement_Status_Type.PENDING_FINANCE:
-          pendingFinance += req.totalCost;
-          break;
-        case Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL:
-          pendingLeadership += req.totalCost;
-          break;
-        case Reimbursement_Status_Type.SABO_SUBMITTED:
-          submittedToSabo += req.totalCost;
-          break;
-        case Reimbursement_Status_Type.REIMBURSED:
-          reimbursed += req.totalCost;
-          break;
-        default:
-          break;
+      if (lastStatus && totals[lastStatus] !== undefined) {
+        totals[lastStatus] += req.totalCost;
       }
     });
+
+    const pendingFinance = totals[Reimbursement_Status_Type.PENDING_FINANCE] ?? 0;
+    const pendingLeadership = totals[Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL] ?? 0;
+    const submittedToSabo = totals[Reimbursement_Status_Type.SABO_SUBMITTED] ?? 0;
+    const reimbursed = totals[Reimbursement_Status_Type.REIMBURSED] ?? 0;
 
     const totalBalance = reimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0);
 

@@ -103,3 +103,43 @@ export const getReimbursementRequestWhereInput = (
 
   return baseWhere;
 };
+
+export const computeRRTotals = (
+  reimbursementRequests: {
+    totalCost: number;
+    reimbursementStatuses: {
+      dateCreated: Date;
+      reimbursementRequestId: string;
+      type: Reimbursement_Status_Type;
+      reimbursementStatusId: string;
+      userId: string;
+    }[];
+  }[]
+): {
+  pendingFinance: number;
+  pendingLeadership: number;
+  submittedToSabo: number;
+  reimbursed: number;
+} => {
+  const totals: Partial<Record<Reimbursement_Status_Type, number>> = {
+    [Reimbursement_Status_Type.PENDING_FINANCE]: 0,
+    [Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL]: 0,
+    [Reimbursement_Status_Type.SABO_SUBMITTED]: 0,
+    [Reimbursement_Status_Type.REIMBURSED]: 0
+  };
+
+  reimbursementRequests.forEach((req) => {
+    const lastStatus = req.reimbursementStatuses.at(-1)?.type;
+
+    if (lastStatus && totals[lastStatus] !== undefined) {
+      totals[lastStatus] += req.totalCost;
+    }
+  });
+
+  const pendingFinance = (totals[Reimbursement_Status_Type.PENDING_FINANCE] ?? 0) / 100;
+  const pendingLeadership = (totals[Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL] ?? 0) / 100;
+  const submittedToSabo = (totals[Reimbursement_Status_Type.SABO_SUBMITTED] ?? 0) / 100;
+  const reimbursed = (totals[Reimbursement_Status_Type.REIMBURSED] ?? 0) / 100;
+
+  return { pendingFinance, pendingLeadership, submittedToSabo, reimbursed };
+};

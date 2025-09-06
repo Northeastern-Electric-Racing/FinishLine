@@ -1086,7 +1086,12 @@ export const useGetReimbursementRequestCategoryData = (reimbursementRequestData:
 
 export const useGetAllReimbursementRequestData = (reimbursementRequestData: ReimbursementRequestDataPayload) =>
   useQuery<ReimbursementRequestData[], Error>(
-    ['reimbursement-request-data', reimbursementRequestData.endDate, reimbursementRequestData.startDate],
+    [
+      'reimbursement-request-data',
+      reimbursementRequestData.endDate,
+      reimbursementRequestData.startDate,
+      reimbursementRequestData.carNumber
+    ],
     async () => {
       const { data } = await getAllReimbursementRequestData(reimbursementRequestData);
       return data;
