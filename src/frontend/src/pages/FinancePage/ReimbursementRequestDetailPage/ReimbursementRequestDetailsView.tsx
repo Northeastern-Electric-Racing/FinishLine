@@ -9,6 +9,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
@@ -65,6 +66,7 @@ import SidePage from '../FinanceComponents/SidePagePopup';
 import EditReimbursementRequestPage from '../EditReimbursementRequest/EditReimbursementRequest';
 import { ReimbursementRequestDataSubmission } from '../ReimbursementRequestForm/ReimbursementRequestForm';
 import LoadingIndicator from '../../../components/LoadingIndicator';
+import AssignFinanceMemberModal from './AssignFinanceMemberModal';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -90,6 +92,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const [showSubmitToSaboModal, setShowSubmitToSaboModal] = useState(false);
   const [showMarkPendingFinanceModal, setShowMarkPendingFinanceModal] = useState(false);
   const [showRequestChangesModal, setShowRequestChangesModal] = useState(false);
+  const [showAssignUserModal, setShowAssignUserModal] = useState(false);
   const { mutateAsync: deleteReimbursementRequest } = useDeleteReimbursementRequest(
     reimbursementRequest.reimbursementRequestId
   );
@@ -412,6 +415,11 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         (!isAdmin(user.role) && user.userId !== reimbursementRequest.recipient.userId)
     },
     {
+      title: 'Assign Finance Member',
+      onClick: () => setShowAssignUserModal(true),
+      icon: <AssignmentIndIcon />
+    },
+    {
       title: 'Request Changes',
       onClick: () => setShowRequestChangesModal(true),
       icon: <ChangeCircle />,
@@ -528,6 +536,11 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         <MarkDeliveredModal
           modalShow={showMarkDelivered}
           onHide={() => setShowMarkDelivered(false)}
+          reimbursementRequest={reimbursementRequest}
+        />
+        <AssignFinanceMemberModal
+          modalShow={showAssignUserModal}
+          onHide={() => setShowAssignUserModal(false)}
           reimbursementRequest={reimbursementRequest}
         />
         <MarkReimbursedModal />

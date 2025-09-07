@@ -162,6 +162,7 @@ const financeCreateReimbursementRequest = () => `${financeEndpoints()}/create`;
 const financeReimbursementRequestById = (id: string) => `${financeEndpoints()}/${id}`;
 const financeImageById = (fileId: string) => `${financeEndpoints()}/receipt-image/${fileId}`;
 const financeEditReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/edit`;
+const financeAssignMemberToRR = (id: string) => `${financeEndpoints()}/${id}/assign-finance-member`;
 const getAllAccountCodes = () => `${financeEndpoints()}/account-codes`;
 const getAllVendors = () => `${financeEndpoints()}/vendors`;
 const financeUploadReceipt = (id: string) => `${financeEndpoints()}/${id}/upload-receipt`;
@@ -537,6 +538,7 @@ export const apiUrls = {
   financeUploadRceipt,
   financeCreateReimbursementRequest,
   financeEditReimbursementRequest,
+  financeAssignMemberToRR,
   financeReimbursementRequestById,
   getAllAccountCodes,
   getAllVendors,

@@ -121,6 +121,13 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.editReimbursementRequest
 );
 
+reimbursementRequestsRouter.post(
+  '/:requestId/assign-finance-member',
+  nonEmptyString(body('assigneeId')),
+  validateInputs,
+  ReimbursementRequestController.assignFinanceMember
+)
+
 reimbursementRequestsRouter.get('/pending-advisor/list', ReimbursementRequestController.getPendingAdvisorList);
 
 reimbursementRequestsRouter.post(

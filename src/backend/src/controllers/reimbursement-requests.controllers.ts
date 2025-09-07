@@ -140,6 +140,23 @@ export default class ReimbursementRequestsController {
     }
   }
 
+  static async assignFinanceMember(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const { assigneeId } = req.body;
+
+      const updatedReimbursementRequest = await ReimbursementRequestService.assignFinanceMember(
+        req.currentUser,
+        req.organization,
+        requestId,
+        assigneeId
+      );
+      res.status(200).json(updatedReimbursementRequest);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async editReimbursement(req: Request, res: Response, next: NextFunction) {
     try {
       const { reimbursementId } = req.params;

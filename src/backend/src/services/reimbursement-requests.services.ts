@@ -404,6 +404,60 @@ export default class ReimbursementRequestService {
   }
 
   /**
+   * Assigns a finance member to a reimbursement request to keep track of it
+   * @param assigner the user making the assignment
+   * @param organization the organization
+   * @param requestId the reimbursement request being assigned to
+   * @param assigneeId the user being assigned to the rr
+   * @returns the updated RR
+   */
+  static async assignFinanceMember(assigner: User, organization: Organization, requestId: string, assigneeId: string) {
+    if (!(await userHasPermission(assigner.userId, organization.organizationId, notGuest))) {
+      throw new AccessDeniedException('Only members can assign reimbursement requests');
+    }
+
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: {
+        reimbursementRequestId: requestId
+      }
+    });
+
+    if (!reimbursementRequest) {
+      throw new NotFoundException('Reimbursement Request', requestId);
+    }
+
+    if (reimbursementRequest.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Reimbursement Request');
+    }
+
+    const assignee = await prisma.user.findUnique({
+      where: {
+        userId: assigneeId
+      }
+    });
+
+    if (!assignee) {
+      throw new NotFoundException('User', assigneeId);
+    }
+
+    const updatedRR = await prisma.reimbursement_Request.update({
+      where: {
+        reimbursementRequestId: requestId
+      },
+      data: {
+        assignee: {
+          connect: {
+            userId: assigneeId
+          }
+        }
+      },
+      ...getReimbursementQueryArgs
+    });
+
+    return updatedRR;
+  }
+
+  /**
    * Edits the given reimbursement
    * @param reimbursementId The id of the reimbursement to be edited
    * @param editor The user editing the reimbursement

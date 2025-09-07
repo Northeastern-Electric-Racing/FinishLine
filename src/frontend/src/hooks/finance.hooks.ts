@@ -62,7 +62,8 @@ import {
   deleteAccountCode,
   deleteOtherProductReason,
   deleteSponsorTier,
-  editSponsorTier
+  editSponsorTier,
+  assignMemberToRR
 } from '../apis/finance.api';
 import {
   IndexCode,
@@ -373,6 +374,16 @@ export const useEditReimbursementRequest = (reimbursementRequestId: string) => {
     ['reimbursement-requests', 'edit'],
     async (formData: EditReimbursementRequestPayload) => {
       const { data } = await editReimbursementRequest(reimbursementRequestId, formData);
+      return data;
+    }
+  );
+};
+
+export const useAssignMemberToRR = (reimbursementRequestId: string) => {
+  return useMutation<ReimbursementRequest, Error, { assigneeId: string }>(
+    ['reimbursement-requests', 'edit'],
+    async (payload: { assigneeId: string }) => {
+      const { data } = await assignMemberToRR(reimbursementRequestId, payload);
       return data;
     }
   );

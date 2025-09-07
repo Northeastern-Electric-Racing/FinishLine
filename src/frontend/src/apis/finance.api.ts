@@ -105,6 +105,16 @@ export const editReimbursementRequest = (id: string, formData: EditReimbursement
 };
 
 /**
+ * Assigns a member to a specific reimbursement request
+ * @param rrId the id of the reimbursement request
+ * @param assigneeId the id of the user being assigned
+ * @returns the updated rr
+ */
+export const assignMemberToRR = (rrId: string, payload: { assigneeId: string }) => {
+  return axios.post(apiUrls.financeAssignMemberToRR(rrId), payload);
+};
+
+/**
  * Deletes a reimbursement request
  *
  * @param id the id of the reimbursement request to delete
