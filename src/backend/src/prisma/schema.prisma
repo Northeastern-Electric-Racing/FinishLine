@@ -1440,7 +1440,7 @@ model Ruleset {
   name            String
   dateCreated     DateTime     @default(now())
   active          Boolean
-  rule            Rule[]
+  rules           Rule[]
   rulesetTypeId   String
   rulesetType     Ruleset_Type @relation(name: "rulesetFileType", fields: [rulesetTypeId], references: [rulesetTypeId])
   carId           String
