@@ -196,14 +196,11 @@ export default class DesignReviewsService {
     for (const memberUserSetting of memberUserSettings) {
       if (memberUserSetting.slackId) {
         try {
-          if (!project) {
-            throw new Error('Could not find work package project');
-          }
           await sendSlackDesignReviewConfirmNotification(
             memberUserSetting.slackId,
             designReview.designReviewId,
             designReview.wbsElement.name,
-            project.wbsElement.name
+            project?.wbsElement.name ?? ''
           );
         } catch (err: unknown) {
           if (err instanceof Error) {

@@ -1,19 +1,12 @@
-import { yupResolver } from '@hookform/resolvers/yup';
 import { Autocomplete, FormControl, FormLabel, TextField } from '@mui/material';
-import { useForm } from 'react-hook-form';
-import * as yup from 'yup';
-import NERFormModal from '../../../components/NERFormModal';
 import { useAssignMemberToRR } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { ReimbursementRequest } from 'shared';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useAllUsers } from '../../../hooks/users.hooks';
-
-const schema = yup.object().shape({
-  assigneeId: yup.string().required()
-});
+import NERModal from '../../../components/NERModal';
 
 interface AssignFinanceMemberModalProps {
   modalShow: boolean;
@@ -28,22 +21,21 @@ const AssignFinanceMemberModal = ({ modalShow, onHide, reimbursementRequest }: A
 
   const [userId, setUserId] = useState<string>();
 
+  useEffect(() => {
+    if (reimbursementRequest.assignee) {
+      setUserId(reimbursementRequest.assignee.userId);
+    }
+  }, [reimbursementRequest]);
+
   if (usersIsError) return <ErrorPage message={usersError?.message} />;
   if (usersLoading || !users) return <LoadingIndicator />;
 
-  const {
-    handleSubmit,
-    control,
-    formState: { errors, isValid },
-    reset
-  } = useForm<{ assigneeId: string }>({
-    resolver: yupResolver(schema),
-    mode: 'onChange'
-  });
-
-  const onSubmit = async (data: { assigneeId: string }) => {
+  const onSubmit = async () => {
     try {
-      await assignMember(data);
+      if (!userId) {
+        throw new Error('Must select a user to assign');
+      }
+      await assignMember({ assigneeId: userId });
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -53,21 +45,16 @@ const AssignFinanceMemberModal = ({ modalShow, onHide, reimbursementRequest }: A
   };
 
   return (
-    <NERFormModal
+    <NERModal
       open={modalShow}
       onHide={onHide}
-      title="Add SABO Number"
-      reset={reset}
-      handleUseFormSubmit={handleSubmit}
-      onFormSubmit={onSubmit}
-      disabled={!isValid}
-      formId="add-sabo-number"
-      paperProps={{
-        width: '100%'
-      }}
+      title={`Assign user to Reimbursement Request #${reimbursementRequest.identifier}`}
+      onSubmit={onSubmit}
+      disabled={!userId}
+      submitText="Submit"
     >
       <FormControl fullWidth>
-        <FormLabel>Assignees</FormLabel>
+        <FormLabel>Assignee</FormLabel>
         <Autocomplete
           options={users}
           getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
@@ -75,10 +62,10 @@ const AssignFinanceMemberModal = ({ modalShow, onHide, reimbursementRequest }: A
           onChange={(_event, value) => {
             setUserId(value?.userId);
           }}
-          renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Select User(s)" error={false} />}
+          renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Select User" error={false} />}
         />
       </FormControl>
-    </NERFormModal>
+    </NERModal>
   );
 };
 
