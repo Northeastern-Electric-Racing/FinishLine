@@ -17,8 +17,6 @@ export interface RulesetType {
   name: string;
   lastUpdated: Date;
   revisionFiles: Ruleset[];
-  createdBy: User;
-  deletedBy?: User;
 }
 
 export interface Ruleset {
@@ -33,8 +31,6 @@ export interface Ruleset {
     carId: string;
     name: string;
   };
-  createdBy: User;
-  deletedBy?: User;
 }
 
 export interface Rule {
@@ -57,9 +53,6 @@ export interface Rule {
   dateCreated: Date;
   dateUpdated?: Date;
   dateDeleted?: Date;
-  createdBy: User;
-  updatedBy?: User;
-  deletedBy?: User;
 }
 
 export interface RuleStatusChange {
@@ -67,7 +60,6 @@ export interface RuleStatusChange {
   projectRule: ProjectRule;
   userUpdated: User;
   updatedAt: Date;
-  oldStatus?: RuleCompletion;
   newStatus: RuleCompletion;
   note: string;
 }
