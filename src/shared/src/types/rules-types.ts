@@ -50,9 +50,6 @@ export interface Rule {
   referencedRules: Rule[];
   referencedBy: Rule[];
   projects: ProjectRule[];
-  dateCreated: Date;
-  dateUpdated?: Date;
-  dateDeleted?: Date;
 }
 
 export interface RuleStatusChange {
