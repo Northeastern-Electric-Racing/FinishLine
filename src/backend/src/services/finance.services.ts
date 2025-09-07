@@ -98,7 +98,7 @@ export default class FinanceServices {
         sponsorTierId,
         taxExempt,
         discountCode,
-        sponsorContact,
+        vendorContact: sponsorContact,
         sponsorTasks: {
           create: sponsorTasks.map((task) => ({
             dueDate: task.dueDate,
@@ -580,7 +580,7 @@ export default class FinanceServices {
             })
           )
         },
-        sponsorContact,
+        vendorContact: sponsorContact,
         taxExempt,
         discountCode
       },
