@@ -1,5 +1,5 @@
 import { Box, Button, Menu, MenuItem, ListItemIcon, Typography, FormControlLabel, Checkbox } from '@mui/material';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { SearchBar } from '../../components/SearchBar';
 import { NERButton } from '../../components/NERButton';
@@ -13,6 +13,7 @@ import ReimbursementRequestTable from './ReimbursementRequestsSection';
 import { useToast } from '../../hooks/toasts.hooks';
 import {
   useAllReimbursementRequests,
+  useCurrentUserAssignedReimbursementRequests,
   useCurrentUserReimbursementRequests,
   useDownloadCSVFileOfReimbursementRequests
 } from '../../hooks/finance.hooks';
@@ -97,17 +98,36 @@ const ReimbursementRequests: React.FC = () => {
   );
 
   const {
-    data: userReimbursementRequests,
-    refetch: refetchUserReimbursementRequests,
-    isError: userReimbursementRequestIsError,
-    error: userReimbursementRequestError
+    data: createdReimbursementRequests,
+    refetch: refetchCreatedReimbursementRequests,
+    isError: createdReimbursementRequestIsError,
+    error: createdReimbursementRequestError
   } = useCurrentUserReimbursementRequests();
+  const {
+    data: assignedReimbursementRequests,
+    refetch: refetchAssignedReimbursementRequests,
+    isError: assignedReimbursementRequestIsError,
+    error: assignedReimbursementRequestError
+  } = useCurrentUserAssignedReimbursementRequests();
   const {
     data: allReimbursementRequests,
     refetch: refetchAllReimbursementRequests,
     isError: allReimbursementRequestsIsError,
     error: allReimbursementRequestsError
   } = useAllReimbursementRequests();
+
+  const userReimbursementRequests = useMemo(() => {
+    const combined = [...(createdReimbursementRequests ?? []), ...(assignedReimbursementRequests ?? [])];
+    const uniqueMap = new Map();
+
+    combined.forEach((item) => {
+      if (!uniqueMap.has(item.reimbursementRequestId)) {
+        uniqueMap.set(item.reimbursementRequestId, item);
+      }
+    });
+
+    return Array.from(uniqueMap.values());
+  }, [createdReimbursementRequests, assignedReimbursementRequests]);
 
   const [searchText, setSearchText] = useState<string>('');
   const [anchorFilterEl, setAnchorFilterEl] = useState<null | HTMLElement>(null);
@@ -127,7 +147,8 @@ const ReimbursementRequests: React.FC = () => {
   };
 
   if (isFinance && allReimbursementRequestsIsError) return <ErrorPage message={allReimbursementRequestsError?.message} />;
-  if (userReimbursementRequestIsError) return <ErrorPage message={userReimbursementRequestError?.message} />;
+  if (assignedReimbursementRequestIsError) return <ErrorPage message={assignedReimbursementRequestError?.message} />;
+  if (createdReimbursementRequestIsError) return <ErrorPage message={createdReimbursementRequestError?.message} />;
 
   const filterMenu = (
     <Menu
@@ -260,15 +281,16 @@ const ReimbursementRequests: React.FC = () => {
       {canViewAllReimbursementRequests && SearchAndFilterBar}
       <Box sx={{ position: 'relative', top: tableOffset }}>
         <ReimbursementRequestTable
-          userReimbursementRequests={userReimbursementRequests ?? []}
+          userReimbursementRequests={userReimbursementRequests}
           allReimbursementRequests={allReimbursementRequests ?? []}
           searchText={searchText}
           statuses={selectedStatuses}
           startDate={startDate}
           endDate={endDate}
           onCloseSidePage={() => {
-            refetchUserReimbursementRequests();
+            refetchCreatedReimbursementRequests();
             refetchAllReimbursementRequests();
+            refetchAssignedReimbursementRequests();
           }}
         />
       </Box>

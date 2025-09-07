@@ -161,10 +161,19 @@ export const getSingleReimbursementRequest = (id: string) => {
 };
 
 /**
- * Get the reimbursement requests for the current user
+ * Get the reimbursement requests created by the current user
  */
 export const getCurrentUserReimbursementRequests = () => {
   return axios.get(apiUrls.financeGetUserReimbursementRequest(), {
+    transformResponse: (data) => JSON.parse(data).map(reimbursementRequestTransformer)
+  });
+};
+
+/**
+ * Get the reimbursement requests assigned to the current user
+ */
+export const getCurrentUserAssignedReimbursementRequests = () => {
+  return axios.get(apiUrls.financeGetUserAssignedReimbursementRequest(), {
     transformResponse: (data) => JSON.parse(data).map(reimbursementRequestTransformer)
   });
 };

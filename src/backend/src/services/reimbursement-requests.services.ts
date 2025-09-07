@@ -91,6 +91,23 @@ export default class ReimbursementRequestService {
   }
 
   /**
+   * Returns all reimbursement requests that are assigned to the given user in the organization
+   * @param assignee the assignee
+   * @param organization the organization
+   * @returns the reimbursement requests assigned to that user
+   */
+  static async getUserAssignedReimbursementRequests(
+    assignee: User,
+    organization: Organization
+  ): Promise<ReimbursementRequest[]> {
+    const assignedReimbursementRequests = await prisma.reimbursement_Request.findMany({
+      where: { dateDeleted: null, assigneeId: assignee.userId, organizationId: organization.organizationId },
+      ...getReimbursementRequestQueryArgs(organization.organizationId)
+    });
+    return assignedReimbursementRequests.map(reimbursementRequestTransformer);
+  }
+
+  /**
    * Returns all reimbursement requests in the database that are created by any user in the given user's team and for the currently selected organization.
    * @param recipient The user retrieving their teams reimbursement requests
    * @param organizationId The organization the user is currently in

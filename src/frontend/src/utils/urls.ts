@@ -167,6 +167,7 @@ const getAllAccountCodes = () => `${financeEndpoints()}/account-codes`;
 const getAllVendors = () => `${financeEndpoints()}/vendors`;
 const financeUploadReceipt = (id: string) => `${financeEndpoints()}/${id}/upload-receipt`;
 const financeGetUserReimbursementRequest = () => `${financeEndpoints()}/current-user`;
+const financeGetUserAssignedReimbursementRequest = () => `${financeEndpoints()}/assigned-user`;
 const financeGetUserReimbursements = () => `${financeEndpoints()}/reimbursements/current-user`;
 const financeGetAllReimbursements = () => `${financeEndpoints()}/reimbursements`;
 const financeReportRefund = () => `${financeEndpoints()}/reimburse`;
@@ -545,6 +546,7 @@ export const apiUrls = {
   financeEndpoints,
   financeUploadReceipt,
   financeGetUserReimbursementRequest,
+  financeGetUserAssignedReimbursementRequest,
   financeGetUserReimbursements,
   financeGetAllReimbursements,
   financeReportRefund,

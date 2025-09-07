@@ -241,22 +241,16 @@ const ReimbursementRequestInfo = ({
             }}
           >
             <TableRow>
-              {headCells.map(
-                (headCell) =>
-                  (currentTab === 1 ||
-                    (headCell.id !== 'submitter' &&
-                      headCell.id !== 'refundSource' &&
-                      headCell.id !== 'financeMemberAssigned')) && (
-                    <ColumnHeader
-                      id={headCell.id}
-                      title={headCell.label}
-                      setAscendingOrder={setAscendingOrder}
-                      isAscendingOrder={isAscendingOrder}
-                      setOrderBy={setOrderBy}
-                      orderBy={orderBy}
-                    />
-                  )
-              )}
+              {headCells.map((headCell) => (
+                <ColumnHeader
+                  id={headCell.id}
+                  title={headCell.label}
+                  setAscendingOrder={setAscendingOrder}
+                  isAscendingOrder={isAscendingOrder}
+                  setOrderBy={setOrderBy}
+                  orderBy={orderBy}
+                />
+              ))}
               <TableCell align="center" />
             </TableRow>
           </TableHead>
@@ -285,13 +279,13 @@ const ReimbursementRequestInfo = ({
                       {cleanReimbursementRequestStatus(row.status)}
                     </Box>
                   </TableCell>
-                  {currentTab === 1 && <TableCell align="center">{fullNamePipe(row.submitter)}</TableCell>}
+                  <TableCell align="center">{fullNamePipe(row.submitter)}</TableCell>
                   <TableCell align="center">{`$${centsToDollar(row.amount)}`}</TableCell>
                   <TableCell align="center">{undefinedPipe(row.identifier)}</TableCell>
                   <TableCell align="center">{undefinedPipe(row.saboId)}</TableCell>
                   <TableCell align="center">{datePipe(row.dateSubmitted)}</TableCell>
                   <TableCell align="center">{dateUndefinedPipe(row.dateSubmittedToSabo)}</TableCell>
-                  {currentTab === 1 && <TableCell align="center">{fullNamePipe(row.financeMemberAssigned)}</TableCell>}
+                  <TableCell align="center">{fullNamePipe(row.financeMemberAssigned)}</TableCell>
                   <TableCell align="center">
                     {
                       <Button

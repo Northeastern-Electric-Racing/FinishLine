@@ -63,7 +63,8 @@ import {
   deleteOtherProductReason,
   deleteSponsorTier,
   editSponsorTier,
-  assignMemberToRR
+  assignMemberToRR,
+  getCurrentUserAssignedReimbursementRequests
 } from '../apis/finance.api';
 import {
   IndexCode,
@@ -402,11 +403,21 @@ export const useGetAllAccountCodes = () => {
 };
 
 /**
- * Custom React Hook to get the reimbursement requests for the current user
+ * Custom React Hook to get the reimbursement requests created by the current user
  */
 export const useCurrentUserReimbursementRequests = () => {
   return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user'], async () => {
     const { data } = await getCurrentUserReimbursementRequests();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get the reimbursement requests assigned to the current user
+ */
+export const useCurrentUserAssignedReimbursementRequests = () => {
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user'], async () => {
+    const { data } = await getCurrentUserAssignedReimbursementRequests();
     return data;
   });
 };
