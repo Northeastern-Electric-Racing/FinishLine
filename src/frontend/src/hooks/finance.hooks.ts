@@ -142,7 +142,7 @@ export interface SponsorPayload {
   activeYears: number[];
   sponsorTierId: string;
   taxExempt: boolean;
-  vendorContact: string;
+  sponsorContact: string;
   sponsorTasks: CreateSponsorTask[];
   discountCode?: string;
 }

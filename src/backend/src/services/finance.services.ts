@@ -52,7 +52,7 @@ export default class FinanceServices {
    * @param sponsorTierId The ID of the sponsor's tier.
    * @param taxExempt Boolean indicating if the sponsor is tax-exempt.
    * @param discountCode The discount code associated with the sponsor.
-   * @param vendorContact The contact information for the sponsor's vendor.
+   * @param sponsorContact The contact information for the sponsor.
    * @param sponsorTasks An array of sponsor tasks associated with the sponsor.
    * @param organization The organization for which the sponsor is being created.
    *
@@ -69,7 +69,7 @@ export default class FinanceServices {
     activeYears: number[],
     sponsorTierId: string,
     taxExempt: boolean,
-    vendorContact: string,
+    sponsorContact: string,
     sponsorTasks: CreateSponsorTask[],
     organization: Organization,
     discountCode?: string
@@ -98,7 +98,7 @@ export default class FinanceServices {
         sponsorTierId,
         taxExempt,
         discountCode,
-        vendorContact,
+        vendorContact: sponsorContact,
         sponsorTasks: {
           create: sponsorTasks.map((task) => ({
             dueDate: task.dueDate,
@@ -487,7 +487,7 @@ export default class FinanceServices {
    * @param sponsorTierId The ID of the sponsor's tier.
    * @param taxExempt Boolean indicating if the sponsor is tax-exempt.
    * @param discountCode The discount code associated with the sponsor.
-   * @param vendorContact The contact information for the sponsor's vendor.
+   * @param sponsorContact The contact information for the sponsor.
    * @param sponsorTasks An array of sponsor tasks associated with the sponsor.
    * @param organization The organization for which the sponsor is being edited.
    * @returns the edited sponsor.
@@ -503,7 +503,7 @@ export default class FinanceServices {
     joinDate: Date,
     activeYears: number[],
     sponsorTierId: string,
-    vendorContact: string,
+    sponsorContact: string,
     taxExempt: boolean,
     sponsorTasks: CreateSponsorTask[],
     discountCode?: string
@@ -580,7 +580,7 @@ export default class FinanceServices {
             })
           )
         },
-        vendorContact,
+        vendorContact: sponsorContact,
         taxExempt,
         discountCode
       },
