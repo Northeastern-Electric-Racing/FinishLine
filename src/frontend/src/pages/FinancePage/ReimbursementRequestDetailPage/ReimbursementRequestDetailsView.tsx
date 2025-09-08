@@ -463,7 +463,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     { label: 'Purchased From', icon: <StoreIcon fontSize="small" /> },
     { label: 'SABO Number', icon: <SellIcon fontSize="small" /> },
     { label: 'Refund Source', icon: <CurrencyExchangeIcon fontSize="small" /> },
-    { label: 'Expense Type', icon: <CurrencyExchangeIcon fontSize="small" /> }
+    { label: 'Expense Type', icon: <CurrencyExchangeIcon fontSize="small" /> },
+    { label: 'Assigned To', icon: <PersonOutlineIcon fontSize="small" /> }
   ];
 
   // grab all unique refund source names
@@ -497,7 +498,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     {
       content: refundSourceNames.join(', ')
     },
-    { content: accountCodePipe(reimbursementRequest.accountCode) }
+    { content: accountCodePipe(reimbursementRequest.accountCode) },
+    { content: fullNamePipe(reimbursementRequest.assignee) }
   ];
 
   const { id } = useParams<{ id: string }>();

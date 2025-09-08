@@ -416,7 +416,7 @@ export const useCurrentUserReimbursementRequests = () => {
  * Custom React Hook to get the reimbursement requests assigned to the current user
  */
 export const useCurrentUserAssignedReimbursementRequests = () => {
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user'], async () => {
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'assignee'], async () => {
     const { data } = await getCurrentUserAssignedReimbursementRequests();
     return data;
   });

@@ -58,7 +58,7 @@ const AssignFinanceMemberModal = ({ modalShow, onHide, reimbursementRequest }: A
         <Autocomplete
           options={users}
           getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
-          value={users.find((user) => user.userId == userId)}
+          value={users.find((user) => user.userId === userId)}
           onChange={(_event, value) => {
             setUserId(value?.userId);
           }}
