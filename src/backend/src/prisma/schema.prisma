@@ -1453,7 +1453,7 @@ model Ruleset {
 
 model Rule {
   ruleId          String         @id @default(uuid())
-  ruleCode        String?
+  ruleCode        String
   ruleContent     String
   imageFileIds    String[]
   rulesetId       String
@@ -1474,6 +1474,7 @@ model Rule {
   deletedByUserId String?
   deletedBy       User?          @relation(name: "ruleDeletor", fields: [deletedByUserId], references: [userId])
 
+  @@unique([rulesetId, ruleCode])
   @@index([parentRuleId, rulesetId, ruleCode])
 }
 
@@ -1495,6 +1496,7 @@ model Project_Rule {
   rule          Rule                 @relation(name: "rulesInProject", fields: [ruleId], references: [ruleId])
   projectId     String
   project       Project              @relation(name: "projectsForRule", fields: [projectId], references: [projectId])
+  currentStatus Rule_Completion
   statusHistory Rule_Status_Change[] @relation(name: "ruleStatusHistory")
 
   @@unique([ruleId, projectId])

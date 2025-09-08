@@ -4,7 +4,6 @@
  */
 
 import { User } from './user-types';
-import { ProjectPreview } from './project-types';
 
 export enum RuleCompletion {
   REVIEW = 'REVIEW',
@@ -35,7 +34,7 @@ export interface Ruleset {
 
 export interface Rule {
   ruleId: string;
-  ruleCode?: string;
+  ruleCode: string;
   ruleContent: string;
   imageFileIds: string[];
   ruleset: {
@@ -46,15 +45,15 @@ export interface Rule {
     ruleId: string;
     ruleCode?: string;
   };
-  subRules: Rule[];
-  referencedRules: Rule[];
-  referencedBy: Rule[];
+  subRuleIds: string[];
+  referencedRules: { ruleId: string; ruleCode: string }[];
+  referencedBy: { ruleId: string; ruleCode: string }[];
   projects: ProjectRule[];
 }
 
 export interface RuleStatusChange {
   historyId: string;
-  projectRule: ProjectRule;
+  projectRuleId: string;
   userUpdated: User;
   updatedAt: Date;
   newStatus: RuleCompletion;
@@ -63,7 +62,8 @@ export interface RuleStatusChange {
 
 export interface ProjectRule {
   projectRuleId: string;
-  rule: Rule;
-  project: ProjectPreview;
+  ruleId: string;
+  projectId: string;
+  currentStatus: RuleCompletion;
   statusHistory: RuleStatusChange[];
 }
