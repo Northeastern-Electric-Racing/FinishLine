@@ -65,7 +65,10 @@ reimbursementRequestsRouter.post(
 
 reimbursementRequestsRouter.get('/current-user', ReimbursementRequestController.getCurrentUserReimbursementRequests);
 
-reimbursementRequestsRouter.get('/assigned-user', ReimbursementRequestController.getCurrentUserAssignedReimbursementRequests);
+reimbursementRequestsRouter.get(
+  '/assigned-user',
+  ReimbursementRequestController.getCurrentUserAssignedReimbursementRequests
+);
 
 reimbursementRequestsRouter.get('/reimbursements/current-user', ReimbursementRequestController.getCurrentUserReimbursements);
 
@@ -128,7 +131,7 @@ reimbursementRequestsRouter.post(
   nonEmptyString(body('assigneeId')),
   validateInputs,
   ReimbursementRequestController.assignFinanceMember
-)
+);
 
 reimbursementRequestsRouter.get('/pending-advisor/list', ReimbursementRequestController.getPendingAdvisorList);
 
