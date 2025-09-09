@@ -1,0 +1,69 @@
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
+import { User } from './user-types';
+
+export enum RuleCompletion {
+  REVIEW = 'REVIEW',
+  INCOMPLETE = 'INCOMPLETE',
+  COMPLETED = 'COMPLETED'
+}
+
+export interface RulesetType {
+  rulesetTypeId: string;
+  name: string;
+  lastUpdated: Date;
+  revisionFiles: Ruleset[];
+}
+
+export interface Ruleset {
+  rulesetId: string;
+  fileId: string;
+  name: string;
+  dateCreated: Date;
+  active: boolean;
+  rulesetType: RulesetType;
+  rules: Rule[];
+  car: {
+    carId: string;
+    name: string;
+  };
+}
+
+export interface Rule {
+  ruleId: string;
+  ruleCode: string;
+  ruleContent: string;
+  imageFileIds: string[];
+  ruleset: {
+    rulesetId: string;
+    name: string;
+  };
+  parentRule?: {
+    ruleId: string;
+    ruleCode: string;
+  };
+  subRuleIds: string[];
+  referencedRules: { ruleId: string; ruleCode: string }[];
+  referencedBy: { ruleId: string; ruleCode: string }[];
+  projects: ProjectRule[];
+}
+
+export interface RuleStatusChange {
+  historyId: string;
+  projectRuleId: string;
+  userUpdated: User;
+  updatedAt: Date;
+  newStatus: RuleCompletion;
+  note: string;
+}
+
+export interface ProjectRule {
+  projectRuleId: string;
+  ruleId: string;
+  projectId: string;
+  currentStatus: RuleCompletion;
+  statusHistory: RuleStatusChange[];
+}

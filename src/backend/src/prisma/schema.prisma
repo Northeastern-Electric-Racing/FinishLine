@@ -151,6 +151,12 @@ enum Review_Status {
   APPROVED
 }
 
+enum Rule_Completion {
+  REVIEW // all rules start as REVIEW
+  INCOMPLETE // rules that need an action
+  COMPLETED
+}
+
 model User {
   userId                String                @id @default(uuid())
   firstName             String
@@ -257,6 +263,14 @@ model User {
   reimbursementRequestComments            Reimbursement_Request_Comment[]      @relation(name: "createdReimbursementRequestComments")
   deletedReimbursementRequestComments     Reimbursement_Request_Comment[]      @relation(name: "deletedReimbursementRequestComments")
   deletedSponsorTiers                     Sponsor_Tier[]
+  ruleStatusChanges                       Rule_Status_Change[]                 @relation(name: "ruleStatusUpdater")
+  createdRulesetTypes                     Ruleset_Type[]                       @relation(name: "rulesetTypeCreator")
+  deletedRulesetTypes                     Ruleset_Type[]                       @relation(name: "rulesetTypeDeleter")
+  createdRulesets                         Ruleset[]                            @relation(name: "rulesetCreator")
+  deletedRulesets                         Ruleset[]                            @relation(name: "rulesetDeleter")
+  createdRules                            Rule[]                               @relation(name: "ruleCreator")
+  updatedRules                            Rule[]                               @relation(name: "ruleUpdater")
+  deletedRules                            Rule[]                               @relation(name: "ruleDeletor")
 }
 
 model Role {
@@ -494,6 +508,7 @@ model Project {
   featuredByOrganization   Organization?  @relation(fields: [featuredByOrganizationId], references: [organizationId])
   abbreviation             String?
   parts                    Part[]
+  rules                    Project_Rule[] @relation(name: "projectsForRule")
 }
 
 model Work_Package {
@@ -1045,6 +1060,7 @@ model Car {
   wbsElementId           String                     @unique
   wbsElement             WBS_Element                @relation(fields: [wbsElementId], references: [wbsElementId])
   linkedGraphs           Graph[]                    @relation(name: "graphCars")
+  rulesets               Ruleset[]                  @relation(name: "rulesetCar")
 }
 
 model Organization {
@@ -1405,4 +1421,82 @@ model Reimbursement_Request_Comment {
   comment                       String
   reimbursementRequestId        String
   reimbursementRequest          Reimbursement_Request @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
+}
+
+model Ruleset_Type {
+  rulesetTypeId   String    @id @default(uuid())
+  name            String
+  lastUpdated     DateTime  @updatedAt
+  revisionFiles   Ruleset[] @relation(name: "rulesetFileType")
+  createdByUserId String
+  createdBy       User      @relation(name: "rulesetTypeCreator", fields: [createdByUserId], references: [userId])
+  deletedByUserId String?
+  deletedBy       User?     @relation(name: "rulesetTypeDeleter", fields: [deletedByUserId], references: [userId])
+}
+
+model Ruleset {
+  fileId          String
+  rulesetId       String       @id @default(uuid())
+  name            String
+  dateCreated     DateTime     @default(now())
+  active          Boolean
+  rules           Rule[]
+  rulesetTypeId   String
+  rulesetType     Ruleset_Type @relation(name: "rulesetFileType", fields: [rulesetTypeId], references: [rulesetTypeId])
+  carId           String
+  car             Car          @relation(name: "rulesetCar", fields: [carId], references: [carId])
+  createdByUserId String
+  createdBy       User         @relation(name: "rulesetCreator", fields: [createdByUserId], references: [userId])
+  deletedByUserId String?
+  deletedBy       User?        @relation(name: "rulesetDeleter", fields: [deletedByUserId], references: [userId])
+}
+
+model Rule {
+  ruleId          String         @id @default(uuid())
+  ruleCode        String
+  ruleContent     String
+  imageFileIds    String[]
+  rulesetId       String
+  ruleset         Ruleset        @relation(fields: [rulesetId], references: [rulesetId])
+  parentRuleId    String?
+  parentRule      Rule?          @relation(name: "subRules", fields: [parentRuleId], references: [ruleId])
+  subRules        Rule[]         @relation(name: "subRules")
+  referencedRule  Rule[]         @relation(name: "ruleReferences")
+  referencedBy    Rule[]         @relation(name: "ruleReferences")
+  projects        Project_Rule[] @relation(name: "rulesInProject")
+  dateCreated     DateTime       @default(now())
+  dateUpdated     DateTime?      @updatedAt
+  dateDeleted     DateTime?
+  createdByUserId String
+  createdBy       User           @relation(name: "ruleCreator", fields: [createdByUserId], references: [userId])
+  updatedByUserId String?
+  updatedBy       User?          @relation(name: "ruleUpdater", fields: [updatedByUserId], references: [userId])
+  deletedByUserId String?
+  deletedBy       User?          @relation(name: "ruleDeletor", fields: [deletedByUserId], references: [userId])
+
+  @@unique([rulesetId, ruleCode])
+  @@index([parentRuleId, rulesetId, ruleCode])
+}
+
+model Rule_Status_Change {
+  historyId     String           @id @default(uuid())
+  projectRule   Project_Rule     @relation(name: "ruleStatusHistory", fields: [projectRuleId], references: [projectRuleId])
+  projectRuleId String
+  userUpdatedId String
+  userUpdated   User             @relation(name: "ruleStatusUpdater", fields: [userUpdatedId], references: [userId])
+  updatedAt     DateTime         @default(now())
+  newStatus     Rule_Completion
+  note          String
+}
+
+model Project_Rule {
+  projectRuleId String               @id @default(uuid())
+  ruleId        String
+  rule          Rule                 @relation(name: "rulesInProject", fields: [ruleId], references: [ruleId])
+  projectId     String
+  project       Project              @relation(name: "projectsForRule", fields: [projectId], references: [projectId])
+  currentStatus Rule_Completion
+  statusHistory Rule_Status_Change[] @relation(name: "ruleStatusHistory")
+
+  @@unique([ruleId, projectId])
 }
