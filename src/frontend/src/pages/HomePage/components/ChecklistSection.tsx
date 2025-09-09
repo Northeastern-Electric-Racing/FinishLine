@@ -23,7 +23,11 @@ const ChecklistSection: React.FC<ChecklistSectionProps> = ({ usersChecklists, ch
   return (
     <Box>
       <Grid container>
-        <NERButton href={organization.applicationLink}>APPLY HERE</NERButton>
+        <Grid item xs={12} padding={2}>
+          <NERButton variant="contained" href={organization.applicationLink}>
+            APPLY HERE THEN CONTINUE
+          </NERButton>
+        </Grid>
         {Object.entries(groupedChecklists).map(([checklistName, checklists]) => (
           <Grid item xs={12} padding={2} key={checklistName}>
             <Checklist parentChecklists={checklists} checkedChecklists={checkedChecklists} checklistName={checklistName} />
