@@ -43,7 +43,7 @@ export interface Rule {
   };
   parentRule?: {
     ruleId: string;
-    ruleCode?: string;
+    ruleCode: string;
   };
   subRuleIds: string[];
   referencedRules: { ruleId: string; ruleCode: string }[];

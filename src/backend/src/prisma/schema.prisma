@@ -1485,7 +1485,6 @@ model Rule_Status_Change {
   userUpdatedId String
   userUpdated   User             @relation(name: "ruleStatusUpdater", fields: [userUpdatedId], references: [userId])
   updatedAt     DateTime         @default(now())
-  oldStatus     Rule_Completion?
   newStatus     Rule_Completion
   note          String
 }

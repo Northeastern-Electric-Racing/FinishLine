@@ -51,7 +51,6 @@ CREATE TABLE "Rule_Status_Change" (
     "projectRuleId" TEXT NOT NULL,
     "userUpdatedId" TEXT NOT NULL,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "oldStatus" "Rule_Completion",
     "newStatus" "Rule_Completion" NOT NULL,
     "note" TEXT NOT NULL,
 
