@@ -179,7 +179,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organ
               onSubmenuCollapse={() => handleCloseSubmenu()}
             />
           ))}
-          {onPNMHomePage && (
+          {/* {onPNMHomePage && (
             // Apply button
             <SidebarButton
               onClick={() => {
@@ -189,7 +189,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organ
               label={'Apply'}
               icon={<ArticleIcon sx={{ fontSize: 27 }} style={{ color: theme.palette.text.primary }} />}
             />
-          )}
+          )} */}
           <NavUserMenu open={drawerOpen} />
         </Box>
         <Box justifyContent={drawerOpen ? 'flex-start' : 'center'}>
