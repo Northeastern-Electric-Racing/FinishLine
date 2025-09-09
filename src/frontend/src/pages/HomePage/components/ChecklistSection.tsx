@@ -25,7 +25,7 @@ const ChecklistSection: React.FC<ChecklistSectionProps> = ({ usersChecklists, ch
       <Grid container>
         {organization.applicationLink && (
           <Grid item xs={12} padding={2}>
-            <Typography variant="h3" gutterBottom>
+            <Typography variant="h6" gutterBottom>
               APPLY <ExternalLink link={organization.applicationLink} description="HERE" /> THEN CONTINUE
             </Typography>
           </Grid>
