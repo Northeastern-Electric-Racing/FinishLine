@@ -1,11 +1,10 @@
-import { Box, Grid, Typography } from '@mui/material';
+import { Box, Grid, Link, Typography } from '@mui/material';
 import { groupChecklists } from '../../../utils/onboarding.utils';
 import Checklist from './Checklist';
 import { Checklist as ChecklistType } from 'shared';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import ExternalLink from '../../../components/ExternalLink';
 
 interface ChecklistSectionProps {
   usersChecklists: ChecklistType[];
@@ -25,8 +24,12 @@ const ChecklistSection: React.FC<ChecklistSectionProps> = ({ usersChecklists, ch
       <Grid container>
         {organization.applicationLink && (
           <Grid item xs={12} padding={2}>
-            <Typography variant="h6" gutterBottom>
-              APPLY <ExternalLink link={organization.applicationLink} description="HERE" /> THEN CONTINUE
+            <Typography variant="h5" gutterBottom>
+              APPLY{' '}
+              <Link target="_blank" rel="noopener noreferrer" href={organization.applicationLink}>
+                HERE
+              </Link>{' '}
+              THEN CONTINUE
             </Typography>
           </Grid>
         )}
