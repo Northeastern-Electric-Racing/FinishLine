@@ -11,7 +11,6 @@ import AppAuthenticated from './AppAuthenticated';
 import { useProvideThemeToggle } from '../hooks/theme.hooks';
 import LoadingIndicator from '../components/LoadingIndicator';
 import { useOrganization } from '../hooks/organizations.hooks';
-import Organizations from '../pages/OrganizationPage/Organizations';
 
 const AppPublic: React.FC = () => {
   const auth = useAuth();
@@ -32,7 +31,7 @@ const AppPublic: React.FC = () => {
       }
 
       if (!organization.organizationId) {
-        return <Organizations></Organizations>;
+        return <LoadingIndicator />;
       }
 
       return <AppAuthenticated userId={auth.user.userId} userRole={auth.user.role} />;
