@@ -2,10 +2,10 @@ import { Box, Grid, Typography } from '@mui/material';
 import { groupChecklists } from '../../../utils/onboarding.utils';
 import Checklist from './Checklist';
 import { Checklist as ChecklistType } from 'shared';
-import { NERButton } from '../../../components/NERButton';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
+import ExternalLink from '../../../components/ExternalLink';
 
 interface ChecklistSectionProps {
   usersChecklists: ChecklistType[];
@@ -23,11 +23,13 @@ const ChecklistSection: React.FC<ChecklistSectionProps> = ({ usersChecklists, ch
   return (
     <Box>
       <Grid container>
-        <Grid item xs={12} padding={2}>
-          <NERButton variant="contained" href={organization.applicationLink}>
-            APPLY HERE THEN CONTINUE
-          </NERButton>
-        </Grid>
+        {organization.applicationLink && (
+          <Grid item xs={12} padding={2}>
+            <Typography variant="h3" gutterBottom>
+              APPLY <ExternalLink link={organization.applicationLink} description="HERE" /> THEN CONTINUE
+            </Typography>
+          </Grid>
+        )}
         {Object.entries(groupedChecklists).map(([checklistName, checklists]) => (
           <Grid item xs={12} padding={2} key={checklistName}>
             <Checklist parentChecklists={checklists} checkedChecklists={checkedChecklists} checklistName={checklistName} />
