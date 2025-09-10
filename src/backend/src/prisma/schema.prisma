@@ -822,18 +822,18 @@ model Material {
   userCreated            User                   @relation(fields: [userCreatedId], references: [userId], name: "materialCreator")
   userCreatedId          String
   status                 Material_Status
-  materialType           Material_Type          @relation(fields: [materialTypeId], references: [id])
-  materialTypeId         String
-  manufacturer           Manufacturer           @relation(fields: [manufacturerId], references: [id])
-  manufacturerId         String
-  manufacturerPartNumber String
+  materialType           Material_Type?          @relation(fields: [materialTypeId], references: [id])
+  materialTypeId         String?
+  manufacturer           Manufacturer?           @relation(fields: [manufacturerId], references: [id])
+  manufacturerId         String?
+  manufacturerPartNumber String?
   pdmFileName            String?
-  quantity               Decimal
+  quantity               Decimal?
   unit                   Unit?                  @relation(fields: [unitId], references: [id])
   unitId                 String?
-  price                  Int
-  subtotal               Int
-  linkUrl                String
+  price                  Int?
+  subtotal               Int?
+  linkUrl                String?
   notes                  String?
   reimbursementRequest   Reimbursement_Request? @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
   reimbursementRequestId String?

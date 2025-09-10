@@ -128,15 +128,15 @@ export default class BillOfMaterialsService {
         name,
         assemblyId,
         status,
-        materialTypeId: materialType.id,
-        manufacturerId: manufacturer.id,
-        manufacturerPartNumber,
+        materialTypeId: materialType ? materialType.id : null,
+        manufacturerId: manufacturer ? manufacturer.id : null,
+        manufacturerPartNumber: manufacturerPartNumber ?? null,
         pdmFileName,
-        quantity,
+        quantity: quantity ?? null,
         unitId: unit ? unit.id : null,
-        price,
-        subtotal,
-        linkUrl,
+        price: price ?? null,
+        subtotal: subtotal ?? null,
+        linkUrl: linkUrl ?? null,
         notes,
         dateCreated: new Date(),
         wbsElementId: project.wbsElementId,
@@ -556,14 +556,14 @@ export default class BillOfMaterialsService {
     materialId: string,
     name: string,
     status: Material_Status,
-    materialTypeName: string,
-    manufacturerName: string,
-    manufacturerPartNumber: string,
-    quantity: Decimal,
-    price: number,
-    subtotal: number,
-    linkUrl: string,
     organization: Organization,
+    materialTypeName: string,
+    manufacturerName?: string,
+    manufacturerPartNumber?: string,
+    quantity?: Decimal,
+    price?: number,
+    subtotal?: number,
+    linkUrl?: string,
     notes?: string,
     unitName?: string,
     assemblyId?: string,
@@ -588,7 +588,13 @@ export default class BillOfMaterialsService {
       if (assembly.wbsElementId !== project.wbsElementId) throw new HttpException(400, 'Assembly not found on this project');
     }
 
-    const materialType = await BillOfMaterialsService.getSingleMaterialTypeWithQueryArgs(materialTypeName, organization);
+    let materialType = null;
+
+    if (materialTypeName) {
+      materialType = await BillOfMaterialsService.getSingleMaterialTypeWithQueryArgs(materialTypeName, organization);
+
+      if (!materialType) throw new NotFoundException('Material Type', materialTypeName);
+    }
 
     let unit = null;
     if (unitName) {
@@ -608,21 +614,27 @@ export default class BillOfMaterialsService {
       }
     }
 
-    const manufacturer = await BillOfMaterialsService.getSingleManufacturerWithQueryArgs(manufacturerName, organization);
+    let manufacturer = null;
+
+    if (manufacturerName) {
+      manufacturer = await BillOfMaterialsService.getSingleMaterialTypeWithQueryArgs(manufacturerName, organization);
+
+      if (!manufacturer) throw new NotFoundException('Manufacturer', manufacturerName);
+    }
 
     const updatedMaterial = await prisma.material.update({
       where: { materialId },
       data: {
         name,
         status,
-        materialTypeId: materialType.id,
-        manufacturerId: manufacturer.id,
-        manufacturerPartNumber,
-        quantity,
+        materialTypeId: materialType ? materialType.id : null,
+        manufacturerId: manufacturer ? manufacturer.id : null,
+        manufacturerPartNumber: manufacturerPartNumber ?? null,
+        quantity: quantity ?? null,
         unitId: unit ? unit.id : null,
-        price,
-        subtotal,
-        linkUrl,
+        price: price ?? null,
+        subtotal: subtotal ?? null,
+        linkUrl: linkUrl ?? null,
         notes,
         wbsElementId: project.wbsElementId,
         assemblyId,

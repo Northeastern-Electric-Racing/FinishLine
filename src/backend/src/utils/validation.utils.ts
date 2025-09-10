@@ -197,15 +197,15 @@ export const materialValidators = [
   nonEmptyString(body('name')),
   nonEmptyString(body('assemblyId').optional()),
   isMaterialStatus(body('status')),
-  nonEmptyString(body('materialTypeName')),
-  nonEmptyString(body('manufacturerName')),
-  nonEmptyString(body('manufacturerPartNumber')),
+  nonEmptyString(body('materialTypeName').optional()),
+  nonEmptyString(body('manufacturerName').optional()),
+  nonEmptyString(body('manufacturerPartNumber').optional()),
   nonEmptyString(body('pdmFileName').optional()),
-  decimalMinZero(body('quantity')),
+  decimalMinZero(body('quantity').optional()),
   nonEmptyString(body('unitName')).optional(),
-  intMinZero(body('price')), // in cents
-  intMinZero(body('subtotal')), // in cents
-  nonEmptyString(body('linkUrl')),
+  intMinZero(body('price').optional()), // in cents
+  intMinZero(body('subtotal').optional()), // in cents
+  nonEmptyString(body('linkUrl').optional()),
   nonEmptyString(body('reimbursementRequestId')).optional(),
   body('notes').isString().optional()
 ];

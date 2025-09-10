@@ -367,7 +367,7 @@ export default class ProjectsController {
         price,
         subtotal,
         linkUrl,
-        req.organization,
+        req.organization.organizationId,
         notes,
         unitName,
         assemblyId,
