@@ -8,16 +8,20 @@ import { routes } from '../../../utils/routes';
 import { DatePicker } from '@mui/x-date-pickers';
 import { useGetUsersTeams } from '../../../hooks/teams.hooks';
 import FinanceDashboardTeamView from './FinanceDashboardTeamView';
+import { useGetAllCars } from '../../../hooks/cars.hooks';
+import NERAutocomplete from '../../../components/NERAutocomplete';
 
 interface GeneralFinanceDashboardProps {
   startDate?: Date;
   endDate?: Date;
+  carNumber?: number;
 }
 
-const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ startDate, endDate }) => {
+const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ startDate, endDate, carNumber }) => {
   const [tabIndex, setTabIndex] = useState<number>(0);
   const [startDateState, setStartDateState] = useState<Date | undefined>(startDate);
   const [endDateState, setEndDateState] = useState<Date | undefined>(endDate);
+  const [carNumberState, setCarNumberState] = useState<number | undefined>(carNumber);
 
   const {
     data: allTeams,
@@ -26,13 +30,27 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
     error: allTeamsError
   } = useGetUsersTeams();
 
+  const { data: allCars, isLoading: allCarsIsLoading, isError: allCarsIsError, error: allCarsError } = useGetAllCars();
+
+  if (allCarsIsError) {
+    return <ErrorPage error={allCarsError} />;
+  }
+
   if (allTeamsIsError) {
     return <ErrorPage error={allTeamsError} />;
   }
 
-  if (!allTeams || allTeamsIsLoading) {
+  if (!allTeams || allTeamsIsLoading || !allCars || allCarsIsLoading) {
     return <LoadingIndicator />;
   }
+
+  const carAutocompleteOptions = allCars.map((car) => {
+    return {
+      label: car.name,
+      id: car.id,
+      number: car.wbsNum.carNumber
+    };
+  });
 
   const datePickerStyle = {
     width: 180,
@@ -115,6 +133,17 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
         flexWrap: 'wrap'
       }}
     >
+      <NERAutocomplete
+        id="finance-admin-car-number"
+        onChange={(_event, newValue) => setCarNumberState(newValue ? Number(newValue.id) : undefined)}
+        options={carAutocompleteOptions}
+        size="small"
+        placeholder="Select A Car"
+        value={
+          carNumberState !== undefined ? carAutocompleteOptions.find((car) => car.id === carNumberState.toString()) : null
+        }
+        sx={datePickerStyle}
+      />
       <DatePicker
         label="Start Date"
         value={startDateState}
@@ -163,7 +192,12 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
     return (
       <PageLayout title={`Finance Budget Overview - ${allTeams[0].teamName}`} headerRight={dates}>
         <Box mt={4}></Box>
-        <FinanceDashboardTeamView teamId={allTeams[0].teamId} />
+        <FinanceDashboardTeamView
+          teamId={allTeams[0].teamId}
+          startDate={startDateState}
+          endDate={endDateState}
+          carNumber={carNumberState}
+        />
       </PageLayout>
     );
   }
@@ -194,7 +228,14 @@ const GeneralFinanceDashboard: React.FC<GeneralFinanceDashboardProps> = ({ start
         </Box>
       }
     >
-      {selectedTab && <FinanceDashboardTeamView teamId={selectedTab.tabUrlValue} />}
+      {selectedTab && (
+        <FinanceDashboardTeamView
+          teamId={selectedTab.tabUrlValue}
+          startDate={startDateState}
+          endDate={endDateState}
+          carNumber={carNumberState}
+        />
+      )}
     </PageLayout>
   );
 };
