@@ -131,20 +131,30 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   }, [hasPreFilledData, refundSources, setValue]);
 
   useEffect(() => {
-    if (firstRefundSourceId) {
-      if (secondRefundSourceId && firstRefundSourceId === secondRefundSourceId) {
-        setValue('secondaryAccount', undefined);
+    if (!selectedAccountCode) {
+      setValue('indexCodeId', '');
+      setValue('secondaryAccount', undefined);
+      setHasConfirmedFinance(false);
 
-        reimbursementProducts.forEach((_, index) => {
-          setValue(`reimbursementProducts.${index}.refundSources.${0}.amount`, 0);
-          setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, 0);
-          setValue(`reimbursementProducts.${index}.cost`, 0);
-        });
-      }
+      reimbursementProducts.forEach((_, index) => {
+        setValue(`reimbursementProducts.${index}.refundSources.${0}.amount`, 0);
+        setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, 0);
+        setValue(`reimbursementProducts.${index}.cost`, 0);
+      });
+      return;
     }
-  }, [firstRefundSourceId, secondRefundSourceId, reimbursementProducts, setValue, watch]);
 
-  // for setting the first refund source in the array
+    if (firstRefundSourceId && secondRefundSourceId && firstRefundSourceId === secondRefundSourceId) {
+      setValue('secondaryAccount', undefined);
+
+      reimbursementProducts.forEach((_, index) => {
+        setValue(`reimbursementProducts.${index}.refundSources.${0}.amount`, 0);
+        setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, 0);
+        setValue(`reimbursementProducts.${index}.cost`, 0);
+      });
+    }
+  }, [selectedAccountCode, firstRefundSourceId, secondRefundSourceId, reimbursementProducts, setValue]);
+
   useEffect(() => {
     if (!firstRefundSourceId || hasConfirmedFinance) return;
 
