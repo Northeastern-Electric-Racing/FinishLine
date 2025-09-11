@@ -52,8 +52,7 @@ async function main() {
     
     console.log('\n📦 Dumping and restoring database...');
     
-    // Use --no-privileges and --no-owner to avoid permission issues
-    const dumpCommand = `pg_dump "${sourceUrl}" --no-privileges --no-owner --clean --if-exists | psql "${targetUrl}"`;
+    const dumpCommand = `pg_dump "${sourceUrl}" --no-acl --no-owner --clean --if-exists | psql "${targetUrl}"`;
     
     execSync(dumpCommand, { stdio: 'inherit' });
     

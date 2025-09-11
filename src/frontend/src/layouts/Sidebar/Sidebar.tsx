@@ -37,10 +37,9 @@ interface SidebarProps {
   setDrawerOpen: (open: boolean) => void;
   moveContent: boolean;
   setMoveContent: (move: boolean) => void;
-  organization?: Organization;
 }
 
-const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organization }: SidebarProps) => {
+const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: SidebarProps) => {
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
   const { onPNMHomePage, onOnboardingHomePage } = useHomePageContext();
   const theme = useTheme();

@@ -48,18 +48,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
   const [moveContent, setMoveContent] = useState(false);
   const { onGuestHomePage } = useHomePageContext();
 
-  const {
-    data: organization,
-    isLoading: organizationIsLoading,
-    isError: organizationIsError,
-    error: organizationError
-  } = useCurrentOrganization();
-
-  if (organizationIsError) {
-    return <ErrorPage message={organizationError.message} />;
-  }
-
-  if (isLoading || !userSettingsData || !organization || organizationIsLoading) return <LoadingIndicator />;
+  if (isLoading || !userSettingsData) return <LoadingIndicator />;
 
   if (isError) {
     if ((error as Error).message === 'Authentication Failed: Invalid JWT!') {
@@ -106,7 +95,6 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             setDrawerOpen={setDrawerOpen}
             moveContent={moveContent}
             setMoveContent={setMoveContent}
-            organization={organization}
           />
         </>
       )}

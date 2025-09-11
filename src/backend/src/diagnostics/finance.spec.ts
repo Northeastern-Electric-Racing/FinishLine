@@ -1,3 +1,4 @@
+import { SponsorTier } from 'shared';
 import prisma from '../prisma/prisma';
 import FinanceServices from '../services/finance.services';
 import { BenchSpec } from './bench-types';
@@ -148,7 +149,7 @@ export const financeSpecs: BenchSpec<any>[] = [
     },
     async run({ submitter, organization, colorHexCode }) {
       const name = `Bench Tier ${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-      await FinanceServices.createSponsorTier(submitter, name, organization, colorHexCode);
+      await FinanceServices.createSponsorTier(submitter, name, organization, colorHexCode, 30);
     }
   },
   {
@@ -157,7 +158,9 @@ export const financeSpecs: BenchSpec<any>[] = [
     async prepare(ctx) {
       const submitter = await prisma.user.findUnique({ where: { userId: ctx.adminUser.userId } });
       if (!submitter) return { skip: 'no admin' };
-      let tier = await prisma.sponsor_Tier.findFirst({ where: { organizationId: ctx.organization.organizationId } });
+      let tier: SponsorTier | null = await prisma.sponsor_Tier.findFirst({
+        where: { organizationId: ctx.organization.organizationId }
+      });
       const org = await prisma.organization.findUnique({ where: { organizationId: ctx.organization.organizationId } });
       if (!org) return { skip: 'could not find org' };
       if (!tier) {
@@ -165,7 +168,8 @@ export const financeSpecs: BenchSpec<any>[] = [
           submitter,
           `Auto Tier ${Math.random().toString(36).slice(2, 6)}`,
           org,
-          '#00FFAA'
+          '#00FFAA',
+          5000
         );
       }
       const assignee = await prisma.user.findFirst({
@@ -295,13 +299,16 @@ export const financeSpecs: BenchSpec<any>[] = [
       });
       const org = await prisma.organization.findUnique({ where: { organizationId: ctx.organization.organizationId } });
       if (!org) return { skip: 'could not find org' };
-      let tier = await prisma.sponsor_Tier.findFirst({ where: { organizationId: ctx.organization.organizationId } });
+      let tier: SponsorTier | null = await prisma.sponsor_Tier.findFirst({
+        where: { organizationId: ctx.organization.organizationId }
+      });
       if (!tier) {
         tier = await FinanceServices.createSponsorTier(
           submitter,
           `Auto Tier ${Math.random().toString(36).slice(2, 6)}`,
           org,
-          '#00FFAA'
+          '#00FFAA',
+          44
         );
       }
       return {
@@ -346,13 +353,16 @@ export const financeSpecs: BenchSpec<any>[] = [
       if (!submitter) return { skip: 'no admin' };
       const org = await prisma.organization.findUnique({ where: { organizationId: ctx.organization.organizationId } });
       if (!org) return { skip: 'could not find org' };
-      let tier = await prisma.sponsor_Tier.findFirst({ where: { organizationId: ctx.organization.organizationId } });
+      let tier: SponsorTier | null = await prisma.sponsor_Tier.findFirst({
+        where: { organizationId: ctx.organization.organizationId }
+      });
       if (!tier) {
         tier = await FinanceServices.createSponsorTier(
           submitter,
           `Auto Tier ${Math.random().toString(36).slice(2, 6)}`,
           org,
-          '#00FFAA'
+          '#00FFAA',
+          67
         );
       }
       return { inputs: { submitter, organization: ctx.organization, sponsorTierId: tier.sponsorTierId } };
@@ -397,13 +407,16 @@ export const financeSpecs: BenchSpec<any>[] = [
       if (!submitter) return { skip: 'no admin' };
       const org = await prisma.organization.findUnique({ where: { organizationId: ctx.organization.organizationId } });
       if (!org) return { skip: 'could not find org' };
-      let tier = await prisma.sponsor_Tier.findFirst({ where: { organizationId: ctx.organization.organizationId } });
+      let tier: SponsorTier | null = await prisma.sponsor_Tier.findFirst({
+        where: { organizationId: ctx.organization.organizationId }
+      });
       if (!tier) {
         tier = await FinanceServices.createSponsorTier(
           submitter,
           `Auto Tier ${Math.random().toString(36).slice(2, 6)}`,
           org,
-          '#00FFAA'
+          '#00FFAA',
+          987
         );
       }
       return { inputs: { submitter, organization: ctx.organization, sponsorTierId: tier.sponsorTierId } };
@@ -440,13 +453,16 @@ export const financeSpecs: BenchSpec<any>[] = [
       if (!submitter) return { skip: 'no admin' };
       const org = await prisma.organization.findUnique({ where: { organizationId: ctx.organization.organizationId } });
       if (!org) return { skip: 'could not find org' };
-      let tier = await prisma.sponsor_Tier.findFirst({ where: { organizationId: ctx.organization.organizationId } });
+      let tier: SponsorTier | null = await prisma.sponsor_Tier.findFirst({
+        where: { organizationId: ctx.organization.organizationId }
+      });
       if (!tier) {
         tier = await FinanceServices.createSponsorTier(
           submitter,
           `Auto Tier ${Math.random().toString(36).slice(2, 6)}`,
           org,
-          '#00FFAA'
+          '#00FFAA',
+          0
         );
       }
       return { inputs: { submitter, organization: ctx.organization, sponsorTierId: tier.sponsorTierId } };
