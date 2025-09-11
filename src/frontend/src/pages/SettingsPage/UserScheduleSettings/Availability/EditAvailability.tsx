@@ -25,7 +25,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
   canChangeDateRange = true
 }) => {
   const [currentlyDisplayedAvailabilities, setCurrentlyDisplayedAvailabilities] = useState(
-    getMostRecentAvailabilities(Array.from(editedAvailabilities.values()), initialDate)
+    Array.from(editedAvailabilities.values())
   );
 
   const [isDragging, setIsDragging] = useState(false);

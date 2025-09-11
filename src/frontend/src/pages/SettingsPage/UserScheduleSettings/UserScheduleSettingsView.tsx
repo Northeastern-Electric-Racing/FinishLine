@@ -48,7 +48,7 @@ const UserScheduleSettingsView = ({
     if (confirmedAvailabilities.size === 0 && scheduleSettings.availabilities.length > 0) {
       const confirmed = getMostRecentAvailabilities(
         scheduleSettings.availabilities,
-        designReview?.dateScheduled || new Date()
+        designReview?.initialDate || new Date()
       );
       setConfirmedAvailabilities(new Map(confirmed.map((availability) => [availability.dateSet.getTime(), availability])));
     }

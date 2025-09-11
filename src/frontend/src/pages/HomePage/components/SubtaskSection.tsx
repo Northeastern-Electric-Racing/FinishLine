@@ -7,6 +7,7 @@ import { GridDragIcon } from '@mui/x-data-grid';
 import { useToggleChecklist } from '../../../hooks/onboarding.hook';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { isChecklistChecked } from '../../../utils/onboarding.utils';
+import NERMarkdown from '../../../components/NERMarkdown';
 
 interface SubtaskSectionProps {
   parentTask: Checklist;
@@ -44,7 +45,7 @@ const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChec
     >
       {subtasks.length > 0 ? (
         <Grid container sx={{ display: 'flex', alignContent: 'center', justifyContent: 'center', alignItems: 'center' }}>
-          <Grid item xs={12} md={7}>
+          <Grid item xs={12} md={5}>
             <Box display="flex" flexDirection="column" marginLeft={5} gap={1}>
               {subtasks.map((subtask) => (
                 <Box display={'flex'} alignItems={'center'}>
@@ -82,14 +83,14 @@ const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChec
           <Grid
             item
             xs={12}
-            md={5}
+            md={7}
             sx={{
               backgroundColor: theme.palette.background.paper,
               padding: 2,
               borderRadius: 2
             }}
           >
-            <Typography color={theme.palette.common.white}>{parentTask.descriptions[0]}</Typography>
+            <NERMarkdown markdown={parentTask.descriptions[0]} />
           </Grid>
         </Grid>
       ) : (
@@ -113,7 +114,7 @@ const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChec
                   margin: 'auto'
                 }}
               >
-                <Typography color={theme.palette.common.white}>{description}</Typography>
+                <NERMarkdown markdown={description} />
               </Grid>
             );
           })}

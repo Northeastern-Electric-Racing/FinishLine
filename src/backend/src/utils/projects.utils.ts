@@ -70,6 +70,10 @@ export const updateProjectAndCreateChanges = async (
           links: { where: { dateDeleted: null }, ...getLinkQueryArgs(organizationId) },
           descriptionBullets: { where: { dateDeleted: null }, ...getDescriptionBulletQueryArgs(organizationId) }
         }
+      },
+      workPackages: {
+        where: { wbsElement: { dateDeleted: null } },
+        include: { wbsElement: true }
       }
     }
   });
@@ -79,7 +83,7 @@ export const updateProjectAndCreateChanges = async (
   if (originalProject.wbsElement.dateDeleted) throw new DeletedException('Project', projectId);
   if (originalProject.wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('Project');
 
-  const { wbsElementId } = originalProject;
+  const { wbsElementId, workPackages: originalWorkPackages } = originalProject;
 
   const nameChangeJson = createChange(
     'name',
@@ -157,6 +161,48 @@ export const updateProjectAndCreateChanges = async (
   );
 
   changesJson = changesJson.concat(descriptionBulletChanges.changes).concat(linkChanges.changes);
+
+  // if the project has no managerId and a managerId is provided, we need to update the work packages
+  // that do not have a managerId and create changes for them
+  // this is so that project manager is the default manager for all work packages
+  if (!originalProject.wbsElement.managerId && managerId) {
+    const wpToUpdate = originalWorkPackages.filter((wp) => !wp.wbsElement.managerId);
+
+    const wpChanges = (
+      await Promise.all(
+        wpToUpdate.map(async (wp) =>
+          createChange('manager', null, await getUserFullName(managerId), crId, implementerId, wp.wbsElementId, null, null)
+        )
+      )
+    ).filter((change) => change !== undefined);
+
+    changesJson = changesJson.concat(wpChanges);
+
+    await prisma.wBS_Element.updateMany({
+      where: { wbsElementId: { in: wpToUpdate.map((wp) => wp.wbsElementId) } },
+      data: { managerId }
+    });
+  }
+
+  // same goes for the project lead
+  if (!originalProject.wbsElement.leadId && leadId) {
+    const wpToUpdate = originalWorkPackages.filter((wp) => !wp.wbsElement.leadId);
+
+    const wpChanges = (
+      await Promise.all(
+        wpToUpdate.map(async (wp) =>
+          createChange('lead', null, await getUserFullName(leadId), crId, implementerId, wp.wbsElementId, null, null)
+        )
+      )
+    ).filter((change) => change !== undefined);
+
+    changesJson = changesJson.concat(wpChanges);
+
+    await prisma.wBS_Element.updateMany({
+      where: { wbsElementId: { in: wpToUpdate.map((wp) => wp.wbsElementId) } },
+      data: { leadId }
+    });
+  }
 
   // update the project with the input fields
   const updatedProject = await prisma.project.update({

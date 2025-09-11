@@ -72,7 +72,7 @@ describe('Finance Tests', () => {
       expect(result.tier.sponsorTierId).toEqual(sponsorTierId);
       expect(result.taxExempt).toBe(true);
       expect(result.discountCode).toEqual('googlecode');
-      expect(result.vendorContact).toEqual('Bill Gates');
+      expect(result.sponsorContact).toEqual('Bill Gates');
       expect(result.sponsorTasks).toEqual([]);
     });
   });
@@ -320,7 +320,8 @@ describe('Finance Tests', () => {
             await createTestUser(wonderwomanGuest, orgId),
             'Silver',
             organization,
-            'C0C0C0'
+            '#C0C0C0',
+            0
           )
       ).rejects.toThrow(new AccessDeniedException('Only heads can create a sponsor tier'));
     });
@@ -330,12 +331,12 @@ describe('Finance Tests', () => {
         await createTestUser(batmanAppAdmin, orgId),
         'Silver',
         organization,
-        'C0C0C0'
+        '#C0C0C0',
+        0
       );
 
       expect(result.name).toEqual('Silver');
-      expect(result.colorHexCode).toEqual('C0C0C0');
-      expect(result.organizationId).toEqual(orgId);
+      expect(result.colorHexCode).toEqual('#C0C0C0');
     });
   });
 
@@ -474,14 +475,20 @@ describe('Finance Tests', () => {
       const result1 = await FinanceServices.getAllSponsorTiers(organization);
       expect(result1.length).toEqual(1);
 
-      await FinanceServices.createSponsorTier(await createTestUser(batmanAppAdmin, orgId), 'Silver', organization, 'C0C0C0');
+      await FinanceServices.createSponsorTier(
+        await createTestUser(batmanAppAdmin, orgId),
+        'Silver',
+        organization,
+        '#C0C0C0',
+        0
+      );
 
       const result2 = await FinanceServices.getAllSponsorTiers(organization);
       expect(result2.length).toEqual(2);
       expect(result2[0].name).toEqual('Gold Tier');
       expect(result2[0].colorHexCode).toEqual('#FFFFFF');
       expect(result2[1].name).toEqual('Silver');
-      expect(result2[1].colorHexCode).toEqual('C0C0C0');
+      expect(result2[1].colorHexCode).toEqual('#C0C0C0');
     });
   });
 
@@ -525,7 +532,7 @@ describe('Finance Tests', () => {
       expect(updatedSponsor.joinDate).toEqual(new Date(5, 11, 25));
       expect(updatedSponsor.activeYears).toEqual([2024, 2025]);
       expect(updatedSponsor.tier.sponsorTierId).toBe(sponsorTierId);
-      expect(updatedSponsor.vendorContact).toBe('New Vendor Contact');
+      expect(updatedSponsor.sponsorContact).toBe('New Vendor Contact');
       expect(updatedSponsor.taxExempt).toBe(false);
       expect(updatedSponsor.discountCode).toBe('New Discount code');
     });

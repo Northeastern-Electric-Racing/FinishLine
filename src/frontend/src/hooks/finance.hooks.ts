@@ -60,7 +60,9 @@ import {
   deleteSponsorTask,
   editOtherProductReason,
   deleteAccountCode,
-  deleteOtherProductReason
+  deleteOtherProductReason,
+  deleteSponsorTier,
+  editSponsorTier
 } from '../apis/finance.api';
 import {
   IndexCode,
@@ -140,13 +142,14 @@ export interface SponsorPayload {
   activeYears: number[];
   sponsorTierId: string;
   taxExempt: boolean;
-  vendorContact: string;
+  sponsorContact: string;
   sponsorTasks: CreateSponsorTask[];
   discountCode?: string;
 }
 
 export interface SponsorTierPayload {
   name: string;
+  minSupportValue: number;
   colorHexCode: string;
 }
 
@@ -230,7 +233,7 @@ export const useCreateSponsorTier = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['sponsor-tier']);
+        queryClient.invalidateQueries(['sponsor-tiers']);
       }
     }
   );
@@ -277,40 +280,47 @@ export interface ReimbursementRequestTeamDataPayload {
   teamId: string;
   startDate?: Date;
   endDate?: Date;
+  carNumber?: number;
 }
 
 export interface ReimbursementRequestDataPayload {
   startDate?: Date;
   endDate?: Date;
+  carNumber?: number;
 }
 
 export interface ReimbursementRequestCategoryDataPayload {
   otherReasonId: string;
   startDate?: Date;
   endDate?: Date;
+  carNumber?: number;
 }
 
 export interface ReimbursementRequestTeamTypeDataPayload {
   teamTypeId: string;
   startDate?: Date;
   endDate?: Date;
+  carNumber?: number;
 }
 
 export interface SpendingBarTeamDataPayload {
   teamId: string;
   startDate?: Date;
   endDate?: Date;
+  carNumber?: number;
 }
 
 export interface SpendingBarTeamTypeDataPayload {
   teamTypeId: string;
   startDate?: Date;
   endDate?: Date;
+  carNumber?: number;
 }
 
 export interface SpendingBarDataPayload {
   startDate?: Date;
   endDate?: Date;
+  carNumber?: number;
 }
 
 /**
@@ -1021,6 +1031,7 @@ export const useGetReimbursementRequestTeamData = (reimbursementRequestData: Rei
       'reimbursement-request-team-data',
       reimbursementRequestData.endDate,
       reimbursementRequestData.startDate,
+      reimbursementRequestData.carNumber,
       reimbursementRequestData.teamId
     ],
     async () => {
@@ -1035,6 +1046,7 @@ export const useGetReimbursementRequestTeamTypeData = (reimbursementRequestData:
       'reimbursement-request-team-type-data',
       reimbursementRequestData.endDate,
       reimbursementRequestData.startDate,
+      reimbursementRequestData.carNumber,
       reimbursementRequestData.teamTypeId
     ],
     async () => {
@@ -1063,6 +1075,7 @@ export const useGetReimbursementRequestCategoryData = (reimbursementRequestData:
       'reimbursement-request-category-data',
       reimbursementRequestData.endDate,
       reimbursementRequestData.startDate,
+      reimbursementRequestData.carNumber,
       reimbursementRequestData.otherReasonId
     ],
     async () => {
@@ -1073,7 +1086,12 @@ export const useGetReimbursementRequestCategoryData = (reimbursementRequestData:
 
 export const useGetAllReimbursementRequestData = (reimbursementRequestData: ReimbursementRequestDataPayload) =>
   useQuery<ReimbursementRequestData[], Error>(
-    ['reimbursement-request-data', reimbursementRequestData.endDate, reimbursementRequestData.startDate],
+    [
+      'reimbursement-request-data',
+      reimbursementRequestData.endDate,
+      reimbursementRequestData.startDate,
+      reimbursementRequestData.carNumber
+    ],
     async () => {
       const { data } = await getAllReimbursementRequestData(reimbursementRequestData);
       return data;
@@ -1082,7 +1100,13 @@ export const useGetAllReimbursementRequestData = (reimbursementRequestData: Reim
 
 export const useGetSpendingBarTeamData = (spendingBarData: SpendingBarTeamDataPayload) =>
   useQuery<SpendingBarData, Error>(
-    ['spending-bar-team-data', spendingBarData.endDate, spendingBarData.startDate, spendingBarData.teamId],
+    [
+      'spending-bar-team-data',
+      spendingBarData.endDate,
+      spendingBarData.startDate,
+      spendingBarData.carNumber,
+      spendingBarData.teamId
+    ],
     async () => {
       const { data } = await getSpendingBarTeamData(spendingBarData);
       return data;
@@ -1091,7 +1115,13 @@ export const useGetSpendingBarTeamData = (spendingBarData: SpendingBarTeamDataPa
 
 export const useGetSpendingBarTeamTypeData = (spendingBarData: SpendingBarTeamTypeDataPayload) =>
   useQuery<SpendingBarData[], Error>(
-    ['spending-bar-team-type-data', spendingBarData.endDate, spendingBarData.startDate, spendingBarData.teamTypeId],
+    [
+      'spending-bar-team-type-data',
+      spendingBarData.endDate,
+      spendingBarData.startDate,
+      spendingBarData.carNumber,
+      spendingBarData.teamTypeId
+    ],
     async () => {
       const { data } = await getSpendingBarTeamTypeData(spendingBarData);
       return data;
@@ -1100,7 +1130,7 @@ export const useGetSpendingBarTeamTypeData = (spendingBarData: SpendingBarTeamTy
 
 export const useGetSpendingBarCategoryData = (spendingBarData: SpendingBarDataPayload) =>
   useQuery<SpendingBarData, Error>(
-    ['spending-bar-category-data', spendingBarData.endDate, spendingBarData.startDate],
+    ['spending-bar-category-data', spendingBarData.endDate, spendingBarData.startDate, spendingBarData.carNumber],
     async () => {
       const { data } = await getSpendingBarCategoryData(spendingBarData);
       return data;
@@ -1108,10 +1138,13 @@ export const useGetSpendingBarCategoryData = (spendingBarData: SpendingBarDataPa
   );
 
 export const useGetAllSpendingBarData = (spendingBarData: SpendingBarDataPayload) =>
-  useQuery<SpendingBarData[], Error>(['spending-bar-data', spendingBarData.endDate, spendingBarData.startDate], async () => {
-    const { data } = await getAllSpendingBarData(spendingBarData);
-    return data;
-  });
+  useQuery<SpendingBarData[], Error>(
+    ['spending-bar-data', spendingBarData.endDate, spendingBarData.startDate, spendingBarData.carNumber],
+    async () => {
+      const { data } = await getAllSpendingBarData(spendingBarData);
+      return data;
+    }
+  );
 
 /**
  * Custom react hook to get all sponsor tiers
@@ -1156,6 +1189,48 @@ export const useDeleteSponsorTask = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['sponsor-task']);
+      }
+    }
+  );
+};
+
+/**
+ * Hook to delete the given sponsor tier
+ * @param sponsorTierId sponsor tier to be deleted
+ * @returns the deleted sponsor tier
+ */
+export const useDeleteSponsorTier = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ id: string }, Error, string>(
+    ['sponsor-tier', 'delete'],
+    async (sponsorTierId: string) => {
+      const { data } = await deleteSponsorTier(sponsorTierId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['sponsor-tiers']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to edit a sponsor tier
+ *
+ * @returns the edited sponsor tier
+ */
+export const useEditSponsorTier = (sponsorTierId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<SponsorTier, Error, SponsorTierPayload>(
+    ['sponsor-tier', 'edit'],
+    async (formData: SponsorTierPayload) => {
+      const { data } = await editSponsorTier(sponsorTierId, formData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['sponsor-tiers']);
       }
     }
   );

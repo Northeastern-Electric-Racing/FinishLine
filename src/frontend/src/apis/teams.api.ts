@@ -44,6 +44,12 @@ export const setTeamDescription = (id: string, description: string) => {
   });
 };
 
+export const setTeamSlackId = (id: string, slackId: string) => {
+  return axios.post<TeamPreview>(apiUrls.teamsSetSlackId(id), {
+    slackId
+  });
+};
+
 export const setTeamHead = (id: string, userId: string) => {
   return axios.post<Team>(apiUrls.teamsSetHead(id), {
     userId

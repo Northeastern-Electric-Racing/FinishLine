@@ -173,6 +173,37 @@ export default class TeamsService {
   }
 
   /**
+   * Updates the slack id of a given team
+   * @param updater the user updating
+   * @param organization the organizaiton
+   * @param teamId the id of the team
+   * @param slackId the new slack id
+   * @returns a preview of the updated team
+   */
+  static async editSlackId(updater: User, organization: Organization, teamId: string, slackId: string) {
+    const team = await TeamsService.getSingleTeam(teamId, organization);
+    if (team.dateArchived) throw new HttpException(400, 'Cannot edit the slack id of an archived team');
+
+    if (
+      !(
+        (await userHasPermission(updater.userId, organization.organizationId, isAdmin)) ||
+        updater.userId === team.head.userId
+      )
+    )
+      throw new AccessDeniedException('you must be an admin or the team head to update the slack id!');
+
+    const updatedTeam = await prisma.team.update({
+      where: { teamId },
+      data: {
+        slackId
+      },
+      ...getTeamPreviewQueryArgs(organization.organizationId)
+    });
+
+    return teamPreviewTransformer(updatedTeam);
+  }
+
+  /**
    * Update the team's head of the given team to the given user
    * @param submitter The submitter of this request
    * @param teamId The id for the team that is being edited

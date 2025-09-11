@@ -4,13 +4,14 @@ import { ChecklistCreateArgs, useEditChecklist } from '../../../../hooks/onboard
 import { useToast } from '../../../../hooks/toasts.hooks';
 import { Checklist } from 'shared';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { FormControl, FormLabel, TextField, InputAdornment, IconButton, useTheme } from '@mui/material';
+import { FormControl, FormLabel, TextField, InputAdornment, IconButton, useTheme, Stack, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import NERFormModal from '../../../../components/NERFormModal';
 import * as yup from 'yup';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import NERMarkdown from '../../../../components/NERMarkdown';
 
 interface EditChecklistModalProps {
   open: boolean;
@@ -46,6 +47,7 @@ const EditChecklistModal = ({ open, handleClose, defaultValues, teamId, teamType
   const {
     handleSubmit,
     control,
+    watch,
     reset,
     formState: { errors }
   } = useForm<ChecklistFormValues>({
@@ -94,6 +96,7 @@ const EditChecklistModal = ({ open, handleClose, defaultValues, teamId, teamType
       onFormSubmit={onFormSubmit}
       formId={!!defaultValues ? 'edit-UsefulLink-form' : 'create-UsefulLink-form'}
       showCloseButton
+      paperProps={{ maxWidth: '80vw' }}
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         <FormControl fullWidth>
@@ -147,47 +150,108 @@ const EditChecklistModal = ({ open, handleClose, defaultValues, teamId, teamType
               Descriptions*
             </FormLabel>
             {fields.map((item, index) => (
-              <Box key={item.id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Controller
-                  name={`descriptions.${index}.name`}
-                  control={control}
-                  defaultValue={item.name || ''}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      placeholder="Enter description..."
-                      fullWidth
-                      multiline
-                      variant="outlined"
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            {index !== 0 && (
-                              <IconButton onClick={() => remove(index)}>
-                                <RemoveCircleOutlineIcon sx={{ color: 'white' }} />
-                              </IconButton>
-                            )}
-                          </InputAdornment>
-                        ),
-                        disableUnderline: true,
-                        sx: { '& fieldset': { border: 'none' } }
-                      }}
-                      sx={{
-                        backgroundColor: theme.palette.background.paper,
-                        borderRadius: 5,
-                        mt: 1,
-                        width: '100%',
-                        ...(index === 0 && {
-                          minHeight: '150px',
-                          fontSize: '1.25rem'
-                        })
-                      }}
-                      error={!!errors.descriptions?.[index]?.name}
-                      helperText={errors.descriptions?.[index]?.name?.message}
-                    />
-                  )}
-                />
-              </Box>
+              <Stack key={item.id} direction={'row'} spacing={3} sx={{ mb: 3 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    width: '30vw',
+                    alignItems: 'stretch'
+                  }}
+                >
+                  <Controller
+                    name={`descriptions.${index}.name`}
+                    control={control}
+                    defaultValue={item.name || ''}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        placeholder="Enter description markdown..."
+                        fullWidth
+                        multiline
+                        variant="outlined"
+                        minRows={12}
+                        maxRows={20}
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              {index !== 0 && (
+                                <IconButton onClick={() => remove(index)}>
+                                  <RemoveCircleOutlineIcon sx={{ color: 'white' }} />
+                                </IconButton>
+                              )}
+                            </InputAdornment>
+                          ),
+                          disableUnderline: true,
+                          sx: {
+                            '& fieldset': { border: 'none' },
+                            fontSize: '1.1rem',
+                            lineHeight: 1.6,
+                            padding: 2
+                          }
+                        }}
+                        sx={{
+                          backgroundColor: theme.palette.background.paper,
+                          borderRadius: 3,
+                          width: '100%',
+                          '& .MuiInputBase-root': {
+                            alignItems: 'flex-start'
+                          }
+                        }}
+                        error={!!errors.descriptions?.[index]?.name}
+                        helperText={errors.descriptions?.[index]?.name?.message}
+                      />
+                    )}
+                  />
+                </Box>
+                <Box
+                  sx={{
+                    backgroundColor: theme.palette.background.paper,
+                    borderRadius: 3,
+                    width: '30vw',
+                    padding: 2,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
+                    wordWrap: 'break-word',
+                    border: `1px solid ${theme.palette.divider}`,
+                    '& *': {
+                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word'
+                    }
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: theme.palette.text.secondary,
+                      mb: 1,
+                      fontStyle: 'italic'
+                    }}
+                  >
+                    Preview:
+                  </Typography>
+                  <Box
+                    sx={{
+                      flex: 1,
+                      overflow: 'auto'
+                    }}
+                  >
+                    {watch(`descriptions.${index}.name`) ? (
+                      <NERMarkdown markdown={watch(`descriptions.${index}.name`)} />
+                    ) : (
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: theme.palette.text.disabled,
+                          fontStyle: 'italic'
+                        }}
+                      >
+                        Start typing to see formatted markdown...
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
+              </Stack>
             ))}
             <IconButton
               onClick={() => append({ name: '' })}

@@ -64,7 +64,7 @@ const ReimbursementRequestInfo = ({
 }: ReimbursementRequestInfoProps) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(100);
-  const [isAscendingOrder, setAscendingOrder] = useState(true);
+  const [isAscendingOrder, setAscendingOrder] = useState(false);
   const [orderBy, setOrderBy] = useState<keyof ReimbursementRequestRow>('identifier');
   const user = useCurrentUser();
   const [sidePageTitle, setSidePageTitle] = useState('');
@@ -284,12 +284,6 @@ const ReimbursementRequestInfo = ({
                   <TableCell align="center">{undefinedPipe(row.saboId)}</TableCell>
                   <TableCell align="center">{datePipe(row.dateSubmitted)}</TableCell>
                   <TableCell align="center">{dateUndefinedPipe(row.dateSubmittedToSabo)}</TableCell>
-                  <SidePage
-                    showPage={showSidePage}
-                    handleClose={closeSidePage}
-                    title={''}
-                    component={<ReimbursementRequestDetails onCloseEditPage={closeSidePage} />}
-                  />
                   <TableCell align="center">
                     {
                       <Button
@@ -321,6 +315,12 @@ const ReimbursementRequestInfo = ({
           </TableBody>
         </Table>
       </TableContainer>
+      <SidePage
+        showPage={showSidePage}
+        handleClose={closeSidePage}
+        title={''}
+        component={<ReimbursementRequestDetails onCloseEditPage={closeSidePage} />}
+      />
       <Box
         sx={{
           backgroundColor: '#121313',

@@ -6,6 +6,7 @@ import { userTransformer } from './user.transformer';
 export const sponsorTransformer = (sponsor: Prisma.SponsorGetPayload<SponsorQueryArgs>): Sponsor => {
   return {
     ...sponsor,
+    sponsorContact: sponsor.vendorContact,
     discountCode: sponsor.discountCode ?? undefined,
     sponsorTasks: sponsor.sponsorTasks.map(sponsorTaskTranformer)
   };

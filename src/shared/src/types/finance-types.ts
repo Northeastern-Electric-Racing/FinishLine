@@ -4,7 +4,7 @@ export interface Sponsor {
   sponsorId: string;
   name: string;
   activeStatus: boolean;
-  vendorContact: string;
+  sponsorContact: string;
   sponsorValue: number;
   joinDate: Date;
   activeYears: number[];
@@ -26,6 +26,7 @@ export interface SponsorTier {
   sponsorTierId: string;
   name: string;
   colorHexCode: string;
+  minSupportValue: number;
 }
 
 export interface SpendingBarData {

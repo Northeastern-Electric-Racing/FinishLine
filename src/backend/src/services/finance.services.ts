@@ -1,13 +1,15 @@
 import {
   CreateSponsorTask,
+  isAdmin,
   isHead,
   ReimbursementRequestData,
   SpendingBarData,
   Sponsor,
   SponsorTask,
-  SponsorTier
+  SponsorTier,
+  wbsPipe
 } from 'shared';
-import { User, Organization, Sponsor_Task } from '@prisma/client';
+import { User, Organization, Sponsor_Task, Reimbursement_Status_Type } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
 import {
   getSponsorQueryArgs,
@@ -15,6 +17,7 @@ import {
   getSponsorTierQueryArgs
 } from '../prisma-query-args/sponsor.query.args';
 import {
+  AccessDeniedAdminOnlyException,
   AccessDeniedException,
   DeletedException,
   HttpException,
@@ -24,17 +27,7 @@ import {
 import prisma from '../prisma/prisma';
 import { sponsorTransformer } from '../transformers/finance.transformer';
 import sponsorTaskTransformer from '../transformers/sponsor-task.transformer';
-import {
-  getAllReimbursementRequestData,
-  getAllSpendingBarData,
-  getReimbursementRequestCategoryData,
-  getReimbursementRequestsByDivision,
-  getReimbursementRequestsByProject,
-  getReimbursementRequestsByTeam,
-  getSpendingBarCategoryData,
-  getSpendingBarDataForProjectBudgetByDivision,
-  getSpendingBarDataForProjectBudgetByTeam
-} from '../utils/finance.utils';
+import { computeRRTotals, getProjectSegmentedWhereInput, getReimbursementRequestWhereInput } from '../utils/finance.utils';
 import { notifySponsorTaskAssignee } from '../utils/slack.utils';
 
 export default class FinanceServices {
@@ -50,7 +43,7 @@ export default class FinanceServices {
    * @param sponsorTierId The ID of the sponsor's tier.
    * @param taxExempt Boolean indicating if the sponsor is tax-exempt.
    * @param discountCode The discount code associated with the sponsor.
-   * @param vendorContact The contact information for the sponsor's vendor.
+   * @param sponsorContact The contact information for the sponsor.
    * @param sponsorTasks An array of sponsor tasks associated with the sponsor.
    * @param organization The organization for which the sponsor is being created.
    *
@@ -67,7 +60,7 @@ export default class FinanceServices {
     activeYears: number[],
     sponsorTierId: string,
     taxExempt: boolean,
-    vendorContact: string,
+    sponsorContact: string,
     sponsorTasks: CreateSponsorTask[],
     organization: Organization,
     discountCode?: string
@@ -96,7 +89,7 @@ export default class FinanceServices {
         sponsorTierId,
         taxExempt,
         discountCode,
-        vendorContact,
+        vendorContact: sponsorContact,
         sponsorTasks: {
           create: sponsorTasks.map((task) => ({
             dueDate: task.dueDate,
@@ -176,9 +169,16 @@ export default class FinanceServices {
    * @param name tier name
    * @param organization current organization of the current user
    * @param colorHexCode tier color
+   * @param minSupportValue minimum support value for the tier
    * @returns newly created sponsor tier
    */
-  static async createSponsorTier(submitter: User, name: string, organization: Organization, colorHexCode: string) {
+  static async createSponsorTier(
+    submitter: User,
+    name: string,
+    organization: Organization,
+    colorHexCode: string,
+    minSupportValue: number
+  ): Promise<SponsorTier> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('Only heads can create a sponsor tier');
 
@@ -186,7 +186,8 @@ export default class FinanceServices {
       data: {
         name,
         organizationId: organization.organizationId,
-        colorHexCode
+        colorHexCode,
+        minSupportValue
       },
       include: {
         organization: true
@@ -397,72 +398,634 @@ export default class FinanceServices {
     startDate?: Date,
     endDate?: Date
   ): Promise<ReimbursementRequestData> {
-    return await getReimbursementRequestsByProject(projectId, organization.organizationId, startDate, endDate);
+    const { organizationId } = organization;
+    const project = await prisma.project.findFirst({
+      where: {
+        projectId,
+        wbsElement: {
+          organizationId,
+          dateDeleted: null
+        }
+      }
+    });
+
+    if (!project) throw new NotFoundException('Project', projectId);
+
+    const reimbursementRequests = await prisma.reimbursement_Request.findMany({
+      where: {
+        reimbursementProducts: {
+          some: {
+            reimbursementProductReason: {
+              wbsElement: {
+                project: {
+                  projectId
+                }
+              }
+            }
+          }
+        },
+        reimbursementStatuses: {
+          none: {
+            type: Reimbursement_Status_Type.DENIED
+          }
+        },
+        ...getReimbursementRequestWhereInput(startDate, endDate)
+      },
+      select: {
+        reimbursementStatuses: true,
+        totalCost: true
+      }
+    });
+
+    const { pendingFinance, pendingLeadership, submittedToSabo, reimbursed } = computeRRTotals(reimbursementRequests);
+
+    const totalBalance = reimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0) / 100;
+
+    const available = project.budget - totalBalance;
+
+    const data: ReimbursementRequestData = {
+      totalBudget: project.budget,
+      pendingFinance,
+      pendingLeadership,
+      submittedToSabo,
+      reimbursed,
+      available
+    };
+    return data;
   }
 
   static async getReimbursementRequestTeamData(
     organization: Organization,
     teamId: string,
     startDate?: Date,
-    endDate?: Date
+    endDate?: Date,
+    carNumber?: number
   ): Promise<ReimbursementRequestData> {
-    return await getReimbursementRequestsByTeam(teamId, organization.organizationId, startDate, endDate);
+    const { organizationId } = organization;
+    const team = await prisma.team.findUnique({
+      where: {
+        organizationId,
+        dateArchived: null,
+        teamId
+      },
+      include: {
+        projects: {
+          ...getProjectSegmentedWhereInput(organizationId, startDate, endDate, carNumber),
+          include: {
+            wbsElement: true
+          }
+        }
+      }
+    });
+
+    if (!team) throw new NotFoundException('Team', teamId);
+
+    const reimbursementRequests = await prisma.reimbursement_Request.findMany({
+      where: {
+        reimbursementProducts: {
+          some: {
+            reimbursementProductReason: {
+              wbsElement: {
+                project: {
+                  teams: {
+                    some: {
+                      teamId
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        reimbursementStatuses: {
+          none: {
+            type: Reimbursement_Status_Type.DENIED
+          }
+        },
+        ...getReimbursementRequestWhereInput(startDate, endDate, carNumber)
+      },
+      select: {
+        reimbursementStatuses: true,
+        totalCost: true
+      }
+    });
+
+    const totalBudget = team.projects.reduce((acc, curr) => acc + curr.budget, 0);
+
+    const { pendingFinance, pendingLeadership, submittedToSabo, reimbursed } = computeRRTotals(reimbursementRequests);
+
+    const totalBalance = reimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0) / 100;
+
+    const available = totalBudget - totalBalance;
+
+    const data: ReimbursementRequestData = {
+      totalBudget,
+      pendingFinance,
+      pendingLeadership,
+      submittedToSabo,
+      reimbursed,
+      available
+    };
+    return data;
   }
 
   static async getReimbursementRequestTeamTypeData(
     organization: Organization,
     teamTypeId: string,
     startDate?: Date,
-    endDate?: Date
+    endDate?: Date,
+    carNumber?: number
   ): Promise<ReimbursementRequestData> {
-    return await getReimbursementRequestsByDivision(teamTypeId, organization.organizationId, startDate, endDate);
+    const { organizationId } = organization;
+    const division = await prisma.team_Type.findUnique({
+      where: {
+        organizationId,
+        teamTypeId
+      },
+      include: {
+        teams: {
+          where: {
+            dateArchived: null
+          },
+          include: {
+            projects: {
+              ...getProjectSegmentedWhereInput(organizationId, startDate, endDate, carNumber),
+              include: {
+                wbsElement: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!division) throw new NotFoundException('Team Type', teamTypeId);
+
+    const results: ReimbursementRequestData = {
+      totalBudget: 0,
+      pendingFinance: 0,
+      pendingLeadership: 0,
+      submittedToSabo: 0,
+      reimbursed: 0,
+      available: 0
+    };
+
+    for (const team of division.teams) {
+      const data: ReimbursementRequestData = await this.getReimbursementRequestTeamData(
+        organization,
+        team.teamId,
+        startDate,
+        endDate,
+        carNumber
+      );
+
+      results.totalBudget += data.totalBudget;
+      results.pendingFinance += data.pendingFinance;
+      results.pendingLeadership += data.pendingLeadership;
+      results.submittedToSabo += data.submittedToSabo;
+      results.reimbursed += data.reimbursed;
+      results.available += data.available;
+    }
+
+    return results;
   }
 
   static async getSpendingBarTeamData(
     organization: Organization,
     teamId: string,
     startDate?: Date,
-    endDate?: Date
+    endDate?: Date,
+    carNumber?: number
   ): Promise<SpendingBarData> {
-    return await getSpendingBarDataForProjectBudgetByTeam(teamId, organization.organizationId, startDate, endDate);
+    const { organizationId } = organization;
+    const team = await prisma.team.findUnique({
+      where: {
+        organizationId,
+        dateArchived: null,
+        teamId
+      },
+      include: {
+        projects: {
+          ...getProjectSegmentedWhereInput(organizationId, startDate, endDate, carNumber),
+          include: {
+            wbsElement: true
+          }
+        }
+      }
+    });
+
+    if (!team) throw new NotFoundException('Team', teamId);
+
+    const spendingInfoPromises = team.projects.map((project) =>
+      this.getReimbursementRequestProjectData(organization, project.projectId, startDate, endDate)
+    );
+
+    const spendingInfos = await Promise.all(spendingInfoPromises);
+
+    const data: SpendingBarData = {
+      title: `${team.teamName}`,
+      data: team.projects.map((project, index) => ({
+        title: `${wbsPipe(project.wbsElement)} - ${project.wbsElement.name}`,
+        spendingInfo: spendingInfos[index]
+      }))
+    };
+    return data;
   }
 
   static async getSpendingBarTeamTypeData(
     organization: Organization,
     teamTypeId: string,
     startDate?: Date,
-    endDate?: Date
+    endDate?: Date,
+    carNumber?: number
   ): Promise<SpendingBarData[]> {
-    return await getSpendingBarDataForProjectBudgetByDivision(teamTypeId, organization.organizationId, startDate, endDate);
+    const { organizationId } = organization;
+    const division = await prisma.team_Type.findUnique({
+      where: {
+        organizationId,
+        teamTypeId
+      },
+      include: {
+        teams: {
+          where: {
+            dateArchived: null,
+            teamTypeId
+          },
+          include: {
+            projects: {
+              ...getProjectSegmentedWhereInput(organizationId, startDate, endDate, carNumber),
+              include: {
+                wbsElement: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!division) throw new NotFoundException('Team Type', teamTypeId);
+
+    const teamDataPromises = division.teams.map(async (team) => {
+      const spendingInfoPromises = team.projects.map((project) =>
+        this.getReimbursementRequestProjectData(organization, project.projectId, startDate, endDate)
+      );
+      const spendingInfos = await Promise.all(spendingInfoPromises);
+
+      return {
+        title: `${team.teamName}`,
+        data: team.projects.map((project, index) => ({
+          title: `${wbsPipe(project.wbsElement)} - ${project.wbsElement.name}`,
+          spendingInfo: spendingInfos[index]
+        }))
+      };
+    });
+
+    const data: SpendingBarData[] = await Promise.all(teamDataPromises);
+
+    return data;
   }
 
   static async getAllReimbursementRequestData(
     organization: Organization,
     startDate?: Date,
-    endDate?: Date
+    endDate?: Date,
+    carNumber?: number
   ): Promise<ReimbursementRequestData[]> {
-    return await getAllReimbursementRequestData(organization.organizationId, startDate, endDate);
+    const { organizationId } = organization;
+    const cashReimbursementRequests = await prisma.reimbursement_Request.findMany({
+      where: {
+        dateDeleted: null,
+        accountCode: { organizationId },
+        indexCode: { organizationId, name: 'CASH', code: '830667' },
+        reimbursementStatuses: {
+          none: {
+            type: Reimbursement_Status_Type.DENIED
+          }
+        },
+        ...getReimbursementRequestWhereInput(startDate, endDate, carNumber)
+      },
+      select: {
+        reimbursementStatuses: true,
+        totalCost: true
+      }
+    });
+
+    const budgetReimbursementRequests = await prisma.reimbursement_Request.findMany({
+      where: {
+        dateDeleted: null,
+        accountCode: { organizationId },
+        indexCode: { organizationId, name: 'BUDGET', code: '800462' },
+        reimbursementStatuses: {
+          none: {
+            type: Reimbursement_Status_Type.DENIED
+          }
+        },
+        ...getReimbursementRequestWhereInput(startDate, endDate, carNumber)
+      },
+      select: {
+        reimbursementStatuses: true,
+        totalCost: true
+      }
+    });
+
+    const allReimbursementRequests = await prisma.reimbursement_Request.findMany({
+      where: {
+        dateDeleted: null,
+        accountCode: { organizationId },
+        indexCode: { organizationId },
+        reimbursementStatuses: {
+          none: {
+            type: Reimbursement_Status_Type.DENIED
+          }
+        },
+        ...getReimbursementRequestWhereInput(startDate, endDate, carNumber)
+      },
+      select: {
+        reimbursementStatuses: true,
+        totalCost: true
+      }
+    });
+
+    const teams = await prisma.team.findMany({
+      where: { dateArchived: null, organizationId },
+      select: {
+        projects: {
+          where: {
+            wbsElement: {
+              ...(carNumber !== undefined && { carNumber }),
+              dateCreated: {
+                ...(startDate && {
+                  gte: startDate
+                }),
+                ...(endDate && {
+                  lte: endDate
+                })
+              }
+            }
+          }
+        }
+      }
+    });
+
+    const allTotalBudget = teams.reduce((teamAcc, team) => {
+      const teamBudget = team.projects.reduce((projAcc, project) => projAcc + project.budget, 0);
+      return teamAcc + teamBudget;
+    }, 0);
+
+    const cashTotalBudget =
+      cashReimbursementRequests.reduce((reqAcc, rr) => {
+        return reqAcc + rr.totalCost;
+      }, 0) / 100;
+
+    const budgetTotalBudget =
+      budgetReimbursementRequests.reduce((reqAcc, rr) => {
+        return reqAcc + rr.totalCost;
+      }, 0) / 100;
+
+    const {
+      pendingFinance: allPendingFinance,
+      pendingLeadership: allPendingLeadership,
+      submittedToSabo: allSubmittedToSabo,
+      reimbursed: allReimbursed
+    } = computeRRTotals(allReimbursementRequests);
+
+    const allTotalBalance = allReimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0) / 100;
+
+    const allAvailable = allTotalBudget - allTotalBalance;
+
+    const {
+      pendingFinance: cashPendingFinance,
+      pendingLeadership: cashPendingLeadership,
+      submittedToSabo: cashSubmittedToSabo,
+      reimbursed: cashReimbursed
+    } = computeRRTotals(cashReimbursementRequests);
+
+    const cashTotalBalance = cashReimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0) / 100;
+
+    const cashAvailable = cashTotalBudget - cashTotalBalance;
+
+    const {
+      pendingFinance: budgetPendingFinance,
+      pendingLeadership: budgetPendingLeadership,
+      submittedToSabo: budgetSubmittedToSabo,
+      reimbursed: budgetReimbursed
+    } = computeRRTotals(budgetReimbursementRequests);
+
+    const budgetTotalBalance = budgetReimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0) / 100;
+
+    const budgetAvailable = budgetTotalBudget - budgetTotalBalance;
+
+    const allData: ReimbursementRequestData = {
+      totalBudget: allTotalBudget,
+      pendingFinance: allPendingFinance,
+      pendingLeadership: allPendingLeadership,
+      submittedToSabo: allSubmittedToSabo,
+      reimbursed: allReimbursed,
+      available: allAvailable
+    };
+
+    const cashData: ReimbursementRequestData = {
+      totalBudget: cashTotalBudget,
+      pendingFinance: cashPendingFinance,
+      pendingLeadership: cashPendingLeadership,
+      submittedToSabo: cashSubmittedToSabo,
+      reimbursed: cashReimbursed,
+      available: cashAvailable
+    };
+
+    const budgetData: ReimbursementRequestData = {
+      totalBudget: budgetTotalBudget,
+      pendingFinance: budgetPendingFinance,
+      pendingLeadership: budgetPendingLeadership,
+      submittedToSabo: budgetSubmittedToSabo,
+      reimbursed: budgetReimbursed,
+      available: budgetAvailable
+    };
+
+    const data: ReimbursementRequestData[] = [allData, budgetData, cashData];
+
+    return data;
   }
 
   static async getReimbursementRequestCategoryData(
     otherReasonId: string,
     organization: Organization,
     startDate?: Date,
-    endDate?: Date
+    endDate?: Date,
+    carNumber?: number
   ): Promise<ReimbursementRequestData> {
-    return await getReimbursementRequestCategoryData(otherReasonId, organization.organizationId, startDate, endDate);
+    const { organizationId } = organization;
+
+    //if a car is specified but not the date ranges, use the car to determine the date ranges
+    if (carNumber !== undefined) {
+      const car = await prisma.car.findFirst({
+        where: {
+          wbsElement: {
+            carNumber
+          }
+        }
+      });
+
+      if (!car) {
+        throw new HttpException(404, `Could not find car with car number: ${carNumber}`);
+      }
+
+      const nextCar = await prisma.car.findFirst({
+        where: {
+          wbsElement: {
+            carNumber: carNumber + 1
+          }
+        }
+      });
+
+      //use latest of start date and car creation date for intersection
+      if (!startDate || startDate.valueOf() < car.dateCreated.valueOf()) {
+        startDate = car.dateCreated;
+      }
+
+      //use earliest of end date and next car creation date for intersection
+      if (nextCar && (!endDate || endDate.valueOf() > nextCar.dateCreated.valueOf())) {
+        endDate = nextCar.dateCreated;
+      }
+    }
+
+    const reimbursementRequests = await prisma.reimbursement_Request.findMany({
+      where: {
+        dateDeleted: null,
+        accountCode: { organizationId },
+        reimbursementStatuses: {
+          none: {
+            type: Reimbursement_Status_Type.DENIED
+          }
+        },
+        reimbursementProducts: {
+          some: {
+            reimbursementProductReason: {
+              otherReasonId
+            }
+          }
+        },
+        ...getReimbursementRequestWhereInput(startDate, endDate)
+      },
+      select: {
+        reimbursementStatuses: true,
+        totalCost: true
+      }
+    });
+
+    const category = await prisma.reimbursement_Product_Other_Reason.findUnique({
+      where: {
+        otherReimbursementProductReasonId: otherReasonId
+      }
+    });
+
+    if (!category) throw new NotFoundException('Reimbursement Product Other Reason', otherReasonId);
+
+    const totalBudget = category.budget;
+
+    const totals: Partial<Record<Reimbursement_Status_Type, number>> = {
+      [Reimbursement_Status_Type.PENDING_FINANCE]: 0,
+      [Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL]: 0,
+      [Reimbursement_Status_Type.SABO_SUBMITTED]: 0,
+      [Reimbursement_Status_Type.REIMBURSED]: 0
+    };
+
+    reimbursementRequests.forEach((req) => {
+      const lastStatus = req.reimbursementStatuses.at(-1)?.type;
+
+      if (lastStatus && totals[lastStatus] !== undefined) {
+        totals[lastStatus] += req.totalCost;
+      }
+    });
+
+    const pendingFinance = totals[Reimbursement_Status_Type.PENDING_FINANCE] ?? 0;
+    const pendingLeadership = totals[Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL] ?? 0;
+    const submittedToSabo = totals[Reimbursement_Status_Type.SABO_SUBMITTED] ?? 0;
+    const reimbursed = totals[Reimbursement_Status_Type.REIMBURSED] ?? 0;
+
+    const totalBalance = reimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0);
+
+    const available = totalBudget - totalBalance;
+
+    const data: ReimbursementRequestData = {
+      totalBudget,
+      pendingFinance,
+      pendingLeadership,
+      submittedToSabo,
+      reimbursed,
+      available
+    };
+
+    return data;
   }
 
   static async getAllSpendingBarData(
     organization: Organization,
     startDate?: Date,
-    endDate?: Date
+    endDate?: Date,
+    carNumber?: number
   ): Promise<SpendingBarData[]> {
-    return await getAllSpendingBarData(organization.organizationId, startDate, endDate);
+    const { organizationId } = organization;
+    const teams = await prisma.team.findMany({
+      where: {
+        organizationId,
+        dateArchived: null
+      },
+      include: {
+        projects: {
+          ...getProjectSegmentedWhereInput(organizationId, startDate, endDate, carNumber),
+          include: {
+            wbsElement: true
+          }
+        }
+      }
+    });
+
+    const teamDataPromises = teams.map(async (team) => {
+      const spendingInfoPromises = team.projects.map((project) =>
+        this.getReimbursementRequestProjectData(organization, project.projectId, startDate, endDate)
+      );
+      const spendingInfos = await Promise.all(spendingInfoPromises);
+
+      return {
+        title: `${team.teamName}`,
+        data: team.projects.map((project, index) => ({
+          title: `${wbsPipe(project.wbsElement)} - ${project.wbsElement.name}`,
+          spendingInfo: spendingInfos[index]
+        }))
+      };
+    });
+
+    const data: SpendingBarData[] = await Promise.all(teamDataPromises);
+
+    return data;
   }
 
   static async getSpendingBarCategoryData(organization: Organization): Promise<SpendingBarData> {
-    return await getSpendingBarCategoryData(organization.organizationId);
+    const { organizationId } = organization;
+    const otherReasons = await prisma.reimbursement_Product_Other_Reason.findMany({
+      where: {
+        dateDeleted: null,
+        indexCode: {
+          organizationId
+        }
+      }
+    });
+
+    const spendingInfoPromises = otherReasons.map((r) =>
+      this.getReimbursementRequestCategoryData(r.otherReimbursementProductReasonId, organization)
+    );
+    const spendingInfos = await Promise.all(spendingInfoPromises);
+
+    const data: SpendingBarData = {
+      title: `Club Categories`,
+      data: otherReasons.map((r, index) => ({
+        title: r.name,
+        spendingInfo: spendingInfos[index]
+      }))
+    };
+
+    return data;
   }
 
   /**
@@ -477,7 +1040,7 @@ export default class FinanceServices {
    * @param sponsorTierId The ID of the sponsor's tier.
    * @param taxExempt Boolean indicating if the sponsor is tax-exempt.
    * @param discountCode The discount code associated with the sponsor.
-   * @param vendorContact The contact information for the sponsor's vendor.
+   * @param sponsorContact The contact information for the sponsor.
    * @param sponsorTasks An array of sponsor tasks associated with the sponsor.
    * @param organization The organization for which the sponsor is being edited.
    * @returns the edited sponsor.
@@ -493,7 +1056,7 @@ export default class FinanceServices {
     joinDate: Date,
     activeYears: number[],
     sponsorTierId: string,
-    vendorContact: string,
+    sponsorContact: string,
     taxExempt: boolean,
     sponsorTasks: CreateSponsorTask[],
     discountCode?: string
@@ -570,7 +1133,7 @@ export default class FinanceServices {
             })
           )
         },
-        vendorContact,
+        vendorContact: sponsorContact,
         taxExempt,
         discountCode
       },
@@ -587,10 +1150,97 @@ export default class FinanceServices {
    */
   static async getAllSponsorTiers(organization: Organization): Promise<SponsorTier[]> {
     const allSponsorTiers = await prisma.sponsor_Tier.findMany({
-      where: { organizationId: organization.organizationId },
+      where: { organizationId: organization.organizationId, dateDeleted: null },
+      orderBy: { minSupportValue: 'asc' },
       ...getSponsorTierQueryArgs(organization.organizationId)
     });
 
     return allSponsorTiers;
+  }
+
+  /**
+   * Soft deletes a given sponsor tier
+   * @param sponsorTierId the id of the sponsor tier that is getting deleted
+   * @param deleter the person deleting the sponsor tier
+   * @param organization the organization the person deleting belongs to
+   * @returns the deleted sponsor tier
+   */
+  static async deleteSponsorTier(sponsorTierId: string, deleter: User, organization: Organization): Promise<SponsorTier> {
+    const sponsorTier = await prisma.sponsor_Tier.findUnique({
+      where: { sponsorTierId }
+    });
+
+    if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('delete a sponsor tier');
+    }
+
+    if (!sponsorTier) throw new NotFoundException('Sponsor Tier', sponsorTierId);
+    if (sponsorTier.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Sponsor Tier');
+    if (sponsorTier.dateDeleted) throw new DeletedException('Sponsor Tier', sponsorTierId);
+
+    const associatedSponsors = await prisma.sponsor.count({
+      where: { sponsorTierId: sponsorTier.sponsorTierId, dateDeleted: null }
+    });
+
+    if (associatedSponsors > 0) {
+      throw new HttpException(
+        400,
+        `Cannot delete Sponsor Tier "${sponsorTier.name}" because it is associated with existing sponsors.`
+      );
+    }
+
+    const deletedSponsorTier = await prisma.sponsor_Tier.update({
+      where: { sponsorTierId },
+      data: { dateDeleted: new Date(), deleter: { connect: { userId: deleter.userId } } },
+      ...getSponsorTierQueryArgs(organization.organizationId)
+    });
+
+    return deletedSponsorTier;
+  }
+
+  /**
+   * Edits a sponsor tier.
+   * @param submitter current user editing the sponsor tier
+   * @param organization current organization of the current user
+   * @param sponsorTierId id of the sponsor tier to be edited
+   * @param name updated tier name
+   * @param colorHexCode updated tier color
+   * @param minSupportValue updated minimum support value for the tier
+   * @returns the updated sponsor tier
+   * @throws AccessDeniedAdminOnlyException if the user lacks permissions.
+   * @throws NotFoundException if the sponsor tier is not found.
+   */
+  static async editSponsorTier(
+    submitter: User,
+    organization: Organization,
+    sponsorTierId: string,
+    name: string,
+    colorHexCode: string,
+    minSupportValue: number
+  ): Promise<SponsorTier> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('edit a sponsor tier');
+
+    const oldSponsorTier = await prisma.sponsor_Tier.findUnique({
+      where: {
+        sponsorTierId,
+        organizationId: organization.organizationId
+      }
+    });
+
+    if (!oldSponsorTier) throw new NotFoundException('Sponsor Tier', sponsorTierId);
+    if (oldSponsorTier.dateDeleted) throw new DeletedException('Sponsor Tier', sponsorTierId);
+
+    const updatedSponsorTier = await prisma.sponsor_Tier.update({
+      where: { sponsorTierId: oldSponsorTier.sponsorTierId },
+      data: {
+        name,
+        colorHexCode,
+        minSupportValue
+      },
+      ...getSponsorTierQueryArgs(organization.organizationId)
+    });
+
+    return updatedSponsorTier;
   }
 }
