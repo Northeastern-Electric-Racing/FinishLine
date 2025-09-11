@@ -9,6 +9,7 @@ import ReimbursementRequestInfo from './FinanceComponents/ReimbursementRequestIn
 
 interface ReimbursementRequestTableProps {
   userReimbursementRequests: ReimbursementRequest[];
+  assignedReimbursementRequests: ReimbursementRequest[];
   allReimbursementRequests?: ReimbursementRequest[];
   onCloseSidePage: () => void;
   searchText?: string;
@@ -19,6 +20,7 @@ interface ReimbursementRequestTableProps {
 
 const ReimbursementRequestTable = ({
   userReimbursementRequests,
+  assignedReimbursementRequests,
   allReimbursementRequests,
   onCloseSidePage,
   searchText,
@@ -58,6 +60,7 @@ const ReimbursementRequestTable = ({
       )}
       <ReimbursementRequestInfo
         userReimbursementRequests={userReimbursementRequests}
+        assignedReimbursementRequests={assignedReimbursementRequests}
         allReimbursementRequests={allReimbursementRequests}
         canViewAllReimbursementRequests={canViewAllReimbursementRequests}
         currentTab={tabValue}

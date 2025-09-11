@@ -257,7 +257,7 @@ model User {
   reimbursementRequestComments            Reimbursement_Request_Comment[]      @relation(name: "createdReimbursementRequestComments")
   deletedReimbursementRequestComments     Reimbursement_Request_Comment[]      @relation(name: "deletedReimbursementRequestComments")
   deletedSponsorTiers                     Sponsor_Tier[]
-  Reimbursement_Request                   Reimbursement_Request[]              @relation(name: "reimbursementRequestAssignee")
+  assignedReimbursementRequests           Reimbursement_Request[]              @relation(name: "reimbursementRequestAssignee")
 }
 
 model Role {

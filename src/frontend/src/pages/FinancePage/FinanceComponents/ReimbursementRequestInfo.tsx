@@ -36,6 +36,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 
 interface ReimbursementRequestInfoProps {
   userReimbursementRequests: ReimbursementRequest[];
+  assignedReimbursementRequests: ReimbursementRequest[];
   allReimbursementRequests?: ReimbursementRequest[];
   canViewAllReimbursementRequests?: boolean;
   currentTab?: number;
@@ -53,6 +54,7 @@ interface ReimbursementTableHeadCell {
 
 const ReimbursementRequestInfo = ({
   userReimbursementRequests,
+  assignedReimbursementRequests,
   allReimbursementRequests,
   canViewAllReimbursementRequests = false,
   currentTab = 0,
@@ -69,7 +71,7 @@ const ReimbursementRequestInfo = ({
   const user = useCurrentUser();
   const [sidePageTitle, setSidePageTitle] = useState('');
 
-  const displayedReimbursementRequests =
+  const displayedReimbursementRequests = 
     canViewAllReimbursementRequests && currentTab !== 0 && allReimbursementRequests
       ? allReimbursementRequests
       : userReimbursementRequests;
@@ -160,7 +162,7 @@ const ReimbursementRequestInfo = ({
     },
     {
       id: 'financeMemberAssigned',
-      label: 'Assignee'
+      label: 'Assigned To'
     }
   ];
 

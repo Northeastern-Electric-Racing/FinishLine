@@ -116,19 +116,6 @@ const ReimbursementRequests: React.FC = () => {
     error: allReimbursementRequestsError
   } = useAllReimbursementRequests();
 
-  const userReimbursementRequests = useMemo(() => {
-    const combined = [...(createdReimbursementRequests ?? []), ...(assignedReimbursementRequests ?? [])];
-    const uniqueMap = new Map();
-
-    combined.forEach((item) => {
-      if (!uniqueMap.has(item.reimbursementRequestId)) {
-        uniqueMap.set(item.reimbursementRequestId, item);
-      }
-    });
-
-    return Array.from(uniqueMap.values());
-  }, [createdReimbursementRequests, assignedReimbursementRequests]);
-
   const [searchText, setSearchText] = useState<string>('');
   const [anchorFilterEl, setAnchorFilterEl] = useState<null | HTMLElement>(null);
   const [selectedStatuses, setSelectedStatuses] = useState<ReimbursementStatusType[]>([]);
@@ -281,7 +268,8 @@ const ReimbursementRequests: React.FC = () => {
       {canViewAllReimbursementRequests && SearchAndFilterBar}
       <Box sx={{ position: 'relative', top: tableOffset }}>
         <ReimbursementRequestTable
-          userReimbursementRequests={userReimbursementRequests}
+          userReimbursementRequests={createdReimbursementRequests ?? []}
+          assignedReimbursementRequests={assignedReimbursementRequests ?? []}
           allReimbursementRequests={allReimbursementRequests ?? []}
           searchText={searchText}
           statuses={selectedStatuses}

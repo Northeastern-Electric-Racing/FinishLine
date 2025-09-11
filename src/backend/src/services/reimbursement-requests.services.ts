@@ -443,6 +443,10 @@ export default class ReimbursementRequestService {
       throw new NotFoundException('Reimbursement Request', requestId);
     }
 
+    if (reimbursementRequest.dateDeleted) {
+      throw new DeletedException('Reimbursement Request', requestId);
+    }
+
     if (reimbursementRequest.organizationId !== organization.organizationId) {
       throw new InvalidOrganizationException('Reimbursement Request');
     }
