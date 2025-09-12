@@ -248,7 +248,7 @@ const ReimbursementRequestInfo = ({
               {headCells.map(
                 (headCell) =>
                   (currentTab !== 0 || headCell.id !== 'submitter') &&
-                  (currentTab !== 2 || headCell.id !== 'financeMemberAssigned') && (
+                  (currentTab === 1 || headCell.id !== 'financeMemberAssigned') && (
                     <ColumnHeader
                       id={headCell.id}
                       title={headCell.label}
@@ -293,7 +293,7 @@ const ReimbursementRequestInfo = ({
                   <TableCell align="center">{undefinedPipe(row.saboId)}</TableCell>
                   <TableCell align="center">{datePipe(row.dateSubmitted)}</TableCell>
                   <TableCell align="center">{dateUndefinedPipe(row.dateSubmittedToSabo)}</TableCell>
-                  {currentTab !== 2 && <TableCell align="center">{fullNamePipe(row.financeMemberAssigned)}</TableCell>}
+                  {currentTab === 1 && <TableCell align="center">{fullNamePipe(row.financeMemberAssigned)}</TableCell>}
                   <TableCell align="center">
                     {
                       <Button
