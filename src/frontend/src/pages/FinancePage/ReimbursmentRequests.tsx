@@ -1,5 +1,5 @@
 import { Box, Button, Menu, MenuItem, ListItemIcon, Typography, FormControlLabel, Checkbox } from '@mui/material';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { SearchBar } from '../../components/SearchBar';
 import { NERButton } from '../../components/NERButton';
@@ -21,7 +21,6 @@ import { DatePicker } from '@mui/x-date-pickers';
 import ReportRefundModal from './FinanceComponents/ReportRefundModal';
 import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
 import ErrorPage from '../ErrorPage';
-import LoadingIndicator from '../../components/LoadingIndicator';
 
 const ReimbursementRequests: React.FC = () => {
   const allStatuses = Object.values(ReimbursementStatusType);
