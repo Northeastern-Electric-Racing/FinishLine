@@ -52,6 +52,8 @@ services:
   postgres-exporter:
     container_name: postgres-exporter-dev
     image: prometheuscommunity/postgres-exporter
+    profiles:
+      - monitoring
     environment:
       DATA_SOURCE_NAME: 'postgresql://postgres:docker@database:5432/finishline_database?sslmode=disable'
     ports:
@@ -63,6 +65,8 @@ services:
   prometheus:
     container_name: prometheus-dev
     image: prom/prometheus
+    profiles:
+      - monitoring
     ports:
       - '9090:9090'
     volumes:
@@ -77,8 +81,10 @@ services:
   grafana:
     container_name: grafana-dev
     image: grafana/grafana
+    profiles:
+      - monitoring
     ports:
-      - '4000:3000' # Grafana on host port 4000, since 3000 is taken by frontend
+      - '4000:3000'
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin

@@ -82,6 +82,12 @@ async function runMigrations() {
 }
 
 async function main() {
+  const args = process.argv.slice(2);
+
+  console.log(args);
+
+  const debugFlag = args.includes('--debug') ? '--profile monitoring' : ''
+
   console.log('Checking container status...');
 
   const containerStatus = await getContainerStatus();
@@ -96,14 +102,14 @@ async function main() {
       console.log(
         `Found ${containerStatus.running}/${containerStatus.total} containers running. Starting all containers...`
       );
-      await runCommand(`docker compose -f ${COMPOSE_FILE} up -d`);
+      await runCommand(`docker compose ${debugFlag} -f ${COMPOSE_FILE} up -d`);
       console.log('Containers started. Following logs...');
       await runCommand(`docker compose -f ${COMPOSE_FILE} logs --follow`);
       break;
 
     case 'not_created':
       console.log('Containers not found. Building and starting...');
-      await runCommand(`docker compose -f ${COMPOSE_FILE} up --build -d`);
+      await runCommand(`docker compose ${debugFlag} -f ${COMPOSE_FILE} up --build -d`);
       console.log('Containers built and started. Waiting for backend...');
       await waitForBackendReady();
       console.log('Running migrations...');
