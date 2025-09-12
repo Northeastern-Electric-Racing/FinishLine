@@ -71,10 +71,12 @@ const ReimbursementRequestInfo = ({
   const user = useCurrentUser();
   const [sidePageTitle, setSidePageTitle] = useState('');
 
-  const displayedReimbursementRequests = 
-    canViewAllReimbursementRequests && currentTab !== 0 && allReimbursementRequests
+  const displayedReimbursementRequests =
+    canViewAllReimbursementRequests && currentTab === 1 && allReimbursementRequests
       ? allReimbursementRequests
-      : userReimbursementRequests;
+      : currentTab === 0
+        ? userReimbursementRequests
+        : assignedReimbursementRequests;
 
   const rows = displayedReimbursementRequests
     .map(createReimbursementRequestRowData)
@@ -243,16 +245,20 @@ const ReimbursementRequestInfo = ({
             }}
           >
             <TableRow>
-              {headCells.map((headCell) => (
-                <ColumnHeader
-                  id={headCell.id}
-                  title={headCell.label}
-                  setAscendingOrder={setAscendingOrder}
-                  isAscendingOrder={isAscendingOrder}
-                  setOrderBy={setOrderBy}
-                  orderBy={orderBy}
-                />
-              ))}
+              {headCells.map(
+                (headCell) =>
+                  (currentTab !== 0 || headCell.id !== 'submitter') &&
+                  (currentTab !== 2 || headCell.id !== 'financeMemberAssigned') && (
+                    <ColumnHeader
+                      id={headCell.id}
+                      title={headCell.label}
+                      setAscendingOrder={setAscendingOrder}
+                      isAscendingOrder={isAscendingOrder}
+                      setOrderBy={setOrderBy}
+                      orderBy={orderBy}
+                    />
+                  )
+              )}
               <TableCell align="center" />
             </TableRow>
           </TableHead>
@@ -281,13 +287,13 @@ const ReimbursementRequestInfo = ({
                       {cleanReimbursementRequestStatus(row.status)}
                     </Box>
                   </TableCell>
-                  <TableCell align="center">{fullNamePipe(row.submitter)}</TableCell>
+                  {currentTab !== 0 && <TableCell align="center">{fullNamePipe(row.submitter)}</TableCell>}
                   <TableCell align="center">{`$${centsToDollar(row.amount)}`}</TableCell>
                   <TableCell align="center">{undefinedPipe(row.identifier)}</TableCell>
                   <TableCell align="center">{undefinedPipe(row.saboId)}</TableCell>
                   <TableCell align="center">{datePipe(row.dateSubmitted)}</TableCell>
                   <TableCell align="center">{dateUndefinedPipe(row.dateSubmittedToSabo)}</TableCell>
-                  <TableCell align="center">{fullNamePipe(row.financeMemberAssigned)}</TableCell>
+                  {currentTab !== 2 && <TableCell align="center">{fullNamePipe(row.financeMemberAssigned)}</TableCell>}
                   <TableCell align="center">
                     {
                       <Button

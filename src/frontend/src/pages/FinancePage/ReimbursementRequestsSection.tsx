@@ -39,6 +39,10 @@ const ReimbursementRequestTable = ({
 
   if (canViewAllReimbursementRequests) tabs.push({ tabUrlValue: 'all-requests', tabName: 'All Requests' });
 
+  if (assignedReimbursementRequests.length > 0) {
+    tabs.push({ tabUrlValue: 'requests-assigned-to-me', tabName: 'Requests Assigned To Me' });
+  }
+
   return (
     <Box sx={{ bgcolor: theme.palette.background.default, width: '100%', borderRadius: '8px 8px 0 0' }}>
       {canViewAllReimbursementRequests && (

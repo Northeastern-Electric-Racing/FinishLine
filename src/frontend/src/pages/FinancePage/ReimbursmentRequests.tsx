@@ -21,6 +21,7 @@ import { DatePicker } from '@mui/x-date-pickers';
 import ReportRefundModal from './FinanceComponents/ReportRefundModal';
 import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
 import ErrorPage from '../ErrorPage';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 const ReimbursementRequests: React.FC = () => {
   const allStatuses = Object.values(ReimbursementStatusType);
