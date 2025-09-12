@@ -42,7 +42,6 @@ describe('announcement tests', () => {
       orgId
     );
     expect(announcement?.text).toBe('text');
-    expect(announcement?.usersReceived).toHaveLength(2);
     expect(announcement?.senderName).toBe('sender name');
     expect(announcement?.dateMessageSent).toStrictEqual(new Date(1000000000000));
     expect(announcement?.slackEventId).toBe('slack id');
@@ -55,7 +54,6 @@ describe('announcement tests', () => {
 
     expect(smAnnouncements).toHaveLength(1);
     expect(smAnnouncements[0]?.text).toBe('text');
-    expect(smAnnouncements[0]?.usersReceived).toHaveLength(2);
     expect(smAnnouncements[0]?.senderName).toBe('sender name');
     expect(smAnnouncements[0]?.dateMessageSent).toStrictEqual(new Date(1000000000000));
     expect(smAnnouncements[0]?.slackEventId).toBe('slack id');

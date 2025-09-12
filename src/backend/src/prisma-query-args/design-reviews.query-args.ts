@@ -17,7 +17,12 @@ export const getDesignReviewQueryArgs = (organizationId: string) =>
       attendees: getUserQueryArgs(organizationId),
       userDeleted: getUserQueryArgs(organizationId),
       wbsElement: {
-        include: {
+        select: {
+          carNumber: true,
+          projectNumber: true,
+          workPackageNumber: true,
+          name: true,
+          organizationId: true,
           workPackage: {
             select: { project: { select: { wbsElement: { select: { name: true } } } } }
           }
@@ -29,7 +34,10 @@ export const getDesignReviewQueryArgs = (organizationId: string) =>
 
 export const getDesignReviewPreviewQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Design_ReviewDefaultArgs>()({
-    include: {
+    select: {
+      designReviewId: true,
+      dateScheduled: true,
+      status: true,
       userCreated: getUserWithSettingsQueryArgs(organizationId)
     }
   });

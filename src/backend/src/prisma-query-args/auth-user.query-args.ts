@@ -21,8 +21,8 @@ export const getAuthUserQueryArgs = (organizationId: string) =>
         ...getTeamQueryArgs(organizationId)
       },
       teamsAsMember: {
-        where: {
-          organizationId
+        select: {
+          financeTeam: true
         }
       },
       favoriteProjects: {
@@ -42,16 +42,25 @@ export const getAuthUserQueryArgs = (organizationId: string) =>
           wbsElement: {
             organizationId
           }
+        },
+        select: {
+          crId: true
         }
       },
       onboardingTeamTypes: {
         where: {
           organizationId
+        },
+        select: {
+          teamTypeId: true
         }
       },
       onboardedTeamTypes: {
         where: {
           organizationId
+        },
+        select: {
+          teamTypeId: true
         }
       }
     }

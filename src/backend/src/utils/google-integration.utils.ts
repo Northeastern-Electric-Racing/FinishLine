@@ -4,7 +4,7 @@ import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { HttpException } from './errors.utils';
 import stream, { Readable } from 'stream';
 import concat from 'concat-stream';
-import { User, WBS_Element } from '@prisma/client';
+import { User } from '@prisma/client';
 import { transformDate } from './datetime.utils';
 import { transformStartTime } from './design-reviews.utils';
 import { getUsers } from './users.utils';
@@ -220,7 +220,10 @@ export const createCalendarEvent = async (
   zoomLink: string | null,
   location: string | null,
   meetingTimes: number[],
-  wbsElement: WBS_Element
+  wbsElement: {
+    projectNumber: number;
+    name: string;
+  }
 ) => {
   if (process.env.NODE_ENV !== 'production') return;
   try {
@@ -280,7 +283,10 @@ export const updateCalendarEvent = async (
   zoomLink: string | null,
   location: string | null,
   meetingTimes: number[],
-  wbsElement: WBS_Element
+  wbsElement: {
+    projectNumber: number;
+    name: string;
+  }
 ) => {
   try {
     oauth2Client.setCredentials({

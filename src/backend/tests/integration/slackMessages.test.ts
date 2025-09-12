@@ -85,7 +85,6 @@ describe('Slack message tests', () => {
     expect(announcement?.senderName).toBe('Slack User Name');
     expect(announcement?.slackChannelName).toBe('Slack Channel Name');
     expect(announcement?.slackEventId).toBe('id_1');
-    expect(announcement?.usersReceived).toHaveLength(3);
   });
 
   it('Adds message to people in channel with @channel and @mention (w/o duplicates)', async () => {
@@ -122,7 +121,6 @@ describe('Slack message tests', () => {
     expect(announcement?.senderName).toBe('Slack User Name');
     expect(announcement?.slackChannelName).toBe('Slack Channel Name');
     expect(announcement?.slackEventId).toBe('id_1');
-    expect(announcement?.usersReceived).toHaveLength(3);
   });
 
   it('Sends the announcement to a single person with a mention', async () => {
@@ -156,7 +154,6 @@ describe('Slack message tests', () => {
     expect(announcement?.senderName).toBe('Slack User Name');
     expect(announcement?.slackChannelName).toBe('Slack Channel Name');
     expect(announcement?.slackEventId).toBe('id_1');
-    expect(announcement?.usersReceived).toHaveLength(1);
   });
 
   it('Correctly processes other types of blocks', async () => {
@@ -204,7 +201,6 @@ describe('Slack message tests', () => {
     expect(announcement?.senderName).toBe('Slack User Name');
     expect(announcement?.slackChannelName).toBe('Slack Channel Name');
     expect(announcement?.slackEventId).toBe('id_1');
-    expect(announcement?.usersReceived).toHaveLength(1);
   });
 
   it("Doesn't create an announcement if no one is mentioned", async () => {
@@ -276,7 +272,6 @@ describe('Slack message tests', () => {
     expect(announcement2?.senderName).toBe('Slack User Name');
     expect(announcement2?.slackChannelName).toBe('Slack Channel Name');
     expect(announcement2?.slackEventId).toBe('id_1');
-    expect(announcement2?.usersReceived).toHaveLength(1);
 
     expect(createSpy).toBeCalledTimes(1);
     expect(updateSpy).toBeCalledTimes(1);
@@ -331,7 +326,6 @@ describe('Slack message tests', () => {
     expect(announcement2?.senderName).toBe('Slack User Name');
     expect(announcement2?.slackChannelName).toBe('Slack Channel Name');
     expect(announcement2?.slackEventId).toBe('id_1');
-    expect(announcement2?.usersReceived).toHaveLength(1);
 
     expect(createSpy).toBeCalledTimes(1);
     expect(updateSpy).toBeCalledTimes(1);

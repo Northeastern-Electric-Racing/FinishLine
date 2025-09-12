@@ -18,7 +18,7 @@ import { getDateImplemented } from '../utils/change-requests.utils';
 import { userTransformer } from './user.transformer';
 import { descBulletConverter } from '../utils/description-bullets.utils';
 import { linkTransformer } from './links.transformer';
-import teamTransformer from './teams.transformer';
+import { teamPreviewTransformer } from './teams.transformer';
 import {
   WbsProposedChangeQueryArgs,
   WorkPackageProposedChangesQueryArgs
@@ -46,7 +46,7 @@ const projectProposedChangesTransformer = (
     summary: projectProposedChanges.summary,
     budget: projectProposedChanges.budget,
     descriptionBullets: wbsProposedChanges.proposedDescriptionBulletChanges.map(descBulletConverter),
-    teams: projectProposedChanges.teams.map(teamTransformer),
+    teams: projectProposedChanges.teams.map(teamPreviewTransformer),
     carNumber: projectProposedChanges.car?.wbsElement.carNumber ?? undefined,
     workPackageProposedChanges: projectProposedChanges.workPackageProposedChanges.map(workPackageProposedChangesTransformer)
   };

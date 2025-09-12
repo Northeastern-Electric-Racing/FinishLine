@@ -22,7 +22,7 @@ import {
   InvalidOrganizationException
 } from '../utils/errors.utils';
 import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
-import workPackageTransformer from '../transformers/work-packages.transformer';
+import { workPackageTransformer } from '../transformers/work-packages.transformer';
 import { updateBlocking, validateChangeRequestAccepted } from '../utils/change-requests.utils';
 import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils';
 import { getWorkPackageChanges } from '../utils/changes.utils';

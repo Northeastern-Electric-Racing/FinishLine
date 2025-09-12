@@ -17,7 +17,7 @@ import { descBulletConverter } from '../utils/description-bullets.utils';
 import { userTransformer } from './user.transformer';
 import { ProjectManyQueryArgs, ProjectQueryArgs } from '../prisma-query-args/projects.query-args';
 import { teamPreviewTransformer } from './teams.transformer';
-import workPackageTransformer, { retrospectiveWorkPackageTransformer } from './work-packages.transformer';
+import { workPackageTransformer, retrospectiveWorkPackageTransformer } from './work-packages.transformer';
 import { WorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
 
 const projectTransformer = (project: Prisma.ProjectGetPayload<ProjectQueryArgs>): Project => {

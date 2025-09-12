@@ -57,7 +57,6 @@ export const getManyChangeRequestQueryArgs = (organizationId: string) =>
         include: { lead: getUserQueryArgs(organizationId), manager: getUserQueryArgs(organizationId) }
       },
       budgetChangeRequest: true,
-      deletedBy: getUserQueryArgs(organizationId),
       requestedReviewers: getUserQueryArgs(organizationId)
     }
   });
@@ -75,7 +74,7 @@ export const getChangeRequestWithProjectAndWorkPackageQueryArgs = (organizationI
             }
           },
           descriptionBullets: { where: { dateDeleted: null } },
-          links: { where: { dateDeleted: null } }
+          links: { where: { dateDeleted: null }, select: { linkId: true } }
         }
       },
       category: getReimbursementProductOtherReasonQueryArgs(organizationId),
@@ -100,7 +99,6 @@ export const getChangeRequestWithProjectAndWorkPackageQueryArgs = (organizationI
         include: { lead: getUserQueryArgs(organizationId), manager: getUserQueryArgs(organizationId) }
       },
       budgetChangeRequest: true,
-      deletedBy: getUserQueryArgs(organizationId),
       requestedReviewers: getUserQueryArgs(organizationId)
     }
   });

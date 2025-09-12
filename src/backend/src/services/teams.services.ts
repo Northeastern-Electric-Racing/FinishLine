@@ -17,7 +17,7 @@ import { getTeamPreviewQueryArgs, getTeamQueryArgs } from '../prisma-query-args/
 import { uploadFile } from '../utils/google-integration.utils';
 import { teamTypeTransformer } from '../transformers/team-types.transformer';
 import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
-import workPackageTransformer from '../transformers/work-packages.transformer';
+import { workPackageTransformer } from '../transformers/work-packages.transformer';
 
 export default class TeamsService {
   /**

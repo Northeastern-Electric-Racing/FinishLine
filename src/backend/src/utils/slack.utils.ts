@@ -389,7 +389,7 @@ export const sendDRConfirmationToThread = async (threads: SlackMessageThread[], 
 
 export const sendDRScheduledSlackNotif = async (
   threads: SlackMessageThread[],
-  designReview: Design_Review & { wbsElement: WBS_Element; userCreated: User }
+  designReview: Design_Review & { wbsElement: { name: string }; userCreated: User }
 ) => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
 

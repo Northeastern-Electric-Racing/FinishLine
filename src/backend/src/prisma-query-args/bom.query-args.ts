@@ -12,16 +12,20 @@ export const getAssemblyQueryArgs = (organizationId: string) =>
       userDeleted: getUserQueryArgs(organizationId),
       materials: getMaterialPreviewQueryArgs(organizationId),
       wbsElement: {
-        include: {
+        select: {
+          carNumber: true,
+          projectNumber: true,
+          workPackageNumber: true,
+          organizationId: true,
           project: {
-            include: {
+            select: {
               teams: getTeamQueryArgs(organizationId)
             }
           },
           workPackage: {
-            include: {
+            select: {
               project: {
-                include: {
+                select: {
                   teams: getTeamQueryArgs(organizationId)
                 }
               }

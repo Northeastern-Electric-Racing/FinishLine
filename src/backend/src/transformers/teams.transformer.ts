@@ -25,8 +25,8 @@ export const teamPreviewTransformer = (team: Prisma.TeamGetPayload<TeamPreviewQu
   return {
     ...team,
     leads: team.leads.map(userTransformer),
-    members: team.members.map(userTransformer),
-    head: userTransformer(team.head)
+    head: userTransformer(team.head),
+    members: team.members.map(userTransformer)
   };
 };
 

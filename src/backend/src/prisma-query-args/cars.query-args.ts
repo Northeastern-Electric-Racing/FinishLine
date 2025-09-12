@@ -7,7 +7,9 @@ export type CarQueryArgs = ReturnType<typeof getCarQueryArgs>;
 
 export const getCarQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.CarDefaultArgs>()({
-    include: {
+    select: {
+      wbsElementId: true,
+      carId: true,
       wbsElement: {
         include: {
           lead: getUserQueryArgs(organizationId),

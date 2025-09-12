@@ -9,6 +9,7 @@ datasource db {
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["relationJoins"]
+  engineType = "library"
 }
 
 enum CR_Type {

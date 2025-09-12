@@ -1,4 +1,4 @@
-import { Material } from 'shared';
+import { MaterialPreview } from 'shared';
 import { GridColDefStyle } from './tables';
 import { centsToDollar } from './pipes';
 import { DataGrid, GridValidRowModel } from '@mui/x-data-grid';
@@ -22,7 +22,7 @@ export interface BomRow extends GridValidRowModel {
   assemblyId: string | undefined;
 }
 
-export const materialToRow = (material: Material, idx: number): BomRow => {
+export const materialToRow = (material: MaterialPreview, idx: number): BomRow => {
   return {
     reimbursementRequestId: material.reimbursementRequest?.identifier,
     id: idx + (material.assemblyId ?? ''),

@@ -7,7 +7,7 @@ import { WorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-a
 import { designReviewPreviewTransformer } from './design-reviews.transformer';
 import { teamTypeTransformer } from './team-types.transformer';
 
-const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>): WorkPackage => {
+export const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>): WorkPackage => {
   const wbsNum = wbsNumOf(wpInput.wbsElement);
   return {
     wbsElementId: wpInput.wbsElementId,
@@ -55,5 +55,3 @@ export const retrospectiveWorkPackageTransformer = (
     originalDuration: wpInput.originalDuration
   };
 };
-
-export default workPackageTransformer;

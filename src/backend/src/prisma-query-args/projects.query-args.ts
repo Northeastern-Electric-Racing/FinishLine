@@ -58,7 +58,8 @@ export const getProjectManyQueryArgs = (organizationId: string) =>
               dateDeleted: null
             },
             ...getLinkQueryArgs(organizationId)
-          }
+          },
+          descriptionBullets: { where: { dateDeleted: null }, ...getDescriptionBulletQueryArgs(organizationId) }
         }
       },
       teams: getTeamPreviewQueryArgs(organizationId),
