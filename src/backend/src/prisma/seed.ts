@@ -50,6 +50,7 @@ import AnnouncementService from '../services/announcement.services';
 import OnboardingServices from '../services/onboarding.services';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
 import FinanceServices from '../services/finance.services';
+import MachineryService from '../services/machinery.services';
 
 const prisma = new PrismaClient();
 
@@ -3059,6 +3060,34 @@ const performSeed: () => Promise<void> = async () => {
     new Date(7, 5, 25),
     thomasEmrax.userId
   );
+
+  // Create temporary shops (placeholder until we have createShop service)
+  const machineShop = await prisma.shop.create({
+    data: {
+      name: 'Precision Manufacturing Lab',
+      description: 'CNC machining and precision manufacturing facility',
+      userCreatedId: thomasEmrax.userId
+    }
+  });
+
+  const electronicsShop = await prisma.shop.create({
+    data: {
+      name: 'Electronics Design Center',
+      description: 'Electronics testing and circuit design lab',
+      userCreatedId: thomasEmrax.userId
+    }
+  });
+
+  // Create machineries and assign to machineShop
+  await MachineryService.createMachinery(thomasEmrax, 'Iron Man Mark 42 CNC Mill', machineShop.shopId, 2, ner);
+  await MachineryService.createMachinery(thomasEmrax, 'Captain America Shield Press', machineShop.shopId, 1, ner);
+  await MachineryService.createMachinery(thomasEmrax, 'Thor Hammer Forge', machineShop.shopId, 1, ner);
+
+  //Create machineries and assign to electronicsShop
+  await MachineryService.createMachinery(thomasEmrax, 'Arc Reactor Oscilloscope', electronicsShop.shopId, 4, ner);
+  await MachineryService.createMachinery(thomasEmrax, 'Vibranium Power Supply', electronicsShop.shopId, 6, ner);
+  await MachineryService.createMachinery(thomasEmrax, 'Stark Industries Multimeter', electronicsShop.shopId, 2, ner);
+  await MachineryService.createMachinery(thomasEmrax, 'Wakanda Tech Oscilloscope', electronicsShop.shopId, 3, ner);
 };
 
 performSeed()
