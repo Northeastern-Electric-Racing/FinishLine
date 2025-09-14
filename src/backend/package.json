@@ -9,7 +9,7 @@
     "prisma:manual": "ts-node ./src/prisma/manual.ts"
   },
   "dependencies": {
-    "@prisma/client": "6.2.1",
+    "@prisma/client": "^6.2.1",
     "@slack/events-api": "^3.0.1",
     "@slack/web-api": "^7.8.0",
     "@types/concat-stream": "^2.0.0",
@@ -33,7 +33,7 @@
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.1",
     "shared": "1.0.0",
-    "prisma": "6.2.1"
+    "prisma": "^6.2.1"
   },
   "devDependencies": {
     "@types/express-jwt": "^6.0.4",
