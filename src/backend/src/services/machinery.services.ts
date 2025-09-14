@@ -6,12 +6,11 @@ import { userHasPermission } from '../utils/users.utils';
 
 export default class MachineryService {
   /**
-   * Creates a new machinery and associates it with a shop.
+   * Creates a new machinery and associates it with shops.
    *
    * @param submitter The user submitting the request, who must be an admin.
    * @param name The name of the machinery.
-   * @param shopId The ID of the shop to associate the machinery with.
-   * @param quantity The quantity of machinery to add to the shop.
+   * @param shopMachineryData Array of shop machinery data containing shopId, quantity, and optional description.
    * @param organization The organization for which the machinery is being created.
    *
    * @returns The created machinery object with associated shop machinery.
@@ -29,10 +28,13 @@ export default class MachineryService {
         name,
         userCreatedId: submitter.userId,
         shops: {
-          create: {
-            shopId,
-            quantity
-          }
+          create: [
+            {
+              shopId,
+              quantity,
+              description: null
+            }
+          ]
         }
       },
       include: {
