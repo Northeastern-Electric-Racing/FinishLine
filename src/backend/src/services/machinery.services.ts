@@ -12,12 +12,20 @@ export default class MachineryService {
    * @param name The name of the machinery.
    * @param shopMachineryData Array of shop machinery data containing shopId, quantity, and optional description.
    * @param organization The organization for which the machinery is being created.
+   * @param description The description of the machinery (optional).
    *
    * @returns The created machinery object with associated shop machinery.
    *
    * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
    */
-  static async createMachinery(submitter: User, name: string, shopId: string, quantity: number, organization: Organization) {
+  static async createMachinery(
+    submitter: User,
+    name: string,
+    shopId: string,
+    quantity: number,
+    organization: Organization,
+    description?: string
+  ) {
     // Check if user is admin
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create machinery');
@@ -32,7 +40,7 @@ export default class MachineryService {
             {
               shopId,
               quantity,
-              description: null
+              description
             }
           ]
         }
