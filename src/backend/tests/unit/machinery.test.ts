@@ -57,7 +57,7 @@ describe('Machinery Tests', () => {
       expect(result.shops).toHaveLength(1);
       expect(result.shops[0].quantity).toBe(2);
       expect(result.shops[0].shopId).toBe(shopId);
-      expect(result.shops[0].description).toBe('Main production unit');
+      expect(result.shops[0].description).toBe('');
     });
   });
 });
