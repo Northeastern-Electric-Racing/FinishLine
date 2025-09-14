@@ -37,14 +37,11 @@ interface SidebarProps {
   setDrawerOpen: (open: boolean) => void;
   moveContent: boolean;
   setMoveContent: (move: boolean) => void;
-  organization?: Organization;
 }
 
-const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organization }: SidebarProps) => {
+const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: SidebarProps) => {
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
   const { onPNMHomePage, onOnboardingHomePage } = useHomePageContext();
-  const theme = useTheme();
-  const history = useHistory();
   const user = useCurrentUser();
 
   const memberLinkItems: LinkItem[] = [
@@ -179,17 +176,6 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organ
               onSubmenuCollapse={() => handleCloseSubmenu()}
             />
           ))}
-          {/* {onPNMHomePage && (
-            // Apply button
-            <SidebarButton
-              onClick={() => {
-                history.push(routes.HOME_SELECT_SUBTEAM);
-                window.open(organization?.applicationLink);
-              }}
-              label={'Apply'}
-              icon={<ArticleIcon sx={{ fontSize: 27 }} style={{ color: theme.palette.text.primary }} />}
-            />
-          )} */}
           <NavUserMenu open={drawerOpen} />
         </Box>
         <Box justifyContent={drawerOpen ? 'flex-start' : 'center'}>
