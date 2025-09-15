@@ -28,7 +28,6 @@ export interface ScheduleSlot {
 
 export interface EventType {
   name: string;
-  events: Event[];
 }
 
 export interface Shop {
@@ -50,6 +49,7 @@ export interface Machinery {
 export interface Event {
   name: string;
   approved: boolean;
+  eventTypeId: string;
   approvedBy?: User;
   scheduledTimes?: ScheduleSlot[];
   people?: User[];
