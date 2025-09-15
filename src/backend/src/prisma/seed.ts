@@ -50,7 +50,7 @@ import AnnouncementService from '../services/announcement.services';
 import OnboardingServices from '../services/onboarding.services';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
 import FinanceServices from '../services/finance.services';
-import MachineryService from '../services/machinery.services';
+import MachineryService from '../services/calendar.services';
 
 const prisma = new PrismaClient();
 

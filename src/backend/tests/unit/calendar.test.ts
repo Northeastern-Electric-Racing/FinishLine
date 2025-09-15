@@ -1,5 +1,5 @@
 import { Organization } from '@prisma/client';
-import MachineryService from '../../src/services/machinery.services';
+import MachineryService from '../../src/services/calendar.services';
 import { AccessDeniedAdminOnlyException } from '../../src/utils/errors.utils';
 import { batmanAppAdmin, wonderwomanGuest, supermanAdmin } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';

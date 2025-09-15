@@ -4,7 +4,7 @@ import prisma from '../prisma/prisma';
 import { AccessDeniedAdminOnlyException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 
-export default class MachineryService {
+export default class CalendarService {
   /**
    * Creates a new machinery and associates it with shops.
    *

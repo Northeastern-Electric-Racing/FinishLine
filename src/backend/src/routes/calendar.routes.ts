@@ -1,7 +1,7 @@
 import express from 'express';
 import { body } from 'express-validator';
 import { nonEmptyString, validateInputs } from '../utils/validation.utils';
-import MachineryController from '../controllers/machinery.controllers';
+import MachineryController from '../controllers/calendar.controllers';
 
 const calendarRouter = express.Router();
 
