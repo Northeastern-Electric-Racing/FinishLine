@@ -28,6 +28,7 @@ export interface ScheduleSlot {
 
 export interface EventType {
   name: string;
+  calendarId: string;
 }
 
 export interface Shop {
