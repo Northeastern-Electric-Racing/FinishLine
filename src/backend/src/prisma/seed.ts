@@ -50,6 +50,7 @@ import AnnouncementService from '../services/announcement.services';
 import OnboardingServices from '../services/onboarding.services';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
 import FinanceServices from '../services/finance.services';
+import ShopServices from '../services/shop.services';
 
 const prisma = new PrismaClient();
 
@@ -3059,7 +3060,24 @@ const performSeed: () => Promise<void> = async () => {
     new Date(7, 5, 25),
     thomasEmrax.userId
   );
+
+  await ShopServices.createShop(
+    thomasEmrax,
+    'Precision Manufacturing Lab',
+    'CNC machining and precision manufacturing facility',
+    ner
+  );
+
+  await ShopServices.createShop(
+    thomasEmrax,
+    'Electronics Design Center',
+    'Electronics testing and circuit design lab',
+    ner
+  );
+
 };
+
+
 
 performSeed()
   .catch((e) => {
@@ -3069,3 +3087,4 @@ performSeed()
   .finally(async () => {
     await prisma.$disconnect();
   });
+
