@@ -5,6 +5,7 @@ export interface Calendar {
   name: string;
   description: string;
   color: string;
+  eventTypes: EventType[];
 }
 
 export enum DayOfWeek {
@@ -28,7 +29,6 @@ export interface ScheduleSlot {
 
 export interface EventType {
   name: string;
-  calendarId: string;
 }
 
 export interface Shop {
