@@ -56,8 +56,8 @@ describe('Machinery Tests', () => {
       expect(result.name).toEqual('Iron Man Mark 42 CNC Mill');
       expect(result.shops).toHaveLength(1);
       expect(result.shops[0].quantity).toBe(2);
-      expect(result.shops[0].shopId).toBe(shopId);
-      expect(result.shops[0].description).toBe(null);
+      expect(result.shops[0].shop.name).toBe('Precision Manufacturing Lab');
+      expect(result.shops[0].description).toBe(undefined);
     });
   });
 });
