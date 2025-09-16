@@ -3068,16 +3068,8 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await ShopServices.createShop(
-    thomasEmrax,
-    'Electronics Design Center',
-    'Electronics testing and circuit design lab',
-    ner
-  );
-
+  await ShopServices.createShop(thomasEmrax, 'Electronics Design Center', 'Electronics testing and circuit design lab', ner);
 };
-
-
 
 performSeed()
   .catch((e) => {
@@ -3087,4 +3079,3 @@ performSeed()
   .finally(async () => {
     await prisma.$disconnect();
   });
-

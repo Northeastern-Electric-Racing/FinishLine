@@ -20,12 +20,7 @@ describe('Shop Tests', () => {
   describe('create shop', () => {
     it('fails if user is not an admin', async () => {
       await expect(
-        ShopServices.createShop(
-          await createTestUser(wonderwomanGuest, orgId),
-          'Non-Admin Shop',
-          'desc',
-          organization
-        )
+        ShopServices.createShop(await createTestUser(wonderwomanGuest, orgId), 'Non-Admin Shop', 'desc', organization)
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create shop'));
     });
 
@@ -42,9 +37,7 @@ describe('Shop Tests', () => {
       const admin = await createTestUser(batmanAppAdmin, orgId);
       await ShopServices.createShop(admin, 'UniqueName', 'first', organization);
 
-      await expect(
-        ShopServices.createShop(admin, 'UniqueName', 'second attempt', organization)
-      ).rejects.toBeTruthy(); 
+      await expect(ShopServices.createShop(admin, 'UniqueName', 'second attempt', organization)).rejects.toBeTruthy();
     });
   });
 });
