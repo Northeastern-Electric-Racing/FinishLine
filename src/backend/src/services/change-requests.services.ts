@@ -146,7 +146,7 @@ export default class ChangeRequestsService {
             dateReviewed: null
           },
           {
-            NOT: { scopeChangeRequest: null }
+            NOT: { scopeChangeRequest: null, submitterId: user.userId }
           }
         ],
         organizationId: organization.organizationId,
