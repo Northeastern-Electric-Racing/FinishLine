@@ -6,7 +6,7 @@ export default class CalendarController {
     try {
       const {
         name,
-        calendarId,
+        calendarIds,
         initialDateScheduled,
         recurring,
         allDay,
@@ -25,7 +25,7 @@ export default class CalendarController {
       const eventType = await CalendarService.createEventType(
         req.currentUser,
         name,
-        calendarId,
+        calendarIds,
         req.organization,
         initialDateScheduled,
         recurring,

@@ -3062,6 +3062,16 @@ const performSeed: () => Promise<void> = async () => {
     thomasEmrax.userId
   );
 
+  const calendar = await prisma.calendar.create({
+    data: {
+      name: 'Engineering Team Calendar',
+      description: 'Tracks all engineering team events, meetings, and deadlines.',
+      colorHexCode: '#3498db',
+      userCreated: { connect: { userId: thomasEmrax.userId } },
+      dateCreated: new Date()
+    }
+  });
+
   // meeting event type
   await CalendarService.createEventType(
     thomasEmrax,
