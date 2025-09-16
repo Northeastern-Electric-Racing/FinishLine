@@ -3,6 +3,7 @@ import { isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedAdminOnlyException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
+import { machineryTransformer } from '../transformers/calendar.transformer';
 
 export default class CalendarService {
   /**
@@ -54,6 +55,6 @@ export default class CalendarService {
       }
     });
 
-    return newMachinery;
+    return machineryTransformer(newMachinery);
   }
 }
