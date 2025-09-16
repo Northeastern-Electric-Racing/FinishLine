@@ -104,6 +104,7 @@ CREATE TABLE "public"."EventType" (
     "shop" BOOLEAN,
     "machinery" BOOLEAN,
     "workPackage" BOOLEAN,
+    "questionDocument" BOOLEAN,
     "documents" BOOLEAN,
     "description" BOOLEAN,
 

@@ -4,6 +4,7 @@ import prisma from '../prisma/prisma';
 import { AccessDeniedAdminOnlyException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { eventTypeTransformer } from '../transformers/calendar.transformer';
+import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
 
 export default class CalendarService {
   /**
@@ -23,6 +24,7 @@ export default class CalendarService {
    * @param shop Determines if a shop is associated with this event type.
    * @param machinery Determines if machinery is associated with this event type.
    * @param workPackage Determines if a work package is associated with this event type.
+   * @param questionDocument Determines if a question document is associated with this event type.
    * @param documents Determines if documents are associates with this event type.
    * @param description Determines if a description is associated with this event type.
    *
@@ -45,6 +47,7 @@ export default class CalendarService {
     shop?: boolean,
     machinery?: boolean,
     workPackage?: boolean,
+    questionDocument?: boolean,
     documents?: boolean,
     description?: boolean
   ): Promise<EventType> {
@@ -69,9 +72,11 @@ export default class CalendarService {
         shop,
         machinery,
         workPackage,
+        questionDocument,
         documents,
         description
-      }
+      },
+      ...getEventTypeQueryArgs(organization.organizationId)
     });
 
     return eventTypeTransformer(newEventType);

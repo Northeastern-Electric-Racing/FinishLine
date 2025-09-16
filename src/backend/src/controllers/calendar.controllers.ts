@@ -17,6 +17,7 @@ export default class CalendarController {
         shop,
         machinery,
         workPackage,
+        questionDocument,
         documents,
         description
       } = req.body;

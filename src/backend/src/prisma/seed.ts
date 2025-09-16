@@ -50,6 +50,8 @@ import AnnouncementService from '../services/announcement.services';
 import OnboardingServices from '../services/onboarding.services';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
 import FinanceServices from '../services/finance.services';
+import CalendarService from '../services/calendar.services';
+import { truncateByDomain } from 'recharts/types/util/ChartUtils';
 
 const prisma = new PrismaClient();
 
@@ -3058,6 +3060,89 @@ const performSeed: () => Promise<void> = async () => {
     sponsor.sponsorId,
     new Date(7, 5, 25),
     thomasEmrax.userId
+  );
+
+  // meeting event type
+  await CalendarService.createEventType(
+    thomasEmrax,
+    'Meeting',
+    [],
+    ner,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    true,
+    true,
+    true
+  );
+
+  // design review event type
+  await CalendarService.createEventType(
+    thomasEmrax,
+    'Design Review',
+    [],
+    ner,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false,
+    true,
+    true,
+    true
+  );
+
+  // manufacturing event type
+  await CalendarService.createEventType(
+    thomasEmrax,
+    'Manufacturing',
+    [],
+    ner,
+    true,
+    false,
+    false,
+    true,
+    false,
+    false,
+    false,
+    true,
+    true,
+    true,
+    false,
+    false,
+    true
+  );
+
+  // bay time event type
+  await CalendarService.createEventType(
+    thomasEmrax,
+    'Bay Time',
+    [],
+    ner,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    true,
+    false,
+    true,
+    false,
+    false,
+    true
   );
 };
 

@@ -1,6 +1,6 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { nonEmptyString, validateInputs } from '../utils/validation.utils';
+import { nonEmptyString } from '../utils/validation.utils';
 
 const calendarRouter = express.Router();
 
@@ -18,6 +18,7 @@ calendarRouter.post(
   body('shop').isBoolean().optional,
   body('machinery').isBoolean().optional,
   body('workPackage').isBoolean().optional,
+  body('questionDocument').isBoolean().optional,
   body('documents').isBoolean().optional,
   body('description').isBoolean().optional
 );
