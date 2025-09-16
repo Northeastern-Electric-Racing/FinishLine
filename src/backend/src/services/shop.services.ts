@@ -11,7 +11,7 @@ export default class ShopServices {
    */
   static async createShop(submitter: User, name: string, description: string, organization: Organization) {
     const permission = await userHasPermission(submitter.userId, organization.organizationId, isAdmin);
-    if (!permission) throw new AccessDeniedAdminOnlyException('create a shop');
+    if (!permission) throw new AccessDeniedAdminOnlyException('create shop');
 
     const shop = await prisma.shop.create({
       data: {
