@@ -25,7 +25,7 @@ import statisticsRouter from './src/routes/statistics.routes';
 import retrospectiveRouter from './src/routes/retrospective.routes';
 import partsRouter from './src/routes/parts.routes';
 import financeRouter from './src/routes/finance.routes';
-import shopRouter from './src/routes/shop.routes';
+import calendarRouter from './src/routes/calendar.routes';
 
 const app = express();
 
@@ -88,7 +88,7 @@ app.use('/statistics', statisticsRouter);
 app.use('/retrospective', retrospectiveRouter);
 app.use('/parts', partsRouter);
 app.use('/finance', financeRouter);
-app.use('/shops', shopRouter);
+app.use('/calendar', calendarRouter);
 app.use('/', (_req, res) => {
   res.status(200).json('Welcome to FinishLine');
 });

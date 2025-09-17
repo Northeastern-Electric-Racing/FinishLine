@@ -1,7 +1,7 @@
 import express from 'express';
 import { body } from 'express-validator';
 import { nonEmptyString, validateInputs } from '../utils/validation.utils';
-import ShopController from '../controllers/shop.controllers';
+import CalendarController from '../controllers/calendar.controllers';
 
 const shopRouter = express.Router();
 shopRouter.post(
@@ -9,7 +9,7 @@ shopRouter.post(
   nonEmptyString(body('name')),
   nonEmptyString(body('description')),
   validateInputs,
-  ShopController.createShop
+  CalendarController.createShop
 );
 
 export default shopRouter;
