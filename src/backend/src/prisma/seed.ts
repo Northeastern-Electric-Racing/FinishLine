@@ -3061,7 +3061,7 @@ const performSeed: () => Promise<void> = async () => {
     thomasEmrax.userId
   );
 
-  // Create machineries and assign to shops
+  // Create shops for machinery
   const advancedShop = await prisma.shop.create({
     data: {
       name: 'Advanced CNC Manufacturing Center',
@@ -3070,7 +3070,71 @@ const performSeed: () => Promise<void> = async () => {
     }
   });
 
-  await MachineryService.createMachinery(thomasEmrax, 'Iron Man Mark 42 CNC Mill', advancedShop.shopId, 1, ner);
+  const electronicsLab = await prisma.shop.create({
+    data: {
+      name: 'Electronics Development Lab',
+      description: 'Electronics testing and development workspace',
+      userCreatedId: thomasEmrax.userId
+    }
+  });
+
+  const testingFacility = await prisma.shop.create({
+    data: {
+      name: 'Testing & Validation Facility',
+      description: 'Component and system testing laboratory',
+      userCreatedId: thomasEmrax.userId
+    }
+  });
+
+  // Create machineries and assign to shops
+  await MachineryService.createMachinery(
+    thomasEmrax,
+    'Iron Man CNC Mill',
+    advancedShop.shopId,
+    1,
+    ner,
+    'High-precision CNC milling operations'
+  );
+  await MachineryService.createMachinery(
+    thomasEmrax,
+    'Thor Hammer Lathe',
+    advancedShop.shopId,
+    2,
+    ner,
+    'High-precision turning operations'
+  );
+  await MachineryService.createMachinery(
+    thomasEmrax,
+    'Spider-Man 3D Printer',
+    electronicsLab.shopId,
+    1,
+    ner,
+    'Rapid prototyping for electronics enclosures'
+  );
+  await MachineryService.createMachinery(
+    thomasEmrax,
+    'Captain America Oscilloscope',
+    electronicsLab.shopId,
+    3,
+    ner,
+    'High-speed signal analysis'
+  );
+  await MachineryService.createMachinery(
+    thomasEmrax,
+    'Hulk Dynamometer',
+    testingFacility.shopId,
+    1,
+    ner,
+    'Engine and motor testing'
+  );
+  await MachineryService.createMachinery(
+    thomasEmrax,
+    'Black Widow Thermal Camera',
+    testingFacility.shopId,
+    2,
+    ner,
+    'Thermal imaging and analysis'
+  );
 };
 
 performSeed()

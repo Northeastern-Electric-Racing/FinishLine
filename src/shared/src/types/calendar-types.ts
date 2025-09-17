@@ -32,8 +32,11 @@ export interface EventType {
 }
 
 export interface Shop {
+  shopId: string;
   name: string;
   description: string;
+  dateCreated: Date;
+  userCreated: User;
 }
 
 export interface ShopMachinery {
@@ -43,8 +46,11 @@ export interface ShopMachinery {
 }
 
 export interface Machinery {
+  machineryId: string;
   name: string;
   shops: ShopMachinery[];
+  dateCreated: Date;
+  userCreated: User;
 }
 
 export interface Event {

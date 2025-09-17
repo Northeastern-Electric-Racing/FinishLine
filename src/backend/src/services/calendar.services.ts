@@ -4,6 +4,7 @@ import prisma from '../prisma/prisma';
 import { AccessDeniedAdminOnlyException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { machineryTransformer } from '../transformers/calendar.transformer';
+import { getMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
 
 export default class CalendarService {
   /**
@@ -46,13 +47,7 @@ export default class CalendarService {
           ]
         }
       },
-      include: {
-        shops: {
-          include: {
-            shop: true
-          }
-        }
-      }
+      ...getMachineryQueryArgs(organization.organizationId)
     });
 
     return machineryTransformer(newMachinery);
