@@ -50,7 +50,8 @@ import AnnouncementService from '../services/announcement.services';
 import OnboardingServices from '../services/onboarding.services';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
 import FinanceServices from '../services/finance.services';
-import CalendarServices from '../services/calendar.services';
+import CalendarService from '../services/calendar.services';
+import { truncateByDomain } from 'recharts/types/util/ChartUtils';
 
 const prisma = new PrismaClient();
 
@@ -3061,14 +3062,99 @@ const performSeed: () => Promise<void> = async () => {
     thomasEmrax.userId
   );
 
-  await CalendarServices.createShop(
+  const calendar = await prisma.calendar.create({
+    data: {
+      name: 'Engineering Team Calendar',
+      description: 'Tracks all engineering team events, meetings, and deadlines.',
+      colorHexCode: '#3498db',
+      userCreated: { connect: { userId: thomasEmrax.userId } },
+      dateCreated: new Date()
+    }
+  });
+
+  // meeting event type
+  await CalendarService.createEventType(
     thomasEmrax,
-    'Precision Manufacturing Lab',
-    'CNC machining and precision manufacturing facility',
-    ner
+    'Meeting',
+    [calendar.calendarId],
+    ner,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    true,
+    true,
+    false,
+    true
   );
 
-  await CalendarServices.createShop(thomasEmrax, 'Electronics Design Center', 'Electronics testing and circuit design lab', ner);
+  // design review event type
+  await CalendarService.createEventType(
+    thomasEmrax,
+    'Design Review',
+    [calendar.calendarId],
+    ner,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false,
+    true,
+    true,
+    true
+  );
+
+  // manufacturing event type
+  await CalendarService.createEventType(
+    thomasEmrax,
+    'Manufacturing',
+    [],
+    ner,
+    true,
+    false,
+    false,
+    true,
+    false,
+    false,
+    false,
+    true,
+    true,
+    true,
+    false,
+    false,
+    true
+  );
+
+  // bay time event type
+  await CalendarService.createEventType(
+    thomasEmrax,
+    'Bay Time',
+    [],
+    ner,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    true,
+    false,
+    true,
+    false,
+    false,
+    true
+  );
 };
 
 performSeed()
