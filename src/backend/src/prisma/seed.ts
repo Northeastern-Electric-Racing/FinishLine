@@ -50,6 +50,7 @@ import AnnouncementService from '../services/announcement.services';
 import OnboardingServices from '../services/onboarding.services';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
 import FinanceServices from '../services/finance.services';
+import CalendarService from '../services/calendar.services';
 
 const prisma = new PrismaClient();
 
@@ -3059,6 +3060,38 @@ const performSeed: () => Promise<void> = async () => {
     new Date(7, 5, 25),
     thomasEmrax.userId
   );
+  const adminUser = await prisma.user.findFirst({
+    where: {
+      roles: {
+        some: {
+          roleType: 'APP_ADMIN'
+        }
+      }
+    }
+  });
+
+  if (adminUser) {
+    await CalendarService.createCalendar({
+      name: 'Company Events',
+      description: 'Official company events and announcements',
+      colorHexCode: '#1f77b4',
+      userCreatedId: adminUser.userId
+    });
+
+    await CalendarService.createCalendar({
+      name: 'Team Meetings',
+      description: 'Regular team meetings and standups',
+      colorHexCode: '#ff7f0e',
+      userCreatedId: adminUser.userId
+    });
+
+    await CalendarService.createCalendar({
+      name: 'Project Deadlines',
+      description: 'Important project milestones and deadlines',
+      colorHexCode: '#2ca02c',
+      userCreatedId: adminUser.userId
+    });
+  }
 };
 
 performSeed()
