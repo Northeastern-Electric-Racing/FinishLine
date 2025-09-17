@@ -1,5 +1,5 @@
 import { CR_Type, Organization, Scope_CR_Why_Type, User, WBS_Element_Status } from '@prisma/client';
-import { createTestOrganization, createTestProject, createTestUser, resetUsers } from '../test-utils';
+import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import ChangeRequestsService from '../../src/services/change-requests.services';
 import { supermanAdmin } from '../test-data/users.test-data';
 import { ProjectProposedChangesCreateArgs, WorkPackageProposedChangesCreateArgs } from 'shared';
