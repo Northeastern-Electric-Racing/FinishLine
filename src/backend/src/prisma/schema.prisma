@@ -991,18 +991,18 @@ model EventType {
   userDeletedId        String?
   userDeleted          User?      @relation(fields: [userDeletedId], references: [userId], name: "eventTypeDeleter")
   calendars            Calendar[]
-  initialDateScheduled Boolean?
-  allDay               Boolean?
-  recurring            Boolean?
-  members              Boolean?
-  location             Boolean?
-  zoomLink             Boolean?
-  availabilities       Boolean?
-  shop                 Boolean?
-  machinery            Boolean?
-  workPackage          Boolean?
-  documents            Boolean?
-  description          Boolean?
+  initialDateScheduled Boolean
+  allDay               Boolean
+  recurring            Boolean
+  members              Boolean
+  location             Boolean
+  zoomLink             Boolean
+  availabilities       Boolean
+  shop                 Boolean
+  machinery            Boolean
+  workPackage          Boolean
+  documents            Boolean
+  description          Boolean
   events               Event[]
 }
 
