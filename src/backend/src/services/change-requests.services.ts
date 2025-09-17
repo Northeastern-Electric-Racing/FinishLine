@@ -1244,16 +1244,20 @@ export default class ChangeRequestsService {
               descriptionBulletType: { connect: { id: bullet.descriptionBulletType.id } }
             }))
           },
-          lead: {
-            connect: {
-              userId: leadId
+          ...(leadId && {
+            lead: {
+              connect: {
+                userId: leadId
+              }
             }
-          },
-          manager: {
-            connect: {
-              userId: managerId
+          }),
+          ...(managerId && {
+            manager: {
+              connect: {
+                userId: managerId
+              }
             }
-          },
+          }),
           workPackageProposedChanges: {
             create: {
               duration,
