@@ -94,7 +94,7 @@ CREATE TABLE "public"."EventType" (
     "dateDeleted" TIMESTAMP(3),
     "userCreatedId" TEXT NOT NULL,
     "userDeletedId" TEXT,
-    "initialDateScheduled" BOOLEAN,
+    "initialDateScheduled" BOOLEAN NOT NULL DEFAULT FALSE,
     "allDay" BOOLEAN NOT NULL DEFAULT FALSE,
     "recurring" BOOLEAN NOT NULL DEFAULT FALSE,
     "members" BOOLEAN NOT NULL DEFAULT FALSE,
@@ -104,6 +104,7 @@ CREATE TABLE "public"."EventType" (
     "shop" BOOLEAN NOT NULL DEFAULT FALSE,
     "machinery" BOOLEAN NOT NULL DEFAULT FALSE,
     "workPackage" BOOLEAN NOT NULL DEFAULT FALSE,
+    "questionDocument" BOOLEAN NOT NULL DEFAULT FALSE,
     "documents" BOOLEAN NOT NULL DEFAULT FALSE,
     "description" BOOLEAN NOT NULL DEFAULT FALSE,
 

@@ -51,6 +51,8 @@ import OnboardingServices from '../services/onboarding.services';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
 import FinanceServices from '../services/finance.services';
 import MachineryService from '../services/calendar.services';
+import CalendarService from '../services/calendar.services';
+import { truncateByDomain } from 'recharts/types/util/ChartUtils';
 
 const prisma = new PrismaClient();
 
@@ -3134,6 +3136,100 @@ const performSeed: () => Promise<void> = async () => {
     2,
     ner,
     'Thermal imaging and analysis'
+  );
+
+  const calendar = await prisma.calendar.create({
+    data: {
+      name: 'Engineering Team Calendar',
+      description: 'Tracks all engineering team events, meetings, and deadlines.',
+      colorHexCode: '#3498db',
+      userCreated: { connect: { userId: thomasEmrax.userId } },
+      dateCreated: new Date()
+    }
+  });
+
+  // meeting event type
+  await CalendarService.createEventType(
+    thomasEmrax,
+    'Meeting',
+    [calendar.calendarId],
+    ner,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    true,
+    true,
+    false,
+    true
+  );
+
+  // design review event type
+  await CalendarService.createEventType(
+    thomasEmrax,
+    'Design Review',
+    [calendar.calendarId],
+    ner,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false,
+    true,
+    true,
+    true
+  );
+
+  // manufacturing event type
+  await CalendarService.createEventType(
+    thomasEmrax,
+    'Manufacturing',
+    [],
+    ner,
+    true,
+    false,
+    false,
+    true,
+    false,
+    false,
+    false,
+    true,
+    true,
+    true,
+    false,
+    false,
+    true
+  );
+
+  // bay time event type
+  await CalendarService.createEventType(
+    thomasEmrax,
+    'Bay Time',
+    [],
+    ner,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    true,
+    false,
+    true,
+    false,
+    false,
+    true
   );
 };
 

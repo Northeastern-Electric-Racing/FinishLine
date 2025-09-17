@@ -1001,6 +1001,7 @@ model EventType {
   shop                 Boolean
   machinery            Boolean
   workPackage          Boolean
+  questionDocument     Boolean
   documents            Boolean
   description          Boolean
   events               Event[]

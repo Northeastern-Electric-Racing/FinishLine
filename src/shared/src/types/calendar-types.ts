@@ -2,9 +2,12 @@ import { WorkPackage } from './project-types';
 import { Availability, User } from './user-types';
 
 export interface Calendar {
+  calendarId: string;
   name: string;
   description: string;
   color: string;
+  userCreated: User;
+  dateCreated: Date;
   eventTypes: EventType[];
 }
 
@@ -19,6 +22,7 @@ export enum DayOfWeek {
 }
 
 export interface ScheduleSlot {
+  scheduleSlotId: string;
   days: DayOfWeek[];
   startTime?: Date;
   endTime?: Date;
@@ -51,11 +55,12 @@ export interface Shop {
   shopId: string;
   name: string;
   description: string;
-  dateCreated: Date;
   userCreated: User;
+  dateCreated: Date;
 }
 
 export interface ShopMachinery {
+  shopMachineryId: string;
   shop: Shop;
   quantity: number;
   description?: string;
@@ -64,14 +69,17 @@ export interface ShopMachinery {
 export interface Machinery {
   machineryId: string;
   name: string;
-  shops: ShopMachinery[];
-  dateCreated: Date;
   userCreated: User;
+  dateCreated: Date;
+  shops: ShopMachinery[];
 }
 
 export interface Event {
+  eventId: string;
   name: string;
   approved: boolean;
+  userCreated: User;
+  dateCreated: Date;
   eventTypeId: string;
   approvedBy?: User;
   scheduledTimes?: ScheduleSlot[];
