@@ -61,7 +61,7 @@ export default class CalendarService {
         calendars: {
           connect: calendarIds.map((calendarId) => ({ calendarId }))
         },
-        userCreated: { connect: { userId: submitter.userId } },
+        userCreatedId: submitter.userId,
         initialDateScheduled,
         recurring,
         allDay,
