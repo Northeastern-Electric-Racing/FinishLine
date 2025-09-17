@@ -14,6 +14,16 @@ describe('Change Request Tests', () => {
     organization = await createTestOrganization();
     orgId = organization.organizationId;
     user = await createTestUser(supermanAdmin, orgId);
+    await prisma.wBS_Element.create({
+      data: {
+        carNumber: 12,
+        projectNumber: 13,
+        workPackageNumber: 14,
+        name: 'test wbs',
+        organizationId: orgId,
+        status: WBS_Element_Status.INACTIVE
+      }
+    });
   });
 
   afterEach(async () => {
@@ -22,20 +32,6 @@ describe('Change Request Tests', () => {
 
   describe('Create Change Request', () => {
     it('create change request on an inactive project - project changes', async () => {
-      await prisma.wBS_Element.update({
-        where: {
-          wbsNumber: {
-            carNumber: 0,
-            projectNumber: 1,
-            workPackageNumber: 0,
-            organizationId: organization.organizationId
-          }
-        },
-        data: {
-          status: WBS_Element_Status.INACTIVE
-        }
-      });
-
       const projPropChanges: ProjectProposedChangesCreateArgs = {
         name: 'Project name changes',
         descriptionBullets: [],
@@ -48,9 +44,9 @@ describe('Change Request Tests', () => {
 
       const cr = await ChangeRequestsService.createStandardChangeRequest(
         user,
-        0,
-        1,
-        0,
+        12,
+        13,
+        14,
         CR_Type.DEFINITION_CHANGE,
         'What',
         [
@@ -66,9 +62,9 @@ describe('Change Request Tests', () => {
       );
 
       expect(cr.submitter.userId).toEqual(user.userId);
-      expect(cr.wbsNum?.carNumber).toEqual(0);
-      expect(cr.wbsNum?.projectNumber).toEqual(1);
-      expect(cr.wbsNum?.workPackageNumber).toEqual(0);
+      expect(cr.wbsNum?.carNumber).toEqual(12);
+      expect(cr.wbsNum?.projectNumber).toEqual(13);
+      expect(cr.wbsNum?.workPackageNumber).toEqual(14);
 
       expect(cr.type).toEqual(CR_Type.DEFINITION_CHANGE);
       expect(cr.what).toEqual('What');
@@ -80,26 +76,26 @@ describe('Change Request Tests', () => {
       const wbsElement = await prisma.wBS_Element.findUnique({
         where: {
           wbsNumber: {
-            carNumber: 0,
-            projectNumber: 1,
-            workPackageNumber: 0,
+            carNumber: 12,
+            projectNumber: 13,
+            workPackageNumber: 14,
             organizationId: organization.organizationId
           }
         }
       });
 
       expect(wbsElement?.status).toEqual(WBS_Element_Status.INACTIVE);
-      expect(wbsElement?.carNumber).toEqual(0);
-      expect(wbsElement?.projectNumber).toEqual(1);
-      expect(wbsElement?.workPackageNumber).toEqual(0);
+      expect(wbsElement?.carNumber).toEqual(12);
+      expect(wbsElement?.projectNumber).toEqual(13);
+      expect(wbsElement?.workPackageNumber).toEqual(14);
     });
     it('create change request does not make active project inactive - project changes', async () => {
       await prisma.wBS_Element.update({
         where: {
           wbsNumber: {
-            carNumber: 0,
-            projectNumber: 1,
-            workPackageNumber: 0,
+            carNumber: 12,
+            projectNumber: 13,
+            workPackageNumber: 14,
             organizationId: organization.organizationId
           }
         },
@@ -121,9 +117,9 @@ describe('Change Request Tests', () => {
 
       await ChangeRequestsService.createStandardChangeRequest(
         user,
-        0,
-        1,
-        0,
+        12,
+        13,
+        14,
         CR_Type.DEFINITION_CHANGE,
         'What',
         [
@@ -141,26 +137,26 @@ describe('Change Request Tests', () => {
       const wbsElement = await prisma.wBS_Element.findUnique({
         where: {
           wbsNumber: {
-            carNumber: 0,
-            projectNumber: 1,
-            workPackageNumber: 0,
+            carNumber: 12,
+            projectNumber: 13,
+            workPackageNumber: 14,
             organizationId: organization.organizationId
           }
         }
       });
 
       expect(wbsElement?.status).toEqual(WBS_Element_Status.ACTIVE);
-      expect(wbsElement?.carNumber).toEqual(0);
-      expect(wbsElement?.projectNumber).toEqual(1);
-      expect(wbsElement?.workPackageNumber).toEqual(0);
+      expect(wbsElement?.carNumber).toEqual(12);
+      expect(wbsElement?.projectNumber).toEqual(13);
+      expect(wbsElement?.workPackageNumber).toEqual(14);
     });
     it('create change request does not make active project inactive - work package changes', async () => {
       await prisma.wBS_Element.update({
         where: {
           wbsNumber: {
-            carNumber: 0,
-            projectNumber: 1,
-            workPackageNumber: 0,
+            carNumber: 12,
+            projectNumber: 13,
+            workPackageNumber: 14,
             organizationId: organization.organizationId
           }
         },
@@ -182,9 +178,9 @@ describe('Change Request Tests', () => {
 
       const cr = await ChangeRequestsService.createStandardChangeRequest(
         user,
-        0,
-        1,
-        0,
+        12,
+        13,
+        14,
         CR_Type.DEFINITION_CHANGE,
         'What',
         [
@@ -202,17 +198,17 @@ describe('Change Request Tests', () => {
       const wbsElement = await prisma.wBS_Element.findUnique({
         where: {
           wbsNumber: {
-            carNumber: 0,
-            projectNumber: 1,
-            workPackageNumber: 0,
+            carNumber: 12,
+            projectNumber: 13,
+            workPackageNumber: 14,
             organizationId: organization.organizationId
           }
         }
       });
       expect(cr.submitter.userId).toEqual(user.userId);
-      expect(cr.wbsNum?.carNumber).toEqual(0);
-      expect(cr.wbsNum?.projectNumber).toEqual(1);
-      expect(cr.wbsNum?.workPackageNumber).toEqual(0);
+      expect(cr.wbsNum?.carNumber).toEqual(12);
+      expect(cr.wbsNum?.projectNumber).toEqual(13);
+      expect(cr.wbsNum?.workPackageNumber).toEqual(14);
 
       expect(cr.type).toEqual(CR_Type.DEFINITION_CHANGE);
       expect(cr.what).toEqual('What');
@@ -222,17 +218,17 @@ describe('Change Request Tests', () => {
       expect(cr.wbsNum).not.toBeNull();
 
       expect(wbsElement?.status).toEqual(WBS_Element_Status.ACTIVE);
-      expect(wbsElement?.carNumber).toEqual(0);
-      expect(wbsElement?.projectNumber).toEqual(1);
-      expect(wbsElement?.workPackageNumber).toEqual(0);
+      expect(wbsElement?.carNumber).toEqual(12);
+      expect(wbsElement?.projectNumber).toEqual(13);
+      expect(wbsElement?.workPackageNumber).toEqual(14);
     });
     it('create change request on an inactive project - work package changes', async () => {
       await prisma.wBS_Element.update({
         where: {
           wbsNumber: {
-            carNumber: 0,
-            projectNumber: 1,
-            workPackageNumber: 0,
+            carNumber: 12,
+            projectNumber: 13,
+            workPackageNumber: 14,
             organizationId: organization.organizationId
           }
         },
@@ -254,9 +250,9 @@ describe('Change Request Tests', () => {
 
       await ChangeRequestsService.createStandardChangeRequest(
         user,
-        0,
-        1,
-        0,
+        12,
+        13,
+        14,
         CR_Type.DEFINITION_CHANGE,
         'What',
         [
@@ -274,18 +270,18 @@ describe('Change Request Tests', () => {
       const wbsElement = await prisma.wBS_Element.findUnique({
         where: {
           wbsNumber: {
-            carNumber: 0,
-            projectNumber: 1,
-            workPackageNumber: 0,
+            carNumber: 12,
+            projectNumber: 13,
+            workPackageNumber: 14,
             organizationId: organization.organizationId
           }
         }
       });
 
       expect(wbsElement?.status).toEqual(WBS_Element_Status.INACTIVE);
-      expect(wbsElement?.carNumber).toEqual(0);
-      expect(wbsElement?.projectNumber).toEqual(1);
-      expect(wbsElement?.workPackageNumber).toEqual(0);
+      expect(wbsElement?.carNumber).toEqual(12);
+      expect(wbsElement?.projectNumber).toEqual(13);
+      expect(wbsElement?.workPackageNumber).toEqual(14);
     });
   });
 });
