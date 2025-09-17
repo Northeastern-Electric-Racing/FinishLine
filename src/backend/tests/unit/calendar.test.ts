@@ -1,16 +1,27 @@
-import { Organization } from '@prisma/client';
+import { Calendar, Organization } from '@prisma/client';
 import CalendarService from '../../src/services/calendar.services';
 import { AccessDeniedAdminOnlyException } from '../../src/utils/errors.utils';
-import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
+import { batmanAppAdmin, wonderwomanGuest, supermanAdmin } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
+import prisma from '../../src/prisma/prisma';
 
 describe('Calendar Tests', () => {
   let orgId: string;
   let organization: Organization;
+  let calendar: Calendar;
 
   beforeEach(async () => {
     organization = await createTestOrganization();
     orgId = organization.organizationId;
+    calendar = await prisma.calendar.create({
+      data: {
+        name: 'Engineering Team Calendar',
+        description: 'Tracks all engineering team events, meetings, and deadlines.',
+        colorHexCode: '#3498db',
+        userCreated: { connect: { userId: (await createTestUser(supermanAdmin, orgId)).userId } },
+        dateCreated: new Date()
+      }
+    });
   });
 
   afterEach(async () => {
@@ -24,8 +35,18 @@ describe('Calendar Tests', () => {
           await CalendarService.createEventType(
             await createTestUser(wonderwomanGuest, orgId),
             'Team Meeting',
-            [],
+            [calendar.calendarId],
             organization,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            false,
+            false,
+            false,
+            true,
             true,
             false,
             true

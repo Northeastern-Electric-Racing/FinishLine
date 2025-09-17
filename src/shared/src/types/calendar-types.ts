@@ -36,19 +36,19 @@ export interface EventType {
   name: string;
   userCreated: User;
   dateCreated: Date;
-  initialDateScheduled?: boolean;
-  allDay?: boolean;
-  recurring?: boolean;
-  members?: boolean;
-  location?: boolean;
-  zoomLink?: boolean;
-  availability?: boolean;
-  shop?: boolean;
-  machinery?: boolean;
-  workPackage?: boolean;
-  questionDocument?: boolean;
-  documents?: boolean;
-  description?: boolean;
+  initialDateScheduled: boolean;
+  allDay: boolean;
+  recurring: boolean;
+  members: boolean;
+  location: boolean;
+  zoomLink: boolean;
+  availability: boolean;
+  shop: boolean;
+  machinery: boolean;
+  workPackage: boolean;
+  questionDocument: boolean;
+  documents: boolean;
+  description: boolean;
 }
 
 export interface Shop {

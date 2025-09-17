@@ -3076,7 +3076,7 @@ const performSeed: () => Promise<void> = async () => {
   await CalendarService.createEventType(
     thomasEmrax,
     'Meeting',
-    [],
+    [calendar.calendarId],
     ner,
     true,
     true,
@@ -3089,6 +3089,7 @@ const performSeed: () => Promise<void> = async () => {
     false,
     true,
     true,
+    false,
     true
   );
 
@@ -3096,7 +3097,7 @@ const performSeed: () => Promise<void> = async () => {
   await CalendarService.createEventType(
     thomasEmrax,
     'Design Review',
-    [],
+    [calendar.calendarId],
     ner,
     true,
     true,

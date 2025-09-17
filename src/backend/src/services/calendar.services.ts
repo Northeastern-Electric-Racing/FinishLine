@@ -37,19 +37,19 @@ export default class CalendarService {
     name: string,
     calendarIds: string[],
     organization: Organization,
-    initialDateScheduled?: boolean,
-    recurring?: boolean,
-    allDay?: boolean,
-    members?: boolean,
-    location?: boolean,
-    zoomLink?: boolean,
-    availabilities?: boolean,
-    shop?: boolean,
-    machinery?: boolean,
-    workPackage?: boolean,
-    questionDocument?: boolean,
-    documents?: boolean,
-    description?: boolean
+    initialDateScheduled: boolean,
+    recurring: boolean,
+    allDay: boolean,
+    members: boolean,
+    location: boolean,
+    zoomLink: boolean,
+    availabilities: boolean,
+    shop: boolean,
+    machinery: boolean,
+    workPackage: boolean,
+    questionDocument: boolean,
+    documents: boolean,
+    description: boolean
   ): Promise<EventType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create event type');
