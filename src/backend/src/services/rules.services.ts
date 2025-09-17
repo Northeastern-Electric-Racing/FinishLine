@@ -1,7 +1,7 @@
-import { User } from '@prisma/client';
-import { userHasPermissionNew } from '../utils/users.utils';
+import { User, Organization } from '@prisma/client';
+import { userHasPermission } from '../utils/users.utils';
 import prisma from '../prisma/prisma';
-import { AccessDeniedException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException } from '../utils/errors.utils';
 import { DeletedException, NotFoundException } from '../utils/errors.utils';
 import { isAdmin, Permission } from 'shared';
 
@@ -13,14 +13,13 @@ export default class RulesService {
    *
    * @param user The user who is deleting the ruleset type
    * @param rulesetTypeId The ruleset type to be deleted
+   * @param organization The organization that the ruleset is being deleted for
    */
-  static async deleteRulesetType(user: User, id: string): Promise<{ message: string }> {
-    /* CHECK IF USER IS ADMIN SOMEHOW
-    
-    if (!isAdmin(user.role)) {
-      throw new AccessDeniedException('You do not have permission to edit graph collections');
+  static async deleteRulesetType(deleter: User, id: string, organization: Organization): Promise<{ message: string }> {
+    //check if user is admin
+    if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('create event type');
     }
-      */
 
     const rulesetType = await prisma.ruleset_Type.findUnique({
       where: { rulesetTypeId: id }
@@ -36,12 +35,7 @@ export default class RulesService {
     await prisma.ruleset_Type.update({
       where: { rulesetTypeId: id },
       data: {
-        deletedByUserId: user.userId,
-        deletedBy: {
-          connect: {
-            userId: user.userId
-          }
-        }
+        deletedByUserId: deleter.userId
       }
     });
 

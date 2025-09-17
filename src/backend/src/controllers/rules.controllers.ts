@@ -7,7 +7,11 @@ export default class RulesController {
   static async deleteRulesetType(req: Request, res: Response, next: NextFunction) {
     try {
       const { rulesetTypeId } = req.params;
-      const message: { message: string } = await RulesService.deleteRulesetType(req.currentUser, rulesetTypeId);
+      const message: { message: string } = await RulesService.deleteRulesetType(
+        req.currentUser,
+        rulesetTypeId,
+        req.organization
+      );
       res.status(200).json(message);
     } catch (error: unknown) {
       next(error);
