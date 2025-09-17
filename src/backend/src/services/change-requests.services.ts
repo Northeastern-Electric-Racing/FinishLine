@@ -1174,7 +1174,7 @@ export default class ChangeRequestsService {
                   wbsProposedChanges: {
                     create: {
                       name: workPackage.originalElement.name,
-                      status: WBS_Element_Status.INACTIVE,
+                      status: wbsElement.status,
                       proposedDescriptionBulletChanges: {
                         create: workPackage.descriptionBullets.map((bullet) => ({
                           detail: bullet.detail,
@@ -1237,7 +1237,7 @@ export default class ChangeRequestsService {
         data: {
           scopeChangeRequest: { connect: { scopeCrId: createdCR.scopeChangeRequest!.scopeCrId } },
           name,
-          status: WBS_Element_Status.ACTIVE,
+          status: wbsElement.status,
           proposedDescriptionBulletChanges: {
             create: validationResult.descriptionBullets.map((bullet) => ({
               detail: bullet.detail,
