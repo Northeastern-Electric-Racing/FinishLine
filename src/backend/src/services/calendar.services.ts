@@ -81,7 +81,7 @@ export default class CalendarService {
 
     return eventTypeTransformer(newEventType);
   }
-   /**
+  /**
    * Creates a new shop
    * requires the submiter to be Admin
    */
@@ -99,5 +99,3 @@ export default class CalendarService {
     return shop;
   }
 }
-
-

@@ -25,16 +25,13 @@ export const eventTypeTransformer = (eventType: Prisma.EventTypeGetPayload<Event
     documents: eventType.documents,
     description: eventType.description
   };
-}
-  export const shopTransformer = (
-  shop: Prisma.ShopGetPayload<ShopQueryArgs>
-    ): Shop => {
-   return {
+};
+export const shopTransformer = (shop: Prisma.ShopGetPayload<ShopQueryArgs>): Shop => {
+  return {
     shopId: shop.shopId,
     name: shop.name,
     description: shop.description ?? '',
     userCreated: userTransformer(shop.userCreated),
-    dateCreated: shop.dateCreated,
+    dateCreated: shop.dateCreated
   };
-}
-
+};
