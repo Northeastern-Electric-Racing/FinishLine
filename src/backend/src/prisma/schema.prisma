@@ -151,6 +151,8 @@ enum Review_Status {
   APPROVED
 }
 
+
+
 model User {
   userId                String                @id @default(uuid())
   firstName             String
@@ -162,6 +164,7 @@ model User {
   additionalPermissions String[]
   userSettings          User_Settings?
   userSecureSettings    User_Secure_Settings?
+ 
 
   // Relation references
   submittedChangeRequests                 Change_Request[]                     @relation(name: "submittedChangeRequests")
