@@ -1,5 +1,8 @@
 import express from 'express';
+import RulesController from '../controllers/rules.controllers';
+import { nonEmptyString, validateInputs } from '../utils/validation.utils';
+import { body } from 'express-validator';
 
-const partsRouter = express.Router
+const partsRouter = express.Router();
 
-// write the routes below here
+partsRouter.post('/rulesetType/create', nonEmptyString(body('name')), validateInputs, RulesController.createRulesetType);
