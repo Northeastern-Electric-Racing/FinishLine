@@ -106,6 +106,25 @@ describe('Calendar Tests', () => {
   });
 
   describe('Create Machinery', () => {
+    beforeEach(async () => {
+      organization = await createTestOrganization();
+      orgId = organization.organizationId;
+      // Create a test shop for shopId, assuming prisma create shop works
+      const shopName = 'Precision Manufacturing Lab';
+      const shop = await prisma.shop.create({
+        data: {
+          name: shopName,
+          description: 'Manufacturing facility equipped with advanced machinery and tools for engineering',
+          userCreatedId: (await createTestUser(batmanAppAdmin, orgId)).userId
+        }
+      });
+      ({ shopId } = shop);
+    });
+
+    afterEach(async () => {
+      await resetUsers();
+    });
+
     it('Fails if user is not an admin', async () => {
       await expect(
         async () =>
