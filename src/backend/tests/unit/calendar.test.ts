@@ -1,7 +1,14 @@
 import { Calendar, Organization } from '@prisma/client';
 import CalendarService from '../../src/services/calendar.services';
 import { AccessDeniedAdminOnlyException } from '../../src/utils/errors.utils';
-import { batmanAppAdmin, wonderwomanGuest, supermanAdmin } from '../test-data/users.test-data';
+import {
+  batmanAppAdmin,
+  wonderwomanGuest,
+  supermanAdmin,
+  flashAdmin,
+  theVisitorGuest,
+  alfred
+} from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 
@@ -29,7 +36,7 @@ describe('Calendar Tests', () => {
       data: {
         name: 'Precision Manufacturing Lab',
         description: 'Manufacturing facility equipped with advanced machinery and tools for engineering',
-        userCreatedId: (await createTestUser(batmanAppAdmin, orgId)).userId
+        userCreatedId: (await createTestUser(flashAdmin, orgId)).userId
       }
     });
     ({ shopId } = shop);
@@ -44,7 +51,7 @@ describe('Calendar Tests', () => {
       await expect(
         async () =>
           await CalendarService.createEventType(
-            await createTestUser(wonderwomanGuest, orgId),
+            await createTestUser(theVisitorGuest, orgId),
             'Team Meeting',
             [calendar.calendarId],
             organization,
@@ -119,7 +126,7 @@ describe('Calendar Tests', () => {
 
     it('Succeeds and creates machinery', async () => {
       const result = await CalendarService.createMachinery(
-        await createTestUser(supermanAdmin, orgId),
+        await createTestUser(alfred, orgId),
         'Iron Man Mark 42 CNC Mill',
         shopId,
         2,
