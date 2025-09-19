@@ -84,6 +84,11 @@ const FinalizeDesignReviewDetailsModal = ({
         location: designReview.location ?? undefined
       });
     }
+    if (designReview.zoomLink === '' && !designReview.isOnline) {
+      reset({
+        zoomLink: undefined
+      });
+    }
   }, [userScheduleSettings, designReview, reset]);
 
   return (
