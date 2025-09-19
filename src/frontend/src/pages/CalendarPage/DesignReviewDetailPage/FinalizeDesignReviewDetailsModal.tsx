@@ -77,11 +77,16 @@ const FinalizeDesignReviewDetailsModal = ({
   };
 
   useEffect(() => {
-    if (userScheduleSettings && !designReview.zoomLink) {
+    if (userScheduleSettings && designReview.isOnline && !designReview.zoomLink) {
       reset({
         docTemplateLink: designReview.docTemplateLink ?? '',
         zoomLink: userScheduleSettings.personalZoomLink ?? '',
         location: designReview.location ?? undefined
+      });
+    }
+    if (designReview.zoomLink === '' && !designReview.isOnline) {
+      reset({
+        zoomLink: undefined
       });
     }
   }, [userScheduleSettings, designReview, reset]);

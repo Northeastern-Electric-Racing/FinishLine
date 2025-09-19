@@ -153,7 +153,7 @@ const TeamSpecificPage: React.FC = () => {
           {TeamActionsDropdown}
         </Stack>
       }
-      title={`${data.teamName} - ${data.teamType}`}
+      title={`${data.teamName} ${data.teamType ? `- ${data.teamType?.name}` : ''}`}
       chips={
         data.dateArchived ? (
           <Box display="flex" gap="20px">
