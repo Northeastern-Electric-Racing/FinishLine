@@ -1,3 +1,4 @@
+import singleFlight from './single-flight';
 import { Design_Review_Status, Team_Type, User, Organization } from '@prisma/client';
 import {
   DesignReview,
@@ -48,7 +49,7 @@ export default class DesignReviewsService {
    * @returns All of the design reviews
    */
   static async getAllDesignReviews(organization: Organization): Promise<DesignReview[]> {
-    const designReviews = await prisma.design_Review.findMany({
+    const designReviews = await singleFlight<any>('design_Review', 'findMany', {
       where: { dateDeleted: null, wbsElement: { organizationId: organization.organizationId } },
       ...getDesignReviewQueryArgs(organization.organizationId)
     });
@@ -66,7 +67,7 @@ export default class DesignReviewsService {
     designReviewId: string,
     organization: Organization
   ): Promise<DesignReview> {
-    const designReview = await prisma.design_Review.findUnique({
+    const designReview = await singleFlight<any>('design_Review', 'findUnique', {
       where: { designReviewId },
       ...getDesignReviewQueryArgs(organization.organizationId)
     });
@@ -127,7 +128,7 @@ export default class DesignReviewsService {
       throw new AccessDeniedException('create design review');
 
     const teamType = await DesignReviewsService.getSingleTeamType(teamTypeId, organization);
-    const wbsElement = await prisma.wBS_Element.findUnique({
+    const wbsElement = await singleFlight<any>('wBS_Element', 'findUnique', {
       where: {
         wbsNumber: {
           carNumber: wbsNum.carNumber,
@@ -172,7 +173,7 @@ export default class DesignReviewsService {
       ...getDesignReviewQueryArgs(organization.organizationId)
     });
 
-    const members = await prisma.user.findMany({
+    const members = await singleFlight<any>('user', 'findMany', {
       where: { userId: { in: optionalMemberIds.concat(requiredMemberIds) } }
     });
 
@@ -181,8 +182,8 @@ export default class DesignReviewsService {
     }
 
     // get the user settings for all the members invited, who are leaderingship
-    const memberUserSettings = await prisma.user_Settings.findMany({
-      where: { userId: { in: members.map((member) => member.userId) } }
+    const memberUserSettings = await singleFlight<any>('user_Settings', 'findMany', {
+      where: { userId: { in: members.map((member: any) => member.userId) } }
     });
 
     if (!memberUserSettings) {
@@ -234,7 +235,7 @@ export default class DesignReviewsService {
     designReviewId: string,
     organization: Organization
   ): Promise<DesignReview> {
-    const designReview = await prisma.design_Review.findUnique({
+    const designReview = await singleFlight<any>('design_Review', 'findUnique', {
       where: { designReviewId },
       ...getDesignReviewQueryArgs(organization.organizationId)
     });
@@ -312,7 +313,7 @@ export default class DesignReviewsService {
       }
     }
     // validate the design review exists and is not deleted
-    const originaldesignReview = await prisma.design_Review.findUnique({
+    const originaldesignReview = await singleFlight<any>('design_Review', 'findUnique', {
       where: { designReviewId },
       ...getDesignReviewQueryArgs(organization.organizationId)
     });
@@ -345,7 +346,7 @@ export default class DesignReviewsService {
 
     // if all required members are confirmed, set the status to confirmed
     const allRequiredMembersConfirmed = updatedRequiredMembers.every((member) =>
-      originaldesignReview.confirmedMembers.map((user) => user.userId).includes(member.userId)
+      originaldesignReview.confirmedMembers.map((user: any) => user.userId).includes(member.userId)
     );
 
     if (status === Design_Review_Status.CONFIRMED && allRequiredMembersConfirmed) {
@@ -414,7 +415,7 @@ export default class DesignReviewsService {
     submitter: UserWithSettings,
     organization: Organization
   ): Promise<DesignReview> {
-    const designReview = await prisma.design_Review.findUnique({
+    const designReview = await singleFlight<any>('design_Review', 'findUnique', {
       where: { designReviewId },
       ...getDesignReviewQueryArgs(organization.organizationId)
     });
@@ -427,7 +428,7 @@ export default class DesignReviewsService {
     if (!isUserOnDesignReview(submitter, designReviewTransformer(designReview)))
       throw new HttpException(400, 'Current user is not in the list of this design reviews members');
 
-    let userSettings = await prisma.schedule_Settings.findUnique({
+    let userSettings = await singleFlight<any>('schedule_Settings', 'findUnique', {
       where: { userId: submitter.userId },
       ...getUserScheduleSettingsQueryArgs()
     });
@@ -454,7 +455,7 @@ export default class DesignReviewsService {
     await updateUserAvailability(availabilities, userSettings, submitter);
 
     // set submitter as confirmed if they're not already
-    if (!designReview.confirmedMembers.map((user) => user.userId).includes(submitter.userId)) {
+    if (!designReview.confirmedMembers.map((user: any) => user.userId).includes(submitter.userId)) {
       const updatedDesignReview = await prisma.design_Review.update({
         where: { designReviewId },
         ...getDesignReviewQueryArgs(organization.organizationId),
@@ -505,7 +506,7 @@ export default class DesignReviewsService {
     organization: Organization
   ): Promise<DesignReview> {
     // validate the design review exists and is not deleted
-    const originaldesignReview = await prisma.design_Review.findUnique({
+    const originaldesignReview = await singleFlight<any>('design_Review', 'findUnique', {
       where: { designReviewId },
       include: { wbsElement: true }
     });
@@ -541,7 +542,7 @@ export default class DesignReviewsService {
    * @returns The retrieved Team Type
    */
   static async getSingleTeamType(teamTypeId: string, organization: Organization): Promise<Team_Type> {
-    const teamType = await prisma.team_Type.findUnique({
+    const teamType = await singleFlight<any>('team_Type', 'findUnique', {
       where: { teamTypeId }
     });
 

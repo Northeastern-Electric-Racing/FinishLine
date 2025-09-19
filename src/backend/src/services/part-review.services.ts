@@ -1,3 +1,4 @@
+import singleFlight from './single-flight';
 import { Organization, User } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
 import {
@@ -55,7 +56,7 @@ export default class PartReviewService {
    * @returns the part with query args
    */
   static async getPartWithQueryArgs(partId: string, userId: string, organizationId: string) {
-    const part = await prisma.part.findUnique({
+    const part = await singleFlight<any>('part', 'findUnique', {
       where: { partId },
       ...getPartQueryArgs(organizationId, userId)
     });
@@ -77,7 +78,7 @@ export default class PartReviewService {
   static async getPart(organization: Organization, user: User, wbsNumber: WbsNumber, indexNum: string) {
     const project: Project = await ProjectsService.getSingleProject(wbsNumber, organization);
     const index = parseInt(indexNum);
-    const part = await prisma.part.findUnique({
+    const part = await singleFlight<any>('part', 'findUnique', {
       where: { ProjectId_and_index: { projectId: project.id, index } },
       ...getPartQueryArgs(organization.organizationId, user.userId)
     });
@@ -86,8 +87,8 @@ export default class PartReviewService {
 
     if (part.dateDeleted) throw new DeletedException('Part', part.partId);
 
-    part.submissions.forEach((submission) => {
-      submission.reviews = submission.reviews.filter((review) => {
+    part.submissions.forEach((submission: any) => {
+      submission.reviews = submission.reviews.filter((review: any) => {
         return review.completedAt || user.userId === review.userCreatedId;
       });
     });
@@ -103,7 +104,7 @@ export default class PartReviewService {
   static async getAllPartsForProject(wbsNumber: WbsNumber, organization: Organization, user: User) {
     const project: Project = await ProjectsService.getSingleProject(wbsNumber, organization);
 
-    const parts = await prisma.part.findMany({
+    const parts = await singleFlight<any>('part', 'findMany', {
       where: { projectId: project.id, dateDeleted: null },
       ...getPartQueryArgs(organization.organizationId, user.userId)
     });
@@ -348,7 +349,7 @@ export default class PartReviewService {
     fileIds: string[],
     notes: string
   ) {
-    const submission = await prisma.part_Submission.findUnique({
+    const submission = await singleFlight<any>('part_Submission', 'findUnique', {
       where: { partSubmissionId: submissionId },
       include: { part: { include: { project: { include: { wbsElement: true } } } } }
     });
@@ -396,7 +397,7 @@ export default class PartReviewService {
     notes: string,
     fileIds: string[]
   ) {
-    const review = await prisma.part_Review.findUnique({
+    const review = await singleFlight<any>('part_Review', 'findUnique', {
       where: { partReviewId: reviewId },
       include: { submission: { include: { part: { include: { project: { include: { wbsElement: true } } } } } } }
     });
@@ -430,7 +431,7 @@ export default class PartReviewService {
    * @param organizationId the organization
    */
   static async deleteReview(reviewId: string, deleter: User, organizationId: string) {
-    const review = await prisma.part_Review.findUnique({
+    const review = await singleFlight<any>('part_Review', 'findUnique', {
       where: { partReviewId: reviewId },
       include: { submission: { include: { part: { include: { project: { include: { wbsElement: true } } } } } } }
     });
@@ -498,7 +499,7 @@ export default class PartReviewService {
    * @returns the updated submission
    */
   static async updateSubmission(submissionId: string, updater: User, organizationId: string, name: string, notes?: string) {
-    const submission = await prisma.part_Submission.findUnique({
+    const submission = await singleFlight<any>('part_Submission', 'findUnique', {
       where: { partSubmissionId: submissionId },
       include: { part: { include: { project: { include: { wbsElement: true } } } } }
     });
@@ -525,7 +526,7 @@ export default class PartReviewService {
    * @returns an array of part tags
    */
   static async getAllPartTags(organizationId: string) {
-    const tags = await prisma.part_Tag.findMany({ where: { organizationId, dateDeleted: null } });
+    const tags = await singleFlight<any>('part_Tag', 'findMany', { where: { organizationId, dateDeleted: null } });
     return tags.map(partTagTransformer);
   }
 
@@ -535,7 +536,7 @@ export default class PartReviewService {
    * @returns all the part review faqs from the given organization
    */
   static async getAllPartReviewFAQs(organizationId: string) {
-    const partReviewFAQs = await prisma.frequentlyAskedQuestion.findMany({
+    const partReviewFAQs = await singleFlight<any>('frequentlyAskedQuestion', 'findMany', {
       where: { dateDeleted: null, partReviewFaqOrgId: organizationId },
       ...getFaqQueryArgs(organizationId)
     });
@@ -583,7 +584,7 @@ export default class PartReviewService {
       throw new AccessDeniedAdminOnlyException('update part review tag');
     }
 
-    const partTag = await prisma.part_Tag.findUnique({ where: { partTagId } });
+    const partTag = await singleFlight<any>('part_Tag', 'findUnique', { where: { partTagId } });
 
     if (!partTag || partTag.organizationId !== organizationId) {
       throw new NotFoundException('Part Tag', partTagId);
@@ -611,14 +612,17 @@ export default class PartReviewService {
       throw new AccessDeniedAdminOnlyException('delete part review tag');
     }
 
-    const partTagWithParts = await prisma.part_Tag.findUnique({ where: { partTagId }, include: { parts: true } });
+    const partTagWithParts = await singleFlight<any>('part_Tag', 'findUnique', {
+      where: { partTagId },
+      include: { parts: true }
+    });
 
     if (!partTagWithParts || partTagWithParts.organizationId !== organizationId) {
       throw new NotFoundException('Part Tag', partTagId);
     }
 
     if (
-      partTagWithParts.parts.some((part) => {
+      partTagWithParts.parts.some((part: any) => {
         return part.dateDeleted === null;
       })
     ) {
@@ -679,7 +683,7 @@ export default class PartReviewService {
       throw new AccessDeniedAdminOnlyException('update faq');
     }
 
-    const faq = await prisma.frequentlyAskedQuestion.findUnique({ where: { faqId } });
+    const faq = await singleFlight<any>('frequentlyAskedQuestion', 'findUnique', { where: { faqId } });
 
     if (!faq || faq.partReviewFaqOrgId !== organizationId) {
       throw new NotFoundException('Faq', faqId);
@@ -710,7 +714,7 @@ export default class PartReviewService {
       throw new AccessDeniedAdminOnlyException('delete faq');
     }
 
-    const faq = await prisma.frequentlyAskedQuestion.findUnique({ where: { faqId }, ...getFaqQueryArgs });
+    const faq = await singleFlight<any>('frequentlyAskedQuestion', 'findUnique', { where: { faqId }, ...getFaqQueryArgs });
 
     if (!faq || faq.partReviewFaqOrgId !== organizationId) {
       throw new NotFoundException('Faq', faqId);
@@ -735,7 +739,7 @@ export default class PartReviewService {
    * @returns an array of common mistakes
    */
   static async getAllCommonMistakes(organizationId: string): Promise<PartReviewCommonMistake[]> {
-    const commonMistakes = await prisma.part_Review_Common_Mistake.findMany({
+    const commonMistakes = await singleFlight<any>('part_Review_Common_Mistake', 'findMany', {
       where: { dateDeleted: null, organizationId },
       ...getFaqQueryArgs(organizationId)
     });
@@ -794,7 +798,7 @@ export default class PartReviewService {
     updater: User,
     organizationId: string
   ): Promise<PartReviewCommonMistake> {
-    const commonMistake = await prisma.part_Review_Common_Mistake.findUnique({
+    const commonMistake = await singleFlight<any>('part_Review_Common_Mistake', 'findUnique', {
       where: { partReviewCommonMistakeId: commonMistakeId }
     });
 
@@ -826,7 +830,7 @@ export default class PartReviewService {
    * @returns the deleted common mistake
    */
   static async deleteCommonMistake(commonMistakeId: string, deleter: User, organizationId: string) {
-    const commonMistake = await prisma.part_Review_Common_Mistake.findUnique({
+    const commonMistake = await singleFlight<any>('part_Review_Common_Mistake', 'findUnique', {
       where: { partReviewCommonMistakeId: commonMistakeId }
     });
 
@@ -883,7 +887,7 @@ export default class PartReviewService {
    * @returns the soft-deleted and transformed PartReviewRequest
    */
   static async deletePartReviewRequest(reviewRequestId: string, user: User, organizationId: string) {
-    const reviewRequest = await prisma.part_Review_Request.findUnique({
+    const reviewRequest = await singleFlight<any>('part_Review_Request', 'findUnique', {
       where: { partReviewRequestId: reviewRequestId },
       include: { part: { include: { project: { include: { wbsElement: true } } } } }
     });
@@ -922,11 +926,11 @@ export default class PartReviewService {
   static async notifyReviewer(reviewerId: string, partId: string, creator: User, organizationId: string) {
     const part = await PartReviewService.getPartWithQueryArgs(partId, creator.userId, organizationId);
 
-    if (!part.reviewRequests.some((request) => request.reviewerId === reviewerId)) {
+    if (!part.reviewRequests.some((request: any) => request.reviewerId === reviewerId)) {
       throw new HttpException(400, 'User is not a reviewer for this part');
     }
 
-    const reviewer = await prisma.user.findUnique({
+    const reviewer = await singleFlight<any>('user', 'findUnique', {
       where: { userId: reviewerId },
       ...getUserWithSettingsQueryArgs(organizationId)
     });
@@ -958,11 +962,11 @@ export default class PartReviewService {
   static async notifyAssignee(assigneeId: string, partId: string, creator: User, organizationId: string) {
     const part = await PartReviewService.getPartWithQueryArgs(partId, creator.userId, organizationId);
 
-    if (!part.assignees.some((assignee) => assignee.userId === assigneeId)) {
+    if (!part.assignees.some((assignee: any) => assignee.userId === assigneeId)) {
       throw new HttpException(400, 'User is not an assignee for this part');
     }
 
-    const assignee = await prisma.user.findUnique({
+    const assignee = await singleFlight<any>('user', 'findUnique', {
       where: { userId: assigneeId },
       ...getUserWithSettingsQueryArgs(organizationId)
     });
@@ -1007,7 +1011,7 @@ export default class PartReviewService {
     description: string,
     creator: User
   ) {
-    const review = await prisma.part_Review.findUnique({
+    const review = await singleFlight<any>('part_Review', 'findUnique', {
       where: { partReviewId: reviewId },
       include: { submission: { include: { part: { include: { project: { include: { wbsElement: true } } } } } } }
     });
@@ -1062,7 +1066,7 @@ export default class PartReviewService {
     description: string,
     updater: User
   ) {
-    const popup = await prisma.part_Review_Popup.findUnique({
+    const popup = await singleFlight<any>('part_Review_Popup', 'findUnique', {
       where: { partReviewPopupId: popupId },
       include: {
         review: {
@@ -1099,7 +1103,7 @@ export default class PartReviewService {
    * @returns Confirmation message
    */
   static async deletePartReviewPopup(popupId: string, deleter: User, organizationId: string) {
-    const popup = await prisma.part_Review_Popup.findUnique({
+    const popup = await singleFlight<any>('part_Review_Popup', 'findUnique', {
       where: { partReviewPopupId: popupId },
       include: {
         review: {
@@ -1185,7 +1189,7 @@ export default class PartReviewService {
    * @returns the id of the image
    */
   static async getPartReviewSampleImage(organizationId: string): Promise<string | null> {
-    const organization = await prisma.organization.findUnique({ where: { organizationId } });
+    const organization = await singleFlight<any>('organization', 'findUnique', { where: { organizationId } });
 
     if (!organization) {
       throw new NotFoundException('Organization', organizationId);

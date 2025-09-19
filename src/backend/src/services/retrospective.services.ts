@@ -1,3 +1,4 @@
+import singleFlight from './single-flight';
 import prisma from '../prisma/prisma';
 import projectTransformer, {
   RetrospectiveProjectPreviewQueryArgs,
@@ -12,15 +13,15 @@ export default class RetrospectiveService {
     startDate?: Date,
     endDate?: Date
   ): Promise<RetrospectiveProjectPreview[]> {
-    const projects = await prisma.project.findMany({
+    const projects = await singleFlight<any>('project', 'findMany', {
       where: { wbsElement: { organizationId } },
       ...getProjectQueryArgs(organizationId)
     });
 
-    const retroProjects: RetrospectiveProjectPreviewQueryArgs[] = projects.map((project) => {
+    const retroProjects: RetrospectiveProjectPreviewQueryArgs[] = projects.map((project: any) => {
       return {
         ...project,
-        workPackages: project.workPackages.map((workPackage) => {
+        workPackages: project.workPackages.map((workPackage: any) => {
           const retroWorkpackage = {
             ...workPackage,
             originalDuration: workPackage.duration,
@@ -30,7 +31,7 @@ export default class RetrospectiveService {
           let minStartChangeDate: Date | undefined = undefined;
           let maxDurationChangeDate: Date | undefined = undefined;
           let maxStartChangeDate: Date | undefined = undefined;
-          workPackage.wbsElement.changes.forEach((change) => {
+          workPackage.wbsElement.changes.forEach((change: any) => {
             if (startDate && change.dateImplemented.getTime() < startDate?.getTime()) return;
 
             if (endDate && change.dateImplemented.getTime() > endDate?.getTime()) return;
@@ -86,14 +87,14 @@ export default class RetrospectiveService {
   }
 
   static async getRetrospectiveBudgets(organizationId: string): Promise<ProjectPreview[]> {
-    const projects = await prisma.project.findMany({
+    const projects = await singleFlight<any>('project', 'findMany', {
       where: { wbsElement: { organizationId } },
       ...getProjectQueryArgs(organizationId)
     });
 
-    const retroProjects = projects.map((project) => {
+    const retroProjects = projects.map((project: any) => {
       const retroProject = { ...project };
-      retroProject.wbsElement.changes.forEach((change) => {
+      retroProject.wbsElement.changes.forEach((change: any) => {
         if (change.detail.toLowerCase().includes('added budget')) {
           const split = change.detail.split('"');
           if (split.length > 0) {

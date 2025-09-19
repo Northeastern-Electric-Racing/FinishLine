@@ -1,3 +1,4 @@
+import singleFlight from './single-flight';
 import { User, Organization } from '@prisma/client';
 import {
   DescriptionBulletPreview,
@@ -57,7 +58,7 @@ export default class WbsElementTemplatesService {
       throw new AccessDeniedGuestException('get a work package template');
     }
 
-    const template = await prisma.work_Package_Template.findUnique({
+    const template = await singleFlight<any>('work_Package_Template', 'findUnique', {
       where: {
         wbsElementTemplateId: workPackageTemplateId
       },
@@ -83,7 +84,7 @@ export default class WbsElementTemplatesService {
       throw new AccessDeniedGuestException('get all work package templates.');
     }
 
-    const workPackageTemplates = await prisma.work_Package_Template.findMany({
+    const workPackageTemplates = await singleFlight<any>('work_Package_Template', 'findMany', {
       where: {
         wbsElementTemplate: { dateDeleted: null, organizationId: organization.organizationId },
         projectTemplateId: null
@@ -130,7 +131,7 @@ export default class WbsElementTemplatesService {
     // and throw an errror if the template doesn't exist
     await Promise.all(
       blockedByIds.map(async (workPackageTemplateId) => {
-        const template = await prisma.work_Package_Template.findFirst({
+        const template = await singleFlight<any>('work_Package_Template', 'findFirst', {
           where: { wbsElementTemplateId: workPackageTemplateId }
         });
 
@@ -206,7 +207,7 @@ export default class WbsElementTemplatesService {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('edit work package templates');
 
-    const originalWorkPackageTemplate = await prisma.work_Package_Template.findUnique({
+    const originalWorkPackageTemplate = await singleFlight<any>('work_Package_Template', 'findUnique', {
       where: { wbsElementTemplateId: workPackageTemplateId },
       include: {
         blockedBy: true,
@@ -288,7 +289,7 @@ export default class WbsElementTemplatesService {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('delete work package template');
 
-    const workPackageTemplate = await prisma.work_Package_Template.findUnique({
+    const workPackageTemplate = await singleFlight<any>('work_Package_Template', 'findUnique', {
       where: {
         wbsElementTemplateId: workPackageTemplateId
       },
@@ -348,13 +349,13 @@ export default class WbsElementTemplatesService {
       throw new AccessDeniedGuestException('get project templates');
     }
 
-    const projectTemplates = await prisma.project_Template.findMany({
+    const projectTemplates = await singleFlight<any>('project_Template', 'findMany', {
       where: { wbsElementTemplate: { dateDeleted: null, organizationId: organization.organizationId } },
       ...getProjectTemplateQueryArgs(organization.organizationId)
     });
 
     return projectTemplates
-      .sort((a, b) => a.wbsElementTemplate.dateCreated.getTime() - b.wbsElementTemplate.dateCreated.getTime())
+      .sort((a: any, b: any) => a.wbsElementTemplate.dateCreated.getTime() - b.wbsElementTemplate.dateCreated.getTime())
       .map(projectTemplateTransformer);
   }
 
@@ -369,7 +370,7 @@ export default class WbsElementTemplatesService {
       throw new AccessDeniedAdminOnlyException('delete project template');
     }
 
-    const projectTemplate = await prisma.project_Template.findUnique({
+    const projectTemplate = await singleFlight<any>('project_Template', 'findUnique', {
       where: {
         wbsElementTemplateId: projectTemplateId
       },
@@ -394,7 +395,7 @@ export default class WbsElementTemplatesService {
     const dateDeleted = new Date();
 
     // Delete all work package templates associated with the project template
-    projectTemplate.workPackageTemplates.forEach(async (template) => {
+    projectTemplate.workPackageTemplates.forEach(async (template: any) => {
       this.deleteWorkPackageTemplate(submitter, template.wbsElementTemplateId, organization, false);
     });
 
@@ -427,7 +428,7 @@ export default class WbsElementTemplatesService {
       throw new AccessDeniedGuestException('get a project template');
     }
 
-    const projectTemplate = await prisma.project_Template.findUnique({
+    const projectTemplate = await singleFlight<any>('project_Template', 'findUnique', {
       where: {
         wbsElementTemplateId: projectTemplateId,
         wbsElementTemplate: { dateDeleted: null, organizationId: organization.organizationId }
@@ -566,7 +567,7 @@ export default class WbsElementTemplatesService {
       throw new AccessDeniedAdminOnlyException('edit a project template');
     }
 
-    const foundProjectTemplate = await prisma.project_Template.findUnique({
+    const foundProjectTemplate = await singleFlight<any>('project_Template', 'findUnique', {
       where: {
         wbsElementTemplateId: projectTemplateId,
         wbsElementTemplate: { dateDeleted: null, organizationId: organization.organizationId }
@@ -582,11 +583,13 @@ export default class WbsElementTemplatesService {
       throw new NotFoundException('Project Template', projectTemplateId);
     }
 
-    const existingWorkPackageTemplates = await prisma.work_Package_Template.findMany({
+    const existingWorkPackageTemplates = await singleFlight<any>('work_Package_Template', 'findMany', {
       where: { projectTemplateId, wbsElementTemplate: { dateDeleted: null } }
     });
 
-    const existingWorkPackageTemplateIds = existingWorkPackageTemplates.map((template) => template.wbsElementTemplateId);
+    const existingWorkPackageTemplateIds = existingWorkPackageTemplates.map(
+      (template: any) => template.wbsElementTemplateId
+    );
     const workPackageTemplateIds = workPackageTemplates.map((template) => template.workPackageTemplateId!);
 
     const templatesToCreate = workPackageTemplates.filter(
@@ -595,7 +598,7 @@ export default class WbsElementTemplatesService {
     const templatesToUpdate = workPackageTemplates.filter((template) =>
       existingWorkPackageTemplateIds.includes(template.workPackageTemplateId!)
     );
-    const templateIdsToDelete = existingWorkPackageTemplateIds.filter((id) => !workPackageTemplateIds.includes(id));
+    const templateIdsToDelete = existingWorkPackageTemplateIds.filter((id: any) => !workPackageTemplateIds.includes(id));
 
     for (const template of templatesToCreate) {
       await this.createWorkPackageTemplate(

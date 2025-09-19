@@ -1,3 +1,4 @@
+import singleFlight from "./single-flight";
 import { User, WBS_Element_Status, Organization } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { hasBulletCheckingPermissions } from '../utils/description-bullets.utils';
@@ -21,7 +22,7 @@ export default class DescriptionBulletsService {
     descriptionId: string,
     organization: Organization
   ): Promise<DescriptionBullet> {
-    const originalDB = await prisma.description_Bullet.findUnique({
+    const originalDB = await singleFlight<any>("description_Bullet", "findUnique", {
       where: { descriptionId },
       include: {
         wbsElement: {
@@ -75,7 +76,7 @@ export default class DescriptionBulletsService {
    * @returns all description bullet types
    */
   static async getAllDescriptionBulletTypes(organization: Organization): Promise<DescriptionBulletType[]> {
-    const descriptionBulletTypes = await prisma.description_Bullet_Type.findMany({
+    const descriptionBulletTypes = await singleFlight<any>("description_Bullet_Type", "findMany", {
       where: {
         organizationId: organization.organizationId
       }
@@ -94,7 +95,7 @@ export default class DescriptionBulletsService {
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedException('create a description bullet type');
 
-    const existingDescriptionBulletType = await prisma.description_Bullet_Type.findUnique({
+    const existingDescriptionBulletType = await singleFlight<any>("description_Bullet_Type", "findUnique", {
       where: {
         uniqueDescriptionBulletType: {
           name,
@@ -149,7 +150,7 @@ export default class DescriptionBulletsService {
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedException('edit a description bullet type');
 
-    const existingDescriptionBulletType = await prisma.description_Bullet_Type.findUnique({
+    const existingDescriptionBulletType = await singleFlight<any>("description_Bullet_Type", "findUnique", {
       where: {
         uniqueDescriptionBulletType: {
           name,

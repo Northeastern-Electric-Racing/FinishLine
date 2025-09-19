@@ -1,3 +1,4 @@
+import singleFlight from './single-flight';
 import prisma from '../prisma/prisma';
 import {
   DesignReviewWithAttendees,
@@ -29,7 +30,7 @@ export default class NotificationsService {
 
     if (endOfDay.getDay() === 0 || endOfDay.getDay() === 2 || endOfDay.getDay() === 4) return;
 
-    const tasks = await prisma.task.findMany({
+    const tasks = await singleFlight<any>('task', 'findMany', {
       where: {
         deadline: {
           lt: endOfDay
@@ -59,10 +60,10 @@ export default class NotificationsService {
     const teamTaskMap = new Map<string, TaskWithAssignees[]>();
 
     // group tasks due by team in a map
-    tasks.forEach((task) => {
-      const teamSlackIds = task.wbsElement.project?.teams.map((team) => team.slackId) ?? [];
+    tasks.forEach((task: any) => {
+      const teamSlackIds = task.wbsElement.project?.teams.map((team: any) => team.slackId) ?? [];
 
-      teamSlackIds.forEach((teamSlackId) => {
+      teamSlackIds.forEach((teamSlackId: string) => {
         const currentTasks = teamTaskMap.get(teamSlackId);
         if (currentTasks) {
           currentTasks.push(task);
@@ -105,9 +106,9 @@ export default class NotificationsService {
     if (date.getDay() === 1) {
       const nextWeek = addWeeksToDate(date, 1);
       const ADMIN = process.env.ADMIN_USER_ID;
-      const admin = await prisma.user.findUnique({ where: { userId: ADMIN } });
+      const admin = await singleFlight<any>('user', 'findUnique', { where: { userId: ADMIN } });
       if (!admin) throw new HttpException(404, 'Admin user not found');
-      const organizations = await prisma.organization.findMany();
+      const organizations = await singleFlight<any>('organization', 'findMany', {});
       for (const organization of organizations) {
         await WorkPackagesService.slackMessageUpcomingDeadlines(admin, nextWeek, organization);
       }
@@ -121,7 +122,7 @@ export default class NotificationsService {
     const endOfToday = startOfDayTomorrow();
     const startOfToday = startOfDay(new Date());
 
-    const designReviews = await prisma.design_Review.findMany({
+    const designReviews = await singleFlight<any>('design_Review', 'findMany', {
       where: {
         dateScheduled: {
           lt: endOfToday,
@@ -145,12 +146,12 @@ export default class NotificationsService {
 
     const designReviewTeamMap = new Map<string, DesignReviewWithAttendees[]>();
 
-    designReviews.forEach((designReview) => {
+    designReviews.forEach((designReview: any) => {
       const teamSlackIds = designReview.wbsElement.project
-        ? designReview.wbsElement.project.teams.map((team) => team.slackId)
-        : (designReview.wbsElement.workPackage?.project.teams.map((team) => team.slackId) ?? []);
+        ? designReview.wbsElement.project.teams.map((team: any) => team.slackId)
+        : (designReview.wbsElement.workPackage?.project.teams.map((team: any) => team.slackId) ?? []);
 
-      teamSlackIds.forEach((teamSlackId) => {
+      teamSlackIds.forEach((teamSlackId: string) => {
         const currentTasks = designReviewTeamMap.get(teamSlackId);
         if (currentTasks) {
           currentTasks.push({
@@ -202,7 +203,7 @@ export default class NotificationsService {
     const startOfToday = startOfDay(new Date());
     const endOfToday = startOfDayTomorrow();
 
-    const sponsorTasks = await prisma.sponsor_Task.findMany({
+    const sponsorTasks = await singleFlight<any>('sponsor_Task', 'findMany', {
       where: {
         notifyDate: {
           not: null,
@@ -219,12 +220,12 @@ export default class NotificationsService {
       }
     });
 
-    const promises = sponsorTasks.map(async (sponsorTask) => {
-      const sponsor = await prisma.sponsor.findUnique({
+    const promises = sponsorTasks.map(async (sponsorTask: any) => {
+      const sponsor = await singleFlight<any>('sponsor', 'findUnique', {
         where: { sponsorId: sponsorTask.sponsorId }
       });
 
-      const organization = await prisma.organization.findUnique({
+      const organization = await singleFlight<any>('organization', 'findUnique', {
         where: { organizationId: sponsor?.organizationId }
       });
 

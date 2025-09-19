@@ -1,3 +1,4 @@
+import singleFlight from './single-flight';
 import { isAdmin, isHead, Team, TeamPreview, TeamType, WorkPackage } from 'shared';
 import { Organization, User, WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma';
@@ -26,7 +27,7 @@ export default class TeamsService {
    * @returns a list of teams
    */
   static async getAllTeams(organization: Organization): Promise<TeamPreview[]> {
-    const teams = await prisma.team.findMany({
+    const teams = await singleFlight<any>('team', 'findMany', {
       where: { dateArchived: null, organizationId: organization.organizationId },
       ...getTeamPreviewQueryArgs(organization.organizationId)
     });
@@ -39,7 +40,7 @@ export default class TeamsService {
    * @returns a list of teams
    */
   static async getAllArchivedTeams(organization: Organization): Promise<TeamPreview[]> {
-    const teams = await prisma.team.findMany({
+    const teams = await singleFlight<any>('team', 'findMany', {
       where: { dateArchived: { not: null }, organizationId: organization.organizationId },
       ...getTeamPreviewQueryArgs(organization.organizationId)
     });
@@ -54,7 +55,7 @@ export default class TeamsService {
    * @throws if the team is not found in the db
    */
   static async getSingleTeam(teamId: string, organization: Organization): Promise<Team> {
-    const team = await prisma.team.findUnique({
+    const team = await singleFlight<any>('team', 'findUnique', {
       where: { teamId },
       ...getTeamQueryArgs(organization.organizationId)
     });
@@ -68,7 +69,7 @@ export default class TeamsService {
   }
 
   static async getUsersTeams(user: User, organization: Organization): Promise<Team[]> {
-    const teams = await prisma.team.findMany({
+    const teams = await singleFlight<any>('team', 'findMany', {
       where: {
         organizationId: organization.organizationId,
         dateArchived: null,
@@ -222,7 +223,7 @@ export default class TeamsService {
     )
       throw new AccessDeniedException('You must be an admin or the head to update the head!');
 
-    const newHead = await prisma.user.findUnique({
+    const newHead = await singleFlight<any>('user', 'findUnique', {
       where: { userId }
     });
 
@@ -239,7 +240,7 @@ export default class TeamsService {
       throw new AccessDeniedException('The team head must be at least a head');
 
     // checking to see if any other teams have the new head as their current head or lead
-    const newHeadTeam = await prisma.team.findFirst({
+    const newHeadTeam = await singleFlight<any>('team', 'findFirst', {
       where: {
         AND: [
           { OR: [{ headId: userId }, { leads: { some: { userId } } }] },
@@ -282,7 +283,10 @@ export default class TeamsService {
     if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('delete teams');
 
-    const team = await prisma.team.findUnique({ where: { teamId }, ...getTeamQueryArgs(organization.organizationId) });
+    const team = await singleFlight<any>('team', 'findUnique', {
+      where: { teamId },
+      ...getTeamQueryArgs(organization.organizationId)
+    });
 
     if (!team) throw new NotFoundException('Team', teamId);
 
@@ -315,7 +319,7 @@ export default class TeamsService {
 
     if (!isUnderWordCount(description, 300)) throw new HttpException(400, 'Description must be less than 300 words');
 
-    const newHead = await prisma.user.findUnique({
+    const newHead = await singleFlight<any>('user', 'findUnique', {
       where: { userId: headId }
     });
 
@@ -324,20 +328,20 @@ export default class TeamsService {
       throw new HttpException(400, 'The team head must be at least a head');
 
     // checking to see if any other teams have the new head as their current head
-    const newHeadTeam = await prisma.team.findFirst({
+    const newHeadTeam = await singleFlight<any>('team', 'findFirst', {
       where: { headId, organizationId: organization.organizationId }
     });
 
     if (newHeadTeam)
       throw new HttpException(400, 'The new team head must not be a head of another team in the same organization.');
 
-    const duplicateName = await prisma.team.findFirst({
+    const duplicateName = await singleFlight<any>('team', 'findFirst', {
       where: { teamName, organizationId: organization.organizationId }
     });
 
     if (duplicateName) throw new HttpException(400, 'The new team name must not be the name of another team');
 
-    const financeTeam = await prisma.team.findFirst({
+    const financeTeam = await singleFlight<any>('team', 'findFirst', {
       where: { financeTeam: true, organizationId: organization.organizationId }
     });
 
@@ -412,7 +416,7 @@ export default class TeamsService {
    * @throws if the team is not found, the submitter has no privilege, the team has any projects that are not complete
    */
   static async archiveTeam(submitter: User, teamId: string, organization: Organization): Promise<Team> {
-    const team = await prisma.team.findUnique({
+    const team = await singleFlight<any>('team', 'findUnique', {
       where: { teamId },
       ...getTeamQueryArgs(organization.organizationId)
     });
@@ -423,7 +427,7 @@ export default class TeamsService {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedException('You must be an admin or above to archive a team');
 
-    if (team.projects.some((project) => project.wbsElement.status !== WBS_Element_Status.COMPLETE))
+    if (team.projects.some((project: any) => project.wbsElement.status !== WBS_Element_Status.COMPLETE))
       throw new HttpException(400, 'A team is not archivable if it has any active projects, or incomplete projects');
 
     const updateData = {
@@ -459,7 +463,7 @@ export default class TeamsService {
       throw new AccessDeniedAdminOnlyException('create a team type');
     }
 
-    const duplicateName = await prisma.team_Type.findUnique({
+    const duplicateName = await singleFlight<any>('team_Type', 'findUnique', {
       where: { uniqueTeamType: { name, organizationId: organization.organizationId } }
     });
 
@@ -489,7 +493,7 @@ export default class TeamsService {
    * @throws if the team is not found in the db
    */
   static async getSingleTeamType(teamTypeId: string, organization: Organization): Promise<TeamType> {
-    const teamType = await prisma.team_Type.findUnique({
+    const teamType = await singleFlight<any>('team_Type', 'findUnique', {
       where: { teamTypeId }
     });
 
@@ -505,7 +509,7 @@ export default class TeamsService {
    * @returns all the team types for the given organization
    */
   static async getAllTeamTypes(organization: Organization): Promise<TeamType[]> {
-    const teamTypes = await prisma.team_Type.findMany({
+    const teamTypes = await singleFlight<any>('team_Type', 'findMany', {
       where: { organizationId: organization.organizationId }
     });
 
@@ -536,7 +540,7 @@ export default class TeamsService {
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedException('you must be an admin to edit the team types description');
 
-    const currentTeamType = await prisma.team_Type.findUnique({
+    const currentTeamType = await singleFlight<any>('team_Type', 'findUnique', {
       where: { teamTypeId }
     });
 
@@ -569,14 +573,14 @@ export default class TeamsService {
       throw new AccessDeniedAdminOnlyException('set a team type');
     }
 
-    const teamType = await prisma.team_Type.findFirst({
+    const teamType = await singleFlight<any>('team_Type', 'findFirst', {
       where: { teamTypeId }
     });
 
     if (!teamType) throw new NotFoundException('Team Type', teamTypeId);
     if (teamType.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Team Type');
 
-    const team = await prisma.team.findUnique({
+    const team = await singleFlight<any>('team', 'findUnique', {
       where: { teamId },
       ...getTeamQueryArgs(organization.organizationId)
     });
@@ -607,7 +611,7 @@ export default class TeamsService {
     if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('only admins can delete team types');
 
-    const teamType = await prisma.team_Type.findUnique({
+    const teamType = await singleFlight<any>('team_Type', 'findUnique', {
       where: { teamTypeId }
     });
 
@@ -631,7 +635,7 @@ export default class TeamsService {
    * @returns the updated team type
    */
   static async setOnboardingUser(submitter: User, teamTypeId: string, organization: Organization): Promise<TeamType> {
-    const teamType = await prisma.team_Type.findUnique({
+    const teamType = await singleFlight<any>('team_Type', 'findUnique', {
       where: { teamTypeId, organizationId: organization.organizationId },
       include: { usersOnboarding: true }
     });
@@ -659,11 +663,11 @@ export default class TeamsService {
   }
 
   static async completeOnboarding(submitter: User) {
-    const onboardingTeamTypes = await prisma.team_Type.findMany({
+    const onboardingTeamTypes = await singleFlight<any>('team_Type', 'findMany', {
       where: { usersOnboarding: { some: { userId: submitter.userId } } }
     });
 
-    const teamTypeIds = onboardingTeamTypes.map((teamType) => ({ teamTypeId: teamType.teamTypeId }));
+    const teamTypeIds = onboardingTeamTypes.map((teamType: any) => ({ teamTypeId: teamType.teamTypeId }));
 
     // remove the user from any onboardingTeamTypes they are a part of and add them to the onboardedTeamTypes
     await prisma.user.update({
@@ -689,7 +693,7 @@ export default class TeamsService {
       throw new AccessDeniedAdminOnlyException('set a team types image');
     }
 
-    const teamType = await prisma.team_Type.findUnique({
+    const teamType = await singleFlight<any>('team_Type', 'findUnique', {
       where: {
         teamTypeId
       }
@@ -718,7 +722,7 @@ export default class TeamsService {
    * @param organization The organization the current user is logged in for
    */
   static async getMyTeamsWorkpackages(user: User, organization: Organization): Promise<WorkPackage[]> {
-    const usersTeams = await prisma.team.findMany({
+    const usersTeams = await singleFlight<any>('team', 'findMany', {
       where: {
         organizationId: organization.organizationId,
         dateArchived: null,
@@ -732,7 +736,7 @@ export default class TeamsService {
       }
     });
 
-    const workPackages = await prisma.work_Package.findMany({
+    const workPackages = await singleFlight<any>('work_Package', 'findMany', {
       where: {
         wbsElement: {
           organizationId: organization.organizationId,
@@ -743,7 +747,7 @@ export default class TeamsService {
           teams: {
             some: {
               teamId: {
-                in: usersTeams.map((team) => team.teamId)
+                in: usersTeams.map((team: any) => team.teamId)
               }
             }
           }

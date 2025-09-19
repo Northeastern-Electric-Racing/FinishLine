@@ -1,3 +1,4 @@
+import singleFlight from './single-flight';
 import {
   CreateSponsorTask,
   isAdmin,
@@ -68,7 +69,7 @@ export default class FinanceServices {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('Only heads can create a sponsor');
 
-    const existingSponsor = await prisma.sponsor.findFirst({
+    const existingSponsor = await singleFlight<any>('sponsor', 'findFirst', {
       where: {
         name,
         organizationId: organization.organizationId
@@ -106,7 +107,7 @@ export default class FinanceServices {
     sponsorTasks.forEach(async (sponsorTask) => {
       if (!sponsorTask.assigneeUserId) return;
 
-      const assignee = await prisma.user.findUnique({
+      const assignee = await singleFlight<any>('user', 'findUnique', {
         where: { userId: sponsorTask.assigneeUserId },
         include: { userSettings: true }
       });
@@ -124,7 +125,7 @@ export default class FinanceServices {
    * @returns All the sponsors in the database
    */
   static async getAllSponsors(organization: Organization) {
-    const allSponsors = await prisma.sponsor.findMany({
+    const allSponsors = await singleFlight<any>('sponsor', 'findMany', {
       where: { organizationId: organization.organizationId, dateDeleted: null },
       ...getSponsorQueryArgs(organization.organizationId)
     });
@@ -140,7 +141,7 @@ export default class FinanceServices {
    * @returns the deleted sponsor
    */
   static async deleteSponsor(sponsorId: string, deleter: User, organization: Organization): Promise<Sponsor> {
-    const sponsor = await prisma.sponsor.findUnique({
+    const sponsor = await singleFlight<any>('sponsor', 'findUnique', {
       where: {
         sponsorId
       }
@@ -221,7 +222,7 @@ export default class FinanceServices {
     if (!(await userHasPermission(submitter.userId, org.organizationId, isHead)))
       throw new AccessDeniedException('Only heads can edit sponsor tasks.');
 
-    const oldSponsorTask = await prisma.sponsor_Task.findUnique({
+    const oldSponsorTask = await singleFlight<any>('sponsor_Task', 'findUnique', {
       where: {
         sponsorTaskId,
         sponsor: {
@@ -235,7 +236,7 @@ export default class FinanceServices {
     let assignee;
 
     if (assigneeUserId) {
-      assignee = await prisma.user.findUnique({
+      assignee = await singleFlight<any>('user', 'findUnique', {
         where: {
           userId: assigneeUserId,
           organizations: {
@@ -263,7 +264,7 @@ export default class FinanceServices {
     });
 
     if (assignee && oldSponsorTask.assigneeUserId !== assigneeUserId) {
-      const sponsor = await prisma.sponsor.findUnique({
+      const sponsor = await singleFlight<any>('sponsor', 'findUnique', {
         where: { sponsorId: updatedSponsorTask.sponsorId }
       });
 
@@ -286,7 +287,7 @@ export default class FinanceServices {
    * @returns all the sponsor tasks for the sponsor
    */
   static async getSponsorTasks(sponsorId: string, organizationId: string) {
-    const sponsor = await prisma.sponsor.findUnique({
+    const sponsor = await singleFlight<any>('sponsor', 'findUnique', {
       where: { dateDeleted: null, sponsorId },
       ...getSponsorQueryArgs(organizationId)
     });
@@ -295,7 +296,7 @@ export default class FinanceServices {
       throw new NotFoundException('Sponsor', sponsorId);
     }
 
-    const sponsorTasks = await prisma.sponsor_Task.findMany({
+    const sponsorTasks = await singleFlight<any>('sponsor_Task', 'findMany', {
       where: {
         sponsorId,
         dateDeleted: null
@@ -314,7 +315,7 @@ export default class FinanceServices {
    * @returns the deleted sponsor task
    */
   static async deleteSponsorTask(sponsorTaskId: string, deleter: User, organization: Organization) {
-    const sponsorTask = await prisma.sponsor_Task.findUnique({
+    const sponsorTask = await singleFlight<any>('sponsor_Task', 'findUnique', {
       where: { sponsorTaskId, dateDeleted: null }
     });
 
@@ -359,12 +360,14 @@ export default class FinanceServices {
       throw new AccessDeniedException('Only heads can create a sponsor task');
     }
 
-    const sponsor = await prisma.sponsor.findUnique({ where: { sponsorId, organizationId: organization.organizationId } });
+    const sponsor = await singleFlight<any>('sponsor', 'findUnique', {
+      where: { sponsorId, organizationId: organization.organizationId }
+    });
     if (!sponsor) throw new NotFoundException('Sponsor', sponsorId);
     if (sponsor.dateDeleted) throw new DeletedException('Sponsor', sponsorId);
 
     if (assigneeUserId) {
-      const assignee = await prisma.user.findUnique({ where: { userId: assigneeUserId } });
+      const assignee = await singleFlight<any>('user', 'findUnique', { where: { userId: assigneeUserId } });
       if (!assignee) throw new NotFoundException('User', assigneeUserId);
     }
 
@@ -380,7 +383,7 @@ export default class FinanceServices {
     });
 
     if (createdSponsorTask.assigneeUserId) {
-      const assignee = await prisma.user.findUnique({
+      const assignee = await singleFlight<any>('user', 'findUnique', {
         where: { userId: createdSponsorTask.assigneeUserId },
         include: { userSettings: true }
       });
@@ -399,7 +402,7 @@ export default class FinanceServices {
     endDate?: Date
   ): Promise<ReimbursementRequestData> {
     const { organizationId } = organization;
-    const project = await prisma.project.findFirst({
+    const project = await singleFlight<any>('project', 'findFirst', {
       where: {
         projectId,
         wbsElement: {
@@ -411,7 +414,7 @@ export default class FinanceServices {
 
     if (!project) throw new NotFoundException('Project', projectId);
 
-    const reimbursementRequests = await prisma.reimbursement_Request.findMany({
+    const reimbursementRequests = await singleFlight<any>('reimbursement_Request', 'findMany', {
       where: {
         reimbursementProducts: {
           some: {
@@ -439,7 +442,7 @@ export default class FinanceServices {
 
     const { pendingFinance, pendingLeadership, submittedToSabo, reimbursed } = computeRRTotals(reimbursementRequests);
 
-    const totalBalance = reimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0) / 100;
+    const totalBalance = reimbursementRequests.reduce((acc: any, curr: any) => acc + curr.totalCost, 0) / 100;
 
     const available = project.budget - totalBalance;
 
@@ -462,7 +465,7 @@ export default class FinanceServices {
     carNumber?: number
   ): Promise<ReimbursementRequestData> {
     const { organizationId } = organization;
-    const team = await prisma.team.findUnique({
+    const team = await singleFlight<any>('team', 'findUnique', {
       where: {
         organizationId,
         dateArchived: null,
@@ -480,7 +483,7 @@ export default class FinanceServices {
 
     if (!team) throw new NotFoundException('Team', teamId);
 
-    const reimbursementRequests = await prisma.reimbursement_Request.findMany({
+    const reimbursementRequests = await singleFlight<any>('reimbursement_Request', 'findMany', {
       where: {
         reimbursementProducts: {
           some: {
@@ -510,11 +513,11 @@ export default class FinanceServices {
       }
     });
 
-    const totalBudget = team.projects.reduce((acc, curr) => acc + curr.budget, 0);
+    const totalBudget = team.projects.reduce((acc: any, curr: any) => acc + curr.budget, 0);
 
     const { pendingFinance, pendingLeadership, submittedToSabo, reimbursed } = computeRRTotals(reimbursementRequests);
 
-    const totalBalance = reimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0) / 100;
+    const totalBalance = reimbursementRequests.reduce((acc: any, curr: any) => acc + curr.totalCost, 0) / 100;
 
     const available = totalBudget - totalBalance;
 
@@ -537,7 +540,7 @@ export default class FinanceServices {
     carNumber?: number
   ): Promise<ReimbursementRequestData> {
     const { organizationId } = organization;
-    const division = await prisma.team_Type.findUnique({
+    const division = await singleFlight<any>('team_Type', 'findUnique', {
       where: {
         organizationId,
         teamTypeId
@@ -598,7 +601,7 @@ export default class FinanceServices {
     carNumber?: number
   ): Promise<SpendingBarData> {
     const { organizationId } = organization;
-    const team = await prisma.team.findUnique({
+    const team = await singleFlight<any>('team', 'findUnique', {
       where: {
         organizationId,
         dateArchived: null,
@@ -616,7 +619,7 @@ export default class FinanceServices {
 
     if (!team) throw new NotFoundException('Team', teamId);
 
-    const spendingInfoPromises = team.projects.map((project) =>
+    const spendingInfoPromises = team.projects.map((project: any) =>
       this.getReimbursementRequestProjectData(organization, project.projectId, startDate, endDate)
     );
 
@@ -624,7 +627,7 @@ export default class FinanceServices {
 
     const data: SpendingBarData = {
       title: `${team.teamName}`,
-      data: team.projects.map((project, index) => ({
+      data: team.projects.map((project: any, index: any) => ({
         title: `${wbsPipe(project.wbsElement)} - ${project.wbsElement.name}`,
         spendingInfo: spendingInfos[index]
       }))
@@ -640,7 +643,7 @@ export default class FinanceServices {
     carNumber?: number
   ): Promise<SpendingBarData[]> {
     const { organizationId } = organization;
-    const division = await prisma.team_Type.findUnique({
+    const division = await singleFlight<any>('team_Type', 'findUnique', {
       where: {
         organizationId,
         teamTypeId
@@ -665,15 +668,15 @@ export default class FinanceServices {
 
     if (!division) throw new NotFoundException('Team Type', teamTypeId);
 
-    const teamDataPromises = division.teams.map(async (team) => {
-      const spendingInfoPromises = team.projects.map((project) =>
+    const teamDataPromises = division.teams.map(async (team: any) => {
+      const spendingInfoPromises = team.projects.map((project: any) =>
         this.getReimbursementRequestProjectData(organization, project.projectId, startDate, endDate)
       );
       const spendingInfos = await Promise.all(spendingInfoPromises);
 
       return {
         title: `${team.teamName}`,
-        data: team.projects.map((project, index) => ({
+        data: team.projects.map((project: any, index: any) => ({
           title: `${wbsPipe(project.wbsElement)} - ${project.wbsElement.name}`,
           spendingInfo: spendingInfos[index]
         }))
@@ -692,7 +695,7 @@ export default class FinanceServices {
     carNumber?: number
   ): Promise<ReimbursementRequestData[]> {
     const { organizationId } = organization;
-    const cashReimbursementRequests = await prisma.reimbursement_Request.findMany({
+    const cashReimbursementRequests = await singleFlight<any>('reimbursement_Request', 'findMany', {
       where: {
         dateDeleted: null,
         accountCode: { organizationId },
@@ -710,7 +713,7 @@ export default class FinanceServices {
       }
     });
 
-    const budgetReimbursementRequests = await prisma.reimbursement_Request.findMany({
+    const budgetReimbursementRequests = await singleFlight<any>('reimbursement_Request', 'findMany', {
       where: {
         dateDeleted: null,
         accountCode: { organizationId },
@@ -728,7 +731,7 @@ export default class FinanceServices {
       }
     });
 
-    const allReimbursementRequests = await prisma.reimbursement_Request.findMany({
+    const allReimbursementRequests = await singleFlight<any>('reimbursement_Request', 'findMany', {
       where: {
         dateDeleted: null,
         accountCode: { organizationId },
@@ -746,7 +749,7 @@ export default class FinanceServices {
       }
     });
 
-    const teams = await prisma.team.findMany({
+    const teams = await singleFlight<any>('team', 'findMany', {
       where: { dateArchived: null, organizationId },
       select: {
         projects: {
@@ -767,18 +770,18 @@ export default class FinanceServices {
       }
     });
 
-    const allTotalBudget = teams.reduce((teamAcc, team) => {
-      const teamBudget = team.projects.reduce((projAcc, project) => projAcc + project.budget, 0);
+    const allTotalBudget = teams.reduce((teamAcc: any, team: any) => {
+      const teamBudget = team.projects.reduce((projAcc: any, project: any) => projAcc + project.budget, 0);
       return teamAcc + teamBudget;
     }, 0);
 
     const cashTotalBudget =
-      cashReimbursementRequests.reduce((reqAcc, rr) => {
+      cashReimbursementRequests.reduce((reqAcc: any, rr: any) => {
         return reqAcc + rr.totalCost;
       }, 0) / 100;
 
     const budgetTotalBudget =
-      budgetReimbursementRequests.reduce((reqAcc, rr) => {
+      budgetReimbursementRequests.reduce((reqAcc: any, rr: any) => {
         return reqAcc + rr.totalCost;
       }, 0) / 100;
 
@@ -789,7 +792,7 @@ export default class FinanceServices {
       reimbursed: allReimbursed
     } = computeRRTotals(allReimbursementRequests);
 
-    const allTotalBalance = allReimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0) / 100;
+    const allTotalBalance = allReimbursementRequests.reduce((acc: any, curr: any) => acc + curr.totalCost, 0) / 100;
 
     const allAvailable = allTotalBudget - allTotalBalance;
 
@@ -800,7 +803,7 @@ export default class FinanceServices {
       reimbursed: cashReimbursed
     } = computeRRTotals(cashReimbursementRequests);
 
-    const cashTotalBalance = cashReimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0) / 100;
+    const cashTotalBalance = cashReimbursementRequests.reduce((acc: any, curr: any) => acc + curr.totalCost, 0) / 100;
 
     const cashAvailable = cashTotalBudget - cashTotalBalance;
 
@@ -811,7 +814,7 @@ export default class FinanceServices {
       reimbursed: budgetReimbursed
     } = computeRRTotals(budgetReimbursementRequests);
 
-    const budgetTotalBalance = budgetReimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0) / 100;
+    const budgetTotalBalance = budgetReimbursementRequests.reduce((acc: any, curr: any) => acc + curr.totalCost, 0) / 100;
 
     const budgetAvailable = budgetTotalBudget - budgetTotalBalance;
 
@@ -858,7 +861,7 @@ export default class FinanceServices {
 
     //if a car is specified but not the date ranges, use the car to determine the date ranges
     if (carNumber !== undefined) {
-      const car = await prisma.car.findFirst({
+      const car = await singleFlight<any>('car', 'findFirst', {
         where: {
           wbsElement: {
             carNumber
@@ -870,7 +873,7 @@ export default class FinanceServices {
         throw new HttpException(404, `Could not find car with car number: ${carNumber}`);
       }
 
-      const nextCar = await prisma.car.findFirst({
+      const nextCar = await singleFlight<any>('car', 'findFirst', {
         where: {
           wbsElement: {
             carNumber: carNumber + 1
@@ -889,7 +892,7 @@ export default class FinanceServices {
       }
     }
 
-    const reimbursementRequests = await prisma.reimbursement_Request.findMany({
+    const reimbursementRequests = await singleFlight<any>('reimbursement_Request', 'findMany', {
       where: {
         dateDeleted: null,
         accountCode: { organizationId },
@@ -913,7 +916,7 @@ export default class FinanceServices {
       }
     });
 
-    const category = await prisma.reimbursement_Product_Other_Reason.findUnique({
+    const category = await singleFlight<any>('reimbursement_Product_Other_Reason', 'findUnique', {
       where: {
         otherReimbursementProductReasonId: otherReasonId
       }
@@ -930,8 +933,8 @@ export default class FinanceServices {
       [Reimbursement_Status_Type.REIMBURSED]: 0
     };
 
-    reimbursementRequests.forEach((req) => {
-      const lastStatus = req.reimbursementStatuses.at(-1)?.type;
+    reimbursementRequests.forEach((req: any) => {
+      const lastStatus: Reimbursement_Status_Type = req.reimbursementStatuses.at(-1)?.type;
 
       if (lastStatus && totals[lastStatus] !== undefined) {
         totals[lastStatus] += req.totalCost;
@@ -943,7 +946,7 @@ export default class FinanceServices {
     const submittedToSabo = totals[Reimbursement_Status_Type.SABO_SUBMITTED] ?? 0;
     const reimbursed = totals[Reimbursement_Status_Type.REIMBURSED] ?? 0;
 
-    const totalBalance = reimbursementRequests.reduce((acc, curr) => acc + curr.totalCost, 0);
+    const totalBalance = reimbursementRequests.reduce((acc: any, curr: any) => acc + curr.totalCost, 0);
 
     const available = totalBudget - totalBalance;
 
@@ -966,7 +969,7 @@ export default class FinanceServices {
     carNumber?: number
   ): Promise<SpendingBarData[]> {
     const { organizationId } = organization;
-    const teams = await prisma.team.findMany({
+    const teams = await singleFlight<any>('team', 'findMany', {
       where: {
         organizationId,
         dateArchived: null
@@ -981,15 +984,15 @@ export default class FinanceServices {
       }
     });
 
-    const teamDataPromises = teams.map(async (team) => {
-      const spendingInfoPromises = team.projects.map((project) =>
+    const teamDataPromises = teams.map(async (team: any) => {
+      const spendingInfoPromises = team.projects.map((project: any) =>
         this.getReimbursementRequestProjectData(organization, project.projectId, startDate, endDate)
       );
       const spendingInfos = await Promise.all(spendingInfoPromises);
 
       return {
         title: `${team.teamName}`,
-        data: team.projects.map((project, index) => ({
+        data: team.projects.map((project: any, index: any) => ({
           title: `${wbsPipe(project.wbsElement)} - ${project.wbsElement.name}`,
           spendingInfo: spendingInfos[index]
         }))
@@ -1003,7 +1006,7 @@ export default class FinanceServices {
 
   static async getSpendingBarCategoryData(organization: Organization): Promise<SpendingBarData> {
     const { organizationId } = organization;
-    const otherReasons = await prisma.reimbursement_Product_Other_Reason.findMany({
+    const otherReasons = await singleFlight<any>('reimbursement_Product_Other_Reason', 'findMany', {
       where: {
         dateDeleted: null,
         indexCode: {
@@ -1012,14 +1015,14 @@ export default class FinanceServices {
       }
     });
 
-    const spendingInfoPromises = otherReasons.map((r) =>
+    const spendingInfoPromises = otherReasons.map((r: any) =>
       this.getReimbursementRequestCategoryData(r.otherReimbursementProductReasonId, organization)
     );
     const spendingInfos = await Promise.all(spendingInfoPromises);
 
     const data: SpendingBarData = {
       title: `Club Categories`,
-      data: otherReasons.map((r, index) => ({
+      data: otherReasons.map((r: any, index: any) => ({
         title: r.name,
         spendingInfo: spendingInfos[index]
       }))
@@ -1064,7 +1067,7 @@ export default class FinanceServices {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('Only heads can edit sponsors.');
 
-    const oldSponsor = await prisma.sponsor.findUnique({
+    const oldSponsor = await singleFlight<any>('sponsor', 'findUnique', {
       where: {
         sponsorId,
         organizationId: organization.organizationId
@@ -1077,7 +1080,7 @@ export default class FinanceServices {
     if (!oldSponsor) throw new NotFoundException('Sponsor', sponsorId);
 
     await Promise.all(
-      oldSponsor.sponsorTasks.map((t) =>
+      oldSponsor.sponsorTasks.map((t: any) =>
         prisma.sponsor_Task.deleteMany({
           where: {
             sponsorTaskId: t.sponsorTaskId
@@ -1086,7 +1089,7 @@ export default class FinanceServices {
       )
     );
 
-    const tier = await prisma.sponsor_Tier.findUnique({
+    const tier = await singleFlight<any>('sponsor_Tier', 'findUnique', {
       where: {
         sponsorTierId,
         organizationId: organization.organizationId
@@ -1095,7 +1098,7 @@ export default class FinanceServices {
 
     if (!tier) throw new NotFoundException('Sponsor Tier', sponsorTierId);
 
-    const existingSponsor = await prisma.sponsor.findFirst({
+    const existingSponsor = await singleFlight<any>('sponsor', 'findFirst', {
       where: {
         name,
         organizationId: organization.organizationId
@@ -1149,7 +1152,7 @@ export default class FinanceServices {
    * @returns all sponsor tiers
    */
   static async getAllSponsorTiers(organization: Organization): Promise<SponsorTier[]> {
-    const allSponsorTiers = await prisma.sponsor_Tier.findMany({
+    const allSponsorTiers = await singleFlight<any>('sponsor_Tier', 'findMany', {
       where: { organizationId: organization.organizationId, dateDeleted: null },
       orderBy: { minSupportValue: 'asc' },
       ...getSponsorTierQueryArgs(organization.organizationId)
@@ -1166,7 +1169,7 @@ export default class FinanceServices {
    * @returns the deleted sponsor tier
    */
   static async deleteSponsorTier(sponsorTierId: string, deleter: User, organization: Organization): Promise<SponsorTier> {
-    const sponsorTier = await prisma.sponsor_Tier.findUnique({
+    const sponsorTier = await singleFlight<any>('sponsor_Tier', 'findUnique', {
       where: { sponsorTierId }
     });
 
@@ -1178,7 +1181,7 @@ export default class FinanceServices {
     if (sponsorTier.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Sponsor Tier');
     if (sponsorTier.dateDeleted) throw new DeletedException('Sponsor Tier', sponsorTierId);
 
-    const associatedSponsors = await prisma.sponsor.count({
+    const associatedSponsors = await singleFlight<any>('sponsor', 'count', {
       where: { sponsorTierId: sponsorTier.sponsorTierId, dateDeleted: null }
     });
 
@@ -1221,7 +1224,7 @@ export default class FinanceServices {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('edit a sponsor tier');
 
-    const oldSponsorTier = await prisma.sponsor_Tier.findUnique({
+    const oldSponsorTier = await singleFlight<any>('sponsor_Tier', 'findUnique', {
       where: {
         sponsorTierId,
         organizationId: organization.organizationId

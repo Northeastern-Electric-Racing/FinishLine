@@ -1,3 +1,4 @@
+import singleFlight from './single-flight';
 import { Organization, Prisma, User } from '@prisma/client';
 import {
   DescriptionBulletPreview,
@@ -42,11 +43,11 @@ export default class ProjectsService {
    */
   static async getAllProjects(organization: Organization, includeDeleted: boolean): Promise<ProjectPreview[]> {
     const projects = includeDeleted
-      ? await prisma.project.findMany({
+      ? await singleFlight<any>('project', 'findMany', {
           where: { wbsElement: { organizationId: organization.organizationId } },
           ...getProjectManyQueryArgs(organization.organizationId)
         })
-      : await prisma.project.findMany({
+      : await singleFlight<any>('project', 'findMany', {
           where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId } },
           ...getProjectManyQueryArgs(organization.organizationId)
         });
@@ -55,7 +56,7 @@ export default class ProjectsService {
   }
 
   static async getUsersLeadingProjects(user: User, organization: Organization): Promise<ProjectPreview[]> {
-    const projects = await prisma.project.findMany({
+    const projects = await singleFlight<any>('project', 'findMany', {
       where: {
         wbsElement: {
           organizationId: organization.organizationId,
@@ -70,7 +71,7 @@ export default class ProjectsService {
   }
 
   static async getUsersTeamsProjects(user: User, organization: Organization): Promise<ProjectPreview[]> {
-    const projects = await prisma.project.findMany({
+    const projects = await singleFlight<any>('project', 'findMany', {
       where: {
         wbsElement: {
           organizationId: organization.organizationId,
@@ -107,7 +108,7 @@ export default class ProjectsService {
   }
 
   static async getTeamsProjects(organization: Organization, teamId: string): Promise<Project[]> {
-    const projects = await prisma.project.findMany({
+    const projects = await singleFlight<any>('project', 'findMany', {
       where: {
         wbsElement: {
           organizationId: organization.organizationId,
@@ -143,7 +144,7 @@ export default class ProjectsService {
 
     const { carNumber, projectNumber, workPackageNumber } = wbsNumber;
 
-    const wbsElement = await prisma.wBS_Element.findUnique({
+    const wbsElement = await singleFlight<any>('wBS_Element', 'findUnique', {
       where: {
         wbsNumber: {
           carNumber,
@@ -210,13 +211,13 @@ export default class ProjectsService {
 
     if (teamIds.length > 0) {
       for (const teamId of teamIds) {
-        const team = await prisma.team.findUnique({ where: { teamId } });
+        const team = await singleFlight<any>('team', 'findUnique', { where: { teamId } });
         if (!team) throw new NotFoundException('Team', teamId);
         if (team.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Team');
       }
     }
 
-    const carWbs = await prisma.wBS_Element.findUnique({
+    const carWbs = await singleFlight<any>('wBS_Element', 'findUnique', {
       where: {
         wbsNumber: { carNumber, projectNumber: 0, workPackageNumber: 0, organizationId: organization.organizationId }
       },
@@ -321,7 +322,7 @@ export default class ProjectsService {
     await validateChangeRequestAccepted(crId);
 
     // get the original project so we can compare things
-    const originalProject = await prisma.project.findUnique({
+    const originalProject = await singleFlight<any>('project', 'findUnique', {
       where: {
         projectId
       },
@@ -374,7 +375,7 @@ export default class ProjectsService {
     // find the associated project
     const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNumber, organization);
 
-    const team = await prisma.team.findUnique({ where: { teamId } });
+    const team = await singleFlight<any>('team', 'findUnique', { where: { teamId } });
     if (!team) throw new NotFoundException('Team', teamId);
     if (team.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Team');
 
@@ -384,7 +385,7 @@ export default class ProjectsService {
     }
 
     // check if the team is already assigned to the project if it is we remove it, otherwise we add it. We do this to toggle the team
-    if (project.teams.some((currTeam) => currTeam.teamId === teamId)) {
+    if (project.teams.some((currTeam: any) => currTeam.teamId === teamId)) {
       await prisma.project.update({
         where: { projectId: project.projectId },
         data: {
@@ -462,7 +463,7 @@ export default class ProjectsService {
     });
 
     // need to delete each of the project's work packages as well
-    const workPackages = await prisma.work_Package.findMany({
+    const workPackages = await singleFlight<any>('work_Package', 'findMany', {
       where: {
         projectId
       },
@@ -471,7 +472,7 @@ export default class ProjectsService {
 
     await Promise.all(
       workPackages.map(
-        async (workPackage) =>
+        async (workPackage: any) =>
           await WorkPackagesService.deleteWorkPackage(user, wbsNumOf(workPackage.wbsElement), organization)
       )
     );
@@ -490,7 +491,7 @@ export default class ProjectsService {
   static async toggleFavorite(wbsNumber: WbsNumber, user: User, organization: Organization): Promise<Project> {
     const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNumber, organization);
 
-    const favorited = project.favoritedBy.some((currUser) => currUser.userId === user.userId);
+    const favorited = project.favoritedBy.some((currUser: any) => currUser.userId === user.userId);
 
     favorited
       ? await prisma.user.update({
@@ -524,7 +525,7 @@ export default class ProjectsService {
    */
   static async getAllLinkTypes(organization: Organization): Promise<LinkType[]> {
     return (
-      await prisma.link_Type.findMany({
+      await singleFlight<any>('link_Type', 'findMany', {
         where: {
           organizationId: organization.organizationId
         },
@@ -555,7 +556,7 @@ export default class ProjectsService {
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedException('Only admins can create link types');
 
-    const existingLinkType = await prisma.link_Type.findUnique({
+    const existingLinkType = await singleFlight<any>('link_Type', 'findUnique', {
       where: { uniqueLinkType: { name, organizationId: organization.organizationId } }
     });
 
@@ -595,7 +596,7 @@ export default class ProjectsService {
       throw new AccessDeniedException('Only an admin can update the linkType');
 
     // check if the linkType we are trying to update exists
-    const linkType = await prisma.link_Type.findUnique({
+    const linkType = await singleFlight<any>('link_Type', 'findUnique', {
       where: {
         uniqueLinkType: {
           name: linkName,

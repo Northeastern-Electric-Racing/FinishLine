@@ -1,3 +1,4 @@
+import singleFlight from './single-flight';
 import { Organization, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
 import {
   calculateEndDate,
@@ -51,12 +52,12 @@ export default class WorkPackagesService {
     },
     organization: Organization
   ): Promise<WorkPackage[]> {
-    const workPackages = await prisma.work_Package.findMany({
+    const workPackages = await singleFlight<any>('work_Package', 'findMany', {
       where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId } },
       ...getWorkPackageQueryArgs(organization.organizationId)
     });
 
-    const outputWorkPackages = workPackages.map(workPackageTransformer).filter((wp) => {
+    const outputWorkPackages = workPackages.map(workPackageTransformer).filter((wp: any) => {
       let passes = true;
       if (query.status) passes &&= wp.status === query.status;
       if (query.daysUntilDeadline) {
@@ -66,7 +67,7 @@ export default class WorkPackagesService {
       return passes;
     });
 
-    outputWorkPackages.sort((wpA, wpB) => wpA.endDate.getTime() - wpB.endDate.getTime());
+    outputWorkPackages.sort((wpA: any, wpB: any) => wpA.endDate.getTime() - wpB.endDate.getTime());
 
     return outputWorkPackages;
   }
@@ -83,7 +84,7 @@ export default class WorkPackagesService {
       throw new HttpException(404, 'WBS Number ' + wbsPipe(parsedWbs) + ' is a not a work package WBS#');
     }
 
-    const wp = await prisma.work_Package.findFirst({
+    const wp = await singleFlight<any>('work_Package', 'findFirst', {
       where: {
         wbsElement: {
           dateDeleted: null,
@@ -172,7 +173,7 @@ export default class WorkPackagesService {
     // and what number work package this should be
     const { carNumber, projectNumber } = projectWbsNum;
 
-    const project = await prisma.project.findFirst({
+    const project = await singleFlight<any>('project', 'findFirst', {
       where: {
         wbsElement: {
           carNumber,
@@ -201,8 +202,8 @@ export default class WorkPackagesService {
 
     const newWorkPackageNumber: number =
       project.workPackages
-        .map((element) => element.wbsElement.workPackageNumber)
-        .reduce((prev, curr) => Math.max(prev, curr), 0) + 1;
+        .map((element: any) => element.wbsElement.workPackageNumber)
+        .reduce((prev: any, curr: any) => Math.max(prev, curr), 0) + 1;
 
     // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
     const date = new Date(startDate.split('T')[0]);
@@ -239,7 +240,7 @@ export default class WorkPackagesService {
         project: { connect: { projectId } },
         startDate: date,
         duration,
-        orderInProject: project.workPackages.filter((wp) => !wp.wbsElement.dateDeleted).length + 1,
+        orderInProject: project.workPackages.filter((wp: any) => !wp.wbsElement.dateDeleted).length + 1,
         blockedBy: { connect: blockedByElements.map((ele) => ({ wbsElementId: ele.wbsElementId })) }
       },
       ...getWorkPackageQueryArgs(organization.organizationId)
@@ -314,7 +315,7 @@ export default class WorkPackagesService {
       throw new AccessDeniedGuestException('edit work packages');
 
     // get the original work package so we can compare things
-    const originalWorkPackage = await prisma.work_Package.findUnique({
+    const originalWorkPackage = await singleFlight<any>('work_Package', 'findUnique', {
       where: { workPackageId },
       include: {
         wbsElement: {
@@ -505,7 +506,7 @@ export default class WorkPackagesService {
     // is a project or car so just return empty array until we implement blocking projects/cars
     if (!isWorkPackageWbs(wbsNum)) return [];
 
-    const wbsElement = await prisma.wBS_Element.findUnique({
+    const wbsElement = await singleFlight<any>('wBS_Element', 'findUnique', {
       where: {
         wbsNumber: {
           carNumber,
@@ -543,7 +544,7 @@ export default class WorkPackagesService {
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('send the upcoming deadlines slack messages');
 
-    const workPackages = await prisma.work_Package.findMany({
+    const workPackages = await singleFlight<any>('work_Package', 'findMany', {
       where: {
         wbsElement: { dateDeleted: null, status: WBS_Element_Status.ACTIVE, organizationId: organization.organizationId }
       },
@@ -551,14 +552,15 @@ export default class WorkPackagesService {
     });
 
     const upcomingWorkPackages = workPackages
-      .filter((wp) => getDay(calculateEndDate(wp.startDate, wp.duration)) <= getDay(deadline))
+      .filter((wp: any) => getDay(calculateEndDate(wp.startDate, wp.duration)) <= getDay(deadline))
       .sort(
-        (a, b) => calculateEndDate(a.startDate, a.duration).getTime() - calculateEndDate(b.startDate, b.duration).getTime()
+        (a: any, b: any) =>
+          calculateEndDate(a.startDate, a.duration).getTime() - calculateEndDate(b.startDate, b.duration).getTime()
       );
 
     // have to do it like this so it goes sequentially and we can sleep between each because of rate limiting
     await upcomingWorkPackages.reduce(
-      (previousCall, workPackage) =>
+      (previousCall: any, workPackage: any) =>
         previousCall.then(async () => {
           await sendSlackUpcomingDeadlineNotification(workPackage); // send the slack message for this work package
           await new Promise((callBack) => setTimeout(callBack, 2000)); // sleep for 2 seconds

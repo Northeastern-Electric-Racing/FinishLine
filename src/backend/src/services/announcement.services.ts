@@ -1,3 +1,4 @@
+import singleFlight from "./single-flight";
 import { Announcement } from 'shared';
 import prisma from '../prisma/prisma';
 import { getAnnouncementQueryArgs } from '../prisma-query-args/announcements.query.args';
@@ -58,7 +59,7 @@ export default class AnnouncementService {
     slackChannelName: string,
     organizationId: string
   ): Promise<Announcement> {
-    const originalAnnouncement = await prisma.announcement.findUnique({
+    const originalAnnouncement = await singleFlight<any>("announcement", "findUnique", {
       where: {
         slackEventId
       }
@@ -91,7 +92,7 @@ export default class AnnouncementService {
   }
 
   static async deleteAnnouncement(slackEventId: string, organizationId: string): Promise<Announcement> {
-    const originalAnnouncement = await prisma.announcement.findUnique({
+    const originalAnnouncement = await singleFlight<any>("announcement", "findUnique", {
       where: {
         slackEventId
       }
@@ -125,7 +126,7 @@ export default class AnnouncementService {
    * @returns the unread announcements of the user
    */
   static async getUserUnreadAnnouncements(userId: string, organizationId: string) {
-    const unreadAnnouncements = await prisma.announcement.findMany({
+    const unreadAnnouncements = await singleFlight<any>("announcement", "findMany", {
       where: {
         dateDeleted: null,
         usersReceived: {
@@ -149,7 +150,7 @@ export default class AnnouncementService {
    * @returns the user's updated unread announcement
    */
   static async removeUserAnnouncement(userId: string, announcementId: string, organizationId: string) {
-    const requestedUser = await prisma.user.findUnique({
+    const requestedUser = await singleFlight<any>("user", "findUnique", {
       where: { userId }
     });
 
