@@ -51,7 +51,7 @@ const FinalizeDesignReviewDetailsModal = ({
 
   const defaultValues = {
     docTemplateLink: designReview.docTemplateLink ?? '',
-    zoomLink: designReview.zoomLink ?? userScheduleSettings?.personalZoomLink ?? (designReview.isOnline ? '' : undefined),
+    zoomLink: designReview.zoomLink ?? userScheduleSettings?.personalZoomLink ?? '',
     location: designReview.location ?? undefined
   };
 
@@ -72,7 +72,7 @@ const FinalizeDesignReviewDetailsModal = ({
   };
 
   const onSubmit = async (data: { docTemplateLink: string; zoomLink?: string; location?: string }) => {
-    finalizeDesignReview({ ...data, meetingType });
+    finalizeDesignReview({ ...data, zoomLink: data.zoomLink ? data.zoomLink : undefined, meetingType });
     setOpen(false);
   };
 
