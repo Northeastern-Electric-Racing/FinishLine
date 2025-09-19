@@ -1,4 +1,4 @@
-import singleFlight from "./single-flight";
+import singleFlight from './single-flight';
 import { Organization, User } from '@prisma/client';
 import { isAdmin } from 'shared';
 import { getCarQueryArgs } from '../prisma-query-args/cars.query-args';
@@ -9,7 +9,7 @@ import { userHasPermission } from '../utils/users.utils';
 
 export default class CarsService {
   static async getAllCars(organization: Organization) {
-    const cars = await singleFlight<any>("car", "findMany", {
+    const cars = await singleFlight<any>('car', 'findMany', {
       where: {
         wbsElement: {
           organizationId: organization.organizationId
@@ -25,7 +25,7 @@ export default class CarsService {
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create a car');
 
-    const numExistingCars = await singleFlight<any>("car", "count", {
+    const numExistingCars = await singleFlight<any>('car', 'count', {
       where: {
         wbsElement: {
           organizationId: organization.organizationId

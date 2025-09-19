@@ -1,5 +1,4 @@
 import singleFlight from './single-flight';
-import prisma from '../prisma/prisma';
 import projectTransformer, {
   RetrospectiveProjectPreviewQueryArgs,
   retrospectiveProjectPreviewTransformer

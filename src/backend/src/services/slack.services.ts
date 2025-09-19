@@ -1,8 +1,7 @@
-import singleFlight from "./single-flight";
+import singleFlight from './single-flight';
 import { getChannelName, getUserName } from '../integrations/slack';
 import AnnouncementService from './announcement.services';
 import { Announcement } from 'shared';
-import prisma from '../prisma/prisma';
 import { blockToMentionedUsers, blockToString } from '../utils/slack.utils';
 import { NotFoundException } from '../utils/errors.utils';
 
@@ -111,11 +110,9 @@ export default class SlackServices {
     //if slack could not produce the name of the user, look for their name in prisma
     if (!userName) {
       try {
-        const userWithThatSlackId = await singleFlight<any>(
-          "user",
-          "findFirst",
-          { where: { userSettings: { slackId: eventMessage.user } } }
-        );
+        const userWithThatSlackId = await singleFlight<any>('user', 'findFirst', {
+          where: { userSettings: { slackId: eventMessage.user } }
+        });
         userName = `${userWithThatSlackId?.firstName} ${userWithThatSlackId?.lastName}`;
       } catch {
         userName = 'Unknown_User:' + eventMessage.user;
