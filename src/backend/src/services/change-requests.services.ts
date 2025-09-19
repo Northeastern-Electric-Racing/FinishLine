@@ -1,4 +1,3 @@
-import singleFlight from './single-flight';
 import {
   ActivationChangeRequest,
   BudgetChangeRequest,
@@ -70,7 +69,7 @@ export default class ChangeRequestsService {
    * @throws if the change request does not exist
    */
   static async getChangeRequestByID(crId: string, organization: Organization): Promise<ChangeRequest> {
-    const changeRequest = await singleFlight<any>('change_Request', 'findUnique', {
+    const changeRequest = await prisma.change_Request.findUnique({
       where: { crId },
       ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
     });
@@ -89,7 +88,7 @@ export default class ChangeRequestsService {
    * @returns All of the change requests
    */
   static async getAllChangeRequests(organization: Organization): Promise<ChangeRequest[]> {
-    const changeRequests = await singleFlight<any>('change_Request', 'findMany', {
+    const changeRequests = await prisma.change_Request.findMany({
       where: { dateDeleted: null, organizationId: organization.organizationId },
       ...getManyChangeRequestQueryArgs(organization.organizationId)
     });
@@ -138,7 +137,7 @@ export default class ChangeRequestsService {
       }
     ];
 
-    const changeRequests = await singleFlight<any>('change_Request', 'findMany', {
+    const changeRequests = await prisma.change_Request.findMany({
       where: {
         dateDeleted: null,
         AND: [
@@ -185,7 +184,7 @@ export default class ChangeRequestsService {
     if (wbsnum) queryAnd.push({ wbsElementId: (await validateWbsElement(wbsnum, organization)).wbsElementId });
     else queryAnd.push({ submitterId: user.userId });
 
-    const changeRequests = await singleFlight<any>('change_Request', 'findMany', {
+    const changeRequests = await prisma.change_Request.findMany({
       where: {
         organizationId: organization.organizationId,
         AND: queryAnd,
@@ -216,7 +215,7 @@ export default class ChangeRequestsService {
       ? [{ wbsElementId: (await validateWbsElement(wbsnum, organization)).wbsElementId }]
       : [{ submitterId: user.userId }];
 
-    const changeRequests = await singleFlight<any>('change_Request', 'findMany', {
+    const changeRequests = await prisma.change_Request.findMany({
       where: {
         organizationId: organization.organizationId,
         OR: [
@@ -265,7 +264,7 @@ export default class ChangeRequestsService {
       throw new AccessDeniedMemberException('review change requests');
 
     // ensure existence of change request
-    const foundCR = await singleFlight<any>('change_Request', 'findUnique', {
+    const foundCR = await prisma.change_Request.findUnique({
       where: { crId },
       ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
     });
@@ -654,7 +653,7 @@ export default class ChangeRequestsService {
       throw new AccessDeniedGuestException('create activation change requests');
 
     // verify wbs element exists
-    const wbsElement = await singleFlight<any>('wBS_Element', 'findUnique', {
+    const wbsElement = await prisma.wBS_Element.findUnique({
       where: {
         wbsNumber: {
           carNumber,
@@ -693,7 +692,7 @@ export default class ChangeRequestsService {
       );
     }
 
-    const numChanges = await singleFlight<any>('change_Request', 'count', {
+    const numChanges = await prisma.change_Request.count({
       where: { organizationId: organization.organizationId }
     });
 
@@ -761,7 +760,7 @@ export default class ChangeRequestsService {
       throw new AccessDeniedGuestException('create stage gate change requests');
 
     // verify wbs element exists
-    const wbsElement = await singleFlight<any>('wBS_Element', 'findUnique', {
+    const wbsElement = await prisma.wBS_Element.findUnique({
       where: {
         wbsNumber: {
           carNumber,
@@ -804,7 +803,7 @@ export default class ChangeRequestsService {
       );
     }
 
-    const numChangeRequests = await singleFlight<any>('change_Request', 'count', {
+    const numChangeRequests = await prisma.change_Request.count({
       where: { organizationId: organization.organizationId }
     });
 
@@ -873,7 +872,7 @@ export default class ChangeRequestsService {
 
     if (otherReasonId) {
       // verify category exists
-      const category = await singleFlight<any>('reimbursement_Product_Other_Reason', 'findUnique', {
+      const category = await prisma.reimbursement_Product_Other_Reason.findUnique({
         where: {
           otherReimbursementProductReasonId: otherReasonId
         },
@@ -894,7 +893,7 @@ export default class ChangeRequestsService {
         );
       }
 
-      const numChangeRequests = await singleFlight<any>('change_Request', 'count', {
+      const numChangeRequests = await prisma.change_Request.count({
         where: { organizationId: organization.organizationId }
       });
 
@@ -914,7 +913,7 @@ export default class ChangeRequestsService {
         ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
       });
 
-      const financeTeams = await singleFlight<any>('team', 'findMany', {
+      const financeTeams = await prisma.team.findMany({
         where: {
           financeTeam: true,
           organizationId: organization.organizationId
@@ -936,7 +935,7 @@ export default class ChangeRequestsService {
       }
     } else if (accountCodeId) {
       // verify account code exists
-      const accountCode = await singleFlight<any>('account_Code', 'findUnique', {
+      const accountCode = await prisma.account_Code.findUnique({
         where: {
           accountCodeId
         },
@@ -954,7 +953,7 @@ export default class ChangeRequestsService {
         throw new HttpException(400, `Please resolve all change requests related to ${accountCode.name} before proceeding`);
       }
 
-      const numChangeRequests = await singleFlight<any>('change_Request', 'count', {
+      const numChangeRequests = await prisma.change_Request.count({
         where: { organizationId: organization.organizationId }
       });
 
@@ -974,7 +973,7 @@ export default class ChangeRequestsService {
         ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
       });
 
-      const financeTeams = await singleFlight<any>('team', 'findMany', {
+      const financeTeams = await prisma.team.findMany({
         where: {
           financeTeam: true,
           organizationId: organization.organizationId
@@ -1048,7 +1047,7 @@ export default class ChangeRequestsService {
     }
 
     // verify wbs element exists
-    const wbsElement = await singleFlight<any>('wBS_Element', 'findUnique', {
+    const wbsElement = await prisma.wBS_Element.findUnique({
       where: {
         wbsNumber: {
           carNumber,
@@ -1072,7 +1071,7 @@ export default class ChangeRequestsService {
       await validateNoUnreviewedOpenCRs(wbsElement.wbsElementId);
     }
 
-    const numChangeRequests = await singleFlight<any>('change_Request', 'count', {
+    const numChangeRequests = await prisma.change_Request.count({
       where: { organizationId: organization.organizationId }
     });
 
@@ -1138,7 +1137,7 @@ export default class ChangeRequestsService {
 
       if (teamIds.length > 0) {
         for (const teamId of teamIds) {
-          const team = await singleFlight<any>('team', 'findUnique', { where: { teamId } });
+          const team = await prisma.team.findUnique({ where: { teamId } });
           if (!team) throw new NotFoundException('Team', teamId);
         }
       }
@@ -1317,7 +1316,7 @@ export default class ChangeRequestsService {
       await addSlackThreadsToChangeRequest(createdCR.crId, notifications);
     }
 
-    const finishedCR = await singleFlight<any>('change_Request', 'findUnique', {
+    const finishedCR = await prisma.change_Request.findUnique({
       where: { crId: createdCR.crId },
       ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
     });
@@ -1354,7 +1353,7 @@ export default class ChangeRequestsService {
       throw new AccessDeniedGuestException('add proposed solutions');
 
     // ensure existence of change request
-    const foundCR = await singleFlight<any>('change_Request', 'findUnique', {
+    const foundCR = await prisma.change_Request.findUnique({
       where: { crId }
     });
 
@@ -1364,7 +1363,7 @@ export default class ChangeRequestsService {
       throw new HttpException(400, `Cannot create proposed solutions on a reviewed change request!`);
 
     // ensure existence of scope change request
-    const foundScopeCR = await singleFlight<any>('scope_CR', 'findUnique', { where: { changeRequestId: crId } });
+    const foundScopeCR = await prisma.scope_CR.findUnique({ where: { changeRequestId: crId } });
     if (!foundScopeCR) throw new NotFoundException('Change Request', crId);
 
     const createdProposedSolution = await prisma.proposed_Solution.create({
@@ -1390,7 +1389,7 @@ export default class ChangeRequestsService {
    */
   static async deleteChangeRequest(submitter: User, crId: string, organization: Organization): Promise<void> {
     // ensure existence of change request
-    const foundCR = await singleFlight<any>('change_Request', 'findUnique', {
+    const foundCR = await prisma.change_Request.findUnique({
       where: { crId },
       include: {
         wbsElement: true
@@ -1452,7 +1451,7 @@ export default class ChangeRequestsService {
       throw new AccessDeniedException(`The following user(s) have no slackId: ${missingReviewerSettingsNames.join(', ')}`);
     }
 
-    const foundCR = await singleFlight<any>('change_Request', 'findUnique', {
+    const foundCR = await prisma.change_Request.findUnique({
       where: { crId },
       ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
     });
@@ -1464,7 +1463,7 @@ export default class ChangeRequestsService {
       throw new AccessDeniedException(`Only the author of this change request can request a reviewer`);
     if (foundCR.reviewerId) throw new HttpException(400, `Cannot request a review on an already reviewed change request`);
 
-    const oldRequestedReviewersIds = foundCR.requestedReviewers.map((reviewer: any) => reviewer.userId);
+    const oldRequestedReviewersIds = foundCR.requestedReviewers.map((reviewer) => reviewer.userId);
 
     const reviewerIds = reviewers.map((reviewer) => {
       return {

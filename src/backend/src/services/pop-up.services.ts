@@ -1,4 +1,3 @@
-import singleFlight from './single-flight';
 import { getPopUpQueryArgs } from '../prisma-query-args/pop-up.query-args';
 import prisma from '../prisma/prisma';
 import popUpTransformer from '../transformers/pop-up.transformer';
@@ -12,7 +11,7 @@ export class PopUpService {
    * @returns the unread pop up of the user
    */
   static async getUserUnreadPopUps(userId: string, organizationId: string) {
-    const unreadPopUps = await singleFlight<any>('popUp', 'findMany', {
+    const unreadPopUps = await prisma.popUp.findMany({
       where: {
         usersReceived: {
           some: { userId }
@@ -35,7 +34,7 @@ export class PopUpService {
    * @returns the user's updated unread pop up
    */
   static async removeUserPopUp(userId: string, popUpId: string, organizationId: string) {
-    const popUp = await singleFlight<any>('popUp', 'findUnique', {
+    const popUp = await prisma.popUp.findUnique({
       where: { popUpId }
     });
 
@@ -87,7 +86,7 @@ export class PopUpService {
     if (!createdPopUp) throw new HttpException(500, 'Failed to create notification');
 
     const popUpPromises = userIds.map(async (userId) => {
-      const requestedUser = await singleFlight<any>('user', 'findUnique', {
+      const requestedUser = await prisma.user.findUnique({
         where: { userId }
       });
 

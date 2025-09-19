@@ -1,4 +1,3 @@
-import singleFlight from './single-flight';
 import { Material_Status, Material_Type, Organization, User } from '@prisma/client';
 import Decimal from 'decimal.js';
 import {
@@ -81,19 +80,19 @@ export default class BillOfMaterialsService {
     const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNumber, organization);
 
     if (assemblyId) {
-      const assembly = await singleFlight<any>('assembly', 'findUnique', { where: { assemblyId } });
+      const assembly = await prisma.assembly.findUnique({ where: { assemblyId } });
       if (!assembly) throw new NotFoundException('Assembly', assemblyId);
       if (assembly.wbsElementId !== project.wbsElementId) throw new HttpException(400, 'Assembly not found on this project');
       if (assembly.dateDeleted) throw new DeletedException('Assembly', assemblyId);
     }
 
-    const materialType = await singleFlight<any>('material_Type', 'findUnique', {
+    const materialType = await prisma.material_Type.findUnique({
       where: { uniqueMaterialType: { name: materialTypeName, organizationId: organization.organizationId } }
     });
     if (!materialType) throw new NotFoundException('Material Type', materialTypeName);
     if (materialType.dateDeleted) throw new DeletedException('Material Type', materialTypeName);
 
-    const manufacturer = await singleFlight<any>('manufacturer', 'findUnique', {
+    const manufacturer = await prisma.manufacturer.findUnique({
       where: { uniqueManufacturer: { name: manufacturerName, organizationId: organization.organizationId } }
     });
     if (!manufacturer) throw new NotFoundException('Manufacturer', manufacturerName);
@@ -101,14 +100,14 @@ export default class BillOfMaterialsService {
 
     let unit = null;
     if (unitName) {
-      unit = await singleFlight<any>('unit', 'findUnique', {
+      unit = await prisma.unit.findUnique({
         where: { uniqueUnit: { name: unitName, organizationId: organization.organizationId } }
       });
       if (!unit) throw new NotFoundException('Unit', unitName);
     }
 
     if (reimbursementRequestId) {
-      const reimbursementRequest = await singleFlight<any>('reimbursement_Request', 'findUnique', {
+      const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
         where: { reimbursementRequestId, dateDeleted: null }
       });
 
@@ -204,7 +203,7 @@ export default class BillOfMaterialsService {
     if (await userHasPermission(submitter.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('create manufacturers');
 
-    const manufacturer = await singleFlight<any>('manufacturer', 'findUnique', {
+    const manufacturer = await prisma.manufacturer.findUnique({
       where: {
         uniqueManufacturer: { name, organizationId: organization.organizationId }
       }
@@ -248,7 +247,7 @@ export default class BillOfMaterialsService {
       throw new AccessDeniedException('Only heads and above can delete a unit');
     }
 
-    const unit = await singleFlight<any>('unit', 'findUnique', {
+    const unit = await prisma.unit.findUnique({
       where: {
         uniqueUnit: { name, organizationId: organization.organizationId }
       }
@@ -303,7 +302,7 @@ export default class BillOfMaterialsService {
     }
 
     return (
-      await singleFlight<any>('manufacturer', 'findMany', {
+      await prisma.manufacturer.findMany({
         where: { dateDeleted: null, organizationId: organization.organizationId },
         ...getManufacturerQueryArgs(organization.organizationId)
       })
@@ -322,7 +321,7 @@ export default class BillOfMaterialsService {
     }
 
     return (
-      await singleFlight<any>('material_Type', 'findMany', {
+      await prisma.material_Type.findMany({
         where: { dateDeleted: null, organizationId: organization.organizationId },
         ...getMaterialTypeQueryArgs(organization.organizationId)
       })
@@ -340,7 +339,7 @@ export default class BillOfMaterialsService {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership)))
       throw new AccessDeniedException('Only leadership or above can create a material type');
 
-    const materialType = await singleFlight<any>('material_Type', 'findUnique', {
+    const materialType = await prisma.material_Type.findUnique({
       where: {
         uniqueMaterialType: { name, organizationId: organization.organizationId }
       }
@@ -423,7 +422,7 @@ export default class BillOfMaterialsService {
         include: { materials: true }
       });
 
-      const updatedMaterial = await singleFlight<any>('material', 'findUnique', {
+      const updatedMaterial = await prisma.material.findUnique({
         where: { materialId }
       });
 
@@ -446,7 +445,7 @@ export default class BillOfMaterialsService {
 
     const assembly = await BillOfMaterialsService.getSingleAssemblyWithQueryArgs(assemblyId, organization);
 
-    const materialPromises = assembly.materials.map(async (material: any) => {
+    const materialPromises = assembly.materials.map(async (material) => {
       return await prisma.material.update({
         where: {
           materialId: material.materialId
@@ -593,14 +592,14 @@ export default class BillOfMaterialsService {
 
     let unit = null;
     if (unitName) {
-      unit = await singleFlight<any>('unit', 'findUnique', {
+      unit = await prisma.unit.findUnique({
         where: { uniqueUnit: { name: unitName, organizationId: project.wbsElement.organizationId } }
       });
       if (!unit) throw new NotFoundException('Unit', unitName);
     }
 
     if (reimbursementRequestId) {
-      const reimbursementRequest = await singleFlight<any>('reimbursement_Request', 'findUnique', {
+      const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
         where: { reimbursementRequestId, dateDeleted: null }
       });
 
@@ -646,7 +645,7 @@ export default class BillOfMaterialsService {
     if (await userHasPermission(user.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('get units');
 
-    const units = await singleFlight<any>('unit', 'findMany', {
+    const units = await prisma.unit.findMany({
       where: {
         organizationId: organization.organizationId
       },
@@ -655,7 +654,7 @@ export default class BillOfMaterialsService {
       }
     });
 
-    return units.map((unit: any) => {
+    return units.map((unit) => {
       return { ...unit, materials: unit.materials.map(materialPreviewTransformer) };
     });
   }
@@ -671,7 +670,7 @@ export default class BillOfMaterialsService {
     if (await userHasPermission(submitter.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('create units');
 
-    const unit = await singleFlight<any>('unit', 'findUnique', {
+    const unit = await prisma.unit.findUnique({
       where: {
         uniqueUnit: { name, organizationId: organization.organizationId }
       }
@@ -732,7 +731,7 @@ export default class BillOfMaterialsService {
    * @returns The found assembly
    */
   static async getSingleAssemblyWithQueryArgs(assemblyId: string, organization: Organization) {
-    const assembly = await singleFlight<any>('assembly', 'findUnique', {
+    const assembly = await prisma.assembly.findUnique({
       where: { assemblyId },
       ...getAssemblyQueryArgs(organization.organizationId)
     });
@@ -751,7 +750,7 @@ export default class BillOfMaterialsService {
    * @returns The found material type
    */
   static async getSingleMaterialTypeWithQueryArgs(materialTypeName: string, organization: Organization) {
-    const materialType = await singleFlight<any>('material_Type', 'findUnique', {
+    const materialType = await prisma.material_Type.findUnique({
       where: { uniqueMaterialType: { name: materialTypeName, organizationId: organization.organizationId } },
       ...getMaterialTypeQueryArgs(organization.organizationId)
     });
@@ -769,7 +768,7 @@ export default class BillOfMaterialsService {
    * @returns The manufacturer with the given name
    */
   static async getSingleManufacturerWithQueryArgs(manufacturerName: string, organization: Organization) {
-    const manufacturer = await singleFlight<any>('manufacturer', 'findUnique', {
+    const manufacturer = await prisma.manufacturer.findUnique({
       where: { uniqueManufacturer: { name: manufacturerName, organizationId: organization.organizationId } },
       ...getManufacturerQueryArgs(organization.organizationId)
     });
@@ -787,7 +786,7 @@ export default class BillOfMaterialsService {
    * @returns The found material
    */
   static async getSingleMaterialWithQueryArgs(materialId: string, organization: Organization) {
-    const material = await singleFlight<any>('material', 'findUnique', {
+    const material = await prisma.material.findUnique({
       where: { materialId },
       include: { wbsElement: true }
     });
@@ -801,7 +800,7 @@ export default class BillOfMaterialsService {
   }
 
   static async getAssembliesForWbsElement(wbsNum: WbsNumber, organization: Organization): Promise<Assembly[]> {
-    const wbsElement = await singleFlight<any>('wBS_Element', 'findUnique', {
+    const wbsElement = await prisma.wBS_Element.findUnique({
       where: {
         wbsNumber: {
           ...wbsNum,
@@ -829,7 +828,7 @@ export default class BillOfMaterialsService {
   }
 
   static async getMaterialsForWbsElement(wbsNum: WbsNumber, organization: Organization): Promise<Material[]> {
-    const wbsElement = await singleFlight<any>('wBS_Element', 'findUnique', {
+    const wbsElement = await prisma.wBS_Element.findUnique({
       where: {
         wbsNumber: {
           ...wbsNum,

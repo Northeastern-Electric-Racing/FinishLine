@@ -1,4 +1,3 @@
-import singleFlight from './single-flight';
 /*
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
@@ -84,7 +83,7 @@ export default class ReimbursementRequestService {
    * @param organizationId The organization the user is currently in
    */
   static async getUserReimbursementRequests(recipient: User, organization: Organization): Promise<ReimbursementRequest[]> {
-    const userReimbursementRequests = await singleFlight<any>('reimbursement_Request', 'findMany', {
+    const userReimbursementRequests = await prisma.reimbursement_Request.findMany({
       where: { dateDeleted: null, recipientId: recipient.userId, organizationId: organization.organizationId },
       ...getReimbursementRequestQueryArgs(organization.organizationId)
     });
@@ -100,7 +99,7 @@ export default class ReimbursementRequestService {
     recipient: User,
     organization: Organization
   ): Promise<ReimbursementRequest[]> {
-    const teams = await singleFlight<any>('team', 'findMany', {
+    const teams = await prisma.team.findMany({
       where: {
         organizationId: organization.organizationId,
         OR: [
@@ -131,13 +130,13 @@ export default class ReimbursementRequestService {
 
     const teamUserIds = new Set<string>();
 
-    teams.forEach((team: any) => {
+    teams.forEach((team) => {
       if (team.headId) teamUserIds.add(team.headId);
-      team.leads.forEach((lead: any) => teamUserIds.add(lead.userId));
-      team.members.forEach((member: any) => teamUserIds.add(member.userId));
+      team.leads.forEach((lead) => teamUserIds.add(lead.userId));
+      team.members.forEach((member) => teamUserIds.add(member.userId));
     });
 
-    const teamsReimbursementRequests = await singleFlight<any>('reimbursement_Request', 'findMany', {
+    const teamsReimbursementRequests = await prisma.reimbursement_Request.findMany({
       where: {
         dateDeleted: null,
         recipientId: { in: Array.from(teamUserIds) },
@@ -156,7 +155,7 @@ export default class ReimbursementRequestService {
    * @returns all reimbursements for the given user
    */
   static async getUserReimbursements(user: User, organization: Organization): Promise<Reimbursement[]> {
-    const userReimbursements = await singleFlight<any>('reimbursement', 'findMany', {
+    const userReimbursements = await prisma.reimbursement.findMany({
       where: { userSubmittedId: user.userId, organizationId: organization.organizationId },
       ...getReimbursementQueryArgs(organization.organizationId)
     });
@@ -172,7 +171,7 @@ export default class ReimbursementRequestService {
   static async getAllReimbursements(user: User, organization: Organization): Promise<Reimbursement[]> {
     await isUserHeadOrOnFinance(user, organization.organizationId);
 
-    const reimbursements = await singleFlight<any>('reimbursement', 'findMany', {
+    const reimbursements = await prisma.reimbursement.findMany({
       where: {
         organizationId: organization.organizationId
       },
@@ -188,7 +187,7 @@ export default class ReimbursementRequestService {
    * @returns All the non-deleted vendors
    */
   static async getAllVendors(organization: Organization): Promise<Vendor[]> {
-    const vendors = await singleFlight<any>('vendor', 'findMany', {
+    const vendors = await prisma.vendor.findMany({
       where: { dateDeleted: null, organizationId: organization.organizationId },
       ...getVendorQueryArgs(organization.organizationId)
     });
@@ -238,7 +237,7 @@ export default class ReimbursementRequestService {
       organization.organizationId
     );
 
-    const numReimbursementRequests = await singleFlight<any>('reimbursement_Request', 'count', {
+    const numReimbursementRequests = await prisma.reimbursement_Request.count({
       where: { organizationId: organization.organizationId }
     });
 
@@ -274,7 +273,7 @@ export default class ReimbursementRequestService {
       organization.organizationId
     );
 
-    const finalizedReimbursementRequest = await singleFlight<any>('reimbursement_Request', 'findUnique', {
+    const finalizedReimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: {
         reimbursementRequestId: createdReimbursementRequest.reimbursementRequestId
       },
@@ -354,7 +353,7 @@ export default class ReimbursementRequestService {
     organization: Organization,
     dateOfExpense?: Date
   ): Promise<Reimbursement_Request> {
-    const oldReimbursementRequest = await singleFlight<any>('reimbursement_Request', 'findUnique', {
+    const oldReimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId: requestId },
       include: {
         reimbursementProducts: true,
@@ -420,7 +419,7 @@ export default class ReimbursementRequestService {
     dateCreated: Date,
     organization: Organization
   ) {
-    const request = await singleFlight<any>('reimbursement', 'findUnique', {
+    const request = await prisma.reimbursement.findUnique({
       where: { reimbursementId }
     });
 
@@ -455,7 +454,7 @@ export default class ReimbursementRequestService {
     submitter: User,
     organization: Organization
   ): Promise<Reimbursement_Request> {
-    const request = await singleFlight<any>('reimbursement_Request', 'findUnique', {
+    const request = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId: requestId },
       include: {
         reimbursementStatuses: true
@@ -468,7 +467,7 @@ export default class ReimbursementRequestService {
     if (request.dateDeleted) throw new DeletedException('Reimbursement Request', requestId);
     if (
       request.reimbursementStatuses.some(
-        (reimbursementStatus: any) => reimbursementStatus.type === Reimbursement_Status_Type.SABO_SUBMITTED
+        (reimbursementStatus) => reimbursementStatus.type === Reimbursement_Status_Type.SABO_SUBMITTED
       )
     )
       throw new AccessDeniedException('You cannot delete this reimbursement request. It has already been approved');
@@ -498,7 +497,7 @@ export default class ReimbursementRequestService {
   static async getPendingAdvisorList(requester: User, organization: Organization): Promise<ReimbursementRequest[]> {
     await validateUserIsPartOfFinanceTeamOrHead(requester, organization.organizationId);
 
-    const requestsPendingAdvisors = await singleFlight<any>('reimbursement_Request', 'findMany', {
+    const requestsPendingAdvisors = await prisma.reimbursement_Request.findMany({
       where: {
         saboId: { not: null },
         reimbursementStatuses: {
@@ -524,7 +523,7 @@ export default class ReimbursementRequestService {
    * @param organizationId the organization the user is currently in
    */
   static async sendPendingAdvisorList(sender: User, saboNumbers: number[], organizationId: string) {
-    const organization = await singleFlight<any>('organization', 'findUnique', {
+    const organization = await prisma.organization.findUnique({
       where: { organizationId },
       include: { advisor: true }
     });
@@ -535,7 +534,7 @@ export default class ReimbursementRequestService {
 
     if (saboNumbers.length === 0) throw new HttpException(400, 'Need to send at least one Sabo #!');
 
-    const reimbursementRequests = await singleFlight<any>('reimbursement_Request', 'findMany', {
+    const reimbursementRequests = await prisma.reimbursement_Request.findMany({
       where: {
         saboId: {
           in: saboNumbers
@@ -545,19 +544,17 @@ export default class ReimbursementRequestService {
 
     if (reimbursementRequests.length < saboNumbers.length) {
       const saboNumbersNotFound = saboNumbers.filter((saboNumber) => {
-        return !reimbursementRequests.some((reimbursementRequest: any) => reimbursementRequest.saboId === saboNumber);
+        return !reimbursementRequests.some((reimbursementRequest) => reimbursementRequest.saboId === saboNumber);
       });
       throw new HttpException(400, `The following sabo numbers do not exist: ${saboNumbersNotFound.join(', ')}`);
     }
 
     const deletedReimbursementRequests = reimbursementRequests.filter(
-      (reimbursementRequest: any) => reimbursementRequest.dateDeleted
+      (reimbursementRequest) => reimbursementRequest.dateDeleted
     );
 
     if (deletedReimbursementRequests.length > 0) {
-      const saboNumbersDeleted = deletedReimbursementRequests.map(
-        (reimbursementRequest: any) => reimbursementRequest.saboId
-      );
+      const saboNumbersDeleted = deletedReimbursementRequests.map((reimbursementRequest) => reimbursementRequest.saboId);
       throw new HttpException(
         400,
         `The following reimbursement requests with these sabo numbers have been deleted: ${saboNumbersDeleted.join(', ')}`
@@ -565,7 +562,7 @@ export default class ReimbursementRequestService {
     }
 
     const reimbursementRequestsNotInOrganization = reimbursementRequests.filter(
-      (reimbursementRequest: any) => reimbursementRequest.organizationId !== organization.organizationId
+      (reimbursementRequest) => reimbursementRequest.organizationId !== organization.organizationId
     );
     if (reimbursementRequestsNotInOrganization.length > 0) throw new InvalidOrganizationException('Reimbursement Request');
 
@@ -578,7 +575,7 @@ export default class ReimbursementRequestService {
 
     await sendMailToAdvisor(mailOptions.subject, mailOptions.text, organization.advisor);
 
-    reimbursementRequests.forEach((reimbursementRequest: any) => {
+    reimbursementRequests.forEach((reimbursementRequest) => {
       prisma.reimbursement_Status.create({
         data: {
           type: Reimbursement_Status_Type.ADVISOR_APPROVED,
@@ -606,7 +603,7 @@ export default class ReimbursementRequestService {
     organization: Organization
   ) {
     await validateUserIsPartOfFinanceTeamOrHead(submitter, organization.organizationId);
-    const reimbursementRequest = await singleFlight<any>('reimbursement_Request', 'findUnique', {
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId }
     });
 
@@ -656,7 +653,7 @@ export default class ReimbursementRequestService {
       (await isUserLeadOrHeadOfFinanceTeam(submitter, organization.organizationId));
     if (!isAuthorized) throw new AccessDeniedException('Only admins, finance leads, and finance heads can create vendors.');
 
-    const existingVendor = await singleFlight<any>('vendor', 'findUnique', {
+    const existingVendor = await prisma.vendor.findUnique({
       where: { uniqueVendor: { name, organizationId: organization.organizationId } },
       ...getVendorQueryArgs(organization.organizationId)
     });
@@ -712,7 +709,7 @@ export default class ReimbursementRequestService {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create Account Codes');
 
-    const existingAccount = await singleFlight<any>('account_Code', 'findUnique', {
+    const existingAccount = await prisma.account_Code.findUnique({
       where: { uniqueExpenseType: { name, organizationId: organization.organizationId } }
     });
 
@@ -821,11 +818,11 @@ export default class ReimbursementRequestService {
     if (await userHasPermission(submitter.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('Guests cannot upload receipts');
 
-    const reimbursementRequest = await singleFlight<any>('reimbursement_Request', 'findUnique', {
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId }
     });
 
-    const numReceipts = await singleFlight<any>('receipt', 'count', {
+    const numReceipts = await prisma.receipt.count({
       where: { reimbursementRequest: { organizationId: organization.organizationId } }
     });
 
@@ -880,7 +877,7 @@ export default class ReimbursementRequestService {
    * @returns The account codes for the given organization
    */
   static async getAllAccountCodes(organization: Organization): Promise<AccountCode[]> {
-    const accountCodes = await singleFlight<any>('account_Code', 'findMany', {
+    const accountCodes = await prisma.account_Code.findMany({
       where: {
         dateDeleted: null,
         organizationId: organization.organizationId
@@ -900,7 +897,7 @@ export default class ReimbursementRequestService {
   static async getAllReimbursementRequests(user: User, organization: Organization): Promise<ReimbursementRequest[]> {
     await isUserHeadOrOnFinance(user, organization.organizationId);
 
-    const reimbursementRequests = await singleFlight<any>('reimbursement_Request', 'findMany', {
+    const reimbursementRequests = await prisma.reimbursement_Request.findMany({
       where: { dateDeleted: null, accountCode: { organizationId: organization.organizationId } },
       ...getReimbursementRequestQueryArgs(organization.organizationId)
     });
@@ -924,7 +921,7 @@ export default class ReimbursementRequestService {
     organization: Organization,
     dateDelivered: Date
   ) {
-    const reimbursementRequest = await singleFlight<any>('reimbursement_Request', 'findUnique', {
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId }
     });
 
@@ -978,7 +975,7 @@ export default class ReimbursementRequestService {
   ) {
     await validateUserIsPartOfFinanceTeamOrHead(submitter, organization.organizationId);
 
-    const reimbursementRequest = await singleFlight<any>('reimbursement_Request', 'findUnique', {
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
       include: {
         reimbursementStatuses: true
@@ -991,12 +988,10 @@ export default class ReimbursementRequestService {
     }
     if (reimbursementRequest.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Reimbursement Request');
-    if (
-      reimbursementRequest.reimbursementStatuses.some((status: any) => status.type === ReimbursementStatusType.REIMBURSED)
-    ) {
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.REIMBURSED)) {
       throw new HttpException(400, 'This reimbursement request has already been marked as reimbursed');
     }
-    if (reimbursementRequest.reimbursementStatuses.some((status: any) => status.type === ReimbursementStatusType.DENIED)) {
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.DENIED)) {
       throw new HttpException(400, 'This reimbursement request has already been denied');
     }
 
@@ -1035,7 +1030,7 @@ export default class ReimbursementRequestService {
     reimbursementRequestId: string,
     organization: Organization
   ): Promise<ReimbursementRequest> {
-    const reimbursementRequest = await singleFlight<any>('reimbursement_Request', 'findUnique', {
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
       ...getReimbursementRequestQueryArgs(organization.organizationId)
     });
@@ -1071,7 +1066,7 @@ export default class ReimbursementRequestService {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('Only a head or admin can approve reimbursement requests');
 
-    const reimbursementRequest = await singleFlight<any>('reimbursement_Request', 'findUnique', {
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
       include: {
         reimbursementStatuses: true,
@@ -1086,7 +1081,7 @@ export default class ReimbursementRequestService {
 
     if (
       reimbursementRequest.reimbursementStatuses.some(
-        (reimbursementStatus: any) => reimbursementStatus.type === Reimbursement_Status_Type.PENDING_FINANCE
+        (reimbursementStatus) => reimbursementStatus.type === Reimbursement_Status_Type.PENDING_FINANCE
       )
     )
       throw new HttpException(400, 'This reimbursement request has already been approved by leadership');
@@ -1127,7 +1122,7 @@ export default class ReimbursementRequestService {
   static async approveReimbursementRequest(reimbursementRequestId: string, submitter: User, organization: Organization) {
     await validateUserIsPartOfFinanceTeamOrHead(submitter, organization.organizationId);
 
-    const reimbursementRequest = await singleFlight<any>('reimbursement_Request', 'findUnique', {
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
       include: {
         reimbursementStatuses: true,
@@ -1143,21 +1138,17 @@ export default class ReimbursementRequestService {
       throw new InvalidOrganizationException('Reimbursement Request');
 
     if (
-      !reimbursementRequest.reimbursementStatuses.some(
-        (status: any) => status.type === ReimbursementStatusType.PENDING_FINANCE
-      )
+      !reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.PENDING_FINANCE)
     ) {
       throw new HttpException(400, 'This reimbursement request has not been approved by leadership');
     }
     if (
-      reimbursementRequest.reimbursementStatuses.some(
-        (status: any) => status.type === ReimbursementStatusType.SABO_SUBMITTED
-      )
+      reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.SABO_SUBMITTED)
     ) {
       throw new HttpException(400, 'This reimbursement request has already been approved');
     }
 
-    if (reimbursementRequest.reimbursementStatuses.some((status: any) => status.type === ReimbursementStatusType.DENIED)) {
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.DENIED)) {
       throw new HttpException(400, 'This reimbursement request has already been denied');
     }
 
@@ -1195,7 +1186,7 @@ export default class ReimbursementRequestService {
    * @returns the created reimbursment status
    */
   static async denyReimbursementRequest(reimbursementRequestId: string, submitter: User, organization: Organization) {
-    const reimbursementRequest = await singleFlight<any>('reimbursement_Request', 'findUnique', {
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
       include: {
         reimbursementStatuses: true
@@ -1208,13 +1199,11 @@ export default class ReimbursementRequestService {
     }
     if (reimbursementRequest.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Reimbursement Request');
-    if (reimbursementRequest.reimbursementStatuses.some((status: any) => status.type === ReimbursementStatusType.DENIED)) {
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.DENIED)) {
       throw new HttpException(400, 'This reimbursement request has already been denied');
     }
 
-    if (
-      reimbursementRequest.reimbursementStatuses.some((status: any) => status.type === ReimbursementStatusType.REIMBURSED)
-    ) {
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.REIMBURSED)) {
       throw new HttpException(400, 'This reimbursement request has already been reimbursed');
     }
 
@@ -1242,7 +1231,7 @@ export default class ReimbursementRequestService {
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
 
-    const recipientSettings = await singleFlight<any>('user_Settings', 'findUnique', {
+    const recipientSettings = await prisma.user_Settings.findUnique({
       where: { userId: reimbursementRequest.recipientId }
     });
 
@@ -1299,7 +1288,7 @@ export default class ReimbursementRequestService {
 
     const users = await getUsers(twoFactorContacts);
 
-    const existingVendor = await singleFlight<any>('vendor', 'findUnique', {
+    const existingVendor = await prisma.vendor.findUnique({
       where: { vendorId },
       select: { twoFactorContacts: { select: { userId: true } } }
     });
@@ -1308,7 +1297,7 @@ export default class ReimbursementRequestService {
       throw new NotFoundException('Vendor', vendorId);
     }
 
-    const existingContactIds = existingVendor?.twoFactorContacts.map((contact: any) => ({ userId: contact.userId })) || [];
+    const existingContactIds = existingVendor?.twoFactorContacts.map((contact) => ({ userId: contact.userId })) || [];
 
     const newContactIds = users.map((user) => ({ userId: user.userId }));
 
@@ -1362,7 +1351,7 @@ export default class ReimbursementRequestService {
    * @returns The vendor with the given id
    */
   static async getSingleVendor(vendorId: string, organization: Organization): Promise<Vendor> {
-    const vendor = await singleFlight<any>('vendor', 'findUnique', {
+    const vendor = await prisma.vendor.findUnique({
       where: { vendorId },
       ...getVendorQueryArgs(organization.organizationId)
     });
@@ -1382,7 +1371,7 @@ export default class ReimbursementRequestService {
    * @returns The account code with the given id
    */
   static async getSingleAccountCode(accountCodeId: string, organization: Organization): Promise<AccountCode> {
-    const accountCode = await singleFlight<any>('account_Code', 'findUnique', {
+    const accountCode = await prisma.account_Code.findUnique({
       where: { accountCodeId },
       ...getAccountCodeQueryArgs(organization.organizationId)
     });
@@ -1400,7 +1389,7 @@ export default class ReimbursementRequestService {
     reimbursementRequestId: string,
     organization: Organization
   ): Promise<ReimbursementStatus> {
-    const reimbursementRequest = await singleFlight<any>('reimbursement_Request', 'findUnique', {
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
       include: {
         reimbursementStatuses: true,
@@ -1419,20 +1408,16 @@ export default class ReimbursementRequestService {
     await validateUserEditRRPermissions(user, reimbursementRequest, organization.organizationId);
 
     if (
-      reimbursementRequest.reimbursementStatuses.some(
-        (status: any) => status.type === ReimbursementStatusType.SABO_SUBMITTED
-      )
+      reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.SABO_SUBMITTED)
     ) {
       throw new HttpException(400, 'This reimbursement request has already been submitted to sabo!');
     }
 
-    if (reimbursementRequest.reimbursementStatuses.some((status: any) => status.type === ReimbursementStatusType.DENIED)) {
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.DENIED)) {
       throw new HttpException(400, 'This reimbursement request has already been denied');
     }
 
-    if (
-      reimbursementRequest.reimbursementStatuses.some((status: any) => status.type === ReimbursementStatusType.REIMBURSED)
-    ) {
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.REIMBURSED)) {
       throw new HttpException(400, 'This reimbursement request has already been reimbursed');
     }
 
@@ -1477,7 +1462,7 @@ export default class ReimbursementRequestService {
     reimbursementRequestId: string,
     organization: Organization
   ): Promise<ReimbursementStatus> {
-    const reimbursementRequest = await singleFlight<any>('reimbursement_Request', 'findUnique', {
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
       include: {
         reimbursementStatuses: true,
@@ -1495,25 +1480,21 @@ export default class ReimbursementRequestService {
     await validateUserEditRRPermissions(user, reimbursementRequest, organization.organizationId);
 
     if (
-      reimbursementRequest.reimbursementStatuses.some(
-        (status: any) => status.type === ReimbursementStatusType.SABO_SUBMITTED
-      )
+      reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.SABO_SUBMITTED)
     ) {
       throw new HttpException(400, 'This reimbursement request has already been submitted to sabo!');
     }
 
-    if (reimbursementRequest.reimbursementStatuses.some((status: any) => status.type === ReimbursementStatusType.DENIED)) {
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.DENIED)) {
       throw new HttpException(400, 'This reimbursement request has already been denied');
     }
 
-    if (
-      reimbursementRequest.reimbursementStatuses.some((status: any) => status.type === ReimbursementStatusType.REIMBURSED)
-    ) {
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.REIMBURSED)) {
       throw new HttpException(400, 'This reimbursement request has already been reimbursed');
     }
 
     const pendingFinanceStatus = reimbursementRequest.reimbursementStatuses.find(
-      (status: any) => status.type === ReimbursementStatusType.PENDING_FINANCE
+      (status) => status.type === ReimbursementStatusType.PENDING_FINANCE
     );
 
     if (!pendingFinanceStatus) throw new HttpException(400, 'Reimbursement Request Must Be Pending Finance');
@@ -1558,7 +1539,7 @@ export default class ReimbursementRequestService {
    * @returns The index code with the given id
    */
   static async getSingleIndexCode(indexCodeId: string, organization: Organization): Promise<IndexCode> {
-    const indexCode = await singleFlight<any>('index_Code', 'findUnique', {
+    const indexCode = await prisma.index_Code.findUnique({
       where: { indexCodeId },
       ...getIndexCodeQueryArgs(organization.organizationId)
     });
@@ -1577,7 +1558,7 @@ export default class ReimbursementRequestService {
    * @returns All of the index codes
    */
   static async getAllIndexCodes(organization: Organization): Promise<IndexCode[]> {
-    const indexCodes = await singleFlight<any>('index_Code', 'findMany', {
+    const indexCodes = await prisma.index_Code.findMany({
       where: { dateDeleted: null, organizationId: organization.organizationId },
       ...getIndexCodeQueryArgs(organization.organizationId)
     });
@@ -1655,7 +1636,7 @@ export default class ReimbursementRequestService {
     otherReimbursementProductReasonId: string,
     organization: Organization
   ): Promise<OtherProductReason> {
-    const otherProductReason = await singleFlight<any>('reimbursement_Product_Other_Reason', 'findUnique', {
+    const otherProductReason = await prisma.reimbursement_Product_Other_Reason.findUnique({
       where: { otherReimbursementProductReasonId },
       ...getReimbursementProductOtherReasonQueryArgs(organization.organizationId)
     });
@@ -1674,7 +1655,7 @@ export default class ReimbursementRequestService {
    * @returns All of the other reimbursement product reasons
    */
   static async getAllOtherReimbursementProductReasons(organization: Organization): Promise<OtherProductReason[]> {
-    const otherReimbursementProductReasons = await singleFlight<any>('reimbursement_Product_Other_Reason', 'findMany', {
+    const otherReimbursementProductReasons = await prisma.reimbursement_Product_Other_Reason.findMany({
       where: { dateDeleted: null },
       ...getReimbursementProductOtherReasonQueryArgs(organization.organizationId)
     });
@@ -1732,7 +1713,7 @@ export default class ReimbursementRequestService {
     comment: string,
     reimbursementRequestId: string
   ) {
-    const reimbursementRequest = await singleFlight<any>('reimbursement_Request', 'findUnique', {
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId, organizationId: organization.organizationId, dateDeleted: null },
       include: { notificationSlackThreads: true }
     });
@@ -1781,7 +1762,7 @@ export default class ReimbursementRequestService {
     for (const taggedName of splitTaggedNames) {
       const { firstName, lastName } = taggedName;
 
-      const taggedUser = await singleFlight<any>('user', 'findFirst', {
+      const taggedUser = await prisma.user.findFirst({
         where: {
           firstName: { equals: firstName, mode: 'insensitive' },
           lastName: { equals: lastName, mode: 'insensitive' },
@@ -1810,7 +1791,7 @@ export default class ReimbursementRequestService {
 
     // if there is no more than one tag (the creator), tag stakeholders
     if (tags.length < 2) {
-      const stakeholders = await singleFlight<any>('user', 'findMany', {
+      const stakeholders = await prisma.user.findMany({
         where: {
           organizations: {
             some: {
@@ -1827,7 +1808,7 @@ export default class ReimbursementRequestService {
       });
 
       tags.push(
-        ...stakeholders.map((user: any) =>
+        ...stakeholders.map((user) =>
           user.userSettings?.slackId && !tags.includes(`<@${user.userSettings.slackId}>`)
             ? `<@${user.userSettings.slackId}>`
             : ''
@@ -1862,7 +1843,7 @@ export default class ReimbursementRequestService {
     comment: string,
     commentId: string
   ) {
-    const reimbursementRequestComment = await singleFlight<any>('reimbursement_Request_Comment', 'findUnique', {
+    const reimbursementRequestComment = await prisma.reimbursement_Request_Comment.findUnique({
       where: { reimbursementRequestCommentId: commentId, dateDeleted: null }
     });
 
@@ -1897,7 +1878,7 @@ export default class ReimbursementRequestService {
    * @throws NotFoundException if the comment doesn't exist
    */
   static async deleteReimbursementRequestComment(deleter: User, organization: Organization, commentId: string) {
-    const reimbursementRequestComment = await singleFlight<any>('reimbursement_Request_Comment', 'findUnique', {
+    const reimbursementRequestComment = await prisma.reimbursement_Request_Comment.findUnique({
       where: { reimbursementRequestCommentId: commentId, dateDeleted: null }
     });
 
@@ -1944,7 +1925,7 @@ export default class ReimbursementRequestService {
       throw new AccessDeniedException('Only heads can edit other reimbursement product reasons.');
     }
 
-    const otherProductReason = await singleFlight<any>('reimbursement_Product_Other_Reason', 'findUnique', {
+    const otherProductReason = await prisma.reimbursement_Product_Other_Reason.findUnique({
       where: { otherReimbursementProductReasonId },
       ...getReimbursementProductOtherReasonQueryArgs(org.organizationId)
     });
@@ -1954,7 +1935,7 @@ export default class ReimbursementRequestService {
     if (otherProductReason.dateDeleted)
       throw new DeletedException('Reimbursement Product Other Reason', otherReimbursementProductReasonId);
 
-    const indexCode = await singleFlight<any>('index_Code', 'findUnique', {
+    const indexCode = await prisma.index_Code.findUnique({
       where: { indexCodeId }
     });
 

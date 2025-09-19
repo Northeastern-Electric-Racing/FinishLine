@@ -1,4 +1,3 @@
-import singleFlight from './single-flight';
 import { Organization, User } from '@prisma/client';
 import { LinkCreateArgs, ProjectPreview, RoleEnum, isAdmin, isAtLeastRank } from 'shared';
 import prisma from '../prisma/prisma';
@@ -24,7 +23,7 @@ export default class OrganizationsService {
    * @returns an array of every organization
    */
   static async getAllOrganizations(): Promise<Organization[]> {
-    return singleFlight<any>('organization', 'findMany', {});
+    return prisma.organization.findMany();
   }
 
   /**
@@ -32,7 +31,7 @@ export default class OrganizationsService {
    * @param organizationId the organizationId to be fetched
    */
   static async getCurrentOrganization(organizationId: string) {
-    const organization = await singleFlight<any>('organization', 'findUnique', {
+    const organization = await prisma.organization.findUnique({
       where: { organizationId },
       include: {
         contacts: {
@@ -61,7 +60,7 @@ export default class OrganizationsService {
    * @param links the links which are being set
    */
   static async setUsefulLinks(submitter: User, organizationId: string, links: LinkCreateArgs[]) {
-    const organization = await singleFlight<any>('organization', 'findUnique', {
+    const organization = await prisma.organization.findUnique({
       where: { organizationId },
       include: { usefulLinks: true }
     });
@@ -73,7 +72,7 @@ export default class OrganizationsService {
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('update useful links');
 
-    const currentLinkIds = organization.usefulLinks.map((link: any) => link.linkId);
+    const currentLinkIds = organization.usefulLinks.map((link) => link.linkId);
 
     // deleting all current useful links so they are empty before repopulating
     await prisma.link.deleteMany({
@@ -141,7 +140,7 @@ export default class OrganizationsService {
     @returns the useful links for the organization
   */
   static async getAllUsefulLinks(organizationId: string) {
-    const organization = await singleFlight<any>('organization', 'findUnique', {
+    const organization = await prisma.organization.findUnique({
       where: { organizationId },
       include: { usefulLinks: true }
     });
@@ -150,9 +149,9 @@ export default class OrganizationsService {
       throw new NotFoundException('Organization', organizationId);
     }
 
-    const links = await singleFlight<any>('link', 'findMany', {
+    const links = await prisma.link.findMany({
       where: {
-        linkId: { in: organization.usefulLinks.map((link: any) => link.linkId) }
+        linkId: { in: organization.usefulLinks.map((link) => link.linkId) }
       },
       ...getLinkQueryArgs(organization.organizationId)
     });
@@ -261,7 +260,7 @@ export default class OrganizationsService {
    * @returns all the milestones from the given organization
    */
   static async getOrganizationImages(organizationId: string) {
-    const organization = await singleFlight<any>('organization', 'findUnique', {
+    const organization = await prisma.organization.findUnique({
       where: { organizationId }
     });
 
@@ -341,7 +340,7 @@ export default class OrganizationsService {
    * @returns the id of the image
    */
   static async getLogoImage(organizationId: string): Promise<string | null> {
-    const organization = await singleFlight<any>('organization', 'findUnique', {
+    const organization = await prisma.organization.findUnique({
       where: { organizationId }
     });
 
@@ -384,7 +383,7 @@ export default class OrganizationsService {
    * @returns all the featured projects for the organization
    */
   static async getOrganizationFeaturedProjects(organizationId: string): Promise<ProjectPreview[]> {
-    const organization = await singleFlight<any>('organization', 'findUnique', {
+    const organization = await prisma.organization.findUnique({
       where: { organizationId },
       include: { featuredProjects: getProjectManyQueryArgs(organizationId) }
     });
@@ -416,7 +415,7 @@ export default class OrganizationsService {
   }
 
   static async getPartReviewGuideLink(organizationId: string, submitter: User) {
-    const organization = await singleFlight<any>('organization', 'findUnique', {
+    const organization = await prisma.organization.findUnique({
       where: { organizationId }
     });
     if (!organization) {
@@ -432,7 +431,7 @@ export default class OrganizationsService {
   }
 
   static async setPartReviewGuideLink(submitter: User, organizationId: string, guideLink: string) {
-    const organization = await singleFlight<any>('organization', 'findUnique', {
+    const organization = await prisma.organization.findUnique({
       where: { organizationId }
     });
 

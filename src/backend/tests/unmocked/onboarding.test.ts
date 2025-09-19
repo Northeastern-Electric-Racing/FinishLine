@@ -66,8 +66,8 @@ describe('Onboarding tests', () => {
 
       const checkedChecklists = await OnboardingServices.getCheckedChecklists(batman, organization);
       expect(checkedChecklists.length).toEqual(2);
-      expect(checkedChecklists.some((checklist: any) => checklist.checklistId === checklist1.checklistId)).toBe(true);
-      expect(checkedChecklists.some((checklist: any) => checklist.checklistId === checklist3.checklistId)).toBe(true);
+      expect(checkedChecklists.some((checklist) => checklist.checklistId === checklist1.checklistId)).toBe(true);
+      expect(checkedChecklists.some((checklist) => checklist.checklistId === checklist3.checklistId)).toBe(true);
     });
   });
 

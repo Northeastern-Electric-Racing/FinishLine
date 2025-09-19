@@ -1,4 +1,3 @@
-import singleFlight from './single-flight';
 import { Organization, User, Graph_Type, Measure, Graph_Display_Type, Special_Permission, Prisma } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { DeletedException, InvalidOrganizationException, NotFoundException } from '../utils/errors.utils';
@@ -57,7 +56,7 @@ export default class StatisticsService {
     if (carIds.length > 0) {
       await Promise.all(
         carIds.map(async (carId) => {
-          const car = await singleFlight<any>('car', 'findUnique', {
+          const car = await prisma.car.findUnique({
             where: { carId, wbsElement: { organizationId: organization.organizationId } },
             include: {
               wbsElement: true
@@ -73,9 +72,7 @@ export default class StatisticsService {
     }
 
     if (graphCollectionId) {
-      const graphCollection = await singleFlight<any>('graph_Collection', 'findUnique', {
-        where: { id: graphCollectionId }
-      });
+      const graphCollection = await prisma.graph_Collection.findUnique({ where: { id: graphCollectionId } });
 
       if (!graphCollection) {
         throw new NotFoundException('Graph Collection', graphCollectionId);
@@ -154,7 +151,7 @@ export default class StatisticsService {
       throw new AccessDeniedException('You do not have permission to edit a graph');
     }
 
-    const graph = await singleFlight<any>('graph', 'findUnique', {
+    const graph = await prisma.graph.findUnique({
       where: {
         id: graphId
       },
@@ -182,9 +179,7 @@ export default class StatisticsService {
     }
 
     if (graphCollectionId) {
-      const graphCollection = await singleFlight<any>('graph_Collection', 'findUnique', {
-        where: { id: graphCollectionId }
-      });
+      const graphCollection = await prisma.graph_Collection.findUnique({ where: { id: graphCollectionId } });
 
       if (!graphCollection) {
         throw new NotFoundException('Graph Collection', graphCollectionId);
@@ -210,7 +205,7 @@ export default class StatisticsService {
         displayGraphType: graphDisplayType,
         specialPermissions,
         cars: {
-          disconnect: graph.cars.map((car: any) => ({ carId: car.carId })),
+          disconnect: graph.cars.map((car) => ({ carId: car.carId })),
           connect: carIds.map((carId) => {
             return { carId };
           })
@@ -243,7 +238,7 @@ export default class StatisticsService {
    * @throws if the graph is not found or the graph is deleted
    */
   static async getSingleGraph(id: string, user: User, organization: Organization): Promise<Graph> {
-    const requestedGraph = await singleFlight<any>('graph', 'findUnique', {
+    const requestedGraph = await prisma.graph.findUnique({
       where: { id, organizationId: organization.organizationId },
       ...getGraphQueryArgs(organization.organizationId)
     });
@@ -268,7 +263,7 @@ export default class StatisticsService {
         organization.organizationId,
         requestedGraph.startDate,
         requestedGraph.endDate,
-        { carIds: requestedGraph.cars.map((car: any) => car.carId) }
+        { carIds: requestedGraph.cars.map((car) => car.carId) }
       )
     });
   }
@@ -284,7 +279,7 @@ export default class StatisticsService {
       throw new AccessDeniedException('You do not have permission to view graph collections');
     }
 
-    let graphCollections = await singleFlight<any>('graph_Collection', 'findMany', {
+    let graphCollections = await prisma.graph_Collection.findMany({
       where: {
         dateDeleted: null,
         organizationId: organization.organizationId
@@ -293,14 +288,14 @@ export default class StatisticsService {
     });
 
     // Prisma does not support the kind of filtering we need natively, so do it after the query based on permissions
-    graphCollections = graphCollections.filter((graphCollection: any) =>
+    graphCollections = graphCollections.filter((graphCollection) =>
       isSubset(graphCollection.viewPermissions, user.additionalPermissions)
     );
 
     return Promise.all(
-      graphCollections.map(async (graphCollection: any) => {
+      graphCollections.map(async (graphCollection) => {
         const addedDataGraphs: (Prisma.GraphGetPayload<GraphQueryArgs> & { graphData: GraphData[] })[] = await Promise.all(
-          graphCollection.graphs.map(async (graph: any) => ({
+          graphCollection.graphs.map(async (graph) => ({
             ...graph,
             graphData: await getGraphData(
               graph.graphType,
@@ -309,7 +304,7 @@ export default class StatisticsService {
               graph.startDate ?? null,
               graph.endDate ?? null,
               {
-                carIds: graph.cars.map((car: any) => {
+                carIds: graph.cars.map((car) => {
                   return car.carId;
                 })
               }
@@ -486,7 +481,7 @@ export default class StatisticsService {
       throw new AccessDeniedException('You do not have permission to edit graph collections');
     }
 
-    const graph = await singleFlight<any>('graph', 'findUnique', {
+    const graph = await prisma.graph.findUnique({
       where: { id: graphId, organizationId: organization.organizationId }
     });
 
@@ -497,7 +492,7 @@ export default class StatisticsService {
       throw new DeletedException('Graph', graphId);
     }
 
-    const collection = await singleFlight<any>('graph_Collection', 'findUnique', {
+    const collection = await prisma.graph_Collection.findUnique({
       where: { id: graphCollectionId, organizationId: organization.organizationId }
     });
 
@@ -535,7 +530,7 @@ export default class StatisticsService {
       throw new AccessDeniedException('You do not have permission to edit graph collections');
     }
 
-    const collection = await singleFlight<any>('graph_Collection', 'findUnique', {
+    const collection = await prisma.graph_Collection.findUnique({
       where: { id: graphCollectionId, organizationId: organization.organizationId }
     });
 

@@ -1,4 +1,4 @@
-import singleFlight from './single-flight';
+import prisma from '../prisma/prisma';
 import {
   DesignReviewWithAttendees,
   TaskWithAssignees,
@@ -29,7 +29,7 @@ export default class NotificationsService {
 
     if (endOfDay.getDay() === 0 || endOfDay.getDay() === 2 || endOfDay.getDay() === 4) return;
 
-    const tasks = await singleFlight<any>('task', 'findMany', {
+    const tasks = await prisma.task.findMany({
       where: {
         deadline: {
           lt: endOfDay
@@ -59,10 +59,10 @@ export default class NotificationsService {
     const teamTaskMap = new Map<string, TaskWithAssignees[]>();
 
     // group tasks due by team in a map
-    tasks.forEach((task: any) => {
-      const teamSlackIds = task.wbsElement.project?.teams.map((team: any) => team.slackId) ?? [];
+    tasks.forEach((task) => {
+      const teamSlackIds = task.wbsElement.project?.teams.map((team) => team.slackId) ?? [];
 
-      teamSlackIds.forEach((teamSlackId: string) => {
+      teamSlackIds.forEach((teamSlackId) => {
         const currentTasks = teamTaskMap.get(teamSlackId);
         if (currentTasks) {
           currentTasks.push(task);
@@ -105,9 +105,9 @@ export default class NotificationsService {
     if (date.getDay() === 1) {
       const nextWeek = addWeeksToDate(date, 1);
       const ADMIN = process.env.ADMIN_USER_ID;
-      const admin = await singleFlight<any>('user', 'findUnique', { where: { userId: ADMIN } });
+      const admin = await prisma.user.findUnique({ where: { userId: ADMIN } });
       if (!admin) throw new HttpException(404, 'Admin user not found');
-      const organizations = await singleFlight<any>('organization', 'findMany', {});
+      const organizations = await prisma.organization.findMany();
       for (const organization of organizations) {
         await WorkPackagesService.slackMessageUpcomingDeadlines(admin, nextWeek, organization);
       }
@@ -121,7 +121,7 @@ export default class NotificationsService {
     const endOfToday = startOfDayTomorrow();
     const startOfToday = startOfDay(new Date());
 
-    const designReviews = await singleFlight<any>('design_Review', 'findMany', {
+    const designReviews = await prisma.design_Review.findMany({
       where: {
         dateScheduled: {
           lt: endOfToday,
@@ -145,12 +145,12 @@ export default class NotificationsService {
 
     const designReviewTeamMap = new Map<string, DesignReviewWithAttendees[]>();
 
-    designReviews.forEach((designReview: any) => {
+    designReviews.forEach((designReview) => {
       const teamSlackIds = designReview.wbsElement.project
-        ? designReview.wbsElement.project.teams.map((team: any) => team.slackId)
-        : (designReview.wbsElement.workPackage?.project.teams.map((team: any) => team.slackId) ?? []);
+        ? designReview.wbsElement.project.teams.map((team) => team.slackId)
+        : (designReview.wbsElement.workPackage?.project.teams.map((team) => team.slackId) ?? []);
 
-      teamSlackIds.forEach((teamSlackId: string) => {
+      teamSlackIds.forEach((teamSlackId) => {
         const currentTasks = designReviewTeamMap.get(teamSlackId);
         if (currentTasks) {
           currentTasks.push({
@@ -202,7 +202,7 @@ export default class NotificationsService {
     const startOfToday = startOfDay(new Date());
     const endOfToday = startOfDayTomorrow();
 
-    const sponsorTasks = await singleFlight<any>('sponsor_Task', 'findMany', {
+    const sponsorTasks = await prisma.sponsor_Task.findMany({
       where: {
         notifyDate: {
           not: null,
@@ -219,12 +219,12 @@ export default class NotificationsService {
       }
     });
 
-    const promises = sponsorTasks.map(async (sponsorTask: any) => {
-      const sponsor = await singleFlight<any>('sponsor', 'findUnique', {
+    const promises = sponsorTasks.map(async (sponsorTask) => {
+      const sponsor = await prisma.sponsor.findUnique({
         where: { sponsorId: sponsorTask.sponsorId }
       });
 
-      const organization = await singleFlight<any>('organization', 'findUnique', {
+      const organization = await prisma.organization.findUnique({
         where: { organizationId: sponsor?.organizationId }
       });
 

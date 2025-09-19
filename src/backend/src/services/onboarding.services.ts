@@ -1,4 +1,3 @@
-import singleFlight from './single-flight';
 import { Checklist, Organization, User } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { userHasPermission } from '../utils/users.utils';
@@ -13,7 +12,7 @@ export default class OnboardingServices {
    * @returns all checklists for the given organization
    */
   static async getAllChecklists(organization: Organization) {
-    const allChecklists = await singleFlight<any>('checklist', 'findMany', {
+    const allChecklists = await prisma.checklist.findMany({
       where: { organizationId: organization.organizationId, dateDeleted: null, parentChecklistId: null },
       include: { subtasks: { where: { dateDeleted: null } }, teamType: true, usersChecked: true }
     });
@@ -28,13 +27,13 @@ export default class OnboardingServices {
    * @returns all the checklists that this user has checked
    */
   static async getCheckedChecklists(user: User, organization: Organization) {
-    const allChecklists = await singleFlight<any>('checklist', 'findMany', {
+    const allChecklists = await prisma.checklist.findMany({
       where: { organizationId: organization.organizationId, dateDeleted: null },
       include: { subtasks: { where: { dateDeleted: null } }, usersChecked: true }
     });
 
-    const checkedChecklists = allChecklists.filter((checklist: any) =>
-      checklist.usersChecked.some((userChecked: any) => userChecked.userId === user.userId)
+    const checkedChecklists = allChecklists.filter((checklist) =>
+      checklist.usersChecked.some((userChecked) => userChecked.userId === user.userId)
     );
 
     return checkedChecklists;
@@ -47,17 +46,14 @@ export default class OnboardingServices {
    * @returns all the checklists for the given teamType Ids
    */
   static async getUsersChecklists(userId: string, organization: Organization) {
-    const user = await singleFlight<any>('user', 'findUnique', {
-      where: { userId },
-      include: { onboardingTeamTypes: true }
-    });
+    const user = await prisma.user.findUnique({ where: { userId }, include: { onboardingTeamTypes: true } });
     if (!user) {
       throw new NotFoundException('User', userId);
     }
 
-    const teamTypeIds = user.onboardingTeamTypes.map((teamType: any) => teamType.teamTypeId);
+    const teamTypeIds = user.onboardingTeamTypes.map((teamType) => teamType.teamTypeId);
 
-    const teamTypeChecklists = await singleFlight<any>('checklist', 'findMany', {
+    const teamTypeChecklists = await prisma.checklist.findMany({
       where: {
         organizationId: organization.organizationId,
         dateDeleted: null,
@@ -75,7 +71,7 @@ export default class OnboardingServices {
       }
     });
 
-    const generalChecklists = await singleFlight<any>('checklist', 'findMany', {
+    const generalChecklists = await prisma.checklist.findMany({
       where: {
         organizationId: organization.organizationId,
         dateDeleted: null,
@@ -128,9 +124,7 @@ export default class OnboardingServices {
 
     if (!teamId && !teamTypeId) {
       if (parentChecklistId) {
-        const parentChecklist = await singleFlight<any>('checklist', 'findFirst', {
-          where: { checklistId: parentChecklistId }
-        });
+        const parentChecklist = await prisma.checklist.findFirst({ where: { checklistId: parentChecklistId } });
         if (parentChecklist?.teamId || parentChecklist?.teamTypeId) {
           throw new HttpException(400, 'Parent checklist must also be a general checklist');
         }
@@ -138,7 +132,7 @@ export default class OnboardingServices {
     }
 
     if (teamId) {
-      const team = await singleFlight<any>('team', 'findUnique', { where: { teamId } });
+      const team = await prisma.team.findUnique({ where: { teamId } });
 
       if (!team) {
         throw new NotFoundException('Team', teamId);
@@ -146,7 +140,7 @@ export default class OnboardingServices {
     }
 
     if (teamTypeId) {
-      const teamType = await singleFlight<any>('team_Type', 'findUnique', { where: { teamTypeId } });
+      const teamType = await prisma.team_Type.findUnique({ where: { teamTypeId } });
 
       if (!teamType) {
         throw new NotFoundException('Team Type', teamTypeId);
@@ -154,9 +148,7 @@ export default class OnboardingServices {
     }
 
     if (parentChecklistId) {
-      const parentChecklist = await singleFlight<any>('checklist', 'findUnique', {
-        where: { checklistId: parentChecklistId }
-      });
+      const parentChecklist = await prisma.checklist.findUnique({ where: { checklistId: parentChecklistId } });
 
       if (!parentChecklist) {
         throw new NotFoundException('Checklist', parentChecklistId);
@@ -223,9 +215,7 @@ export default class OnboardingServices {
 
     if (!teamId && !teamTypeId) {
       if (parentChecklistId) {
-        const parentChecklist = await singleFlight<any>('checklist', 'findFirst', {
-          where: { checklistId: parentChecklistId }
-        });
+        const parentChecklist = await prisma.checklist.findFirst({ where: { checklistId: parentChecklistId } });
         if (parentChecklist?.teamId || parentChecklist?.teamTypeId) {
           throw new HttpException(400, 'Parent checklist must also be a general checklist');
         }
@@ -233,7 +223,7 @@ export default class OnboardingServices {
     }
 
     if (teamId) {
-      const team = await singleFlight<any>('team', 'findUnique', { where: { teamId } });
+      const team = await prisma.team.findUnique({ where: { teamId } });
 
       if (!team) {
         throw new NotFoundException('Team', teamId);
@@ -241,7 +231,7 @@ export default class OnboardingServices {
     }
 
     if (teamTypeId) {
-      const teamType = await singleFlight<any>('team_Type', 'findUnique', { where: { teamTypeId } });
+      const teamType = await prisma.team_Type.findUnique({ where: { teamTypeId } });
 
       if (!teamType) {
         throw new NotFoundException('Team Type', teamTypeId);
@@ -249,9 +239,7 @@ export default class OnboardingServices {
     }
 
     if (parentChecklistId) {
-      const parentChecklist = await singleFlight<any>('checklist', 'findUnique', {
-        where: { checklistId: parentChecklistId }
-      });
+      const parentChecklist = await prisma.checklist.findUnique({ where: { checklistId: parentChecklistId } });
 
       if (!parentChecklist) {
         throw new NotFoundException('Checklist', parentChecklistId);
@@ -269,7 +257,7 @@ export default class OnboardingServices {
       }
     }
 
-    const checklist = await singleFlight<any>('checklist', 'findUnique', { where: { checklistId } });
+    const checklist = await prisma.checklist.findUnique({ where: { checklistId } });
 
     if (!checklist) {
       throw new NotFoundException('Checklist', checklistId);
@@ -303,10 +291,7 @@ export default class OnboardingServices {
       throw new AccessDeniedAdminOnlyException('delete a checklist');
     }
 
-    const checklist = await singleFlight<any>('checklist', 'findUnique', {
-      where: { checklistId },
-      include: { subtasks: true }
-    });
+    const checklist = await prisma.checklist.findUnique({ where: { checklistId }, include: { subtasks: true } });
 
     if (!checklist) {
       throw new NotFoundException('Checklist', checklistId);
@@ -334,7 +319,7 @@ export default class OnboardingServices {
    * @returns the updated checklist
    */
   static async toggleChecklist(checklistId: string, user: User, organization: Organization) {
-    const checklist = await singleFlight<any>('checklist', 'findUnique', {
+    const checklist = await prisma.checklist.findUnique({
       where: { checklistId, organizationId: organization.organizationId },
       include: { usersChecked: true, subtasks: { where: { dateDeleted: null }, include: { usersChecked: true } } }
     });
@@ -348,22 +333,22 @@ export default class OnboardingServices {
     }
 
     const { userId } = user;
-    const isChecked = checklist.usersChecked.some((user: any) => user.userId === userId);
+    const isChecked = checklist.usersChecked.some((user) => user.userId === userId);
 
     if (
       checklist.subtasks.length > 0 &&
-      !checklist.subtasks.every((subtask: any) => subtask.usersChecked.some((user: any) => user.userId === userId))
+      !checklist.subtasks.every((subtask) => subtask.usersChecked.some((user) => user.userId === userId))
     ) {
       throw new HttpException(400, 'Cannot check off this checklist item because not all of its subtasks are checked.');
     }
 
     if (isChecked) {
-      const childChecklists = await singleFlight<any>('checklist', 'findMany', {
+      const childChecklists = await prisma.checklist.findMany({
         where: { parentChecklistId: checklistId }
       });
 
       await Promise.all(
-        childChecklists.map((checklist: any) =>
+        childChecklists.map((checklist) =>
           prisma.checklist.update({
             where: { checklistId: checklist.checklistId },
             data: {
@@ -396,7 +381,7 @@ export default class OnboardingServices {
 
     // Check off the parent checklist if all subtasks are checked
     if (checklist.parentChecklistId) {
-      const parentChecklist = await singleFlight<any>('checklist', 'findUnique', {
+      const parentChecklist = await prisma.checklist.findUnique({
         where: { checklistId: checklist.parentChecklistId },
         include: {
           subtasks: {
@@ -408,8 +393,8 @@ export default class OnboardingServices {
 
       if (parentChecklist) {
         const allSubtasksChecked = parentChecklist.subtasks
-          .filter((subtask: any) => !subtask.isOptional)
-          .every((subtask: any) => subtask.usersChecked.some((user: any) => user.userId === userId));
+          .filter((subtask) => !subtask.isOptional)
+          .every((subtask) => subtask.usersChecked.some((user) => user.userId === userId));
         if (allSubtasksChecked) {
           await prisma.checklist.update({
             where: { checklistId: parentChecklist.checklistId },
@@ -432,7 +417,7 @@ export default class OnboardingServices {
       }
     }
 
-    const updatedChecklist = await singleFlight<any>('checklist', 'findUnique', {
+    const updatedChecklist = await prisma.checklist.findUnique({
       where: { checklistId },
       include: { usersChecked: true }
     });

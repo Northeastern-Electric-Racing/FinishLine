@@ -89,8 +89,8 @@ describe('Announcemnts Tests', () => {
       announcements.sort(announcementComparator);
 
       expect(announcements).toHaveLength(2);
-      expect(announcements.some((announcement: any) => announcement.text === 'test1')).toBe(true);
-      expect(announcements.some((announcement: any) => announcement.text === 'test2')).toBe(true);
+      expect(announcements.some((announcement) => announcement.text === 'test1')).toBe(true);
+      expect(announcements.some((announcement) => announcement.text === 'test2')).toBe(true);
 
       const updatedAnnouncements = await AnnouncementService.removeUserAnnouncement(
         testBatman.userId,

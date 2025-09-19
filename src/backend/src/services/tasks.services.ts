@@ -1,4 +1,3 @@
-import singleFlight from './single-flight';
 import { Task_Priority, Task_Status, User, Organization } from '@prisma/client';
 import { isAdmin, isUnderWordCount, notGuest, Task, WbsNumber, wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
@@ -43,7 +42,7 @@ export default class TasksService {
     organization: Organization,
     deadline?: Date
   ): Promise<Task> {
-    const requestedWbsElement = await singleFlight<any>('wBS_Element', 'findUnique', {
+    const requestedWbsElement = await prisma.wBS_Element.findUnique({
       where: {
         wbsNumber: {
           ...wbsNum,
@@ -133,7 +132,7 @@ export default class TasksService {
     const hasPermission = await userHasPermission(user.userId, organizationId, notGuest);
     if (!hasPermission) throw new AccessDeniedException('Guests cannot edit tasks');
 
-    const originalTask = await singleFlight<any>('task', 'findUnique', { where: { taskId }, include: { wbsElement: true } });
+    const originalTask = await prisma.task.findUnique({ where: { taskId }, include: { wbsElement: true } });
 
     if (!originalTask) throw new NotFoundException('Task', taskId);
     if (originalTask.wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('Task');
@@ -162,10 +161,7 @@ export default class TasksService {
    */
   static async editTaskStatus(user: User, organizationId: string, taskId: string, status: Task_Status) {
     // Get the original task and check if it exists
-    const originalTask = await singleFlight<any>('task', 'findUnique', {
-      where: { taskId },
-      include: { assignees: true, wbsElement: true }
-    });
+    const originalTask = await prisma.task.findUnique({ where: { taskId }, include: { assignees: true, wbsElement: true } });
     if (!originalTask) throw new NotFoundException('Task', taskId);
     if (organizationId !== originalTask.wbsElement.organizationId) throw new InvalidOrganizationException('Task');
     if (originalTask.dateDeleted) throw new DeletedException('Task', taskId);
@@ -201,7 +197,7 @@ export default class TasksService {
     organization: Organization
   ): Promise<Task> {
     // Get the original task and check if it exists
-    const originalTask = await singleFlight<any>('task', 'findUnique', {
+    const originalTask = await prisma.task.findUnique({
       where: { taskId },
       include: {
         wbsElement: { include: { project: getProjectQueryArgs(organization.organizationId) } },
@@ -211,7 +207,7 @@ export default class TasksService {
     if (!originalTask) throw new NotFoundException('Task', taskId);
     if (originalTask.dateDeleted) throw new DeletedException('Task', taskId);
 
-    const originalAssigneeIds = originalTask.assignees.map((assignee: any) => assignee.userId);
+    const originalAssigneeIds = originalTask.assignees.map((assignee) => assignee.userId);
     const newAssigneeIds = assignees.filter((userId) => !originalAssigneeIds.includes(userId));
 
     const hasPermission = await userHasPermission(user.userId, organization.organizationId, notGuest);
@@ -253,14 +249,11 @@ export default class TasksService {
    * @throws if the user does not have permission
    */
   static async deleteTask(currentUser: User, taskId: string, organization: Organization): Promise<string> {
-    const task = await singleFlight<any>('task', 'findUnique', {
-      where: { taskId },
-      ...getTaskQueryArgs(organization.organizationId)
-    });
+    const task = await prisma.task.findUnique({ where: { taskId }, ...getTaskQueryArgs(organization.organizationId) });
     if (!task) throw new NotFoundException('Task', taskId);
     if (task.dateDeleted) throw new DeletedException('Task', taskId);
 
-    const wbsElement = await singleFlight<any>('wBS_Element', 'findUnique', { where: { wbsElementId: task.wbsElementId } });
+    const wbsElement = await prisma.wBS_Element.findUnique({ where: { wbsElementId: task.wbsElementId } });
     if (!wbsElement) throw new NotFoundException('WBS Element', task.wbsElementId);
     if (wbsElement.dateDeleted) {
       const wbsNum = wbsNumOf(wbsElement);

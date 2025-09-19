@@ -1,4 +1,3 @@
-import singleFlight from './single-flight';
 import { User, Organization } from '@prisma/client';
 import { isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
@@ -14,7 +13,7 @@ export default class RecruitmentServices {
    * @returns all the milestones from the given organization
    */
   static async getAllMilestones(organization: Organization) {
-    const allMilestones = await singleFlight<any>('milestone', 'findMany', {
+    const allMilestones = await prisma.milestone.findMany({
       where: { organizationId: organization.organizationId, dateDeleted: null }
     });
 
@@ -73,7 +72,7 @@ export default class RecruitmentServices {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create a milestone');
 
-    const currentMilestone = await singleFlight<any>('milestone', 'findUnique', {
+    const currentMilestone = await prisma.milestone.findUnique({
       where: {
         milestoneId
       }
@@ -108,7 +107,7 @@ export default class RecruitmentServices {
    * @returns all the faqs from the given organization
    */
   static async getAllOrganizationFaqs(organization: Organization) {
-    const allFaqs = await singleFlight<any>('frequentlyAskedQuestion', 'findMany', {
+    const allFaqs = await prisma.frequentlyAskedQuestion.findMany({
       where: { dateDeleted: null, regularFaqOrgId: organization.organizationId },
       ...getFaqQueryArgs(organization.organizationId)
     });
@@ -126,7 +125,7 @@ export default class RecruitmentServices {
     if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('delete milestone');
 
-    const milestone = await singleFlight<any>('milestone', 'findUnique', { where: { milestoneId } });
+    const milestone = await prisma.milestone.findUnique({ where: { milestoneId } });
 
     if (!milestone) throw new NotFoundException('Milestone', milestoneId);
 
@@ -175,7 +174,7 @@ export default class RecruitmentServices {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('edit frequently asked questions');
 
-    const oldFAQ = await singleFlight<any>('frequentlyAskedQuestion', 'findUnique', {
+    const oldFAQ = await prisma.frequentlyAskedQuestion.findUnique({
       where: { faqId }
     });
 
@@ -200,7 +199,7 @@ export default class RecruitmentServices {
     if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('delete an faq');
 
-    const faq = await singleFlight<any>('frequentlyAskedQuestion', 'findUnique', { where: { faqId } });
+    const faq = await prisma.frequentlyAskedQuestion.findUnique({ where: { faqId } });
 
     if (!faq) throw new NotFoundException('Faq', faqId);
 

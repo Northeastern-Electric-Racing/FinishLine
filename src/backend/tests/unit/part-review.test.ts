@@ -778,8 +778,8 @@ describe('part review tests', () => {
         ])
       );
 
-      expect(partTags.some((tag: any) => tag.partTagId === '345')).toBeFalsy();
-      expect(partTags.some((tag: any) => tag.partTagId === '973')).toBeFalsy();
+      expect(partTags.some((tag) => tag.partTagId === '345')).toBeFalsy();
+      expect(partTags.some((tag) => tag.partTagId === '973')).toBeFalsy();
     });
   });
 
