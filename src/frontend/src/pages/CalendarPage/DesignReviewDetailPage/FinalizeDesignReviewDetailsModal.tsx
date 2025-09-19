@@ -51,7 +51,7 @@ const FinalizeDesignReviewDetailsModal = ({
 
   const defaultValues = {
     docTemplateLink: designReview.docTemplateLink ?? '',
-    zoomLink: designReview.zoomLink ?? userScheduleSettings?.personalZoomLink ?? '',
+    zoomLink: designReview.zoomLink ?? userScheduleSettings?.personalZoomLink ?? (designReview.isOnline ? '' : undefined),
     location: designReview.location ?? undefined
   };
 
