@@ -1,3 +1,5 @@
+// replaces direct Prisma read queries with singleFlight calls
+
 import fs from "fs";
 import path from "path";
 import recast from "recast";
@@ -12,7 +14,7 @@ const parser = {
   },
 };
 
-const projectDir = "../src/backend/src/services"; // change to your codebase root
+const projectDir = "../src/backend/src/services";
 
 // Prisma read-only methods
 const queryMethods = new Set([
