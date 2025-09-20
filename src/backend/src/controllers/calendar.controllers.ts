@@ -50,9 +50,11 @@ export default class CalendarController {
   static async createShop(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, description } = req.body;
-      const shop = await CalendarService.createShop((req as any).currentUser, name, description, (req as any).organization);
-      res.status(201).json(shop);
-    } catch (error) {
+
+      const shop = await CalendarService.createShop(req.currentUser, name, description, req.organization);
+
+      res.status(200).json(shop);
+    } catch (error: unknown) {
       next(error);
     }
   }

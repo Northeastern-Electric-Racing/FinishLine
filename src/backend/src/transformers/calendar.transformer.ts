@@ -30,7 +30,7 @@ export const shopTransformer = (shop: Prisma.ShopGetPayload<ShopQueryArgs>): Sho
   return {
     shopId: shop.shopId,
     name: shop.name,
-    description: shop.description ?? '',
+    description: shop.description,
     userCreated: userTransformer(shop.userCreated),
     dateCreated: shop.dateCreated
   };
