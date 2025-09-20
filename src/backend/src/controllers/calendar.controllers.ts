@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import CalendarService from '../services/calendar.services';
+import { validationResult } from 'express-validator';
 
 export default class CalendarController {
   static async createEventType(req: Request, res: Response, next: NextFunction) {
@@ -42,6 +43,41 @@ export default class CalendarController {
         description
       );
       res.status(200).json(eventType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+  static async createCalendar(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({ errors: errors.array() });
+        return;
+      }
+
+      if (!req.currentUser) {
+        res.status(401).json({
+          message: 'Unauthorized: Authentication required'
+        });
+        return;
+      }
+
+      if (!req.currentUser.additionalPermissions || !req.currentUser.additionalPermissions.includes('admin')) {
+        res.status(403).json({
+          message: 'Forbidden: Admin access required to create calendars'
+        });
+        return;
+      }
+
+      const { name, description, color } = req.body;
+      const calendar = await CalendarService.createCalendar({
+        name,
+        description,
+        colorHexCode: color,
+        userCreatedId: req.currentUser.userId
+      });
+
+      res.status(201).json(calendar);
     } catch (error: unknown) {
       next(error);
     }

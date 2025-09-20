@@ -6,6 +6,13 @@ import { userHasPermission } from '../utils/users.utils';
 import { eventTypeTransformer } from '../transformers/calendar.transformer';
 import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
 
+interface CreateCalendarData {
+  name: string;
+  description?: string;
+  colorHexCode: string;
+  userCreatedId: string;
+}
+
 export default class CalendarService {
   /**
    * Creates a new event type.
@@ -72,7 +79,6 @@ export default class CalendarService {
         shop,
         machinery,
         workPackage,
-        questionDocument,
         documents,
         description
       },
@@ -80,5 +86,37 @@ export default class CalendarService {
     });
 
     return eventTypeTransformer(newEventType);
+  }
+
+  static async createCalendar(
+    submitter: User,
+    name: string,
+    description: string | undefined,
+    colorHexCode: string,
+    organization: Organization
+  ) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('create calendar');
+    }
+
+    return await prisma.calendar.create({
+      data: {
+        name,
+        description: description ?? '',
+        colorHexCode,
+        userCreatedId: submitter.userId,
+        dateCreated: new Date()
+      },
+      include: {
+        userCreated: {
+          select: {
+            userId: true,
+            firstName: true,
+            lastName: true,
+            email: true
+          }
+        }
+      }
+    });
   }
 }

@@ -51,7 +51,6 @@ import OnboardingServices from '../services/onboarding.services';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
 import FinanceServices from '../services/finance.services';
 import CalendarService from '../services/calendar.services';
-import { truncateByDomain } from 'recharts/types/util/ChartUtils';
 
 const prisma = new PrismaClient();
 
@@ -3155,6 +3154,56 @@ const performSeed: () => Promise<void> = async () => {
     false,
     true
   );
+
+  const companyEventsCalendar = await prisma.calendar.create({
+    data: {
+      name: 'Company Events',
+      description: 'Official company-wide events and meetings',
+      colorHexCode: '#3B82F6',
+      userCreated: { connect: { userId: thomasEmrax.userId } },
+      dateCreated: new Date()
+    }
+  });
+
+  const teamMeetingsCalendar = await prisma.calendar.create({
+    data: {
+      name: 'Team Meetings',
+      description: 'Regular team meetings and standups',
+      colorHexCode: '#10B981',
+      userCreated: { connect: { userId: thomasEmrax.userId } },
+      dateCreated: new Date()
+    }
+  });
+
+  const projectDeadlinesCalendar = await prisma.calendar.create({
+    data: {
+      name: 'Project Deadlines',
+      description: 'Important project milestones and deadlines',
+      colorHexCode: '#EF4444',
+      userCreated: { connect: { userId: thomasEmrax.userId } },
+      dateCreated: new Date()
+    }
+  });
+
+  const trainingCalendar = await prisma.calendar.create({
+    data: {
+      name: 'Training Sessions',
+      description: 'Employee training and development sessions',
+      colorHexCode: '#8B5CF6',
+      userCreated: { connect: { userId: thomasEmrax.userId } },
+      dateCreated: new Date()
+    }
+  });
+
+  const maintenanceCalendar = await prisma.calendar.create({
+    data: {
+      name: 'Maintenance Windows',
+      description: 'System maintenance and downtime schedules',
+      colorHexCode: '#F59E0B',
+      userCreated: { connect: { userId: thomasEmrax.userId } },
+      dateCreated: new Date()
+    }
+  });
 };
 
 performSeed()

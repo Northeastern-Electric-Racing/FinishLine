@@ -27,4 +27,13 @@ calendarRouter.post(
   CalendarController.createEventType
 );
 
+calendarRouter.post(
+  '/create',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('description')),
+  nonEmptyString(body('color')),
+  validateInputs,
+  CalendarController.createCalendar
+);
+
 export default calendarRouter;

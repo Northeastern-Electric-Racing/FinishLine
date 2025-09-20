@@ -91,4 +91,74 @@ describe('Calendar Tests', () => {
       expect(result.description).toBe(true);
     });
   });
+
+  describe('Create Calendar', () => {
+    it('Fails if user is not an admin', async () => {
+      const guestUser = await createTestUser(wonderwomanGuest, orgId);
+
+      await expect(
+        async () =>
+          await CalendarService.createCalendar(guestUser, 'Test Calendar', 'A test calendar', '#FF5733', organization)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('create calendar'));
+    });
+
+    it('Succeeds and creates a calendar with all fields', async () => {
+      const adminUser = await createTestUser(batmanAppAdmin, orgId);
+
+      const result = await CalendarService.createCalendar(
+        adminUser,
+        'New Test Calendar',
+        'Calendar for testing purposes',
+        '#10B981',
+        organization
+      );
+
+      expect(result.name).toEqual('New Test Calendar');
+      expect(result.description).toEqual('Calendar for testing purposes');
+      expect(result.colorHexCode).toEqual('#10B981');
+      expect(result.userCreatedId).toEqual(adminUser.userId);
+      expect(result.calendarId).toBeDefined();
+      expect(result.dateCreated).toBeDefined();
+    });
+
+    it('Succeeds and creates a calendar without description', async () => {
+      const adminUser = await createTestUser(supermanAdmin, orgId);
+
+      const result = await CalendarService.createCalendar(
+        adminUser,
+        'Calendar Without Description',
+        undefined,
+        '#EF4444',
+        organization
+      );
+
+      expect(result.name).toEqual('Calendar Without Description');
+      expect(result.description).toBe('');
+      expect(result.colorHexCode).toEqual('#EF4444');
+      expect(result.userCreatedId).toEqual(adminUser.userId);
+    });
+
+    it('Validates hex color format', async () => {
+      const adminUser = await createTestUser(batmanAppAdmin, orgId);
+
+      await expect(
+        async () =>
+          await CalendarService.createCalendar(
+            adminUser,
+            'Invalid Color Calendar',
+            'A test calendar',
+            'invalid-color',
+            organization
+          )
+      ).rejects.toThrow();
+    });
+
+    it('Handles empty name validation', async () => {
+      const adminUser = await createTestUser(supermanAdmin, orgId);
+
+      await expect(
+        async () => await CalendarService.createCalendar(adminUser, '', 'A test calendar', '#8B5CF6', organization)
+      ).rejects.toThrow();
+    });
+  });
 });
