@@ -88,8 +88,9 @@ export default class CalendarService {
    * requires the submitter to be Admin
    */
   static async createShop(submitter: User, name: string, description: string, organization: Organization): Promise<Shop> {
-    const hasPermission = await userHasPermission(submitter.userId, organization.organizationId, isAdmin);
-    if (!hasPermission) throw new AccessDeniedAdminOnlyException('create shop');
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('create shop');
+    }
 
     const newShop = await prisma.shop.create({
       data: {
