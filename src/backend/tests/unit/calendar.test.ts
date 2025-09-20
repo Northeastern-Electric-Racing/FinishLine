@@ -107,7 +107,7 @@ describe('Calendar Tests', () => {
 
         expect(result.name).toBe('Demo Shop');
         expect(result.description).toBe('A seeded demo shop');
-        expect(result.userCreatedId).toBe(admin.userId);
+        expect(result.userCreated.userId).toBe(admin.userId);
       });
 
       it('fails on duplicate name', async () => {

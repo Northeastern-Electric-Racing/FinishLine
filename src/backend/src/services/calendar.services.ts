@@ -1,10 +1,12 @@
 import { Organization, User } from '@prisma/client';
-import { isAdmin, EventType } from 'shared';
+import { isAdmin, EventType, Shop } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedAdminOnlyException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { eventTypeTransformer } from '../transformers/calendar.transformer';
 import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
+import { shopTransformer } from '../transformers/calendar.transformer';
+import { getShopQueryArgs } from '../prisma-query-args/shop.query-args';
 
 export default class CalendarService {
   /**
@@ -83,19 +85,21 @@ export default class CalendarService {
   }
   /**
    * Creates a new shop
-   * requires the submiter to be Admin
+   * requires the submitter to be Admin
    */
-  static async createShop(submitter: User, name: string, description: string, organization: Organization) {
-    const permission = await userHasPermission(submitter.userId, organization.organizationId, isAdmin);
-    if (!permission) throw new AccessDeniedAdminOnlyException('create shop');
+  static async createShop(submitter: User, name: string, description: string, organization: Organization): Promise<Shop> {
+    const hasPermission = await userHasPermission(submitter.userId, organization.organizationId, isAdmin);
+    if (!hasPermission) throw new AccessDeniedAdminOnlyException('create shop');
 
-    const shop = await prisma.shop.create({
+    const newShop = await prisma.shop.create({
       data: {
         name,
         description,
         userCreatedId: submitter.userId
-      }
+      },
+      ...getShopQueryArgs(organization.organizationId)
     });
-    return shop;
+
+    return shopTransformer(newShop);
   }
 }
