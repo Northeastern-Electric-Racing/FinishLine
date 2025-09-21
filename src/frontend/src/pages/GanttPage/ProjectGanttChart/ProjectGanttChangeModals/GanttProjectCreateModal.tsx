@@ -1,5 +1,5 @@
 import { Box, Typography } from '@mui/material';
-import { ProjectPreview } from 'shared';
+import { ProjectGantt } from 'shared';
 import dayjs from 'dayjs';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { useToast } from '../../../../hooks/toasts.hooks';
@@ -17,7 +17,7 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
   const toast = useToast();
   const { isLoading, mutateAsync: createProject } = useCreateSingleProject();
   const { isLoading: workPackageIsLoading, mutateAsync: createWorkPackage } = useCreateSingleWorkPackage();
-  const project = change.element as ProjectPreview;
+  const project = change.element as ProjectGantt;
 
   const startDate = getProjectStartDate(project);
   const latestEndDate = getProjectEndDate(project);

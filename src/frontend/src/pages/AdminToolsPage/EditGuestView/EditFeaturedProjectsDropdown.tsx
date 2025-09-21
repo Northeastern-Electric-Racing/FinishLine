@@ -2,7 +2,7 @@ import React from 'react';
 import { Autocomplete, Chip, TextField } from '@mui/material';
 import { ProjectPreview } from 'shared';
 import { projectWbsNamePipe } from '../../../utils/pipes';
-import { useAllProjects } from '../../../hooks/projects.hooks';
+import { useAllProjectsPreviews } from '../../../hooks/projects.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 
@@ -12,7 +12,7 @@ interface EditFeatureProjectsDropdownProps {
 }
 
 const EditFeaturedProjectsDropdown: React.FC<EditFeatureProjectsDropdownProps> = ({ onChange, value }) => {
-  const { data: allProjects, isLoading, isError, error } = useAllProjects();
+  const { data: allProjects, isLoading, isError, error } = useAllProjectsPreviews();
 
   if (isLoading || !allProjects) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;

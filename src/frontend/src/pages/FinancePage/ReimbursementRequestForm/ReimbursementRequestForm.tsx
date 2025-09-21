@@ -18,10 +18,10 @@ import ErrorPage from '../../ErrorPage';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import CreateReimbursementRequestFormView from './ReimbursementFormView';
-import { useAllProjects } from '../../../hooks/projects.hooks';
 import { useHistory, useLocation } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { useCurrentUserSecureSettings } from '../../../hooks/users.hooks';
+import { useAllProjectsPreviews } from '../../../hooks/projects.hooks';
 
 export interface ReimbursementRequestInformation {
   vendorId: string;
@@ -190,7 +190,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     isError: allProjectsIsError,
     error: allProjectsError,
     data: allProjects
-  } = useAllProjects();
+  } = useAllProjectsPreviews();
 
   // checking the data here instead of using isError since function doesn't ever return an error
   const { data: userSecureSettings, isLoading: checkSecureSettingsIsLoading } = useCurrentUserSecureSettings();

@@ -10,6 +10,8 @@ import {
   LinkType,
   LinkTypeCreatePayload,
   Project,
+  ProjectOverview,
+  ProjectGantt,
   ProjectPreview,
   WbsNumber,
   WorkPackageTemplate
@@ -17,7 +19,7 @@ import {
 import {
   editSingleProject,
   createSingleProject,
-  getAllProjects,
+  getAllProjectsGantt,
   getSingleProject,
   setProjectTeam,
   deleteProject,
@@ -32,7 +34,8 @@ import {
   getUsersLeadingProjects,
   setAbbreviation,
   deleteAbbreviation,
-  getTeamsProjects
+  getTeamsProjects,
+  getAllProjectPreviews
 } from '../apis/projects.api';
 import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 import { useCurrentUser } from './users.hooks';
@@ -40,22 +43,29 @@ import { useCurrentUser } from './users.hooks';
 /**
  * Custom React Hook to supply all projects.
  */
-export const useAllProjects = (includeDeleted: boolean = false) => {
-  return useQuery<ProjectPreview[], Error>(['projects'], async () => {
-    const { data } = await getAllProjects(includeDeleted);
+export const useAllProjectsGantt = () => {
+  return useQuery<ProjectGantt[], Error>(['projects'], async () => {
+    const { data } = await getAllProjectsGantt();
+    return data;
+  });
+};
+
+export const useAllProjectsPreviews = () => {
+  return useQuery<ProjectPreview[], Error>(['projects', 'previews'], async () => {
+    const { data } = await getAllProjectPreviews();
     return data;
   });
 };
 
 export const useGetUsersTeamsProjects = () => {
-  return useQuery<ProjectPreview[], Error>(['projects', 'teams'], async () => {
+  return useQuery<ProjectOverview[], Error>(['projects', 'teams'], async () => {
     const { data } = await getUsersTeamsProjects();
     return data;
   });
 };
 
 export const useGetUsersLeadingProjects = () => {
-  return useQuery<ProjectPreview[], Error>(['projects', 'leading'], async () => {
+  return useQuery<ProjectOverview[], Error>(['projects', 'leading'], async () => {
     const { data } = await getUsersLeadingProjects();
     return data;
   });

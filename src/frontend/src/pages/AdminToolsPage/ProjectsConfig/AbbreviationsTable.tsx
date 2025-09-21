@@ -1,7 +1,7 @@
 import { Box, IconButton, TableCell, TableRow, Typography } from '@mui/material';
 import AdminToolTable from '../AdminToolTable';
 import { NERButton } from '../../../components/NERButton';
-import { useAllProjects, useDeleteProjectAbbreviation } from '../../../hooks/projects.hooks';
+import { useAllProjectsPreviews, useDeleteProjectAbbreviation } from '../../../hooks/projects.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import SetAbbreviationModal from './SetAbbreviationModal';
@@ -11,7 +11,12 @@ import { Delete } from '@mui/icons-material';
 import NERModal from '../../../components/NERModal';
 
 const AbbreviationsTable: React.FC = () => {
-  const { data: projects, isLoading: projectsIsLoading, isError: projectsIsError, error: projectsError } = useAllProjects();
+  const {
+    data: projects,
+    isLoading: projectsIsLoading,
+    isError: projectsIsError,
+    error: projectsError
+  } = useAllProjectsPreviews();
   const { mutateAsync } = useDeleteProjectAbbreviation();
   const [openModal, setOpenModal] = useState(false);
   const [abbreviationToDelete, setAbbreviationToDelete] = useState<ProjectPreview>();

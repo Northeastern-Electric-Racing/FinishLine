@@ -12,18 +12,32 @@ import {
   Project,
   WbsNumber,
   WorkPackageTemplate,
-  ProjectPreview
+  ProjectGantt,
+  ProjectPreview,
+  ProjectOverview
 } from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
-import { linkTypeTransformer, projectPreviewTransformer, projectTransformer } from './transformers/projects.transformers';
+import {
+  linkTypeTransformer,
+  projectOverviewTransformer,
+  projectGanttTransformer,
+  projectPreviewTransformer,
+  projectTransformer
+} from './transformers/projects.transformers';
 import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 
 /**
  * Fetches all projects.
  */
-export const getAllProjects = (includeDeleted: boolean) => {
-  return axios.get<ProjectPreview[]>(apiUrls.allProjects(includeDeleted), {
+export const getAllProjectsGantt = () => {
+  return axios.get<ProjectGantt[]>(apiUrls.allProjectsGantt(), {
+    transformResponse: (data) => JSON.parse(data).map(projectGanttTransformer)
+  });
+};
+
+export const getAllProjectPreviews = () => {
+  return axios.get<ProjectPreview[]>(apiUrls.allProjectPreviews(), {
     transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer)
   });
 };
@@ -32,8 +46,8 @@ export const getAllProjects = (includeDeleted: boolean) => {
  * Fetches all the projects that are on the users teams
  */
 export const getUsersTeamsProjects = () => {
-  return axios.get<ProjectPreview[]>(apiUrls.usersTeamsProjects(), {
-    transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer)
+  return axios.get<ProjectOverview[]>(apiUrls.usersTeamsProjects(), {
+    transformResponse: (data) => JSON.parse(data).map(projectOverviewTransformer)
   });
 };
 
@@ -41,8 +55,8 @@ export const getUsersTeamsProjects = () => {
  * Fetches all projects that the user is the manager or lead of.
  */
 export const getUsersLeadingProjects = () => {
-  return axios.get<ProjectPreview[]>(apiUrls.usersLeadingProjects(), {
-    transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer)
+  return axios.get<ProjectOverview[]>(apiUrls.usersLeadingProjects(), {
+    transformResponse: (data) => JSON.parse(data).map(projectOverviewTransformer)
   });
 };
 
@@ -51,7 +65,7 @@ export const getUsersLeadingProjects = () => {
  */
 export const getTeamsProjects = (teamId: string) => {
   return axios.get<Project[]>(apiUrls.teamsProjects(teamId), {
-    transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer)
+    transformResponse: (data) => JSON.parse(data).map(projectGanttTransformer)
   });
 };
 

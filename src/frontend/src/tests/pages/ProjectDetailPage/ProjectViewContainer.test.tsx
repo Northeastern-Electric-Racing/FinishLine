@@ -17,8 +17,7 @@ import * as bomHooks from '../../../hooks/bom.hooks';
 import {
   mockManyMaterials,
   mockManyWorkPackages,
-  mockUseGetReimbursementRequestProjectData,
-  mockUseUsersFavoriteProjects
+  mockUseGetReimbursementRequestProjectData
 } from '../../test-support/mock-hooks';
 import { exampleAllWorkPackages } from '../../test-support/test-data/work-packages.stub';
 import { exampleRRData } from '../../test-support/test-data/finance.stubs';
@@ -57,7 +56,6 @@ describe('Rendering Project View Container', () => {
     }));
     vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
     vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
-    vi.spyOn(userHooks, 'useUsersFavoriteProjects').mockReturnValue(mockUseUsersFavoriteProjects());
     vi.spyOn(wpHooks, 'useGetManyWorkPackages').mockReturnValue(mockManyWorkPackages(exampleAllWorkPackages));
     vi.spyOn(bomHooks, 'useGetMaterialsForWbsElement').mockReturnValue(mockManyMaterials([]));
     vi.spyOn(financeHooks, 'useGetReimbursementRequestProjectData').mockReturnValue(
