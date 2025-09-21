@@ -1,5 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { EventType } from 'shared';
+import { Shop } from 'shared';
+import { ShopQueryArgs } from '../prisma-query-args/shop.query-args';
 import { EventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
 import { userTransformer } from './user.transformer';
 
@@ -22,5 +24,14 @@ export const eventTypeTransformer = (eventType: Prisma.EventTypeGetPayload<Event
     questionDocument: eventType.questionDocument,
     documents: eventType.documents,
     description: eventType.description
+  };
+};
+export const shopTransformer = (shop: Prisma.ShopGetPayload<ShopQueryArgs>): Shop => {
+  return {
+    shopId: shop.shopId,
+    name: shop.name,
+    description: shop.description,
+    userCreated: userTransformer(shop.userCreated),
+    dateCreated: shop.dateCreated
   };
 };

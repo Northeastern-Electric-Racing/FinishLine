@@ -46,4 +46,16 @@ export default class CalendarController {
       next(error);
     }
   }
+
+  static async createShop(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, description } = req.body;
+
+      const shop = await CalendarService.createShop(req.currentUser, name, description, req.organization);
+
+      res.status(200).json(shop);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
