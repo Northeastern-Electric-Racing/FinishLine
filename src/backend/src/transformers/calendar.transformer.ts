@@ -3,6 +3,8 @@ import { Machinery, Shop, ShopMachinery } from 'shared';
 import { MachineryQueryArgs, ShopQueryArgs, ShopMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
 import { userTransformer } from './user.transformer';
 import { EventType } from 'shared';
+import { Shop } from 'shared';
+import { ShopQueryArgs } from '../prisma-query-args/shop.query-args';
 import { EventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
 
 export const shopTransformer = (shop: Prisma.ShopGetPayload<ShopQueryArgs>): Shop => {
