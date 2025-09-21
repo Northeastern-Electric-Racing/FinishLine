@@ -78,7 +78,8 @@ export default class CalendarService {
         workPackage,
         questionDocument,
         documents,
-        description
+        description,
+        organizationId: organization.organizationId
       },
       ...getEventTypeQueryArgs(organization.organizationId)
     });
@@ -167,7 +168,8 @@ export default class CalendarService {
       data: {
         name,
         description,
-        userCreatedId: submitter.userId
+        userCreatedId: submitter.userId,
+        organizationId: organization.organizationId
       },
       ...getShopQueryArgs(organization.organizationId)
     });

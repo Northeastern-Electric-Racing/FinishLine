@@ -13,6 +13,7 @@ CREATE TABLE "public"."Shop" (
     "userCreatedId" TEXT NOT NULL,
     "userDeletedId" TEXT,
     "description" TEXT NOT NULL,
+    "organizationId" TEXT NOT NULL,
 
     CONSTRAINT "Shop_pkey" PRIMARY KEY ("shopId")
 );
@@ -25,6 +26,7 @@ CREATE TABLE "public"."Machinery" (
     "dateDeleted" TIMESTAMP(3),
     "userCreatedId" TEXT NOT NULL,
     "userDeletedId" TEXT,
+    "organizationId" TEXT NOT NULL,
 
     CONSTRAINT "Machinery_pkey" PRIMARY KEY ("machineryId")
 );
@@ -82,6 +84,7 @@ CREATE TABLE "public"."Calendar" (
     "userDeletedId" TEXT,
     "description" TEXT NOT NULL,
     "colorHexCode" TEXT NOT NULL,
+    "organizationId" TEXT NOT NULL,
 
     CONSTRAINT "Calendar_pkey" PRIMARY KEY ("calendarId")
 );
@@ -107,6 +110,7 @@ CREATE TABLE "public"."EventType" (
     "questionDocument" BOOLEAN NOT NULL DEFAULT FALSE,
     "documents" BOOLEAN NOT NULL DEFAULT FALSE,
     "description" BOOLEAN NOT NULL DEFAULT FALSE,
+    "organizationId" TEXT NOT NULL,
 
     CONSTRAINT "EventType_pkey" PRIMARY KEY ("eventTypeId")
 );
@@ -185,6 +189,30 @@ CREATE INDEX "_EventToWork_Package_B_index" ON "public"."_EventToWork_Package"("
 
 -- CreateIndex
 CREATE INDEX "_CalendarToEventType_B_index" ON "public"."_CalendarToEventType"("B");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Calendar_name_organizationId_key" ON "Calendar"("name", "organizationId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "EventType_name_organizationId_key" ON "EventType"("name", "organizationId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Machinery_name_organizationId_key" ON "Machinery"("name", "organizationId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Shop_name_organizationId_key" ON "Shop"("name", "organizationId");
+
+-- AddForeignKey
+ALTER TABLE "Shop" ADD CONSTRAINT "Shop_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Machinery" ADD CONSTRAINT "Machinery_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Calendar" ADD CONSTRAINT "Calendar_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "EventType" ADD CONSTRAINT "EventType_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."Shop" ADD CONSTRAINT "Shop_userCreatedId_fkey" FOREIGN KEY ("userCreatedId") REFERENCES "public"."User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
