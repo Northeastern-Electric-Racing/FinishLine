@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from 'express';
-import MachineryService from '../services/calendar.services';
 import CalendarService from '../services/calendar.services';
 export default class CalendarController {
   static async createEventType(req: Request, res: Response, next: NextFunction) {

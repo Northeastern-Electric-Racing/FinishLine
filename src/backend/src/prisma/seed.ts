@@ -52,7 +52,6 @@ import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
 import FinanceServices from '../services/finance.services';
 import MachineryService from '../services/calendar.services';
 import CalendarService from '../services/calendar.services';
-import { truncateByDomain } from 'recharts/types/util/ChartUtils';
 
 const prisma = new PrismaClient();
 
