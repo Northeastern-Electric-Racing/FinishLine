@@ -3,7 +3,7 @@ import { getMachineryQueryArgs } from '../prisma-query-args/machinery.query-args
 import { Organization, User } from '@prisma/client';
 import { isAdmin, EventType } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { eventTypeTransformer } from '../transformers/calendar.transformer';
 import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
@@ -96,6 +96,7 @@ export default class CalendarService {
    * @returns The created machinery object with associated shop machinery.
    *
    * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
+   * @throws NotFoundException If the shop with the given shopId does not exist.
    */
   static async createMachinery(
     submitter: User,
@@ -108,6 +109,28 @@ export default class CalendarService {
     // Check if user is admin
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create machinery');
+    }
+
+    // Check if shop with id exists and belongs to the same organization
+    const existingShop = await prisma.shop.findUnique({
+      where: { shopId },
+      include: {
+        userCreated: {
+          include: {
+            organizations: {
+              where: { organizationId: organization.organizationId }
+            }
+          }
+        }
+      }
+    });
+
+    if (!existingShop) {
+      throw new NotFoundException('Shop', shopId);
+    }
+
+    if (existingShop.userCreated.organizations.length === 0) {
+      throw new AccessDeniedAdminOnlyException('create machinery for shop in different organization');
     }
 
     const newMachinery = await prisma.machinery.create({
