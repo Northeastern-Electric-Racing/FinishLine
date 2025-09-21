@@ -3068,7 +3068,8 @@ const performSeed: () => Promise<void> = async () => {
       description: 'Tracks all engineering team events, meetings, and deadlines.',
       colorHexCode: '#3498db',
       userCreated: { connect: { userId: thomasEmrax.userId } },
-      dateCreated: new Date()
+      dateCreated: new Date(),
+      organization: { connect: { organizationId } }
     }
   });
 

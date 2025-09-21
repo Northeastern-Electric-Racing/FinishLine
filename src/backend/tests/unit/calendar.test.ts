@@ -19,7 +19,8 @@ describe('Calendar Tests', () => {
         description: 'Tracks all engineering team events, meetings, and deadlines.',
         colorHexCode: '#3498db',
         userCreated: { connect: { userId: (await createTestUser(supermanAdmin, orgId)).userId } },
-        dateCreated: new Date()
+        dateCreated: new Date(),
+        organization: { connect: { organizationId: organization.organizationId } }
       }
     });
   });
