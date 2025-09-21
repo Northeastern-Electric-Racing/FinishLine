@@ -44,7 +44,7 @@ CREATE TABLE "public"."ShopMachinery" (
 
 -- CreateTable
 CREATE TABLE "public"."ScheduleSlot" (
-    "id" TEXT NOT NULL,
+    "scheduleSlotId" TEXT NOT NULL,
     "days" "public"."DayOfWeek"[],
     "startTime" TIMESTAMP(3),
     "endTime" TIMESTAMP(3),
@@ -52,7 +52,7 @@ CREATE TABLE "public"."ScheduleSlot" (
     "initialDateScheduled" DATE NOT NULL,
     "allDay" BOOLEAN NOT NULL DEFAULT false,
 
-    CONSTRAINT "ScheduleSlot_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "ScheduleSlot_pkey" PRIMARY KEY ("scheduleSlotId")
 );
 
 -- CreateTable
@@ -263,7 +263,7 @@ ALTER TABLE "public"."Availability" ADD CONSTRAINT "Availability_eventId_fkey" F
 ALTER TABLE "public"."_EventToScheduleSlot" ADD CONSTRAINT "_EventToScheduleSlot_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."Event"("eventId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."_EventToScheduleSlot" ADD CONSTRAINT "_EventToScheduleSlot_B_fkey" FOREIGN KEY ("B") REFERENCES "public"."ScheduleSlot"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."_EventToScheduleSlot" ADD CONSTRAINT "_EventToScheduleSlot_B_fkey" FOREIGN KEY ("B") REFERENCES "public"."ScheduleSlot"("scheduleSlotId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."_eventAttender" ADD CONSTRAINT "_eventAttender_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."Event"("eventId") ON DELETE CASCADE ON UPDATE CASCADE;
