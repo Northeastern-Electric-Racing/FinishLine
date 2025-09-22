@@ -3067,7 +3067,8 @@ const performSeed: () => Promise<void> = async () => {
     data: {
       name: 'Advanced CNC Manufacturing Center',
       description: 'CNC machining and precision manufacturing facility',
-      userCreatedId: thomasEmrax.userId
+      userCreatedId: thomasEmrax.userId,
+      organizationId
     }
   });
 
@@ -3075,7 +3076,8 @@ const performSeed: () => Promise<void> = async () => {
     data: {
       name: 'Electronics Development Lab',
       description: 'Electronics testing and development workspace',
-      userCreatedId: thomasEmrax.userId
+      userCreatedId: thomasEmrax.userId,
+      organizationId
     }
   });
 
@@ -3083,7 +3085,8 @@ const performSeed: () => Promise<void> = async () => {
     data: {
       name: 'Testing & Validation Facility',
       description: 'Component and system testing laboratory',
-      userCreatedId: thomasEmrax.userId
+      userCreatedId: thomasEmrax.userId,
+      organizationId
     }
   });
 

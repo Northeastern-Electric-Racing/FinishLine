@@ -37,7 +37,8 @@ describe('Calendar Tests', () => {
       data: {
         name: 'Precision Manufacturing Lab',
         description: 'Manufacturing facility equipped with advanced machinery and tools for engineering',
-        userCreatedId: (await createTestUser(flashAdmin, orgId)).userId
+        userCreatedId: (await createTestUser(flashAdmin, orgId)).userId,
+        organizationId: orgId
       }
     });
     ({ shopId } = shop);

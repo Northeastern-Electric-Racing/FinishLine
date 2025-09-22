@@ -116,30 +116,22 @@ export default class CalendarService {
 
     // Check if shop with id exists and belongs to the same organization
     const existingShop = await prisma.shop.findUnique({
-      where: { shopId },
-      include: {
-        userCreated: {
-          include: {
-            organizations: {
-              where: { organizationId: organization.organizationId }
-            }
-          }
-        }
-      }
+      where: { shopId }
     });
 
     if (!existingShop) {
       throw new NotFoundException('Shop', shopId);
     }
 
-    if (existingShop.userCreated.organizations.length === 0) {
-      throw new AccessDeniedAdminOnlyException('create machinery for shop in different organization');
+    if (existingShop.organizationId !== organization.organizationId) {
+      throw new AccessDeniedAdminOnlyException('shop does not belong to the specified organization');
     }
 
     const newMachinery = await prisma.machinery.create({
       data: {
         name,
         userCreatedId: submitter.userId,
+        organizationId: organization.organizationId,
         shops: {
           create: [
             {
