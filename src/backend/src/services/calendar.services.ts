@@ -59,6 +59,27 @@ export default class CalendarService {
       throw new AccessDeniedAdminOnlyException('create event type');
     }
 
+    // Check if calendars with ids exist and belong to the same organization
+    const existingCalendars = await prisma.calendar.findMany({
+      where: {
+        calendarId: { in: calendarIds }
+      }
+    });
+
+    // Ensure all provided calendars exist
+    if (existingCalendars.length !== calendarIds.length) {
+      const foundIds = existingCalendars.map((c) => c.calendarId);
+      const missingIds = calendarIds.filter((id) => !foundIds.includes(id));
+      throw new NotFoundException('Calendar', missingIds.join(', '));
+    }
+
+    // Ensure all calendars belong to the given organization
+    for (const calendar of existingCalendars) {
+      if (calendar.organizationId !== organization.organizationId) {
+        throw new InvalidOrganizationException('Calendar');
+      }
+    }
+
     const newEventType = await prisma.eventType.create({
       data: {
         name,
