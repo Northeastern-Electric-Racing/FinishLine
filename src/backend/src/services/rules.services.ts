@@ -3,7 +3,7 @@ import { userHasPermission } from '../utils/users.utils';
 import prisma from '../prisma/prisma';
 import { AccessDeniedAdminOnlyException } from '../utils/errors.utils';
 import { DeletedException, NotFoundException } from '../utils/errors.utils';
-import { isAdmin, Permission } from 'shared';
+import { isAdmin } from 'shared';
 
 export default class RulesService {
   // service functions go here!
@@ -18,7 +18,7 @@ export default class RulesService {
   static async deleteRulesetType(deleter: User, id: string, organization: Organization): Promise<{ message: string }> {
     //check if user is admin
     if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('create event type');
+      throw new AccessDeniedAdminOnlyException('only admin are allowed to delete ruleset types');
     }
 
     const rulesetType = await prisma.ruleset_Type.findUnique({

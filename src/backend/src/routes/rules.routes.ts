@@ -1,8 +1,10 @@
 import express from 'express';
 import RulesController from '../controllers/rules.controllers';
 
-const partsRouter = express.Router();
+const rulesRouter = express.Router();
 
 // write the routes below here
 
-partsRouter.delete('/rules/rulesetType/:rulesetTypeId/delete', RulesController.deleteRulesetType);
+rulesRouter.delete('/rules/rulesetType/:rulesetTypeId/delete', RulesController.deleteRulesetType);
+
+export default rulesRouter;
