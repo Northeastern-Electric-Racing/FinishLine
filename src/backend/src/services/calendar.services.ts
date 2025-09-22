@@ -3,7 +3,7 @@ import { getMachineryQueryArgs } from '../prisma-query-args/machinery.query-args
 import { Organization, User } from '@prisma/client';
 import { isAdmin, EventType, Shop } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException, NotFoundException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, InvalidOrganizationException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { eventTypeTransformer } from '../transformers/calendar.transformer';
 import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
@@ -124,7 +124,7 @@ export default class CalendarService {
     }
 
     if (existingShop.organizationId !== organization.organizationId) {
-      throw new AccessDeniedAdminOnlyException('shop does not belong to the specified organization');
+      throw new InvalidOrganizationException('Shop');
     }
 
     const newMachinery = await prisma.machinery.create({
