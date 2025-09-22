@@ -35,6 +35,8 @@ export default class CalendarService {
    * @returns The created event type.
    *
    * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
+   * @throws NotFoundException If the given calendarIds are not found.
+   * @throws InvalidOrganizationException If the given calendarIds are not part of the same organization.
    */
   static async createEventType(
     submitter: User,
