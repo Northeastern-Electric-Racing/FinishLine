@@ -50,8 +50,8 @@ import AnnouncementService from '../services/announcement.services';
 import OnboardingServices from '../services/onboarding.services';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
 import FinanceServices from '../services/finance.services';
+import MachineryService from '../services/calendar.services';
 import CalendarService from '../services/calendar.services';
-import { truncateByDomain } from 'recharts/types/util/ChartUtils';
 
 const prisma = new PrismaClient();
 
@@ -3060,6 +3060,84 @@ const performSeed: () => Promise<void> = async () => {
     sponsor.sponsorId,
     new Date(7, 5, 25),
     thomasEmrax.userId
+  );
+
+  // Create shops for machinery
+  const advancedShop = await prisma.shop.create({
+    data: {
+      name: 'Advanced CNC Manufacturing Center',
+      description: 'CNC machining and precision manufacturing facility',
+      userCreatedId: thomasEmrax.userId,
+      organizationId
+    }
+  });
+
+  const electronicsLab = await prisma.shop.create({
+    data: {
+      name: 'Electronics Development Lab',
+      description: 'Electronics testing and development workspace',
+      userCreatedId: thomasEmrax.userId,
+      organizationId
+    }
+  });
+
+  const testingFacility = await prisma.shop.create({
+    data: {
+      name: 'Testing & Validation Facility',
+      description: 'Component and system testing laboratory',
+      userCreatedId: thomasEmrax.userId,
+      organizationId
+    }
+  });
+
+  // Create machineries and assign to shops
+  await MachineryService.createMachinery(
+    thomasEmrax,
+    'Iron Man CNC Mill',
+    advancedShop.shopId,
+    1,
+    ner,
+    'High-precision CNC milling operations'
+  );
+  await MachineryService.createMachinery(
+    thomasEmrax,
+    'Thor Hammer Lathe',
+    advancedShop.shopId,
+    2,
+    ner,
+    'High-precision turning operations'
+  );
+  await MachineryService.createMachinery(
+    thomasEmrax,
+    'Spider-Man 3D Printer',
+    electronicsLab.shopId,
+    1,
+    ner,
+    'Rapid prototyping for electronics enclosures'
+  );
+  await MachineryService.createMachinery(
+    thomasEmrax,
+    'Captain America Oscilloscope',
+    electronicsLab.shopId,
+    3,
+    ner,
+    'High-speed signal analysis'
+  );
+  await MachineryService.createMachinery(
+    thomasEmrax,
+    'Hulk Dynamometer',
+    testingFacility.shopId,
+    1,
+    ner,
+    'Engine and motor testing'
+  );
+  await MachineryService.createMachinery(
+    thomasEmrax,
+    'Black Widow Thermal Camera',
+    testingFacility.shopId,
+    2,
+    ner,
+    'Thermal imaging and analysis'
   );
 
   const calendar = await prisma.calendar.create({

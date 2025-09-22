@@ -28,6 +28,16 @@ calendarRouter.post(
 );
 
 calendarRouter.post(
+  '/machinery/create',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('shopId')),
+  body('quantity').isInt({ min: 1 }),
+  body('description').optional().isString(),
+  validateInputs,
+  CalendarController.createMachinery
+);
+
+calendarRouter.post(
   '/shop/create',
   nonEmptyString(body('name')),
   body('description').optional().isString(),

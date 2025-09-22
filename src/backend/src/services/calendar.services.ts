@@ -1,7 +1,9 @@
+import { machineryTransformer } from '../transformers/calendar.transformer';
+import { getMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
 import { Organization, User } from '@prisma/client';
 import { isAdmin, EventType, Shop } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, InvalidOrganizationException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { eventTypeTransformer } from '../transformers/calendar.transformer';
 import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
@@ -83,6 +85,67 @@ export default class CalendarService {
     });
 
     return eventTypeTransformer(newEventType);
+  }
+
+  /**
+   * Creates a new machinery and associates it with shops.
+   *
+   * @param submitter The user submitting the request, who must be an admin.
+   * @param name The name of the machinery.
+   * @param shopMachineryData Array of shop machinery data containing shopId, quantity, and optional description.
+   * @param organization The organization for which the machinery is being created.
+   * @param description The description of the machinery (optional).
+   *
+   * @returns The created machinery object with associated shop machinery.
+   *
+   * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
+   * @throws NotFoundException If the shop with the given shopId does not exist.
+   */
+  static async createMachinery(
+    submitter: User,
+    name: string,
+    shopId: string,
+    quantity: number,
+    organization: Organization,
+    description?: string
+  ) {
+    // Check if user is admin
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('create machinery');
+    }
+
+    // Check if shop with id exists and belongs to the same organization
+    const existingShop = await prisma.shop.findUnique({
+      where: { shopId }
+    });
+
+    if (!existingShop) {
+      throw new NotFoundException('Shop', shopId);
+    }
+
+    if (existingShop.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Shop');
+    }
+
+    const newMachinery = await prisma.machinery.create({
+      data: {
+        name,
+        userCreatedId: submitter.userId,
+        organizationId: organization.organizationId,
+        shops: {
+          create: [
+            {
+              shopId,
+              quantity,
+              description
+            }
+          ]
+        }
+      },
+      ...getMachineryQueryArgs(organization.organizationId)
+    });
+
+    return machineryTransformer(newMachinery);
   }
   /**
    * Creates a new shop
