@@ -62,12 +62,11 @@ export interface ProjectGantt extends WbsElementPreview {
   startDate?: Date;
   endDate?: Date;
   budget: number;
-  teams: TeamPreview[];
+  teams: { teamId: string; teamName: string }[];
   workPackages: WorkPackage[];
   tasks: Task[];
   duration: number;
   abbreviation?: string;
-  links: Link[];
 }
 
 export interface ProjectPreview extends WbsElementPreview {

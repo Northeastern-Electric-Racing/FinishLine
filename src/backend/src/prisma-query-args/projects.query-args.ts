@@ -56,16 +56,15 @@ export const getProjectGanttQueryArgs = (organizationId: string) =>
               dateDeleted: null
             },
             ...getTaskQueryArgs(organizationId)
-          },
-          links: {
-            where: {
-              dateDeleted: null
-            },
-            ...getLinkQueryArgs(organizationId)
           }
         }
       },
-      teams: getTeamPreviewQueryArgs(organizationId),
+      teams: {
+        select: {
+          teamId: true,
+          teamName: true
+        }
+      },
       workPackages: {
         where: {
           wbsElement: {

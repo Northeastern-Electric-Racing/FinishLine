@@ -86,8 +86,10 @@ export const projectGanttTransformer = (project: Prisma.ProjectGetPayload<Projec
     lead: lead ? userTransformer(lead) : undefined,
     manager: manager ? userTransformer(manager) : undefined,
     budget: project.budget,
-    teams: project.teams.map(teamPreviewTransformer),
-    links: project.wbsElement.links.map(linkTransformer),
+    teams: project.teams.map((team) => ({
+      teamId: team.teamId,
+      teamName: team.teamName,
+    })),
     duration: calculateDuration(project.workPackages),
     startDate: calculateProjectStartDate(project.workPackages),
     tasks: project.wbsElement.tasks.map(taskTransformer),

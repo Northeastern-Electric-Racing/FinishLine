@@ -28,7 +28,7 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
   const handleSubmit = async () => {
     const [selectedTeam] = project.teams;
 
-    const teamIds = selectedTeam ? [selectedTeam.teamId] : [];
+    const teamIds: string[] = selectedTeam ? [selectedTeam.teamId] : [];
 
     const payload: CreateSingleProjectPayload = {
       name: project.name,

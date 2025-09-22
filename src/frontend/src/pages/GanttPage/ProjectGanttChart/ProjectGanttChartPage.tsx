@@ -299,7 +299,10 @@ const ProjectGanttChartPage: FC = () => {
     return existingCarProjects + 1;
   };
 
-  const handleAddProjectInfo = (projectInfo: { name: string; carNumber: number }, selectedTeam: TeamPreview) => {
+  const handleAddProjectInfo = (
+    projectInfo: { name: string; carNumber: number },
+    selectedTeam: { teamId: string; teamName: string }
+  ) => {
     const id = uuidv4();
     const newProject: ProjectGantt = {
       id,
@@ -318,7 +321,6 @@ const ProjectGanttChartPage: FC = () => {
       duration: 1,
       wbsElementId: '-1',
       dateCreated: new Date(),
-      links: []
     };
 
     addNewProjectHandler(newProject);

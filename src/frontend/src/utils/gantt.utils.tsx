@@ -8,7 +8,6 @@ import {
   DesignReviewPreview,
   DesignReviewStatus,
   isWorkPackage,
-  Project,
   ProjectGantt,
   RetrospectiveProjectPreview,
   RetrospectiveWorkPackage,
@@ -134,23 +133,6 @@ export const getProjectEndDate = (project: ProjectGantt): Date => {
     if (current.endDate > acc) return current.endDate;
     return acc;
   }, project.workPackages[0].endDate);
-};
-
-export const transformProjectPreviewToProject = (projectPreview: ProjectGantt, team: TeamPreview): Project => {
-  return {
-    ...projectPreview,
-    summary: '',
-    budget: 0,
-    links: [],
-    descriptionBullets: [],
-    duration: 0,
-    tasks: [],
-    favoritedBy: [],
-    wbsElementId: '-1',
-    teams: [team],
-    changes: [],
-    dateCreated: new Date()
-  };
 };
 
 export const transformDesignReviewToGanttEvent = (designReview: DesignReviewPreview): GanttEvent => {
