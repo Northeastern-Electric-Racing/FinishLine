@@ -6,7 +6,7 @@ import { AccessDeniedException } from '../utils/errors.utils';
 
 export default class RulesService {
   /**
-   * Creates a new ruleset type with the given information
+   * Creates new ruleset type with the given information
    * @param submitter a user who is making this request
    * @param name the name of the ruleset type
    * @param organizationId the organization ID for permission check
