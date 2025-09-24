@@ -37,6 +37,73 @@ import { userHasPermission } from '../utils/users.utils';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
+  /** Lightweight structured logger for date normalization during create/edit. */
+  private static logDateNormalization(
+    context: 'create' | 'edit',
+    details: {
+      userId: string;
+      organizationId: string;
+      rawInput: string;
+      clientOffsetMinutes?: number;
+      normalized: Date;
+      workPackageId?: string;
+      projectRef?: string; // e.g., "car.project.wp#"
+    }
+  ) {
+    try {
+      const { userId, organizationId, rawInput, clientOffsetMinutes, normalized, workPackageId, projectRef } = details;
+      // Keep it concise but useful for debugging timezone issues
+      console.log(
+        `WP ${context} date normalization`,
+        {
+          userId,
+          organizationId,
+          rawInput,
+          clientOffsetMinutes,
+          normalizedISO: normalized.toISOString(),
+          normalizedLocal: normalized.toString(),
+          workPackageId,
+          projectRef
+        }
+      );
+    } catch {
+      // never let logging break the flow
+    }
+  }
+  /**
+   * Normalize an input date string to the user's local midnight converted to UTC.
+   * - If clientOffsetMinutes is provided (minutes from UTC, same sign as Date.getTimezoneOffset), we interpret day boundaries in that local timezone.
+   * - For date-only inputs (YYYY-MM-DD or YYYY/MM/DD): use 00:00 local on that date, then convert to the corresponding UTC instant.
+   * - For timestamp inputs: derive the local calendar day of that instant in user's timezone, then normalize to that day's 00:00 local converted to UTC.
+   * - If clientOffsetMinutes is not provided, default to UTC day boundaries (00:00:00.000Z) for backwards compatibility.
+   */
+  private static toUtcMidnight(input: string, clientOffsetMinutes?: number): Date {
+    const dateOnly = input.match(/^(\d{4})[-/](\d{2})[-/](\d{2})$/);
+    const offsetMs = (clientOffsetMinutes ?? 0) * 60 * 1000;
+
+    // Helper: build a Date for local midnight converted to UTC using the offset
+    const toUtcFromLocalMidnight = (y: number, mZeroIdx: number, d: number) =>
+      new Date(Date.UTC(y, mZeroIdx, d, 0, 0, 0, 0) + offsetMs);
+
+    if (dateOnly) {
+      const y = Number(dateOnly[1]);
+      const m = Number(dateOnly[2]);
+      const d = Number(dateOnly[3]);
+      const normalized = toUtcFromLocalMidnight(y, m - 1, d);
+      return normalized;
+    }
+
+    const parsed = new Date(input);
+    if (isNaN(parsed.getTime())) throw new Error(`Invalid date input: ${input}`);
+
+    // Derive user's local calendar date by shifting the instant by the offset
+    const shifted = new Date(parsed.getTime() - offsetMs);
+    const y = shifted.getUTCFullYear();
+    const m = shifted.getUTCMonth();
+    const d = shifted.getUTCDate();
+    const normalized = toUtcFromLocalMidnight(y, m, d);
+    return normalized;
+  }
   /**
    * Retrieve all work packages, optionally filtered by query parameters.
    *
@@ -157,7 +224,8 @@ export default class WorkPackagesService {
     blockedBy: WbsNumber[],
     descriptionBullets: DescriptionBulletPreview[],
     projectWbsNum: WbsNumber,
-    organization: Organization
+    organization: Organization,
+    clientOffsetMinutes?: number
   ): Promise<WorkPackage> {
     if (await userHasPermission(user.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('create work packages');
@@ -205,9 +273,17 @@ export default class WorkPackagesService {
         .map((element) => element.wbsElement.workPackageNumber)
         .reduce((prev, curr) => Math.max(prev, curr), 0) + 1;
 
-    // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
-    const date = new Date(startDate.split('T')[0]);
-    date.setTime(date.getTime() + 12 * 60 * 60 * 1000);
+    // Normalize incoming startDate using user's local midnight converted to UTC when offset provided
+    const date = WorkPackagesService.toUtcMidnight(startDate, clientOffsetMinutes);
+    // Log normalization context for troubleshooting
+    WorkPackagesService.logDateNormalization('create', {
+      userId: user.userId,
+      organizationId: organization.organizationId,
+      rawInput: startDate,
+      clientOffsetMinutes,
+      normalized: date,
+      projectRef: `${carNumber}.${projectNumber}.${newWorkPackageNumber}`
+    });
 
     const changesToCreate = crId
       ? [
@@ -252,7 +328,7 @@ export default class WorkPackagesService {
       null,
       stage,
       null,
-      new Date(startDate),
+      date,
       null,
       duration,
       [],
@@ -307,7 +383,8 @@ export default class WorkPackagesService {
     descriptionBullets: DescriptionBulletPreview[],
     leadId: string | null,
     managerId: string | null,
-    organization: Organization
+    organization: Organization,
+    clientOffsetMinutes?: number
   ): Promise<WorkPackage> {
     const { userId } = user;
     // verify user is allowed to edit work packages
@@ -339,13 +416,24 @@ export default class WorkPackagesService {
 
     const blockedByElems = await validateBlockedBys(blockedBy, organization.organizationId);
 
+    // Normalize new startDate using user's local midnight converted to UTC when offset provided
+    const normalizedEdit = WorkPackagesService.toUtcMidnight(startDate, clientOffsetMinutes);
+    // Log normalization context for troubleshooting
+    WorkPackagesService.logDateNormalization('edit', {
+      userId,
+      organizationId: organization.organizationId,
+      rawInput: startDate,
+      clientOffsetMinutes,
+      normalized: normalizedEdit,
+      workPackageId
+    });
     const changes = await getWorkPackageChanges(
       originalWorkPackage.wbsElement.name,
       name,
       originalWorkPackage.stage,
       stage,
       originalWorkPackage.startDate,
-      new Date(startDate),
+      normalizedEdit,
       originalWorkPackage.duration,
       duration,
       originalWorkPackage.blockedBy,
@@ -360,10 +448,8 @@ export default class WorkPackagesService {
       wbsElementId,
       userId
     );
-
-    // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
-    const date = new Date(startDate);
-    date.setTime(date.getTime() + 12 * 60 * 60 * 1000);
+    // Store at 00:00 UTC (canonical)
+    const date = normalizedEdit;
 
     // set the status of the wbs element to active if an edit is made to a completed version
     const status =
