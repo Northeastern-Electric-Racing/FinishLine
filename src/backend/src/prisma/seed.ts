@@ -3234,7 +3234,6 @@ const performSeed: () => Promise<void> = async () => {
     false,
     true
   );
-
 };
 
 performSeed()
