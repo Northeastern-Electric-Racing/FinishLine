@@ -3,7 +3,12 @@ import { getMachineryQueryArgs } from '../prisma-query-args/machinery.query-args
 import { Organization, User } from '@prisma/client';
 import { isAdmin, EventType, Shop } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException, InvalidOrganizationException, NotFoundException } from '../utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  InvalidOrganizationException,
+  NotFoundException,
+  AccessDeniedException
+} from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { eventTypeTransformer } from '../transformers/calendar.transformer';
 import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
@@ -190,5 +195,53 @@ export default class CalendarService {
     });
 
     return shopTransformer(newShop);
+  }
+
+  /**
+   * Deletes a shop by its ID.
+   * Requires the submitter to be head or above.
+   * @param submitter The user submitting the request.
+   * @param shopId The ID of the shop to be deleted.
+   * @param organization The organization to which the shop belongs.
+   * @returns The deleted shop object.
+   * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
+   * @throws NotFoundException If the shop with the given ID does not exist.
+   * @throws InvalidOrganizationException If the shop does not belong to the given organization.
+   *
+   */
+
+  static async deleteShop(submitter: User, shopId: string, organization: Organization): Promise<Shop> {
+    if (
+      !(await userHasPermission(
+        submitter.userId,
+        organization.organizationId,
+        (role) => !!role && ['HEAD', 'LEADERSHIP', 'ADMIN', 'APP_ADMIN'].includes(String(role))
+      ))
+    ) {
+      throw new AccessDeniedException('head or above only have the ability to delete shop');
+    }
+
+    // Ensure the shop exists
+    const existing = await prisma.shop.findUnique({ where: { shopId } });
+    if (!existing) throw new NotFoundException('Shop', shopId);
+
+    // Ensure it belongs to this org
+    if (existing.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Shop');
+    }
+
+    // not already soft-deleted
+    if (existing.dateDeleted) {
+      throw new NotFoundException('Shop', shopId);
+    }
+
+    // Soft delete and return transformed DTO
+    const deleted = await prisma.shop.update({
+      where: { shopId },
+      data: { dateDeleted: new Date() },
+      include: getShopQueryArgs(organization.organizationId).include
+    });
+
+    return shopTransformer(deleted);
   }
 }

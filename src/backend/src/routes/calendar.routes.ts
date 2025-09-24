@@ -1,5 +1,5 @@
 import express from 'express';
-import { body } from 'express-validator';
+import { body, param } from 'express-validator';
 import { nonEmptyString, validateInputs } from '../utils/validation.utils';
 import CalendarController from '../controllers/calendar.controllers';
 
@@ -44,5 +44,7 @@ calendarRouter.post(
   validateInputs,
   CalendarController.createShop
 );
+
+calendarRouter.delete('/shop/:shopId', nonEmptyString(param('shopId')), validateInputs, CalendarController.deleteShop);
 
 export default calendarRouter;

@@ -1,11 +1,17 @@
 import { Calendar, Organization } from '@prisma/client';
 import CalendarService from '../../src/services/calendar.services';
-import { AccessDeniedAdminOnlyException } from '../../src/utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  NotFoundException,
+  InvalidOrganizationException,
+  AccessDeniedException
+} from '../../src/utils/errors.utils';
 import {
   batmanAppAdmin,
   wonderwomanGuest,
   supermanAdmin,
   flashAdmin,
+  greenlanternHead,
   theVisitorGuest,
   alfred
 } from '../test-data/users.test-data';
@@ -167,6 +173,51 @@ describe('Calendar Tests', () => {
         await CalendarService.createShop(admin, 'UniqueName', 'first', organization);
 
         await expect(CalendarService.createShop(admin, 'UniqueName', 'second attempt', organization)).rejects.toBeTruthy();
+      });
+    });
+
+    describe('Delete shop', () => {
+      it('fails if user is not head or above', async () => {
+        await expect(
+          CalendarService.deleteShop(await createTestUser(wonderwomanGuest, orgId), shopId, organization)
+        ).rejects.toBeInstanceOf(AccessDeniedException);
+      });
+
+      it('succeeds for head', async () => {
+        const head = await createTestUser(greenlanternHead, orgId);
+
+        const result = await CalendarService.deleteShop(head, shopId, organization);
+        expect(result.shopId).toBe(shopId);
+
+        // verify soft delete happened
+        const row = await prisma.shop.findUnique({ where: { shopId } });
+        expect(row?.dateDeleted).not.toBeNull();
+      });
+
+      it('fails if shop does not exist', async () => {
+        const head = await createTestUser(greenlanternHead, orgId);
+        await expect(CalendarService.deleteShop(head, 'non-existent-id', organization)).rejects.toBeInstanceOf(
+          NotFoundException
+        );
+      });
+
+      // optional but useful:
+      it('fails if shop is already deleted', async () => {
+        const head = await createTestUser(greenlanternHead, orgId);
+        await CalendarService.deleteShop(head, shopId, organization);
+
+        await expect(CalendarService.deleteShop(head, shopId, organization)).rejects.toBeInstanceOf(NotFoundException);
+      });
+
+      it('fails if shop belongs to a different organization', async () => {
+        const otherOrg = await createTestOrganization();
+        const otherAdmin = await createTestUser(batmanAppAdmin, otherOrg.organizationId);
+        const otherShop = await CalendarService.createShop(otherAdmin, 'OtherShop', 'desc', otherOrg);
+
+        const head = await createTestUser(greenlanternHead, orgId);
+        await expect(CalendarService.deleteShop(head, otherShop.shopId, organization)).rejects.toBeInstanceOf(
+          InvalidOrganizationException
+        );
       });
     });
   });
