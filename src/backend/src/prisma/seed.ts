@@ -3235,16 +3235,6 @@ const performSeed: () => Promise<void> = async () => {
     true
   );
 
-  // to delete shop for testing delete shop functionality
-  const deletableShop = await prisma.shop.create({
-    data: {
-      name: 'Temp Deletable Shop',
-      description: 'For deleteShop manual testing',
-      userCreatedId: thomasEmrax.userId,
-      organizationId
-    }
-  });
-  console.log('Deletable shopId:', deletableShop.shopId);
 };
 
 performSeed()
