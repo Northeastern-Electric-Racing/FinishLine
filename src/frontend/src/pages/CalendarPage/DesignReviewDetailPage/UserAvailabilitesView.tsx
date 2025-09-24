@@ -60,7 +60,7 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
         }}
       >
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-          <Typography style={{ marginRight: '10px' }}>0/0</Typography>
+          <Typography style={{ marginRight: '10px' }}>0/{totalUsers}</Typography>
           {Array.from({ length: 6 }, (_, i) => (
             <Box
               sx={{
