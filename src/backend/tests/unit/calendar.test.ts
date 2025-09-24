@@ -201,7 +201,6 @@ describe('Calendar Tests', () => {
         );
       });
 
-      // optional but useful:
       it('fails if shop is already deleted', async () => {
         const head = await createTestUser(greenlanternHead, orgId);
         await CalendarService.deleteShop(head, shopId, organization);
@@ -210,13 +209,24 @@ describe('Calendar Tests', () => {
       });
 
       it('fails if shop belongs to a different organization', async () => {
-        const otherOrg = await createTestOrganization();
-        const otherAdmin = await createTestUser(batmanAppAdmin, otherOrg.organizationId);
-        const otherShop = await CalendarService.createShop(otherAdmin, 'OtherShop', 'desc', otherOrg);
+        const existing = await prisma.user.findFirstOrThrow({
+          where: { googleAuthId: supermanAdmin.googleAuthId },
+          select: { userId: true }
+        });
 
-        const head = await createTestUser(greenlanternHead, orgId);
-        await expect(CalendarService.deleteShop(head, otherShop.shopId, organization)).rejects.toBeInstanceOf(
-          InvalidOrganizationException
+        const otherOrg = await prisma.organization.create({
+          data: {
+            name: 'Other Org (calendar test)',
+            description: 'for cross-org negative case',
+            applicationLink: '',
+            userCreated: { connect: { userId: existing.userId } }
+          }
+        });
+
+        const headInOtherOrg = await createTestUser(greenlanternHead, otherOrg.organizationId);
+
+        await expect(CalendarService.deleteShop(headInOtherOrg, shopId, otherOrg)).rejects.toThrow(
+          new InvalidOrganizationException('Shop')
         );
       });
     });
