@@ -47,19 +47,16 @@ export default class WorkPackagesService {
     const offsetMs = (clientOffsetMinutes ?? 0) * 60 * 1000;
 
     // Build a Date for local midnight converted to UTC using the offset
-    const toUtcFromLocalMidnight = (y: number, mZeroIdx: number, d: number) =>
-      new Date(Date.UTC(y, mZeroIdx, d, 0, 0, 0, 0) + offsetMs);
+    const toUtcFromLocalMidnight = (y: number, m: number, d: number) => new Date(Date.UTC(y, m, d, 0, 0, 0, 0) + offsetMs);
 
     const parsed = new Date(input);
 
     // Derive user's local calendar date by shifting the instant by the offset
     const shifted = new Date(parsed.getTime() - offsetMs);
-    const y = shifted.getUTCFullYear();
-    const m = shifted.getUTCMonth();
-    const d = shifted.getUTCDate();
-    const normalized = toUtcFromLocalMidnight(y, m, d);
+    const normalized = toUtcFromLocalMidnight(shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate());
     return normalized;
   }
+
   /**
    * Retrieve all work packages, optionally filtered by query parameters.
    *
@@ -230,7 +227,10 @@ export default class WorkPackagesService {
         .reduce((prev, curr) => Math.max(prev, curr), 0) + 1;
 
     // Normalize incoming startDate using user's local midnight converted to UTC when offset provided
-    const date = WorkPackagesService.toUtcMidnight(startDate, clientOffsetMinutes);
+    const date = WorkPackagesService.toUtcMidnight(
+      startDate,
+      typeof clientOffsetMinutes === 'number' ? clientOffsetMinutes : undefined
+    );
 
     const changesToCreate = crId
       ? [
@@ -364,7 +364,10 @@ export default class WorkPackagesService {
     const blockedByElems = await validateBlockedBys(blockedBy, organization.organizationId);
 
     // Normalize new startDate using user's local midnight converted to UTC when offset provided
-    const normalizedEdit = WorkPackagesService.toUtcMidnight(startDate, clientOffsetMinutes);
+    const normalizedEdit = WorkPackagesService.toUtcMidnight(
+      startDate,
+      typeof clientOffsetMinutes === 'number' ? clientOffsetMinutes : undefined
+    );
     const changes = await getWorkPackageChanges(
       originalWorkPackage.wbsElement.name,
       name,
