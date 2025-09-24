@@ -61,7 +61,7 @@ export default class WorkPackagesController {
         descriptionBullets,
         projectWbsNum,
         req.organization,
-        typeof clientOffsetMinutes === 'number' ? clientOffsetMinutes : undefined
+        clientOffsetMinutes
       );
 
       res.status(200).json(workPackage);
@@ -102,7 +102,7 @@ export default class WorkPackagesController {
         leadId,
         managerId,
         req.organization,
-        typeof clientOffsetMinutes === 'number' ? clientOffsetMinutes : undefined
+        clientOffsetMinutes
       );
       res.status(200).json({ message: 'Work package updated successfully' });
     } catch (error: unknown) {
