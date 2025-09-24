@@ -37,39 +37,6 @@ import { userHasPermission } from '../utils/users.utils';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
-  /** Lightweight structured logger for date normalization during create/edit. */
-  private static logDateNormalization(
-    context: 'create' | 'edit',
-    details: {
-      userId: string;
-      organizationId: string;
-      rawInput: string;
-      clientOffsetMinutes?: number;
-      normalized: Date;
-      workPackageId?: string;
-      projectRef?: string; // e.g., "car.project.wp#"
-    }
-  ) {
-    try {
-      const { userId, organizationId, rawInput, clientOffsetMinutes, normalized, workPackageId, projectRef } = details;
-      // Keep it concise but useful for debugging timezone issues
-      console.log(
-        `WP ${context} date normalization`,
-        {
-          userId,
-          organizationId,
-          rawInput,
-          clientOffsetMinutes,
-          normalizedISO: normalized.toISOString(),
-          normalizedLocal: normalized.toString(),
-          workPackageId,
-          projectRef
-        }
-      );
-    } catch {
-      // never let logging break the flow
-    }
-  }
   /**
    * Normalize an input date string to the user's local midnight converted to UTC.
    * - If clientOffsetMinutes is provided (minutes from UTC, same sign as Date.getTimezoneOffset), we interpret day boundaries in that local timezone.
@@ -275,15 +242,6 @@ export default class WorkPackagesService {
 
     // Normalize incoming startDate using user's local midnight converted to UTC when offset provided
     const date = WorkPackagesService.toUtcMidnight(startDate, clientOffsetMinutes);
-    // Log normalization context for troubleshooting
-    WorkPackagesService.logDateNormalization('create', {
-      userId: user.userId,
-      organizationId: organization.organizationId,
-      rawInput: startDate,
-      clientOffsetMinutes,
-      normalized: date,
-      projectRef: `${carNumber}.${projectNumber}.${newWorkPackageNumber}`
-    });
 
     const changesToCreate = crId
       ? [
@@ -418,15 +376,6 @@ export default class WorkPackagesService {
 
     // Normalize new startDate using user's local midnight converted to UTC when offset provided
     const normalizedEdit = WorkPackagesService.toUtcMidnight(startDate, clientOffsetMinutes);
-    // Log normalization context for troubleshooting
-    WorkPackagesService.logDateNormalization('edit', {
-      userId,
-      organizationId: organization.organizationId,
-      rawInput: startDate,
-      clientOffsetMinutes,
-      normalized: normalizedEdit,
-      workPackageId
-    });
     const changes = await getWorkPackageChanges(
       originalWorkPackage.wbsElement.name,
       name,
