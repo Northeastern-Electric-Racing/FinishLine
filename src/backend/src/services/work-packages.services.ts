@@ -40,28 +40,17 @@ export default class WorkPackagesService {
   /**
    * Normalize an input date string to the user's local midnight converted to UTC.
    * - If clientOffsetMinutes is provided (minutes from UTC, same sign as Date.getTimezoneOffset), we interpret day boundaries in that local timezone.
-   * - For date-only inputs (YYYY-MM-DD or YYYY/MM/DD): use 00:00 local on that date, then convert to the corresponding UTC instant.
-   * - For timestamp inputs: derive the local calendar day of that instant in user's timezone, then normalize to that day's 00:00 local converted to UTC.
+   * - Derive the local calendar day of that instant in user's timezone, then normalize to that day's 00:00 local converted to UTC.
    * - If clientOffsetMinutes is not provided, default to UTC day boundaries (00:00:00.000Z) for backwards compatibility.
    */
   private static toUtcMidnight(input: string, clientOffsetMinutes?: number): Date {
-    const dateOnly = input.match(/^(\d{4})[-/](\d{2})[-/](\d{2})$/);
     const offsetMs = (clientOffsetMinutes ?? 0) * 60 * 1000;
 
-    // Helper: build a Date for local midnight converted to UTC using the offset
+    // Build a Date for local midnight converted to UTC using the offset
     const toUtcFromLocalMidnight = (y: number, mZeroIdx: number, d: number) =>
       new Date(Date.UTC(y, mZeroIdx, d, 0, 0, 0, 0) + offsetMs);
 
-    if (dateOnly) {
-      const y = Number(dateOnly[1]);
-      const m = Number(dateOnly[2]);
-      const d = Number(dateOnly[3]);
-      const normalized = toUtcFromLocalMidnight(y, m - 1, d);
-      return normalized;
-    }
-
     const parsed = new Date(input);
-    if (isNaN(parsed.getTime())) throw new Error(`Invalid date input: ${input}`);
 
     // Derive user's local calendar date by shifting the instant by the offset
     const shifted = new Date(parsed.getTime() - offsetMs);
