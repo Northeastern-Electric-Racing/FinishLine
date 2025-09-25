@@ -1,4 +1,4 @@
-import { ProjectRule, User, isLeadership, RuleCompletion } from 'shared';
+import { ProjectRule, isLeadership, RuleCompletion } from 'shared';
 import { userHasPermission } from '../utils/users.utils';
 import {
   AccessDeniedException,
@@ -10,7 +10,7 @@ import {
 import prisma from '../prisma/prisma';
 import { projectRuleTransformer } from '../transformers/rules.transformer';
 import { getProjectRuleQueryArgs } from '../prisma-query-args/rules.query-args';
-import { Organization } from '@prisma/client';
+import { Organization, User } from '@prisma/client';
 
 /**
  * Add a preexisting rule to a specific project

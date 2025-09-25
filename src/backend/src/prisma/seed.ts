@@ -15,8 +15,7 @@ import {
   Task_Priority,
   Task_Status,
   Team,
-  Part_Tag,
-  Project_Rule
+  Part_Tag
 } from '@prisma/client';
 import { createUser, dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
@@ -28,7 +27,6 @@ import {
   RoleEnum,
   SpecialPermission,
   StandardChangeRequest,
-  User,
   WbsElementStatus,
   WorkPackageStage
 } from 'shared';
@@ -3059,10 +3057,11 @@ const performSeed: () => Promise<void> = async () => {
   const ruleT211 = await prisma.rule.create({
     data: ruleSeedData.leafRule(ruleset1.rulesetId, batman.userId, ruleT21.ruleId)
   });
+  console.log('Created ruleT211:', ruleT211.ruleId);
 
   // project rules
-  await RulesService.createProjectRule(thomasEmrax, ner, project1Id, ruleT211.ruleId);
-  await RulesService.createProjectRule(thomasEmrax, ner, project2Id, ruleT211.ruleId);
+  await RulesService.createProjectRule(batman, ner, project1Id, ruleT21.ruleId);
+  await RulesService.createProjectRule(batman, ner, project1Id, ruleT211.ruleId);
 
   const goldSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Gold', ner, '#9F9156', 3000);
   await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, '#C0C0C0', 200);

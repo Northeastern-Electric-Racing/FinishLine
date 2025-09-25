@@ -1,5 +1,4 @@
 import { Prisma } from '@prisma/client';
-// write types and query args below here
 
 // preview for rule display
 export const getRulePreviewQueryArgs = () =>
@@ -7,7 +6,7 @@ export const getRulePreviewQueryArgs = () =>
     select: {
       ruleId: true,
       ruleCode: true,
-      ruleContent: true,
+      ruleContent: true
     }
   });
 
@@ -16,7 +15,6 @@ export const getProjectRuleQueryArgs = () =>
     include: {
       rule: getRulePreviewQueryArgs(),
       project: { select: { projectId: true } },
-      currentStatus: true,
       statusHistory: {
         include: {
           userUpdated: {
