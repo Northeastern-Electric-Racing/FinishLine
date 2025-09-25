@@ -90,6 +90,7 @@ const taskEditStatus = (taskId: string) => `${tasks()}/${taskId}/edit-status`;
 const editTaskById = (taskId: string) => `${tasks()}/${taskId}/edit`;
 const editTaskAssignees = (taskId: string) => `${tasks()}/${taskId}/edit-assignees`;
 const deleteTask = (taskId: string) => `${tasks()}/${taskId}/delete`;
+const overdueTasksByTeamLeadership = (userId: string) => `${tasks()}/overdue-by-team-member/${userId}`;
 
 /**************** Work Packages Endpoints ****************/
 const workPackages = (queryParams?: { [field: string]: string }) => {
@@ -502,6 +503,7 @@ export const apiUrls = {
   taskEditStatus,
   editTaskAssignees,
   deleteTask,
+  overdueTasksByTeamLeadership,
 
   workPackages,
   workPackagesByWbsNum,

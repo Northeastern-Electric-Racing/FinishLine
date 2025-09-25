@@ -12,7 +12,8 @@ import {
   UserWithScheduleSettings,
   AuthenticatedUser,
   AvailabilityCreateArgs,
-  ProjectPreview
+  ProjectPreview,
+  ContextUser
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -33,8 +34,8 @@ import {
   getUserScheduleSettingsQueryArgs,
   getUserWithSettingsQueryArgs
 } from '../prisma-query-args/user.query-args';
-import { getAuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
-import authenticatedUserTransformer from '../transformers/auth-user.transformer';
+import { currentUserQueryArgs, getAuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
+import authenticatedUserTransformer, { currentUserTransformer } from '../transformers/auth-user.transformer';
 import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args';
 import taskTransformer from '../transformers/tasks.transformer';
 import { validateUserIsPartOfFinanceTeamOrHead } from '../utils/reimbursement-requests.utils';
@@ -74,7 +75,7 @@ export default class UsersService {
     return users.map(userWithScheduleSettingsTransformer);
   }
 
-  static async getCurrentUser(user: User): Promise<AuthenticatedUser> {
+  static async getCurrentUser(user: User): Promise<ContextUser> {
     const userWithOrgs = await prisma.user.findUnique({ where: { userId: user.userId }, include: { organizations: true } });
 
     if (!userWithOrgs) {
@@ -85,16 +86,16 @@ export default class UsersService {
 
     if (!organization) throw new HttpException(500, 'User is not apart of any organizations');
 
-    const authUser = await prisma.user.findUnique({
+    const currentUser = await prisma.user.findUnique({
       where: { userId: user.userId },
-      ...getAuthUserQueryArgs(organization.organizationId)
+      ...currentUserQueryArgs(organization.organizationId)
     });
 
-    if (!authUser) {
+    if (!currentUser) {
       throw new NotFoundException('User', user.userId);
     }
 
-    return authenticatedUserTransformer(authUser, organization.organizationId);
+    return currentUserTransformer(currentUser);
   }
 
   /**

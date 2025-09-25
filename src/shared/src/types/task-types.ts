@@ -33,6 +33,10 @@ export interface Task {
   status: TaskStatus;
 }
 
+export type TaskCardPreview = Pick<Task, 'taskId' | 'title' | 'deadline' | 'priority'> & {
+  assignees: { firstName: string; lastName: string }[];
+};
+
 export interface TaskWithIndex extends Task {
   index: number;
 }

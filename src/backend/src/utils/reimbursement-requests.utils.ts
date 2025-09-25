@@ -19,7 +19,7 @@ import { AccessDeniedException, DeletedException, HttpException, NotFoundExcepti
 import { Prisma, Receipt, Reimbursement_Product, Reimbursement_Request, Reimbursement_Status, User } from '@prisma/client';
 import { isUserOnTeam } from './teams.utils';
 import { userHasPermission } from './users.utils';
-import { AuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
+import { AuthUserQueryArgs, CurrentUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
 
 /**
  * This function removes any deleted receipts and adds any new receipts
@@ -360,7 +360,7 @@ export const isUserLeadOrHeadOfFinanceTeam = async (user: User, organizationId: 
   return user.userId === financeTeam.headId || financeTeam.leads.map((u) => u.userId).includes(user.userId);
 };
 
-export const isAuthUserOnFinance = (user: Prisma.UserGetPayload<AuthUserQueryArgs>) => {
+export const isCurrentUserOnFinance = (user: Prisma.UserGetPayload<CurrentUserQueryArgs>) => {
   return (
     user.teamsAsHead.some((team) => team.financeTeam) ||
     user.teamsAsLead.some((team) => team.financeTeam) ||
@@ -373,7 +373,7 @@ export const isAuthUserOnFinance = (user: Prisma.UserGetPayload<AuthUserQueryArg
  * @param user the user to check
  * @returns Whether they are a finance lead.
  */
-export const isAuthUserAtLeastLeadForFinance = (user: Prisma.UserGetPayload<AuthUserQueryArgs>) => {
+export const isCurrentUserAtLeastLeadForFinance = (user: Prisma.UserGetPayload<CurrentUserQueryArgs>) => {
   return user.teamsAsHead.some((team) => team.financeTeam) || user.teamsAsLead.some((team) => team.financeTeam);
 };
 

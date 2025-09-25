@@ -1,9 +1,9 @@
-import { AuthenticatedUser, getPermissionsForRoleType, Permission, RoleEnum } from 'shared';
-import { AuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
+import { AuthenticatedUser, ContextUser, getPermissionsForRoleType, Permission, RoleEnum } from 'shared';
+import { AuthUserQueryArgs, CurrentUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
 import {
   isAuthUserHeadOfFinance,
-  isAuthUserAtLeastLeadForFinance,
-  isAuthUserOnFinance
+  isCurrentUserAtLeastLeadForFinance,
+  isCurrentUserOnFinance
 } from '../utils/reimbursement-requests.utils';
 import { Prisma } from '@prisma/client';
 import teamTransformer from './teams.transformer';
@@ -24,9 +24,9 @@ const authenticatedUserTransformer = (
     defaultTheme: user.userSettings?.defaultTheme,
     teamAsHeadId: user.teamsAsHead.length > 0 ? user.teamsAsHead[0].teamId : undefined,
     favoritedProjectsId: user.favoriteProjects.map((project) => project.projectId),
-    isFinance: isAuthUserOnFinance(user),
+    isFinance: isCurrentUserOnFinance(user),
     isHeadOfFinance: isAuthUserHeadOfFinance(user),
-    isAtLeastFinanceLead: isAuthUserAtLeastLeadForFinance(user),
+    isAtLeastFinanceLead: isCurrentUserAtLeastLeadForFinance(user),
     changeRequestsToReviewId: user.changeRequestsToReview.map((changeRequest) => changeRequest.crId),
     organizations: user.organizations.map((organization) => organization.organizationId),
     currentOrganization: currentOrganization ? organizationTransformer(currentOrganization) : undefined,
@@ -38,6 +38,22 @@ const authenticatedUserTransformer = (
       .map((role) => getPermissionsForRoleType(role.roleType))
       .flat()
       .concat(user.additionalPermissions as Permission[])
+  };
+};
+
+export const currentUserTransformer = (user: Prisma.UserGetPayload<CurrentUserQueryArgs>): ContextUser => {
+  return {
+    userId: user.userId,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    role: user.roles.length > 0 ? user.roles[0].roleType : RoleEnum.GUEST,
+    teamAsHeadId: user.teamsAsHead.length > 0 ? user.teamsAsHead[0].teamId : undefined,
+    isFinance: isCurrentUserOnFinance(user),
+    isAtLeastFinanceLead: isCurrentUserAtLeastLeadForFinance(user),
+    onboardedTeamTypeIds: user.onboardedTeamTypes.map((teamType) => teamType.teamTypeId),
+    onboardingTeamTypeIds: user.onboardingTeamTypes.map((teamType) => teamType.teamTypeId),
+    teamsAsLead: user.teamsAsLead.map(teamTransformer)
   };
 };
 

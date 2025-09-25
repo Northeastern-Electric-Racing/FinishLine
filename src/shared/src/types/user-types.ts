@@ -92,6 +92,18 @@ export interface AuthenticatedUser {
   permissions: Permission[];
 }
 
+export type ContextUser = Omit<
+  AuthenticatedUser,
+  | 'emailId'
+  | 'defaultTheme'
+  | 'currentOrganization'
+  | 'favoritedProjectsId'
+  | 'changeRequestsToReviewId'
+  | 'isHeadOfFinance'
+  | 'organizations'
+  | 'permissions'
+>;
+
 export interface UserSettings {
   id: string;
   defaultTheme: ThemeName;

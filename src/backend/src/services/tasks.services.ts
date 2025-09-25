@@ -1,7 +1,7 @@
 import { Task_Priority, Task_Status, User, Organization } from '@prisma/client';
-import { isAdmin, isUnderWordCount, notGuest, Task, WbsNumber, wbsPipe } from 'shared';
+import { isAdmin, isUnderWordCount, notGuest, Task, TaskCardPreview, WbsNumber, wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
-import taskTransformer from '../transformers/tasks.transformer';
+import taskTransformer, { taskCardPreviewTransformer } from '../transformers/tasks.transformer';
 import {
   NotFoundException,
   AccessDeniedException,
@@ -13,7 +13,7 @@ import { sendSlackTaskAssignedNotificationToUsers } from '../utils/tasks.utils';
 import { getUsers, userHasPermission } from '../utils/users.utils';
 import { wbsNumOf } from '../utils/utils';
 import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
-import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args';
+import { getTaskPreviewQueryArgs, getTaskQueryArgs } from '../prisma-query-args/tasks.query-args';
 import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
 
 export default class TasksService {
@@ -272,5 +272,39 @@ export default class TasksService {
     });
 
     return deletedTask.taskId;
+  }
+
+  static async getOverdueTasksByTeamLeadership(userId: string, organization: Organization): Promise<TaskCardPreview[]> {
+    const teams = await prisma.team.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        OR: [{ leads: { some: { userId } } }, { headId: userId }],
+        dateArchived: null
+      }
+    });
+
+    const tasks = await prisma.task.findMany({
+      where: {
+        assignees: { some: { userId } },
+        deadline: { lt: new Date() },
+        status: { not: 'DONE' },
+        dateDeleted: null,
+        wbsElement: {
+          organizationId: organization.organizationId,
+          dateDeleted: null,
+          OR: [
+            { project: { teams: { some: { teamId: { in: teams.map((team) => team.teamId) } } } } },
+            {
+              workPackage: {
+                wbsElement: { project: { teams: { some: { teamId: { in: teams.map((team) => team.teamId) } } } } }
+              }
+            }
+          ]
+        }
+      },
+      ...getTaskPreviewQueryArgs()
+    });
+
+    return tasks.map(taskCardPreviewTransformer);
   }
 }
