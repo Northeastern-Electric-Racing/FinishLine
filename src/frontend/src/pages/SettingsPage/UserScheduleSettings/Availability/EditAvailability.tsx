@@ -105,7 +105,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     <Grid container>
       <Grid container justifyContent="space-between" mb={1}>
         <Typography display={'flex'} justifyContent={'flex-start'} mt={1} variant="subtitle1">
-          Available times in red
+          Available times in green
         </Typography>
         <NERButton variant="outlined" sx={{ display: 'flex', justifyContent: 'flex-end' }} onClick={invertAvailabilities}>
           Invert Availability
