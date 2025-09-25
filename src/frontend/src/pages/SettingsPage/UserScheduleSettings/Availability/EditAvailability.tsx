@@ -24,6 +24,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
   initialDate,
   canChangeDateRange = true
 }) => {
+  console.log(editedAvailabilities);
   const [currentlyDisplayedAvailabilities, setCurrentlyDisplayedAvailabilities] = useState(
     Array.from(editedAvailabilities.values())
   );

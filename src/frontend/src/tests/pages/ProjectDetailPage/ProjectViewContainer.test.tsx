@@ -61,6 +61,18 @@ describe('Rendering Project View Container', () => {
     vi.spyOn(financeHooks, 'useGetReimbursementRequestProjectData').mockReturnValue(
       mockUseGetReimbursementRequestProjectData(exampleRRData)
     );
+    vi.spyOn(userHooks, 'useUsersFavoriteProjects').mockReturnValue({
+      data: [
+        {
+          ...exampleProject1,
+          workPackages: exampleProject1.workPackages,
+          teams: exampleProject1.teams
+        }
+      ],
+      isLoading: false,
+      isError: false,
+      error: undefined
+    } as any);
   });
 
   it('renders the provided project', async () => {
