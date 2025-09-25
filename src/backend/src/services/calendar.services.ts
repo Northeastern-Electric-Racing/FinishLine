@@ -215,7 +215,7 @@ export default class CalendarService {
       !(await userHasPermission(
         submitter.userId,
         organization.organizationId,
-        (role) => !!role && ['HEAD', 'LEADERSHIP', 'ADMIN', 'APP_ADMIN'].includes(String(role))
+        isAdmin
       ))
     ) {
       throw new AccessDeniedException('head or above only have the ability to delete shop');
