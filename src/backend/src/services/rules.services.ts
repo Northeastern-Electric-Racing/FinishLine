@@ -1,4 +1,4 @@
-import { Organization, ProjectRule, User, isLeadership, RuleCompletion } from 'shared';
+import { ProjectRule, User, isLeadership, RuleCompletion } from 'shared';
 import { userHasPermission } from '../utils/users.utils';
 import {
   AccessDeniedException,
@@ -7,20 +7,17 @@ import {
   DeletedException,
   InvalidOrganizationException
 } from '../utils/errors.utils';
-import prisma from '../prisma/prisma';
 import { projectRuleTransformer } from '../transformers/rules.transformer';
 import { getProjectRuleQueryArgs } from '../prisma-query-args/rules.query-args';
 
 export default class RulesService {
-  // service functions go here!
-
   static async createProjectRule(
-    creator: User,
+    submitter: User,
     organizationId: string,
     ruleId: string,
     projectId: string
   ): Promise<ProjectRule> {
-    if (!(await userHasPermission(creator.userId, organizationId, isLeadership))) {
+    if (!(await userHasPermission(submitter.userId, organizationId, isLeadership))) {
       throw new AccessDeniedException('You do not have permission to create a project rule');
     }
 
@@ -39,6 +36,7 @@ export default class RulesService {
       throw new InvalidOrganizationException('Rule');
     }
 
+    // must be leaf rule
     if (rule.subRules.length > 0) {
       throw new HttpException(400, 'Cannot add rules with sub-rules to projects');
     }
@@ -56,6 +54,8 @@ export default class RulesService {
     if (project.wbsElement.organizationId !== organizationId) {
       throw new InvalidOrganizationException('Project');
     }
+
+    if (project.dateDeleted) throw new DeletedException('Project', projectId);
 
     // Checks if this rule was already assigned to this project
     const existingProjectRule = await prisma.project_Rule.findUnique({

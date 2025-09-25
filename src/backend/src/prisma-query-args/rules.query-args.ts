@@ -8,7 +8,6 @@ export const getRulePreviewQueryArgs = () =>
       ruleId: true,
       ruleCode: true,
       ruleContent: true,
-      imageFileIds: true
     }
   });
 
@@ -16,6 +15,20 @@ export const getProjectRuleQueryArgs = () =>
   Prisma.validator<Prisma.Project_RuleDefaultArgs>()({
     include: {
       rule: getRulePreviewQueryArgs(),
-      project: { select: { projectId: true } }
+      project: { select: { projectId: true } },
+      currentStatus: true,
+      statusHistory: {
+        include: {
+          userUpdated: {
+            select: {
+              firstName: true,
+              lastName: true
+            }
+          }
+        },
+        orderBy: {
+          updatedAt: 'desc'
+        }
+      }
     }
   });

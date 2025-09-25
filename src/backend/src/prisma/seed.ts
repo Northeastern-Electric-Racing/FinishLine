@@ -52,6 +52,7 @@ import OnboardingServices from '../services/onboarding.services';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
 import FinanceServices from '../services/finance.services';
 import { ruleSeedData } from './seed-data/rules.seed';
+import RulesService from '../services/rules.services';
 
 const prisma = new PrismaClient();
 
@@ -3054,12 +3055,8 @@ const performSeed: () => Promise<void> = async () => {
   const ruleT211 = await prisma.rule.create({ data: ruleSeedData.leafRule(ruleset1.rulesetId, batman.userId, ruleT21.ruleId) });
 
   // project rules
-  const projectRule1 = await prisma.project_Rule.create({
-    data: ruleSeedData.projectRule1(project1Id, ruleT211.ruleId)
-  });
-  const projectRule2 = await prisma.project_Rule.create({
-    data: ruleSeedData.projectRule2(project2Id, ruleT211.ruleId)
-  });
+  const projectRule1 = await RulesService.createProjectRule(thomasEmrax, ner, project1Id, ruleT211.ruleId);
+  const projectRule2 = await RulesService.createProjectRule(thomasEmrax, ner, project2Id, ruleT211.ruleId);
 
   const goldSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Gold', ner, '#9F9156', 3000);
   await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, '#C0C0C0', 200);
