@@ -3,12 +3,7 @@ import { getMachineryQueryArgs } from '../prisma-query-args/machinery.query-args
 import { Organization, User } from '@prisma/client';
 import { isAdmin, EventType, Shop } from 'shared';
 import prisma from '../prisma/prisma';
-import {
-  AccessDeniedAdminOnlyException,
-  InvalidOrganizationException,
-  NotFoundException,
-  AccessDeniedException
-} from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, InvalidOrganizationException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { eventTypeTransformer } from '../transformers/calendar.transformer';
 import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
@@ -212,7 +207,7 @@ export default class CalendarService {
 
   static async deleteShop(submitter: User, shopId: string, organization: Organization): Promise<Shop> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
-      throw new AccessDeniedException('head or above only have the ability to delete shop');
+      throw new AccessDeniedAdminOnlyException('delete shop');
     }
 
     // Ensure the shop exists
