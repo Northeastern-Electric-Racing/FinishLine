@@ -26,7 +26,6 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
   const { data: materials, isLoading, isError } = useGetMaterialsForWbsElement(wbsNum);
   const [openRows, setOpenRows] = React.useState<Record<string, boolean>>({});
 
-  // Group materials by reimbursementRequestId
   const grouped = React.useMemo(() => {
     if (!materials) return [];
     const map: Record<string, { request: any; materials: Material[] }> = {};

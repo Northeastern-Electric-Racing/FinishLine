@@ -137,7 +137,6 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
             reimbursed={rrData.reimbursed}
             available={rrData.available}
           />
-          <ProjectSpendingHistory wbsNum={project.wbsNum} />
         </Grid>
       )}
       <Grid item {...summaryGridSize} sx={{ mb: emptyRRData ? 2 : 7 }}>
