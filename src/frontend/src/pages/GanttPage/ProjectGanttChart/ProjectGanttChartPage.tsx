@@ -320,7 +320,7 @@ const ProjectGanttChartPage: FC = () => {
       teams: [selectedTeam],
       duration: 1,
       wbsElementId: '-1',
-      dateCreated: new Date(),
+      dateCreated: new Date()
     };
 
     addNewProjectHandler(newProject);

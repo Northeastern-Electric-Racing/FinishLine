@@ -88,7 +88,7 @@ export const projectGanttTransformer = (project: Prisma.ProjectGetPayload<Projec
     budget: project.budget,
     teams: project.teams.map((team) => ({
       teamId: team.teamId,
-      teamName: team.teamName,
+      teamName: team.teamName
     })),
     duration: calculateDuration(project.workPackages),
     startDate: calculateProjectStartDate(project.workPackages),
