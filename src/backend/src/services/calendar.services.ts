@@ -211,13 +211,7 @@ export default class CalendarService {
    */
 
   static async deleteShop(submitter: User, shopId: string, organization: Organization): Promise<Shop> {
-    if (
-      !(await userHasPermission(
-        submitter.userId,
-        organization.organizationId,
-        isAdmin
-      ))
-    ) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedException('head or above only have the ability to delete shop');
     }
 
