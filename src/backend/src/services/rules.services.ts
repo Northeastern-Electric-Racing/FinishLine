@@ -7,17 +7,28 @@ import {
   DeletedException,
   InvalidOrganizationException
 } from '../utils/errors.utils';
+import prisma from '../prisma/prisma';
 import { projectRuleTransformer } from '../transformers/rules.transformer';
 import { getProjectRuleQueryArgs } from '../prisma-query-args/rules.query-args';
+import { Organization } from '@prisma/client';
 
+/**
+ * Add a preexisting rule to a specific project
+ *
+ * @param submitter The user creating the project rule
+ * @param organization The organization the project rule is being created in
+ * @param ruleId The rule ID being added to the project
+ * @param projectId The project ID to add the rule to
+ * @returns The created project rule
+ */
 export default class RulesService {
   static async createProjectRule(
     submitter: User,
-    organizationId: string,
+    organization: Organization,
     ruleId: string,
     projectId: string
   ): Promise<ProjectRule> {
-    if (!(await userHasPermission(submitter.userId, organizationId, isLeadership))) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership))) {
       throw new AccessDeniedException('You do not have permission to create a project rule');
     }
 
@@ -32,7 +43,7 @@ export default class RulesService {
     if (!rule) {
       throw new NotFoundException('Rule', ruleId);
     }
-    if (rule.ruleset.car.wbsElement.organizationId !== organizationId) {
+    if (rule.ruleset.car.wbsElement.organizationId !== organization.organizationId) {
       throw new InvalidOrganizationException('Rule');
     }
 
@@ -51,11 +62,11 @@ export default class RulesService {
     if (!project) {
       throw new NotFoundException('Project', projectId);
     }
-    if (project.wbsElement.organizationId !== organizationId) {
+    if (project.wbsElement.organizationId !== organization.organizationId) {
       throw new InvalidOrganizationException('Project');
     }
 
-    if (project.dateDeleted) throw new DeletedException('Project', projectId);
+    if (project.wbsElement.dateDeleted) throw new DeletedException('Project', projectId);
 
     // Checks if this rule was already assigned to this project
     const existingProjectRule = await prisma.project_Rule.findUnique({

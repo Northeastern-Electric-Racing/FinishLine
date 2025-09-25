@@ -5,7 +5,6 @@ import { body } from 'express-validator';
 
 const rulesRouter = express.Router();
 
-// write the routes below here
 rulesRouter.post(
   '/projectRule/create',
   body('ruleId').isString(),

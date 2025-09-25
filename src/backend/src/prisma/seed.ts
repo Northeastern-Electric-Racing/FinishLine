@@ -3050,13 +3050,19 @@ const performSeed: () => Promise<void> = async () => {
 
   // rules
   const ruleT = await prisma.rule.create({ data: ruleSeedData.topLevelRule(ruleset1.rulesetId, batman.userId) });
-  const ruleT2 = await prisma.rule.create({ data: ruleSeedData.secondLevelRule(ruleset1.rulesetId, batman.userId, ruleT.ruleId) });
-  const ruleT21 = await prisma.rule.create({ data: ruleSeedData.thirdLevelRule(ruleset1.rulesetId, batman.userId, ruleT2.ruleId) });
-  const ruleT211 = await prisma.rule.create({ data: ruleSeedData.leafRule(ruleset1.rulesetId, batman.userId, ruleT21.ruleId) });
+  const ruleT2 = await prisma.rule.create({
+    data: ruleSeedData.secondLevelRule(ruleset1.rulesetId, batman.userId, ruleT.ruleId)
+  });
+  const ruleT21 = await prisma.rule.create({
+    data: ruleSeedData.thirdLevelRule(ruleset1.rulesetId, batman.userId, ruleT2.ruleId)
+  });
+  const ruleT211 = await prisma.rule.create({
+    data: ruleSeedData.leafRule(ruleset1.rulesetId, batman.userId, ruleT21.ruleId)
+  });
 
   // project rules
-  const projectRule1 = await RulesService.createProjectRule(thomasEmrax, ner, project1Id, ruleT211.ruleId);
-  const projectRule2 = await RulesService.createProjectRule(thomasEmrax, ner, project2Id, ruleT211.ruleId);
+  await RulesService.createProjectRule(thomasEmrax, ner, project1Id, ruleT211.ruleId);
+  await RulesService.createProjectRule(thomasEmrax, ner, project2Id, ruleT211.ruleId);
 
   const goldSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Gold', ner, '#9F9156', 3000);
   await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, '#C0C0C0', 200);

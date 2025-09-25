@@ -10,9 +10,9 @@ export default class RulesController {
 
       const projectRule: ProjectRule = await RulesService.createProjectRule(
         req.currentUser,
-        req.organization.organizationId,
+        req.organization,
         ruleId,
-        projectId,
+        projectId
       );
 
       res.status(200).json(projectRule);

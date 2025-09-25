@@ -51,24 +51,24 @@ const leafRule = (rulesetId: string, userCreatedId: string, parentRuleId: string
 
 // ruleset types
 const rulesetType1 = (userCreatedId: string): Prisma.Ruleset_TypeCreateInput => {
-    return {
-      name: 'FSAE',
-      createdBy: { connect: { userId: userCreatedId } }
-    };
+  return {
+    name: 'FSAE',
+    createdBy: { connect: { userId: userCreatedId } }
   };
-  
+};
+
 // rulesets
-  const ruleset1 = (carId: string, userCreatedId: string, rulesetTypeId: string): Prisma.RulesetCreateInput => {
-    return {
-      name: 'FSAE Rules 2025',
-      fileId: 'fsae-rules-2025',
-      active: true,
-      dateCreated: new Date('2025-01-01T10:00:00Z'),
-      car: { connect: { carId } },
-      createdBy: { connect: { userId: userCreatedId } },
-      rulesetType: { connect: { rulesetTypeId } }
-    };
+const ruleset1 = (carId: string, userCreatedId: string, rulesetTypeId: string): Prisma.RulesetCreateInput => {
+  return {
+    name: 'FSAE Rules 2025',
+    fileId: 'fsae-rules-2025',
+    active: true,
+    dateCreated: new Date('2025-01-01T10:00:00Z'),
+    car: { connect: { carId } },
+    createdBy: { connect: { userId: userCreatedId } },
+    rulesetType: { connect: { rulesetTypeId } }
   };
+};
 
 // project rules
 const projectRule1 = (projectId: string, ruleId: string): Prisma.Project_RuleCreateInput => {
@@ -92,7 +92,7 @@ export const ruleSeedData = {
   secondLevelRule,
   thirdLevelRule,
   leafRule,
-  rulesetType1, 
+  rulesetType1,
   ruleset1,
   projectRule1,
   projectRule2
