@@ -4,6 +4,8 @@ import { StandardChangeRequest } from 'shared';
 import ProjectDiffSection from './ProjectDiffSection';
 import WorkPackageDiffSection from './WorkPackageDiffSection';
 import LoadingIndicator from '../../../components/LoadingIndicator';
+import DiffSectionEdit from './DiffSectionEdit';
+import { getChangesForWorkPackage } from '../../../utils/diff-page.utils';
 interface DiffSectionProps {
   changeRequest: StandardChangeRequest;
 }
@@ -18,7 +20,11 @@ const DiffSection: React.FC<DiffSectionProps> = ({ changeRequest }) => {
         projectProposedChanges ? (
           <ProjectDiffSection projectProposedChanges={projectProposedChanges} wbsNum={wbsNum} />
         ) : workPackageProposedChanges ? (
-          <WorkPackageDiffSection workPackageProposedChanges={workPackageProposedChanges} wbsNum={wbsNum} />
+          wbsNum.workPackageNumber === 0 ? (
+            <DiffSectionEdit collections={[getChangesForWorkPackage(undefined, workPackageProposedChanges)]} />
+          ) : (
+            <WorkPackageDiffSection workPackageProposedChanges={workPackageProposedChanges} wbsNum={wbsNum} />
+          )
         ) : (
           <></>
         )

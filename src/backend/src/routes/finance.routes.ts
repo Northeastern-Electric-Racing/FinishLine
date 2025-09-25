@@ -4,7 +4,7 @@ import {
   validateInputs,
   isDate,
   isOptionalDate,
-  startEndDateValidators,
+  financeDashboardFilterValidators,
   intMinZero
 } from '../utils/validation.utils';
 import { body } from 'express-validator';
@@ -22,7 +22,7 @@ financeRouter.post(
   intMinZero(body('activeYears.*')),
   nonEmptyString(body('sponsorTierId')),
   body('taxExempt').isBoolean(),
-  nonEmptyString(body('vendorContact')),
+  nonEmptyString(body('sponsorContact')),
   body('sponsorTasks').isArray(),
   isDate(body('sponsorTasks.*.dueDate')),
   isDate(body('sponsorTasks.*.notifyDate')),
@@ -71,54 +71,59 @@ financeRouter.post(
 
 financeRouter.get(
   '/reimbursement-request-project-data/:projectId',
-  startEndDateValidators,
+  financeDashboardFilterValidators,
   validateInputs,
   FinanceController.getReimbursementRequestProjectData
 );
 
 financeRouter.get(
   '/reimbursement-request-team-data/:teamId',
-  startEndDateValidators,
+  financeDashboardFilterValidators,
   validateInputs,
   FinanceController.getReimbursementRequestTeamData
 );
 
 financeRouter.get(
   '/reimbursement-request-data',
-  startEndDateValidators,
+  financeDashboardFilterValidators,
   validateInputs,
   FinanceController.getAllReimbursementRequestData
 );
 
 financeRouter.get(
   '/reimbursement-request-category-data/:otherReasonId',
-  startEndDateValidators,
+  financeDashboardFilterValidators,
   validateInputs,
   FinanceController.getReimbursementRequestCategoryData
 );
 
 financeRouter.get(
   '/reimbursement-request-team-type-data/:teamTypeId',
-  startEndDateValidators,
+  financeDashboardFilterValidators,
   validateInputs,
   FinanceController.getReimbursementRequestTeamTypeData
 );
 
 financeRouter.get(
   '/spending-bar-team-data/:teamId',
-  startEndDateValidators,
+  financeDashboardFilterValidators,
   validateInputs,
   FinanceController.getSpendingBarTeamData
 );
 
 financeRouter.get(
   '/spending-bar-team-type-data/:teamTypeId',
-  startEndDateValidators,
+  financeDashboardFilterValidators,
   validateInputs,
   FinanceController.getSpendingBarTeamTypeData
 );
 
-financeRouter.get('/spending-bar-data', startEndDateValidators, validateInputs, FinanceController.getAllSpendingBarData);
+financeRouter.get(
+  '/spending-bar-data',
+  financeDashboardFilterValidators,
+  validateInputs,
+  FinanceController.getAllSpendingBarData
+);
 
 financeRouter.get('/spending-bar-category-data/', FinanceController.getSpendingBarCategoryData);
 
@@ -134,7 +139,7 @@ financeRouter.post(
   intMinZero(body('activeYears.*')),
   nonEmptyString(body('sponsorTierId')),
   body('taxExempt').isBoolean(),
-  nonEmptyString(body('vendorContact')),
+  nonEmptyString(body('sponsorContact')),
   body('sponsorTasks').isArray(),
   isDate(body('sponsorTasks.*.dueDate')),
   isDate(body('sponsorTasks.*.notifyDate')),

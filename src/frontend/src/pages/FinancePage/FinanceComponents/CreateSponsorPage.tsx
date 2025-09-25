@@ -30,7 +30,7 @@ const CreateSponsorPage = ({ showPage, handleClose }: CreateSponsorPageProps) =>
       joinDate: undefined,
       activeYears: [],
       sponsorTierId: '',
-      vendorContact: '',
+      sponsorContact: '',
       taxExempt: false,
       sponsorTasks: []
     }

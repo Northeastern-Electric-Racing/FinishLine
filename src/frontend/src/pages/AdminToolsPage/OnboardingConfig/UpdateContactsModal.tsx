@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
-import { FormLabel, Button, IconButton, TextField, FormHelperText, Box, Select, MenuItem } from '@mui/material';
+import { FormLabel, Button, IconButton, TextField, FormHelperText, Box, Autocomplete } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useToast } from '../../../hooks/toasts.hooks';
@@ -9,8 +9,9 @@ import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import * as yup from 'yup';
 import { useUpdateOrganizationContacts } from '../../../hooks/organizations.hooks'; // Assume hook exists
-import { Contact, User } from 'shared';
+import { Contact } from 'shared';
 import { useAllUsers } from '../../../hooks/users.hooks';
+import { fullNamePipe } from '../../../utils/pipes';
 
 const schema = yup.object().shape({
   contacts: yup
@@ -105,6 +106,7 @@ const UpdateOnboardingContactsModal: React.FC<UpdateOnboardingContactsModalProps
       reset={() => reset({ contacts: contactsAsObjects })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
+      disabled={!!errors.contacts}
       formId="edit-contacts-form"
     >
       <Box display="flex" flexDirection="column" gap={2}>
@@ -115,14 +117,16 @@ const UpdateOnboardingContactsModal: React.FC<UpdateOnboardingContactsModalProps
               name={`contacts.${index}.userId`}
               control={control}
               render={({ field }) => (
-                <Select {...field} label={`User ${index + 1}`} variant="outlined" fullWidth>
-                  <MenuItem value="" disabled>
-                    Select a User
-                  </MenuItem>
-                  {users.map((user: User) => (
-                    <MenuItem value={user.userId}>{`${user.firstName} ${user.lastName}`}</MenuItem>
-                  ))}
-                </Select>
+                <Autocomplete
+                  {...field}
+                  options={users.map((user) => user.userId)}
+                  getOptionLabel={(option: string) => (option ? fullNamePipe(users.find((u) => u.userId === option)) : '')}
+                  onChange={(_, newValue) => field.onChange(newValue)}
+                  renderInput={(params) => (
+                    <TextField {...params} label={`User ${index + 1}`} variant="outlined" fullWidth />
+                  )}
+                  sx={{ minWidth: '300px' }}
+                />
               )}
             />
             <Controller

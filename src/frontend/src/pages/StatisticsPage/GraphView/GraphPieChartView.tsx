@@ -6,9 +6,10 @@ interface GraphPieChartViewProps {
   graph: Graph;
   height: number;
   cars: Car[];
+  width: number;
 }
 
-const GraphPieChartView = ({ graph, height, cars }: GraphPieChartViewProps) => {
+const GraphPieChartView = ({ graph, height, cars, width }: GraphPieChartViewProps) => {
   return (
     <StatsPieChart
       graphTitle={`${displayEnum(graph.measure)} ${graph.title} - ${displayEnum(graph.graphType)} ${
@@ -17,6 +18,7 @@ const GraphPieChartView = ({ graph, height, cars }: GraphPieChartViewProps) => {
       xAxisData={graph.graphData[0].values.map((data) => data.label)}
       yAxisData={graph.graphData[0].values.map((data) => data.value)}
       height={height}
+      width={width}
     />
   );
 };

@@ -39,9 +39,9 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({
   const toast = useToast();
 
   const onFormSubmit = (data: ScheduleSettingsFormInput) => {
-    if (data.personalZoomLink && data.personalZoomLink !== '') {
+    if (data.personalZoomLink && data.personalZoomLink.trim()) {
       if (!data.personalZoomLink.startsWith('https://')) {
-        toast.error('Invalid Zoom Link Format. Link must start with "https://".');
+        toast.error('Invalid Meeting Link Format. Link must start with "https://".');
         return;
       }
     }
@@ -120,16 +120,16 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({
         <Grid item xs={12} sm={6}>
           <FormControl fullWidth>
             <FormLabel sx={{ display: 'flex' }}>
-              <Typography sx={{ whiteSpace: 'nowrap' }}>Personal Zoom Link</Typography>
+              <Typography sx={{ whiteSpace: 'nowrap' }}>Personal Meeting Link</Typography>
               <Tooltip
-                title="Ensure your Zoom Link is Publicly Accessible and Does Not Require a Password."
+                title="Ensure your Meeting Link is Publicly Accessible and Does Not Require a Password."
                 placement="right"
               >
                 <HelpIcon style={{ fontSize: 'medium', marginLeft: '5px', marginTop: '3px' }} />
               </Tooltip>
               <ExternalLink
                 link="https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0066271"
-                description="(Find your Personal Zoom Link)"
+                description="(Find your Personal Meeting Link)"
               />
             </FormLabel>
             <Controller
@@ -137,7 +137,7 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({
               control={control}
               render={({ field: { onChange, value } }) => (
                 <TextField
-                  id="zoom-link-input"
+                  id="meeting-link-input"
                   autoComplete="off"
                   onChange={onChange}
                   value={value}

@@ -183,7 +183,6 @@ export default class WorkPackagesService {
       },
       include: {
         workPackages: {
-          where: { wbsElement: { dateDeleted: null } },
           include: {
             wbsElement: true
           }
@@ -240,7 +239,7 @@ export default class WorkPackagesService {
         project: { connect: { projectId } },
         startDate: date,
         duration,
-        orderInProject: project.workPackages.length + 1,
+        orderInProject: project.workPackages.filter((wp) => !wp.wbsElement.dateDeleted).length + 1,
         blockedBy: { connect: blockedByElements.map((ele) => ({ wbsElementId: ele.wbsElementId })) }
       },
       ...getWorkPackageQueryArgs(organization.organizationId)
