@@ -306,6 +306,7 @@ model Team {
   organization           Organization               @relation(fields: [organizationId], references: [organizationId])
   checklists             Checklist[]
   projectTemplates       Project_Template[]
+  rules                  Rule[]                     @relation(name: "teamRules")
 }
 
 model Session {
@@ -1464,6 +1465,7 @@ model Rule {
   referencedRule  Rule[]         @relation(name: "ruleReferences")
   referencedBy    Rule[]         @relation(name: "ruleReferences")
   projects        Project_Rule[] @relation(name: "rulesInProject")
+  teams           Team[]         @relation(name: "teamRules")
   dateCreated     DateTime       @default(now())
   dateUpdated     DateTime?      @updatedAt
   dateDeleted     DateTime?
