@@ -3057,7 +3057,6 @@ const performSeed: () => Promise<void> = async () => {
   const ruleT211 = await prisma.rule.create({
     data: ruleSeedData.leafRule(ruleset1.rulesetId, batman.userId, ruleT21.ruleId)
   });
-  console.log('Created ruleT211:', ruleT211.ruleId);
 
   // project rules
   await RulesService.createProjectRule(batman, ner, project1Id, ruleT21.ruleId);
