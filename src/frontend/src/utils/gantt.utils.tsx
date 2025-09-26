@@ -38,6 +38,7 @@ export const NO_TEAM = 'No Team';
 
 export const GANTT_CHART_GAP_SIZE = '0.75rem';
 export const GANTT_CHART_CELL_SIZE = '2.25rem';
+export const GANTT_TASK_COLOR = '#1976d2';
 
 export interface GanttCollection<E, T> {
   id: string;
@@ -377,7 +378,7 @@ export const transformTaskToGanttTask = <T extends Task>(task: T, end: Date): Ga
     },
     styles: {
       color: GanttWorkPackageTextColor,
-      backgroundColor: '#FFFFFF'
+      backgroundColor: GANTT_TASK_COLOR
     },
     onClick: () => window.open(`/projects`, '_blank'),
     root: false
