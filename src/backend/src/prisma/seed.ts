@@ -3059,8 +3059,7 @@ const performSeed: () => Promise<void> = async () => {
   });
 
   // project rules
-  await RulesService.createProjectRule(batman, ner, project1Id, ruleT21.ruleId);
-  await RulesService.createProjectRule(batman, ner, project1Id, ruleT211.ruleId);
+  await RulesService.createProjectRule(batman, ner, ruleT211.ruleId, project1Id);
 
   const goldSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Gold', ner, '#9F9156', 3000);
   await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, '#C0C0C0', 200);
