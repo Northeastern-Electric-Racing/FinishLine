@@ -2,12 +2,21 @@ import { NextFunction, Request, Response } from 'express';
 import RulesService from '../services/rules.services';
 
 export default class RulesController {
-  // rules dashboard controller functions go here!
-  static async deleteRule(req: Request, res: Response, next: NextFunction) {
+static async deleteRule(req: Request, res: Response, next: NextFunction) {
     try {
       const { ruleId } = req.params;
       const deletedRule = await RulesService.deleteRule(ruleId, req.currentUser, req.organization);
       res.status(200).json(deletedRule);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createRulesetType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name } = req.body;
+      const rulesetType = await RulesService.createRulesetType(req.currentUser, name, req.organization);
+      res.status(200).json(rulesetType);
     } catch (error: unknown) {
       next(error);
     }

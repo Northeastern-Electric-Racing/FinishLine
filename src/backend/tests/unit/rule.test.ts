@@ -2,11 +2,10 @@ import { Car, Organization, Rule, Ruleset, Ruleset_Type, User } from '@prisma/cl
 import { createTestCar, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import RulesService from '../../src/services/rules.services';
-import { supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
+import { supermanAdmin, wonderwomanGuest, batmanAppAdmin } from '../test-data/users.test-data';
 import { AccessDeniedException, DeletedException, NotFoundException } from '../../src/utils/errors.utils';
 
-// tests go below here
-describe('Rules tests', () => {
+describe('Rules Tests', () => {
   let deletedRule: Rule;
   let rule: Rule;
   let user: User;
@@ -79,6 +78,20 @@ describe('Rules tests', () => {
       await expect(RulesService.deleteRule('bad id', user, organization)).rejects.toThrow(
         new NotFoundException('Rule', 'bad id')
       );
+    });
+  });
+
+  describe('Create Ruleset Type', () => {
+    it('Fails if user is not leadership or above', async () => {
+      await expect(
+        async () => await RulesService.createRulesetType(await createTestUser(wonderwomanGuest, orgId), 'FSAE', organization)
+      ).rejects.toThrow(new AccessDeniedException('only leadership and above can create ruleset types!'));
+    });
+
+    it('Succeeds and creates a ruleset type', async () => {
+      const result = await RulesService.createRulesetType(await createTestUser(batmanAppAdmin, orgId), 'FSAE', organization);
+
+      expect(result.name).toEqual('FSAE');
     });
   });
 });
