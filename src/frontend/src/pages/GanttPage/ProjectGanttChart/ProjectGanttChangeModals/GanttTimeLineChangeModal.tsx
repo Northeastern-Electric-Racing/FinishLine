@@ -1,5 +1,14 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
-import { ChangeRequestReason, ChangeRequestType, Link, LinkCreateArgs, ProjectPreview, WorkPackage } from 'shared';
+import {
+  ChangeRequestReason,
+  ChangeRequestType,
+  Link,
+  LinkCreateArgs,
+  ProjectPreview,
+  Task,
+  WbsElementPreview,
+  WorkPackage
+} from 'shared';
 import { useState } from 'react';
 import dayjs from 'dayjs';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../../hooks/change-requests.hooks';
@@ -157,7 +166,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
   return (
     <NERDraggableFormModal
       open={open}
-      title={change.element.name}
+      title={(change.element as WbsElementPreview).name ?? (change.element as Task).title}
       disableSuccessButton={editedWorkPackages.length > 0 && (!reasonForChange || !explanationForChange)}
       handleSubmit={handleSubmit}
       onHide={() => handleClose(true)}

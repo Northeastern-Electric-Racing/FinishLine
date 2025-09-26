@@ -4,7 +4,7 @@ import { useHistory } from 'react-router-dom';
 import { useGetAllCars } from '../../hooks/cars.hooks';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
 import { ChangeEvent, useEffect, useState } from 'react';
-import { RetrospectiveProjectPreview, TeamPreview, TeamType, WbsElementPreview } from 'shared';
+import { RetrospectiveProjectPreview, Task, TeamPreview, TeamType, WbsElementPreview } from 'shared';
 import {
   constructCollectionsFromTeamPreviewAndProjects,
   GanttCollection,
@@ -44,7 +44,7 @@ const RetrospectivePage = () => {
 
   const [searchText, setSearchText] = useState<string>('');
   const [showWorkPackagesMap, setShowWorkPackagesMap] = useState<Map<string, boolean>>(new Map());
-  const [collections, setCollections] = useState<GanttCollection<TeamPreview, WbsElementPreview>[]>([]);
+  const [collections, setCollections] = useState<GanttCollection<TeamPreview, WbsElementPreview | Task>[]>([]);
 
   const {
     data: projects,
@@ -225,8 +225,10 @@ const RetrospectivePage = () => {
     });
   };
 
-  const toggleElementShowChildren = (element: WbsElementPreview) => {
-    setShowWorkPackagesMap((prev) => new Map(prev.set(element.id, !prev.get(element.id))));
+  const elementId = (element: WbsElementPreview | Task) => (element as WbsElementPreview).id || (element as Task).taskId;
+
+  const toggleElementShowChildren = (element: WbsElementPreview | Task) => {
+    setShowWorkPackagesMap((prev) => new Map(prev.set(elementId(element), !prev.get(elementId(element)))));
   };
 
   const headerRight = (
@@ -261,7 +263,7 @@ const RetrospectivePage = () => {
           collections={collections}
           startDate={startDate}
           endDate={endDate}
-          shouldShowChildren={(task) => !!showWorkPackagesMap.get(task.element.id)}
+          shouldShowChildren={(task) => !!showWorkPackagesMap.get(elementId(task.element))}
           onShowChildrenToggle={(task) => toggleElementShowChildren(task.element)}
         />
       </PageLayout>

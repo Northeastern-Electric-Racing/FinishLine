@@ -8,10 +8,10 @@ import {
   DesignReviewPreview,
   DesignReviewStatus,
   isWorkPackage,
-  Project,
   ProjectPreview,
   RetrospectiveProjectPreview,
   RetrospectiveWorkPackage,
+  Task,
   TeamPreview,
   User,
   validateWBS,
@@ -136,23 +136,6 @@ export const getProjectEndDate = (project: ProjectPreview): Date => {
   }, project.workPackages[0].endDate);
 };
 
-export const transformProjectPreviewToProject = (projectPreview: ProjectPreview, team: TeamPreview): Project => {
-  return {
-    ...projectPreview,
-    summary: '',
-    budget: 0,
-    links: [],
-    descriptionBullets: [],
-    duration: 0,
-    tasks: [],
-    favoritedBy: [],
-    wbsElementId: '-1',
-    teams: [team],
-    changes: [],
-    dateCreated: new Date()
-  };
-};
-
 export const transformDesignReviewToGanttEvent = (designReview: DesignReviewPreview): GanttEvent => {
   return {
     date: designReview.dateScheduled,
@@ -171,7 +154,7 @@ export const transformDesignReviewToGanttEvent = (designReview: DesignReviewPrev
 const applyChangesToBlockedBy = (
   initialWorkPackage: WorkPackage,
   totalWorkPackages: WorkPackage[],
-  changeToApply: GanttChange<WbsElementPreview>
+  changeToApply: GanttChange<WbsElementPreview | Task>
 ) => {
   const updatedBlockingWbsNums: Set<String> = new Set();
 
@@ -214,13 +197,13 @@ const applyChangesToBlockedBy = (
  * @param parentProject The parent project of the wbs element, itself if it is a project
  */
 export const applyChangesToWBSElement = (
-  ganttChanges: GanttChange<WbsElementPreview>[],
-  wbsElement: WbsElementPreview,
+  ganttChanges: GanttChange<WbsElementPreview | Task>[],
+  wbsElement: WbsElementPreview | Task,
   parentProject: ProjectPreview
-): { updatedProject: ProjectPreview; updatedElement: WbsElementPreview } => {
+): { updatedProject: ProjectPreview; updatedElement: WbsElementPreview | Task } => {
   const updatedElement = { ...wbsElement };
   const copiedProject = projectPreviewTransformer(JSON.parse(JSON.stringify(parentProject)));
-  if (isWorkPackage(updatedElement)) {
+  if ((updatedElement as WbsElementPreview).wbsNum !== undefined && isWorkPackage(updatedElement as WbsElementPreview)) {
     // If its a work package were gonna loop through and see if we need to apply changes
     const workPackage = workPackageTransformer(JSON.parse(JSON.stringify(updatedElement)));
     for (const change of ganttChanges) {
@@ -374,6 +357,33 @@ const getBlockingGanttTasks = <T extends WorkPackage>(
     .filter((wp) => !!wp);
 };
 
+export const transformTaskToGanttTask = <T extends Task>(task: T, end: Date): GanttTask<T> => {
+  return {
+    id: uuidv4(),
+    element: task,
+
+    name: task.title,
+    start: new Date(task.deadline?.valueOf() ?? end.valueOf()),
+    end: new Date(task.deadline ?? end),
+
+    events: [],
+    blocking: [],
+    children: [],
+    overlays: [],
+
+    tooltip: {
+      upperRightDisplay: <Typography>Title: {task.title}</Typography>,
+      lowerRightDisplay: <Typography>Notes: {task.notes}</Typography>
+    },
+    styles: {
+      color: GanttWorkPackageTextColor,
+      backgroundColor: '#FFFFFF'
+    },
+    onClick: () => window.open(`/projects`, '_blank'),
+    root: false
+  };
+};
+
 export const transformWorkPackageToGanttTask = <T extends WorkPackage>(
   workPackage: T,
   allWorkPackages: T[]
@@ -404,7 +414,7 @@ export const transformWorkPackageToGanttTask = <T extends WorkPackage>(
   };
 };
 
-export const transformProjectToGanttTask = (project: ProjectPreview): GanttTask<WbsElementPreview> => {
+export const transformProjectToGanttTask = (project: ProjectPreview): GanttTask<WbsElementPreview | Task> => {
   const startDate = getProjectStartDate(project);
 
   const endDate = getProjectEndDate(project);
@@ -417,9 +427,12 @@ export const transformProjectToGanttTask = (project: ProjectPreview): GanttTask<
     start: startDate,
     end: endDate,
     blocking: [],
-    children: project.workPackages
-      .filter((workPackage) => workPackage.blockedBy.length === 0)
-      .map((workPackage) => transformWorkPackageToGanttTask(workPackage, project.workPackages)),
+    children: [
+      ...project.workPackages
+        .filter((workPackage) => workPackage.blockedBy.length === 0)
+        .map((workPackage) => transformWorkPackageToGanttTask(workPackage, project.workPackages)),
+      ...project.tasks.map((task) => transformTaskToGanttTask(task, endDate))
+    ],
     overlays: project.workPackages.map((wp) => transformWorkPackageToGanttTask(wp, project.workPackages)),
     events: [],
     tooltip: {
@@ -433,7 +446,7 @@ export const transformProjectToGanttTask = (project: ProjectPreview): GanttTask<
 
 export const transformRetrospectiveProjectToGanttTask = (
   project: RetrospectiveProjectPreview
-): GanttTask<WbsElementPreview> => {
+): GanttTask<WbsElementPreview | Task> => {
   return {
     ...transformProjectToGanttTask(project),
     children: project.workPackages
@@ -465,9 +478,9 @@ export const constructCollectionsFromTeamPreviewAndProjects = <T extends Project
   projects: T[],
   filters: GanttFilters,
   searchText: string,
-  projectTransformation: (project: T) => GanttTaskData<WbsElementPreview>,
+  projectTransformation: (project: T) => GanttTaskData<WbsElementPreview | Task>,
   reparser: (project: T) => T
-): GanttCollection<TeamPreview, WbsElementPreview>[] => {
+): GanttCollection<TeamPreview, WbsElementPreview | Task>[] => {
   const projectMap = new Map<string, ProjectPreview[]>();
   projects.forEach((project) => {
     project.teams.forEach((team) => {
@@ -582,7 +595,7 @@ export const isHighlightedChangeOnGanttTask = <T,>(
 export const constructFinalizedChanges = (
   originalProjects: ProjectPreview[],
   updatedProjects: ProjectPreview[],
-  changes: GanttChange<WbsElementPreview>[]
+  changes: GanttChange<WbsElementPreview | Task>[]
 ) => {
   const aggregatedSet: Set<string> = new Set();
 
@@ -622,7 +635,7 @@ export const constructFinalizedChanges = (
   return eventChanges;
 };
 
-export const isProjectPreview = (wbsPreview: WbsElementPreview): wbsPreview is ProjectPreview => {
+export const isProjectPreview = (wbsPreview: WbsElementPreview | Task): wbsPreview is ProjectPreview => {
   return 'workPackages' in wbsPreview;
 };
 

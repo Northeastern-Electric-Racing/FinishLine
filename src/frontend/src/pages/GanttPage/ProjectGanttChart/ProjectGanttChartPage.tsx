@@ -31,6 +31,7 @@ import GanttChartFiltersButton from './GanttChartFiltersButton';
 import GanttChart from '../GanttChart/GanttChart';
 import {
   ProjectPreview,
+  Task,
   TeamPreview,
   TeamType,
   WbsElementPreview,
@@ -49,6 +50,10 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { v4 as uuidv4 } from 'uuid';
 import { projectWbsPipe } from '../../../utils/pipes';
 import { projectPreviewTransformer } from '../../../apis/transformers/projects.transformers';
+
+const getElementId = (element: WbsElementPreview | Task) => {
+  return (element as WbsElementPreview).id ?? (element as Task).taskId;
+};
 
 const ProjectGanttChartPage: FC = () => {
   const history = useHistory();
@@ -71,11 +76,11 @@ const ProjectGanttChartPage: FC = () => {
   const [addedProjects, setAddedProjects] = useState<ProjectPreview[]>([]);
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
   const [showAddWorkPackageModal, setShowAddWorkPackageModal] = useState(false);
-  const [ganttChanges, setGanttChanges] = useState<GanttChange<WbsElementPreview>[]>([]);
-  const [requestEventChanges, setRequestEventChanges] = useState<RequestEventChange<WbsElementPreview>[]>([]);
+  const [ganttChanges, setGanttChanges] = useState<GanttChange<WbsElementPreview | Task>[]>([]);
+  const [requestEventChanges, setRequestEventChanges] = useState<RequestEventChange<WbsElementPreview | Task>[]>([]);
   const [selectedProject, setSelectedProject] = useState<ProjectPreview | undefined>(undefined);
   const [selectedTeam, setSelectedTeam] = useState<TeamPreview | undefined>(undefined);
-  const [collections, setCollections] = useState<GanttCollection<TeamPreview, WbsElementPreview>[]>([]);
+  const [collections, setCollections] = useState<GanttCollection<TeamPreview, WbsElementPreview | Task>[]>([]);
   const [allProjects, setAllProjects] = useState<ProjectPreview[]>([]);
   const [editedProjects, setEditedProjects] = useState<ProjectPreview[]>([]);
 
@@ -224,7 +229,7 @@ const ProjectGanttChartPage: FC = () => {
   /* **************************************************** */
   /* ****************** Editability ********************* */
 
-  const handleCancel = (_collection?: GanttCollection<TeamPreview, WbsElementPreview>) => {
+  const handleCancel = (_collection?: GanttCollection<TeamPreview, WbsElementPreview | Task>) => {
     //TODO Filter by gantt collection
     setAddedProjects([]);
     setEditedProjects([]);
@@ -232,14 +237,14 @@ const ProjectGanttChartPage: FC = () => {
     setSelectedProject(undefined);
   };
 
-  const onAddNewSubtask = (parent: GanttTask<WbsElementPreview>) => {
+  const onAddNewSubtask = (parent: GanttTask<WbsElementPreview | Task>) => {
     if (isProjectPreview(parent.element)) {
       setSelectedProject(parent.element);
       setShowAddWorkPackageModal(true);
     }
   };
 
-  const onAddNewTask = (collection: GanttCollection<TeamPreview, WbsElementPreview>) => {
+  const onAddNewTask = (collection: GanttCollection<TeamPreview, WbsElementPreview | Task>) => {
     setSelectedTeam(collection.element);
     setShowAddProjectModal(true);
   };
@@ -325,11 +330,11 @@ const ProjectGanttChartPage: FC = () => {
     });
   };
 
-  const createChange = (change: GanttChange<WbsElementPreview>) => {
+  const createChange = (change: GanttChange<WbsElementPreview | Task>) => {
     setGanttChanges([...ganttChanges, change]);
   };
 
-  const createChangeHandler = (change: GanttChange<WbsElementPreview>) => {
+  const createChangeHandler = (change: GanttChange<WbsElementPreview | Task>) => {
     const parentProject = allProjects.find((project) => wbsPipe(project.wbsNum) === projectWbsPipe(change.element.wbsNum)); // Find the project that either the change is on, or the changes work package is a part of
     if (!parentProject) return;
 
@@ -392,25 +397,27 @@ const ProjectGanttChartPage: FC = () => {
     );
   };
 
-  const reverseEventChange = (change: RequestEventChange<WbsElementPreview>) => {
+  const reverseEventChange = (change: RequestEventChange<WbsElementPreview | Task>) => {
     const { element } = change;
     switch (change.type) {
       case 'create-task':
-        setAddedProjects((prev) => prev.filter((project) => project.id !== element.id));
+        setAddedProjects((prev) => prev.filter((project) => project.id !== getElementId(element)));
         break;
       case 'edit-task':
-        setEditedProjects((prev) => prev.filter((project) => project.id !== element.id));
+        setEditedProjects((prev) => prev.filter((project) => project.id !== getElementId(element)));
     }
   };
 
-  const removeActiveModal = (change: RequestEventChange<WbsElementPreview>, cancelled: boolean) => {
+  const removeActiveModal = (change: RequestEventChange<WbsElementPreview | Task>, cancelled: boolean) => {
     const newChanges = requestEventChanges.filter((newChange) => newChange.changeId !== change.changeId);
     setRequestEventChanges(newChanges);
     if (newChanges.length === 0) {
       handleCancel();
     } else {
       const change = newChanges[newChanges.length - 1];
-      setShowWorkPackagesMap((prev) => new Map(prev.set(change.element.id, true)));
+      setShowWorkPackagesMap(
+        (prev) => new Map(prev.set((change.element as Task).taskId ?? (change.element as WbsElementPreview).id, true))
+      );
     }
 
     if (cancelled) {
@@ -444,11 +451,17 @@ const ProjectGanttChartPage: FC = () => {
     }
   };
 
-  const highlightProjectComparator = (highlightedElement: WbsElementPreview, wbsElement: WbsElementPreview) => {
+  const highlightProjectComparator = (
+    highlightedElement: WbsElementPreview | Task,
+    wbsElement: WbsElementPreview | Task
+  ) => {
     return projectWbsPipe(highlightedElement.wbsNum) === projectWbsPipe(wbsElement.wbsNum);
   };
 
-  const highlightWorkPackageComparator = (highlightedElement: WbsElementPreview, wbsElement: WbsElementPreview) => {
+  const highlightWorkPackageComparator = (
+    highlightedElement: WbsElementPreview | Task,
+    wbsElement: WbsElementPreview | Task
+  ) => {
     return wbsPipe(highlightedElement.wbsNum) === wbsPipe(wbsElement.wbsNum);
   };
 
@@ -494,8 +507,8 @@ const ProjectGanttChartPage: FC = () => {
     });
   };
 
-  const toggleElementShowChildren = (element: WbsElementPreview) => {
-    setShowWorkPackagesMap((prev) => new Map(prev.set(element.id, !prev.get(element.id))));
+  const toggleElementShowChildren = (element: WbsElementPreview | Task) => {
+    setShowWorkPackagesMap((prev) => new Map(prev.set(getElementId(element), !prev.get(getElementId(element)))));
   };
 
   const headerRight = (
@@ -541,7 +554,7 @@ const ProjectGanttChartPage: FC = () => {
             highlightSubtaskComparator: highlightWorkPackageComparator,
             highlightTaskComparator: highlightProjectComparator
           }}
-          shouldShowChildren={(task) => !!showWorkPackagesMap.get(task.element.id)}
+          shouldShowChildren={(task) => !!showWorkPackagesMap.get(getElementId(task.element))}
           onShowChildrenToggle={(task) => toggleElementShowChildren(task.element)}
         />
       </PageLayout>
