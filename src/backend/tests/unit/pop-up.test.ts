@@ -9,6 +9,7 @@ describe('Pop Ups Tests', () => {
   let orgId: string;
   let organization: Organization;
   beforeEach(async () => {
+    await resetUsers();
     organization = await createTestOrganization();
     orgId = organization.organizationId;
   });
