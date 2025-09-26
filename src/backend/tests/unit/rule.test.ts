@@ -3,13 +3,7 @@ import { Organization, User, Project, Car, Ruleset_Type, Rule_Completion } from 
 import { supermanAdmin, financeMember } from '../test-data/users.test-data';
 import { createTestOrganization, createTestProject, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
-import {
-  AccessDeniedException,
-  DeletedException,
-  HttpException,
-  InvalidOrganizationException,
-  NotFoundException
-} from '../../src/utils/errors.utils';
+import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
 
 describe('Rule Tests', () => {
   let orgId: string;
