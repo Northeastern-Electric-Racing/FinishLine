@@ -32,7 +32,7 @@ import {
   Select
 } from '@mui/material';
 import NERAutocomplete from '../../components/NERAutocomplete';
-import { useAllProjectsPreviews } from '../../hooks/projects.hooks';
+import { useAllProjects } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import NERFailButton from '../../components/NERFailButton';
@@ -91,7 +91,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
 
   const { fields: whys, append: appendWhy, remove: removeWhy } = useFieldArray({ control, name: 'why' });
 
-  const { isLoading, isError, error, data: projects } = useAllProjectsPreviews();
+  const { isLoading, isError, error, data: projects } = useAllProjects();
 
   const permittedTypes = Object.values(ChangeRequestType).filter(
     (t) => t !== ChangeRequestType.Activation && t !== ChangeRequestType.StageGate && t !== ChangeRequestType.Budget

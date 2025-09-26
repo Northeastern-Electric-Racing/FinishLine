@@ -23,9 +23,9 @@ export default class ProjectsController {
     }
   }
 
-  static async getAllProjectPreviews(req: Request, res: Response, next: NextFunction) {
+  static async getAllProjects(req: Request, res: Response, next: NextFunction) {
     try {
-      const projects: ProjectPreview[] = await ProjectsService.getAllProjectPreviews(req.organization);
+      const projects: ProjectPreview[] = await ProjectsService.getAllProjects(req.organization);
       res.status(200).json(projects);
     } catch (error: unknown) {
       next(error);

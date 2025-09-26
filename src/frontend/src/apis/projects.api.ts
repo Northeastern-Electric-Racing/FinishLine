@@ -28,7 +28,7 @@ import {
 import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 
 /**
- * Fetches all projects.
+ * Fetches all projects with querry args needed for Gantt chart
  */
 export const getAllProjectsGantt = () => {
   return axios.get<ProjectGantt[]>(apiUrls.allProjectsGantt(), {
@@ -36,7 +36,10 @@ export const getAllProjectsGantt = () => {
   });
 };
 
-export const getAllProjectPreviews = () => {
+/**
+ * Fetches all projects with preview querry args
+ */
+export const getAllProjects = () => {
   return axios.get<ProjectPreview[]>(apiUrls.allProjectPreviews(), {
     transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer)
   });

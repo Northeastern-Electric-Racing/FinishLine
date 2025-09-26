@@ -12,7 +12,7 @@ import ProjectsController from '../controllers/projects.controllers';
 const projectRouter = express.Router();
 
 projectRouter.get('/all-gantt', ProjectsController.getAllProjectsGantt);
-projectRouter.get('/all-previews', ProjectsController.getAllProjectPreviews);
+projectRouter.get('/all-previews', ProjectsController.getAllProjects);
 projectRouter.get('/users-teams', ProjectsController.getUsersTeamsProjects);
 projectRouter.get('/leading', ProjectsController.getUsersLeadingProjects);
 projectRouter.get('/teams-projects/:teamId', ProjectsController.getTeamsProjects);

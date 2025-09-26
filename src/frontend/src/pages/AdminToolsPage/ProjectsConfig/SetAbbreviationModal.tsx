@@ -5,7 +5,7 @@ import ReactHookTextField from '../../../components/ReactHookTextField';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { wbsPipe } from 'shared';
-import { useAllProjectsPreviews, useSetProjectAbbreviation } from '../../../hooks/projects.hooks';
+import { useAllProjects, useSetProjectAbbreviation } from '../../../hooks/projects.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 
@@ -20,12 +20,7 @@ interface SetAbbreviation {
 }
 
 const SetAbbreviationModal: React.FC<SetAbbreviation> = ({ open, handleClose }) => {
-  const {
-    data: projects,
-    isLoading: projectsIsLoading,
-    isError: projectsIsError,
-    error: projectsError
-  } = useAllProjectsPreviews();
+  const { data: projects, isLoading: projectsIsLoading, isError: projectsIsError, error: projectsError } = useAllProjects();
   const { mutateAsync } = useSetProjectAbbreviation();
 
   const onFormSubmit = async (data: { wbsNum: string; abbreviation: string }) => {

@@ -21,7 +21,7 @@ import CreateReimbursementRequestFormView from './ReimbursementFormView';
 import { useHistory, useLocation } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { useCurrentUserSecureSettings } from '../../../hooks/users.hooks';
-import { useAllProjectsPreviews } from '../../../hooks/projects.hooks';
+import { useAllProjects } from '../../../hooks/projects.hooks';
 
 export interface ReimbursementRequestInformation {
   vendorId: string;
@@ -190,7 +190,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     isError: allProjectsIsError,
     error: allProjectsError,
     data: allProjects
-  } = useAllProjectsPreviews();
+  } = useAllProjects();
 
   // checking the data here instead of using isError since function doesn't ever return an error
   const { data: userSecureSettings, isLoading: checkSecureSettingsIsLoading } = useCurrentUserSecureSettings();

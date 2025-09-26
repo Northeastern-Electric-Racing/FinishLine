@@ -8,7 +8,7 @@ import { DataGrid, GridColDef, GridFilterModel, GridRow, GridRowProps } from '@m
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Project, WbsElementStatus, WbsNumber, WorkPackage } from 'shared';
-import { useAllProjectsPreviews } from '../../hooks/projects.hooks';
+import { useAllProjects } from '../../hooks/projects.hooks';
 import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { GridColDefStyle } from '../../utils/tables';
@@ -19,7 +19,7 @@ import { getProjectTeamsName } from '../ProjectDetailPage/ProjectViewContainer/P
  * Table of all projects.
  */
 const ProjectsTable: React.FC = () => {
-  const { isLoading, data, error } = useAllProjectsPreviews();
+  const { isLoading, data, error } = useAllProjects();
   if (!localStorage.getItem('projectsTableRowCount')) localStorage.setItem('projectsTableRowCount', '30');
   const [pageSize, setPageSize] = useState(localStorage.getItem('projectsTableRowCount'));
   const [windowSize, setWindowSize] = useState(window.innerWidth);

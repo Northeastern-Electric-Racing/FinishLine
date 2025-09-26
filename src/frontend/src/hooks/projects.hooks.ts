@@ -35,13 +35,13 @@ import {
   setAbbreviation,
   deleteAbbreviation,
   getTeamsProjects,
-  getAllProjectPreviews
+  getAllProjects
 } from '../apis/projects.api';
 import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 import { useCurrentUser } from './users.hooks';
 
 /**
- * Custom React Hook to supply all projects.
+ * Custom React Hook to supply all projects with Gantt querry args
  */
 export const useAllProjectsGantt = () => {
   return useQuery<ProjectGantt[], Error>(['projects'], async () => {
@@ -50,13 +50,19 @@ export const useAllProjectsGantt = () => {
   });
 };
 
-export const useAllProjectsPreviews = () => {
+/**
+ * Custom React Hook to supply all projects
+ */
+export const useAllProjects = () => {
   return useQuery<ProjectPreview[], Error>(['projects', 'previews'], async () => {
-    const { data } = await getAllProjectPreviews();
+    const { data } = await getAllProjects();
     return data;
   });
 };
 
+/**
+ * Custom React Hook to supply all of the projects that are on the users teams
+ */
 export const useGetUsersTeamsProjects = () => {
   return useQuery<ProjectOverview[], Error>(['projects', 'teams'], async () => {
     const { data } = await getUsersTeamsProjects();
@@ -64,6 +70,9 @@ export const useGetUsersTeamsProjects = () => {
   });
 };
 
+/**
+ * Custom React Hook to supply all of the projects that the user is the manager or lead of
+ */
 export const useGetUsersLeadingProjects = () => {
   return useQuery<ProjectOverview[], Error>(['projects', 'leading'], async () => {
     const { data } = await getUsersLeadingProjects();
@@ -71,6 +80,9 @@ export const useGetUsersLeadingProjects = () => {
   });
 };
 
+/**
+ * Custom React Hook to supply all of the projects for a given team
+ */
 export const useGetTeamsProjects = (teamId: string) => {
   return useQuery<Project[], Error>(['projects', 'teams'], async () => {
     const { data } = await getTeamsProjects(teamId);
