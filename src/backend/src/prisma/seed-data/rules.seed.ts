@@ -1,4 +1,6 @@
 import type { Prisma } from '@prisma/client';
+import { Organization, User } from '@prisma/client';
+import RulesService from '../../services/rules.services';
 
 // rules
 const topLevelRule = (rulesetId: string, userCreatedId: string): Prisma.RuleCreateInput => {
@@ -85,6 +87,12 @@ const projectRule2 = (projectId: string, ruleId: string): Prisma.Project_RuleCre
     rule: { connect: { ruleId } },
     project: { connect: { projectId } }
   };
+};
+
+export const seedRulesetType = async (submitter: User, name: string, organization: Organization) => {
+  const createdRulesetType = await RulesService.createRulesetType(submitter, name, organization);
+
+  return createdRulesetType;
 };
 
 export const ruleSeedData = {

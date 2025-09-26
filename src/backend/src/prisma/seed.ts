@@ -51,6 +51,7 @@ import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
 import FinanceServices from '../services/finance.services';
 import { ruleSeedData } from './seed-data/rules.seed';
 import RulesService from '../services/rules.services';
+import { seedRulesetType } from './seed-data/rules.seed';
 
 const prisma = new PrismaClient();
 
@@ -789,6 +790,16 @@ const performSeed: () => Promise<void> = async () => {
     glen.userId,
     ner
   );
+
+  /**
+   * Ruleset Types
+   */
+
+  /** FSAE ruleset type */
+  const rulesetTypeFSAE = await seedRulesetType(joeShmoe, 'FSAE', ner);
+
+  /** FHE ruleset type */
+  const rulesetTypeFHE = await seedRulesetType(joeBlow, 'FHE', ner);
 
   /**
    * Graphs

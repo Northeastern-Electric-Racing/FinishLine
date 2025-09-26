@@ -1,6 +1,6 @@
 import RulesService from '../../src/services/rules.services';
 import { Organization, User, Project, Car, Ruleset_Type, Rule_Completion } from '@prisma/client';
-import { supermanAdmin, financeMember } from '../test-data/users.test-data';
+import { supermanAdmin, financeMember, wonderwomanGuest, batmanAppAdmin } from '../test-data/users.test-data';
 import { createTestOrganization, createTestProject, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
@@ -105,6 +105,20 @@ describe('Rule Tests', () => {
 
     return { ruleset1, topLevelRule, leafRule1, leafRule2 };
   };
+
+  describe('Create Ruleset Type', () => {
+    it('Fails if user is not leadership or above', async () => {
+      await expect(
+        async () => await RulesService.createRulesetType(await createTestUser(wonderwomanGuest, orgId), 'FSAE', organization)
+      ).rejects.toThrow(new AccessDeniedException('only leadership and above can create ruleset types!'));
+    });
+
+    it('Succeeds and creates a ruleset type', async () => {
+      const result = await RulesService.createRulesetType(await createTestUser(batmanAppAdmin, orgId), 'FSAE', organization);
+
+      expect(result.name).toEqual('FSAE');
+    });
+  });
 
   describe('Project Rule endpoints', () => {
     it('Creates a project rule successfully', async () => {

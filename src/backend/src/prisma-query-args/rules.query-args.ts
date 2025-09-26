@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+// write types and query args below here
 
 // preview for rule display
 export const getRulePreviewQueryArgs = () =>
