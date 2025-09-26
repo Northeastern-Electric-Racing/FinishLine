@@ -5,7 +5,7 @@
 
 import React, { ChangeEvent, FC, useEffect, useState } from 'react';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useAllProjects } from '../../../hooks/projects.hooks';
+import { useAllProjectsGantt } from '../../../hooks/projects.hooks';
 import ErrorPage from '../../ErrorPage';
 import { add, sub } from 'date-fns';
 import { useHistory } from 'react-router-dom';
@@ -30,7 +30,7 @@ import GanttChartColorLegend from './GanttChartColorLegend';
 import GanttChartFiltersButton from './GanttChartFiltersButton';
 import GanttChart from '../GanttChart/GanttChart';
 import {
-  ProjectPreview,
+  ProjectGantt,
   Task,
   TeamPreview,
   TeamType,
@@ -49,7 +49,7 @@ import { GanttRequestChangeModal } from './ProjectGanttChangeModals/GanttRequest
 import { useToast } from '../../../hooks/toasts.hooks';
 import { v4 as uuidv4 } from 'uuid';
 import { projectWbsPipe } from '../../../utils/pipes';
-import { projectPreviewTransformer } from '../../../apis/transformers/projects.transformers';
+import { projectGanttTransformer } from '../../../apis/transformers/projects.transformers';
 
 const getElementId = (element: WbsElementPreview | Task) => {
   return (element as WbsElementPreview).id ?? (element as Task).taskId;
@@ -59,7 +59,12 @@ const ProjectGanttChartPage: FC = () => {
   const history = useHistory();
   const toast = useToast();
 
-  const { isLoading: projectsIsLoading, isError: projectsIsError, data: projects, error: projectsError } = useAllProjects();
+  const {
+    isLoading: projectsIsLoading,
+    isError: projectsIsError,
+    data: projects,
+    error: projectsError
+  } = useAllProjectsGantt();
 
   const {
     isLoading: teamTypesIsLoading,
@@ -73,31 +78,31 @@ const ProjectGanttChartPage: FC = () => {
   const { isLoading: teamsIsLoading, isError: teamsIsError, data: teams, error: teamsError } = useAllTeams();
   const [searchText, setSearchText] = useState<string>('');
   const [showWorkPackagesMap, setShowWorkPackagesMap] = useState<Map<string, boolean>>(new Map());
-  const [addedProjects, setAddedProjects] = useState<ProjectPreview[]>([]);
+  const [addedProjects, setAddedProjects] = useState<ProjectGantt[]>([]);
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
   const [showAddWorkPackageModal, setShowAddWorkPackageModal] = useState(false);
   const [ganttChanges, setGanttChanges] = useState<GanttChange<WbsElementPreview | Task>[]>([]);
   const [requestEventChanges, setRequestEventChanges] = useState<RequestEventChange<WbsElementPreview | Task>[]>([]);
-  const [selectedProject, setSelectedProject] = useState<ProjectPreview | undefined>(undefined);
+  const [selectedProject, setSelectedProject] = useState<ProjectGantt | undefined>(undefined);
   const [selectedTeam, setSelectedTeam] = useState<TeamPreview | undefined>(undefined);
   const [collections, setCollections] = useState<GanttCollection<TeamPreview, WbsElementPreview | Task>[]>([]);
-  const [allProjects, setAllProjects] = useState<ProjectPreview[]>([]);
-  const [editedProjects, setEditedProjects] = useState<ProjectPreview[]>([]);
+  const [allProjects, setAllProjects] = useState<ProjectGantt[]>([]);
+  const [editedProjects, setEditedProjects] = useState<ProjectGantt[]>([]);
 
   /******************** Filters ***************************/
   const { filters, setFilters } = useGanttFilters('project-gantt');
 
   useEffect(() => {
     const requestRefresh = (
-      projects: ProjectPreview[],
+      projects: ProjectGantt[],
       teams: TeamPreview[],
-      editedProjects: ProjectPreview[],
-      addedProjects: ProjectPreview[],
+      editedProjects: ProjectGantt[],
+      addedProjects: ProjectGantt[],
       filters: GanttFilters,
       searchText: string
     ) => {
-      let allProjects: ProjectPreview[] = JSON.parse(JSON.stringify(projects.concat(addedProjects))).map(
-        projectPreviewTransformer
+      let allProjects: ProjectGantt[] = JSON.parse(JSON.stringify(projects.concat(addedProjects))).map(
+        projectGanttTransformer
       );
       allProjects = allProjects.map((project) => {
         const editedProject = editedProjects.find((proj) => proj.id === project.id);
@@ -111,7 +116,7 @@ const ProjectGanttChartPage: FC = () => {
           filters,
           searchText,
           transformProjectToGanttTask,
-          projectPreviewTransformer
+          projectGanttTransformer
         )
       );
     };
@@ -251,7 +256,7 @@ const ProjectGanttChartPage: FC = () => {
 
   const handleAddWorkPackageInfo = (
     workPackageInfo: { name: string; stage?: WorkPackageStage },
-    parentProject: ProjectPreview
+    parentProject: ProjectGantt
   ) => {
     const newWorkPackageNumber = parentProject.workPackages.length + 1;
     const id = uuidv4();
@@ -299,9 +304,12 @@ const ProjectGanttChartPage: FC = () => {
     return existingCarProjects + 1;
   };
 
-  const handleAddProjectInfo = (projectInfo: { name: string; carNumber: number }, selectedTeam: TeamPreview) => {
+  const handleAddProjectInfo = (
+    projectInfo: { name: string; carNumber: number },
+    selectedTeam: { teamId: string; teamName: string }
+  ) => {
     const id = uuidv4();
-    const newProject: ProjectPreview = {
+    const newProject: ProjectGantt = {
       id,
       name: projectInfo.name,
       wbsNum: {
@@ -317,8 +325,7 @@ const ProjectGanttChartPage: FC = () => {
       teams: [selectedTeam],
       duration: 1,
       wbsElementId: '-1',
-      dateCreated: new Date(),
-      links: []
+      dateCreated: new Date()
     };
 
     addNewProjectHandler(newProject);
@@ -425,7 +432,7 @@ const ProjectGanttChartPage: FC = () => {
     }
   };
 
-  const addNewProjectHandler = (project: ProjectPreview) => {
+  const addNewProjectHandler = (project: ProjectGantt) => {
     setAddedProjects((prev) => [...prev, project]);
   };
 
@@ -443,7 +450,7 @@ const ProjectGanttChartPage: FC = () => {
         const originalProject = projects.find((project) => project.id === workPackage.projectId); // Check for an unedited original project
 
         if (originalProject) {
-          const copy = projectPreviewTransformer(JSON.parse(JSON.stringify(originalProject))); // Need to maintain integrity of original projects
+          const copy = projectGanttTransformer(JSON.parse(JSON.stringify(originalProject))); // Need to maintain integrity of original projects
           copy.workPackages.push(workPackage);
           setEditedProjects((prev) => [...prev, copy]);
         }

@@ -4,7 +4,7 @@ import {
   ChangeRequestType,
   Link,
   LinkCreateArgs,
-  ProjectPreview,
+  ProjectGantt,
   Task,
   WbsElementPreview,
   WorkPackage
@@ -74,7 +74,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
     };
   };
 
-  const project = change.element as ProjectPreview;
+  const project = change.element as ProjectGantt;
 
   const editedWorkPackages: WorkPackage[] = [];
   const createdWorkPackages: WorkPackage[] = [];

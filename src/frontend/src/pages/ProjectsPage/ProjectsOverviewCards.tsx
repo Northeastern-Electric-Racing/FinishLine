@@ -5,13 +5,13 @@
 
 import ProjectDetailCard from '../../components/ProjectDetailCard';
 import { Box, Grid, Typography } from '@mui/material';
-import { ProjectPreview } from 'shared';
+import { ProjectOverview } from 'shared';
 import { useState } from 'react';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 interface ProjectsOverviewCardsProps {
-  projects: ProjectPreview[];
+  projects: ProjectOverview[];
   title: string;
   favoriteProjectsSet: Set<string>;
   emptyMessage?: string;

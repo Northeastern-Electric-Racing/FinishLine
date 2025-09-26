@@ -33,7 +33,7 @@ import {
   UserWithScheduleSettings,
   SetUserScheduleSettingsPayload,
   Task,
-  ProjectPreview
+  ProjectOverview
 } from 'shared';
 import { useAuth } from './auth.hooks';
 import { useContext } from 'react';
@@ -163,7 +163,7 @@ export const useUserScheduleSettings = (id: string) => {
  * @param id User ID of the requested user's settings.
  */
 export const useUsersFavoriteProjects = (id: string) => {
-  return useQuery<ProjectPreview[], Error>(['users', id, 'favorite projects'], async () => {
+  return useQuery<ProjectOverview[], Error>(['users', id, 'favorite projects'], async () => {
     const { data } = await getUsersFavoriteProjects(id);
     return data;
   });
