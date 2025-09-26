@@ -32,7 +32,7 @@ describe('Rule Tests', () => {
     await resetUsers();
   });
 
-  const createUniqueCar = async (orgId: string, userId: string) => {
+  const createUniqueCar = async (orgId: string) => {
     let carCounter = 0;
     carCounter++;
 
@@ -122,8 +122,8 @@ describe('Rule Tests', () => {
 
   describe('Project Rule endpoints', () => {
     it('Creates a project rule successfully', async () => {
-      const car = await createUniqueCar(orgId, admin.userId);
-      const { leafRule1, ruleset1 } = await setupRules(car);
+      const car = await createUniqueCar(orgId);
+      const { leafRule1 } = await setupRules(car);
       const projectRule = await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
 
       expect(projectRule.projectRuleId).toBeDefined();
@@ -135,14 +135,14 @@ describe('Rule Tests', () => {
       expect(projectRule.currentStatus).toBe(Rule_Completion.REVIEW);
     });
     it('Create project rule fails if user does not have permission', async () => {
-      const car = await createUniqueCar(orgId, admin.userId);
+      const car = await createUniqueCar(orgId);
       const { leafRule1 } = await setupRules(car);
       await expect(
         async () => await RulesService.createProjectRule(nonLeadership, organization, leafRule1.ruleId, project.projectId)
       ).rejects.toThrow(new AccessDeniedException('You do not have permission to create a project rule'));
     });
     it('Create project rule fails if rule has sub rules', async () => {
-      const car = await createUniqueCar(orgId, admin.userId);
+      const car = await createUniqueCar(orgId);
       const { topLevelRule } = await setupRules(car);
       await expect(
         async () =>
@@ -155,7 +155,7 @@ describe('Rule Tests', () => {
       ).rejects.toThrow(new HttpException(400, 'Cannot add rules with sub-rules to projects'));
     });
     it('Create project rule fails if rule was deleted', async () => {
-      const car = await createUniqueCar(orgId, admin.userId);
+      const car = await createUniqueCar(orgId);
       const { leafRule2 } = await setupRules(car);
 
       await prisma.rule.update({
@@ -172,7 +172,7 @@ describe('Rule Tests', () => {
       ).rejects.toThrow(new NotFoundException('Rule', '019263825673825738'));
     });
     it('Create project rule fails if project was deleted', async () => {
-      const car = await createUniqueCar(orgId, admin.userId);
+      const car = await createUniqueCar(orgId);
       const { leafRule2 } = await setupRules(car);
       await prisma.project.update({
         where: { projectId: project.projectId },
@@ -187,14 +187,14 @@ describe('Rule Tests', () => {
       ).rejects.toThrow(new DeletedException('Project', project.projectId));
     });
     it('Create project rule fails if project does not exist', async () => {
-      const car = await createUniqueCar(orgId, admin.userId);
+      const car = await createUniqueCar(orgId);
       const { leafRule1 } = await setupRules(car);
       await expect(RulesService.createProjectRule(admin, organization, leafRule1.ruleId, 'fake-project-id')).rejects.toThrow(
         new NotFoundException('Project', 'fake-project-id')
       );
     });
     it('Create project rule fails if project rule assignment already exists', async () => {
-      const car = await createUniqueCar(orgId, admin.userId);
+      const car = await createUniqueCar(orgId);
       const { leafRule1 } = await setupRules(car);
       await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
       await expect(RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId)).rejects.toThrow(
