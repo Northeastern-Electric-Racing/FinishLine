@@ -23,14 +23,17 @@ export interface WbsElement {
   deleted: boolean;
   name: string;
   status: WbsElementStatus;
-  lead?: User;
-  manager?: User;
   links: Link[];
   changes: ImplementedChange[];
   descriptionBullets: DescriptionBullet[];
+  lead?: User;
+  manager?: User;
 }
 
-export type WbsElementPreview = Omit<WbsElement, 'changes' | 'materials' | 'assemblies' | 'descriptionBullets'>;
+export type WbsElementPreview = Omit<
+  WbsElement,
+  'changes' | 'materials' | 'assemblies' | 'descriptionBullets' | 'lead' | 'manager'
+>;
 
 export enum WbsElementStatus {
   Inactive = 'INACTIVE',
@@ -66,6 +69,8 @@ export interface ProjectPreview extends WbsElementPreview {
   tasks: Task[];
   duration: number;
   abbreviation?: string;
+  lead?: User;
+  manager?: User;
 }
 
 export interface RetrospectiveWorkPackage extends WorkPackage {
@@ -94,6 +99,9 @@ export interface WorkPackagePreview extends WbsElementPreview {
   duration: number;
   endDate: Date;
   stage?: WorkPackageStage;
+  lead?: Pick<User, 'firstName' | 'lastName'>;
+  manager?: Pick<User, 'firstName' | 'lastName'>;
+  blockedBy: WbsNumber[];
 }
 
 export interface DescriptionBullet {
@@ -108,8 +116,6 @@ export interface DescriptionBullet {
 
 export interface LinkType {
   name: string;
-  dateCreated: Date;
-  creator: UserPreview;
   required: boolean;
   iconName: string;
 }
@@ -117,8 +123,6 @@ export interface LinkType {
 export interface Link {
   linkId: string;
   linkType: LinkType;
-  dateCreated: Date;
-  creator: User;
   url: string;
 }
 

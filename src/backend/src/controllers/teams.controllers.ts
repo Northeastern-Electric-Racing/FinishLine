@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import TeamsService from '../services/teams.services';
 import { HttpException } from '../utils/errors.utils';
-import { WorkPackage } from 'shared';
 
 export default class TeamsController {
   static async getAllTeams(req: Request, res: Response, next: NextFunction) {
@@ -256,21 +255,6 @@ export default class TeamsController {
       const teamType = await TeamsService.setTeamTypeImage(req.currentUser, req.params.teamTypeId, file, req.organization);
       res.status(200).json(teamType);
     } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async getMyTeamsWorkpackages(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { onlyLeadingTeams, onlyOverdue } = req.query;
-      const workPackages: WorkPackage[] = await TeamsService.getMyTeamsWorkpackages(
-        req.currentUser,
-        req.organization,
-        Boolean(onlyLeadingTeams),
-        Boolean(onlyOverdue)
-      );
-      res.json(workPackages);
-    } catch (error) {
       next(error);
     }
   }

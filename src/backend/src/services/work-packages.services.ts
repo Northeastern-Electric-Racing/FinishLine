@@ -10,6 +10,8 @@ import {
   WbsNumber,
   wbsPipe,
   WorkPackage,
+  WorkPackagePreview,
+  WorkPackageSelection,
   WorkPackageStage
 } from 'shared';
 import prisma from '../prisma/prisma';
@@ -21,8 +23,8 @@ import {
   DeletedException,
   InvalidOrganizationException
 } from '../utils/errors.utils';
-import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
-import workPackageTransformer from '../transformers/work-packages.transformer';
+import { getWorkPackagePreviewQueryArgs, getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
+import workPackageTransformer, { workPackagePreviewTransformer } from '../transformers/work-packages.transformer';
 import { updateBlocking, validateChangeRequestAccepted } from '../utils/change-requests.utils';
 import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils';
 import { getWorkPackageChanges } from '../utils/changes.utils';
@@ -565,5 +567,68 @@ export default class WorkPackagesService {
         }),
       Promise.resolve()
     );
+  }
+
+  /**
+   * Gets the current users teams workpackages
+   *
+   * @param user The current user
+   * @param organization The organization the current user is logged in for
+   * @param onlyOverdue Whether to only return overdue workpackages
+   */
+  static async getHomePageWorkPackages(
+    user: User,
+    organization: Organization,
+    selection: WorkPackageSelection
+  ): Promise<WorkPackagePreview[]> {
+    const selectionArgs =
+      selection === 'allOverdue'
+        ? {}
+        : selection === 'leading'
+          ? {
+              workPackage: {
+                project: {
+                  teams: { some: { OR: [{ headId: user.userId }, { leads: { some: { userId: user.userId } } }] } }
+                }
+              }
+            }
+          : {
+              workPackage: {
+                project: {
+                  teams: {
+                    some: {
+                      OR: [
+                        { headId: user.userId },
+                        { leads: { some: { userId: user.userId } } },
+                        { members: { some: { userId: user.userId } } }
+                      ]
+                    }
+                  }
+                }
+              }
+            };
+
+    let workPackages = await prisma.work_Package.findMany({
+      where: {
+        wbsElement: {
+          ...selectionArgs,
+          dateDeleted: null,
+          organizationId: organization.organizationId,
+          status: { not: WBS_Element_Status.COMPLETE }
+        }
+      },
+      ...getWorkPackagePreviewQueryArgs()
+    });
+
+    if (selection === 'allOverdue') {
+      workPackages = workPackages.filter((wp) => {
+        const endDate = new Date(wp.startDate);
+        endDate.setDate(endDate.getDate() + wp.duration * 7); // Add weeks as days
+
+        return endDate < new Date();
+      });
+    }
+
+    return workPackages.map(workPackagePreviewTransformer);
   }
 }

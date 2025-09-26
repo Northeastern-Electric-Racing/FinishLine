@@ -74,13 +74,6 @@ export const setTeamLeads = (id: string, userIds: string[]) => {
   });
 };
 
-export const getMyTeamsWorkpackages = (onlyLeadingTeams?: boolean, onlyOverdue?: boolean) => {
-  console.log('API call - getMyTeamsWorkpackages', apiUrls.myTeamsWorkpackages(onlyLeadingTeams, onlyOverdue));
-  return axios.get<WorkPackage[]>(apiUrls.myTeamsWorkpackages(onlyLeadingTeams, onlyOverdue), {
-    transformResponse: (data) => JSON.parse(data).map(workPackageTransformer)
-  });
-};
-
 export const getMyTeamAsHead = () => {
   return axios.get<string>(apiUrls.myTeamAsHead());
 };

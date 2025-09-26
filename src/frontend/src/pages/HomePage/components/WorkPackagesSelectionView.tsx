@@ -10,7 +10,7 @@ import WorkPackageSelect from './WorkPackageSelect';
 import React, { useState } from 'react';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
-import { useMyTeamsWorkpackages } from '../../../hooks/teams.hooks';
+import { useHomeScreenWorkPackages } from '../../../hooks/work-packages.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 
@@ -27,7 +27,7 @@ const NoWorkPackages: React.FC = () => {
 const WorkPackagesSelectionView: React.FC = () => {
   const theme = useTheme();
 
-  const { data: relevantWPs, isLoading, isError, error } = useMyTeamsWorkpackages(true, false);
+  const { data: relevantWPs, isLoading, isError, error } = useHomeScreenWorkPackages('leading');
 
   const [upcomingWPs, inProgressWPs, overdueWPs] = React.useMemo(() => {
     if (!relevantWPs) return [[], [], []];

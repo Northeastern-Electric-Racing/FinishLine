@@ -39,6 +39,7 @@ export const CircularProgressWithLabel = (props: CircularProgressProps & { value
 
 const OverdueWorkPackageCard = ({ wp }: { wp: WorkPackage }) => {
   const theme = useTheme();
+  console.log('wp', wp);
   const { data: blockedByWps, isLoading } = useGetManyWorkPackages(wp.blockedBy);
   const numDaysOverdue = daysOverdue(new Date(wp.endDate));
   if (isLoading || !blockedByWps) return <LoadingIndicator />;

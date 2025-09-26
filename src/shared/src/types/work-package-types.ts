@@ -65,3 +65,5 @@ export interface ProjectTemplate extends WbsElementTemplate {
   teams: TeamPreview[];
   summary?: string;
 }
+
+export type WorkPackageSelection = 'allOverdue' | 'leading' | 'member';

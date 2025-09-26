@@ -16,7 +16,6 @@ import {
   setTeamLeads,
   archiveTeam,
   getAllArchivedTeams,
-  getMyTeamsWorkpackages,
   getUsersTeams,
   setTeamSlackId,
   getMyTeamAsHead
@@ -184,14 +183,6 @@ export const useSetTeamLeads = (teamId: string) => {
       }
     }
   );
-};
-
-export const useMyTeamsWorkpackages = (onlyLeadingTeams: boolean, onlyOverdue: boolean) => {
-  console.log('useMyTeamsWorkpackages called with:', { onlyLeadingTeams, onlyOverdue });
-  return useQuery<WorkPackage[], Error>(['teams', 'work-packages', onlyLeadingTeams, onlyOverdue], async () => {
-    const { data } = await getMyTeamsWorkpackages(onlyLeadingTeams, onlyOverdue);
-    return data;
-  });
 };
 
 export const useMyTeamAsHead = () => {

@@ -1,4 +1,4 @@
-import { isAdmin, isHead, Team, TeamPreview, TeamType, WorkPackage } from 'shared';
+import { isAdmin, isHead, Team, TeamPreview, TeamType } from 'shared';
 import { Organization, User, WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import teamTransformer, { teamPreviewTransformer } from '../transformers/teams.transformer';
@@ -16,8 +16,6 @@ import { removeUsersFromList } from '../utils/teams.utils';
 import { getTeamPreviewQueryArgs, getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
 import { uploadFile } from '../utils/google-integration.utils';
 import { teamTypeTransformer } from '../transformers/team-types.transformer';
-import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
-import workPackageTransformer from '../transformers/work-packages.transformer';
 
 export default class TeamsService {
   /**
@@ -718,73 +716,5 @@ export default class TeamsService {
     });
 
     return updatedTeamType;
-  }
-
-  /**
-   * Gets the current users teams workpackages
-   *
-   * @param user The current user
-   * @param organization The organization the current user is logged in for
-   * @param onlyOverdue Whether to only return overdue workpackages
-   */
-  static async getMyTeamsWorkpackages(
-    user: User,
-    organization: Organization,
-    onlyLeadingTeams: boolean,
-    onlyOverdue: boolean
-  ): Promise<WorkPackage[]> {
-    onlyLeadingTeams = onlyLeadingTeams ?? false;
-    // get all the teams the user is a part of
-    const usersTeams = await prisma.team.findMany({
-      where: {
-        organizationId: organization.organizationId,
-        dateArchived: null,
-        OR: [
-          {
-            headId: user.userId
-          },
-          {
-            leads: { some: { userId: user.userId } }
-          },
-          ...(onlyLeadingTeams
-            ? []
-            : [
-                {
-                  members: { some: { userId: user.userId } }
-                }
-              ])
-        ]
-      },
-      select: { teamId: true }
-    });
-
-    const workPackages = await prisma.work_Package.findMany({
-      where: {
-        wbsElement: {
-          organizationId: organization.organizationId,
-          dateDeleted: null,
-          status: { not: WBS_Element_Status.COMPLETE }
-        },
-        project: {
-          teams: {
-            some: {
-              teamId: {
-                in: usersTeams.map((team) => team.teamId)
-              }
-            }
-          }
-        }
-      },
-      ...getWorkPackageQueryArgs(organization.organizationId)
-    });
-
-    const overdueWorkPackages = workPackages.filter((wp) => {
-      const endDate = new Date(wp.startDate);
-      endDate.setDate(endDate.getDate() + wp.duration * 7); // Add weeks as days
-
-      return endDate < new Date();
-    });
-
-    return (onlyOverdue ? overdueWorkPackages : workPackages).map(workPackageTransformer);
   }
 }

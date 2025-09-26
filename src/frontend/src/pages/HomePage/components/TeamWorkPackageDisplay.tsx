@@ -2,7 +2,7 @@ import WorkPackageCard from './WorkPackageCard';
 import ScrollablePageBlock from './ScrollablePageBlock';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
-import { useMyTeamsWorkpackages } from '../../../hooks/teams.hooks';
+import { useHomeScreenWorkPackages } from '../../../hooks/work-packages.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 
@@ -19,7 +19,7 @@ const NoTeamWorkPackagesDisplay: React.FC = () => {
 };
 
 const TeamWorkPackageDisplay: React.FC<TeamWorkPackageDisplayProps> = () => {
-  const { isLoading, isError, data: workPackages, error } = useMyTeamsWorkpackages(false, false);
+  const { isLoading, isError, data: workPackages, error } = useHomeScreenWorkPackages('member');
 
   if (isLoading || !workPackages) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;

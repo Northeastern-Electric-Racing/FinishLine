@@ -4,6 +4,7 @@
  */
 
 import { WbsNumber, wbsPipe } from 'shared';
+import { WorkPackageSelection } from 'shared';
 
 /**
  * This file centralizes URLs used to query the API.
@@ -108,6 +109,7 @@ const workPackagesDelete = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/
 const workPackagesBlocking = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/blocking`;
 const workPackagesSlackUpcomingDeadlines = () => `${workPackages()}/slack-upcoming-deadlines`;
 const workPackagesMany = () => `${workPackages()}/get-many`;
+const homePageWorkPackages = (selection: WorkPackageSelection) => `${workPackages()}/home-page/${selection}`;
 
 /**************** Change Requests Endpoints ****************/
 const changeRequests = () => `${API_URL}/change-requests`;
@@ -147,10 +149,6 @@ const allTeamTypes = () => `${teamTypes()}/all`;
 const teamTypesCreate = () => `${teamTypes()}/create`;
 const teamTypeEdit = (id: string) => `${teamTypes()}/${id}/edit`;
 const teamTypeSetImage = (id: string) => `${teamTypes()}/${id}/set-image`;
-const myTeamsWorkpackages = (onlyLeadingTeams?: boolean, onlyOverdue?: boolean) =>
-  `${teams()}/my-teams-work-packages` +
-  (onlyLeadingTeams ? `?onlyLeadingTeams=${onlyLeadingTeams}` : '') +
-  (onlyOverdue ? `${onlyLeadingTeams ? '&' : '?'}onlyOverdue=${onlyOverdue}` : '');
 const myTeamAsHead = () => `${teams()}/my-team-as-head`;
 
 /**************** Description Bullet Endpoints ****************/
@@ -517,6 +515,7 @@ export const apiUrls = {
   workPackagesBlocking,
   workPackagesSlackUpcomingDeadlines,
   workPackagesMany,
+  homePageWorkPackages,
 
   changeRequests,
   changeRequestsById,
@@ -551,7 +550,6 @@ export const apiUrls = {
   teamTypesCreate,
   teamTypeEdit,
   teamTypeSetImage,
-  myTeamsWorkpackages,
   myTeamAsHead,
 
   descriptionBulletsCheck,

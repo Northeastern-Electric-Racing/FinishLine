@@ -1,6 +1,6 @@
 import express from 'express';
 import TeamsController from '../controllers/teams.controllers';
-import { body, query } from 'express-validator';
+import { body } from 'express-validator';
 import { nonEmptyString, validateInputs } from '../utils/validation.utils';
 import multer, { memoryStorage } from 'multer';
 
@@ -11,13 +11,6 @@ teamsRouter.get('/', TeamsController.getAllTeams);
 teamsRouter.get('/archive', TeamsController.getAllArchivedTeams);
 teamsRouter.get('/users-teams', TeamsController.getUsersTeams);
 teamsRouter.get('/my-team-as-head', TeamsController.getMyTeamAsHead);
-teamsRouter.get(
-  '/my-teams-work-packages',
-  query('onlyLeadingTeams').isBoolean().optional(),
-  query('onlyOverdue').isBoolean().optional(),
-  validateInputs,
-  TeamsController.getMyTeamsWorkpackages
-);
 teamsRouter.get('/:teamId', TeamsController.getSingleTeam);
 
 teamsRouter.post(
