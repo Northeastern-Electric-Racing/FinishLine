@@ -75,6 +75,14 @@ CREATE TABLE "_ruleReferences" (
     CONSTRAINT "_ruleReferences_AB_pkey" PRIMARY KEY ("A","B")
 );
 
+-- CreateTable
+CREATE TABLE "_teamRules" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_teamRules_AB_pkey" PRIMARY KEY ("A","B")
+);
+
 -- CreateIndex
 CREATE INDEX "Rule_parentRuleId_rulesetId_ruleCode_idx" ON "Rule"("parentRuleId", "rulesetId", "ruleCode");
 
@@ -86,6 +94,9 @@ CREATE UNIQUE INDEX "Project_Rule_ruleId_projectId_key" ON "Project_Rule"("ruleI
 
 -- CreateIndex
 CREATE INDEX "_ruleReferences_B_index" ON "_ruleReferences"("B");
+
+-- CreateIndex
+CREATE INDEX "_teamRules_B_index" ON "_teamRules"("B");
 
 -- AddForeignKey
 ALTER TABLE "Ruleset_Type" ADD CONSTRAINT "Ruleset_Type_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -137,3 +148,9 @@ ALTER TABLE "_ruleReferences" ADD CONSTRAINT "_ruleReferences_A_fkey" FOREIGN KE
 
 -- AddForeignKey
 ALTER TABLE "_ruleReferences" ADD CONSTRAINT "_ruleReferences_B_fkey" FOREIGN KEY ("B") REFERENCES "Rule"("ruleId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_teamRules" ADD CONSTRAINT "_teamRules_A_fkey" FOREIGN KEY ("A") REFERENCES "Rule"("ruleId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_teamRules" ADD CONSTRAINT "_teamRules_B_fkey" FOREIGN KEY ("B") REFERENCES "Team"("teamId") ON DELETE CASCADE ON UPDATE CASCADE;
