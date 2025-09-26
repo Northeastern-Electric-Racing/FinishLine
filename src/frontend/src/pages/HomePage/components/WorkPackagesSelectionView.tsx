@@ -5,12 +5,14 @@ import {
   getOverdueWorkPackages,
   getUpcomingWorkPackages
 } from '../../../utils/work-package.utils';
-import { useCurrentUser } from '../../../hooks/users.hooks';
 import WorkPackageCard from './WorkPackageCard';
 import WorkPackageSelect from './WorkPackageSelect';
 import React, { useState } from 'react';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
+import { useMyTeamsWorkpackages } from '../../../hooks/teams.hooks';
+import ErrorPage from '../../ErrorPage';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 
 const NoWorkPackages: React.FC = () => {
   return (
@@ -23,18 +25,18 @@ const NoWorkPackages: React.FC = () => {
 };
 
 const WorkPackagesSelectionView: React.FC = () => {
-  const user = useCurrentUser();
   const theme = useTheme();
 
-  const teamsAsHead = user.teamsAsHead ?? [];
-  const teamsAsLead = user.teamsAsLead ?? [];
-  const teamsAsLeadership = [...teamsAsHead, ...teamsAsLead];
+  const { data: relevantWPs, isLoading, isError, error } = useMyTeamsWorkpackages(true, false);
 
-  const relevantWPs = teamsAsLeadership.map((team) => team.projects.map((project) => project.workPackages)).flat(2);
-
-  const upcomingWPs: WorkPackagePreview[] = getUpcomingWorkPackages(relevantWPs);
-  const inProgressWPs: WorkPackagePreview[] = getInProgressWorkPackages(relevantWPs);
-  const overdueWPs: WorkPackagePreview[] = getOverdueWorkPackages(relevantWPs);
+  const [upcomingWPs, inProgressWPs, overdueWPs] = React.useMemo(() => {
+    if (!relevantWPs) return [[], [], []];
+    return [
+      getUpcomingWorkPackages(relevantWPs),
+      getInProgressWorkPackages(relevantWPs),
+      getOverdueWorkPackages(relevantWPs)
+    ];
+  }, [relevantWPs]);
 
   // options for selection
   const workPackageOptions: [string, WorkPackagePreview[]][] = [
@@ -52,6 +54,9 @@ const WorkPackagesSelectionView: React.FC = () => {
   }
 
   const [currentDisplayedWPs, setCurrentDisplayedWPs] = useState<number>(defaultFirstDisplay);
+
+  if (isLoading || !relevantWPs) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error.message} />;
 
   // destructuring tuple to get wps of selected option
   const [, currentWps] = workPackageOptions[currentDisplayedWPs];

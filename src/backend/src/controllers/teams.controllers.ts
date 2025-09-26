@@ -262,8 +262,23 @@ export default class TeamsController {
 
   static async getMyTeamsWorkpackages(req: Request, res: Response, next: NextFunction) {
     try {
-      const workPackages: WorkPackage[] = await TeamsService.getMyTeamsWorkpackages(req.currentUser, req.organization);
+      const { onlyLeadingTeams, onlyOverdue } = req.query;
+      const workPackages: WorkPackage[] = await TeamsService.getMyTeamsWorkpackages(
+        req.currentUser,
+        req.organization,
+        Boolean(onlyLeadingTeams),
+        Boolean(onlyOverdue)
+      );
       res.json(workPackages);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getMyTeamAsHead(req: Request, res: Response, next: NextFunction) {
+    try {
+      const team = await TeamsService.getMyTeamAsHead(req.currentUser, req.organization);
+      res.json(team);
     } catch (error) {
       next(error);
     }

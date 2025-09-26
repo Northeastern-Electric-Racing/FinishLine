@@ -147,7 +147,11 @@ const allTeamTypes = () => `${teamTypes()}/all`;
 const teamTypesCreate = () => `${teamTypes()}/create`;
 const teamTypeEdit = (id: string) => `${teamTypes()}/${id}/edit`;
 const teamTypeSetImage = (id: string) => `${teamTypes()}/${id}/set-image`;
-const myTeamsWorkpackages = () => `${teams()}/my-teams-work-packages`;
+const myTeamsWorkpackages = (onlyLeadingTeams?: boolean, onlyOverdue?: boolean) =>
+  `${teams()}/my-teams-work-packages` +
+  (onlyLeadingTeams ? `?onlyLeadingTeams=${onlyLeadingTeams}` : '') +
+  (onlyOverdue ? `${onlyLeadingTeams ? '&' : '?'}onlyOverdue=${onlyOverdue}` : '');
+const myTeamAsHead = () => `${teams()}/my-team-as-head`;
 
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
@@ -548,6 +552,7 @@ export const apiUrls = {
   teamTypeEdit,
   teamTypeSetImage,
   myTeamsWorkpackages,
+  myTeamAsHead,
 
   descriptionBulletsCheck,
   descriptionBulletTypes,

@@ -18,7 +18,8 @@ import {
   getAllArchivedTeams,
   getMyTeamsWorkpackages,
   getUsersTeams,
-  setTeamSlackId
+  setTeamSlackId,
+  getMyTeamAsHead
 } from '../apis/teams.api';
 
 export interface CreateTeamPayload {
@@ -185,9 +186,17 @@ export const useSetTeamLeads = (teamId: string) => {
   );
 };
 
-export const useMyTeamsWorkpackages = () => {
-  return useQuery<WorkPackage[], Error>(['teams', 'work-packages'], async () => {
-    const { data } = await getMyTeamsWorkpackages();
+export const useMyTeamsWorkpackages = (onlyLeadingTeams: boolean, onlyOverdue: boolean) => {
+  console.log('useMyTeamsWorkpackages called with:', { onlyLeadingTeams, onlyOverdue });
+  return useQuery<WorkPackage[], Error>(['teams', 'work-packages', onlyLeadingTeams, onlyOverdue], async () => {
+    const { data } = await getMyTeamsWorkpackages(onlyLeadingTeams, onlyOverdue);
+    return data;
+  });
+};
+
+export const useMyTeamAsHead = () => {
+  return useQuery<string | undefined, Error>(['teams', 'as-head'], async () => {
+    const { data } = await getMyTeamAsHead();
     return data;
   });
 };

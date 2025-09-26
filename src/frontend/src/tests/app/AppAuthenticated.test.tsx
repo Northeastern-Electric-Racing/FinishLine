@@ -40,7 +40,12 @@ describe.skip('App Authenticated', () => {
     vi.spyOn(workPackageHooks, 'useAllWorkPackages').mockReturnValue(mockUseAllWorkPackagesReturnValue([]));
     vi.spyOn(miscHooks, 'useGetVersionNumber').mockReturnValue(mockGetVersionNumberReturnValue({ tag_name: 'v3.5.4' }));
     vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue({
+      ...exampleAdminUser,
+      organizations: [],
+      onboardedTeamTypeIds: [],
+      onboardingTeamTypeIds: []
+    });
     vi.spyOn(userHooks, 'useSingleUserSettings').mockReturnValue(mockUseSingleUserSettings());
   });
 

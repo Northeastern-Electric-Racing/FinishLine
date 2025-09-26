@@ -33,7 +33,12 @@ const renderComponent = () => {
 describe('Sidebar Tests', () => {
   it('Renders Navigation Links', () => {
     vi.spyOn(miscHooks, 'useGetVersionNumber').mockReturnValue(mockGetVersionNumberReturnValue({ tag_name: 'v3.5.4' }));
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue({
+      ...exampleAdminUser,
+      organizations: [],
+      onboardedTeamTypeIds: [],
+      onboardingTeamTypeIds: []
+    });
 
     renderComponent();
     expect(screen.getByText(/Projects/i)).toBeInTheDocument();

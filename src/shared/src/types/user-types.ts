@@ -4,7 +4,6 @@
  */
 
 import { AvailabilityCreateArgs } from './design-review-types';
-import { Team } from './team-types';
 
 export interface User {
   userId: string;
@@ -67,42 +66,21 @@ export interface Organization {
 }
 
 /**
- * User object used purely for authentication purposes.
+ * Type for the current user
  */
 export interface AuthenticatedUser {
   userId: string;
   firstName: string;
   lastName: string;
   email: string;
-  emailId: string | null;
   role: Role;
   defaultTheme?: ThemeName;
   isFinance?: boolean;
-  teamAsHeadId?: string;
-  favoritedProjectsId: string[];
-  changeRequestsToReviewId: string[];
-  isHeadOfFinance?: boolean;
   isAtLeastFinanceLead?: boolean;
   organizations: string[];
-  currentOrganization?: OrganizationPreview;
   onboardingTeamTypeIds: string[];
   onboardedTeamTypeIds: string[];
-  teamsAsHead?: Team[];
-  teamsAsLead?: Team[];
-  permissions: Permission[];
 }
-
-export type ContextUser = Omit<
-  AuthenticatedUser,
-  | 'emailId'
-  | 'defaultTheme'
-  | 'currentOrganization'
-  | 'favoritedProjectsId'
-  | 'changeRequestsToReviewId'
-  | 'isHeadOfFinance'
-  | 'organizations'
-  | 'permissions'
->;
 
 export interface UserSettings {
   id: string;

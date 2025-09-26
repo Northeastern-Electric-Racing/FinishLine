@@ -102,7 +102,7 @@ export interface DescriptionBullet {
   dateAdded: Date;
   type: string;
   dateDeleted?: Date;
-  userChecked?: User;
+  userChecked?: Pick<User, 'firstName' | 'lastName'>;
   dateChecked?: Date;
 }
 

@@ -41,7 +41,12 @@ const renderComponent = (
 
 describe.skip('work package container view', () => {
   beforeEach(() => {
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue({
+      ...exampleAdminUser,
+      organizations: [],
+      onboardedTeamTypeIds: [],
+      onboardingTeamTypeIds: []
+    });
     vi.spyOn(wpHooks, 'useGetManyWorkPackages').mockReturnValue(mockManyWorkPackages([exampleResearchWorkPackage]));
   });
 

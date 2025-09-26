@@ -56,7 +56,12 @@ describe('Rendering Project View Container', () => {
       disconnect: vi.fn()
     }));
     vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue({
+      ...exampleAdminUser,
+      organizations: [],
+      onboardedTeamTypeIds: [],
+      onboardingTeamTypeIds: []
+    });
     vi.spyOn(userHooks, 'useUsersFavoriteProjects').mockReturnValue(mockUseUsersFavoriteProjects());
     vi.spyOn(wpHooks, 'useGetManyWorkPackages').mockReturnValue(mockManyWorkPackages(exampleAllWorkPackages));
     vi.spyOn(bomHooks, 'useGetMaterialsForWbsElement').mockReturnValue(mockManyMaterials([]));
@@ -76,7 +81,12 @@ describe('Rendering Project View Container', () => {
 
   it('disables the buttons for guest users', () => {
     renderComponent();
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleGuestUser);
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue({
+      ...exampleGuestUser,
+      organizations: [],
+      onboardedTeamTypeIds: [],
+      onboardingTeamTypeIds: []
+    });
 
     fireEvent.click(screen.getByText('Actions'));
 

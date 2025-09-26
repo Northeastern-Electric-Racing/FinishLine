@@ -440,6 +440,15 @@ export default class TeamsService {
     return teamTransformer(updatedTeam);
   }
 
+  static async getMyTeamAsHead(user: User, organization: Organization): Promise<string | undefined> {
+    const team = await prisma.team.findFirst({
+      where: { headId: user.userId, organizationId: organization.organizationId },
+      select: { teamId: true }
+    });
+
+    return team?.teamId;
+  }
+
   /**
    * Creates a team type
    * @param submitter the user who is creating the team type
@@ -716,20 +725,37 @@ export default class TeamsService {
    *
    * @param user The current user
    * @param organization The organization the current user is logged in for
+   * @param onlyOverdue Whether to only return overdue workpackages
    */
-  static async getMyTeamsWorkpackages(user: User, organization: Organization): Promise<WorkPackage[]> {
+  static async getMyTeamsWorkpackages(
+    user: User,
+    organization: Organization,
+    onlyLeadingTeams: boolean,
+    onlyOverdue: boolean
+  ): Promise<WorkPackage[]> {
+    onlyLeadingTeams = onlyLeadingTeams ?? false;
+    // get all the teams the user is a part of
     const usersTeams = await prisma.team.findMany({
       where: {
         organizationId: organization.organizationId,
         dateArchived: null,
         OR: [
           {
-            members: { some: { userId: user.userId } },
-            leads: { some: { userId: user.userId } },
             headId: user.userId
-          }
+          },
+          {
+            leads: { some: { userId: user.userId } }
+          },
+          ...(onlyLeadingTeams
+            ? []
+            : [
+                {
+                  members: { some: { userId: user.userId } }
+                }
+              ])
         ]
-      }
+      },
+      select: { teamId: true }
     });
 
     const workPackages = await prisma.work_Package.findMany({
@@ -752,6 +778,13 @@ export default class TeamsService {
       ...getWorkPackageQueryArgs(organization.organizationId)
     });
 
-    return workPackages.map(workPackageTransformer);
+    const overdueWorkPackages = workPackages.filter((wp) => {
+      const endDate = new Date(wp.startDate);
+      endDate.setDate(endDate.getDate() + wp.duration * 7); // Add weeks as days
+
+      return endDate < new Date();
+    });
+
+    return (onlyOverdue ? overdueWorkPackages : workPackages).map(workPackageTransformer);
   }
 }

@@ -53,7 +53,12 @@ const renderComponent = (proposedSolutions: ProposedSolution[] = [], crReviewed:
 
 describe('Proposed Solutions List Test Suite', () => {
   beforeEach(() => {
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue({
+      ...exampleAdminUser,
+      organizations: [],
+      onboardedTeamTypeIds: [],
+      onboardingTeamTypeIds: []
+    });
   });
 
   it('Renders correctly when empty and CR is not reviewed', () => {

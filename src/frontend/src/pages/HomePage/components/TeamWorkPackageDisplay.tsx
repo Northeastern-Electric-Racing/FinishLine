@@ -19,7 +19,7 @@ const NoTeamWorkPackagesDisplay: React.FC = () => {
 };
 
 const TeamWorkPackageDisplay: React.FC<TeamWorkPackageDisplayProps> = () => {
-  const { isLoading, isError, data: workPackages, error } = useMyTeamsWorkpackages();
+  const { isLoading, isError, data: workPackages, error } = useMyTeamsWorkpackages(false, false);
 
   if (isLoading || !workPackages) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;

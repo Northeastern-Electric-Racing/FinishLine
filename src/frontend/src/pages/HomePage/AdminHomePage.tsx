@@ -62,8 +62,12 @@ const AdminHomePage = ({ user }: AdminHomePageProps) => {
           >
             <WorkPackagesSelectionView />
           </Grid>
-          <Grid item height="100%" style={{ width: 'min-content', minWidth: 'min-content', overflow: 'hidden' }}>
-            <OverdueWorkPackages user={user} />
+          <Grid
+            item
+            height="100%"
+            style={{ width: 'min-content', minWidth: 'min-content', overflow: 'hidden', flexGrow: 1 }}
+          >
+            <OverdueWorkPackages />
           </Grid>
         </Grid>
       </Box>

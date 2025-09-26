@@ -1,81 +1,28 @@
 import { Prisma } from '@prisma/client';
-import { getTeamQueryArgs } from './teams.query-args';
 
 export type AuthUserQueryArgs = ReturnType<typeof getAuthUserQueryArgs>;
-export type CurrentUserQueryArgs = ReturnType<typeof currentUserQueryArgs>;
 
 export const getAuthUserQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.UserDefaultArgs>()({
     include: {
       userSettings: true,
-      teamsAsHead: {
-        where: {
-          organizationId
-        },
-        ...getTeamQueryArgs(organizationId)
-      },
       organizations: true,
-      teamsAsLead: {
-        where: {
-          organizationId
-        },
-        ...getTeamQueryArgs(organizationId)
-      },
-      teamsAsMember: {
-        where: {
-          organizationId
-        }
-      },
-      favoriteProjects: {
-        where: {
-          wbsElement: {
-            organizationId
-          }
-        }
-      },
-      roles: {
-        where: {
-          organizationId
-        }
-      },
-      changeRequestsToReview: {
-        where: {
-          wbsElement: {
-            organizationId
-          }
-        }
-      },
-      onboardingTeamTypes: {
-        where: {
-          organizationId
-        }
-      },
-      onboardedTeamTypes: {
-        where: {
-          organizationId
-        }
-      }
-    }
-  });
-
-export const currentUserQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.UserDefaultArgs>()({
-    include: {
       teamsAsHead: {
-        where: {
-          organizationId
-        },
-        ...getTeamQueryArgs(organizationId)
+        select: {
+          teamId: true,
+          financeTeam: true
+        }
       },
       teamsAsLead: {
-        where: {
-          organizationId
-        },
-        ...getTeamQueryArgs(organizationId)
+        select: {
+          financeTeam: true,
+          teamId: true
+        }
       },
       teamsAsMember: {
-        where: {
-          organizationId
+        select: {
+          financeTeam: true,
+          teamId: true
         }
       },
       roles: {

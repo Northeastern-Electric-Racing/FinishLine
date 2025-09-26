@@ -10,12 +10,8 @@ export const exampleAuthenticatedAdminUser: AuthenticatedUser = {
   firstName: 'Joe',
   lastName: 'Shmoe',
   email: 'shmoe.j@husky.neu.edu',
-  emailId: 'shmoe.j',
   role: RoleEnum.ADMIN,
-  favoritedProjectsId: [],
-  changeRequestsToReviewId: [],
   organizations: [],
   onboardingTeamTypeIds: [],
-  onboardedTeamTypeIds: [],
-  permissions: []
+  onboardedTeamTypeIds: []
 };

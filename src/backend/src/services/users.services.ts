@@ -12,8 +12,7 @@ import {
   UserWithScheduleSettings,
   AuthenticatedUser,
   AvailabilityCreateArgs,
-  ProjectPreview,
-  ContextUser
+  ProjectPreview
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -34,8 +33,8 @@ import {
   getUserScheduleSettingsQueryArgs,
   getUserWithSettingsQueryArgs
 } from '../prisma-query-args/user.query-args';
-import { currentUserQueryArgs, getAuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
-import authenticatedUserTransformer, { currentUserTransformer } from '../transformers/auth-user.transformer';
+import { getAuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
+import authenticatedUserTransformer from '../transformers/auth-user.transformer';
 import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args';
 import taskTransformer from '../transformers/tasks.transformer';
 import { validateUserIsPartOfFinanceTeamOrHead } from '../utils/reimbursement-requests.utils';
@@ -75,7 +74,7 @@ export default class UsersService {
     return users.map(userWithScheduleSettingsTransformer);
   }
 
-  static async getCurrentUser(user: User): Promise<ContextUser> {
+  static async getCurrentUser(user: User): Promise<AuthenticatedUser> {
     const userWithOrgs = await prisma.user.findUnique({ where: { userId: user.userId }, include: { organizations: true } });
 
     if (!userWithOrgs) {
@@ -88,14 +87,14 @@ export default class UsersService {
 
     const currentUser = await prisma.user.findUnique({
       where: { userId: user.userId },
-      ...currentUserQueryArgs(organization.organizationId)
+      ...getAuthUserQueryArgs(organization.organizationId)
     });
 
     if (!currentUser) {
       throw new NotFoundException('User', user.userId);
     }
 
-    return currentUserTransformer(currentUser);
+    return authenticatedUserTransformer(currentUser);
   }
 
   /**
@@ -302,14 +301,12 @@ export default class UsersService {
       user: authenticatedUserTransformer({
         ...user,
         organizations: [],
-        favoriteProjects: [],
-        changeRequestsToReview: [],
-        teamsAsHead: [],
-        teamsAsLead: [],
-        teamsAsMember: [],
         roles: [],
         onboardingTeamTypes: [],
-        onboardedTeamTypes: []
+        onboardedTeamTypes: [],
+        teamsAsHead: [],
+        teamsAsLead: [],
+        teamsAsMember: []
       }),
       token
     };
@@ -356,14 +353,12 @@ export default class UsersService {
     return authenticatedUserTransformer({
       ...user,
       organizations: [],
-      favoriteProjects: [],
-      changeRequestsToReview: [],
-      teamsAsHead: [],
-      teamsAsLead: [],
-      teamsAsMember: [],
       roles: [],
       onboardingTeamTypes: [],
-      onboardedTeamTypes: []
+      onboardedTeamTypes: [],
+      teamsAsHead: [],
+      teamsAsLead: [],
+      teamsAsMember: []
     });
   }
 

@@ -44,7 +44,7 @@ vi.mock('../../../hooks/users.hooks');
 const mockedUseCurrentUser = useCurrentUser as jest.Mock<AuthenticatedUser>;
 
 const mockCurrentUserHook = (user = exampleAdminUser) => {
-  mockedUseCurrentUser.mockReturnValue(user);
+  mockedUseCurrentUser.mockReturnValue({ ...user, organizations: [], onboardedTeamTypeIds: [], onboardingTeamTypeIds: [] });
 };
 
 const renderComponent = () => {

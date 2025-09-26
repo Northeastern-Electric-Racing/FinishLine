@@ -23,7 +23,12 @@ const renderComponent = () => {
 
 describe('help page component', () => {
   it('renders everything', () => {
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue({
+      ...exampleAdminUser,
+      organizations: [],
+      onboardedTeamTypeIds: [],
+      onboardingTeamTypeIds: []
+    });
     renderComponent();
     expect(screen.getAllByText('Information').length).toEqual(1);
     expect(screen.getByText(/Resources/)).toBeInTheDocument();

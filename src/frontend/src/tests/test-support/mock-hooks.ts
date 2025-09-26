@@ -21,21 +21,21 @@ import { exampleAdminUser } from './test-data/users.stub';
 export const mockLogUserInReturnValue = mockUseMutationResult<AuthenticatedUser>(
   false,
   false,
-  exampleAdminUser,
+  { ...exampleAdminUser, organizations: [], onboardedTeamTypeIds: [], onboardingTeamTypeIds: [] },
   new Error()
 ) as UseMutationResult<AuthenticatedUser, Error, string, unknown>;
 
 export const mockLogUserInDevReturnValue = mockUseMutationResult<AuthenticatedUser>(
   false,
   false,
-  exampleAdminUser,
+  { ...exampleAdminUser, organizations: [], onboardedTeamTypeIds: [], onboardingTeamTypeIds: [] },
   new Error()
 ) as UseMutationResult<AuthenticatedUser, Error, string, unknown>;
 
 export const mockGetCurrentUserValue = mockUseMutationResult<AuthenticatedUser>(
   false,
   false,
-  exampleAdminUser,
+  { ...exampleAdminUser, organizations: [], onboardedTeamTypeIds: [], onboardingTeamTypeIds: [] },
   new Error()
 ) as UseMutationResult<AuthenticatedUser, Error, void, unknown>;
 

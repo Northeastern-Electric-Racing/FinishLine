@@ -36,7 +36,14 @@ describe('user hooks', () => {
 
   it.skip('handles logging in a user', async () => {
     const mockedLogUserIn = logUserIn as jest.Mock<Promise<AxiosResponse<AuthenticatedUser>>>;
-    mockedLogUserIn.mockReturnValue(mockPromiseAxiosResponse<AuthenticatedUser>(exampleAdminUser));
+    mockedLogUserIn.mockReturnValue(
+      mockPromiseAxiosResponse<AuthenticatedUser>({
+        ...exampleAdminUser,
+        organizations: [],
+        onboardedTeamTypeIds: [],
+        onboardingTeamTypeIds: []
+      })
+    );
 
     const { result } = renderHook(() => useLogUserIn(), {
       wrapper

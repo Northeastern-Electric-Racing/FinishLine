@@ -15,33 +15,23 @@ export const exampleAppAdminUser: User = {
   permissions: []
 };
 
-export const exampleAdminUser: AuthenticatedUser = {
+export const exampleAdminUser: User = {
   userId: '2',
   firstName: 'Joe',
   lastName: 'Shmoe',
   email: 'shmoe.j@husky.neu.edu',
   emailId: 'shmoe.j',
   role: RoleEnum.ADMIN,
-  favoritedProjectsId: [],
-  changeRequestsToReviewId: [],
-  organizations: ['yello'],
-  onboardingTeamTypeIds: [],
-  onboardedTeamTypeIds: [],
   permissions: []
 };
 
-export const exampleAdminUser2: AuthenticatedUser = {
+export const exampleAdminUser2: User = {
   userId: '8',
   firstName: 'Joe',
   lastName: 'Shmoseph',
   email: 'shmoseph.j@husky.neu.edu',
   emailId: 'shmoseph.j',
   role: RoleEnum.ADMIN,
-  favoritedProjectsId: [],
-  changeRequestsToReviewId: [],
-  organizations: [],
-  onboardingTeamTypeIds: [],
-  onboardedTeamTypeIds: [],
   permissions: []
 };
 
@@ -75,33 +65,23 @@ export const exampleManagerUser: User = {
   permissions: []
 };
 
-export const exampleMemberUser: AuthenticatedUser = {
+export const exampleMemberUser: User = {
   userId: '6',
   firstName: 'Emily',
   lastName: 'Bendara',
   email: 'bendara.e@husky.neu.edu',
   emailId: 'bendara.e',
   role: RoleEnum.HEAD,
-  favoritedProjectsId: [],
-  changeRequestsToReviewId: [],
-  organizations: [],
-  onboardingTeamTypeIds: [],
-  onboardedTeamTypeIds: [],
   permissions: []
 };
 
-export const exampleGuestUser: AuthenticatedUser = {
+export const exampleGuestUser: User = {
   userId: '7',
   firstName: 'Jackson',
   lastName: 'James',
   email: 'james.j@husky.neu.edu',
   emailId: 'james.j',
   role: RoleEnum.GUEST,
-  favoritedProjectsId: [],
-  changeRequestsToReviewId: [],
-  organizations: [],
-  onboardingTeamTypeIds: [],
-  onboardedTeamTypeIds: [],
   permissions: []
 };
 

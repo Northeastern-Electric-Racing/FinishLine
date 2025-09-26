@@ -19,7 +19,12 @@ vi.mock('../../../layouts/PageTitle/PageBreadcrumbs', () => {
 
 describe('error page', () => {
   it('renders title', () => {
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue({
+      ...exampleAdminUser,
+      organizations: [],
+      onboardedTeamTypeIds: [],
+      onboardingTeamTypeIds: []
+    });
     render(<PageTitle title={'test'} />);
 
     expect(screen.getByText('test')).toBeInTheDocument();
