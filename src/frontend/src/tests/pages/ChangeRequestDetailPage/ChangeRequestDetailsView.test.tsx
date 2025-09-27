@@ -22,6 +22,7 @@ import {
   mockLogUserInDevReturnValue,
   mockGetCurrentUserValue
 } from '../../test-support/mock-hooks';
+import { exampleAuthenticatedAdminUser } from '../../test-support/test-data/authenticated-user.stub';
 
 vi.mock('../../../hooks/projects.hooks');
 vi.mock('../../../hooks/users.hooks');
@@ -72,7 +73,7 @@ describe('Implement change request permission tests', () => {
       onboardedTeamTypeIds: [],
       onboardingTeamTypeIds: []
     });
-    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAuthenticatedAdminUser));
     vi.spyOn(userHooks, 'useGetCurrentUser').mockReturnValue(mockGetCurrentUserValue);
   });
 
