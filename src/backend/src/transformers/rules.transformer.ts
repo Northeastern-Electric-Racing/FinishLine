@@ -8,6 +8,6 @@ export const projectRuleTransformer = (projectRule: any): ProjectRule => {
     rule: projectRule.rule,
     projectId: projectRule.projectId,
     currentStatus: projectRule.currentStatus,
-    statusHistory: []
+    statusHistory: projectRule.statusHistory
   };
 };

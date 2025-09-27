@@ -34,7 +34,6 @@ describe('Rule Tests', () => {
 
   const createUniqueCar = async (orgId: string) => {
     let carCounter = 0;
-    carCounter++;
 
     const car = await prisma.car.create({
       data: {
@@ -52,6 +51,7 @@ describe('Rule Tests', () => {
         wbsElement: true
       }
     });
+    carCounter++;
     return car;
   };
 
