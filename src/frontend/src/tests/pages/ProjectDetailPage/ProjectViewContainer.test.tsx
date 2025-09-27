@@ -17,8 +17,7 @@ import * as bomHooks from '../../../hooks/bom.hooks';
 import {
   mockManyMaterials,
   mockManyWorkPackages,
-  mockUseGetReimbursementRequestProjectData,
-  mockUseUsersFavoriteProjects
+  mockUseGetReimbursementRequestProjectData
 } from '../../test-support/mock-hooks';
 import { exampleAllWorkPackages } from '../../test-support/test-data/work-packages.stub';
 import { exampleRRData } from '../../test-support/test-data/finance.stubs';
@@ -62,12 +61,23 @@ describe('Rendering Project View Container', () => {
       onboardedTeamTypeIds: [],
       onboardingTeamTypeIds: []
     });
-    vi.spyOn(userHooks, 'useUsersFavoriteProjects').mockReturnValue(mockUseUsersFavoriteProjects());
     vi.spyOn(wpHooks, 'useGetManyWorkPackages').mockReturnValue(mockManyWorkPackages(exampleAllWorkPackages));
     vi.spyOn(bomHooks, 'useGetMaterialsForWbsElement').mockReturnValue(mockManyMaterials([]));
     vi.spyOn(financeHooks, 'useGetReimbursementRequestProjectData').mockReturnValue(
       mockUseGetReimbursementRequestProjectData(exampleRRData)
     );
+    vi.spyOn(userHooks, 'useUsersFavoriteProjects').mockReturnValue({
+      data: [
+        {
+          ...exampleProject1,
+          workPackages: exampleProject1.workPackages,
+          teams: exampleProject1.teams
+        }
+      ],
+      isLoading: false,
+      isError: false,
+      error: undefined
+    } as any);
   });
 
   it('renders the provided project', async () => {

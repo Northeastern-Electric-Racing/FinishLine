@@ -7,35 +7,6 @@ import { getLinkQueryArgs } from './links.query-args';
 export type WorkPackageQueryArgs = ReturnType<typeof getWorkPackageQueryArgs>;
 export type WorkPackagePreviewQueryArgs = ReturnType<typeof getWorkPackagePreviewQueryArgs>;
 
-export const getWorkPackagePreviewQueryArgs = () =>
-  Prisma.validator<Prisma.Work_PackageDefaultArgs>()({
-    select: {
-      workPackageId: true,
-      projectId: true,
-      project: {
-        select: { wbsElement: { select: { name: true } } }
-      },
-      wbsElementId: true,
-      wbsElement: {
-        select: {
-          dateDeleted: true,
-          status: true,
-          carNumber: true,
-          dateCreated: true,
-          projectNumber: true,
-          workPackageNumber: true,
-          name: true,
-          lead: { select: { firstName: true, lastName: true } },
-          manager: { select: { firstName: true, lastName: true } },
-          links: getLinkQueryArgs()
-        }
-      },
-      startDate: true,
-      duration: true,
-      blockedBy: true
-    }
-  });
-
 export const getWorkPackageQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Work_PackageDefaultArgs>()({
     include: {
@@ -64,5 +35,41 @@ export const getWorkPackageQueryArgs = (organizationId: string) =>
         }
       },
       blockedBy: { where: { dateDeleted: null } }
+    }
+  });
+
+export const getWorkPackagePreviewQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Work_PackageDefaultArgs>()({
+    select: {
+      blockedBy: true,
+      wbsElement: {
+        select: {
+          wbsElementId: true,
+          carNumber: true,
+          projectNumber: true,
+          workPackageNumber: true,
+          dateCreated: true,
+          dateDeleted: true,
+          name: true,
+          lead: getUserQueryArgs(organizationId),
+          manager: getUserQueryArgs(organizationId),
+          status: true
+        }
+      },
+      project: {
+        select: {
+          projectId: true,
+          wbsElement: {
+            select: {
+              name: true,
+              links: getLinkQueryArgs()
+            }
+          }
+        }
+      },
+      startDate: true,
+      duration: true,
+      workPackageId: true,
+      stage: true
     }
   });

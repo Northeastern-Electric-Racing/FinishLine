@@ -32,7 +32,8 @@ const logUserOut = () => `${users()}/auth/log-out`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
-const allProjects = (includeDeleted: boolean) => `${projects()}/all/${includeDeleted ? 'true' : 'false'}`;
+const allProjectsGantt = () => `${projects()}/all-gantt`;
+const allProjects = () => `${projects()}/all-previews`;
 const usersTeamsProjects = () => `${projects()}/users-teams`;
 const usersLeadingProjects = () => `${projects()}/leading`;
 const teamsProjects = (teamId: string) => `${projects()}/teams-projects/${teamId}`;
@@ -448,7 +449,8 @@ export const apiUrls = {
   logUserOut,
 
   projects,
-  allProjects,
+  allProjectsGantt,
+  allProjectPreviews: allProjects,
   projectsByWbsNum,
   projectsCreate,
   projectsEdit,

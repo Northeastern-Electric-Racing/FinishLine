@@ -617,7 +617,7 @@ export default class WorkPackagesService {
           status: { not: WBS_Element_Status.COMPLETE }
         }
       },
-      ...getWorkPackagePreviewQueryArgs()
+      ...getWorkPackagePreviewQueryArgs(organization.organizationId)
     });
 
     if (selection === 'allOverdue') {

@@ -3,7 +3,16 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { DescriptionBullet, Link, LinkType, Project, ProjectPreview, RetrospectiveProjectPreview } from 'shared';
+import {
+  DescriptionBullet,
+  Link,
+  LinkType,
+  Project,
+  ProjectOverview,
+  ProjectGantt,
+  ProjectPreview,
+  RetrospectiveProjectPreview
+} from 'shared';
 import { implementedChangeTransformer } from './change-requests.transformers';
 import { taskTransformer } from './tasks.transformers';
 import { retrospectiveWorkPackageTransformer, workPackageTransformer } from './work-packages.transformers';
@@ -46,14 +55,14 @@ export const retrospectiveProjectPreviewTransformer = (
   project: RetrospectiveProjectPreview
 ): RetrospectiveProjectPreview => {
   return {
-    ...projectPreviewTransformer(project),
+    ...projectGanttTransformer(project),
     originalEndDate: project.originalEndDate ? new Date(project.originalEndDate) : undefined,
     originalStartDate: project.originalStartDate ? new Date(project.originalStartDate) : undefined,
     workPackages: project.workPackages.map(retrospectiveWorkPackageTransformer)
   };
 };
 
-export const projectPreviewTransformer = (project: ProjectPreview): ProjectPreview => {
+export const projectGanttTransformer = (project: ProjectGantt): ProjectGantt => {
   return {
     ...project,
     dateCreated: new Date(project.dateCreated),
@@ -63,7 +72,39 @@ export const projectPreviewTransformer = (project: ProjectPreview): ProjectPrevi
   };
 };
 
-export const projectToProjectPreviewTransformer = (project: Project): ProjectPreview => {
+export const projectPreviewTransformer = (project: ProjectPreview): ProjectPreview => {
+  return {
+    ...project,
+    dateCreated: new Date(project.dateCreated),
+    startDate: project.startDate ? new Date(project.startDate) : undefined,
+    endDate: project.endDate ? new Date(project.endDate) : undefined,
+    workPackages: project.workPackages.map((wp) => ({
+      ...wp,
+      dateCreated: new Date(wp.dateCreated),
+      startDate: new Date(wp.startDate),
+      endDate: new Date(wp.endDate)
+    }))
+  };
+};
+
+export const projectOverviewTransformer = (project: ProjectOverview): ProjectOverview => {
+  return {
+    ...project,
+    dateCreated: new Date(project.dateCreated),
+    startDate: project.startDate ? new Date(project.startDate) : undefined,
+    endDate: project.endDate ? new Date(project.endDate) : undefined,
+    workPackages: project.workPackages.map((wp) => ({
+      ...wp,
+      dateCreated: new Date(wp.dateCreated),
+      startDate: new Date(wp.startDate),
+      endDate: new Date(wp.endDate)
+    })),
+    links: project.links,
+    tasks: project.tasks.map(taskTransformer)
+  };
+};
+
+export const projectToProjectPreviewTransformer = (project: Project): ProjectGantt => {
   return {
     ...project
   };
