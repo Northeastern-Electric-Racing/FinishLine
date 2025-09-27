@@ -11,7 +11,29 @@ export const exampleAuthenticatedAdminUser: AuthenticatedUser = {
   lastName: 'Shmoe',
   email: 'shmoe.j@husky.neu.edu',
   role: RoleEnum.ADMIN,
-  organizations: [],
+  organizations: ['yello'],
+  onboardingTeamTypeIds: [],
+  onboardedTeamTypeIds: []
+};
+
+export const exampleAuthenticatedGuestUser: AuthenticatedUser = {
+  userId: '5',
+  firstName: 'Guest',
+  lastName: 'User',
+  email: 'guest@ner.edu',
+  role: RoleEnum.GUEST,
+  organizations: ['foo'],
+  onboardingTeamTypeIds: [],
+  onboardedTeamTypeIds: []
+};
+
+export const exampleAuthenticatedMemberUser: AuthenticatedUser = {
+  userId: '6',
+  firstName: 'Member',
+  lastName: 'User',
+  email: 'member@ner.edu',
+  role: RoleEnum.MEMBER,
+  organizations: ['bar'],
   onboardingTeamTypeIds: [],
   onboardedTeamTypeIds: []
 };

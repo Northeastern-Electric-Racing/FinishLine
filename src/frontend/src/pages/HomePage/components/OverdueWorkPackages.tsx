@@ -12,8 +12,6 @@ const OverdueWorkPackages: React.FC<{}> = () => {
   if (isLoading || !overdueWPs) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
-  console.log('Overdue WPs:', overdueWPs);
-
   return <OverdueWorkPackagesView theme={theme} workPackages={overdueWPs} />;
 };
 

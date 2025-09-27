@@ -144,3 +144,6 @@ export const mockManyMaterials = (materials: Material[]) =>
 
 export const mockUseGetReimbursementRequestProjectData = (rrData: ReimbursementRequestData) =>
   mockUseQueryResult<ReimbursementRequestData>(false, false, rrData, new Error());
+
+export const mockUseMyTeamAsHead = (teamId?: string) =>
+  mockUseQueryResult<string | undefined>(false, false, teamId, new Error());

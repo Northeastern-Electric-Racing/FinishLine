@@ -3,7 +3,18 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User, RoleEnum } from 'shared';
+import { User, RoleEnum, AuthenticatedUser } from 'shared';
+
+export const exampleAuthenticatedUser: AuthenticatedUser = {
+  userId: 'uuid',
+  firstName: 'current',
+  lastName: 'user',
+  email: 'iluvner@northeastern.edu',
+  role: RoleEnum.ADMIN,
+  organizations: [],
+  onboardingTeamTypeIds: [],
+  onboardedTeamTypeIds: []
+};
 
 export const exampleAppAdminUser: User = {
   userId: '1',

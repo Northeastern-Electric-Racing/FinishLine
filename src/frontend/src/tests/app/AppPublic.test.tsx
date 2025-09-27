@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User } from 'shared';
+import { AuthenticatedUser, User } from 'shared';
 import { render, screen, routerWrapperBuilder } from '../test-support/test-utils';
 import { exampleAdminUser } from '../test-support/test-data/users.stub';
 import { mockAuth } from '../test-support/test-data/test-utils.stub';
@@ -11,6 +11,7 @@ import { useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/routes';
 import { Auth } from '../../utils/types';
 import AppPublic from '../../app/AppPublic';
+import { exampleAuthenticatedAdminUser } from '../test-support/test-data/authenticated-user.stub';
 
 vi.mock('../../app/AppAuthenticated', () => {
   return {
@@ -25,7 +26,7 @@ vi.mock('../../hooks/auth.hooks');
 
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 
-const mockHook = (isLoading: boolean, user?: User) => {
+const mockHook = (isLoading: boolean, user?: AuthenticatedUser) => {
   mockedUseAuth.mockReturnValue(mockAuth(isLoading, user));
 };
 
@@ -41,14 +42,14 @@ const renderComponent = (path?: string, route?: string) => {
 
 describe('app public section', () => {
   it('renders loading spinner', () => {
-    mockHook(true, exampleAdminUser);
+    mockHook(true, exampleAuthenticatedAdminUser);
     renderComponent(routes.LOGIN, routes.LOGIN);
 
     expect(screen.getByTestId('loader')).toBeInTheDocument();
   });
 
   it('renders app authenticated', () => {
-    mockHook(false, exampleAdminUser);
+    mockHook(false, exampleAuthenticatedAdminUser);
     renderComponent(routes.PROJECTS, routes.PROJECTS);
 
     expect(screen.getByText('app-authenticated')).toBeInTheDocument();
