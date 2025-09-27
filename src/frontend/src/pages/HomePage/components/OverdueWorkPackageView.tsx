@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Theme, Typography, useTheme } from '@mui/material';
+import { Box, Card, CardContent, Theme, Typography } from '@mui/material';
 import { WorkPackage } from 'shared';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
