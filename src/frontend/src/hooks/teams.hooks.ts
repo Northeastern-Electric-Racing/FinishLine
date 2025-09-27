@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useQueryClient, useMutation } from 'react-query';
-import { Team, TeamPreview, WorkPackage } from 'shared';
+import { Team, TeamPreview } from 'shared';
 import {
   getAllTeams,
   getSingleTeam,

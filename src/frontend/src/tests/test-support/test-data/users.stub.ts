@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User, RoleEnum, AuthenticatedUser } from 'shared';
+import { User, RoleEnum } from 'shared';
 
 export const exampleAppAdminUser: User = {
   userId: '1',

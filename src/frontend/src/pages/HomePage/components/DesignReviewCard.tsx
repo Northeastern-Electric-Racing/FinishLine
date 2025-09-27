@@ -1,5 +1,5 @@
 import { Box, Card, CardContent, Link, Stack, Typography, useTheme } from '@mui/material';
-import { AuthenticatedUser, DesignReview, meetingStartTimePipe, User } from 'shared';
+import { AuthenticatedUser, DesignReview, meetingStartTimePipe } from 'shared';
 import { datePipe, projectWbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';

@@ -10,7 +10,7 @@ import Typography from '@mui/material/Typography';
 import { useReducer, useState } from 'react';
 import { useCheckDescriptionBullet } from '../hooks/description-bullets.hooks';
 import { Tooltip } from '@mui/material';
-import { AuthenticatedUser, User } from 'shared';
+import { User } from 'shared';
 import NERModal from './NERModal';
 import { fullNamePipe } from '../utils/pipes';
 import { useToast } from '../hooks/toasts.hooks';

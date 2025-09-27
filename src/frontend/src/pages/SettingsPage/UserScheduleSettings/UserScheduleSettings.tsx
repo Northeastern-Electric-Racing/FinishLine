@@ -15,8 +15,7 @@ import {
   Availability,
   AvailabilityCreateArgs,
   getMostRecentAvailabilities,
-  SetUserScheduleSettingsArgs,
-  User
+  SetUserScheduleSettingsArgs
 } from 'shared';
 import { useUpdateUserScheduleSettings, useUserScheduleSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';

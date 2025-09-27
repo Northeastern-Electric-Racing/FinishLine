@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { Task, TaskCardPreview, TaskPreview } from 'shared';
+import { Task, TaskCardPreview } from 'shared';
 import { wbsNumOf } from '../utils/utils';
 import { convertTaskPriority, convertTaskStatus } from '../utils/tasks.utils';
 import { userTransformer } from './user.transformer';

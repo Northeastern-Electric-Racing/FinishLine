@@ -5,8 +5,6 @@
 
 import {
   DescriptionBullet,
-  Link,
-  LinkType,
   Project,
   ProjectOverview,
   ProjectGantt,
