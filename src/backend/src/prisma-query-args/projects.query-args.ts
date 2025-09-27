@@ -94,7 +94,7 @@ export const getProjectPreviewQueryArgs = (organizationId: string) =>
           status: true
         }
       },
-      workPackages: getWorkPackagePreviewQueryArgs(organizationId),
+      workPackages: getWorkPackagePreviewQueryArgs(),
       projectId: true,
       budget: true,
       abbreviation: true,
@@ -126,7 +126,7 @@ export const getProjectOverviewQueryArgs = (organizationId: string) =>
           tasks: getTaskQueryArgs(organizationId)
         }
       },
-      workPackages: getWorkPackagePreviewQueryArgs(organizationId),
+      workPackages: getWorkPackagePreviewQueryArgs(),
       projectId: true,
       budget: true,
       abbreviation: true,

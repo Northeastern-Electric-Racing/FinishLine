@@ -38,7 +38,7 @@ export const getWorkPackageQueryArgs = (organizationId: string) =>
     }
   });
 
-export const getWorkPackagePreviewQueryArgs = (organizationId: string) =>
+export const getWorkPackagePreviewQueryArgs = () =>
   Prisma.validator<Prisma.Work_PackageDefaultArgs>()({
     select: {
       blockedBy: true,
@@ -51,8 +51,8 @@ export const getWorkPackagePreviewQueryArgs = (organizationId: string) =>
           dateCreated: true,
           dateDeleted: true,
           name: true,
-          lead: getUserQueryArgs(organizationId),
-          manager: getUserQueryArgs(organizationId),
+          lead: { select: { userId: true, firstName: true, lastName: true } },
+          manager: { select: { userId: true, firstName: true, lastName: true } },
           status: true
         }
       },

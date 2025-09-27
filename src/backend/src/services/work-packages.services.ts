@@ -23,7 +23,7 @@ import {
   DeletedException,
   InvalidOrganizationException
 } from '../utils/errors.utils';
-import { getWorkPackagePreviewQueryArgs, getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
+import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
 import workPackageTransformer, { workPackagePreviewTransformer } from '../transformers/work-packages.transformer';
 import { updateBlocking, validateChangeRequestAccepted } from '../utils/change-requests.utils';
 import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils';
@@ -617,7 +617,28 @@ export default class WorkPackagesService {
           status: { not: WBS_Element_Status.COMPLETE }
         }
       },
-      ...getWorkPackagePreviewQueryArgs(organization.organizationId)
+      select: {
+        project: { select: { projectId: true, wbsElement: { select: { name: true } } } },
+        wbsElement: {
+          select: {
+            dateCreated: true,
+            status: true,
+            name: true,
+            carNumber: true,
+            projectNumber: true,
+            workPackageNumber: true,
+            dateDeleted: true,
+            wbsElementId: true,
+            lead: { select: { firstName: true, lastName: true, userId: true } },
+            manager: { select: { firstName: true, lastName: true, userId: true } }
+          }
+        },
+        blockedBy: true,
+        startDate: true,
+        duration: true,
+        workPackageId: true,
+        stage: true
+      }
     });
 
     if (selection === 'allOverdue') {
