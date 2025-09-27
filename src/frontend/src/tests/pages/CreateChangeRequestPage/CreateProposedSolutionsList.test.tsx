@@ -10,6 +10,7 @@ import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 import * as userHooks from '../../../hooks/users.hooks';
 import AppContextUser from '../../../app/AppContextUser';
+import { exampleAuthenticatedAdminUser } from '../../test-support/test-data/authenticated-user.stub';
 
 /**
  * Sets up the component under test with the desired values and renders it.
@@ -33,7 +34,7 @@ describe('Proposed Solutions List Test Suite', () => {
       onboardedTeamTypeIds: [],
       onboardingTeamTypeIds: []
     });
-    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAuthenticatedAdminUser));
   });
 
   it('Renders correctly when empty', () => {

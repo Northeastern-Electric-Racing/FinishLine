@@ -5,7 +5,7 @@
 
 import { AxiosHeaders, AxiosResponse } from 'axios';
 import { UseMutationResult, UseQueryResult } from 'react-query';
-import { AuthenticatedUser, User } from 'shared';
+import { AuthenticatedUser } from 'shared';
 import { exampleAuthenticatedAdminUser } from './authenticated-user.stub';
 import { Auth } from '../../../utils/types';
 

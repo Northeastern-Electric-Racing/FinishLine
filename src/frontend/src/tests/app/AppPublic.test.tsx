@@ -3,9 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { AuthenticatedUser, User } from 'shared';
+import { AuthenticatedUser } from 'shared';
 import { render, screen, routerWrapperBuilder } from '../test-support/test-utils';
-import { exampleAdminUser } from '../test-support/test-data/users.stub';
 import { mockAuth } from '../test-support/test-data/test-utils.stub';
 import { useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/routes';

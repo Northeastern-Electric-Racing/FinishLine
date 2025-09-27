@@ -16,6 +16,10 @@ import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data
 import WorkPackagePage from '../../../pages/WorkPackageDetailPage/WorkPackagePage';
 import AppContextUser from '../../../app/AppContextUser';
 import { useCurrentUser } from '../../../hooks/users.hooks';
+import {
+  exampleAuthenticatedAdminUser,
+  exampleAuthenticatedGuestUser
+} from '../../test-support/test-data/authenticated-user.stub';
 
 vi.mock('../../../hooks/work-packages.hooks');
 
@@ -35,7 +39,7 @@ vi.mock('../../../hooks/auth.hooks');
 
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 
-const mockAuthHook = (user = exampleAdminUser) => {
+const mockAuthHook = (user = exampleAuthenticatedAdminUser) => {
   mockedUseAuth.mockReturnValue(mockAuth(false, user));
 };
 
@@ -105,7 +109,7 @@ describe('work package container', () => {
 
   it('enables the edit button for non-guest user', () => {
     mockSingleWPHook(false, false, exampleResearchWorkPackage);
-    mockAuthHook(exampleAdminUser);
+    mockAuthHook(exampleAuthenticatedAdminUser);
     mockCurrentUserHook();
     mockGetBlockingWorkPackagesHook(false, false, [exampleDesignWorkPackage]);
     renderComponent();
@@ -116,7 +120,7 @@ describe('work package container', () => {
 
   it('disables the edit button for guest user', () => {
     mockSingleWPHook(false, false, exampleResearchWorkPackage);
-    mockAuthHook(exampleGuestUser);
+    mockAuthHook(exampleAuthenticatedGuestUser);
     mockCurrentUserHook(exampleGuestUser);
     mockGetBlockingWorkPackagesHook(false, false, [exampleDesignWorkPackage]);
     renderComponent();
