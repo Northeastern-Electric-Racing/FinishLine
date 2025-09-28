@@ -33,9 +33,9 @@ import {
   UserScheduleSettings,
   SetUserScheduleSettingsPayload,
   Task,
-  ProjectOverview,
   UserWithRole,
-  UserWithScheduleSettings
+  UserWithScheduleSettings,
+  ProjectOverview
 } from 'shared';
 import { useAuth } from './auth.hooks';
 import { useContext } from 'react';

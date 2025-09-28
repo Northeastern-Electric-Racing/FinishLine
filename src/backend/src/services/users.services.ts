@@ -11,14 +11,14 @@ import {
   UserScheduleSettings,
   AuthenticatedUser,
   AvailabilityCreateArgs,
-  ProjectGantt,
-  UserWithScheduleSettings
+  UserWithScheduleSettings,
+  ProjectOverview
 } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import { generateAccessToken } from '../utils/auth.utils';
-import { projectGanttTransformer } from '../transformers/projects.transformer';
-import { getProjectGanttQueryArgs } from '../prisma-query-args/projects.query-args';
+import { projectOverviewTransformer } from '../transformers/projects.transformer';
+import { getProjectOverviewQueryArgs } from '../prisma-query-args/projects.query-args';
 import userSecureSettingsTransformer from '../transformers/user-secure-settings.transformer';
 import userScheduleSettingsTransformer from '../transformers/user-schedule-settings.transformer';
 import { userTransformer, userWithScheduleSettingsTransformer } from '../transformers/user.transformer';
@@ -147,7 +147,7 @@ export default class UsersService {
    * @param organizationId the id of the organization the user is in
    * @returns the user's favorite projects
    */
-  static async getUsersFavoriteProjects(userId: string, organization: Organization): Promise<ProjectGantt[]> {
+  static async getUsersFavoriteProjects(userId: string, organization: Organization): Promise<ProjectOverview[]> {
     const requestedUser = await prisma.user.findUnique({ where: { userId } });
     if (!requestedUser) throw new NotFoundException('User', userId);
 
@@ -162,10 +162,10 @@ export default class UsersService {
           organizationId: organization.organizationId
         }
       },
-      ...getProjectGanttQueryArgs(organization.organizationId)
+      ...getProjectOverviewQueryArgs(organization.organizationId)
     });
 
-    return projects.map(projectGanttTransformer);
+    return projects.map(projectOverviewTransformer);
   }
 
   /**
