@@ -1,47 +1,50 @@
-import { Calendar, Organization } from '@prisma/client';
+import { Calendar, Organization, User } from '@prisma/client';
 import CalendarService from '../../src/services/calendar.services';
 import { AccessDeniedAdminOnlyException, AccessDeniedException, NotFoundException } from '../../src/utils/errors.utils';
-import {
-  batmanAppAdmin,
-  wonderwomanGuest,
-  supermanAdmin,
-  flashAdmin,
-  theVisitorGuest,
-  alfred
-} from '../test-data/users.test-data';
+import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, theVisitorGuest, alfred } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
+import { Machinery, Shop } from 'shared';
 
 describe('Calendar Tests', () => {
   let orgId: string;
   let organization: Organization;
+  let adminUser: User;
   let calendar: Calendar;
-  let shopId: string;
+  let shop: Shop;
+  let machinery: Machinery;
 
   beforeEach(async () => {
     organization = await createTestOrganization();
     orgId = organization.organizationId;
+    adminUser = await createTestUser(batmanAppAdmin, orgId);
 
     calendar = await prisma.calendar.create({
       data: {
         name: 'Engineering Team Calendar',
         description: 'Tracks all engineering team events, meetings, and deadlines.',
         colorHexCode: '#3498db',
-        userCreated: { connect: { userId: (await createTestUser(supermanAdmin, orgId)).userId } },
+        userCreated: { connect: { userId: adminUser.userId } },
         dateCreated: new Date(),
         organization: { connect: { organizationId: organization.organizationId } }
       }
     });
 
-    const shop = await prisma.shop.create({
-      data: {
-        name: 'Precision Manufacturing Lab',
-        description: 'Manufacturing facility equipped with advanced machinery and tools for engineering',
-        userCreatedId: (await createTestUser(flashAdmin, orgId)).userId,
-        organizationId: orgId
-      }
-    });
-    ({ shopId } = shop);
+    shop = await CalendarService.createShop(
+      adminUser,
+      'Precision Manufacturing Lab',
+      'Manufacturing facility equipped with advanced machinery and tools for engineering',
+      organization
+    );
+
+    machinery = await CalendarService.createMachinery(
+      adminUser,
+      'Original Machinery Name',
+      shop.shopId,
+      1,
+      organization,
+      'Original description'
+    );
   });
 
   afterEach(async () => {
@@ -76,7 +79,7 @@ describe('Calendar Tests', () => {
 
     it('Succeeds and creates an event type', async () => {
       const result = await CalendarService.createEventType(
-        await createTestUser(batmanAppAdmin, orgId),
+        await createTestUser(supermanAdmin, orgId),
         'Team Meeting',
         [],
         organization,
@@ -119,7 +122,7 @@ describe('Calendar Tests', () => {
           await CalendarService.createMachinery(
             await createTestUser(wonderwomanGuest, orgId),
             'Captain America Shield Press',
-            shopId,
+            shop.shopId,
             1,
             organization
           )
@@ -128,9 +131,9 @@ describe('Calendar Tests', () => {
 
     it('Succeeds and creates machinery', async () => {
       const result = await CalendarService.createMachinery(
-        await createTestUser(alfred, orgId),
+        await createTestUser(supermanAdmin, orgId),
         'Iron Man Mark 42 CNC Mill',
-        shopId,
+        shop.shopId,
         2,
         organization
       );
@@ -144,59 +147,14 @@ describe('Calendar Tests', () => {
   });
 
   describe('Edit Machinery', () => {
-    let machineryId: string;
-    let anotherShopId: string;
-
-    //Create some machinery beforehand so we can edit it
-    beforeEach(async () => {
-      await resetUsers();
-
-      // Recreate the organization and shop since resetUsers() cleared everything
-      organization = await createTestOrganization();
-      orgId = organization.organizationId;
-
-      const shop = await prisma.shop.create({
-        data: {
-          name: 'Precision Manufacturing Lab',
-          description: 'Manufacturing facility equipped with advanced machinery and tools for engineering',
-          userCreatedId: (await createTestUser(supermanAdmin, orgId)).userId,
-          organizationId: orgId
-        }
-      });
-      ({ shopId } = shop);
-
-      const machinery = await CalendarService.createMachinery(
-        await createTestUser(alfred, orgId),
-        'Original Machinery Name',
-        shopId,
-        1,
-        organization,
-        'Original description'
-      );
-      const { machineryId: machineryIdFromResponse } = machinery;
-      machineryId = machineryIdFromResponse;
-
-      // Create another shop for testing (add onto the created machinery above)
-      const anotherShop = await prisma.shop.create({
-        data: {
-          name: 'Advanced Testing Lab',
-          description: 'Advanced testing facility',
-          userCreatedId: (await createTestUser(flashAdmin, orgId)).userId,
-          organizationId: orgId
-        }
-      });
-      const { shopId: anotherShopIdFromResponse } = anotherShop;
-      anotherShopId = anotherShopIdFromResponse;
-    });
-
     it('Fails if user is not a head or above', async () => {
       await expect(
         async () =>
           await CalendarService.editMachinery(
             await createTestUser(wonderwomanGuest, orgId),
-            machineryId,
+            machinery.machineryId,
             'Updated Machinery Name',
-            shopId,
+            shop.shopId,
             2,
             organization,
             'Updated description'
@@ -212,7 +170,7 @@ describe('Calendar Tests', () => {
             await createTestUser(supermanAdmin, orgId),
             nonExistentId,
             'Updated Machinery Name',
-            shopId,
+            shop.shopId,
             2,
             organization,
             'Updated description'
@@ -226,7 +184,7 @@ describe('Calendar Tests', () => {
         async () =>
           await CalendarService.editMachinery(
             await createTestUser(supermanAdmin, orgId),
-            machineryId,
+            machinery.machineryId,
             'Updated Machinery Name',
             nonExistentShopId,
             2,
@@ -239,9 +197,9 @@ describe('Calendar Tests', () => {
     it('Succeeds and updates machinery for head user', async () => {
       const result = await CalendarService.editMachinery(
         await createTestUser(supermanAdmin, orgId),
-        machineryId,
+        machinery.machineryId,
         'Updated Machinery Name',
-        shopId,
+        shop.shopId,
         3,
         organization,
         'Updated description'
@@ -255,11 +213,18 @@ describe('Calendar Tests', () => {
     });
 
     it('Succeeds and updates machinery for admin user', async () => {
+      const anotherShop = await CalendarService.createShop(
+        await createTestUser(alfred, orgId),
+        'Advanced Testing Lab',
+        'Advanced testing facility',
+        organization
+      );
+
       const result = await CalendarService.editMachinery(
-        await createTestUser(batmanAppAdmin, orgId),
-        machineryId,
+        await createTestUser(supermanAdmin, orgId),
+        machinery.machineryId,
         'Admin Updated Machinery',
-        anotherShopId,
+        anotherShop.shopId,
         5,
         organization,
         'Admin updated description'
@@ -275,9 +240,9 @@ describe('Calendar Tests', () => {
     it('Succeeds and updates machinery without description', async () => {
       const result = await CalendarService.editMachinery(
         await createTestUser(supermanAdmin, orgId),
-        machineryId,
+        machinery.machineryId,
         'No Description Machinery',
-        shopId,
+        shop.shopId,
         2,
         organization
       );
@@ -298,8 +263,7 @@ describe('Calendar Tests', () => {
       });
 
       it('succeeds for admin', async () => {
-        // Using a different admin fixture to avoid googleAuthId collision with the calendar creator
-        const admin = await createTestUser(batmanAppAdmin, orgId);
+        const admin = await createTestUser(supermanAdmin, orgId);
 
         const result = await CalendarService.createShop(admin, 'Demo Shop', 'A seeded demo shop', organization);
 
@@ -309,10 +273,11 @@ describe('Calendar Tests', () => {
       });
 
       it('fails on duplicate name', async () => {
-        const admin = await createTestUser(batmanAppAdmin, orgId);
-        await CalendarService.createShop(admin, 'UniqueName', 'first', organization);
+        await CalendarService.createShop(await createTestUser(supermanAdmin, orgId), 'UniqueName', 'first', organization);
 
-        await expect(CalendarService.createShop(admin, 'UniqueName', 'second attempt', organization)).rejects.toBeTruthy();
+        await expect(
+          CalendarService.createShop(await createTestUser(alfred, orgId), 'UniqueName', 'second attempt', organization)
+        ).rejects.toBeTruthy();
       });
     });
   });
