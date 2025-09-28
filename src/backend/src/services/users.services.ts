@@ -36,18 +36,20 @@ export default class UsersService {
    * @param organizationId the id of the organization to get the users for
    * @returns a list of all the users
    */
-  static async getAllUsers(organizationId: string): Promise<User[]> {
+  static async getAllUsers(organizationId?: string): Promise<User[]> {
     const users = await prisma.user.findMany({
-      where: organizationId
-        ? {
-            organizations: {
-              some: {
-                organizationId
-              }
+      ...(organizationId ? { where: { organizations: { some: { organizationId } } } } : {}),
+      ...(organizationId
+        ? getUserQueryArgs(organizationId)
+        : {
+            select: {
+              roles: true,
+              userId: true,
+              firstName: true,
+              lastName: true,
+              email: true
             }
-          }
-        : {},
-      ...getUserQueryArgs(organizationId)
+          })
     });
 
     users.sort((a, b) => a.firstName.localeCompare(b.firstName));

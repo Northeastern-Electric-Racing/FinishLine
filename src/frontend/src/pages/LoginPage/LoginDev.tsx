@@ -28,7 +28,7 @@ const LoginDev: React.FC<LoginDevProps> = ({ devSetUser, devFormSubmit }) => {
   if (import.meta.env.MODE !== 'development') return <></>;
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const { isLoading, data: usersList } = useAllUsers();
+  const { isLoading, data: usersList } = useAllUsers(true);
 
   if (!usersList || isLoading) return <LoadingIndicator />;
 

@@ -28,8 +28,10 @@ import { taskTransformer } from './transformers/tasks.transformers';
 /**
  * Fetches all users.
  */
-export const getAllUsers = () => {
-  return axios.get<UserWithRole[]>(apiUrls.users());
+export const getAllUsers = (allOrgs?: boolean) => {
+  return axios.get<UserWithRole[]>(apiUrls.allUsers(allOrgs), {
+    transformResponse: (data) => JSON.parse(data).map(userTransformer)
+  });
 };
 
 /**

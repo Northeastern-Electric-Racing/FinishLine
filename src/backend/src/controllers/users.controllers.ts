@@ -5,20 +5,13 @@ import { Task } from 'shared';
 export default class UsersController {
   static async getAllUsers(req: Request, res: Response, next: NextFunction) {
     try {
-      const users = await UsersService.getAllUsers(req.organization.organizationId);
-
+      const allOrgs = req.query.allOrgs === 'true';
+      const users = allOrgs
+        ? await UsersService.getAllUsers()
+        : await UsersService.getAllUsers(req.organization.organizationId);
       res.status(200).json(users);
     } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async getAllOrganizationUsers(req: Request, res: Response, next: NextFunction) {
-    try {
-      const users = await UsersService.getAllUsers(req.organization.organizationId);
-
-      res.status(200).json(users);
-    } catch (error: unknown) {
+      console.error(error);
       next(error);
     }
   }

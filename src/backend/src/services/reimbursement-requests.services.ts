@@ -896,6 +896,7 @@ export default class ReimbursementRequestService {
    * @returns an array of the prisma version of the reimbursement requests transformed to the shared version
    */
   static async getAllReimbursementRequests(user: User, organization: Organization): Promise<ReimbursementRequest[]> {
+    console.log(organization.organizationId);
     await isUserHeadOrOnFinance(user, organization.organizationId);
 
     const reimbursementRequests = await prisma.reimbursement_Request.findMany({

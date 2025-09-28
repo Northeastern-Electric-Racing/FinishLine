@@ -274,13 +274,16 @@ export default class ReimbursementRequestsController {
   }
 
   static async getAllReimbursementRequests(req: Request, res: Response, next: NextFunction) {
+    console.log('here');
     try {
       const reimbursementRequests: ReimbursementRequest[] = await ReimbursementRequestService.getAllReimbursementRequests(
         req.currentUser,
         req.organization
       );
+      console.log(reimbursementRequests);
       res.status(200).json(reimbursementRequests);
     } catch (error: unknown) {
+      console.error(error);
       next(error);
     }
   }

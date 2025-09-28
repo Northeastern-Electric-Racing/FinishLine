@@ -53,9 +53,9 @@ export const useCurrentUser = (): AuthenticatedUser => {
 /**
  * Custom React Hook to supply all users.
  */
-export const useAllUsers = () => {
-  return useQuery<UserWithRole[], Error>(['users'], async () => {
-    const { data } = await getAllUsers();
+export const useAllUsers = (allOrgs?: boolean) => {
+  return useQuery<UserWithRole[], Error>(['users', allOrgs], async () => {
+    const { data } = await getAllUsers(allOrgs);
     return data;
   });
 };
@@ -276,6 +276,11 @@ export const useManyUserTasks = (userIds: string[]) => {
   });
 };
 
+/**
+ * Custom react hook to get the users with their schedule settings for all users in the list
+ * @param userIds ids of users to get schedule settings from
+ * @returns users with their schedule settings
+ */
 export const useManyUsersWithScheduleSettings = (userIds: string[]) => {
   return useQuery<UserWithScheduleSettings[], Error>(['users', userIds, 'with-schedule-settings'], async () => {
     const { data } = await getManyUsersWithScheduleSettings(userIds);

@@ -1,13 +1,19 @@
 import { Theme } from '@prisma/client';
 import express from 'express';
-import { body } from 'express-validator';
+import { body, query } from 'express-validator';
 import UsersController from '../controllers/users.controllers';
 import { isRole, nonEmptyString, intMinZero, validateInputs, isDate } from '../utils/validation.utils';
 
 const userRouter = express.Router();
 
-userRouter.get('/', UsersController.getAllUsers);
-userRouter.post('/scheduleSettings', nonEmptyString(body('userIds.*')), UsersController.getManyUsersWithScheduleSettings);
+userRouter.get('/all', query('allOrgs').isBoolean().optional(), validateInputs, UsersController.getAllUsers);
+userRouter.post(
+  '/scheduleSettings',
+  body('userIds').isArray(),
+  nonEmptyString(body('userIds.*')),
+  validateInputs,
+  UsersController.getManyUsersWithScheduleSettings
+);
 userRouter.get('/:userId', UsersController.getSingleUser);
 userRouter.get('/:userId/settings', UsersController.getUserSettings);
 userRouter.get('/secure-settings/current-user', UsersController.getCurrentUserSecureSettings);
