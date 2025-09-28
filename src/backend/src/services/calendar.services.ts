@@ -224,11 +224,15 @@ export default class CalendarService {
       throw new NotFoundException('Shop', shopId);
     }
 
-    // Soft delete and return transformed DTO
-    const deleted = await prisma.shop.update({
-      where: { shopId },
-      data: { dateDeleted: new Date() },
-      include: getShopQueryArgs(organization.organizationId).include
+    // Soft delete the shop and its associated shop machinery in a transaction
+    const deleted = await prisma.$transaction(async (tx) => {
+      await tx.shopMachinery.deleteMany({ where: { shopId } });
+
+      return tx.shop.update({
+        where: { shopId },
+        data: { dateDeleted: new Date() },
+        include: getShopQueryArgs(organization.organizationId).include
+      });
     });
 
     return shopTransformer(deleted);
