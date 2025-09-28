@@ -15,7 +15,7 @@ export default class UsersController {
 
   static async getAllOrgUsers(req: Request, res: Response, next: NextFunction) {
     try {
-      const users = await UsersService.getAllOrgUsers(req.organization);
+      const users = await UsersService.getAllOrgUsers(req.organization.organizationId);
       res.status(200).json(users);
     } catch (error: unknown) {
       next(error);

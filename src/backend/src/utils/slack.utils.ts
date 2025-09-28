@@ -550,14 +550,14 @@ export const blockToString = async (block: SlackRichTextBlock) => {
  */
 export const blockToMentionedUsers = async (
   block: SlackRichTextBlock,
-  _organizationId: string,
+  organizationId: string,
   channelId: string
 ): Promise<string[]> => {
   switch (block.type) {
     case 'broadcast':
       switch (block.range) {
         case 'everyone':
-          const usersInOrg = await UsersService.getAllUsers();
+          const usersInOrg = await UsersService.getAllOrgUsers(organizationId);
           return usersInOrg.map((user) => user.userId);
         case 'channel':
         case 'here':
