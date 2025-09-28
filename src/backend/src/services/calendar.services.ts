@@ -10,12 +10,11 @@ import {
   InvalidOrganizationException,
   NotFoundException
 } from '../utils/errors.utils';
-import { userHasPermission, getUserRole } from '../utils/users.utils';
+import { userHasPermission } from '../utils/users.utils';
 import { eventTypeTransformer } from '../transformers/calendar.transformer';
 import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
 import { shopTransformer } from '../transformers/calendar.transformer';
 import { getShopQueryArgs } from '../prisma-query-args/shop.query-args';
-import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args';
 
 export default class CalendarService {
   /**
