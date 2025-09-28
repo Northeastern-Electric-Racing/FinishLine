@@ -7,7 +7,6 @@ import { render, screen, routerWrapperBuilder, fireEvent } from '../../../test-s
 import { exampleResearchWorkPackage, exampleDesignWorkPackage } from '../../../test-support/test-data/work-packages.stub';
 import WorkPackageViewContainer from '../../../../pages/WorkPackageDetailPage/WorkPackageViewContainer/WorkPackageViewContainer';
 import * as wpHooks from '../../../../hooks/work-packages.hooks';
-import { exampleAdminUser } from '../../../test-support/test-data/users.stub';
 import AppContextUser from '../../../../app/AppContextUser';
 import * as userHooks from '../../../../hooks/users.hooks';
 import { mockManyWorkPackages } from '../../../test-support/mock-hooks';

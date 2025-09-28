@@ -7,7 +7,6 @@ import { render, screen, routerWrapperBuilder } from '../test-support/test-utils
 import { routes } from '../../utils/routes';
 import InfoPage from '../../pages/InfoPage';
 import * as userHooks from '../../hooks/users.hooks';
-import { exampleAdminUser } from '../test-support/test-data/users.stub';
 import { exampleAuthenticatedAdminUser } from '../test-support/test-data/authenticated-user.stub';
 
 /**

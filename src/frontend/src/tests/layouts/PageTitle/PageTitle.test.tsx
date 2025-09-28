@@ -6,7 +6,6 @@
 import { render, screen } from '../../test-support/test-utils';
 import PageTitle from '../../../layouts/PageTitle/PageTitle';
 import * as userHooks from '../../../hooks/users.hooks';
-import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 import { exampleAuthenticatedAdminUser } from '../../test-support/test-data/authenticated-user.stub';
 
 vi.mock('../../../layouts/PageTitle/PageBreadcrumbs', () => {

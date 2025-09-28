@@ -12,7 +12,6 @@ import * as workPackageHooks from '../../hooks/work-packages.hooks';
 import * as userHooks from '../../hooks/users.hooks';
 import { mockUseAllWorkPackagesReturnValue } from '../test-support/mock-hooks';
 import { mockAuth } from '../test-support/test-data/test-utils.stub';
-import { exampleAdminUser } from '../test-support/test-data/users.stub';
 import { exampleAuthenticatedAdminUser } from '../test-support/test-data/authenticated-user.stub';
 
 vi.mock('../../pages/ProjectsPage/Projects', () => {

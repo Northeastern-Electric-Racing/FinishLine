@@ -13,7 +13,6 @@ import { mockAuth, mockUseMutationResult, mockUseQueryResult } from '../../test-
 import { exampleProject1 } from '../../test-support/test-data/projects.stub';
 import { ToastProvider } from '../../../components/Toast/ToastProvider';
 import * as authHooks from '../../../hooks/auth.hooks';
-import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 import AppContextUser from '../../../app/AppContextUser';
 import { useAllUsers, useLogUserIn } from '../../../hooks/users.hooks';
 import * as userHooks from '../../../hooks/users.hooks';

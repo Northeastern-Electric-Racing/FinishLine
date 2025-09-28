@@ -8,7 +8,6 @@ import {
   Task,
   TaskPriority,
   TaskStatus,
-  User,
   UserSettings,
   UserWithRole,
   WorkPackage

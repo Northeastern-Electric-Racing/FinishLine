@@ -6,7 +6,6 @@
 import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
 import { mockGetVersionNumberReturnValue } from '../../test-support/mock-hooks';
 import * as miscHooks from '../../../hooks/misc.hooks';
-import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 import * as userHooks from '../../../hooks/users.hooks';
 import Sidebar from '../../../layouts/Sidebar/Sidebar';
 import { ToastContext, ToastInputs } from '../../../components/Toast/ToastProvider';
