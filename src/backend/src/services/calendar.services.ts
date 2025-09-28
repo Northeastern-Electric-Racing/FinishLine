@@ -1,14 +1,21 @@
 import { machineryTransformer } from '../transformers/calendar.transformer';
 import { getMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
 import { Organization, User } from '@prisma/client';
-import { isAdmin, EventType, Shop } from 'shared';
+import { isAdmin, isHead, EventType, Shop } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException, InvalidOrganizationException, NotFoundException } from '../utils/errors.utils';
-import { userHasPermission } from '../utils/users.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedException,
+  DeletedException,
+  InvalidOrganizationException,
+  NotFoundException
+} from '../utils/errors.utils';
+import { userHasPermission, getUserRole } from '../utils/users.utils';
 import { eventTypeTransformer } from '../transformers/calendar.transformer';
 import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
 import { shopTransformer } from '../transformers/calendar.transformer';
 import { getShopQueryArgs } from '../prisma-query-args/shop.query-args';
+import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args';
 
 export default class CalendarService {
   /**
@@ -190,5 +197,45 @@ export default class CalendarService {
     });
 
     return shopTransformer(newShop);
+  }
+
+  /**
+   * Delete calendar in the database
+   * @param submitter The user submitting the request, who must be a head or above.
+   * @param calendarId The id of the given calendar.
+   * @param organization The organization for which the calendar is being deleted.
+   *
+   * @returns The deleted calendar ID.
+   *
+   * @throws NotFoundException If the given calendarIds are not found.
+   * @throws InvalidOrganizationException If the given calendarIds are not part of the same organization.
+   * @throws DeletedException If the calendar has already been deleted.
+   * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
+   */
+  static async deleteCalendar(submitter: User, calendarId: string, organization: Organization): Promise<string> {
+    const calendar = await prisma.calendar.findUnique({
+      where: { calendarId }
+    });
+
+    if (!calendar) throw new NotFoundException('Calendar', calendarId);
+    if (calendar.dateDeleted) throw new DeletedException('Calendar', calendarId);
+    if (calendar.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Calendar');
+
+    const hasPermission = await userHasPermission(
+      submitter.userId,
+      organization.organizationId,
+      (role) => isAdmin(role) || isHead(role)
+    );
+
+    if (!hasPermission) {
+      throw new AccessDeniedException('Only heads and above can delete calendars');
+    }
+
+    const deletedCalendar = await prisma.calendar.update({
+      where: { calendarId },
+      data: { dateDeleted: new Date(), userDeletedId: submitter.userId }
+    });
+
+    return deletedCalendar.calendarId;
   }
 }
