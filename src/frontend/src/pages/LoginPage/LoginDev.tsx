@@ -10,7 +10,7 @@ import InputLabel from '@mui/material/InputLabel';
 import LoginIcon from '@mui/icons-material/Login';
 import FormControl from '@mui/material/FormControl';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { useAllUsers } from '../../hooks/users.hooks';
+import { useAllLoginUsers } from '../../hooks/users.hooks';
 import { fullNamePipe } from '../../utils/pipes';
 import { rankUserRole } from 'shared';
 import { FormEvent } from 'react';
@@ -28,7 +28,7 @@ const LoginDev: React.FC<LoginDevProps> = ({ devSetUser, devFormSubmit }) => {
   if (import.meta.env.MODE !== 'development') return <></>;
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const { isLoading, data: usersList } = useAllUsers(true);
+  const { isLoading, data: usersList } = useAllLoginUsers();
 
   if (!usersList || isLoading) return <LoadingIndicator />;
 

@@ -51,11 +51,22 @@ export const useCurrentUser = (): AuthenticatedUser => {
 };
 
 /**
- * Custom React Hook to supply all users.
+ * Custom React Hook to supply all users. (only users in the current org)
  */
-export const useAllUsers = (allOrgs?: boolean) => {
-  return useQuery<UserWithRole[], Error>(['users', allOrgs], async () => {
-    const { data } = await getAllUsers(allOrgs);
+export const useAllUsers = () => {
+  return useQuery<UserWithRole[], Error>(['users'], async () => {
+    const { data } = await getAllUsers();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to supply all users for login (no org filtering).
+ * @returns all users regardless of org
+ */
+export const useAllLoginUsers = () => {
+  return useQuery<UserWithRole[], Error>(['users', 'login'], async () => {
+    const { data } = await getAllUsers();
     return data;
   });
 };

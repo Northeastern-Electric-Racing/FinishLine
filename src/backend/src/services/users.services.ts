@@ -33,23 +33,33 @@ import { validateUserIsPartOfFinanceTeamOrHead } from '../utils/reimbursement-re
 export default class UsersService {
   /**
    * Gets all of the users from the database
-   * @param organizationId the id of the organization to get the users for
    * @returns a list of all the users
    */
-  static async getAllUsers(organizationId?: string): Promise<User[]> {
+  static async getAllUsers(): Promise<User[]> {
     const users = await prisma.user.findMany({
-      ...(organizationId ? { where: { organizations: { some: { organizationId } } } } : {}),
-      ...(organizationId
-        ? getUserQueryArgs(organizationId)
-        : {
-            select: {
-              roles: true,
-              userId: true,
-              firstName: true,
-              lastName: true,
-              email: true
-            }
-          })
+      select: {
+        roles: true,
+        userId: true,
+        firstName: true,
+        lastName: true,
+        email: true
+      }
+    });
+
+    users.sort((a, b) => a.firstName.localeCompare(b.firstName));
+
+    return users.map(userTransformer);
+  }
+
+  /**
+   * Gets all of the users in the current organization
+   * @param organization the organization to get the users from
+   * @returns a list of all the users in the current organization
+   */
+  static async getAllOrgUsers(organization: Organization): Promise<User[]> {
+    const users = await prisma.user.findMany({
+      where: { organizations: { some: { organizationId: organization.organizationId } } },
+      ...getUserQueryArgs(organization.organizationId)
     });
 
     users.sort((a, b) => a.firstName.localeCompare(b.firstName));

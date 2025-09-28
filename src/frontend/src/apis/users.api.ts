@@ -28,8 +28,18 @@ import { taskTransformer } from './transformers/tasks.transformers';
 /**
  * Fetches all users.
  */
-export const getAllUsers = (allOrgs?: boolean) => {
-  return axios.get<UserWithRole[]>(apiUrls.allUsers(allOrgs), {
+export const getAllUsers = () => {
+  return axios.get<UserWithRole[]>(apiUrls.users(), {
+    transformResponse: (data) => JSON.parse(data).map(userTransformer)
+  });
+};
+
+/**
+ * All users in the current organization with their roles.
+ * @returns the users in the current organization with their roles
+ */
+export const getAllOrgUsers = () => {
+  return axios.get<UserWithRole[]>(apiUrls.orgUsers(), {
     transformResponse: (data) => JSON.parse(data).map(userTransformer)
   });
 };

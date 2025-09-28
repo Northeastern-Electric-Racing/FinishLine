@@ -3,15 +3,21 @@ import UsersService from '../services/users.services';
 import { AccessDeniedException } from '../utils/errors.utils';
 import { Task } from 'shared';
 export default class UsersController {
-  static async getAllUsers(req: Request, res: Response, next: NextFunction) {
+  static async getAllUsers(_req: Request, res: Response, next: NextFunction) {
     try {
-      const allOrgs = req.query.allOrgs === 'true';
-      const users = allOrgs
-        ? await UsersService.getAllUsers()
-        : await UsersService.getAllUsers(req.organization.organizationId);
+      const users = await UsersService.getAllUsers();
       res.status(200).json(users);
     } catch (error: unknown) {
       console.error(error);
+      next(error);
+    }
+  }
+
+  static async getAllOrgUsers(req: Request, res: Response, next: NextFunction) {
+    try {
+      const users = await UsersService.getAllOrgUsers(req.organization);
+      res.status(200).json(users);
+    } catch (error: unknown) {
       next(error);
     }
   }
