@@ -1,6 +1,6 @@
 import { Calendar, Organization } from '@prisma/client';
 import CalendarService from '../../src/services/calendar.services';
-import { AccessDeniedAdminOnlyException } from '../../src/utils/errors.utils';
+import { AccessDeniedAdminOnlyException, AccessDeniedException, NotFoundException } from '../../src/utils/errors.utils';
 import {
   batmanAppAdmin,
   wonderwomanGuest,
@@ -139,6 +139,152 @@ describe('Calendar Tests', () => {
       expect(result.shops).toHaveLength(1);
       expect(result.shops[0].quantity).toBe(2);
       expect(result.shops[0].shop.name).toBe('Precision Manufacturing Lab');
+      expect(result.shops[0].description).toBe(undefined);
+    });
+  });
+
+  describe('Edit Machinery', () => {
+    let machineryId: string;
+    let anotherShopId: string;
+
+    //Create some machinery beforehand so we can edit it
+    beforeEach(async () => {
+      await resetUsers();
+
+      // Recreate the organization and shop since resetUsers() cleared everything
+      organization = await createTestOrganization();
+      orgId = organization.organizationId;
+
+      const shop = await prisma.shop.create({
+        data: {
+          name: 'Precision Manufacturing Lab',
+          description: 'Manufacturing facility equipped with advanced machinery and tools for engineering',
+          userCreatedId: (await createTestUser(supermanAdmin, orgId)).userId,
+          organizationId: orgId
+        }
+      });
+      ({ shopId } = shop);
+
+      const machinery = await CalendarService.createMachinery(
+        await createTestUser(alfred, orgId),
+        'Original Machinery Name',
+        shopId,
+        1,
+        organization,
+        'Original description'
+      );
+      const { machineryId: machineryIdFromResponse } = machinery;
+      machineryId = machineryIdFromResponse;
+
+      // Create another shop for testing (add onto the created machinery above)
+      const anotherShop = await prisma.shop.create({
+        data: {
+          name: 'Advanced Testing Lab',
+          description: 'Advanced testing facility',
+          userCreatedId: (await createTestUser(flashAdmin, orgId)).userId,
+          organizationId: orgId
+        }
+      });
+      const { shopId: anotherShopIdFromResponse } = anotherShop;
+      anotherShopId = anotherShopIdFromResponse;
+    });
+
+    it('Fails if user is not a head or above', async () => {
+      await expect(
+        async () =>
+          await CalendarService.editMachinery(
+            await createTestUser(wonderwomanGuest, orgId),
+            machineryId,
+            'Updated Machinery Name',
+            shopId,
+            2,
+            organization,
+            'Updated description'
+          )
+      ).rejects.toThrow(new AccessDeniedException('Only heads and above can edit machinery'));
+    });
+
+    it('Fails if machinery does not exist', async () => {
+      const nonExistentId = 'non-existent-id';
+      await expect(
+        async () =>
+          await CalendarService.editMachinery(
+            await createTestUser(supermanAdmin, orgId),
+            nonExistentId,
+            'Updated Machinery Name',
+            shopId,
+            2,
+            organization,
+            'Updated description'
+          )
+      ).rejects.toThrow(new NotFoundException('Machinery', nonExistentId));
+    });
+
+    it('Fails if shop does not exist', async () => {
+      const nonExistentShopId = 'non-existent-shop-id';
+      await expect(
+        async () =>
+          await CalendarService.editMachinery(
+            await createTestUser(supermanAdmin, orgId),
+            machineryId,
+            'Updated Machinery Name',
+            nonExistentShopId,
+            2,
+            organization,
+            'Updated description'
+          )
+      ).rejects.toThrow(new NotFoundException('Shop', nonExistentShopId));
+    });
+
+    it('Succeeds and updates machinery for head user', async () => {
+      const result = await CalendarService.editMachinery(
+        await createTestUser(supermanAdmin, orgId),
+        machineryId,
+        'Updated Machinery Name',
+        shopId,
+        3,
+        organization,
+        'Updated description'
+      );
+
+      expect(result.name).toEqual('Updated Machinery Name');
+      expect(result.shops).toHaveLength(1);
+      expect(result.shops[0].quantity).toBe(3);
+      expect(result.shops[0].description).toBe('Updated description');
+      expect(result.shops[0].shop.name).toBe('Precision Manufacturing Lab');
+    });
+
+    it('Succeeds and updates machinery for admin user', async () => {
+      const result = await CalendarService.editMachinery(
+        await createTestUser(batmanAppAdmin, orgId),
+        machineryId,
+        'Admin Updated Machinery',
+        anotherShopId,
+        5,
+        organization,
+        'Admin updated description'
+      );
+
+      expect(result.name).toEqual('Admin Updated Machinery');
+      expect(result.shops).toHaveLength(1);
+      expect(result.shops[0].quantity).toBe(5);
+      expect(result.shops[0].description).toBe('Admin updated description');
+      expect(result.shops[0].shop.name).toBe('Advanced Testing Lab');
+    });
+
+    it('Succeeds and updates machinery without description', async () => {
+      const result = await CalendarService.editMachinery(
+        await createTestUser(supermanAdmin, orgId),
+        machineryId,
+        'No Description Machinery',
+        shopId,
+        2,
+        organization
+      );
+
+      expect(result.name).toEqual('No Description Machinery');
+      expect(result.shops).toHaveLength(1);
+      expect(result.shops[0].quantity).toBe(2);
       expect(result.shops[0].description).toBe(undefined);
     });
   });

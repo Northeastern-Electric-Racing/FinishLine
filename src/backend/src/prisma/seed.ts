@@ -50,7 +50,6 @@ import AnnouncementService from '../services/announcement.services';
 import OnboardingServices from '../services/onboarding.services';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
 import FinanceServices from '../services/finance.services';
-import MachineryService from '../services/calendar.services';
 import CalendarService from '../services/calendar.services';
 
 const prisma = new PrismaClient();
@@ -3085,7 +3084,7 @@ const performSeed: () => Promise<void> = async () => {
   });
 
   // Create machineries and assign to shops
-  await MachineryService.createMachinery(
+  await CalendarService.createMachinery(
     thomasEmrax,
     'Iron Man CNC Mill',
     advancedShop.shopId,
@@ -3093,7 +3092,7 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'High-precision CNC milling operations'
   );
-  await MachineryService.createMachinery(
+  await CalendarService.createMachinery(
     thomasEmrax,
     'Thor Hammer Lathe',
     advancedShop.shopId,
@@ -3101,7 +3100,7 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'High-precision turning operations'
   );
-  await MachineryService.createMachinery(
+  await CalendarService.createMachinery(
     thomasEmrax,
     'Spider-Man 3D Printer',
     electronicsLab.shopId,
@@ -3109,7 +3108,7 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'Rapid prototyping for electronics enclosures'
   );
-  await MachineryService.createMachinery(
+  await CalendarService.createMachinery(
     thomasEmrax,
     'Captain America Oscilloscope',
     electronicsLab.shopId,
@@ -3117,7 +3116,7 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'High-speed signal analysis'
   );
-  await MachineryService.createMachinery(
+  await CalendarService.createMachinery(
     thomasEmrax,
     'Hulk Dynamometer',
     testingFacility.shopId,
@@ -3125,7 +3124,7 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'Engine and motor testing'
   );
-  await MachineryService.createMachinery(
+  await CalendarService.createMachinery(
     thomasEmrax,
     'Black Widow Thermal Camera',
     testingFacility.shopId,
