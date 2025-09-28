@@ -207,7 +207,7 @@ describe('Calendar Tests', () => {
       });
 
       it('also deletes associated shopMachinery bridge rows', async () => {
-        // create a machinery that links to this shop 
+        // create a machinery that links to this shop
         const admin = await createTestUser(batmanAppAdmin, orgId);
         await CalendarService.createMachinery(admin, 'Bridge-Linked', shopId, 1, organization);
 
