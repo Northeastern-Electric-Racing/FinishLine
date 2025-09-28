@@ -1,4 +1,4 @@
-import { Organization, Prisma, User } from '@prisma/client';
+import { Organization, Prisma } from '@prisma/client';
 import {
   DescriptionBulletPreview,
   isAdmin,
@@ -11,7 +11,8 @@ import {
   ProjectGantt,
   ProjectPreview,
   WbsNumber,
-  wbsPipe
+  wbsPipe,
+  User
 } from 'shared';
 import prisma from '../prisma/prisma';
 import projectTransformer, {

@@ -12,6 +12,7 @@ import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.s
 import { exampleAllUsers, exampleAdminUser } from '../test-support/test-data/users.stub';
 import { getAllUsers, getSingleUser, logUserIn } from '../../apis/users.api';
 import { useAllUsers, useSingleUser, useLogUserIn } from '../../hooks/users.hooks';
+import { exampleAuthenticatedAdminUser } from '../test-support/test-data/authenticated-user.stub';
 
 vi.mock('../../apis/users.api');
 
@@ -36,14 +37,7 @@ describe('user hooks', () => {
 
   it.skip('handles logging in a user', async () => {
     const mockedLogUserIn = logUserIn as jest.Mock<Promise<AxiosResponse<AuthenticatedUser>>>;
-    mockedLogUserIn.mockReturnValue(
-      mockPromiseAxiosResponse<AuthenticatedUser>({
-        ...exampleAdminUser,
-        organizations: [],
-        onboardedTeamTypeIds: [],
-        onboardingTeamTypeIds: []
-      })
-    );
+    mockedLogUserIn.mockReturnValue(mockPromiseAxiosResponse<AuthenticatedUser>(exampleAuthenticatedAdminUser));
 
     const { result } = renderHook(() => useLogUserIn(), {
       wrapper

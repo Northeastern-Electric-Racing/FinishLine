@@ -8,6 +8,7 @@ import { routes } from '../../utils/routes';
 import InfoPage from '../../pages/InfoPage';
 import * as userHooks from '../../hooks/users.hooks';
 import { exampleAdminUser } from '../test-support/test-data/users.stub';
+import { exampleAuthenticatedAdminUser } from '../test-support/test-data/authenticated-user.stub';
 
 /**
  * Sets up the component under test with the desired values and renders it.
@@ -23,12 +24,7 @@ const renderComponent = () => {
 
 describe('help page component', () => {
   it('renders everything', () => {
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue({
-      ...exampleAdminUser,
-      organizations: [],
-      onboardedTeamTypeIds: [],
-      onboardingTeamTypeIds: []
-    });
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAuthenticatedAdminUser);
     renderComponent();
     expect(screen.getAllByText('Information').length).toEqual(1);
     expect(screen.getByText(/Resources/)).toBeInTheDocument();

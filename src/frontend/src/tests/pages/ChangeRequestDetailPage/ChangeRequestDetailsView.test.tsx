@@ -67,12 +67,7 @@ describe('Implement change request permission tests', () => {
   beforeEach(() => {
     vi.spyOn(userHooks, 'useLogUserIn').mockReturnValue(mockLogUserInReturnValue);
     vi.spyOn(userHooks, 'useLogUserInDev').mockReturnValue(mockLogUserInDevReturnValue);
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue({
-      ...exampleAdminUser,
-      organizations: [],
-      onboardedTeamTypeIds: [],
-      onboardingTeamTypeIds: []
-    });
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAuthenticatedAdminUser);
     vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAuthenticatedAdminUser));
     vi.spyOn(userHooks, 'useGetCurrentUser').mockReturnValue(mockGetCurrentUserValue);
   });

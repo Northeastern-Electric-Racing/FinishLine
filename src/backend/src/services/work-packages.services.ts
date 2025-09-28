@@ -1,4 +1,4 @@
-import { Organization, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
+import { Organization, WBS_Element, WBS_Element_Status } from '@prisma/client';
 import {
   calculateEndDate,
   DescriptionBulletPreview,
@@ -12,7 +12,8 @@ import {
   WorkPackage,
   WorkPackagePreview,
   WorkPackageSelection,
-  WorkPackageStage
+  WorkPackageStage,
+  User
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {

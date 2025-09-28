@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User, RoleEnum, AuthenticatedUser } from 'shared';
+import { RoleEnum, AuthenticatedUser, UserWithRole } from 'shared';
 
 export const exampleAuthenticatedUser: AuthenticatedUser = {
   userId: 'uuid',
@@ -16,97 +16,79 @@ export const exampleAuthenticatedUser: AuthenticatedUser = {
   onboardedTeamTypeIds: []
 };
 
-export const exampleAppAdminUser: User = {
+export const exampleAppAdminUser: UserWithRole = {
   userId: '1',
   firstName: 'Thomas',
   lastName: 'Emrax',
   email: 'emrax.t@husky.neu.edu',
-  emailId: 'emrax.t',
-  role: RoleEnum.APP_ADMIN,
-  permissions: []
+  role: RoleEnum.APP_ADMIN
 };
 
-export const exampleAdminUser: User = {
+export const exampleAdminUser: UserWithRole = {
   userId: '2',
   firstName: 'Joe',
   lastName: 'Shmoe',
   email: 'shmoe.j@husky.neu.edu',
-  emailId: 'shmoe.j',
-  role: RoleEnum.ADMIN,
-  permissions: []
+  role: RoleEnum.ADMIN
 };
 
-export const exampleAdminUser2: User = {
+export const exampleAdminUser2: UserWithRole = {
   userId: '8',
   firstName: 'Joe',
   lastName: 'Shmoseph',
   email: 'shmoseph.j@husky.neu.edu',
-  emailId: 'shmoseph.j',
-  role: RoleEnum.ADMIN,
-  permissions: []
+  role: RoleEnum.ADMIN
 };
 
-export const exampleLeadershipUser: User = {
+export const exampleLeadershipUser: UserWithRole = {
   userId: '3',
   firstName: 'Joe',
   lastName: 'Blow',
   email: 'blow.j@husky.neu.edu',
-  emailId: 'blow.j',
-  role: RoleEnum.LEADERSHIP,
-  permissions: []
+  role: RoleEnum.LEADERSHIP
 };
 
-export const exampleLeadUser: User = {
+export const exampleLeadUser: UserWithRole = {
   userId: '4',
   firstName: 'Amy',
   lastName: 'Smith',
   email: 'smith.a@husky.neu.edu',
-  emailId: 'smith.a',
-  role: RoleEnum.HEAD,
-  permissions: []
+  role: RoleEnum.HEAD
 };
 
-export const exampleManagerUser: User = {
+export const exampleManagerUser: UserWithRole = {
   userId: '5',
   firstName: 'Rachel',
   lastName: 'Barmatha',
   email: 'barmatha.r@husky.neu.edu',
-  emailId: 'barmatha.r',
-  role: RoleEnum.MEMBER,
-  permissions: []
+  role: RoleEnum.MEMBER
 };
 
-export const exampleMemberUser: User = {
+export const exampleMemberUser: UserWithRole = {
   userId: '6',
   firstName: 'Emily',
   lastName: 'Bendara',
   email: 'bendara.e@husky.neu.edu',
-  emailId: 'bendara.e',
-  role: RoleEnum.HEAD,
-  permissions: []
+  role: RoleEnum.HEAD
 };
 
-export const exampleGuestUser: User = {
+export const exampleGuestUser: UserWithRole = {
   userId: '7',
   firstName: 'Jackson',
   lastName: 'James',
   email: 'james.j@husky.neu.edu',
-  emailId: 'james.j',
-  role: RoleEnum.GUEST,
-  permissions: []
+  role: RoleEnum.GUEST
 };
 
-export const exampleGuestUser2: User = {
+export const exampleGuestUser2: UserWithRole = {
   userId: '8',
   firstName: 'James',
   lastName: 'Jackson',
   email: 'jackson.j@husky.neu.edu',
-  emailId: 'jackson.j',
-  role: RoleEnum.GUEST,
-  permissions: []
+  role: RoleEnum.GUEST
 };
 
-export const exampleAllUsers: User[] = [
+export const exampleAllUsers: UserWithRole[] = [
   exampleAppAdminUser,
   exampleAdminUser,
   exampleLeadershipUser,

@@ -7,6 +7,7 @@ import { render, screen } from '../../test-support/test-utils';
 import PageTitle from '../../../layouts/PageTitle/PageTitle';
 import * as userHooks from '../../../hooks/users.hooks';
 import { exampleAdminUser } from '../../test-support/test-data/users.stub';
+import { exampleAuthenticatedAdminUser } from '../../test-support/test-data/authenticated-user.stub';
 
 vi.mock('../../../layouts/PageTitle/PageBreadcrumbs', () => {
   return {
@@ -19,12 +20,7 @@ vi.mock('../../../layouts/PageTitle/PageBreadcrumbs', () => {
 
 describe('error page', () => {
   it('renders title', () => {
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue({
-      ...exampleAdminUser,
-      organizations: [],
-      onboardedTeamTypeIds: [],
-      onboardingTeamTypeIds: []
-    });
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAuthenticatedAdminUser);
     render(<PageTitle title={'test'} />);
 
     expect(screen.getByText('test')).toBeInTheDocument();

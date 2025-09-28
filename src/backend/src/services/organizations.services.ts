@@ -1,5 +1,5 @@
-import { Organization, User } from '@prisma/client';
-import { Link, LinkCreateArgs, ProjectPreview, RoleEnum, isAdmin, isAtLeastRank } from 'shared';
+import { Organization } from '@prisma/client';
+import { Link, LinkCreateArgs, ProjectPreview, RoleEnum, isAdmin, isAtLeastRank, User } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,

@@ -2,13 +2,13 @@ import {
   ChangeRequest,
   daysBetween,
   Task,
-  UserPreview,
   wbsPipe,
   calculateEndDate,
   meetingStartTimePipe,
-  CreateSponsorTask
+  CreateSponsorTask,
+  User
 } from 'shared';
-import { Account_Code, Reimbursement_Product_Other_Reason, Sponsor_Task, User } from '@prisma/client';
+import { Account_Code, Reimbursement_Product_Other_Reason, Sponsor_Task } from '@prisma/client';
 import {
   editMessage,
   getChannelName,
@@ -46,7 +46,7 @@ export const buildDueString = (daysUntilDeadline: number): string => {
 };
 
 // build the "user" string for the upcoming deadlines slack message
-const buildUserString = (lead?: UserPreview, slackId?: string): string => {
+const buildUserString = (lead?: User, slackId?: string): string => {
   if (lead && slackId) return `<@${slackId}>`;
   if (lead && !slackId)
     return `${lead.firstName} ${lead.lastName} (<https://finishlinebyner.com/settings|set your slack id here>)`;

@@ -10,12 +10,10 @@ export interface User {
   firstName: string;
   lastName: string;
   email: string;
-  emailId: string | null;
-  role: Role;
-  permissions: Permission[];
+  role?: Role;
 }
 
-export type UserPreview = Pick<User, 'userId' | 'firstName' | 'lastName' | 'email' | 'emailId' | 'role' | 'permissions'>;
+export type UserWithRole = User & { role: Role };
 
 export type Role = 'APP_ADMIN' | 'ADMIN' | 'HEAD' | 'LEADERSHIP' | 'MEMBER' | 'GUEST';
 export enum RoleEnum {
@@ -49,11 +47,11 @@ export interface Organization {
   organizationId: string;
   name: string;
   dateCreated: Date | null;
-  userCreated: UserPreview;
+  userCreated: User;
   dateDeleted?: Date | null;
-  userDeleted?: UserPreview;
-  treasurer?: UserPreview;
-  advisor?: UserPreview;
+  userDeleted?: User;
+  treasurer?: User;
+  advisor?: User;
   description: string;
   applyInterestImageId?: string;
   exploreAsGuestImageId?: string;

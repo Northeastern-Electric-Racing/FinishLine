@@ -12,14 +12,16 @@ import {
   wbsPipe,
   WbsReimbursementProductCreateArgs,
   ReimbursementStatusType,
-  isHead
+  isHead,
+  User
 } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from './errors.utils';
-import { Prisma, Receipt, Reimbursement_Product, Reimbursement_Request, Reimbursement_Status, User } from '@prisma/client';
+import { Prisma, Receipt, Reimbursement_Product, Reimbursement_Request, Reimbursement_Status } from '@prisma/client';
 import { isUserOnTeam } from './teams.utils';
 import { userHasPermission } from './users.utils';
 import { AuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
+import { getUserQueryArgs } from '../prisma-query-args/user.query-args';
 
 /**
  * This function removes any deleted receipts and adds any new receipts
@@ -320,7 +322,11 @@ export const validateUserIsPartOfFinanceTeamOrHead = async (user: User, organiza
 const getFinanceTeam = async (organizationId: string) => {
   const financeTeam = await prisma.team.findFirst({
     where: { financeTeam: true, organizationId },
-    include: { head: true, leads: true, members: true }
+    include: {
+      head: getUserQueryArgs(organizationId),
+      leads: getUserQueryArgs(organizationId),
+      members: getUserQueryArgs(organizationId)
+    }
   });
 
   if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');

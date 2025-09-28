@@ -7,6 +7,7 @@ import { isRole, nonEmptyString, intMinZero, validateInputs, isDate } from '../u
 const userRouter = express.Router();
 
 userRouter.get('/', UsersController.getAllUsers);
+userRouter.post('/scheduleSettings', nonEmptyString(body('userIds.*')), UsersController.getManyUsersWithScheduleSettings);
 userRouter.get('/:userId', UsersController.getSingleUser);
 userRouter.get('/:userId/settings', UsersController.getUserSettings);
 userRouter.get('/secure-settings/current-user', UsersController.getCurrentUserSecureSettings);

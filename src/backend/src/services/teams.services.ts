@@ -1,5 +1,5 @@
-import { isAdmin, isHead, Team, TeamPreview, TeamType } from 'shared';
-import { Organization, User, WBS_Element_Status } from '@prisma/client';
+import { isAdmin, isHead, Team, TeamPreview, TeamType, User } from 'shared';
+import { Organization, WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import teamTransformer, { teamPreviewTransformer } from '../transformers/teams.transformer';
 import {

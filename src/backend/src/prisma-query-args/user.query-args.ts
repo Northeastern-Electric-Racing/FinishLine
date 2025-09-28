@@ -9,13 +9,12 @@ export type UserScheduleSettingsQueryArgs = ReturnType<typeof getUserScheduleSet
 // DO NOT CALL ANY OTHER QUERY ARGS FROM HERE TO AVOID CIRCULAR DEPENDENCIES
 export const getUserQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.UserDefaultArgs>()({
-    include: {
-      roles: {
-        where: {
-          organizationId
-        }
-      },
-      organizations: true
+    select: {
+      roles: { where: { organizationId } },
+      userId: true,
+      firstName: true,
+      lastName: true,
+      email: true
     }
   });
 

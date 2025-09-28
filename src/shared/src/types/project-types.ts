@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User, UserPreview } from './user-types';
+import { User } from './user-types';
 import { ImplementedChange } from './change-request-types';
 import { WorkPackageStage } from './work-package-types';
 import { TeamPreview } from './team-types';
@@ -50,7 +50,7 @@ export interface Project extends WbsElement {
   workPackages: WorkPackage[];
   teams: TeamPreview[];
   tasks: Task[];
-  favoritedBy: UserPreview[];
+  favoritedBy: User[];
   abbreviation?: string;
 }
 
@@ -151,8 +151,8 @@ export interface WbsProposedChanges {
   status: WbsElementStatus;
   links: Link[];
   descriptionBullets: DescriptionBullet[];
-  lead?: UserPreview;
-  manager?: UserPreview;
+  lead?: User;
+  manager?: User;
 }
 
 export interface ProjectProposedChanges extends WbsProposedChanges {

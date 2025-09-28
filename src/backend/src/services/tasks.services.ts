@@ -1,5 +1,5 @@
-import { Task_Priority, Task_Status, User, Organization } from '@prisma/client';
-import { isAdmin, isUnderWordCount, notGuest, Task, TaskCardPreview, WbsNumber, wbsPipe } from 'shared';
+import { Task_Priority, Task_Status, Organization } from '@prisma/client';
+import { isAdmin, isUnderWordCount, notGuest, Task, TaskCardPreview, WbsNumber, wbsPipe, User } from 'shared';
 import prisma from '../prisma/prisma';
 import taskTransformer, { taskCardPreviewTransformer } from '../transformers/tasks.transformer';
 import {

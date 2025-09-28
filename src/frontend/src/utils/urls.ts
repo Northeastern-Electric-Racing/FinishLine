@@ -29,6 +29,7 @@ const userTasks = (id: string) => `${usersById(id)}/tasks`;
 const manyUserTasks = () => `${users()}/tasks/get-many`;
 const currentUser = () => `${users()}/auth/current`;
 const logUserOut = () => `${users()}/auth/log-out`;
+const manyUsersWithScheduleSettings = () => `${users()}/scheduleSettings`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
@@ -447,6 +448,7 @@ export const apiUrls = {
   manyUserTasks,
   currentUser,
   logUserOut,
+  manyUsersWithScheduleSettings,
 
   projects,
   allProjectsGantt,

@@ -10,6 +10,7 @@ import {
   TaskStatus,
   User,
   UserSettings,
+  UserWithRole,
   WorkPackage
 } from 'shared';
 import { CheckDescriptionBulletRequestPayload } from '../../hooks/description-bullets.hooks';
@@ -17,29 +18,31 @@ import { CreateTaskPayload, DeleteTaskPayload, TaskPayload } from '../../hooks/t
 import { VersionObject } from '../../utils/types';
 import { mockUseMutationResult, mockUseQueryResult } from './test-data/test-utils.stub';
 import { exampleAdminUser } from './test-data/users.stub';
+import { exampleAuthenticatedAdminUser } from './test-data/authenticated-user.stub';
 
 export const mockLogUserInReturnValue = mockUseMutationResult<AuthenticatedUser>(
   false,
   false,
-  { ...exampleAdminUser, organizations: [], onboardedTeamTypeIds: [], onboardingTeamTypeIds: [] },
+  exampleAuthenticatedAdminUser,
   new Error()
 ) as UseMutationResult<AuthenticatedUser, Error, string, unknown>;
 
 export const mockLogUserInDevReturnValue = mockUseMutationResult<AuthenticatedUser>(
   false,
   false,
-  { ...exampleAdminUser, organizations: [], onboardedTeamTypeIds: [], onboardingTeamTypeIds: [] },
+  exampleAuthenticatedAdminUser,
   new Error()
 ) as UseMutationResult<AuthenticatedUser, Error, string, unknown>;
 
 export const mockGetCurrentUserValue = mockUseMutationResult<AuthenticatedUser>(
   false,
   false,
-  { ...exampleAdminUser, organizations: [], onboardedTeamTypeIds: [], onboardingTeamTypeIds: [] },
+  exampleAuthenticatedAdminUser,
   new Error()
 ) as UseMutationResult<AuthenticatedUser, Error, void, unknown>;
 
-export const mockUseAllUsersReturnValue = (users: User[]) => mockUseQueryResult<User[]>(false, false, users, new Error());
+export const mockUseAllUsersReturnValue = (users: UserWithRole[]) =>
+  mockUseQueryResult<UserWithRole[]>(false, false, users, new Error());
 
 export const mockUseSingleUserSettings = (settings?: UserSettings) =>
   mockUseQueryResult<UserSettings>(

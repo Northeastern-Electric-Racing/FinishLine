@@ -4,7 +4,7 @@
  */
 
 import { WbsNumber } from './project-types';
-import { UserPreview } from './user-types';
+import { User } from './user-types';
 
 export enum TaskPriority {
   Low = 'LOW',
@@ -25,9 +25,9 @@ export interface Task {
   notes: string;
   dateDeleted?: Date;
   dateCreated: Date;
-  createdBy: UserPreview;
-  deletedBy?: UserPreview;
-  assignees: UserPreview[];
+  createdBy: User;
+  deletedBy?: User;
+  assignees: User[];
   deadline?: Date;
   priority: TaskPriority;
   status: TaskStatus;

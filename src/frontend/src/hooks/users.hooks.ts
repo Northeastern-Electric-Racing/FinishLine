@@ -21,7 +21,8 @@ import {
   getUserTasks,
   getManyUserTasks,
   getCurrentUser,
-  logUserOut
+  logUserOut,
+  getManyUsersWithScheduleSettings
 } from '../apis/users.api';
 import {
   User,
@@ -30,10 +31,11 @@ import {
   UpdateUserRolePayload,
   UserSecureSettings,
   UserScheduleSettings,
-  UserWithScheduleSettings,
   SetUserScheduleSettingsPayload,
   Task,
-  ProjectOverview
+  ProjectOverview,
+  UserWithRole,
+  UserWithScheduleSettings
 } from 'shared';
 import { useAuth } from './auth.hooks';
 import { useContext } from 'react';
@@ -52,7 +54,7 @@ export const useCurrentUser = (): AuthenticatedUser => {
  * Custom React Hook to supply all users.
  */
 export const useAllUsers = () => {
-  return useQuery<UserWithScheduleSettings[], Error>(['users'], async () => {
+  return useQuery<UserWithRole[], Error>(['users'], async () => {
     const { data } = await getAllUsers();
     return data;
   });
@@ -270,6 +272,13 @@ export const useUserTasks = (userId: string) => {
 export const useManyUserTasks = (userIds: string[]) => {
   return useQuery<Task[], Error>(['users', userIds, 'tasks'], async () => {
     const { data } = await getManyUserTasks(userIds);
+    return data;
+  });
+};
+
+export const useManyUsersWithScheduleSettings = (userIds: string[]) => {
+  return useQuery<UserWithScheduleSettings[], Error>(['users', userIds, 'with-schedule-settings'], async () => {
+    const { data } = await getManyUsersWithScheduleSettings(userIds);
     return data;
   });
 };

@@ -55,12 +55,7 @@ const renderComponent = () => {
 describe('home component', () => {
   beforeEach(() => {
     vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAuthenticatedAdminUser));
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue({
-      ...exampleAdminUser,
-      organizations: [],
-      onboardedTeamTypeIds: [],
-      onboardingTeamTypeIds: []
-    });
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAuthenticatedAdminUser);
     vi.spyOn(userHooks, 'useSingleUserSettings').mockReturnValue(mockUseSingleUserSettings());
   });
 

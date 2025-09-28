@@ -11,6 +11,7 @@ import { exampleAdminUser } from '../../../test-support/test-data/users.stub';
 import AppContextUser from '../../../../app/AppContextUser';
 import * as userHooks from '../../../../hooks/users.hooks';
 import { mockManyWorkPackages } from '../../../test-support/mock-hooks';
+import { exampleAuthenticatedAdminUser } from '../../../test-support/test-data/authenticated-user.stub';
 
 // Sets up the component under test with the desired values and renders it.
 const renderComponent = (
@@ -41,12 +42,7 @@ const renderComponent = (
 
 describe.skip('work package container view', () => {
   beforeEach(() => {
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue({
-      ...exampleAdminUser,
-      organizations: [],
-      onboardedTeamTypeIds: [],
-      onboardingTeamTypeIds: []
-    });
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAuthenticatedAdminUser);
     vi.spyOn(wpHooks, 'useGetManyWorkPackages').mockReturnValue(mockManyWorkPackages([exampleResearchWorkPackage]));
   });
 

@@ -47,7 +47,7 @@ vi.mock('../../../hooks/users.hooks');
 
 const mockedUseCurrentUser = useCurrentUser as jest.Mock<AuthenticatedUser>;
 
-const mockCurrentUserHook = (user = exampleAdminUser) => {
+const mockCurrentUserHook = (user = exampleAuthenticatedAdminUser) => {
   mockedUseCurrentUser.mockReturnValue({ ...user, organizations: [], onboardedTeamTypeIds: [], onboardingTeamTypeIds: [] });
 };
 
@@ -121,7 +121,7 @@ describe('work package container', () => {
   it('disables the edit button for guest user', () => {
     mockSingleWPHook(false, false, exampleResearchWorkPackage);
     mockAuthHook(exampleAuthenticatedGuestUser);
-    mockCurrentUserHook(exampleGuestUser);
+    mockCurrentUserHook(exampleAuthenticatedGuestUser);
     mockGetBlockingWorkPackagesHook(false, false, [exampleDesignWorkPackage]);
     renderComponent();
 
