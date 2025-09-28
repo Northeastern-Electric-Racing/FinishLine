@@ -8,7 +8,6 @@ export default class UsersController {
       const users = await UsersService.getAllUsers();
       res.status(200).json(users);
     } catch (error: unknown) {
-      console.error(error);
       next(error);
     }
   }

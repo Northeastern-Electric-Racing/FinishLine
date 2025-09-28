@@ -281,7 +281,6 @@ export default class ReimbursementRequestsController {
       );
       res.status(200).json(reimbursementRequests);
     } catch (error: unknown) {
-      console.error(error);
       next(error);
     }
   }
