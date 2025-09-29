@@ -239,22 +239,11 @@ export default class CalendarService {
       data: {
         name,
         shops: {
-          upsert: {
-            where: {
-              uniqueShopMachinery: {
-                shopId,
-                machineryId
-              }
-            },
-            create: {
-              shopId,
-              quantity,
-              description
-            },
-            update: {
-              quantity,
-              description
-            }
+          deleteMany: {},
+          create: {
+            shopId,
+            quantity,
+            description
           }
         }
       },
