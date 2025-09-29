@@ -43,7 +43,7 @@ const TeamTypesSection = ({ onSelectSubteamPage }: { onSelectSubteamPage?: boole
   return <Tabs tabs={teamTypeTabs} tabValue={teamTypeTabValue} setTabValue={setTeamTypeTabValue} />;
 };
 
-const TeamTypeSection = ({ teamType, onSelectSubteamPage = false }: TeamTypeSectionProps) => {
+const TeamTypeSection = ({ teamType, onSelectSubteamPage = true }: TeamTypeSectionProps) => {
   const [showModal, setShowModal] = useState(false);
   const history = useHistory();
   const { data: imageUrl, isLoading: imageIsLoading } = useGetImageUrl(teamType.imageFileId);

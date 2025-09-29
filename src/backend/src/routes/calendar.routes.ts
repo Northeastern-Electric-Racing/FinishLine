@@ -45,6 +45,15 @@ calendarRouter.post(
   CalendarController.createShop
 );
 
+calendarRouter.post(
+  '/create',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('description')),
+  nonEmptyString(body('colorHexCode')),
+  validateInputs,
+  CalendarController.createCalendar
+);
+
 calendarRouter.post('/shop/:shopId/delete', nonEmptyString(param('shopId')), validateInputs, CalendarController.deleteShop);
 
 export default calendarRouter;

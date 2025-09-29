@@ -795,21 +795,16 @@ const performSeed: () => Promise<void> = async () => {
    * Graphs
    */
 
-  /** Graph 1 */
-  const graph1 = await seedGraph(
-    new Date('12/12/2024'),
-    new Date('12/12/2027'),
-    'new graph',
-    Graph_Type.PROJECT_BUDGET_BY_DIVISION,
-    Graph_Display_Type.BAR,
-    Measure.SUM,
-    thomasEmrax,
-    ner
-  );
-
-  /**
-   * Graph Collection 1
-   */
+  const graph1 = await prisma.graph.create({
+    data: {
+      title: 'graph1',
+      graphType: Graph_Type.CHANGE_REQUESTS_BY_DIVISION,
+      displayGraphType: Graph_Display_Type.BAR,
+      measure: Measure.SUM,
+      userCreatedId: thomasEmrax.userId,
+      organizationId: ner.organizationId
+    }
+  });
   const graph2 = await prisma.graph.create({
     data: {
       title: 'graph2',
@@ -824,9 +819,8 @@ const performSeed: () => Promise<void> = async () => {
   const graphCollection1 = await prisma.graph_Collection.create({
     data: {
       title: 'Graph Collection 1',
-      viewPermissions: [SpecialPermission.FINANCE_ONLY],
       graphs: {
-        connect: [{ id: graph2.id }]
+        connect: [{ id: graph2.id }, { id: graph1.id }]
       },
       userCreatedId: thomasEmrax.userId,
       organizationId: ner.organizationId
@@ -3140,16 +3134,30 @@ const performSeed: () => Promise<void> = async () => {
     'Thermal imaging and analysis'
   );
 
-  const calendar = await prisma.calendar.create({
-    data: {
-      name: 'Engineering Team Calendar',
-      description: 'Tracks all engineering team events, meetings, and deadlines.',
-      colorHexCode: '#3498db',
-      userCreated: { connect: { userId: thomasEmrax.userId } },
-      dateCreated: new Date(),
-      organization: { connect: { organizationId } }
-    }
-  });
+  // various calendars for testing
+  const calendar = await CalendarService.createCalendar(
+    thomasEmrax,
+    'Engineering Team Calendar',
+    'Tracks all engineering team events, meetings, and deadlines.',
+    '#3498db',
+    ner
+  );
+
+  const calendarFinishline = await CalendarService.createCalendar(
+    joeShmoe,
+    'Finishline Projects Calendar',
+    'Tracks all ongoing projects currently being developed for Finishline',
+    '#911111ff',
+    ner
+  );
+
+  const calendarMeta = await CalendarService.createCalendar(
+    thomasEmrax,
+    'Calendar Improvements Calendar',
+    'Tracks all current improvements and schedulings for the improvement of the Finishline Calendar',
+    '#bf40e6ff',
+    ner
+  );
 
   // meeting event type
   await CalendarService.createEventType(
@@ -3234,6 +3242,8 @@ const performSeed: () => Promise<void> = async () => {
     false,
     true
   );
+
+  console.log('Thomas Emrax:', thomasEmrax.userId);
 };
 
 performSeed()

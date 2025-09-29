@@ -189,15 +189,21 @@ export default class DesignReviewsService {
       throw new NotFoundException('User Settings', 'Cannot find settings of members');
     }
 
+    const project = wbsElement.workPackage?.project;
+    const teams = project?.teams;
+
     // send a slack message to all leadership invited to the design review
     for (const memberUserSetting of memberUserSettings) {
       if (memberUserSetting.slackId) {
         try {
-          await sendSlackDesignReviewConfirmNotification(
-            memberUserSetting.slackId,
-            designReview.designReviewId,
-            designReview.wbsElement.name
-          );
+          if (project) {
+            await sendSlackDesignReviewConfirmNotification(
+              memberUserSetting.slackId,
+              designReview.designReviewId,
+              designReview.wbsElement.name,
+              project.wbsElement.name
+            );
+          }
         } catch (err: unknown) {
           if (err instanceof Error) {
             throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
@@ -208,10 +214,8 @@ export default class DesignReviewsService {
 
     await sendDrPopUp(designReview, members, submitter, wbsElement.name, organization.organizationId);
 
-    const project = wbsElement.workPackage?.project;
-    const teams = project?.teams;
     if (teams && teams.length > 0) {
-      await sendSlackDRNotifications(teams, designReview, submitter, wbsElement.name);
+      await sendSlackDRNotifications(teams, designReview, submitter, wbsElement.name, project.wbsElement.name);
     }
 
     return designReviewTransformer(designReview);

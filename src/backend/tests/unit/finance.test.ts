@@ -72,7 +72,7 @@ describe('Finance Tests', () => {
       expect(result.tier.sponsorTierId).toEqual(sponsorTierId);
       expect(result.taxExempt).toBe(true);
       expect(result.discountCode).toEqual('googlecode');
-      expect(result.vendorContact).toEqual('Bill Gates');
+      expect(result.sponsorContact).toEqual('Bill Gates');
       expect(result.sponsorTasks).toEqual([]);
     });
   });
@@ -532,7 +532,7 @@ describe('Finance Tests', () => {
       expect(updatedSponsor.joinDate).toEqual(new Date(5, 11, 25));
       expect(updatedSponsor.activeYears).toEqual([2024, 2025]);
       expect(updatedSponsor.tier.sponsorTierId).toBe(sponsorTierId);
-      expect(updatedSponsor.vendorContact).toBe('New Vendor Contact');
+      expect(updatedSponsor.sponsorContact).toBe('New Vendor Contact');
       expect(updatedSponsor.taxExempt).toBe(false);
       expect(updatedSponsor.discountCode).toBe('New Discount code');
     });
