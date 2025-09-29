@@ -46,9 +46,9 @@ calendarRouter.post(
 );
 
 calendarRouter.post(
-  '/calendar/create',
+  '/create',
   nonEmptyString(body('name')),
-  body('description').optional().isString(),
+  body('description').isString(),
   nonEmptyString(body('colorHexCode')),
   validateInputs,
   CalendarController.createCalendar
