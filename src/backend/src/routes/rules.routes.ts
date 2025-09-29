@@ -9,8 +9,8 @@ rulesRouter.post('/rulesetType/create', nonEmptyString(body('name')), validateIn
 
 rulesRouter.post(
   '/projectRule/create',
-  body('ruleId').isString(),
-  body('projectId').isString(),
+  nonEmptyString(body('ruleId')),
+  nonEmptyString(body('projectId')),
   validateInputs,
   RulesController.createProjectRule
 );

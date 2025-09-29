@@ -20,6 +20,7 @@ export const getProjectRuleQueryArgs = () =>
         include: {
           userUpdated: {
             select: {
+              userId: true,
               firstName: true,
               lastName: true
             }

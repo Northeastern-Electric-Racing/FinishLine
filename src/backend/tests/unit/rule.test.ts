@@ -33,7 +33,7 @@ describe('Rule Tests', () => {
   });
 
   const createUniqueCar = async (orgId: string) => {
-    let carCounter = 0;
+    let carCounter = 1;
 
     const car = await prisma.car.create({
       data: {
@@ -123,6 +123,19 @@ describe('Rule Tests', () => {
   describe('Project Rule endpoints', () => {
     it('Creates a project rule successfully', async () => {
       const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      const projectRule = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
+
+      expect(projectRule.projectRuleId).toBeDefined();
+      expect(projectRule.rule).toBeDefined();
+      expect(projectRule.rule.ruleId).toBe(topLevelRule.ruleId);
+      expect(projectRule.rule.ruleCode).toBe(topLevelRule.ruleCode);
+      expect(projectRule.projectId).toBe(project.projectId);
+      expect(projectRule.statusHistory).toEqual([]);
+      expect(projectRule.currentStatus).toBe(Rule_Completion.REVIEW);
+    });
+    it('Creates a project rule successfully for a leaf rule', async () => {
+      const car = await createUniqueCar(orgId);
       const { leafRule1 } = await setupRules(car);
       const projectRule = await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
 
@@ -140,19 +153,6 @@ describe('Rule Tests', () => {
       await expect(
         async () => await RulesService.createProjectRule(nonLeadership, organization, leafRule1.ruleId, project.projectId)
       ).rejects.toThrow(new AccessDeniedException('You do not have permission to create a project rule'));
-    });
-    it('Create project rule fails if rule has sub rules', async () => {
-      const car = await createUniqueCar(orgId);
-      const { topLevelRule } = await setupRules(car);
-      await expect(
-        async () =>
-          await RulesService.createProjectRule(
-            admin,
-            organization,
-            topLevelRule.ruleId, //not leaf
-            project.projectId
-          )
-      ).rejects.toThrow(new HttpException(400, 'Cannot add rules with sub-rules to projects'));
     });
     it('Create project rule fails if rule was deleted', async () => {
       const car = await createUniqueCar(orgId);

@@ -12,15 +12,6 @@ import { projectRuleTransformer } from '../transformers/rules.transformer';
 import { getProjectRuleQueryArgs } from '../prisma-query-args/rules.query-args';
 import { Organization, User } from '@prisma/client';
 
-/**
- * Add a preexisting rule to a specific project
- *
- * @param submitter The user creating the project rule
- * @param organization The organization the project rule is being created in
- * @param ruleId The rule ID being added to the project
- * @param projectId The project ID to add the rule to
- * @returns The created project rule
- */
 export default class RulesService {
   /**
    * Creates new ruleset type with the given information
@@ -31,7 +22,7 @@ export default class RulesService {
    */
   static async createRulesetType(submitter: User, name: string, organization: Organization) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership)))
-      throw new AccessDeniedException('only leadership and above can create ruleset types!');
+      throw new AccessDeniedException('Only leadership and above can create ruleset types!');
 
     const rulesetType = await prisma.ruleset_Type.create({
       data: {
@@ -43,6 +34,15 @@ export default class RulesService {
     return rulesetType;
   }
 
+  /**
+   * Add a preexisting rule to a specific project
+   *
+   * @param submitter The user creating the project rule
+   * @param organization The organization the project rule is being created in
+   * @param ruleId The rule ID being added to the project
+   * @param projectId The project ID to add the rule to
+   * @returns The created project rule
+   */
   static async createProjectRule(
     submitter: User,
     organization: Organization,
@@ -50,14 +50,14 @@ export default class RulesService {
     projectId: string
   ): Promise<ProjectRule> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership))) {
-      throw new AccessDeniedException('You do not have permission to create a project rule');
+      throw new AccessDeniedException('You do not have permissions to assign rules to projects');
     }
 
     const rule = await prisma.rule.findUnique({
       where: { ruleId },
       include: {
         subRules: true,
-        ruleset: { include: { car: { include: { wbsElement: { select: { organizationId: true } } } } } }
+        ruleset: { select: { car: { include: { wbsElement: { select: { organizationId: true } } } } } }
       }
     });
 
@@ -66,11 +66,6 @@ export default class RulesService {
     }
     if (rule.ruleset.car.wbsElement.organizationId !== organization.organizationId) {
       throw new InvalidOrganizationException('Rule');
-    }
-
-    // must be leaf rule
-    if (rule.subRules.length > 0) {
-      throw new HttpException(400, 'Cannot add rules with sub-rules to projects');
     }
 
     if (rule.dateDeleted) throw new DeletedException('Rule', ruleId);
