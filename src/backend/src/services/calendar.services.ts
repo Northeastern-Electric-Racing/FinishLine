@@ -275,4 +275,3 @@ export default class CalendarService {
     return shopTransformer(deleted);
   }
 }
-
