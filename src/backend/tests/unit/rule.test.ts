@@ -152,7 +152,7 @@ describe('Rule Tests', () => {
       const { leafRule1 } = await setupRules(car);
       await expect(
         async () => await RulesService.createProjectRule(nonLeadership, organization, leafRule1.ruleId, project.projectId)
-      ).rejects.toThrow(new AccessDeniedException('You do not have permission to create a project rule'));
+      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to assign rules to projects'));
     });
     it('Create project rule fails if rule was deleted', async () => {
       const car = await createUniqueCar(orgId);

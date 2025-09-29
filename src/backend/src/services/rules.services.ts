@@ -22,7 +22,7 @@ export default class RulesService {
    */
   static async createRulesetType(submitter: User, name: string, organization: Organization) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership)))
-      throw new AccessDeniedException('Only leadership and above can create ruleset types!');
+      throw new AccessDeniedException('only leadership and above can create ruleset types!');
 
     const rulesetType = await prisma.ruleset_Type.create({
       data: {
