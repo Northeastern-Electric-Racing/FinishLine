@@ -3,7 +3,12 @@ import { createTestCar, createTestOrganization, createTestUser, resetUsers } fro
 import prisma from '../../src/prisma/prisma';
 import RulesService from '../../src/services/rules.services';
 import { supermanAdmin, wonderwomanGuest, batmanAppAdmin } from '../test-data/users.test-data';
-import { AccessDeniedException, DeletedException, NotFoundException } from '../../src/utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedException,
+  DeletedException,
+  NotFoundException
+} from '../../src/utils/errors.utils';
 
 describe('Rules Tests', () => {
   let deletedRule: Rule;
@@ -50,6 +55,10 @@ describe('Rules Tests', () => {
     });
   });
 
+  afterEach(async () => {
+    await resetUsers();
+  });
+
   describe('Delete rule', () => {
     it('Successful deletion', async () => {
       deletedRule = await RulesService.deleteRule(rule.ruleId, user, organization);
@@ -64,7 +73,7 @@ describe('Rules Tests', () => {
     it('Fails when non admin tries to delete', async () => {
       const guest = await createTestUser(wonderwomanGuest, orgId);
       await expect(RulesService.deleteRule(rule.ruleId, guest, organization)).rejects.toThrow(
-        new AccessDeniedException('Only admins can delete rules.')
+        new AccessDeniedAdminOnlyException('delete rules')
       );
     });
     it('Fails when rule has already been deleted', async () => {

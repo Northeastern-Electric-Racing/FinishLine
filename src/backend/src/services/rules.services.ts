@@ -1,7 +1,12 @@
 import { Organization, Rule, User } from '@prisma/client';
 import { isAdmin, isLeadership } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedException, DeletedException, NotFoundException } from '../utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedException,
+  DeletedException,
+  NotFoundException
+} from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 
 export default class RulesService {
@@ -41,7 +46,7 @@ export default class RulesService {
     });
 
     if (!(await userHasPermission(deleter.userId, org.organizationId, isAdmin))) {
-      throw new AccessDeniedException('Only admins can delete rules.');
+      throw new AccessDeniedAdminOnlyException('delete rules');
     }
 
     if (!rule) throw new NotFoundException('Rule', ruleId);
