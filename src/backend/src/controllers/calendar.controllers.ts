@@ -75,4 +75,22 @@ export default class CalendarController {
       next(error);
     }
   }
+
+  static async createCalendar(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, description, colorHexCode } = req.body;
+
+      const calendar = await CalendarService.createCalendar(
+        req.currentUser,
+        name,
+        description,
+        colorHexCode,
+        req.organization
+      );
+
+      res.status(200).json(calendar);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

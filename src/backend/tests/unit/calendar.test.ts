@@ -170,4 +170,53 @@ describe('Calendar Tests', () => {
       });
     });
   });
+
+  describe('Main Calendar Tests', () => {
+    describe('create calendar', () => {
+      it('fails if user is not an admin', async () => {
+        await expect(
+          CalendarService.createCalendar(
+            await createTestUser(wonderwomanGuest, orgId),
+            'Non-Admin Calendar',
+            'desc',
+            '#3498db',
+            organization
+          )
+        ).rejects.toThrow(new AccessDeniedAdminOnlyException('create calendar'));
+      });
+
+      it('succeeds for admin', async () => {
+        const admin = await createTestUser(batmanAppAdmin, orgId);
+
+        const result = await CalendarService.createCalendar(
+          admin,
+          'Cool Calendar',
+          'A very cool calendar',
+          '#3498db',
+          organization
+        );
+
+        expect(result.name).toBe('Cool Calendar');
+        expect(result.description).toBe('A very cool calendar');
+        expect(result.color).toBe('#3498db');
+        expect(result.userCreated.userId).toBe(admin.userId);
+      });
+
+      it('fails on duplicate name', async () => {
+        const admin = await createTestUser(batmanAppAdmin, orgId);
+
+        await CalendarService.createCalendar(admin, 'Cool Calendar', 'A very cool calendar', '#3498db', organization);
+
+        await expect(
+          CalendarService.createCalendar(
+            admin,
+            'Cool Calendar',
+            'A very cool calendar, but not quite as cool',
+            '#0062a3ff',
+            organization
+          )
+        ).rejects.toBeTruthy();
+      });
+    });
+  });
 });

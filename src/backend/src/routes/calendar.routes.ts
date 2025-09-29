@@ -45,4 +45,13 @@ calendarRouter.post(
   CalendarController.createShop
 );
 
+calendarRouter.post(
+  '/calendar/create',
+  nonEmptyString(body('name')),
+  body('description').optional().isString(),
+  nonEmptyString(body('colorHexCode')),
+  validateInputs,
+  CalendarController.createCalendar
+);
+
 export default calendarRouter;
