@@ -50,6 +50,7 @@ import AnnouncementService from '../services/announcement.services';
 import OnboardingServices from '../services/onboarding.services';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
 import FinanceServices from '../services/finance.services';
+import { getUserQueryArgs } from '../prisma-query-args/user.query-args';
 
 const prisma = new PrismaClient();
 
@@ -112,7 +113,7 @@ export const CreatePartReviewFAQ = async (
 const performSeed: () => Promise<void> = async () => {
   const thomasEmrax = await prisma.user.create({
     data: dbSeedAllUsers.thomasEmrax,
-    include: { userSettings: true, userSecureSettings: true }
+    include: { userSettings: true, userSecureSettings: true, roles: true }
   });
 
   const ner = await prisma.organization.create({

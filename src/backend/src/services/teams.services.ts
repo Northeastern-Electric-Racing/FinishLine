@@ -1,5 +1,5 @@
-import { isAdmin, isHead, Team, TeamPreview, TeamType, WorkPackage } from 'shared';
-import { Organization, User, WBS_Element_Status } from '@prisma/client';
+import { isAdmin, isHead, Team, TeamPreview, TeamType, User } from 'shared';
+import { Organization, WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import teamTransformer, { teamPreviewTransformer } from '../transformers/teams.transformer';
 import {
@@ -16,8 +16,6 @@ import { removeUsersFromList } from '../utils/teams.utils';
 import { getTeamPreviewQueryArgs, getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
 import { uploadFile } from '../utils/google-integration.utils';
 import { teamTypeTransformer } from '../transformers/team-types.transformer';
-import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
-import workPackageTransformer from '../transformers/work-packages.transformer';
 
 export default class TeamsService {
   /**
@@ -440,6 +438,15 @@ export default class TeamsService {
     return teamTransformer(updatedTeam);
   }
 
+  static async getMyTeamAsHead(user: User, organization: Organization): Promise<string | undefined> {
+    const team = await prisma.team.findFirst({
+      where: { headId: user.userId, organizationId: organization.organizationId },
+      select: { teamId: true }
+    });
+
+    return team?.teamId;
+  }
+
   /**
    * Creates a team type
    * @param submitter the user who is creating the team type
@@ -709,49 +716,5 @@ export default class TeamsService {
     });
 
     return updatedTeamType;
-  }
-
-  /**
-   * Gets the current users teams workpackages
-   *
-   * @param user The current user
-   * @param organization The organization the current user is logged in for
-   */
-  static async getMyTeamsWorkpackages(user: User, organization: Organization): Promise<WorkPackage[]> {
-    const usersTeams = await prisma.team.findMany({
-      where: {
-        organizationId: organization.organizationId,
-        dateArchived: null,
-        OR: [
-          {
-            members: { some: { userId: user.userId } },
-            leads: { some: { userId: user.userId } },
-            headId: user.userId
-          }
-        ]
-      }
-    });
-
-    const workPackages = await prisma.work_Package.findMany({
-      where: {
-        wbsElement: {
-          organizationId: organization.organizationId,
-          dateDeleted: null,
-          status: { not: WBS_Element_Status.COMPLETE }
-        },
-        project: {
-          teams: {
-            some: {
-              teamId: {
-                in: usersTeams.map((team) => team.teamId)
-              }
-            }
-          }
-        }
-      },
-      ...getWorkPackageQueryArgs(organization.organizationId)
-    });
-
-    return workPackages.map(workPackageTransformer);
   }
 }
