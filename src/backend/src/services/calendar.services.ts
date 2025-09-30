@@ -1,7 +1,7 @@
-import { machineryTransformer } from '../transformers/calendar.transformer';
+import { calendarTransformer, machineryTransformer } from '../transformers/calendar.transformer';
 import { getMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
 import { Organization, User } from '@prisma/client';
-import { isAdmin, isHead, EventType, Shop } from 'shared';
+import { isAdmin, EventType, Shop, Calendar } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
@@ -15,6 +15,7 @@ import { eventTypeTransformer } from '../transformers/calendar.transformer';
 import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
 import { shopTransformer } from '../transformers/calendar.transformer';
 import { getShopQueryArgs } from '../prisma-query-args/shop.query-args';
+import { getCalendarQueryArgs } from '../prisma-query-args/calendar.query-args';
 
 export default class CalendarService {
   /**
@@ -211,7 +212,7 @@ export default class CalendarService {
    * @throws DeletedException If the calendar has already been deleted.
    * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
    */
-  static async deleteCalendar(submitter: User, calendarId: string, organization: Organization): Promise<string> {
+  static async deleteCalendar(submitter: User, calendarId: string, organization: Organization): Promise<Calendar> {
     const calendar = await prisma.calendar.findUnique({
       where: { calendarId }
     });
@@ -220,21 +221,18 @@ export default class CalendarService {
     if (calendar.dateDeleted) throw new DeletedException('Calendar', calendarId);
     if (calendar.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Calendar');
 
-    const hasPermission = await userHasPermission(
-      submitter.userId,
-      organization.organizationId,
-      (role) => isAdmin(role) || isHead(role)
-    );
+    const hasPermission = await userHasPermission(submitter.userId, organization.organizationId, isAdmin);
 
     if (!hasPermission) {
-      throw new AccessDeniedException('Only heads and above can delete calendars');
+      throw new AccessDeniedException('Only admins can delete calendars');
     }
 
     const deletedCalendar = await prisma.calendar.update({
       where: { calendarId },
-      data: { dateDeleted: new Date(), userDeletedId: submitter.userId }
+      data: { dateDeleted: new Date(), userDeletedId: submitter.userId },
+      ...getCalendarQueryArgs(organization.organizationId)
     });
 
-    return deletedCalendar.calendarId;
+    return calendarTransformer(deletedCalendar);
   }
 }

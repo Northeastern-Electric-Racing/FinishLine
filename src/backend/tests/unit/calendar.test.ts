@@ -69,32 +69,8 @@ describe('Calendar Tests', () => {
       });
 
       await expect(CalendarService.deleteCalendar(member, calendar.calendarId, organization)).rejects.toThrow(
-        new AccessDeniedException('Only heads and above can delete calendars')
+        new AccessDeniedException('Only admins can delete calendars')
       );
-    });
-
-    it('succeeds for head', async () => {
-      const head = await createTestUser(greenlanternHead, orgId);
-
-      const calendar = await prisma.calendar.create({
-        data: {
-          name: 'Calendar to Delete',
-          description: 'Test',
-          colorHexCode: '#FF0000',
-          userCreatedId: head.userId,
-          organizationId: orgId
-        }
-      });
-
-      const result = await CalendarService.deleteCalendar(head, calendar.calendarId, organization);
-
-      expect(result).toBe(calendar.calendarId);
-
-      const deletedCalendar = await prisma.calendar.findUnique({
-        where: { calendarId: calendar.calendarId }
-      });
-      expect(deletedCalendar?.dateDeleted).toBeTruthy();
-      expect(deletedCalendar?.userDeletedId).toBe(head.userId);
     });
 
     it('succeeds for admin', async () => {
@@ -111,7 +87,12 @@ describe('Calendar Tests', () => {
       });
 
       const result = await CalendarService.deleteCalendar(admin, calendar.calendarId, organization);
-      expect(result).toBe(calendar.calendarId);
+
+      expect(result.calendarId).toBe(calendar.calendarId);
+      expect(result.name).toBe('Admin Delete Calendar');
+      expect(result.description).toBe('Test');
+      expect(result.color).toBe('#00FF00');
+      expect(result.userCreated.userId).toBe(admin.userId);
     });
 
     it('fails if calendar not found', async () => {

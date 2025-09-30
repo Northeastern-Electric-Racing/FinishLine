@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { Machinery, Shop, ShopMachinery, EventType } from 'shared';
+import { Machinery, Shop, ShopMachinery, EventType, Calendar } from 'shared';
 import { MachineryQueryArgs, ShopQueryArgs, ShopMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
 import { userTransformer } from './user.transformer';
 import { EventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
@@ -54,5 +54,17 @@ export const eventTypeTransformer = (eventType: Prisma.EventTypeGetPayload<Event
     questionDocument: eventType.questionDocument,
     documents: eventType.documents,
     description: eventType.description
+  };
+};
+
+export const calendarTransformer = (calendar: any): Calendar => {
+  return {
+    calendarId: calendar.calendarId,
+    name: calendar.name,
+    description: calendar.description ?? '',
+    color: calendar.colorHexCode,
+    userCreated: userTransformer(calendar.userCreated),
+    dateCreated: calendar.dateCreated,
+    eventTypes: calendar.eventTypes?.map(eventTypeTransformer) ?? []
   };
 };
