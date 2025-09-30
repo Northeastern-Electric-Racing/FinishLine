@@ -3134,16 +3134,30 @@ const performSeed: () => Promise<void> = async () => {
     'Thermal imaging and analysis'
   );
 
-  const calendar = await prisma.calendar.create({
-    data: {
-      name: 'Engineering Team Calendar',
-      description: 'Tracks all engineering team events, meetings, and deadlines.',
-      colorHexCode: '#3498db',
-      userCreated: { connect: { userId: thomasEmrax.userId } },
-      dateCreated: new Date(),
-      organization: { connect: { organizationId } }
-    }
-  });
+  // various calendars for testing
+  const calendar = await CalendarService.createCalendar(
+    thomasEmrax,
+    'Engineering Team Calendar',
+    'Tracks all engineering team events, meetings, and deadlines.',
+    '#3498db',
+    ner
+  );
+
+  const calendarFinishline = await CalendarService.createCalendar(
+    joeShmoe,
+    'Finishline Projects Calendar',
+    'Tracks all ongoing projects currently being developed for Finishline',
+    '#911111ff',
+    ner
+  );
+
+  const calendarMeta = await CalendarService.createCalendar(
+    thomasEmrax,
+    'Calendar Improvements Calendar',
+    'Tracks all current improvements and schedulings for the improvement of the Finishline Calendar',
+    '#bf40e6ff',
+    ner
+  );
 
   // meeting event type
   await CalendarService.createEventType(
@@ -3228,6 +3242,8 @@ const performSeed: () => Promise<void> = async () => {
     false,
     true
   );
+
+  console.log('Thomas Emrax:', thomasEmrax.userId);
 };
 
 performSeed()

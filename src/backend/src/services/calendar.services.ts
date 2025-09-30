@@ -1,7 +1,7 @@
-import { machineryTransformer } from '../transformers/calendar.transformer';
+import { calendarTransformer, machineryTransformer } from '../transformers/calendar.transformer';
 import { getMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
 import { Organization, User } from '@prisma/client';
-import { isAdmin, isHead, EventType, Shop } from 'shared';
+import { isAdmin, isHead, EventType, Shop, Calendar } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
@@ -14,6 +14,7 @@ import { eventTypeTransformer } from '../transformers/calendar.transformer';
 import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
 import { shopTransformer } from '../transformers/calendar.transformer';
 import { getShopQueryArgs } from '../prisma-query-args/shop.query-args';
+import { getCalendarQueryArgs } from '../prisma-query-args/calendar.query-args';
 
 export default class CalendarService {
   /**
@@ -273,5 +274,87 @@ export default class CalendarService {
     });
 
     return shopTransformer(newShop);
+  }
+
+  /**
+   * @param submitter The user submitting the request, who must be an admin
+   * @param name The name of the calendar
+   * @param description A summary of what the calendar is used for
+   * @param colorHexCode The color of the calendar
+   * @param organization The organization for which the calendar is being created
+   *
+   * @returns The created calendar
+   *
+   * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
+   */
+  static async createCalendar(
+    submitter: User,
+    name: string,
+    description: string,
+    colorHexCode: string,
+    organization: Organization
+  ): Promise<Calendar> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('create calendar');
+    }
+
+    const newCalendar = await prisma.calendar.create({
+      data: {
+        name,
+        description,
+        colorHexCode,
+        userCreatedId: submitter.userId,
+        organizationId: organization.organizationId
+      },
+      ...getCalendarQueryArgs(organization.organizationId)
+    });
+
+    return calendarTransformer(newCalendar);
+  }
+
+  /**
+   * Deletes a shop by its ID.
+   * Requires the submitter to be head or above.
+   * @param submitter The user submitting the request.
+   * @param shopId The ID of the shop to be deleted.
+   * @param organization The organization to which the shop belongs.
+   * @returns The deleted shop object.
+   * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
+   * @throws NotFoundException If the shop with the given ID does not exist.
+   * @throws InvalidOrganizationException If the shop does not belong to the given organization.
+   *
+   */
+
+  static async deleteShop(submitter: User, shopId: string, organization: Organization): Promise<Shop> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('delete shop');
+    }
+
+    // Ensure the shop exists
+    const existing = await prisma.shop.findUnique({ where: { shopId } });
+    if (!existing) throw new NotFoundException('Shop', shopId);
+
+    // Ensure it belongs to this org
+    if (existing.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Shop');
+    }
+
+    // not already soft-deleted
+    if (existing.dateDeleted) {
+      throw new NotFoundException('Shop', shopId);
+    }
+
+    // Soft delete the shop and its associated shop machinery in a transaction
+    const deleted = await prisma.$transaction(async (tx) => {
+      await tx.shopMachinery.deleteMany({ where: { shopId } });
+
+      return tx.shop.update({
+        where: { shopId },
+        data: { dateDeleted: new Date() },
+        include: getShopQueryArgs(organization.organizationId).include
+      });
+    });
+
+    return shopTransformer(deleted);
   }
 }
