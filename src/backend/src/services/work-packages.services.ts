@@ -11,9 +11,9 @@ import {
   wbsPipe,
   WorkPackage,
   WorkPackagePreview,
-  WorkPackageSelection,
   WorkPackageStage,
-  User
+  User,
+  WorkPackageSelection
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -37,6 +37,7 @@ import {
 import { getBlockingWorkPackages, validateBlockedBys } from '../utils/work-packages.utils';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
 import { userHasPermission } from '../utils/users.utils';
+import { getUserPreviewQueryArgs } from '../prisma-query-args/user.query-args';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
@@ -583,9 +584,9 @@ export default class WorkPackagesService {
     selection: WorkPackageSelection
   ): Promise<WorkPackagePreview[]> {
     const selectionArgs =
-      selection === 'allOverdue'
+      selection === WorkPackageSelection.ALL_OVERDUE
         ? {}
-        : selection === 'leading'
+        : selection === WorkPackageSelection.LEADING
           ? {
               workPackage: {
                 project: {
@@ -630,8 +631,8 @@ export default class WorkPackagesService {
             workPackageNumber: true,
             dateDeleted: true,
             wbsElementId: true,
-            lead: { select: { firstName: true, lastName: true, userId: true } },
-            manager: { select: { firstName: true, lastName: true, userId: true } }
+            lead: getUserPreviewQueryArgs(),
+            manager: getUserPreviewQueryArgs()
           }
         },
         blockedBy: true,
@@ -642,7 +643,7 @@ export default class WorkPackagesService {
       }
     });
 
-    if (selection === 'allOverdue') {
+    if (selection === WorkPackageSelection.ALL_OVERDUE) {
       workPackages = workPackages.filter((wp) => {
         const endDate = new Date(wp.startDate);
         endDate.setDate(endDate.getDate() + wp.duration * 7); // Add weeks as days

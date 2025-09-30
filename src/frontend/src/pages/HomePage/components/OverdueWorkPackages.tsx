@@ -4,10 +4,11 @@ import ErrorPage from '../../ErrorPage';
 import OverdueWorkPackagesView from './OverdueWorkPackageView';
 import { useHomeScreenWorkPackages } from '../../../hooks/work-packages.hooks';
 import { useTheme } from '@mui/material';
+import { WorkPackageSelection } from 'shared';
 
 const OverdueWorkPackages: React.FC<{}> = () => {
   const theme = useTheme();
-  const { data: overdueWPs, isLoading, isError, error } = useHomeScreenWorkPackages('allOverdue');
+  const { data: overdueWPs, isLoading, isError, error } = useHomeScreenWorkPackages(WorkPackageSelection.ALL_OVERDUE);
 
   if (isLoading || !overdueWPs) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;

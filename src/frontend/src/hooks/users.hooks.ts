@@ -22,7 +22,8 @@ import {
   getManyUserTasks,
   getCurrentUser,
   logUserOut,
-  getManyUsersWithScheduleSettings
+  getManyUsersWithScheduleSettings,
+  getAllOrgUsers
 } from '../apis/users.api';
 import {
   User,
@@ -55,7 +56,7 @@ export const useCurrentUser = (): AuthenticatedUser => {
  */
 export const useAllUsers = () => {
   return useQuery<UserWithRole[], Error>(['users'], async () => {
-    const { data } = await getAllUsers();
+    const { data } = await getAllOrgUsers();
     return data;
   });
 };

@@ -1,4 +1,4 @@
-import { WorkPackagePreview } from 'shared';
+import { WorkPackagePreview, WorkPackageSelection } from 'shared';
 import { Box, Card, CardContent, useTheme } from '@mui/material';
 import {
   getInProgressWorkPackages,
@@ -27,7 +27,7 @@ const NoWorkPackages: React.FC = () => {
 const WorkPackagesSelectionView: React.FC = () => {
   const theme = useTheme();
 
-  const { data: relevantWPs, isLoading, isError, error } = useHomeScreenWorkPackages('leading');
+  const { data: relevantWPs, isLoading, isError, error } = useHomeScreenWorkPackages(WorkPackageSelection.LEADING);
 
   const [upcomingWPs, inProgressWPs, overdueWPs] = React.useMemo(() => {
     if (!relevantWPs) return [[], [], []];

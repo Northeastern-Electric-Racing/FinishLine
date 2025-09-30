@@ -14,11 +14,11 @@ export const getTaskQueryArgs = (organizationId: string) =>
     }
   });
 
-export const getTaskPreviewQueryArgs = () =>
+export const getTaskPreviewQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.TaskDefaultArgs>()({
     include: {
       wbsElement: true,
-      createdBy: true,
-      assignees: true
+      createdBy: getUserQueryArgs(organizationId),
+      assignees: getUserQueryArgs(organizationId)
     }
   });

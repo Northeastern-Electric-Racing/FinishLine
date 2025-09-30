@@ -12,7 +12,11 @@ const descriptionBulletTransformer = (
     type: descBullet.descriptionBulletType.name,
     dateDeleted: descBullet.dateDeleted ?? undefined,
     userChecked: descBullet.userChecked
-      ? { firstName: descBullet.userChecked.firstName, lastName: descBullet.userChecked.lastName }
+      ? {
+          userId: descBullet.userChecked.userId,
+          firstName: descBullet.userChecked.firstName,
+          lastName: descBullet.userChecked.lastName
+        }
       : undefined,
     dateChecked: descBullet.dateTimeChecked ?? undefined
   };

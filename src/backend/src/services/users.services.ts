@@ -37,16 +37,9 @@ export default class UsersService {
    */
   static async getAllUsers(): Promise<User[]> {
     const users = await prisma.user.findMany({
-      select: {
-        roles: true,
-        userId: true,
-        firstName: true,
-        lastName: true,
-        email: true
-      }
+      ...getUserQueryArgs(),
+      orderBy: { firstName: 'asc' }
     });
-
-    users.sort((a, b) => a.firstName.localeCompare(b.firstName));
 
     return users.map(userTransformer);
   }
@@ -59,10 +52,9 @@ export default class UsersService {
   static async getAllOrgUsers(organizationId: string): Promise<User[]> {
     const users = await prisma.user.findMany({
       where: { organizations: { some: { organizationId } } },
-      ...getUserQueryArgs(organizationId)
+      ...getUserQueryArgs(organizationId),
+      orderBy: { firstName: 'asc' }
     });
-
-    users.sort((a, b) => a.firstName.localeCompare(b.firstName));
 
     return users.map(userTransformer);
   }

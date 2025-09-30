@@ -66,4 +66,8 @@ export interface ProjectTemplate extends WbsElementTemplate {
   summary?: string;
 }
 
-export type WorkPackageSelection = 'allOverdue' | 'leading' | 'member';
+export enum WorkPackageSelection {
+  ALL_OVERDUE = 'allOverdue',
+  LEADING = 'leading',
+  MEMBER = 'member'
+}

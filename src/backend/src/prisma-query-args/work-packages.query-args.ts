@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { getUserQueryArgs } from './user.query-args';
+import { getUserPreviewQueryArgs, getUserQueryArgs } from './user.query-args';
 import { getDescriptionBulletQueryArgs } from './description-bullets.query-args';
 import { getDesignReviewPreviewQueryArgs } from './design-reviews.query-args';
 import { getLinkQueryArgs } from './links.query-args';
@@ -51,8 +51,8 @@ export const getWorkPackagePreviewQueryArgs = () =>
           dateCreated: true,
           dateDeleted: true,
           name: true,
-          lead: { select: { userId: true, firstName: true, lastName: true } },
-          manager: { select: { userId: true, firstName: true, lastName: true } },
+          lead: getUserPreviewQueryArgs(),
+          manager: getUserPreviewQueryArgs(),
           status: true
         }
       },

@@ -13,6 +13,8 @@ export interface User {
   role?: Role;
 }
 
+export type UserPreview = Pick<User, 'userId' | 'firstName' | 'lastName'>;
+
 export type UserWithRole = User & { role: Role };
 
 export type Role = 'APP_ADMIN' | 'ADMIN' | 'HEAD' | 'LEADERSHIP' | 'MEMBER' | 'GUEST';

@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User } from './user-types';
+import { User, UserPreview } from './user-types';
 import { ImplementedChange } from './change-request-types';
 import { WorkPackageStage } from './work-package-types';
 import { TeamPreview } from './team-types';
@@ -23,8 +23,8 @@ export interface WbsElementPreview {
   deleted: boolean;
   name: string;
   status: WbsElementStatus;
-  lead?: Pick<User, 'userId' | 'firstName' | 'lastName'>;
-  manager?: Pick<User, 'userId' | 'firstName' | 'lastName'>;
+  lead?: UserPreview;
+  manager?: UserPreview;
 }
 
 export interface WbsElement extends WbsElementPreview {
@@ -123,7 +123,7 @@ export interface DescriptionBullet {
   dateAdded: Date;
   type: string;
   dateDeleted?: Date;
-  userChecked?: Pick<User, 'firstName' | 'lastName'>;
+  userChecked?: UserPreview;
   dateChecked?: Date;
 }
 

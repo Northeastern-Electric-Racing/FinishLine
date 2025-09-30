@@ -10,6 +10,7 @@ import {
   nonEmptyString,
   validateInputs
 } from '../utils/validation.utils';
+import { WorkPackageSelection } from 'shared';
 const workPackagesRouter = express.Router();
 
 workPackagesRouter.get('/', WorkPackagesController.getAllWorkPackages);
@@ -65,7 +66,7 @@ workPackagesRouter.post(
 
 workPackagesRouter.get(
   '/home-page/:selection',
-  param('selection').isIn(['allOverdue', 'leading', 'member']),
+  param('selection').isIn(Object.values(WorkPackageSelection)),
   validateInputs,
   WorkPackagesController.getHomePageWorkPackages
 );

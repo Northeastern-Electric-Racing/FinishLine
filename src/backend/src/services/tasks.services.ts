@@ -302,7 +302,7 @@ export default class TasksService {
           ]
         }
       },
-      ...getTaskPreviewQueryArgs()
+      ...getTaskPreviewQueryArgs(organization.organizationId)
     });
 
     return tasks.map(taskCardPreviewTransformer);
