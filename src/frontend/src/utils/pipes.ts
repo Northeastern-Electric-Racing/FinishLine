@@ -5,7 +5,6 @@
 
 import {
   WbsNumber,
-  User,
   wbsPipe,
   isProject,
   IndexCode,
