@@ -12,8 +12,7 @@ import {
   supermanAdmin,
   flashAdmin,
   theVisitorGuest,
-  alfred,
-  greenlanternHead
+  alfred
 } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
