@@ -4,7 +4,6 @@ import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
   NotFoundException,
-  NotFoundException,
   InvalidOrganizationException
 } from '../../src/utils/errors.utils';
 import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, theVisitorGuest, alfred } from '../test-data/users.test-data';
