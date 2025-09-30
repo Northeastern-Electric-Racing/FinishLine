@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 
-const SLOW_QUERY_THRESHOLD = 15000;
+const SLOW_QUERY_THRESHOLD = 300;
 
 interface QueryLoggerExtension {
   name: string;

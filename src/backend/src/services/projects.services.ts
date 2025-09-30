@@ -7,12 +7,18 @@ import {
   LinkCreateArgs,
   LinkType,
   Project,
+  ProjectOverview,
+  ProjectGantt,
   ProjectPreview,
   WbsNumber,
   wbsPipe
 } from 'shared';
 import prisma from '../prisma/prisma';
-import projectTransformer, { projectPreviewTransformer } from '../transformers/projects.transformer';
+import projectTransformer, {
+  projectOverviewTransformer,
+  projectGanttTransformer,
+  projectPreviewTransformer
+} from '../transformers/projects.transformer';
 import { validateChangeRequestAccepted } from '../utils/change-requests.utils';
 import {
   AccessDeniedAdminOnlyException,
@@ -28,33 +34,52 @@ import { wbsNumOf } from '../utils/utils';
 import WorkPackagesService from './work-packages.services';
 import { linkTypeTransformer } from '../transformers/links.transformer';
 import { userHasPermission } from '../utils/users.utils';
-import { getProjectManyQueryArgs, getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
+import {
+  getProjectGanttQueryArgs,
+  getProjectOverviewQueryArgs,
+  getProjectPreviewQueryArgs,
+  getProjectQueryArgs
+} from '../prisma-query-args/projects.query-args';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
 import { getLinkTypeQueryArgs } from '../prisma-query-args/link-types.query-args';
 
 export default class ProjectsService {
   /**
-   * Get all the non deleted projects in the database for the given organization.
-   * @param organizationId the id of the organization the user is currently in
-   * @param includeDeleted whether or not to include deleted projects
-   * @returns all the projects
+   * Get all the non deleted projects in the database for the given organization
+   * @param organization the organization the user is currently in
+   * @returns all the projects with query args for use in the gantt chart
    */
-  static async getAllProjects(organization: Organization, includeDeleted: boolean): Promise<ProjectPreview[]> {
-    const projects = includeDeleted
-      ? await prisma.project.findMany({
-          where: { wbsElement: { organizationId: organization.organizationId } },
-          ...getProjectManyQueryArgs(organization.organizationId)
-        })
-      : await prisma.project.findMany({
-          where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId } },
-          ...getProjectManyQueryArgs(organization.organizationId)
-        });
+  static async getAllProjectsGantt(organization: Organization): Promise<ProjectGantt[]> {
+    const projects = await prisma.project.findMany({
+      where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId } },
+      ...getProjectGanttQueryArgs(organization.organizationId)
+    });
+
+    return projects.map(projectGanttTransformer);
+  }
+
+  /**
+   * Get all projects for given organization
+   * @param organization the organization the user is in
+   * @returns all the projects with preview query args
+   */
+  static async getAllProjects(organization: Organization): Promise<ProjectPreview[]> {
+    const projects = await prisma.project.findMany({
+      where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId } },
+      ...getProjectPreviewQueryArgs(organization.organizationId)
+    });
 
     return projects.map(projectPreviewTransformer);
   }
 
-  static async getUsersLeadingProjects(user: User, organization: Organization): Promise<ProjectPreview[]> {
+  /**
+   * Get all projects that the user is the lead or manager of
+   * @param user the user making the request
+   * @param organization the oranization the user is in
+   * @returns the projects the user is a lead or manager of with preview query args
+   */
+  static async getUsersLeadingProjects(user: User, organization: Organization): Promise<ProjectOverview[]> {
     const projects = await prisma.project.findMany({
       where: {
         wbsElement: {
@@ -63,13 +88,19 @@ export default class ProjectsService {
           OR: [{ leadId: user.userId }, { managerId: user.userId }]
         }
       },
-      ...getProjectManyQueryArgs(organization.organizationId)
+      ...getProjectOverviewQueryArgs(organization.organizationId)
     });
 
-    return projects.map(projectPreviewTransformer);
+    return projects.map(projectOverviewTransformer);
   }
 
-  static async getUsersTeamsProjects(user: User, organization: Organization): Promise<ProjectPreview[]> {
+  /**
+   * Get all projects related to teams the user is on
+   * @param user the user making the request
+   * @param organization the organization the user is in
+   * @returns all projects associated with teams the user is on with overview card query args
+   */
+  static async getUsersTeamsProjects(user: User, organization: Organization): Promise<ProjectOverview[]> {
     const projects = await prisma.project.findMany({
       where: {
         wbsElement: {
@@ -100,12 +131,18 @@ export default class ProjectsService {
           }
         }
       },
-      ...getProjectManyQueryArgs(organization.organizationId)
+      ...getProjectOverviewQueryArgs(organization.organizationId)
     });
 
-    return projects.map(projectPreviewTransformer);
+    return projects.map(projectOverviewTransformer);
   }
 
+  /**
+   * Get the projects for a given team
+   * @param organization
+   * @param teamId
+   * @returns all the projects for the given team with full project query args
+   */
   static async getTeamsProjects(organization: Organization, teamId: string): Promise<Project[]> {
     const projects = await prisma.project.findMany({
       where: {
