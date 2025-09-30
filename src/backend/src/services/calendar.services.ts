@@ -228,4 +228,50 @@ export default class CalendarService {
 
     return calendarTransformer(newCalendar);
   }
+
+  /**
+   * Deletes a shop by its ID.
+   * Requires the submitter to be head or above.
+   * @param submitter The user submitting the request.
+   * @param shopId The ID of the shop to be deleted.
+   * @param organization The organization to which the shop belongs.
+   * @returns The deleted shop object.
+   * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
+   * @throws NotFoundException If the shop with the given ID does not exist.
+   * @throws InvalidOrganizationException If the shop does not belong to the given organization.
+   *
+   */
+
+  static async deleteShop(submitter: User, shopId: string, organization: Organization): Promise<Shop> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('delete shop');
+    }
+
+    // Ensure the shop exists
+    const existing = await prisma.shop.findUnique({ where: { shopId } });
+    if (!existing) throw new NotFoundException('Shop', shopId);
+
+    // Ensure it belongs to this org
+    if (existing.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Shop');
+    }
+
+    // not already soft-deleted
+    if (existing.dateDeleted) {
+      throw new NotFoundException('Shop', shopId);
+    }
+
+    // Soft delete the shop and its associated shop machinery in a transaction
+    const deleted = await prisma.$transaction(async (tx) => {
+      await tx.shopMachinery.deleteMany({ where: { shopId } });
+
+      return tx.shop.update({
+        where: { shopId },
+        data: { dateDeleted: new Date() },
+        include: getShopQueryArgs(organization.organizationId).include
+      });
+    });
+
+    return shopTransformer(deleted);
+  }
 }

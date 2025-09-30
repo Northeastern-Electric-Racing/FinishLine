@@ -93,4 +93,15 @@ export default class CalendarController {
       next(error);
     }
   }
+  static async deleteShop(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { shopId } = req.params;
+
+      const shop = await CalendarService.deleteShop(req.currentUser, shopId, req.organization);
+
+      res.status(200).json(shop);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

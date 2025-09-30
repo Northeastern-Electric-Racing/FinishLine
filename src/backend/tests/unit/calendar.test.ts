@@ -1,6 +1,10 @@
 import { Calendar, Organization } from '@prisma/client';
 import CalendarService from '../../src/services/calendar.services';
-import { AccessDeniedAdminOnlyException } from '../../src/utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  NotFoundException,
+  InvalidOrganizationException
+} from '../../src/utils/errors.utils';
 import {
   batmanAppAdmin,
   wonderwomanGuest,
@@ -167,6 +171,82 @@ describe('Calendar Tests', () => {
         await CalendarService.createShop(admin, 'UniqueName', 'first', organization);
 
         await expect(CalendarService.createShop(admin, 'UniqueName', 'second attempt', organization)).rejects.toBeTruthy();
+      });
+    });
+
+    describe('Delete shop', () => {
+      it('fails if user is not head or above', async () => {
+        await expect(
+          CalendarService.deleteShop(await createTestUser(wonderwomanGuest, orgId), shopId, organization)
+        ).rejects.toBeInstanceOf(AccessDeniedAdminOnlyException);
+      });
+
+      it('succeeds for admin', async () => {
+        const admin = await createTestUser(batmanAppAdmin, orgId);
+
+        const result = await CalendarService.deleteShop(admin, shopId, organization);
+        expect(result.shopId).toBe(shopId);
+
+        // verify soft delete happened
+        const row = await prisma.shop.findUnique({ where: { shopId } });
+        expect(row?.dateDeleted).not.toBeNull();
+      });
+
+      it('fails if shop does not exist', async () => {
+        const admin = await createTestUser(batmanAppAdmin, orgId);
+        await expect(CalendarService.deleteShop(admin, 'non-existent-id', organization)).rejects.toBeInstanceOf(
+          NotFoundException
+        );
+      });
+
+      it('fails if shop is already deleted', async () => {
+        const admin = await createTestUser(batmanAppAdmin, orgId);
+        await CalendarService.deleteShop(admin, shopId, organization);
+
+        await expect(CalendarService.deleteShop(admin, shopId, organization)).rejects.toBeInstanceOf(NotFoundException);
+      });
+
+      it('also deletes associated shopMachinery bridge rows', async () => {
+        // create a machinery that links to this shop
+        const admin = await createTestUser(batmanAppAdmin, orgId);
+        await CalendarService.createMachinery(admin, 'Bridge-Linked', shopId, 1, organization);
+
+        //confirm the bridge row exists before delete
+        const before = await prisma.shopMachinery.count({ where: { shopId } });
+        expect(before).toBeGreaterThan(0);
+
+        // delete shop
+        await CalendarService.deleteShop(admin, shopId, organization);
+
+        // the bridge should be cleaned up
+        const after = await prisma.shopMachinery.count({ where: { shopId } });
+        expect(after).toBe(0);
+
+        // the shop should be soft-deleted
+        const deletedShop = await prisma.shop.findUnique({ where: { shopId } });
+        expect(deletedShop?.dateDeleted).not.toBeNull();
+      });
+
+      it('fails if shop belongs to a different organization', async () => {
+        const existing = await prisma.user.findFirstOrThrow({
+          where: { googleAuthId: supermanAdmin.googleAuthId },
+          select: { userId: true }
+        });
+
+        const otherOrg = await prisma.organization.create({
+          data: {
+            name: 'Other Org (calendar test)',
+            description: 'for cross-org negative case',
+            applicationLink: '',
+            userCreated: { connect: { userId: existing.userId } }
+          }
+        });
+
+        const AdminInOtherOrg = await createTestUser(batmanAppAdmin, otherOrg.organizationId);
+
+        await expect(CalendarService.deleteShop(AdminInOtherOrg, shopId, otherOrg)).rejects.toThrow(
+          new InvalidOrganizationException('Shop')
+        );
       });
     });
   });
