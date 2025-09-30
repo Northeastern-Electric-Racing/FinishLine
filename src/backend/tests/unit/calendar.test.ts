@@ -290,18 +290,18 @@ describe('Calendar Tests', () => {
     describe('Delete shop', () => {
       it('fails if user is not head or above', async () => {
         await expect(
-          CalendarService.deleteShop(await createTestUser(wonderwomanGuest, orgId), shopId, organization)
+          CalendarService.deleteShop(await createTestUser(wonderwomanGuest, orgId), shop.shopId, organization)
         ).rejects.toBeInstanceOf(AccessDeniedAdminOnlyException);
       });
 
       it('succeeds for admin', async () => {
         const admin = await createTestUser(batmanAppAdmin, orgId);
 
-        const result = await CalendarService.deleteShop(admin, shopId, organization);
-        expect(result.shopId).toBe(shopId);
+        const result = await CalendarService.deleteShop(admin, shop.shopId, organization);
+        expect(result.shopId).toBe(shop.shopId);
 
         // verify soft delete happened
-        const row = await prisma.shop.findUnique({ where: { shopId } });
+        const row = await prisma.shop.findUnique({ where: { shopId: shop.shopId } });
         expect(row?.dateDeleted).not.toBeNull();
       });
 
@@ -314,29 +314,29 @@ describe('Calendar Tests', () => {
 
       it('fails if shop is already deleted', async () => {
         const admin = await createTestUser(batmanAppAdmin, orgId);
-        await CalendarService.deleteShop(admin, shopId, organization);
+        await CalendarService.deleteShop(admin, shop.shopId, organization);
 
-        await expect(CalendarService.deleteShop(admin, shopId, organization)).rejects.toBeInstanceOf(NotFoundException);
+        await expect(CalendarService.deleteShop(admin, shop.shopId, organization)).rejects.toBeInstanceOf(NotFoundException);
       });
 
       it('also deletes associated shopMachinery bridge rows', async () => {
         // create a machinery that links to this shop
         const admin = await createTestUser(batmanAppAdmin, orgId);
-        await CalendarService.createMachinery(admin, 'Bridge-Linked', shopId, 1, organization);
+        await CalendarService.createMachinery(admin, 'Bridge-Linked', shop.shopId, 1, organization);
 
         //confirm the bridge row exists before delete
-        const before = await prisma.shopMachinery.count({ where: { shopId } });
+        const before = await prisma.shopMachinery.count({ where: { shopId: shop.shopId } });
         expect(before).toBeGreaterThan(0);
 
         // delete shop
-        await CalendarService.deleteShop(admin, shopId, organization);
+        await CalendarService.deleteShop(admin, shop.shopId, organization);
 
         // the bridge should be cleaned up
-        const after = await prisma.shopMachinery.count({ where: { shopId } });
+        const after = await prisma.shopMachinery.count({ where: { shopId: shop.shopId } });
         expect(after).toBe(0);
 
         // the shop should be soft-deleted
-        const deletedShop = await prisma.shop.findUnique({ where: { shopId } });
+        const deletedShop = await prisma.shop.findUnique({ where: { shopId: shop.shopId } });
         expect(deletedShop?.dateDeleted).not.toBeNull();
       });
 
@@ -357,7 +357,7 @@ describe('Calendar Tests', () => {
 
         const AdminInOtherOrg = await createTestUser(batmanAppAdmin, otherOrg.organizationId);
 
-        await expect(CalendarService.deleteShop(AdminInOtherOrg, shopId, otherOrg)).rejects.toThrow(
+        await expect(CalendarService.deleteShop(AdminInOtherOrg, shop.shopId, otherOrg)).rejects.toThrow(
           new InvalidOrganizationException('Shop')
         );
       });
