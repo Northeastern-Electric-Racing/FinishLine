@@ -5,11 +5,12 @@ interface GraphBarChartViewProps {
   graph: Graph;
   height: number;
   cars: Car[];
+  width: number;
 }
 
 const colors = ['#DE1515', '#1515DE', '#15DE15'];
 
-const GraphBarChartView = ({ graph, height, cars }: GraphBarChartViewProps) => {
+const GraphBarChartView = ({ graph, height, cars, width }: GraphBarChartViewProps) => {
   return (
     <StatsBarChart
       graphTitle={`${displayEnum(graph.measure)} ${graph.title} - ${displayEnum(graph.graphType)} ${
@@ -23,6 +24,7 @@ const GraphBarChartView = ({ graph, height, cars }: GraphBarChartViewProps) => {
       xAxisData={graph.graphData[0].values.map((data) => data.label)}
       xAxisLabel={graph.xAxisLabel}
       height={height}
+      width={width}
     />
   );
 };

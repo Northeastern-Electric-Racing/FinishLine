@@ -66,7 +66,7 @@ const GanttChart = <E, T>({
       }}
     >
       <GanttChartTimeline start={startDate} end={endDate} />
-      <Box>
+      <Box sx={{ position: 'relative' }}>
         {collections.map((collection) => {
           return collection.tasks ? (
             <GanttChartCollectionSection
@@ -81,22 +81,22 @@ const GanttChart = <E, T>({
             <></>
           );
         })}
-      </Box>
 
-      {currentWeekCol > 0 && (
-        <Box
-          sx={{
-            position: 'absolute',
-            left: `calc(${currentWeekCol - 1} * (${GANTT_CHART_CELL_SIZE} + ${GANTT_CHART_GAP_SIZE}) + 1.1rem + ${dailyOffset}rem)`,
-            top: '5rem',
-            width: '1px',
-            backgroundColor: theme.palette.info.main,
-            zIndex: 3,
-            pointerEvents: 'none',
-            height: '150%'
-          }}
-        />
-      )}
+        {currentWeekCol > 0 && (
+          <Box
+            sx={{
+              position: 'absolute',
+              left: `calc(${currentWeekCol - 1} * (${GANTT_CHART_CELL_SIZE} + ${GANTT_CHART_GAP_SIZE}) + 1.1rem + ${dailyOffset}rem)`,
+              top: 0,
+              bottom: 0,
+              width: '1px',
+              backgroundColor: theme.palette.info.main,
+              zIndex: 3,
+              pointerEvents: 'none'
+            }}
+          />
+        )}
+      </Box>
     </Box>
   );
 };

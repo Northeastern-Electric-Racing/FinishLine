@@ -3,7 +3,7 @@ import { Team, TeamPreview } from 'shared';
 import { TeamPreviewQueryArgs, TeamQueryArgs } from '../prisma-query-args/teams.query-args';
 import { userTransformer } from './user.transformer';
 import { teamTypeTransformer } from './team-types.transformer';
-import { projectPreviewTransformer } from './projects.transformer';
+import { projectGanttTransformer } from './projects.transformer';
 
 const teamTransformer = (team: Prisma.TeamGetPayload<TeamQueryArgs>): Team => {
   return {
@@ -13,7 +13,7 @@ const teamTransformer = (team: Prisma.TeamGetPayload<TeamQueryArgs>): Team => {
     description: team.description,
     head: userTransformer(team.head),
     members: team.members.map(userTransformer),
-    projects: team.projects.map(projectPreviewTransformer),
+    projects: team.projects.map(projectGanttTransformer),
     leads: team.leads.map(userTransformer),
     userArchived: team.userArchived ? userTransformer(team.userArchived) : undefined,
     dateArchived: team.dateArchived ?? undefined,

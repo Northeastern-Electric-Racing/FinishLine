@@ -120,7 +120,7 @@ const StatsBarChart: React.FC<StatsBarChartProps> = ({
   };
 
   return (
-    <Box sx={{ height, width: '100%', maxWidth: width }}>
+    <Box sx={{ height, width, maxWidth: '100%', maxHeight: '100%' }}>
       <Bar data={data} options={options} />
     </Box>
   );

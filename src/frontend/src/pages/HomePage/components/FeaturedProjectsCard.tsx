@@ -1,6 +1,6 @@
 import { Construction, Work } from '@mui/icons-material';
 import { Box, Card, CardContent, Chip, Link, Stack, Typography, useTheme } from '@mui/material';
-import { wbsPipe, ProjectPreview, wbsNamePipe } from 'shared';
+import { wbsPipe, wbsNamePipe, ProjectPreview } from 'shared';
 import { datePipe, fullNamePipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';

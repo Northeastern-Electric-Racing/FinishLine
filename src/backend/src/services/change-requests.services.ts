@@ -146,7 +146,7 @@ export default class ChangeRequestsService {
             dateReviewed: null
           },
           {
-            NOT: { scopeChangeRequest: null }
+            NOT: [{ scopeChangeRequest: null }, { submitterId: user.userId }]
           }
         ],
         organizationId: organization.organizationId,
@@ -1244,16 +1244,20 @@ export default class ChangeRequestsService {
               descriptionBulletType: { connect: { id: bullet.descriptionBulletType.id } }
             }))
           },
-          lead: {
-            connect: {
-              userId: leadId
+          ...(leadId && {
+            lead: {
+              connect: {
+                userId: leadId
+              }
             }
-          },
-          manager: {
-            connect: {
-              userId: managerId
+          }),
+          ...(managerId && {
+            manager: {
+              connect: {
+                userId: managerId
+              }
             }
-          },
+          }),
           workPackageProposedChanges: {
             create: {
               duration,
