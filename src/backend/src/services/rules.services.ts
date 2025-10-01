@@ -133,8 +133,7 @@ export default class RulesService {
         ruleId
       },
       data: {
-        ruleContent,
-        organizationId: organization.organizationId
+        ruleContent
       }
     });
 
