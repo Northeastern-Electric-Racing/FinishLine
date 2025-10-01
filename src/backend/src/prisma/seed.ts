@@ -27,7 +27,6 @@ import {
   RoleEnum,
   SpecialPermission,
   StandardChangeRequest,
-  User,
   WbsElementStatus,
   WorkPackageStage
 } from 'shared';
@@ -50,6 +49,8 @@ import AnnouncementService from '../services/announcement.services';
 import OnboardingServices from '../services/onboarding.services';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
 import FinanceServices from '../services/finance.services';
+import { ruleSeedData } from './seed-data/rules.seed';
+import RulesService from '../services/rules.services';
 import { seedRulesetType } from './seed-data/rules.seed';
 
 const prisma = new PrismaClient();
@@ -3035,6 +3036,35 @@ const performSeed: () => Promise<void> = async () => {
       }
     }
   });
+
+  /**
+   * Rules
+   */
+
+  // ruleset types
+  const fsaeRulesetType = await prisma.ruleset_Type.create({
+    data: ruleSeedData.rulesetType1(batman.userId)
+  });
+
+  // rulesets
+  const ruleset1 = await prisma.ruleset.create({
+    data: ruleSeedData.ruleset1(fergus.carId, batman.userId, fsaeRulesetType.rulesetTypeId)
+  });
+
+  // rules
+  const ruleT = await prisma.rule.create({ data: ruleSeedData.topLevelRule(ruleset1.rulesetId, batman.userId) });
+  const ruleT2 = await prisma.rule.create({
+    data: ruleSeedData.secondLevelRule(ruleset1.rulesetId, batman.userId, ruleT.ruleId)
+  });
+  const ruleT21 = await prisma.rule.create({
+    data: ruleSeedData.thirdLevelRule(ruleset1.rulesetId, batman.userId, ruleT2.ruleId)
+  });
+  const ruleT211 = await prisma.rule.create({
+    data: ruleSeedData.leafRule(ruleset1.rulesetId, batman.userId, ruleT21.ruleId)
+  });
+
+  // project rules
+  await RulesService.createProjectRule(batman, ner, ruleT211.ruleId, project1Id);
 
   const goldSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Gold', ner, '#9F9156', 3000);
   await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, '#C0C0C0', 200);

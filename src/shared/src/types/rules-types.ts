@@ -62,7 +62,7 @@ export interface RuleStatusChange {
 
 export interface ProjectRule {
   projectRuleId: string;
-  ruleId: string;
+  rule: Rule;
   projectId: string;
   currentStatus: RuleCompletion;
   statusHistory: RuleStatusChange[];
