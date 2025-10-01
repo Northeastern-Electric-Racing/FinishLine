@@ -3,6 +3,7 @@ import { Machinery, Shop, ShopMachinery, EventType, Calendar } from 'shared';
 import { MachineryQueryArgs, ShopQueryArgs, ShopMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
 import { userTransformer } from './user.transformer';
 import { EventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
+import { CalendarQueryArgs } from '../prisma-query-args/calendar.query-args';
 
 export const shopTransformer = (shop: Prisma.ShopGetPayload<ShopQueryArgs>): Shop => {
   return {
@@ -57,14 +58,14 @@ export const eventTypeTransformer = (eventType: Prisma.EventTypeGetPayload<Event
   };
 };
 
-export const calendarTransformer = (calendar: any): Calendar => {
+export const calendarTransformer = (calendar: Prisma.CalendarGetPayload<CalendarQueryArgs>): Calendar => {
   return {
     calendarId: calendar.calendarId,
     name: calendar.name,
-    description: calendar.description ?? '',
+    description: calendar.description,
     color: calendar.colorHexCode,
     userCreated: userTransformer(calendar.userCreated),
     dateCreated: calendar.dateCreated,
-    eventTypes: calendar.eventTypes?.map(eventTypeTransformer) ?? []
+    eventTypes: calendar.eventTypes.map(eventTypeTransformer)
   };
 };
