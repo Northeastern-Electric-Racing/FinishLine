@@ -15,7 +15,8 @@ import {
   Task_Priority,
   Task_Status,
   Team,
-  Part_Tag
+  Part_Tag,
+  Ruleset_Type
 } from '@prisma/client';
 import { createUser, dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
