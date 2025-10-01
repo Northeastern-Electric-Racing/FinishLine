@@ -94,7 +94,6 @@ export default class CalendarController {
     }
   }
 
-  
   static async deleteCalendar(req: Request, res: Response, next: NextFunction) {
     try {
       const { calendarId } = req.params;
@@ -106,7 +105,6 @@ export default class CalendarController {
       next(error);
     }
   }
-
 
   static async deleteShop(req: Request, res: Response, next: NextFunction) {
     try {

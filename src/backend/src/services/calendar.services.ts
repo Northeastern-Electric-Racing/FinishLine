@@ -199,6 +199,7 @@ export default class CalendarService {
     return shopTransformer(newShop);
   }
 
+  /**
    * @param submitter The user submitting the request, who must be an admin
    * @param name The name of the calendar
    * @param description A summary of what the calendar is used for
@@ -233,7 +234,7 @@ export default class CalendarService {
 
     return calendarTransformer(newCalendar);
   }
-  
+
   /**
    * Delete calendar in the database
    * @param submitter The user submitting the request, who must be a head or above.
