@@ -15,4 +15,6 @@ rulesRouter.post(
   RulesController.createProjectRule
 );
 
+rulesRouter.post('/rules/rule/:ruleId/edit', nonEmptyString(body('rulesContent')), validateInputs, RulesController.editRule);
+
 export default rulesRouter;

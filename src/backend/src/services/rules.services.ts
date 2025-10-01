@@ -1,11 +1,12 @@
-import { ProjectRule, isLeadership, RuleCompletion } from 'shared';
+import { ProjectRule, isLeadership, RuleCompletion, isAdmin } from 'shared';
 import { userHasPermission } from '../utils/users.utils';
 import {
   AccessDeniedException,
   NotFoundException,
   HttpException,
   DeletedException,
-  InvalidOrganizationException
+  InvalidOrganizationException,
+  AccessDeniedAdminOnlyException
 } from '../utils/errors.utils';
 import prisma from '../prisma/prisma';
 import { projectRuleTransformer } from '../transformers/rules.transformer';
@@ -99,5 +100,44 @@ export default class RulesService {
     });
 
     return projectRuleTransformer(projectRule);
+  }
+
+  /**
+   * Edits a rule with the given id
+   * @param submitter a user who is making this request
+   * @param ruleContent the rule content to edit
+   * @param ruleId The rule ID being edited
+   * @param organizationId the organization Id
+   * @returns the edited rule
+   */
+  static async editRule(submitter: User, ruleContent: string, ruleId: string, organization: Organization) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('edit a rule');
+
+    const currentRule = await prisma.rule.findUnique({
+      where: {
+        ruleId
+      }
+    });
+
+    if (!currentRule) {
+      throw new NotFoundException('Rule', ruleId);
+    }
+
+    if (currentRule.dateDeleted) {
+      throw new DeletedException('Rule', ruleId);
+    }
+
+    const updatedRule = await prisma.rule.update({
+      where: {
+        ruleId
+      },
+      data: {
+        ruleContent,
+        organizationId: organization.organizationId
+      }
+    });
+
+    return updatedRule;
   }
 }
