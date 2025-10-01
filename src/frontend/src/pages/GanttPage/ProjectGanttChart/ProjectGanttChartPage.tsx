@@ -347,9 +347,7 @@ const ProjectGanttChartPage: FC = () => {
         firstName: 'Temp',
         lastName: 'User',
         email: 'temp@example.com',
-        emailId: 'temp@example.com',
-        role: 'MEMBER' as const,
-        permissions: []
+        role: 'MEMBER' as const
       },
       assignees: [],
       deadline,

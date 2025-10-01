@@ -110,9 +110,7 @@ export const sharedBatman: SharedUser = {
   firstName: 'Bruce',
   lastName: 'Wayne',
   email: 'notbatman@gmail.com',
-  emailId: 'notbatman',
-  role: 'APP_ADMIN',
-  permissions: [Permission.CREATE_GRAPH, Permission.EDIT_GRAPH, Permission.VIEW_GRAPH, Permission.DELETE_GRAPH]
+  role: 'APP_ADMIN'
 };
 
 export const batmanSecureSettings: User_Secure_Settings = {

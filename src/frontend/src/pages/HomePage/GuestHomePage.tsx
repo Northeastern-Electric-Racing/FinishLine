@@ -4,9 +4,6 @@
  */
 
 import { Box, Grid, Stack, Typography } from '@mui/material';
-import { useSingleUserSettings } from '../../hooks/users.hooks';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import ErrorPage from '../ErrorPage';
 import PageLayout, { PAGE_GRID_HEIGHT } from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
 import MemberEncouragement from './components/MemberEncouragement';
@@ -21,7 +18,6 @@ interface GuestHomePageProps {
 }
 
 const GuestHomePage = ({ user }: GuestHomePageProps) => {
-  const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId);
   const [showModal, setShowModal] = useState(false);
 
   // shows modal only once per session
@@ -32,9 +28,6 @@ const GuestHomePage = ({ user }: GuestHomePageProps) => {
       sessionStorage.setItem('hasSeenModal', 'true');
     }
   }, []);
-
-  if (isLoading || !userSettingsData) return <LoadingIndicator />;
-  if (isError) return <ErrorPage error={error} message={error.message} />;
 
   return (
     <PageLayout title="Home" hidePageTitle>

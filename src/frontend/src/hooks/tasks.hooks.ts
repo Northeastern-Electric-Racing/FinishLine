@@ -3,9 +3,16 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { WbsNumber, TaskPriority, TaskStatus, Task } from 'shared';
-import { createSingleTask, deleteSingleTask, editSingleTaskStatus, editTask, editTaskAssignees } from '../apis/tasks.api';
+import {
+  createSingleTask,
+  deleteSingleTask,
+  editSingleTaskStatus,
+  editTask,
+  editTaskAssignees,
+  getOverdueTasksByTeamLeader
+} from '../apis/tasks.api';
 
 export interface CreateTaskPayload {
   wbsNum: WbsNumber;
@@ -138,4 +145,11 @@ export const useDeleteTask = () => {
       }
     }
   );
+};
+
+export const useOverdueTasksByTeamLeader = (userId: string) => {
+  return useQuery<Task[], Error>([userId, 'tasks'], async () => {
+    const { data } = await getOverdueTasksByTeamLeader(userId);
+    return data;
+  });
 };

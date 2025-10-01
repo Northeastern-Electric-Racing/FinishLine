@@ -29,8 +29,6 @@ const RetrospectivePage = () => {
   const history = useHistory();
   const { filters, setFilters } = useGanttFilters('retro-gantt');
 
-  console.log(filters.startDate);
-
   const { data: teams, isLoading: teamsIsLoading, isError: teamsIsError, error: teamsError } = useAllTeams();
 
   const {
