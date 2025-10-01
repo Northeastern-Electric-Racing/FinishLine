@@ -40,6 +40,7 @@ export default class TasksService {
     status: Task_Status,
     assignees: string[],
     organization: Organization,
+    startDate?: Date,
     deadline?: Date
   ): Promise<Task> {
     const requestedWbsElement = await prisma.wBS_Element.findUnique({
@@ -93,6 +94,7 @@ export default class TasksService {
         },
         title,
         notes,
+        startDate,
         deadline,
         priority,
         status,
@@ -127,7 +129,8 @@ export default class TasksService {
     title: string,
     notes: string,
     priority: Task_Priority,
-    deadline: Date
+    startDate?: Date,
+    deadline?: Date
   ) {
     const hasPermission = await userHasPermission(user.userId, organizationId, notGuest);
     if (!hasPermission) throw new AccessDeniedException('Guests cannot edit tasks');
@@ -144,7 +147,7 @@ export default class TasksService {
 
     const updatedTask = await prisma.task.update({
       where: { taskId },
-      data: { title, notes, priority, deadline },
+      data: { title, notes, priority, startDate, deadline },
       ...getTaskQueryArgs(originalTask.wbsElement.organizationId)
     });
     return taskTransformer(updatedTask);

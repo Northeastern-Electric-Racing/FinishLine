@@ -630,6 +630,7 @@ model Task {
   title           String
   notes           String
   deadline        DateTime?
+  startDate       DateTime?
   assignees       User[]        @relation(name: "assignedTo")
   priority        Task_Priority
   status          Task_Status

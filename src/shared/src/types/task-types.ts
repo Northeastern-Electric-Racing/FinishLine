@@ -28,6 +28,7 @@ export interface Task {
   createdBy: UserPreview;
   deletedBy?: UserPreview;
   assignees: UserPreview[];
+  startDate?: Date;
   deadline?: Date;
   priority: TaskPriority;
   status: TaskStatus;

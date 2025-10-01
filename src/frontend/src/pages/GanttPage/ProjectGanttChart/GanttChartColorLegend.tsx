@@ -4,13 +4,19 @@
  */
 
 import { Box, Card, Tooltip, Typography } from '@mui/material';
-import { DesignReviewStatus, WbsElementStatus, WorkPackageStage } from 'shared';
+import { DesignReviewStatus, TaskStatus, WbsElementStatus, WorkPackageStage } from 'shared';
 import {
   ganttDesignReviewStatusColorPipe,
+  ganttTaskColorPipe,
   ganttWorkPackageStageColorPipe,
   GanttWorkPackageTextColor
 } from '../../../utils/gantt.utils';
-import { DesignReviewStatusTextPipe, WbsElementStatusTextPipe, WorkPackageStageTextPipe } from '../../../utils/enum-pipes';
+import {
+  DesignReviewStatusTextPipe,
+  TaskStatusTextPipe,
+  WbsElementStatusTextPipe,
+  WorkPackageStageTextPipe
+} from '../../../utils/enum-pipes';
 import { grey } from '@mui/material/colors';
 
 const LEGEND_POPUPS_MAP = new Map<WorkPackageStage, JSX.Element>();
@@ -90,6 +96,43 @@ const DesignReviewToolTipPopUp = () => {
   );
 };
 
+const TaskToolTopPopUp = () => {
+  return (
+    <Card
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1,
+        px: 2,
+        py: 1
+      }}
+    >
+      {
+        // map through all Task Statuses
+        [TaskStatus.IN_BACKLOG, TaskStatus.IN_PROGRESS, TaskStatus.DONE].map((status) => {
+          return (
+            <Box
+              sx={{
+                backgroundColor: ganttTaskColorPipe(status),
+                height: '2rem',
+                width: '8rem',
+                borderRadius: 1,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
+            >
+              <Typography variant="body1" sx={{ color: 'white' }}>
+                {TaskStatusTextPipe(status)}
+              </Typography>
+            </Box>
+          );
+        })
+      }
+    </Card>
+  );
+};
+
 const GanttChartColorLegend = () => {
   return (
     <Box
@@ -139,6 +182,30 @@ const GanttChartColorLegend = () => {
           );
         })
       }
+      <Box
+        sx={{
+          background: ganttTaskColorPipe(TaskStatus.IN_PROGRESS),
+          display: 'flex',
+          flexDirection: 'column',
+          height: '2rem',
+          width: '8.25rem',
+          borderRadius: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          px: 0.8
+        }}
+      >
+        <Tooltip
+          title={<TaskToolTopPopUp />}
+          slotProps={{
+            tooltip: { sx: { background: 'transparent', width: 'fit-content' } }
+          }}
+        >
+          <Typography variant="body2" sx={{ color: 'white', overflow: 'hidden', textWrap: 'nowrap' }}>
+            Task
+          </Typography>
+        </Tooltip>
+      </Box>
       <Box
         sx={{
           background: ganttDesignReviewStatusColorPipe(DesignReviewStatus.CONFIRMED),

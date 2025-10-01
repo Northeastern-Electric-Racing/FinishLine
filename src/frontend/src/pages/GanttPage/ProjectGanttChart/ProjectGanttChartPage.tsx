@@ -32,6 +32,8 @@ import GanttChart from '../GanttChart/GanttChart';
 import {
   ProjectGantt,
   Task,
+  TaskPriority,
+  TaskStatus,
   TeamPreview,
   TeamType,
   WbsElementPreview,
@@ -45,6 +47,8 @@ import { useGetAllCars } from '../../../hooks/cars.hooks';
 import { useAllTeamTypes } from '../../../hooks/team-types.hooks';
 import AddGanttProjectModal from './AddGanttProjectModal';
 import AddGanttWorkPackageModal from './AddGanttWorkPackageModal';
+import AddGanttSelectionModal from './AddGanttSelectionModal';
+import AddGanttTaskModal from './AddGanttTaskModal';
 import { GanttRequestChangeModal } from './ProjectGanttChangeModals/GanttRequestChangeModal';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { v4 as uuidv4 } from 'uuid';
@@ -74,13 +78,14 @@ const ProjectGanttChartPage: FC = () => {
   } = useAllTeamTypes();
 
   const { isLoading: carsIsLoading, isError: carsIsError, data: cars, error: carsError } = useGetAllCars();
-
   const { isLoading: teamsIsLoading, isError: teamsIsError, data: teams, error: teamsError } = useAllTeams();
   const [searchText, setSearchText] = useState<string>('');
   const [showWorkPackagesMap, setShowWorkPackagesMap] = useState<Map<string, boolean>>(new Map());
   const [addedProjects, setAddedProjects] = useState<ProjectGantt[]>([]);
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
   const [showAddWorkPackageModal, setShowAddWorkPackageModal] = useState(false);
+  const [showAddTaskModal, setShowAddTaskModal] = useState(false);
+  const [showSelectionModal, setShowSelectionModal] = useState(false);
   const [ganttChanges, setGanttChanges] = useState<GanttChange<WbsElementPreview | Task>[]>([]);
   const [requestEventChanges, setRequestEventChanges] = useState<RequestEventChange<WbsElementPreview | Task>[]>([]);
   const [selectedProject, setSelectedProject] = useState<ProjectGantt | undefined>(undefined);
@@ -245,7 +250,7 @@ const ProjectGanttChartPage: FC = () => {
   const onAddNewSubtask = (parent: GanttTask<WbsElementPreview | Task>) => {
     if (isProjectPreview(parent.element)) {
       setSelectedProject(parent.element);
-      setShowAddWorkPackageModal(true);
+      setShowSelectionModal(true);
     }
   };
 
@@ -304,13 +309,70 @@ const ProjectGanttChartPage: FC = () => {
     return existingCarProjects + 1;
   };
 
-  const handleAddProjectInfo = (
+  const handleWorkPackageSelected = () => {
+    setShowAddWorkPackageModal(true);
+  };
+
+  const handleTaskSelected = () => {
+    setShowAddTaskModal(true);
+  };
+
+  const handleAddTaskInfo = (
+    taskInfo: {
+      title: string;
+      priority: TaskPriority;
+      status: TaskStatus;
+      assignees: string[];
+      notes: string;
+      startDate: Date | null;
+      deadline: Date | null;
+    },
+    parentProject: ProjectGantt
+  ) => {
+    const taskId = uuidv4();
+
+    // Calculate deadline: use provided deadline or default to 1 week from now
+    const deadline = taskInfo.deadline || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const startDate = taskInfo.startDate || new Date();
+
+    const newTask: Task = {
+      taskId,
+      wbsNum: parentProject.wbsNum,
+      title: taskInfo.title,
+      notes: taskInfo.notes,
+      dateCreated: new Date(),
+      // Will be overwritten when saved
+      createdBy: {
+        userId: 'temp',
+        firstName: 'Temp',
+        lastName: 'User',
+        email: 'temp@example.com',
+        emailId: 'temp@example.com',
+        role: 'MEMBER' as const,
+        permissions: []
+      },
+      assignees: [],
+      deadline,
+      startDate,
+      priority: taskInfo.priority,
+      status: taskInfo.status
+    };
+
+    addNewTaskHandler(newTask, parentProject.id);
+
+    createChange({
+      id: taskId,
+      type: 'create-sub-task',
+      element: newTask
+    });
+    setSelectedProject(undefined);
+  };
+  const handleAddProjectInfo = async (
     projectInfo: { name: string; carNumber: number },
     selectedTeam: { teamId: string; teamName: string }
   ) => {
-    const id = uuidv4();
-    const newProject: ProjectGantt = {
-      id,
+    const mockProject: ProjectGantt = {
+      id: uuidv4(),
       name: projectInfo.name,
       wbsNum: {
         carNumber: projectInfo.carNumber,
@@ -328,13 +390,20 @@ const ProjectGanttChartPage: FC = () => {
       dateCreated: new Date()
     };
 
-    addNewProjectHandler(newProject);
+    // Add to local state and create change request event
+    addNewProjectHandler(mockProject);
 
-    createChange({
-      id,
-      type: 'create-task',
-      element: newProject
-    });
+    // Create a RequestEventChange for the modal system
+    const requestChange: RequestEventChange<ProjectGantt> = {
+      changeId: uuidv4(),
+      element: mockProject,
+      newStart: new Date(),
+      newEnd: new Date(),
+      type: 'create-task' // Projects use 'create-task' type in the modal system
+    };
+
+    setRequestEventChanges((prev) => [...prev, requestChange]);
+    setSelectedTeam(undefined);
   };
 
   const createChange = (change: GanttChange<WbsElementPreview | Task>) => {
@@ -356,14 +425,18 @@ const ProjectGanttChartPage: FC = () => {
     createChange(change);
   };
 
-  const saveChanges = () => {
+  const saveChanges = async () => {
     try {
-      const requestEventChanges = constructFinalizedChanges(projects, addedProjects.concat(editedProjects), ganttChanges);
-
-      setRequestEventChanges(requestEventChanges);
-      if (requestEventChanges.length > 0) {
-        const { element } = requestEventChanges[requestEventChanges.length - 1];
-        setShowWorkPackagesMap((prev) => new Map(prev.set(element.id, true)));
+      if (ganttChanges.length > 0) {
+        const requestEventChanges = constructFinalizedChanges(projects, addedProjects.concat(editedProjects), ganttChanges);
+        setRequestEventChanges(requestEventChanges);
+        if (requestEventChanges.length > 0) {
+          const { element } = requestEventChanges[requestEventChanges.length - 1];
+          setShowWorkPackagesMap((prev) => new Map(prev.set(element.id, true)));
+        }
+      } else {
+        toast.success('Changes saved successfully!');
+        handleCancel();
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -400,6 +473,34 @@ const ProjectGanttChartPage: FC = () => {
             toast.error('No Parent Project Selected');
           }
         }}
+      />
+    );
+  };
+
+  const AddTaskModal = () => {
+    return (
+      <AddGanttTaskModal
+        showModal={showAddTaskModal}
+        handleClose={() => setShowAddTaskModal(false)}
+        addTask={(taskInfo) => {
+          if (selectedProject) {
+            handleAddTaskInfo(taskInfo, selectedProject);
+          } else {
+            toast.error('No Parent Project Selected');
+          }
+        }}
+      />
+    );
+  };
+
+  const SelectionModal = () => {
+    return (
+      <AddGanttSelectionModal
+        showModal={showSelectionModal}
+        handleClose={() => setShowSelectionModal(false)}
+        onWorkPackageSelected={handleWorkPackageSelected}
+        onTaskSelected={handleTaskSelected}
+        projectName={selectedProject?.name || 'Project'}
       />
     );
   };
@@ -452,6 +553,28 @@ const ProjectGanttChartPage: FC = () => {
         if (originalProject) {
           const copy = projectGanttTransformer(JSON.parse(JSON.stringify(originalProject))); // Need to maintain integrity of original projects
           copy.workPackages.push(workPackage);
+          setEditedProjects((prev) => [...prev, copy]);
+        }
+      }
+    }
+  };
+
+  const addNewTaskHandler = (task: Task, projectId: string) => {
+    const editedParentProject = editedProjects.find((project) => project.id === projectId); // check for an already edited project
+    if (editedParentProject) {
+      editedParentProject.tasks.push(task);
+      setEditedProjects((prev) => [...prev.filter((project) => project.id !== editedParentProject.id), editedParentProject]);
+    } else {
+      const newParentProject = addedProjects.find((project) => project.id === projectId); // Check for a newly created project
+      if (newParentProject) {
+        newParentProject.tasks.push(task);
+        setAddedProjects((prev) => [...prev.filter((project) => project.id !== newParentProject.id), newParentProject]);
+      } else {
+        const originalProject = projects.find((project) => project.id === projectId); // Check for an unedited original project
+
+        if (originalProject) {
+          const copy = projectGanttTransformer(JSON.parse(JSON.stringify(originalProject))); // Need to maintain integrity of original projects
+          copy.tasks.push(task);
           setEditedProjects((prev) => [...prev, copy]);
         }
       }
@@ -537,6 +660,8 @@ const ProjectGanttChartPage: FC = () => {
     <>
       <AddProjectModal />
       <AddWorkPackageModal />
+      <AddTaskModal />
+      <SelectionModal />
       {requestEventChanges.map((change) => (
         <GanttRequestChangeModal change={change} open handleClose={(didCancel) => removeActiveModal(change, didCancel)} />
       ))}
