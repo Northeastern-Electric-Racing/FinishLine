@@ -7,5 +7,17 @@ import { body } from 'express-validator';
 const rulesRouter = express.Router();
 
 rulesRouter.post('/rulesetType/create', nonEmptyString(body('name')), validateInputs, RulesController.createRulesetType);
+
 rulesRouter.post('/rule/:ruleId/delete', RulesController.deleteRule);
+
+
+rulesRouter.post(
+  '/projectRule/create',
+  nonEmptyString(body('ruleId')),
+  nonEmptyString(body('projectId')),
+  validateInputs,
+  RulesController.createProjectRule
+);
+
+
 export default rulesRouter;

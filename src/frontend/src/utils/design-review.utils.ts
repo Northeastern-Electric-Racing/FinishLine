@@ -50,7 +50,7 @@ export enum REVIEW_TIMES {
 
 export const HOURS: number[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
-export const HeatmapColors = ['#D9D9D9', '#E0C0C1', '#E89A9B', '#E4797A', '#EF4345', '#D70C0F'];
+export const HeatmapColors = ['#D9D9D9', '#C1E0C1', '#9BE89B', '#7AE47A', '#45EF45', '#0FD70F'];
 
 export const NUMBER_OF_TIME_SLOTS = enumToArray(REVIEW_TIMES).length * enumToArray(DAY_NAMES).length;
 

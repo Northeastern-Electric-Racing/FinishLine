@@ -11,8 +11,8 @@ import {
   IndexCode,
   AccountCode,
   DesignReview,
-  WbsElementPreview,
-  WorkPackagePreview
+  WorkPackagePreview,
+  WbsElementPreview
 } from 'shared';
 
 /**
