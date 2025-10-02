@@ -19,6 +19,7 @@ describe('Rules Tests', () => {
   let car: Car;
   let rulesetType: Ruleset_Type;
   let ruleset: Ruleset;
+  let subRule: Rule;
 
   beforeEach(async () => {
     await resetUsers();
@@ -53,6 +54,19 @@ describe('Rules Tests', () => {
         createdBy: { connect: { userId: user.userId } }
       }
     });
+
+    subRule = await prisma.rule.create({
+      data: {
+        ruleCode: 'parent rule code',
+        ruleContent: 'parent rule contenet',
+        imageFileIds: [],
+        ruleset: { connect: { rulesetId: ruleset.rulesetId } },
+        createdBy: { connect: { userId: user.userId } },
+        parentRule: {
+          connect: { ruleId: rule.ruleId }
+        }
+      }
+    });
   });
 
   afterEach(async () => {
@@ -67,6 +81,19 @@ describe('Rules Tests', () => {
         ...rule,
         dateUpdated: deletedRule.dateUpdated,
         dateDeleted: deletedRule.dateDeleted,
+        deletedByUserId: user.userId
+      });
+
+      const deletedSubRule = await prisma.rule.findUnique({
+        where: {
+          ruleId: subRule.ruleId
+        }
+      });
+
+      expect(deletedSubRule).toMatchObject({
+        ...subRule,
+        dateUpdated: deletedSubRule!.dateUpdated,
+        dateDeleted: deletedSubRule!.dateDeleted,
         deletedByUserId: user.userId
       });
     });

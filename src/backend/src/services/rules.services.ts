@@ -52,9 +52,55 @@ export default class RulesService {
     if (!rule) throw new NotFoundException('Rule', ruleId);
     if (rule.dateDeleted) throw new DeletedException('Rule', ruleId);
 
-    const deletedRule = await prisma.rule.update({
-      where: { ruleId },
-      data: { dateDeleted: new Date(), deletedByUserId: deleter.userId }
+    const deletedRule: Rule = await prisma.$transaction(async (tx) => {
+      const deleteParentChildReferencing = async (currRuleId: string): Promise<void> => {
+        const referencingRules = await tx.rule.findMany({
+          where: {
+            referencedRule: {
+              some: { ruleId: currRuleId }
+            },
+            dateDeleted: null
+          },
+          select: { ruleId: true }
+        });
+
+        for (const referencingRule of referencingRules) {
+          await tx.rule.update({
+            where: { ruleId: referencingRule.ruleId },
+            data: {
+              referencedRule: {
+                disconnect: { ruleId: currRuleId }
+              }
+            }
+          });
+        }
+
+        const childRules = await tx.rule.findMany({
+          where: {
+            parentRuleId: currRuleId,
+            dateDeleted: null
+          }
+        });
+        for (const childRule of childRules) {
+          await deleteParentChildReferencing(childRule.ruleId);
+        }
+
+        await tx.rule.update({
+          where: { ruleId: currRuleId },
+          data: {
+            dateDeleted: new Date(),
+            deletedByUserId: deleter.userId
+          }
+        });
+      };
+
+      await deleteParentChildReferencing(ruleId);
+      const deletedRule = await tx.rule.findUnique({
+        where: { ruleId }
+      });
+
+      if (!deletedRule) throw new NotFoundException('Rule', ruleId);
+      return deletedRule;
     });
 
     return deletedRule;
