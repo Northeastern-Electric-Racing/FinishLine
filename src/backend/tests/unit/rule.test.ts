@@ -3,7 +3,13 @@ import { Organization, User, Project, Car, Ruleset_Type, Rule_Completion } from 
 import { supermanAdmin, financeMember, wonderwomanGuest, batmanAppAdmin } from '../test-data/users.test-data';
 import { createTestOrganization, createTestProject, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
-import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
+import {
+  AccessDeniedException,
+  DeletedException,
+  HttpException,
+  NotFoundException,
+  AccessDeniedAdminOnlyException
+} from '../../src/utils/errors.utils';
 
 describe('Rule Tests', () => {
   let orgId: string;
@@ -200,6 +206,43 @@ describe('Rule Tests', () => {
       await expect(RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId)).rejects.toThrow(
         new HttpException(400, 'This rule is already associated with the project')
       );
+    });
+  });
+
+  describe('Edit Rule', () => {
+    it('Fails if user is not an admin', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      await expect(
+        async () =>
+          await RulesService.editRule(
+            await createTestUser(wonderwomanGuest, orgId),
+            'Some rule content',
+            topLevelRule.ruleId,
+            organization
+          )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit a rule'));
+    });
+
+    it('Fails if rule doesn`t exist', async () => {
+      await expect(
+        async () =>
+          await RulesService.editRule(
+            await createTestUser(batmanAppAdmin, orgId),
+            'Some more rule content',
+            '1',
+            organization
+          )
+      ).rejects.toThrow(new NotFoundException('Rule', 1));
+    });
+
+    it('Succeeds and edits a rule', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+
+      const updatedRule = await RulesService.editRule(admin, 'BRAND NEW RULE CONTENT', topLevelRule.ruleId, organization);
+
+      expect(updatedRule.ruleContent).toEqual('BRAND NEW RULE CONTENT');
     });
   });
 });
