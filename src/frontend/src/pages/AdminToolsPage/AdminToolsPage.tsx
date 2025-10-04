@@ -77,9 +77,8 @@ const AdminToolsPage: React.FC = () => {
           {isUserAdmin && <AdminToolsBOMConfig />}
         </Box>
       ) : tabIndex === 2 ? (
-     
-      <AdminToolsScheduleConfig />
-    )  : tabIndex === 3 ? (
+        <AdminToolsScheduleConfig />
+      ) : tabIndex === 3 ? (
         <AdminToolsFinanceConfig />
       ) : tabIndex === 4 ? (
         <AdminToolsRecruitmentConfig />

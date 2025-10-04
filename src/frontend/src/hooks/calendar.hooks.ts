@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Shop } from 'shared';
-import { getShops, createShop} from '../apis/calendar.api';
+import { getShops, createShop } from '../apis/calendar.api';
 
 /**
  * Get all shops for the current org
@@ -13,7 +13,7 @@ export const useShops = () => {
 };
 
 /**
- * Create a shop 
+ * Create a shop
  */
 type CreateShopPayload = { name: string; description: string };
 

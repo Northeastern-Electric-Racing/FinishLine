@@ -1,17 +1,6 @@
 // src/layouts/pages/admintoolspage/AdminToolsScheduleConfig.tsx
 import React, { useState } from 'react';
-import {
-  Box,
-  Grid,
-  Typography,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Button
-} from '@mui/material';
+import { Box, Grid, Typography, Paper, Table, TableBody, TableCell, TableHead, TableRow, Button } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useShops, useCreateShop } from '../../../hooks/calendar.hooks';
@@ -89,9 +78,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
                   shops.map((shop) => (
                     <TableRow key={shop.shopId} hover>
                       <TableCell>{shop.name}</TableCell>
-                      <TableCell sx={{ whiteSpace: 'pre-wrap' }}>
-                        {shop.description ?? '—'}
-                      </TableCell>
+                      <TableCell sx={{ whiteSpace: 'pre-wrap' }}>{shop.description ?? '—'}</TableCell>
                       <TableCell align="center">
                         <Box display="flex" gap={1} justifyContent="center">
                           <Button size="small" variant="outlined" disabled>
