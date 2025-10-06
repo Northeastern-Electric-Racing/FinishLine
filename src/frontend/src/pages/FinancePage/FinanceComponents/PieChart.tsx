@@ -24,10 +24,12 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
   available
 }) => {
   const [isLegendOpen, setIsLegendOpen] = useState(true);
+
+  // Combine pending categories into one
+  const pendingReimbursement = pendingLeadership + pendingFinance + submittedToSABO;
+
   const [sectionStates, setSectionStates] = useState([
-    { title: 'Pending Leadership', color: '#562016', expanded: false },
-    { title: 'Pending Finance', color: '#8e3c2d', expanded: false },
-    { title: 'Submitted to SABO', color: '#dd514c', expanded: false },
+    { title: 'Pending Reimbursement', color: '#8e3c2d', expanded: false },
     { title: 'Reimbursed', color: '#797a7a', expanded: false },
     { title: 'Available', color: '#afafaf', expanded: false }
   ]);
@@ -35,9 +37,7 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
   const MIN_PERCENTAGE = 0.05;
 
   const data = [
-    { name: 'Pending Leadership', value: pendingLeadership },
-    { name: 'Pending Finance', value: pendingFinance },
-    { name: 'Submitted to SABO', value: submittedToSABO },
+    { name: 'Pending Reimbursement', value: pendingReimbursement },
     { name: 'Reimbursed', value: reimbursed },
     { name: 'Available', value: available }
   ];
@@ -73,9 +73,7 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
   }
 
   const sectionColorMap = new Map([
-    ['Pending Leadership', '#562016'],
-    ['Pending Finance', '#8e3c2d'],
-    ['Submitted to SABO', '#dd514c'],
+    ['Pending Reimbursement', '#8e3c2d'],
     ['Reimbursed', '#797a7a'],
     ['Available', '#afafaf']
   ]);

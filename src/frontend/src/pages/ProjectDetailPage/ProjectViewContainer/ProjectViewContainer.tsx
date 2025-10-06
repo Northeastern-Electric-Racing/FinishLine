@@ -181,7 +181,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
             { tabUrlValue: 'gantt', tabName: 'Gantt' },
             { tabUrlValue: 'change-requests', tabName: 'Change Requests' },
             { tabUrlValue: 'parts-review', tabName: 'Parts Review' },
-            { tabUrlValue: 'spending', tabName: 'Spending History' }
+            { tabUrlValue: 'spending', tabName: 'Budget' }
           ]}
           baseUrl={`${routes.PROJECTS}/${wbsNum}`}
           defaultTab="overview"
