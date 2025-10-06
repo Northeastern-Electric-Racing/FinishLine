@@ -396,6 +396,76 @@ export default class DesignReviewsService {
           updatedDesignReview.wbsElement
         );
       }
+
+      // Mark all attendees as unavailable during the scheduled meeting time
+      for (const member of updatedDesignReview.confirmedMembers) {
+        let userSettings = await prisma.schedule_Settings.findUnique({
+          where: { userId: member.userId },
+          ...getUserScheduleSettingsQueryArgs()
+        });
+
+        if (!userSettings) {
+          userSettings = await prisma.schedule_Settings.create({
+            data: {
+              userId: member.userId,
+              availabilities: {
+                createMany: {
+                  data: [
+                    {
+                      availability: [],
+                      dateSet: dateScheduled
+                    }
+                  ]
+                }
+              },
+              personalGmail: '',
+              personalZoomLink: ''
+            },
+            ...getUserScheduleSettingsQueryArgs()
+          });
+        }
+
+        // Check if user has availability already for the scheduled date
+        // TODO: Due to the off-by-one date bug, need to adjust one day from the scheduled date
+        const existingAvailability = userSettings.availabilities.find((availability) => {
+          const availabilityDate = new Date(availability.dateSet);
+          const scheduledDate = new Date(updatedDesignReview.dateScheduled);
+          // Subtract one day from scheduledDate
+          const dayAfterScheduled = new Date(scheduledDate);
+          dayAfterScheduled.setDate(scheduledDate.getDate() + 1);
+          return availabilityDate.toDateString() === dayAfterScheduled.toDateString();
+        });
+
+        // const existingAvailability = userSettings.availabilities.find(
+        //   (availability) => availability.dateSet.toDateString() === updatedDesignReview.dateScheduled.toDateString()
+        // );
+
+        if (existingAvailability) {
+          // Remove meeting times from existing availability
+          const updatedAvailability = existingAvailability.availability.filter((time) => !meetingTimes.includes(time));
+
+          await prisma.availability.update({
+            where: { availabilityId: existingAvailability.availabilityId },
+            data: {
+              availability: updatedAvailability
+            }
+          });
+
+          await prisma.schedule_Settings.update({
+            where: { userId: member.userId },
+            data: {
+              availabilities: {
+                update: {
+                  where: { availabilityId: existingAvailability.availabilityId },
+                  data: {
+                    availability: updatedAvailability
+                  }
+                }
+              }
+            }
+          });
+        }
+      }
     }
 
     return designReviewTransformer(updatedDesignReview);
