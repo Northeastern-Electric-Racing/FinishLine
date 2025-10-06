@@ -427,6 +427,7 @@ export default class DesignReviewsService {
 
         // Check if user has availability already for the scheduled date
         // TODO: Due to the off-by-one date bug, need to adjust one day from the scheduled date
+        // might need to make another ticket for this
         const existingAvailability = userSettings.availabilities.find((availability) => {
           const availabilityDate = new Date(availability.dateSet);
           const scheduledDate = new Date(updatedDesignReview.dateScheduled);
