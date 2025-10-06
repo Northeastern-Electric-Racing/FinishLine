@@ -1,9 +1,11 @@
 import { Prisma } from '@prisma/client';
-import { getUserQueryArgs } from './user.query-args';
+import { getUserPreviewQueryArgs, getUserQueryArgs } from './user.query-args';
 import { getDescriptionBulletQueryArgs } from './description-bullets.query-args';
 import { getDesignReviewPreviewQueryArgs } from './design-reviews.query-args';
+import { getLinkQueryArgs } from './links.query-args';
 
 export type WorkPackageQueryArgs = ReturnType<typeof getWorkPackageQueryArgs>;
+export type WorkPackagePreviewQueryArgs = ReturnType<typeof getWorkPackagePreviewQueryArgs>;
 
 export const getWorkPackageQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Work_PackageDefaultArgs>()({
@@ -33,5 +35,41 @@ export const getWorkPackageQueryArgs = (organizationId: string) =>
         }
       },
       blockedBy: { where: { dateDeleted: null } }
+    }
+  });
+
+export const getWorkPackagePreviewQueryArgs = () =>
+  Prisma.validator<Prisma.Work_PackageDefaultArgs>()({
+    select: {
+      blockedBy: true,
+      wbsElement: {
+        select: {
+          wbsElementId: true,
+          carNumber: true,
+          projectNumber: true,
+          workPackageNumber: true,
+          dateCreated: true,
+          dateDeleted: true,
+          name: true,
+          lead: getUserPreviewQueryArgs(),
+          manager: getUserPreviewQueryArgs(),
+          status: true
+        }
+      },
+      project: {
+        select: {
+          projectId: true,
+          wbsElement: {
+            select: {
+              name: true,
+              links: getLinkQueryArgs()
+            }
+          }
+        }
+      },
+      startDate: true,
+      duration: true,
+      workPackageId: true,
+      stage: true
     }
   });

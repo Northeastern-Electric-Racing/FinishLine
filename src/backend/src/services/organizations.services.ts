@@ -1,5 +1,5 @@
-import { Organization, User } from '@prisma/client';
-import { LinkCreateArgs, ProjectPreview, RoleEnum, isAdmin, isAtLeastRank } from 'shared';
+import { Organization } from '@prisma/client';
+import { Link, LinkCreateArgs, ProjectPreview, RoleEnum, isAdmin, isAtLeastRank, User } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
@@ -10,11 +10,10 @@ import {
 } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { createUsefulLinks } from '../utils/organizations.utils';
-import { linkTransformer } from '../transformers/links.transformer';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
 import { uploadFile } from '../utils/google-integration.utils';
 import { getProjects } from '../utils/projects.utils';
-import { getProjectManyQueryArgs } from '../prisma-query-args/projects.query-args';
+import { getProjectPreviewQueryArgs } from '../prisma-query-args/projects.query-args';
 import { projectPreviewTransformer } from '../transformers/projects.transformer';
 
 export default class OrganizationsService {
@@ -139,7 +138,7 @@ export default class OrganizationsService {
     @param organizationId the organization to get the links for
     @returns the useful links for the organization
   */
-  static async getAllUsefulLinks(organizationId: string) {
+  static async getAllUsefulLinks(organizationId: string): Promise<Link[]> {
     const organization = await prisma.organization.findUnique({
       where: { organizationId },
       include: { usefulLinks: true }
@@ -153,9 +152,9 @@ export default class OrganizationsService {
       where: {
         linkId: { in: organization.usefulLinks.map((link) => link.linkId) }
       },
-      ...getLinkQueryArgs(organization.organizationId)
+      ...getLinkQueryArgs()
     });
-    return links.map(linkTransformer);
+    return links;
   }
 
   /**
@@ -385,7 +384,7 @@ export default class OrganizationsService {
   static async getOrganizationFeaturedProjects(organizationId: string): Promise<ProjectPreview[]> {
     const organization = await prisma.organization.findUnique({
       where: { organizationId },
-      include: { featuredProjects: getProjectManyQueryArgs(organizationId) }
+      include: { featuredProjects: getProjectPreviewQueryArgs(organizationId) }
     });
 
     if (!organization) {

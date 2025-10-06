@@ -6,7 +6,7 @@
 import { Construction, Work } from '@mui/icons-material';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import { Project, ProjectPreview, wbsPipe } from 'shared';
+import { Project, wbsPipe } from 'shared';
 import { datePipe, dollarsPipe, fullNamePipe, weeksPipe } from '../../../utils/pipes';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
@@ -22,7 +22,7 @@ import WarningBanner from '../../../components/WarningBanner';
 import { Box } from '@mui/system';
 import ProjectSpendingHistory from '../../ProjectPage/ProjectSpendingHistory';
 
-export const getProjectTeamsName = (project: ProjectPreview): string => {
+export const getProjectTeamsName = (project: { teams: { teamName: string }[] }): string => {
   return project.teams.map((team) => team.teamName).join(', ');
 };
 

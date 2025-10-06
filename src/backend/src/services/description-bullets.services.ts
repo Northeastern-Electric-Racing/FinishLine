@@ -1,9 +1,9 @@
-import { User, WBS_Element_Status, Organization } from '@prisma/client';
+import { WBS_Element_Status, Organization } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { hasBulletCheckingPermissions } from '../utils/description-bullets.utils';
 import { AccessDeniedException, HttpException, NotFoundException, DeletedException } from '../utils/errors.utils';
 import descriptionBulletTransformer from '../transformers/description-bullets.transformer';
-import { DescriptionBullet, DescriptionBulletType, isAdmin } from 'shared';
+import { DescriptionBullet, DescriptionBulletType, isAdmin, User } from 'shared';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
 import { userHasPermission } from '../utils/users.utils';
 

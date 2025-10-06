@@ -21,7 +21,9 @@ import {
   getUserTasks,
   getManyUserTasks,
   getCurrentUser,
-  logUserOut
+  logUserOut,
+  getManyUsersWithScheduleSettings,
+  getAllOrgUsers
 } from '../apis/users.api';
 import {
   User,
@@ -30,10 +32,11 @@ import {
   UpdateUserRolePayload,
   UserSecureSettings,
   UserScheduleSettings,
-  UserWithScheduleSettings,
   SetUserScheduleSettingsPayload,
   Task,
-  ProjectPreview
+  UserWithRole,
+  UserWithScheduleSettings,
+  ProjectOverview
 } from 'shared';
 import { useAuth } from './auth.hooks';
 import { useContext } from 'react';
@@ -49,10 +52,21 @@ export const useCurrentUser = (): AuthenticatedUser => {
 };
 
 /**
- * Custom React Hook to supply all users.
+ * Custom React Hook to supply all users. (only users in the current org)
  */
 export const useAllUsers = () => {
-  return useQuery<UserWithScheduleSettings[], Error>(['users'], async () => {
+  return useQuery<UserWithRole[], Error>(['users'], async () => {
+    const { data } = await getAllOrgUsers();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to supply all users for login (no org filtering).
+ * @returns all users regardless of org
+ */
+export const useAllLoginUsers = () => {
+  return useQuery<UserWithRole[], Error>(['users', 'login'], async () => {
     const { data } = await getAllUsers();
     return data;
   });
@@ -163,7 +177,7 @@ export const useUserScheduleSettings = (id: string) => {
  * @param id User ID of the requested user's settings.
  */
 export const useUsersFavoriteProjects = (id: string) => {
-  return useQuery<ProjectPreview[], Error>(['users', id, 'favorite projects'], async () => {
+  return useQuery<ProjectOverview[], Error>(['users', id, 'favorite projects'], async () => {
     const { data } = await getUsersFavoriteProjects(id);
     return data;
   });
@@ -270,6 +284,18 @@ export const useUserTasks = (userId: string) => {
 export const useManyUserTasks = (userIds: string[]) => {
   return useQuery<Task[], Error>(['users', userIds, 'tasks'], async () => {
     const { data } = await getManyUserTasks(userIds);
+    return data;
+  });
+};
+
+/**
+ * Custom react hook to get the users with their schedule settings for all users in the list
+ * @param userIds ids of users to get schedule settings from
+ * @returns users with their schedule settings
+ */
+export const useManyUsersWithScheduleSettings = (userIds: string[]) => {
+  return useQuery<UserWithScheduleSettings[], Error>(['users', userIds, 'with-schedule-settings'], async () => {
+    const { data } = await getManyUsersWithScheduleSettings(userIds);
     return data;
   });
 };

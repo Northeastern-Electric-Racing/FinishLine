@@ -24,9 +24,27 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
   initialDate,
   canChangeDateRange = true
 }) => {
-  const [currentlyDisplayedAvailabilities, setCurrentlyDisplayedAvailabilities] = useState(
-    Array.from(editedAvailabilities.values())
-  );
+  const [currentlyDisplayedAvailabilities, setCurrentlyDisplayedAvailabilities] = useState(() => {
+    const availabilities = Array.from(editedAvailabilities.values());
+    if (availabilities.length === 0) {
+      const defaultAvailabilities: Availability[] = [];
+      for (let i = 0; i < 7; i++) {
+        const date = addDaysToDate(initialDate, i);
+        defaultAvailabilities.push({
+          dateSet: date,
+          availability: []
+        });
+      }
+
+      defaultAvailabilities.forEach((availability) => {
+        editedAvailabilities.set(availability.dateSet.getTime(), availability);
+      });
+      setEditedAvailabilities(editedAvailabilities);
+
+      return defaultAvailabilities;
+    }
+    return availabilities;
+  });
 
   const [isDragging, setIsDragging] = useState(false);
 
@@ -105,7 +123,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     <Grid container>
       <Grid container justifyContent="space-between" mb={1}>
         <Typography display={'flex'} justifyContent={'flex-start'} mt={1} variant="subtitle1">
-          Available times in red
+          Available times in green
         </Typography>
         <NERButton variant="outlined" sx={{ display: 'flex', justifyContent: 'flex-end' }} onClick={invertAvailabilities}>
           Invert Availability

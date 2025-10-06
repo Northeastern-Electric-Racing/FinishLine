@@ -100,3 +100,9 @@ export const editSingleTaskStatus = (id: string, status: TaskStatus) => {
 export const deleteSingleTask = (taskId: string) => {
   return axios.post<{ message: string }>(apiUrls.deleteTask(taskId), {});
 };
+
+export const getOverdueTasksByTeamLeader = (userId: string) => {
+  return axios.get<Task[]>(apiUrls.overdueTasksByTeamLeadership(userId), {
+    transformResponse: (data) => JSON.parse(data).map(taskTransformer)
+  });
+};

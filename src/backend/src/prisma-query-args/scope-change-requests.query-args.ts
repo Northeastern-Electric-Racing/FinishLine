@@ -32,7 +32,7 @@ export const getWorkPackageProposedChangesQueryArgs = (organizationId: string) =
       blockedBy: true,
       wbsProposedChanges: {
         include: {
-          links: getLinkQueryArgs(organizationId),
+          links: getLinkQueryArgs(),
           lead: getUserQueryArgs(organizationId),
           manager: getUserQueryArgs(organizationId),
           proposedDescriptionBulletChanges: getDescriptionBulletQueryArgs(organizationId)
@@ -46,7 +46,7 @@ export const getWbsProposedChangeQueryArgs = (organizationId: string) =>
     include: {
       projectProposedChanges: getProjectProposedChangesQueryArgs(organizationId),
       workPackageProposedChanges: getWorkPackageProposedChangesQueryArgs(organizationId),
-      links: getLinkQueryArgs(organizationId),
+      links: getLinkQueryArgs(),
       lead: getUserQueryArgs(organizationId),
       manager: getUserQueryArgs(organizationId),
       proposedDescriptionBulletChanges: getDescriptionBulletQueryArgs(organizationId)

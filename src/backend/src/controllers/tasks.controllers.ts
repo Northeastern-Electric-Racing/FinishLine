@@ -89,4 +89,15 @@ export default class TasksController {
       next(error);
     }
   }
+
+  static async getOverdueTasksByTeamLeadership(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.params;
+
+      const tasks = await TasksService.getOverdueTasksByTeamLeadership(userId, req.organization);
+      res.status(200).json(tasks);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

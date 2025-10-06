@@ -4,6 +4,7 @@
  */
 
 import { WbsNumber, wbsPipe } from 'shared';
+import { WorkPackageSelection } from 'shared';
 
 /**
  * This file centralizes URLs used to query the API.
@@ -13,6 +14,7 @@ const API_URL: string = import.meta.env.VITE_REACT_APP_BACKEND_URL || 'http://lo
 
 /**************** Users Endpoints ****************/
 const users = () => `${API_URL}/users`;
+const orgUsers = () => `${users()}/organization`;
 const usersById = (id: string) => `${users()}/${id}`;
 const usersLogin = () => `${users()}/auth/login`;
 const usersLoginDev = () => `${users()}/auth/login/dev`;
@@ -28,10 +30,12 @@ const userTasks = (id: string) => `${usersById(id)}/tasks`;
 const manyUserTasks = () => `${users()}/tasks/get-many`;
 const currentUser = () => `${users()}/auth/current`;
 const logUserOut = () => `${users()}/auth/log-out`;
+const manyUsersWithScheduleSettings = () => `${users()}/scheduleSettings`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
-const allProjects = (includeDeleted: boolean) => `${projects()}/all/${includeDeleted ? 'true' : 'false'}`;
+const allProjectsGantt = () => `${projects()}/all-gantt`;
+const allProjects = () => `${projects()}/all-previews`;
 const usersTeamsProjects = () => `${projects()}/users-teams`;
 const usersLeadingProjects = () => `${projects()}/leading`;
 const teamsProjects = (teamId: string) => `${projects()}/teams-projects/${teamId}`;
@@ -90,6 +94,7 @@ const taskEditStatus = (taskId: string) => `${tasks()}/${taskId}/edit-status`;
 const editTaskById = (taskId: string) => `${tasks()}/${taskId}/edit`;
 const editTaskAssignees = (taskId: string) => `${tasks()}/${taskId}/edit-assignees`;
 const deleteTask = (taskId: string) => `${tasks()}/${taskId}/delete`;
+const overdueTasksByTeamLeadership = (userId: string) => `${tasks()}/overdue-by-team-member/${userId}`;
 
 /**************** Work Packages Endpoints ****************/
 const workPackages = (queryParams?: { [field: string]: string }) => {
@@ -107,6 +112,7 @@ const workPackagesDelete = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/
 const workPackagesBlocking = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/blocking`;
 const workPackagesSlackUpcomingDeadlines = () => `${workPackages()}/slack-upcoming-deadlines`;
 const workPackagesMany = () => `${workPackages()}/get-many`;
+const homePageWorkPackages = (selection: WorkPackageSelection) => `${workPackages()}/home-page/${selection}`;
 
 /**************** Change Requests Endpoints ****************/
 const changeRequests = () => `${API_URL}/change-requests`;
@@ -146,7 +152,7 @@ const allTeamTypes = () => `${teamTypes()}/all`;
 const teamTypesCreate = () => `${teamTypes()}/create`;
 const teamTypeEdit = (id: string) => `${teamTypes()}/${id}/edit`;
 const teamTypeSetImage = (id: string) => `${teamTypes()}/${id}/set-image`;
-const myTeamsWorkpackages = () => `${teams()}/my-teams-work-packages`;
+const myTeamAsHead = () => `${teams()}/my-team-as-head`;
 
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
@@ -428,6 +434,7 @@ const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing
 
 export const apiUrls = {
   users,
+  orgUsers,
   usersById,
   usersLogin,
   usersLoginDev,
@@ -443,9 +450,11 @@ export const apiUrls = {
   manyUserTasks,
   currentUser,
   logUserOut,
+  manyUsersWithScheduleSettings,
 
   projects,
-  allProjects,
+  allProjectsGantt,
+  allProjectPreviews: allProjects,
   projectsByWbsNum,
   projectsCreate,
   projectsEdit,
@@ -502,6 +511,7 @@ export const apiUrls = {
   taskEditStatus,
   editTaskAssignees,
   deleteTask,
+  overdueTasksByTeamLeadership,
 
   workPackages,
   workPackagesByWbsNum,
@@ -511,6 +521,7 @@ export const apiUrls = {
   workPackagesBlocking,
   workPackagesSlackUpcomingDeadlines,
   workPackagesMany,
+  homePageWorkPackages,
 
   changeRequests,
   changeRequestsById,
@@ -545,7 +556,7 @@ export const apiUrls = {
   teamTypesCreate,
   teamTypeEdit,
   teamTypeSetImage,
-  myTeamsWorkpackages,
+  myTeamAsHead,
 
   descriptionBulletsCheck,
   descriptionBulletTypes,
