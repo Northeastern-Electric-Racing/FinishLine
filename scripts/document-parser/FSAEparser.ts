@@ -6,164 +6,175 @@ interface RuleData {
   ruleContent: string;
   parentRuleCode?: string;
   pageNumber: string;
-  isFromTOC?: boolean;
 }
 
-interface RuleMatch {
-  code: string;
-  text: string;
+interface Rule {
+  ruleCode: string;
+  ruleContent: string;
 }
 
 interface ParsedOutput {
   rules: RuleData[];
   totalRules: number;
-  totalTOCRules: number;
   generatedAt: string;
 }
 
 class FSAERuleParser {
-  async parsePdf(path: string): Promise<{ rules: RuleData[] }> {
+  async parsePdf(path: string): Promise<{ rules: RuleData[]; text: string }> {
     const filePath = "ruleDocs/" + path;
-    console.log(`Reading PDF: ${filePath}`);
+    console.log(`Reading  ${filePath}`);
     
     const dataBuffer = fs.readFileSync(filePath);
     const pdfData = await pdf(dataBuffer);
     
     console.log(`PDF Stats: ${pdfData.numpages} pages, ${pdfData.text.length} characters`);
     
-    const rules = this.extractRules(pdfData.text);
-    const tocRules = rules.filter(r => r.isFromTOC);
-    console.log(`Found ${rules.length} total rules (${tocRules.length} from TOC, ${rules.length - tocRules.length} with full content)`);
-    
-    return { rules };
+    const rules = this.extractRules(pdfData.text);    
+    return { rules, text: pdfData.text };
   }
 
   private extractRules(text: string): RuleData[] {
     const rules: RuleData[] = [];
     const lines = text.split('\n');
     
-    console.log(`Scanning ${lines.length} lines for rules and TOC entries...`);
-
-    let currentRule: { code: string; text: string; pageNumber: string; isFromTOC: boolean } | null = null;
+    let currentRule: { code: string; text: string; pageNumber: string } | null = null;
     let currentPageNumber = '1';
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      
-      if (!line) continue;
-
-      // Check for page number indicators
-      const pageMatch = this.extractPageNumber(line);
-      if (pageMatch) {
-        currentPageNumber = pageMatch;
-        continue;
-      }
-
-      // Check if this is a TOC entry first
-      const tocEntry = this.parseTOCEntry(line);
-      if (tocEntry) {
-        // Add TOC entry as a rule with the isFromTOC flag
-        rules.push({
-          ruleCode: tocEntry.ruleCode,
-          ruleContent: tocEntry.title,
-          parentRuleCode: this.findParentRuleCode(tocEntry.ruleCode),
-          pageNumber: tocEntry.pageNumber,
-          isFromTOC: true
-        });
-        continue;
-      }
-
-      // Otherwise, process as regular rule
-      const ruleMatch = this.parseRuleNumber(line);
-      
-      if (ruleMatch) {
-        // Save previous rule if it exists
-        if (currentRule) {
+  
+    const saveCurrentRule = () => {
+      if (currentRule) {
+        // Check if the rule has lettered sub-items
+        const subRules = this.extractSubRules(currentRule.code, currentRule.text, currentRule.pageNumber);
+        
+        if (subRules.length > 0) {
+          // Add the main rule and all sub-rules
+          rules.push(...subRules);
+        } else {
+          // No sub-rules, just add the main rule
           rules.push({
             ruleCode: currentRule.code,
             ruleContent: currentRule.text.trim(),
             parentRuleCode: this.findParentRuleCode(currentRule.code),
             pageNumber: currentRule.pageNumber,
-            isFromTOC: currentRule.isFromTOC
           });
         }
+      }
+    };
+  
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      if (!trimmedLine) continue;
+  
+      // Update page number if found
+      const pageMatch = this.extractPageNumber(trimmedLine);
+      if (pageMatch) {
+        currentPageNumber = pageMatch;
+        continue;
+      }
+  
+      // Check if this line starts a new rule
+      const rule = this.parseRuleNumber(trimmedLine);
+      if (rule) {
+        saveCurrentRule();
         
-        // Start new rule
         currentRule = {
-          code: ruleMatch.code,
-          text: ruleMatch.text,
+          code: rule.ruleCode,
+          text: rule.ruleContent,
           pageNumber: currentPageNumber,
-          isFromTOC: false
         };
       } else if (currentRule) {
-        // Continue adding content to current rule
-        if (this.isRuleContent(line)) {
-          currentRule.text += ' ' + line;
-        }
+        // Append to existing rule
+        currentRule.text += ' ' + trimmedLine;
       }
     }
     
-    // Don't forget the last rule
-    if (currentRule) {
-      rules.push({
-        ruleCode: currentRule.code,
-        ruleContent: currentRule.text.trim(),
-        parentRuleCode: this.findParentRuleCode(currentRule.code),
-        pageNumber: currentRule.pageNumber,
-        isFromTOC: currentRule.isFromTOC
-      });
-    }
-    
+    saveCurrentRule();
     return rules;
   }
 
-  private parseRuleNumber(line: string): RuleMatch | null {
+  /**
+   * Extracts bulleted child rules (a, b, c, etc.) from a rule's content
+   * and adds them as separate rules
+   * @param ruleCode The parent rule code (e.g., "EV.5.2.2")
+   * @param content The full rule content
+   * @param pageNumber The page number
+   * @returns Array of RuleData including the main rule and new subrules
+   */
+  private extractSubRules(ruleCode: string, content: string, pageNumber: string): RuleData[] {
+    const subRules: RuleData[] = [];
+    
+    // Pattern for lettered bullets like "a. Some text" or "b. Some text"
+    const letterPattern = /\s+([a-z])\.\s+/g;
+    const matches = [...content.matchAll(letterPattern)];
+    
+    if (matches.length === 0) {
+      // No sub-rules found
+      return [];
+    }
+    
+    // Extract the main rule content (everything before the first lettered item)
+    const firstMatchIndex = matches[0].index!;
+    const mainContent = content.substring(0, firstMatchIndex).trim();
+    
+    // Add the main rule
+    subRules.push({
+      ruleCode: ruleCode,
+      ruleContent: mainContent,
+      parentRuleCode: this.findParentRuleCode(ruleCode),
+      pageNumber: pageNumber,
+    });
+    
+    // Extract the lettered sub-rules
+    for (let i = 0; i < matches.length; i++) {
+      const letter = matches[i][1];
+      const startIndex = matches[i].index! + matches[i][0].length;
+      
+      // Find where this sub-rule ends (either at next letter or end of rule content)
+      const endIndex = i < matches.length - 1 
+        ? matches[i + 1].index! 
+        : content.length;
+      
+      const subRuleContent = content.substring(startIndex, endIndex).trim();
+      const subRuleCode = `${ruleCode}.${letter}`;
+      
+      subRules.push({
+        ruleCode: subRuleCode,
+        ruleContent: subRuleContent,
+        parentRuleCode: ruleCode,
+        pageNumber: pageNumber,
+      });
+    }
+    return subRules;
+  }
+
+  private parseRuleNumber(line: string): Rule | null {
     // Match rule patterns like "GR.1.1" followed by text
     const rulePattern = /^([A-Z]{1,4}(?:\.[\d]+)+)\s+(.+)$/;
     // Match section patterns like "GR - GENERAL REGULATIONS"  
     const sectionPattern = /^([A-Z]{1,4})\s*-\s*([A-Z][A-Z\s]+)$/;
     
     let match = line.match(rulePattern) || line.match(sectionPattern);
-    
     if (match) {
       return {
-        code: match[1],
-        text: match[2]
+        ruleCode: match[1],
+        ruleContent: match[2]
       };
     }
     
     return null;
   }
 
-  private parseTOCEntry(line: string): { ruleCode: string; title: string; pageNumber: string } | null {
-    // Match pattern like: "EV.1     Definitions .......... 90"
-    const tocPattern = /^([A-Z]{1,4}(?:\.[\d]+)*)\s+(.+?)\.{3,}.*?(\d+)\s*$/;
-    const match = line.match(tocPattern);
-    
-    if (match) {
-      const ruleCode = match[1];
-      const title = match[2].trim();
-      const pageNumber = match[3];
-      
-      return {
-        ruleCode,
-        title,
-        pageNumber
-      };
-    }
-    
-    return null;
-  }
-
+  /**
+   * Looks for page indicators like "Page 5 of 143"
+   * @param line current rule line being observed
+   * @returns the page number if found, otherwise null
+   */
   private extractPageNumber(line: string): string | null {
-    // Look for page indicators like "Page 5 of 143"
     const pagePattern = /Page\s+(\d+)\s+of\s+\d+/i;
     const match = line.match(pagePattern);
     
     if (match) {
       return match[1];
     }
-    
     return null;
   }
 
@@ -172,72 +183,37 @@ class FSAERuleParser {
     if (parts.length <= 1) {
       return undefined;
     }
-    
     const parentParts = parts.slice(0, -1);
     return parentParts.join('.');
   }
 
-  private isRuleContent(line: string): boolean {
-    if (line.includes("Formula SAE® Rules 2025")) return false;
-    if (line.includes("Page") && line.includes("of")) return false;
-    if (line.includes("© 2024 SAE International")) return false;
-    if (/^\d+$/.test(line)) return false;
-    if (line.includes("Version 1.0")) return false;
-    if (/^\d{2} [A-Z][a-z]{2} \d{4}$/.test(line)) return false;
-    return true;
-  }
-
-  private cleanRuleContent(content: string): string {
-    return content
-      .replace(/\s+/g, ' ')
-      .replace(/[""]/g, '"')
-      .replace(/['']/g, "'")
-      .trim();
-  }
-
   async saveToJSON(rules: RuleData[], outputPath: string = './fsae_rules.json'): Promise<void> {
-    console.log(`Saving rules to ${outputPath}...`);
-    
-    const cleanRules = rules.map(rule => ({
-      ...rule,
-      ruleContent: this.cleanRuleContent(rule.ruleContent)
-    }));
-    
-    const tocRules = cleanRules.filter(r => r.isFromTOC);
-    
     const output: ParsedOutput = {
-      rules: cleanRules,
-      totalRules: cleanRules.length,
-      totalTOCRules: tocRules.length,
+      rules: rules,
+      totalRules: rules.length,
       generatedAt: new Date().toISOString()
     };
 
     fs.writeFileSync(outputPath, JSON.stringify(output, null, 2), 'utf-8');
-    console.log(`Saved ${cleanRules.length} rules (${tocRules.length} from TOC) to ${outputPath}`);
+    console.log(`Saved ${rules.length} rules to ${outputPath}`);
+  }
+
+  async saveToTxt(text: string): Promise<void> {
+    const txtPath = './txtVersions/FSAE.txt';
+    fs.writeFileSync(txtPath, text, 'utf-8');
+    console.log(`Saved text version to ${txtPath}`);
   }
 }
 
 async function main(): Promise<void> {
   const filePath = process.argv[2];
   const outputFile = process.argv[3] || './fsae_rules.json';
-  
-  if (!filePath) {
-    console.log('Usage: ts-node FSAEparser.ts <pdf-file-path> [output-file]');
-    console.log('Example: ts-node FSAEparser.ts FSAE_Rules_2025.pdf');
-    console.log('Default output: ./fsae_rules.json');
-    process.exit(1);
-  }
-
   const parser = new FSAERuleParser();
   
   try {
-    const { rules } = await parser.parsePdf(filePath);
+    const { rules, text } = await parser.parsePdf(filePath);
     await parser.saveToJSON(rules, outputFile);
-    
-    console.log(`\nProcessing complete!`);
-    console.log(`Total rules: ${rules.length}`);
-    console.log(`Output file: ${outputFile}`);
-    
+    await parser.saveToTxt(text);
   } catch (error) {
     console.error('Error:', error);
     process.exit(1);
