@@ -1646,6 +1646,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [joeShmoe.userId],
     ner,
+    undefined,
     new Date('2022-11-16T00:00-05:00')
   );
 

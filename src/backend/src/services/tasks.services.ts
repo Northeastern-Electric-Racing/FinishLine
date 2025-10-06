@@ -27,6 +27,7 @@ export default class TasksService {
    * @param status the status of the task
    * @param assignees the assignees ids of the task
    * @param organizationId the organization that the user is currently in
+   * @param startDate the start date of the task
    * @param deadline the deadline of the task
    * @returns the id of the successfully created task
    * @throws if the user does not have access to create a task, wbs element does not exist, or wbs element is deleted
