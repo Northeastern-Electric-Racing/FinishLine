@@ -1533,6 +1533,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId],
     ner,
+    undefined,
     new Date('01/01/2024')
   );
 
@@ -1545,6 +1546,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_BACKLOG,
     [joeShmoe.userId],
     ner,
+    new Date('10/015/2023'),
     new Date('01/01/2024')
   );
 
@@ -1557,6 +1559,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId, joeBlow.userId],
     ner,
+    undefined,
     new Date('01/01/2024')
   );
 
@@ -1570,6 +1573,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeBlow.userId],
     ner,
+    undefined,
     new Date('2024-02-17T00:00:00-05:00')
   );
 
@@ -1582,6 +1586,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId],
     ner,
+    new Date('2023-11-01T00:00:00-05:00'),
     new Date('2024-01-01T00:00:00-05:00')
   );
 
@@ -1594,6 +1599,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId],
     ner,
+    undefined,
     new Date('2024-01-20T00:00:00-05:00')
   );
 
@@ -1606,6 +1612,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId],
     ner,
+    undefined,
     new Date('2023-05-19T00:00:00-04:00')
   );
 
@@ -1618,6 +1625,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [joeShmoe.userId],
     ner,
+    undefined,
     new Date('01/01/2024')
   );
 
@@ -1650,6 +1658,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId],
     ner,
+    new Date('2023-01-15T00:00:00-04:00'),
     new Date('2023-03-15T00:00:00-04:00')
   );
 
@@ -1662,6 +1671,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_BACKLOG,
     [],
     ner,
+    undefined,
     new Date('2023-04-01T00:00:00-04:00')
   );
 
@@ -1674,6 +1684,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId],
     ner,
+    undefined,
     new Date('2024-01-01T00:00:00-05:00')
   );
 
@@ -1686,6 +1697,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId, joeShmoe.userId],
     ner,
+    undefined,
     new Date('2024-01-01T00:00:00-05:00')
   );
 
@@ -1698,6 +1710,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [thomasEmrax.userId],
     ner,
+    new Date('2023-02-28T00:00:00-04:00'),
     new Date('2023-10-31T00:00:00-04:00')
   );
 
@@ -1710,6 +1723,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_BACKLOG,
     [thomasEmrax, joeShmoe, joeBlow].map((user) => user.userId),
     ner,
+    undefined,
     new Date('2024-05-01T00:00:00-04:00')
   );
 
@@ -1722,6 +1736,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId],
     ner,
+    undefined,
     new Date('2024-02-29T00:00:00-05:00')
   );
 
@@ -1734,6 +1749,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_BACKLOG,
     [joeShmoe.userId],
     ner,
+    undefined,
     new Date('2024-03-17T00:00:00-05:00')
   );
 
@@ -1746,6 +1762,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [joeBlow.userId],
     ner,
+    undefined,
     new Date('2024-04-15T00:00:00-04:00')
   );
 
@@ -1758,6 +1775,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [joeBlow.userId],
     ner,
+    undefined,
     new Date('2024-04-15T00:00:00-04:00')
   );
 
@@ -1770,6 +1788,7 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [regina.userId],
     ner,
+    new Date('2023-05-01T00:00:00-04:00'),
     new Date('2023-06-23T00:00:00-04:00')
   );
 
