@@ -28,7 +28,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import { useGetMaterialsForWbsElement } from '../../hooks/bom.hooks';
 import { useAllReimbursementRequests } from '../../hooks/finance.hooks';
 import { useSingleProject } from '../../hooks/projects.hooks';
-import { Material, WbsNumber, ReimbursementRequest, WBSElementData, OtherProductReason, equalsWbsNumber } from 'shared';
+import { Material, WbsNumber, ReimbursementRequest, WBSElementData, equalsWbsNumber } from 'shared';
 
 interface ProjectSpendingHistoryProps {
   wbsNum: WbsNumber;
@@ -36,7 +36,13 @@ interface ProjectSpendingHistoryProps {
 
 const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum }) => {
   const { data: materials, isLoading: materialsLoading, isError: materialsError } = useGetMaterialsForWbsElement(wbsNum);
-  const { data: allReimbursementRequests, isLoading: rrLoading, isError: rrError } = useAllReimbursementRequests();
+  const {
+    data: allReimbursementRequests,
+    isLoading: rrLoading,
+    isError: rrError,
+    error: rrErrorDetails
+  } = useAllReimbursementRequests();
+
   const { data: project, isLoading: projectLoading } = useSingleProject(wbsNum);
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
   const [showFilters, setShowFilters] = useState(false);
@@ -50,27 +56,13 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
   const [amountMaxFilter, setAmountMaxFilter] = useState('');
 
   const grouped = useMemo(() => {
+    // Return empty array if any required data is missing
     if (!allReimbursementRequests || !project) return [];
-    
-    // Create a map of reimbursement requests that include both:
-    // 1. Requests with BOM materials for this project
-    // 2. Requests with products linked directly to this project
+
+    // Create a map of reimbursement requests that are linked to this project
     const requestMap = new Map<string, { request: ReimbursementRequest; materials: Material[] }>();
-    
-    // First, add reimbursement requests from BOM materials
-    if (materials) {
-      materials.forEach((mat) => {
-        const rr = mat.reimbursementRequest;
-        if (rr) {
-          if (!requestMap.has(rr.reimbursementRequestId)) {
-            requestMap.set(rr.reimbursementRequestId, { request: rr, materials: [] });
-          }
-          requestMap.get(rr.reimbursementRequestId)!.materials.push(mat);
-        }
-      });
-    }
-    
-    // Then, add standalone reimbursement requests linked to this project
+
+    // First, find all reimbursement requests that are directly linked to this project
     allReimbursementRequests.forEach((rr) => {
       const hasProjectProduct = rr.reimbursementProducts.some((product) => {
         const reason = product.reimbursementProductReason;
@@ -83,12 +75,23 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
         }
         return false;
       });
-      
-      if (hasProjectProduct && !requestMap.has(rr.reimbursementRequestId)) {
+
+      if (hasProjectProduct) {
         requestMap.set(rr.reimbursementRequestId, { request: rr, materials: [] });
       }
     });
-    
+
+    // Then, add BOM materials ONLY for reimbursement requests that are already linked to this project
+    if (materials && materials.length > 0) {
+      materials.forEach((mat) => {
+        const rr = mat.reimbursementRequest;
+        if (rr && requestMap.has(rr.reimbursementRequestId)) {
+          // Only add the material if the RR is already linked to this project
+          requestMap.get(rr.reimbursementRequestId)!.materials.push(mat);
+        }
+      });
+    }
+
     return Array.from(requestMap.values());
   }, [materials, allReimbursementRequests, project, wbsNum]);
 
@@ -97,7 +100,8 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
     return grouped.filter(({ request }) => {
       // Submitter filter
       if (submitterFilter) {
-        const submitterName = `${request.recipient?.firstName} ${request.recipient?.lastName}` || request.recipient?.email || '';
+        const submitterName =
+          `${request.recipient?.firstName} ${request.recipient?.lastName}` || request.recipient?.email || '';
         if (!submitterName.toLowerCase().includes(submitterFilter.toLowerCase())) {
           return false;
         }
@@ -178,10 +182,21 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
     submitterFilter || statusFilter || dateFromFilter || dateToFilter || amountMinFilter || amountMaxFilter;
 
   const isLoading = materialsLoading || rrLoading || projectLoading;
-  const isError = materialsError || rrError;
 
   if (isLoading) return <Typography>Loading spending history...</Typography>;
-  if (isError) return <Typography color="error">Failed to load spending history.</Typography>;
+
+  // Handle specific errors
+  if (rrError) {
+    console.error('Failed to load reimbursement requests:', rrErrorDetails);
+    return <Typography color="error">Failed to load spending history.</Typography>;
+  }
+
+  if (materialsError) {
+    console.error('Failed to load materials for project');
+    return <Typography color="error">Failed to load spending history.</Typography>;
+  }
+
+  // If we have no data but no errors, show "no spending history"
   if (!grouped.length) return <Typography>No spending history for this project.</Typography>;
 
   const handleToggleRow = (id: string) => {
@@ -326,12 +341,14 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
                         </IconButton>
                       </TableCell>
                       <TableCell>
-                        <Link 
+                        <Link
                           href={`/finance/reimbursement-requests/${request.reimbursementRequestId}`}
                           underline="hover"
                           color="primary"
                         >
-                          {`${request.recipient?.firstName} ${request.recipient?.lastName}` || request.recipient?.email || 'N/A'}
+                          {`${request.recipient?.firstName} ${request.recipient?.lastName}` ||
+                            request.recipient?.email ||
+                            'N/A'}
                         </Link>
                       </TableCell>
                       <TableCell>{new Date(request.dateCreated).toLocaleDateString()}</TableCell>
@@ -372,8 +389,8 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
                               </Table>
                             ) : (
                               <Typography variant="body2" color="textSecondary">
-                                This reimbursement request has no associated BOM line items. 
-                                It may have been created independently or with non-BOM products.
+                                This reimbursement request has no associated BOM line items. It may have been created
+                                independently or with non-BOM products.
                               </Typography>
                             )}
                           </Box>
