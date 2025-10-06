@@ -93,6 +93,52 @@ export default class CalendarController {
       next(error);
     }
   }
+
+  static async editEventType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { eventTypeId } = req.params;
+      const {
+        calendarIds,
+        initialDateScheduled,
+        recurring,
+        allDay,
+        members,
+        location,
+        zoomLink,
+        availabilities,
+        shop,
+        machinery,
+        workPackage,
+        questionDocument,
+        documents,
+        description
+      } = req.body;
+
+      const eventType = await CalendarService.editEventType(
+        eventTypeId,
+        req.currentUser,
+        calendarIds,
+        req.organization,
+        initialDateScheduled,
+        recurring,
+        allDay,
+        members,
+        location,
+        zoomLink,
+        availabilities,
+        shop,
+        machinery,
+        workPackage,
+        questionDocument,
+        documents,
+        description
+      );
+      res.status(200).json(eventType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async deleteShop(req: Request, res: Response, next: NextFunction) {
     try {
       const { shopId } = req.params;

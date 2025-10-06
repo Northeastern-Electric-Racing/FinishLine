@@ -1,51 +1,57 @@
-import { Calendar, Organization } from '@prisma/client';
+import { Calendar, Organization, User } from '@prisma/client';
 import CalendarService from '../../src/services/calendar.services';
 import {
   AccessDeniedAdminOnlyException,
-  NotFoundException,
-  InvalidOrganizationException
+  AccessDeniedException,
+  InvalidOrganizationException,
+  NotFoundException
 } from '../../src/utils/errors.utils';
-import {
-  batmanAppAdmin,
-  wonderwomanGuest,
-  supermanAdmin,
-  flashAdmin,
-  theVisitorGuest,
-  alfred
-} from '../test-data/users.test-data';
+import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, theVisitorGuest, alfred } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
+import { EventType, Machinery, Shop } from 'shared';
 
 describe('Calendar Tests', () => {
   let orgId: string;
   let organization: Organization;
+  let adminUser: User;
   let calendar: Calendar;
+  let shop: Shop;
+  let machinery: Machinery;
   let shopId: string;
 
   beforeEach(async () => {
     organization = await createTestOrganization();
     orgId = organization.organizationId;
+    adminUser = await createTestUser(batmanAppAdmin, orgId);
 
     calendar = await prisma.calendar.create({
       data: {
         name: 'Engineering Team Calendar',
         description: 'Tracks all engineering team events, meetings, and deadlines.',
         colorHexCode: '#3498db',
-        userCreated: { connect: { userId: (await createTestUser(supermanAdmin, orgId)).userId } },
+        userCreated: { connect: { userId: adminUser.userId } },
         dateCreated: new Date(),
         organization: { connect: { organizationId: organization.organizationId } }
       }
     });
 
-    const shop = await prisma.shop.create({
-      data: {
-        name: 'Precision Manufacturing Lab',
-        description: 'Manufacturing facility equipped with advanced machinery and tools for engineering',
-        userCreatedId: (await createTestUser(flashAdmin, orgId)).userId,
-        organizationId: orgId
-      }
-    });
+    shop = await CalendarService.createShop(
+      adminUser,
+      'Precision Manufacturing Lab',
+      'Manufacturing facility equipped with advanced machinery and tools for engineering',
+      organization
+    );
     ({ shopId } = shop);
+
+    machinery = await CalendarService.createMachinery(
+      adminUser,
+      'Original Machinery Name',
+      shop.shopId,
+      1,
+      organization,
+      'Original description'
+    );
   });
 
   afterEach(async () => {
@@ -80,7 +86,7 @@ describe('Calendar Tests', () => {
 
     it('Succeeds and creates an event type', async () => {
       const result = await CalendarService.createEventType(
-        await createTestUser(batmanAppAdmin, orgId),
+        await createTestUser(supermanAdmin, orgId),
         'Team Meeting',
         [],
         organization,
@@ -123,7 +129,7 @@ describe('Calendar Tests', () => {
           await CalendarService.createMachinery(
             await createTestUser(wonderwomanGuest, orgId),
             'Captain America Shield Press',
-            shopId,
+            shop.shopId,
             1,
             organization
           )
@@ -132,9 +138,9 @@ describe('Calendar Tests', () => {
 
     it('Succeeds and creates machinery', async () => {
       const result = await CalendarService.createMachinery(
-        await createTestUser(alfred, orgId),
+        await createTestUser(supermanAdmin, orgId),
         'Iron Man Mark 42 CNC Mill',
-        shopId,
+        shop.shopId,
         2,
         organization
       );
@@ -156,8 +162,7 @@ describe('Calendar Tests', () => {
       });
 
       it('succeeds for admin', async () => {
-        // Using a different admin fixture to avoid googleAuthId collision with the calendar creator
-        const admin = await createTestUser(batmanAppAdmin, orgId);
+        const admin = await createTestUser(supermanAdmin, orgId);
 
         const result = await CalendarService.createShop(admin, 'Demo Shop', 'A seeded demo shop', organization);
 
@@ -167,87 +172,67 @@ describe('Calendar Tests', () => {
       });
 
       it('fails on duplicate name', async () => {
-        const admin = await createTestUser(batmanAppAdmin, orgId);
-        await CalendarService.createShop(admin, 'UniqueName', 'first', organization);
+        await CalendarService.createShop(await createTestUser(supermanAdmin, orgId), 'UniqueName', 'first', organization);
 
-        await expect(CalendarService.createShop(admin, 'UniqueName', 'second attempt', organization)).rejects.toBeTruthy();
+        await expect(
+          CalendarService.createShop(await createTestUser(alfred, orgId), 'UniqueName', 'second attempt', organization)
+        ).rejects.toBeTruthy();
       });
     });
+  });
 
-    describe('Delete shop', () => {
-      it('fails if user is not head or above', async () => {
-        await expect(
-          CalendarService.deleteShop(await createTestUser(wonderwomanGuest, orgId), shopId, organization)
-        ).rejects.toBeInstanceOf(AccessDeniedAdminOnlyException);
+  describe('Delete shop', () => {
+    it('fails if user is not head or above', async () => {
+      await expect(
+        CalendarService.deleteShop(await createTestUser(wonderwomanGuest, orgId), shop.shopId, organization)
+      ).rejects.toBeInstanceOf(AccessDeniedAdminOnlyException);
+    });
+    it('succeeds for admin', async () => {
+      const result = await CalendarService.deleteShop(adminUser, shop.shopId, organization);
+      expect(result.shopId).toBe(shop.shopId);
+      // verify soft delete happened
+      const row = await prisma.shop.findUnique({ where: { shopId } });
+      expect(row?.dateDeleted).not.toBeNull();
+    });
+    it('fails if shop does not exist', async () => {
+      await expect(CalendarService.deleteShop(adminUser, 'non-existent-id', organization)).rejects.toBeInstanceOf(
+        NotFoundException
+      );
+    });
+    it('fails if shop is already deleted', async () => {
+      await CalendarService.deleteShop(adminUser, shop.shopId, organization);
+      await expect(CalendarService.deleteShop(adminUser, shop.shopId, organization)).rejects.toBeInstanceOf(
+        NotFoundException
+      );
+    });
+    it('also deletes associated shopMachinery bridge rows', async () => {
+      // create a machinery that links to this shop
+      await CalendarService.createMachinery(adminUser, 'Bridge-Linked', shop.shopId, 1, organization);
+      //confirm the bridge row exists before delete
+      const before = await prisma.shopMachinery.count({ where: { shopId } });
+      expect(before).toBeGreaterThan(0);
+      // delete shop
+      await CalendarService.deleteShop(adminUser, shop.shopId, organization);
+      // the bridge should be cleaned up
+      const after = await prisma.shopMachinery.count({ where: { shopId } });
+      expect(after).toBe(0);
+      // the shop should be soft-deleted
+      const deletedShop = await prisma.shop.findUnique({ where: { shopId } });
+      expect(deletedShop?.dateDeleted).not.toBeNull();
+    });
+    it('fails if shop belongs to a different organization', async () => {
+      const otherOrg = await prisma.organization.create({
+        data: {
+          name: 'Other Org (calendar test)',
+          description: 'for cross-org negative case',
+          applicationLink: '',
+          userCreated: { connect: { userId: adminUser.userId } }
+        }
       });
-
-      it('succeeds for admin', async () => {
-        const admin = await createTestUser(batmanAppAdmin, orgId);
-
-        const result = await CalendarService.deleteShop(admin, shopId, organization);
-        expect(result.shopId).toBe(shopId);
-
-        // verify soft delete happened
-        const row = await prisma.shop.findUnique({ where: { shopId } });
-        expect(row?.dateDeleted).not.toBeNull();
-      });
-
-      it('fails if shop does not exist', async () => {
-        const admin = await createTestUser(batmanAppAdmin, orgId);
-        await expect(CalendarService.deleteShop(admin, 'non-existent-id', organization)).rejects.toBeInstanceOf(
-          NotFoundException
-        );
-      });
-
-      it('fails if shop is already deleted', async () => {
-        const admin = await createTestUser(batmanAppAdmin, orgId);
-        await CalendarService.deleteShop(admin, shopId, organization);
-
-        await expect(CalendarService.deleteShop(admin, shopId, organization)).rejects.toBeInstanceOf(NotFoundException);
-      });
-
-      it('also deletes associated shopMachinery bridge rows', async () => {
-        // create a machinery that links to this shop
-        const admin = await createTestUser(batmanAppAdmin, orgId);
-        await CalendarService.createMachinery(admin, 'Bridge-Linked', shopId, 1, organization);
-
-        //confirm the bridge row exists before delete
-        const before = await prisma.shopMachinery.count({ where: { shopId } });
-        expect(before).toBeGreaterThan(0);
-
-        // delete shop
-        await CalendarService.deleteShop(admin, shopId, organization);
-
-        // the bridge should be cleaned up
-        const after = await prisma.shopMachinery.count({ where: { shopId } });
-        expect(after).toBe(0);
-
-        // the shop should be soft-deleted
-        const deletedShop = await prisma.shop.findUnique({ where: { shopId } });
-        expect(deletedShop?.dateDeleted).not.toBeNull();
-      });
-
-      it('fails if shop belongs to a different organization', async () => {
-        const existing = await prisma.user.findFirstOrThrow({
-          where: { googleAuthId: supermanAdmin.googleAuthId },
-          select: { userId: true }
-        });
-
-        const otherOrg = await prisma.organization.create({
-          data: {
-            name: 'Other Org (calendar test)',
-            description: 'for cross-org negative case',
-            applicationLink: '',
-            userCreated: { connect: { userId: existing.userId } }
-          }
-        });
-
-        const AdminInOtherOrg = await createTestUser(batmanAppAdmin, otherOrg.organizationId);
-
-        await expect(CalendarService.deleteShop(AdminInOtherOrg, shopId, otherOrg)).rejects.toThrow(
-          new InvalidOrganizationException('Shop')
-        );
-      });
+      const AdminInOtherOrg = await createTestUser(alfred, otherOrg.organizationId);
+      await expect(CalendarService.deleteShop(AdminInOtherOrg, shop.shopId, otherOrg)).rejects.toThrow(
+        new InvalidOrganizationException('Shop')
+      );
     });
   });
 
@@ -259,37 +244,29 @@ describe('Calendar Tests', () => {
             await createTestUser(wonderwomanGuest, orgId),
             'Non-Admin Calendar',
             'desc',
-            '#3498db',
+            '#3498DB',
             organization
           )
         ).rejects.toThrow(new AccessDeniedAdminOnlyException('create calendar'));
       });
-
       it('succeeds for admin', async () => {
-        const admin = await createTestUser(batmanAppAdmin, orgId);
-
         const result = await CalendarService.createCalendar(
-          admin,
+          adminUser,
           'Cool Calendar',
           'A very cool calendar',
-          '#3498db',
+          '#3498DB',
           organization
         );
-
         expect(result.name).toBe('Cool Calendar');
         expect(result.description).toBe('A very cool calendar');
-        expect(result.color).toBe('#3498db');
-        expect(result.userCreated.userId).toBe(admin.userId);
+        expect(result.color).toBe('#3498DB');
+        expect(result.userCreated.userId).toBe(adminUser.userId);
       });
-
       it('fails on duplicate name', async () => {
-        const admin = await createTestUser(batmanAppAdmin, orgId);
-
-        await CalendarService.createCalendar(admin, 'Cool Calendar', 'A very cool calendar', '#3498db', organization);
-
+        await CalendarService.createCalendar(adminUser, 'Cool Calendar', 'A very cool calendar', '#3498DB', organization);
         await expect(
           CalendarService.createCalendar(
-            admin,
+            adminUser,
             'Cool Calendar',
             'A very cool calendar, but not quite as cool',
             '#0062a3ff',
@@ -297,6 +274,178 @@ describe('Calendar Tests', () => {
           )
         ).rejects.toBeTruthy();
       });
+    });
+  });
+  describe('Edit EventType', () => {
+    let eventType: EventType;
+
+    beforeEach(async () => {
+      eventType = await CalendarService.createEventType(
+        adminUser,
+        'Initial Event Type',
+        [calendar.calendarId],
+        organization,
+        true,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      );
+    });
+
+    it('fails if user is not an admin', async () => {
+      const guest = await createTestUser(wonderwomanGuest, orgId);
+      await expect(
+        CalendarService.editEventType(
+          eventType.eventTypeId,
+          guest,
+          [calendar.calendarId],
+          organization,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit event type'));
+    });
+
+    it('fails if any provided calendar does not exist', async () => {
+      const invalidCalendarId = 'non-existent-calendar-id';
+      await expect(
+        CalendarService.editEventType(
+          eventType.eventTypeId,
+          adminUser,
+          [invalidCalendarId],
+          organization,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        )
+      ).rejects.toThrow(new NotFoundException('Calendar', invalidCalendarId));
+    });
+
+    it('fails if a calendar belongs to a different organization', async () => {
+      const otherOrg = await prisma.organization.create({
+        data: {
+          name: 'Different Org',
+          description: 'for invalid org calendar case',
+          applicationLink: '',
+          userCreated: { connect: { userId: adminUser.userId } }
+        }
+      });
+
+      const foreignCalendar = await prisma.calendar.create({
+        data: {
+          name: 'Foreign Calendar',
+          description: 'Calendar from another org',
+          colorHexCode: '#ff0000',
+          userCreatedId: adminUser.userId,
+          organizationId: otherOrg.organizationId
+        }
+      });
+
+      await expect(
+        CalendarService.editEventType(
+          eventType.eventTypeId,
+          adminUser,
+          [foreignCalendar.calendarId],
+          organization,
+          true,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        )
+      ).rejects.toThrow(new InvalidOrganizationException('Calendar'));
+    });
+
+    it('fails if event type does not exist', async () => {
+      const nonExistentId = 'non-existent-event-type-id';
+      await expect(
+        CalendarService.editEventType(
+          nonExistentId,
+          adminUser,
+          [calendar.calendarId],
+          organization,
+          true,
+          false,
+          true,
+          true,
+          false,
+          false,
+          true,
+          false,
+          false,
+          false,
+          false,
+          false,
+          true
+        )
+      ).rejects.toThrow(new NotFoundException('Event Type', nonExistentId));
+    });
+
+    it('succeeds and updates event type fields', async () => {
+      const result = await CalendarService.editEventType(
+        eventType.eventTypeId,
+        adminUser,
+        [calendar.calendarId],
+        organization,
+        false,
+        true,
+        false,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true,
+        true,
+        false,
+        true,
+        false
+      );
+
+      expect(result.eventTypeId).toBe(eventType.eventTypeId);
+      expect(result.recurring).toBe(true);
+      expect(result.initialDateScheduled).toBe(false);
+      expect(result.location).toBe(true);
+      expect(result.zoomLink).toBe(true);
+      expect(result.description).toBe(false);
     });
   });
 });

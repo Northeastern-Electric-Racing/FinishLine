@@ -3160,7 +3160,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   // meeting event type
-  await CalendarService.createEventType(
+  const meetingEventType = await CalendarService.createEventType(
     thomasEmrax,
     'Meeting',
     [calendar.calendarId],
@@ -3244,6 +3244,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   console.log('Thomas Emrax:', thomasEmrax.userId);
+  console.log('Event Type Id: ', meetingEventType.eventTypeId)
 };
 
 performSeed()
