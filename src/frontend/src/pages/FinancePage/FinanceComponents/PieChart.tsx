@@ -25,7 +25,6 @@ const FinancePieChart: React.FC<FinancePieChartProps> = ({
 }) => {
   const [isLegendOpen, setIsLegendOpen] = useState(true);
 
-  // Combine pending categories into one
   const pendingReimbursement = pendingLeadership + pendingFinance + submittedToSABO;
 
   const [sectionStates, setSectionStates] = useState([

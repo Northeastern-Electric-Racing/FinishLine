@@ -47,7 +47,6 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
   const [showFilters, setShowFilters] = useState(false);
 
-  // Filter states
   const [submitterFilter, setSubmitterFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [dateFromFilter, setDateFromFilter] = useState('');
@@ -56,22 +55,15 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
   const [amountMaxFilter, setAmountMaxFilter] = useState('');
 
   const grouped = useMemo(() => {
-    // Return empty array if any required data is missing
     if (!allReimbursementRequests || !project) return [];
 
-    // Create a map of reimbursement requests that are linked to this project
     const requestMap = new Map<string, { request: ReimbursementRequest; materials: Material[] }>();
 
-    // First, find all reimbursement requests that are directly linked to this project
     allReimbursementRequests.forEach((rr) => {
       const hasProjectProduct = rr.reimbursementProducts.some((product) => {
         const reason = product.reimbursementProductReason;
-        // Check if it's a WBS element and matches our project
         if ((reason as WBSElementData).wbsNum) {
-          return equalsWbsNumber(
-            { ...(reason as WBSElementData).wbsNum, workPackageNumber: 0 }, // Convert to project WBS
-            wbsNum
-          );
+          return equalsWbsNumber((reason as WBSElementData).wbsNum, { ...wbsNum, workPackageNumber: 0 });
         }
         return false;
       });
@@ -81,12 +73,10 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
       }
     });
 
-    // Then, add BOM materials ONLY for reimbursement requests that are already linked to this project
     if (materials && materials.length > 0) {
       materials.forEach((mat) => {
         const rr = mat.reimbursementRequest;
         if (rr && requestMap.has(rr.reimbursementRequestId)) {
-          // Only add the material if the RR is already linked to this project
           requestMap.get(rr.reimbursementRequestId)!.materials.push(mat);
         }
       });
@@ -95,10 +85,8 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
     return Array.from(requestMap.values());
   }, [materials, allReimbursementRequests, project, wbsNum]);
 
-  // Filter the grouped data
   const filteredData = useMemo(() => {
     return grouped.filter(({ request }) => {
-      // Submitter filter
       if (submitterFilter) {
         const submitterName =
           `${request.recipient?.firstName} ${request.recipient?.lastName}` || request.recipient?.email || '';
@@ -107,15 +95,12 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
         }
       }
 
-      // Status filter
       if (statusFilter) {
         const currentStatus = request.reimbursementStatuses?.[0]?.type || '';
         if (currentStatus !== statusFilter) {
           return false;
         }
       }
-
-      // Date range filter
       const requestDate = new Date(request.dateCreated);
       if (dateFromFilter) {
         const fromDate = new Date(dateFromFilter);
@@ -125,13 +110,12 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
       }
       if (dateToFilter) {
         const toDate = new Date(dateToFilter);
-        toDate.setHours(23, 59, 59, 999); // End of day
+        toDate.setHours(23, 59, 59, 999);
         if (requestDate > toDate) {
           return false;
         }
       }
 
-      // Amount range filter
       const amount = (request.totalCost || 0) / 100;
       if (amountMinFilter) {
         const minAmount = parseFloat(amountMinFilter);
@@ -150,7 +134,6 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
     });
   }, [grouped, submitterFilter, statusFilter, dateFromFilter, dateToFilter, amountMinFilter, amountMaxFilter]);
 
-  // Get unique submitters and statuses for filter dropdowns
   const uniqueSubmitters = useMemo(() => {
     const submitters = new Set<string>();
     grouped.forEach(({ request }) => {
@@ -185,7 +168,6 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
 
   if (isLoading) return <Typography>Loading spending history...</Typography>;
 
-  // Handle specific errors
   if (rrError) {
     console.error('Failed to load reimbursement requests:', rrErrorDetails);
     return <Typography color="error">Failed to load spending history.</Typography>;
@@ -196,7 +178,6 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
     return <Typography color="error">Failed to load spending history.</Typography>;
   }
 
-  // If we have no data but no errors, show "no spending history"
   if (!grouped.length) return <Typography>No spending history for this project.</Typography>;
 
   const handleToggleRow = (id: string) => {

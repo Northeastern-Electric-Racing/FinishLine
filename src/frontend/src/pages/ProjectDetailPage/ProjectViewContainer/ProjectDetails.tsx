@@ -20,7 +20,6 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import PieChart from '../../FinancePage/FinanceComponents/PieChart';
 import WarningBanner from '../../../components/WarningBanner';
 import { Box } from '@mui/system';
-import ProjectSpendingHistory from '../../ProjectPage/ProjectSpendingHistory';
 
 export const getProjectTeamsName = (project: { teams: { teamName: string }[] }): string => {
   return project.teams.map((team) => team.teamName).join(', ');
