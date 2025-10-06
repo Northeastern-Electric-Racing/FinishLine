@@ -3242,9 +3242,6 @@ const performSeed: () => Promise<void> = async () => {
     false,
     true
   );
-
-  console.log('Thomas Emrax:', thomasEmrax.userId);
-  console.log('Event Type Id: ', meetingEventType.eventTypeId)
 };
 
 performSeed()

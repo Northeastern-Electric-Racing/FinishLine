@@ -2,14 +2,13 @@ import { Calendar, Organization, User } from '@prisma/client';
 import CalendarService from '../../src/services/calendar.services';
 import {
   AccessDeniedAdminOnlyException,
-  AccessDeniedException,
   InvalidOrganizationException,
   NotFoundException
 } from '../../src/utils/errors.utils';
 import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, theVisitorGuest, alfred } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
-import { EventType, Machinery, Shop } from 'shared';
+import { EventType, Shop } from 'shared';
 
 describe('Calendar Tests', () => {
   let orgId: string;
@@ -17,7 +16,7 @@ describe('Calendar Tests', () => {
   let adminUser: User;
   let calendar: Calendar;
   let shop: Shop;
-  let machinery: Machinery;
+  //let machinery: Machinery;
   let shopId: string;
 
   beforeEach(async () => {
@@ -44,6 +43,7 @@ describe('Calendar Tests', () => {
     );
     ({ shopId } = shop);
 
+    /*
     machinery = await CalendarService.createMachinery(
       adminUser,
       'Original Machinery Name',
@@ -52,6 +52,7 @@ describe('Calendar Tests', () => {
       organization,
       'Original description'
     );
+    */
   });
 
   afterEach(async () => {
