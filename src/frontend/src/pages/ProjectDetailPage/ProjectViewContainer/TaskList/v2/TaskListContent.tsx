@@ -83,9 +83,16 @@ export const TaskListContent = ({ project }: TaskListProps) => {
     try {
       await setTaskStatus({ taskId: sourcePost.taskId, status: destinationStatus });
       const confettiPositions = [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9];
-      if (destinationStatus === 'DONE') {
+      if (destinationStatus === 'DONE' && sourceStatus !== 'DONE') {
         confettiPositions.forEach((xPos: number) => {
-          confetti({ origin: { y: -0.5, x: xPos }, angle: 270, gravity: 1.5, startVelocity: 35, spread: 70, particleCount: 25 });
+          confetti({
+            origin: { y: -0.5, x: xPos },
+            angle: 270,
+            gravity: 1.5,
+            startVelocity: 35,
+            spread: 70,
+            particleCount: 25
+          });
         });
       }
     } catch (error) {
