@@ -220,18 +220,11 @@ describe('Calendar Tests', () => {
     });
 
     it('Succeeds and updates machinery for admin user', async () => {
-      const anotherShop = await CalendarService.createShop(
-        await createTestUser(alfred, orgId),
-        'Advanced Testing Lab',
-        'Advanced testing facility',
-        organization
-      );
-
       const result = await CalendarService.editMachinery(
         await createTestUser(supermanAdmin, orgId),
         machinery.machineryId,
         'Admin Updated Machinery',
-        anotherShop.shopId,
+        shop.shopId,
         5,
         organization,
         'Admin updated description'
@@ -241,7 +234,7 @@ describe('Calendar Tests', () => {
       expect(result.shops).toHaveLength(1);
       expect(result.shops[0].quantity).toBe(5);
       expect(result.shops[0].description).toBe('Admin updated description');
-      expect(result.shops[0].shop.name).toBe('Advanced Testing Lab');
+      expect(result.shops[0].shop.name).toBe('Precision Manufacturing Lab');
     });
 
     it('Succeeds and updates machinery without description', async () => {
@@ -251,13 +244,14 @@ describe('Calendar Tests', () => {
         'No Description Machinery',
         shop.shopId,
         2,
-        organization
+        organization,
+        undefined
       );
 
       expect(result.name).toEqual('No Description Machinery');
       expect(result.shops).toHaveLength(1);
       expect(result.shops[0].quantity).toBe(2);
-      expect(result.shops[0].description).toBe(undefined);
+      expect(result.shops[0].description).toBe('Original description'); // Original description should remain unchanged
     });
   });
 

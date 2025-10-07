@@ -240,11 +240,12 @@ export default class CalendarService {
       data: {
         name,
         shops: {
-          deleteMany: {},
-          create: {
-            shopId,
-            quantity,
-            description
+          updateMany: {
+            where: { shopId },
+            data: {
+              quantity,
+              description
+            }
           }
         }
       },
