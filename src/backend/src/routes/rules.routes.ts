@@ -10,7 +10,6 @@ rulesRouter.post('/rulesetType/create', nonEmptyString(body('name')), validateIn
 
 rulesRouter.post('/rule/:ruleId/delete', RulesController.deleteRule);
 
-
 rulesRouter.post(
   '/projectRule/create',
   nonEmptyString(body('ruleId')),
@@ -18,6 +17,5 @@ rulesRouter.post(
   validateInputs,
   RulesController.createProjectRule
 );
-
 
 export default rulesRouter;

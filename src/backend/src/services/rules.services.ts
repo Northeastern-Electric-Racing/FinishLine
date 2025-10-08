@@ -35,7 +35,7 @@ export default class RulesService {
     return rulesetType;
   }
 
-/**
+  /**
    * Deletes a rule
    * @param ruleId id of a rule to be deleted
    * @param deleter user deleting the rule
