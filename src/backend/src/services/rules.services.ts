@@ -44,8 +44,17 @@ export default class RulesService {
    */
   static async deleteRule(ruleId: string, deleter: User, org: Organization): Promise<Rule> {
     const rule = await prisma.rule.findUnique({
-      where: {
-        ruleId
+      where: { ruleId },
+      include: {
+        ruleset: {
+          include: {
+            car: {
+              include: {
+                wbsElement: true
+              }
+            }
+          }
+        }
       }
     });
 
@@ -56,31 +65,7 @@ export default class RulesService {
     if (!rule) throw new NotFoundException('Rule', ruleId);
     if (rule.dateDeleted) throw new DeletedException('Rule', ruleId);
 
-    const ruleset = await prisma.ruleset.findUnique({
-      where: {
-        rulesetId: rule?.rulesetId
-      },
-      select: {
-        carId: true
-      }
-    });
-
-    const car = await prisma.car.findUnique({
-      where: {
-        carId: ruleset?.carId
-      },
-      select: {
-        wbsElementId: true
-      }
-    });
-
-    const wbsElem = await prisma.wBS_Element.findUnique({
-      where: {
-        wbsElementId: car?.wbsElementId
-      }
-    });
-
-    if (wbsElem?.organizationId !== org.organizationId) throw new InvalidOrganizationException('Rule');
+    if (rule.ruleset?.car?.wbsElement?.organizationId !== org.organizationId) throw new InvalidOrganizationException('Rule');
 
     const deletedRule: Rule = await prisma.$transaction(async (tx) => {
       const deleteParentChildReferencing = async (currRuleId: string): Promise<void> => {
