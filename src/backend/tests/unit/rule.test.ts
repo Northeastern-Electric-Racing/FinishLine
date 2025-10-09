@@ -8,6 +8,7 @@ import {
   AccessDeniedException,
   DeletedException,
   HttpException,
+  InvalidOrganizationException,
   NotFoundException
 } from '../../src/utils/errors.utils';
 
@@ -147,6 +148,58 @@ describe('Rules Tests', () => {
     it('Fails with invalid ruleId', async () => {
       await expect(RulesService.deleteRule('bad id', user, organization)).rejects.toThrow(
         new NotFoundException('Rule', 'bad id')
+      );
+    });
+
+    it('Fails with inconsistent organizations', async () => {
+      const user2 = await prisma.user.create({
+        data: {
+          firstName: 'Admin2',
+          lastName: 'User2',
+          email: '2',
+          googleAuthId: 'organizationCreato2'
+        }
+      });
+
+      const org2 = await prisma.organization.create({
+        data: {
+          name: 'Org 2',
+          description: 'Org 2 description',
+          applicationLink: '',
+          userCreated: {
+            connect: {
+              userId: user2.userId
+            }
+          }
+        }
+      });
+
+      const car2 = await createUniqueCar(org2.organizationId);
+
+      const ruleset2 = await prisma.ruleset.create({
+        data: {
+          name: 'ruleset name',
+          fileId: 'fileId',
+          active: true,
+          dateCreated: new Date(),
+          rulesetTypeId: rulesetType.rulesetTypeId,
+          createdByUserId: user.userId,
+          carId: car2.carId
+        }
+      });
+
+      const rule2 = await prisma.rule.create({
+        data: {
+          ruleCode: 'rule org2',
+          ruleContent: 'rule content org2',
+          imageFileIds: [],
+          ruleset: { connect: { rulesetId: ruleset2.rulesetId } },
+          createdBy: { connect: { userId: user2.userId } }
+        }
+      });
+
+      await expect(RulesService.deleteRule(rule2.ruleId, user, organization)).rejects.toThrow(
+        new InvalidOrganizationException('Rule')
       );
     });
   });
