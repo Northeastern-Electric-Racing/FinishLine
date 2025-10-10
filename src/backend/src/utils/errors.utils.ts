@@ -158,6 +158,7 @@ export type ExceptionObjectNames =
   | 'Sponsor'
   | 'SponsorTask'
   | 'Shop'
+  | 'Machinery'
   | 'Sponsor Tier'
   | 'Index Code'
   | 'Reimbursement Product Other Reason'
