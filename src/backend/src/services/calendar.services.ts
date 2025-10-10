@@ -352,6 +352,115 @@ export default class CalendarService {
   }
 
   /**
+   * Edits a given event type.
+   *
+   * @param eventTypeId The id of the event type of be edited
+   * @param submitter The user submitting the request, who must be an admin.
+   * @param name The name of the event type.
+   * @param calendarIds An array of the calendars this event type is associated with.
+   * @param organization The organization for which the event type is being created.
+   * @param initialDateScheduled Determines if a date is associated with this event type.
+   * @param recurring Determines if this event type is recurring.
+   * @param allDay Determines if this event type is all day.
+   * @param members Determines if this event type has members.
+   * @param location Determines if this event type has a location.
+   * @param zoomLink Determines if this event type has a zoom link.
+   * @param availabilities Determines if this event type has availabilities.
+   * @param shop Determines if a shop is associated with this event type.
+   * @param machinery Determines if machinery is associated with this event type.
+   * @param workPackage Determines if a work package is associated with this event type.
+   * @param questionDocument Determines if a question document is associated with this event type.
+   * @param documents Determines if documents are associates with this event type.
+   * @param description Determines if a description is associated with this event type.
+   *
+   * @returns The created event type.
+   *
+   * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
+   * @throws NotFoundException If the given calendarIds are not found.
+   * @throws InvalidOrganizationException If the given calendarIds are not part of the same organization.
+   */
+  static async editEventType(
+    eventTypeId: string,
+    submitter: User,
+    calendarIds: string[],
+    organization: Organization,
+    initialDateScheduled: boolean,
+    recurring: boolean,
+    allDay: boolean,
+    members: boolean,
+    location: boolean,
+    zoomLink: boolean,
+    availabilities: boolean,
+    shop: boolean,
+    machinery: boolean,
+    workPackage: boolean,
+    questionDocument: boolean,
+    documents: boolean,
+    description: boolean
+  ): Promise<EventType> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('edit event type');
+    }
+
+    // Check if calendars with ids exist and belong to the same organization
+    const existingCalendars = await prisma.calendar.findMany({
+      where: {
+        calendarId: { in: calendarIds }
+      }
+    });
+
+    // Ensure all provided calendars exist
+    if (existingCalendars.length !== calendarIds.length) {
+      const foundIds = existingCalendars.map((c) => c.calendarId);
+      const missingIds = calendarIds.filter((id) => !foundIds.includes(id));
+      throw new NotFoundException('Calendar', missingIds.join(', '));
+    }
+
+    // Ensure all calendars belong to the given organization
+    for (const calendar of existingCalendars) {
+      if (calendar.organizationId !== organization.organizationId) {
+        throw new InvalidOrganizationException('Calendar');
+      }
+    }
+
+    // Ensure event type to edit exists
+    const oldEventType = await prisma.eventType.findUnique({
+      where: {
+        eventTypeId,
+        organizationId: organization.organizationId
+      }
+    });
+
+    if (!oldEventType) throw new NotFoundException('Event Type', eventTypeId);
+    if (oldEventType.dateDeleted) throw new DeletedException('Event Type', eventTypeId);
+
+    const updatedEventType = await prisma.eventType.update({
+      where: { eventTypeId: oldEventType.eventTypeId },
+      data: {
+        calendars: {
+          connect: calendarIds.map((calendarId) => ({ calendarId }))
+        },
+        initialDateScheduled,
+        recurring,
+        allDay,
+        members,
+        location,
+        zoomLink,
+        availabilities,
+        shop,
+        machinery,
+        workPackage,
+        questionDocument,
+        documents,
+        description
+      },
+      ...getEventTypeQueryArgs(organization.organizationId)
+    });
+
+    return eventTypeTransformer(updatedEventType);
+  }
+
+  /**
    * Deletes a shop by its ID.
    * Requires the submitter to be head or above.
    * @param submitter The user submitting the request.

@@ -10,7 +10,7 @@ import {
 import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, theVisitorGuest, alfred } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
-import { Machinery, Shop } from 'shared';
+import { EventType, Machinery, Shop } from 'shared';
 
 describe('Calendar Tests', () => {
   let orgId: string;
@@ -440,6 +440,178 @@ describe('Calendar Tests', () => {
           )
         ).rejects.toBeTruthy();
       });
+    });
+  });
+  describe('Edit EventType', () => {
+    let eventType: EventType;
+
+    beforeEach(async () => {
+      eventType = await CalendarService.createEventType(
+        adminUser,
+        'Initial Event Type',
+        [calendar.calendarId],
+        organization,
+        true,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      );
+    });
+
+    it('fails if user is not an admin', async () => {
+      const guest = await createTestUser(wonderwomanGuest, orgId);
+      await expect(
+        CalendarService.editEventType(
+          eventType.eventTypeId,
+          guest,
+          [calendar.calendarId],
+          organization,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit event type'));
+    });
+
+    it('fails if any provided calendar does not exist', async () => {
+      const invalidCalendarId = 'non-existent-calendar-id';
+      await expect(
+        CalendarService.editEventType(
+          eventType.eventTypeId,
+          adminUser,
+          [invalidCalendarId],
+          organization,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        )
+      ).rejects.toThrow(new NotFoundException('Calendar', invalidCalendarId));
+    });
+
+    it('fails if a calendar belongs to a different organization', async () => {
+      const otherOrg = await prisma.organization.create({
+        data: {
+          name: 'Different Org',
+          description: 'for invalid org calendar case',
+          applicationLink: '',
+          userCreated: { connect: { userId: adminUser.userId } }
+        }
+      });
+
+      const foreignCalendar = await prisma.calendar.create({
+        data: {
+          name: 'Foreign Calendar',
+          description: 'Calendar from another org',
+          colorHexCode: '#ff0000',
+          userCreatedId: adminUser.userId,
+          organizationId: otherOrg.organizationId
+        }
+      });
+
+      await expect(
+        CalendarService.editEventType(
+          eventType.eventTypeId,
+          adminUser,
+          [foreignCalendar.calendarId],
+          organization,
+          true,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        )
+      ).rejects.toThrow(new InvalidOrganizationException('Calendar'));
+    });
+
+    it('fails if event type does not exist', async () => {
+      const nonExistentId = 'non-existent-event-type-id';
+      await expect(
+        CalendarService.editEventType(
+          nonExistentId,
+          adminUser,
+          [calendar.calendarId],
+          organization,
+          true,
+          false,
+          true,
+          true,
+          false,
+          false,
+          true,
+          false,
+          false,
+          false,
+          false,
+          false,
+          true
+        )
+      ).rejects.toThrow(new NotFoundException('Event Type', nonExistentId));
+    });
+
+    it('succeeds and updates event type fields', async () => {
+      const result = await CalendarService.editEventType(
+        eventType.eventTypeId,
+        adminUser,
+        [calendar.calendarId],
+        organization,
+        false,
+        true,
+        false,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true,
+        true,
+        false,
+        true,
+        false
+      );
+
+      expect(result.eventTypeId).toBe(eventType.eventTypeId);
+      expect(result.recurring).toBe(true);
+      expect(result.initialDateScheduled).toBe(false);
+      expect(result.location).toBe(true);
+      expect(result.zoomLink).toBe(true);
+      expect(result.description).toBe(false);
     });
   });
 });

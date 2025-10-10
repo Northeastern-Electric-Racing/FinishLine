@@ -164,4 +164,5 @@ export type ExceptionObjectNames =
   | 'Reimbursement Product Other Reason'
   | 'Encryption Key'
   | 'Reimbursement Request Comment'
-  | 'Calendar';
+  | 'Calendar'
+  | 'Event Type';
