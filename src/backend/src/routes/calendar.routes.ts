@@ -54,6 +54,8 @@ calendarRouter.post(
   CalendarController.createCalendar
 );
 
+calendarRouter.post('/:calendarId/delete', CalendarController.deleteCalendar);
+
 calendarRouter.post('/shop/:shopId/delete', nonEmptyString(param('shopId')), validateInputs, CalendarController.deleteShop);
 
 export default calendarRouter;
