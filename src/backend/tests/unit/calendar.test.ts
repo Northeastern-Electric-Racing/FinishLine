@@ -59,6 +59,69 @@ describe('Calendar Tests', () => {
     await resetUsers();
   });
 
+  describe('delete calendar', () => {
+    it('fails if user is not a head or admin', async () => {
+      const member = await createTestUser(wonderwomanGuest, orgId);
+
+      const calendar = await prisma.calendar.create({
+        data: {
+          name: 'Test Calendar',
+          description: 'Test',
+          colorHexCode: '#000000',
+          userCreatedId: member.userId,
+          organizationId: orgId
+        }
+      });
+
+      await expect(CalendarService.deleteCalendar(member, calendar.calendarId, organization)).rejects.toThrow(
+        new AccessDeniedException('Only admins can delete calendars')
+      );
+    });
+
+    it('succeeds for admin', async () => {
+      const calendar = await prisma.calendar.create({
+        data: {
+          name: 'Admin Delete Calendar',
+          description: 'Test',
+          colorHexCode: '#00FF00',
+          userCreatedId: adminUser.userId,
+          organizationId: orgId
+        }
+      });
+
+      const result = await CalendarService.deleteCalendar(adminUser, calendar.calendarId, organization);
+
+      expect(result.calendarId).toBe(calendar.calendarId);
+      expect(result.name).toBe('Admin Delete Calendar');
+      expect(result.description).toBe('Test');
+      expect(result.color).toBe('#00FF00');
+      expect(result.userCreated.userId).toBe(adminUser.userId);
+    });
+
+    it('fails if calendar not found', async () => {
+      await expect(CalendarService.deleteCalendar(adminUser, 'non-existent-id', organization)).rejects.toThrow(
+        new NotFoundException('Calendar', 'non-existent-id')
+      );
+    });
+
+    it('fails if calendar already deleted', async () => {
+      const calendar = await prisma.calendar.create({
+        data: {
+          name: 'Already Deleted',
+          description: 'Test',
+          colorHexCode: '#0000FF',
+          userCreatedId: adminUser.userId,
+          organizationId: orgId,
+          dateDeleted: new Date() // Already deleted
+        }
+      });
+
+      await expect(CalendarService.deleteCalendar(adminUser, calendar.calendarId, organization)).rejects.toThrow(
+        new DeletedException('Calendar', calendar.calendarId)
+      );
+    });
+  });
+
   describe('Create EventType', () => {
     it('Fails if user is not an admin', async () => {
       await expect(
