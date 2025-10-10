@@ -67,7 +67,7 @@ export default class RulesService {
 
     if (rule.ruleset?.car?.wbsElement?.organizationId !== org.organizationId) throw new InvalidOrganizationException('Rule');
 
-    const deletedRule: Rule = await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx) => {
       const deleteParentChildReferencing = async (currRuleId: string): Promise<void> => {
         const referencingRules = await tx.rule.findMany({
           where: {
@@ -110,15 +110,13 @@ export default class RulesService {
       };
 
       await deleteParentChildReferencing(ruleId);
-      const deletedRule = await tx.rule.findUnique({
-        where: { ruleId }
-      });
-
-      if (!deletedRule) throw new NotFoundException('Rule', ruleId);
-      return deletedRule;
     });
 
-    return deletedRule;
+    const deletedRule = await prisma.rule.findUnique({
+      where: { ruleId }
+    });
+
+    return deletedRule!;
   }
 
   /**
