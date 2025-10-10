@@ -46,6 +46,16 @@ calendarRouter.post(
   CalendarController.createMachinery
 );
 
+calendarRouter.put(
+  '/machinery/edit/:machineryId',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('shopId')),
+  body('quantity').isInt({ min: 1 }),
+  body('description').optional().isString(),
+  validateInputs,
+  CalendarController.editMachinery
+);
+
 calendarRouter.post(
   '/shop/create',
   nonEmptyString(body('name')),
@@ -74,6 +84,8 @@ calendarRouter.post(
   validateInputs,
   CalendarController.editEventType
 );
+
+calendarRouter.post('/:calendarId/delete', CalendarController.deleteCalendar);
 
 calendarRouter.post('/shop/:shopId/delete', nonEmptyString(param('shopId')), validateInputs, CalendarController.deleteShop);
 

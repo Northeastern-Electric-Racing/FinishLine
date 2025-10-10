@@ -2,13 +2,15 @@ import { Calendar, Organization, User } from '@prisma/client';
 import CalendarService from '../../src/services/calendar.services';
 import {
   AccessDeniedAdminOnlyException,
-  InvalidOrganizationException,
-  NotFoundException
+  AccessDeniedException,
+  DeletedException,
+  NotFoundException,
+  InvalidOrganizationException
 } from '../../src/utils/errors.utils';
 import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, theVisitorGuest, alfred } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
-import { EventType, Shop } from 'shared';
+import { EventType, Machinery, Shop } from 'shared';
 
 describe('Calendar Tests', () => {
   let orgId: string;
@@ -16,7 +18,7 @@ describe('Calendar Tests', () => {
   let adminUser: User;
   let calendar: Calendar;
   let shop: Shop;
-  //let machinery: Machinery;
+  let machinery: Machinery;
   let shopId: string;
 
   beforeEach(async () => {
@@ -43,7 +45,6 @@ describe('Calendar Tests', () => {
     );
     ({ shopId } = shop);
 
-    /*
     machinery = await CalendarService.createMachinery(
       adminUser,
       'Original Machinery Name',
@@ -52,11 +53,73 @@ describe('Calendar Tests', () => {
       organization,
       'Original description'
     );
-    */
   });
 
   afterEach(async () => {
     await resetUsers();
+  });
+
+  describe('delete calendar', () => {
+    it('fails if user is not a head or admin', async () => {
+      const member = await createTestUser(wonderwomanGuest, orgId);
+
+      const calendar = await prisma.calendar.create({
+        data: {
+          name: 'Test Calendar',
+          description: 'Test',
+          colorHexCode: '#000000',
+          userCreatedId: member.userId,
+          organizationId: orgId
+        }
+      });
+
+      await expect(CalendarService.deleteCalendar(member, calendar.calendarId, organization)).rejects.toThrow(
+        new AccessDeniedException('Only admins can delete calendars')
+      );
+    });
+
+    it('succeeds for admin', async () => {
+      const calendar = await prisma.calendar.create({
+        data: {
+          name: 'Admin Delete Calendar',
+          description: 'Test',
+          colorHexCode: '#00FF00',
+          userCreatedId: adminUser.userId,
+          organizationId: orgId
+        }
+      });
+
+      const result = await CalendarService.deleteCalendar(adminUser, calendar.calendarId, organization);
+
+      expect(result.calendarId).toBe(calendar.calendarId);
+      expect(result.name).toBe('Admin Delete Calendar');
+      expect(result.description).toBe('Test');
+      expect(result.color).toBe('#00FF00');
+      expect(result.userCreated.userId).toBe(adminUser.userId);
+    });
+
+    it('fails if calendar not found', async () => {
+      await expect(CalendarService.deleteCalendar(adminUser, 'non-existent-id', organization)).rejects.toThrow(
+        new NotFoundException('Calendar', 'non-existent-id')
+      );
+    });
+
+    it('fails if calendar already deleted', async () => {
+      const calendar = await prisma.calendar.create({
+        data: {
+          name: 'Already Deleted',
+          description: 'Test',
+          colorHexCode: '#0000FF',
+          userCreatedId: adminUser.userId,
+          organizationId: orgId,
+          dateDeleted: new Date() // Already deleted
+        }
+      });
+
+      await expect(CalendarService.deleteCalendar(adminUser, calendar.calendarId, organization)).rejects.toThrow(
+        new DeletedException('Calendar', calendar.calendarId)
+      );
+    });
   });
 
   describe('Create EventType', () => {
@@ -151,6 +214,108 @@ describe('Calendar Tests', () => {
       expect(result.shops[0].quantity).toBe(2);
       expect(result.shops[0].shop.name).toBe('Precision Manufacturing Lab');
       expect(result.shops[0].description).toBe(undefined);
+    });
+  });
+
+  describe('Edit Machinery', () => {
+    it('Fails if user is not a head or above', async () => {
+      await expect(
+        async () =>
+          await CalendarService.editMachinery(
+            await createTestUser(wonderwomanGuest, orgId),
+            machinery.machineryId,
+            'Updated Machinery Name',
+            shop.shopId,
+            2,
+            organization,
+            'Updated description'
+          )
+      ).rejects.toThrow(new AccessDeniedException('Only heads and above can edit machinery'));
+    });
+
+    it('Fails if machinery does not exist', async () => {
+      const nonExistentId = 'non-existent-id';
+      await expect(
+        async () =>
+          await CalendarService.editMachinery(
+            await createTestUser(supermanAdmin, orgId),
+            nonExistentId,
+            'Updated Machinery Name',
+            shop.shopId,
+            2,
+            organization,
+            'Updated description'
+          )
+      ).rejects.toThrow(new NotFoundException('Machinery', nonExistentId));
+    });
+
+    it('Fails if shop does not exist', async () => {
+      const nonExistentShopId = 'non-existent-shop-id';
+      await expect(
+        async () =>
+          await CalendarService.editMachinery(
+            await createTestUser(supermanAdmin, orgId),
+            machinery.machineryId,
+            'Updated Machinery Name',
+            nonExistentShopId,
+            2,
+            organization,
+            'Updated description'
+          )
+      ).rejects.toThrow(new NotFoundException('Shop', nonExistentShopId));
+    });
+
+    it('Succeeds and updates machinery for head user', async () => {
+      const result = await CalendarService.editMachinery(
+        await createTestUser(supermanAdmin, orgId),
+        machinery.machineryId,
+        'Updated Machinery Name',
+        shop.shopId,
+        3,
+        organization,
+        'Updated description'
+      );
+
+      expect(result.name).toEqual('Updated Machinery Name');
+      expect(result.shops).toHaveLength(1);
+      expect(result.shops[0].quantity).toBe(3);
+      expect(result.shops[0].description).toBe('Updated description');
+      expect(result.shops[0].shop.name).toBe('Precision Manufacturing Lab');
+    });
+
+    it('Succeeds and updates machinery for admin user', async () => {
+      const result = await CalendarService.editMachinery(
+        await createTestUser(supermanAdmin, orgId),
+        machinery.machineryId,
+        'Admin Updated Machinery',
+        shop.shopId,
+        5,
+        organization,
+        'Admin updated description'
+      );
+
+      expect(result.name).toEqual('Admin Updated Machinery');
+      expect(result.shops).toHaveLength(1);
+      expect(result.shops[0].quantity).toBe(5);
+      expect(result.shops[0].description).toBe('Admin updated description');
+      expect(result.shops[0].shop.name).toBe('Precision Manufacturing Lab');
+    });
+
+    it('Succeeds and updates machinery without description', async () => {
+      const result = await CalendarService.editMachinery(
+        await createTestUser(supermanAdmin, orgId),
+        machinery.machineryId,
+        'No Description Machinery',
+        shop.shopId,
+        2,
+        organization,
+        undefined
+      );
+
+      expect(result.name).toEqual('No Description Machinery');
+      expect(result.shops).toHaveLength(1);
+      expect(result.shops[0].quantity).toBe(2);
+      expect(result.shops[0].description).toBe('Original description'); // Original description should remain unchanged
     });
   });
 
