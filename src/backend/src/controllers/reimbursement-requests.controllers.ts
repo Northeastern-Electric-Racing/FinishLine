@@ -525,6 +525,23 @@ export default class ReimbursementRequestsController {
     }
   }
 
+  static async editIndexCode(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, code } = req.body;
+      const { indexCodeId } = req.params;
+      const updatedIndexCode = await ReimbursementRequestService.editIndexCode(
+        req.currentUser,
+        req.organization,
+        indexCodeId,
+        name,
+        code
+      );
+      res.status(200).json(updatedIndexCode);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async deleteIndexCode(req: Request, res: Response, next: NextFunction) {
     try {
       const { indexCodeId } = req.params;

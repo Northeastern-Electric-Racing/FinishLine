@@ -1567,6 +1567,50 @@ export default class ReimbursementRequestService {
   }
 
   /**
+   * Edit an index code
+   * @param user the user editing the index code
+   * @param organization the organization the user is in
+   * @param indexCodeId the id of the index code to edit
+   * @param name the new name of the index code
+   * @param code the new code of the index code
+   * @returns the updated index code
+   */
+  static async editIndexCode(user: User, organization: Organization, indexCodeId: string, name: string, code: string) {
+    const indexCode = await prisma.index_Code.findUnique({
+      where: {
+        indexCodeId
+      }
+    });
+
+    if (!userHasPermission(user.userId, organization.organizationId, isAdmin)) {
+      throw new AccessDeniedAdminOnlyException('Only admins can update index codes');
+    }
+
+    if (!indexCode) {
+      throw new NotFoundException('Index Code', indexCodeId);
+    }
+
+    if (indexCode.dateDeleted) {
+      throw new DeletedException('Index Code', indexCodeId);
+    }
+
+    if (indexCode.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Index Code');
+    }
+
+    const updatedCode = await prisma.index_Code.update({
+      where: { indexCodeId },
+      data: {
+        name,
+        code
+      },
+      ...getIndexCodeQueryArgs(organization.organizationId)
+    });
+
+    return indexCodeTransformer(updatedCode);
+  }
+
+  /**
    * Deletes the index code
    *
    * @param indexCodeid the requested index code to be deleted

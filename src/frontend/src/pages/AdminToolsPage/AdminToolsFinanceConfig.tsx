@@ -2,6 +2,7 @@ import { Box, Grid, Typography } from '@mui/material';
 import AccountManagerTable from './FinanceConfig/AccountManagerTable';
 import CategoriesTable from './FinanceConfig/CategoriesTable';
 import SponsorTierTable from './FinanceConfig/SponsorTierTable';
+import IndexCodesTable from './FinanceConfig/IndexCodesTable';
 
 const AdminToolsFinanceConfig: React.FC = () => {
   return (
@@ -18,6 +19,9 @@ const AdminToolsFinanceConfig: React.FC = () => {
         </Grid>
         <Grid item direction="column" xs={12} md={6}>
           <SponsorTierTable />
+        </Grid>
+        <Grid item direction="column" xs={12} md={6}>
+          <IndexCodesTable />
         </Grid>
       </Grid>
     </Box>

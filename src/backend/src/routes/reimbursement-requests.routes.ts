@@ -32,6 +32,13 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.createIndexCode
 );
 
+reimbursementRequestsRouter.post(
+  '/index-codes/:indexCodeId/edit',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('code')),
+  validateInputs,
+  ReimbursementRequestController.editIndexCode
+);
 reimbursementRequestsRouter.get('/index-codes/:indexCodeId', ReimbursementRequestController.getSingleIndexCode);
 
 reimbursementRequestsRouter.get('/index-codes', ReimbursementRequestController.getAllIndexCodes);

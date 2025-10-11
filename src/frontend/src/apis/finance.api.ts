@@ -21,7 +21,8 @@ import {
   ReimbursementRequestDataPayload,
   SpendingBarDataPayload,
   ReimbursementRequestCategoryDataPayload,
-  OtherProductReasonPayload
+  OtherProductReasonPayload,
+  IndexCodePayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -489,6 +490,19 @@ export const createReimbursementRequestComment = async (id: string, commentData:
  */
 export const getAllIndexCodes = () => {
   return axios.get<IndexCode[]>(apiUrls.getAllIndexCodes(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
+ * Edits an index code
+ * 
+ * @param indexCodeId the id of the index code to edit
+ * @param indexCodePayload the new data for the index code
+ * @returns the updated index code
+ */
+export const editIndexCode = (indexCodeId: string, indexCodePayload: IndexCodePayload) => {
+  return axios.post<IndexCode>(apiUrls.editIndexCode(indexCodeId), indexCodePayload, {
     transformResponse: (data) => JSON.parse(data)
   });
 };

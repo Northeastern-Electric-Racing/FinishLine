@@ -62,7 +62,8 @@ import {
   deleteAccountCode,
   deleteOtherProductReason,
   deleteSponsorTier,
-  editSponsorTier
+  editSponsorTier,
+  editIndexCode
 } from '../apis/finance.api';
 import {
   IndexCode,
@@ -176,6 +177,11 @@ export interface OtherProductReasonPayload {
   budget: number;
 }
 
+export interface IndexCodePayload {
+  name: string;
+  code: string;
+}
+
 /**
  * Custom React hook to create a sponsor
  *
@@ -265,10 +271,6 @@ export const useCreateReimbursementRequestComment = (reimbursementRequestId: str
     }
   );
 };
-
-export interface IndexCodePayload {
-  name: string;
-}
 
 export interface ReimbursementRequestProjectDataPayload {
   projectId: string;
@@ -890,6 +892,26 @@ export const useGetAllIndexCodes = () => {
     const { data } = await getAllIndexCodes();
     return data;
   });
+};
+
+/** Custom React Hook to edit an IndexCode
+ *
+ * @returns the updated IndexCode
+ */
+export const useEditIndexCode = (indexCodeId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<IndexCode, Error, IndexCodePayload>(
+    ['index-codes', 'edit'],
+    async (indexCodePayload: IndexCodePayload) => {
+      const { data } = await editIndexCode(indexCodeId, indexCodePayload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['index-codes']);
+      }
+    }
+  );
 };
 
 /**
