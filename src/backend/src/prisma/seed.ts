@@ -25,9 +25,7 @@ import {
   DesignReviewStatus,
   MaterialStatus,
   RoleEnum,
-  SpecialPermission,
   StandardChangeRequest,
-  User,
   WbsElementStatus,
   WorkPackageStage
 } from 'shared';
@@ -45,7 +43,6 @@ import { writeFileSync } from 'fs';
 import WbsElementTemplatesService from '../services/wbs-element-templates.services';
 import RecruitmentServices from '../services/recruitment.services';
 import OrganizationsService from '../services/organizations.services';
-import { seedGraph } from './seed-data/statistics.seed';
 import AnnouncementService from '../services/announcement.services';
 import OnboardingServices from '../services/onboarding.services';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
@@ -114,7 +111,7 @@ export const CreatePartReviewFAQ = async (
 const performSeed: () => Promise<void> = async () => {
   const thomasEmrax = await prisma.user.create({
     data: dbSeedAllUsers.thomasEmrax,
-    include: { userSettings: true, userSecureSettings: true }
+    include: { userSettings: true, userSecureSettings: true, roles: true }
   });
 
   const ner = await prisma.organization.create({
@@ -3144,7 +3141,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   const calendarFinishline = await CalendarService.createCalendar(
-    joeShmoe,
+    thomasEmrax,
     'Finishline Projects Calendar',
     'Tracks all ongoing projects currently being developed for Finishline',
     '#911111ff',

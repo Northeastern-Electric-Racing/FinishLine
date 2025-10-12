@@ -1,4 +1,4 @@
-import { Organization, Prisma, User } from '@prisma/client';
+import { Organization, Prisma } from '@prisma/client';
 import {
   DescriptionBulletPreview,
   isAdmin,
@@ -11,7 +11,8 @@ import {
   ProjectGantt,
   ProjectPreview,
   WbsNumber,
-  wbsPipe
+  wbsPipe,
+  User
 } from 'shared';
 import prisma from '../prisma/prisma';
 import projectTransformer, {
@@ -32,7 +33,6 @@ import {
 import { updateProjectAndCreateChanges, getHighestProjectNumber } from '../utils/projects.utils';
 import { wbsNumOf } from '../utils/utils';
 import WorkPackagesService from './work-packages.services';
-import { linkTypeTransformer } from '../transformers/links.transformer';
 import { userHasPermission } from '../utils/users.utils';
 import {
   getProjectGanttQueryArgs,
@@ -42,7 +42,6 @@ import {
 } from '../prisma-query-args/projects.query-args';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
-import { getLinkTypeQueryArgs } from '../prisma-query-args/link-types.query-args';
 
 export default class ProjectsService {
   /**
@@ -365,7 +364,7 @@ export default class ProjectsService {
       include: {
         wbsElement: {
           include: {
-            links: getLinkQueryArgs(organization.organizationId),
+            links: getLinkQueryArgs(),
             descriptionBullets: getDescriptionBulletQueryArgs(organization.organizationId)
           }
         }
@@ -560,14 +559,11 @@ export default class ProjectsService {
    * @returns all the link types in the users organization
    */
   static async getAllLinkTypes(organization: Organization): Promise<LinkType[]> {
-    return (
-      await prisma.link_Type.findMany({
-        where: {
-          organizationId: organization.organizationId
-        },
-        ...getLinkTypeQueryArgs(organization.organizationId)
-      })
-    ).map(linkTypeTransformer);
+    return await prisma.link_Type.findMany({
+      where: {
+        organizationId: organization.organizationId
+      }
+    });
   }
 
   /**
@@ -605,11 +601,10 @@ export default class ProjectsService {
         iconName,
         required,
         organizationId: organization.organizationId
-      },
-      ...getLinkTypeQueryArgs(organization.organizationId)
+      }
     });
 
-    return linkTypeTransformer(linkType);
+    return linkType;
   }
 
   /**
@@ -650,10 +645,9 @@ export default class ProjectsService {
         name: linkName,
         iconName,
         required
-      },
-      ...getLinkTypeQueryArgs(organization.organizationId)
+      }
     });
-    return linkTypeTransformer(linkTypeUpdated);
+    return linkTypeUpdated;
   }
   /**
    * Sets an abbreviation for this project

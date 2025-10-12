@@ -1,7 +1,7 @@
 import { calendarTransformer, machineryTransformer } from '../transformers/calendar.transformer';
 import { getMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
-import { Organization, User } from '@prisma/client';
-import { isAdmin, isHead, EventType, Shop, Calendar } from 'shared';
+import { Organization } from '@prisma/client';
+import { isAdmin, isHead, EventType, Shop, Calendar, User } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,

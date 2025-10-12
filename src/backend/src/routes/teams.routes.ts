@@ -10,6 +10,7 @@ const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage()
 teamsRouter.get('/', TeamsController.getAllTeams);
 teamsRouter.get('/archive', TeamsController.getAllArchivedTeams);
 teamsRouter.get('/users-teams', TeamsController.getUsersTeams);
+teamsRouter.get('/my-team-as-head', TeamsController.getMyTeamAsHead);
 teamsRouter.get('/:teamId', TeamsController.getSingleTeam);
 
 teamsRouter.post(
@@ -87,7 +88,5 @@ teamsRouter.post(
 );
 
 teamsRouter.delete('teamType/:teamTypeId/delete', TeamsController.deleteTeamType);
-
-teamsRouter.get('/my-teams-work-packages', TeamsController.getMyTeamsWorkpackages);
 
 export default teamsRouter;

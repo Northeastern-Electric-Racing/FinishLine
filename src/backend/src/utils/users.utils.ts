@@ -1,4 +1,4 @@
-import { Prisma, User, User_Settings } from '@prisma/client';
+import { Prisma, User_Settings } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { HttpException, InvalidOrganizationException, NotFoundException } from './errors.utils';
 import {
@@ -8,6 +8,7 @@ import {
   isSubset,
   PermissionCheck,
   Role,
+  User,
   RoleEnum
 } from 'shared';
 import { UserWithId } from './teams.utils';
@@ -32,7 +33,7 @@ export const getUserSlackId = async (userId?: string): Promise<string | undefine
 };
 
 export const getUserRole = async (userId: string, organizationId: string): Promise<Role> => {
-  const user = await prisma.user.findUnique({ where: { userId }, include: { roles: true } });
+  const user = await prisma.user.findUnique({ where: { userId }, include: { roles: { where: { organizationId } } } });
   if (!user) throw new NotFoundException('User', userId);
   return user.roles.find((role) => role.organizationId === organizationId)?.roleType ?? RoleEnum.GUEST;
 };
@@ -127,7 +128,7 @@ export const userHasPermission = async (
   organizationId: string,
   permissionCheck: PermissionCheck
 ): Promise<boolean> => {
-  const user = await prisma.user.findUnique({ where: { userId }, include: { roles: true } });
+  const user = await prisma.user.findUnique({ where: { userId }, include: { roles: { where: { organizationId } } } });
   if (!user) throw new NotFoundException('User', userId);
 
   const organization = await prisma.organization.findUnique({ where: { organizationId } });
