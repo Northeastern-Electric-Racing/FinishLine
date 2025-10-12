@@ -1,29 +1,43 @@
 // src/layouts/pages/admintoolspage/AdminToolsScheduleConfig.tsx
 import React, { useState } from 'react';
-import { Box, Grid, Typography, Paper, Table, TableBody, TableCell, TableHead, TableRow, Button } from '@mui/material';
+import {
+  Box,
+  Grid,
+  Typography,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Button
+} from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { useShops, useCreateShop } from '../../../hooks/calendar.hooks';
+import { useAllShops, useCreateShop } from '../../../hooks/calendar.hooks';
 import CreateShopModal from './CreateShopModal';
 
 const AdminToolsScheduleConfig: React.FC = () => {
-  const { data: shops, isLoading, isError, error } = useShops();
-  const createShop = useCreateShop();
+  const { data: shops, isLoading, isError, error } = useAllShops();
+  if (shops) console.debug('Shops length:', shops.length, shops);
+
+
+  const { mutateAsync: createShopMutate } = useCreateShop();
 
   const [openCreate, setOpenCreate] = useState(false);
 
-  if (isError) return <ErrorPage error={error as Error} />;
-  if (isLoading || !shops) return <LoadingIndicator />;
+  if (isLoading) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={(error as Error).message} />;
 
   return (
     <Box padding="5px">
-      {/* top page header*/}
+      {/* Page header */}
       <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor="white">
         Schedule
       </Typography>
 
       <Grid container spacing={2}>
-        {/* Top-left (placeholder) */}
+        {/* Top-left placeholder */}
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2, backgroundColor: 'transparent' }}>
             <Typography variant="h6" gutterBottom>
@@ -35,7 +49,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
           </Paper>
         </Grid>
 
-        {/* Top-right (placeholder) */}
+        {/* Top-right placeholder */}
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2, backgroundColor: 'transparent' }}>
             <Typography variant="h6" gutterBottom>
@@ -47,7 +61,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
           </Paper>
         </Grid>
 
-        {/* Shops table */}
+        {/* Shops table (bottom-left) */}
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2, backgroundColor: 'transparent' }}>
             <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
@@ -68,7 +82,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {shops.length === 0 ? (
+                {!shops || shops.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={3} align="center">
                       No shops yet.
@@ -97,7 +111,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
           </Paper>
         </Grid>
 
-        {/* Bottom-right (placeholder) */}
+        {/* Bottom-right placeholder */}
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2, backgroundColor: 'transparent' }}>
             <Typography variant="h6" gutterBottom>
@@ -115,8 +129,9 @@ const AdminToolsScheduleConfig: React.FC = () => {
         open={openCreate}
         onClose={() => setOpenCreate(false)}
         onSubmit={async ({ name, description }) => {
-          await createShop.mutateAsync({ name, description });
+          await createShopMutate({ name, description });
           setOpenCreate(false);
+          
         }}
       />
     </Box>

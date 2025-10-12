@@ -1,36 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Shop } from 'shared';
-import { getShops, createShop } from '../apis/calendar.api';
+import { getAllShops, postCreateShop } from '../apis/calendar.api';
 
-/**
- * Get all shops for the current org
- */
-export const useShops = () => {
-  return useQuery<Shop[], Error>(['calendar', 'shops'], async () => {
-    const { data } = await getShops();
-    return data;
+export const SHOPS_KEY = ['calendar', 'shops'];
+
+export const useAllShops = () =>
+  useQuery<Shop[], Error>(SHOPS_KEY, async () => {
+    const { data } = await getAllShops();
+    return data; 
   });
-};
-
-/**
- * Create a shop
- */
-type CreateShopPayload = { name: string; description: string };
 
 export const useCreateShop = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation<Shop, Error, CreateShopPayload>(
-    ['calendar', 'shops', 'create'],
-    async ({ name, description }) => {
-      const { data } = await createShop({ name, description });
-      return data;
-    },
-    {
-      onSuccess: () => {
-        // refresh the table
-        queryClient.invalidateQueries(['calendar', 'shops']);
-      }
-    }
+  const qc = useQueryClient();
+  return useMutation<Shop, Error, { name: string; description?: string }>(
+    (payload) => postCreateShop(payload).then((r) => r.data),
+    { onSuccess: () => qc.invalidateQueries(SHOPS_KEY) }
   );
 };
