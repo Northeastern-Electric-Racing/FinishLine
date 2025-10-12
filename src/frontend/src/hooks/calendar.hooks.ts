@@ -7,7 +7,7 @@ export const SHOPS_KEY = ['calendar', 'shops'];
 export const useAllShops = () =>
   useQuery<Shop[], Error>(SHOPS_KEY, async () => {
     const { data } = await getAllShops();
-    return data; 
+    return data;
   });
 
 export const useCreateShop = () => {

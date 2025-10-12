@@ -3,7 +3,7 @@ import { apiUrls } from '../utils/urls';
 import { Shop } from 'shared';
 import { shopTransformer } from './transformers/calendar.transformer';
 
-const pickArray = (x: any): any[] | null => Array.isArray(x) ? x : null;
+const pickArray = (x: any): any[] | null => (Array.isArray(x) ? x : null);
 
 const normalizeShopsResponse = (raw: unknown): Shop[] => {
   const r = raw as any;
@@ -24,7 +24,6 @@ const normalizeShopsResponse = (raw: unknown): Shop[] => {
     if (pickArray(r.results)) return r.results.map(shopTransformer);
   }
 
-  
   return [];
 };
 
@@ -35,7 +34,7 @@ export const getAllShops = () => {
         const parsed = JSON.parse(data);
         return normalizeShopsResponse(parsed);
       } catch {
-        return []; 
+        return [];
       }
     }
   });
@@ -50,7 +49,6 @@ export const postCreateShop = (payload: { name: string; description?: string }) 
         const shop = (parsed?.shop ?? parsed?.data?.shop ?? parsed) as Shop;
         return shopTransformer(shop);
       } catch {
-        
         return payload as unknown as Shop;
       }
     }

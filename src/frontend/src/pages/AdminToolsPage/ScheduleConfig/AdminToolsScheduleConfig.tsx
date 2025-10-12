@@ -1,17 +1,6 @@
 // src/layouts/pages/admintoolspage/AdminToolsScheduleConfig.tsx
 import React, { useState } from 'react';
-import {
-  Box,
-  Grid,
-  Typography,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Button
-} from '@mui/material';
+import { Box, Grid, Typography, Paper, Table, TableBody, TableCell, TableHead, TableRow, Button } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useAllShops, useCreateShop } from '../../../hooks/calendar.hooks';
@@ -20,7 +9,6 @@ import CreateShopModal from './CreateShopModal';
 const AdminToolsScheduleConfig: React.FC = () => {
   const { data: shops, isLoading, isError, error } = useAllShops();
   if (shops) console.debug('Shops length:', shops.length, shops);
-
 
   const { mutateAsync: createShopMutate } = useCreateShop();
 
@@ -131,7 +119,6 @@ const AdminToolsScheduleConfig: React.FC = () => {
         onSubmit={async ({ name, description }) => {
           await createShopMutate({ name, description });
           setOpenCreate(false);
-          
         }}
       />
     </Box>
