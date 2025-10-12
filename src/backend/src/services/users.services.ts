@@ -12,7 +12,7 @@ import {
   UserWithScheduleSettings,
   AuthenticatedUser,
   AvailabilityCreateArgs,
-  ProjectPreview
+  ProjectGantt
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -22,8 +22,8 @@ import {
   NotFoundException
 } from '../utils/errors.utils';
 import { generateAccessToken } from '../utils/auth.utils';
-import { projectPreviewTransformer } from '../transformers/projects.transformer';
-import { getProjectManyQueryArgs } from '../prisma-query-args/projects.query-args';
+import { projectGanttTransformer } from '../transformers/projects.transformer';
+import { getProjectGanttQueryArgs } from '../prisma-query-args/projects.query-args';
 import userSecureSettingsTransformer from '../transformers/user-secure-settings.transformer';
 import userScheduleSettingsTransformer from '../transformers/user-schedule-settings.transformer';
 import { userTransformer, userWithScheduleSettingsTransformer } from '../transformers/user.transformer';
@@ -155,7 +155,7 @@ export default class UsersService {
    * @param organizationId the id of the organization the user is in
    * @returns the user's favorite projects
    */
-  static async getUsersFavoriteProjects(userId: string, organization: Organization): Promise<ProjectPreview[]> {
+  static async getUsersFavoriteProjects(userId: string, organization: Organization): Promise<ProjectGantt[]> {
     const requestedUser = await prisma.user.findUnique({ where: { userId } });
     if (!requestedUser) throw new NotFoundException('User', userId);
 
@@ -170,10 +170,10 @@ export default class UsersService {
           organizationId: organization.organizationId
         }
       },
-      ...getProjectManyQueryArgs(organization.organizationId)
+      ...getProjectGanttQueryArgs(organization.organizationId)
     });
 
-    return projects.map(projectPreviewTransformer);
+    return projects.map(projectGanttTransformer);
   }
 
   /**
@@ -397,29 +397,34 @@ export default class UsersService {
     const userRankedRole = rankUserRole(userRole);
     const targetUserRankedRole = rankUserRole(targetUserRole);
 
-    if (!isHead(userRole)) {
-      throw new AccessDeniedException('Guests, members, and leadership cannot update user roles!');
-    }
+    const isLeadershipPromotingGuestToMember =
+      userRole === RoleEnum.LEADERSHIP && targetUserRole === RoleEnum.GUEST && role === RoleEnum.MEMBER;
 
-    if (targetUserRankedRole >= userRankedRole) {
-      throw new AccessDeniedException('Cannot change the role of a user with an equal or higher role than you');
-    }
+    if (!isLeadershipPromotingGuestToMember) {
+      if (!isHead(userRole)) {
+        throw new AccessDeniedException('Guests, members, and leadership cannot update user roles!');
+      }
 
-    if (userRole === RoleEnum.HEAD && rankUserRole(role) >= userRankedRole) {
-      throw new AccessDeniedException('Heads can only promote to leadership or below');
-    } else {
+      if (targetUserRankedRole >= userRankedRole) {
+        throw new AccessDeniedException('Cannot change the role of a user with an equal or higher role than you');
+      }
+
+      if (userRole === RoleEnum.HEAD && rankUserRole(role) >= userRankedRole) {
+        throw new AccessDeniedException('Heads can only promote to leadership or below');
+      }
+
       if (rankUserRole(role) > userRankedRole) {
         throw new AccessDeniedException('Cannot promote user to a higher role than yourself');
       }
-
-      await prisma.role.upsert({
-        where: { uniqueRole: { userId: targetUserId, organizationId: organization.organizationId } },
-        update: { roleType: role },
-        create: { userId: targetUserId, organizationId: organization.organizationId, roleType: role }
-      });
     }
 
-    return userTransformer(targetUser);
+    await prisma.role.upsert({
+      where: { uniqueRole: { userId: targetUserId, organizationId: organization.organizationId } },
+      update: { roleType: role },
+      create: { userId: targetUserId, organizationId: organization.organizationId, roleType: role }
+    });
+
+    return userTransformer({ ...targetUser, roles: [{ ...targetUser.roles[0], roleType: role }] });
   }
 
   /**

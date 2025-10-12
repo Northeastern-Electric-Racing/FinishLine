@@ -1,5 +1,5 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
-import { ChangeRequestReason, ChangeRequestType, Link, LinkCreateArgs, ProjectPreview, WorkPackage } from 'shared';
+import { ChangeRequestReason, ChangeRequestType, Link, LinkCreateArgs, ProjectGantt, WorkPackage } from 'shared';
 import { useState } from 'react';
 import dayjs from 'dayjs';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../../hooks/change-requests.hooks';
@@ -65,7 +65,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
     };
   };
 
-  const project = change.element as ProjectPreview;
+  const project = change.element as ProjectGantt;
 
   const editedWorkPackages: WorkPackage[] = [];
   const createdWorkPackages: WorkPackage[] = [];

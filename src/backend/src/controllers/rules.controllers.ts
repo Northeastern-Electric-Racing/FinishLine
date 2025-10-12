@@ -1,8 +1,33 @@
 import { NextFunction, Request, Response } from 'express';
 import RulesService from '../services/rules.services';
-
+import { ProjectRule } from 'shared';
 export default class RulesController {
-  // rules dashboard controller functions go here!
+  static async createRulesetType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name } = req.body;
+
+      const rulesetType = await RulesService.createRulesetType(req.currentUser, name, req.organization);
+      res.status(200).json(rulesetType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createProjectRule(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { ruleId, projectId } = req.body;
+      const projectRule: ProjectRule = await RulesService.createProjectRule(
+        req.currentUser,
+        req.organization,
+        ruleId,
+        projectId
+      );
+
+      res.status(200).json(projectRule);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 
   static async deleteRulesetType(req: Request, res: Response, next: NextFunction) {
     try {

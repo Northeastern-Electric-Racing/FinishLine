@@ -596,7 +596,7 @@ export const getReimbursementRequestProjectData = (payload: ReimbursementRequest
 
 export const getReimbursementRequestTeamData = (payload: ReimbursementRequestTeamDataPayload) => {
   return axios.get<ReimbursementRequestData>(
-    apiUrls.getReimbursementRequestTeamData(payload.teamId, payload.startDate, payload.endDate),
+    apiUrls.getReimbursementRequestTeamData(payload.teamId, payload.startDate, payload.endDate, payload.carNumber),
     {
       transformResponse: (data) => reimbursementRequestDataTransformer(JSON.parse(data))
     }
@@ -605,7 +605,12 @@ export const getReimbursementRequestTeamData = (payload: ReimbursementRequestTea
 
 export const getReimbursementRequestCategoryData = (payload: ReimbursementRequestCategoryDataPayload) => {
   return axios.get<ReimbursementRequestData>(
-    apiUrls.getReimbursementRequestCategoryData(payload.otherReasonId, payload.startDate, payload.endDate),
+    apiUrls.getReimbursementRequestCategoryData(
+      payload.otherReasonId,
+      payload.startDate,
+      payload.endDate,
+      payload.carNumber
+    ),
     {
       transformResponse: (data) => reimbursementRequestDataTransformer(JSON.parse(data))
     }
@@ -613,14 +618,17 @@ export const getReimbursementRequestCategoryData = (payload: ReimbursementReques
 };
 
 export const getAllReimbursementRequestData = (payload: ReimbursementRequestDataPayload) => {
-  return axios.get<ReimbursementRequestData[]>(apiUrls.getAllReimbursementRequestData(payload.startDate, payload.endDate), {
-    transformResponse: (data) => JSON.parse(data).map(reimbursementRequestDataTransformer)
-  });
+  return axios.get<ReimbursementRequestData[]>(
+    apiUrls.getAllReimbursementRequestData(payload.startDate, payload.endDate, payload.carNumber),
+    {
+      transformResponse: (data) => JSON.parse(data).map(reimbursementRequestDataTransformer)
+    }
+  );
 };
 
 export const getReimbursementRequestTeamTypeData = (payload: ReimbursementRequestTeamTypeDataPayload) => {
   return axios.get<ReimbursementRequestData>(
-    apiUrls.getReimbursementRequestTeamTypeData(payload.teamTypeId, payload.startDate, payload.endDate),
+    apiUrls.getReimbursementRequestTeamTypeData(payload.teamTypeId, payload.startDate, payload.endDate, payload.carNumber),
     {
       transformResponse: (data) => reimbursementRequestDataTransformer(JSON.parse(data))
     }
@@ -628,14 +636,17 @@ export const getReimbursementRequestTeamTypeData = (payload: ReimbursementReques
 };
 
 export const getSpendingBarTeamData = (payload: SpendingBarTeamDataPayload) => {
-  return axios.get<SpendingBarData>(apiUrls.getSpendingBarTeamData(payload.teamId, payload.startDate, payload.endDate), {
-    transformResponse: (data) => spendingBarDataTransformer(JSON.parse(data))
-  });
+  return axios.get<SpendingBarData>(
+    apiUrls.getSpendingBarTeamData(payload.teamId, payload.startDate, payload.endDate, payload.carNumber),
+    {
+      transformResponse: (data) => spendingBarDataTransformer(JSON.parse(data))
+    }
+  );
 };
 
 export const getSpendingBarTeamTypeData = (payload: SpendingBarTeamTypeDataPayload) => {
   return axios.get<SpendingBarData[]>(
-    apiUrls.getSpendingBarTeamTypeData(payload.teamTypeId, payload.startDate, payload.endDate),
+    apiUrls.getSpendingBarTeamTypeData(payload.teamTypeId, payload.startDate, payload.endDate, payload.carNumber),
     {
       transformResponse: (data) => JSON.parse(data).map(spendingBarDataTransformer)
     }
@@ -643,13 +654,16 @@ export const getSpendingBarTeamTypeData = (payload: SpendingBarTeamTypeDataPaylo
 };
 
 export const getSpendingBarCategoryData = (payload: SpendingBarDataPayload) => {
-  return axios.get<SpendingBarData>(apiUrls.getSpendingBarCategoryData(payload.startDate, payload.endDate), {
-    transformResponse: (data) => spendingBarDataTransformer(JSON.parse(data))
-  });
+  return axios.get<SpendingBarData>(
+    apiUrls.getSpendingBarCategoryData(payload.startDate, payload.endDate, payload.carNumber),
+    {
+      transformResponse: (data) => spendingBarDataTransformer(JSON.parse(data))
+    }
+  );
 };
 
 export const getAllSpendingBarData = (payload: SpendingBarDataPayload) => {
-  return axios.get<SpendingBarData[]>(apiUrls.getAllSpendingBarData(payload.startDate, payload.endDate), {
+  return axios.get<SpendingBarData[]>(apiUrls.getAllSpendingBarData(payload.startDate, payload.endDate, payload.carNumber), {
     transformResponse: (data) => JSON.parse(data).map(spendingBarDataTransformer)
   });
 };

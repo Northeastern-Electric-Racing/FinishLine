@@ -4,7 +4,7 @@ export interface Sponsor {
   sponsorId: string;
   name: string;
   activeStatus: boolean;
-  vendorContact: string;
+  sponsorContact: string;
   sponsorValue: number;
   joinDate: Date;
   activeYears: number[];

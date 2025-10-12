@@ -4,6 +4,7 @@ import { getDescriptionBulletQueryArgs } from './description-bullets.query-args'
 import { getDesignReviewPreviewQueryArgs } from './design-reviews.query-args';
 
 export type WorkPackageQueryArgs = ReturnType<typeof getWorkPackageQueryArgs>;
+export type WorkPackagePreviewQueryArgs = ReturnType<typeof getWorkPackagePreviewQueryArgs>;
 
 export const getWorkPackageQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Work_PackageDefaultArgs>()({
@@ -33,5 +34,29 @@ export const getWorkPackageQueryArgs = (organizationId: string) =>
         }
       },
       blockedBy: { where: { dateDeleted: null } }
+    }
+  });
+
+export const getWorkPackagePreviewQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Work_PackageDefaultArgs>()({
+    select: {
+      wbsElement: {
+        select: {
+          wbsElementId: true,
+          carNumber: true,
+          projectNumber: true,
+          workPackageNumber: true,
+          dateCreated: true,
+          dateDeleted: true,
+          name: true,
+          lead: getUserQueryArgs(organizationId),
+          manager: getUserQueryArgs(organizationId),
+          status: true
+        }
+      },
+      startDate: true,
+      duration: true,
+      workPackageId: true,
+      stage: true
     }
   });

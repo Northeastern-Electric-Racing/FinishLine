@@ -62,6 +62,7 @@ export default class OnboardingServices {
       },
       include: {
         subtasks: {
+          where: { dateDeleted: null },
           include: {
             usersChecked: true
           }
@@ -80,6 +81,7 @@ export default class OnboardingServices {
       },
       include: {
         subtasks: {
+          where: { dateDeleted: null },
           include: {
             usersChecked: true
           }
