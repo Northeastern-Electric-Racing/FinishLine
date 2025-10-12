@@ -67,7 +67,7 @@ export const updateProjectAndCreateChanges = async (
     include: {
       wbsElement: {
         include: {
-          links: { where: { dateDeleted: null }, ...getLinkQueryArgs(organizationId) },
+          links: { where: { dateDeleted: null }, ...getLinkQueryArgs() },
           descriptionBullets: { where: { dateDeleted: null }, ...getDescriptionBulletQueryArgs(organizationId) }
         }
       },

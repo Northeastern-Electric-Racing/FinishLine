@@ -342,7 +342,7 @@ describe('Reimbursement Requests', () => {
         include: {
           userSettings: true,
           userSecureSettings: true,
-          roles: true
+          roles: { where: { organizationId: org.organizationId } }
         }
       });
 

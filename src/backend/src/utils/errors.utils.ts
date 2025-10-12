@@ -158,9 +158,11 @@ export type ExceptionObjectNames =
   | 'Sponsor'
   | 'SponsorTask'
   | 'Shop'
+  | 'Machinery'
   | 'Sponsor Tier'
   | 'Index Code'
   | 'Reimbursement Product Other Reason'
   | 'Encryption Key'
   | 'Reimbursement Request Comment'
-  | 'Calendar';
+  | 'Calendar'
+  | 'Event Type';
