@@ -514,7 +514,7 @@ export default class OrganizationsService {
    */
   static async setFinanceDelegates(submitter: User, organizationId: string, userIds: string[]): Promise<User[]> {
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('only admins can set finance delegates');
+      throw new AccessDeniedAdminOnlyException('set finance delegates');
     }
 
     const userIdsNoDuplicates = Array.from(new Set(userIds));
