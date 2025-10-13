@@ -10,7 +10,7 @@ import {
 import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, theVisitorGuest, alfred } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
-import { DayOfWeek, EventType, Machinery, Shop, ScheduleSlot, Availability } from 'shared';
+import { Availability, DayOfWeek, EventType, Machinery, ScheduleSlot, Shop } from 'shared';
 
 describe('Calendar Tests', () => {
   let orgId: string;
@@ -637,20 +637,46 @@ describe('Calendar Tests', () => {
 
   describe('Create Event', () => {
     let member: User;
-    let scheduleSettings: any;
+    let otherOrg: Organization;
+    let otherOrgUser: User;
+    let otherOrgShop: Shop;
+    let otherOrgMachinery: Machinery;
+    let document: string;
 
     beforeEach(async () => {
       member = await createTestUser(supermanAdmin, orgId);
-      scheduleSettings = await prisma.schedule_Settings.create({
+
+      otherOrg = await prisma.organization.create({
         data: {
-          userId: member.userId,
-          personalGmail: '',
-          personalZoomLink: ''
+          name: 'Other Org (calendar test)',
+          description: 'for cross-org negative case',
+          applicationLink: '',
+          userCreated: { connect: { userId: adminUser.userId } }
         }
       });
+      otherOrgUser = await createTestUser(alfred, otherOrg.organizationId);
+
+      // Create additional entities for testing
+      otherOrgShop = await CalendarService.createShop(
+        otherOrgUser,
+        'Other Org Shop',
+        'Shop in different organization',
+        otherOrg
+      );
+
+      otherOrgMachinery = await CalendarService.createMachinery(
+        otherOrgUser,
+        'Other Org Machinery',
+        otherOrgShop.shopId,
+        1,
+        otherOrg,
+        'Machinery in different organization'
+      );
+
+      document = 'Test Document';
     });
 
-    it('succeeds with valid inputs', async () => {
+    it('succeeds for admin with valid inputs', async () => {
       const scheduleSlots = [
         {
           days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
@@ -664,8 +690,7 @@ describe('Calendar Tests', () => {
       const availabilities = [
         {
           availability: [9, 10],
-          dateSet: new Date('2025-10-13'),
-          scheduleSettingsId: scheduleSettings.scheduleSettingsId
+          dateSet: new Date('2025-10-13')
         }
       ];
 
@@ -678,7 +703,7 @@ describe('Calendar Tests', () => {
         [shop.shopId],
         [machinery.machineryId],
         [],
-        [],
+        [document],
         scheduleSlots,
         availabilities,
         true,
@@ -697,8 +722,10 @@ describe('Calendar Tests', () => {
       expect(result.shops[0].shopId).toBe(shop.shopId);
       expect(result.machinery).toHaveLength(1);
       expect(result.machinery[0].machineryId).toBe(machinery.machineryId);
+      expect(result.workPackages).toHaveLength(0);
+      expect(result.documentIds).toHaveLength(1);
       expect(result.scheduledTimes).toHaveLength(1);
-      expect(result.scheduledTimes[0].days).toEqual(['MONDAY', 'TUESDAY']);
+      expect(result.scheduledTimes[0].days).toEqual([DayOfWeek.MONDAY, DayOfWeek.TUESDAY]);
       expect(result.availability).toHaveLength(1);
       expect(result.availability[0].availability).toEqual([9, 10]);
       expect(result.approved).toBe(true);
@@ -723,8 +750,7 @@ describe('Calendar Tests', () => {
       const availabilities = [
         {
           availability: [9, 10],
-          dateSet: new Date('2025-10-13'),
-          scheduleSettingsId: scheduleSettings.scheduleSettingsId
+          dateSet: new Date('2025-10-13')
         }
       ];
 
@@ -747,14 +773,6 @@ describe('Calendar Tests', () => {
     });
 
     it('fails if organization is invalid', async () => {
-      const otherOrg = await prisma.organization.create({
-        data: {
-          name: 'Other Org',
-          description: 'Different organization',
-          applicationLink: '',
-          userCreated: { connect: { userId: adminUser.userId } }
-        }
-      });
       const scheduleSlots = [
         {
           days: [DayOfWeek.MONDAY],
@@ -768,8 +786,7 @@ describe('Calendar Tests', () => {
       const availabilities = [
         {
           availability: [9, 10],
-          dateSet: new Date('2025-10-13'),
-          scheduleSettingsId: scheduleSettings.scheduleSettingsId
+          dateSet: new Date('2025-10-13')
         }
       ];
 
@@ -788,7 +805,7 @@ describe('Calendar Tests', () => {
           availabilities,
           false
         )
-      ).rejects.toThrow(new NotFoundException('Event Type', eventType.eventTypeId));
+      ).rejects.toThrow(new InvalidOrganizationException('Event Type'));
     });
 
     it('succeeds with minimal inputs', async () => {
@@ -825,6 +842,269 @@ describe('Calendar Tests', () => {
       expect(result.location).toBeUndefined();
       expect(result.zoomLink).toBeUndefined();
       expect(result.description).toBeUndefined();
+    });
+
+    it('fails if memberIds are invalid', async () => {
+      const scheduleSlots = [] as ScheduleSlot[];
+      const availabilities = [] as Availability[];
+
+      await expect(
+        CalendarService.createEvent(
+          adminUser,
+          'Invalid Members',
+          eventType.eventTypeId,
+          organization,
+          ['non-existent-user-id'],
+          [],
+          [],
+          [],
+          [],
+          scheduleSlots,
+          availabilities,
+          false
+        )
+      ).rejects.toThrow(new NotFoundException('User', 'non-existent-user-id'));
+    });
+
+    it('fails if memberIds belong to a different organization', async () => {
+      const scheduleSlots = [] as ScheduleSlot[];
+      const availabilities = [] as Availability[];
+
+      await expect(
+        CalendarService.createEvent(
+          adminUser,
+          'Wrong Org Members',
+          eventType.eventTypeId,
+          organization,
+          [otherOrgUser.userId],
+          [],
+          [],
+          [],
+          [],
+          scheduleSlots,
+          availabilities,
+          false
+        )
+      ).rejects.toThrow(new NotFoundException('User', otherOrgUser.userId));
+    });
+
+    it('fails if shopIds are invalid', async () => {
+      const scheduleSlots = [] as ScheduleSlot[];
+      const availabilities = [] as Availability[];
+
+      await expect(
+        CalendarService.createEvent(
+          adminUser,
+          'Invalid Shops',
+          eventType.eventTypeId,
+          organization,
+          [],
+          ['non-existent-shop-id'],
+          [],
+          [],
+          [],
+          scheduleSlots,
+          availabilities,
+          false
+        )
+      ).rejects.toThrow(new NotFoundException('Shop', 'non-existent-shop-id'));
+    });
+
+    it('fails if shopIds belong to a different organization', async () => {
+      const scheduleSlots = [] as ScheduleSlot[];
+      const availabilities = [] as Availability[];
+
+      await expect(
+        CalendarService.createEvent(
+          adminUser,
+          'Wrong Org Shops',
+          eventType.eventTypeId,
+          organization,
+          [],
+          [otherOrgShop.shopId],
+          [],
+          [],
+          [],
+          scheduleSlots,
+          availabilities,
+          false
+        )
+      ).rejects.toThrow(new NotFoundException('Shop', otherOrgShop.shopId));
+    });
+
+    it('fails if machineryIds are invalid', async () => {
+      const scheduleSlots = [] as ScheduleSlot[];
+      const availabilities = [] as Availability[];
+
+      await expect(
+        CalendarService.createEvent(
+          adminUser,
+          'Invalid Machinery',
+          eventType.eventTypeId,
+          organization,
+          [],
+          [],
+          ['non-existent-machinery-id'],
+          [],
+          [],
+          scheduleSlots,
+          availabilities,
+          false
+        )
+      ).rejects.toThrow(new NotFoundException('Machinery', 'non-existent-machinery-id'));
+    });
+
+    it('fails if machineryIds belong to a different organization', async () => {
+      const scheduleSlots = [] as ScheduleSlot[];
+      const availabilities = [] as Availability[];
+
+      await expect(
+        CalendarService.createEvent(
+          adminUser,
+          'Wrong Org Machinery',
+          eventType.eventTypeId,
+          organization,
+          [],
+          [],
+          [otherOrgMachinery.machineryId],
+          [],
+          [],
+          scheduleSlots,
+          availabilities,
+          false
+        )
+      ).rejects.toThrow(new NotFoundException('Machinery', otherOrgMachinery.machineryId));
+    });
+
+    it('fails if workPackageIds are invalid', async () => {
+      const scheduleSlots = [] as ScheduleSlot[];
+      const availabilities = [] as Availability[];
+
+      await expect(
+        CalendarService.createEvent(
+          adminUser,
+          'Invalid Work Packages',
+          eventType.eventTypeId,
+          organization,
+          [],
+          [],
+          [],
+          ['non-existent-work-package-id'],
+          [],
+          scheduleSlots,
+          availabilities,
+          false
+        )
+      ).rejects.toThrow(new NotFoundException('Work Package', 'non-existent-work-package-id'));
+    });
+
+    it('fails if approvedByUserId is invalid', async () => {
+      const scheduleSlots = [] as ScheduleSlot[];
+      const availabilities = [] as Availability[];
+
+      await expect(
+        CalendarService.createEvent(
+          adminUser,
+          'Invalid Approver',
+          eventType.eventTypeId,
+          organization,
+          [],
+          [],
+          [],
+          [],
+          [],
+          scheduleSlots,
+          availabilities,
+          true,
+          'non-existent-user-id'
+        )
+      ).rejects.toThrow(new NotFoundException('User', 'non-existent-user-id'));
+    });
+
+    it('fails if approvedByUserId belongs to a different organization', async () => {
+      const scheduleSlots = [] as ScheduleSlot[];
+      const availabilities = [] as Availability[];
+
+      await expect(
+        CalendarService.createEvent(
+          adminUser,
+          'Wrong Org Approver',
+          eventType.eventTypeId,
+          organization,
+          [],
+          [],
+          [],
+          [],
+          [],
+          scheduleSlots,
+          availabilities,
+          true,
+          otherOrgUser.userId
+        )
+      ).rejects.toThrow(new NotFoundException('User', otherOrgUser.userId));
+    });
+
+    it('fails if shopIds are deleted', async () => {
+      const deletedShop = await CalendarService.createShop(adminUser, 'Deleted Shop', 'Deleted shop', organization);
+      await prisma.shop.update({
+        where: { shopId: deletedShop.shopId },
+        data: { dateDeleted: new Date() }
+      });
+
+      const scheduleSlots = [] as ScheduleSlot[];
+      const availabilities = [] as Availability[];
+
+      await expect(
+        CalendarService.createEvent(
+          adminUser,
+          'Deleted Shops',
+          eventType.eventTypeId,
+          organization,
+          [],
+          [deletedShop.shopId],
+          [],
+          [],
+          [],
+          scheduleSlots,
+          availabilities,
+          false
+        )
+      ).rejects.toThrow(new NotFoundException('Shop', deletedShop.shopId));
+    });
+
+    it('fails if machineryIds are deleted', async () => {
+      const deletedMachinery = await CalendarService.createMachinery(
+        adminUser,
+        'Deleted Machinery',
+        shop.shopId,
+        1,
+        organization,
+        'Deleted machinery'
+      );
+      await prisma.machinery.update({
+        where: { machineryId: deletedMachinery.machineryId },
+        data: { dateDeleted: new Date() }
+      });
+
+      const scheduleSlots = [] as ScheduleSlot[];
+      const availabilities = [] as Availability[];
+
+      await expect(
+        CalendarService.createEvent(
+          adminUser,
+          'Deleted Machinery',
+          eventType.eventTypeId,
+          organization,
+          [],
+          [],
+          [deletedMachinery.machineryId],
+          [],
+          [],
+          scheduleSlots,
+          availabilities,
+          false
+        )
+      ).rejects.toThrow(new NotFoundException('Machinery', deletedMachinery.machineryId));
     });
   });
 });

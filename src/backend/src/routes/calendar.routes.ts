@@ -1,6 +1,6 @@
 import express from 'express';
 import { body, param } from 'express-validator';
-import { intMinZero, isDate, nonEmptyString, validateInputs } from '../utils/validation.utils';
+import { intMinZero, isDate, nonEmptyString, validateInputs, isDayOfWeek } from '../utils/validation.utils';
 import CalendarController from '../controllers/calendar.controllers';
 
 const calendarRouter = express.Router();
@@ -41,7 +41,7 @@ calendarRouter.post(
   nonEmptyString(body('title')),
   body('eventTypeId').isString(),
   body('approved').isBoolean(),
-  body('approveByUserId').optional().isString(),
+  body('approvedByUserId').optional().isString(),
   body('memberIds').isArray(),
   body('memberIds.*').isString(),
   body('location').optional().isString(),
@@ -58,7 +58,7 @@ calendarRouter.post(
   body('description').optional().isString(),
   body('scheduleSlot').isArray(),
   body('scheduleSlot.*.daysOfWeek').isArray(),
-  body('scheduleSlot.*.daysOfWeek.*').isString(),
+  isDayOfWeek(body('scheduleSlot.*.daysOfWeek.*')),
   isDate(body('scheduleSlot.*.startTime')).optional(),
   isDate(body('scheduleSlot.*.endTime')).optional(),
   intMinZero(body('scheduleSlot.*.recurrenceNumber')),
