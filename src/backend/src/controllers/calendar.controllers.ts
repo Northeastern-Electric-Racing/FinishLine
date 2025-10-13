@@ -115,6 +115,26 @@ export default class CalendarController {
     }
   }
 
+  static async editCalendar(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { calendarId } = req.params;
+      const { name, colorHexCode, description } = req.body;
+
+      const updatedCalendar = await CalendarService.editCalendar(
+        req.currentUser,
+        calendarId,
+        name,
+        description,
+        colorHexCode,
+        req.organization
+      );
+
+      res.status(200).json(updatedCalendar);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async deleteCalendar(req: Request, res: Response, next: NextFunction) {
     try {
       const { calendarId } = req.params;

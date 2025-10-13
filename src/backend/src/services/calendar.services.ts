@@ -315,15 +315,65 @@ export default class CalendarService {
   }
 
   /**
+   * @param submitter The user submitting the request, who must be an admin.
+   * @param calendarId The id of the given calendar.
+   * @param name The name of the calendar.
+   * @param description The summary of what the calendar is used for.
+   * @param colorHexCode The color of the calendar.
+   * @param organization The organization for which the calendar is being edited.
+   *
+   * @returns The edited calendar.
+   *
+   * @throws NotFoundException If the given calendarId is not found.
+   * @throws InvalidOrganizationException If the given calendarId is not part of the same organization.
+   * @throws DeletedException If the calendar has already been deleted.
+   * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
+   */
+  static async editCalendar(
+    submitter: User,
+    calendarId: string,
+    name: string,
+    description: string,
+    colorHexCode: string,
+    organization: Organization
+  ): Promise<Calendar> {
+    const calendar = await prisma.calendar.findUnique({
+      where: { calendarId }
+    });
+
+    if (!calendar) throw new NotFoundException('Calendar', calendarId);
+    if (calendar.dateDeleted) throw new DeletedException('Calendar', calendarId);
+    if (calendar.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Calendar');
+
+    const hasPermission = await userHasPermission(submitter.userId, organization.organizationId, isAdmin);
+
+    if (!hasPermission) {
+      throw new AccessDeniedException('Only admins can edit calendars');
+    }
+
+    const newCalendar = await prisma.calendar.update({
+      where: { calendarId },
+      data: {
+        name,
+        description,
+        colorHexCode
+      },
+      ...getCalendarQueryArgs(organization.organizationId)
+    });
+
+    return calendarTransformer(newCalendar);
+  }
+
+  /**
    * Delete calendar in the database
-   * @param submitter The user submitting the request, who must be a head or above.
+   * @param submitter The user submitting the request, who must be an admin.
    * @param calendarId The id of the given calendar.
    * @param organization The organization for which the calendar is being deleted.
    *
-   * @returns The deleted calendar ID.
+   * @returns The deleted calendar.
    *
-   * @throws NotFoundException If the given calendarIds are not found.
-   * @throws InvalidOrganizationException If the given calendarIds are not part of the same organization.
+   * @throws NotFoundException If the given calendarId is not found.
+   * @throws InvalidOrganizationException If the given calendarId is not part of the same organization.
    * @throws DeletedException If the calendar has already been deleted.
    * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
    */
