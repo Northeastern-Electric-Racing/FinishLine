@@ -18,7 +18,7 @@ import {
   replyToMessageInThread,
   sendMessage
 } from '../integrations/slack';
-import { getUserFullName, getUserSlackId } from './users.utils';
+import { getUserSlackId, getUserSlackMentionOrName } from './users.utils';
 import prisma from '../prisma/prisma';
 import { HttpException } from './errors.utils';
 import { Change_Request, Design_Review, Team, WBS_Element } from '@prisma/client';
@@ -38,7 +38,7 @@ interface SlackMessageThread {
   changeRequestId: string | null;
 }
 
-const DEV_TESTING_OVERRIDE = false;
+const DEV_TESTING_OVERRIDE = true;
 
 // build the "due" string for the upcoming deadlines slack message
 export const buildDueString = (daysUntilDeadline: number): string => {
@@ -137,7 +137,7 @@ export const sendReimbursementRequestCreatedNotificationAndCreateMessageInfo = a
 ): Promise<void> => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
 
-  const msg = `${await getUserFullName(submitterId)} created a reimbursement request (ID#: ${requestIdentifier}) 💲`;
+  const msg = `${await getUserSlackMentionOrName(submitterId)} created a reimbursement request (ID#: ${requestIdentifier}) 💲`;
   const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
   const linkButtonText = 'View Reimbursement Request';
 
@@ -203,24 +203,35 @@ export const sendThreadResponse = async (threads: SlackMessageThread[], message:
 export const sendReimbursementRequestPendingFinanceNotification = async (threads: SlackMessageThread[]) =>
   await sendThreadResponse(threads, `This Reimbursement Request is now pending finance :moneybag:`);
 
-export const sendReimbursementRequestLeadershipApprovedNotification = async (threads: SlackMessageThread[]) =>
+export const sendReimbursementRequestLeadershipApprovedNotification = async (
+  threads: SlackMessageThread[],
+  approverId: string,
+  recipientId: string
+) =>
   await sendThreadResponse(
     threads,
-    `This Reimbursment Request has been approved by leadership, you may now purchase the items and add the receipts, then mark the reimbursement request as pending finance.`
+    `${await getUserSlackMentionOrName(approverId)} has approved this reimbursement request. ${await getUserSlackMentionOrName(recipientId)} you may now purchase the items, add the receipts, and mark the reimbursement request as pending finance.`
   );
 
-export const sendReimbursementRequestChangesRequestedNotification = async (threads: SlackMessageThread[]) =>
+export const sendReimbursementRequestChangesRequestedNotification = async (threads: SlackMessageThread[], userId: string) =>
   await sendThreadResponse(
     threads,
-    'The finance team has requested changes on this reimbursement request, please make the changes and remark as pending finance.'
+    `${await getUserSlackMentionOrName(userId)} has requested changes on this reimbursement request, please make the changes and remark as pending finance.`
   );
 
 export const sendSubmittedToSaboNotification = async (threads: SlackMessageThread[]) => {
   await sendThreadResponse(threads, 'This reimbursement request has been submitted to sabo!');
 };
 
-export const sendPendingSaboSubmissionNotification = async (threads: SlackMessageThread[]) => {
-  await sendThreadResponse(threads, 'This Reimbursement Request is pending submission to sabo!');
+export const sendPendingSaboSubmissionNotification = async (
+  threads: SlackMessageThread[],
+  financeUserId: string,
+  pendingSubmissionFromId: string
+) => {
+  await sendThreadResponse(
+    threads,
+    `${await getUserSlackMentionOrName(financeUserId)} has added this reimbursement request to Concur. ${await getUserSlackMentionOrName(pendingSubmissionFromId)}, please approve the request in Concur and mark it as submitted on Finishline.`
+  );
 };
 
 export const sendSlackDesignReviewConfirmNotification = async (

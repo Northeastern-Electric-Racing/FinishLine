@@ -1107,7 +1107,11 @@ export default class ReimbursementRequestService {
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
 
-    await sendReimbursementRequestLeadershipApprovedNotification(reimbursementRequest.notificationSlackThreads);
+    await sendReimbursementRequestLeadershipApprovedNotification(
+      reimbursementRequest.notificationSlackThreads,
+      submitter.userId,
+      reimbursementRequest.recipientId
+    );
 
     return reimbursementStatusTransformer(reimbursementStatus);
   }
@@ -1188,7 +1192,11 @@ export default class ReimbursementRequestService {
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
 
-    await sendPendingSaboSubmissionNotification(reimbursementRequest.notificationSlackThreads);
+    await sendPendingSaboSubmissionNotification(
+      reimbursementRequest.notificationSlackThreads,
+      submitter.userId,
+      reimbursementRequest.recipientId
+    );
 
     return reimbursementStatusTransformer(reimbursementStatus);
   }
@@ -1628,7 +1636,7 @@ export default class ReimbursementRequestService {
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
 
-    await sendReimbursementRequestChangesRequestedNotification(reimbursementRequest.notificationSlackThreads);
+    await sendReimbursementRequestChangesRequestedNotification(reimbursementRequest.notificationSlackThreads, user.userId);
 
     return reimbursementStatusTransformer(deletedStatus);
   }
