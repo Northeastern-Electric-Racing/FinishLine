@@ -58,6 +58,7 @@ import {
 } from '../transformers/reimbursement-requests.transformer';
 import { UserWithSecureSettings } from '../utils/auth.utils';
 import {
+  sendPendingSaboSubmissionNotification,
   sendReimbursementRequestChangesRequestedNotification,
   sendReimbursementRequestCreatedNotificationAndCreateMessageInfo,
   sendReimbursementRequestDeniedNotification,
@@ -649,10 +650,9 @@ export default class ReimbursementRequestService {
     password?: string,
     discountCode?: string
   ) {
-    const isAuthorized =
-      (await userHasPermission(submitter.userId, organization.organizationId, isAdmin)) ||
-      (await isUserLeadOrHeadOfFinanceTeam(submitter, organization.organizationId));
-    if (!isAuthorized) throw new AccessDeniedException('Only admins, finance leads, and finance heads can create vendors.');
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, notGuest))) {
+      throw new AccessDeniedException('create vendors');
+    }
 
     const existingVendor = await prisma.vendor.findUnique({
       where: { uniqueVendor: { name, organizationId: organization.organizationId } },
@@ -1113,14 +1113,15 @@ export default class ReimbursementRequestService {
   }
 
   /**
-   * Adds a reimbursement status with type sabo submitted to the given reimbursement request
+   * Adds a reimbursement status with type pending_sabo_submission to the given reimbursement request
+   * This marks the reimbursement request as inputted in SABO by the finance team
    *
-   * @param reimbursementRequestId the id of the reimbursement request to approve
-   * @param submitter the user who is approving the reimbursement request
-   * @param organizationId the organization the user is currently in
-   * @returns the created reimbursment status
+   * @param reimbursementRequestId the id of the reimbursement request to input in SABO
+   * @param submitter the user who is inputting the reimbursement request in SABO (finance team member)
+   * @param organization the organization the user is currently in
+   * @returns the created reimbursement status
    */
-  static async approveReimbursementRequest(reimbursementRequestId: string, submitter: User, organization: Organization) {
+  static async inputReimbursementRequestInSabo(reimbursementRequestId: string, submitter: User, organization: Organization) {
     await validateUserIsPartOfFinanceTeamOrHead(submitter, organization.organizationId);
 
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
@@ -1144,16 +1145,97 @@ export default class ReimbursementRequestService {
       throw new HttpException(400, 'This reimbursement request has not been approved by leadership');
     }
     if (
+      reimbursementRequest.reimbursementStatuses.some(
+        (status) => status.type === ReimbursementStatusType.PENDING_SABO_SUBMISSION
+      )
+    ) {
+      throw new HttpException(400, 'This reimbursement request has already been inputted in SABO');
+    }
+    if (
       reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.SABO_SUBMITTED)
     ) {
-      throw new HttpException(400, 'This reimbursement request has already been approved');
+      throw new HttpException(400, 'This reimbursement request has already been approved by SABO');
     }
 
     if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.DENIED)) {
       throw new HttpException(400, 'This reimbursement request has already been denied');
     }
 
-    const comment = `${submitter.firstName}  ${submitter.lastName} Submitted To SABO`;
+    const comment = `${submitter.firstName}  ${submitter.lastName} Inputted in SABO`;
+
+    await prisma.reimbursement_Request_Comment.create({
+      data: {
+        userCreatedId: submitter.userId,
+        reimbursementRequestId,
+        comment
+      },
+      ...getReimbursementRequestCommentQueryArgs(organization.organizationId)
+    });
+
+    const reimbursementStatus = await prisma.reimbursement_Status.create({
+      data: {
+        type: ReimbursementStatusType.PENDING_SABO_SUBMISSION,
+        userId: submitter.userId,
+        reimbursementRequestId: reimbursementRequest.reimbursementRequestId
+      },
+      ...getReimbursementStatusQueryArgs(organization.organizationId)
+    });
+
+    await sendPendingSaboSubmissionNotification(reimbursementRequest.notificationSlackThreads);
+
+    return reimbursementStatusTransformer(reimbursementStatus);
+  }
+
+  /**
+   * Adds a reimbursement status with type sabo_submitted to the given reimbursement request
+   * This should be called after the user has approved the reimbursement request in Concur
+   *
+   * @param reimbursementRequestId the id of the reimbursement request to mark as approved by SABO
+   * @param submitter the user marking as approved by SABO (should be the recipient who approved in Concur)
+   * @param organization the organization the user is currently in
+   * @returns the created reimbursment status
+   */
+  static async markReimbursementRequestAsSaboSubmitted(
+    reimbursementRequestId: string,
+    submitter: User,
+    organization: Organization
+  ) {
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId },
+      include: {
+        reimbursementStatuses: true,
+        notificationSlackThreads: true
+      }
+    });
+
+    if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+    if (reimbursementRequest.dateDeleted) {
+      throw new DeletedException('Reimbursement Request', reimbursementRequestId);
+    }
+    if (reimbursementRequest.organizationId !== organization.organizationId)
+      throw new InvalidOrganizationException('Reimbursement Request');
+
+    if (submitter.userId !== reimbursementRequest.recipientId) {
+      throw new AccessDeniedException('Only the recipient of the reimbursement request can mark as submitted to SABO');
+    }
+    if (
+      !reimbursementRequest.reimbursementStatuses.some(
+        (status) => status.type === ReimbursementStatusType.PENDING_SABO_SUBMISSION
+      )
+    ) {
+      throw new HttpException(400, 'This reimbursement request has not been inputted into SABO yet');
+    }
+    if (
+      reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.SABO_SUBMITTED)
+    ) {
+      throw new HttpException(400, 'This reimbursement request has already been submitted to SABO');
+    }
+
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.DENIED)) {
+      throw new HttpException(400, 'This reimbursement request has already been denied');
+    }
+
+    const comment = `${submitter.firstName}  ${submitter.lastName} submitted to SABO`;
 
     await prisma.reimbursement_Request_Comment.create({
       data: {
@@ -1269,6 +1351,12 @@ export default class ReimbursementRequestService {
    *
    * @param name the new vendor name
    * @param vendorId the requested vendor to be edited
+   * @param username the new vendor username
+   * @param password the new vendor password
+   * @param discountCode the new vendor discount code
+   * @param taxExempt the new vendor tax exempt status
+   * @param twoFactorContacts the new two-factor contact ids
+   * @param notes the new vendor notes
    * @param submitter the user editing the vendor name
    * @param organizationId the organization the user is currently in
    * @returns the updated vendor
@@ -1285,18 +1373,24 @@ export default class ReimbursementRequestService {
     submitter: User,
     organization: Organization
   ): Promise<Vendor> {
-    await isUserHeadOrOnFinance(submitter, organization.organizationId);
-
-    const users = await getUsers(twoFactorContacts);
-
     const existingVendor = await prisma.vendor.findUnique({
-      where: { vendorId },
-      select: { twoFactorContacts: { select: { userId: true } } }
+      where: { vendorId, dateDeleted: null },
+      include: { twoFactorContacts: { select: { userId: true } } }
     });
 
     if (!existingVendor) {
       throw new NotFoundException('Vendor', vendorId);
     }
+
+    if (existingVendor.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Vendor');
+    }
+
+    if (existingVendor.addedByUserId !== submitter.userId) {
+      await isUserHeadOrOnFinance(submitter, organization.organizationId);
+    }
+
+    const users = await getUsers(twoFactorContacts);
 
     const existingContactIds = existingVendor?.twoFactorContacts.map((contact) => ({ userId: contact.userId })) || [];
 
@@ -1332,12 +1426,24 @@ export default class ReimbursementRequestService {
    * @returns the 'deleted' vendor
    */
   static async deleteVendor(vendorId: string, submitter: User, organization: Organization) {
-    await isUserHeadOrOnFinance(submitter, organization.organizationId);
+    const existingVendor = await prisma.vendor.findUnique({
+      where: { vendorId, dateDeleted: null }
+    });
 
-    const vendor = await ReimbursementRequestService.getSingleVendor(vendorId, organization);
+    if (!existingVendor) {
+      throw new NotFoundException('Vendor', vendorId);
+    }
+
+    if (existingVendor.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Vendor');
+    }
+
+    if (existingVendor.addedByUserId !== submitter.userId) {
+      await isUserHeadOrOnFinance(submitter, organization.organizationId);
+    }
 
     const deletedVendor = await prisma.vendor.update({
-      where: { vendorId: vendor.vendorId },
+      where: { vendorId: existingVendor.vendorId },
       data: { dateDeleted: new Date() },
       ...getVendorQueryArgs(organization.organizationId)
     });

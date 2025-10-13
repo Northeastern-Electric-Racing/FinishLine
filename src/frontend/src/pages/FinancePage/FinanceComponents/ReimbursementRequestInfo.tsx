@@ -181,6 +181,7 @@ const ReimbursementRequestInfo = ({
         return '#dd514c';
       case 'PENDING_FINANCE':
       case 'SABO_SUBMITTED':
+      case 'PENDING_SABO_SUBMISSION':
       case 'PENDING_LEADERSHIP_APPROVAL':
       case 'LEADERSHIP_APPROVED':
       case 'ADVISOR_APPROVED':

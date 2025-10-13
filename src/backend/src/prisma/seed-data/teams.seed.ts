@@ -23,7 +23,7 @@ const ravens = (headId: string, organizationId: string): Prisma.TeamCreateArgs =
   return {
     data: {
       teamName: 'Ravens',
-      slackId: 'asdf',
+      slackId: 'C06HR7WTTKM',
       description: ravensDescription,
       headId,
       organizationId
@@ -35,7 +35,7 @@ const orioles = (headId: string, organizationId: string): Prisma.TeamCreateArgs 
   return {
     data: {
       teamName: 'Orioles',
-      slackId: 'jkl;',
+      slackId: 'C06HR7WTTKM',
       description: oriolesDescription,
       headId,
       organizationId
@@ -47,7 +47,7 @@ const justiceLeague = (headId: string, organizationId: string): Prisma.TeamCreat
   return {
     data: {
       teamName: 'Justice League',
-      slackId: 'dc',
+      slackId: 'C06HR7WTTKM',
       headId,
       organizationId
     }
@@ -58,7 +58,7 @@ const avatarBenders = (headId: string, teamTypeId: string, organizationId: strin
   return {
     data: {
       teamName: 'Avatar: The Last Airbender',
-      slackId: 'avatar',
+      slackId: 'C06HR7WTTKM',
       headId,
       teamTypeId,
       organizationId
@@ -70,7 +70,7 @@ const plLegends = (headId: string, organizationId: string): Prisma.TeamCreateArg
   return {
     data: {
       teamName: 'PlTeams',
-      slackId: 'Pl',
+      slackId: 'C06HR7WTTKM',
       headId,
       organizationId
     }
@@ -81,7 +81,7 @@ const huskies = (headId: string, teamTypeId: string, organizationId: string): Pr
   return {
     data: {
       teamName: 'Huskies',
-      slackId: 'neu',
+      slackId: 'C06HR7WTTKM',
       headId,
       description:
         '# Welcome!\nThanks for joining our team! Here are some onboarding docs or something idk:\n\n[very important please read](https://crouton.net)',
@@ -95,7 +95,7 @@ const financeTeam = (headId: string, organizationId: string): Prisma.TeamCreateA
   return {
     data: {
       teamName: 'financeTeam',
-      slackId: 'financerand',
+      slackId: 'C06HR7WTTKM',
       headId,
       organizationId,
       financeTeam: true

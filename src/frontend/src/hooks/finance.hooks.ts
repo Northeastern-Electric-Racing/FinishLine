@@ -4,7 +4,7 @@
  */
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import {
-  approveReimbursementRequest,
+  inputReimbursementRequestInSabo,
   createReimbursementRequest,
   deleteReimbursementRequest,
   denyReimbursementRequest,
@@ -20,6 +20,7 @@ import {
   getSingleReimbursementRequest,
   markReimbursementRequestAsDelivered,
   markReimbursementRequestAsReimbursed,
+  markReimbursementRequestAsSaboSubmitted,
   reportRefund,
   sendPendingAdvisorList,
   setSaboNumber,
@@ -121,9 +122,9 @@ export interface EditVendorPayload {
   username?: string;
   password?: string;
   discountCode?: string;
-  taxExempt: boolean;
-  twoFactorContactIds: string[];
-  notes: string;
+  taxExempt?: boolean;
+  twoFactorContactIds?: string[];
+  notes?: string;
 }
 
 export interface RefundPayload {
@@ -555,17 +556,40 @@ export const useDeleteReimbursementRequest = (id: string) => {
 };
 
 /**
- * Custom react hook to approve a reimbursement request for the finance team
+ * Custom react hook to input a reimbursement request in SABO for the finance team
  *
- * @param id id of the reimbursement request to approve
- * @returns the created sabo submitted reimbursement status
+ * @param id id of the reimbursement request to input in SABO
+ * @returns the created pending sabo submission reimbursement status
  */
-export const useApproveReimbursementRequest = (id: string) => {
+export const useInputReimbursementRequestInSabo = (id: string) => {
   const queryClient = useQueryClient();
   return useMutation<ReimbursementStatus, Error>(
     ['reimbursement-requests', 'edit'],
     async () => {
-      const { data } = await approveReimbursementRequest(id);
+      const { data } = await inputReimbursementRequestInSabo(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests', id]);
+      }
+    }
+  );
+};
+
+/**
+ * Custom react hook to mark a reimbursement request as approved by SABO
+ * This should be called after the user has approved the request in Concur
+ *
+ * @param id id of the reimbursement request to mark as approved by SABO
+ * @returns the created sabo submitted reimbursement status
+ */
+export const useMarkReimbursementRequestAsSaboSubmitted = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ReimbursementStatus, Error>(
+    ['reimbursement-requests', 'edit'],
+    async () => {
+      const { data } = await markReimbursementRequestAsSaboSubmitted(id);
       return data;
     },
     {
@@ -807,14 +831,11 @@ export const useCreateAccountCode = () => {
  */
 export const useCreateVendor = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, EditVendorPayload>(
-    ['vendors', 'create'],
-    async (vendorData: EditVendorPayload) => {
-      const { data } = await createVendor(vendorData);
-      queryClient.invalidateQueries(['vendors']);
-      return data;
-    }
-  );
+  return useMutation<Vendor, Error, EditVendorPayload>(['vendors', 'create'], async (vendorData: EditVendorPayload) => {
+    const { data } = await createVendor(vendorData);
+    queryClient.invalidateQueries(['vendors']);
+    return data;
+  });
 };
 
 /**

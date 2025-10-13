@@ -197,13 +197,24 @@ export const getAllReimbursements = () => {
 };
 
 /**
- * Approve Reimbursement Request (set it to Sabo Submitted)
+ * Input Reimbursement Request in SABO (set it to Pending Sabo Submission)
  *
- * @param id of the reimbursement request being approved by finance
+ * @param id of the reimbursement request being inputted in SABO by finance
+ * @returns the pending sabo submission reimbursement status
+ */
+export const inputReimbursementRequestInSabo = (id: string) => {
+  return axios.post(apiUrls.financeInputReimbursementRequestInSabo(id));
+};
+
+/**
+ * Mark Reimbursement Request as Approved by SABO
+ * This should be called after the user has approved the request in Concur
+ *
+ * @param id of the reimbursement request being marked as approved by SABO
  * @returns the sabo submitted reimbursement status
  */
-export const approveReimbursementRequest = (id: string) => {
-  return axios.post(apiUrls.financeApproveReimbursementRequest(id));
+export const markReimbursementRequestAsSaboSubmitted = (id: string) => {
+  return axios.post(apiUrls.financeMarkReimbursementRequestAsSaboSubmitted(id));
 };
 
 /**
@@ -396,7 +407,9 @@ export const createAccountCode = async (accountCodeData: AccountCodePayload) => 
  * @returns the new vendor
  */
 export const createVendor = async (vendorData: EditVendorPayload) => {
-  return axios.post(apiUrls.financeCreateVendor(), vendorData);
+  return axios.post(apiUrls.financeCreateVendor(), vendorData, {
+    transformResponse: (data) => vendorTransformer(JSON.parse(data))
+  });
 };
 
 /**
@@ -496,7 +509,7 @@ export const getAllIndexCodes = () => {
 
 /**
  * Edits an index code
- * 
+ *
  * @param indexCodeId the id of the index code to edit
  * @param indexCodePayload the new data for the index code
  * @returns the updated index code

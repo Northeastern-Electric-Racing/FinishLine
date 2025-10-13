@@ -1,13 +1,13 @@
 import NERModal from '../../../components/NERModal';
 import { Box, Grid, Typography, Stack } from '@mui/material';
-import { useApproveReimbursementRequest } from '../../../hooks/finance.hooks';
+import { useInputReimbursementRequestInSabo } from '../../../hooks/finance.hooks';
 import { OtherProductReason, ReimbursementRequest, WBSElementData, wbsPipe } from 'shared';
 import { useCurrentUser, useUserSecureSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { centsToDollar, datePipe } from '../../../utils/pipes';
 import DetailDisplay from '../../../components/DetailDisplay';
-import { imagePreviewUrl, isReimbursementRequestSaboSubmitted } from '../../../utils/reimbursement-request.utils';
+import { imagePreviewUrl, isReimbursementRequestPendingSaboSubmission } from '../../../utils/reimbursement-request.utils';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { codeAndRefundSourceName } from '../../../utils/pipes';
 import CopyToClipboardButton from '../../../components/CopyToClipboardButton';
@@ -20,12 +20,12 @@ interface SubmitToSaboModalProps {
 
 const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSaboModalProps) => {
   const user = useCurrentUser();
-  const { mutateAsync: submitToSabo } = useApproveReimbursementRequest(reimbursementRequest.reimbursementRequestId);
+  const { mutateAsync: inputInSabo } = useInputReimbursementRequestInSabo(reimbursementRequest.reimbursementRequestId);
   const { recipient, dateOfExpense, totalCost, vendor, accountCode, reimbursementProducts, receiptPictures } =
     reimbursementRequest;
   const { data: userInfo, isLoading, isError, error } = useUserSecureSettings(recipient.userId);
   const toast = useToast();
-  const isSaboSubmitted = isReimbursementRequestSaboSubmitted(reimbursementRequest);
+  const isPendingSaboSubmission = isReimbursementRequestPendingSaboSubmission(reimbursementRequest);
   if (!user.isFinance) return <></>;
   if (isLoading || !userInfo) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
@@ -41,9 +41,9 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
     .filter((product, index, self) => index === self.indexOf(product))
     .join(', ');
 
-  const handleSubmitToSabo = () => {
+  const handleInputInSabo = () => {
     try {
-      submitToSabo();
+      inputInSabo();
     } catch (e) {
       if (e instanceof Error) {
         toast.error(e.message);
@@ -53,8 +53,8 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
     setOpen(false);
   };
 
-  const treasurerName = 'Alex Leblang';
-  const treasurerEmail = 'leblang.a@northeastern.edu';
+  const treasurerName = 'Andrew Berkovich';
+  const treasurerEmail = 'berkovich.a@northeastern.edu';
 
   const advisorName = 'Andrew Gouldstone';
   const advisorEmail = 'a.gouldstone@northeastern.edu';
@@ -63,11 +63,11 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
     <NERModal
       open={open}
       onHide={() => setOpen(false)}
-      title="Input these fields into the SABO Form"
-      submitText={isSaboSubmitted ? undefined : 'Submit to SABO'}
-      showCloseButton={isSaboSubmitted}
-      hideFormButtons={isSaboSubmitted}
-      onSubmit={() => handleSubmitToSabo()}
+      title="Input these fields into Concur"
+      submitText={isPendingSaboSubmission ? undefined : 'Mark as added to Concur'}
+      showCloseButton={isPendingSaboSubmission}
+      hideFormButtons={isPendingSaboSubmission}
+      onSubmit={() => handleInputInSabo()}
     >
       <Grid container spacing={1}>
         <Grid item xs={4}>
