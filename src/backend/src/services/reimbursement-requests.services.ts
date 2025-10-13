@@ -1052,12 +1052,12 @@ export default class ReimbursementRequestService {
   }
 
   /**
-   * Adds a reimbursement status with type pending finance to the given reimbursement request
+   * Adds a reimbursement status with type Leadership Approved to the given reimbursement request
    *
    * @param reimbursementRequestId The id of the reimbursement request to approve
    * @param submitter The person approving the reimbursement request
    * @param organizationId The organization the user is currently in
-   * @returns The Pending Finance reimbursement status
+   * @returns The Leadership Approved reimbursement status
    */
   static async leadershipApproveReimbursementRequest(
     reimbursementRequestId: string,
@@ -1082,7 +1082,7 @@ export default class ReimbursementRequestService {
 
     if (
       reimbursementRequest.reimbursementStatuses.some(
-        (reimbursementStatus) => reimbursementStatus.type === Reimbursement_Status_Type.PENDING_FINANCE
+        (reimbursementStatus) => reimbursementStatus.type === Reimbursement_Status_Type.LEADERSHIP_APPROVED
       )
     )
       throw new HttpException(400, 'This reimbursement request has already been approved by leadership');
@@ -1140,9 +1140,14 @@ export default class ReimbursementRequestService {
       throw new InvalidOrganizationException('Reimbursement Request');
 
     if (
-      !reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.PENDING_FINANCE)
+      !reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.LEADERSHIP_APPROVED)
     ) {
       throw new HttpException(400, 'This reimbursement request has not been approved by leadership');
+    }
+    if (
+      !reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.PENDING_FINANCE)
+    ) {
+      throw new HttpException(400, 'This reimbursement request has not been set as pending finance');
     }
     if (
       reimbursementRequest.reimbursementStatuses.some(
@@ -1491,6 +1496,14 @@ export default class ReimbursementRequestService {
     return accountCodeTransformer(accountCode);
   }
 
+  /**
+   * Adds a reimbursement status with type pending finance to the given reimbursement request
+   *
+   * @param reimbursementRequestId The id of the reimbursement request to approve
+   * @param submitter The person approving the reimbursement request
+   * @param organizationId The organization the user is currently in
+   * @returns The Pending Finance reimbursement status
+   */
   static async markPendingFinance(
     user: User,
     reimbursementRequestId: string,
