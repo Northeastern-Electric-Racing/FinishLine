@@ -650,7 +650,7 @@ describe('Calendar Tests', () => {
       });
     });
 
-    it('succeeds for admin with valid inputs', async () => {
+    it('succeeds with valid inputs', async () => {
       const scheduleSlots = [
         {
           days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
