@@ -96,12 +96,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
 
                           <Tooltip title="Delete" arrow>
                             <span>
-                              <IconButton
-                                size="small"
-                                color="error"
-                                disabled
-                                aria-label="delete shop"
-                              >
+                              <IconButton size="small" color="error" disabled aria-label="delete shop">
                                 <DeleteIcon fontSize="small" />
                               </IconButton>
                             </span>
