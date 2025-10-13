@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Box, Grid, Typography, Paper, Table, TableBody, TableCell, TableHead, TableRow, Button } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -20,13 +19,11 @@ const AdminToolsScheduleConfig: React.FC = () => {
 
   return (
     <Box padding="5px">
-
       <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor="white">
         Schedule
       </Typography>
 
       <Grid container spacing={2}>
-        
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2, backgroundColor: 'transparent' }}>
             <Typography variant="h6" gutterBottom>
@@ -38,7 +35,6 @@ const AdminToolsScheduleConfig: React.FC = () => {
           </Paper>
         </Grid>
 
-        
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2, backgroundColor: 'transparent' }}>
             <Typography variant="h6" gutterBottom>
@@ -109,7 +105,6 @@ const AdminToolsScheduleConfig: React.FC = () => {
           </Paper>
         </Grid>
 
-       
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2, backgroundColor: 'transparent' }}>
             <Typography variant="h6" gutterBottom>

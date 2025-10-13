@@ -4,7 +4,6 @@ import { getAllShops, postCreateShop } from '../apis/calendar.api';
 
 export const SHOPS_KEY = ['shops'] as const;
 
-
 export const useAllShops = () =>
   useQuery<Shop[], Error>(SHOPS_KEY, async () => {
     const { data } = await getAllShops();
