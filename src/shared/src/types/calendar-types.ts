@@ -92,7 +92,7 @@ export interface Event {
   eventTypeId: string;
   approvedBy?: User;
   scheduledTimes: ScheduleSlot[];
-  people?: User[];
+  people: User[];
   location?: string;
   zoomLink?: string;
   availability: Availability[];

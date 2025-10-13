@@ -10,8 +10,7 @@ import {
   User,
   ScheduleSlotCreateArgs,
   AvailabilityCreateArgs,
-  Event,
-  DayOfWeek
+  Event
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -214,8 +213,8 @@ export default class CalendarService {
    * @returns The created event.
    *
    * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
-   * @throws NotFoundException If the given calendarIds are not found.
-   * @throws InvalidOrganizationException If the given calendarIds are not part of the same organization.
+   * @throws NotFoundException If the given event type is not found.
+   * @throws InvalidOrganizationException If the given event types are not part of the same organization.
    */
   static async createEvent(
     submitter: User,
@@ -236,8 +235,15 @@ export default class CalendarService {
     zoomLink?: string,
     description?: string
   ): Promise<Event> {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('create event');
+    const foundEventType = await prisma.eventType.findUnique({
+      where: { eventTypeId, organizationId: organization.organizationId }
+    });
+    if (!foundEventType) throw new NotFoundException('Event Type', eventTypeId);
+    if (foundEventType.dateDeleted) throw new DeletedException('Event Type', eventTypeId);
+
+    // Ensure the event belongs to the given organization
+    if (foundEventType.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Event Type');
     }
 
     // Ensure each availability has a scheduleSettingsId
