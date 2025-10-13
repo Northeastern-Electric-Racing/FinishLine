@@ -183,4 +183,49 @@ export default class CalendarController {
       next(error);
     }
   }
+
+  static async createEvent(req: Request, res: Response, next: NextFunction) {
+    try {
+      const {
+        title,
+        eventTypeId,
+        memberIds,
+        shopIds,
+        machineryIds,
+        workPackageIds,
+        documentIds,
+        scheduleSlots,
+        availabilities,
+        approved,
+        approveByUserId,
+        questionDocument,
+        location,
+        zoomLink,
+        description
+      } = req.body;
+
+      const event = await CalendarService.createEvent(
+        req.currentUser,
+        title,
+        eventTypeId,
+        req.organization,
+        memberIds,
+        shopIds,
+        machineryIds,
+        workPackageIds,
+        documentIds,
+        scheduleSlots,
+        availabilities,
+        approved,
+        approveByUserId,
+        questionDocument,
+        location,
+        zoomLink,
+        description
+      );
+      res.status(200).json(event);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

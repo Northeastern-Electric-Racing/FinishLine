@@ -1,9 +1,12 @@
 import { Prisma } from '@prisma/client';
-import { Machinery, Shop, ShopMachinery, EventType, Calendar } from 'shared';
-import { MachineryQueryArgs, ShopQueryArgs, ShopMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
+import { Machinery, Shop, ShopMachinery, EventType, Calendar, Event, ScheduleSlot, DayOfWeek } from 'shared';
+import { MachineryQueryArgs, ShopMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
 import { userTransformer } from './user.transformer';
 import { EventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
 import { CalendarQueryArgs } from '../prisma-query-args/calendar.query-args';
+import { EventQueryArgs } from '../prisma-query-args/event.query-args';
+import { ShopQueryArgs } from '../prisma-query-args/shop.query-args';
+import workPackageTransformer from './work-packages.transformer';
 
 export const shopTransformer = (shop: Prisma.ShopGetPayload<ShopQueryArgs>): Shop => {
   return {
@@ -67,5 +70,40 @@ export const calendarTransformer = (calendar: Prisma.CalendarGetPayload<Calendar
     userCreated: userTransformer(calendar.userCreated),
     dateCreated: calendar.dateCreated,
     eventTypes: calendar.eventTypes.map(eventTypeTransformer)
+  };
+};
+
+export const scheduleTimesTransformer = (scheduleTimes: Prisma.ScheduleSlotGetPayload<null>): ScheduleSlot => {
+  return {
+    scheduleSlotId: scheduleTimes.scheduleSlotId,
+    days: scheduleTimes.days.map((d) => d as DayOfWeek),
+    startTime: scheduleTimes.startTime ?? undefined,
+    endTime: scheduleTimes.endTime ?? undefined,
+    recurrenceNumber: scheduleTimes.recurrenceNumber,
+    initialDateScheduled: scheduleTimes.initialDateScheduled,
+    allDay: scheduleTimes.allDay
+  };
+};
+
+export const eventTransformer = (event: Prisma.EventGetPayload<EventQueryArgs>): Event => {
+  return {
+    eventId: event.eventId,
+    title: event.title,
+    userCreated: userTransformer(event.userCreated),
+    dateCreated: event.dateCreated,
+    eventTypeId: event.eventTypeId,
+    people: event.members,
+    shops: event.shops,
+    machinery: event.machinery.map(machineryTransformer),
+    workPackages: event.workPackages.map(workPackageTransformer),
+    documentIds: event.documentIds,
+    scheduledTimes: event.scheduledTimes.map(scheduleTimesTransformer),
+    availability: event.availabilities,
+    approved: event.approved,
+    approvedBy: event.approvedBy ?? undefined,
+    location: event.location ?? undefined,
+    zoomLink: event.zoomLink ?? undefined,
+    questionDocument: event.questionDocument ?? undefined,
+    description: event.description ?? undefined
   };
 };

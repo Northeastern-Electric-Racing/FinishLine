@@ -64,11 +64,12 @@ CREATE TABLE "public"."Event" (
     "userCreatedId" TEXT NOT NULL,
     "userDeletedId" TEXT,
     "eventTypeId" TEXT NOT NULL,
-    "approved" BOOLEAN,
+    "approved" BOOLEAN DEFAULT FALSE,
     "approvedByUserId" TEXT,
     "location" TEXT,
     "zoomLink" TEXT,
     "documentIds" TEXT[],
+    "questionDocument" TEXT,
     "description" TEXT,
 
     CONSTRAINT "Event_pkey" PRIMARY KEY ("eventId")

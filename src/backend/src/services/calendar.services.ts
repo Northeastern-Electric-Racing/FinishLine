@@ -1,7 +1,18 @@
-import { calendarTransformer, machineryTransformer } from '../transformers/calendar.transformer';
+import { calendarTransformer, eventTransformer, machineryTransformer } from '../transformers/calendar.transformer';
 import { getMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
 import { Organization } from '@prisma/client';
-import { isAdmin, isHead, EventType, Shop, Calendar, User } from 'shared';
+import {
+  isAdmin,
+  isHead,
+  EventType,
+  Shop,
+  Calendar,
+  User,
+  ScheduleSlotCreateArgs,
+  AvailabilityCreateArgs,
+  Event,
+  DayOfWeek
+} from 'shared';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
@@ -16,6 +27,7 @@ import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-arg
 import { shopTransformer } from '../transformers/calendar.transformer';
 import { getShopQueryArgs } from '../prisma-query-args/shop.query-args';
 import { getCalendarQueryArgs } from '../prisma-query-args/calendar.query-args';
+import { getEventQueryArgs } from '../prisma-query-args/event.query-args';
 
 export default class CalendarService {
   /**
@@ -176,6 +188,130 @@ export default class CalendarService {
     });
 
     return machineryTransformer(newMachinery);
+  }
+
+  /**
+   * Creates a new event.
+   *
+   * @param submitter The user submitting the request, who must be an admin.
+   * @param title The title of the event.
+   * @param eventTypeId The event type id the event is associated with.
+   * @param organization The organization for which the event type is being created.
+   * @param memberIds An array of member ids that are invited to the event.
+   * @param shopIds An array of shops associated with the event.
+   * @param machineryIds An array of machinery associated with the event.
+   * @param workPackageIds An array of work packages associated with the event.
+   * @param documentIds An array of documents associated with the event.
+   * @param scheduleSlots An array of schedule slots associated with the event.
+   * @param availabilities An array of availabilities associated with the event.
+   * @param approved Determines if the event has been approved.
+   * @param approvedByUserId The ID of the approving user.
+   * @param questionDocument The link to the question document.
+   * @param location Location of the event.
+   * @param zoomLink Zoom Link if the event is online.
+   * @param description Describes the event.
+   *
+   * @returns The created event.
+   *
+   * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
+   * @throws NotFoundException If the given calendarIds are not found.
+   * @throws InvalidOrganizationException If the given calendarIds are not part of the same organization.
+   */
+  static async createEvent(
+    submitter: User,
+    title: string,
+    eventTypeId: string,
+    organization: Organization,
+    memberIds: string[],
+    shopIds: string[],
+    machineryIds: string[],
+    workPackageIds: string[],
+    documentIds: string[],
+    scheduleSlots: ScheduleSlotCreateArgs[],
+    availabilities: AvailabilityCreateArgs[],
+    approved: boolean,
+    approvedByUserId?: string,
+    questionDocument?: string,
+    location?: string,
+    zoomLink?: string,
+    description?: string
+  ): Promise<Event> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('create event');
+    }
+
+    // Ensure each availability has a scheduleSettingsId
+    const availabilitiesWithScheduleSettings = await Promise.all(
+      availabilities.map(async (availability) => {
+        // For each availability, find or create the ScheduleSettings for the relevant user
+        // Assuming availabilities are tied to the submitter; adjust if tied to other users
+        let scheduleSettings = await prisma.schedule_Settings.findUnique({
+          where: { userId: submitter.userId }
+        });
+
+        if (!scheduleSettings) {
+          scheduleSettings = await prisma.schedule_Settings.create({
+            data: {
+              userId: submitter.userId,
+              personalGmail: '',
+              personalZoomLink: ''
+            }
+          });
+        }
+
+        return {
+          availability: availability.availability,
+          dateSet: availability.dateSet,
+          scheduleSettingsId: scheduleSettings.drScheduleSettingsId
+        };
+      })
+    );
+
+    const newEvent = await prisma.event.create({
+      data: {
+        userCreatedId: submitter.userId,
+        dateCreated: new Date(),
+        title,
+        eventTypeId,
+        members: {
+          connect: memberIds.map((userId) => ({ userId }))
+        },
+        shops: {
+          connect: shopIds.map((shopId) => ({ shopId }))
+        },
+        machinery: {
+          connect: machineryIds.map((machineryId) => ({ machineryId }))
+        },
+        workPackages: {
+          connect: workPackageIds.map((workPackageId) => ({ workPackageId }))
+        },
+        documentIds,
+        scheduledTimes: {
+          create: scheduleSlots.map((s) => ({
+            days: s.days,
+            startTime: s.startTime ?? null,
+            endTime: s.endTime ?? null,
+            recurrenceNumber: s.recurrenceNumber,
+            initialDateScheduled: s.initialDateScheduled,
+            allDay: s.allDay
+          }))
+        },
+        availabilities: {
+          createMany: {
+            data: availabilitiesWithScheduleSettings
+          }
+        },
+        approved,
+        approvedByUserId,
+        location,
+        zoomLink,
+        questionDocument,
+        description
+      },
+      ...getEventQueryArgs(organization.organizationId)
+    });
+
+    return eventTransformer(newEvent);
   }
 
   /**

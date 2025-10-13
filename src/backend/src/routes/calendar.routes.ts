@@ -1,6 +1,6 @@
 import express from 'express';
 import { body, param } from 'express-validator';
-import { nonEmptyString, validateInputs } from '../utils/validation.utils';
+import { intMinZero, isDate, nonEmptyString, validateInputs } from '../utils/validation.utils';
 import CalendarController from '../controllers/calendar.controllers';
 
 const calendarRouter = express.Router();
@@ -34,6 +34,42 @@ calendarRouter.post(
   body('description').isBoolean(),
   validateInputs,
   CalendarController.createEventType
+);
+
+calendarRouter.post(
+  '/event/create',
+  nonEmptyString(body('title')),
+  body('eventTypeId').isString(),
+  body('approved').isBoolean(),
+  body('approveByUserId').optional().isString(),
+  body('memberIds').isArray(),
+  body('memberIds.*').isString(),
+  body('location').optional().isString(),
+  body('zoomLink').optional().isURL(),
+  body('shopIds').isArray(),
+  body('shopIds.*').isString(),
+  body('machineryIds').isArray(),
+  body('machineryIds.*').isString(),
+  body('workPackageIds').isArray(),
+  body('workPackageIds.*').isString(),
+  body('documentIds').isArray(),
+  body('documentIds.*').isString(),
+  body('questionDocument').optional().isString(),
+  body('description').optional().isString(),
+  body('scheduleSlot').isArray(),
+  body('scheduleSlot.*.daysOfWeek').isArray(),
+  body('scheduleSlot.*.daysOfWeek.*').isString(),
+  isDate(body('scheduleSlot.*.startTime')).optional(),
+  isDate(body('scheduleSlot.*.endTime')).optional(),
+  intMinZero(body('scheduleSlot.*.recurrenceNumber')),
+  isDate(body('scheduleSlot.*.initialDateScheduled')),
+  body('scheduleSlot.*.allDay').isBoolean(),
+  body('availability').isArray(),
+  body('availability.*.availability').isArray(),
+  intMinZero(body('availability.*.availability.*')),
+  isDate(body('availability.*.dateSet')),
+  validateInputs,
+  CalendarController.createEvent
 );
 
 calendarRouter.post(
