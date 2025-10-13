@@ -74,7 +74,7 @@ const EditLogoForm: React.FC<EditLogoFormProps> = ({ onSubmit, orgLogo, onHide }
                   <input
                     onChange={(e) => {
                       if (e.target.files && e.target.files[0]) {
-                        const file = e.target.files[0];
+                        const [file] = e.target.files;
                         if (file.size > MAX_FILE_SIZE) {
                           toast.error(
                             `File "${file.name}" exceeds the maximum size limit of ${MAX_FILE_SIZE / 1024 / 1024} MB`

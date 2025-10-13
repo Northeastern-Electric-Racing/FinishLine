@@ -1140,7 +1140,9 @@ export default class ReimbursementRequestService {
       throw new InvalidOrganizationException('Reimbursement Request');
 
     if (
-      !reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.LEADERSHIP_APPROVED)
+      !reimbursementRequest.reimbursementStatuses.some(
+        (status) => status.type === ReimbursementStatusType.LEADERSHIP_APPROVED
+      )
     ) {
       throw new HttpException(400, 'This reimbursement request has not been approved by leadership');
     }
