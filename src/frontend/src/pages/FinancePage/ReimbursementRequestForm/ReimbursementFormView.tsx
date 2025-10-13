@@ -53,10 +53,13 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { wbsNumComparator } from 'shared/src/validate-wbs';
-import { codeAndRefundSourceName, accountCodePipe } from '../../../utils/pipes';
+import { codeAndRefundSourceName, accountCodePipe, fullNamePipe } from '../../../utils/pipes';
 import NERModal from '../../../components/NERModal';
 import CheckList from '../../../components/CheckList';
 import { useCreateVendor } from '../../../hooks/finance.hooks';
+import { useGetFinanceDelegates } from '../../../hooks/organizations.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
 
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
@@ -232,6 +235,16 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
 
   wbsElementAutocompleteOptions.sort((wbsNum1, wbsNum2) => wbsNumComparator(wbsNum1.id, wbsNum2.id));
 
+  const { isLoading, isError, error, data: financeDelegates } = useGetFinanceDelegates();
+
+  if (isLoading || !financeDelegates) {
+    return <LoadingIndicator />;
+  }
+
+  if (isError) {
+    return <ErrorPage message={error.message} />;
+  }
+
   const ReceiptFileInput = () => (
     <FormControl>
       <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
@@ -293,39 +306,24 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         items={[
           {
             resolved: false,
-            detail:
-              'I certify my receipts with expenses greater than $75 include an itemized description of goods or service purchased.',
+            detail: `I certify that I have a Concur account${financeDelegates.length > 0 ? ', and have assigned ' + financeDelegates.map(fullNamePipe).join(', ') + ' as delegate(s) to submit this reimbursement request on my behalf.' : '.'}`,
             id: '1'
           },
           {
             resolved: false,
-            detail: `I certify my receipts include the vendor's name (for ex. Amazon, stop and shop, Target).`,
+            detail:
+              'I certify my receipts with expenses greater than $75 include an itemized description of goods or service purchased.',
             id: '2'
           },
           {
             resolved: false,
-            detail: `I certify my receipts include a Transaction Date for each expense.`,
+            detail: `This reimbursement request is "NOT" for a faculty or full-time staff member.`,
             id: '3'
           },
           {
             resolved: false,
-            detail: `I certify my receipts include the amount paid for each expense.`,
-            id: '4'
-          },
-          {
-            resolved: false,
-            detail: `I certify my receipts include the form of payment for each expense (Cash, check or last four digits of credit card).`,
-            id: '5'
-          },
-          {
-            resolved: false,
-            detail: `This reimbursement request is "NOT" for a faculty or full-time staff member.`,
-            id: '6'
-          },
-          {
-            resolved: false,
             detail: `The reimbursement does not include sales tax unless it is for a prepared meal or hotel.`,
-            id: '7'
+            id: '4'
           }
         ]}
         isDisabled={false}
@@ -371,6 +369,67 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           </Alert>
         </Snackbar>
       )}
+
+      <Box
+        sx={{
+          backgroundColor: 'rgba(211, 47, 47, 0.1)',
+          border: '2px solid #d32f2f',
+          borderRadius: '8px',
+          padding: '16px',
+          marginBottom: '20px',
+          width: '100%'
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '8px',
+            marginBottom: '12px'
+          }}
+        >
+          <Typography
+            sx={{
+              color: '#d32f2f',
+              fontWeight: 'bold',
+              fontSize: '16px',
+              textAlign: 'center'
+            }}
+          >
+            To submit Reimbursement Requests you{' '}
+            <span style={{ textDecoration: 'underline' }}>
+              <strong>must</strong>
+            </span>{' '}
+            assign the below users as delegates on Concur
+          </Typography>
+          <Tooltip
+            title="In order for the finance team to submit reimbursements on your behalf, you must assign them as delegates in concur. To do this, go to concur (reach out to your head if you do not have concur access), click your profile -> Profile Settings -> Expense Delegates -> add all finance delegates, and ensure they have can prepare permissions."
+            placement="right"
+          >
+            <HelpIcon sx={{ color: '#d32f2f', fontSize: '20px', cursor: 'pointer' }} />
+          </Tooltip>
+        </Box>
+        {financeDelegates.length > 0 && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '8px' }}>
+            {financeDelegates.map((delegate) => (
+              <Typography
+                key={delegate.userId}
+                sx={{
+                  color: '#d32f2f',
+                  fontWeight: 'bold',
+                  fontSize: '14px',
+                  backgroundColor: 'rgba(211, 47, 47, 0.2)',
+                  padding: '4px 12px',
+                  borderRadius: '12px'
+                }}
+              >
+                {fullNamePipe(delegate)}
+              </Typography>
+            ))}
+          </Box>
+        )}
+      </Box>
 
       <Grid item container spacing={5} md={12} xs={12} sx={{ '&.MuiGrid-item': { height: 'fit-content' } }}>
         <Grid item xs={12} md={6}>

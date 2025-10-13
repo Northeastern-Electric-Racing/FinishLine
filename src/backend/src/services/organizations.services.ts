@@ -514,16 +514,18 @@ export default class OrganizationsService {
    */
   static async setFinanceDelegates(submitter: User, organizationId: string, userIds: string[]): Promise<User[]> {
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('set finance delegates');
+      throw new AccessDeniedAdminOnlyException('only admins can set finance delegates');
     }
+
+    const userIdsNoDuplicates = Array.from(new Set(userIds));
 
     const users = await prisma.user.findMany({
       where: {
-        userId: { in: userIds }
+        userId: { in: userIdsNoDuplicates }
       }
     });
 
-    if (users.length !== userIds.length) {
+    if (users.length !== userIdsNoDuplicates.length) {
       throw new NotFoundException('User', 'one or more user IDs');
     }
 
@@ -531,7 +533,7 @@ export default class OrganizationsService {
       where: { organizationId },
       data: {
         financeDelegates: {
-          set: userIds.map((userId) => ({ userId }))
+          set: userIdsNoDuplicates.map((userId) => ({ userId }))
         }
       },
       include: {

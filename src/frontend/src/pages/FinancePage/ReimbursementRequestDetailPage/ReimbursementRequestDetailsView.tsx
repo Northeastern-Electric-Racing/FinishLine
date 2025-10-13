@@ -305,7 +305,6 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   // Check if the RR has purchase details (receipts and date of expense)
   const hasPurchaseDetails = reimbursementRequest.receiptPictures.length > 0 && !!reimbursementRequest.dateOfExpense;
 
-  // Create a type that extends ButtonInfo with a show property
   type ButtonInfoWithShow = ButtonInfo & { show?: boolean };
 
   const allButtons: ButtonInfoWithShow[] = [
@@ -421,7 +420,6 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     }
   ];
 
-  // Filter out buttons that shouldn't be shown and remove the show property
   const buttons: ButtonInfo[] = allButtons.filter((button) => button.show !== false).map(({ show, ...button }) => button);
 
   const sortedStatus = reimbursementRequest.reimbursementStatuses.sort((a) => a.dateCreated.getDate());
