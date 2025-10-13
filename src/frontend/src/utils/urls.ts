@@ -731,7 +731,6 @@ export const apiUrls = {
 
   calendarShops,
   calendarCreateShop,
-  //calendarDeleteShop,
 
   version
 };

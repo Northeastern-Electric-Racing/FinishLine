@@ -37,7 +37,7 @@ export const CreateShopModal: React.FC<CreateShopModalProps> = ({ open, onClose,
 
   const onFormSubmit = async (data: CreateShopFormValues) => {
     try {
-      await onSubmit(data); // expects { name, description }
+      await onSubmit(data); 
     } catch (e: unknown) {
       if (e instanceof Error) toast.error(e.message);
     }

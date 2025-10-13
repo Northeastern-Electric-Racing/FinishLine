@@ -1,11 +1,6 @@
-import { Shop, User } from 'shared';
+import { Shop } from 'shared';
+import {userTransformer} from  './users.transformers';
 
-const userTransformer = (user: User): User => {
-  // Nothing to coerce on User right now
-  return {
-    ...user
-  };
-};
 
 export const shopTransformer = (shop: Shop): Shop => {
   return {

@@ -1,4 +1,4 @@
-// src/layouts/pages/admintoolspage/AdminToolsScheduleConfig.tsx
+
 import React, { useState } from 'react';
 import { Box, Grid, Typography, Paper, Table, TableBody, TableCell, TableHead, TableRow, Button } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -11,8 +11,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 
 const AdminToolsScheduleConfig: React.FC = () => {
   const { data: shops, isLoading, isError, error } = useAllShops();
-  if (shops) console.debug('Shops length:', shops.length, shops);
-
   const { mutateAsync: createShopMutate } = useCreateShop();
 
   const [openCreate, setOpenCreate] = useState(false);
@@ -22,13 +20,13 @@ const AdminToolsScheduleConfig: React.FC = () => {
 
   return (
     <Box padding="5px">
-      {/* Page header */}
+
       <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor="white">
         Schedule
       </Typography>
 
       <Grid container spacing={2}>
-        {/* Top-left placeholder */}
+        
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2, backgroundColor: 'transparent' }}>
             <Typography variant="h6" gutterBottom>
@@ -40,7 +38,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
           </Paper>
         </Grid>
 
-        {/* Top-right placeholder */}
+        
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2, backgroundColor: 'transparent' }}>
             <Typography variant="h6" gutterBottom>
@@ -52,7 +50,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
           </Paper>
         </Grid>
 
-        {/* Shops table (bottom-left) */}
+        {/* Shops table */}
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2, backgroundColor: 'transparent' }}>
             <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
@@ -111,7 +109,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
           </Paper>
         </Grid>
 
-        {/* Bottom-right placeholder */}
+       
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2, backgroundColor: 'transparent' }}>
             <Typography variant="h6" gutterBottom>
