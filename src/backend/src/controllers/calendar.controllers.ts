@@ -97,6 +97,15 @@ export default class CalendarController {
     }
   }
 
+  static async getAllShops(req: Request, res: Response, next: NextFunction) {
+    try {
+      const shops = await CalendarService.getAllShops(req.organization);
+      res.status(200).json(shops);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createCalendar(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, description, colorHexCode } = req.body;

@@ -5,6 +5,9 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useAllShops, useCreateShop } from '../../../hooks/calendar.hooks';
 import CreateShopModal from './CreateShopModal';
+import { IconButton, Tooltip } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const AdminToolsScheduleConfig: React.FC = () => {
   const { data: shops, isLoading, isError, error } = useAllShops();
@@ -83,12 +86,26 @@ const AdminToolsScheduleConfig: React.FC = () => {
                       <TableCell sx={{ whiteSpace: 'pre-wrap' }}>{shop.description ?? '—'}</TableCell>
                       <TableCell align="center">
                         <Box display="flex" gap={1} justifyContent="center">
-                          <Button size="small" variant="outlined" disabled>
-                            Edit
-                          </Button>
-                          <Button size="small" variant="outlined" color="error" disabled>
-                            Delete
-                          </Button>
+                          <Tooltip title="Edit" arrow>
+                            <span>
+                              <IconButton size="small" disabled aria-label="edit shop">
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+
+                          <Tooltip title="Delete" arrow>
+                            <span>
+                              <IconButton
+                                size="small"
+                                color="error"
+                                disabled
+                                aria-label="delete shop"
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
                         </Box>
                       </TableCell>
                     </TableRow>
