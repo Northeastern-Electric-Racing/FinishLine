@@ -59,8 +59,98 @@ describe('Calendar Tests', () => {
     await resetUsers();
   });
 
+  describe('edit calendar', () => {
+    it('fails if user is not an admin', async () => {
+      const member = await createTestUser(wonderwomanGuest, orgId);
+
+      const calendar = await prisma.calendar.create({
+        data: {
+          name: 'Test Calendar',
+          description: 'Test',
+          colorHexCode: '#000000',
+          userCreatedId: member.userId,
+          organizationId: orgId
+        }
+      });
+
+      await expect(
+        CalendarService.editCalendar(
+          member,
+          calendar.calendarId,
+          'Updated Name',
+          'Updated Description',
+          '#FF0000',
+          organization
+        )
+      ).rejects.toThrow(new AccessDeniedException('Only admins can edit calendars'));
+    });
+
+    it('succeeds for admin', async () => {
+      const calendar = await prisma.calendar.create({
+        data: {
+          name: 'Original Calendar',
+          description: 'Original Description',
+          colorHexCode: '#00FF00',
+          userCreatedId: adminUser.userId,
+          organizationId: orgId
+        }
+      });
+
+      const result = await CalendarService.editCalendar(
+        adminUser,
+        calendar.calendarId,
+        'Updated Calendar',
+        'Updated Description',
+        '#0000FF',
+        organization
+      );
+
+      expect(result.calendarId).toBe(calendar.calendarId);
+      expect(result.name).toBe('Updated Calendar');
+      expect(result.description).toBe('Updated Description');
+      expect(result.color).toBe('#0000FF');
+    });
+
+    it('fails if calendar not found', async () => {
+      await expect(
+        CalendarService.editCalendar(
+          adminUser,
+          'non-existent-id',
+          'Updated Name',
+          'Updated Description',
+          '#FF0000',
+          organization
+        )
+      ).rejects.toThrow(new NotFoundException('Calendar', 'non-existent-id'));
+    });
+
+    it('fails if calendar already deleted', async () => {
+      const calendar = await prisma.calendar.create({
+        data: {
+          name: 'Already Deleted',
+          description: 'Test',
+          colorHexCode: '#0000FF',
+          userCreatedId: adminUser.userId,
+          organizationId: orgId,
+          dateDeleted: new Date()
+        }
+      });
+
+      await expect(
+        CalendarService.editCalendar(
+          adminUser,
+          calendar.calendarId,
+          'Updated Name',
+          'Updated Description',
+          '#FF0000',
+          organization
+        )
+      ).rejects.toThrow(new DeletedException('Calendar', calendar.calendarId));
+    });
+  });
+
   describe('delete calendar', () => {
-    it('fails if user is not a head or admin', async () => {
+    it('fails if user is not an admin', async () => {
       const member = await createTestUser(wonderwomanGuest, orgId);
 
       const calendar = await prisma.calendar.create({

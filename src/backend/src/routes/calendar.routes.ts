@@ -56,6 +56,15 @@ calendarRouter.put(
   CalendarController.editMachinery
 );
 
+calendarRouter.put(
+  '/:calendarId/edit',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('description')),
+  nonEmptyString(body('colorHexCode')),
+  validateInputs,
+  CalendarController.editCalendar
+);
+
 calendarRouter.post(
   '/shop/create',
   nonEmptyString(body('name')),
