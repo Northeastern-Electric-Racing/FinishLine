@@ -324,7 +324,7 @@ describe('Organization Tests', () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
 
       await expect(OrganizationsService.setFinanceDelegates(testBatman, orgId, ['nonexistent-user-id'])).rejects.toThrow(
-        new NotFoundException('User', 'one or more user IDs')
+        new HttpException(404, 'One or more users not found')
       );
     });
 

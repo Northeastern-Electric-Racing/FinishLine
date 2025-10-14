@@ -11,7 +11,6 @@ import { imagePreviewUrl, isReimbursementRequestPendingSaboSubmission } from '..
 import { useToast } from '../../../hooks/toasts.hooks';
 import { codeAndRefundSourceName } from '../../../utils/pipes';
 import CopyToClipboardButton from '../../../components/CopyToClipboardButton';
-import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 
 interface SubmitToSaboModalProps {
   open: boolean;
