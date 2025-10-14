@@ -13,7 +13,6 @@ import {
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import React, { useState } from 'react';
-import { User } from 'shared';
 import { NERButton } from '../../../components/NERButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useGetFinanceDelegates, useSetFinanceDelegates } from '../../../hooks/organizations.hooks';
@@ -34,9 +33,9 @@ const FinanceDelegatesTable = () => {
   const { mutateAsync: setFinanceDelegates, isLoading: isUpdating } = useSetFinanceDelegates();
   const toast = useToast();
 
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string>();
 
-  if (!financeDelegates || delegatesIsLoading || usersIsLoading) {
+  if (!financeDelegates || delegatesIsLoading || !allUsers || usersIsLoading) {
     return <LoadingIndicator />;
   }
 
@@ -49,12 +48,12 @@ const FinanceDelegatesTable = () => {
   }
 
   const handleAddDelegate = async () => {
-    if (!selectedUser) return;
+    if (!selectedUserId) return;
 
     try {
-      const updatedUserIds = [...financeDelegates.map((u) => u.userId), selectedUser.userId];
+      const updatedUserIds = [...financeDelegates.map((u) => u.userId), selectedUserId];
       await setFinanceDelegates(updatedUserIds);
-      setSelectedUser(null);
+      setSelectedUserId(undefined);
       toast.success('Finance delegate added successfully');
     } catch (error: any) {
       toast.error(error.message);
@@ -75,9 +74,8 @@ const FinanceDelegatesTable = () => {
     allUsers?.filter((user) => !financeDelegates.some((delegate) => delegate.userId === user.userId)) || [];
 
   const userAutocompleteOptions = availableUsers.map((user) => ({
-    label: fullNamePipe(user),
-    id: user.userId,
-    user
+    label: `${fullNamePipe(user)} (${user.email})`,
+    id: user.userId
   }));
 
   const delegateTableRows = financeDelegates.map((delegate, index) => (
@@ -107,18 +105,18 @@ const FinanceDelegatesTable = () => {
         <Autocomplete
           sx={{ width: 300 }}
           options={userAutocompleteOptions}
-          value={selectedUser ? { label: fullNamePipe(selectedUser), id: selectedUser.userId, user: selectedUser } : null}
+          getOptionLabel={(option) => option.label}
+          value={userAutocompleteOptions.find((option) => option.id === selectedUserId) || null}
           onChange={(_event, newValue) => {
-            setSelectedUser(newValue?.user || null);
+            setSelectedUserId(newValue?.id || undefined);
           }}
           renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select a User" />}
-          isOptionEqualToValue={(option, value) => option.id === value.id}
         />
         <NERButton
           style={{ color: 'white' }}
           variant="contained"
           onClick={handleAddDelegate}
-          disabled={!selectedUser || isUpdating}
+          disabled={!selectedUserId || isUpdating}
         >
           Add Delegate
         </NERButton>

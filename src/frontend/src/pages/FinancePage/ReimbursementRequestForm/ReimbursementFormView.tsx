@@ -54,8 +54,6 @@ import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { wbsNumComparator } from 'shared/src/validate-wbs';
 import { codeAndRefundSourceName, accountCodePipe, fullNamePipe } from '../../../utils/pipes';
-import NERModal from '../../../components/NERModal';
-import CheckList from '../../../components/CheckList';
 import { useCreateVendor } from '../../../hooks/finance.hooks';
 import { useGetFinanceDelegates } from '../../../hooks/organizations.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -226,7 +224,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const calculatedTotalCost = products
     .reduce((acc: number, product: ReimbursementProductFormArgs) => acc + Number(product.cost), 0)
     .toFixed(2);
-  const [showReimbursementGuidelinesModal, setShowReimbursementGuidelinesModal] = useState(true);
 
   const wbsElementAutocompleteOptions = allWbsElements.map((wbsElement) => ({
     label: wbsPipe(wbsElement.wbsNum) + ' - ' + wbsElement.wbsName,
@@ -292,46 +289,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
     </FormControl>
   );
 
-  const ReimbursementGuidelinesModal = () => (
-    <NERModal
-      open={showReimbursementGuidelinesModal}
-      onHide={() => setShowReimbursementGuidelinesModal(false)}
-      title="Finance Checklist"
-      cancelText="No"
-      submitText="Yes"
-      onSubmit={() => setShowReimbursementGuidelinesModal(false)}
-    >
-      <CheckList
-        title="Receipts must have the following: "
-        items={[
-          {
-            resolved: false,
-            detail: `I certify that I have a Concur account${financeDelegates.length > 0 ? ', and have assigned ' + financeDelegates.map(fullNamePipe).join(', ') + ' as delegate(s) to submit this reimbursement request on my behalf.' : '.'}`,
-            id: '1'
-          },
-          {
-            resolved: false,
-            detail:
-              'I certify my receipts with expenses greater than $75 include an itemized description of goods or service purchased.',
-            id: '2'
-          },
-          {
-            resolved: false,
-            detail: `This reimbursement request is "NOT" for a faculty or full-time staff member.`,
-            id: '3'
-          },
-          {
-            resolved: false,
-            detail: `The reimbursement does not include sales tax unless it is for a prepared meal or hotel.`,
-            id: '4'
-          }
-        ]}
-        isDisabled={false}
-        checkDescriptionBullets={false}
-      />
-    </NERModal>
-  );
-
   const accountCodesToAutocomplete = (accountCode: AccountCode): { label: string; id: string } => {
     return {
       label: accountCodePipe(accountCode),
@@ -356,7 +313,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         justifyContent: 'space-between'
       }}
     >
-      <ReimbursementGuidelinesModal />
       {!hasSecureSettingsSet && (
         <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }} open={true}>
           <Alert variant="filled" severity="warning">
