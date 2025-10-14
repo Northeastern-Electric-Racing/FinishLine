@@ -15,10 +15,11 @@ import {
 } from '../utils/validation.utils';
 import ReimbursementRequestController from '../controllers/reimbursement-requests.controllers';
 import multer, { memoryStorage } from 'multer';
+import { MAX_FILE_SIZE } from 'shared';
 
 const reimbursementRequestsRouter = express.Router();
 
-const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage() });
+const upload = multer({ limits: { fileSize: MAX_FILE_SIZE }, storage: memoryStorage() });
 
 reimbursementRequestsRouter.get('/vendors', ReimbursementRequestController.getAllVendors);
 
@@ -32,6 +33,13 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.createIndexCode
 );
 
+reimbursementRequestsRouter.post(
+  '/index-codes/:indexCodeId/edit',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('code')),
+  validateInputs,
+  ReimbursementRequestController.editIndexCode
+);
 reimbursementRequestsRouter.get('/index-codes/:indexCodeId', ReimbursementRequestController.getSingleIndexCode);
 
 reimbursementRequestsRouter.get('/index-codes', ReimbursementRequestController.getAllIndexCodes);
@@ -144,8 +152,8 @@ reimbursementRequestsRouter.post(
   nonEmptyString(body('username')).optional(),
   nonEmptyString(body('password')).optional(),
   nonEmptyString(body('discountCode')).optional(),
-  body('taxExempt').isBoolean(),
-  body('twoFactorContacts').isArray(),
+  body('taxExempt').optional().isBoolean(),
+  body('twoFactorContacts').optional().isArray(),
   nonEmptyString(body('twoFactorContacts.*')),
   nonEmptyString(body('notes')).optional(),
   validateInputs,
@@ -200,7 +208,14 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.uploadReceipt
 );
 
-reimbursementRequestsRouter.post('/:requestId/approve', ReimbursementRequestController.approveReimbursementRequest);
+reimbursementRequestsRouter.post(
+  '/:requestId/input-in-sabo',
+  ReimbursementRequestController.inputReimbursementRequestInSabo
+);
+reimbursementRequestsRouter.post(
+  '/:requestId/mark-sabo-submitted',
+  ReimbursementRequestController.markReimbursementRequestAsSaboSubmitted
+);
 reimbursementRequestsRouter.post(
   '/:requestId/leadership-approve',
   ReimbursementRequestController.leadershipApproveReimbursementRequest
