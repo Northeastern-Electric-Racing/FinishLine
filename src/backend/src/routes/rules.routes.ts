@@ -15,4 +15,11 @@ rulesRouter.post(
   RulesController.createProjectRule
 );
 
+rulesRouter.post(
+  '/projectRule/:projectRuleId/editStatus',
+  nonEmptyString(body('status')),
+  validateInputs,
+  RulesController.editProjectRuleStatus
+);
+
 export default rulesRouter;

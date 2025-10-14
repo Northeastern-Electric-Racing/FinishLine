@@ -100,4 +100,55 @@ export default class RulesService {
 
     return projectRuleTransformer(projectRule);
   }
+
+  /**
+   * Updates the status of a project rule
+   * Such as changing a project rule from INCOMPLETE to COMPLETE
+   * @param submitter the user updating the status
+   * @param organization the organization of the rule
+   * @param projectRuleId the id of the project rule to update
+   * @param newStatus the new status of the project rule
+   * @returns the project rule with updated status
+   */
+  static async editProjectRuleStatus(
+    submitter: User,
+    organization: Organization,
+    projectRuleId: string,
+    newStatus: RuleCompletion
+  ) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership))) {
+      throw new AccessDeniedException('You do not have permissions to update a project rule status');
+    }
+
+    const projectRule = await prisma.project_Rule.findUnique({
+      where: { projectRuleId },
+      include: { rule: { include: { ruleset: { include: { car: { include: { wbsElement: true } } } } } } }
+    });
+
+    if (!projectRule) {
+      throw new NotFoundException('Project Rule', projectRuleId);
+    }
+
+    if (projectRule.rule.ruleset.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Project Rule');
+    }
+
+    if (projectRule.dateDeleted) throw new DeletedException('Project Rule', projectRuleId);
+
+    const newStatusHistory = {
+      projectRuleId: projectRuleId,
+      userUpdatedId: submitter.userId,
+      updatedAt: new Date(),
+      newStatus: projectRule.newStatus,
+      note: `${submitter.firstName} ${submitter.lastName} marked as ${newStatus}`
+    };
+
+    const updatedProjectRule = await prisma.project_Rule.update({
+      where: { projectRuleId },
+      data: { currentStatus: newStatus, statusHistory: { create: newStatusHistory } },
+      ...getProjectRuleQueryArgs()
+    });
+
+    return projectRuleTransformer(updatedProjectRule);
+  }
 }

@@ -29,4 +29,22 @@ export default class RulesController {
       next(error);
     }
   }
+
+  static async editProjectRuleStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { projectRuleId } = req.params;
+      const { newStatus } = req.body;
+
+      const projectRule: ProjectRule = await RulesService.editProjectRuleStatus(
+        req.currentUser,
+        req.organization,
+        projectRuleId,
+        newStatus
+      );
+
+      res.status(200).json(projectRule);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

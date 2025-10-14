@@ -1,7 +1,5 @@
 import { ProjectRule } from 'shared';
 
-// transformer functions go below here
-
 export const projectRuleTransformer = (projectRule: any): ProjectRule => {
   return {
     projectRuleId: projectRule.projectRuleId,
