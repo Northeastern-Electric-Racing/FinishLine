@@ -220,7 +220,7 @@ describe('Rule Tests', () => {
       expect(updatedProjectRule.statusHistory.length).toBe(1);
       expect(updatedProjectRule.statusHistory[0].newStatus).toBe(Rule_Completion.COMPLETED);
       expect(updatedProjectRule.statusHistory[0].projectRuleId).toBe(projectRule.projectRuleId);
-      expect(updatedProjectRule.statusHistory[0].userUpdatedId).toBe(admin.userId);
+      expect(updatedProjectRule.statusHistory[0].userUpdated.userId).toBe(admin.userId);
       expect(new Date(updatedProjectRule.statusHistory[0].updatedAt).getTime()).toBeGreaterThan(Date.now() - 10000);
     });
 

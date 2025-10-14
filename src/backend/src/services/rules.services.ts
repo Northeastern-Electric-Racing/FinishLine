@@ -1,4 +1,4 @@
-import { ProjectRule, isLeadership, RuleCompletion } from 'shared';
+import { ProjectRule, isLeadership } from 'shared';
 import { userHasPermission } from '../utils/users.utils';
 import {
   AccessDeniedException,
@@ -10,7 +10,7 @@ import {
 import prisma from '../prisma/prisma';
 import { projectRuleTransformer } from '../transformers/rules.transformer';
 import { getProjectRuleQueryArgs } from '../prisma-query-args/rules.query-args';
-import { Organization, User } from '@prisma/client';
+import { Organization, User, Rule_Completion } from '@prisma/client';
 
 export default class RulesService {
   /**
@@ -94,7 +94,7 @@ export default class RulesService {
     }
 
     const projectRule = await prisma.project_Rule.create({
-      data: { ruleId, projectId, currentStatus: RuleCompletion.REVIEW },
+      data: { ruleId, projectId, currentStatus: Rule_Completion.REVIEW },
       ...getProjectRuleQueryArgs()
     });
 
@@ -114,8 +114,8 @@ export default class RulesService {
     submitter: User,
     organization: Organization,
     projectRuleId: string,
-    newStatus: RuleCompletion
-  ) {
+    newStatus: Rule_Completion
+  ): Promise<ProjectRule> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership))) {
       throw new AccessDeniedException('You do not have permissions to update a project rule status');
     }
@@ -139,7 +139,6 @@ export default class RulesService {
     }
 
     const newStatusHistory = {
-      projectRuleId,
       userUpdatedId: submitter.userId,
       updatedAt: new Date(),
       newStatus,
