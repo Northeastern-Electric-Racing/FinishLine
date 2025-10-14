@@ -223,5 +223,22 @@ describe('Rule Tests', () => {
       expect(updatedProjectRule.statusHistory[0].userUpdatedId).toBe(admin.userId);
       expect(new Date(updatedProjectRule.statusHistory[0].updatedAt).getTime()).toBeGreaterThan(Date.now() - 10000);
     });
+
+    it('Updates a project rule status to the same status', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      const projectRule = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
+
+      const updatedProjectRule = await RulesService.editProjectRuleStatus(
+        admin,
+        organization,
+        projectRule.projectRuleId,
+        Rule_Completion.REVIEW
+      );
+
+      expect(updatedProjectRule.projectRuleId).toBe(projectRule.projectRuleId);
+      expect(updatedProjectRule.currentStatus).toBe(Rule_Completion.REVIEW);
+      expect(updatedProjectRule.statusHistory.length).toBe(0);
+    });
   });
 });
