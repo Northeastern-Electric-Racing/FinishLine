@@ -27,7 +27,6 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
   const { data: userInfo, isLoading, isError, error } = useUserSecureSettings(recipient.userId);
   const toast = useToast();
   const isPendingSaboSubmission = isReimbursementRequestPendingSaboSubmission(reimbursementRequest);
-  const organization = useCurrentOrganization();
   if (!user.isFinance) return <></>;
   if (isLoading || !userInfo) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
@@ -55,6 +54,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
     setOpen(false);
   };
 
+  // TODO: don't hardcode for multitenancy
   const treasurerName = 'Andrew Berkovich';
   const treasurerEmail = 'berkovich.a@northeastern.edu';
 
@@ -135,7 +135,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
         <Grid item xs={8}>
           <Stack>
             <Box display="flex" alignItems="center">
-              <Typography>{organization.treas}</Typography>
+              <Typography>{treasurerName}</Typography>
               <CopyToClipboardButton msg={treasurerName} />
             </Box>
             <Box display="flex" alignItems="center">
