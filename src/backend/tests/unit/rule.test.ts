@@ -212,13 +212,13 @@ describe('Rule Tests', () => {
         admin,
         organization,
         projectRule.projectRuleId,
-        Rule_Completion.COMPLETE
+        Rule_Completion.COMPLETED
       );
 
       expect(updatedProjectRule.projectRuleId).toBe(projectRule.projectRuleId);
-      expect(updatedProjectRule.currentStatus).toBe(Rule_Completion.COMPLETE);
+      expect(updatedProjectRule.currentStatus).toBe(Rule_Completion.COMPLETED);
       expect(updatedProjectRule.statusHistory.length).toBe(1);
-      expect(updatedProjectRule.statusHistory[0].newStatus).toBe(Rule_Completion.COMPLETE);
+      expect(updatedProjectRule.statusHistory[0].newStatus).toBe(Rule_Completion.COMPLETED);
       expect(updatedProjectRule.statusHistory[0].projectRuleId).toBe(projectRule.projectRuleId);
       expect(updatedProjectRule.statusHistory[0].userUpdatedId).toBe(admin.userId);
       expect(new Date(updatedProjectRule.statusHistory[0].updatedAt).getTime()).toBeGreaterThan(Date.now() - 10000);
@@ -238,7 +238,7 @@ describe('Rule Tests', () => {
 
       expect(updatedProjectRule.projectRuleId).toBe(projectRule.projectRuleId);
       expect(updatedProjectRule.currentStatus).toBe(Rule_Completion.REVIEW);
-      expect(updatedProjectRule.statusHistory.length).toBe(0);
+      expect(updatedProjectRule.statusHistory).toBeUndefined();
     });
   });
 });

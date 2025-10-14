@@ -133,18 +133,16 @@ export default class RulesService {
       throw new InvalidOrganizationException('Project Rule');
     }
 
-    if (projectRule.dateDeleted) throw new DeletedException('Project Rule', projectRuleId);
-
     // If the status does not change, simply return the project rule
     if (projectRule.currentStatus === newStatus) {
       return projectRuleTransformer(projectRule);
     }
 
     const newStatusHistory = {
-      projectRuleId: projectRuleId,
+      projectRuleId,
       userUpdatedId: submitter.userId,
       updatedAt: new Date(),
-      newStatus: newStatus,
+      newStatus,
       note: `${submitter.firstName} ${submitter.lastName} marked as ${newStatus}`
     };
 
