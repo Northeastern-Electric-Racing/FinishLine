@@ -66,7 +66,7 @@ const ReimbursementRequestInfo = ({
 }: ReimbursementRequestInfoProps) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(100);
-  const [isAscendingOrder, setAscendingOrder] = useState(true);
+  const [isAscendingOrder, setAscendingOrder] = useState(false);
   const [orderBy, setOrderBy] = useState<keyof ReimbursementRequestRow>('identifier');
   const user = useCurrentUser();
   const [sidePageTitle, setSidePageTitle] = useState('');
@@ -189,6 +189,7 @@ const ReimbursementRequestInfo = ({
         return '#dd514c';
       case 'PENDING_FINANCE':
       case 'SABO_SUBMITTED':
+      case 'PENDING_SABO_SUBMISSION':
       case 'PENDING_LEADERSHIP_APPROVAL':
       case 'LEADERSHIP_APPROVED':
       case 'ADVISOR_APPROVED':

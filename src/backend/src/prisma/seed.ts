@@ -50,6 +50,7 @@ import AnnouncementService from '../services/announcement.services';
 import OnboardingServices from '../services/onboarding.services';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
 import FinanceServices from '../services/finance.services';
+import { getUserQueryArgs } from '../prisma-query-args/user.query-args';
 
 const prisma = new PrismaClient();
 
@@ -112,7 +113,7 @@ export const CreatePartReviewFAQ = async (
 const performSeed: () => Promise<void> = async () => {
   const thomasEmrax = await prisma.user.create({
     data: dbSeedAllUsers.thomasEmrax,
-    include: { userSettings: true, userSecureSettings: true }
+    include: { userSettings: true, userSecureSettings: true, roles: true }
   });
 
   const ner = await prisma.organization.create({
@@ -793,21 +794,16 @@ const performSeed: () => Promise<void> = async () => {
    * Graphs
    */
 
-  /** Graph 1 */
-  const graph1 = await seedGraph(
-    new Date('12/12/2024'),
-    new Date('12/12/2027'),
-    'new graph',
-    Graph_Type.PROJECT_BUDGET_BY_DIVISION,
-    Graph_Display_Type.BAR,
-    Measure.SUM,
-    thomasEmrax,
-    ner
-  );
-
-  /**
-   * Graph Collection 1
-   */
+  const graph1 = await prisma.graph.create({
+    data: {
+      title: 'graph1',
+      graphType: Graph_Type.CHANGE_REQUESTS_BY_DIVISION,
+      displayGraphType: Graph_Display_Type.BAR,
+      measure: Measure.SUM,
+      userCreatedId: thomasEmrax.userId,
+      organizationId: ner.organizationId
+    }
+  });
   const graph2 = await prisma.graph.create({
     data: {
       title: 'graph2',
@@ -822,9 +818,8 @@ const performSeed: () => Promise<void> = async () => {
   const graphCollection1 = await prisma.graph_Collection.create({
     data: {
       title: 'Graph Collection 1',
-      viewPermissions: [SpecialPermission.FINANCE_ONLY],
       graphs: {
-        connect: [{ id: graph2.id }]
+        connect: [{ id: graph2.id }, { id: graph1.id }]
       },
       userCreatedId: thomasEmrax.userId,
       organizationId: ner.organizationId

@@ -58,7 +58,8 @@
     "docker:start": "yarn database:setup:script && cd devContainerization && node start-containers.js",
     "docker:i": "cd devContainerization && docker compose -f docker-compose.dev.yml exec -T backend sh -c \"yarn install && cd src/backend && npx prisma generate\" && docker compose -f docker-compose.dev.yml exec -T frontend sh -c \"yarn install\"",
     "docker:test": "yarn test:setup && cd devContainerization && docker compose -f docker-compose.dev.yml exec backend bash -c \"yarn test:backend\" && docker compose -f docker-compose.dev.yml exec frontend sh -c \"yarn test:frontend\" && yarn test:teardown",
-    "docker:rebuild": "docker compose -f devContainerization/docker-compose.dev.yml rm -f -s && yarn docker:start"
+    "docker:rebuild": "docker compose -f devContainerization/docker-compose.dev.yml rm -f -s && yarn docker:start",
+    "db:pull": "node scripts/db-pull.js"
   },
   "resolutions": {
     "@types/react": "17.0.1",
@@ -66,6 +67,7 @@
   },
   "dependencies": {
     "@types/multer": "^1.4.12",
+    "canvas-confetti": "^1.9.3",
     "mitt": "^3.0.1",
     "react-hook-form-persist": "^3.0.0",
     "recharts": "^2.15.3",
@@ -76,6 +78,7 @@
     "@babel/plugin-transform-object-assign": "^7.18.6",
     "@babel/preset-react": "^7.18.6",
     "@babel/preset-typescript": "^7.18.6",
+    "@types/canvas-confetti": "^1.9.0",
     "@types/jest": "^29.5.14",
     "@types/node": "20.0.0",
     "@typescript-eslint/eslint-plugin": "8.20.0",

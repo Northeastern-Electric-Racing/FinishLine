@@ -34,6 +34,7 @@ import { useGetMaterialsForWbsElement } from '../../../hooks/bom.hooks';
 import ChangeRequestTab from '../../../components/ChangeRequestTab';
 import PartsReviewPage from './PartReview/PartsReviewPage';
 import ActionsMenu from '../../../components/ActionsMenu';
+import { useMyTeamAsHead } from '../../../hooks/teams.hooks';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -45,13 +46,24 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   const toast = useToast();
   const history = useHistory();
   const { mutateAsync: mutateAsyncSetProjectTeam } = useSetProjectTeam(project.wbsNum);
-  const { data: favoriteProjects, isLoading, isError, error } = useUsersFavoriteProjects(user.userId);
+  const {
+    data: favoriteProjects,
+    isLoading: favoriteProjectsIsLoading,
+    isError: favoriteProjectsIsError,
+    error: favoriteProjectsError
+  } = useUsersFavoriteProjects(user.userId);
   const {
     data: materials,
     isLoading: materialsIsLoading,
     isError: materialsIsError,
     error: materialsError
   } = useGetMaterialsForWbsElement(project.wbsNum);
+  const {
+    data: teamAsHeadId,
+    isLoading: teamAsHeadIdIsLoading,
+    isError: teamAsHeadIdIsError,
+    error: teamAsHeadIdError
+  } = useMyTeamAsHead();
   const [deleteModalShow, setDeleteModalShow] = useState<boolean>(false);
   const handleDeleteClose = () => setDeleteModalShow(false);
   const handleClickDelete = () => {
@@ -60,13 +72,15 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   const [, setAnchorEl] = useState<null | HTMLElement>(null);
   const [tab, setTab] = useState(0);
 
-  if (isError) return <ErrorPage message={error.message} />;
+  if (favoriteProjectsIsError) return <ErrorPage message={favoriteProjectsError.message} />;
   if (materialsIsError) return <ErrorPage message={materialsError.message} />;
+  if (teamAsHeadIdIsError) return <ErrorPage message={teamAsHeadIdError.message} />;
 
-  if (isLoading || !favoriteProjects || !materials || materialsIsLoading) return <LoadingIndicator />;
+  if (favoriteProjectsIsLoading || teamAsHeadIdIsLoading || !favoriteProjects || !materials || materialsIsLoading)
+    return <LoadingIndicator />;
 
   project.workPackages.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
-  const { teamAsHeadId } = user;
+
   const projectIsFavorited = favoriteProjects.map((favoriteProject) => favoriteProject.id).includes(project.id);
 
   const handleDropdownClose = () => {

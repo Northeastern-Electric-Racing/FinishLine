@@ -6,6 +6,7 @@ import { getTasksByStatus, statuses, TasksByStatus } from '.';
 import { useSetTaskStatus } from '../../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../../hooks/toasts.hooks';
 import { TaskColumn } from './TaskColumn';
+import confetti from 'canvas-confetti';
 
 interface TaskListProps {
   project: Project;
@@ -79,8 +80,24 @@ export const TaskListContent = ({ project }: TaskListProps) => {
     );
 
     //trigger the mutation to persist the changes
-    setTaskStatus({ taskId: sourcePost.taskId, status: destinationStatus }).catch((error) => {
-      toast.error(error.message);
+    try {
+      await setTaskStatus({ taskId: sourcePost.taskId, status: destinationStatus });
+      const confettiPositions = [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9];
+      if (destinationStatus === 'DONE' && sourceStatus !== 'DONE') {
+        confettiPositions.forEach((xPos) => {
+          confetti({
+            origin: { y: -0.5, x: xPos },
+            angle: 270,
+            gravity: 1.5,
+            startVelocity: 35,
+            spread: 70,
+            particleCount: 25
+          });
+        });
+      }
+    } catch (error) {
+      if (error instanceof Error) toast.error(error.message);
+      //revert optimistic updates
       setTasksByStatus(
         updateTaskStatusLocal(
           sourcePost,
@@ -89,7 +106,7 @@ export const TaskListContent = ({ project }: TaskListProps) => {
           tasksByStatus
         )
       );
-    });
+    }
   };
 
   return (

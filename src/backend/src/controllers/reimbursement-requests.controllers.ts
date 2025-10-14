@@ -246,8 +246,8 @@ export default class ReimbursementRequestsController {
         req.currentUser,
         name,
         req.organization,
-        taxExempt,
-        twoFactorContacts,
+        taxExempt ?? false,
+        twoFactorContacts ?? [],
         notes,
         username,
         password,
@@ -329,11 +329,26 @@ export default class ReimbursementRequestsController {
     }
   }
 
-  static async approveReimbursementRequest(req: Request, res: Response, next: NextFunction) {
+  static async inputReimbursementRequestInSabo(req: Request, res: Response, next: NextFunction) {
     try {
       const { requestId } = req.params;
 
-      const reimbursementStatus = await ReimbursementRequestService.approveReimbursementRequest(
+      const reimbursementStatus = await ReimbursementRequestService.inputReimbursementRequestInSabo(
+        requestId,
+        req.currentUser,
+        req.organization
+      );
+      res.status(200).json(reimbursementStatus);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async markReimbursementRequestAsSaboSubmitted(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+
+      const reimbursementStatus = await ReimbursementRequestService.markReimbursementRequestAsSaboSubmitted(
         requestId,
         req.currentUser,
         req.organization
@@ -549,6 +564,23 @@ export default class ReimbursementRequestsController {
     try {
       const indexCodes = await ReimbursementRequestService.getAllIndexCodes(req.organization);
       res.status(200).json(indexCodes);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editIndexCode(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, code } = req.body;
+      const { indexCodeId } = req.params;
+      const updatedIndexCode = await ReimbursementRequestService.editIndexCode(
+        req.currentUser,
+        req.organization,
+        indexCodeId,
+        name,
+        code
+      );
+      res.status(200).json(updatedIndexCode);
     } catch (error: unknown) {
       next(error);
     }

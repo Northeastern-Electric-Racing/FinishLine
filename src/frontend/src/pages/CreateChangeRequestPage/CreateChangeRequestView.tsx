@@ -8,9 +8,9 @@ import {
   ChangeRequestType,
   ProjectPreview,
   ProposedSolutionFormInput,
+  WbsElementPreview,
   wbsNamePipe,
-  wbsPipe,
-  WorkPackagePreview
+  wbsPipe
 } from 'shared';
 import { routes } from '../../utils/routes';
 import TextField from '@mui/material/TextField';
@@ -113,9 +113,13 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
       label: `${wbsNamePipe(project)}`,
       id: wbsPipe(project.wbsNum)
     });
-    project.workPackages.forEach((workPackage: WorkPackagePreview) => {
+    project.workPackages.forEach((workPackage: WbsElementPreview) => {
       wbsDropdownOptions.push({
-        label: `${wbsNamePipe(workPackage)}`,
+        label: `${wbsNamePipe({
+          wbsNum: workPackage.wbsNum,
+          name: workPackage.name,
+          projectName: project.name
+        })}`,
         id: wbsPipe(workPackage.wbsNum)
       });
     });

@@ -4,7 +4,7 @@
  */
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import {
-  approveReimbursementRequest,
+  inputReimbursementRequestInSabo,
   createReimbursementRequest,
   deleteReimbursementRequest,
   denyReimbursementRequest,
@@ -20,6 +20,7 @@ import {
   getSingleReimbursementRequest,
   markReimbursementRequestAsDelivered,
   markReimbursementRequestAsReimbursed,
+  markReimbursementRequestAsSaboSubmitted,
   reportRefund,
   sendPendingAdvisorList,
   setSaboNumber,
@@ -63,6 +64,7 @@ import {
   deleteOtherProductReason,
   deleteSponsorTier,
   editSponsorTier,
+  editIndexCode,
   assignMemberToRR,
   getCurrentUserAssignedReimbursementRequests
 } from '../apis/finance.api';
@@ -122,9 +124,9 @@ export interface EditVendorPayload {
   username?: string;
   password?: string;
   discountCode?: string;
-  taxExempt: boolean;
-  twoFactorContactIds: string[];
-  notes: string;
+  taxExempt?: boolean;
+  twoFactorContactIds?: string[];
+  notes?: string;
 }
 
 export interface RefundPayload {
@@ -144,7 +146,7 @@ export interface SponsorPayload {
   activeYears: number[];
   sponsorTierId: string;
   taxExempt: boolean;
-  vendorContact: string;
+  sponsorContact: string;
   sponsorTasks: CreateSponsorTask[];
   discountCode?: string;
 }
@@ -176,6 +178,11 @@ export interface OtherProductReasonPayload {
   accountCodeIds: string[];
   name: string;
   budget: number;
+}
+
+export interface IndexCodePayload {
+  name: string;
+  code: string;
 }
 
 /**
@@ -268,10 +275,6 @@ export const useCreateReimbursementRequestComment = (reimbursementRequestId: str
   );
 };
 
-export interface IndexCodePayload {
-  name: string;
-}
-
 export interface ReimbursementRequestProjectDataPayload {
   projectId: string;
   startDate?: Date;
@@ -282,40 +285,47 @@ export interface ReimbursementRequestTeamDataPayload {
   teamId: string;
   startDate?: Date;
   endDate?: Date;
+  carNumber?: number;
 }
 
 export interface ReimbursementRequestDataPayload {
   startDate?: Date;
   endDate?: Date;
+  carNumber?: number;
 }
 
 export interface ReimbursementRequestCategoryDataPayload {
   otherReasonId: string;
   startDate?: Date;
   endDate?: Date;
+  carNumber?: number;
 }
 
 export interface ReimbursementRequestTeamTypeDataPayload {
   teamTypeId: string;
   startDate?: Date;
   endDate?: Date;
+  carNumber?: number;
 }
 
 export interface SpendingBarTeamDataPayload {
   teamId: string;
   startDate?: Date;
   endDate?: Date;
+  carNumber?: number;
 }
 
 export interface SpendingBarTeamTypeDataPayload {
   teamTypeId: string;
   startDate?: Date;
   endDate?: Date;
+  carNumber?: number;
 }
 
 export interface SpendingBarDataPayload {
   startDate?: Date;
   endDate?: Date;
+  carNumber?: number;
 }
 
 /**
@@ -568,17 +578,40 @@ export const useDeleteReimbursementRequest = (id: string) => {
 };
 
 /**
- * Custom react hook to approve a reimbursement request for the finance team
+ * Custom react hook to input a reimbursement request in SABO for the finance team
  *
- * @param id id of the reimbursement request to approve
- * @returns the created sabo submitted reimbursement status
+ * @param id id of the reimbursement request to input in SABO
+ * @returns the created pending sabo submission reimbursement status
  */
-export const useApproveReimbursementRequest = (id: string) => {
+export const useInputReimbursementRequestInSabo = (id: string) => {
   const queryClient = useQueryClient();
   return useMutation<ReimbursementStatus, Error>(
     ['reimbursement-requests', 'edit'],
     async () => {
-      const { data } = await approveReimbursementRequest(id);
+      const { data } = await inputReimbursementRequestInSabo(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests', id]);
+      }
+    }
+  );
+};
+
+/**
+ * Custom react hook to mark a reimbursement request as submitted to SABO
+ * This should be called after the user has approved the request in Concur
+ *
+ * @param id id of the reimbursement request to mark as submitted to SABO
+ * @returns the created sabo submitted reimbursement status
+ */
+export const useMarkReimbursementRequestAsSaboSubmitted = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ReimbursementStatus, Error>(
+    ['reimbursement-requests', 'edit'],
+    async () => {
+      const { data } = await markReimbursementRequestAsSaboSubmitted(id);
       return data;
     },
     {
@@ -820,14 +853,11 @@ export const useCreateAccountCode = () => {
  */
 export const useCreateVendor = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, EditVendorPayload>(
-    ['vendors', 'create'],
-    async (vendorData: EditVendorPayload) => {
-      const { data } = await createVendor(vendorData);
-      queryClient.invalidateQueries(['vendors']);
-      return data;
-    }
-  );
+  return useMutation<Vendor, Error, EditVendorPayload>(['vendors', 'create'], async (vendorData: EditVendorPayload) => {
+    const { data } = await createVendor(vendorData);
+    queryClient.invalidateQueries(['vendors']);
+    return data;
+  });
 };
 
 /**
@@ -905,6 +935,26 @@ export const useGetAllIndexCodes = () => {
     const { data } = await getAllIndexCodes();
     return data;
   });
+};
+
+/** Custom React Hook to edit an IndexCode
+ *
+ * @returns the updated IndexCode
+ */
+export const useEditIndexCode = (indexCodeId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<IndexCode, Error, IndexCodePayload>(
+    ['index-codes', 'edit'],
+    async (indexCodePayload: IndexCodePayload) => {
+      const { data } = await editIndexCode(indexCodeId, indexCodePayload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['index-codes']);
+      }
+    }
+  );
 };
 
 /**
@@ -1046,6 +1096,7 @@ export const useGetReimbursementRequestTeamData = (reimbursementRequestData: Rei
       'reimbursement-request-team-data',
       reimbursementRequestData.endDate,
       reimbursementRequestData.startDate,
+      reimbursementRequestData.carNumber,
       reimbursementRequestData.teamId
     ],
     async () => {
@@ -1060,6 +1111,7 @@ export const useGetReimbursementRequestTeamTypeData = (reimbursementRequestData:
       'reimbursement-request-team-type-data',
       reimbursementRequestData.endDate,
       reimbursementRequestData.startDate,
+      reimbursementRequestData.carNumber,
       reimbursementRequestData.teamTypeId
     ],
     async () => {
@@ -1088,6 +1140,7 @@ export const useGetReimbursementRequestCategoryData = (reimbursementRequestData:
       'reimbursement-request-category-data',
       reimbursementRequestData.endDate,
       reimbursementRequestData.startDate,
+      reimbursementRequestData.carNumber,
       reimbursementRequestData.otherReasonId
     ],
     async () => {
@@ -1098,7 +1151,12 @@ export const useGetReimbursementRequestCategoryData = (reimbursementRequestData:
 
 export const useGetAllReimbursementRequestData = (reimbursementRequestData: ReimbursementRequestDataPayload) =>
   useQuery<ReimbursementRequestData[], Error>(
-    ['reimbursement-request-data', reimbursementRequestData.endDate, reimbursementRequestData.startDate],
+    [
+      'reimbursement-request-data',
+      reimbursementRequestData.endDate,
+      reimbursementRequestData.startDate,
+      reimbursementRequestData.carNumber
+    ],
     async () => {
       const { data } = await getAllReimbursementRequestData(reimbursementRequestData);
       return data;
@@ -1107,7 +1165,13 @@ export const useGetAllReimbursementRequestData = (reimbursementRequestData: Reim
 
 export const useGetSpendingBarTeamData = (spendingBarData: SpendingBarTeamDataPayload) =>
   useQuery<SpendingBarData, Error>(
-    ['spending-bar-team-data', spendingBarData.endDate, spendingBarData.startDate, spendingBarData.teamId],
+    [
+      'spending-bar-team-data',
+      spendingBarData.endDate,
+      spendingBarData.startDate,
+      spendingBarData.carNumber,
+      spendingBarData.teamId
+    ],
     async () => {
       const { data } = await getSpendingBarTeamData(spendingBarData);
       return data;
@@ -1116,7 +1180,13 @@ export const useGetSpendingBarTeamData = (spendingBarData: SpendingBarTeamDataPa
 
 export const useGetSpendingBarTeamTypeData = (spendingBarData: SpendingBarTeamTypeDataPayload) =>
   useQuery<SpendingBarData[], Error>(
-    ['spending-bar-team-type-data', spendingBarData.endDate, spendingBarData.startDate, spendingBarData.teamTypeId],
+    [
+      'spending-bar-team-type-data',
+      spendingBarData.endDate,
+      spendingBarData.startDate,
+      spendingBarData.carNumber,
+      spendingBarData.teamTypeId
+    ],
     async () => {
       const { data } = await getSpendingBarTeamTypeData(spendingBarData);
       return data;
@@ -1125,7 +1195,7 @@ export const useGetSpendingBarTeamTypeData = (spendingBarData: SpendingBarTeamTy
 
 export const useGetSpendingBarCategoryData = (spendingBarData: SpendingBarDataPayload) =>
   useQuery<SpendingBarData, Error>(
-    ['spending-bar-category-data', spendingBarData.endDate, spendingBarData.startDate],
+    ['spending-bar-category-data', spendingBarData.endDate, spendingBarData.startDate, spendingBarData.carNumber],
     async () => {
       const { data } = await getSpendingBarCategoryData(spendingBarData);
       return data;
@@ -1133,10 +1203,13 @@ export const useGetSpendingBarCategoryData = (spendingBarData: SpendingBarDataPa
   );
 
 export const useGetAllSpendingBarData = (spendingBarData: SpendingBarDataPayload) =>
-  useQuery<SpendingBarData[], Error>(['spending-bar-data', spendingBarData.endDate, spendingBarData.startDate], async () => {
-    const { data } = await getAllSpendingBarData(spendingBarData);
-    return data;
-  });
+  useQuery<SpendingBarData[], Error>(
+    ['spending-bar-data', spendingBarData.endDate, spendingBarData.startDate, spendingBarData.carNumber],
+    async () => {
+      const { data } = await getAllSpendingBarData(spendingBarData);
+      return data;
+    }
+  );
 
 /**
  * Custom react hook to get all sponsor tiers

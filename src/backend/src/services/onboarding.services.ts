@@ -1,7 +1,7 @@
-import { Checklist, Organization, User } from '@prisma/client';
+import { Checklist, Organization } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { userHasPermission } from '../utils/users.utils';
-import { isAdmin } from 'shared';
+import { isAdmin, User } from 'shared';
 import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import { downloadFile } from '../utils/google-integration.utils';
 
@@ -62,6 +62,7 @@ export default class OnboardingServices {
       },
       include: {
         subtasks: {
+          where: { dateDeleted: null },
           include: {
             usersChecked: true
           }
@@ -80,6 +81,7 @@ export default class OnboardingServices {
       },
       include: {
         subtasks: {
+          where: { dateDeleted: null },
           include: {
             usersChecked: true
           }

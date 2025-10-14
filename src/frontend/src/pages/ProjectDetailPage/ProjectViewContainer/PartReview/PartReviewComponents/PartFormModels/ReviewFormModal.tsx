@@ -1,4 +1,4 @@
-import { PartPreview, PartSubmission, Review_Status } from 'shared';
+import { MAX_FILE_SIZE, PartPreview, PartSubmission, Review_Status } from 'shared';
 import { useToast } from '../../../../../../hooks/toasts.hooks';
 import * as yup from 'yup';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
@@ -10,7 +10,6 @@ import { FormControl, FormHelperText, FormLabel, TextField } from '@mui/material
 import ReactHookTextField from '../../../../../../components/ReactHookTextField';
 import { Delete, FileUpload } from '@mui/icons-material';
 import { useUploadFile } from '../../../../../../hooks/part-review.hooks';
-import { MAX_PART_FILE_SIZE } from '../../../../../../utils/part.utils';
 
 interface ReviewFormModalProps {
   open: boolean;
@@ -158,18 +157,10 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
                       }
                       setUploading(true);
                       const uploadPromises = [...e.target.files]?.map(async (file) => {
-                        if (file.size > MAX_PART_FILE_SIZE) {
+                        if (file.size > MAX_FILE_SIZE) {
                           toast.error(
-                            `File "${file.name}" exceeds the maximum size limit of ${MAX_PART_FILE_SIZE / (1024 * 2014)} mbs`
+                            `File "${file.name}" exceeds the maximum size limit of ${MAX_FILE_SIZE / (1024 * 1024)} mbs`
                           );
-                          return;
-                        }
-                        if (!/^[\w.]+$/.test(file.name)) {
-                          toast.error(`File names can only contain letters and numbers`);
-                          return;
-                        }
-                        if (file.name.length > 20) {
-                          toast.error(`File names cannot be longer than 20 characters`);
                           return;
                         }
 

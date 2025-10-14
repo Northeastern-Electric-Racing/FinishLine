@@ -1,4 +1,4 @@
-import { Organization, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
+import { Organization, WBS_Element, WBS_Element_Status } from '@prisma/client';
 import {
   calculateEndDate,
   DescriptionBulletPreview,
@@ -10,7 +10,10 @@ import {
   WbsNumber,
   wbsPipe,
   WorkPackage,
-  WorkPackageStage
+  WorkPackagePreview,
+  WorkPackageStage,
+  User,
+  WorkPackageSelection
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -22,7 +25,7 @@ import {
   InvalidOrganizationException
 } from '../utils/errors.utils';
 import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
-import workPackageTransformer from '../transformers/work-packages.transformer';
+import workPackageTransformer, { workPackagePreviewTransformer } from '../transformers/work-packages.transformer';
 import { updateBlocking, validateChangeRequestAccepted } from '../utils/change-requests.utils';
 import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils';
 import { getWorkPackageChanges } from '../utils/changes.utils';
@@ -34,6 +37,7 @@ import {
 import { getBlockingWorkPackages, validateBlockedBys } from '../utils/work-packages.utils';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
 import { userHasPermission } from '../utils/users.utils';
+import { getUserPreviewQueryArgs } from '../prisma-query-args/user.query-args';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
@@ -183,7 +187,6 @@ export default class WorkPackagesService {
       },
       include: {
         workPackages: {
-          where: { wbsElement: { dateDeleted: null } },
           include: {
             wbsElement: true
           }
@@ -240,7 +243,7 @@ export default class WorkPackagesService {
         project: { connect: { projectId } },
         startDate: date,
         duration,
-        orderInProject: project.workPackages.length + 1,
+        orderInProject: project.workPackages.filter((wp) => !wp.wbsElement.dateDeleted).length + 1,
         blockedBy: { connect: blockedByElements.map((ele) => ({ wbsElementId: ele.wbsElementId })) }
       },
       ...getWorkPackageQueryArgs(organization.organizationId)
@@ -566,5 +569,89 @@ export default class WorkPackagesService {
         }),
       Promise.resolve()
     );
+  }
+
+  /**
+   * Gets the current users teams workpackages
+   *
+   * @param user The current user
+   * @param organization The organization the current user is logged in for
+   * @param onlyOverdue Whether to only return overdue workpackages
+   */
+  static async getHomePageWorkPackages(
+    user: User,
+    organization: Organization,
+    selection: WorkPackageSelection
+  ): Promise<WorkPackagePreview[]> {
+    const selectionArgs =
+      selection === WorkPackageSelection.ALL_OVERDUE
+        ? {}
+        : selection === WorkPackageSelection.LEADING
+          ? {
+              workPackage: {
+                project: {
+                  teams: { some: { OR: [{ headId: user.userId }, { leads: { some: { userId: user.userId } } }] } }
+                }
+              }
+            }
+          : {
+              workPackage: {
+                project: {
+                  teams: {
+                    some: {
+                      OR: [
+                        { headId: user.userId },
+                        { leads: { some: { userId: user.userId } } },
+                        { members: { some: { userId: user.userId } } }
+                      ]
+                    }
+                  }
+                }
+              }
+            };
+
+    let workPackages = await prisma.work_Package.findMany({
+      where: {
+        wbsElement: {
+          ...selectionArgs,
+          dateDeleted: null,
+          organizationId: organization.organizationId,
+          status: { not: WBS_Element_Status.COMPLETE }
+        }
+      },
+      select: {
+        project: { select: { projectId: true, wbsElement: { select: { name: true } } } },
+        wbsElement: {
+          select: {
+            dateCreated: true,
+            status: true,
+            name: true,
+            carNumber: true,
+            projectNumber: true,
+            workPackageNumber: true,
+            dateDeleted: true,
+            wbsElementId: true,
+            lead: getUserPreviewQueryArgs(),
+            manager: getUserPreviewQueryArgs()
+          }
+        },
+        blockedBy: true,
+        startDate: true,
+        duration: true,
+        workPackageId: true,
+        stage: true
+      }
+    });
+
+    if (selection === WorkPackageSelection.ALL_OVERDUE) {
+      workPackages = workPackages.filter((wp) => {
+        const endDate = new Date(wp.startDate);
+        endDate.setDate(endDate.getDate() + wp.duration * 7); // Add weeks as days
+
+        return endDate < new Date();
+      });
+    }
+
+    return workPackages.map(workPackagePreviewTransformer);
   }
 }

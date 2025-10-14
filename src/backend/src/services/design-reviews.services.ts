@@ -1,4 +1,4 @@
-import { Design_Review_Status, Team_Type, User, Organization } from '@prisma/client';
+import { Design_Review_Status, Team_Type, Organization } from '@prisma/client';
 import {
   DesignReview,
   WbsNumber,
@@ -6,7 +6,8 @@ import {
   isLeadership,
   isNotLeadership,
   DesignReviewStatus,
-  AvailabilityCreateArgs
+  AvailabilityCreateArgs,
+  User
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -196,12 +197,14 @@ export default class DesignReviewsService {
     for (const memberUserSetting of memberUserSettings) {
       if (memberUserSetting.slackId) {
         try {
-          await sendSlackDesignReviewConfirmNotification(
-            memberUserSetting.slackId,
-            designReview.designReviewId,
-            designReview.wbsElement.name,
-            project?.wbsElement.name ?? ''
-          );
+          if (project) {
+            await sendSlackDesignReviewConfirmNotification(
+              memberUserSetting.slackId,
+              designReview.designReviewId,
+              designReview.wbsElement.name,
+              project.wbsElement.name
+            );
+          }
         } catch (err: unknown) {
           if (err instanceof Error) {
             throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
