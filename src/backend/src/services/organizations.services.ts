@@ -38,7 +38,7 @@ export default class OrganizationsService {
       include: {
         contacts: {
           include: {
-          user: true
+            user: true
           }
         }
       }
