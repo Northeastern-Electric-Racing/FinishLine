@@ -11,6 +11,7 @@ import { imagePreviewUrl, isReimbursementRequestPendingSaboSubmission } from '..
 import { useToast } from '../../../hooks/toasts.hooks';
 import { codeAndRefundSourceName } from '../../../utils/pipes';
 import CopyToClipboardButton from '../../../components/CopyToClipboardButton';
+import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 
 interface SubmitToSaboModalProps {
   open: boolean;
@@ -26,6 +27,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
   const { data: userInfo, isLoading, isError, error } = useUserSecureSettings(recipient.userId);
   const toast = useToast();
   const isPendingSaboSubmission = isReimbursementRequestPendingSaboSubmission(reimbursementRequest);
+  const organization = useCurrentOrganization();
   if (!user.isFinance) return <></>;
   if (isLoading || !userInfo) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
@@ -133,7 +135,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
         <Grid item xs={8}>
           <Stack>
             <Box display="flex" alignItems="center">
-              <Typography>{treasurerName}</Typography>
+              <Typography>{organization.treas}</Typography>
               <CopyToClipboardButton msg={treasurerName} />
             </Box>
             <Box display="flex" alignItems="center">

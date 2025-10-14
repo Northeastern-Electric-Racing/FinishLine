@@ -207,10 +207,10 @@ export const inputReimbursementRequestInSabo = (id: string) => {
 };
 
 /**
- * Mark Reimbursement Request as Approved by SABO
+ * Mark Reimbursement Request as submitted to SABO
  * This should be called after the user has approved the request in Concur
  *
- * @param id of the reimbursement request being marked as approved by SABO
+ * @param id of the reimbursement request being marked as submitted to SABO
  * @returns the sabo submitted reimbursement status
  */
 export const markReimbursementRequestAsSaboSubmitted = (id: string) => {

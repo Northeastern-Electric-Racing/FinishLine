@@ -17,6 +17,7 @@ import { getProjectPreviewQueryArgs } from '../prisma-query-args/projects.query-
 import { projectPreviewTransformer } from '../transformers/projects.transformer';
 import { getUserQueryArgs } from '../prisma-query-args/user.query-args';
 import { userTransformer } from '../transformers/user.transformer';
+import { organizationTransformer } from '../transformers/organizationTransformer';
 
 export default class OrganizationsService {
   /**
@@ -37,7 +38,7 @@ export default class OrganizationsService {
       include: {
         contacts: {
           include: {
-            user: true
+          user: true
           }
         }
       }
@@ -51,7 +52,7 @@ export default class OrganizationsService {
       throw new DeletedException('Organization', organizationId);
     }
 
-    return organization;
+    return organizationTransformer(organization);
   }
 
   /**
@@ -526,7 +527,7 @@ export default class OrganizationsService {
     });
 
     if (users.length !== userIdsNoDuplicates.length) {
-      throw new NotFoundException('User', 'one or more user IDs');
+      throw new HttpException(404, 'One or more users not found');
     }
 
     const updatedOrg = await prisma.organization.update({

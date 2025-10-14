@@ -533,7 +533,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         items={[
           {
             resolved: false,
-            detail: `I certify that I have a Concur account${financeDelegates.length > 0 ? ', and have assigned ' + financeDelegates.map(fullNamePipe).join(', ') + ' as delegate(s) to submit this reimbursement request on my behalf.' : '.'}`,
+            detail: `I certify that I have a Concur account${financeDelegates.length > 0 ? ', and have assigned ' + financeDelegates.map(fullNamePipe).join(', ') + ' as delegate(s) to prepare this reimbursement request on my behalf.' : '.'}`,
             id: '1'
           },
           {

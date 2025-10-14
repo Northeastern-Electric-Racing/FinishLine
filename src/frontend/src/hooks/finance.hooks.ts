@@ -578,10 +578,10 @@ export const useInputReimbursementRequestInSabo = (id: string) => {
 };
 
 /**
- * Custom react hook to mark a reimbursement request as approved by SABO
+ * Custom react hook to mark a reimbursement request as submitted to SABO
  * This should be called after the user has approved the request in Concur
  *
- * @param id id of the reimbursement request to mark as approved by SABO
+ * @param id id of the reimbursement request to mark as submitted to SABO
  * @returns the created sabo submitted reimbursement status
  */
 export const useMarkReimbursementRequestAsSaboSubmitted = (id: string) => {

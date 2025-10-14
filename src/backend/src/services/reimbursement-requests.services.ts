@@ -33,8 +33,8 @@ import {
   validateReimbursementProducts,
   validateUserEditRRPermissions,
   validateRefund,
-  isUserHeadOrOnFinance,
-  validateUserIsPartOfFinanceTeamOrHead
+  validateUserIsPartOfFinanceTeamOrHead,
+  isUserOnFinanceTeam
 } from '../utils/reimbursement-requests.utils';
 import {
   AccessDeniedAdminOnlyException,
@@ -171,7 +171,12 @@ export default class ReimbursementRequestService {
    * @returns All the reimbursements in the database
    */
   static async getAllReimbursements(user: User, organization: Organization): Promise<Reimbursement[]> {
-    await isUserHeadOrOnFinance(user, organization.organizationId);
+    const isUserAuthorized =
+      (await isUserOnFinanceTeam(user, organization.organizationId)) ||
+      (await userHasPermission(user.userId, organization.organizationId, isHead));
+    if (!isUserAuthorized) {
+      throw new AccessDeniedException(`You are not a member of the finance team!`);
+    }
 
     const reimbursements = await prisma.reimbursement.findMany({
       where: {
@@ -789,7 +794,12 @@ export default class ReimbursementRequestService {
    * @returns the 'deleted' account code
    */
   static async deleteAccountCode(accountCodeId: string, submitter: User, organization: Organization) {
-    await isUserHeadOrOnFinance(submitter, organization.organizationId);
+    const isUserAuthorized =
+      (await isUserOnFinanceTeam(submitter, organization.organizationId)) ||
+      (await userHasPermission(submitter.userId, organization.organizationId, isHead));
+    if (!isUserAuthorized) {
+      throw new AccessDeniedException(`You are not a member of the finance team!`);
+    }
 
     const accountCode = await ReimbursementRequestService.getSingleAccountCode(accountCodeId, organization);
 
@@ -896,7 +906,12 @@ export default class ReimbursementRequestService {
    * @returns an array of the prisma version of the reimbursement requests transformed to the shared version
    */
   static async getAllReimbursementRequests(user: User, organization: Organization): Promise<ReimbursementRequest[]> {
-    await isUserHeadOrOnFinance(user, organization.organizationId);
+    const isUserAuthorized =
+      (await isUserOnFinanceTeam(user, organization.organizationId)) ||
+      (await userHasPermission(user.userId, organization.organizationId, isHead));
+    if (!isUserAuthorized) {
+      throw new AccessDeniedException(`You are not a member of the finance team!`);
+    }
 
     const reimbursementRequests = await prisma.reimbursement_Request.findMany({
       where: { dateDeleted: null, accountCode: { organizationId: organization.organizationId } },
@@ -1106,12 +1121,15 @@ export default class ReimbursementRequestService {
       },
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
-
-    await sendReimbursementRequestLeadershipApprovedNotification(
-      reimbursementRequest.notificationSlackThreads,
-      submitter.userId,
-      reimbursementRequest.recipientId
-    );
+    try {
+      await sendReimbursementRequestLeadershipApprovedNotification(
+        reimbursementRequest.notificationSlackThreads,
+        submitter.userId,
+        reimbursementRequest.recipientId
+      );
+    } catch (e: unknown) {
+      console.error('Error sending reimbursement request leadership approved notification:', e);
+    }
 
     return reimbursementStatusTransformer(reimbursementStatus);
   }
@@ -1192,11 +1210,15 @@ export default class ReimbursementRequestService {
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
 
-    await sendPendingSaboSubmissionNotification(
-      reimbursementRequest.notificationSlackThreads,
-      submitter.userId,
-      reimbursementRequest.recipientId
-    );
+    try {
+      await sendPendingSaboSubmissionNotification(
+        reimbursementRequest.notificationSlackThreads,
+        submitter.userId,
+        reimbursementRequest.recipientId
+      );
+    } catch (e: unknown) {
+      console.error('Error sending pending SABO submission notification:', e);
+    }
 
     return reimbursementStatusTransformer(reimbursementStatus);
   }
@@ -1270,7 +1292,11 @@ export default class ReimbursementRequestService {
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
 
-    await sendSubmittedToSaboNotification(reimbursementRequest.notificationSlackThreads);
+    try {
+      await sendSubmittedToSaboNotification(reimbursementRequest.notificationSlackThreads);
+    } catch (e: unknown) {
+      console.error('Error sending submitted to SABO notification:', e);
+    }
 
     return reimbursementStatusTransformer(reimbursementStatus);
   }
@@ -1339,7 +1365,11 @@ export default class ReimbursementRequestService {
         'Reimbursement Request successfully updated, however no slack message was sent as recipient is missing their settings!'
       );
 
-    await sendReimbursementRequestDeniedNotification(recipientSettings.slackId, reimbursementRequestId);
+    try {
+      await sendReimbursementRequestDeniedNotification(recipientSettings.slackId, reimbursementRequestId);
+    } catch (e: unknown) {
+      console.error('Error sending reimbursement request denied notification:', e);
+    }
 
     return reimbursementStatusTransformer(reimbursementStatus);
   }
@@ -1401,8 +1431,12 @@ export default class ReimbursementRequestService {
       throw new InvalidOrganizationException('Vendor');
     }
 
-    if (existingVendor.addedByUserId !== submitter.userId) {
-      await isUserHeadOrOnFinance(submitter, organization.organizationId);
+    const isUserAuthorized =
+      existingVendor.addedByUserId === submitter.userId ||
+      (await isUserOnFinanceTeam(submitter, organization.organizationId)) ||
+      (await userHasPermission(submitter.userId, organization.organizationId, isHead));
+    if (!isUserAuthorized) {
+      throw new AccessDeniedException(`You are not a member of the finance team!`);
     }
 
     const users = await getUsers(twoFactorContacts);
@@ -1453,8 +1487,12 @@ export default class ReimbursementRequestService {
       throw new InvalidOrganizationException('Vendor');
     }
 
-    if (existingVendor.addedByUserId !== submitter.userId) {
-      await isUserHeadOrOnFinance(submitter, organization.organizationId);
+    const isUserAuthorized =
+      existingVendor.addedByUserId === submitter.userId ||
+      (await isUserOnFinanceTeam(submitter, organization.organizationId)) ||
+      (await userHasPermission(submitter.userId, organization.organizationId, isHead));
+    if (!isUserAuthorized) {
+      throw new AccessDeniedException(`You are not a member of the finance team!`);
     }
 
     const deletedVendor = await prisma.vendor.update({
@@ -1582,7 +1620,11 @@ export default class ReimbursementRequestService {
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
 
-    await sendReimbursementRequestPendingFinanceNotification(reimbursementRequest.notificationSlackThreads);
+    try {
+      await sendReimbursementRequestPendingFinanceNotification(reimbursementRequest.notificationSlackThreads);
+    } catch (e: unknown) {
+      console.error('Error sending reimbursement request pending finance notification:', e);
+    }
 
     return reimbursementStatusTransformer(updatedReimbursementStatus);
   }
@@ -1636,7 +1678,11 @@ export default class ReimbursementRequestService {
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
 
-    await sendReimbursementRequestChangesRequestedNotification(reimbursementRequest.notificationSlackThreads, user.userId);
+    try {
+      await sendReimbursementRequestChangesRequestedNotification(reimbursementRequest.notificationSlackThreads, user.userId);
+    } catch (e: unknown) {
+      console.error('Error sending reimbursement request changes requested notification:', e);
+    }
 
     return reimbursementStatusTransformer(deletedStatus);
   }
@@ -1995,7 +2041,11 @@ export default class ReimbursementRequestService {
       comment += ` ${[...new Set(restOfTags)].join(' ')}`;
     }
 
-    await sendThreadResponse(reimbursementRequest.notificationSlackThreads, comment);
+    try {
+      await sendThreadResponse(reimbursementRequest.notificationSlackThreads, comment);
+    } catch (e: unknown) {
+      console.error('Error sending thread response:', e);
+    }
 
     return reimbursementRequestCommentTransformer(createdComment);
   }

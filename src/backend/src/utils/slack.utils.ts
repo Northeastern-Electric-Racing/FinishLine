@@ -38,7 +38,7 @@ interface SlackMessageThread {
   changeRequestId: string | null;
 }
 
-const DEV_TESTING_OVERRIDE = true;
+const DEV_TESTING_OVERRIDE = process.env.SEND_SLACK_MESSAGES_IN_DEV === 'true';
 
 // build the "due" string for the upcoming deadlines slack message
 export const buildDueString = (daysUntilDeadline: number): string => {
@@ -62,7 +62,7 @@ export const sendSlackUpcomingDeadlineNotification = async (
   const endDate = calculateEndDate(workPackage.startDate, workPackage.duration);
 
   const { lead, manager } = workPackage.wbsElement;
-  const slackId = await getUserSlackId(lead?.userId);
+  const slackId = lead ? await getUserSlackId(lead?.userId) : undefined;
   const daysUntilDeadline = daysBetween(endDate, new Date());
 
   const userString = lead ? buildUserString(userTransformer(lead), slackId) : 'No Lead Set';
@@ -230,7 +230,7 @@ export const sendPendingSaboSubmissionNotification = async (
 ) => {
   await sendThreadResponse(
     threads,
-    `${await getUserSlackMentionOrName(financeUserId)} has added this reimbursement request to Concur. ${await getUserSlackMentionOrName(pendingSubmissionFromId)}, please approve the request in Concur and mark it as submitted on Finishline.`
+    `${await getUserSlackMentionOrName(financeUserId)} has added this reimbursement request to Concur. ${await getUserSlackMentionOrName(pendingSubmissionFromId)}, please check your email to approve the request in Concur and mark it as submitted on Finishline.`
   );
 };
 
