@@ -14,7 +14,14 @@ import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { isGuest, ReimbursementRequest } from 'shared';
 import { ReimbursementRequestRow, ReimbursementStatusType } from 'shared/src/types/reimbursement-requests-types';
-import { undefinedPipe, fullNamePipe, centsToDollar, datePipe, dateUndefinedPipe } from '../../../utils/pipes';
+import {
+  undefinedPipe,
+  fullNamePipe,
+  centsToDollar,
+  datePipe,
+  dateUndefinedPipe,
+  formatSaboIdPipe
+} from '../../../utils/pipes';
 import {
   createReimbursementRequestRowData,
   vendorDescendingComparator,
@@ -282,7 +289,7 @@ const ReimbursementRequestInfo = ({
                   {currentTab === 1 && <TableCell align="center">{fullNamePipe(row.submitter)}</TableCell>}
                   <TableCell align="center">{`$${centsToDollar(row.amount)}`}</TableCell>
                   <TableCell align="center">{undefinedPipe(row.identifier)}</TableCell>
-                  <TableCell align="center">{undefinedPipe(row.saboId)}</TableCell>
+                  <TableCell align="center">{formatSaboIdPipe(row.saboId)}</TableCell>
                   <TableCell align="center">{datePipe(row.dateSubmitted)}</TableCell>
                   <TableCell align="center">{dateUndefinedPipe(row.dateSubmittedToSabo)}</TableCell>
                   <TableCell align="center">

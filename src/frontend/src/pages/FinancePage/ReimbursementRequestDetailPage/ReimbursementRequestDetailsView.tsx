@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { accountCodePipe, displayEnum } from '../../../utils/pipes';
+import { accountCodePipe, displayEnum, formatSaboIdPipe } from '../../../utils/pipes';
 import { Assignment, ChangeCircle, Edit, Pending } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
@@ -39,7 +39,7 @@ import {
 } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
-import { centsToDollar, fullNamePipe, undefinedPipe } from '../../../utils/pipes';
+import { centsToDollar, fullNamePipe } from '../../../utils/pipes';
 import {
   imageDownloadUrl,
   imageFileUrl,
@@ -469,7 +469,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     },
     { content: `$${centsToDollar(reimbursementRequest.totalCost)}` },
     { content: reimbursementRequest.vendor.name },
-    { content: `${undefinedPipe(reimbursementRequest.saboId)}` },
+    { content: `${formatSaboIdPipe(reimbursementRequest.saboId)}` },
     {
       content: refundSourceNames.join(', ')
     },
