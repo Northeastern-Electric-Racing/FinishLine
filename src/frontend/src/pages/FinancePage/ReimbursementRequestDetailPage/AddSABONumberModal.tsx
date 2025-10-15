@@ -12,9 +12,9 @@ const schema = yup.object({
     .number()
     .typeError('The SABO number should be a valid number')
     .required('The SABO number is required')
-    .test('exact-5-digits', 'The SABO number must be at least 5 digits', function () {
+    .test('exact-5-digits', 'The SABO number must be exactly 5 digits', function () {
       const original = this.originalValue?.toString().trim();
-      return /^\d{5,}$/.test(original || '');
+      return /^\d{5}$/.test(original || '');
     })
 });
 
