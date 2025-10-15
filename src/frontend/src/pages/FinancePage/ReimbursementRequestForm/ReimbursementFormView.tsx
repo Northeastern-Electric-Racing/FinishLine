@@ -655,15 +655,11 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                       }}
                       onClose={() => setDatePickerOpen(false)}
                       onOpen={() => setDatePickerOpen(true)}
-                      onChange={(newValue) => {
-                        onChange(newValue ?? new Date());
-                      }}
+                      onChange={onChange}
                       slotProps={{
                         textField: {
                           error: !!errors.dateOfExpense,
-                          helperText: errors.dateOfExpense?.message,
-                          onClick: () => setDatePickerOpen(true),
-                          inputProps: { readOnly: true }
+                          helperText: errors.dateOfExpense?.message
                         }
                       }}
                     />
