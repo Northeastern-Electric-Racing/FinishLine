@@ -1,4 +1,4 @@
-import { User, Organization } from '@prisma/client';
+import { Organization } from '@prisma/client';
 import {
   DescriptionBulletPreview,
   isAdmin,
@@ -6,7 +6,8 @@ import {
   ProjectTemplate,
   WorkPackageStage,
   WorkPackageTemplate,
-  WorkPackageTemplateApiInputs
+  WorkPackageTemplateApiInputs,
+  User
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {

@@ -1,4 +1,4 @@
-import { Prisma, User, User_Settings } from '@prisma/client';
+import { Prisma, User_Settings } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { HttpException, InvalidOrganizationException, NotFoundException } from './errors.utils';
 import {
@@ -8,6 +8,7 @@ import {
   isSubset,
   PermissionCheck,
   Role,
+  User,
   RoleEnum
 } from 'shared';
 import { UserWithId } from './teams.utils';
@@ -20,19 +21,31 @@ type UserWithSettings = {
 export const getUserFullName = async (userId: string | null) => {
   if (!userId) return 'no one';
   const user = await prisma.user.findUnique({ where: { userId } });
-  if (!user) return 'no one';
+  if (!user) throw new NotFoundException('User', userId);
   return `${user.firstName} ${user.lastName}`;
 };
 
-export const getUserSlackId = async (userId?: string): Promise<string | undefined> => {
-  if (!userId) return undefined;
+export const getUserSlackMentionOrName = async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: { userId },
+    include: {
+      userSettings: {
+        select: { slackId: true }
+      }
+    }
+  });
+  if (!user) throw new NotFoundException('User', userId);
+  return user.userSettings?.slackId ? `<@${user.userSettings.slackId}>` : `${user.firstName} ${user.lastName}`;
+};
+
+export const getUserSlackId = async (userId: string): Promise<string | undefined> => {
   const user = await prisma.user.findUnique({ where: { userId }, include: { userSettings: true } });
   if (!user) throw new NotFoundException('User', userId);
   return user.userSettings?.slackId;
 };
 
 export const getUserRole = async (userId: string, organizationId: string): Promise<Role> => {
-  const user = await prisma.user.findUnique({ where: { userId }, include: { roles: true } });
+  const user = await prisma.user.findUnique({ where: { userId }, include: { roles: { where: { organizationId } } } });
   if (!user) throw new NotFoundException('User', userId);
   return user.roles.find((role) => role.organizationId === organizationId)?.roleType ?? RoleEnum.GUEST;
 };
@@ -127,7 +140,7 @@ export const userHasPermission = async (
   organizationId: string,
   permissionCheck: PermissionCheck
 ): Promise<boolean> => {
-  const user = await prisma.user.findUnique({ where: { userId }, include: { roles: true } });
+  const user = await prisma.user.findUnique({ where: { userId }, include: { roles: { where: { organizationId } } } });
   if (!user) throw new NotFoundException('User', userId);
 
   const organization = await prisma.organization.findUnique({ where: { organizationId } });
