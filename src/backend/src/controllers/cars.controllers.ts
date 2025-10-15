@@ -22,4 +22,14 @@ export default class CarsController {
       next(error);
     }
   }
+
+  static async getCurrentCar(req: Request, res: Response, next: NextFunction) {
+    try {
+      const car = await CarsService.getCurrentCar(req.organization);
+
+      res.status(200).json(car);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

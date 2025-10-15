@@ -53,4 +53,26 @@ export default class CarsService {
 
     return carTransformer(car);
   }
+
+  static async getCurrentCar(organization: Organization) {
+    const car = await prisma.car.findFirst({
+      where: {
+        wbsElement: {
+          organizationId: organization.organizationId
+        }
+      },
+      orderBy: {
+        wbsElement: {
+          carNumber: 'desc'
+        }
+      },
+      ...getCarQueryArgs(organization.organizationId)
+    });
+
+    if (!car) {
+      return null;
+    }
+
+    return carTransformer(car);
+  }
 }

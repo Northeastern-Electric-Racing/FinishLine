@@ -374,6 +374,7 @@ const organizationsSetSlackSponsorshipNotificationChannelId = () => `${organizat
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
+const carsCurrent = () => `${cars()}/current`;
 const carsCreate = () => `${cars()}/create`;
 
 /************** Recruitment Endpoints ***************/
@@ -679,6 +680,7 @@ export const apiUrls = {
   organizationsSetSlackSponsorshipNotificationChannelId,
 
   cars,
+  carsCurrent,
   carsCreate,
 
   recruitment,
