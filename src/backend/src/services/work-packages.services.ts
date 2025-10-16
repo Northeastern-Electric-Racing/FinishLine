@@ -37,7 +37,6 @@ import { getBlockingWorkPackages, validateBlockedBys } from '../utils/work-packa
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
 import { userHasPermission } from '../utils/users.utils';
 
-// Initialize Day.js plugins for timezone handling
 dayjs.extend(utc);
 
 /** Service layer containing logic for work package controller functions. */
