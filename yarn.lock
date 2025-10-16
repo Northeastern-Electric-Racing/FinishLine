@@ -6911,6 +6911,7 @@ __metadata:
     concat-stream: ^2.0.0
     cookie-parser: ^1.4.5
     cors: ^2.8.5
+    dayjs: ^1.11.18
     decimal.js: ^10.4.3
     dotenv: ^16.0.1
     express: ^5.0.0
@@ -8540,6 +8541,13 @@ __metadata:
   version: 1.11.13
   resolution: "dayjs@npm:1.11.13"
   checksum: f388db88a6aa93956c1f6121644e783391c7b738b73dbc54485578736565c8931bdfba4bb94e9b1535c6e509c97d5deb918bbe1ae6b34358d994de735055cca9
+  languageName: node
+  linkType: hard
+
+"dayjs@npm:^1.11.18":
+  version: 1.11.18
+  resolution: "dayjs@npm:1.11.18"
+  checksum: cc90054bad30ab011417a7a474b2ffa70e7a28ca6f834d7e86fe53a408a40a14c174f26155072628670e9eda4c48c4ed0d847d2edf83d47c0bfb78be15bbf2dd
   languageName: node
   linkType: hard
 

@@ -26,6 +26,8 @@ import workPackageTransformer from '../transformers/work-packages.transformer';
 import { updateBlocking, validateChangeRequestAccepted } from '../utils/change-requests.utils';
 import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils';
 import { getWorkPackageChanges } from '../utils/changes.utils';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import {
   DescriptionBulletDestination,
   addRawDescriptionBullets,
@@ -35,26 +37,30 @@ import { getBlockingWorkPackages, validateBlockedBys } from '../utils/work-packa
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
 import { userHasPermission } from '../utils/users.utils';
 
+// Initialize Day.js plugins for timezone handling
+dayjs.extend(utc);
+
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
   /**
-   * Normalize an input date string to the user's local midnight converted to UTC.
-   * - If clientOffsetMinutes is provided (minutes from UTC, same sign as Date.getTimezoneOffset), we interpret day boundaries in that local timezone.
-   * - Derive the local calendar day of that instant in user's timezone, then normalize to that day's 00:00 local converted to UTC.
-   * - If clientOffsetMinutes is not provided, default to UTC day boundaries (00:00:00.000Z) for backwards compatibility.
+   * Normalize an input date string to the user's local midnight converted to UTC
+   *
+   * @param input - The date string to normalize
+   * @param clientOffsetMinutes - client timezone offset in minutes
+   * @returns date representing midnight
    */
   private static toUtcMidnight(input: string, clientOffsetMinutes?: number): Date {
-    const offsetMs = (clientOffsetMinutes ?? 0) * 60 * 1000;
+    if (clientOffsetMinutes === undefined) {
+      return dayjs(input).utc().startOf('day').toDate();
+    }
 
-    // Build a Date for local midnight converted to UTC using the offset
-    const toUtcFromLocalMidnight = (y: number, m: number, d: number) => new Date(Date.UTC(y, m, d, 0, 0, 0, 0) + offsetMs);
+    const inputDate = dayjs(input);
+    const userLocalDate = inputDate.subtract(clientOffsetMinutes, 'minutes');
 
-    const parsed = new Date(input);
+    const userMidnight = userLocalDate.startOf('day');
+    const utcMidnight = userMidnight.add(clientOffsetMinutes, 'minutes');
 
-    // Derive user's local calendar date by shifting the instant by the offset
-    const shifted = new Date(parsed.getTime() - offsetMs);
-    const normalized = toUtcFromLocalMidnight(shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate());
-    return normalized;
+    return utcMidnight.toDate();
   }
 
   /**
