@@ -59,3 +59,8 @@ export const exampleCar3: Car = {
 export const exampleAllCars: Car[] = [exampleCar1, exampleCar2, exampleCar3];
 
 export const exampleCurrentCar: Car = exampleCar3; // Latest car by car number
+
+// Additional test data for global car filter
+export const exampleEmptyCarArray: Car[] = [];
+
+export const exampleSingleCar: Car[] = [exampleCar3];

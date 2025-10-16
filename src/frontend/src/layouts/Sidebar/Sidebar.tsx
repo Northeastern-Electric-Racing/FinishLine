@@ -28,6 +28,7 @@ import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useState } from 'react';
+import GlobalCarFilterDropdown from '../../components/GlobalCarFilterDropdown';
 
 interface SidebarProps {
   drawerOpen: boolean;
@@ -167,12 +168,17 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
         <Box>
           {linkItems.map((linkItem) => (
             <NavPageLink
+              key={linkItem.route}
               {...linkItem}
               isSubmenuOpen={openSubmenu === linkItem.name}
               onSubmenuHover={() => handleOpenSubmenu(linkItem.name)}
               onSubmenuCollapse={() => handleCloseSubmenu()}
             />
           ))}
+          <Divider sx={{ mx: 1, my: 2 }} />
+          <Box sx={{ px: 1 }}>
+            <GlobalCarFilterDropdown compact />
+          </Box>
           <NavUserMenu open={drawerOpen} />
         </Box>
         <Box justifyContent={drawerOpen ? 'flex-start' : 'center'}>
