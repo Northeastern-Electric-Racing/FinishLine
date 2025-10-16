@@ -65,8 +65,8 @@ import {
   deleteSponsorTier,
   editSponsorTier,
   editIndexCode,
-  assignMemberToRR,
-  getCurrentUserAssignedReimbursementRequests
+  getCurrentUserAssignedReimbursementRequests,
+  assignMemberToRR
 } from '../apis/finance.api';
 import {
   IndexCode,

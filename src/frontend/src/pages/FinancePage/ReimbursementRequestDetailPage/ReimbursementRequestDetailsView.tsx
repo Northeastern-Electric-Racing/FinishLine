@@ -67,8 +67,8 @@ import ReimbursementRequestStatusPill from '../../../components/ReimbursementReq
 import SidePage from '../FinanceComponents/SidePagePopup';
 import EditReimbursementRequestPage from '../EditReimbursementRequest/EditReimbursementRequest';
 import { ReimbursementRequestDataSubmission } from '../ReimbursementRequestForm/ReimbursementRequestForm';
-import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useGetFinanceDelegates } from '../../../hooks/organizations.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import AssignFinanceMemberModal from './AssignFinanceMemberModal';
 
@@ -399,12 +399,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     {
       title: 'Assign Finance Member',
       onClick: () => setShowAssignUserModal(true),
-      icon: <AssignmentIndIcon />
-    },
-    {
-      title: 'Assign Finance Member',
-      onClick: () => setShowAssignUserModal(true),
-      icon: <AssignmentIndIcon />
+      icon: <AssignmentIndIcon />,
+      show: user.isFinance
     },
     {
       title: 'Request Changes',
@@ -521,6 +517,10 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       id: reimbursementRequest.reimbursementRequestId,
       files: data.receiptFiles.filter((receipt) => receipt.googleFileId === '').map((file) => file.file!)
     });
+
+    if (isHead(user.role) && !isReimbursementRequestLeadershipApproved(reimbursementRequest)) {
+      await leadershipApproveReimbursementRequest();
+    }
 
     await markPendingFinance();
     closeSidePage();

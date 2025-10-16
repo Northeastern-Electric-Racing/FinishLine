@@ -19,6 +19,7 @@ import {
 } from '@prisma/client';
 import { createUser, dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
+import { seedReimbursementRequests } from './seed-data/reimbursement-requests.seed';
 import ChangeRequestsService from '../services/change-requests.services';
 import TeamsService from '../services/teams.services';
 import {
@@ -260,7 +261,7 @@ const performSeed: () => Promise<void> = async () => {
   const trang = await createUser(dbSeedAllUsers.trang, RoleEnum.MEMBER, organizationId);
   const regina = await createUser(dbSeedAllUsers.regina, RoleEnum.MEMBER, organizationId);
   const patrick = await createUser(dbSeedAllUsers.patrick, RoleEnum.MEMBER, organizationId);
-  const spongebob = await createUser(dbSeedAllUsers.spongebob, RoleEnum.GUEST, organizationId);
+  const spongebob = await createUser(dbSeedAllUsers.spongebob, RoleEnum.MEMBER, organizationId);
 
   await UsersService.updateUserRole(cyborg.userId, thomasEmrax, 'APP_ADMIN', ner);
 
@@ -413,6 +414,14 @@ const performSeed: () => Promise<void> = async () => {
     [mrKrabs, richieRich].map((user) => user.userId),
     ner
   );
+
+  // Set finance delegates for the organization
+  await OrganizationsService.setFinanceDelegates(thomasEmrax, organizationId, [
+    monopolyMan.userId,
+    mrKrabs.userId,
+    richieRich.userId,
+    johnBoddy.userId
+  ]);
 
   await TeamsService.setTeamMembers(
     aang,
@@ -1776,7 +1785,7 @@ const performSeed: () => Promise<void> = async () => {
   /**
    * Reimbursements
    */
-  const vendor = await ReimbursementRequestService.createVendor(
+  const vendorTesla = await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Tesla',
     ner,
@@ -1787,7 +1796,7 @@ const performSeed: () => Promise<void> = async () => {
     'racecar228!',
     'SAVE50!'
   );
-  await ReimbursementRequestService.createVendor(
+  const vendorAmazon = await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Amazon',
     ner,
@@ -1798,7 +1807,7 @@ const performSeed: () => Promise<void> = async () => {
     'racecare228!',
     'SAVE20!'
   );
-  await ReimbursementRequestService.createVendor(
+  const vendorGoogle = await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Google',
     ner,
@@ -1809,7 +1818,7 @@ const performSeed: () => Promise<void> = async () => {
     'racecar228!',
     'SAVE50!'
   );
-  await ReimbursementRequestService.createVendor(
+  const vendorMicrosoft = await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Microsoft',
     ner,
@@ -1820,7 +1829,7 @@ const performSeed: () => Promise<void> = async () => {
     'secure123!',
     'WELCOME10'
   );
-  await ReimbursementRequestService.createVendor(
+  const vendorApple = await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Apple',
     ner,
@@ -1831,7 +1840,7 @@ const performSeed: () => Promise<void> = async () => {
     'appl3Secure!',
     'APPLE30'
   );
-  await ReimbursementRequestService.createVendor(
+  const vendorCostco = await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Costco',
     ner,
@@ -1842,7 +1851,7 @@ const performSeed: () => Promise<void> = async () => {
     'bulkBuy22!',
     'BULKDEAL'
   );
-  await ReimbursementRequestService.createVendor(
+  const vendorWalmart = await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Walmart',
     ner,
@@ -1853,7 +1862,7 @@ const performSeed: () => Promise<void> = async () => {
     'WalMartP@ss1',
     'ROLLBACK15'
   );
-  await ReimbursementRequestService.createVendor(
+  const vendorTarget = await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Target',
     ner,
@@ -2063,120 +2072,107 @@ const performSeed: () => Promise<void> = async () => {
     3010
   );
 
-  const reimbursement1 = await ReimbursementRequestService.createReimbursementRequest(
-    thomasEmrax,
-    vendor.vendorId,
-    indexCodeCash.indexCodeId,
-    [],
-    [
-      {
-        name: 'GLUE',
-        reason: {
-          carNumber: 0,
-          projectNumber: 1,
-          workPackageNumber: 0
-        },
-        cost: 200000,
-        refundSources: [
-          {
-            indexCode: indexCodeBudget,
-            amount: 150000
-          },
-          {
-            indexCode: indexCodeCash,
-            amount: 50000
-          }
-        ]
+  // Add userSecureSettings for users who will create reimbursement requests
+  const usersNeedingSecureSettings = [
+    { user: joeShmoe, varName: 'joeShmoe' },
+    { user: batman, varName: 'batman' },
+    { user: superman, varName: 'superman' },
+    { user: flash, varName: 'flash' },
+    { user: aquaman, varName: 'aquaman' },
+    { user: wonderwoman, varName: 'wonderwoman' },
+    { user: greenLantern, varName: 'greenLantern' },
+    { user: cyborg, varName: 'cyborg' },
+    { user: martianManhunter, varName: 'martianManhunter' },
+    { user: nightwing, varName: 'nightwing' },
+    { user: aang, varName: 'aang' },
+    { user: katara, varName: 'katara' },
+    { user: sokka, varName: 'sokka' },
+    { user: toph, varName: 'toph' },
+    { user: zuko, varName: 'zuko' },
+    { user: regina, varName: 'regina' },
+    { user: cady, varName: 'cady' },
+    { user: gretchen, varName: 'gretchen' },
+    { user: karen, varName: 'karen' },
+    { user: spongebob, varName: 'spongebob' },
+    { user: patrick, varName: 'patrick' }
+  ];
+
+  const updatedUsers: any = {};
+
+  for (let i = 0; i < usersNeedingSecureSettings.length; i++) {
+    const { user, varName } = usersNeedingSecureSettings[i];
+    await prisma.user_Secure_Settings.create({
+      data: {
+        userSecureSettingsId: `secure-${user.userId}`,
+        userId: user.userId,
+        nuid: `00123456${i.toString().padStart(2, '0')}`,
+        phoneNumber: `123456${i.toString().padStart(4, '0')}`,
+        street: `${100 + i} Main St`,
+        city: 'Boston',
+        state: 'MA',
+        zipcode: '02115'
       }
-    ],
-    accountCode.accountCodeId,
-    100,
+    });
+
+    // Re-fetch user with secure settings
+    const updatedUser = await prisma.user.findUnique({
+      where: { userId: user.userId },
+      include: { userSettings: true, userSecureSettings: true, roles: true }
+    });
+    updatedUsers[varName] = updatedUser;
+  }
+
+  // Seed comprehensive reimbursement requests with various statuses and assignees
+  const seededReimbursementRequests = await seedReimbursementRequests(
+    {
+      thomasEmrax,
+      joeShmoe: updatedUsers.joeShmoe,
+      batman: updatedUsers.batman,
+      superman: updatedUsers.superman,
+      flash: updatedUsers.flash,
+      aquaman: updatedUsers.aquaman,
+      wonderwoman: updatedUsers.wonderwoman,
+      greenLantern: updatedUsers.greenLantern,
+      cyborg: updatedUsers.cyborg,
+      martianManhunter: updatedUsers.martianManhunter,
+      robin: updatedUsers.nightwing, // Using nightwing as robin since robin wasn't stored in a variable
+      nightwing: updatedUsers.nightwing,
+      aang: updatedUsers.aang,
+      katara: updatedUsers.katara,
+      sokka: updatedUsers.sokka,
+      toph: updatedUsers.toph,
+      zuko: updatedUsers.zuko,
+      monopolyMan,
+      mrKrabs,
+      richieRich,
+      johnBoddy,
+      regina: updatedUsers.regina,
+      cady: updatedUsers.cady,
+      gretchen: updatedUsers.gretchen,
+      karen: updatedUsers.karen,
+      spongebob: updatedUsers.spongebob,
+      patrick: updatedUsers.patrick
+    },
+    {
+      tesla: vendorTesla,
+      amazon: vendorAmazon,
+      google: vendorGoogle,
+      microsoft: vendorMicrosoft,
+      apple: vendorApple,
+      costco: vendorCostco,
+      walmart: vendorWalmart,
+      target: vendorTarget
+    },
+    {
+      cash: indexCodeCash,
+      budget: indexCodeBudget
+    },
+    {
+      equipment: accountCode,
+      things: accountCode2,
+      stuff: accountCode3
+    },
     ner
-  );
-
-  const reimbursement3 = await ReimbursementRequestService.createReimbursementRequest(
-    thomasEmrax,
-    vendor.vendorId,
-    indexCodeBudget.indexCodeId,
-    [],
-    [
-      {
-        name: 'BOX',
-        reason: {
-          carNumber: 0,
-          projectNumber: 1,
-          workPackageNumber: 0
-        },
-        cost: 200000,
-        refundSources: [
-          {
-            indexCode: indexCodeBudget,
-            amount: 150000
-          },
-          {
-            indexCode: indexCodeCash,
-            amount: 50000
-          }
-        ]
-      }
-    ],
-    accountCode.accountCodeId,
-    200,
-    ner,
-    new Date()
-  );
-
-  const reimbursement2 = await ReimbursementRequestService.createReimbursementRequest(
-    thomasEmrax,
-    vendor.vendorId,
-    indexCodeBudget.indexCodeId,
-    [],
-    [
-      {
-        name: 'BOX',
-        reason: {
-          carNumber: 0,
-          projectNumber: 1,
-          workPackageNumber: 0
-        },
-        cost: 10000,
-        refundSources: [
-          {
-            indexCode: indexCodeBudget,
-            amount: 7000
-          },
-          {
-            indexCode: indexCodeCash,
-            amount: 3000
-          }
-        ]
-      }
-    ],
-    accountCode.accountCodeId,
-    20000,
-    ner,
-    new Date()
-  );
-
-  ReimbursementRequestService.createReimbursementRequestComment(
-    thomasEmrax,
-    ner,
-    'Thomas Followed up - "Please upload reciept"',
-    reimbursement1.reimbursementRequestId
-  );
-
-  ReimbursementRequestService.createReimbursementRequestComment(
-    batman,
-    ner,
-    'Batman Uploaded Receipt',
-    reimbursement1.reimbursementRequestId
-  );
-
-  ReimbursementRequestService.createReimbursementRequestComment(
-    thomasEmrax,
-    ner,
-    'Thomas Submmited to SABO',
-    reimbursement1.reimbursementRequestId
   );
 
   const otherProductReasonConsumables = await ReimbursementRequestService.createOtherReasonReimbursementProduct(
@@ -2310,7 +2306,7 @@ const performSeed: () => Promise<void> = async () => {
     undefined,
     undefined,
     undefined,
-    reimbursement1.reimbursementRequestId
+    seededReimbursementRequests[0]?.reimbursementRequestId
   );
 
   // Need to do this because the design review cannot be scheduled for a past day
