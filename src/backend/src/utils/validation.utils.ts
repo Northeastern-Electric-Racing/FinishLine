@@ -1,4 +1,11 @@
-import { Design_Review_Status, Graph_Display_Type, Graph_Type, Measure, Special_Permission } from '@prisma/client';
+import {
+  DayOfWeek,
+  Design_Review_Status,
+  Graph_Display_Type,
+  Graph_Type,
+  Measure,
+  Special_Permission
+} from '@prisma/client';
 import { Request, Response } from 'express';
 import { body, query, ValidationChain, validationResult } from 'express-validator';
 import { MaterialStatus, TaskPriority, TaskStatus, WorkPackageStage, RoleEnum, WbsElementStatus } from 'shared';
@@ -161,6 +168,20 @@ export const isDesignReviewStatus = (validationObject: ValidationChain): Validat
       Design_Review_Status.DONE,
       Design_Review_Status.SCHEDULED,
       Design_Review_Status.UNCONFIRMED
+    ]);
+};
+
+export const isDayOfWeek = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject
+    .isString()
+    .isIn([
+      DayOfWeek.MONDAY,
+      DayOfWeek.TUESDAY,
+      DayOfWeek.WEDNESDAY,
+      DayOfWeek.THURSDAY,
+      DayOfWeek.FRIDAY,
+      DayOfWeek.SATURDAY,
+      DayOfWeek.SUNDAY
     ]);
 };
 

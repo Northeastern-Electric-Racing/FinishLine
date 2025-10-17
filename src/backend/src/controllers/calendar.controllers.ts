@@ -97,6 +97,15 @@ export default class CalendarController {
     }
   }
 
+  static async getAllShops(req: Request, res: Response, next: NextFunction) {
+    try {
+      const shops = await CalendarService.getAllShops(req.organization);
+      res.status(200).json(shops);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async editShop(req: Request, res: Response, next: NextFunction) {
     try {
       const { shopId } = req.params;
@@ -211,6 +220,51 @@ export default class CalendarController {
       const shop = await CalendarService.deleteShop(req.currentUser, shopId, req.organization);
 
       res.status(200).json(shop);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createEvent(req: Request, res: Response, next: NextFunction) {
+    try {
+      const {
+        title,
+        eventTypeId,
+        memberIds,
+        shopIds,
+        machineryIds,
+        workPackageIds,
+        documentIds,
+        scheduleSlot,
+        availability,
+        approved,
+        approvedByUserId,
+        questionDocument,
+        location,
+        zoomLink,
+        description
+      } = req.body;
+
+      const event = await CalendarService.createEvent(
+        req.currentUser,
+        title,
+        eventTypeId,
+        req.organization,
+        memberIds,
+        shopIds,
+        machineryIds,
+        workPackageIds,
+        documentIds,
+        scheduleSlot,
+        availability,
+        approved,
+        approvedByUserId,
+        questionDocument,
+        location,
+        zoomLink,
+        description
+      );
+      res.status(200).json(event);
     } catch (error: unknown) {
       next(error);
     }

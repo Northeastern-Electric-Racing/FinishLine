@@ -146,6 +146,7 @@ export const resetUsers = async () => {
   await prisma.wBS_Element_Template.deleteMany();
   await prisma.user_Settings.deleteMany();
   await prisma.session.deleteMany();
+  await prisma.availability.deleteMany();
   await prisma.user_Secure_Settings.deleteMany();
   await prisma.schedule_Settings.deleteMany();
   await prisma.role.deleteMany();
@@ -166,6 +167,7 @@ export const resetUsers = async () => {
   await prisma.account_Code.deleteMany();
   await prisma.refund_Source.deleteMany();
   await prisma.index_Code.deleteMany();
+  await prisma.event.deleteMany();
   await prisma.eventType.deleteMany();
   await prisma.calendar.deleteMany();
   await prisma.shopMachinery.deleteMany();

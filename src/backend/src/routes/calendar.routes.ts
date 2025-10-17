@@ -1,6 +1,6 @@
 import express from 'express';
 import { body, param } from 'express-validator';
-import { nonEmptyString, validateInputs } from '../utils/validation.utils';
+import { intMinZero, isDate, nonEmptyString, validateInputs, isDayOfWeek } from '../utils/validation.utils';
 import CalendarController from '../controllers/calendar.controllers';
 
 const calendarRouter = express.Router();
@@ -34,6 +34,42 @@ calendarRouter.post(
   body('description').isBoolean(),
   validateInputs,
   CalendarController.createEventType
+);
+
+calendarRouter.post(
+  '/event/create',
+  nonEmptyString(body('title')),
+  body('eventTypeId').isString(),
+  body('approved').isBoolean(),
+  body('approvedByUserId').optional().isString(),
+  body('memberIds').isArray(),
+  body('memberIds.*').isString(),
+  body('location').optional().isString(),
+  body('zoomLink').optional().isURL(),
+  body('shopIds').isArray(),
+  body('shopIds.*').isString(),
+  body('machineryIds').isArray(),
+  body('machineryIds.*').isString(),
+  body('workPackageIds').isArray(),
+  body('workPackageIds.*').isString(),
+  body('documentIds').isArray(),
+  body('documentIds.*').isString(),
+  body('questionDocument').optional().isString(),
+  body('description').optional().isString(),
+  body('scheduleSlot').isArray(),
+  body('scheduleSlot.*.daysOfWeek').isArray(),
+  isDayOfWeek(body('scheduleSlot.*.daysOfWeek.*')),
+  isDate(body('scheduleSlot.*.startTime')).optional(),
+  isDate(body('scheduleSlot.*.endTime')).optional(),
+  intMinZero(body('scheduleSlot.*.recurrenceNumber')),
+  isDate(body('scheduleSlot.*.initialDateScheduled')),
+  body('scheduleSlot.*.allDay').isBoolean(),
+  body('availability').isArray(),
+  body('availability.*.availability').isArray(),
+  intMinZero(body('availability.*.availability.*')),
+  isDate(body('availability.*.dateSet')),
+  validateInputs,
+  CalendarController.createEvent
 );
 
 calendarRouter.post(
@@ -105,5 +141,7 @@ calendarRouter.post(
 calendarRouter.post('/:calendarId/delete', CalendarController.deleteCalendar);
 
 calendarRouter.post('/shop/:shopId/delete', nonEmptyString(param('shopId')), validateInputs, CalendarController.deleteShop);
+
+calendarRouter.get('/shops', CalendarController.getAllShops);
 
 export default calendarRouter;
