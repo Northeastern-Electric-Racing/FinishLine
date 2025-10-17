@@ -18,6 +18,7 @@ describe('Rule Tests', () => {
   let organization: Organization;
   let admin: User;
   let nonLeadership: User;
+  let guest: User;
   let project: Project;
   let fsaeRulesetType: Ruleset_Type;
 
@@ -26,6 +27,7 @@ describe('Rule Tests', () => {
     orgId = organization.organizationId;
     admin = await createTestUser(supermanAdmin, organization.organizationId);
     nonLeadership = await createTestUser(financeMember, organization.organizationId);
+    guest = await createTestUser(wonderwomanGuest, organization.organizationId);
     project = await createTestProject(admin, organization.organizationId);
 
     fsaeRulesetType = await prisma.ruleset_Type.create({
@@ -142,6 +144,7 @@ describe('Rule Tests', () => {
       expect(projectRule.statusHistory).toEqual([]);
       expect(projectRule.currentStatus).toBe(Rule_Completion.REVIEW);
     });
+
     it('Creates a project rule successfully for a leaf rule', async () => {
       const car = await createUniqueCar(orgId);
       const { leafRule1 } = await setupRules(car);
@@ -155,6 +158,7 @@ describe('Rule Tests', () => {
       expect(projectRule.statusHistory).toEqual([]);
       expect(projectRule.currentStatus).toBe(Rule_Completion.REVIEW);
     });
+
     it('Create project rule fails if user does not have permission', async () => {
       const car = await createUniqueCar(orgId);
       const { leafRule1 } = await setupRules(car);
@@ -162,6 +166,7 @@ describe('Rule Tests', () => {
         async () => await RulesService.createProjectRule(nonLeadership, organization, leafRule1.ruleId, project.projectId)
       ).rejects.toThrow(new AccessDeniedException('You do not have permissions to assign rules to projects'));
     });
+
     it('Create project rule fails if rule was deleted', async () => {
       const car = await createUniqueCar(orgId);
       const { leafRule2 } = await setupRules(car);
@@ -174,11 +179,13 @@ describe('Rule Tests', () => {
         async () => await RulesService.createProjectRule(admin, organization, leafRule2.ruleId, project.projectId)
       ).rejects.toThrow(new DeletedException('Rule', leafRule2.ruleId));
     });
+
     it('Create project rule fails if rule does not exist', async () => {
       await expect(
         async () => await RulesService.createProjectRule(admin, organization, '019263825673825738', project.projectId)
       ).rejects.toThrow(new NotFoundException('Rule', '019263825673825738'));
     });
+
     it('Create project rule fails if project was deleted', async () => {
       const car = await createUniqueCar(orgId);
       const { leafRule2 } = await setupRules(car);
@@ -194,6 +201,7 @@ describe('Rule Tests', () => {
         async () => await RulesService.createProjectRule(admin, organization, leafRule2.ruleId, project.projectId)
       ).rejects.toThrow(new DeletedException('Project', project.projectId));
     });
+
     it('Create project rule fails if project does not exist', async () => {
       const car = await createUniqueCar(orgId);
       const { leafRule1 } = await setupRules(car);
@@ -201,6 +209,7 @@ describe('Rule Tests', () => {
         new NotFoundException('Project', 'fake-project-id')
       );
     });
+
     it('Create project rule fails if project rule assignment already exists', async () => {
       const car = await createUniqueCar(orgId);
       const { leafRule1 } = await setupRules(car);
@@ -211,64 +220,48 @@ describe('Rule Tests', () => {
     });
   });
 
-  describe('Rule Tests', () => {
-    let orgId: string;
-    let organization: Organization;
-    beforeEach(async () => {
-      organization = await createTestOrganization();
-      orgId = organization.organizationId;
+  describe('Delete Ruleset Type', () => {
+    it('Fails if user not an admin', async () => {
+      await expect(async () => await RulesService.deleteRulesetType(guest, 'FSAE', organization)).rejects.toThrow(
+        new AccessDeniedAdminOnlyException('only admin are allowed to delete ruleset types')
+      );
     });
 
-    afterEach(async () => {
-      await resetUsers();
+    it('Fails if the ruleset type has already been deleted', async () => {
+      vi.spyOn(prisma.ruleset_Type, 'findUnique').mockResolvedValue({
+        name: 'FSAE',
+        rulesetTypeId: '1',
+        lastUpdated: new Date(),
+        createdByUserId: 'kk',
+        deletedByUserId: 'berthaaa'
+      });
+
+      const appAdmin = await createTestUser(batmanAppAdmin, orgId);
+      await expect(RulesService.deleteRulesetType(appAdmin, '1', organization)).rejects.toThrow(
+        new DeletedException('Ruleset Type', '1')
+      );
     });
 
-    describe('Delete Ruleset Type', () => {
-      it('Fails if user not an admin', async () => {
-        await expect(
-          async () =>
-            await RulesService.deleteRulesetType(await createTestUser(wonderwomanGuest, orgId), 'FSAE', organization)
-        ).rejects.toThrow(new AccessDeniedAdminOnlyException('only admin are allowed to delete ruleset types'));
+    it('Successfully deletes the ruleset type', async () => {
+      vi.spyOn(prisma.ruleset_Type, 'findUnique').mockResolvedValue({
+        name: 'FSAE',
+        rulesetTypeId: '234',
+        lastUpdated: new Date(),
+        createdByUserId: 'bertha',
+        deletedByUserId: null
+      });
+      vi.spyOn(prisma.ruleset_Type, 'update').mockResolvedValue({
+        name: 'Test Ruleset',
+        rulesetTypeId: '234',
+        lastUpdated: new Date(),
+        createdByUserId: 'user1',
+        deletedByUserId: 'bertha'
       });
 
-      it('Fails if the ruleset type has already been deleted', async () => {
-        vi.spyOn(prisma.ruleset_Type, 'findUnique').mockResolvedValue({
-          name: 'FSAE',
-          rulesetTypeId: '1',
-          lastUpdated: new Date(),
-          createdByUserId: 'kk',
-          deletedByUserId: 'berthaaa'
-        });
+      const appAdmin = await createTestUser(batmanAppAdmin, orgId);
+      const result = await RulesService.deleteRulesetType(appAdmin, '123', organization);
 
-        await expect(
-          RulesService.deleteRulesetType(await createTestUser(batmanAppAdmin, orgId), '1', organization)
-        ).rejects.toThrow(new DeletedException('Ruleset Type', '1'));
-      });
-
-      it('Successfully deletes the ruleset type', async () => {
-        vi.spyOn(prisma.ruleset_Type, 'findUnique').mockResolvedValue({
-          name: 'FSAE',
-          rulesetTypeId: '234',
-          lastUpdated: new Date(),
-          createdByUserId: 'bertha',
-          deletedByUserId: null
-        });
-        vi.spyOn(prisma.ruleset_Type, 'update').mockResolvedValue({
-          name: 'Test Ruleset',
-          rulesetTypeId: '234',
-          lastUpdated: new Date(),
-          createdByUserId: 'user1',
-          deletedByUserId: 'bertha' // Now deleted
-        });
-
-        const result = await RulesService.deleteRulesetType(
-          await createTestUser(batmanAppAdmin, orgId),
-          '123',
-          organization
-        );
-
-        expect(result).toEqual({ message: 'Ruleset Type Deleted' });
-      });
+      expect(result).toEqual({ message: 'Ruleset Type Deleted' });
     });
   });
 });
