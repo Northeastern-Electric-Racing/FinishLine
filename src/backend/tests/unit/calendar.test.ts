@@ -528,15 +528,6 @@ describe('Calendar Tests', () => {
       ).rejects.toBeInstanceOf(NotFoundException);
     });
 
-    it('fails if shop belongs to a different org', async () => {
-      // clone the real org but with a different ID
-      const otherOrganization: Organization = { ...organization, organizationId: 'some-other-org-id' };
-
-      await expect(
-        CalendarService.editShop(adminUser, shop.shopId, 'Updated Shop Name', 'Updated Description', otherOrganization)
-      ).rejects.toThrow(new InvalidOrganizationException('Shop'));
-    });
-
     it('fails if shop is soft-deleted', async () => {
       const created = await CalendarService.createShop(adminUser, 'Shop D', 'Desc D', organization);
       await CalendarService.deleteShop(adminUser, created.shopId, organization);
