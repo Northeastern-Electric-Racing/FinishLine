@@ -43,7 +43,7 @@ dayjs.extend(utc);
 export default class WorkPackagesService {
   /**
    * Normalize an input date string to the user's local midnight converted to UTC
-   * @param input - The date string to normalize 
+   * @param input - The date string to normalize
    * @returns date object representing midnight UTC
    */
   private static toUtcMidnight(input: string): Date {
