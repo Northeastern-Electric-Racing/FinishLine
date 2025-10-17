@@ -1,6 +1,6 @@
 import { alfred, robinMember, cyborgMember, theVisitorGuest } from '../test-data/users.test-data';
 import ReimbursementRequestService from '../../src/services/reimbursement-requests.services';
-import { AccessDeniedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
+import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
 import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { addDaysToDate, IndexCode, ReimbursementRequest, ReimbursementStatusType, AccountCode } from 'shared';
@@ -927,9 +927,7 @@ describe('Reimbursement Requests', () => {
           reimbursementRequest.reimbursementRequestId,
           financeMember.userId
         )
-      ).rejects.toThrow(
-        new Error('Reimbursement Request with id: ' + reimbursementRequest.reimbursementRequestId + ' has been deleted!')
-      );
+      ).rejects.toThrow(new DeletedException('Reimbursement Request', reimbursementRequest.reimbursementRequestId));
     });
   });
 
