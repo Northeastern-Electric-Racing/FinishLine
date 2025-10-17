@@ -6,8 +6,8 @@ export const SHOPS_KEY = ['shops'] as const;
 
 export const useAllShops = () =>
   useQuery<Shop[], Error>(SHOPS_KEY, async () => {
-    const { data } = await getAllShops();
-    return data;
+    const res = await getAllShops();
+    return res.data;
   });
 
 export const useCreateShop = () => {
