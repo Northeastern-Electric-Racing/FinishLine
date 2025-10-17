@@ -12,13 +12,13 @@ export interface Calendar {
 }
 
 export enum DayOfWeek {
-  MONDAY,
-  TUESDAY,
-  WEDNESDAY,
-  THURSDAY,
-  FRIDAY,
-  SATURDAY,
-  SUNDAY
+  MONDAY = 'MONDAY',
+  TUESDAY = 'TUESDAY',
+  WEDNESDAY = 'WEDNESDAY',
+  THURSDAY = 'THURSDAY',
+  FRIDAY = 'FRIDAY',
+  SATURDAY = 'SATURDAY',
+  SUNDAY = 'SUNDAY'
 }
 
 export interface ScheduleSlot {
@@ -28,7 +28,16 @@ export interface ScheduleSlot {
   endTime?: Date;
   recurrenceNumber: number;
   initialDateScheduled: Date;
-  allDay: Boolean;
+  allDay: boolean;
+}
+
+export interface ScheduleSlotCreateArgs {
+  days: DayOfWeek[];
+  startTime?: Date;
+  endTime?: Date;
+  recurrenceNumber: number;
+  initialDateScheduled: Date;
+  allDay: boolean;
 }
 
 export interface EventType {
@@ -76,20 +85,21 @@ export interface Machinery {
 
 export interface Event {
   eventId: string;
-  name: string;
+  title: string;
   approved: boolean;
   userCreated: User;
   dateCreated: Date;
   eventTypeId: string;
   approvedBy?: User;
-  scheduledTimes?: ScheduleSlot[];
-  people?: User[];
+  scheduledTimes: ScheduleSlot[];
+  people: User[];
   location?: string;
   zoomLink?: string;
-  availability?: Availability[];
-  shop?: Shop[];
-  machinery?: Machinery[];
-  workPackage?: WorkPackage[];
-  documentIds?: string[];
+  availability: Availability[];
+  shops: Shop[];
+  machinery: Machinery[];
+  workPackages: WorkPackage[];
+  documentIds: string[];
+  questionDocument?: string;
   description?: string;
 }

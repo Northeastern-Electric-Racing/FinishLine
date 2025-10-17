@@ -1,16 +1,9 @@
 import { Prisma } from '@prisma/client';
 import { getUserQueryArgs } from './user.query-args';
+import { getShopQueryArgs } from './shop.query-args';
 
-export type ShopQueryArgs = ReturnType<typeof getShopQueryArgs>;
 export type ShopMachineryQueryArgs = ReturnType<typeof getShopMachineryQueryArgs>;
 export type MachineryQueryArgs = ReturnType<typeof getMachineryQueryArgs>;
-
-export const getShopQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.ShopDefaultArgs>()({
-    include: {
-      userCreated: getUserQueryArgs(organizationId)
-    }
-  });
 
 export const getShopMachineryQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.ShopMachineryDefaultArgs>()({
