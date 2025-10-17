@@ -529,11 +529,12 @@ describe('Calendar Tests', () => {
     });
 
     it('fails if shop belongs to a different org', async () => {
-      const created = await CalendarService.createShop(adminUser, 'Shop C', 'Desc C', organization);
-      const otherOrg = await createTestOrganization(); // your existing helper
-      await expect(CalendarService.editShop(adminUser, created.shopId, 'X', 'Y', otherOrg)).rejects.toBeInstanceOf(
-        InvalidOrganizationException
-      );
+      // clone the real org but with a different ID
+      const otherOrganization: Organization = { ...organization, organizationId: 'some-other-org-id' };
+
+      await expect(
+        CalendarService.editShop(adminUser, shop.shopId, 'Updated Shop Name', 'Updated Description', otherOrganization)
+      ).rejects.toThrow(new InvalidOrganizationException('Shop'));
     });
 
     it('fails if shop is soft-deleted', async () => {
