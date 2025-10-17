@@ -97,6 +97,18 @@ export default class CalendarController {
     }
   }
 
+  static async editShop(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { shopId } = req.params;
+      const { name, description } = req.body;
+
+      const updatedShop = await CalendarService.editShop(req.currentUser, shopId, name, description, req.organization);
+      res.status(200).json(updatedShop);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createCalendar(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, description, colorHexCode } = req.body;

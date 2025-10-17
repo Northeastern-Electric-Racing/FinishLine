@@ -278,6 +278,34 @@ export default class CalendarService {
     return shopTransformer(newShop);
   }
 
+  static async editShop(
+    submitter: User,
+    shopId: string,
+    name: string,
+    description: string,
+    organization: Organization
+  ): Promise<Shop> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('create shop');
+    }
+
+    const existing = await prisma.shop.findUnique({ where: { shopId } });
+    if (!existing) throw new NotFoundException('Shop', shopId);
+    if (existing.dateDeleted) throw new DeletedException('Shop', shopId);
+    if (existing.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Shop');
+
+    const updatedShop = await prisma.shop.update({
+      where: { shopId },
+      data: {
+        name,
+        description
+      },
+      ...getShopQueryArgs(organization.organizationId)
+    });
+
+    return shopTransformer(await updatedShop);
+  }
+
   /**
    * @param submitter The user submitting the request, who must be an admin
    * @param name The name of the calendar

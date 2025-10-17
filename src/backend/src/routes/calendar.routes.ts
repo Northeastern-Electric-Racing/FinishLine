@@ -73,6 +73,14 @@ calendarRouter.post(
   CalendarController.createShop
 );
 
+calendarRouter.put(
+  '/shop/edit/:shopId',
+  nonEmptyString(body('name')),
+  body('description').optional().isString(),
+  validateInputs,
+  CalendarController.editShop
+);
+
 calendarRouter.post(
   '/event-type/:eventTypeId/edit',
   body('calendarIds').isArray(),
