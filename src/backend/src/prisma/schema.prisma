@@ -1041,7 +1041,7 @@ model Event {
   userDeleted      User?          @relation(fields: [userDeletedId], references: [userId], name: "eventDeleter")
   eventTypeId      String
   eventType        EventType      @relation(fields: [eventTypeId], references: [eventTypeId])
-  approved         Boolean
+  approved         Boolean        @default(false)
   approvedByUserId String?
   approvedBy       User?          @relation(fields: [approvedByUserId], references: [userId], name: "eventApprover")
   scheduledTimes   ScheduleSlot[]
