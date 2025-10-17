@@ -1197,11 +1197,14 @@ export default class ReimbursementRequestService {
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
     try {
-      await sendReimbursementRequestLeadershipApprovedNotification(
-        reimbursementRequest.notificationSlackThreads,
-        submitter.userId,
-        reimbursementRequest.recipientId
-      );
+      // Only send notification if the submitter is not the recipient
+      if (submitter.userId !== reimbursementRequest.recipientId) {
+        await sendReimbursementRequestLeadershipApprovedNotification(
+          reimbursementRequest.notificationSlackThreads,
+          submitter.userId,
+          reimbursementRequest.recipientId
+        );
+      }
     } catch (e: unknown) {
       console.error('Error sending reimbursement request leadership approved notification:', e);
     }
@@ -1696,7 +1699,7 @@ export default class ReimbursementRequestService {
     });
 
     try {
-      await sendReimbursementRequestPendingFinanceNotification(reimbursementRequest.notificationSlackThreads);
+      await sendReimbursementRequestPendingFinanceNotification(reimbursementRequest.notificationSlackThreads, reimbursementRequest.assigneeId);
     } catch (e: unknown) {
       console.error('Error sending reimbursement request pending finance notification:', e);
     }
