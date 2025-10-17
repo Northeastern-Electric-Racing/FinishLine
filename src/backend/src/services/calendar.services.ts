@@ -764,4 +764,16 @@ export default class CalendarService {
 
     return shopTransformer(deleted);
   }
+
+  static async getAllShops(organization: Organization): Promise<Shop[]> {
+    const shops = await prisma.shop.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null
+      },
+      ...getShopQueryArgs(organization.organizationId)
+    });
+
+    return shops.map(shopTransformer);
+  }
 }
