@@ -8537,13 +8537,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dayjs@npm:^1.11.10":
-  version: 1.11.13
-  resolution: "dayjs@npm:1.11.13"
-  checksum: f388db88a6aa93956c1f6121644e783391c7b738b73dbc54485578736565c8931bdfba4bb94e9b1535c6e509c97d5deb918bbe1ae6b34358d994de735055cca9
-  languageName: node
-  linkType: hard
-
 "dayjs@npm:^1.11.18":
   version: 1.11.18
   resolution: "dayjs@npm:1.11.18"
@@ -10947,7 +10940,7 @@ __metadata:
     classnames: ^2.3.1
     customize-cra: ^1.0.0
     date-fns: ^4.1.0
-    dayjs: ^1.11.10
+    dayjs: ^1.11.18
     file-saver: ^2.0.5
     google-auth-library: ^9.15.0
     jest-fail-on-console: ^3.0.2

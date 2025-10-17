@@ -19,10 +19,14 @@ export const dateFormatMonthDate = (date: Date) => {
   return dayjs(date).format('MMM D');
 };
 
+/**
+ * Transforms a Date object to a string in YYYY/MM/DD format using the user's local date
+ * This avoids timezone offset issues by using Day.js to format the date as-is
+ * @param date the Date object to transform
+ * @returns the date string in YYYY/MM/DD format
+ */
 export const transformDate = (date: Date) => {
-  const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();
-  const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate().toString();
-  return `${date.getFullYear().toString()}/${month}/${day}`;
+  return dayjs(date).format('YYYY/MM/DD');
 };
 
 export const formatDate = (date: Date) => {

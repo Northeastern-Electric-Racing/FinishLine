@@ -43,23 +43,11 @@ dayjs.extend(utc);
 export default class WorkPackagesService {
   /**
    * Normalize an input date string to the user's local midnight converted to UTC
-   *
-   * @param input - The date string to normalize
-   * @param clientOffsetMinutes - client timezone offset in minutes
-   * @returns date representing midnight
+   * @param input - The date string to normalize 
+   * @returns date object representing midnight UTC
    */
-  private static toUtcMidnight(input: string, clientOffsetMinutes?: number): Date {
-    if (clientOffsetMinutes === undefined) {
-      return dayjs(input).utc().startOf('day').toDate();
-    }
-
-    const inputDate = dayjs(input);
-    const userLocalDate = inputDate.subtract(clientOffsetMinutes, 'minutes');
-
-    const userMidnight = userLocalDate.startOf('day');
-    const utcMidnight = userMidnight.add(clientOffsetMinutes, 'minutes');
-
-    return utcMidnight.toDate();
+  private static toUtcMidnight(input: string): Date {
+    return dayjs(input).utc().startOf('day').toDate();
   }
 
   /**
@@ -182,8 +170,7 @@ export default class WorkPackagesService {
     blockedBy: WbsNumber[],
     descriptionBullets: DescriptionBulletPreview[],
     projectWbsNum: WbsNumber,
-    organization: Organization,
-    clientOffsetMinutes?: number
+    organization: Organization
   ): Promise<WorkPackage> {
     if (await userHasPermission(user.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('create work packages');
@@ -231,11 +218,8 @@ export default class WorkPackagesService {
         .map((element) => element.wbsElement.workPackageNumber)
         .reduce((prev, curr) => Math.max(prev, curr), 0) + 1;
 
-    // Normalize incoming startDate using user's local midnight converted to UTC when offset provided
-    const date = WorkPackagesService.toUtcMidnight(
-      startDate,
-      typeof clientOffsetMinutes === 'number' ? clientOffsetMinutes : undefined
-    );
+    // Parse the startDate to UTC midnight (frontend handles timezone formatting)
+    const date = WorkPackagesService.toUtcMidnight(startDate);
 
     const changesToCreate = crId
       ? [
@@ -335,8 +319,7 @@ export default class WorkPackagesService {
     descriptionBullets: DescriptionBulletPreview[],
     leadId: string | null,
     managerId: string | null,
-    organization: Organization,
-    clientOffsetMinutes?: number
+    organization: Organization
   ): Promise<WorkPackage> {
     const { userId } = user;
     // verify user is allowed to edit work packages
@@ -368,11 +351,8 @@ export default class WorkPackagesService {
 
     const blockedByElems = await validateBlockedBys(blockedBy, organization.organizationId);
 
-    // Normalize new startDate using user's local midnight converted to UTC when offset provided
-    const normalizedEdit = WorkPackagesService.toUtcMidnight(
-      startDate,
-      typeof clientOffsetMinutes === 'number' ? clientOffsetMinutes : undefined
-    );
+    // Parse new startDate to UTC midnight (frontend handles timezone formatting)
+    const normalizedEdit = WorkPackagesService.toUtcMidnight(startDate);
     const changes = await getWorkPackageChanges(
       originalWorkPackage.wbsElement.name,
       name,

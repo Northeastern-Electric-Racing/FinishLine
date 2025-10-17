@@ -24,7 +24,7 @@
     "classnames": "^2.3.1",
     "customize-cra": "^1.0.0",
     "date-fns": "^4.1.0",
-    "dayjs": "^1.11.10",
+    "dayjs": "^1.11.18",
     "file-saver": "^2.0.5",
     "google-auth-library": "^9.15.0",
     "pdf-lib": "^1.17.1",

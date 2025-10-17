@@ -17,8 +17,6 @@ export interface WorkPackageApiInputs {
   crId?: string;
   blockedBy: WbsNumber[];
   descriptionBullets: DescriptionBulletPreview[];
-  /** Optional client timezone offset in minutes (same sign as Date.getTimezoneOffset). */
-  clientOffsetMinutes?: number;
 }
 
 export interface WorkPackageCreateArgs extends WorkPackageApiInputs {
@@ -55,12 +53,7 @@ export const getSingleWorkPackage = (wbsNum: WbsNumber) => {
  * @param payload Payload containing all the necessary data to create a work package.
  */
 export const createSingleWorkPackage = (payload: WorkPackageCreateArgs) => {
-  const clientOffsetMinutes =
-    typeof payload.clientOffsetMinutes === 'number' ? payload.clientOffsetMinutes : new Date().getTimezoneOffset();
-  return axios.post<WorkPackage>(apiUrls.workPackagesCreate(), {
-    ...payload,
-    clientOffsetMinutes
-  });
+  return axios.post<WorkPackage>(apiUrls.workPackagesCreate(), payload);
 };
 
 /**
@@ -70,12 +63,7 @@ export const createSingleWorkPackage = (payload: WorkPackageCreateArgs) => {
  * @returns Promise that will resolve to either a success status code or a fail status code.
  */
 export const editWorkPackage = (payload: WorkPackageEditArgs) => {
-  const clientOffsetMinutes =
-    typeof payload.clientOffsetMinutes === 'number' ? payload.clientOffsetMinutes : new Date().getTimezoneOffset();
-  return axios.post<{ message: string }>(apiUrls.workPackagesEdit(), {
-    ...payload,
-    clientOffsetMinutes
-  });
+  return axios.post<{ message: string }>(apiUrls.workPackagesEdit(), payload);
 };
 
 /**

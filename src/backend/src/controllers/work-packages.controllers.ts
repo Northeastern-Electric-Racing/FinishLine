@@ -44,8 +44,7 @@ export default class WorkPackagesController {
   // Create a work package with the given details
   static async createWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, crId, startDate, duration, blockedBy, descriptionBullets, projectWbsNum, clientOffsetMinutes } =
-        req.body;
+      const { name, crId, startDate, duration, blockedBy, descriptionBullets, projectWbsNum } = req.body;
       let { stage } = req.body;
       if (stage === 'NONE') {
         stage = null;
@@ -60,8 +59,7 @@ export default class WorkPackagesController {
         blockedBy,
         descriptionBullets,
         projectWbsNum,
-        req.organization,
-        clientOffsetMinutes
+        req.organization
       );
 
       res.status(200).json(workPackage);
@@ -73,18 +71,7 @@ export default class WorkPackagesController {
   // Edit a work package to the given specifications
   static async editWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
-      const {
-        workPackageId,
-        name,
-        crId,
-        startDate,
-        duration,
-        blockedBy,
-        descriptionBullets,
-        leadId,
-        managerId,
-        clientOffsetMinutes
-      } = req.body;
+      const { workPackageId, name, crId, startDate, duration, blockedBy, descriptionBullets, leadId, managerId } = req.body;
       let { stage } = req.body;
       if (stage === 'NONE') {
         stage = null;
@@ -101,8 +88,7 @@ export default class WorkPackagesController {
         descriptionBullets,
         leadId,
         managerId,
-        req.organization,
-        clientOffsetMinutes
+        req.organization
       );
       res.status(200).json({ message: 'Work package updated successfully' });
     } catch (error: unknown) {
