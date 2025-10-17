@@ -13,11 +13,14 @@ export const useAllShops = () =>
 export const useCreateShop = () => {
   const qc = useQueryClient();
   return useMutation<Shop, Error, { name: string; description: string }>(
-    (payload) => postCreateShop(payload).then((r) => r.data),
+    async (payload) => {
+      const { data } = await postCreateShop(payload);
+      return data;
+    },
     {
       onSuccess: () => {
         qc.invalidateQueries(SHOPS_KEY);
-      }
+      },
     }
   );
 };
