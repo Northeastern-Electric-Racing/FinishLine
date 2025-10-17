@@ -20,7 +20,7 @@ export const useCreateShop = () => {
     {
       onSuccess: () => {
         qc.invalidateQueries(SHOPS_KEY);
-      },
+      }
     }
   );
 };
