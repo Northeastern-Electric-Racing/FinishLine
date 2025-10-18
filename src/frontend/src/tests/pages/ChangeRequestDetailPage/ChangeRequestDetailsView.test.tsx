@@ -22,6 +22,7 @@ import {
   mockGetCurrentUserValue
 } from '../../test-support/mock-hooks';
 import { exampleAuthenticatedAdminUser } from '../../test-support/test-data/authenticated-user.stub';
+import ClarityProvider from '../../../app/ClarityProvider';
 
 vi.mock('../../../hooks/projects.hooks');
 vi.mock('../../../hooks/users.hooks');
@@ -47,18 +48,20 @@ const mockUseLogUserInHook = (isLoading: boolean, isError: boolean, error?: Erro
 const renderComponent = (cr: ChangeRequest, allowed: boolean = false) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
-    <AppContextUser>
-      <ToastProvider>
-        <RouterWrapper>
-          <ChangeRequestDetailsView
-            changeRequest={cr}
-            isUserAllowedToReview={allowed}
-            isUserAllowedToImplement={allowed}
-            isUserAllowedToDelete={allowed}
-          />
-        </RouterWrapper>
-      </ToastProvider>
-    </AppContextUser>
+    <ClarityProvider>
+      <AppContextUser>
+        <ToastProvider>
+          <RouterWrapper>
+            <ChangeRequestDetailsView
+              changeRequest={cr}
+              isUserAllowedToReview={allowed}
+              isUserAllowedToImplement={allowed}
+              isUserAllowedToDelete={allowed}
+            />
+          </RouterWrapper>
+        </ToastProvider>
+      </AppContextUser>
+    </ClarityProvider>
   );
 };
 

@@ -19,6 +19,7 @@ import {
   exampleAuthenticatedAdminUser,
   exampleAuthenticatedGuestUser
 } from '../../test-support/test-data/authenticated-user.stub';
+import ClarityProvider from '../../../app/ClarityProvider';
 
 vi.mock('../../../hooks/work-packages.hooks');
 
@@ -54,9 +55,11 @@ const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <AppContextUser>
-        <WorkPackagePage wbsNum={exampleWbsProject1} />
-      </AppContextUser>
+      <ClarityProvider>
+        <AppContextUser>
+          <WorkPackagePage wbsNum={exampleWbsProject1} />
+        </AppContextUser>
+      </ClarityProvider>
     </RouterWrapper>
   );
 };

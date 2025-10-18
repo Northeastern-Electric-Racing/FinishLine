@@ -10,6 +10,7 @@ import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import * as userHooks from '../../../hooks/users.hooks';
 import AppContextUser from '../../../app/AppContextUser';
 import { exampleAuthenticatedAdminUser } from '../../test-support/test-data/authenticated-user.stub';
+import ClarityProvider from '../../../app/ClarityProvider';
 
 /**
  * Sets up the component under test with the desired values and renders it.
@@ -17,11 +18,13 @@ import { exampleAuthenticatedAdminUser } from '../../test-support/test-data/auth
 const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
-    <AppContextUser>
-      <RouterWrapper>
-        <CreateProposedSolutionsList proposedSolutions={[]} setProposedSolutions={() => {}} />
-      </RouterWrapper>
-    </AppContextUser>
+    <ClarityProvider>
+      <AppContextUser>
+        <RouterWrapper>
+          <CreateProposedSolutionsList proposedSolutions={[]} setProposedSolutions={() => {}} />
+        </RouterWrapper>
+      </AppContextUser>
+    </ClarityProvider>
   );
 };
 
