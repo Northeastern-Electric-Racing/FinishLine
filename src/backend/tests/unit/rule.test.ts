@@ -202,4 +202,39 @@ describe('Rule Tests', () => {
       );
     });
   });
+
+  describe('Delete Ruleset', () => {
+    it('Deletes a ruleset successfully', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+      const deleted = await RulesService.deleteRuleset(ruleset1.rulesetId, admin.userId, organization.organizationId);
+
+      expect(deleted).toBeDefined();
+      expect(deleted.rulesetId).toBe(ruleset1.rulesetId);
+      expect(deleted.deletedBy).toBeDefined();
+      expect(deleted.deletedByUserId).toBe(admin.userId);
+    });
+    it('Delete ruleset fails if user does not have permission', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+
+      await expect(
+        async () => await RulesService.deleteRuleset(ruleset1.rulesetId, nonLeadership.userId, organization.organizationId)
+      ).rejects.toThrow(new AccessDeniedException('Only admins (including the ruleset creator) can delete a ruleset.'));
+    });
+    it('Delete ruleset fails if ruleset was already deleted', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+
+      await RulesService.deleteRuleset(ruleset1.rulesetId, admin.userId, organization.organizationId);
+      await expect(
+        async () => await RulesService.deleteRuleset(ruleset1.rulesetId, admin.userId, organization.organizationId)
+      ).rejects.toThrow(new DeletedException('Ruleset', ruleset1.rulesetId));
+    });
+    it('Delete ruleset fails if ruleset does not exist', async () => {
+      await expect(
+        async () => await RulesService.deleteRuleset('fake-ruleset-id', admin.userId, organization.organizationId)
+      ).rejects.toThrow(new NotFoundException('Ruleset', 'fake-ruleset-id'));
+    });
+  });
 });

@@ -30,6 +30,8 @@ export interface Ruleset {
     carId: string;
     name: string;
   };
+  deletedBy: User | null;
+  deletedByUserId: string | null;
 }
 
 export interface Rule {

@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { getUserQueryArgs } from './user.query-args';
 // write types and query args below here
 
 // preview for rule display
@@ -30,5 +31,18 @@ export const getProjectRuleQueryArgs = () =>
           updatedAt: 'desc'
         }
       }
+    }
+  });
+
+export type RulesetQueryArgs = ReturnType<typeof getRulesetQueryArgs>;
+
+export const getRulesetQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.RulesetDefaultArgs>()({
+    include: {
+      rules: { where: { dateDeleted: null } },
+      rulesetType: true,
+      car: true,
+      createdBy: getUserQueryArgs(organizationId),
+      deletedBy: getUserQueryArgs(organizationId)
     }
   });
