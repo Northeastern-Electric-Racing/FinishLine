@@ -11,6 +11,9 @@ import {
   ProjectGantt,
   RetrospectiveProjectPreview,
   RetrospectiveWorkPackage,
+  Task,
+  TaskPriority,
+  TaskStatus,
   TeamPreview,
   User,
   validateWBS,
@@ -36,7 +39,22 @@ import { useQuery } from '../hooks/utils.hooks';
 export const NO_TEAM = 'No Team';
 
 export const GANTT_CHART_GAP_SIZE = '0.75rem';
-export const GANTT_CHART_CELL_SIZE = '2.25rem';
+
+// Gantt-specific task type for local state management (before API calls)
+export interface GanttTaskCreate {
+  id?: string; // actual task ID for existing tasks (when editing)
+  taskId: string; // temporary ID for local tracking
+  wbsNum: WbsNumber;
+  title: string;
+  notes: string;
+  startDate?: Date;
+  deadline?: Date;
+  priority: TaskPriority;
+  status: TaskStatus;
+  assigneeIds: string[]; // Just the IDs, not full user objects
+}
+
+export const GANTT_CHART_CELL_SIZE = '2.375rem';
 
 export interface GanttCollection<E, T> {
   id: string;
@@ -116,23 +134,28 @@ export type RequestEventChange<T> = {
 };
 
 export const getProjectStartDate = (project: ProjectGantt): Date => {
-  if (project.workPackages.length === 0) {
-    return new Date();
-  }
-  return project.workPackages.reduce((acc, current) => {
+  const wpStart = project.workPackages.reduce((acc, current) => {
     if (current.startDate < acc) return current.startDate;
     return acc;
-  }, project.workPackages[0].startDate);
+  }, new Date());
+  return project.tasks.reduce((acc, current) => {
+    if (current.startDate && current.startDate < acc) return current.startDate;
+    return acc;
+  }, wpStart);
 };
 
 export const getProjectEndDate = (project: ProjectGantt): Date => {
-  if (project.workPackages.length === 0) {
-    return new Date(Date.now() + 1000 * 60 * 60 * 24 * 7 * 5);
-  }
-  return project.workPackages.reduce((acc, current) => {
-    if (current.endDate > acc) return current.endDate;
+  const wpEnd = project.workPackages.reduce(
+    (acc, current) => {
+      if (current.endDate > acc) return current.endDate;
+      return acc;
+    },
+    new Date(Date.now() + 1000 * 60 * 60 * 24 * 7 * 5)
+  );
+  return project.tasks.reduce((acc, current) => {
+    if (current.deadline && current.deadline > acc) return current.deadline;
     return acc;
-  }, project.workPackages[0].endDate);
+  }, wpEnd);
 };
 
 export const transformDesignReviewToGanttEvent = (designReview: DesignReviewPreview): GanttEvent => {
@@ -153,7 +176,7 @@ export const transformDesignReviewToGanttEvent = (designReview: DesignReviewPrev
 const applyChangesToBlockedBy = (
   initialWorkPackage: WorkPackage,
   totalWorkPackages: WorkPackage[],
-  changeToApply: GanttChange<WbsElementPreview>
+  changeToApply: GanttChange<WbsElementPreview | Task>
 ) => {
   const updatedBlockingWbsNums: Set<String> = new Set();
 
@@ -196,13 +219,41 @@ const applyChangesToBlockedBy = (
  * @param parentProject The parent project of the wbs element, itself if it is a project
  */
 export const applyChangesToWBSElement = (
-  ganttChanges: GanttChange<WbsElementPreview>[],
-  wbsElement: WbsElementPreview,
+  ganttChanges: GanttChange<WbsElementPreview | Task>[],
+  wbsElement: WbsElementPreview | Task,
   parentProject: ProjectGantt
-): { updatedProject: ProjectGantt; updatedElement: WbsElementPreview } => {
+): { updatedProject: ProjectGantt; updatedElement: WbsElementPreview | Task } => {
   const updatedElement = { ...wbsElement };
   const copiedProject = projectGanttTransformer(JSON.parse(JSON.stringify(parentProject)));
-  if (isWorkPackage(updatedElement)) {
+
+  // Check if it's a Task
+  if ((updatedElement as Task).taskId !== undefined) {
+    const task = JSON.parse(JSON.stringify(updatedElement)) as Task;
+    for (const change of ganttChanges) {
+      if ((change.element as Task).taskId === task.taskId) {
+        // Apply changes to the task
+        if (change.type === 'shift-by-days') {
+          // For tasks, we shift the deadline by the specified number of days
+          task.deadline = task.deadline ? dayjs(task.deadline).add(change.days, 'day').toDate() : new Date();
+          task.startDate = task.startDate ? dayjs(task.startDate).add(change.days, 'day').toDate() : undefined;
+        } else if (change.type === 'change-end-date') {
+          if (!task.startDate) {
+            task.startDate = task.deadline;
+          }
+          task.deadline = change.newEnd;
+        }
+
+        // Update the task in the project's tasks array
+        copiedProject.tasks = copiedProject.tasks.map((projectTask) =>
+          projectTask.taskId === task.taskId ? task : projectTask
+        );
+      }
+    }
+
+    return { updatedProject: copiedProject, updatedElement: task };
+  }
+
+  if ((updatedElement as WbsElementPreview).wbsNum !== undefined && isWorkPackage(updatedElement as WbsElementPreview)) {
     // If its a work package were gonna loop through and see if we need to apply changes
     const workPackage = workPackageTransformer(JSON.parse(JSON.stringify(updatedElement)));
     for (const change of ganttChanges) {
@@ -235,6 +286,7 @@ export interface GanttFilters {
   showTeamTypes: string[];
   showTeams: string[];
   showOnlyOverdue?: boolean;
+  hideTasks?: boolean;
 }
 
 export interface GanttTask<T> extends GanttTaskData<T> {}
@@ -326,6 +378,7 @@ export const buildGanttSearchParams = (ganttFilters: GanttFilters, additionalPar
     ganttFilters.showTeamTypes.map(teamTypeFormat).join('') +
     ganttFilters.showTeams.map(teamFormat).join('') +
     (ganttFilters.showOnlyOverdue ? `&overdue=${ganttFilters.showOnlyOverdue}` : '') +
+    (ganttFilters.hideTasks ? `&hideTasks=${ganttFilters.hideTasks}` : '') +
     (additionalParams ?? '');
 
   return newParams;
@@ -354,6 +407,33 @@ const getBlockingGanttTasks = <T extends WorkPackage>(
       return undefined;
     })
     .filter((wp) => !!wp);
+};
+
+export const transformTaskToGanttTask = <T extends Task>(task: T, end: Date): GanttTask<T> => {
+  return {
+    id: uuidv4(),
+    element: task,
+
+    name: task.title,
+    start: new Date(task.startDate?.valueOf() ?? task.deadline?.valueOf() ?? end),
+    end: new Date(task.deadline?.valueOf() ?? end.valueOf()),
+
+    events: [],
+    blocking: [],
+    children: [],
+    overlays: [],
+
+    tooltip: {
+      upperRightDisplay: <Typography>Creator: {fullNamePipe(task.createdBy)}</Typography>,
+      lowerRightDisplay: <Typography>Assignees: {task.assignees.map(fullNamePipe).join(', ')}</Typography>
+    },
+    styles: {
+      color: GanttWorkPackageTextColor,
+      backgroundColor: ganttTaskColorPipe(task.status)
+    },
+    onClick: () => window.open(`/projects`, '_blank'),
+    root: false
+  };
 };
 
 export const transformWorkPackageToGanttTask = <T extends WorkPackage>(
@@ -386,10 +466,15 @@ export const transformWorkPackageToGanttTask = <T extends WorkPackage>(
   };
 };
 
-export const transformProjectToGanttTask = (project: ProjectGantt): GanttTask<WbsElementPreview> => {
+export const transformProjectToGanttTask = (
+  project: ProjectGantt,
+  hideTasks: boolean = false
+): GanttTask<WbsElementPreview | Task> => {
   const startDate = getProjectStartDate(project);
 
   const endDate = getProjectEndDate(project);
+
+  const taskList = hideTasks ? [] : project.tasks;
 
   return {
     id: uuidv4(),
@@ -399,10 +484,16 @@ export const transformProjectToGanttTask = (project: ProjectGantt): GanttTask<Wb
     start: startDate,
     end: endDate,
     blocking: [],
-    children: project.workPackages
-      .filter((workPackage) => workPackage.blockedBy.length === 0)
-      .map((workPackage) => transformWorkPackageToGanttTask(workPackage, project.workPackages)),
-    overlays: project.workPackages.map((wp) => transformWorkPackageToGanttTask(wp, project.workPackages)),
+    children: [
+      ...project.workPackages
+        .filter((workPackage) => workPackage.blockedBy.length === 0)
+        .map((workPackage) => transformWorkPackageToGanttTask(workPackage, project.workPackages)),
+      ...taskList.map((task) => transformTaskToGanttTask(task, endDate))
+    ],
+    overlays: [
+      ...project.workPackages.map((wp) => transformWorkPackageToGanttTask(wp, project.workPackages)),
+      ...taskList.map((task) => transformTaskToGanttTask(task, endDate))
+    ],
     events: [],
     tooltip: {
       upperRightDisplay: <UserDisplay user={project.lead} label="Lead" />,
@@ -414,10 +505,11 @@ export const transformProjectToGanttTask = (project: ProjectGantt): GanttTask<Wb
 };
 
 export const transformRetrospectiveProjectToGanttTask = (
-  project: RetrospectiveProjectPreview
-): GanttTask<WbsElementPreview> => {
+  project: RetrospectiveProjectPreview,
+  showTasks: boolean = true
+): GanttTask<WbsElementPreview | Task> => {
   return {
-    ...transformProjectToGanttTask(project),
+    ...transformProjectToGanttTask(project, showTasks),
     children: project.workPackages
       .filter((wp) => wp.blockedBy.length === 0)
       .map((wp) => transformRetrospectiveWorkPackageToGanttTask(wp, project.workPackages)),
@@ -447,9 +539,9 @@ export const constructCollectionsFromTeamPreviewAndProjects = <T extends Project
   projects: T[],
   filters: GanttFilters,
   searchText: string,
-  projectTransformation: (project: T) => GanttTaskData<WbsElementPreview>,
+  projectTransformation: (project: T, hideTasks?: boolean) => GanttTaskData<WbsElementPreview | Task>,
   reparser: (project: T) => T
-): GanttCollection<TeamPreview, WbsElementPreview>[] => {
+): GanttCollection<TeamPreview, WbsElementPreview | Task>[] => {
   const projectMap = new Map<string, ProjectGantt[]>();
   projects.forEach((project) => {
     project.teams.forEach((team) => {
@@ -461,11 +553,13 @@ export const constructCollectionsFromTeamPreviewAndProjects = <T extends Project
     });
   });
 
+  const hideTasks = filters.hideTasks ?? false;
+
   return teams.map((team) => ({
     id: uuidv4(),
     element: team,
     tasks: filterGanttProjects((projectMap.get(team.teamId) ?? []) as T[], filters, searchText, team, reparser).map(
-      (project) => projectTransformation(project as T)
+      (project) => projectTransformation(project as T, hideTasks)
     ),
     title: team.teamName
   }));
@@ -490,6 +584,18 @@ export const sortWbs = (a: { wbsNum: WbsNumber }, b: { wbsNum: WbsNumber }) => {
 
 export const ganttDesignReviewStatusColorPipe = (status: DesignReviewStatus) => {
   return status !== DesignReviewStatus.UNCONFIRMED ? '#712f99' : '#876e96';
+};
+
+// Maps task status to the desired color for Gantt Chart
+export const ganttTaskColorPipe = (status: TaskStatus) => {
+  switch (status) {
+    case TaskStatus.IN_BACKLOG:
+      return '#80CBC4';
+    case TaskStatus.IN_PROGRESS:
+      return '#26A69A';
+    case TaskStatus.DONE:
+      return '#00695C';
+  }
 };
 
 // maps stage and status to the desired color for Gantt Chart
@@ -564,7 +670,7 @@ export const isHighlightedChangeOnGanttTask = <T,>(
 export const constructFinalizedChanges = (
   originalProjects: ProjectGantt[],
   updatedProjects: ProjectGantt[],
-  changes: GanttChange<WbsElementPreview>[]
+  changes: GanttChange<WbsElementPreview | Task>[]
 ) => {
   const aggregatedSet: Set<string> = new Set();
 
@@ -604,7 +710,7 @@ export const constructFinalizedChanges = (
   return eventChanges;
 };
 
-export const isProjectPreview = (wbsPreview: WbsElementPreview): wbsPreview is ProjectGantt => {
+export const isProjectPreview = (wbsPreview: WbsElementPreview | Task): wbsPreview is ProjectGantt => {
   return 'workPackages' in wbsPreview;
 };
 
@@ -621,6 +727,8 @@ export const useGanttFilters = (key: string) => {
 
     const showOnlyOverdue = query.get('overdue') ? query.get('overdue') === 'true' : undefined;
 
+    const hideTasks = query.get('hideTasks') ? query.get('hideTasks') === 'true' : undefined;
+
     const retroStartDate = query.get('retro-start') ? new Date(query.get('retro-start')!) : undefined;
 
     const retroEndDate = query.get('retro-end') ? new Date(query.get('retro-end')!) : undefined;
@@ -630,6 +738,7 @@ export const useGanttFilters = (key: string) => {
       showTeamTypes,
       showTeams,
       showOnlyOverdue,
+      hideTasks,
       startDate: retroStartDate,
       endDate: retroEndDate
     };
@@ -637,7 +746,7 @@ export const useGanttFilters = (key: string) => {
 
   const setFilters = (updates: RetroGanttFilters) => {
     history.push({ search: buildRetroGanttParams(updates) }, { replace: false });
-    localStorage.setItem(key, JSON.stringify(filters));
+    localStorage.setItem(key, JSON.stringify(updates));
   };
 
   useEffect(() => {

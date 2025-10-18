@@ -46,14 +46,25 @@ import { writeFileSync } from 'fs';
 import WbsElementTemplatesService from '../services/wbs-element-templates.services';
 import RecruitmentServices from '../services/recruitment.services';
 import OrganizationsService from '../services/organizations.services';
-import { seedGraph } from './seed-data/statistics.seed';
 import AnnouncementService from '../services/announcement.services';
 import OnboardingServices from '../services/onboarding.services';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
 import FinanceServices from '../services/finance.services';
-import { getUserQueryArgs } from '../prisma-query-args/user.query-args';
 
 const prisma = new PrismaClient();
+
+// Compute relative dates for seeding
+const getRelativeDate = (daysOffset: number, hoursOffset: number = 0): Date => {
+  const date = new Date();
+  date.setDate(date.getDate() + daysOffset);
+  date.setHours(date.getHours() + hoursOffset);
+  return date;
+};
+
+const daysAgo = (days: number): Date => getRelativeDate(-days);
+const daysFromNow = (days: number): Date => getRelativeDate(days);
+const weeksAgo = (weeks: number): Date => daysAgo(weeks * 7);
+const weeksFromNow = (weeks: number): Date => daysFromNow(weeks * 7);
 
 export const CreatePartTag = async (organizationId: string, name: string, colorHexCode: string) => {
   return await prisma.part_Tag.create({
@@ -1110,8 +1121,8 @@ const performSeed: () => Promise<void> = async () => {
     'Bodywork Concept of Design',
     changeRequestProject1Id,
     WorkPackageStage.Design,
-    '01/01/2023',
-    3,
+    weeksAgo(12).toISOString().split('T')[0],
+    6,
     [],
     [],
     thomasEmrax,
@@ -1130,7 +1141,7 @@ const performSeed: () => Promise<void> = async () => {
     'ACTIVATION',
     thomasEmrax.userId,
     joeShmoe.userId,
-    new Date('2024-03-25T04:00:00.000Z'),
+    weeksAgo(12),
     true,
     ner
   );
@@ -1156,7 +1167,7 @@ const performSeed: () => Promise<void> = async () => {
     'Adhesive Shear Strength Test',
     changeRequestProject1Id,
     WorkPackageStage.Research,
-    '01/22/2023',
+    weeksAgo(10).toISOString().split('T')[0],
     5,
     [],
     [],
@@ -1174,8 +1185,8 @@ const performSeed: () => Promise<void> = async () => {
     'Manufacture Wiring Harness',
     changeRequestProject5Id,
     WorkPackageStage.Manufacturing,
-    '02/01/2023',
-    3,
+    weeksAgo(9).toISOString().split('T')[0],
+    4,
     [],
     [],
     thomasEmrax,
@@ -1194,7 +1205,7 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.ACTIVATION,
     regina.userId,
     janis.userId,
-    new Date('2023-08-21T04:00:00.000Z'),
+    weeksAgo(9),
     true,
     ner
   );
@@ -1207,8 +1218,8 @@ const performSeed: () => Promise<void> = async () => {
     'Install Wiring Harness',
     changeRequestProject5Id,
     WorkPackageStage.Install,
-    '04/01/2023',
-    7,
+    weeksAgo(5).toISOString().split('T')[0],
+    6,
     [],
     [],
     thomasEmrax,
@@ -1227,7 +1238,7 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.ACTIVATION,
     joeShmoe.userId,
     thomasEmrax.userId,
-    new Date('2023-10-02T04:00:00.000Z'),
+    weeksAgo(5),
     true,
     ner
   );
@@ -1240,7 +1251,7 @@ const performSeed: () => Promise<void> = async () => {
     'Design Plush',
     changeRequestProject6Id,
     WorkPackageStage.Design,
-    '04/02/2023',
+    weeksAgo(16).toISOString().split('T')[0],
     7,
     [],
     [],
@@ -1260,7 +1271,7 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.ACTIVATION,
     katara.userId,
     aang.userId,
-    new Date('2023-05-08T04:00:00.000Z'),
+    weeksAgo(16),
     true,
     ner
   );
@@ -1273,8 +1284,8 @@ const performSeed: () => Promise<void> = async () => {
     'Put Plush Together',
     changeRequestProject6Id,
     WorkPackageStage.Manufacturing,
-    '04/02/2023',
-    7,
+    weeksAgo(9).toISOString().split('T')[0],
+    5,
     [],
     [],
     aang,
@@ -1293,7 +1304,7 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.ACTIVATION,
     katara.userId,
     aang.userId,
-    new Date('2023-07-31T04:00:00.000Z'),
+    weeksAgo(9),
     true,
     ner
   );
@@ -1306,8 +1317,8 @@ const performSeed: () => Promise<void> = async () => {
     'Plush Testing',
     changeRequestProject6Id,
     WorkPackageStage.Testing,
-    '04/02/2023',
-    3,
+    weeksAgo(4).toISOString().split('T')[0],
+    4,
     [],
     [],
     aang,
@@ -1326,7 +1337,7 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.ACTIVATION,
     katara.userId,
     aang.userId,
-    new Date('2023-10-09T04:00:00.000Z'),
+    weeksAgo(4),
     true,
     ner
   );
@@ -1340,8 +1351,8 @@ const performSeed: () => Promise<void> = async () => {
     'Design Laser Canon',
     changeRequestProject7Id,
     WorkPackageStage.Design,
-    '01/01/2023',
-    3,
+    weeksAgo(8).toISOString().split('T')[0],
+    5,
     [],
     [],
     zatanna,
@@ -1360,7 +1371,7 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.ACTIVATION,
     zatanna.userId,
     lexLuther.userId,
-    new Date('2024-03-25T04:00:00.000Z'),
+    weeksAgo(8),
     true,
     ner
   );
@@ -1373,8 +1384,8 @@ const performSeed: () => Promise<void> = async () => {
     'Laser Canon Research',
     changeRequestProject7Id,
     WorkPackageStage.Research,
-    '01/22/2023',
-    5,
+    weeksAgo(3).toISOString().split('T')[0],
+    6,
     [],
     [],
     zatanna,
@@ -1391,8 +1402,8 @@ const performSeed: () => Promise<void> = async () => {
     'Laser Canon Testing',
     changeRequestProject7Id,
     WorkPackageStage.Testing,
-    '02/15/2023',
-    3,
+    weeksFromNow(3).toISOString().split('T')[0],
+    4,
     [],
     [],
     zatanna,
@@ -1410,8 +1421,8 @@ const performSeed: () => Promise<void> = async () => {
     'Stadium Research',
     changeRequestProject8Id,
     WorkPackageStage.Research,
-    '02/01/2023',
-    5,
+    weeksAgo(14).toISOString().split('T')[0],
+    7,
     [],
     [],
     mikeMacdonald,
@@ -1430,7 +1441,7 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.ACTIVATION,
     mikeMacdonald.userId,
     ryanGiggs.userId,
-    new Date('2023-08-21T04:00:00.000Z'),
+    weeksAgo(14),
     true,
     ner
   );
@@ -1443,8 +1454,8 @@ const performSeed: () => Promise<void> = async () => {
     'Stadium Install',
     changeRequestProject8Id,
     WorkPackageStage.Install,
-    '03/01/2023',
-    8,
+    weeksAgo(7).toISOString().split('T')[0],
+    6,
     [],
     [],
     mikeMacdonald,
@@ -1461,8 +1472,8 @@ const performSeed: () => Promise<void> = async () => {
     'Stadium Testing',
     changeRequestProject8Id,
     WorkPackageStage.Testing,
-    '06/01/2023',
-    3,
+    weeksAgo(1).toISOString().split('T')[0],
+    5,
     [],
     [],
     mikeMacdonald,
@@ -1525,7 +1536,7 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.ACTIVATION,
     thomasEmrax.userId,
     joeShmoe.userId,
-    new Date('02/01/2023'),
+    weeksAgo(9),
     true,
     ner
   );
@@ -1542,7 +1553,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId],
     ner,
-    new Date('01/01/2024')
+    undefined,
+    daysFromNow(10)
   );
 
   await TasksService.createTask(
@@ -1554,7 +1566,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_BACKLOG,
     [joeShmoe.userId],
     ner,
-    new Date('01/01/2024')
+    daysAgo(5),
+    daysFromNow(15)
   );
 
   await TasksService.createTask(
@@ -1566,7 +1579,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId, joeBlow.userId],
     ner,
-    new Date('01/01/2024')
+    undefined,
+    daysFromNow(8)
   );
 
   await TasksService.createTask(
@@ -1579,7 +1593,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeBlow.userId],
     ner,
-    new Date('2024-02-17T00:00:00-05:00')
+    undefined,
+    daysFromNow(14)
   );
 
   await TasksService.createTask(
@@ -1591,7 +1606,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId],
     ner,
-    new Date('2024-01-01T00:00:00-05:00')
+    daysAgo(14),
+    daysFromNow(7)
   );
 
   await TasksService.createTask(
@@ -1603,7 +1619,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId],
     ner,
-    new Date('2024-01-20T00:00:00-05:00')
+    undefined,
+    daysFromNow(9)
   );
 
   await TasksService.createTask(
@@ -1615,7 +1632,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId],
     ner,
-    new Date('2023-05-19T00:00:00-04:00')
+    undefined,
+    daysFromNow(6)
   );
 
   await TasksService.createTask(
@@ -1627,7 +1645,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [joeShmoe.userId],
     ner,
-    new Date('01/01/2024')
+    undefined,
+    daysAgo(30)
   );
 
   await TasksService.createTask(
@@ -1647,7 +1666,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [joeShmoe.userId],
     ner,
-    new Date('2022-11-16T00:00-05:00')
+    undefined,
+    daysAgo(90)
   );
 
   await TasksService.createTask(
@@ -1659,7 +1679,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId],
     ner,
-    new Date('2023-03-15T00:00:00-04:00')
+    daysAgo(70),
+    daysAgo(55)
   );
 
   await TasksService.createTask(
@@ -1671,7 +1692,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_BACKLOG,
     [],
     ner,
-    new Date('2023-04-01T00:00:00-04:00')
+    undefined,
+    daysFromNow(12)
   );
 
   await TasksService.createTask(
@@ -1683,7 +1705,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId],
     ner,
-    new Date('2024-01-01T00:00:00-05:00')
+    undefined,
+    daysFromNow(8)
   );
 
   await TasksService.createTask(
@@ -1695,7 +1718,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId, joeShmoe.userId],
     ner,
-    new Date('2024-01-01T00:00:00-05:00')
+    undefined,
+    daysFromNow(7)
   );
 
   await TasksService.createTask(
@@ -1707,7 +1731,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [thomasEmrax.userId],
     ner,
-    new Date('2023-10-31T00:00:00-04:00')
+    daysAgo(80),
+    daysAgo(65)
   );
 
   await TasksService.createTask(
@@ -1719,7 +1744,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_BACKLOG,
     [thomasEmrax, joeShmoe, joeBlow].map((user) => user.userId),
     ner,
-    new Date('2024-05-01T00:00:00-04:00')
+    undefined,
+    daysFromNow(16)
   );
 
   await TasksService.createTask(
@@ -1731,7 +1757,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId],
     ner,
-    new Date('2024-02-29T00:00:00-05:00')
+    undefined,
+    daysFromNow(13)
   );
 
   await TasksService.createTask(
@@ -1743,7 +1770,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_BACKLOG,
     [joeShmoe.userId],
     ner,
-    new Date('2024-03-17T00:00:00-05:00')
+    undefined,
+    daysFromNow(18)
   );
 
   await TasksService.createTask(
@@ -1755,7 +1783,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [joeBlow.userId],
     ner,
-    new Date('2024-04-15T00:00:00-04:00')
+    undefined,
+    daysAgo(45)
   );
 
   await TasksService.createTask(
@@ -1767,7 +1796,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [joeBlow.userId],
     ner,
-    new Date('2024-04-15T00:00:00-04:00')
+    undefined,
+    daysAgo(60)
   );
 
   await TasksService.createTask(
@@ -1779,7 +1809,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [regina.userId],
     ner,
-    new Date('2023-06-23T00:00:00-04:00')
+    daysAgo(21),
+    daysAgo(10)
   );
 
   /**
@@ -2376,7 +2407,7 @@ const performSeed: () => Promise<void> = async () => {
     'Slim and Light Car',
     newWorkPackageChangeRequest.crId,
     WorkPackageStage.Design,
-    '01/22/2024',
+    weeksAgo(2).toISOString().split('T')[0],
     5,
     [],
     [],
@@ -2498,10 +2529,10 @@ const performSeed: () => Promise<void> = async () => {
     { userId: regina.userId, title: 'Chief Electrical Engineer' }
   ]);
 
-  await RecruitmentServices.createMilestone(batman, 'Club fair!', 'Also meet us at:', new Date('9/3/24'), ner);
-  await RecruitmentServices.createMilestone(batman, 'Applications Open', '', new Date('11/13/24'), ner);
-  await RecruitmentServices.createMilestone(batman, 'Applications Close', '', new Date('11/27/24'), ner);
-  await RecruitmentServices.createMilestone(batman, 'Decision Day!', '', new Date('12/4/24'), ner);
+  await RecruitmentServices.createMilestone(batman, 'Club fair!', 'Also meet us at:', daysAgo(120), ner);
+  await RecruitmentServices.createMilestone(batman, 'Applications Open', '', daysAgo(70), ner);
+  await RecruitmentServices.createMilestone(batman, 'Applications Close', '', daysAgo(56), ner);
+  await RecruitmentServices.createMilestone(batman, 'Decision Day!', '', daysAgo(49), ner);
 
   await RecruitmentServices.createOrganizationFaq(batman, 'Who is the Chief Software Engineer?', 'Peyton McKee', ner);
   await RecruitmentServices.createOrganizationFaq(
@@ -3031,7 +3062,7 @@ const performSeed: () => Promise<void> = async () => {
     'Google',
     true,
     5000,
-    new Date(12, 1, 24),
+    daysAgo(90),
     [2024, 2025],
     goldSponsorTier.sponsorTierId,
     true,
@@ -3044,10 +3075,10 @@ const performSeed: () => Promise<void> = async () => {
   await FinanceServices.createSponsorTask(
     thomasEmrax,
     ner,
-    new Date(12, 1, 25),
+    daysFromNow(30),
     'notes...',
     sponsor.sponsorId,
-    new Date(7, 5, 25),
+    daysAgo(60),
     thomasEmrax.userId
   );
 };
