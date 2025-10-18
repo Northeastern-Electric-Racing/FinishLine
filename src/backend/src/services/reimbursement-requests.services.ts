@@ -1699,7 +1699,10 @@ export default class ReimbursementRequestService {
     });
 
     try {
-      await sendReimbursementRequestPendingFinanceNotification(reimbursementRequest.notificationSlackThreads, reimbursementRequest.assigneeId);
+      await sendReimbursementRequestPendingFinanceNotification(
+        reimbursementRequest.notificationSlackThreads,
+        reimbursementRequest.assigneeId
+      );
     } catch (e: unknown) {
       console.error('Error sending reimbursement request pending finance notification:', e);
     }
