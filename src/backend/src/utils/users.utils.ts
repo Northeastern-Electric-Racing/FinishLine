@@ -21,12 +21,24 @@ type UserWithSettings = {
 export const getUserFullName = async (userId: string | null) => {
   if (!userId) return 'no one';
   const user = await prisma.user.findUnique({ where: { userId } });
-  if (!user) return 'no one';
+  if (!user) throw new NotFoundException('User', userId);
   return `${user.firstName} ${user.lastName}`;
 };
 
-export const getUserSlackId = async (userId?: string): Promise<string | undefined> => {
-  if (!userId) return undefined;
+export const getUserSlackMentionOrName = async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: { userId },
+    include: {
+      userSettings: {
+        select: { slackId: true }
+      }
+    }
+  });
+  if (!user) throw new NotFoundException('User', userId);
+  return user.userSettings?.slackId ? `<@${user.userSettings.slackId}>` : `${user.firstName} ${user.lastName}`;
+};
+
+export const getUserSlackId = async (userId: string): Promise<string | undefined> => {
   const user = await prisma.user.findUnique({ where: { userId }, include: { userSettings: true } });
   if (!user) throw new NotFoundException('User', userId);
   return user.userSettings?.slackId;

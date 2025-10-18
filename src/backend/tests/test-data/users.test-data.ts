@@ -98,6 +98,24 @@ export const member: CreateTestUserParams = {
   role: RoleEnum.MEMBER
 };
 
+export const robinMember: CreateTestUserParams = {
+  firstName: 'Dick',
+  lastName: 'Grayson',
+  email: 'robin@gmail.com',
+  emailId: 'robin',
+  role: RoleEnum.MEMBER,
+  googleAuthId: 'robin'
+};
+
+export const cyborgMember: CreateTestUserParams = {
+  firstName: 'Victor',
+  lastName: 'Stone',
+  email: 'cyborg@gmail.com',
+  emailId: 'cyborg',
+  role: RoleEnum.MEMBER,
+  googleAuthId: 'cyborg'
+};
+
 export const batmanSettings: User_Settings = {
   id: 'bm',
   userId: '1',

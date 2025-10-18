@@ -15,6 +15,9 @@ import { uploadFile } from '../utils/google-integration.utils';
 import { getProjects } from '../utils/projects.utils';
 import { getProjectPreviewQueryArgs } from '../prisma-query-args/projects.query-args';
 import { projectPreviewTransformer } from '../transformers/projects.transformer';
+import { getUserQueryArgs } from '../prisma-query-args/user.query-args';
+import { userTransformer } from '../transformers/user.transformer';
+import { organizationTransformer } from '../transformers/organizationTransformer';
 
 export default class OrganizationsService {
   /**
@@ -49,7 +52,7 @@ export default class OrganizationsService {
       throw new DeletedException('Organization', organizationId);
     }
 
-    return organization;
+    return organizationTransformer(organization);
   }
 
   /**
@@ -475,5 +478,72 @@ export default class OrganizationsService {
     });
 
     return updatedOrg;
+  }
+
+  /**
+   * Gets the finance delegates for the given organization
+   * @param organizationId the organization to get the finance delegates for
+   * @returns all the finance delegates for the organization
+   */
+  static async getFinanceDelegates(organizationId: string): Promise<User[]> {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId },
+      include: {
+        financeDelegates: {
+          ...getUserQueryArgs(organizationId)
+        }
+      }
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+
+    if (organization.dateDeleted) {
+      throw new DeletedException('Organization', organizationId);
+    }
+
+    return organization.financeDelegates.map(userTransformer);
+  }
+
+  /**
+   * Sets the finance delegates for the given organization
+   * @param submitter the user making the change
+   * @param organizationId the organization to update
+   * @param userIds the user IDs to set as finance delegates
+   * @returns the updated list of finance delegates
+   */
+  static async setFinanceDelegates(submitter: User, organizationId: string, userIds: string[]): Promise<User[]> {
+    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('set finance delegates');
+    }
+
+    const userIdsNoDuplicates = Array.from(new Set(userIds));
+
+    const users = await prisma.user.findMany({
+      where: {
+        userId: { in: userIdsNoDuplicates }
+      }
+    });
+
+    if (users.length !== userIdsNoDuplicates.length) {
+      throw new HttpException(404, 'One or more users not found');
+    }
+
+    const updatedOrg = await prisma.organization.update({
+      where: { organizationId },
+      data: {
+        financeDelegates: {
+          set: userIdsNoDuplicates.map((userId) => ({ userId }))
+        }
+      },
+      include: {
+        financeDelegates: {
+          ...getUserQueryArgs(organizationId)
+        }
+      }
+    });
+
+    return updatedOrg.financeDelegates.map(userTransformer);
   }
 }
