@@ -33,27 +33,25 @@ Object.values(WorkPackageStage).map((stage) =>
         py: 1
       }}
     >
-      {
-        Object.values(WbsElementStatus).map((status) => {
-          return (
-            <Box
-              sx={{
-                backgroundColor: ganttWorkPackageStageColorPipe(stage, status),
-                height: '2rem',
-                width: '8rem',
-                borderRadius: 1,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center'
-              }}
-            >
-              <Typography variant="body1" sx={{ color: GanttWorkPackageTextColor }}>
-                {WbsElementStatusTextPipe(status)}
-              </Typography>
-            </Box>
-          );
-        })
-      }
+      {Object.values(WbsElementStatus).map((status) => {
+        return (
+          <Box
+            sx={{
+              backgroundColor: ganttWorkPackageStageColorPipe(stage, status),
+              height: '2rem',
+              width: '8rem',
+              borderRadius: 1,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}
+          >
+            <Typography variant="body1" sx={{ color: GanttWorkPackageTextColor }}>
+              {WbsElementStatusTextPipe(status)}
+            </Typography>
+          </Box>
+        );
+      })}
     </Card>
   )
 );
@@ -69,27 +67,25 @@ const DesignReviewToolTipPopUp = () => {
         py: 1
       }}
     >
-      {
-        [DesignReviewStatus.UNCONFIRMED, DesignReviewStatus.SCHEDULED].map((status) => {
-          return (
-            <Box
-              sx={{
-                backgroundColor: ganttDesignReviewStatusColorPipe(status),
-                height: '2rem',
-                width: '8rem',
-                borderRadius: 1,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center'
-              }}
-            >
-              <Typography variant="body1" sx={{ color: 'white' }}>
-                {DesignReviewStatusTextPipe(status)}
-              </Typography>
-            </Box>
-          );
-        })
-      }
+      {[DesignReviewStatus.UNCONFIRMED, DesignReviewStatus.SCHEDULED].map((status) => {
+        return (
+          <Box
+            sx={{
+              backgroundColor: ganttDesignReviewStatusColorPipe(status),
+              height: '2rem',
+              width: '8rem',
+              borderRadius: 1,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}
+          >
+            <Typography variant="body1" sx={{ color: 'white' }}>
+              {DesignReviewStatusTextPipe(status)}
+            </Typography>
+          </Box>
+        );
+      })}
     </Card>
   );
 };
@@ -105,27 +101,25 @@ const TaskToolTopPopUp = () => {
         py: 1
       }}
     >
-      {
-        [TaskStatus.IN_BACKLOG, TaskStatus.IN_PROGRESS, TaskStatus.DONE].map((status) => {
-          return (
-            <Box
-              sx={{
-                backgroundColor: ganttTaskColorPipe(status),
-                height: '2rem',
-                width: '8rem',
-                borderRadius: 1,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center'
-              }}
-            >
-              <Typography variant="body1" sx={{ color: 'white' }}>
-                {TaskStatusTextPipe(status)}
-              </Typography>
-            </Box>
-          );
-        })
-      }
+      {[TaskStatus.IN_BACKLOG, TaskStatus.IN_PROGRESS, TaskStatus.DONE].map((status) => {
+        return (
+          <Box
+            sx={{
+              backgroundColor: ganttTaskColorPipe(status),
+              height: '2rem',
+              width: '8rem',
+              borderRadius: 1,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}
+          >
+            <Typography variant="body1" sx={{ color: 'white' }}>
+              {TaskStatusTextPipe(status)}
+            </Typography>
+          </Box>
+        );
+      })}
     </Card>
   );
 };
@@ -145,39 +139,34 @@ const GanttChartColorLegend = () => {
         msOverflowStyle: 'none' // IE and Edge
       }}
     >
-      {
-        Object.values(WorkPackageStage).map((stage) => {
-          return (
-            <Box
-              sx={{
-                background: ganttWorkPackageStageColorPipe(stage, WbsElementStatus.Active),
-                display: 'flex',
-                flexDirection: 'column',
-                height: '2rem',
-                width: '8.25rem',
-                borderRadius: 1,
-                justifyContent: 'center',
-                alignItems: 'center',
-                px: 0.8
+      {Object.values(WorkPackageStage).map((stage) => {
+        return (
+          <Box
+            sx={{
+              background: ganttWorkPackageStageColorPipe(stage, WbsElementStatus.Active),
+              display: 'flex',
+              flexDirection: 'column',
+              height: '2rem',
+              width: '8.25rem',
+              borderRadius: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+              px: 0.8
+            }}
+          >
+            <Tooltip
+              title={LEGEND_POPUPS_MAP.get(stage)}
+              slotProps={{
+                tooltip: { sx: { background: 'transparent', width: 'fit-content' } }
               }}
             >
-              <Tooltip
-                title={LEGEND_POPUPS_MAP.get(stage)}
-                slotProps={{
-                  tooltip: { sx: { background: 'transparent', width: 'fit-content' } }
-                }}
-              >
-                <Typography
-                  variant="body2"
-                  sx={{ color: GanttWorkPackageTextColor, overflow: 'hidden', textWrap: 'nowrap' }}
-                >
-                  {WorkPackageStageTextPipe(stage)}
-                </Typography>
-              </Tooltip>
-            </Box>
-          );
-        })
-      }
+              <Typography variant="body2" sx={{ color: GanttWorkPackageTextColor, overflow: 'hidden', textWrap: 'nowrap' }}>
+                {WorkPackageStageTextPipe(stage)}
+              </Typography>
+            </Tooltip>
+          </Box>
+        );
+      })}
       <Box
         sx={{
           background: ganttTaskColorPipe(TaskStatus.IN_PROGRESS),
