@@ -1,6 +1,6 @@
 import { alfred, robinMember, cyborgMember, theVisitorGuest } from '../test-data/users.test-data';
 import ReimbursementRequestService from '../../src/services/reimbursement-requests.services';
-import { AccessDeniedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
+import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
 import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { addDaysToDate, IndexCode, ReimbursementRequest, ReimbursementStatusType, AccountCode } from 'shared';
@@ -823,6 +823,222 @@ describe('Reimbursement Requests', () => {
       await expect(
         ReimbursementRequestService.editIndexCode(financeHead, org, 'non-existent-id', 'Test', '123456')
       ).rejects.toThrow(new NotFoundException('Index Code', 'non-existent-id'));
+    });
+  });
+
+  describe('Assign Finance Member to Reimbursement Request', () => {
+    test('Member can assign a user to a reimbursement request', async () => {
+      const updatedRR = await ReimbursementRequestService.assignFinanceMember(
+        regularMember,
+        org,
+        reimbursementRequest.reimbursementRequestId,
+        financeMember.userId
+      );
+
+      expect(updatedRR).not.toBeNull();
+      expect(updatedRR.assigneeId).toBe(financeMember.userId);
+    });
+
+    test('Finance member can assign themselves to a reimbursement request', async () => {
+      const updatedRR = await ReimbursementRequestService.assignFinanceMember(
+        financeMember,
+        org,
+        reimbursementRequest.reimbursementRequestId,
+        financeMember.userId
+      );
+
+      expect(updatedRR).not.toBeNull();
+      expect(updatedRR.assigneeId).toBe(financeMember.userId);
+    });
+
+    test('Finance head can assign a user to a reimbursement request', async () => {
+      const updatedRR = await ReimbursementRequestService.assignFinanceMember(
+        financeHead,
+        org,
+        reimbursementRequest.reimbursementRequestId,
+        anotherMember.userId
+      );
+
+      expect(updatedRR).not.toBeNull();
+      expect(updatedRR.assigneeId).toBe(anotherMember.userId);
+    });
+
+    test('Can reassign a reimbursement request to a different user', async () => {
+      // First assignment
+      await ReimbursementRequestService.assignFinanceMember(
+        regularMember,
+        org,
+        reimbursementRequest.reimbursementRequestId,
+        financeMember.userId
+      );
+
+      // Reassignment
+      const updatedRR = await ReimbursementRequestService.assignFinanceMember(
+        regularMember,
+        org,
+        reimbursementRequest.reimbursementRequestId,
+        anotherMember.userId
+      );
+
+      expect(updatedRR).not.toBeNull();
+      expect(updatedRR.assigneeId).toBe(anotherMember.userId);
+    });
+
+    test('Guest cannot assign a user to a reimbursement request', async () => {
+      await expect(
+        ReimbursementRequestService.assignFinanceMember(
+          guestUser,
+          org,
+          reimbursementRequest.reimbursementRequestId,
+          financeMember.userId
+        )
+      ).rejects.toThrow(new AccessDeniedException('Only members can assign reimbursement requests'));
+    });
+
+    test('Cannot assign to a non-existent reimbursement request', async () => {
+      await expect(
+        ReimbursementRequestService.assignFinanceMember(regularMember, org, 'non-existent-id', financeMember.userId)
+      ).rejects.toThrow(new NotFoundException('Reimbursement Request', 'non-existent-id'));
+    });
+
+    test('Cannot assign a non-existent user to a reimbursement request', async () => {
+      await expect(
+        ReimbursementRequestService.assignFinanceMember(
+          regularMember,
+          org,
+          reimbursementRequest.reimbursementRequestId,
+          'non-existent-user-id'
+        )
+      ).rejects.toThrow(new NotFoundException('User', 'non-existent-user-id'));
+    });
+
+    test('Cannot assign user to deleted reimbursement request', async () => {
+      // Delete the reimbursement request
+      await ReimbursementRequestService.deleteReimbursementRequest(
+        reimbursementRequest.reimbursementRequestId,
+        financeHead,
+        org
+      );
+
+      await expect(
+        ReimbursementRequestService.assignFinanceMember(
+          regularMember,
+          org,
+          reimbursementRequest.reimbursementRequestId,
+          financeMember.userId
+        )
+      ).rejects.toThrow(new DeletedException('Reimbursement Request', reimbursementRequest.reimbursementRequestId));
+    });
+  });
+
+  describe('Get User Assigned Reimbursement Requests', () => {
+    test('Returns empty array when user has no assigned reimbursement requests', async () => {
+      const assignedRRs = await ReimbursementRequestService.getUserAssignedReimbursementRequests(regularMember, org);
+
+      expect(assignedRRs).toEqual([]);
+    });
+
+    test('Returns reimbursement requests assigned to a user', async () => {
+      // Assign the reimbursement request to regularMember
+      await ReimbursementRequestService.assignFinanceMember(
+        financeHead,
+        org,
+        reimbursementRequest.reimbursementRequestId,
+        regularMember.userId
+      );
+
+      const assignedRRs = await ReimbursementRequestService.getUserAssignedReimbursementRequests(regularMember, org);
+
+      expect(assignedRRs).toHaveLength(1);
+      expect(assignedRRs[0].reimbursementRequestId).toBe(reimbursementRequest.reimbursementRequestId);
+      expect(assignedRRs[0].assignee?.userId).toBe(regularMember.userId);
+    });
+
+    test('Returns multiple reimbursement requests assigned to a user', async () => {
+      // Create a second reimbursement request
+      const rr2 = await ReimbursementRequestService.createReimbursementRequest(
+        createdUser,
+        createdVendor.vendorId,
+        createdIndexCode.indexCodeId,
+        [],
+        [
+          {
+            name: 'PAINT',
+            reason: {
+              carNumber: 0,
+              projectNumber: 0,
+              workPackageNumber: 0
+            },
+            cost: 50000,
+            refundSources: [
+              {
+                indexCode: createdIndexCode,
+                amount: 50
+              }
+            ]
+          }
+        ],
+        createdAccountCode.accountCodeId,
+        50,
+        org
+      );
+
+      // Assign both reimbursement requests to regularMember
+      await ReimbursementRequestService.assignFinanceMember(
+        financeHead,
+        org,
+        reimbursementRequest.reimbursementRequestId,
+        regularMember.userId
+      );
+      await ReimbursementRequestService.assignFinanceMember(
+        financeHead,
+        org,
+        rr2.reimbursementRequestId,
+        regularMember.userId
+      );
+
+      const assignedRRs = await ReimbursementRequestService.getUserAssignedReimbursementRequests(regularMember, org);
+
+      expect(assignedRRs).toHaveLength(2);
+      const rrIds = assignedRRs.map((rr) => rr.reimbursementRequestId);
+      expect(rrIds).toContain(reimbursementRequest.reimbursementRequestId);
+      expect(rrIds).toContain(rr2.reimbursementRequestId);
+    });
+
+    test('Does not return reimbursement requests assigned to other users', async () => {
+      // Assign to regularMember
+      await ReimbursementRequestService.assignFinanceMember(
+        financeHead,
+        org,
+        reimbursementRequest.reimbursementRequestId,
+        regularMember.userId
+      );
+
+      // Check that anotherMember sees no assigned RRs
+      const assignedRRs = await ReimbursementRequestService.getUserAssignedReimbursementRequests(anotherMember, org);
+
+      expect(assignedRRs).toEqual([]);
+    });
+
+    test('Does not return deleted reimbursement requests', async () => {
+      // Assign to regularMember
+      await ReimbursementRequestService.assignFinanceMember(
+        financeHead,
+        org,
+        reimbursementRequest.reimbursementRequestId,
+        regularMember.userId
+      );
+
+      // Delete the reimbursement request
+      await ReimbursementRequestService.deleteReimbursementRequest(
+        reimbursementRequest.reimbursementRequestId,
+        financeHead,
+        org
+      );
+
+      const assignedRRs = await ReimbursementRequestService.getUserAssignedReimbursementRequests(regularMember, org);
+
+      expect(assignedRRs).toEqual([]);
     });
   });
 });

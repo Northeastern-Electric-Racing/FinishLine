@@ -200,8 +200,14 @@ export const sendThreadResponse = async (threads: SlackMessageThread[], message:
   }
 };
 
-export const sendReimbursementRequestPendingFinanceNotification = async (threads: SlackMessageThread[]) =>
-  await sendThreadResponse(threads, `This Reimbursement Request is now pending finance :moneybag:`);
+export const sendReimbursementRequestPendingFinanceNotification = async (
+  threads: SlackMessageThread[],
+  assigneeId: string | null
+) =>
+  await sendThreadResponse(
+    threads,
+    `${assigneeId ? await getUserSlackMentionOrName(assigneeId) : ''} This Reimbursement Request is now pending finance :moneybag:`
+  );
 
 export const sendReimbursementRequestLeadershipApprovedNotification = async (
   threads: SlackMessageThread[],

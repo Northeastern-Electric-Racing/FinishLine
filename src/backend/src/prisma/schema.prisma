@@ -260,6 +260,7 @@ model User {
   deletedReimbursementRequestComments     Reimbursement_Request_Comment[]      @relation(name: "deletedReimbursementRequestComments")
   deletedSponsorTiers                     Sponsor_Tier[]
   financeDelegateForOrganizations         Organization[]                       @relation(name: "financeDelegates")
+  assignedReimbursementRequests           Reimbursement_Request[]              @relation(name: "reimbursementRequestAssignee")
 }
 
 model Role {
@@ -701,6 +702,8 @@ model Reimbursement_Request {
   notificationSlackThreads Message_Info[]
   materials                Material[]
   reimbursementComments    Reimbursement_Request_Comment[]
+  assigneeId               String?
+  assignee                 User?                           @relation(name: "reimbursementRequestAssignee", fields: [assigneeId], references: [userId])
 
   @@unique([identifier, organizationId], name: "uniqueReimbursementRequest")
   @@index([organizationId])

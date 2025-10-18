@@ -64,7 +64,9 @@ import {
   deleteOtherProductReason,
   deleteSponsorTier,
   editSponsorTier,
-  editIndexCode
+  editIndexCode,
+  getCurrentUserAssignedReimbursementRequests,
+  assignMemberToRR
 } from '../apis/finance.api';
 import {
   IndexCode,
@@ -388,6 +390,16 @@ export const useEditReimbursementRequest = (reimbursementRequestId: string) => {
   );
 };
 
+export const useAssignMemberToRR = (reimbursementRequestId: string) => {
+  return useMutation<ReimbursementRequest, Error, { assigneeId: string }>(
+    ['reimbursement-requests', 'edit'],
+    async (payload: { assigneeId: string }) => {
+      const { data } = await assignMemberToRR(reimbursementRequestId, payload);
+      return data;
+    }
+  );
+};
+
 /**
  * Custom react hook to get all account codes
  *
@@ -401,11 +413,21 @@ export const useGetAllAccountCodes = () => {
 };
 
 /**
- * Custom React Hook to get the reimbursement requests for the current user
+ * Custom React Hook to get the reimbursement requests created by the current user
  */
 export const useCurrentUserReimbursementRequests = () => {
   return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user'], async () => {
     const { data } = await getCurrentUserReimbursementRequests();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get the reimbursement requests assigned to the current user
+ */
+export const useCurrentUserAssignedReimbursementRequests = () => {
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'assignee'], async () => {
+    const { data } = await getCurrentUserAssignedReimbursementRequests();
     return data;
   });
 };

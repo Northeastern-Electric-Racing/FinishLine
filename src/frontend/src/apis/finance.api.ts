@@ -106,6 +106,16 @@ export const editReimbursementRequest = (id: string, formData: EditReimbursement
 };
 
 /**
+ * Assigns a member to a specific reimbursement request
+ * @param rrId the id of the reimbursement request
+ * @param assigneeId the id of the user being assigned
+ * @returns the updated rr
+ */
+export const assignMemberToRR = (rrId: string, payload: { assigneeId: string }) => {
+  return axios.post(apiUrls.financeAssignMemberToRR(rrId), payload);
+};
+
+/**
  * Deletes a reimbursement request
  *
  * @param id the id of the reimbursement request to delete
@@ -152,10 +162,19 @@ export const getSingleReimbursementRequest = (id: string) => {
 };
 
 /**
- * Get the reimbursement requests for the current user
+ * Get the reimbursement requests created by the current user
  */
 export const getCurrentUserReimbursementRequests = () => {
   return axios.get(apiUrls.financeGetUserReimbursementRequest(), {
+    transformResponse: (data) => JSON.parse(data).map(reimbursementRequestTransformer)
+  });
+};
+
+/**
+ * Get the reimbursement requests assigned to the current user
+ */
+export const getCurrentUserAssignedReimbursementRequests = () => {
+  return axios.get(apiUrls.financeGetUserAssignedReimbursementRequest(), {
     transformResponse: (data) => JSON.parse(data).map(reimbursementRequestTransformer)
   });
 };

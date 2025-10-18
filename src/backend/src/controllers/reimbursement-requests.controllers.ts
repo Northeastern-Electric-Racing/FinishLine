@@ -23,6 +23,18 @@ export default class ReimbursementRequestsController {
     }
   }
 
+  static async getCurrentUserAssignedReimbursementRequests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const assignedReimbursementRequests = await ReimbursementRequestService.getUserAssignedReimbursementRequests(
+        req.currentUser,
+        req.organization
+      );
+      res.status(200).json(assignedReimbursementRequests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getCurrentUserReimbursements(req: Request, res: Response, next: NextFunction) {
     try {
       const userReimbursements = await ReimbursementRequestService.getUserReimbursements(req.currentUser, req.organization);
@@ -135,6 +147,23 @@ export default class ReimbursementRequestsController {
         dateOfExpense
       );
       res.status(200).json(updatedReimbursementRequestId);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async assignFinanceMember(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const { assigneeId } = req.body;
+
+      const updatedReimbursementRequest = await ReimbursementRequestService.assignFinanceMember(
+        req.currentUser,
+        req.organization,
+        requestId,
+        assigneeId
+      );
+      res.status(200).json(updatedReimbursementRequest);
     } catch (error: unknown) {
       next(error);
     }
