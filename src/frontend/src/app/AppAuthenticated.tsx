@@ -34,6 +34,7 @@ import { useHomePageContext } from './HomePageContext';
 import { useCurrentOrganization } from '../hooks/organizations.hooks';
 import Statistics from '../pages/StatisticsPage/Statistics';
 import RetrospectiveGanttChartPage from '../pages/RetrospectivePage/Retrospective';
+import { useClarity } from './ClarityProvider';
 
 interface AppAuthenticatedProps {
   userId: string;

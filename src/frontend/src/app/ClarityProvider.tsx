@@ -22,7 +22,7 @@ declare global {
 }
 
 // Your Microsoft Clarity project ID is read from VITE_REACT_APP_CLARITY_PROJECT_ID
-const CLARITY_PROJECT_ID = import.meta.env.VITE_REACT_APP_CLARITY_PROJECT_ID as string;
+const CLARITY_PROJECT_ID = import.meta.env.VITE_REACT_APP_CLARITY_PROJECT_ID as string | undefined;
 
 // Type for the Clarity function
 type ClarityFn = (...args: any[]) => void;
@@ -36,7 +36,13 @@ export const ClarityContext = createContext<ClarityFn | undefined>(undefined);
  * Returns the Clarity function from context. Use this to call Clarity API methods.
  * Example: const clarity = useClarity();
  */
-export const useClarity = () => useContext(ClarityContext);
+export const useClarity = () => {
+  const context = useContext(ClarityContext);
+  if (context === undefined) {
+    throw new Error('useClarity must be used within a ClarityProvider');
+  }
+  return context;
+};
 
 /**
  * ClarityProvider component
@@ -47,7 +53,7 @@ export const useClarity = () => useContext(ClarityContext);
 const ClarityProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   useEffect(() => {
     // Inject the Clarity script only once, if not already present
-    if (typeof window !== 'undefined' && !window.clarity) {
+    if (typeof window !== 'undefined' && !window.clarity && CLARITY_PROJECT_ID) {
       (function (c: any, l: Document, a: string, r: string, i: string) {
         c[a] =
           c[a] ||
