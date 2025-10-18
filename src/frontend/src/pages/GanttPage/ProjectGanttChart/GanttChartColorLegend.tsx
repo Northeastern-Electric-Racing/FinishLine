@@ -34,7 +34,6 @@ Object.values(WorkPackageStage).map((stage) =>
       }}
     >
       {
-        // map through all the Wbs Element Statuses
         Object.values(WbsElementStatus).map((status) => {
           return (
             <Box
@@ -71,7 +70,6 @@ const DesignReviewToolTipPopUp = () => {
       }}
     >
       {
-        // map through all the Wbs Element Statuses
         [DesignReviewStatus.UNCONFIRMED, DesignReviewStatus.SCHEDULED].map((status) => {
           return (
             <Box
@@ -108,7 +106,6 @@ const TaskToolTopPopUp = () => {
       }}
     >
       {
-        // map through all Task Statuses
         [TaskStatus.IN_BACKLOG, TaskStatus.IN_PROGRESS, TaskStatus.DONE].map((status) => {
           return (
             <Box
@@ -149,7 +146,6 @@ const GanttChartColorLegend = () => {
       }}
     >
       {
-        // map through all the WP Stages
         Object.values(WorkPackageStage).map((stage) => {
           return (
             <Box

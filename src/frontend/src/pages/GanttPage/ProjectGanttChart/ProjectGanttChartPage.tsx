@@ -54,6 +54,7 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { v4 as uuidv4 } from 'uuid';
 import { projectWbsPipe } from '../../../utils/pipes';
 import { projectGanttTransformer } from '../../../apis/transformers/projects.transformers';
+import { useCurrentUser } from '../../../hooks/users.hooks';
 
 const getElementId = (element: WbsElementPreview | Task) => {
   return (element as WbsElementPreview).id ?? (element as Task).taskId;
@@ -93,6 +94,7 @@ const ProjectGanttChartPage: FC = () => {
   const [collections, setCollections] = useState<GanttCollection<TeamPreview, WbsElementPreview | Task>[]>([]);
   const [allProjects, setAllProjects] = useState<ProjectGantt[]>([]);
   const [editedProjects, setEditedProjects] = useState<ProjectGantt[]>([]);
+  const user = useCurrentUser();
 
   /******************** Filters ***************************/
   const { filters, setFilters } = useGanttFilters('project-gantt');
@@ -214,6 +216,15 @@ const ProjectGanttChartPage: FC = () => {
       handler: (event: ChangeEvent<HTMLInputElement>) =>
         handleSetGanttFilters({ ...filters, showOnlyOverdue: event.target.checked }),
       defaultChecked: filters.showOnlyOverdue
+    }
+  ];
+
+  const hideTasksHandler = [
+    {
+      filterLabel: 'Hide Tasks',
+      handler: (event: ChangeEvent<HTMLInputElement>) =>
+        handleSetGanttFilters({ ...filters, hideTasks: event.target.checked }),
+      defaultChecked: filters.hideTasks
     }
   ];
 
@@ -341,13 +352,12 @@ const ProjectGanttChartPage: FC = () => {
       title: taskInfo.title,
       notes: taskInfo.notes,
       dateCreated: new Date(),
-      // Will be overwritten when saved
       createdBy: {
-        userId: 'temp',
-        firstName: 'Temp',
-        lastName: 'User',
-        email: 'temp@example.com',
-        role: 'MEMBER' as const
+        userId: user.userId,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role
       },
       assignees: [],
       deadline,
@@ -647,6 +657,7 @@ const ProjectGanttChartPage: FC = () => {
         teamTypeHandlers={teamTypeHandlers}
         teamHandlers={teamHandlers}
         overdueHandler={overdueHandler}
+        hideTasksHandler={hideTasksHandler}
         resetHandler={resetHandler}
         collapseHandler={collapseHandler}
         expandHandler={expandHandler}

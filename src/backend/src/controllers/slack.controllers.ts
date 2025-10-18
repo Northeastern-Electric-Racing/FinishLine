@@ -5,6 +5,7 @@ import SlackServices from '../services/slack.services';
 export default class SlackController {
   static async processMessageEvent(event: any) {
     try {
+      console.log('got an event');
       const organizations = await OrganizationsService.getAllOrganizations();
       const nerSlackWorkspaceId = await getWorkspaceId();
       const relatedOrganization = organizations.find((org) => org.slackWorkspaceId === nerSlackWorkspaceId);

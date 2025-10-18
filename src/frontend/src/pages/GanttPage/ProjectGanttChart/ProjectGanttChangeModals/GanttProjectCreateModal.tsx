@@ -76,12 +76,12 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
               deadline: task.deadline ? task.deadline.toISOString() : undefined,
               startDate: task.startDate ? task.startDate.toISOString() : undefined
             });
+            toast.success('All tasks created successfully!');
           } catch (error) {
             console.error('Error creating task:', error);
             toast.error(`Failed to create task: ${task.title}`);
           }
         }
-        toast.success('All tasks created successfully!');
       }
 
       handleClose(false);

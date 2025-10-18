@@ -286,6 +286,7 @@ export interface GanttFilters {
   showTeamTypes: string[];
   showTeams: string[];
   showOnlyOverdue?: boolean;
+  hideTasks?: boolean;
 }
 
 export interface GanttTask<T> extends GanttTaskData<T> {}
@@ -377,6 +378,7 @@ export const buildGanttSearchParams = (ganttFilters: GanttFilters, additionalPar
     ganttFilters.showTeamTypes.map(teamTypeFormat).join('') +
     ganttFilters.showTeams.map(teamFormat).join('') +
     (ganttFilters.showOnlyOverdue ? `&overdue=${ganttFilters.showOnlyOverdue}` : '') +
+    (ganttFilters.hideTasks ? `&hideTasks=${ganttFilters.hideTasks}` : '') +
     (additionalParams ?? '');
 
   return newParams;
@@ -464,10 +466,15 @@ export const transformWorkPackageToGanttTask = <T extends WorkPackage>(
   };
 };
 
-export const transformProjectToGanttTask = (project: ProjectGantt): GanttTask<WbsElementPreview | Task> => {
+export const transformProjectToGanttTask = (
+  project: ProjectGantt,
+  hideTasks: boolean = false
+): GanttTask<WbsElementPreview | Task> => {
   const startDate = getProjectStartDate(project);
 
   const endDate = getProjectEndDate(project);
+
+  const taskList = hideTasks ? [] : project.tasks;
 
   return {
     id: uuidv4(),
@@ -481,11 +488,11 @@ export const transformProjectToGanttTask = (project: ProjectGantt): GanttTask<Wb
       ...project.workPackages
         .filter((workPackage) => workPackage.blockedBy.length === 0)
         .map((workPackage) => transformWorkPackageToGanttTask(workPackage, project.workPackages)),
-      ...project.tasks.map((task) => transformTaskToGanttTask(task, endDate))
+      ...taskList.map((task) => transformTaskToGanttTask(task, endDate))
     ],
     overlays: [
       ...project.workPackages.map((wp) => transformWorkPackageToGanttTask(wp, project.workPackages)),
-      ...project.tasks.map((task) => transformTaskToGanttTask(task, endDate))
+      ...taskList.map((task) => transformTaskToGanttTask(task, endDate))
     ],
     events: [],
     tooltip: {
@@ -498,10 +505,11 @@ export const transformProjectToGanttTask = (project: ProjectGantt): GanttTask<Wb
 };
 
 export const transformRetrospectiveProjectToGanttTask = (
-  project: RetrospectiveProjectPreview
+  project: RetrospectiveProjectPreview,
+  showTasks: boolean = true
 ): GanttTask<WbsElementPreview | Task> => {
   return {
-    ...transformProjectToGanttTask(project),
+    ...transformProjectToGanttTask(project, showTasks),
     children: project.workPackages
       .filter((wp) => wp.blockedBy.length === 0)
       .map((wp) => transformRetrospectiveWorkPackageToGanttTask(wp, project.workPackages)),
@@ -531,7 +539,7 @@ export const constructCollectionsFromTeamPreviewAndProjects = <T extends Project
   projects: T[],
   filters: GanttFilters,
   searchText: string,
-  projectTransformation: (project: T) => GanttTaskData<WbsElementPreview | Task>,
+  projectTransformation: (project: T, hideTasks?: boolean) => GanttTaskData<WbsElementPreview | Task>,
   reparser: (project: T) => T
 ): GanttCollection<TeamPreview, WbsElementPreview | Task>[] => {
   const projectMap = new Map<string, ProjectGantt[]>();
@@ -545,11 +553,13 @@ export const constructCollectionsFromTeamPreviewAndProjects = <T extends Project
     });
   });
 
+  const hideTasks = filters.hideTasks ?? false;
+
   return teams.map((team) => ({
     id: uuidv4(),
     element: team,
     tasks: filterGanttProjects((projectMap.get(team.teamId) ?? []) as T[], filters, searchText, team, reparser).map(
-      (project) => projectTransformation(project as T)
+      (project) => projectTransformation(project as T, hideTasks)
     ),
     title: team.teamName
   }));
@@ -717,6 +727,8 @@ export const useGanttFilters = (key: string) => {
 
     const showOnlyOverdue = query.get('overdue') ? query.get('overdue') === 'true' : undefined;
 
+    const hideTasks = query.get('hideTasks') ? query.get('hideTasks') === 'true' : undefined;
+
     const retroStartDate = query.get('retro-start') ? new Date(query.get('retro-start')!) : undefined;
 
     const retroEndDate = query.get('retro-end') ? new Date(query.get('retro-end')!) : undefined;
@@ -726,6 +738,7 @@ export const useGanttFilters = (key: string) => {
       showTeamTypes,
       showTeams,
       showOnlyOverdue,
+      hideTasks,
       startDate: retroStartDate,
       endDate: retroEndDate
     };
@@ -733,7 +746,7 @@ export const useGanttFilters = (key: string) => {
 
   const setFilters = (updates: RetroGanttFilters) => {
     history.push({ search: buildRetroGanttParams(updates) }, { replace: false });
-    localStorage.setItem(key, JSON.stringify(filters));
+    localStorage.setItem(key, JSON.stringify(updates));
   };
 
   useEffect(() => {

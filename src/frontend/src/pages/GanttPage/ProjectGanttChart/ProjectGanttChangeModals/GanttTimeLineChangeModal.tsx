@@ -204,12 +204,12 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
 
           try {
             await createTask(taskPayload);
+            toast.success(`Successfully created ${createdTasks.length} task(s)`);
           } catch (error) {
             console.error('Error creating task:', error);
             toast.error(`Failed to create task: ${task.title}`);
           }
         }
-        toast.success(`Successfully created ${createdTasks.length} task(s)`);
       }
 
       if (editedTasks.length > 0) {
@@ -225,12 +225,12 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
 
           try {
             await editTask(taskPayload);
+            toast.success(`Successfully updated ${editedTasks.length} task(s)`);
           } catch (error) {
             console.error('Error editing task:', error);
             toast.error(`Failed to edit task: ${task.title}`);
           }
         }
-        toast.success(`Successfully updated ${editedTasks.length} task(s)`);
       }
 
       handleClose(false);

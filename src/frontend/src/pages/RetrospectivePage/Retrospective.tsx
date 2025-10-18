@@ -162,6 +162,15 @@ const RetrospectivePage = () => {
     }
   ];
 
+  const hideTasksHandler = [
+    {
+      filterLabel: 'Hide Tasks',
+      handler: (event: ChangeEvent<HTMLInputElement>) =>
+        handleSetGanttFilters({ ...filters, hideTasks: event.target.checked }),
+      defaultChecked: filters.hideTasks
+    }
+  ];
+
   const carHandlers: {
     filterLabel: string;
     handler: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -243,6 +252,7 @@ const RetrospectivePage = () => {
         teamTypeHandlers={teamTypeHandlers}
         teamHandlers={teamHandlers}
         overdueHandler={overdueHandler}
+        hideTasksHandler={hideTasksHandler}
         resetHandler={resetHandler}
         collapseHandler={collapseHandler}
         expandHandler={expandHandler}
