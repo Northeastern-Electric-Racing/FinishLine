@@ -48,20 +48,16 @@ const mockUseLogUserInHook = (isLoading: boolean, isError: boolean, error?: Erro
 const renderComponent = (cr: ChangeRequest, allowed: boolean = false) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
-    <ClarityProvider>
-      <AppContextUser>
-        <ToastProvider>
-          <RouterWrapper>
-            <ChangeRequestDetailsView
-              changeRequest={cr}
-              isUserAllowedToReview={allowed}
-              isUserAllowedToImplement={allowed}
-              isUserAllowedToDelete={allowed}
-            />
-          </RouterWrapper>
-        </ToastProvider>
-      </AppContextUser>
-    </ClarityProvider>
+    <ToastProvider>
+      <RouterWrapper>
+        <ChangeRequestDetailsView
+          changeRequest={cr}
+          isUserAllowedToReview={allowed}
+          isUserAllowedToImplement={allowed}
+          isUserAllowedToDelete={allowed}
+        />
+      </RouterWrapper>
+    </ToastProvider>
   );
 };
 

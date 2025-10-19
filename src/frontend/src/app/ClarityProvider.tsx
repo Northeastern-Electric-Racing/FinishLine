@@ -9,23 +9,9 @@ declare global {
 
 const CLARITY_PROJECT_ID = import.meta.env.VITE_REACT_APP_CLARITY_PROJECT_ID as string | undefined;
 
-type ClarityFn = (...args: any[]) => void;
+export type ClarityFn = (...args: any[]) => void;
 
 export const ClarityContext = createContext<ClarityFn | undefined>(undefined);
-
-/**
- * useClarity hook
- *
- * Returns the Clarity function from context. Use this to call Clarity API methods.
- * Example: const clarity = useClarity();
- */
-export const useClarity = () => {
-  const context = useContext(ClarityContext);
-  if (context === undefined) {
-    throw new Error('useClarity must be used within a ClarityProvider');
-  }
-  return context;
-};
 
 /**
  * ClarityProvider component

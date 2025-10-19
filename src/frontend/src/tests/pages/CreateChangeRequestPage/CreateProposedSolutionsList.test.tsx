@@ -8,9 +8,7 @@ import CreateProposedSolutionsList from '../../../pages/CreateChangeRequestPage/
 import * as authHooks from '../../../hooks/auth.hooks';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import * as userHooks from '../../../hooks/users.hooks';
-import AppContextUser from '../../../app/AppContextUser';
 import { exampleAuthenticatedAdminUser } from '../../test-support/test-data/authenticated-user.stub';
-import ClarityProvider from '../../../app/ClarityProvider';
 
 /**
  * Sets up the component under test with the desired values and renders it.
@@ -18,13 +16,9 @@ import ClarityProvider from '../../../app/ClarityProvider';
 const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
-    <ClarityProvider>
-      <AppContextUser>
-        <RouterWrapper>
-          <CreateProposedSolutionsList proposedSolutions={[]} setProposedSolutions={() => {}} />
-        </RouterWrapper>
-      </AppContextUser>
-    </ClarityProvider>
+    <RouterWrapper>
+      <CreateProposedSolutionsList proposedSolutions={[]} setProposedSolutions={() => {}} />
+    </RouterWrapper>
   );
 };
 

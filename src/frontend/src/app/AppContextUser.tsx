@@ -9,7 +9,7 @@ import { createContext } from 'react';
 import { AuthenticatedUser } from 'shared';
 import LoadingIndicator from '../components/LoadingIndicator';
 import { useAuth } from '../hooks/auth.hooks';
-import { useClarity } from './ClarityProvider';
+import { useClarity } from '../hooks/misc.hooks';
 import { fullNamePipe } from '../utils/pipes';
 import { useGetUsersTeams } from '../hooks/teams.hooks';
 import ErrorPage from '../pages/ErrorPage';
