@@ -11,7 +11,6 @@ import * as userHooks from '../../../hooks/users.hooks';
 import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import { mockUseSingleUserSettings } from '../../test-support/mock-hooks';
-import { exampleAuthenticatedAdminUser } from '../../test-support/test-data/authenticated-user.stub';
 
 vi.mock('../../../pages/HomePage/components/UsefulLinks', () => {
   return {
@@ -54,8 +53,8 @@ const renderComponent = () => {
 
 describe('home component', () => {
   beforeEach(() => {
-    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAuthenticatedAdminUser));
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAuthenticatedAdminUser);
+    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
     vi.spyOn(userHooks, 'useSingleUserSettings').mockReturnValue(mockUseSingleUserSettings());
   });
 

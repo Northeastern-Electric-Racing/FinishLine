@@ -10,16 +10,17 @@ import {
   exampleActivationChangeRequest as exActivationCR,
   exampleStandardChangeRequest as exStandardCR
 } from '../../test-support/test-data/change-requests.stub';
+import {
+  exampleAdminUser,
+  exampleAdminUser2,
+  exampleGuestUser,
+  exampleMemberUser
+} from '../../test-support/test-data/users.stub';
 import { render, screen, routerWrapperBuilder, fireEvent } from '../../test-support/test-utils';
 import { mockUseQueryResult, mockAuth } from '../../test-support/test-data/test-utils.stub';
 import { useSingleChangeRequest } from '../../../hooks/change-requests.hooks';
 import { useAuth } from '../../../hooks/auth.hooks';
 import ChangeRequestDetails from '../../../pages/ChangeRequestDetailPage/ChangeRequestDetails';
-import {
-  exampleAuthenticatedAdminUser,
-  exampleAuthenticatedGuestUser,
-  exampleAuthenticatedMemberUser
-} from '../../test-support/test-data/authenticated-user.stub';
 
 vi.mock('../../../hooks/change-requests.hooks');
 
@@ -33,7 +34,7 @@ vi.mock('../../../hooks/auth.hooks');
 
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 
-const mockAuthHook = (user = exampleAuthenticatedAdminUser) => {
+const mockAuthHook = (user = exampleAdminUser) => {
   mockedUseAuth.mockReturnValue(mockAuth(false, user));
 };
 
@@ -61,7 +62,7 @@ describe.skip('change request details container', () => {
 
   it('enables review if the user is an admin', () => {
     mockSingleCRHook(false, false, exActivationCR);
-    mockAuthHook(exampleAuthenticatedAdminUser);
+    mockAuthHook(exampleAdminUser2);
     renderComponent();
 
     expect(screen.getByText('Review')).not.toHaveAttribute('aria-disabled');
@@ -69,7 +70,7 @@ describe.skip('change request details container', () => {
 
   it("disables review of admin's own change requests", () => {
     mockSingleCRHook(false, false, exActivationCR);
-    mockAuthHook(exampleAuthenticatedAdminUser);
+    mockAuthHook(exampleAdminUser);
     renderComponent();
 
     expect(screen.getByText('Review')).toHaveAttribute('aria-disabled');
@@ -77,7 +78,7 @@ describe.skip('change request details container', () => {
 
   it('disables reviewing change requests for guests', () => {
     mockSingleCRHook(false, false, exActivationCR);
-    mockAuthHook(exampleAuthenticatedGuestUser);
+    mockAuthHook(exampleGuestUser);
     renderComponent();
 
     expect(screen.getByText('Review')).toHaveAttribute('aria-disabled');
@@ -85,7 +86,7 @@ describe.skip('change request details container', () => {
 
   it('disables reviewing change requests for member users', () => {
     mockSingleCRHook(false, false, exActivationCR);
-    mockAuthHook(exampleAuthenticatedMemberUser);
+    mockAuthHook(exampleMemberUser);
     renderComponent();
 
     expect(screen.getByText('Review')).toHaveAttribute('aria-disabled');
@@ -93,7 +94,7 @@ describe.skip('change request details container', () => {
 
   it('enables implementing if the user is an admin', () => {
     mockSingleCRHook(false, false, exStandardCR);
-    mockAuthHook(exampleAuthenticatedAdminUser);
+    mockAuthHook(exampleAdminUser);
     renderComponent();
 
     fireEvent.click(screen.getByText('Implement Change Request'));
@@ -103,7 +104,7 @@ describe.skip('change request details container', () => {
 
   it('disables implementing change requests for guests', () => {
     mockSingleCRHook(false, false, exStandardCR);
-    mockAuthHook(exampleAuthenticatedGuestUser);
+    mockAuthHook(exampleGuestUser);
     renderComponent();
 
     fireEvent.click(screen.getByText('Implement Change Request'));

@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Organization } from '@prisma/client';
-import { DescriptionBulletPreview, WbsElementStatus, WbsNumber, WorkPackage, User } from 'shared';
+import { Organization, User } from '@prisma/client';
+import { DescriptionBulletPreview, WbsElementStatus, WbsNumber, WorkPackage } from 'shared';
 import { WorkPackageStage } from 'shared';
 import WorkPackagesService from '../../services/work-packages.services';
 

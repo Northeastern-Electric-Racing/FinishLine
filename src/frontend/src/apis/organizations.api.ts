@@ -129,22 +129,3 @@ export const setSlackSponsorshipNotificationSlackChannelId = (payload: ChannelId
     ...payload
   });
 };
-
-/**
- * Gets the finance delegates for an organization
- */
-export const getFinanceDelegates = async () => {
-  return axios.get(apiUrls.organizationsFinanceDelegates(), {
-    transformResponse: (data) => JSON.parse(data)
-  });
-};
-
-/**
- * Sets the finance delegates for an organization
- * @param userIds the user IDs to set as finance delegates
- */
-export const setFinanceDelegates = async (userIds: string[]) => {
-  return axios.post(apiUrls.organizationsSetFinanceDelegates(), {
-    userIds
-  });
-};

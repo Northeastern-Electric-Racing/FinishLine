@@ -4,7 +4,7 @@
  */
 
 import { WbsNumber } from './project-types';
-import { User } from './user-types';
+import { UserPreview } from './user-types';
 
 export enum TaskPriority {
   Low = 'LOW',
@@ -25,17 +25,13 @@ export interface Task {
   notes: string;
   dateDeleted?: Date;
   dateCreated: Date;
-  createdBy: User;
-  deletedBy?: User;
-  assignees: User[];
+  createdBy: UserPreview;
+  deletedBy?: UserPreview;
+  assignees: UserPreview[];
   deadline?: Date;
   priority: TaskPriority;
   status: TaskStatus;
 }
-
-export type TaskCardPreview = Pick<Task, 'taskId' | 'title' | 'deadline' | 'priority'> & {
-  assignees: { firstName: string; lastName: string }[];
-};
 
 export interface TaskWithIndex extends Task {
   index: number;

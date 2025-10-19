@@ -1,4 +1,4 @@
-import { Organization } from '@prisma/client';
+import { Organization, User } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
 import {
   FrequentlyAskedQuestion,
@@ -11,8 +11,7 @@ import {
   isAtLeastRank,
   RoleEnum,
   Review_Status,
-  validateWBS,
-  User
+  validateWBS
 } from 'shared';
 import {
   AccessDeniedAdminOnlyException,

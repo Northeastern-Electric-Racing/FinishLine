@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { getTeamQueryArgs } from './teams.query-args';
 
 export type AuthUserQueryArgs = ReturnType<typeof getAuthUserQueryArgs>;
 
@@ -6,28 +7,41 @@ export const getAuthUserQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.UserDefaultArgs>()({
     include: {
       userSettings: true,
-      organizations: true,
       teamsAsHead: {
-        select: {
-          teamId: true,
-          financeTeam: true
-        }
+        where: {
+          organizationId
+        },
+        ...getTeamQueryArgs(organizationId)
       },
+      organizations: true,
       teamsAsLead: {
-        select: {
-          financeTeam: true,
-          teamId: true
-        }
+        where: {
+          organizationId
+        },
+        ...getTeamQueryArgs(organizationId)
       },
       teamsAsMember: {
-        select: {
-          financeTeam: true,
-          teamId: true
+        where: {
+          organizationId
+        }
+      },
+      favoriteProjects: {
+        where: {
+          wbsElement: {
+            organizationId
+          }
         }
       },
       roles: {
         where: {
           organizationId
+        }
+      },
+      changeRequestsToReview: {
+        where: {
+          wbsElement: {
+            organizationId
+          }
         }
       },
       onboardingTeamTypes: {

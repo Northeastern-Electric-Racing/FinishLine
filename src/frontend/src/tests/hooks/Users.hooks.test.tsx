@@ -10,16 +10,15 @@ import { AuthenticatedUser, User } from 'shared';
 import wrapper from '../../app/AppContextQuery';
 import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
 import { exampleAllUsers, exampleAdminUser } from '../test-support/test-data/users.stub';
-import { getAllOrgUsers, getSingleUser, logUserIn } from '../../apis/users.api';
+import { getAllUsers, getSingleUser, logUserIn } from '../../apis/users.api';
 import { useAllUsers, useSingleUser, useLogUserIn } from '../../hooks/users.hooks';
-import { exampleAuthenticatedAdminUser } from '../test-support/test-data/authenticated-user.stub';
 
 vi.mock('../../apis/users.api');
 
 describe('user hooks', () => {
   it('handles getting a list of users', async () => {
-    const mockedGetAllOrgUsers = getAllOrgUsers as jest.Mock<Promise<AxiosResponse<User[]>>>;
-    mockedGetAllOrgUsers.mockReturnValue(mockPromiseAxiosResponse<User[]>(exampleAllUsers));
+    const mockedGetAllUsers = getAllUsers as jest.Mock<Promise<AxiosResponse<User[]>>>;
+    mockedGetAllUsers.mockReturnValue(mockPromiseAxiosResponse<User[]>(exampleAllUsers));
 
     const { result } = renderHook(() => useAllUsers(), { wrapper });
     await waitFor(() => result.current.isSuccess);
@@ -37,7 +36,7 @@ describe('user hooks', () => {
 
   it.skip('handles logging in a user', async () => {
     const mockedLogUserIn = logUserIn as jest.Mock<Promise<AxiosResponse<AuthenticatedUser>>>;
-    mockedLogUserIn.mockReturnValue(mockPromiseAxiosResponse<AuthenticatedUser>(exampleAuthenticatedAdminUser));
+    mockedLogUserIn.mockReturnValue(mockPromiseAxiosResponse<AuthenticatedUser>(exampleAdminUser));
 
     const { result } = renderHook(() => useLogUserIn(), {
       wrapper

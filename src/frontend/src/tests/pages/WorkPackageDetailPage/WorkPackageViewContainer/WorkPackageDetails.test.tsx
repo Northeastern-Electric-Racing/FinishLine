@@ -22,7 +22,6 @@ import { mockAuth, mockUseQueryResult } from '../../../test-support/test-data/te
 import { UseQueryResult } from 'react-query';
 import { exampleAdminUser, exampleAppAdminUser, exampleLeadershipUser } from '../../../test-support/test-data/users.stub';
 import { Auth } from '../../../../utils/types';
-import { exampleAuthenticatedAdminUser } from '../../../test-support/test-data/authenticated-user.stub';
 
 vi.mock('../../../../hooks/users.hooks');
 vi.mock('../../../../hooks/auth.hooks');
@@ -32,7 +31,7 @@ const mockedUseAuth = useAuth as jest.Mock<Auth>;
 
 const mockHook = (isLoading: boolean, isError: boolean, data?: User[], error?: Error) => {
   mockedUseAllUsers.mockReturnValue(mockUseQueryResult<User[]>(isLoading, isError, data, error));
-  mockedUseAuth.mockReturnValue(mockAuth(isLoading, exampleAuthenticatedAdminUser));
+  mockedUseAuth.mockReturnValue(mockAuth(isLoading, exampleAppAdminUser));
 };
 
 const users = [exampleAdminUser, exampleAppAdminUser, exampleLeadershipUser];

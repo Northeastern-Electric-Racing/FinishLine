@@ -9,7 +9,6 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useGetImageUrl } from '../../../hooks/onboarding.hook';
 import ErrorPage from '../../ErrorPage';
 import ApplicationLinkTable from './ApplicationLinkTable';
-import { MAX_FILE_SIZE } from 'shared';
 
 const AdminToolsRecruitmentConfig: React.FC = () => {
   const {
@@ -45,14 +44,14 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
   const handleFileUpload = async (files: File[], type: 'exploreAsGuest' | 'applyInterest') => {
     const validFiles: File[] = [];
     files.forEach((file) => {
-      if (file.size < MAX_FILE_SIZE) {
+      if (file.size < 5 * 1024 * 1024) {
         if (type === 'applyInterest') {
           validFiles[0] = file;
         } else if (type === 'exploreAsGuest') {
           validFiles[1] = file;
         }
       } else {
-        toast.error(`Error uploading ${file.name}; file must be less than ${MAX_FILE_SIZE / 1024 / 1024} MB`, 5000);
+        toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
       }
     });
 

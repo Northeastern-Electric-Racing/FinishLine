@@ -4,18 +4,19 @@
  */
 
 import { AvailabilityCreateArgs } from './design-review-types';
+import { Team } from './team-types';
 
 export interface User {
   userId: string;
   firstName: string;
   lastName: string;
   email: string;
-  role?: Role;
+  emailId: string | null;
+  role: Role;
+  permissions: Permission[];
 }
 
-export type UserPreview = Pick<User, 'userId' | 'firstName' | 'lastName'>;
-
-export type UserWithRole = User & { role: Role };
+export type UserPreview = Pick<User, 'userId' | 'firstName' | 'lastName' | 'email' | 'emailId' | 'role' | 'permissions'>;
 
 export type Role = 'APP_ADMIN' | 'ADMIN' | 'HEAD' | 'LEADERSHIP' | 'MEMBER' | 'GUEST';
 export enum RoleEnum {
@@ -49,11 +50,11 @@ export interface Organization {
   organizationId: string;
   name: string;
   dateCreated: Date | null;
-  userCreated: User;
+  userCreated: UserPreview;
   dateDeleted?: Date | null;
-  userDeleted?: User;
-  treasurer?: User;
-  advisor?: User;
+  userDeleted?: UserPreview;
+  treasurer?: UserPreview;
+  advisor?: UserPreview;
   description: string;
   applyInterestImageId?: string;
   exploreAsGuestImageId?: string;
@@ -66,20 +67,29 @@ export interface Organization {
 }
 
 /**
- * Type for the current user
+ * User object used purely for authentication purposes.
  */
 export interface AuthenticatedUser {
   userId: string;
   firstName: string;
   lastName: string;
   email: string;
+  emailId: string | null;
   role: Role;
   defaultTheme?: ThemeName;
   isFinance?: boolean;
+  teamAsHeadId?: string;
+  favoritedProjectsId: string[];
+  changeRequestsToReviewId: string[];
+  isHeadOfFinance?: boolean;
   isAtLeastFinanceLead?: boolean;
   organizations: string[];
+  currentOrganization?: OrganizationPreview;
   onboardingTeamTypeIds: string[];
   onboardedTeamTypeIds: string[];
+  teamsAsHead?: Team[];
+  teamsAsLead?: Team[];
+  permissions: Permission[];
 }
 
 export interface UserSettings {

@@ -1,4 +1,4 @@
-import { Material_Status, Material_Type, Organization } from '@prisma/client';
+import { Material_Status, Material_Type, Organization, User } from '@prisma/client';
 import Decimal from 'decimal.js';
 import {
   Manufacturer,
@@ -11,8 +11,7 @@ import {
   isHead,
   MaterialType,
   Material,
-  Unit,
-  User
+  Unit
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {

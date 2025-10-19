@@ -1,12 +1,13 @@
 import React from 'react';
 import ScrollablePageBlock from './ScrollablePageBlock';
 import { AuthenticatedUser } from 'shared';
+import { useManyUserTasks } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import TeamTaskCard from './TeamTaskCard';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
-import { useOverdueTasksByTeamLeader } from '../../../hooks/tasks.hooks';
+import { getOverdueTasks } from '../../../utils/task.utils';
 
 interface MyTeamsOverdueTasksProps {
   user: AuthenticatedUser;
@@ -23,10 +24,17 @@ const NoOverdueTeamTaskDisplay = () => {
 };
 
 const MyTeamsOverdueTasks: React.FC<MyTeamsOverdueTasksProps> = ({ user }) => {
-  const { data: overdueTasks, isLoading, isError, error } = useOverdueTasksByTeamLeader(user.userId);
+  const teamsAsHead = user.teamsAsHead ?? [];
+  const teamsAsLead = user.teamsAsLead ?? [];
+  const teamsAsLeadership = [...teamsAsHead, ...teamsAsLead];
+  // converting to set for no duplicate members
+  const allMembers = new Set(teamsAsLeadership.map((team) => team.members).flat());
+  const { data: tasks, isLoading, isError, error } = useManyUserTasks([...allMembers].map((member) => member.userId));
 
-  if (isLoading || !overdueTasks) return <LoadingIndicator />;
+  if (isLoading || !tasks) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
+
+  const overdueTasks = getOverdueTasks(tasks);
 
   return (
     <ScrollablePageBlock title={`My Team's Overdue Tasks (${overdueTasks.length})`}>

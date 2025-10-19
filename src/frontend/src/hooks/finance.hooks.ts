@@ -4,7 +4,7 @@
  */
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import {
-  inputReimbursementRequestInSabo,
+  approveReimbursementRequest,
   createReimbursementRequest,
   deleteReimbursementRequest,
   denyReimbursementRequest,
@@ -20,7 +20,6 @@ import {
   getSingleReimbursementRequest,
   markReimbursementRequestAsDelivered,
   markReimbursementRequestAsReimbursed,
-  markReimbursementRequestAsSaboSubmitted,
   reportRefund,
   sendPendingAdvisorList,
   setSaboNumber,
@@ -63,8 +62,7 @@ import {
   deleteAccountCode,
   deleteOtherProductReason,
   deleteSponsorTier,
-  editSponsorTier,
-  editIndexCode
+  editSponsorTier
 } from '../apis/finance.api';
 import {
   IndexCode,
@@ -122,9 +120,9 @@ export interface EditVendorPayload {
   username?: string;
   password?: string;
   discountCode?: string;
-  taxExempt?: boolean;
-  twoFactorContactIds?: string[];
-  notes?: string;
+  taxExempt: boolean;
+  twoFactorContactIds: string[];
+  notes: string;
 }
 
 export interface RefundPayload {
@@ -176,11 +174,6 @@ export interface OtherProductReasonPayload {
   accountCodeIds: string[];
   name: string;
   budget: number;
-}
-
-export interface IndexCodePayload {
-  name: string;
-  code: string;
 }
 
 /**
@@ -272,6 +265,10 @@ export const useCreateReimbursementRequestComment = (reimbursementRequestId: str
     }
   );
 };
+
+export interface IndexCodePayload {
+  name: string;
+}
 
 export interface ReimbursementRequestProjectDataPayload {
   projectId: string;
@@ -556,40 +553,17 @@ export const useDeleteReimbursementRequest = (id: string) => {
 };
 
 /**
- * Custom react hook to input a reimbursement request in SABO for the finance team
+ * Custom react hook to approve a reimbursement request for the finance team
  *
- * @param id id of the reimbursement request to input in SABO
- * @returns the created pending sabo submission reimbursement status
- */
-export const useInputReimbursementRequestInSabo = (id: string) => {
-  const queryClient = useQueryClient();
-  return useMutation<ReimbursementStatus, Error>(
-    ['reimbursement-requests', 'edit'],
-    async () => {
-      const { data } = await inputReimbursementRequestInSabo(id);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['reimbursement-requests', id]);
-      }
-    }
-  );
-};
-
-/**
- * Custom react hook to mark a reimbursement request as submitted to SABO
- * This should be called after the user has approved the request in Concur
- *
- * @param id id of the reimbursement request to mark as submitted to SABO
+ * @param id id of the reimbursement request to approve
  * @returns the created sabo submitted reimbursement status
  */
-export const useMarkReimbursementRequestAsSaboSubmitted = (id: string) => {
+export const useApproveReimbursementRequest = (id: string) => {
   const queryClient = useQueryClient();
   return useMutation<ReimbursementStatus, Error>(
     ['reimbursement-requests', 'edit'],
     async () => {
-      const { data } = await markReimbursementRequestAsSaboSubmitted(id);
+      const { data } = await approveReimbursementRequest(id);
       return data;
     },
     {
@@ -831,11 +805,14 @@ export const useCreateAccountCode = () => {
  */
 export const useCreateVendor = () => {
   const queryClient = useQueryClient();
-  return useMutation<Vendor, Error, EditVendorPayload>(['vendors', 'create'], async (vendorData: EditVendorPayload) => {
-    const { data } = await createVendor(vendorData);
-    queryClient.invalidateQueries(['vendors']);
-    return data;
-  });
+  return useMutation<{ message: string }, Error, EditVendorPayload>(
+    ['vendors', 'create'],
+    async (vendorData: EditVendorPayload) => {
+      const { data } = await createVendor(vendorData);
+      queryClient.invalidateQueries(['vendors']);
+      return data;
+    }
+  );
 };
 
 /**
@@ -913,26 +890,6 @@ export const useGetAllIndexCodes = () => {
     const { data } = await getAllIndexCodes();
     return data;
   });
-};
-
-/** Custom React Hook to edit an IndexCode
- *
- * @returns the updated IndexCode
- */
-export const useEditIndexCode = (indexCodeId: string) => {
-  const queryClient = useQueryClient();
-  return useMutation<IndexCode, Error, IndexCodePayload>(
-    ['index-codes', 'edit'],
-    async (indexCodePayload: IndexCodePayload) => {
-      const { data } = await editIndexCode(indexCodeId, indexCodePayload);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['index-codes']);
-      }
-    }
-  );
 };
 
 /**

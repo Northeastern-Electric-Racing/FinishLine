@@ -46,8 +46,6 @@ interface ReimbursementRequestFormProps {
   submitData: (data: ReimbursementRequestDataSubmission) => Promise<string>;
   onFormExit?: () => void;
   defaultValues?: ReimbursementRequestFormInput;
-  isLeadershipApproved?: boolean;
-  onSubmitToFinance?: (data: ReimbursementRequestDataSubmission) => Promise<void>;
 }
 
 const RECEIPTS_REQUIRED = import.meta.env.VITE_RR_RECEIPT_REQUIREMENT || 'disabled';
@@ -131,9 +129,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
   submitText,
   defaultValues,
   submitData,
-  onFormExit,
-  isLeadershipApproved = false,
-  onSubmitToFinance
+  onFormExit
 }) => {
   const {
     handleSubmit,
@@ -282,58 +278,6 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     };
   });
 
-  const onSubmitToFinanceWrapper = onSubmitToFinance
-    ? async (data: ReimbursementRequestFormInput) => {
-        try {
-          const totalCost = Math.round(data.reimbursementProducts.reduce((acc, curr) => acc + curr.cost, 0) * 100);
-          const reimbursementProducts = data.reimbursementProducts.map((product: ReimbursementProductFormArgs) => {
-            const anyNonZero = product.refundSources.some((rs) => Number(rs.amount) > 0);
-            const formattedRefundSources = anyNonZero ? product.refundSources : [];
-            return {
-              ...product,
-              cost: Math.round(product.cost * 100),
-              refundSources: formattedRefundSources.map((rs) => ({
-                ...rs,
-                amount: Math.round(Number(rs.amount) * 100)
-              }))
-            };
-          });
-
-          const otherReimbursementProducts: OtherReimbursementProductCreateArgs[] = [];
-          const wbsReimbursementProducts: WbsReimbursementProductCreateArgs[] = [];
-
-          reimbursementProducts.forEach((product) => {
-            if (product.reason && 'otherProductReasonId' in product.reason) {
-              otherReimbursementProducts.push({
-                reason: product.reason as OtherProductReason,
-                cost: product.cost,
-                name: product.name,
-                refundSources: product.refundSources
-              });
-            } else {
-              wbsReimbursementProducts.push({
-                reason: product.reason as WbsNumber,
-                cost: product.cost,
-                name: product.name,
-                refundSources: product.refundSources
-              });
-            }
-          });
-
-          await onSubmitToFinance({
-            ...data,
-            otherReimbursementProducts,
-            wbsReimbursementProducts,
-            totalCost
-          });
-        } catch (e: unknown) {
-          if (e instanceof Error) {
-            toast.error(e.message, 5000);
-          }
-        }
-      }
-    : undefined;
-
   return (
     <CreateReimbursementRequestFormView
       watch={watch}
@@ -355,9 +299,6 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       hasSecureSettingsSet={hasSecureSettingsSet}
       register={register}
       onFormExit={onFormExit}
-      isEditing={!!defaultValues}
-      isLeadershipApproved={isLeadershipApproved}
-      onSubmitToFinance={onSubmitToFinanceWrapper}
     />
   );
 };

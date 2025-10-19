@@ -4733,13 +4733,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/canvas-confetti@npm:^1.9.0":
-  version: 1.9.0
-  resolution: "@types/canvas-confetti@npm:1.9.0"
-  checksum: 56227a362cead21ab76b0870e07e0cc2d26c800f5bc0fc109e4a3eca1a4d4dd317e1292163246d389827b7f30ce9e6eca3915681f3c80ed1e46491018f48a266
-  languageName: node
-  linkType: hard
-
 "@types/chai@npm:^5.2.2":
   version: 5.2.2
   resolution: "@types/chai@npm:5.2.2"
@@ -7358,13 +7351,6 @@ __metadata:
   version: 1.0.30001733
   resolution: "caniuse-lite@npm:1.0.30001733"
   checksum: cf9d0701ef5617231072be7db74a077ac7a453c8672fe0f17df14aee73f8f253b42cd0d95e1f150ff73453edb115b7131e98b416070b798c8f41b25606f15292
-  languageName: node
-  linkType: hard
-
-"canvas-confetti@npm:^1.9.3":
-  version: 1.9.3
-  resolution: "canvas-confetti@npm:1.9.3"
-  checksum: db044a9c9ca0e58eafd115f7dfc2f9ecc377be34d8a5dd75901dae0dafd4fb0b75fbbf8edd48bbefad2468653c5838348f0e768b79727a924259a9ada343ea30
   languageName: node
   linkType: hard
 
@@ -10752,13 +10738,11 @@ __metadata:
     "@babel/plugin-transform-object-assign": ^7.18.6
     "@babel/preset-react": ^7.18.6
     "@babel/preset-typescript": ^7.18.6
-    "@types/canvas-confetti": ^1.9.0
     "@types/jest": ^29.5.14
     "@types/multer": ^1.4.12
     "@types/node": 20.0.0
     "@typescript-eslint/eslint-plugin": 8.20.0
     "@typescript-eslint/parser": 8.20.0
-    canvas-confetti: ^1.9.3
     concurrently: ^9.1.0
     eslint: ^7.0.0
     eslint-config-prettier: ^10.0.1

@@ -1,4 +1,5 @@
-import { LinkCreateArgs, User } from 'shared';
+import { LinkCreateArgs } from 'shared';
+import { User } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { HttpException } from './errors.utils';
 

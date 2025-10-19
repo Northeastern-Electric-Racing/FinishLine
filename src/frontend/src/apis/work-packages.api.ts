@@ -7,8 +7,7 @@ import axios from '../utils/axios';
 import { DescriptionBulletPreview, WbsNumber, WorkPackage, WorkPackageStage } from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
-import { workPackagePreviewTransformer, workPackageTransformer } from './transformers/work-packages.transformers';
-import { WorkPackageSelection } from 'shared';
+import { workPackageTransformer } from './transformers/work-packages.transformers';
 
 export interface WorkPackageApiInputs {
   name: string;
@@ -110,11 +109,5 @@ export const getManyWorkPackages = (wbsNums: WbsNumber[]) => {
 export const slackUpcomingDeadlines = (deadline: Date) => {
   return axios.post<{ message: string }>(apiUrls.workPackagesSlackUpcomingDeadlines(), {
     deadline
-  });
-};
-
-export const getHomePageWorkPackages = (selection: WorkPackageSelection) => {
-  return axios.get<WorkPackage[]>(apiUrls.homePageWorkPackages(selection), {
-    transformResponse: (data) => JSON.parse(data).map(workPackagePreviewTransformer)
   });
 };

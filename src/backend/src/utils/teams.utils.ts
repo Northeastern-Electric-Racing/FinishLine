@@ -1,20 +1,15 @@
-import { Prisma, Team, Project } from '@prisma/client';
+import { Prisma, User, Team, Project } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { UserWithSettings } from './auth.utils';
 import { NotFoundException } from './errors.utils';
-import { getUserQueryArgs } from '../prisma-query-args/user.query-args';
-import { User } from 'shared';
 
-type TeamQueryArgsMembersOnly = ReturnType<typeof teamQueryArgsMembersOnly>;
-
-const teamQueryArgsMembersOnly = (orgainzationId: string) =>
-  Prisma.validator<Prisma.TeamDefaultArgs>()({
-    include: {
-      members: getUserQueryArgs(orgainzationId),
-      head: getUserQueryArgs(orgainzationId),
-      leads: getUserQueryArgs(orgainzationId)
-    }
-  });
+const teamQueryArgsMembersOnly = Prisma.validator<Prisma.TeamDefaultArgs>()({
+  include: {
+    members: true,
+    head: true,
+    leads: true
+  }
+});
 
 /**
  * Returns true if every given user is on the given team (either a member, head, or lead)
@@ -22,14 +17,14 @@ const teamQueryArgsMembersOnly = (orgainzationId: string) =>
  * @param users the given users
  * @returns true or false
  */
-export const allUsersOnTeam = (team: Prisma.TeamGetPayload<TeamQueryArgsMembersOnly>, users: User[]): boolean => {
+export const allUsersOnTeam = (team: Prisma.TeamGetPayload<typeof teamQueryArgsMembersOnly>, users: User[]): boolean => {
   return users.every((user) => isUserOnTeam(team, user));
 };
 
 /**
  * Returns true if the user is a member, head, or lead of a team
  */
-export const isUserOnTeam = (team: Prisma.TeamGetPayload<TeamQueryArgsMembersOnly>, user: User): boolean => {
+export const isUserOnTeam = (team: Prisma.TeamGetPayload<typeof teamQueryArgsMembersOnly>, user: User): boolean => {
   return (
     team.headId === user.userId ||
     team.leads.map((lead) => lead.userId).includes(user.userId) ||
@@ -44,7 +39,7 @@ export const isUserOnTeam = (team: Prisma.TeamGetPayload<TeamQueryArgsMembersOnl
  * @param users the users to check are on at least one of the teams
  * @returns if all of the users are part of at least one of ther teams
  */
-export const areUsersPartOfTeams = (teams: Prisma.TeamGetPayload<TeamQueryArgsMembersOnly>[], users: User[]) => {
+export const areUsersPartOfTeams = (teams: Prisma.TeamGetPayload<typeof teamQueryArgsMembersOnly>[], users: User[]) => {
   return users.every((user) => teams.some((team) => isUserOnTeam(team, user)));
 };
 
@@ -55,7 +50,7 @@ export const areUsersPartOfTeams = (teams: Prisma.TeamGetPayload<TeamQueryArgsMe
  * @param user the user to check
  * @returns if all of the users are part of at least one of ther teams
  */
-export const isUserPartOfTeams = (teams: Prisma.TeamGetPayload<TeamQueryArgsMembersOnly>[], user: User) => {
+export const isUserPartOfTeams = (teams: Prisma.TeamGetPayload<typeof teamQueryArgsMembersOnly>[], user: User) => {
   return teams.some((team) => isUserOnTeam(team, user));
 };
 

@@ -1,5 +1,5 @@
-import { Organization } from '@prisma/client';
-import { isAdmin, User } from 'shared';
+import { User, Organization } from '@prisma/client';
+import { isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';

@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react';
 import { OrganizationContext } from '../app/AppOrganizationContext';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Organization, ProjectPreview, User } from 'shared';
+import { Organization, ProjectPreview } from 'shared';
 import {
   getFeaturedProjects,
   getCurrentOrganization,
@@ -16,9 +16,7 @@ import {
   setOrganizationImages,
   getPartReviewGuideLink,
   setPartReviewGuideLink,
-  setSlackSponsorshipNotificationSlackChannelId,
-  getFinanceDelegates,
-  setFinanceDelegates
+  setSlackSponsorshipNotificationSlackChannelId
 } from '../apis/organizations.api';
 import { downloadGoogleImage } from '../apis/organizations.api';
 
@@ -257,29 +255,6 @@ export const useSetSlackSponsorshipNotificationChannelId = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['organizations']);
-      }
-    }
-  );
-};
-
-export const useGetFinanceDelegates = () => {
-  return useQuery<User[], Error>(['organizations', 'finance-delegates'], async () => {
-    const { data } = await getFinanceDelegates();
-    return data;
-  });
-};
-
-export const useSetFinanceDelegates = () => {
-  const queryClient = useQueryClient();
-  return useMutation<User[], Error, string[]>(
-    ['organizations', 'finance-delegates'],
-    async (userIds: string[]) => {
-      const { data } = await setFinanceDelegates(userIds);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['organizations', 'finance-delegates']);
       }
     }
   );

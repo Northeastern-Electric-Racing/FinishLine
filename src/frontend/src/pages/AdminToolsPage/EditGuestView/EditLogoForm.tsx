@@ -5,8 +5,6 @@ import { Controller, useForm } from 'react-hook-form';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import ImageIcon from '@mui/icons-material/Image';
-import { MAX_FILE_SIZE } from 'shared';
-import { useToast } from '../../../hooks/toasts.hooks';
 
 export interface EditLogoInput {
   logoImage?: File;
@@ -24,7 +22,6 @@ const EditLogoForm: React.FC<EditLogoFormProps> = ({ onSubmit, orgLogo, onHide }
       logoImage: orgLogo
     }
   });
-  const toast = useToast();
 
   const onHideWrapper = () => {
     onHide();
@@ -73,16 +70,7 @@ const EditLogoForm: React.FC<EditLogoFormProps> = ({ onSubmit, orgLogo, onHide }
                   Upload
                   <input
                     onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        const [file] = e.target.files;
-                        if (file.size > MAX_FILE_SIZE) {
-                          toast.error(
-                            `File "${file.name}" exceeds the maximum size limit of ${MAX_FILE_SIZE / 1024 / 1024} MB`
-                          );
-                          return;
-                        }
-                        onChange(file);
-                      }
+                      onChange(!!e.target.files && e.target.files[0]);
                     }}
                     type="file"
                     id="logo-image"

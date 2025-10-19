@@ -6,6 +6,7 @@
 import { render, screen, routerWrapperBuilder, fireEvent, waitFor } from '../../test-support/test-utils';
 import { exampleProject1 } from '../../test-support/test-data/projects.stub';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
+import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data/users.stub';
 import ProjectViewContainer from '../../../pages/ProjectDetailPage/ProjectViewContainer/ProjectViewContainer';
 import { WorkPackageStage } from 'shared/src/types/work-package-types';
 import * as userHooks from '../../../hooks/users.hooks';
@@ -13,19 +14,13 @@ import * as financeHooks from '../../../hooks/finance.hooks';
 import * as authHooks from '../../../hooks/auth.hooks';
 import * as wpHooks from '../../../hooks/work-packages.hooks';
 import * as bomHooks from '../../../hooks/bom.hooks';
-import * as teamHooks from '../../../hooks/teams.hooks';
 import {
   mockManyMaterials,
   mockManyWorkPackages,
-  mockUseGetReimbursementRequestProjectData,
-  mockUseMyTeamAsHead
+  mockUseGetReimbursementRequestProjectData
 } from '../../test-support/mock-hooks';
 import { exampleAllWorkPackages } from '../../test-support/test-data/work-packages.stub';
 import { exampleRRData } from '../../test-support/test-data/finance.stubs';
-import {
-  exampleAuthenticatedAdminUser,
-  exampleAuthenticatedGuestUser
-} from '../../test-support/test-data/authenticated-user.stub';
 
 vi.mock('../../../utils/axios');
 vi.mock('../../../hooks/toasts.hooks');
@@ -59,16 +54,13 @@ describe('Rendering Project View Container', () => {
       unobserve: vi.fn(),
       disconnect: vi.fn()
     }));
-    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAuthenticatedAdminUser));
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue({
-      ...exampleAuthenticatedAdminUser
-    });
+    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
     vi.spyOn(wpHooks, 'useGetManyWorkPackages').mockReturnValue(mockManyWorkPackages(exampleAllWorkPackages));
     vi.spyOn(bomHooks, 'useGetMaterialsForWbsElement').mockReturnValue(mockManyMaterials([]));
     vi.spyOn(financeHooks, 'useGetReimbursementRequestProjectData').mockReturnValue(
       mockUseGetReimbursementRequestProjectData(exampleRRData)
     );
-    vi.spyOn(teamHooks, 'useMyTeamAsHead').mockReturnValue(mockUseMyTeamAsHead());
     vi.spyOn(userHooks, 'useUsersFavoriteProjects').mockReturnValue({
       data: [
         {
@@ -94,9 +86,7 @@ describe('Rendering Project View Container', () => {
 
   it('disables the buttons for guest users', () => {
     renderComponent();
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue({
-      ...exampleAuthenticatedGuestUser
-    });
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleGuestUser);
 
     fireEvent.click(screen.getByText('Actions'));
 

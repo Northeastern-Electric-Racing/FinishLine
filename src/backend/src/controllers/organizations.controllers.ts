@@ -217,27 +217,4 @@ export default class OrganizationsController {
       next(error);
     }
   }
-
-  static async getFinanceDelegates(req: Request, res: Response, next: NextFunction) {
-    try {
-      const financeDelegates = await OrganizationsService.getFinanceDelegates(req.organization.organizationId);
-      res.status(200).json(financeDelegates);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async setFinanceDelegates(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { userIds } = req.body;
-      const updatedDelegates = await OrganizationsService.setFinanceDelegates(
-        req.currentUser,
-        req.organization.organizationId,
-        userIds
-      );
-      res.status(200).json(updatedDelegates);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
 }

@@ -11,11 +11,11 @@ import { IconButton, Box, Grid, Typography } from '@mui/material';
 import UserScheduleSettingsView from './UserScheduleSettingsView';
 import UserScheduleSettingsEdit from './UserScheduleSettingsEdit';
 import {
-  AuthenticatedUser,
   Availability,
   AvailabilityCreateArgs,
   getMostRecentAvailabilities,
-  SetUserScheduleSettingsArgs
+  SetUserScheduleSettingsArgs,
+  User
 } from 'shared';
 import { useUpdateUserScheduleSettings, useUserScheduleSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -35,7 +35,7 @@ export interface ScheduleSettingsPayload extends ScheduleSettingsFormInput {
   availability: AvailabilityCreateArgs[];
 }
 
-const UserScheduleSettings = ({ user }: { user: AuthenticatedUser }) => {
+const UserScheduleSettings = ({ user }: { user: User }) => {
   const [edit, setEdit] = useState(false);
   const toast = useToast();
   const query = useQuery();

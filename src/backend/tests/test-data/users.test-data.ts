@@ -98,24 +98,6 @@ export const member: CreateTestUserParams = {
   role: RoleEnum.MEMBER
 };
 
-export const robinMember: CreateTestUserParams = {
-  firstName: 'Dick',
-  lastName: 'Grayson',
-  email: 'robin@gmail.com',
-  emailId: 'robin',
-  role: RoleEnum.MEMBER,
-  googleAuthId: 'robin'
-};
-
-export const cyborgMember: CreateTestUserParams = {
-  firstName: 'Victor',
-  lastName: 'Stone',
-  email: 'cyborg@gmail.com',
-  emailId: 'cyborg',
-  role: RoleEnum.MEMBER,
-  googleAuthId: 'cyborg'
-};
-
 export const batmanSettings: User_Settings = {
   id: 'bm',
   userId: '1',
@@ -128,7 +110,9 @@ export const sharedBatman: SharedUser = {
   firstName: 'Bruce',
   lastName: 'Wayne',
   email: 'notbatman@gmail.com',
-  role: 'APP_ADMIN'
+  emailId: 'notbatman',
+  role: 'APP_ADMIN',
+  permissions: [Permission.CREATE_GRAPH, Permission.EDIT_GRAPH, Permission.VIEW_GRAPH, Permission.DELETE_GRAPH]
 };
 
 export const batmanSecureSettings: User_Secure_Settings = {

@@ -44,7 +44,7 @@ const joeShmoe: Prisma.UserCreateInput = {
   userSettings: {
     create: {
       defaultTheme: Theme.LIGHT,
-      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'shmoe'
+      slackId: 'asdf'
     }
   }
 };
@@ -58,7 +58,7 @@ const joeBlow: Prisma.UserCreateInput = {
   userSettings: {
     create: {
       defaultTheme: Theme.DARK,
-      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'blow'
+      slackId: 'blow'
     }
   }
 };
@@ -159,7 +159,7 @@ const batman: Prisma.UserCreateInput = {
   userSettings: {
     create: {
       defaultTheme: Theme.DARK,
-      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'batman'
+      slackId: 'batman'
     }
   }
 };
@@ -172,7 +172,7 @@ const superman: Prisma.UserCreateInput = {
   userSettings: {
     create: {
       defaultTheme: Theme.LIGHT,
-      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'superman'
+      slackId: 'superman'
     }
   }
 };
@@ -705,7 +705,7 @@ const monopolyMan: Prisma.UserCreateInput = {
   userSettings: {
     create: {
       defaultTheme: Theme.LIGHT,
-      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'monopolyman'
+      slackId: 'monopolyman'
     }
   }
 };
@@ -718,7 +718,7 @@ const mrKrabs: Prisma.UserCreateInput = {
   userSettings: {
     create: {
       defaultTheme: Theme.LIGHT,
-      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'mrkrabs'
+      slackId: 'mrkrabs'
     }
   }
 };
@@ -731,7 +731,7 @@ const richieRich: Prisma.UserCreateInput = {
   userSettings: {
     create: {
       defaultTheme: Theme.LIGHT,
-      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'richietherich'
+      slackId: 'richietherich'
     }
   }
 };

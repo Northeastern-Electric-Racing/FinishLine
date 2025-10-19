@@ -3,10 +3,9 @@ import { linkValidators, nonEmptyString, validateInputs } from '../utils/validat
 import OrganizationsController from '../controllers/organizations.controllers';
 import multer, { memoryStorage } from 'multer';
 import { body } from 'express-validator';
-import { MAX_FILE_SIZE } from 'shared';
 
 const organizationRouter = express.Router();
-const upload = multer({ limits: { fileSize: MAX_FILE_SIZE }, storage: memoryStorage() });
+const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage() });
 
 organizationRouter.get('/current', OrganizationsController.getCurrentOrganization);
 organizationRouter.post('/useful-links/set', ...linkValidators, validateInputs, OrganizationsController.setUsefulLinks);
@@ -74,14 +73,4 @@ organizationRouter.post(
   validateInputs,
   OrganizationsController.setSlackSponsorshipNotificationsSlackId
 );
-
-organizationRouter.get('/finance-delegates', OrganizationsController.getFinanceDelegates);
-organizationRouter.post(
-  '/finance-delegates/set',
-  body('userIds').isArray(),
-  nonEmptyString(body('userIds.*')),
-  validateInputs,
-  OrganizationsController.setFinanceDelegates
-);
-
 export default organizationRouter;
