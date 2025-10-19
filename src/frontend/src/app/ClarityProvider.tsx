@@ -1,4 +1,4 @@
-import React, { useEffect, createContext, useContext, useCallback } from 'react';
+import React, { useEffect, createContext, useCallback } from 'react';
 
 // Extend the Window interface to include the Clarity function
 declare global {

@@ -13,7 +13,6 @@ import { mockAuth, mockUseMutationResult, mockUseQueryResult } from '../../test-
 import { exampleProject1 } from '../../test-support/test-data/projects.stub';
 import { ToastProvider } from '../../../components/Toast/ToastProvider';
 import * as authHooks from '../../../hooks/auth.hooks';
-import AppContextUser from '../../../app/AppContextUser';
 import { useAllUsers, useLogUserIn } from '../../../hooks/users.hooks';
 import * as userHooks from '../../../hooks/users.hooks';
 import {
@@ -22,7 +21,6 @@ import {
   mockGetCurrentUserValue
 } from '../../test-support/mock-hooks';
 import { exampleAuthenticatedAdminUser } from '../../test-support/test-data/authenticated-user.stub';
-import ClarityProvider from '../../../app/ClarityProvider';
 
 vi.mock('../../../hooks/projects.hooks');
 vi.mock('../../../hooks/users.hooks');
