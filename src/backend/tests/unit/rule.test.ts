@@ -240,5 +240,21 @@ describe('Rule Tests', () => {
       expect(updatedProjectRule.currentStatus).toBe(Rule_Completion.REVIEW);
       expect(updatedProjectRule.statusHistory).toBeUndefined();
     });
+
+    it('Update project rule fails if user does not have permission', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      const projectRule = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
+
+      await expect(
+        async () =>
+          await RulesService.editProjectRuleStatus(
+            nonLeadership,
+            organization,
+            projectRule.projectRuleId,
+            Rule_Completion.REVIEW
+          )
+      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to update a project rule status'));
+    });
   });
 });
