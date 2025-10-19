@@ -228,7 +228,7 @@ export const applyChangesToWBSElement = (
 
   // Check if it's a Task
   if ((updatedElement as Task).taskId !== undefined) {
-    const task = JSON.parse(JSON.stringify(updatedElement)) as Task;
+    const task = updatedElement as Task;
     for (const change of ganttChanges) {
       if ((change.element as Task).taskId === task.taskId) {
         // Apply changes to the task
