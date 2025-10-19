@@ -161,4 +161,7 @@ export type ExceptionObjectNames =
   | 'Index Code'
   | 'Reimbursement Product Other Reason'
   | 'Encryption Key'
-  | 'Reimbursement Request Comment';
+  | 'Reimbursement Request Comment'
+  | 'Ruleset'
+  | 'Parent Rule'
+  | 'Referenced Rule';
