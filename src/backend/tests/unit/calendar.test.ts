@@ -1197,4 +1197,81 @@ describe('Calendar Tests', () => {
       ).rejects.toThrow(new NotFoundException('Machinery', deletedMachinery.machineryId));
     });
   });
+
+  describe('Delete Machinery', () => {
+    let machineryToDelete: Machinery;
+    let anotherShop: Shop;
+
+    beforeEach(async () => {
+      machineryToDelete = await CalendarService.createMachinery(
+        adminUser,
+        'Deletable Machinery',
+        shop.shopId,
+        2,
+        organization,
+        'Test description'
+      );
+
+      anotherShop = await CalendarService.createShop(
+        adminUser,
+        'Secondary Shop',
+        'Another shop for deletion test',
+        organization
+      );
+
+      await prisma.shopMachinery.create({
+        data: {
+          shopId: anotherShop.shopId,
+          machineryId: machineryToDelete.machineryId,
+          quantity: 1,
+          description: 'Bridge row for deletion test'
+        }
+      });
+    });
+
+    it('fails if user is not an admin', async () => {
+      const guest = await createTestUser(wonderwomanGuest, orgId);
+      await expect(CalendarService.deleteMachinery(guest, machineryToDelete.machineryId, organization)).rejects.toThrow(
+        new AccessDeniedAdminOnlyException('delete machinery')
+      );
+    });
+
+    it('fails if machinery does not exist', async () => {
+      await expect(CalendarService.deleteMachinery(adminUser, 'non-existent-id', organization)).rejects.toThrow(
+        new NotFoundException('Machinery', 'non-existent-id')
+      );
+    });
+
+    it('fails if machinery is already deleted', async () => {
+      await prisma.machinery.update({
+        where: { machineryId: machineryToDelete.machineryId },
+        data: { dateDeleted: new Date() }
+      });
+
+      await expect(CalendarService.deleteMachinery(adminUser, machineryToDelete.machineryId, organization)).rejects.toThrow(
+        new NotFoundException('Machinery', machineryToDelete.machineryId)
+      );
+    });
+
+    it('succeeds for admin and soft deletes machinery and shopMachinery rows', async () => {
+      const bridgeBefore = await prisma.shopMachinery.count({
+        where: { machineryId: machineryToDelete.machineryId }
+      });
+      expect(bridgeBefore).toBeGreaterThan(0);
+
+      const deleted = await CalendarService.deleteMachinery(adminUser, machineryToDelete.machineryId, organization);
+
+      const row = await prisma.machinery.findUnique({ where: { machineryId: machineryToDelete.machineryId } });
+      expect(row?.dateDeleted).not.toBeNull();
+      expect(row?.userDeletedId).toBe(adminUser.userId);
+
+      expect(deleted.machineryId).toBe(machineryToDelete.machineryId);
+      expect(deleted.name).toBe(machineryToDelete.name);
+
+      const bridgeAfter = await prisma.shopMachinery.count({
+        where: { machineryId: machineryToDelete.machineryId }
+      });
+      expect(bridgeAfter).toBe(0);
+    });
+  });
 });

@@ -3107,6 +3107,7 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'Rapid prototyping for electronics enclosures'
   );
+  console.log(printer.machineryId);
   await MachineryService.createMachinery(
     thomasEmrax,
     'Captain America Oscilloscope',

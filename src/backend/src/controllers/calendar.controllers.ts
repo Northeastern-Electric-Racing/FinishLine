@@ -257,4 +257,16 @@ export default class CalendarController {
       next(error);
     }
   }
+
+  static async deleteMachinery(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { machineryId } = req.params;
+
+      const machinery = await CalendarService.deleteMachinery(req.currentUser, machineryId, req.organization);
+
+      res.status(200).json(machinery);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
