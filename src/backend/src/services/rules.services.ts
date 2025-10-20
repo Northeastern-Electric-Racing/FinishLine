@@ -105,6 +105,7 @@ export default class RulesService {
    * Given a ruleset id, retrieves the ruleset and throws errors if
    * it does not exist or is already deleted
    * @param rulesetId the id of the ruleset
+   * @param organizationId the id of the organization
    * @returns the ruleset with query args
    */
   static async getRulesetWithQueryArgs(rulesetId: string, organizationId: string) {
