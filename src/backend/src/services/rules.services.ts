@@ -105,7 +105,7 @@ export default class RulesService {
    * Given a ruleset id, retrieves the ruleset and throws errors if
    * it does not exist or is already deleted
    * @param rulesetId the id of the ruleset
-   * @param organizationId the id of the organization
+   * @param organizationId the id of the organization the ruleset is being deleted in
    * @returns the ruleset with query args
    */
   static async getRulesetWithQueryArgs(rulesetId: string, organizationId: string) {
@@ -124,7 +124,7 @@ export default class RulesService {
    * Deletes a specific Ruleset
    * @param rulesetId the id of the ruleset to be deleted
    * @param deleterId the id of the user deleting the ruleset
-   * @param organizationID the organization id
+   * @param organizationID the id of the organization the ruleset is being deleted in
    * @returns the deleted Ruleset
    */
   static async deleteRuleset(rulesetId: string, deleterId: string, organizationId: string) {
