@@ -104,7 +104,7 @@ calendarRouter.put(
 calendarRouter.post(
   '/shop/create',
   nonEmptyString(body('name')),
-  body('description').optional().isString(),
+  body('description').isString(),
   validateInputs,
   CalendarController.createShop
 );
@@ -112,7 +112,7 @@ calendarRouter.post(
 calendarRouter.put(
   '/shop/edit/:shopId',
   nonEmptyString(body('name')),
-  body('description').optional().isString(),
+  body('description').isString(),
   validateInputs,
   CalendarController.editShop
 );

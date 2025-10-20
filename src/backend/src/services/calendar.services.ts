@@ -487,6 +487,19 @@ export default class CalendarService {
     return shopTransformer(newShop);
   }
 
+  /**
+   * Edits an existing shop
+   * @param submitter The user submitting the request, who must be a admin.
+   * @param shopId The id of the shop to edit
+   * @param name The name of the shop
+   * @param description The description of the shop
+   * @param organization The organization for which the shop is being edited
+   * @returns Updated shop
+   * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
+   * @throws NotFoundException If the shop with the given ID does not exist.
+   * @throws DeletedException If the shop has already been deleted.
+   * @throws InvalidOrganizationException If the shop does not belong to the given organization.
+   */
   static async editShop(
     submitter: User,
     shopId: string,
@@ -512,7 +525,7 @@ export default class CalendarService {
       ...getShopQueryArgs(organization.organizationId)
     });
 
-    return shopTransformer(await updatedShop);
+    return shopTransformer(updatedShop);
   }
 
   /**
