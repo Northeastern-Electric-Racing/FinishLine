@@ -26,8 +26,6 @@ describe('Rules Tests', () => {
   let project: Project;
   let nonLeadership: User;
   let carCounter = 1;
-  let guest: User;
-  let fsaeRulesetType: Ruleset_Type;
 
   const createUniqueCar = async (orgId: string) => {
     const car = await prisma.car.create({
