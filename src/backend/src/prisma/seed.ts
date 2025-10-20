@@ -16,6 +16,7 @@ import {
   Task_Status,
   Team,
   Part_Tag,
+  Prisma,
   Ruleset_Type
 } from '@prisma/client';
 import { createUser, dbSeedAllUsers } from './seed-data/users.seed';
@@ -3095,6 +3096,37 @@ const performSeed: () => Promise<void> = async () => {
     new Date(7, 5, 25),
     thomasEmrax.userId
   );
+
+  const rulesetType = await prisma.ruleset_Type.create({
+    data: {
+      name: 'FSAE',
+      createdByUserId: thomasEmrax.userId
+    }
+  });
+
+  const ruleset = await prisma.ruleset.create({
+    data: {
+      name: 'FSAE Rules 2025',
+      fileId: 'fsae-rules-2025',
+      active: true,
+      dateCreated: new Date('2025-01-01T10:00:00Z'),
+      rulesetTypeId: rulesetType.rulesetTypeId,
+      createdByUserId: thomasEmrax.userId,
+      carId: fergus.carId
+    }
+  });
+
+  await prisma.rule.create({
+    data: {
+      ruleCode: 'T2.1.1',
+      ruleContent:
+        'The vehicle must be open-wheeled and open-cockpit (a formula style body) with four (4) wheels that are not in a straight line.',
+      imageFileIds: [],
+      dateCreated: new Date('2025-09-01T10:00:00Z'),
+      ruleset: { connect: { rulesetId: ruleset.rulesetId } },
+      createdBy: { connect: { userId: thomasEmrax.userId } }
+    }
+  });
 };
 
 performSeed()
