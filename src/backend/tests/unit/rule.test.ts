@@ -27,7 +27,6 @@ describe('Rules Tests', () => {
   let nonLeadership: User;
   let carCounter = 1;
   let guest: User;
-  let admin: User;
   let fsaeRulesetType: Ruleset_Type;
 
   const createUniqueCar = async (orgId: string) => {
@@ -58,8 +57,6 @@ describe('Rules Tests', () => {
     orgId = organization.organizationId;
     user = await createTestUser(supermanAdmin, orgId);
     nonLeadership = await createTestUser(financeMember, orgId);
-    guest = await createTestUser(wonderwomanGuest, organization.organizationId);
-    admin = await createTestUser(supermanAdmin, organization.organizationId);
 
     rulesetType = await prisma.ruleset_Type.create({
       data: {
@@ -304,7 +301,7 @@ describe('Rules Tests', () => {
 
   describe('Delete Ruleset Type', () => {
     it('Fails if user not an admin', async () => {
-      await expect(async () => await RulesService.deleteRulesetType(guest, 'FSAE', organization)).rejects.toThrow(
+      await expect(async () => await RulesService.deleteRulesetType(nonLeadership, 'FSAE', organization)).rejects.toThrow(
         new AccessDeniedAdminOnlyException('only admin are allowed to delete ruleset types')
       );
     });
