@@ -82,8 +82,8 @@ calendarRouter.post(
   CalendarController.createMachinery
 );
 
-calendarRouter.put(
-  '/machinery/edit/:machineryId',
+calendarRouter.post(
+  '/machinery/:machineryId/edit',
   nonEmptyString(body('name')),
   nonEmptyString(body('shopId')),
   body('quantity').isInt({ min: 1 }),
@@ -92,7 +92,7 @@ calendarRouter.put(
   CalendarController.editMachinery
 );
 
-calendarRouter.put(
+calendarRouter.post(
   '/:calendarId/edit',
   nonEmptyString(body('name')),
   nonEmptyString(body('description')),
@@ -109,7 +109,7 @@ calendarRouter.post(
   CalendarController.createShop
 );
 
-calendarRouter.put(
+calendarRouter.post(
   '/shop/:shopId/edit',
   nonEmptyString(body('name')),
   nonEmptyString(body('description')),
