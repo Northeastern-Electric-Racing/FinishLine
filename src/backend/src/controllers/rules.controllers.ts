@@ -33,8 +33,8 @@ export default class RulesController {
   static async deleteRuleset(req: Request, res: Response, next: NextFunction) {
     try {
       const { rulesetId } = req.params;
-      await RulesService.deleteRuleset(rulesetId, req.currentUser.userId, req.organization.organizationId);
-      res.status(204).json({ message: `Successfully deleted ruleset #${rulesetId}` });
+      const ruleset = await RulesService.deleteRuleset(rulesetId, req.currentUser.userId, req.organization.organizationId);
+      res.status(200).json(ruleset);
     } catch (error: unknown) {
       next(error);
     }

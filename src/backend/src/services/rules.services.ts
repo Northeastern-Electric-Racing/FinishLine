@@ -132,7 +132,7 @@ export default class RulesService {
     const hasPermission =
       (await userHasPermission(deleterId, organizationId, isAdmin)) || deleterId === ruleset.createdBy.userId;
 
-    if (!hasPermission) throw new AccessDeniedException('Only admins (including the ruleset creator) can delete a ruleset.');
+    if (!hasPermission) throw new AccessDeniedException('Only admins can delete a ruleset.');
 
     const deletedRuleset = await prisma.ruleset.update({
       where: { rulesetId },
