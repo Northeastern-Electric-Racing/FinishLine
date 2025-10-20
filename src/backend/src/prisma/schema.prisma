@@ -1026,6 +1026,7 @@ model ScheduleSlot {
   endTime              DateTime? // time of day (just use a DateTime, ignore the date portion)
   recurrenceNumber     Int
   initialDateScheduled DateTime    @db.Date
+  endDate              DateTime    @db.Date
   allDay               Boolean     @default(false)
   ScheduledEvents      Event[]
 }

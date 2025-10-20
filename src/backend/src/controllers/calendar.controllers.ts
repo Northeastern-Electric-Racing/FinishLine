@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import CalendarService from '../services/calendar.services';
+import { matchedData } from 'express-validator';
 
 export default class CalendarController {
   static async createEventType(req: Request, res: Response, next: NextFunction) {
@@ -253,6 +254,100 @@ export default class CalendarController {
         description
       );
       res.status(200).json(event);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getFilteredEvents(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { filterArgs } = req.body;
+      const filteredEvents = await CalendarService.getFilteredEvents(req.currentUser, filterArgs, req.organization);
+      res.status(200).json(filteredEvents);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllEvents(req: Request, res: Response, next: NextFunction) {
+    try {
+      const events = await CalendarService.getFilteredEvents(req.currentUser, {}, req.organization);
+      res.status(200).json(events);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getSpecificEvent(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { eventId } = req.params;
+      const filteredEvents = await CalendarService.getFilteredEvents(
+        req.currentUser,
+        { eventIds: [eventId] },
+        req.organization
+      );
+      res.status(200).json(filteredEvents);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getEventsFromCalendar(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { calendarId } = req.params;
+      const events = await CalendarService.getFilteredEvents(
+        req.currentUser,
+        { calendarIds: [calendarId] },
+        req.organization
+      );
+      res.status(200).json(events);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getSpecificMembersEvents(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { memberId } = req.params;
+      const events = await CalendarService.getFilteredEvents(req.currentUser, { memberIds: [memberId] }, req.organization);
+      res.status(200).json(events);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getUnapprovedEvents(req: Request, res: Response, next: NextFunction) {
+    try {
+      const filteredEvents = await CalendarService.getFilteredEvents(
+        req.currentUser,
+        { approvalStatus: false },
+        req.organization
+      );
+      res.status(200).json(filteredEvents);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getEventsFromTimeframe(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { startPeriod, endPeriod } = matchedData(req, {
+        locations: ['query'],
+        onlyValidData: true
+      });
+
+      const events = await CalendarService.getFilteredEvents(req.currentUser, { startPeriod, endPeriod }, req.organization);
+
+      res.status(200).json(events);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllCalendars(req: Request, res: Response, next: NextFunction) {
+    try {
+      const calendars = await CalendarService.getAllCalendars(req.organization);
+      res.status(200).json(calendars);
     } catch (error: unknown) {
       next(error);
     }

@@ -81,6 +81,7 @@ export const scheduleTimesTransformer = (scheduleTimes: Prisma.ScheduleSlotGetPa
     endTime: scheduleTimes.endTime ?? undefined,
     recurrenceNumber: scheduleTimes.recurrenceNumber,
     initialDateScheduled: scheduleTimes.initialDateScheduled,
+    endDate: scheduleTimes.endDate,
     allDay: scheduleTimes.allDay
   };
 };

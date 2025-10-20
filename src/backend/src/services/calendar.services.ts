@@ -10,7 +10,8 @@ import {
   User,
   ScheduleSlotCreateArgs,
   AvailabilityCreateArgs,
-  Event
+  Event,
+  FilterArgs
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -27,6 +28,7 @@ import { shopTransformer } from '../transformers/calendar.transformer';
 import { getShopQueryArgs } from '../prisma-query-args/shop.query-args';
 import { getCalendarQueryArgs } from '../prisma-query-args/calendar.query-args';
 import { getEventQueryArgs } from '../prisma-query-args/event.query-args';
+import { buildScheduledTimesOverlap } from '../utils/calendar.utils';
 
 export default class CalendarService {
   /**
@@ -340,6 +342,11 @@ export default class CalendarService {
       })
     );
 
+    const computeEndDate = (initial: Date, recurrenceNumber: number) => {
+      const weeks = Math.max(1, recurrenceNumber ?? 1);
+      return new Date(initial.getTime() + weeks * 7 * 24 * 60 * 60 * 1000);
+    };
+
     const newEvent = await prisma.event.create({
       data: {
         userCreatedId: submitter.userId,
@@ -366,6 +373,7 @@ export default class CalendarService {
             endTime: s.endTime ?? null,
             recurrenceNumber: s.recurrenceNumber,
             initialDateScheduled: s.initialDateScheduled,
+            endDate: computeEndDate(s.initialDateScheduled, s.recurrenceNumber),
             allDay: s.allDay
           }))
         },
@@ -765,6 +773,111 @@ export default class CalendarService {
     return shopTransformer(deleted);
   }
 
+  static async getFilteredEvents(requester: User, filters: FilterArgs, organization: Organization): Promise<Event[]> {
+    if (!(await userHasPermission(requester.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('delete shop');
+    }
+
+    const { memberIds, calendarIds, eventTypeIds, eventIds, approvalStatus, startPeriod, endPeriod } = filters;
+
+    // validate memberIds
+    if (memberIds?.length) {
+      const foundMembers = await prisma.user.findMany({
+        where: {
+          userId: { in: memberIds }
+        }
+      });
+      if (foundMembers.length !== memberIds.length) {
+        const missingIds = memberIds.filter((id) => !foundMembers.some((mem) => mem.userId === id));
+        throw new NotFoundException('User', missingIds.join(', '));
+      }
+    }
+
+    // validate calendarIds
+    if (calendarIds?.length) {
+      const foundcalendars = await prisma.calendar.findMany({
+        where: {
+          calendarId: { in: calendarIds }
+        }
+      });
+      if (foundcalendars.length !== calendarIds.length) {
+        const missingIds = calendarIds.filter((id) => !foundcalendars.some((mem) => mem.calendarId === id));
+        throw new NotFoundException('Calendar', missingIds.join(', '));
+      }
+    }
+
+    // validate eventTypeIds
+    if (eventTypeIds?.length) {
+      const foundEventTypes = await prisma.eventType.findMany({
+        where: {
+          eventTypeId: { in: eventTypeIds }
+        }
+      });
+      if (foundEventTypes.length !== eventTypeIds.length) {
+        const missingIds = eventTypeIds.filter((id) => !foundEventTypes.some((et) => et.eventTypeId === id));
+        throw new NotFoundException('Event Type', missingIds.join(', '));
+      }
+    }
+
+    // validate eventIds
+    if (eventIds?.length) {
+      const foundEvents = await prisma.event.findMany({
+        where: {
+          eventId: { in: eventIds }
+        }
+      });
+      if (foundEvents.length !== eventIds.length) {
+        const missingIds = eventIds.filter((id) => !foundEvents.some((et) => et.eventId === id));
+        throw new NotFoundException('Event', missingIds.join(', '));
+      }
+    }
+
+    // filters for members
+    const memberOrCreator = memberIds?.length
+      ? {
+          OR: [
+            { members: { some: { userId: { in: memberIds } } } }, // attendee
+            { userCreatedId: { in: memberIds } } // creator
+          ]
+        }
+      : undefined;
+
+    // filters for selected calendars
+    const fromCalendar = calendarIds?.length
+      ? {
+          eventType: {
+            is: {
+              dateDeleted: null,
+              organizationId: organization.organizationId,
+              calendars: {
+                some: {
+                  calendarId: { in: calendarIds },
+                  dateDeleted: null,
+                  organizationId: organization.organizationId
+                }
+              }
+            }
+          }
+        }
+      : undefined;
+
+    // get event using filter args
+    const events = await prisma.event.findMany({
+      where: {
+        dateDeleted: null,
+        eventId: eventIds?.length ? { in: eventIds } : undefined,
+        eventTypeId: eventTypeIds?.length ? { in: eventTypeIds } : undefined,
+        approved: approvalStatus !== undefined ? { equals: approvalStatus } : undefined,
+        scheduledTimes: buildScheduledTimesOverlap(startPeriod, endPeriod),
+        ...memberOrCreator,
+        ...fromCalendar
+      },
+      ...getEventQueryArgs(organization.organizationId)
+    });
+
+    return events.map((event) => eventTransformer(event));
+  }
+
   static async getAllShops(organization: Organization): Promise<Shop[]> {
     const shops = await prisma.shop.findMany({
       where: {
@@ -775,5 +888,17 @@ export default class CalendarService {
     });
 
     return shops.map(shopTransformer);
+  }
+
+  static async getAllCalendars(organization: Organization): Promise<Calendar[]> {
+    const calendars = await prisma.calendar.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null
+      },
+      ...getCalendarQueryArgs(organization.organizationId)
+    });
+
+    return calendars.map(calendarTransformer);
   }
 }

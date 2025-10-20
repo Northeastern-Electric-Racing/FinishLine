@@ -1,5 +1,5 @@
 import express from 'express';
-import { body, param } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import { intMinZero, isDate, nonEmptyString, validateInputs, isDayOfWeek } from '../utils/validation.utils';
 import CalendarController from '../controllers/calendar.controllers';
 
@@ -122,7 +122,6 @@ calendarRouter.post(
   body('availabilities').isBoolean(),
   body('shop').isBoolean(),
   body('machinery').isBoolean(),
-  body('workPackage').isBoolean(),
   body('questionDocument').isBoolean(),
   body('documents').isBoolean(),
   body('description').isBoolean(),
@@ -135,5 +134,43 @@ calendarRouter.post('/:calendarId/delete', CalendarController.deleteCalendar);
 calendarRouter.post('/shop/:shopId/delete', nonEmptyString(param('shopId')), validateInputs, CalendarController.deleteShop);
 
 calendarRouter.get('/shops', CalendarController.getAllShops);
+
+calendarRouter.post(
+  '/events/filter',
+  body('filterArgs').optional(),
+  body('filterArgs.memberIds').optional().isArray(),
+  body('filterArgs.memberIds.*').optional().isString(),
+  body('filterArgs.calendarIds').isArray().optional(),
+  body('filterArgs.calendarIds.*').isString().optional(),
+  body('filterArgs.eventTypeIds').optional().isArray(),
+  body('filterArgs.eventTypeIds.*').optional().isString(),
+  body('filterArgs.eventIds').isArray().optional(),
+  body('filterArgs.eventIds.*').isString().optional(),
+  body('filterArgs.approvalStatus').isBoolean().optional(),
+  isDate(body('filterArgs.startPeriod')).optional(),
+  isDate(body('filterArgs.endPeriod')).optional(),
+  validateInputs,
+  CalendarController.getFilteredEvents
+);
+
+calendarRouter.get('/events/member/:memberId', CalendarController.getSpecificMembersEvents);
+
+calendarRouter.get('/events', CalendarController.getAllEvents);
+
+calendarRouter.get('/events/:eventId', CalendarController.getSpecificEvent);
+
+calendarRouter.get('/events/unapproved', CalendarController.getUnapprovedEvents);
+
+calendarRouter.get('/events/calendar/:calendarId', CalendarController.getEventsFromCalendar);
+
+calendarRouter.get('/calendars', CalendarController.getAllCalendars);
+
+calendarRouter.get(
+  '/events/events/timeframe',
+  isDate(query('startPeriod')).optional(),
+  isDate(query('endPeriod')).optional(),
+  validateInputs,
+  CalendarController.getEventsFromTimeframe
+);
 
 export default calendarRouter;

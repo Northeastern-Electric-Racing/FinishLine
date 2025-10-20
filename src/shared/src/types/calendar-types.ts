@@ -28,6 +28,7 @@ export interface ScheduleSlot {
   endTime?: Date;
   recurrenceNumber: number;
   initialDateScheduled: Date;
+  endDate: Date;
   allDay: boolean;
 }
 
@@ -38,6 +39,16 @@ export interface ScheduleSlotCreateArgs {
   recurrenceNumber: number;
   initialDateScheduled: Date;
   allDay: boolean;
+}
+
+export interface FilterArgs {
+  memberIds?: string[];
+  calendarIds?: string[];
+  eventTypeIds?: string[];
+  eventIds?: string[];
+  approvalStatus?: boolean;
+  startPeriod?: Date;
+  endPeriod?: Date;
 }
 
 export interface EventType {

@@ -165,4 +165,5 @@ export type ExceptionObjectNames =
   | 'Encryption Key'
   | 'Reimbursement Request Comment'
   | 'Calendar'
+  | 'Event'
   | 'Event Type';
