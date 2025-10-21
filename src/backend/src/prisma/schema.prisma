@@ -1030,6 +1030,8 @@ model ScheduleSlot {
   endDate              DateTime    @db.Date
   allDay               Boolean     @default(false)
   ScheduledEvents      Event[]
+
+  @@index([initialDateScheduled, endDate])
 }
 
 model Event {
