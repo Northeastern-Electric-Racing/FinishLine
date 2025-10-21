@@ -224,6 +224,7 @@ export default class CalendarService {
     eventTypeId: string,
     organization: Organization,
     memberIds: string[],
+    teamIds: string[],
     shopIds: string[],
     machineryIds: string[],
     workPackageIds: string[],
@@ -258,6 +259,20 @@ export default class CalendarService {
       if (foundMembers.length !== memberIds.length) {
         const missingIds = memberIds.filter((id) => !foundMembers.some((user) => user.userId === id));
         throw new NotFoundException('User', missingIds.join(', '));
+      }
+    }
+
+    // Validate teamIds
+    if (teamIds.length > 0) {
+      const foundteams = await prisma.team.findMany({
+        where: {
+          teamId: { in: teamIds },
+          organization: { organizationId: organization.organizationId }
+        }
+      });
+      if (foundteams.length !== teamIds.length) {
+        const missingIds = teamIds.filter((id) => !foundteams.some((team) => team.teamId === id));
+        throw new NotFoundException('Team', missingIds.join(', '));
       }
     }
 
@@ -355,6 +370,9 @@ export default class CalendarService {
         eventTypeId,
         members: {
           connect: memberIds.map((userId) => ({ userId }))
+        },
+        teams: {
+          connect: teamIds.map((teamId) => ({ teamId }))
         },
         shops: {
           connect: shopIds.map((shopId) => ({ shopId }))
@@ -778,7 +796,7 @@ export default class CalendarService {
       throw new AccessDeniedAdminOnlyException('delete shop');
     }
 
-    const { memberIds, calendarIds, eventTypeIds, eventIds, approvalStatus, startPeriod, endPeriod } = filters;
+    const { memberIds, teamIds, calendarIds, eventTypeIds, eventIds, approvalStatus, startPeriod, endPeriod } = filters;
 
     // validate memberIds
     if (memberIds?.length) {
@@ -790,6 +808,20 @@ export default class CalendarService {
       if (foundMembers.length !== memberIds.length) {
         const missingIds = memberIds.filter((id) => !foundMembers.some((mem) => mem.userId === id));
         throw new NotFoundException('User', missingIds.join(', '));
+      }
+    }
+
+    // validate teamIds
+    if (teamIds?.length) {
+      const foundteams = await prisma.team.findMany({
+        where: {
+          teamId: { in: teamIds },
+          organization: { organizationId: organization.organizationId }
+        }
+      });
+      if (foundteams.length !== teamIds.length) {
+        const missingIds = teamIds.filter((id) => !foundteams.some((team) => team.teamId === id));
+        throw new NotFoundException('Team', missingIds.join(', '));
       }
     }
 
@@ -867,6 +899,7 @@ export default class CalendarService {
         dateDeleted: null,
         eventId: eventIds?.length ? { in: eventIds } : undefined,
         eventTypeId: eventTypeIds?.length ? { in: eventTypeIds } : undefined,
+        teams: { some: { teamId: { in: teamIds } } },
         approved: approvalStatus !== undefined ? { equals: approvalStatus } : undefined,
         scheduledTimes: buildScheduledTimesOverlap(startPeriod, endPeriod),
         ...memberOrCreator,

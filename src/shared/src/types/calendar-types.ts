@@ -1,4 +1,5 @@
 import { WorkPackage } from './project-types';
+import { Team } from './team-types';
 import { Availability, User } from './user-types';
 
 export interface Calendar {
@@ -43,6 +44,7 @@ export interface ScheduleSlotCreateArgs {
 
 export interface FilterArgs {
   memberIds?: string[];
+  teamIds?: string[];
   calendarIds?: string[];
   eventTypeIds?: string[];
   eventIds?: string[];
@@ -104,6 +106,7 @@ export interface Event {
   approvedBy?: User;
   scheduledTimes: ScheduleSlot[];
   people: User[];
+  teams: Team[];
   location?: string;
   zoomLink?: string;
   availability: Availability[];

@@ -220,6 +220,7 @@ export default class CalendarController {
         title,
         eventTypeId,
         memberIds,
+        teamIds,
         shopIds,
         machineryIds,
         workPackageIds,
@@ -242,6 +243,7 @@ export default class CalendarController {
         memberIds,
         shopIds,
         machineryIds,
+        teamIds,
         workPackageIds,
         documentIds,
         scheduleSlot,
@@ -259,6 +261,7 @@ export default class CalendarController {
     }
   }
 
+  //overall filtering for events
   static async getFilteredEvents(req: Request, res: Response, next: NextFunction) {
     try {
       const { filterArgs } = req.body;
@@ -295,9 +298,12 @@ export default class CalendarController {
   static async getEventsFromCalendar(req: Request, res: Response, next: NextFunction) {
     try {
       const { calendarId } = req.params;
+      const { startPeriod, endPeriod } = req.query;
+      const parsedStartPeriod = typeof startPeriod === 'string' ? new Date(startPeriod) : undefined;
+      const parsedEndPeriod = typeof endPeriod === 'string' ? new Date(endPeriod) : undefined;
       const events = await CalendarService.getFilteredEvents(
         req.currentUser,
-        { calendarIds: [calendarId] },
+        { calendarIds: [calendarId], startPeriod: parsedStartPeriod, endPeriod: parsedEndPeriod },
         req.organization
       );
       res.status(200).json(events);
@@ -309,7 +315,14 @@ export default class CalendarController {
   static async getSpecificMembersEvents(req: Request, res: Response, next: NextFunction) {
     try {
       const { memberId } = req.params;
-      const events = await CalendarService.getFilteredEvents(req.currentUser, { memberIds: [memberId] }, req.organization);
+      const { startPeriod, endPeriod } = req.query;
+      const parsedStartPeriod = typeof startPeriod === 'string' ? new Date(startPeriod) : undefined;
+      const parsedEndPeriod = typeof endPeriod === 'string' ? new Date(endPeriod) : undefined;
+      const events = await CalendarService.getFilteredEvents(
+        req.currentUser,
+        { memberIds: [memberId], startPeriod: parsedStartPeriod, endPeriod: parsedEndPeriod },
+        req.organization
+      );
       res.status(200).json(events);
     } catch (error: unknown) {
       next(error);
@@ -331,12 +344,15 @@ export default class CalendarController {
 
   static async getEventsFromTimeframe(req: Request, res: Response, next: NextFunction) {
     try {
-      const { startPeriod, endPeriod } = matchedData(req, {
-        locations: ['query'],
-        onlyValidData: true
-      });
+      const { startPeriod, endPeriod } = req.query;
+      const parsedStartPeriod = typeof startPeriod === 'string' ? new Date(startPeriod) : undefined;
+      const parsedEndPeriod = typeof endPeriod === 'string' ? new Date(endPeriod) : undefined;
 
-      const events = await CalendarService.getFilteredEvents(req.currentUser, { startPeriod, endPeriod }, req.organization);
+      const events = await CalendarService.getFilteredEvents(
+        req.currentUser,
+        { startPeriod: parsedStartPeriod, endPeriod: parsedEndPeriod },
+        req.organization
+      );
 
       res.status(200).json(events);
     } catch (error: unknown) {

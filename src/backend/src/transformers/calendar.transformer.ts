@@ -7,6 +7,7 @@ import { CalendarQueryArgs } from '../prisma-query-args/calendar.query-args';
 import { EventQueryArgs } from '../prisma-query-args/event.query-args';
 import { ShopQueryArgs } from '../prisma-query-args/shop.query-args';
 import workPackageTransformer from './work-packages.transformer';
+import teamTransformer from './teams.transformer';
 
 export const shopTransformer = (shop: Prisma.ShopGetPayload<ShopQueryArgs>): Shop => {
   return {
@@ -94,6 +95,7 @@ export const eventTransformer = (event: Prisma.EventGetPayload<EventQueryArgs>):
     dateCreated: event.dateCreated,
     eventTypeId: event.eventTypeId,
     people: event.members.map(userTransformer),
+    teams: event.teams.map(teamTransformer),
     shops: event.shops.map(shopTransformer),
     machinery: event.machinery.map(machineryTransformer),
     workPackages: event.workPackages.map(workPackageTransformer),
