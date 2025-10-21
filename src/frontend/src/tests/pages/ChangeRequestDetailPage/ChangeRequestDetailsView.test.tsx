@@ -13,7 +13,6 @@ import { mockAuth, mockUseMutationResult, mockUseQueryResult } from '../../test-
 import { exampleProject1 } from '../../test-support/test-data/projects.stub';
 import { ToastProvider } from '../../../components/Toast/ToastProvider';
 import * as authHooks from '../../../hooks/auth.hooks';
-import AppContextUser from '../../../app/AppContextUser';
 import { useAllUsers, useLogUserIn } from '../../../hooks/users.hooks';
 import * as userHooks from '../../../hooks/users.hooks';
 import {
@@ -47,18 +46,16 @@ const mockUseLogUserInHook = (isLoading: boolean, isError: boolean, error?: Erro
 const renderComponent = (cr: ChangeRequest, allowed: boolean = false) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
-    <AppContextUser>
-      <ToastProvider>
-        <RouterWrapper>
-          <ChangeRequestDetailsView
-            changeRequest={cr}
-            isUserAllowedToReview={allowed}
-            isUserAllowedToImplement={allowed}
-            isUserAllowedToDelete={allowed}
-          />
-        </RouterWrapper>
-      </ToastProvider>
-    </AppContextUser>
+    <ToastProvider>
+      <RouterWrapper>
+        <ChangeRequestDetailsView
+          changeRequest={cr}
+          isUserAllowedToReview={allowed}
+          isUserAllowedToImplement={allowed}
+          isUserAllowedToDelete={allowed}
+        />
+      </RouterWrapper>
+    </ToastProvider>
   );
 };
 
