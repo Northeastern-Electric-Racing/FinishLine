@@ -21,7 +21,8 @@ import {
   ReimbursementRequestDataPayload,
   SpendingBarDataPayload,
   ReimbursementRequestCategoryDataPayload,
-  OtherProductReasonPayload
+  OtherProductReasonPayload,
+  IndexCodePayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -105,6 +106,16 @@ export const editReimbursementRequest = (id: string, formData: EditReimbursement
 };
 
 /**
+ * Assigns a member to a specific reimbursement request
+ * @param rrId the id of the reimbursement request
+ * @param assigneeId the id of the user being assigned
+ * @returns the updated rr
+ */
+export const assignMemberToRR = (rrId: string, payload: { assigneeId: string }) => {
+  return axios.post(apiUrls.financeAssignMemberToRR(rrId), payload);
+};
+
+/**
  * Deletes a reimbursement request
  *
  * @param id the id of the reimbursement request to delete
@@ -151,10 +162,19 @@ export const getSingleReimbursementRequest = (id: string) => {
 };
 
 /**
- * Get the reimbursement requests for the current user
+ * Get the reimbursement requests created by the current user
  */
 export const getCurrentUserReimbursementRequests = () => {
   return axios.get(apiUrls.financeGetUserReimbursementRequest(), {
+    transformResponse: (data) => JSON.parse(data).map(reimbursementRequestTransformer)
+  });
+};
+
+/**
+ * Get the reimbursement requests assigned to the current user
+ */
+export const getCurrentUserAssignedReimbursementRequests = () => {
+  return axios.get(apiUrls.financeGetUserAssignedReimbursementRequest(), {
     transformResponse: (data) => JSON.parse(data).map(reimbursementRequestTransformer)
   });
 };
@@ -196,13 +216,24 @@ export const getAllReimbursements = () => {
 };
 
 /**
- * Approve Reimbursement Request (set it to Sabo Submitted)
+ * Input Reimbursement Request in SABO (set it to Pending Sabo Submission)
  *
- * @param id of the reimbursement request being approved by finance
+ * @param id of the reimbursement request being inputted in SABO by finance
+ * @returns the pending sabo submission reimbursement status
+ */
+export const inputReimbursementRequestInSabo = (id: string) => {
+  return axios.post(apiUrls.financeInputReimbursementRequestInSabo(id));
+};
+
+/**
+ * Mark Reimbursement Request as submitted to SABO
+ * This should be called after the user has approved the request in Concur
+ *
+ * @param id of the reimbursement request being marked as submitted to SABO
  * @returns the sabo submitted reimbursement status
  */
-export const approveReimbursementRequest = (id: string) => {
-  return axios.post(apiUrls.financeApproveReimbursementRequest(id));
+export const markReimbursementRequestAsSaboSubmitted = (id: string) => {
+  return axios.post(apiUrls.financeMarkReimbursementRequestAsSaboSubmitted(id));
 };
 
 /**
@@ -395,7 +426,9 @@ export const createAccountCode = async (accountCodeData: AccountCodePayload) => 
  * @returns the new vendor
  */
 export const createVendor = async (vendorData: EditVendorPayload) => {
-  return axios.post(apiUrls.financeCreateVendor(), vendorData);
+  return axios.post(apiUrls.financeCreateVendor(), vendorData, {
+    transformResponse: (data) => vendorTransformer(JSON.parse(data))
+  });
 };
 
 /**
@@ -489,6 +522,19 @@ export const createReimbursementRequestComment = async (id: string, commentData:
  */
 export const getAllIndexCodes = () => {
   return axios.get<IndexCode[]>(apiUrls.getAllIndexCodes(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
+ * Edits an index code
+ *
+ * @param indexCodeId the id of the index code to edit
+ * @param indexCodePayload the new data for the index code
+ * @returns the updated index code
+ */
+export const editIndexCode = (indexCodeId: string, indexCodePayload: IndexCodePayload) => {
+  return axios.post<IndexCode>(apiUrls.editIndexCode(indexCodeId), indexCodePayload, {
     transformResponse: (data) => JSON.parse(data)
   });
 };

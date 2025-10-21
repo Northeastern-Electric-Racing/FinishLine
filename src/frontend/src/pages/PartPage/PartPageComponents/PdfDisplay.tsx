@@ -29,12 +29,10 @@ import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import HelpIcon from '@mui/icons-material/Help';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { MAX_FILE_SIZE } from 'shared';
 
 //set up PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
-
-//no files greater than 5 mbs
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 const isPdf = (fileName: string) => {
   const extension = fileName.split('.').pop()?.toLowerCase();
@@ -558,14 +556,6 @@ const PDFViewer: React.FC<FileDisplayProps> = ({ submission, review, hasNext, ne
                         //validate each file
                         if (file.size > MAX_FILE_SIZE) {
                           toast.error(`File "${file.name}" exceeds the maximum size limit of ${MAX_FILE_SIZE} bytes`);
-                          return;
-                        }
-                        if (!/^[\w.]+$/.test(file.name)) {
-                          toast.error(`File names can only contain letters and numbers`);
-                          return;
-                        }
-                        if (file.name.length > 20) {
-                          toast.error(`File names cannot be longer than 20 characters`);
                           return;
                         }
 
