@@ -791,18 +791,15 @@ export default class CalendarService {
     return shopTransformer(deleted);
   }
 
-  static async getFilteredEvents(requester: User, filters: FilterArgs, organization: Organization): Promise<Event[]> {
-    if (!(await userHasPermission(requester.userId, organization.organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('delete shop');
-    }
-
+  static async getFilteredEvents(filters: FilterArgs, organization: Organization): Promise<Event[]> {
     const { memberIds, teamIds, calendarIds, eventTypeIds, eventIds, approvalStatus, startPeriod, endPeriod } = filters;
 
     // validate memberIds
     if (memberIds?.length) {
       const foundMembers = await prisma.user.findMany({
         where: {
-          userId: { in: memberIds }
+          userId: { in: memberIds },
+          organizations: { some: { organizationId: organization.organizationId } }
         }
       });
       if (foundMembers.length !== memberIds.length) {
@@ -829,7 +826,9 @@ export default class CalendarService {
     if (calendarIds?.length) {
       const foundcalendars = await prisma.calendar.findMany({
         where: {
-          calendarId: { in: calendarIds }
+          calendarId: { in: calendarIds },
+          organization: { organizationId: organization.organizationId },
+          dateDeleted: null
         }
       });
       if (foundcalendars.length !== calendarIds.length) {
@@ -842,7 +841,9 @@ export default class CalendarService {
     if (eventTypeIds?.length) {
       const foundEventTypes = await prisma.eventType.findMany({
         where: {
-          eventTypeId: { in: eventTypeIds }
+          eventTypeId: { in: eventTypeIds },
+          organization: { organizationId: organization.organizationId },
+          dateDeleted: null
         }
       });
       if (foundEventTypes.length !== eventTypeIds.length) {
@@ -855,7 +856,8 @@ export default class CalendarService {
     if (eventIds?.length) {
       const foundEvents = await prisma.event.findMany({
         where: {
-          eventId: { in: eventIds }
+          eventId: { in: eventIds },
+          dateDeleted: null
         }
       });
       if (foundEvents.length !== eventIds.length) {
@@ -879,12 +881,10 @@ export default class CalendarService {
       ? {
           eventType: {
             is: {
-              dateDeleted: null,
               organizationId: organization.organizationId,
               calendars: {
                 some: {
                   calendarId: { in: calendarIds },
-                  dateDeleted: null,
                   organizationId: organization.organizationId
                 }
               }
@@ -896,7 +896,6 @@ export default class CalendarService {
     // get event using filter args
     const events = await prisma.event.findMany({
       where: {
-        dateDeleted: null,
         eventId: eventIds?.length ? { in: eventIds } : undefined,
         eventTypeId: eventTypeIds?.length ? { in: eventTypeIds } : undefined,
         teams: { some: { teamId: { in: teamIds } } },

@@ -265,7 +265,7 @@ export default class CalendarController {
   static async getFilteredEvents(req: Request, res: Response, next: NextFunction) {
     try {
       const { filterArgs } = req.body;
-      const filteredEvents = await CalendarService.getFilteredEvents(req.currentUser, filterArgs, req.organization);
+      const filteredEvents = await CalendarService.getFilteredEvents(filterArgs, req.organization);
       res.status(200).json(filteredEvents);
     } catch (error: unknown) {
       next(error);
@@ -274,7 +274,7 @@ export default class CalendarController {
 
   static async getAllEvents(req: Request, res: Response, next: NextFunction) {
     try {
-      const events = await CalendarService.getFilteredEvents(req.currentUser, {}, req.organization);
+      const events = await CalendarService.getFilteredEvents({}, req.organization);
       res.status(200).json(events);
     } catch (error: unknown) {
       next(error);
@@ -284,11 +284,7 @@ export default class CalendarController {
   static async getSpecificEvent(req: Request, res: Response, next: NextFunction) {
     try {
       const { eventId } = req.params;
-      const filteredEvents = await CalendarService.getFilteredEvents(
-        req.currentUser,
-        { eventIds: [eventId] },
-        req.organization
-      );
+      const filteredEvents = await CalendarService.getFilteredEvents({ eventIds: [eventId] }, req.organization);
       res.status(200).json(filteredEvents);
     } catch (error: unknown) {
       next(error);
@@ -302,7 +298,6 @@ export default class CalendarController {
       const parsedStartPeriod = typeof startPeriod === 'string' ? new Date(startPeriod) : undefined;
       const parsedEndPeriod = typeof endPeriod === 'string' ? new Date(endPeriod) : undefined;
       const events = await CalendarService.getFilteredEvents(
-        req.currentUser,
         { calendarIds: [calendarId], startPeriod: parsedStartPeriod, endPeriod: parsedEndPeriod },
         req.organization
       );
@@ -319,7 +314,6 @@ export default class CalendarController {
       const parsedStartPeriod = typeof startPeriod === 'string' ? new Date(startPeriod) : undefined;
       const parsedEndPeriod = typeof endPeriod === 'string' ? new Date(endPeriod) : undefined;
       const events = await CalendarService.getFilteredEvents(
-        req.currentUser,
         { memberIds: [memberId], startPeriod: parsedStartPeriod, endPeriod: parsedEndPeriod },
         req.organization
       );
@@ -331,11 +325,7 @@ export default class CalendarController {
 
   static async getUnapprovedEvents(req: Request, res: Response, next: NextFunction) {
     try {
-      const filteredEvents = await CalendarService.getFilteredEvents(
-        req.currentUser,
-        { approvalStatus: false },
-        req.organization
-      );
+      const filteredEvents = await CalendarService.getFilteredEvents({ approvalStatus: false }, req.organization);
       res.status(200).json(filteredEvents);
     } catch (error: unknown) {
       next(error);
@@ -349,7 +339,6 @@ export default class CalendarController {
       const parsedEndPeriod = typeof endPeriod === 'string' ? new Date(endPeriod) : undefined;
 
       const events = await CalendarService.getFilteredEvents(
-        req.currentUser,
         { startPeriod: parsedStartPeriod, endPeriod: parsedEndPeriod },
         req.organization
       );
