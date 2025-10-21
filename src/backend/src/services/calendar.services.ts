@@ -810,18 +810,20 @@ export default class CalendarService {
       throw new NotFoundException('Machinery', machineryId);
     }
 
-    // Soft delete machinery and remove shop mappings
-    await prisma.shopMachinery.deleteMany({
-      where: { machineryId }
-    });
+    // Soft delete machinery and remove shop mappings in a transaction
+    const deleted = await prisma.$transaction(async (tx) => {
+      await tx.shopMachinery.deleteMany({
+        where: { machineryId }
+      });
 
-    const deleted = await prisma.machinery.update({
-      where: { machineryId },
-      data: {
-        dateDeleted: new Date(),
-        userDeletedId: submitter.userId
-      },
-      ...getMachineryQueryArgs(organization.organizationId)
+      return await tx.machinery.update({
+        where: { machineryId },
+        data: {
+          dateDeleted: new Date(),
+          userDeletedId: submitter.userId
+        },
+        ...getMachineryQueryArgs(organization.organizationId)
+      });
     });
 
     return machineryTransformer(deleted);

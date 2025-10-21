@@ -92,12 +92,7 @@ calendarRouter.put(
   CalendarController.editMachinery
 );
 
-calendarRouter.post(
-  '/machinery/:machineryId/delete',
-  nonEmptyString(param('machineryId')),
-  validateInputs,
-  CalendarController.deleteMachinery
-);
+calendarRouter.post('/machinery/:machineryId/delete', validateInputs, CalendarController.deleteMachinery);
 
 calendarRouter.put(
   '/:calendarId/edit',
