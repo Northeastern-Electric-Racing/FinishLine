@@ -1215,6 +1215,10 @@ describe('Calendar Tests', () => {
 
   describe('Get Events', () => {
     it('Succeeds and gets all events', async () => {
+      const member = await createTestUser(supermanAdmin, orgId);
+
+      const document = 'Test Document';
+
       const scheduleSlots = [
         {
           days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
@@ -1232,28 +1236,7 @@ describe('Calendar Tests', () => {
         }
       ];
 
-      const event1 = await CalendarService.createEvent(
-        adminUser,
-        'Team Sync',
-        eventType.eventTypeId,
-        organization,
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        scheduleSlots,
-        availabilities,
-        true,
-        adminUser.userId,
-        'https://example.com/questions.pdf',
-        'Conference Room A',
-        'https://zoom.us/j/123456789',
-        'Weekly team synchronization meeting'
-      );
-
-      const event2 = await CalendarService.createEvent(
+      const event = await CalendarService.createEvent(
         adminUser,
         'Team Sync',
         eventType.eventTypeId,
@@ -1275,7 +1258,7 @@ describe('Calendar Tests', () => {
       );
 
       const result = await CalendarService.getFilteredEvents({}, organization);
-      expect(result).toStrictEqual([]);
+      expect(result).toStrictEqual([event]);
     });
   });
 });
