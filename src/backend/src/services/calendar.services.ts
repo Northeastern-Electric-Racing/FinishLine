@@ -898,7 +898,7 @@ export default class CalendarService {
       where: {
         eventId: eventIds?.length ? { in: eventIds } : undefined,
         eventTypeId: eventTypeIds?.length ? { in: eventTypeIds } : undefined,
-        teams: { some: { teamId: { in: teamIds } } },
+        teams: teamIds?.length ? { some: { teamId: { in: teamIds } } } : undefined,
         approved: approvalStatus !== undefined ? { equals: approvalStatus } : undefined,
         scheduledTimes: buildScheduledTimesOverlap(startPeriod, endPeriod),
         ...memberOrCreator,
