@@ -10,7 +10,8 @@ import {
   User,
   ScheduleSlotCreateArgs,
   AvailabilityCreateArgs,
-  Event
+  Event,
+  Machinery
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -816,5 +817,56 @@ export default class CalendarService {
     });
 
     return shops.map(shopTransformer);
+  }
+
+  /**
+   * Deletes a machinery by its ID.
+   * Requires the submitter to be an admin.
+   * @param submitter The user submitting the request.
+   * @param machineryid The ID of the machinery to be deleted.
+   * @param organization The organization to which the machinery belongs.
+   * @returns The deleted machinery object.
+   * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
+   * @throws NotFoundException If the machinery with the given ID does not exist.
+   * @throws InvalidOrganizationException If the machinery does not belong to the given organization.
+   *
+   */
+
+  static async deleteMachinery(submitter: User, machineryId: string, organization: Organization): Promise<Machinery> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('delete machinery');
+    }
+
+    // Ensure the machinery exists
+    const existing = await prisma.machinery.findUnique({ where: { machineryId } });
+    if (!existing) throw new NotFoundException('Machinery', machineryId);
+
+    // Ensure it belongs to this org
+    if (existing.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Machinery');
+    }
+
+    // not already soft-deleted
+    if (existing.dateDeleted) {
+      throw new NotFoundException('Machinery', machineryId);
+    }
+
+    // Soft delete machinery and remove shop mappings in a transaction
+    const deleted = await prisma.$transaction(async (tx) => {
+      await tx.shopMachinery.deleteMany({
+        where: { machineryId }
+      });
+
+      return await tx.machinery.update({
+        where: { machineryId },
+        data: {
+          dateDeleted: new Date(),
+          userDeletedId: submitter.userId
+        },
+        ...getMachineryQueryArgs(organization.organizationId)
+      });
+    });
+
+    return machineryTransformer(deleted);
   }
 }

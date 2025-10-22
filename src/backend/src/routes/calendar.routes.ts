@@ -92,6 +92,8 @@ calendarRouter.post(
   CalendarController.editMachinery
 );
 
+calendarRouter.post('/machinery/:machineryId/delete', CalendarController.deleteMachinery);
+
 calendarRouter.post(
   '/:calendarId/edit',
   nonEmptyString(body('name')),
