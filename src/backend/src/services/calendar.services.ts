@@ -904,6 +904,7 @@ export default class CalendarService {
         ...memberOrCreator,
         ...fromCalendar
       },
+      orderBy: { dateCreated: 'asc' },
       ...getEventQueryArgs(organization.organizationId)
     });
 
