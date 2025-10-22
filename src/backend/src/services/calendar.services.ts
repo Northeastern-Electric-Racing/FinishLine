@@ -791,6 +791,15 @@ export default class CalendarService {
     return shopTransformer(deleted);
   }
 
+  /**
+   * Gets all events that match the given filter arguments
+   *
+   * @param filters Filters for the events you want to get, which include member IDs, team IDs, event IDs, event type IDs, approval status, and date ranges
+   *
+   * @returns The all events that match all of the given filter arguments.
+   *
+   * @throws NotFoundException If the given event type Ids, member IDs, team IDs, or event IDs are not found.
+   */
   static async getFilteredEvents(filters: FilterArgs, organization: Organization): Promise<Event[]> {
     const { memberIds, teamIds, calendarIds, eventTypeIds, eventIds, approvalStatus, startPeriod, endPeriod } = filters;
 
