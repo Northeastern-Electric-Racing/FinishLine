@@ -1383,7 +1383,108 @@ describe('Calendar Tests', () => {
         { startPeriod: new Date('2025-10-01T09:00:00Z'), endPeriod: new Date('2025-11-01T09:00:00Z') },
         organization
       );
-      expect(result).toStrictEqual([event1, event2]);
+      expect(result).toStrictEqual([event2, event1]);
+    });
+
+    it('Succeeds and gets all events with matching members', async () => {
+      const member = await createTestUser(supermanAdmin, orgId);
+
+      const document = 'Test Document';
+
+      const scheduleSlots = [
+        {
+          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
+          startTime: new Date('2025-10-13T09:00:00Z'),
+          endTime: new Date('2025-10-13T10:00:00Z'),
+          recurrenceNumber: 1,
+          initialDateScheduled: new Date('2025-10-13'),
+          allDay: false
+        }
+      ];
+      const availabilities = [
+        {
+          availability: [9, 10],
+          dateSet: new Date('2025-10-13')
+        }
+      ];
+
+      const event1 = await CalendarService.createEvent(
+        adminUser,
+        'Team Sync',
+        eventType.eventTypeId,
+        organization,
+        [member.userId],
+        [],
+        [shop.shopId],
+        [machinery.machineryId],
+        [],
+        [document],
+        scheduleSlots,
+        availabilities,
+        true,
+        adminUser.userId,
+        'https://example.com/questions.pdf',
+        'Conference Room A',
+        'https://zoom.us/j/123456789',
+        'Weekly team synchronization meeting'
+      );
+
+      await CalendarService.createEvent(
+        adminUser,
+        'Awesome Meeting',
+        eventType.eventTypeId,
+        organization,
+        [],
+        [],
+        [shop.shopId],
+        [],
+        [],
+        [],
+        scheduleSlots,
+        availabilities,
+        true,
+        adminUser.userId,
+        'https://example.com/questions.pdf',
+        'Conference Room A',
+        'https://zoom.us/j/123456789',
+        'Weekly team synchronization meeting'
+      );
+
+      const scheduleSlots2 = [
+        {
+          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
+          startTime: new Date('2025-10-13T09:00:00Z'),
+          endTime: new Date('2025-10-13T10:00:00Z'),
+          recurrenceNumber: 5,
+          initialDateScheduled: new Date('2029-10-01'),
+          allDay: false
+        }
+      ];
+
+      // out of timeframe date
+      await CalendarService.createEvent(
+        adminUser,
+        'Way too far in the future meeting',
+        eventType.eventTypeId,
+        organization,
+        [],
+        [],
+        [shop.shopId],
+        [],
+        [],
+        [],
+        scheduleSlots2,
+        availabilities,
+        true,
+        adminUser.userId,
+        'https://example.com/questions.pdf',
+        'Conference Room A',
+        'https://zoom.us/j/123456789',
+        'Weekly team synchronization meeting'
+      );
+
+      const result = await CalendarService.getFilteredEvents({ memberIds: [member.userId] }, organization);
+      expect(result).toStrictEqual([event1]);
     });
   });
 });
