@@ -298,14 +298,12 @@ describe('Rules Tests', () => {
 
   describe('Edit Rule', () => {
     it('Fails if user is not an admin', async () => {
-      const car = await createUniqueCar(orgId);
-      const { topLevelRule } = await setupRules(car);
       await expect(
         async () =>
           await RulesService.editRule(
             await createTestUser(wonderwomanGuest, orgId),
             'Some rule content',
-            topLevelRule.ruleId,
+            rule.ruleId,
             organization
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit a rule'));
@@ -324,10 +322,7 @@ describe('Rules Tests', () => {
     });
 
     it('Succeeds and edits a rule', async () => {
-      const car = await createUniqueCar(orgId);
-      const { topLevelRule } = await setupRules(car);
-
-      const updatedRule = await RulesService.editRule(admin, 'BRAND NEW RULE CONTENT', topLevelRule.ruleId, organization);
+      const updatedRule = await RulesService.editRule(user, 'BRAND NEW RULE CONTENT', rule.ruleId, organization);
 
       expect(updatedRule.ruleContent).toEqual('BRAND NEW RULE CONTENT');
     });
