@@ -221,6 +221,9 @@ export default class RulesService {
       throw new DeletedException('Rule', ruleId);
     }
 
+    if (currentRule.ruleset?.car?.wbsElement?.organizationId !== organization.organizationId)
+      throw new InvalidOrganizationException('Rule');
+
     const updatedRule = await prisma.rule.update({
       where: {
         ruleId
