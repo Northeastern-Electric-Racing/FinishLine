@@ -1,12 +1,13 @@
 import { Autocomplete, FormControl, FormLabel, TextField } from '@mui/material';
 import { useAssignMemberToRR } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { ReimbursementRequest } from 'shared';
+import { ReimbursementRequest, User } from 'shared';
 import { useEffect, useState } from 'react';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useAllUsers } from '../../../hooks/users.hooks';
 import NERModal from '../../../components/NERModal';
+import { fullNamePipe } from '../../../utils/pipes';
 
 interface AssignFinanceMemberModalProps {
   modalShow: boolean;
@@ -36,12 +37,27 @@ const AssignFinanceMemberModal = ({ modalShow, onHide, reimbursementRequest }: A
         throw new Error('Must select a user to assign');
       }
       await assignMember({ assigneeId: userId });
+      toast.success('Finance member assigned successfully');
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
       }
     }
     onHide();
+  };
+
+  const usersSearchOnChange = (
+    _event: React.SyntheticEvent<Element, Event>,
+    value: { label: string; id: string } | null
+  ) => {
+    if (value) {
+      setUserId(value.id);
+    } else {
+      setUserId(undefined);
+    }
+  };
+  const userToAutocompleteOptionWithRole = (user: User): { label: string; id: string } => {
+    return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
   };
 
   return (
@@ -56,12 +72,8 @@ const AssignFinanceMemberModal = ({ modalShow, onHide, reimbursementRequest }: A
       <FormControl fullWidth>
         <FormLabel>Assignee</FormLabel>
         <Autocomplete
-          options={users}
-          getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
-          value={users.find((user) => user.userId === userId)}
-          onChange={(_event, value) => {
-            setUserId(value?.userId);
-          }}
+          options={users.map(userToAutocompleteOptionWithRole)}
+          onChange={usersSearchOnChange}
           renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Select User" error={false} />}
         />
       </FormControl>
