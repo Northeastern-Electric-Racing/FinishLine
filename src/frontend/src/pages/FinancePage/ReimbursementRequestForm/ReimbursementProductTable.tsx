@@ -41,7 +41,7 @@ import ErrorPage from '../../ErrorPage';
 import { formatReasonName } from '../../../utils/reimbursement-request.utils';
 
 interface ReimbursementProductTableProps {
-  reimbursementProducts: (ReimbursementProductFormArgs & { id: string })[];
+  reimbursementProducts: ReimbursementProductFormArgs[];
   removeProduct: (index: number) => void;
   appendProduct: (args: ReimbursementProductFormArgs) => void;
   wbsElementAutocompleteOptions: {
@@ -85,7 +85,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
       name: string;
       cost: number;
       index: number;
-      id: string;
+      id?: string;
     }[]
   >();
 
