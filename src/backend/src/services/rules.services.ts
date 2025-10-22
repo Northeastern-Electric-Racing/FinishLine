@@ -114,9 +114,16 @@ export default class RulesService {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('edit a rule');
 
-    const currentRule = await prisma.rule.findUnique({
+    const currentRule = await prisma.rule.findFirst({
       where: {
-        ruleId
+        ruleId,
+        ruleset: {
+          car: {
+            wbsElement: {
+              organizationId: organization.organizationId
+            }
+          }
+        }
       }
     });
 
@@ -133,7 +140,9 @@ export default class RulesService {
         ruleId
       },
       data: {
-        ruleContent
+        ruleContent,
+        dateUpdated: new Date(),
+        updatedByUserId: submitter.userId
       }
     });
 
