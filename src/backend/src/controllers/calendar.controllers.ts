@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import CalendarService from '../services/calendar.services';
-import { matchedData } from 'express-validator';
 
 export default class CalendarController {
   static async createEventType(req: Request, res: Response, next: NextFunction) {

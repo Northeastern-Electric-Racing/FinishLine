@@ -1212,4 +1212,101 @@ describe('Calendar Tests', () => {
       ).rejects.toThrow(new NotFoundException('Machinery', deletedMachinery.machineryId));
     });
   });
+
+  describe('Get Events', () => {
+    it('Succeeds and gets all events', async () => {
+      const member = await createTestUser(supermanAdmin, orgId);
+
+      const otherOrg = await prisma.organization.create({
+        data: {
+          name: 'Other Org (calendar test)',
+          description: 'for cross-org negative case',
+          applicationLink: '',
+          userCreated: { connect: { userId: adminUser.userId } }
+        }
+      });
+      const otherOrgUser = await createTestUser(alfred, otherOrg.organizationId);
+
+      // Create additional entities for testing
+      const otherOrgShop = await CalendarService.createShop(
+        otherOrgUser,
+        'Other Org Shop',
+        'Shop in different organization',
+        otherOrg
+      );
+
+      const otherOrgMachinery = await CalendarService.createMachinery(
+        otherOrgUser,
+        'Other Org Machinery',
+        otherOrgShop.shopId,
+        1,
+        otherOrg,
+        'Machinery in different organization'
+      );
+
+      const document = 'Test Document';
+
+      const scheduleSlots = [
+        {
+          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
+          startTime: new Date('2025-10-13T09:00:00Z'),
+          endTime: new Date('2025-10-13T10:00:00Z'),
+          recurrenceNumber: 1,
+          initialDateScheduled: new Date('2025-10-13'),
+          allDay: false
+        }
+      ];
+      const availabilities = [
+        {
+          availability: [9, 10],
+          dateSet: new Date('2025-10-13')
+        }
+      ];
+
+      const event1 = await CalendarService.createEvent(
+        adminUser,
+        'Team Sync',
+        eventType.eventTypeId,
+        organization,
+        [member.userId],
+        [],
+        [shop.shopId],
+        [machinery.machineryId],
+        [],
+        [document],
+        scheduleSlots,
+        availabilities,
+        true,
+        adminUser.userId,
+        'https://example.com/questions.pdf',
+        'Conference Room A',
+        'https://zoom.us/j/123456789',
+        'Weekly team synchronization meeting'
+      );
+
+      const event2 = await CalendarService.createEvent(
+        adminUser,
+        'Team Sync',
+        eventType.eventTypeId,
+        organization,
+        [member.userId],
+        [],
+        [shop.shopId],
+        [],
+        [],
+        [],
+        scheduleSlots,
+        availabilities,
+        true,
+        adminUser.userId,
+        'https://example.com/questions.pdf',
+        'Conference Room A',
+        'https://zoom.us/j/123456789',
+        'Weekly team synchronization meeting'
+      );
+
+      const result = await CalendarService.getFilteredEvents({}, organization);
+      expect(result).toStrictEqual([event1, event2]);
+    });
+  });
 });
