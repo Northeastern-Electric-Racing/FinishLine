@@ -1487,4 +1487,34 @@ describe('Calendar Tests', () => {
       expect(result).toStrictEqual([event1]);
     });
   });
+
+  it('fails if memberIds do not exist', async () => {
+    await expect(CalendarService.getFilteredEvents({ memberIds: ['fakeId'] }, organization)).rejects.toThrow(
+      new NotFoundException('User', 'non-existent-user-id')
+    );
+  });
+
+  it('fails if eventTypeIds do not exist', async () => {
+    await expect(CalendarService.getFilteredEvents({ eventTypeIds: ['fakeId'] }, organization)).rejects.toThrow(
+      new NotFoundException('Event Type', 'non-existent-event-type-id')
+    );
+  });
+
+  it('fails if eventIds do not exist', async () => {
+    await expect(CalendarService.getFilteredEvents({ eventIds: ['fakeId'] }, organization)).rejects.toThrow(
+      new NotFoundException('Event', 'non-existent-event-id')
+    );
+  });
+
+  it('fails if calendarIds do not exist', async () => {
+    await expect(CalendarService.getFilteredEvents({ calendarIds: ['fakeId'] }, organization)).rejects.toThrow(
+      new NotFoundException('Calendar', 'non-existent-calendar-id')
+    );
+  });
+
+  it('fails if teamIds do not exist', async () => {
+    await expect(CalendarService.getFilteredEvents({ teamIds: ['fakeId'] }, organization)).rejects.toThrow(
+      new NotFoundException('Team', 'non-existent-team-id')
+    );
+  });
 });
