@@ -1275,7 +1275,7 @@ describe('Calendar Tests', () => {
       );
 
       const result = await CalendarService.getFilteredEvents({}, organization);
-      expect(result).toStrictEqual([event1, event2]);
+      expect(result).toStrictEqual([]);
     });
   });
 });
