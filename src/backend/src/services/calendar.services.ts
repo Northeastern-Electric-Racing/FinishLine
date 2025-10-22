@@ -905,6 +905,7 @@ export default class CalendarService {
     // get event using filter args
     const events = await prisma.event.findMany({
       where: {
+        dateDeleted: null,
         eventId: eventIds?.length ? { in: eventIds } : undefined,
         eventTypeId: eventTypeIds?.length ? { in: eventTypeIds } : undefined,
         teams: teamIds?.length ? { some: { teamId: { in: teamIds } } } : undefined,
@@ -913,8 +914,8 @@ export default class CalendarService {
         ...memberOrCreator,
         ...fromCalendar
       },
-      orderBy: { dateCreated: 'asc' },
-      ...getEventQueryArgs(organization.organizationId)
+      ...getEventQueryArgs(organization.organizationId),
+      orderBy: { dateCreated: 'asc' }
     });
 
     return events.map((event) => eventTransformer(event));
