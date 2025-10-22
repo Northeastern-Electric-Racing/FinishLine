@@ -198,13 +198,15 @@ export default class RulesService {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('edit a rule');
 
-    const currentRule = await prisma.rule.findFirst({
-      where: {
-        ruleId,
+    const currentRule = await prisma.rule.findUnique({
+      where: { ruleId },
+      include: {
         ruleset: {
-          car: {
-            wbsElement: {
-              organizationId: organization.organizationId
+          include: {
+            car: {
+              include: {
+                wbsElement: true
+              }
             }
           }
         }
