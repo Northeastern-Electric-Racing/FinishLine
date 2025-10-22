@@ -1490,31 +1490,31 @@ describe('Calendar Tests', () => {
 
   it('fails if memberIds do not exist', async () => {
     await expect(CalendarService.getFilteredEvents({ memberIds: ['fakeId'] }, organization)).rejects.toThrow(
-      new NotFoundException('User', 'non-existent-user-id')
+      new NotFoundException('User', 'fakeId')
     );
   });
 
   it('fails if eventTypeIds do not exist', async () => {
     await expect(CalendarService.getFilteredEvents({ eventTypeIds: ['fakeId'] }, organization)).rejects.toThrow(
-      new NotFoundException('Event Type', 'non-existent-event-type-id')
+      new NotFoundException('Event Type', 'fakeId')
     );
   });
 
   it('fails if eventIds do not exist', async () => {
     await expect(CalendarService.getFilteredEvents({ eventIds: ['fakeId'] }, organization)).rejects.toThrow(
-      new NotFoundException('Event', 'non-existent-event-id')
+      new NotFoundException('Event', 'fakeId')
     );
   });
 
   it('fails if calendarIds do not exist', async () => {
     await expect(CalendarService.getFilteredEvents({ calendarIds: ['fakeId'] }, organization)).rejects.toThrow(
-      new NotFoundException('Calendar', 'non-existent-calendar-id')
+      new NotFoundException('Calendar', 'fakeId')
     );
   });
 
   it('fails if teamIds do not exist', async () => {
     await expect(CalendarService.getFilteredEvents({ teamIds: ['fakeId'] }, organization)).rejects.toThrow(
-      new NotFoundException('Team', 'non-existent-team-id')
+      new NotFoundException('Team', 'fakeId')
     );
   });
 });
