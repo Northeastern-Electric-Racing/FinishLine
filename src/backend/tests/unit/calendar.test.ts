@@ -512,6 +512,51 @@ describe('Calendar Tests', () => {
     });
   });
 
+  describe('Shop: edit', () => {
+    it('fails if user is not admin', async () => {
+      const created = await CalendarService.createShop(adminUser, 'Shop A', 'Desc A', organization);
+      await expect(
+        CalendarService.editShop(
+          await createTestUser(wonderwomanGuest, orgId),
+          created.shopId,
+          'New Name',
+          'New Desc',
+          organization
+        )
+      ).rejects.toBeInstanceOf(AccessDeniedAdminOnlyException);
+    });
+
+    it('succeeds for admin', async () => {
+      const created = await CalendarService.createShop(adminUser, 'Shop B', 'Desc B', organization);
+      const updated = await CalendarService.editShop(
+        adminUser,
+        created.shopId,
+        'Updated Shop Name',
+        'Updated Description',
+        organization
+      );
+      expect(updated.shopId).toBe(created.shopId);
+      expect(updated.name).toBe('Updated Shop Name');
+      expect(updated.description).toBe('Updated Description');
+      expect(updated.userCreated.userId).toBe(created.userCreated.userId);
+      expect(updated.dateCreated).toBeTruthy();
+    });
+
+    it('fails if shop does not exist', async () => {
+      await expect(
+        CalendarService.editShop(adminUser, 'non-existent-id', 'Name', 'Desc', organization)
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('fails if shop is soft-deleted', async () => {
+      const created = await CalendarService.createShop(adminUser, 'Shop D', 'Desc D', organization);
+      await CalendarService.deleteShop(adminUser, created.shopId, organization);
+      await expect(CalendarService.editShop(adminUser, created.shopId, 'X', 'Y', organization)).rejects.toBeInstanceOf(
+        DeletedException
+      );
+    });
+  });
+
   describe('Main Calendar Tests', () => {
     describe('create calendar', () => {
       it('fails if user is not an admin', async () => {
