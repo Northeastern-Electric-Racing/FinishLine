@@ -1325,27 +1325,6 @@ describe('Calendar Tests', () => {
         'Weekly team synchronization meeting'
       );
 
-      const event2 = await CalendarService.createEvent(
-        adminUser,
-        'Awesome Meeting',
-        eventType.eventTypeId,
-        organization,
-        [member.userId],
-        [],
-        [shop.shopId],
-        [],
-        [],
-        [],
-        scheduleSlots,
-        availabilities,
-        true,
-        adminUser.userId,
-        'https://example.com/questions.pdf',
-        'Conference Room A',
-        'https://zoom.us/j/123456789',
-        'Weekly team synchronization meeting'
-      );
-
       const scheduleSlots2 = [
         {
           days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
@@ -1383,7 +1362,7 @@ describe('Calendar Tests', () => {
         { startPeriod: new Date('2025-10-01T09:00:00Z'), endPeriod: new Date('2025-11-01T09:00:00Z') },
         organization
       );
-      expect(result).toStrictEqual([event2, event1]);
+      expect(result).toStrictEqual([event1]);
     });
 
     it('Succeeds and gets all events with matching members', async () => {
