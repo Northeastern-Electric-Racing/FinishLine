@@ -1616,12 +1616,12 @@ model Rule {
 }
 
 model Rule_Status_Change {
-  historyId     String           @id @default(uuid())
-  projectRule   Project_Rule     @relation(name: "ruleStatusHistory", fields: [projectRuleId], references: [projectRuleId])
+  historyId     String          @id @default(uuid())
+  projectRule   Project_Rule    @relation(name: "ruleStatusHistory", fields: [projectRuleId], references: [projectRuleId])
   projectRuleId String
   userUpdatedId String
-  userUpdated   User             @relation(name: "ruleStatusUpdater", fields: [userUpdatedId], references: [userId])
-  updatedAt     DateTime         @default(now())
+  userUpdated   User            @relation(name: "ruleStatusUpdater", fields: [userUpdatedId], references: [userId])
+  updatedAt     DateTime        @default(now())
   newStatus     Rule_Completion
   note          String
 }
