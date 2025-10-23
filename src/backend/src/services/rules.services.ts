@@ -203,8 +203,8 @@ export default class RulesService {
     ruleId: string,
     ruleCode: string,
     imageFileIds: string[],
-    parentRuleId: string,
-    organization: Organization
+    organization: Organization,
+    parentRuleId?: string
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('edit a rule');

@@ -306,7 +306,6 @@ describe('Rules Tests', () => {
             rule.ruleId,
             rule.ruleCode,
             ['newfile'],
-            'noparent',
             organization
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit a rule'));
@@ -321,7 +320,6 @@ describe('Rules Tests', () => {
             '1',
             rule.ruleCode,
             ['samefile'],
-            'noparent',
             organization
           )
       ).rejects.toThrow(new NotFoundException('Rule', 1));
@@ -334,7 +332,6 @@ describe('Rules Tests', () => {
         rule.ruleId,
         rule.ruleCode,
         rule.imageFileIds,
-        'noparent',
         organization
       );
 
