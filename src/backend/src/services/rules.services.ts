@@ -10,8 +10,8 @@ import {
   NotFoundException
 } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
-import { projectRuleTransformer } from '../transformers/rules.transformer';
-import { getProjectRuleQueryArgs } from '../prisma-query-args/rules.query-args';
+import { projectRuleTransformer, ruleTransformer } from '../transformers/rules.transformer';
+import { getProjectRuleQueryArgs, getRuleQueryArgs } from '../prisma-query-args/rules.query-args';
 
 export default class RulesService {
   /**
@@ -235,6 +235,20 @@ export default class RulesService {
     if (currentRule.ruleset?.car?.wbsElement?.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Rule');
 
+    if (parentRuleId) {
+      const parentRule = await prisma.rule.findUnique({
+        where: { ruleId: parentRuleId }
+      });
+
+      if (!parentRule) {
+        throw new NotFoundException('Parent Rule', parentRuleId);
+      }
+
+      if (parentRule.dateDeleted) {
+        throw new DeletedException('Parent Rule', parentRuleId);
+      }
+    }
+
     const updatedRule = await prisma.rule.update({
       where: {
         ruleId
@@ -246,9 +260,10 @@ export default class RulesService {
         ...(parentRuleId && { parentRuleId }),
         dateUpdated: new Date(),
         updatedByUserId: submitter.userId
-      }
+      },
+      ...getRuleQueryArgs()
     });
 
-    return updatedRule;
+    return ruleTransformer(updatedRule);
   }
 }

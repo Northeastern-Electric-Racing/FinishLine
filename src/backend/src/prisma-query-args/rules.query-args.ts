@@ -1,6 +1,8 @@
 import { Prisma } from '@prisma/client';
 // write types and query args below here
 
+export type RuleQueryArgs = ReturnType<typeof getRuleQueryArgs>;
+
 // preview for rule display
 export const getRulePreviewQueryArgs = () =>
   Prisma.validator<Prisma.RuleDefaultArgs>()({
@@ -28,6 +30,32 @@ export const getProjectRuleQueryArgs = () =>
         },
         orderBy: {
           updatedAt: 'desc'
+        }
+      }
+    }
+  });
+
+export const getRuleQueryArgs = () =>
+  Prisma.validator<Prisma.RuleDefaultArgs>()({
+    include: {
+      ruleset: true,
+      parentRule: getRulePreviewQueryArgs(),
+      subRules: getRulePreviewQueryArgs(),
+      referencedRule: getRulePreviewQueryArgs(),
+      referencedBy: getRulePreviewQueryArgs(),
+      projects: getProjectRuleQueryArgs(),
+      createdBy: {
+        select: {
+          userId: true,
+          firstName: true,
+          lastName: true
+        }
+      },
+      updatedBy: {
+        select: {
+          userId: true,
+          firstName: true,
+          lastName: true
         }
       }
     }
