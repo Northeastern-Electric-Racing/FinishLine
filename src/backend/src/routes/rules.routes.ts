@@ -18,6 +18,15 @@ rulesRouter.post(
   RulesController.createProjectRule
 );
 
-rulesRouter.post('/rule/:ruleId/edit', nonEmptyString(body('ruleContent')), validateInputs, RulesController.editRule);
+rulesRouter.post(
+  '/rule/:ruleId/edit',
+  nonEmptyString(body('ruleContent')),
+  nonEmptyString(body('ruleCode')),
+  body('imageFileIds').isArray(),
+  nonEmptyString(body('imageFileIds.*')),
+  nonEmptyString(body('parentRuleId')),
+  validateInputs,
+  RulesController.editRule
+);
 
 export default rulesRouter;
