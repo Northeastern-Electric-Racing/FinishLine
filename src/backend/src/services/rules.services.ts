@@ -243,7 +243,7 @@ export default class RulesService {
         ruleContent,
         ruleCode,
         imageFileIds,
-        parentRuleId: parentRuleId ? parentRuleId : currentRule.parentRuleId,
+        ...(parentRuleId && { parentRuleId }),
         dateUpdated: new Date(),
         updatedByUserId: submitter.userId
       }
