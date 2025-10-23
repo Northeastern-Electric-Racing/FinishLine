@@ -50,8 +50,8 @@ export default class RulesController {
         ruleId,
         ruleCode,
         imageFileIds,
-        parentRuleId,
-        req.organization
+        req.organization,
+        parentRuleId
       );
       res.status(200).json(rule);
     } catch (error: unknown) {
