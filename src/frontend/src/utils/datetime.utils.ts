@@ -20,13 +20,12 @@ export const dateFormatMonthDate = (date: Date) => {
 };
 
 /**
- * Transforms a Date object to a string in YYYY/MM/DD format using the user's local date
- * This avoids timezone offset issues by using Day.js to format the date as-is
+ * Transforms a Date object to a YYYY-MM-DD format using Day.js
  * @param date the Date object to transform
- * @returns the date string in YYYY/MM/DD format
+ * @returns the date string in YYYY-MM-DD format representing the user's calendar date
  */
 export const transformDate = (date: Date) => {
-  return dayjs(date).format('YYYY/MM/DD');
+  return dayjs(date).format('YYYY-MM-DD');
 };
 
 export const formatDate = (date: Date) => {
