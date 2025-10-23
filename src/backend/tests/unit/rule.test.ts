@@ -304,6 +304,9 @@ describe('Rules Tests', () => {
             await createTestUser(wonderwomanGuest, orgId),
             'Some rule content',
             rule.ruleId,
+            rule.ruleCode,
+            ['newfile'],
+            'noparent',
             organization
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit a rule'));
@@ -316,13 +319,24 @@ describe('Rules Tests', () => {
             await createTestUser(batmanAppAdmin, orgId),
             'Some more rule content',
             '1',
+            rule.ruleCode,
+            ['samefile'],
+            'noparent',
             organization
           )
       ).rejects.toThrow(new NotFoundException('Rule', 1));
     });
 
     it('Succeeds and edits a rule', async () => {
-      const updatedRule = await RulesService.editRule(user, 'BRAND NEW RULE CONTENT', rule.ruleId, organization);
+      const updatedRule = await RulesService.editRule(
+        user,
+        'BRAND NEW RULE CONTENT',
+        rule.ruleId,
+        rule.ruleCode,
+        rule.imageFileIds,
+        'noparent',
+        organization
+      );
 
       expect(updatedRule.ruleContent).toEqual('BRAND NEW RULE CONTENT');
     });
