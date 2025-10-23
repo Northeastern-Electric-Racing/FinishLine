@@ -191,6 +191,9 @@ export default class RulesService {
    * @param submitter a user who is making this request
    * @param ruleContent the rule content to edit
    * @param ruleId The rule ID being edited
+   * @param ruleCode The rule code to update
+   * @param imageFileIds The image files to update
+   * @param parentRuleId The parent rule ID to update
    * @param organizationId the organization Id
    * @returns the edited rule
    */
@@ -240,7 +243,7 @@ export default class RulesService {
         ruleContent,
         ruleCode,
         imageFileIds,
-        parentRuleId,
+        parentRuleId: parentRuleId ? parentRuleId : currentRule.parentRuleId,
         dateUpdated: new Date(),
         updatedByUserId: submitter.userId
       }

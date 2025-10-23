@@ -24,7 +24,7 @@ rulesRouter.post(
   nonEmptyString(body('ruleCode')),
   body('imageFileIds').isArray(),
   nonEmptyString(body('imageFileIds.*')),
-  nonEmptyString(body('parentRuleId')),
+  body('parentRuleId').optional().isString(),
   validateInputs,
   RulesController.editRule
 );
