@@ -42,9 +42,17 @@ export default class RulesController {
   static async editRule(req: Request, res: Response, next: NextFunction) {
     try {
       const { ruleId } = req.params;
-      const { ruleContent } = req.body;
+      const { ruleContent, ruleCode, imageFileIds, parentRuleId } = req.body;
 
-      const rule = await RulesService.editRule(req.currentUser, ruleContent, ruleId, req.organization);
+      const rule = await RulesService.editRule(
+        req.currentUser,
+        ruleContent,
+        ruleId,
+        ruleCode,
+        imageFileIds,
+        parentRuleId,
+        req.organization
+      );
       res.status(200).json(rule);
     } catch (error: unknown) {
       next(error);

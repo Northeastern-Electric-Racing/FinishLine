@@ -194,7 +194,15 @@ export default class RulesService {
    * @param organizationId the organization Id
    * @returns the edited rule
    */
-  static async editRule(submitter: User, ruleContent: string, ruleId: string, organization: Organization) {
+  static async editRule(
+    submitter: User,
+    ruleContent: string,
+    ruleId: string,
+    ruleCode: string,
+    imageFileIds: string[],
+    parentRuleId: string,
+    organization: Organization
+  ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('edit a rule');
 
@@ -230,6 +238,9 @@ export default class RulesService {
       },
       data: {
         ruleContent,
+        ruleCode,
+        imageFileIds,
+        parentRuleId,
         dateUpdated: new Date(),
         updatedByUserId: submitter.userId
       }
