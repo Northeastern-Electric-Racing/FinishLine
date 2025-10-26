@@ -106,6 +106,18 @@ export default class CalendarController {
     }
   }
 
+  static async editShop(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { shopId } = req.params;
+      const { name, description } = req.body;
+
+      const updatedShop = await CalendarService.editShop(req.currentUser, shopId, name, description, req.organization);
+      res.status(200).json(updatedShop);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createCalendar(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, description, colorHexCode } = req.body;
@@ -361,6 +373,13 @@ export default class CalendarController {
     try {
       const calendars = await CalendarService.getAllCalendars(req.organization);
       res.status(200).json(calendars);
+  static async deleteMachinery(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { machineryId } = req.params;
+
+      const machinery = await CalendarService.deleteMachinery(req.currentUser, machineryId, req.organization);
+
+      res.status(200).json(machinery);
     } catch (error: unknown) {
       next(error);
     }
