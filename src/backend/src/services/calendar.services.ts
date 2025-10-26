@@ -819,6 +819,18 @@ export default class CalendarService {
     return shops.map(shopTransformer);
   }
 
+  static async getAllMachinery(organization: Organization): Promise<Machinery[]> {
+    const machinery = await prisma.machinery.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null
+      },
+      ...getMachineryQueryArgs(organization.organizationId)
+    });
+
+    return machinery.map(machineryTransformer);
+  }
+
   /**
    * Deletes a machinery by its ID.
    * Requires the submitter to be an admin.

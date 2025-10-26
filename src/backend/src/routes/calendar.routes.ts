@@ -146,4 +146,6 @@ calendarRouter.post('/shop/:shopId/delete', nonEmptyString(param('shopId')), val
 
 calendarRouter.get('/shops', CalendarController.getAllShops);
 
+calendarRouter.get('/machinery', CalendarController.getAllMachinery);
+
 export default calendarRouter;

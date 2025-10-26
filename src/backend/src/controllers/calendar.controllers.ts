@@ -106,6 +106,15 @@ export default class CalendarController {
     }
   }
 
+  static async getAllMachinery(req: Request, res: Response, next: NextFunction) {
+    try {
+      const machinery = await CalendarService.getAllMachinery(req.organization);
+      res.status(200).json(machinery);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async editShop(req: Request, res: Response, next: NextFunction) {
     try {
       const { shopId } = req.params;
