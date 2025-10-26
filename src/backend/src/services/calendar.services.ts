@@ -985,6 +985,7 @@ export default class CalendarService {
     });
 
     return calendars.map(calendarTransformer);
+  }
   /**
    * Deletes a machinery by its ID.
    * Requires the submitter to be an admin.

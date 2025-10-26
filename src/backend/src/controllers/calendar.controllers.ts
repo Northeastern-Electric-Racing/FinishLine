@@ -373,6 +373,11 @@ export default class CalendarController {
     try {
       const calendars = await CalendarService.getAllCalendars(req.organization);
       res.status(200).json(calendars);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async deleteMachinery(req: Request, res: Response, next: NextFunction) {
     try {
       const { machineryId } = req.params;
