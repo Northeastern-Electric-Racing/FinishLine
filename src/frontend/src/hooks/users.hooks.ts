@@ -21,9 +21,7 @@ import {
   getUserTasks,
   getManyUserTasks,
   getCurrentUser,
-  logUserOut,
-  getManyUsersWithScheduleSettings,
-  getAllOrgUsers
+  logUserOut
 } from '../apis/users.api';
 import {
   User,
@@ -32,10 +30,9 @@ import {
   UpdateUserRolePayload,
   UserSecureSettings,
   UserScheduleSettings,
+  UserWithScheduleSettings,
   SetUserScheduleSettingsPayload,
   Task,
-  UserWithRole,
-  UserWithScheduleSettings,
   ProjectOverview
 } from 'shared';
 import { useAuth } from './auth.hooks';
@@ -52,21 +49,10 @@ export const useCurrentUser = (): AuthenticatedUser => {
 };
 
 /**
- * Custom React Hook to supply all users. (only users in the current org)
+ * Custom React Hook to supply all users.
  */
 export const useAllUsers = () => {
-  return useQuery<UserWithRole[], Error>(['users'], async () => {
-    const { data } = await getAllOrgUsers();
-    return data;
-  });
-};
-
-/**
- * Custom React Hook to supply all users for login (no org filtering).
- * @returns all users regardless of org
- */
-export const useAllLoginUsers = () => {
-  return useQuery<UserWithRole[], Error>(['users', 'login'], async () => {
+  return useQuery<UserWithScheduleSettings[], Error>(['users'], async () => {
     const { data } = await getAllUsers();
     return data;
   });
@@ -284,18 +270,6 @@ export const useUserTasks = (userId: string) => {
 export const useManyUserTasks = (userIds: string[]) => {
   return useQuery<Task[], Error>(['users', userIds, 'tasks'], async () => {
     const { data } = await getManyUserTasks(userIds);
-    return data;
-  });
-};
-
-/**
- * Custom react hook to get the users with their schedule settings for all users in the list
- * @param userIds ids of users to get schedule settings from
- * @returns users with their schedule settings
- */
-export const useManyUsersWithScheduleSettings = (userIds: string[]) => {
-  return useQuery<UserWithScheduleSettings[], Error>(['users', userIds, 'with-schedule-settings'], async () => {
-    const { data } = await getManyUsersWithScheduleSettings(userIds);
     return data;
   });
 };

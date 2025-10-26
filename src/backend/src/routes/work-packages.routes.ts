@@ -1,5 +1,5 @@
 import express from 'express';
-import { body, param } from 'express-validator';
+import { body } from 'express-validator';
 import WorkPackagesController from '../controllers/work-packages.controllers';
 import {
   blockedByValidators,
@@ -10,7 +10,6 @@ import {
   nonEmptyString,
   validateInputs
 } from '../utils/validation.utils';
-import { WorkPackageSelection } from 'shared';
 const workPackagesRouter = express.Router();
 
 workPackagesRouter.get('/', WorkPackagesController.getAllWorkPackages);
@@ -62,13 +61,6 @@ workPackagesRouter.post(
   isDate(body('deadline')),
   validateInputs,
   WorkPackagesController.slackMessageUpcomingDeadlines
-);
-
-workPackagesRouter.get(
-  '/home-page/:selection',
-  param('selection').isIn(Object.values(WorkPackageSelection)),
-  validateInputs,
-  WorkPackagesController.getHomePageWorkPackages
 );
 
 export default workPackagesRouter;

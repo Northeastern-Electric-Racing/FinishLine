@@ -10,7 +10,6 @@ import { exampleAdminUser, exampleLeadershipUser } from '../../test-support/test
 import { ToastProvider } from '../../../components/Toast/ToastProvider';
 import AppContextUser from '../../../app/AppContextUser';
 import * as userHooks from '../../../hooks/users.hooks';
-import { exampleAuthenticatedAdminUser } from '../../test-support/test-data/authenticated-user.stub';
 
 const exampleProposedSolution1: ProposedSolution = {
   id: '1',
@@ -54,7 +53,7 @@ const renderComponent = (proposedSolutions: ProposedSolution[] = [], crReviewed:
 
 describe('Proposed Solutions List Test Suite', () => {
   beforeEach(() => {
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAuthenticatedAdminUser);
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
   });
 
   it('Renders correctly when empty and CR is not reviewed', () => {

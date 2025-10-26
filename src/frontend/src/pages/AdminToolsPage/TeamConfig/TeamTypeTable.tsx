@@ -4,7 +4,7 @@ import ErrorPage from '../../ErrorPage';
 import { NERButton } from '../../../components/NERButton';
 import AdminToolTable from '../AdminToolTable';
 import CreateTeamTypeFormModal from './CreateTeamTypeFormModal';
-import { MAX_FILE_SIZE, TeamType } from 'shared';
+import { TeamType } from 'shared';
 import EditTeamTypeFormModal from './EditTeamTypeFormModal';
 import { useAllTeamTypes, useSetTeamTypeImage } from '../../../hooks/team-types.hooks';
 import { useState } from 'react';
@@ -72,10 +72,10 @@ const TeamTypeTable: React.FC = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, teamTypeId: string) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size < MAX_FILE_SIZE) {
+      if (file.size < 1000000) {
         setAddedImages((prev) => ({ ...prev, [teamTypeId]: file }));
       } else {
-        toast.error(`Error uploading ${file.name}; file must be less than ${MAX_FILE_SIZE / 1024 / 1024} MB`, 5000);
+        toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
       }
     }
   };

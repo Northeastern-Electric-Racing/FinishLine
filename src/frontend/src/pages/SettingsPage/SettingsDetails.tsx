@@ -2,7 +2,7 @@ import { useAuth } from '../../hooks/auth.hooks';
 import { Box, Grid, Typography } from '@mui/material';
 import DetailDisplay from '../../components/DetailDisplay';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { useCurrentUser } from '../../hooks/users.hooks';
+import { useCurrentUser, useCurrentUserSecureSettings, useSingleUserSettings } from '../../hooks/users.hooks';
 import ErrorPage from '../ErrorPage';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import { displayEnum } from '../../utils/pipes';
@@ -11,10 +11,34 @@ import { isUserOnTeam } from '../../utils/teams.utils';
 const SettingsDetails: React.FC = () => {
   const auth = useAuth();
   const user = useCurrentUser();
+  const {
+    isLoading: settingsIsLoading,
+    isError: settingsIsError,
+    error: settingsError,
+    data: userSettingsData
+  } = useSingleUserSettings(user.userId);
+  const {
+    isLoading: secureSettingsIsLoading,
+    isError: secureSettingsIsError,
+    error: secureSettingsError,
+    data: userSecureSettings
+  } = useCurrentUserSecureSettings();
   const { isLoading: allTeamsIsLoading, isError: allTeamsIsError, data: teams, error: allTeamsError } = useAllTeams();
 
+  if (secureSettingsIsError) return <ErrorPage error={secureSettingsError} message={secureSettingsError.message} />;
+  if (settingsIsError) return <ErrorPage error={settingsError} message={settingsError.message} />;
   if (allTeamsIsError) return <ErrorPage error={allTeamsError} message={allTeamsError.message} />;
-  if (auth.isLoading || !auth.user || allTeamsIsLoading || !teams) return <LoadingIndicator />;
+  if (
+    auth.isLoading ||
+    !auth.user ||
+    settingsIsLoading ||
+    !userSettingsData ||
+    secureSettingsIsLoading ||
+    !userSecureSettings ||
+    allTeamsIsLoading ||
+    !teams
+  )
+    return <LoadingIndicator />;
 
   const userTeams = teams.filter((team) => isUserOnTeam(team, user));
 

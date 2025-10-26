@@ -21,8 +21,7 @@ import {
   ReimbursementRequestDataPayload,
   SpendingBarDataPayload,
   ReimbursementRequestCategoryDataPayload,
-  OtherProductReasonPayload,
-  IndexCodePayload
+  OtherProductReasonPayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -197,24 +196,13 @@ export const getAllReimbursements = () => {
 };
 
 /**
- * Input Reimbursement Request in SABO (set it to Pending Sabo Submission)
+ * Approve Reimbursement Request (set it to Sabo Submitted)
  *
- * @param id of the reimbursement request being inputted in SABO by finance
- * @returns the pending sabo submission reimbursement status
- */
-export const inputReimbursementRequestInSabo = (id: string) => {
-  return axios.post(apiUrls.financeInputReimbursementRequestInSabo(id));
-};
-
-/**
- * Mark Reimbursement Request as submitted to SABO
- * This should be called after the user has approved the request in Concur
- *
- * @param id of the reimbursement request being marked as submitted to SABO
+ * @param id of the reimbursement request being approved by finance
  * @returns the sabo submitted reimbursement status
  */
-export const markReimbursementRequestAsSaboSubmitted = (id: string) => {
-  return axios.post(apiUrls.financeMarkReimbursementRequestAsSaboSubmitted(id));
+export const approveReimbursementRequest = (id: string) => {
+  return axios.post(apiUrls.financeApproveReimbursementRequest(id));
 };
 
 /**
@@ -407,9 +395,7 @@ export const createAccountCode = async (accountCodeData: AccountCodePayload) => 
  * @returns the new vendor
  */
 export const createVendor = async (vendorData: EditVendorPayload) => {
-  return axios.post(apiUrls.financeCreateVendor(), vendorData, {
-    transformResponse: (data) => vendorTransformer(JSON.parse(data))
-  });
+  return axios.post(apiUrls.financeCreateVendor(), vendorData);
 };
 
 /**
@@ -503,19 +489,6 @@ export const createReimbursementRequestComment = async (id: string, commentData:
  */
 export const getAllIndexCodes = () => {
   return axios.get<IndexCode[]>(apiUrls.getAllIndexCodes(), {
-    transformResponse: (data) => JSON.parse(data)
-  });
-};
-
-/**
- * Edits an index code
- *
- * @param indexCodeId the id of the index code to edit
- * @param indexCodePayload the new data for the index code
- * @returns the updated index code
- */
-export const editIndexCode = (indexCodeId: string, indexCodePayload: IndexCodePayload) => {
-  return axios.post<IndexCode>(apiUrls.editIndexCode(indexCodeId), indexCodePayload, {
     transformResponse: (data) => JSON.parse(data)
   });
 };

@@ -6,10 +6,10 @@
 import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
 import { mockGetVersionNumberReturnValue } from '../../test-support/mock-hooks';
 import * as miscHooks from '../../../hooks/misc.hooks';
+import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 import * as userHooks from '../../../hooks/users.hooks';
 import Sidebar from '../../../layouts/Sidebar/Sidebar';
 import { ToastContext, ToastInputs } from '../../../components/Toast/ToastProvider';
-import { exampleAuthenticatedAdminUser } from '../../test-support/test-data/authenticated-user.stub';
 
 const addToast = (message: ToastInputs) => {
   console.log(message);
@@ -33,7 +33,7 @@ const renderComponent = () => {
 describe('Sidebar Tests', () => {
   it('Renders Navigation Links', () => {
     vi.spyOn(miscHooks, 'useGetVersionNumber').mockReturnValue(mockGetVersionNumberReturnValue({ tag_name: 'v3.5.4' }));
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAuthenticatedAdminUser);
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
 
     renderComponent();
     expect(screen.getByText(/Projects/i)).toBeInTheDocument();

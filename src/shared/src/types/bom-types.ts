@@ -1,5 +1,5 @@
 import { Decimal } from 'decimal.js';
-import { User } from './user-types';
+import { User, UserPreview } from './user-types';
 import { ReimbursementRequest } from './reimbursement-requests-types';
 
 export enum MaterialStatus {
@@ -20,7 +20,7 @@ export type UnitPreview = Omit<Unit, 'materials'>;
 export interface MaterialType {
   name: string;
   dateCreated: Date;
-  userCreated: User;
+  userCreated: UserPreview;
   dateDeleted?: Date;
   materials: MaterialPreview[];
 }
@@ -31,8 +31,8 @@ export interface Assembly {
   name: string;
   pdmFileName?: string;
   dateDeleted?: Date;
-  userDeleted?: User;
-  userCreated: User;
+  userDeleted?: UserPreview;
+  userCreated: UserPreview;
   wbsElementId: string;
   materials: MaterialPreview[];
 }
@@ -56,9 +56,9 @@ export interface Material {
   name: string;
   wbsElementId: string;
   dateDeleted?: Date;
-  userDeleted?: User;
+  userDeleted?: UserPreview;
   dateCreated: Date;
-  userCreated: User;
+  userCreated: UserPreview;
   status: MaterialStatus;
   materialTypeName: string;
   materialType: MaterialTypePreview;

@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { validateWBS, WbsNumber, WorkPackage, WorkPackagePreview, WorkPackageSelection } from 'shared';
+import { validateWBS, WbsNumber, WorkPackage } from 'shared';
 import WorkPackagesService from '../services/work-packages.services';
 
 /** Controller for operations involving work packages. */
@@ -130,22 +130,6 @@ export default class WorkPackagesController {
       const { deadline } = req.body;
 
       await WorkPackagesService.slackMessageUpcomingDeadlines(req.currentUser, new Date(deadline), req.organization);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async getHomePageWorkPackages(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { selection } = req.params;
-
-      const workPackages: WorkPackagePreview[] = await WorkPackagesService.getHomePageWorkPackages(
-        req.currentUser,
-        req.organization,
-        selection as WorkPackageSelection
-      );
-
-      res.status(200).json(workPackages);
     } catch (error: unknown) {
       next(error);
     }

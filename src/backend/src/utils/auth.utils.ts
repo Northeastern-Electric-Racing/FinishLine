@@ -3,9 +3,8 @@ import { Request, Response, NextFunction } from 'express';
 import { JwtPayload, VerifyErrors } from 'jsonwebtoken';
 import prisma from '../prisma/prisma';
 import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from './errors.utils';
-import { Organization, User_Secure_Settings, User_Settings } from '@prisma/client';
+import { Organization, User, User_Secure_Settings, User_Settings } from '@prisma/client';
 import { IncomingHttpHeaders } from 'http';
-import { User } from 'shared';
 
 const TOKEN_SECRET = process.env.TOKEN_SECRET || 'i<3security';
 

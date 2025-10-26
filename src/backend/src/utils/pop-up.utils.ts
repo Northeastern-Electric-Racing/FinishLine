@@ -1,5 +1,4 @@
-import { Change_Request, Design_Review } from '@prisma/client';
-import { User } from 'shared';
+import { Change_Request, Design_Review, User } from '@prisma/client';
 import { PopUpService } from '../services/pop-up.services';
 
 /**

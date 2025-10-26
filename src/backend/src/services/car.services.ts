@@ -1,5 +1,5 @@
-import { Organization } from '@prisma/client';
-import { isAdmin, User } from 'shared';
+import { Organization, User } from '@prisma/client';
+import { isAdmin } from 'shared';
 import { getCarQueryArgs } from '../prisma-query-args/cars.query-args';
 import prisma from '../prisma/prisma';
 import { carTransformer } from '../transformers/cars.transformer';

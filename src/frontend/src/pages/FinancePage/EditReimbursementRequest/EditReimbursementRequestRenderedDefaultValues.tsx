@@ -5,16 +5,13 @@ import ReimbursementRequestForm, {
 import PageLayout from '../../../components/PageLayout';
 import { routes } from '../../../utils/routes';
 import { centsToDollar, fullNamePipe } from '../../../utils/pipes';
-import { isReimbursementRequestLeadershipApproved } from '../../../utils/reimbursement-request.utils';
 
 const EditReimbursementRequestRenderedDefaultValues: React.FC<{
   reimbursementRequest: ReimbursementRequest;
   onSubmitData: (data: ReimbursementRequestDataSubmission) => Promise<string>;
   onExitEditPage: () => void;
-  onSubmitToFinance?: (data: ReimbursementRequestDataSubmission) => Promise<void>;
-}> = ({ reimbursementRequest, onSubmitData, onExitEditPage, onSubmitToFinance }) => {
+}> = ({ reimbursementRequest, onSubmitData, onExitEditPage }) => {
   const previousPage = `${routes.REIMBURSEMENT_REQUESTS}/my-requests/${reimbursementRequest.reimbursementRequestId}`;
-  const isLeadershipApproved = isReimbursementRequestLeadershipApproved(reimbursementRequest);
 
   return (
     <PageLayout
@@ -33,8 +30,6 @@ const EditReimbursementRequestRenderedDefaultValues: React.FC<{
       <ReimbursementRequestForm
         submitText="Save"
         submitData={onSubmitData}
-        isLeadershipApproved={isLeadershipApproved}
-        onSubmitToFinance={onSubmitToFinance}
         defaultValues={{
           vendorId: reimbursementRequest.vendor.vendorId,
           indexCodeId: reimbursementRequest.indexCode.indexCodeId,

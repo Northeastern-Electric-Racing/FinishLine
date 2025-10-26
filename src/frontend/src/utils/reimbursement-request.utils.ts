@@ -51,11 +51,10 @@ export const statusDescendingComparator = (a: ReimbursementStatusType, b: Reimbu
   const statusOrder = new Map<ReimbursementStatusType, number>([
     [ReimbursementStatusType.PENDING_LEADERSHIP_APPROVAL, 0],
     [ReimbursementStatusType.PENDING_FINANCE, 1],
-    [ReimbursementStatusType.PENDING_SABO_SUBMISSION, 2],
-    [ReimbursementStatusType.SABO_SUBMITTED, 3],
-    [ReimbursementStatusType.ADVISOR_APPROVED, 4],
-    [ReimbursementStatusType.REIMBURSED, 5],
-    [ReimbursementStatusType.DENIED, 6]
+    [ReimbursementStatusType.SABO_SUBMITTED, 2],
+    [ReimbursementStatusType.ADVISOR_APPROVED, 3],
+    [ReimbursementStatusType.REIMBURSED, 4],
+    [ReimbursementStatusType.DENIED, 5]
   ]);
 
   const bConverted = statusOrder.get(b);
@@ -120,8 +119,6 @@ export const cleanReimbursementRequestStatus = (status: ReimbursementStatusType)
       return 'Pending Finance Team';
     case ReimbursementStatusType.REIMBURSED:
       return 'Reimbursed';
-    case ReimbursementStatusType.PENDING_SABO_SUBMISSION:
-      return 'Pending SABO Submission';
     case ReimbursementStatusType.SABO_SUBMITTED:
       return 'Submitted to SABO';
     case ReimbursementStatusType.DENIED:
@@ -141,12 +138,6 @@ export const isReimbursementRequestAdvisorApproved = (reimbursementRequest: Reim
   return reimbursementRequest.reimbursementStatuses
     .map((status) => status.type)
     .includes(ReimbursementStatusType.ADVISOR_APPROVED);
-};
-
-export const isReimbursementRequestPendingSaboSubmission = (reimbursementRequest: ReimbursementRequest) => {
-  return reimbursementRequest.reimbursementStatuses
-    .map((status) => status.type)
-    .includes(ReimbursementStatusType.PENDING_SABO_SUBMISSION);
 };
 
 export const isReimbursementRequestSaboSubmitted = (reimbursementRequest: ReimbursementRequest) => {

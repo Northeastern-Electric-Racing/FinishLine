@@ -5,14 +5,14 @@
 
 import {
   WbsNumber,
+  User,
   wbsPipe,
   isProject,
   IndexCode,
   AccountCode,
   DesignReview,
   WorkPackagePreview,
-  WbsElementPreview,
-  UserPreview
+  WbsElementPreview
 } from 'shared';
 
 /**
@@ -46,7 +46,7 @@ export const projectWbsPipe = (wbsNum: WbsNumber) => {
 };
 
 /** Display user by their name "Joe Shmoe" */
-export const fullNamePipe = (user?: UserPreview) => {
+export const fullNamePipe = (user?: Pick<User, 'firstName' | 'lastName'>) => {
   return user ? `${user.firstName} ${user.lastName}` : emDashPipe('');
 };
 

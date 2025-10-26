@@ -7,10 +7,9 @@ import {
   Sponsor,
   SponsorTask,
   SponsorTier,
-  wbsPipe,
-  User
+  wbsPipe
 } from 'shared';
-import { Organization, Sponsor_Task, Reimbursement_Status_Type } from '@prisma/client';
+import { User, Organization, Sponsor_Task, Reimbursement_Status_Type } from '@prisma/client';
 import { userHasPermission } from '../utils/users.utils';
 import {
   getSponsorQueryArgs,

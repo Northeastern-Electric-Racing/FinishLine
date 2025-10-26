@@ -38,6 +38,4 @@ tasksRouter.post(
 
 tasksRouter.post('/:taskId/delete', TasksController.deleteTask);
 
-tasksRouter.get('/overdue-by-team-member/:userId', TasksController.getOverdueTasksByTeamLeadership);
-
 export default tasksRouter;

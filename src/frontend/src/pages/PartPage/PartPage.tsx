@@ -9,6 +9,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useEffect, useState } from 'react';
 import PDFViewer from './PartPageComponents/PdfDisplay';
+import { useCurrentUser } from '../../hooks/users.hooks';
 import PartSubmissionDetails from './PartPageComponents/PartSubmissionDetails';
 import PartOverview from './PartPageComponents/PartOverview';
 import PartHistoryView from './PartPageComponents/PartHistoryView';
@@ -24,6 +25,8 @@ const PartPage: React.FC = () => {
   //location and history to maintain url with params for submission and review index
   const location = useLocation();
   const history = useHistory();
+
+  const user = useCurrentUser();
 
   const {
     data: project,
@@ -101,7 +104,7 @@ const PartPage: React.FC = () => {
         }
       }
     }
-  }, [partWithIsolatedReviews, location.search]);
+  }, [partWithIsolatedReviews, location.search, user]);
 
   if (projectLoading || !project || partLoading || !part || !partWithIsolatedReviews) return <LoadingIndicator />;
   if (projectIsError) return <ErrorPage message={projectError?.message} />;

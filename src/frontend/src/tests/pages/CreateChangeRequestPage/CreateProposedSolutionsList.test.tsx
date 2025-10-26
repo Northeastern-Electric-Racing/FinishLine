@@ -7,9 +7,9 @@ import { render, routerWrapperBuilder, screen, waitFor } from '../../test-suppor
 import CreateProposedSolutionsList from '../../../pages/CreateChangeRequestPage/CreateProposedSolutionsList';
 import * as authHooks from '../../../hooks/auth.hooks';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
+import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 import * as userHooks from '../../../hooks/users.hooks';
 import AppContextUser from '../../../app/AppContextUser';
-import { exampleAuthenticatedAdminUser } from '../../test-support/test-data/authenticated-user.stub';
 
 /**
  * Sets up the component under test with the desired values and renders it.
@@ -27,8 +27,8 @@ const renderComponent = () => {
 
 describe('Proposed Solutions List Test Suite', () => {
   beforeEach(() => {
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAuthenticatedAdminUser);
-    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAuthenticatedAdminUser));
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
+    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
   });
 
   it('Renders correctly when empty', () => {

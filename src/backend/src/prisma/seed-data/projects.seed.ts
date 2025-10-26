@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Organization } from '@prisma/client';
-import { DescriptionBulletPreview, LinkCreateArgs, WbsNumber, User } from 'shared';
+import { Organization, User } from '@prisma/client';
+import { DescriptionBulletPreview, LinkCreateArgs, WbsNumber } from 'shared';
 import ProjectsService from '../../services/projects.services';
 
 /**

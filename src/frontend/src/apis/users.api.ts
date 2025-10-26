@@ -11,7 +11,6 @@ import {
   User,
   UserScheduleSettings,
   UserSecureSettings,
-  UserWithRole,
   UserWithScheduleSettings
 } from 'shared';
 import { apiUrls } from '../utils/urls';
@@ -29,18 +28,8 @@ import { taskTransformer } from './transformers/tasks.transformers';
  * Fetches all users.
  */
 export const getAllUsers = () => {
-  return axios.get<UserWithRole[]>(apiUrls.users(), {
-    transformResponse: (data) => JSON.parse(data).map(userTransformer)
-  });
-};
-
-/**
- * All users in the current organization with their roles.
- * @returns the users in the current organization with their roles
- */
-export const getAllOrgUsers = () => {
-  return axios.get<UserWithRole[]>(apiUrls.orgUsers(), {
-    transformResponse: (data) => JSON.parse(data).map(userTransformer)
+  return axios.get<UserWithScheduleSettings[]>(apiUrls.users(), {
+    transformResponse: (data) => JSON.parse(data).map(userWithScheduleSettingsTransformer)
   });
 };
 
@@ -179,18 +168,6 @@ export const getManyUserTasks = (userIds: string[]) => {
     { userIds },
     {
       transformResponse: (data) => JSON.parse(data).map(taskTransformer)
-    }
-  );
-};
-
-export const getManyUsersWithScheduleSettings = (userIds: string[]) => {
-  return axios.post<UserWithScheduleSettings[]>(
-    apiUrls.manyUsersWithScheduleSettings(),
-    {
-      userIds
-    },
-    {
-      transformResponse: (data) => JSON.parse(data).map(userWithScheduleSettingsTransformer)
     }
   );
 };

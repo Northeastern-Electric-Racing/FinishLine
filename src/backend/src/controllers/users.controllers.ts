@@ -6,15 +6,7 @@ export default class UsersController {
   static async getAllUsers(_req: Request, res: Response, next: NextFunction) {
     try {
       const users = await UsersService.getAllUsers();
-      res.status(200).json(users);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
 
-  static async getAllOrgUsers(req: Request, res: Response, next: NextFunction) {
-    try {
-      const users = await UsersService.getAllOrgUsers(req.organization.organizationId);
       res.status(200).json(users);
     } catch (error: unknown) {
       next(error);
@@ -213,18 +205,6 @@ export default class UsersController {
     try {
       res.clearCookie('token');
       res.status(200).json({ message: 'successfully logged out' });
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async getManyUsersWithScheduleSettings(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { userIds } = req.body;
-
-      const users = await UsersService.getManyUsersWithScheduleSettings(userIds, req.organization);
-
-      res.status(200).json(users);
     } catch (error: unknown) {
       next(error);
     }

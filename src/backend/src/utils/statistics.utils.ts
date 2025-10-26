@@ -1,5 +1,5 @@
-import { Graph_Type, Measure, Organization, Prisma, Reimbursement_Status_Type } from '@prisma/client';
-import { GraphData, wbsPipe, wbsNamePipe, Permission, User } from 'shared';
+import { Graph_Type, Measure, Organization, Prisma, Reimbursement_Status_Type, User } from '@prisma/client';
+import { GraphData, wbsPipe, wbsNamePipe, Permission } from 'shared';
 import prisma from '../prisma/prisma';
 import { getGraphCollectionQueryArgs } from '../prisma-query-args/statistics.query-args';
 import { AccessDeniedException, DeletedException, InvalidOrganizationException, NotFoundException } from './errors.utils';

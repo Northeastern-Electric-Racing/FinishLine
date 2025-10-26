@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import TeamsService from '../services/teams.services';
 import { HttpException } from '../utils/errors.utils';
+import { WorkPackage } from 'shared';
 
 export default class TeamsController {
   static async getAllTeams(req: Request, res: Response, next: NextFunction) {
@@ -259,10 +260,10 @@ export default class TeamsController {
     }
   }
 
-  static async getMyTeamAsHead(req: Request, res: Response, next: NextFunction) {
+  static async getMyTeamsWorkpackages(req: Request, res: Response, next: NextFunction) {
     try {
-      const team = await TeamsService.getMyTeamAsHead(req.currentUser, req.organization);
-      res.json(team);
+      const workPackages: WorkPackage[] = await TeamsService.getMyTeamsWorkpackages(req.currentUser, req.organization);
+      res.json(workPackages);
     } catch (error) {
       next(error);
     }

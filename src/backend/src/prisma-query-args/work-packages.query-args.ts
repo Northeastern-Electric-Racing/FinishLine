@@ -1,8 +1,7 @@
 import { Prisma } from '@prisma/client';
-import { getUserPreviewQueryArgs, getUserQueryArgs } from './user.query-args';
+import { getUserQueryArgs } from './user.query-args';
 import { getDescriptionBulletQueryArgs } from './description-bullets.query-args';
 import { getDesignReviewPreviewQueryArgs } from './design-reviews.query-args';
-import { getLinkQueryArgs } from './links.query-args';
 
 export type WorkPackageQueryArgs = ReturnType<typeof getWorkPackageQueryArgs>;
 export type WorkPackagePreviewQueryArgs = ReturnType<typeof getWorkPackagePreviewQueryArgs>;
@@ -38,10 +37,9 @@ export const getWorkPackageQueryArgs = (organizationId: string) =>
     }
   });
 
-export const getWorkPackagePreviewQueryArgs = () =>
+export const getWorkPackagePreviewQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Work_PackageDefaultArgs>()({
     select: {
-      blockedBy: true,
       wbsElement: {
         select: {
           wbsElementId: true,
@@ -51,20 +49,9 @@ export const getWorkPackagePreviewQueryArgs = () =>
           dateCreated: true,
           dateDeleted: true,
           name: true,
-          lead: getUserPreviewQueryArgs(),
-          manager: getUserPreviewQueryArgs(),
+          lead: getUserQueryArgs(organizationId),
+          manager: getUserQueryArgs(organizationId),
           status: true
-        }
-      },
-      project: {
-        select: {
-          projectId: true,
-          wbsElement: {
-            select: {
-              name: true,
-              links: getLinkQueryArgs()
-            }
-          }
         }
       },
       startDate: true,

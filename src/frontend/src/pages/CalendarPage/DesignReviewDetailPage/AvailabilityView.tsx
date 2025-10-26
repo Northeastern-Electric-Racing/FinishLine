@@ -14,13 +14,11 @@ import UserAvailabilites from './UserAvailabilitesView';
 import { getWeekDateRange } from '../../../utils/design-review.utils';
 import { dateRangePipe } from '../../../utils/pipes';
 import { FinalizeReviewInformation } from './DesignReviewDetailPage';
-import { useManyUsersWithScheduleSettings } from '../../../hooks/users.hooks';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import ErrorPage from '../../ErrorPage';
 
 interface AvailabilityViewProps {
   designReview: DesignReview;
   allDesignReviews: DesignReview[];
+  allUsers: UserWithScheduleSettings[];
   handleEdit: (data?: FinalizeReviewInformation) => void;
   selectedDate: Date;
   setSelectDate: (date: Date) => void;
@@ -35,6 +33,7 @@ interface AvailabilityViewProps {
 const AvailabilityView: React.FC<AvailabilityViewProps> = ({
   designReview,
   allDesignReviews,
+  allUsers,
   handleEdit,
   selectedDate,
   setSelectDate,
@@ -45,13 +44,6 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({
   requiredUserIds,
   optionalUserIds
 }) => {
-  const {
-    data: relevantUsers,
-    isLoading,
-    isError,
-    error
-  } = useManyUsersWithScheduleSettings([...requiredUserIds, ...optionalUserIds]);
-
   const availableUsers = new Map<number, User[]>();
   const unavailableUsers = new Map<number, User[]>();
   const existingMeetingData = new Map<number, string>();
@@ -60,9 +52,6 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({
   const [currentAvailableUsers, setCurrentAvailableUsers] = useState<User[]>([]);
   const [currentUnavailableUsers, setCurrentUnavailableUsers] = useState<User[]>([]);
   const [startDateRange, endDateRange] = getWeekDateRange(selectedDate);
-
-  if (isLoading || !relevantUsers) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error?.message} />;
 
   const currentWeekDesignReviews = allDesignReviews.filter((currDr) => {
     const drDate = new Date(currDr.dateScheduled).getTime();
@@ -100,11 +89,16 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({
     })
   );
 
-  relevantUsers.forEach((user: UserWithScheduleSettings) => {
-    const availability = getMostRecentAvailabilities(user.scheduleSettings?.availabilities ?? [], designReview.initialDate);
+  allUsers
+    .filter((user) => requiredUserIds.concat(optionalUserIds).includes(user.userId))
+    .forEach((user: UserWithScheduleSettings) => {
+      const availability = getMostRecentAvailabilities(
+        user.scheduleSettings?.availabilities ?? [],
+        designReview.initialDate
+      );
 
-    usersToAvailabilities.set(user, availability ?? []);
-  });
+      usersToAvailabilities.set(user, availability ?? []);
+    });
 
   return (
     <Grid container>

@@ -24,7 +24,9 @@ const renderComponent = (modalShow: boolean, route: string) => {
             firstName: 'a',
             lastName: 'b',
             email: 'c',
-            role: 'APP_ADMIN'
+            emailId: 'd',
+            role: 'APP_ADMIN',
+            permissions: []
           },
           wbsNum: {
             carNumber: 1,

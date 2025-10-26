@@ -1,11 +1,11 @@
-import { AuthenticatedUser, Team, TeamPreview, User } from 'shared';
+import { Team, TeamPreview, User } from 'shared';
 import { fullNamePipe } from './pipes';
 
 export const makeTeamList = (team: Team | TeamPreview): User[] => {
   return team.members.concat(team.head).concat(team.leads);
 };
 
-export const isUserOnTeam = (team: TeamPreview, user: AuthenticatedUser): boolean => {
+export const isUserOnTeam = (team: TeamPreview, user: User): boolean => {
   return (
     team.head.userId === user.userId ||
     team.leads.map((lead) => lead.userId).includes(user.userId) ||
@@ -41,8 +41,7 @@ export type SubmitText =
   | 'Delete'
   | 'Schedule'
   | 'Send To Advisor'
-  | 'Mark as added to Concur'
-  | 'Mark Submitted'
+  | 'Submit to SABO'
   | 'Create Change Request'
   | 'Update'
   | 'Submit Vendor';

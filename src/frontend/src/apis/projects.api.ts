@@ -19,10 +19,11 @@ import {
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import {
-  projectPreviewTransformer,
-  projectTransformer,
+  linkTypeTransformer,
   projectOverviewTransformer,
-  projectGanttTransformer
+  projectGanttTransformer,
+  projectPreviewTransformer,
+  projectTransformer
 } from './transformers/projects.transformers';
 import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 
@@ -138,7 +139,7 @@ export const toggleProjectFavorite = (wbsNum: WbsNumber) => {
  */
 export const getAllLinkTypes = () => {
   return axios.get<LinkType[]>(apiUrls.projectsLinkTypes(), {
-    transformResponse: (data) => JSON.parse(data)
+    transformResponse: (data) => JSON.parse(data).map(linkTypeTransformer)
   });
 };
 

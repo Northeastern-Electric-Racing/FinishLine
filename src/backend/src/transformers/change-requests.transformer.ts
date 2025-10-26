@@ -17,6 +17,7 @@ import proposedSolutionTransformer from './proposed-solutions.transformer';
 import { getDateImplemented } from '../utils/change-requests.utils';
 import { userTransformer } from './user.transformer';
 import { descBulletConverter } from '../utils/description-bullets.utils';
+import { linkTransformer } from './links.transformer';
 import teamTransformer from './teams.transformer';
 import {
   WbsProposedChangeQueryArgs,
@@ -39,7 +40,7 @@ const projectProposedChangesTransformer = (
     id: wbsProposedChanges.wbsProposedChangesId,
     name: wbsProposedChanges.name,
     status: wbsProposedChanges.status as WbsElementStatus,
-    links: wbsProposedChanges.links,
+    links: wbsProposedChanges.links.map(linkTransformer),
     lead: wbsProposedChanges.lead ? userTransformer(wbsProposedChanges.lead) : undefined,
     manager: wbsProposedChanges.manager ? userTransformer(wbsProposedChanges.manager) : undefined,
     summary: projectProposedChanges.summary,
@@ -58,7 +59,7 @@ const workPackageProposedChangesTransformer = (
     id: workPackageProposedChanges.wbsProposedChangesId,
     name: workPackageProposedChanges.wbsProposedChanges.name,
     status: workPackageProposedChanges.wbsProposedChanges.status as WbsElementStatus,
-    links: workPackageProposedChanges.wbsProposedChanges.links,
+    links: workPackageProposedChanges.wbsProposedChanges.links.map(linkTransformer),
     lead: workPackageProposedChanges.wbsProposedChanges.lead
       ? userTransformer(workPackageProposedChanges.wbsProposedChanges.lead)
       : undefined,

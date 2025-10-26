@@ -1,9 +1,9 @@
 import { Prisma } from '@prisma/client';
+import { getLinkQueryArgs } from './links.query-args';
 import { getUserQueryArgs } from './user.query-args';
 import { getDescriptionBulletQueryArgs } from './description-bullets.query-args';
 import { getTeamPreviewQueryArgs } from './teams.query-args';
 import { getTaskQueryArgs } from './tasks.query-args';
-import { getLinkQueryArgs } from './links.query-args';
 import { getWorkPackagePreviewQueryArgs, getWorkPackageQueryArgs } from './work-packages.query-args';
 
 export type ProjectQueryArgs = ReturnType<typeof getProjectQueryArgs>;
@@ -23,7 +23,7 @@ export const getProjectQueryArgs = (organizationId: string) =>
           manager: getUserQueryArgs(organizationId),
           descriptionBullets: { where: { dateDeleted: null }, ...getDescriptionBulletQueryArgs(organizationId) },
           tasks: { where: { dateDeleted: null }, ...getTaskQueryArgs(organizationId) },
-          links: { where: { dateDeleted: null }, ...getLinkQueryArgs() },
+          links: { where: { dateDeleted: null }, ...getLinkQueryArgs(organizationId) },
           changes: {
             where: { changeRequest: { dateDeleted: null } },
             include: { implementer: getUserQueryArgs(organizationId), changeRequest: true }
@@ -94,7 +94,7 @@ export const getProjectPreviewQueryArgs = (organizationId: string) =>
           status: true
         }
       },
-      workPackages: getWorkPackagePreviewQueryArgs(),
+      workPackages: getWorkPackagePreviewQueryArgs(organizationId),
       projectId: true,
       budget: true,
       abbreviation: true,
@@ -122,11 +122,11 @@ export const getProjectOverviewQueryArgs = (organizationId: string) =>
           lead: getUserQueryArgs(organizationId),
           manager: getUserQueryArgs(organizationId),
           status: true,
-          links: getLinkQueryArgs(),
+          links: getLinkQueryArgs(organizationId),
           tasks: getTaskQueryArgs(organizationId)
         }
       },
-      workPackages: getWorkPackagePreviewQueryArgs(),
+      workPackages: getWorkPackagePreviewQueryArgs(organizationId),
       projectId: true,
       budget: true,
       abbreviation: true,

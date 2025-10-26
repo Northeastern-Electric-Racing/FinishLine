@@ -1,8 +1,9 @@
-import { alfred, robinMember, cyborgMember, theVisitorGuest } from '../test-data/users.test-data';
+import { alfred } from '../test-data/users.test-data';
 import ReimbursementRequestService from '../../src/services/reimbursement-requests.services';
-import { AccessDeniedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
+import { AccessDeniedException, HttpException } from '../../src/utils/errors.utils';
 import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
+import { assert } from 'console';
 import { addDaysToDate, IndexCode, ReimbursementRequest, ReimbursementStatusType, AccountCode } from 'shared';
 import { Organization, Role_Type, Theme, User, Vendor } from '@prisma/client';
 import { UserWithSecureSettings } from '../../src/utils/auth.utils';
@@ -14,12 +15,6 @@ describe('Reimbursement Requests', () => {
   let createdIndexCode: IndexCode;
   let createdAccountCode: AccountCode;
   let createdUser: UserWithSecureSettings;
-  let financeHead: User;
-  let financeLead: User;
-  let financeMember: User;
-  let regularMember: User;
-  let anotherMember: User;
-  let guestUser: User;
 
   beforeEach(async () => {
     const result = await createTestReimbursementRequest();
@@ -29,45 +24,6 @@ describe('Reimbursement Requests', () => {
     createdIndexCode = result.indexCode;
     createdAccountCode = result.accountCode;
     createdUser = result.user;
-
-    // Get the pre-created finance team members
-    const financeHeadUser = await prisma.user.findUnique({
-      where: { googleAuthId: 'financeHead' },
-      include: {
-        userSettings: true,
-        userSecureSettings: true,
-        roles: { where: { organizationId: org.organizationId } }
-      }
-    });
-    if (!financeHeadUser) throw new Error('Finance head not found');
-    financeHead = financeHeadUser;
-
-    const financeLeadUser = await prisma.user.findUnique({
-      where: { googleAuthId: 'financeLead' },
-      include: {
-        userSettings: true,
-        userSecureSettings: true,
-        roles: { where: { organizationId: org.organizationId } }
-      }
-    });
-    if (!financeLeadUser) throw new Error('Finance lead not found');
-    financeLead = financeLeadUser;
-
-    const financeMemberUser = await prisma.user.findUnique({
-      where: { googleAuthId: 'financeMember' },
-      include: {
-        userSettings: true,
-        userSecureSettings: true,
-        roles: { where: { organizationId: org.organizationId } }
-      }
-    });
-    if (!financeMemberUser) throw new Error('Finance member not found');
-    financeMember = financeMemberUser;
-
-    // Create additional test users
-    regularMember = await createTestUser(robinMember, org.organizationId);
-    anotherMember = await createTestUser(cyborgMember, org.organizationId);
-    guestUser = await createTestUser(theVisitorGuest, org.organizationId);
   });
 
   afterEach(async () => {
@@ -90,6 +46,17 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Delete Reimbursement Request succeeds when the deleter is a finance lead', async () => {
+      const financeLead = await prisma.user.findUnique({
+        where: {
+          googleAuthId: 'financeLead'
+        }
+      });
+
+      if (!financeLead) {
+        console.log('No finance lead found, please run createFinanceTeamAndLead before this function');
+        assert(false);
+        throw new Error('No finance lead found, please run createFinanceTeamAndLead before this function');
+      }
       await ReimbursementRequestService.deleteReimbursementRequest(
         reimbursementRequest.reimbursementRequestId,
         financeLead,
@@ -98,6 +65,17 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Delete Reimbursement Request succeeds when the deleter is a head of finance', async () => {
+      const financeHead = await prisma.user.findUnique({
+        where: {
+          googleAuthId: 'financeHead'
+        }
+      });
+
+      if (!financeHead) {
+        console.log('No finance head found, please run createFinanceTeamAndLead before this function');
+        assert(false);
+        throw new Error('No finance head found, please run createFinanceTeamAndLead before this function');
+      }
       await ReimbursementRequestService.deleteReimbursementRequest(
         reimbursementRequest.reimbursementRequestId,
         financeHead,
@@ -364,7 +342,7 @@ describe('Reimbursement Requests', () => {
         include: {
           userSettings: true,
           userSecureSettings: true,
-          roles: { where: { organizationId: org.organizationId } }
+          roles: true
         }
       });
 
@@ -405,424 +383,6 @@ describe('Reimbursement Requests', () => {
         org
       );
       expect(status.type).toEqual(ReimbursementStatusType.DENIED);
-    });
-  });
-
-  describe('Input Reimbursement Request in SABO', () => {
-    test('Finance team member can input request in SABO after leadership approval', async () => {
-      // Create a reimbursement request
-      const rr = await ReimbursementRequestService.createReimbursementRequest(
-        createdUser,
-        createdVendor.vendorId,
-        createdIndexCode.indexCodeId,
-        [],
-        [
-          {
-            name: 'GLUE',
-            reason: {
-              carNumber: 0,
-              projectNumber: 0,
-              workPackageNumber: 0
-            },
-            cost: 200000,
-            refundSources: [
-              {
-                indexCode: createdIndexCode,
-                amount: 200
-              }
-            ]
-          }
-        ],
-        createdAccountCode.accountCodeId,
-        100,
-        org
-      );
-
-      // Approve by leadership first
-      await ReimbursementRequestService.leadershipApproveReimbursementRequest(rr.reimbursementRequestId, createdUser, org);
-
-      await prisma.receipt.create({
-        data: {
-          googleFileId: 'test file id',
-          name: 'test receipt',
-          createdBy: { connect: { userId: createdUser.userId } },
-          reimbursementRequest: { connect: { reimbursementRequestId: rr.reimbursementRequestId } }
-        }
-      });
-
-      await prisma.reimbursement_Request.update({
-        where: { reimbursementRequestId: rr.reimbursementRequestId },
-        data: { dateOfExpense: new Date() }
-      });
-
-      // Set as pending finance
-      await ReimbursementRequestService.markPendingFinance(createdUser, rr.reimbursementRequestId, org);
-
-      // Input in SABO by finance team
-      const status = await ReimbursementRequestService.inputReimbursementRequestInSabo(
-        rr.reimbursementRequestId,
-        financeMember,
-        org
-      );
-
-      expect(status.type).toEqual(ReimbursementStatusType.PENDING_SABO_SUBMISSION);
-    });
-
-    test('Cannot input in SABO without leadership approval', async () => {
-      const rr = await ReimbursementRequestService.createReimbursementRequest(
-        createdUser,
-        createdVendor.vendorId,
-        createdIndexCode.indexCodeId,
-        [],
-        [
-          {
-            name: 'GLUE',
-            reason: {
-              carNumber: 0,
-              projectNumber: 0,
-              workPackageNumber: 0
-            },
-            cost: 200000,
-            refundSources: [
-              {
-                indexCode: createdIndexCode,
-                amount: 200
-              }
-            ]
-          }
-        ],
-        createdAccountCode.accountCodeId,
-        100,
-        org
-      );
-
-      await expect(
-        ReimbursementRequestService.inputReimbursementRequestInSabo(rr.reimbursementRequestId, financeMember, org)
-      ).rejects.toThrow(new HttpException(400, 'This reimbursement request has not been approved by leadership'));
-    });
-
-    test('Non-finance team member cannot input in SABO', async () => {
-      await expect(
-        ReimbursementRequestService.inputReimbursementRequestInSabo(
-          reimbursementRequest.reimbursementRequestId,
-          regularMember,
-          org
-        )
-      ).rejects.toThrow(new AccessDeniedException('You are not a member of the finance team!'));
-    });
-  });
-
-  describe('Mark Reimbursement Request as SABO Submitted', () => {
-    test('Recipient can mark request as SABO submitted after input in SABO', async () => {
-      // Create a reimbursement request
-      const rr = await ReimbursementRequestService.createReimbursementRequest(
-        createdUser,
-        createdVendor.vendorId,
-        createdIndexCode.indexCodeId,
-        [],
-        [
-          {
-            name: 'GLUE',
-            reason: {
-              carNumber: 0,
-              projectNumber: 0,
-              workPackageNumber: 0
-            },
-            cost: 200000,
-            refundSources: [
-              {
-                indexCode: createdIndexCode,
-                amount: 200
-              }
-            ]
-          }
-        ],
-        createdAccountCode.accountCodeId,
-        100,
-        org
-      );
-
-      // Approve by leadership
-      await ReimbursementRequestService.leadershipApproveReimbursementRequest(rr.reimbursementRequestId, createdUser, org);
-
-      await prisma.receipt.create({
-        data: {
-          googleFileId: 'test file id',
-          name: 'test receipt',
-          createdBy: { connect: { userId: createdUser.userId } },
-          reimbursementRequest: { connect: { reimbursementRequestId: rr.reimbursementRequestId } }
-        }
-      });
-
-      await prisma.reimbursement_Request.update({
-        where: { reimbursementRequestId: rr.reimbursementRequestId },
-        data: { dateOfExpense: new Date() }
-      });
-
-      // Set as pending finance
-      await ReimbursementRequestService.markPendingFinance(createdUser, rr.reimbursementRequestId, org);
-
-      // Input in SABO by finance team
-      await ReimbursementRequestService.inputReimbursementRequestInSabo(rr.reimbursementRequestId, financeMember, org);
-
-      // Mark as SABO submitted by recipient
-      const status = await ReimbursementRequestService.markReimbursementRequestAsSaboSubmitted(
-        rr.reimbursementRequestId,
-        createdUser,
-        org
-      );
-
-      expect(status.type).toEqual(ReimbursementStatusType.SABO_SUBMITTED);
-    });
-
-    test('Cannot mark as SABO submitted without input in SABO', async () => {
-      const rr = await ReimbursementRequestService.createReimbursementRequest(
-        createdUser,
-        createdVendor.vendorId,
-        createdIndexCode.indexCodeId,
-        [],
-        [
-          {
-            name: 'GLUE',
-            reason: {
-              carNumber: 0,
-              projectNumber: 0,
-              workPackageNumber: 0
-            },
-            cost: 200000,
-            refundSources: [
-              {
-                indexCode: createdIndexCode,
-                amount: 200
-              }
-            ]
-          }
-        ],
-        createdAccountCode.accountCodeId,
-        100,
-        org
-      );
-
-      // Approve by leadership but don't input in SABO
-      await ReimbursementRequestService.leadershipApproveReimbursementRequest(rr.reimbursementRequestId, createdUser, org);
-
-      await expect(
-        ReimbursementRequestService.markReimbursementRequestAsSaboSubmitted(rr.reimbursementRequestId, createdUser, org)
-      ).rejects.toThrow(new HttpException(400, 'This reimbursement request has not been inputted into SABO yet'));
-    });
-
-    test('Non-recipient cannot mark as SABO submitted', async () => {
-      const rr = await ReimbursementRequestService.createReimbursementRequest(
-        createdUser,
-        createdVendor.vendorId,
-        createdIndexCode.indexCodeId,
-        [],
-        [
-          {
-            name: 'GLUE',
-            reason: {
-              carNumber: 0,
-              projectNumber: 0,
-              workPackageNumber: 0
-            },
-            cost: 200000,
-            refundSources: [
-              {
-                indexCode: createdIndexCode,
-                amount: 200
-              }
-            ]
-          }
-        ],
-        createdAccountCode.accountCodeId,
-        100,
-        org
-      );
-
-      // Approve by leadership and input in SABO
-      await ReimbursementRequestService.leadershipApproveReimbursementRequest(rr.reimbursementRequestId, createdUser, org);
-
-      await prisma.receipt.create({
-        data: {
-          googleFileId: 'test file id',
-          name: 'test receipt',
-          createdBy: { connect: { userId: createdUser.userId } },
-          reimbursementRequest: { connect: { reimbursementRequestId: rr.reimbursementRequestId } }
-        }
-      });
-
-      await prisma.reimbursement_Request.update({
-        where: { reimbursementRequestId: rr.reimbursementRequestId },
-        data: { dateOfExpense: new Date() }
-      });
-
-      // Set as pending finance
-      await ReimbursementRequestService.markPendingFinance(createdUser, rr.reimbursementRequestId, org);
-
-      // Input in SABO by finance team
-      await ReimbursementRequestService.inputReimbursementRequestInSabo(rr.reimbursementRequestId, financeMember, org);
-
-      await expect(
-        ReimbursementRequestService.markReimbursementRequestAsSaboSubmitted(rr.reimbursementRequestId, anotherMember, org)
-      ).rejects.toThrow(
-        new AccessDeniedException('Only the recipient of the reimbursement request can mark as submitted to SABO')
-      );
-    });
-  });
-
-  describe('Creating a vendor', () => {
-    test('Non-guest users can create vendors', async () => {
-      const vendor = await ReimbursementRequestService.createVendor(
-        regularMember,
-        'Member Vendor',
-        org,
-        false,
-        [],
-        'Some notes'
-      );
-
-      expect(vendor).not.toBeNull();
-      expect(vendor.name).toBe('Member Vendor');
-      expect(vendor.addedBy.userId).toBe(regularMember.userId);
-    });
-
-    test('Guest users cannot create vendors', async () => {
-      await expect(
-        ReimbursementRequestService.createVendor(guestUser, 'Guest Vendor', org, false, [], 'Some notes')
-      ).rejects.toThrow(new AccessDeniedException('create vendors'));
-    });
-  });
-
-  describe('Editing a vendor', () => {
-    test('Creator can edit their own vendor', async () => {
-      const vendor = await ReimbursementRequestService.createVendor(
-        regularMember,
-        'Creator Vendor',
-        org,
-        false,
-        [],
-        'Original notes'
-      );
-
-      const updatedVendor = await ReimbursementRequestService.editVendor(
-        'Updated Vendor Name',
-        vendor.vendorId,
-        '',
-        '',
-        '',
-        false,
-        [],
-        'Updated notes',
-        regularMember,
-        org
-      );
-
-      expect(updatedVendor).not.toBeNull();
-      expect(updatedVendor.name).toBe('Updated Vendor Name');
-      expect(updatedVendor.notes).toBe('Updated notes');
-    });
-
-    test('Non-creator non-finance member cannot edit vendor', async () => {
-      await expect(
-        ReimbursementRequestService.editVendor(
-          'Updated Name',
-          createdVendor.vendorId,
-          '',
-          '',
-          '',
-          false,
-          [],
-          'notes',
-          anotherMember,
-          org
-        )
-      ).rejects.toThrow(new AccessDeniedException('You are not a member of the finance team!'));
-    });
-
-    test('Finance team member can edit any vendor', async () => {
-      const updatedVendor = await ReimbursementRequestService.editVendor(
-        'Finance Updated Vendor',
-        createdVendor.vendorId,
-        '',
-        '',
-        '',
-        false,
-        [],
-        'Finance notes',
-        financeMember,
-        org
-      );
-
-      expect(updatedVendor).not.toBeNull();
-      expect(updatedVendor.name).toBe('Finance Updated Vendor');
-    });
-  });
-
-  describe('Deleting a vendor', () => {
-    test('Creator can delete their own vendor', async () => {
-      const vendor = await ReimbursementRequestService.createVendor(
-        regularMember,
-        'Vendor to Delete',
-        org,
-        false,
-        [],
-        'Delete me'
-      );
-
-      const deletedVendor = await ReimbursementRequestService.deleteVendor(vendor.vendorId, regularMember, org);
-
-      expect(deletedVendor).not.toBeNull();
-      expect(deletedVendor.name).toBe('Vendor to Delete');
-    });
-
-    test('Non-creator non-finance member cannot delete vendor', async () => {
-      await expect(ReimbursementRequestService.deleteVendor(createdVendor.vendorId, anotherMember, org)).rejects.toThrow(
-        new AccessDeniedException('You are not a member of the finance team!')
-      );
-    });
-
-    test('Finance team member can delete any vendor', async () => {
-      const deletedVendor = await ReimbursementRequestService.deleteVendor(createdVendor.vendorId, financeMember, org);
-
-      expect(deletedVendor).not.toBeNull();
-    });
-  });
-
-  describe('Edit Index Code', () => {
-    test('Admin can edit index code', async () => {
-      const indexCode = await ReimbursementRequestService.createIndexCode('TEST', '123456', financeHead, org);
-
-      const updatedIndexCode = await ReimbursementRequestService.editIndexCode(
-        financeHead,
-        org,
-        indexCode.indexCodeId,
-        'UPDATED TEST',
-        '654321'
-      );
-
-      expect(updatedIndexCode).not.toBeNull();
-      expect(updatedIndexCode.name).toBe('UPDATED TEST');
-      expect(updatedIndexCode.code).toBe('654321');
-    });
-
-    test('Non-admin can edit index code if they are the creator', async () => {
-      const updatedIndexCode = await ReimbursementRequestService.editIndexCode(
-        regularMember,
-        org,
-        createdIndexCode.indexCodeId,
-        'UPDATED TEST',
-        '654321'
-      );
-
-      expect(updatedIndexCode).not.toBeNull();
-      expect(updatedIndexCode.name).toBe('UPDATED TEST');
-      expect(updatedIndexCode.code).toBe('654321');
-    });
-
-    test('Cannot edit non-existent index code', async () => {
-      await expect(
-        ReimbursementRequestService.editIndexCode(financeHead, org, 'non-existent-id', 'Test', '123456')
-      ).rejects.toThrow(new NotFoundException('Index Code', 'non-existent-id'));
     });
   });
 });

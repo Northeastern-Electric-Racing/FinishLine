@@ -65,9 +65,3 @@ export interface ProjectTemplate extends WbsElementTemplate {
   teams: TeamPreview[];
   summary?: string;
 }
-
-export enum WorkPackageSelection {
-  ALL_OVERDUE = 'allOverdue',
-  LEADING = 'leading',
-  MEMBER = 'member'
-}

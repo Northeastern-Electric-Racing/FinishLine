@@ -1,6 +1,5 @@
-import { Graph_Display_Type, Graph_Type, Measure, Organization } from '@prisma/client';
+import { Graph_Display_Type, Graph_Type, Measure, Organization, User } from '@prisma/client';
 import StatisticsService from '../../services/statistics.services';
-import { User } from 'shared';
 
 export const seedGraph = async (
   startDate: Date | null,
