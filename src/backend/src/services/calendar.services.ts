@@ -918,7 +918,7 @@ export default class CalendarService {
       orderBy: { dateCreated: 'asc' }
     });
 
-    return events.map((event) => eventTransformer(event));
+    return events.map(eventTransformer);
   }
 
   static async getAllShops(organization: Organization): Promise<Shop[]> {

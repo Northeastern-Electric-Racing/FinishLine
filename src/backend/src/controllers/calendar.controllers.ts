@@ -331,6 +331,15 @@ export default class CalendarController {
     }
   }
 
+  static async getApprovedEvents(req: Request, res: Response, next: NextFunction) {
+    try {
+      const filteredEvents = await CalendarService.getFilteredEvents({ approvalStatus: true }, req.organization);
+      res.status(200).json(filteredEvents);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getEventsFromTimeframe(req: Request, res: Response, next: NextFunction) {
     try {
       const { startPeriod, endPeriod } = req.query;

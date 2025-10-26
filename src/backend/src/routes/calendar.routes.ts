@@ -124,6 +124,7 @@ calendarRouter.post(
   body('availabilities').isBoolean(),
   body('shop').isBoolean(),
   body('machinery').isBoolean(),
+  body('workPackage').isBoolean(),
   body('questionDocument').isBoolean(),
   body('documents').isBoolean(),
   body('description').isBoolean(),
@@ -193,6 +194,7 @@ calendarRouter.get('/events', CalendarController.getAllEvents);
 
 // filtered by approval
 calendarRouter.get('/events/unapproved', CalendarController.getUnapprovedEvents);
+calendarRouter.get('/events/approved', CalendarController.getApprovedEvents);
 
 calendarRouter.get('/calendars', CalendarController.getAllCalendars);
 
