@@ -1,5 +1,5 @@
-import { Organization, Rule, User } from '@prisma/client';
-import { isAdmin, isLeadership, ProjectRule, RuleCompletion } from 'shared';
+import { Organization, Rule } from '@prisma/client';
+import { isAdmin, isLeadership, ProjectRule, RuleCompletion, RulesetType, User } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
@@ -10,7 +10,7 @@ import {
   NotFoundException
 } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
-import { projectRuleTransformer } from '../transformers/rules.transformer';
+import { projectRuleTransformer, rulesetTypeTransformer } from '../transformers/rules.transformer';
 import { getProjectRuleQueryArgs } from '../prisma-query-args/rules.query-args';
 
 export default class RulesService {
@@ -28,7 +28,8 @@ export default class RulesService {
     const rulesetType = await prisma.ruleset_Type.create({
       data: {
         name,
-        createdByUserId: submitter.userId
+        createdByUserId: submitter.userId,
+        organizationId: organization.organizationId
       }
     });
 
@@ -184,5 +185,15 @@ export default class RulesService {
     });
 
     return projectRuleTransformer(projectRule);
+  }
+
+  static async getAllRulesetTypes(organization: Organization): Promise<RulesetType[]> {
+    const rulesets = await prisma.ruleset_Type.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        deletedBy: null
+      }
+    });
+    return rulesets.map(rulesetTypeTransformer);
   }
 }

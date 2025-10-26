@@ -38,4 +38,13 @@ export default class RulesController {
       next(error);
     }
   }
+
+  static async getAllRulesetTypes(req: Request, res: Response, next: NextFunction) {
+    try {
+      const rulesets = await RulesService.getAllRulesetTypes(req.organization);
+      res.status(200).json(rulesets);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

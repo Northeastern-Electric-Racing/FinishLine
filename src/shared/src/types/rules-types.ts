@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User } from './user-types';
+import { Organization, User } from './user-types';
 
 export enum RuleCompletion {
   REVIEW = 'REVIEW',
@@ -16,6 +16,7 @@ export interface RulesetType {
   name: string;
   lastUpdated: Date;
   revisionFiles: Ruleset[];
+  organization: Organization;
 }
 
 export interface Ruleset {

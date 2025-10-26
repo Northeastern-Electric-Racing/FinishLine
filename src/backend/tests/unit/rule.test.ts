@@ -58,7 +58,8 @@ describe('Rules Tests', () => {
     rulesetType = await prisma.ruleset_Type.create({
       data: {
         name: 'FSAE',
-        createdByUserId: user.userId
+        createdByUserId: user.userId,
+        organizationId: orgId
       }
     });
 
@@ -293,6 +294,38 @@ describe('Rules Tests', () => {
       await expect(RulesService.createProjectRule(user, organization, rule.ruleId, project.projectId)).rejects.toThrow(
         new HttpException(400, 'This rule is already associated with the project')
       );
+    });
+  });
+
+  describe('Get all ruleset types', () => {
+    it('Successful get all ruleset types', async () => {
+      const rulesetTypes = await RulesService.getAllRulesetTypes(organization);
+      expect(rulesetTypes.length).toEqual(1);
+      expect(rulesetTypes[0].name).toEqual('FSAE');
+    });
+    it('Get all ruleset types successful after adding ruleset type', async () => {
+      await prisma.ruleset_Type.create({
+        data: {
+          name: 'FSAE2',
+          createdByUserId: user.userId,
+          organizationId: orgId
+        }
+      });
+      const rulesetTypes = await RulesService.getAllRulesetTypes(organization);
+      expect(rulesetTypes.length).toEqual(2);
+      expect(rulesetTypes[1].name).toEqual('FSAE2');
+    });
+    it('Get all ruleset types successful after deleting ruleset type', async () => {
+      await prisma.ruleset_Type.update({
+        where: {
+          rulesetTypeId: rulesetType.rulesetTypeId
+        },
+        data: {
+          deletedByUserId: user.userId
+        }
+      });
+      const rulesetTypes = await RulesService.getAllRulesetTypes(organization);
+      expect(rulesetTypes.length).toEqual(0);
     });
   });
 });

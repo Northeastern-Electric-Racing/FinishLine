@@ -1,6 +1,7 @@
 import type { Prisma } from '@prisma/client';
-import { Organization, User } from '@prisma/client';
+import { Organization } from '@prisma/client';
 import RulesService from '../../services/rules.services';
+import { User } from 'shared';
 
 // rules
 const topLevelRule = (rulesetId: string, userCreatedId: string): Prisma.RuleCreateInput => {
@@ -52,10 +53,11 @@ const leafRule = (rulesetId: string, userCreatedId: string, parentRuleId: string
 };
 
 // ruleset types
-const rulesetType1 = (userCreatedId: string): Prisma.Ruleset_TypeCreateInput => {
+const rulesetType1 = (userCreatedId: string, organizationId: string): Prisma.Ruleset_TypeCreateInput => {
   return {
     name: 'FSAE',
-    createdBy: { connect: { userId: userCreatedId } }
+    createdBy: { connect: { userId: userCreatedId } },
+    organization: { connect: { organizationId } }
   };
 };
 

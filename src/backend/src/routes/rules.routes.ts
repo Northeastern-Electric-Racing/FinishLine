@@ -18,4 +18,6 @@ rulesRouter.post(
   RulesController.createProjectRule
 );
 
+rulesRouter.get('/rulesetTypes', RulesController.getAllRulesetTypes);
+
 export default rulesRouter;
