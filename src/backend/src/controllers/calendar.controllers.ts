@@ -213,6 +213,18 @@ export default class CalendarController {
     }
   }
 
+  static async deleteEventType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { eventTypeId } = req.params;
+
+      const deletedEventType = await CalendarService.deleteEventType(req.currentUser, eventTypeId, req.organization);
+
+      res.status(200).json(deletedEventType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async deleteShop(req: Request, res: Response, next: NextFunction) {
     try {
       const { shopId } = req.params;
@@ -264,6 +276,66 @@ export default class CalendarController {
         zoomLink,
         description
       );
+      res.status(200).json(event);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editEvent(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { eventId } = req.params;
+
+      const {
+        title,
+        eventTypeId,
+        memberIds,
+        shopIds,
+        machineryIds,
+        workPackageIds,
+        documentIds,
+        scheduleSlot,
+        availability,
+        approved,
+        approvedByUserId,
+        questionDocument,
+        location,
+        zoomLink,
+        description
+      } = req.body;
+
+      const event = await CalendarService.editEvent(
+        req.currentUser,
+        eventId,
+        title,
+        eventTypeId,
+        req.organization,
+        memberIds,
+        shopIds,
+        machineryIds,
+        workPackageIds,
+        documentIds,
+        scheduleSlot,
+        availability,
+        approved,
+        approvedByUserId,
+        questionDocument,
+        location,
+        zoomLink,
+        description
+      );
+      res.status(200).json(event);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteEvent(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { eventId } = req.params;
+
+      const event = await CalendarService.deleteEvent(req.currentUser, eventId, req.organization);
+
       res.status(200).json(event);
     } catch (error: unknown) {
       next(error);

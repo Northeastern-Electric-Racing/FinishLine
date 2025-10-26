@@ -389,6 +389,273 @@ export default class CalendarService {
   }
 
   /**
+   * Edits an event.
+   *
+   * @param submitter The user submitting the request, who must be an admin.
+   * @param eventId The id of the event to edit.
+   * @param title The title of the event.
+   * @param eventTypeId The event type id the event is associated with.
+   * @param organization The organization for which the event type is being created.
+   * @param memberIds An array of member ids that are invited to the event.
+   * @param shopIds An array of shops associated with the event.
+   * @param machineryIds An array of machinery associated with the event.
+   * @param workPackageIds An array of work packages associated with the event.
+   * @param documentIds An array of documents associated with the event.
+   * @param scheduleSlots An array of schedule slots associated with the event.
+   * @param availabilities An array of availabilities associated with the event.
+   * @param approved Determines if the event has been approved.
+   * @param approvedByUserId The ID of the approving user.
+   * @param questionDocument The link to the question document.
+   * @param location Location of the event.
+   * @param zoomLink Zoom Link if the event is online.
+   * @param description Describes the event.
+   *
+   * @returns The edited event.
+   *
+   * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
+   * @throws NotFoundException If the given event type, member IDs, shop IDs, machinery IDs, work package IDs, document IDs, or approvedByUserId are not found.
+   * @throws InvalidOrganizationException If the given event type, members, shops, machinery, work packages, or approvedByUserId are not part of the same organization.
+   */
+  static async editEvent(
+    submitter: User,
+    eventId: string,
+    title: string,
+    eventTypeId: string,
+    organization: Organization,
+    memberIds: string[],
+    shopIds: string[],
+    machineryIds: string[],
+    workPackageIds: string[],
+    documentIds: string[],
+    scheduleSlot: ScheduleSlotCreateArgs[],
+    availability: AvailabilityCreateArgs[],
+    approved: boolean,
+    approvedByUserId?: string,
+    questionDocument?: string,
+    location?: string,
+    zoomLink?: string,
+    description?: string
+  ): Promise<Event> {
+    // validate eventId
+    const foundEvent = await prisma.event.findUnique({
+      where: { eventId }
+    });
+
+    if (!foundEvent) throw new NotFoundException('Event', eventId);
+    if (foundEvent.dateDeleted) throw new DeletedException('Event', eventId);
+
+    // Validate eventTypeId
+    const foundEventType = await prisma.eventType.findUnique({
+      where: { eventTypeId }
+    });
+    if (!foundEventType) throw new NotFoundException('Event Type', eventTypeId);
+    if (foundEventType.dateDeleted) throw new DeletedException('Event Type', eventTypeId);
+    if (foundEventType.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Event Type');
+    }
+
+    // Validate memberIds
+    if (memberIds.length > 0) {
+      const foundMembers = await prisma.user.findMany({
+        where: {
+          userId: { in: memberIds },
+          organizations: { some: { organizationId: organization.organizationId } }
+        }
+      });
+      if (foundMembers.length !== memberIds.length) {
+        const missingIds = memberIds.filter((id) => !foundMembers.some((user) => user.userId === id));
+        throw new NotFoundException('User', missingIds.join(', '));
+      }
+    }
+
+    // Validate shopIds
+    if (shopIds.length > 0) {
+      const foundShops = await prisma.shop.findMany({
+        where: {
+          shopId: { in: shopIds },
+          organizationId: organization.organizationId,
+          dateDeleted: null
+        }
+      });
+      if (foundShops.length !== shopIds.length) {
+        const missingIds = shopIds.filter((id) => !foundShops.some((shop) => shop.shopId === id));
+        throw new NotFoundException('Shop', missingIds.join(', '));
+      }
+    }
+
+    // Validate machineryIds
+    if (machineryIds.length > 0) {
+      const foundMachinery = await prisma.machinery.findMany({
+        where: {
+          machineryId: { in: machineryIds },
+          organizationId: organization.organizationId,
+          dateDeleted: null
+        }
+      });
+      if (foundMachinery.length !== machineryIds.length) {
+        const missingIds = machineryIds.filter((id) => !foundMachinery.some((m) => m.machineryId === id));
+        throw new NotFoundException('Machinery', missingIds.join(', '));
+      }
+    }
+
+    // Validate workPackageIds
+    if (workPackageIds.length > 0) {
+      const foundWorkPackages = await prisma.work_Package.findMany({
+        where: {
+          workPackageId: { in: workPackageIds }
+        }
+      });
+      if (foundWorkPackages.length !== workPackageIds.length) {
+        const missingIds = workPackageIds.filter((id) => !foundWorkPackages.some((wp) => wp.workPackageId === id));
+        throw new NotFoundException('Work Package', missingIds.join(', '));
+      }
+    }
+
+    // Validate approvedByUserId
+    if (approvedByUserId) {
+      const foundApprovedByUser = await prisma.user.findUnique({
+        where: {
+          userId: approvedByUserId,
+          organizations: { some: { organizationId: organization.organizationId } }
+        }
+      });
+      if (!foundApprovedByUser) {
+        throw new NotFoundException('User', approvedByUserId);
+      }
+    }
+
+    // Ensure each availability has a scheduleSettingsId
+    const availabilitiesWithScheduleSettings = await Promise.all(
+      availability.map(async (availability) => {
+        let scheduleSettings = await prisma.schedule_Settings.findUnique({
+          where: { userId: submitter.userId }
+        });
+
+        if (!scheduleSettings) {
+          scheduleSettings = await prisma.schedule_Settings.create({
+            data: {
+              userId: submitter.userId,
+              personalGmail: '',
+              personalZoomLink: ''
+            }
+          });
+        }
+
+        return {
+          availability: availability.availability,
+          dateSet: availability.dateSet,
+          scheduleSettingsId: scheduleSettings.drScheduleSettingsId
+        };
+      })
+    );
+
+    // Use transaction for the update
+    const updatedEvent = await prisma.$transaction(async (tx) => {
+      await tx.scheduleSlot.deleteMany({
+        where: {
+          ScheduledEvents: {
+            some: {
+              eventId
+            }
+          }
+        }
+      });
+
+      await tx.availability.deleteMany({
+        where: {
+          event: {
+            eventId
+          }
+        }
+      });
+
+      // Update the event with new data
+      return await tx.event.update({
+        where: { eventId },
+        data: {
+          userCreatedId: submitter.userId,
+          dateCreated: new Date(),
+          title,
+          eventTypeId,
+          members: {
+            set: memberIds.map((userId) => ({ userId }))
+          },
+          shops: {
+            set: shopIds.map((shopId) => ({ shopId }))
+          },
+          machinery: {
+            set: machineryIds.map((machineryId) => ({ machineryId }))
+          },
+          workPackages: {
+            set: workPackageIds.map((workPackageId) => ({ workPackageId }))
+          },
+          documentIds,
+          scheduledTimes: {
+            create: scheduleSlot.map((s) => ({
+              days: s.days,
+              startTime: s.startTime ?? null,
+              endTime: s.endTime ?? null,
+              recurrenceNumber: s.recurrenceNumber,
+              initialDateScheduled: s.initialDateScheduled,
+              allDay: s.allDay
+            }))
+          },
+          availabilities: {
+            createMany: {
+              data: availabilitiesWithScheduleSettings
+            }
+          },
+          approved,
+          approvedByUserId,
+          location,
+          zoomLink,
+          questionDocument,
+          description
+        },
+        ...getEventQueryArgs(organization.organizationId)
+      });
+    });
+
+    return eventTransformer(updatedEvent);
+  }
+
+  /**
+   * Delete event in the database
+   * @param submitter The user submitting the request, who must be an admin.
+   * @param eventId The id of the given event.
+   * @param organization The organization for which the event is being deleted.
+   *
+   * @returns The deleted event.
+   *
+   * @throws NotFoundException If the given eventId is not found.
+   * @throws InvalidOrganizationException If the given eventId is not part of the same organization.
+   * @throws DeletedException If the event has already been deleted.
+   * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
+   */
+  static async deleteEvent(submitter: User, eventId: string, organization: Organization): Promise<Event> {
+    const event = await prisma.event.findUnique({
+      where: { eventId }
+    });
+
+    if (!event) throw new NotFoundException('Event', eventId);
+    if (event.dateDeleted) throw new DeletedException('Event', eventId);
+
+    const hasPermission = await userHasPermission(submitter.userId, organization.organizationId, isAdmin);
+
+    if (!hasPermission) {
+      throw new AccessDeniedException('Only admins can delete events!');
+    }
+
+    const deletedEvent = await prisma.event.update({
+      where: { eventId },
+      data: { dateDeleted: new Date(), userDeletedId: submitter.userId },
+      ...getEventQueryArgs(organization.organizationId)
+    });
+
+    return eventTransformer(deletedEvent);
+  }
+
+  /**
    * Edits an existing machinery and its associated shop machinery.
    *
    * @param submitter The user submitting the request, who must be a head or above.
@@ -759,6 +1026,43 @@ export default class CalendarService {
     });
 
     return eventTypeTransformer(updatedEventType);
+  }
+
+  /**
+   * Delete event type in the database
+   * @param submitter The user submitting the request, who must be an admin.
+   * @param eventTypeId The id of the given event type.
+   * @param organization The organization for which the event type is being deleted.
+   *
+   * @returns The deleted event type.
+   *
+   * @throws NotFoundException If the given event type is not found.
+   * @throws InvalidOrganizationException If the given eventTypeId is not part of the same organization.
+   * @throws DeletedException If the event type has already been deleted.
+   * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
+   */
+  static async deleteEventType(submitter: User, eventTypeId: string, organization: Organization): Promise<EventType> {
+    const eventType = await prisma.eventType.findUnique({
+      where: { eventTypeId }
+    });
+
+    if (!eventType) throw new NotFoundException('Event Type', eventTypeId);
+    if (eventType.dateDeleted) throw new DeletedException('Event Type', eventTypeId);
+    if (eventType.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Event Type');
+
+    const hasPermission = await userHasPermission(submitter.userId, organization.organizationId, isAdmin);
+
+    if (!hasPermission) {
+      throw new AccessDeniedException('Only admins can delete event types!');
+    }
+
+    const deletedEventType = await prisma.eventType.update({
+      where: { eventTypeId },
+      data: { dateDeleted: new Date(), userDeletedId: submitter.userId },
+      ...getEventTypeQueryArgs(organization.organizationId)
+    });
+
+    return eventTypeTransformer(deletedEventType);
   }
 
   /**

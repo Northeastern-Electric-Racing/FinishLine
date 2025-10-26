@@ -10,7 +10,17 @@ import {
 import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, theVisitorGuest, alfred } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
-import { Availability, DayOfWeek, EventType, Machinery, ScheduleSlot, Shop } from 'shared';
+import {
+  Availability,
+  AvailabilityCreateArgs,
+  DayOfWeek,
+  EventType,
+  Machinery,
+  ScheduleSlot,
+  ScheduleSlotCreateArgs,
+  Shop,
+  Event
+} from 'shared';
 
 describe('Calendar Tests', () => {
   let orgId: string;
@@ -1317,6 +1327,601 @@ describe('Calendar Tests', () => {
         where: { machineryId: machineryToDelete.machineryId }
       });
       expect(bridgeAfter).toBe(0);
+    });
+  });
+
+  describe('Edit Event', () => {
+    let event: Event;
+    let member: User;
+    let scheduleSlots: ScheduleSlotCreateArgs[];
+    let availabilities: AvailabilityCreateArgs[];
+
+    beforeEach(async () => {
+      member = await createTestUser(supermanAdmin, orgId);
+      scheduleSlots = [
+        {
+          days: [DayOfWeek.MONDAY],
+          startTime: new Date('2025-10-13T09:00:00Z'),
+          endTime: new Date('2025-10-13T10:00:00Z'),
+          recurrenceNumber: 1,
+          initialDateScheduled: new Date('2025-10-13'),
+          allDay: false
+        }
+      ];
+      availabilities = [
+        {
+          availability: [9, 10],
+          dateSet: new Date('2025-10-13')
+        }
+      ];
+
+      event = await CalendarService.createEvent(
+        adminUser,
+        'Original Event',
+        eventType.eventTypeId,
+        organization,
+        [member.userId],
+        [shop.shopId],
+        [machinery.machineryId],
+        [],
+        ['doc1'],
+        scheduleSlots,
+        availabilities,
+        false
+      );
+    });
+
+    it('fails if event does not exist', async () => {
+      await expect(
+        CalendarService.editEvent(
+          adminUser,
+          'non-existent-id',
+          'Updated Title',
+          eventType.eventTypeId,
+          organization,
+          [],
+          [],
+          [],
+          [],
+          [],
+          scheduleSlots,
+          availabilities,
+          false
+        )
+      ).rejects.toThrow(new NotFoundException('Event', 'non-existent-id'));
+    });
+
+    it('fails if event is already deleted', async () => {
+      await prisma.event.update({
+        where: { eventId: event.eventId },
+        data: { dateDeleted: new Date() }
+      });
+
+      await expect(
+        CalendarService.editEvent(
+          adminUser,
+          event.eventId,
+          'Updated Title',
+          eventType.eventTypeId,
+          organization,
+          [],
+          [],
+          [],
+          [],
+          [],
+          scheduleSlots,
+          availabilities,
+          false
+        )
+      ).rejects.toThrow(new DeletedException('Event', event.eventId));
+    });
+
+    it('fails if eventTypeId does not exist', async () => {
+      await expect(
+        CalendarService.editEvent(
+          adminUser,
+          event.eventId,
+          'Updated Title',
+          'non-existent-event-type-id',
+          organization,
+          [],
+          [],
+          [],
+          [],
+          [],
+          scheduleSlots,
+          availabilities,
+          false
+        )
+      ).rejects.toThrow(new NotFoundException('Event Type', 'non-existent-event-type-id'));
+    });
+
+    it('fails if eventType is deleted', async () => {
+      await prisma.eventType.update({
+        where: { eventTypeId: eventType.eventTypeId },
+        data: { dateDeleted: new Date() }
+      });
+
+      await expect(
+        CalendarService.editEvent(
+          adminUser,
+          event.eventId,
+          'Updated Title',
+          eventType.eventTypeId,
+          organization,
+          [],
+          [],
+          [],
+          [],
+          [],
+          scheduleSlots,
+          availabilities,
+          false
+        )
+      ).rejects.toThrow(new DeletedException('Event Type', eventType.eventTypeId));
+    });
+
+    it('fails if eventType belongs to different organization', async () => {
+      const otherOrg = await prisma.organization.create({
+        data: {
+          name: 'Other Org (calendar test)',
+          description: 'for cross-org negative case',
+          applicationLink: '',
+          userCreated: { connect: { userId: adminUser.userId } }
+        }
+      });
+      const AdminInOtherOrg = await createTestUser(alfred, otherOrg.organizationId);
+
+      const otherEventType = await CalendarService.createEventType(
+        AdminInOtherOrg,
+        'Other Org Event Type',
+        [],
+        otherOrg,
+        true,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      );
+
+      await expect(
+        CalendarService.editEvent(
+          adminUser,
+          event.eventId,
+          'Updated Title',
+          otherEventType.eventTypeId,
+          organization,
+          [],
+          [],
+          [],
+          [],
+          [],
+          scheduleSlots,
+          availabilities,
+          false
+        )
+      ).rejects.toThrow(new InvalidOrganizationException('Event Type'));
+    });
+
+    it('fails if memberIds are invalid', async () => {
+      await expect(
+        CalendarService.editEvent(
+          adminUser,
+          event.eventId,
+          'Updated Title',
+          eventType.eventTypeId,
+          organization,
+          ['non-existent-user-id'],
+          [],
+          [],
+          [],
+          [],
+          scheduleSlots,
+          availabilities,
+          false
+        )
+      ).rejects.toThrow(new NotFoundException('User', 'non-existent-user-id'));
+    });
+
+    it('fails if shopIds are invalid', async () => {
+      await expect(
+        CalendarService.editEvent(
+          adminUser,
+          event.eventId,
+          'Updated Title',
+          eventType.eventTypeId,
+          organization,
+          [],
+          ['non-existent-shop-id'],
+          [],
+          [],
+          [],
+          scheduleSlots,
+          availabilities,
+          false
+        )
+      ).rejects.toThrow(new NotFoundException('Shop', 'non-existent-shop-id'));
+    });
+
+    it('fails if shopIds are deleted', async () => {
+      const deletedShop = await CalendarService.createShop(adminUser, 'Deleted Shop', 'Deleted', organization);
+      await prisma.shop.update({
+        where: { shopId: deletedShop.shopId },
+        data: { dateDeleted: new Date() }
+      });
+
+      await expect(
+        CalendarService.editEvent(
+          adminUser,
+          event.eventId,
+          'Updated Title',
+          eventType.eventTypeId,
+          organization,
+          [],
+          [deletedShop.shopId],
+          [],
+          [],
+          [],
+          scheduleSlots,
+          availabilities,
+          false
+        )
+      ).rejects.toThrow(new NotFoundException('Shop', deletedShop.shopId));
+    });
+
+    it('fails if machineryIds are invalid', async () => {
+      await expect(
+        CalendarService.editEvent(
+          adminUser,
+          event.eventId,
+          'Updated Title',
+          eventType.eventTypeId,
+          organization,
+          [],
+          [],
+          ['non-existent-machinery-id'],
+          [],
+          [],
+          scheduleSlots,
+          availabilities,
+          false
+        )
+      ).rejects.toThrow(new NotFoundException('Machinery', 'non-existent-machinery-id'));
+    });
+
+    it('fails if machineryIds are deleted', async () => {
+      const deletedMachinery = await CalendarService.createMachinery(
+        adminUser,
+        'Deleted Machinery',
+        shop.shopId,
+        1,
+        organization
+      );
+      await prisma.machinery.update({
+        where: { machineryId: deletedMachinery.machineryId },
+        data: { dateDeleted: new Date() }
+      });
+
+      await expect(
+        CalendarService.editEvent(
+          adminUser,
+          event.eventId,
+          'Updated Title',
+          eventType.eventTypeId,
+          organization,
+          [],
+          [],
+          [deletedMachinery.machineryId],
+          [],
+          [],
+          scheduleSlots,
+          availabilities,
+          false
+        )
+      ).rejects.toThrow(new NotFoundException('Machinery', deletedMachinery.machineryId));
+    });
+
+    it('fails if workPackageIds are invalid', async () => {
+      await expect(
+        CalendarService.editEvent(
+          adminUser,
+          event.eventId,
+          'Updated Title',
+          eventType.eventTypeId,
+          organization,
+          [],
+          [],
+          [],
+          ['non-existent-wp-id'],
+          [],
+          scheduleSlots,
+          availabilities,
+          false
+        )
+      ).rejects.toThrow(new NotFoundException('Work Package', 'non-existent-wp-id'));
+    });
+
+    it('fails if approvedByUserId is invalid', async () => {
+      await expect(
+        CalendarService.editEvent(
+          adminUser,
+          event.eventId,
+          'Updated Title',
+          eventType.eventTypeId,
+          organization,
+          [],
+          [],
+          [],
+          [],
+          [],
+          scheduleSlots,
+          availabilities,
+          true,
+          'non-existent-user-id'
+        )
+      ).rejects.toThrow(new NotFoundException('User', 'non-existent-user-id'));
+    });
+
+    it('succeeds for admin and updates event', async () => {
+      const newMember = await createTestUser(alfred, orgId);
+      const newScheduleSlots: ScheduleSlotCreateArgs[] = [
+        {
+          days: [DayOfWeek.WEDNESDAY],
+          startTime: new Date('2025-10-15T14:00:00Z'),
+          endTime: new Date('2025-10-15T15:00:00Z'),
+          recurrenceNumber: 2,
+          initialDateScheduled: new Date('2025-10-15'),
+          allDay: true
+        }
+      ];
+      const newAvailabilities: AvailabilityCreateArgs[] = [
+        {
+          availability: [14, 15],
+          dateSet: new Date('2025-10-15')
+        }
+      ];
+
+      const result = await CalendarService.editEvent(
+        adminUser,
+        event.eventId,
+        'Updated Event Title',
+        eventType.eventTypeId,
+        organization,
+        [newMember.userId],
+        [],
+        [],
+        [],
+        ['doc2', 'doc3'],
+        newScheduleSlots,
+        newAvailabilities,
+        true,
+        adminUser.userId,
+        'https://updated.com/questions.pdf',
+        'Updated Location',
+        'https://zoom.us/updated',
+        'Updated description'
+      );
+
+      expect(result.eventId).toBe(event.eventId);
+      expect(result.title).toBe('Updated Event Title');
+      expect(result.people).toHaveLength(1);
+      expect(result.people[0].userId).toBe(newMember.userId);
+      expect(result.documentIds).toEqual(['doc2', 'doc3']);
+      expect(result.approved).toBe(true);
+      expect(result.approvedBy!.userId).toBe(adminUser.userId);
+      expect(result.questionDocument).toBe('https://updated.com/questions.pdf');
+      expect(result.location).toBe('Updated Location');
+      expect(result.zoomLink).toBe('https://zoom.us/updated');
+      expect(result.description).toBe('Updated description');
+    });
+
+    it('succeeds and updates with minimal fields', async () => {
+      const result = await CalendarService.editEvent(
+        adminUser,
+        event.eventId,
+        'Minimal Update',
+        eventType.eventTypeId,
+        organization,
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        false
+      );
+
+      expect(result.eventId).toBe(event.eventId);
+      expect(result.title).toBe('Minimal Update');
+      expect(result.people).toHaveLength(0);
+      expect(result.shops).toHaveLength(0);
+      expect(result.machinery).toHaveLength(0);
+      expect(result.workPackages).toHaveLength(0);
+      expect(result.documentIds).toHaveLength(0);
+      expect(result.approved).toBe(false);
+    });
+  });
+
+  describe('Delete Event', () => {
+    let event: Event;
+
+    beforeEach(async () => {
+      const scheduleSlots: ScheduleSlotCreateArgs[] = [
+        {
+          days: [DayOfWeek.MONDAY],
+          startTime: new Date('2025-10-13T09:00:00Z'),
+          endTime: new Date('2025-10-13T10:00:00Z'),
+          recurrenceNumber: 1,
+          initialDateScheduled: new Date('2025-10-13'),
+          allDay: false
+        }
+      ];
+      const availabilities: AvailabilityCreateArgs[] = [
+        {
+          availability: [9, 10],
+          dateSet: new Date('2025-10-13')
+        }
+      ];
+
+      event = await CalendarService.createEvent(
+        adminUser,
+        'Event to Delete',
+        eventType.eventTypeId,
+        organization,
+        [],
+        [],
+        [],
+        [],
+        [],
+        scheduleSlots,
+        availabilities,
+        false
+      );
+    });
+
+    it('fails if user is not an admin', async () => {
+      const guest = await createTestUser(wonderwomanGuest, orgId);
+      await expect(CalendarService.deleteEvent(guest, event.eventId, organization)).rejects.toThrow(
+        new AccessDeniedException('Only admins can delete events!')
+      );
+    });
+
+    it('fails if event does not exist', async () => {
+      await expect(CalendarService.deleteEvent(adminUser, 'non-existent-id', organization)).rejects.toThrow(
+        new NotFoundException('Event', 'non-existent-id')
+      );
+    });
+
+    it('fails if event is already deleted', async () => {
+      await prisma.event.update({
+        where: { eventId: event.eventId },
+        data: { dateDeleted: new Date() }
+      });
+
+      await expect(CalendarService.deleteEvent(adminUser, event.eventId, organization)).rejects.toThrow(
+        new DeletedException('Event', event.eventId)
+      );
+    });
+
+    it('succeeds for admin and soft deletes event', async () => {
+      const result = await CalendarService.deleteEvent(adminUser, event.eventId, organization);
+
+      expect(result.eventId).toBe(event.eventId);
+      expect(result.title).toBe('Event to Delete');
+
+      const deletedEvent = await prisma.event.findUnique({
+        where: { eventId: event.eventId }
+      });
+      expect(deletedEvent?.dateDeleted).not.toBeNull();
+      expect(deletedEvent?.userDeletedId).toBe(adminUser.userId);
+    });
+  });
+
+  describe('Delete EventType', () => {
+    let eventTypeToDelete: EventType;
+
+    beforeEach(async () => {
+      eventTypeToDelete = await CalendarService.createEventType(
+        adminUser,
+        'EventType to Delete',
+        [calendar.calendarId],
+        organization,
+        true,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      );
+    });
+
+    it('fails if user is not an admin', async () => {
+      const guest = await createTestUser(wonderwomanGuest, orgId);
+      await expect(CalendarService.deleteEventType(guest, eventTypeToDelete.eventTypeId, organization)).rejects.toThrow(
+        new AccessDeniedException('Only admins can delete event types!')
+      );
+    });
+
+    it('fails if event type does not exist', async () => {
+      await expect(CalendarService.deleteEventType(adminUser, 'non-existent-id', organization)).rejects.toThrow(
+        new NotFoundException('Event Type', 'non-existent-id')
+      );
+    });
+
+    it('fails if event type is already deleted', async () => {
+      await prisma.eventType.update({
+        where: { eventTypeId: eventTypeToDelete.eventTypeId },
+        data: { dateDeleted: new Date() }
+      });
+
+      await expect(CalendarService.deleteEventType(adminUser, eventTypeToDelete.eventTypeId, organization)).rejects.toThrow(
+        new DeletedException('Event Type', eventTypeToDelete.eventTypeId)
+      );
+    });
+
+    it('fails if event type belongs to different organization', async () => {
+      const otherOrg = await prisma.organization.create({
+        data: {
+          name: 'Other Org (calendar test)',
+          description: 'for cross-org negative case',
+          applicationLink: '',
+          userCreated: { connect: { userId: adminUser.userId } }
+        }
+      });
+      const AdminInOtherOrg = await createTestUser(alfred, otherOrg.organizationId);
+
+      const otherOrgEventType = await CalendarService.createEventType(
+        AdminInOtherOrg,
+        'Other Org Event Type',
+        [],
+        otherOrg,
+        true,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      );
+
+      await expect(CalendarService.deleteEventType(adminUser, otherOrgEventType.eventTypeId, organization)).rejects.toThrow(
+        new InvalidOrganizationException('Event Type')
+      );
+    });
+
+    it('succeeds for admin and soft deletes event type', async () => {
+      const result = await CalendarService.deleteEventType(adminUser, eventTypeToDelete.eventTypeId, organization);
+
+      expect(result.eventTypeId).toBe(eventTypeToDelete.eventTypeId);
+      expect(result.name).toBe('EventType to Delete');
+
+      const deletedEventType = await prisma.eventType.findUnique({
+        where: { eventTypeId: eventTypeToDelete.eventTypeId }
+      });
+      expect(deletedEventType?.dateDeleted).not.toBeNull();
+      expect(deletedEventType?.userDeletedId).toBe(adminUser.userId);
     });
   });
 });
