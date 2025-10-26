@@ -11,7 +11,7 @@ import {
   ScheduleSlotCreateArgs,
   AvailabilityCreateArgs,
   Event,
-  FilterArgs
+  FilterArgs,
   Machinery
 } from 'shared';
 import prisma from '../prisma/prisma';

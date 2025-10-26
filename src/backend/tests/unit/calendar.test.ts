@@ -1561,6 +1561,8 @@ describe('Calendar Tests', () => {
     await expect(CalendarService.getFilteredEvents({ teamIds: ['fakeId'] }, organization)).rejects.toThrow(
       new NotFoundException('Team', 'fakeId')
     );
+  });
+
   describe('Delete Machinery', () => {
     let machineryToDelete: Machinery;
     let anotherShop: Shop;
