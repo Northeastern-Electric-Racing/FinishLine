@@ -10,14 +10,14 @@ import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { useEffect } from 'react';
 
 export interface EditMachineFormValues {
-  name: string;
+  machineName: string;
   shopId: string;
   quantity: number;
 }
 
 const schema = yup.object({
   shopId: yup.string().required('Shop is required'),
-  name: yup.string().required('Machine Name is required'),
+  machineName: yup.string().required('Machine Name is required'),
   quantity: yup.number().required('Quantity is required').min(1, 'Quantity must be at least 1')
 });
 
@@ -39,7 +39,7 @@ export const EditMachineryModal: React.FC<EditMachineryModalProps> = ({ open, on
     formState: { errors }
   } = useForm<EditMachineFormValues>({
     resolver: yupResolver(schema),
-    defaultValues: initialValues || { shopId: '', name: '', quantity: 1 }
+    defaultValues: initialValues || { shopId: '', machineName: '', quantity: 1 }
   });
 
   useEffect(() => {
@@ -64,7 +64,7 @@ export const EditMachineryModal: React.FC<EditMachineryModalProps> = ({ open, on
       open={open}
       onHide={onClose}
       title="Edit Machine"
-      reset={() => reset(initialValues || { shopId: '', name: '', quantity: 1 })}
+      reset={() => reset(initialValues || { shopId: '', machineName: '', quantity: 1 })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
       formId="edit-machinery-form"
@@ -105,7 +105,7 @@ export const EditMachineryModal: React.FC<EditMachineryModalProps> = ({ open, on
             Machine:*
           </Typography>
           <ReactHookTextField name="name" control={control} placeholder="Machine Name" fullWidth />
-          <FormHelperText error>{errors.name?.message}</FormHelperText>
+          <FormHelperText error>{errors.machineName?.message}</FormHelperText>
         </FormControl>
 
         <FormControl fullWidth>

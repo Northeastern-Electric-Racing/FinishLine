@@ -225,15 +225,15 @@ const AdminToolsScheduleConfig: React.FC = () => {
               open={true}
               onClose={() => setEditMachineryId(null)}
               initialValues={{
-                name: selectedMachine.name,
+                machineName: selectedMachine.name,
                 shopId: selectedMachine.shops?.[0]?.shop?.shopId || '',
                 quantity: selectedMachine.shops?.[0]?.quantity || 1
               }}
-              onSubmit={async ({ name, shopId, quantity }) => {
+              onSubmit={async ({ machineName, shopId, quantity }) => {
                 // Closes the edit modal while updating the machinery so there's no flicker of input values
                 const machineryId = editMachineryId;
                 setEditMachineryId(null);
-                await editMachineryMutate({ machineryId, name, shopId, quantity });
+                await editMachineryMutate({ machineryId, name: machineName, shopId, quantity });
               }}
             />
           );
