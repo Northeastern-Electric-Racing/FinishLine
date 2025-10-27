@@ -20,15 +20,27 @@ export const getAllMachinery = () => {
   });
 };
 
-export const postCreateMachinery = (payload: { name: string; shopId: string; quantity: number }) => {
-  return axios.post<Machinery>(apiUrls.calendarCreateMachinery(), payload, {
-    transformResponse: (data) => JSON.parse(data) as Machinery
-  });
+export const postCreateMachinery = async (payload: { machineName: string; shopId: string; quantity: number }) => {
+  const { machineName, ...rest } = payload;
+  const { data } = await axios.post<Machinery>(
+    apiUrls.calendarCreateMachinery(),
+    { name: machineName, ...rest },
+    {
+      transformResponse: (data) => JSON.parse(data) as Machinery
+    }
+  );
+  return data;
 };
 
-export const postEditMachinery = (payload: { machineryId: string; name: string; shopId: string; quantity: number }) => {
+export const postEditMachinery = async (payload: {
+  machineryId: string;
+  name: string;
+  shopId: string;
+  quantity: number;
+}) => {
   const { machineryId, ...body } = payload;
-  return axios.post<Machinery>(apiUrls.calendarEditMachinery(machineryId), body, {
+  const { data } = await axios.post<Machinery>(apiUrls.calendarEditMachinery(machineryId), body, {
     transformResponse: (data) => JSON.parse(data) as Machinery
   });
+  return data;
 };

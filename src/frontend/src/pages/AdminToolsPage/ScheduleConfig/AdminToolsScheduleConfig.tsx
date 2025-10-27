@@ -2,26 +2,18 @@ import React, { useState } from 'react';
 import { Box, Grid, Typography, Paper, Table, TableBody, TableCell, TableHead, TableRow, Button } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import {
-  useAllShops,
-  useAllMachines,
-  useCreateShop,
-  useCreateMachinery,
-  useEditMachinery
-} from '../../../hooks/calendar.hooks';
+import { useAllShops, useAllMachines, useCreateShop } from '../../../hooks/calendar.hooks';
 import CreateShopModal from './Shop/CreateShopModal';
 import { IconButton, Tooltip } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CreateMachineryModal from './Machinery/CreateMachineryModal';
-import { EditMachineryModal } from './Machinery/EditMachineryModal';
+import EditMachineryModal from './Machinery/EditMachineryModal';
 
 const AdminToolsScheduleConfig: React.FC = () => {
   const { data: shops, isLoading: shopsLoading, isError: shopsError, error: shopsErrorMsg } = useAllShops();
   const { data: machines, isLoading: machinesLoading, isError: machinesError, error: machinesErrorMsg } = useAllMachines();
   const { mutateAsync: createShopMutate } = useCreateShop();
-  const { mutateAsync: createMachineryMutate } = useCreateMachinery();
-  const { mutateAsync: editMachineryMutate } = useEditMachinery();
 
   const [openCreate, setOpenCreate] = useState(false);
   const [openCreateMachinery, setOpenCreateMachinery] = useState(false);
@@ -205,15 +197,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
       />
 
       {/* Create Machine Modal */}
-      <CreateMachineryModal
-        open={openCreateMachinery}
-        onClose={() => setOpenCreateMachinery(false)}
-        onSubmit={async ({ shopId, machineName, quantity }) => {
-          const result = await createMachineryMutate({ name: machineName, shopId, quantity });
-          setOpenCreateMachinery(false);
-          return result;
-        }}
-      />
+      <CreateMachineryModal open={openCreateMachinery} onClose={() => setOpenCreateMachinery(false)} />
 
       {/* Edit Machine Modal */}
       {editMachineryId &&
@@ -222,23 +206,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
           const selectedMachine = machines.find((m) => m.machineryId === editMachineryId);
           if (!selectedMachine) return null;
 
-          return (
-            <EditMachineryModal
-              open={true}
-              onClose={() => setEditMachineryId(null)}
-              initialValues={{
-                machineName: selectedMachine.name,
-                shopId: selectedMachine.shops?.[0]?.shop?.shopId || '',
-                quantity: selectedMachine.shops?.[0]?.quantity || 1
-              }}
-              onSubmit={async ({ machineName, shopId, quantity }) => {
-                // Closes the edit modal while updating the machinery so there's no flicker of input values
-                const machineryId = editMachineryId;
-                setEditMachineryId(null);
-                return await editMachineryMutate({ machineryId, name: machineName, shopId, quantity });
-              }}
-            />
-          );
+          return <EditMachineryModal open={true} onClose={() => setEditMachineryId(null)} machinery={selectedMachine} />;
         })()}
     </Box>
   );
