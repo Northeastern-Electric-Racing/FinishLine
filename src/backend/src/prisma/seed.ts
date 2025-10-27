@@ -3083,54 +3083,18 @@ const performSeed: () => Promise<void> = async () => {
   });
 
   // Create machineries and assign to shops
-  const ironMachine = await MachineryService.createMachinery(
-    thomasEmrax,
-    'Iron Man CNC Mill',
-    advancedShop.shopId,
-    1,
-    ner,
-    'High-precision CNC milling operations'
-  );
-  const hammer = await MachineryService.createMachinery(
-    thomasEmrax,
-    'Thor Hammer Lathe',
-    advancedShop.shopId,
-    2,
-    ner,
-    'High-precision turning operations'
-  );
+  const ironMachine = await MachineryService.createMachinery(thomasEmrax, 'Iron Man CNC Mill', advancedShop.shopId, 1, ner);
+  const hammer = await MachineryService.createMachinery(thomasEmrax, 'Thor Hammer Lathe', advancedShop.shopId, 2, ner);
   const printer = await MachineryService.createMachinery(
     thomasEmrax,
     'Spider-Man 3D Printer',
     electronicsLab.shopId,
     1,
-    ner,
-    'Rapid prototyping for electronics enclosures'
+    ner
   );
-  await MachineryService.createMachinery(
-    thomasEmrax,
-    'Captain America Oscilloscope',
-    electronicsLab.shopId,
-    3,
-    ner,
-    'High-speed signal analysis'
-  );
-  await MachineryService.createMachinery(
-    thomasEmrax,
-    'Hulk Dynamometer',
-    testingFacility.shopId,
-    1,
-    ner,
-    'Engine and motor testing'
-  );
-  await MachineryService.createMachinery(
-    thomasEmrax,
-    'Black Widow Thermal Camera',
-    testingFacility.shopId,
-    2,
-    ner,
-    'Thermal imaging and analysis'
-  );
+  await MachineryService.createMachinery(thomasEmrax, 'Captain America Oscilloscope', electronicsLab.shopId, 3, ner);
+  await MachineryService.createMachinery(thomasEmrax, 'Hulk Dynamometer', testingFacility.shopId, 1, ner);
+  await MachineryService.createMachinery(thomasEmrax, 'Black Widow Thermal Camera', testingFacility.shopId, 2, ner);
 
   // various calendars for testing
   const calendar = await CalendarService.createCalendar(
