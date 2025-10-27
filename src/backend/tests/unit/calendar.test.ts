@@ -411,6 +411,34 @@ describe('Calendar Tests', () => {
       expect(result.shops).toHaveLength(1);
       expect(result.shops[0].quantity).toBe(2);
     });
+
+    it('Succeeds and updates machinery to a different shop', async () => {
+      // Create a newshop
+      const newShop = await CalendarService.createShop(
+        adminUser,
+        'Electronics Lab',
+        'Electronics testing facility',
+        organization
+      );
+
+      //Check that the machinery original shop is not the new shop before editing
+      expect(machinery.shops[0].shop.shopId).not.toBe(newShop.shopId);
+
+      const result = await CalendarService.editMachinery(
+        adminUser,
+        machinery.machineryId,
+        'Updated Shop to Electronics Lab',
+        newShop.shopId,
+        5,
+        organization
+      );
+
+      expect(result.name).toEqual('Updated Shop to Electronics Lab');
+      expect(result.shops).toHaveLength(1);
+      expect(result.shops[0].quantity).toBe(5);
+      expect(result.shops[0].shop.name).toBe('Electronics Lab');
+      expect(result.shops[0].shop.shopId).toBe(newShop.shopId);
+    });
   });
 
   describe('Shop Tests', () => {
