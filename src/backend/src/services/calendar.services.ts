@@ -134,23 +134,16 @@ export default class CalendarService {
    *
    * @param submitter The user submitting the request, who must be an admin.
    * @param name The name of the machinery.
-   * @param shopMachineryData Array of shop machinery data containing shopId, quantity, and optional description.
+   * @param shopId The shop ID to associate with the machinery.
+   * @param quantity The quantity of machinery in the shop.
    * @param organization The organization for which the machinery is being created.
-   * @param description The description of the machinery (optional).
    *
    * @returns The created machinery object with associated shop machinery.
    *
    * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
    * @throws NotFoundException If the shop with the given shopId does not exist.
    */
-  static async createMachinery(
-    submitter: User,
-    name: string,
-    shopId: string,
-    quantity: number,
-    organization: Organization,
-    description?: string
-  ) {
+  static async createMachinery(submitter: User, name: string, shopId: string, quantity: number, organization: Organization) {
     // Check if user is admin
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create machinery');
@@ -178,8 +171,7 @@ export default class CalendarService {
           create: [
             {
               shopId,
-              quantity,
-              description
+              quantity
             }
           ]
         }
@@ -397,7 +389,6 @@ export default class CalendarService {
    * @param shopId The shop ID to associate with the machinery.
    * @param quantity The quantity of machinery in the shop.
    * @param organization The organization for which the machinery is being edited.
-   * @param description The description of the machinery (optional).
    *
    * @returns The updated machinery object with associated shop machinery.
    *
@@ -411,8 +402,7 @@ export default class CalendarService {
     name: string,
     shopId: string,
     quantity: number,
-    organization: Organization,
-    description?: string
+    organization: Organization
   ) {
     // Check if user is head or above
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
@@ -454,8 +444,7 @@ export default class CalendarService {
           updateMany: {
             where: { shopId },
             data: {
-              quantity,
-              description
+              quantity
             }
           }
         }

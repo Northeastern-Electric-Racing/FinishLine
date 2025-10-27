@@ -7,6 +7,7 @@ import { useForm, Controller } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
+import { Machinery } from 'shared';
 
 export interface CreateMachineFormValues {
   shopId: string;
@@ -23,7 +24,7 @@ const schema = yup.object({
 interface CreateMachineryModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateMachineFormValues) => Promise<unknown> | unknown;
+  onSubmit: (data: CreateMachineFormValues) => Promise<Machinery>;
 }
 
 export const CreateMachineryModal: React.FC<CreateMachineryModalProps> = ({ open, onClose, onSubmit }) => {

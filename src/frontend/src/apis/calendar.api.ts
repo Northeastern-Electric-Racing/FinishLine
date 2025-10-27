@@ -20,19 +20,13 @@ export const getAllMachinery = () => {
   });
 };
 
-export const postCreateMachinery = (payload: { name: string; shopId: string; quantity: number; description?: string }) => {
+export const postCreateMachinery = (payload: { name: string; shopId: string; quantity: number }) => {
   return axios.post<Machinery>(apiUrls.calendarCreateMachinery(), payload, {
     transformResponse: (data) => JSON.parse(data) as Machinery
   });
 };
 
-export const postEditMachinery = (payload: {
-  machineryId: string;
-  name: string;
-  shopId: string;
-  quantity: number;
-  description?: string;
-}) => {
+export const postEditMachinery = (payload: { machineryId: string; name: string; shopId: string; quantity: number }) => {
   return axios.post<Machinery>(apiUrls.calendarEditMachinery(payload.machineryId), payload, {
     transformResponse: (data) => JSON.parse(data) as Machinery
   });

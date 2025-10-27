@@ -198,8 +198,9 @@ const AdminToolsScheduleConfig: React.FC = () => {
         open={openCreate}
         onClose={() => setOpenCreate(false)}
         onSubmit={async ({ name, description }) => {
-          await createShopMutate({ name, description });
+          const result = await createShopMutate({ name, description });
           setOpenCreate(false);
+          return result;
         }}
       />
 
@@ -208,8 +209,9 @@ const AdminToolsScheduleConfig: React.FC = () => {
         open={openCreateMachinery}
         onClose={() => setOpenCreateMachinery(false)}
         onSubmit={async ({ shopId, machineName, quantity }) => {
-          await createMachineryMutate({ name: machineName, shopId, quantity });
+          const result = await createMachineryMutate({ name: machineName, shopId, quantity });
           setOpenCreateMachinery(false);
+          return result;
         }}
       />
 
@@ -233,7 +235,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
                 // Closes the edit modal while updating the machinery so there's no flicker of input values
                 const machineryId = editMachineryId;
                 setEditMachineryId(null);
-                await editMachineryMutate({ machineryId, name: machineName, shopId, quantity });
+                return await editMachineryMutate({ machineryId, name: machineName, shopId, quantity });
               }}
             />
           );

@@ -8,6 +8,7 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { useEffect } from 'react';
+import { Machinery } from 'shared';
 
 export interface EditMachineFormValues {
   machineName: string;
@@ -24,7 +25,7 @@ const schema = yup.object({
 interface EditMachineryModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: EditMachineFormValues) => Promise<unknown> | unknown;
+  onSubmit: (data: EditMachineFormValues) => Promise<Machinery>;
   initialValues?: EditMachineFormValues;
 }
 

@@ -34,7 +34,7 @@ export const useAllMachines = () =>
 
 export const useCreateMachinery = () => {
   const qc = useQueryClient();
-  return useMutation<Machinery, Error, { name: string; shopId: string; quantity: number; description?: string }>(
+  return useMutation<Machinery, Error, { name: string; shopId: string; quantity: number }>(
     async (payload) => {
       const { data } = await postCreateMachinery(payload);
       return data;
@@ -49,11 +49,7 @@ export const useCreateMachinery = () => {
 
 export const useEditMachinery = () => {
   const qc = useQueryClient();
-  return useMutation<
-    Machinery,
-    Error,
-    { machineryId: string; name: string; shopId: string; quantity: number; description?: string }
-  >(
+  return useMutation<Machinery, Error, { machineryId: string; name: string; shopId: string; quantity: number }>(
     async (payload) => {
       const { data } = await postEditMachinery(payload);
       return data;
