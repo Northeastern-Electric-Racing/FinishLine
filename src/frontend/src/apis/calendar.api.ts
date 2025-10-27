@@ -27,7 +27,8 @@ export const postCreateMachinery = (payload: { name: string; shopId: string; qua
 };
 
 export const postEditMachinery = (payload: { machineryId: string; name: string; shopId: string; quantity: number }) => {
-  return axios.post<Machinery>(apiUrls.calendarEditMachinery(payload.machineryId), payload, {
+  const { machineryId, ...body } = payload;
+  return axios.post<Machinery>(apiUrls.calendarEditMachinery(machineryId), body, {
     transformResponse: (data) => JSON.parse(data) as Machinery
   });
 };

@@ -105,7 +105,7 @@ export const EditMachineryModal: React.FC<EditMachineryModalProps> = ({ open, on
           <Typography color="#ef4345" variant="h5" sx={{ fontWeight: 'bold', fontSize: 20 }}>
             Machine:*
           </Typography>
-          <ReactHookTextField name="name" control={control} placeholder="Machine Name" fullWidth />
+          <ReactHookTextField name="machineName" control={control} placeholder="Machine Name" fullWidth />
           <FormHelperText error>{errors.machineName?.message}</FormHelperText>
         </FormControl>
 

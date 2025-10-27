@@ -442,8 +442,9 @@ export default class CalendarService {
         name,
         shops: {
           updateMany: {
-            where: { shopId },
+            where: {},
             data: {
+              shopId,
               quantity
             }
           }

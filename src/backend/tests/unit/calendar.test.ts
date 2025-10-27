@@ -46,14 +46,7 @@ describe('Calendar Tests', () => {
     );
     ({ shopId } = shop);
 
-    machinery = await CalendarService.createMachinery(
-      adminUser,
-      'Original Machinery Name',
-      shop.shopId,
-      1,
-      organization,
-      'Original description'
-    );
+    machinery = await CalendarService.createMachinery(adminUser, 'Original Machinery Name', shop.shopId, 1, organization);
     eventType = await CalendarService.createEventType(
       adminUser,
       'Team Meeting',
@@ -337,8 +330,7 @@ describe('Calendar Tests', () => {
             'Updated Machinery Name',
             shop.shopId,
             2,
-            organization,
-            'Updated description'
+            organization
           )
       ).rejects.toThrow(new AccessDeniedException('Only heads and above can edit machinery'));
     });
@@ -353,8 +345,7 @@ describe('Calendar Tests', () => {
             'Updated Machinery Name',
             shop.shopId,
             2,
-            organization,
-            'Updated description'
+            organization
           )
       ).rejects.toThrow(new NotFoundException('Machinery', nonExistentId));
     });
@@ -369,8 +360,7 @@ describe('Calendar Tests', () => {
             'Updated Machinery Name',
             nonExistentShopId,
             2,
-            organization,
-            'Updated description'
+            organization
           )
       ).rejects.toThrow(new NotFoundException('Shop', nonExistentShopId));
     });
@@ -382,14 +372,12 @@ describe('Calendar Tests', () => {
         'Updated Machinery Name',
         shop.shopId,
         3,
-        organization,
-        'Updated description'
+        organization
       );
 
       expect(result.name).toEqual('Updated Machinery Name');
       expect(result.shops).toHaveLength(1);
       expect(result.shops[0].quantity).toBe(3);
-      expect(result.shops[0].description).toBe('Updated description');
       expect(result.shops[0].shop.name).toBe('Precision Manufacturing Lab');
     });
 
@@ -400,14 +388,12 @@ describe('Calendar Tests', () => {
         'Admin Updated Machinery',
         shop.shopId,
         5,
-        organization,
-        'Admin updated description'
+        organization
       );
 
       expect(result.name).toEqual('Admin Updated Machinery');
       expect(result.shops).toHaveLength(1);
       expect(result.shops[0].quantity).toBe(5);
-      expect(result.shops[0].description).toBe('Admin updated description');
       expect(result.shops[0].shop.name).toBe('Precision Manufacturing Lab');
     });
 
@@ -418,14 +404,12 @@ describe('Calendar Tests', () => {
         'No Description Machinery',
         shop.shopId,
         2,
-        organization,
-        undefined
+        organization
       );
 
       expect(result.name).toEqual('No Description Machinery');
       expect(result.shops).toHaveLength(1);
       expect(result.shops[0].quantity).toBe(2);
-      expect(result.shops[0].description).toBe('Original description'); // Original description should remain unchanged
     });
   });
 
@@ -804,8 +788,7 @@ describe('Calendar Tests', () => {
         'Other Org Machinery',
         otherOrgShop.shopId,
         1,
-        otherOrg,
-        'Machinery in different organization'
+        otherOrg
       );
 
       document = 'Test Document';
@@ -1213,8 +1196,7 @@ describe('Calendar Tests', () => {
         'Deleted Machinery',
         shop.shopId,
         1,
-        organization,
-        'Deleted machinery'
+        organization
       );
       await prisma.machinery.update({
         where: { machineryId: deletedMachinery.machineryId },
@@ -1253,8 +1235,7 @@ describe('Calendar Tests', () => {
         'Deletable Machinery',
         shop.shopId,
         2,
-        organization,
-        'Test description'
+        organization
       );
 
       anotherShop = await CalendarService.createShop(
