@@ -213,7 +213,6 @@ export default class CalendarService {
    *
    * @returns The created event.
    *
-   * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
    * @throws NotFoundException If the given event type, member IDs, shop IDs, machinery IDs, work package IDs, document IDs, or approvedByUserId are not found.
    * @throws InvalidOrganizationException If the given event type, members, shops, machinery, work packages, or approvedByUserId are not part of the same organization.
    */
@@ -412,7 +411,6 @@ export default class CalendarService {
    *
    * @returns The edited event.
    *
-   * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
    * @throws NotFoundException If the given event type, member IDs, shop IDs, machinery IDs, work package IDs, document IDs, or approvedByUserId are not found.
    * @throws InvalidOrganizationException If the given event type, members, shops, machinery, work packages, or approvedByUserId are not part of the same organization.
    */
