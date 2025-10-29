@@ -19,7 +19,10 @@ import {
   InputLabel,
   Select,
   Button,
-  Link
+  Link,
+  LinearProgress,
+  Card,
+  CardContent
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -101,14 +104,18 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
           return false;
         }
       }
-      const requestDate = new Date(request.dateCreated);
-      if (dateFromFilter) {
+      const requestDate =
+        request.reimbursementStatuses && request.reimbursementStatuses.length > 0
+          ? new Date(Math.min(...request.reimbursementStatuses.map((status) => new Date(status.dateCreated).getTime())))
+          : null;
+
+      if (dateFromFilter && requestDate) {
         const fromDate = new Date(dateFromFilter);
         if (requestDate < fromDate) {
           return false;
         }
       }
-      if (dateToFilter) {
+      if (dateToFilter && requestDate) {
         const toDate = new Date(dateToFilter);
         toDate.setHours(23, 59, 59, 999);
         if (requestDate > toDate) {
@@ -161,6 +168,22 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
     setAmountMaxFilter('');
   };
 
+  const budgetInfo = useMemo(() => {
+    if (!project || !grouped.length) return null;
+
+    const totalBudget = project.budget; // Budget is in cents
+    const totalSpent = grouped.reduce((sum, { request }) => sum + (request.totalCost || 0), 0); // Total cost is in cents
+    const budgetRemaining = totalBudget - totalSpent;
+    const budgetUsedPercentage = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
+
+    return {
+      totalBudget: totalBudget / 100, // Convert to dollars
+      totalSpent: totalSpent / 100, // Convert to dollars
+      budgetRemaining: budgetRemaining / 100, // Convert to dollars
+      budgetUsedPercentage: Math.min(budgetUsedPercentage, 100) // Cap at 100%
+    };
+  }, [project, grouped]);
+
   const hasActiveFilters =
     submitterFilter || statusFilter || dateFromFilter || dateToFilter || amountMinFilter || amountMaxFilter;
 
@@ -211,6 +234,67 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
           )}
         </Box>
       </Box>
+
+      {budgetInfo && (
+        <Card sx={{ mb: 3, backgroundColor: '#2a2a2a', border: '1px solid #444' }}>
+          <CardContent>
+            <Grid container spacing={3} alignItems="center">
+              <Grid item xs={12} md={8}>
+                <Typography variant="h6" sx={{ mb: 1 }}>
+                  Budget Overview
+                </Typography>
+                <Box sx={{ mb: 2 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant="body2" color="textSecondary">
+                      Spent: ${budgetInfo.totalSpent.toFixed(2)}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      Total Budget: ${budgetInfo.totalBudget.toFixed(2)}
+                    </Typography>
+                  </Box>
+                  <LinearProgress
+                    variant="determinate"
+                    value={budgetInfo.budgetUsedPercentage}
+                    sx={{
+                      height: 8,
+                      borderRadius: 5,
+                      backgroundColor: '#444',
+                      '& .MuiLinearProgress-bar': {
+                        borderRadius: 5,
+                        backgroundColor:
+                          budgetInfo.budgetUsedPercentage > 90
+                            ? '#f44336'
+                            : budgetInfo.budgetUsedPercentage > 75
+                              ? '#ff9800'
+                              : '#4caf50'
+                      }
+                    }}
+                  />
+                </Box>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+                  <Typography variant="body2" color="textSecondary" sx={{ mb: 0.5 }}>
+                    Budget Remaining
+                  </Typography>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      color: budgetInfo.budgetRemaining >= 0 ? '#4caf50' : '#f44336',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    ${budgetInfo.budgetRemaining.toFixed(2)}
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    ({budgetInfo.budgetUsedPercentage.toFixed(1)}% used)
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
+      )}
 
       {showFilters && (
         <Box sx={{ mb: 3, p: 2, border: '1px solid #444', borderRadius: 1, backgroundColor: '#1a1a1a' }}>
@@ -306,20 +390,24 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
               <TableRow>
                 <TableCell />
                 <TableCell>Submitter / RR Link</TableCell>
-                <TableCell>Date</TableCell>
+                <TableCell>Description</TableCell>
+                <TableCell>Date Submitted</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell align="right">Total Amount</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {filteredData.map(({ request, materials }) => {
+                const hasMaterials = materials.length > 0;
                 return (
                   <React.Fragment key={request.reimbursementRequestId}>
                     <TableRow hover>
                       <TableCell>
-                        <IconButton size="small" onClick={() => handleToggleRow(request.reimbursementRequestId)}>
-                          {openRows[request.reimbursementRequestId] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                        </IconButton>
+                        {hasMaterials ? (
+                          <IconButton size="small" onClick={() => handleToggleRow(request.reimbursementRequestId)}>
+                            {openRows[request.reimbursementRequestId] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                          </IconButton>
+                        ) : null}
                       </TableCell>
                       <TableCell>
                         <Link
@@ -332,7 +420,23 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
                             'N/A'}
                         </Link>
                       </TableCell>
-                      <TableCell>{new Date(request.dateCreated).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {request.accountCode?.name ||
+                            request.reimbursementProducts?.map((p) => p.name).join(', ') ||
+                            request.vendor?.name ||
+                            'No description available'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        {request.reimbursementStatuses && request.reimbursementStatuses.length > 0
+                          ? new Date(
+                              Math.min(
+                                ...request.reimbursementStatuses.map((status) => new Date(status.dateCreated).getTime())
+                              )
+                            ).toLocaleDateString()
+                          : ''}
+                      </TableCell>
                       <TableCell>
                         <Chip
                           label={request.reimbursementStatuses?.[0]?.type?.replace(/_/g, ' ') || 'N/A'}
@@ -342,14 +446,14 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
                       </TableCell>
                       <TableCell align="right">${(request.totalCost / 100)?.toFixed(2) || '0.00'}</TableCell>
                     </TableRow>
-                    <TableRow>
-                      <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={5}>
-                        <Collapse in={openRows[request.reimbursementRequestId]} timeout="auto" unmountOnExit>
-                          <Box sx={{ margin: 1, background: '#181818', borderRadius: 1, p: 2 }}>
-                            <Typography variant="subtitle1" sx={{ color: 'secondary.main', mb: 1 }}>
-                              Line Items
-                            </Typography>
-                            {materials.length > 0 ? (
+                    {hasMaterials && (
+                      <TableRow>
+                        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+                          <Collapse in={openRows[request.reimbursementRequestId]} timeout="auto" unmountOnExit>
+                            <Box sx={{ margin: 1, background: '#181818', borderRadius: 1, p: 2 }}>
+                              <Typography variant="subtitle1" sx={{ color: 'secondary.main', mb: 1 }}>
+                                Line Items
+                              </Typography>
                               <Table size="small">
                                 <TableHead>
                                   <TableRow>
@@ -368,16 +472,11 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
                                   ))}
                                 </TableBody>
                               </Table>
-                            ) : (
-                              <Typography variant="body2" color="textSecondary">
-                                This reimbursement request has no associated BOM line items. It may have been created
-                                independently or with non-BOM products.
-                              </Typography>
-                            )}
-                          </Box>
-                        </Collapse>
-                      </TableCell>
-                    </TableRow>
+                            </Box>
+                          </Collapse>
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </React.Fragment>
                 );
               })}
