@@ -31,7 +31,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ devSetUser, devFormSubmit, prodSu
       <CardContent>
         <Typography variant="h5">FinishLine by NER</Typography>
         <Typography variant="body1" sx={{ mb: 1 }}>
-          Login Required. Students must use their Husky Google account.
+          Students must use their Husky Google account to login.
+          <br />
+          <br />
+          This means if your email is 'last.first@northeastern.edu', login to Google with the email
+          'last.first@husky.neu.edu'
         </Typography>
         {import.meta.env.MODE === 'development' ? loginDev : googleLogin}
       </CardContent>

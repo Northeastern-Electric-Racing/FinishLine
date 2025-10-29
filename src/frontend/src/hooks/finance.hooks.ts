@@ -4,7 +4,7 @@
  */
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import {
-  approveReimbursementRequest,
+  inputReimbursementRequestInSabo,
   createReimbursementRequest,
   deleteReimbursementRequest,
   denyReimbursementRequest,
@@ -20,6 +20,7 @@ import {
   getSingleReimbursementRequest,
   markReimbursementRequestAsDelivered,
   markReimbursementRequestAsReimbursed,
+  markReimbursementRequestAsSaboSubmitted,
   reportRefund,
   sendPendingAdvisorList,
   setSaboNumber,
@@ -62,7 +63,10 @@ import {
   deleteAccountCode,
   deleteOtherProductReason,
   deleteSponsorTier,
-  editSponsorTier
+  editSponsorTier,
+  editIndexCode,
+  getCurrentUserAssignedReimbursementRequests,
+  assignMemberToRR
 } from '../apis/finance.api';
 import {
   IndexCode,
@@ -120,9 +124,9 @@ export interface EditVendorPayload {
   username?: string;
   password?: string;
   discountCode?: string;
-  taxExempt: boolean;
-  twoFactorContactIds: string[];
-  notes: string;
+  taxExempt?: boolean;
+  twoFactorContactIds?: string[];
+  notes?: string;
 }
 
 export interface RefundPayload {
@@ -174,6 +178,11 @@ export interface OtherProductReasonPayload {
   accountCodeIds: string[];
   name: string;
   budget: number;
+}
+
+export interface IndexCodePayload {
+  name: string;
+  code: string;
 }
 
 /**
@@ -265,10 +274,6 @@ export const useCreateReimbursementRequestComment = (reimbursementRequestId: str
     }
   );
 };
-
-export interface IndexCodePayload {
-  name: string;
-}
 
 export interface ReimbursementRequestProjectDataPayload {
   projectId: string;
@@ -385,6 +390,16 @@ export const useEditReimbursementRequest = (reimbursementRequestId: string) => {
   );
 };
 
+export const useAssignMemberToRR = (reimbursementRequestId: string) => {
+  return useMutation<ReimbursementRequest, Error, { assigneeId: string }>(
+    ['reimbursement-requests', 'edit'],
+    async (payload: { assigneeId: string }) => {
+      const { data } = await assignMemberToRR(reimbursementRequestId, payload);
+      return data;
+    }
+  );
+};
+
 /**
  * Custom react hook to get all account codes
  *
@@ -398,11 +413,21 @@ export const useGetAllAccountCodes = () => {
 };
 
 /**
- * Custom React Hook to get the reimbursement requests for the current user
+ * Custom React Hook to get the reimbursement requests created by the current user
  */
 export const useCurrentUserReimbursementRequests = () => {
   return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user'], async () => {
     const { data } = await getCurrentUserReimbursementRequests();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get the reimbursement requests assigned to the current user
+ */
+export const useCurrentUserAssignedReimbursementRequests = () => {
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'assignee'], async () => {
+    const { data } = await getCurrentUserAssignedReimbursementRequests();
     return data;
   });
 };
@@ -553,17 +578,40 @@ export const useDeleteReimbursementRequest = (id: string) => {
 };
 
 /**
- * Custom react hook to approve a reimbursement request for the finance team
+ * Custom react hook to input a reimbursement request in SABO for the finance team
  *
- * @param id id of the reimbursement request to approve
- * @returns the created sabo submitted reimbursement status
+ * @param id id of the reimbursement request to input in SABO
+ * @returns the created pending sabo submission reimbursement status
  */
-export const useApproveReimbursementRequest = (id: string) => {
+export const useInputReimbursementRequestInSabo = (id: string) => {
   const queryClient = useQueryClient();
   return useMutation<ReimbursementStatus, Error>(
     ['reimbursement-requests', 'edit'],
     async () => {
-      const { data } = await approveReimbursementRequest(id);
+      const { data } = await inputReimbursementRequestInSabo(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests', id]);
+      }
+    }
+  );
+};
+
+/**
+ * Custom react hook to mark a reimbursement request as submitted to SABO
+ * This should be called after the user has approved the request in Concur
+ *
+ * @param id id of the reimbursement request to mark as submitted to SABO
+ * @returns the created sabo submitted reimbursement status
+ */
+export const useMarkReimbursementRequestAsSaboSubmitted = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ReimbursementStatus, Error>(
+    ['reimbursement-requests', 'edit'],
+    async () => {
+      const { data } = await markReimbursementRequestAsSaboSubmitted(id);
       return data;
     },
     {
@@ -805,14 +853,11 @@ export const useCreateAccountCode = () => {
  */
 export const useCreateVendor = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, EditVendorPayload>(
-    ['vendors', 'create'],
-    async (vendorData: EditVendorPayload) => {
-      const { data } = await createVendor(vendorData);
-      queryClient.invalidateQueries(['vendors']);
-      return data;
-    }
-  );
+  return useMutation<Vendor, Error, EditVendorPayload>(['vendors', 'create'], async (vendorData: EditVendorPayload) => {
+    const { data } = await createVendor(vendorData);
+    queryClient.invalidateQueries(['vendors']);
+    return data;
+  });
 };
 
 /**
@@ -890,6 +935,26 @@ export const useGetAllIndexCodes = () => {
     const { data } = await getAllIndexCodes();
     return data;
   });
+};
+
+/** Custom React Hook to edit an IndexCode
+ *
+ * @returns the updated IndexCode
+ */
+export const useEditIndexCode = (indexCodeId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<IndexCode, Error, IndexCodePayload>(
+    ['index-codes', 'edit'],
+    async (indexCodePayload: IndexCodePayload) => {
+      const { data } = await editIndexCode(indexCodeId, indexCodePayload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['index-codes']);
+      }
+    }
+  );
 };
 
 /**

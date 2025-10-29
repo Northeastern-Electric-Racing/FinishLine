@@ -85,6 +85,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
       name: string;
       cost: number;
       index: number;
+      id?: string;
     }[]
   >();
 
@@ -104,9 +105,9 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     const productReason = hasWbsNum ? wbsPipe(product.reason as WbsNumber) : (product.reason as OtherProductReason).name;
     if (uniqueWbsElementsWithProducts.has(productReason)) {
       const products = uniqueWbsElementsWithProducts.get(productReason);
-      products?.push({ ...product, index });
+      products?.push({ ...product, index, id: product.id });
     } else {
-      uniqueWbsElementsWithProducts.set(productReason, [{ ...product, index }]);
+      uniqueWbsElementsWithProducts.set(productReason, [{ ...product, index, id: product.id }]);
     }
   });
 
@@ -160,8 +161,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
 
     if (refundSources.length > 1) {
       reimbursementProducts.forEach((product, index) => {
-        setValue(`reimbursementProducts.${index}.refundSources.${0}.amount`, product.refundSources[0].amount / 100);
-        setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, product.refundSources[1].amount / 100);
+        setValue(`reimbursementProducts.${index}.refundSources.${0}.amount`, product.refundSources[0]?.amount ?? 0 / 100);
+        setValue(`reimbursementProducts.${index}.refundSources.${1}.amount`, product.refundSources[1]?.amount ?? 0 / 100);
       });
     }
 
@@ -442,7 +443,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                       )}
                     </Box>
                     {uniqueWbsElementsWithProducts.get(key)?.map((product) => (
-                      <ListItem key={product.index}>
+                      <ListItem key={product.id}>
                         <Box sx={{ display: 'flex' }}>
                           <Box
                             sx={{

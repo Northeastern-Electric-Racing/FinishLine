@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { WorkPackage, WbsNumber } from 'shared';
+import { WorkPackage, WbsNumber, WorkPackageSelection } from 'shared';
 import {
   createSingleWorkPackage,
   deleteWorkPackage,
@@ -15,7 +15,8 @@ import {
   slackUpcomingDeadlines,
   getManyWorkPackages,
   WorkPackageCreateArgs,
-  WorkPackageEditArgs
+  WorkPackageEditArgs,
+  getHomePageWorkPackages
 } from '../apis/work-packages.api';
 
 /**
@@ -128,6 +129,13 @@ export const useGetManyWorkPackages = (wbsNums: WbsNumber[]) => {
 export const useSlackUpcomingDeadlines = () => {
   return useMutation<{ message: string }, Error, Date>(['slack upcoming deadlines'], async (deadline: Date) => {
     const { data } = await slackUpcomingDeadlines(deadline);
+    return data;
+  });
+};
+
+export const useHomeScreenWorkPackages = (selection: WorkPackageSelection) => {
+  return useQuery<WorkPackage[], Error>(['teams', 'work-packages', selection], async () => {
+    const { data } = await getHomePageWorkPackages(selection);
     return data;
   });
 };

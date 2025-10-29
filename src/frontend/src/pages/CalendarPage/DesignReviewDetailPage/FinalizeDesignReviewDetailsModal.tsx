@@ -72,16 +72,21 @@ const FinalizeDesignReviewDetailsModal = ({
   };
 
   const onSubmit = async (data: { docTemplateLink: string; zoomLink?: string; location?: string }) => {
-    finalizeDesignReview({ ...data, meetingType });
+    finalizeDesignReview({ ...data, zoomLink: data.zoomLink ? data.zoomLink : undefined, meetingType });
     setOpen(false);
   };
 
   useEffect(() => {
-    if (userScheduleSettings && !designReview.zoomLink) {
+    if (userScheduleSettings && designReview.isOnline && !designReview.zoomLink) {
       reset({
         docTemplateLink: designReview.docTemplateLink ?? '',
         zoomLink: userScheduleSettings.personalZoomLink ?? '',
         location: designReview.location ?? undefined
+      });
+    }
+    if (designReview.zoomLink === '' && !designReview.isOnline) {
+      reset({
+        zoomLink: undefined
       });
     }
   }, [userScheduleSettings, designReview, reset]);

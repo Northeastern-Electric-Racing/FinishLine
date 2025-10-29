@@ -1,6 +1,6 @@
 import prisma from '../prisma/prisma';
-import { DescriptionBullet, DescriptionBulletPreview, isLeadership } from 'shared';
-import { Description_Bullet, Prisma, User } from '@prisma/client';
+import { DescriptionBullet, DescriptionBulletPreview, isLeadership, User } from 'shared';
+import { Description_Bullet, Prisma } from '@prisma/client';
 import { HttpException, NotFoundException } from './errors.utils';
 import { ChangeListValue } from './changes.utils';
 import { userHasPermission } from './users.utils';

@@ -1,7 +1,7 @@
-import { Task_Priority, Task_Status, User, Organization } from '@prisma/client';
-import { isAdmin, isUnderWordCount, notGuest, Task, WbsNumber, wbsPipe } from 'shared';
+import { Task_Priority, Task_Status, Organization } from '@prisma/client';
+import { isAdmin, isUnderWordCount, notGuest, Task, TaskCardPreview, WbsNumber, wbsPipe, User } from 'shared';
 import prisma from '../prisma/prisma';
-import taskTransformer from '../transformers/tasks.transformer';
+import taskTransformer, { taskCardPreviewTransformer } from '../transformers/tasks.transformer';
 import {
   NotFoundException,
   AccessDeniedException,
@@ -13,7 +13,7 @@ import { sendSlackTaskAssignedNotificationToUsers } from '../utils/tasks.utils';
 import { getUsers, userHasPermission } from '../utils/users.utils';
 import { wbsNumOf } from '../utils/utils';
 import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
-import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args';
+import { getTaskPreviewQueryArgs, getTaskQueryArgs } from '../prisma-query-args/tasks.query-args';
 import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
 
 export default class TasksService {
@@ -27,6 +27,7 @@ export default class TasksService {
    * @param status the status of the task
    * @param assignees the assignees ids of the task
    * @param organizationId the organization that the user is currently in
+   * @param startDate the start date of the task
    * @param deadline the deadline of the task
    * @returns the id of the successfully created task
    * @throws if the user does not have access to create a task, wbs element does not exist, or wbs element is deleted
@@ -40,6 +41,7 @@ export default class TasksService {
     status: Task_Status,
     assignees: string[],
     organization: Organization,
+    startDate?: Date,
     deadline?: Date
   ): Promise<Task> {
     const requestedWbsElement = await prisma.wBS_Element.findUnique({
@@ -93,6 +95,7 @@ export default class TasksService {
         },
         title,
         notes,
+        startDate,
         deadline,
         priority,
         status,
@@ -127,7 +130,8 @@ export default class TasksService {
     title: string,
     notes: string,
     priority: Task_Priority,
-    deadline: Date
+    startDate?: Date,
+    deadline?: Date
   ) {
     const hasPermission = await userHasPermission(user.userId, organizationId, notGuest);
     if (!hasPermission) throw new AccessDeniedException('Guests cannot edit tasks');
@@ -144,7 +148,7 @@ export default class TasksService {
 
     const updatedTask = await prisma.task.update({
       where: { taskId },
-      data: { title, notes, priority, deadline },
+      data: { title, notes, priority, startDate, deadline },
       ...getTaskQueryArgs(originalTask.wbsElement.organizationId)
     });
     return taskTransformer(updatedTask);
@@ -272,5 +276,39 @@ export default class TasksService {
     });
 
     return deletedTask.taskId;
+  }
+
+  static async getOverdueTasksByTeamLeadership(userId: string, organization: Organization): Promise<TaskCardPreview[]> {
+    const teams = await prisma.team.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        OR: [{ leads: { some: { userId } } }, { headId: userId }],
+        dateArchived: null
+      }
+    });
+
+    const tasks = await prisma.task.findMany({
+      where: {
+        assignees: { some: { userId } },
+        deadline: { lt: new Date() },
+        status: { not: 'DONE' },
+        dateDeleted: null,
+        wbsElement: {
+          organizationId: organization.organizationId,
+          dateDeleted: null,
+          OR: [
+            { project: { teams: { some: { teamId: { in: teams.map((team) => team.teamId) } } } } },
+            {
+              workPackage: {
+                wbsElement: { project: { teams: { some: { teamId: { in: teams.map((team) => team.teamId) } } } } }
+              }
+            }
+          ]
+        }
+      },
+      ...getTaskPreviewQueryArgs(organization.organizationId)
+    });
+
+    return tasks.map(taskCardPreviewTransformer);
   }
 }

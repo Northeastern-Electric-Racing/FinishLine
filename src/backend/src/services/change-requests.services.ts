@@ -14,7 +14,8 @@ import {
   StandardChangeRequest,
   WbsNumber,
   wbsPipe,
-  WorkPackageProposedChangesCreateArgs
+  WorkPackageProposedChangesCreateArgs,
+  User
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -40,7 +41,7 @@ import {
   validateNoUnreviewedOpenOtherReasonCRs,
   validateNoUnreviewedOpenAccountCodeCRs
 } from '../utils/change-requests.utils';
-import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type, Prisma, Organization } from '@prisma/client';
+import { CR_Type, WBS_Element_Status, Scope_CR_Why_Type, Prisma, Organization } from '@prisma/client';
 import { getUserFullName, getUsersWithSettings, userHasPermission } from '../utils/users.utils';
 import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
 import { buildChangeDetail } from '../utils/changes.utils';
@@ -146,7 +147,7 @@ export default class ChangeRequestsService {
             dateReviewed: null
           },
           {
-            NOT: { scopeChangeRequest: null }
+            NOT: [{ scopeChangeRequest: null }, { submitterId: user.userId }]
           }
         ],
         organizationId: organization.organizationId,
@@ -1244,16 +1245,20 @@ export default class ChangeRequestsService {
               descriptionBulletType: { connect: { id: bullet.descriptionBulletType.id } }
             }))
           },
-          lead: {
-            connect: {
-              userId: leadId
+          ...(leadId && {
+            lead: {
+              connect: {
+                userId: leadId
+              }
             }
-          },
-          manager: {
-            connect: {
-              userId: managerId
+          }),
+          ...(managerId && {
+            manager: {
+              connect: {
+                userId: managerId
+              }
             }
-          },
+          }),
           workPackageProposedChanges: {
             create: {
               duration,

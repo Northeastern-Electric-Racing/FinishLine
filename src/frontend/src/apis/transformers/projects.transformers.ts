@@ -3,7 +3,14 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { DescriptionBullet, Link, LinkType, Project, ProjectPreview, RetrospectiveProjectPreview } from 'shared';
+import {
+  DescriptionBullet,
+  Project,
+  ProjectOverview,
+  ProjectGantt,
+  ProjectPreview,
+  RetrospectiveProjectPreview
+} from 'shared';
 import { implementedChangeTransformer } from './change-requests.transformers';
 import { taskTransformer } from './tasks.transformers';
 import { retrospectiveWorkPackageTransformer, workPackageTransformer } from './work-packages.transformers';
@@ -24,33 +31,6 @@ export const descriptionBulletTransformer = (bullet: DescriptionBullet) => {
 };
 
 /**
- * Transforms a link to ensure deep field transformation of date objects.
- *
- * @param link Icoming link object supplied by the HTTP response.
- * @returns Properly transformed link object.
- */
-const linkTransformer = (link: Link) => {
-  return {
-    ...link,
-    dateCreated: new Date(link.dateCreated),
-    linkType: linkTypeTransformer(link.linkType)
-  };
-};
-
-/**
- * Transforms a link type to ensure deep field transformation of date objects.
- *
- * @param linkType Incoming link type to be transformed
- * @returns Properly transformed description bullet
- */
-export const linkTypeTransformer = (linkType: LinkType) => {
-  return {
-    ...linkType,
-    dateCreated: new Date(linkType.dateCreated)
-  };
-};
-
-/**
  * Transforms a project to ensure deep field transformation of date objects.
  *
  * @param project Incoming project object supplied by the HTTP response.
@@ -65,8 +45,7 @@ export const projectTransformer = (project: Project): Project => {
     workPackages: project.workPackages.map(workPackageTransformer),
     descriptionBullets: project.descriptionBullets.map(descriptionBulletTransformer),
     changes: project.changes.map(implementedChangeTransformer),
-    tasks: project.tasks.map(taskTransformer),
-    links: project.links.map(linkTransformer)
+    tasks: project.tasks.map(taskTransformer)
   };
 };
 
@@ -74,10 +53,21 @@ export const retrospectiveProjectPreviewTransformer = (
   project: RetrospectiveProjectPreview
 ): RetrospectiveProjectPreview => {
   return {
-    ...projectPreviewTransformer(project),
+    ...projectGanttTransformer(project),
     originalEndDate: project.originalEndDate ? new Date(project.originalEndDate) : undefined,
     originalStartDate: project.originalStartDate ? new Date(project.originalStartDate) : undefined,
     workPackages: project.workPackages.map(retrospectiveWorkPackageTransformer)
+  };
+};
+
+export const projectGanttTransformer = (project: ProjectGantt): ProjectGantt => {
+  return {
+    ...project,
+    dateCreated: new Date(project.dateCreated),
+    startDate: project.startDate ? new Date(project.startDate) : undefined,
+    endDate: project.endDate ? new Date(project.endDate) : undefined,
+    workPackages: project.workPackages.map(workPackageTransformer),
+    tasks: project.tasks.map(taskTransformer)
   };
 };
 
@@ -87,11 +77,33 @@ export const projectPreviewTransformer = (project: ProjectPreview): ProjectPrevi
     dateCreated: new Date(project.dateCreated),
     startDate: project.startDate ? new Date(project.startDate) : undefined,
     endDate: project.endDate ? new Date(project.endDate) : undefined,
-    workPackages: project.workPackages.map(workPackageTransformer)
+    workPackages: project.workPackages.map((wp) => ({
+      ...wp,
+      dateCreated: new Date(wp.dateCreated),
+      startDate: new Date(wp.startDate),
+      endDate: new Date(wp.endDate)
+    }))
   };
 };
 
-export const projectToProjectPreviewTransformer = (project: Project): ProjectPreview => {
+export const projectOverviewTransformer = (project: ProjectOverview): ProjectOverview => {
+  return {
+    ...project,
+    dateCreated: new Date(project.dateCreated),
+    startDate: project.startDate ? new Date(project.startDate) : undefined,
+    endDate: project.endDate ? new Date(project.endDate) : undefined,
+    workPackages: project.workPackages.map((wp) => ({
+      ...wp,
+      dateCreated: new Date(wp.dateCreated),
+      startDate: new Date(wp.startDate),
+      endDate: new Date(wp.endDate)
+    })),
+    links: project.links,
+    tasks: project.tasks.map(taskTransformer)
+  };
+};
+
+export const projectToProjectPreviewTransformer = (project: Project): ProjectGantt => {
   return {
     ...project
   };
