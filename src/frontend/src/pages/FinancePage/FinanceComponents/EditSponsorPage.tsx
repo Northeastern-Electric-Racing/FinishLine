@@ -42,7 +42,7 @@ const EditSponsorPage = ({ showPage, handleClose, sponsor }: EditSponsorPageProp
       joinDate: sponsor.joinDate,
       activeYears: sponsor.activeYears,
       sponsorTierId: sponsor.tier.sponsorTierId,
-      vendorContact: sponsor.vendorContact,
+      sponsorContact: sponsor.sponsorContact,
       taxExempt: sponsor.taxExempt,
       discountCode: sponsor.discountCode ?? undefined,
       sponsorTasks: defaultSponsorTasks

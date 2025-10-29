@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { Rule, RuleCompletion } from 'shared';
+import { Rule, RuleCompletion, ProjectRule } from 'shared';
 import { RuleQueryArgs } from '../prisma-query-args/rules.query-args';
 import { userTransformer } from './user.transformer';
 
@@ -42,5 +42,15 @@ export const ruleTransformer = (rule: Prisma.RuleGetPayload<RuleQueryArgs>): Rul
         note: history.note
       }))
     }))
+  };
+};
+
+export const projectRuleTransformer = (projectRule: any): ProjectRule => {
+  return {
+    projectRuleId: projectRule.projectRuleId,
+    rule: projectRule.rule,
+    projectId: projectRule.projectId,
+    currentStatus: projectRule.currentStatus,
+    statusHistory: projectRule.statusHistory
   };
 };

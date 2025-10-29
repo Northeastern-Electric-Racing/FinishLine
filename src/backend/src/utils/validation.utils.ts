@@ -236,7 +236,8 @@ export const partPopupValidators = [
   body('description').optional().isString()
 ];
 
-export const startEndDateValidators = [
+export const financeDashboardFilterValidators = [
   nonEmptyString(query('startDate')).optional(),
-  nonEmptyString(query('endDate')).optional()
+  nonEmptyString(query('endDate')).optional(),
+  nonEmptyString(query('carNumber')).optional()
 ];

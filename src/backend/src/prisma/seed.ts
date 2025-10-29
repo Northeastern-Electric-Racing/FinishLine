@@ -15,7 +15,8 @@ import {
   Task_Priority,
   Task_Status,
   Team,
-  Part_Tag
+  Part_Tag,
+  Prisma
 } from '@prisma/client';
 import { createUser, dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
@@ -27,7 +28,6 @@ import {
   RoleEnum,
   SpecialPermission,
   StandardChangeRequest,
-  User,
   WbsElementStatus,
   WorkPackageStage
 } from 'shared';
@@ -50,6 +50,9 @@ import AnnouncementService from '../services/announcement.services';
 import OnboardingServices from '../services/onboarding.services';
 import { dbSeedAllParts, dbSeedAllPartTags } from './seed-data/parts.seed';
 import FinanceServices from '../services/finance.services';
+import { ruleSeedData } from './seed-data/rules.seed';
+import RulesService from '../services/rules.services';
+import { seedRulesetType } from './seed-data/rules.seed';
 
 const prisma = new PrismaClient();
 
@@ -790,24 +793,29 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /**
+   * Ruleset Types
+   */
+
+  /** FSAE ruleset type */
+  const rulesetTypeFSAE = await seedRulesetType(joeShmoe, 'FSAE', ner);
+
+  /** FHE ruleset type */
+  const rulesetTypeFHE = await seedRulesetType(joeBlow, 'FHE', ner);
+
+  /**
    * Graphs
    */
 
-  /** Graph 1 */
-  const graph1 = await seedGraph(
-    new Date('12/12/2024'),
-    new Date('12/12/2027'),
-    'new graph',
-    Graph_Type.PROJECT_BUDGET_BY_DIVISION,
-    Graph_Display_Type.BAR,
-    Measure.SUM,
-    thomasEmrax,
-    ner
-  );
-
-  /**
-   * Graph Collection 1
-   */
+  const graph1 = await prisma.graph.create({
+    data: {
+      title: 'graph1',
+      graphType: Graph_Type.CHANGE_REQUESTS_BY_DIVISION,
+      displayGraphType: Graph_Display_Type.BAR,
+      measure: Measure.SUM,
+      userCreatedId: thomasEmrax.userId,
+      organizationId: ner.organizationId
+    }
+  });
   const graph2 = await prisma.graph.create({
     data: {
       title: 'graph2',
@@ -822,9 +830,8 @@ const performSeed: () => Promise<void> = async () => {
   const graphCollection1 = await prisma.graph_Collection.create({
     data: {
       title: 'Graph Collection 1',
-      viewPermissions: [SpecialPermission.FINANCE_ONLY],
       graphs: {
-        connect: [{ id: graph2.id }]
+        connect: [{ id: graph2.id }, { id: graph1.id }]
       },
       userCreatedId: thomasEmrax.userId,
       organizationId: ner.organizationId
@@ -3031,6 +3038,35 @@ const performSeed: () => Promise<void> = async () => {
     }
   });
 
+  /**
+   * Rules
+   */
+
+  // ruleset types
+  const fsaeRulesetType = await prisma.ruleset_Type.create({
+    data: ruleSeedData.rulesetType1(batman.userId)
+  });
+
+  // rulesets
+  const ruleset1 = await prisma.ruleset.create({
+    data: ruleSeedData.ruleset1(fergus.carId, batman.userId, fsaeRulesetType.rulesetTypeId)
+  });
+
+  // rules
+  const ruleT = await prisma.rule.create({ data: ruleSeedData.topLevelRule(ruleset1.rulesetId, batman.userId) });
+  const ruleT2 = await prisma.rule.create({
+    data: ruleSeedData.secondLevelRule(ruleset1.rulesetId, batman.userId, ruleT.ruleId)
+  });
+  const ruleT21 = await prisma.rule.create({
+    data: ruleSeedData.thirdLevelRule(ruleset1.rulesetId, batman.userId, ruleT2.ruleId)
+  });
+  const ruleT211 = await prisma.rule.create({
+    data: ruleSeedData.leafRule(ruleset1.rulesetId, batman.userId, ruleT21.ruleId)
+  });
+
+  // project rules
+  await RulesService.createProjectRule(batman, ner, ruleT211.ruleId, project1Id);
+
   const goldSponsorTier = await FinanceServices.createSponsorTier(thomasEmrax, 'Gold', ner, '#9F9156', 3000);
   await FinanceServices.createSponsorTier(thomasEmrax, 'Silver', ner, '#C0C0C0', 200);
   await FinanceServices.createSponsorTier(thomasEmrax, 'Bronze', ner, '#CD7F32', 10);
@@ -3151,6 +3187,12 @@ const performSeed: () => Promise<void> = async () => {
       ruleContent: 'The smaller track width must be no less than 75% of the wheelbase',
       rulesetId: fsae2025Ruleset.rulesetId,
       parentRuleId: vehicleConfigRule.ruleId,
+      createdByUserId: thomasEmrax.userId
+    }
+  });
+  const rulesetType = await prisma.ruleset_Type.create({
+    data: {
+      name: 'FSAE',
       createdByUserId: thomasEmrax.userId
     }
   });
@@ -3430,6 +3472,30 @@ const performSeed: () => Promise<void> = async () => {
       rulesetId: fsae2024Ruleset.rulesetId,
       parentRuleId: tech2024Rule.ruleId,
       createdByUserId: thomasEmrax.userId
+    }
+  });
+  
+  const ruleset = await prisma.ruleset.create({
+    data: {
+      name: 'FSAE Rules 2025',
+      fileId: 'fsae-rules-2025',
+      active: true,
+      dateCreated: new Date('2025-01-01T10:00:00Z'),
+      rulesetTypeId: rulesetType.rulesetTypeId,
+      createdByUserId: thomasEmrax.userId,
+      carId: fergus.carId
+    }
+  });
+
+  await prisma.rule.create({
+    data: {
+      ruleCode: 'T2.1.1',
+      ruleContent:
+        'The vehicle must be open-wheeled and open-cockpit (a formula style body) with four (4) wheels that are not in a straight line.',
+      imageFileIds: [],
+      dateCreated: new Date('2025-09-01T10:00:00Z'),
+      ruleset: { connect: { rulesetId: ruleset.rulesetId } },
+      createdBy: { connect: { userId: thomasEmrax.userId } }
     }
   });
 };

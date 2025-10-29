@@ -165,3 +165,4 @@ export type ExceptionObjectNames =
   | 'Ruleset'
   | 'Parent Rule'
   | 'Referenced Rule';
+  | 'Rule';

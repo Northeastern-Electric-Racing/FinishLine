@@ -1,7 +1,7 @@
 import express from 'express';
 import RulesController from '../controllers/rules.controllers';
-import { body } from 'express-validator';
 import { nonEmptyString, validateInputs } from '../utils/validation.utils';
+import { body } from 'express-validator';
 
 const rulesRouter = express.Router();
 
@@ -17,6 +17,18 @@ rulesRouter.post(
   body('imageFileIds.*').optional().isString(),
   validateInputs,
   RulesController.createRule
+);
+
+rulesRouter.post('/rulesetType/create', nonEmptyString(body('name')), validateInputs, RulesController.createRulesetType);
+
+rulesRouter.post('/rule/:ruleId/delete', RulesController.deleteRule);
+
+rulesRouter.post(
+  '/projectRule/create',
+  nonEmptyString(body('ruleId')),
+  nonEmptyString(body('projectId')),
+  validateInputs,
+  RulesController.createProjectRule
 );
 
 export default rulesRouter;
