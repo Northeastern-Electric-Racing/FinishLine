@@ -43,7 +43,7 @@ describe('Create Rules Tests', () => {
         }
       }
     });
-    carId = car.carId;
+    ({ carId } = car);
 
     const rulesetType = await prisma.ruleset_Type.create({
       data: {
@@ -62,7 +62,7 @@ describe('Create Rules Tests', () => {
         createdBy: { connect: { userId: batman.userId } }
       }
     });
-    rulesetId = ruleset.rulesetId;
+    ({ rulesetId } = ruleset);
   });
 
   afterEach(async () => {

@@ -164,5 +164,5 @@ export type ExceptionObjectNames =
   | 'Reimbursement Request Comment'
   | 'Ruleset'
   | 'Parent Rule'
-  | 'Referenced Rule';
+  | 'Referenced Rule'
   | 'Rule';
