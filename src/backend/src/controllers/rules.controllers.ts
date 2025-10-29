@@ -23,7 +23,7 @@ export default class RulesController {
       next(error);
     }
   }
-  
+
   static async deleteRule(req: Request, res: Response, next: NextFunction) {
     try {
       const { ruleId } = req.params;

@@ -3467,7 +3467,7 @@ const performSeed: () => Promise<void> = async () => {
       createdByUserId: thomasEmrax.userId
     }
   });
-  
+
   const ruleset = await prisma.ruleset.create({
     data: {
       name: 'FSAE Rules 2025',

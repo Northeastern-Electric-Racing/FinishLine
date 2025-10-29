@@ -14,8 +14,7 @@ import { ruleTransformer, projectRuleTransformer } from '../transformers/rules.t
 import { getRuleQueryArgs, getProjectRuleQueryArgs } from '../prisma-query-args/rules.query-args';
 
 export default class RulesService {
-  
-    /**
+  /**
    * Creates a new rule in the database
    *
    * @param user The user creating the rule, must be a member or above
@@ -138,7 +137,7 @@ export default class RulesService {
 
     return ruleTransformer(rule);
   }
-  
+
   /**
    * Creates new ruleset type with the given information
    * @param submitter a user who is making this request
