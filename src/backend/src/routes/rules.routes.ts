@@ -17,7 +17,7 @@ rulesRouter.post(
 
 rulesRouter.post(
   '/projectRule/:projectRuleId/editStatus',
-  nonEmptyString(body('status')),
+  nonEmptyString(body('newStatus')),
   validateInputs,
   RulesController.editProjectRuleStatus
 );

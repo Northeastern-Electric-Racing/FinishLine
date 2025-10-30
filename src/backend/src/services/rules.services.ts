@@ -116,6 +116,11 @@ export default class RulesService {
     projectRuleId: string,
     newStatus: Rule_Completion
   ): Promise<ProjectRule> {
+    // Ensure new satus is a valid Rule_Completion value
+    if (!Object.values(Rule_Completion).includes(newStatus as Rule_Completion)) {
+      throw new HttpException(400, `status must be one of: ${Object.values(Rule_Completion).join(', ')}`);
+    }
+
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership))) {
       throw new AccessDeniedException('You do not have permissions to update a project rule status');
     }
