@@ -204,7 +204,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Jay Jung', color: '##344739' },
     { name: 'Elton Yu', color: '#f202a2' },
     { name: 'Will Anderson', color: '#ebb145' },
-    { name: 'Alex Park', color: '#CCCCFF', sx: { textShadow: '0 0 2px rgba(0,0,0), 0 0 20px rgba(220,220,220,1)' } },
+    { name: 'Alex Park', color: '#CCCCFF' },
     {
       name: 'Yipeng (Andrew) Wang',
       color: 'transparent',
