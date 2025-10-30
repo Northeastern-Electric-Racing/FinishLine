@@ -299,7 +299,14 @@ const CreditsPage: React.FC = () => {
           '100%': { backgroundPosition: '0% 200%' }
         }
       }
-    }
+    },
+    { 
+      name: 'John Cassidy', 
+      color: '#8378ffff',
+      sx: {
+        textShadow: '0px 0px 10px rgba(195, 165, 193, 1)',
+      }
+    },
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
