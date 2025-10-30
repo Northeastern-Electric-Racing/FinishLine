@@ -15,7 +15,8 @@ import {
   Task_Priority,
   Task_Status,
   Team,
-  Part_Tag
+  Part_Tag,
+  Prisma
 } from '@prisma/client';
 import { createUser, dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
@@ -805,21 +806,16 @@ const performSeed: () => Promise<void> = async () => {
    * Graphs
    */
 
-  /** Graph 1 */
-  const graph1 = await seedGraph(
-    new Date('12/12/2024'),
-    new Date('12/12/2027'),
-    'new graph',
-    Graph_Type.PROJECT_BUDGET_BY_DIVISION,
-    Graph_Display_Type.BAR,
-    Measure.SUM,
-    thomasEmrax,
-    ner
-  );
-
-  /**
-   * Graph Collection 1
-   */
+  const graph1 = await prisma.graph.create({
+    data: {
+      title: 'graph1',
+      graphType: Graph_Type.CHANGE_REQUESTS_BY_DIVISION,
+      displayGraphType: Graph_Display_Type.BAR,
+      measure: Measure.SUM,
+      userCreatedId: thomasEmrax.userId,
+      organizationId: ner.organizationId
+    }
+  });
   const graph2 = await prisma.graph.create({
     data: {
       title: 'graph2',
@@ -834,9 +830,8 @@ const performSeed: () => Promise<void> = async () => {
   const graphCollection1 = await prisma.graph_Collection.create({
     data: {
       title: 'Graph Collection 1',
-      viewPermissions: [SpecialPermission.FINANCE_ONLY],
       graphs: {
-        connect: [{ id: graph2.id }]
+        connect: [{ id: graph2.id }, { id: graph1.id }]
       },
       userCreatedId: thomasEmrax.userId,
       organizationId: ner.organizationId
@@ -3100,6 +3095,37 @@ const performSeed: () => Promise<void> = async () => {
     new Date(7, 5, 25),
     thomasEmrax.userId
   );
+
+  const rulesetType = await prisma.ruleset_Type.create({
+    data: {
+      name: 'FSAE',
+      createdByUserId: thomasEmrax.userId
+    }
+  });
+
+  const ruleset = await prisma.ruleset.create({
+    data: {
+      name: 'FSAE Rules 2025',
+      fileId: 'fsae-rules-2025',
+      active: true,
+      dateCreated: new Date('2025-01-01T10:00:00Z'),
+      rulesetTypeId: rulesetType.rulesetTypeId,
+      createdByUserId: thomasEmrax.userId,
+      carId: fergus.carId
+    }
+  });
+
+  await prisma.rule.create({
+    data: {
+      ruleCode: 'T2.1.1',
+      ruleContent:
+        'The vehicle must be open-wheeled and open-cockpit (a formula style body) with four (4) wheels that are not in a straight line.',
+      imageFileIds: [],
+      dateCreated: new Date('2025-09-01T10:00:00Z'),
+      ruleset: { connect: { rulesetId: ruleset.rulesetId } },
+      createdBy: { connect: { userId: thomasEmrax.userId } }
+    }
+  });
 };
 
 performSeed()

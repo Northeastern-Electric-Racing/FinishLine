@@ -4,7 +4,7 @@ import projectTransformer, {
   retrospectiveProjectPreviewTransformer
 } from '../transformers/projects.transformer';
 import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
-import { ProjectPreview, RetrospectiveProjectPreview } from 'shared';
+import { ProjectGantt, RetrospectiveProjectPreview } from 'shared';
 
 export default class RetrospectiveService {
   static async getRetrospectiveTimelines(
@@ -85,7 +85,7 @@ export default class RetrospectiveService {
     return retroProjects.map(retrospectiveProjectPreviewTransformer);
   }
 
-  static async getRetrospectiveBudgets(organizationId: string): Promise<ProjectPreview[]> {
+  static async getRetrospectiveBudgets(organizationId: string): Promise<ProjectGantt[]> {
     const projects = await prisma.project.findMany({
       where: { wbsElement: { organizationId } },
       ...getProjectQueryArgs(organizationId)

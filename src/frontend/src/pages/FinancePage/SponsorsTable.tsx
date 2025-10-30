@@ -90,7 +90,7 @@ const SponsorsTable = () => {
           borderBottom: 'none'
         }}
       >
-        <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.25rem' }}>{sponsor.vendorContact}</Typography>
+        <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.25rem' }}>{sponsor.sponsorContact}</Typography>
       </TableCell>
 
       <TableCell
