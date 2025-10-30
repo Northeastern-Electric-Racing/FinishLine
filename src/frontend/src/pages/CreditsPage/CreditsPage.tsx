@@ -204,7 +204,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Jay Jung', color: '##344739' },
     { name: 'Elton Yu', color: '#f202a2' },
     { name: 'Will Anderson', color: '#ebb145' },
-    { name: 'Alex Park', color: '#CCCCFF' },
+    { name: 'Alex Park', color: '#CCCCFF', sx: { textShadow: '0 0 2px rgba(0,0,0), 0 0 20px rgba(220,220,220,1)' } },
     {
       name: 'Yipeng (Andrew) Wang',
       color: 'transparent',
@@ -299,7 +299,8 @@ const CreditsPage: React.FC = () => {
           '100%': { backgroundPosition: '0% 200%' }
         }
       }
-    }
+    },
+    { name: 'Richard Feng', color: '#FFFF', sx: { textShadow: '0 0 2px rgba(0,26,255), 0 0 5px rgba(255,255,255)' } }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
