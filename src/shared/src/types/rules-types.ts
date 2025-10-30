@@ -37,18 +37,8 @@ export interface Rule {
   ruleCode: string;
   ruleContent: string;
   imageFileIds: string[];
-  ruleset: {
-    rulesetId: string;
-    name: string;
-  };
-  parentRule?: {
-    ruleId: string;
-    ruleCode: string;
-  };
   subRuleIds: string[];
-  referencedRules: { ruleId: string; ruleCode: string }[];
-  referencedBy: { ruleId: string; ruleCode: string }[];
-  projects: ProjectRule[];
+  referencedRules: { ruleId: string }[];
 }
 
 export interface RuleStatusChange {

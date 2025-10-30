@@ -1222,6 +1222,7 @@ model Organization {
   sponsors                 Sponsor[]
   sponsorTiers             Sponsor_Tier[]
   indexCodes               Index_Code[]
+  ruleset_types            Ruleset_Type[]
 }
 
 model FrequentlyAskedQuestion {
@@ -1560,27 +1561,32 @@ model Reimbursement_Request_Comment {
 }
 
 model Ruleset_Type {
-  rulesetTypeId   String    @id @default(uuid())
+  rulesetTypeId   String       @id @default(uuid())
   name            String
-  lastUpdated     DateTime  @updatedAt
-  revisionFiles   Ruleset[] @relation(name: "rulesetFileType")
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [organizationId])
+  lastUpdated     DateTime     @updatedAt
+  revisionFiles   Ruleset[]    @relation(name: "rulesetFileType")
+  dateCreated     DateTime     @default(now())
+  dateDeleted     DateTime?
   createdByUserId String
-  createdBy       User      @relation(name: "rulesetTypeCreator", fields: [createdByUserId], references: [userId])
+  createdBy       User         @relation(name: "rulesetTypeCreator", fields: [createdByUserId], references: [userId])
   deletedByUserId String?
-  deletedBy       User?     @relation(name: "rulesetTypeDeleter", fields: [deletedByUserId], references: [userId])
+  deletedBy       User?        @relation(name: "rulesetTypeDeleter", fields: [deletedByUserId], references: [userId])
 }
 
 model Ruleset {
   fileId          String
   rulesetId       String       @id @default(uuid())
   name            String
-  dateCreated     DateTime     @default(now())
   active          Boolean
   rules           Rule[]
   rulesetTypeId   String
   rulesetType     Ruleset_Type @relation(name: "rulesetFileType", fields: [rulesetTypeId], references: [rulesetTypeId])
   carId           String
   car             Car          @relation(name: "rulesetCar", fields: [carId], references: [carId])
+  dateCreated     DateTime     @default(now())
+  dateDeleted     DateTime?
   createdByUserId String
   createdBy       User         @relation(name: "rulesetCreator", fields: [createdByUserId], references: [userId])
   deletedByUserId String?
