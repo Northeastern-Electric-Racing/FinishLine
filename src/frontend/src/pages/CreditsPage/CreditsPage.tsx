@@ -298,9 +298,9 @@ const CreditsPage: React.FC = () => {
           '0%': { backgroundPosition: '400% 200%' },
           '100%': { backgroundPosition: '0% 200%' }
         }
-      }
+      }   
     },
-    { 
+    {
       name: 'Samuel Shrestha', 
       color: '#be0000',
       sx: {
@@ -311,7 +311,7 @@ const CreditsPage: React.FC = () => {
           '50%': { textShadow: '0 0 10px rgba(190, 0, 0, 1), 0 0 22px rgba(190, 0, 0, 0.95)' },
           '100%': { textShadow: '0 0 4px rgba(190, 0, 0, 0.7), 0 0 10px rgba(190, 0, 0, 0.4)' } 
         }
-      } 
+      }
     }
   ];
 
