@@ -359,7 +359,7 @@ export default class CalendarService {
     );
 
     const computeEndDate = (initial: Date, recurrenceNumber: number) => {
-      const weeks = Math.max(1, recurrenceNumber ?? 1);
+      const weeks = Math.max(1, recurrenceNumber ?? 0);
       return new Date(initial.getTime() + weeks * 7 * 24 * 60 * 60 * 1000);
     };
 
