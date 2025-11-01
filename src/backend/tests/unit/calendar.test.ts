@@ -424,13 +424,22 @@ describe('Calendar Tests', () => {
       //Check that the machinery original shop is not the new shop before editing
       expect(machinery.shops[0].shop.shopId).not.toBe(newShop.shopId);
 
+      // Get the original shop ID to pass to editMachinery
+      const [originalShopMachinery] = machinery.shops;
+      const {
+        shop: { shopId: originalShopId },
+        shopMachineryId
+      } = originalShopMachinery;
+
       const result = await CalendarService.editMachinery(
         adminUser,
         machinery.machineryId,
         'Updated Shop to Electronics Lab',
         newShop.shopId,
         5,
-        organization
+        organization,
+        originalShopId,
+        shopMachineryId
       );
 
       expect(result.name).toEqual('Updated Shop to Electronics Lab');

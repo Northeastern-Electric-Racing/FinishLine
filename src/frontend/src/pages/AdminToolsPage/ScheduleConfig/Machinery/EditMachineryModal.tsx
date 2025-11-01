@@ -12,18 +12,30 @@ interface EditMachineryModalProps {
 }
 
 const EditMachineryModal = ({ open, onClose, machinery }: EditMachineryModalProps) => {
+  const shopMachinery = machinery.shops?.[0];
+  const originalShopId = shopMachinery?.shop?.shopId || '';
+  const shopMachineryId = shopMachinery?.shopMachineryId || '';
+
   const { isLoading, isError, error, mutateAsync } = useEditMachinery(machinery.machineryId);
 
   const machineryData: MachineryFormValues = {
-    shopId: machinery.shops?.[0]?.shop?.shopId || '',
+    shopId: originalShopId,
     machineName: machinery.name,
-    quantity: machinery.shops?.[0]?.quantity || 1
+    quantity: shopMachinery?.quantity || 1
   };
 
   if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading) return <LoadingIndicator />;
 
-  return <MachineryFormModal open={open} onClose={onClose} onSubmit={mutateAsync} initialValues={machineryData} />;
+  const onSubmit = async (data: { shopId: string; machineName: string; quantity: number }) => {
+    return await mutateAsync({
+      ...data,
+      originalShopId,
+      shopMachineryId
+    });
+  };
+
+  return <MachineryFormModal open={open} onClose={onClose} onSubmit={onSubmit} initialValues={machineryData} />;
 };
 
 export default EditMachineryModal;

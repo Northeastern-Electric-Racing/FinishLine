@@ -17,7 +17,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
 
   const [openCreate, setOpenCreate] = useState(false);
   const [openCreateMachinery, setOpenCreateMachinery] = useState(false);
-  const [editMachineryId, setEditMachineryId] = useState<string | null>(null);
+  const [editMachinery, setEditMachinery] = useState<{ machineryId: string; shopId: string } | null>(null);
 
   if (shopsLoading || machinesLoading) return <LoadingIndicator />;
   if (shopsError) return <ErrorPage message={(shopsErrorMsg as Error).message} />;
@@ -141,43 +141,45 @@ const AdminToolsScheduleConfig: React.FC = () => {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  machines.map((machine) => {
-                    let shopName = '—';
-                    let machineQuantity = '—';
-                    if (machine.shops && machine.shops.length > 0) {
-                      shopName = machine.shops[0].shop.name;
-                      machineQuantity = machine.shops[0].quantity.toString();
-                    }
+                  machines.flatMap(
+                    (machine) =>
+                      machine.shops?.map((shopMachinery) => (
+                        <TableRow key={`${machine.machineryId}-${shopMachinery.shopMachineryId}`} hover>
+                          <TableCell>{machine.name}</TableCell>
+                          <TableCell sx={{ whiteSpace: 'pre-wrap' }}>{shopMachinery.shop.name}</TableCell>
+                          <TableCell sx={{ whiteSpace: 'pre-wrap' }} align="center">
+                            {shopMachinery.quantity.toString()}
+                          </TableCell>
+                          <TableCell align="center">
+                            <Box display="flex" gap={1} justifyContent="center">
+                              <Tooltip title="Edit" arrow>
+                                <span>
+                                  <IconButton
+                                    size="small"
+                                    onClick={() =>
+                                      setEditMachinery({
+                                        machineryId: machine.machineryId,
+                                        shopId: shopMachinery.shop.shopId
+                                      })
+                                    }
+                                  >
+                                    <EditIcon fontSize="small" />
+                                  </IconButton>
+                                </span>
+                              </Tooltip>
 
-                    return (
-                      <TableRow key={machine.machineryId} hover>
-                        <TableCell>{machine.name}</TableCell>
-                        <TableCell sx={{ whiteSpace: 'pre-wrap' }}>{shopName}</TableCell>
-                        <TableCell sx={{ whiteSpace: 'pre-wrap' }} align="center">
-                          {machineQuantity}
-                        </TableCell>
-                        <TableCell align="center">
-                          <Box display="flex" gap={1} justifyContent="center">
-                            <Tooltip title="Edit" arrow>
-                              <span>
-                                <IconButton size="small" onClick={() => setEditMachineryId(machine.machineryId)}>
-                                  <EditIcon fontSize="small" />
-                                </IconButton>
-                              </span>
-                            </Tooltip>
-
-                            <Tooltip title="Delete" arrow>
-                              <span>
-                                <IconButton size="small" color="error" disabled aria-label="delete machine">
-                                  <DeleteIcon fontSize="small" />
-                                </IconButton>
-                              </span>
-                            </Tooltip>
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
+                              <Tooltip title="Delete" arrow>
+                                <span>
+                                  <IconButton size="small" color="error" disabled aria-label="delete machine">
+                                    <DeleteIcon fontSize="small" />
+                                  </IconButton>
+                                </span>
+                              </Tooltip>
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+                      )) || []
+                  )
                 )}
               </TableBody>
             </Table>
@@ -200,13 +202,22 @@ const AdminToolsScheduleConfig: React.FC = () => {
       <CreateMachineryModal open={openCreateMachinery} onClose={() => setOpenCreateMachinery(false)} />
 
       {/* Edit Machine Modal */}
-      {editMachineryId &&
+      {editMachinery &&
         machines &&
         (() => {
-          const selectedMachine = machines.find((m) => m.machineryId === editMachineryId);
+          const selectedMachine = machines.find((m) => m.machineryId === editMachinery.machineryId);
           if (!selectedMachine) return null;
 
-          return <EditMachineryModal open={true} onClose={() => setEditMachineryId(null)} machinery={selectedMachine} />;
+          const selectedShopMachinery = selectedMachine.shops?.find((sm) => sm.shop.shopId === editMachinery.shopId);
+
+          if (!selectedShopMachinery) return null;
+
+          const machineryForEdit: typeof selectedMachine = {
+            ...selectedMachine,
+            shops: [selectedShopMachinery]
+          };
+
+          return <EditMachineryModal open={true} onClose={() => setEditMachinery(null)} machinery={machineryForEdit} />;
         })()}
     </Box>
   );

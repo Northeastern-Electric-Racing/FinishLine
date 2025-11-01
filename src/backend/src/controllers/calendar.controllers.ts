@@ -61,7 +61,7 @@ export default class CalendarController {
   static async editMachinery(req: Request, res: Response, next: NextFunction) {
     try {
       const { machineryId } = req.params;
-      const { name, shopId, quantity } = req.body;
+      const { name, shopId, quantity, originalShopId, shopMachineryId } = req.body;
 
       const machinery = await CalendarService.editMachinery(
         req.currentUser,
@@ -69,7 +69,9 @@ export default class CalendarController {
         name,
         shopId,
         quantity,
-        req.organization
+        req.organization,
+        originalShopId,
+        shopMachineryId
       );
       res.status(200).json(machinery);
     } catch (error: unknown) {

@@ -37,6 +37,8 @@ export const postEditMachinery = async (payload: {
   name: string;
   shopId: string;
   quantity: number;
+  originalShopId: string;
+  shopMachineryId: string;
 }) => {
   const { machineryId, ...body } = payload;
   const { data } = await axios.post<Machinery>(apiUrls.calendarEditMachinery(machineryId), body, {
