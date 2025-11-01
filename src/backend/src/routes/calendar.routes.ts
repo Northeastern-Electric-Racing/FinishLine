@@ -1,5 +1,5 @@
 import express from 'express';
-import { body, param, query } from 'express-validator';
+import { body, param } from 'express-validator';
 import { intMinZero, isDate, nonEmptyString, validateInputs, isDayOfWeek } from '../utils/validation.utils';
 import CalendarController from '../controllers/calendar.controllers';
 
