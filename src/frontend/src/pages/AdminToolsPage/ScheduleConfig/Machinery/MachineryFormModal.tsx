@@ -1,4 +1,4 @@
-import { Box, FormControl, FormHelperText, Typography, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { Box, FormControl, FormHelperText, Typography, MenuItem, Select } from '@mui/material';
 import NERFormModal from '../../../../components/NERFormModal';
 import ReactHookTextField from '../../../../components/ReactHookTextField';
 import { useToast } from '../../../../hooks/toasts.hooks';
@@ -104,7 +104,7 @@ export const MachineryFormModal: React.FC<MachineryFormModalProps> = ({ open, on
             render={({ field: { onChange, value } }) => (
               <Select
                 value={value}
-                onChange={(event: SelectChangeEvent<string>) => onChange(event.target.value)}
+                onChange={(event) => onChange(event.target.value)}
                 size="small"
                 sx={{ height: 56, width: '100%', textAlign: 'left' }}
                 displayEmpty
@@ -135,25 +135,7 @@ export const MachineryFormModal: React.FC<MachineryFormModalProps> = ({ open, on
           <Typography color="#ef4345" variant="h5" sx={{ fontWeight: 'bold', fontSize: 20 }}>
             # of Machines:*
           </Typography>
-          <Controller
-            control={control}
-            name="quantity"
-            render={({ field: { onChange, value } }) => (
-              <Select
-                value={value.toString()}
-                onChange={(event: SelectChangeEvent<string>) => onChange(parseInt(event.target.value))}
-                size="small"
-                sx={{ height: 56, width: '100%', textAlign: 'left' }}
-                displayEmpty
-              >
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                  <MenuItem key={num} value={num.toString()}>
-                    {num}
-                  </MenuItem>
-                ))}
-              </Select>
-            )}
-          />
+          <ReactHookTextField name="quantity" control={control} placeholder="Number of machines" type="number" fullWidth />
           <FormHelperText error>{errors.quantity?.message}</FormHelperText>
         </FormControl>
       </Box>
