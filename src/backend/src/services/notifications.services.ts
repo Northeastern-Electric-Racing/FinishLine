@@ -265,6 +265,13 @@ export default class NotificationsService {
                 type: Reimbursement_Status_Type.SABO_SUBMITTED
               }
             }
+          },
+          {
+            reimbursementStatuses: {
+              none: {
+                type: Reimbursement_Status_Type.DENIED
+              }
+            }
           }
         ]
       },
