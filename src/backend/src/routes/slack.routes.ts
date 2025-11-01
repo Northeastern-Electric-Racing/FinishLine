@@ -1,8 +1,29 @@
-import { createEventAdapter } from '@slack/events-api';
+import { slackApp } from '../integrations/slack';
 import SlackController from '../controllers/slack.controllers';
 
-export const slackEvents = createEventAdapter(process.env.SLACK_SIGNING_SECRET || '');
+// Register message event listener
+slackApp.message(async ({ message, logger }: any) => {
+  try {
+    await SlackController.processMessageEvent(message);
+  } catch (error) {
+    logger.error('Error processing message event:', error);
+    console.error(error);
+  }
+});
 
-slackEvents.on('message', SlackController.processMessageEvent);
+// Register interactive action handler for SABO submission confirmation
+slackApp.action('sabo_submitted_confirmation', async ({ ack, body, logger }: any) => {
+  await ack();
 
-slackEvents.on('error', console.log);
+  try {
+    await SlackController.handleSaboSubmittedAction(body);
+  } catch (error) {
+    logger.error('Error handling sabo_submitted_confirmation action:', error);
+    console.error(error);
+  }
+});
+
+// Error handler
+slackApp.error(async (error: Error) => {
+  console.error('Slack app error:', error);
+});

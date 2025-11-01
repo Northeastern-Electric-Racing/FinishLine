@@ -66,7 +66,83 @@ export interface SlackRichTextBlock {
   usergroup_id?: string;
 }
 
+/**
+ * Represents a Slack interactive payload from a button click
+ */
+export interface SlackInteractivePayload {
+  type: string;
+  user: {
+    id: string;
+    username: string;
+    name: string;
+  };
+  actions: Array<{
+    action_id: string;
+    value: string;
+    type: string;
+  }>;
+  response_url: string;
+}
+
 export default class SlackServices {
+  /**
+   * Handles the Slack button click for marking a reimbursement request as SABO submitted
+   * @param payload the Slack interactive payload
+   * @param organizationId the organization ID
+   */
+  static async handleSaboSubmittedAction(payload: SlackInteractivePayload): Promise<void> {
+    const [action] = payload.actions;
+    if (action.action_id !== 'sabo_submitted_confirmation') {
+      console.log('Ignoring action with id:', action.action_id);
+      return;
+    }
+
+    console.log('Processing sabo_submitted_confirmation action');
+    const { reimbursementRequestId } = JSON.parse(action.value);
+    const slackUserId = payload.user.id;
+
+    console.log('Looking up user with slack ID:', slackUserId);
+    console.log('Reimbursement Request ID:', reimbursementRequestId);
+
+    // Find the user by their slack ID
+    const user = await prisma.user.findFirst({
+      where: {
+        userSettings: {
+          slackId: slackUserId
+        }
+      }
+    });
+
+    if (!user) {
+      console.error('User not found for slack ID:', slackUserId);
+      throw new NotFoundException('User', slackUserId);
+    }
+
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: {
+        reimbursementRequestId
+      },
+      include: {
+        organization: true
+      }
+    });
+
+    if (!reimbursementRequest) {
+      throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+    }
+
+
+    // Import the service dynamically to avoid circular dependencies
+    const ReimbursementRequestService = (await import('./reimbursement-requests.services')).default;
+
+    // Call the service function to mark as SABO submitted
+    await ReimbursementRequestService.markReimbursementRequestAsSaboSubmitted(
+      reimbursementRequestId,
+      user,
+      reimbursementRequest.organization
+    );
+  }
+
   /**
    * Given a slack event representing a message in a channel,
    * make the appropriate announcement change in prisma.

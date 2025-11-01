@@ -16,6 +16,7 @@ import {
   getUsersInChannel,
   reactToMessage,
   replyToMessageInThread,
+  sendEphemeralConfirmation,
   sendMessage
 } from '../integrations/slack';
 import { getUserSlackId, getUserSlackMentionOrName } from './users.utils';
@@ -232,12 +233,20 @@ export const sendSubmittedToSaboNotification = async (threads: SlackMessageThrea
 export const sendPendingSaboSubmissionNotification = async (
   threads: SlackMessageThread[],
   financeUserId: string,
-  pendingSubmissionFromId: string
+  pendingSubmissionFromId: string,
+  reimbursementRequestId: string
 ) => {
   await sendThreadResponse(
     threads,
     `${await getUserSlackMentionOrName(financeUserId)} has added this reimbursement request to Concur. ${await getUserSlackMentionOrName(pendingSubmissionFromId)}, please check your email to approve the request in Concur and mark it as submitted on Finishline.`
   );
+  const userId = await getUserSlackId(financeUserId);
+  if (threads && threads.length !== 0 && userId) {
+    const msgs = threads.map((thread) =>
+      sendEphemeralConfirmation(thread.channelId, thread.timestamp, userId, reimbursementRequestId)
+    );
+    await Promise.all(msgs);
+  }
 };
 
 export const sendSlackDesignReviewConfirmNotification = async (

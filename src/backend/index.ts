@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Router } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { getUserAndOrganization, prodHeaders, requireJwtDev, requireJwtProd } from './src/utils/auth.utils';
@@ -17,7 +17,7 @@ import wbsElementTemplatesRouter from './src/routes/wbs-element-templates.routes
 import carsRouter from './src/routes/cars.routes';
 import organizationRouter from './src/routes/organizations.routes';
 import recruitmentRouter from './src/routes/recruitment.routes';
-import { slackEvents } from './src/routes/slack.routes';
+import { receiver } from './src/integrations/slack';
 import announcementsRouter from './src/routes/announcements.routes';
 import onboardingRouter from './src/routes/onboarding.routes';
 import popUpsRouter from './src/routes/pop-up.routes';
@@ -48,9 +48,11 @@ const options: cors.CorsOptions = {
   allowedHeaders
 };
 
-// so we can listen to slack messages
-// NOTE: must be done before using json
-app.use('/slack', slackEvents.requestListener());
+// Mount Slack Bolt receiver BEFORE other middleware to handle raw body parsing
+// Bolt's receiver handles its own body parsing and request verification
+// The receiver is configured to handle requests at /slack/events
+app.use(receiver.router as unknown as Router);
+console.log('Registered Slack Bolt receiver at /slack/events');
 
 // so that we can use cookies and json
 app.use(cookieParser());

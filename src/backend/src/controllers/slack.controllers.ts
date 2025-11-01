@@ -15,4 +15,41 @@ export default class SlackController {
       console.log(error);
     }
   }
+
+  static async handleSaboSubmittedAction(body: any) {
+    try {
+      // Extract action details from Bolt's BlockAction payload
+      const [action] = body.actions;
+
+      if (action.type !== 'button') {
+        // ignore non-button actions for sab submission confirmation
+        return;
+      }
+
+      const payload = {
+        type: body.type,
+        user: {
+          id: body.user.id,
+          username: body.user.username,
+          name: body.user.name
+        },
+        actions: [
+          {
+            action_id: action.action_id,
+            value: action.value || '',
+            type: action.type
+          }
+        ],
+        response_url: body.response_url
+      };
+
+      // Handle the action using existing service
+      await SlackServices.handleSaboSubmittedAction(payload);
+    } catch (error: unknown) {
+      console.error('Error handling Slack interactive action:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Error details:', errorMessage);
+      throw error; // Re-throw to be handled by Bolt's error handler
+    }
+  }
 }

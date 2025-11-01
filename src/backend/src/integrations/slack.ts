@@ -1,7 +1,19 @@
-import { ChatPostMessageResponse, WebClient } from '@slack/web-api';
+import { App, ExpressReceiver } from '@slack/bolt';
 import { HttpException } from '../utils/errors.utils';
 
-const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
+const receiver = new ExpressReceiver({
+  signingSecret: process.env.SLACK_SIGNING_SECRET || '',
+  endpoints: '/slack/events'
+});
+
+// Initialize the Bolt app
+const slackApp = new App({
+  token: process.env.SLACK_BOT_TOKEN,
+  receiver
+});
+
+// Get the WebClient from the Bolt app
+const slack = slackApp.client;
 
 /**
  * Send a slack message
@@ -18,8 +30,7 @@ export const sendMessage = async (slackId: string, message: string, link?: strin
   const block = generateSlackTextBlock(message, link, linkButtonText);
 
   try {
-    const response: ChatPostMessageResponse = await slack.chat.postMessage({
-      token: SLACK_BOT_TOKEN,
+    const response = await slack.chat.postMessage({
       channel: slackId,
       text: message,
       blocks: [block],
@@ -54,7 +65,6 @@ export const replyToMessageInThread = async (
 
   try {
     await slack.chat.postMessage({
-      token: SLACK_BOT_TOKEN,
       channel: slackId,
       thread_ts: parentTimestamp,
       text: message,
@@ -87,7 +97,6 @@ export const editMessage = async (
 
   try {
     await slack.chat.update({
-      token: SLACK_BOT_TOKEN,
       channel: slackId,
       ts: timestamp,
       text: message,
@@ -110,7 +119,6 @@ export const reactToMessage = async (slackId: string, parentTimestamp: string, e
 
   try {
     await slack.reactions.add({
-      token: SLACK_BOT_TOKEN,
       channel: slackId,
       timestamp: parentTimestamp,
       name: emoji
@@ -230,4 +238,59 @@ export const getWorkspaceId = async () => {
   }
 };
 
+export async function sendEphemeralConfirmation(
+  channelId: string,
+  threadTs: string,
+  userId: string,
+  reimbursementRequestId: string
+) {
+  try {
+    await slack.chat.postEphemeral({
+      channel: channelId,
+      user: userId,
+      thread_ts: threadTs,
+      text: 'Approve the request on concur and then click the button below to mark it as submitted on Finishline.',
+      blocks: [
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: 'Approve the request on concur and then click the button below to mark it as submitted on Finishline.'
+          }
+        },
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: '<https://us2.concursolutions.com/home|*Click here to go to concur*>'
+          }
+        },
+        {
+          type: 'actions',
+          elements: [
+            {
+              type: 'button',
+              text: {
+                type: 'plain_text',
+                text: "✓ I've approved the request on Concur"
+              },
+              style: 'primary',
+              action_id: 'sabo_submitted_confirmation',
+              value: JSON.stringify({
+                reimbursementRequestId
+              })
+            }
+          ]
+        }
+      ]
+    });
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      throw new HttpException(500, `Failed to send slack notifications: ${err.message}`);
+    }
+  }
+}
+
+// Export the slack client, bolt app, and receiver for any direct usage if needed
+export { slack, slackApp, receiver };
 export default slack;

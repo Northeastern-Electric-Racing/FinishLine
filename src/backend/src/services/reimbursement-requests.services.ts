@@ -418,11 +418,25 @@ export default class ReimbursementRequestService {
         totalCost,
         accountCodeId: accountCode.accountCodeId,
         vendorId: vendor.vendorId
+      },
+      include: {
+        notificationSlackThreads: true
       }
     });
 
     //set any deleted receipts with a dateDeleted
     await removeDeletedReceiptPictures(receiptPictures, oldReimbursementRequest.receiptPictures || [], submitter);
+
+    try {
+      await sendPendingSaboSubmissionNotification(
+        updatedReimbursementRequest.notificationSlackThreads,
+        submitter.userId,
+        updatedReimbursementRequest.recipientId,
+        updatedReimbursementRequest.reimbursementRequestId
+      );
+    } catch (e: unknown) {
+      console.error('Error sending pending SABO submission notification:', e);
+    }
 
     return updatedReimbursementRequest;
   }
@@ -1292,7 +1306,8 @@ export default class ReimbursementRequestService {
       await sendPendingSaboSubmissionNotification(
         reimbursementRequest.notificationSlackThreads,
         submitter.userId,
-        reimbursementRequest.recipientId
+        reimbursementRequest.recipientId,
+        reimbursementRequest.reimbursementRequestId
       );
     } catch (e: unknown) {
       console.error('Error sending pending SABO submission notification:', e);
