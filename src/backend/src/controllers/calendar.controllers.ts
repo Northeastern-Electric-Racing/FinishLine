@@ -275,8 +275,7 @@ export default class CalendarController {
   //overall filtering for events
   static async getFilteredEvents(req: Request, res: Response, next: NextFunction) {
     try {
-      const { filterArgs } = req.body;
-      const filteredEvents = await CalendarService.getFilteredEvents(filterArgs, req.organization);
+      const filteredEvents = await CalendarService.getFilteredEvents(req.body, req.organization);
       res.status(200).json(filteredEvents);
     } catch (error: unknown) {
       next(error);
