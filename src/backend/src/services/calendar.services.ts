@@ -549,30 +549,98 @@ export default class CalendarService {
 
     // Use transaction for the update
     const updatedEvent = await prisma.$transaction(async (tx) => {
-      await tx.scheduleSlot.deleteMany({
-        where: {
-          ScheduledEvents: {
-            some: {
-              eventId
-            }
+      // Fetch existing schedule slots and availabilities
+      const [existingSlots, existingAvailabilities] = await Promise.all([
+        tx.scheduleSlot.findMany({
+          where: { ScheduledEvents: { some: { eventId } } },
+          select: {
+            days: true,
+            startTime: true,
+            endTime: true,
+            recurrenceNumber: true,
+            initialDateScheduled: true,
+            allDay: true
           }
-        }
-      });
+        }),
+        tx.availability.findMany({
+          where: { eventId },
+          select: {
+            availability: true,
+            dateSet: true,
+            scheduleSettingsId: true
+          }
+        })
+      ]);
 
-      await tx.availability.deleteMany({
-        where: {
-          event: {
+      // Checks if all schedule slots are the same (ie no changes)
+      const haveDifferentSlots = (a: typeof existingSlots, b: typeof scheduleSlot) => {
+        if (a.length !== b.length) return true;
+        return a.some((oldSlot, idx) => {
+          const newSlot = b[idx];
+          return (
+            oldSlot.days !== newSlot.days ||
+            oldSlot.startTime !== newSlot.startTime ||
+            oldSlot.endTime !== newSlot.endTime ||
+            oldSlot.recurrenceNumber !== newSlot.recurrenceNumber ||
+            oldSlot.initialDateScheduled !== newSlot.initialDateScheduled ||
+            oldSlot.allDay !== newSlot.allDay
+          );
+        });
+      };
+
+      // Checks if all availabilties are the same (ie no changes)
+      const haveDifferentAvailabilities = (
+        a: typeof existingAvailabilities,
+        b: typeof availabilitiesWithScheduleSettings
+      ) => {
+        if (a.length !== b.length) return true;
+        return a.some((oldAvail, idx) => {
+          const newAvail = b[idx];
+          return (
+            oldAvail.scheduleSettingsId !== newAvail.scheduleSettingsId ||
+            oldAvail.availability !== newAvail.availability ||
+            oldAvail.dateSet !== newAvail.dateSet
+          );
+        });
+      };
+
+      if (haveDifferentSlots(existingSlots, scheduleSlot)) {
+        await tx.scheduleSlot.deleteMany({
+          where: { ScheduledEvents: { some: { eventId } } }
+        });
+        await Promise.all(
+          scheduleSlot.map((s) =>
+            tx.scheduleSlot.create({
+              data: {
+                days: s.days,
+                startTime: s.startTime ?? null,
+                endTime: s.endTime ?? null,
+                recurrenceNumber: s.recurrenceNumber,
+                initialDateScheduled: s.initialDateScheduled,
+                allDay: s.allDay,
+                ScheduledEvents: { connect: { eventId } }
+              }
+            })
+          )
+        );
+      }
+
+      if (haveDifferentAvailabilities(existingAvailabilities, availabilitiesWithScheduleSettings)) {
+        await tx.availability.deleteMany({
+          where: { eventId }
+        });
+        await tx.availability.createMany({
+          data: availabilitiesWithScheduleSettings.map((a) => ({
+            ...a,
             eventId
-          }
-        }
-      });
+          }))
+        });
+      }
 
       // Update the event with new data
       return await tx.event.update({
         where: { eventId },
         data: {
-          userCreatedId: submitter.userId,
-          dateCreated: new Date(),
           title,
           eventTypeId,
           members: {
@@ -588,21 +656,6 @@ export default class CalendarService {
             set: workPackageIds.map((workPackageId) => ({ workPackageId }))
           },
           documentIds,
-          scheduledTimes: {
-            create: scheduleSlot.map((s) => ({
-              days: s.days,
-              startTime: s.startTime ?? null,
-              endTime: s.endTime ?? null,
-              recurrenceNumber: s.recurrenceNumber,
-              initialDateScheduled: s.initialDateScheduled,
-              allDay: s.allDay
-            }))
-          },
-          availabilities: {
-            createMany: {
-              data: availabilitiesWithScheduleSettings
-            }
-          },
           approved,
           approvedByUserId,
           location,
@@ -638,7 +691,9 @@ export default class CalendarService {
     if (!event) throw new NotFoundException('Event', eventId);
     if (event.dateDeleted) throw new DeletedException('Event', eventId);
 
-    const hasPermission = await userHasPermission(submitter.userId, organization.organizationId, isAdmin);
+    const hasPermission =
+      (await userHasPermission(submitter.userId, organization.organizationId, isAdmin)) ||
+      submitter.userId === event.userCreatedId;
 
     if (!hasPermission) {
       throw new AccessDeniedException('Only admins can delete events!');
