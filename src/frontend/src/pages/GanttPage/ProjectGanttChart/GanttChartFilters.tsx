@@ -84,6 +84,11 @@ interface GanttChartFiltersProps {
     handler: (event: ChangeEvent<HTMLInputElement>) => void;
     defaultChecked?: boolean;
   }[];
+  hideTasksHandler: {
+    filterLabel: string;
+    handler: (event: ChangeEvent<HTMLInputElement>) => void;
+    defaultChecked?: boolean;
+  }[];
   resetHandler: () => void;
   collapseHandler: () => void;
   expandHandler: () => void;
@@ -94,6 +99,7 @@ const GanttChartFilters = ({
   teamTypeHandlers,
   teamHandlers,
   overdueHandler,
+  hideTasksHandler,
   resetHandler,
   collapseHandler,
   expandHandler
@@ -132,6 +138,20 @@ const GanttChartFilters = ({
         />
         <Typography fontSize={'10px'} sx={{ color: '#ef4345' }}>
           Overdue
+        </Typography>
+        <Checkbox
+          onChange={hideTasksHandler[0].handler}
+          sx={{
+            '&:hover': {
+              backgroundColor: 'transparent'
+            },
+            color: '#ef4345'
+          }}
+          defaultChecked={hideTasksHandler[0].defaultChecked}
+          checked={hideTasksHandler[0].defaultChecked}
+        />
+        <Typography fontSize={'10px'} sx={{ color: '#ef4345' }}>
+          Hide Tasks
         </Typography>
       </Box>
     );

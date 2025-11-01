@@ -151,7 +151,8 @@ export default class UsersService {
           }
         },
         wbsElement: {
-          organizationId: organization.organizationId
+          organizationId: organization.organizationId,
+          dateDeleted: null
         }
       },
       ...getProjectOverviewQueryArgs(organization.organizationId)
