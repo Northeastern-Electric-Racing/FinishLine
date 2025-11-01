@@ -1323,7 +1323,10 @@ describe('Calendar Tests', () => {
         'Weekly team synchronization meeting'
       );
 
-      const result = await CalendarService.getFilteredEvents({}, organization);
+      const result = await CalendarService.getFilteredEvents(
+        { startPeriod: new Date('2020-10-01T09:00:00Z'), endPeriod: new Date('2027-11-01T09:00:00Z') },
+        organization
+      );
       expect(result).toStrictEqual([event1, event2]);
     });
 
@@ -1528,39 +1531,73 @@ describe('Calendar Tests', () => {
         'Weekly team synchronization meeting'
       );
 
-      const result = await CalendarService.getFilteredEvents({ memberIds: [member.userId] }, organization);
+      const result = await CalendarService.getFilteredEvents(
+        {
+          startPeriod: new Date('2020-10-01T09:00:00Z'),
+          endPeriod: new Date('2027-11-01T09:00:00Z'),
+          memberIds: [member.userId]
+        },
+        organization
+      );
       expect(result).toStrictEqual([event1]);
     });
   });
 
   it('fails if memberIds do not exist', async () => {
-    await expect(CalendarService.getFilteredEvents({ memberIds: ['fakeId'] }, organization)).rejects.toThrow(
-      new NotFoundException('User', 'fakeId')
-    );
+    await expect(
+      CalendarService.getFilteredEvents(
+        {
+          startPeriod: new Date('2020-10-01T09:00:00Z'),
+          endPeriod: new Date('2027-11-01T09:00:00Z'),
+          memberIds: ['fakeId']
+        },
+        organization
+      )
+    ).rejects.toThrow(new NotFoundException('User', 'fakeId'));
   });
 
   it('fails if eventTypeIds do not exist', async () => {
-    await expect(CalendarService.getFilteredEvents({ eventTypeIds: ['fakeId'] }, organization)).rejects.toThrow(
-      new NotFoundException('Event Type', 'fakeId')
-    );
+    await expect(
+      CalendarService.getFilteredEvents(
+        {
+          startPeriod: new Date('2020-10-01T09:00:00Z'),
+          endPeriod: new Date('2027-11-01T09:00:00Z'),
+          eventTypeIds: ['fakeId']
+        },
+        organization
+      )
+    ).rejects.toThrow(new NotFoundException('Event Type', 'fakeId'));
   });
 
   it('fails if eventIds do not exist', async () => {
-    await expect(CalendarService.getFilteredEvents({ eventIds: ['fakeId'] }, organization)).rejects.toThrow(
-      new NotFoundException('Event', 'fakeId')
-    );
+    await expect(
+      CalendarService.getFilteredEvents(
+        { startPeriod: new Date('2020-10-01T09:00:00Z'), endPeriod: new Date('2027-11-01T09:00:00Z'), eventIds: ['fakeId'] },
+        organization
+      )
+    ).rejects.toThrow(new NotFoundException('Event', 'fakeId'));
   });
 
   it('fails if calendarIds do not exist', async () => {
-    await expect(CalendarService.getFilteredEvents({ calendarIds: ['fakeId'] }, organization)).rejects.toThrow(
-      new NotFoundException('Calendar', 'fakeId')
-    );
+    await expect(
+      CalendarService.getFilteredEvents(
+        {
+          startPeriod: new Date('2020-10-01T09:00:00Z'),
+          endPeriod: new Date('2027-11-01T09:00:00Z'),
+          calendarIds: ['fakeId']
+        },
+        organization
+      )
+    ).rejects.toThrow(new NotFoundException('Calendar', 'fakeId'));
   });
 
   it('fails if teamIds do not exist', async () => {
-    await expect(CalendarService.getFilteredEvents({ teamIds: ['fakeId'] }, organization)).rejects.toThrow(
-      new NotFoundException('Team', 'fakeId')
-    );
+    await expect(
+      CalendarService.getFilteredEvents(
+        { startPeriod: new Date('2020-10-01T09:00:00Z'), endPeriod: new Date('2027-11-01T09:00:00Z'), teamIds: ['fakeId'] },
+        organization
+      )
+    ).rejects.toThrow(new NotFoundException('Team', 'fakeId'));
   });
 
   describe('Delete Machinery', () => {

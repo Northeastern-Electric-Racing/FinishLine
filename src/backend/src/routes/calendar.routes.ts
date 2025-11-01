@@ -162,48 +162,11 @@ calendarRouter.post(
   body('eventIds').isArray().optional(),
   body('eventIds.*').isString().optional(),
   body('approvalStatus').isBoolean().optional(),
-  isDate(body('startPeriod')).optional(),
-  isDate(body('endPeriod')).optional(),
+  isDate(body('startPeriod')),
+  isDate(body('endPeriod')),
   validateInputs,
   CalendarController.getFilteredEvents
 );
-
-// Example get queries using the base filter service, in case it's easier to use these
-
-// filter via specific ID
-calendarRouter.get(
-  '/events/member/:memberId',
-  nonEmptyString(query('startPeriod')).optional(),
-  nonEmptyString(query('endPeriod')).optional(),
-  validateInputs,
-  CalendarController.getSpecificMembersEvents
-);
-
-calendarRouter.get(
-  '/events/calendar/:calendarId',
-  nonEmptyString(query('startPeriod')).optional(),
-  nonEmptyString(query('endPeriod')).optional(),
-  validateInputs,
-  CalendarController.getEventsFromCalendar
-);
-
-calendarRouter.get('/events/event/:eventId', CalendarController.getSpecificEvent);
-
-// filter just based on time
-calendarRouter.get(
-  '/events/timeframe',
-  nonEmptyString(query('startPeriod')).optional(),
-  nonEmptyString(query('endPeriod')).optional(),
-  validateInputs,
-  CalendarController.getEventsFromTimeframe
-);
-
-// unfiltered
-calendarRouter.get('/events', CalendarController.getAllEvents);
-
-// filtered by approval
-calendarRouter.get('/events/unapproved', CalendarController.getUnapprovedEvents);
-calendarRouter.get('/events/approved', CalendarController.getApprovedEvents);
 
 calendarRouter.get('/calendars', CalendarController.getAllCalendars);
 
