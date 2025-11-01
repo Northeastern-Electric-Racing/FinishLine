@@ -299,6 +299,19 @@ const CreditsPage: React.FC = () => {
           '100%': { backgroundPosition: '0% 200%' }
         }
       }
+    },
+    {
+      name: 'Samuel Shrestha',
+      color: '#be0000',
+      sx: {
+        textShadow: '0 0 6px rgba(190, 0, 0, 0.9), 0 0 14px rgba(190, 0, 0, 0.6)',
+        animation: 'sam-glow 2.6s ease-in-out infinite',
+        '@keyframes sam-glow': {
+          '0%': { textShadow: '0 0 4px rgba(190, 0, 0, 0.7), 0 0 10px rgba(190, 0, 0, 0.4)' },
+          '50%': { textShadow: '0 0 10px rgba(190, 0, 0, 1), 0 0 22px rgba(190, 0, 0, 0.95)' },
+          '100%': { textShadow: '0 0 4px rgba(190, 0, 0, 0.7), 0 0 10px rgba(190, 0, 0, 0.4)' }
+        }
+      }
     }
   ];
 
