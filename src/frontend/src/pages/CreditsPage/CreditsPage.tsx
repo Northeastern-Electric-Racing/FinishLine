@@ -300,6 +300,7 @@ const CreditsPage: React.FC = () => {
         }
       }
     },
+    { name: 'Richard Feng', color: '#FFFF', sx: { textShadow: '0 0 2px rgba(0,26,255), 0 0 5px rgba(255,255,255)' } },
     {
       name: 'Samuel Shrestha',
       color: '#be0000',
