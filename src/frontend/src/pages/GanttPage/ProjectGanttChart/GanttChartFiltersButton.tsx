@@ -16,6 +16,11 @@ interface GanttChartFiltersButtonProps {
     handler: (event: ChangeEvent<HTMLInputElement>) => void;
     defaultChecked?: boolean;
   }[];
+  hideTasksHandler: {
+    filterLabel: string;
+    handler: (event: ChangeEvent<HTMLInputElement>) => void;
+    defaultChecked?: boolean;
+  }[];
   resetHandler: () => void;
   collapseHandler: () => void;
   expandHandler: () => void;
@@ -26,6 +31,7 @@ const GanttChartFiltersButton = ({
   teamTypeHandlers,
   teamHandlers,
   overdueHandler,
+  hideTasksHandler,
   resetHandler,
   collapseHandler,
   expandHandler
@@ -64,6 +70,7 @@ const GanttChartFiltersButton = ({
           teamTypeHandlers={teamTypeHandlers}
           teamHandlers={teamHandlers}
           overdueHandler={overdueHandler}
+          hideTasksHandler={hideTasksHandler}
           resetHandler={resetHandler}
           collapseHandler={collapseHandler}
           expandHandler={expandHandler}

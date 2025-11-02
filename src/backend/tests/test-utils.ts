@@ -123,6 +123,7 @@ export const resetUsers = async () => {
   await prisma.assembly.deleteMany();
   await prisma.team.deleteMany();
   await prisma.user_Secure_Settings.deleteMany();
+  await prisma.receipt.deleteMany();
   await prisma.reimbursement_Product.deleteMany();
   await prisma.reimbursement_Status.deleteMany();
   await prisma.reimbursement_Request_Comment.deleteMany();
@@ -714,6 +715,7 @@ export const createTestTaskWithOrganization = async (user: User, organization?: 
     TaskStatus.IN_PROGRESS,
     [user.userId],
     organization,
+    undefined,
     new Date()
   );
 

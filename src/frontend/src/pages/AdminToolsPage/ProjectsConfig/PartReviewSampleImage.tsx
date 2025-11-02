@@ -5,6 +5,7 @@ import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { MAX_FILE_SIZE } from 'shared';
 
 const PartReviewSampleImage: React.FC = () => {
   const {
@@ -77,16 +78,10 @@ const PartReviewSampleImage: React.FC = () => {
             hidden
             onChange={async (e) => {
               if (e.target.files && e.target.files[0]) {
-                if (e.target.files[0].size > 5 * 1024 * 1024) {
-                  toast.error(`File "${e.target.files[0].name}" exceeds the maximum size limit of 5MB`);
-                  return;
-                }
-                if (!/^[\w.]+$/.test(e.target.files[0].name)) {
-                  toast.error(`File names can only contain letters and numbers`);
-                  return;
-                }
-                if (e.target.files[0].name.length > 20) {
-                  toast.error(`File names cannot be longer than 20 characters`);
+                if (e.target.files[0].size > MAX_FILE_SIZE) {
+                  toast.error(
+                    `File "${e.target.files[0].name}" exceeds the maximum size limit of ${MAX_FILE_SIZE / 1024 / 1024} MB`
+                  );
                   return;
                 }
                 try {
