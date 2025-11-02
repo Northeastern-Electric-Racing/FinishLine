@@ -49,9 +49,9 @@ export default class CalendarController {
 
   static async createMachinery(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, shopId, quantity } = req.body;
+      const { name } = req.body;
 
-      const machinery = await CalendarService.createMachinery(req.currentUser, name, shopId, quantity, req.organization);
+      const machinery = await CalendarService.createMachinery(req.currentUser, name, req.organization);
       res.status(200).json(machinery);
     } catch (error: unknown) {
       next(error);
@@ -61,17 +61,27 @@ export default class CalendarController {
   static async editMachinery(req: Request, res: Response, next: NextFunction) {
     try {
       const { machineryId } = req.params;
-      const { name, shopId, quantity, originalShopId, shopMachineryId } = req.body;
+      const { name } = req.body;
 
-      const machinery = await CalendarService.editMachinery(
+      const machinery = await CalendarService.editMachinery(req.currentUser, machineryId, name, req.organization);
+      res.status(200).json(machinery);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async addMachineryToShop(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { machineryId } = req.params;
+      const { shopId, quantity, originalShopId } = req.body;
+
+      const machinery = await CalendarService.addMachineryToShop(
         req.currentUser,
         machineryId,
-        name,
         shopId,
         quantity,
         req.organization,
-        originalShopId,
-        shopMachineryId
+        originalShopId
       );
       res.status(200).json(machinery);
     } catch (error: unknown) {

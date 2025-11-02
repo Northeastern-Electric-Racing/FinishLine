@@ -18,10 +18,16 @@ export interface MachineryFormValues {
   quantity: number;
 }
 
-const schema = yup.object({
+const createSchema = yup.object({
   shopId: yup.string().required('Shop is required'),
   machineName: yup.string().required('Machine Name is required'),
   quantity: yup.number().required('Quantity is required').min(1, 'Quantity must be at least 1')
+});
+
+const editSchema = yup.object({
+  shopId: yup.string().required('Shop is required'),
+  machineName: yup.string().required('Machine Name is required'),
+  quantity: yup.number().required('Quantity is required').min(0, 'Quantity cannot be negative')
 });
 
 interface MachineryFormModalProps {
@@ -45,7 +51,7 @@ export const MachineryFormModal: React.FC<MachineryFormModalProps> = ({ open, on
     watch,
     setValue
   } = useForm<MachineryFormValues>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(initialValues ? editSchema : createSchema),
     defaultValues: initialValues || defaultValues
   });
 

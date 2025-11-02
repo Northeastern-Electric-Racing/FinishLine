@@ -72,22 +72,22 @@ calendarRouter.post(
   CalendarController.createEvent
 );
 
-calendarRouter.post(
-  '/machinery/create',
-  nonEmptyString(body('name')),
-  nonEmptyString(body('shopId')),
-  body('quantity').isInt({ min: 1 }),
-  validateInputs,
-  CalendarController.createMachinery
-);
+calendarRouter.post('/machinery/create', nonEmptyString(body('name')), validateInputs, CalendarController.createMachinery);
 
 calendarRouter.post(
   '/machinery/:machineryId/edit',
   nonEmptyString(body('name')),
-  nonEmptyString(body('shopId')),
-  body('quantity').isInt({ min: 1 }),
   validateInputs,
   CalendarController.editMachinery
+);
+
+calendarRouter.post(
+  '/machinery/:machineryId/add-to-shop',
+  nonEmptyString(body('shopId')),
+  body('quantity').isInt({ min: 0 }),
+  body('originalShopId').optional().isString(),
+  validateInputs,
+  CalendarController.addMachineryToShop
 );
 
 calendarRouter.post('/machinery/:machineryId/delete', CalendarController.deleteMachinery);

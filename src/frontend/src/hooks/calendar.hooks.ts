@@ -1,6 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Shop, Machinery } from 'shared';
-import { getAllShops, postCreateShop, getAllMachinery, postCreateMachinery, postEditMachinery } from '../apis/calendar.api';
+import {
+  getAllShops,
+  postCreateShop,
+  getAllMachinery,
+  postCreateMachinery,
+  postEditMachinery,
+  postAddMachineryToShop
+} from '../apis/calendar.api';
 
 export const SHOPS_KEY = ['shops'] as const;
 export const MACHINERY_KEY = ['machinery'] as const;
@@ -34,7 +41,7 @@ export const useAllMachines = () =>
 
 export const useCreateMachinery = () => {
   const qc = useQueryClient();
-  return useMutation<Machinery, Error, { machineName: string; shopId: string; quantity: number }>(
+  return useMutation<Machinery, Error, { machineName: string }>(
     async (payload) => {
       return await postCreateMachinery(payload);
     },
@@ -48,20 +55,28 @@ export const useCreateMachinery = () => {
 
 export const useEditMachinery = (machineryId: string) => {
   const qc = useQueryClient();
-  return useMutation<
-    Machinery,
-    Error,
-    { shopId: string; machineName: string; quantity: number; originalShopId: string; shopMachineryId: string }
-  >(
+  return useMutation<Machinery, Error, { machineName: string }>(
     async (payload) => {
-      const { machineName, shopId, quantity, originalShopId, shopMachineryId } = payload;
       return await postEditMachinery({
         machineryId,
-        name: machineName,
-        shopId,
-        quantity,
-        originalShopId,
-        shopMachineryId
+        name: payload.machineName
+      });
+    },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(MACHINERY_KEY);
+      }
+    }
+  );
+};
+
+export const useAddMachineryToShop = (machineryId: string) => {
+  const qc = useQueryClient();
+  return useMutation<Machinery, Error, { shopId: string; quantity: number; originalShopId?: string }>(
+    async (payload) => {
+      return await postAddMachineryToShop({
+        machineryId,
+        ...payload
       });
     },
     {
