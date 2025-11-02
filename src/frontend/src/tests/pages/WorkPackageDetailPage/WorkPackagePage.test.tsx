@@ -13,7 +13,6 @@ import { mockAuth, mockUseQueryResult } from '../../test-support/test-data/test-
 import { exampleDesignWorkPackage, exampleResearchWorkPackage } from '../../test-support/test-data/work-packages.stub';
 import { exampleWbsProject1 } from '../../test-support/test-data/wbs-numbers.stub';
 import WorkPackagePage from '../../../pages/WorkPackageDetailPage/WorkPackagePage';
-import AppContextUser from '../../../app/AppContextUser';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import {
   exampleAuthenticatedAdminUser,
@@ -54,9 +53,7 @@ const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <AppContextUser>
-        <WorkPackagePage wbsNum={exampleWbsProject1} />
-      </AppContextUser>
+      <WorkPackagePage wbsNum={exampleWbsProject1} />
     </RouterWrapper>
   );
 };

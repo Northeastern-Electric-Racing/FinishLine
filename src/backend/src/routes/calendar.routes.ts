@@ -44,6 +44,8 @@ calendarRouter.post(
   body('approvedByUserId').optional().isString(),
   body('memberIds').isArray(),
   body('memberIds.*').isString(),
+  body('teamIds').isArray(),
+  body('teamIds.*').isString(),
   body('location').optional().isString(),
   body('zoomLink').optional().isURL(),
   body('shopIds').isArray(),
@@ -144,6 +146,26 @@ calendarRouter.post('/shop/:shopId/delete', nonEmptyString(param('shopId')), val
 
 calendarRouter.get('/shops', CalendarController.getAllShops);
 
-calendarRouter.get('/machinery', CalendarController.getAllMachinery);
+// no restrictions filtering, in case multiple filters need to be sent
+calendarRouter.post(
+  '/events/filter',
+  body('memberIds').optional().isArray(),
+  body('memberIds.*').optional().isString(),
+  body('teamIds').optional().isArray(),
+  body('teamIds.*').optional().isString(),
+  body('calendarIds').isArray().optional(),
+  body('calendarIds.*').isString().optional(),
+  body('eventTypeIds').optional().isArray(),
+  body('eventTypeIds.*').optional().isString(),
+  body('eventIds').isArray().optional(),
+  body('eventIds.*').isString().optional(),
+  body('approvalStatus').isBoolean().optional(),
+  isDate(body('startPeriod')),
+  isDate(body('endPeriod')),
+  validateInputs,
+  CalendarController.getFilteredEvents
+);
+
+calendarRouter.get('/calendars', CalendarController.getAllCalendars);
 
 export default calendarRouter;

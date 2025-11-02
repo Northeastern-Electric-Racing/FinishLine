@@ -3,9 +3,6 @@ import { yellow, purple, green, grey, red } from '@mui/material/colors';
 
 type HistoryEntry = [Date, string];
 
-//max file size for an individual part file for yup validation (currently 5 mbs)
-export const MAX_PART_FILE_SIZE = 5 * 1024 * 1024;
-
 export const getPartCreationHistory = (createdAt: Date, name: String): HistoryEntry[] => {
   return [[new Date(createdAt), `${name} was created`]];
 };

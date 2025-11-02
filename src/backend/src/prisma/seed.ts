@@ -19,6 +19,7 @@ import {
 } from '@prisma/client';
 import { createUser, dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
+import { seedReimbursementRequests } from './seed-data/reimbursement-requests.seed';
 import ChangeRequestsService from '../services/change-requests.services';
 import TeamsService from '../services/teams.services';
 import {
@@ -52,6 +53,19 @@ import MachineryService from '../services/calendar.services';
 import CalendarService from '../services/calendar.services';
 
 const prisma = new PrismaClient();
+
+// Compute relative dates for seeding
+const getRelativeDate = (daysOffset: number, hoursOffset: number = 0): Date => {
+  const date = new Date();
+  date.setDate(date.getDate() + daysOffset);
+  date.setHours(date.getHours() + hoursOffset);
+  return date;
+};
+
+const daysAgo = (days: number): Date => getRelativeDate(-days);
+const daysFromNow = (days: number): Date => getRelativeDate(days);
+const weeksAgo = (weeks: number): Date => daysAgo(weeks * 7);
+const weeksFromNow = (weeks: number): Date => daysFromNow(weeks * 7);
 
 export const CreatePartTag = async (organizationId: string, name: string, colorHexCode: string) => {
   return await prisma.part_Tag.create({
@@ -259,7 +273,7 @@ const performSeed: () => Promise<void> = async () => {
   const trang = await createUser(dbSeedAllUsers.trang, RoleEnum.MEMBER, organizationId);
   const regina = await createUser(dbSeedAllUsers.regina, RoleEnum.MEMBER, organizationId);
   const patrick = await createUser(dbSeedAllUsers.patrick, RoleEnum.MEMBER, organizationId);
-  const spongebob = await createUser(dbSeedAllUsers.spongebob, RoleEnum.GUEST, organizationId);
+  const spongebob = await createUser(dbSeedAllUsers.spongebob, RoleEnum.MEMBER, organizationId);
 
   await UsersService.updateUserRole(cyborg.userId, thomasEmrax, 'APP_ADMIN', ner);
 
@@ -412,6 +426,14 @@ const performSeed: () => Promise<void> = async () => {
     [mrKrabs, richieRich].map((user) => user.userId),
     ner
   );
+
+  // Set finance delegates for the organization
+  await OrganizationsService.setFinanceDelegates(thomasEmrax, organizationId, [
+    monopolyMan.userId,
+    mrKrabs.userId,
+    richieRich.userId,
+    johnBoddy.userId
+  ]);
 
   await TeamsService.setTeamMembers(
     aang,
@@ -1100,8 +1122,8 @@ const performSeed: () => Promise<void> = async () => {
     'Bodywork Concept of Design',
     changeRequestProject1Id,
     WorkPackageStage.Design,
-    '01/01/2023',
-    3,
+    weeksAgo(12).toISOString().split('T')[0],
+    6,
     [],
     [],
     thomasEmrax,
@@ -1120,7 +1142,7 @@ const performSeed: () => Promise<void> = async () => {
     'ACTIVATION',
     thomasEmrax.userId,
     joeShmoe.userId,
-    new Date('2024-03-25T04:00:00.000Z'),
+    weeksAgo(12),
     true,
     ner
   );
@@ -1146,7 +1168,7 @@ const performSeed: () => Promise<void> = async () => {
     'Adhesive Shear Strength Test',
     changeRequestProject1Id,
     WorkPackageStage.Research,
-    '01/22/2023',
+    weeksAgo(10).toISOString().split('T')[0],
     5,
     [],
     [],
@@ -1164,8 +1186,8 @@ const performSeed: () => Promise<void> = async () => {
     'Manufacture Wiring Harness',
     changeRequestProject5Id,
     WorkPackageStage.Manufacturing,
-    '02/01/2023',
-    3,
+    weeksAgo(9).toISOString().split('T')[0],
+    4,
     [],
     [],
     thomasEmrax,
@@ -1184,7 +1206,7 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.ACTIVATION,
     regina.userId,
     janis.userId,
-    new Date('2023-08-21T04:00:00.000Z'),
+    weeksAgo(9),
     true,
     ner
   );
@@ -1197,8 +1219,8 @@ const performSeed: () => Promise<void> = async () => {
     'Install Wiring Harness',
     changeRequestProject5Id,
     WorkPackageStage.Install,
-    '04/01/2023',
-    7,
+    weeksAgo(5).toISOString().split('T')[0],
+    6,
     [],
     [],
     thomasEmrax,
@@ -1217,7 +1239,7 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.ACTIVATION,
     joeShmoe.userId,
     thomasEmrax.userId,
-    new Date('2023-10-02T04:00:00.000Z'),
+    weeksAgo(5),
     true,
     ner
   );
@@ -1230,7 +1252,7 @@ const performSeed: () => Promise<void> = async () => {
     'Design Plush',
     changeRequestProject6Id,
     WorkPackageStage.Design,
-    '04/02/2023',
+    weeksAgo(16).toISOString().split('T')[0],
     7,
     [],
     [],
@@ -1250,7 +1272,7 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.ACTIVATION,
     katara.userId,
     aang.userId,
-    new Date('2023-05-08T04:00:00.000Z'),
+    weeksAgo(16),
     true,
     ner
   );
@@ -1263,8 +1285,8 @@ const performSeed: () => Promise<void> = async () => {
     'Put Plush Together',
     changeRequestProject6Id,
     WorkPackageStage.Manufacturing,
-    '04/02/2023',
-    7,
+    weeksAgo(9).toISOString().split('T')[0],
+    5,
     [],
     [],
     aang,
@@ -1283,7 +1305,7 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.ACTIVATION,
     katara.userId,
     aang.userId,
-    new Date('2023-07-31T04:00:00.000Z'),
+    weeksAgo(9),
     true,
     ner
   );
@@ -1296,8 +1318,8 @@ const performSeed: () => Promise<void> = async () => {
     'Plush Testing',
     changeRequestProject6Id,
     WorkPackageStage.Testing,
-    '04/02/2023',
-    3,
+    weeksAgo(4).toISOString().split('T')[0],
+    4,
     [],
     [],
     aang,
@@ -1316,7 +1338,7 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.ACTIVATION,
     katara.userId,
     aang.userId,
-    new Date('2023-10-09T04:00:00.000Z'),
+    weeksAgo(4),
     true,
     ner
   );
@@ -1330,8 +1352,8 @@ const performSeed: () => Promise<void> = async () => {
     'Design Laser Canon',
     changeRequestProject7Id,
     WorkPackageStage.Design,
-    '01/01/2023',
-    3,
+    weeksAgo(8).toISOString().split('T')[0],
+    5,
     [],
     [],
     zatanna,
@@ -1350,7 +1372,7 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.ACTIVATION,
     zatanna.userId,
     lexLuther.userId,
-    new Date('2024-03-25T04:00:00.000Z'),
+    weeksAgo(8),
     true,
     ner
   );
@@ -1363,8 +1385,8 @@ const performSeed: () => Promise<void> = async () => {
     'Laser Canon Research',
     changeRequestProject7Id,
     WorkPackageStage.Research,
-    '01/22/2023',
-    5,
+    weeksAgo(3).toISOString().split('T')[0],
+    6,
     [],
     [],
     zatanna,
@@ -1381,8 +1403,8 @@ const performSeed: () => Promise<void> = async () => {
     'Laser Canon Testing',
     changeRequestProject7Id,
     WorkPackageStage.Testing,
-    '02/15/2023',
-    3,
+    weeksFromNow(3).toISOString().split('T')[0],
+    4,
     [],
     [],
     zatanna,
@@ -1400,8 +1422,8 @@ const performSeed: () => Promise<void> = async () => {
     'Stadium Research',
     changeRequestProject8Id,
     WorkPackageStage.Research,
-    '02/01/2023',
-    5,
+    weeksAgo(14).toISOString().split('T')[0],
+    7,
     [],
     [],
     mikeMacdonald,
@@ -1420,7 +1442,7 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.ACTIVATION,
     mikeMacdonald.userId,
     ryanGiggs.userId,
-    new Date('2023-08-21T04:00:00.000Z'),
+    weeksAgo(14),
     true,
     ner
   );
@@ -1433,8 +1455,8 @@ const performSeed: () => Promise<void> = async () => {
     'Stadium Install',
     changeRequestProject8Id,
     WorkPackageStage.Install,
-    '03/01/2023',
-    8,
+    weeksAgo(7).toISOString().split('T')[0],
+    6,
     [],
     [],
     mikeMacdonald,
@@ -1451,8 +1473,8 @@ const performSeed: () => Promise<void> = async () => {
     'Stadium Testing',
     changeRequestProject8Id,
     WorkPackageStage.Testing,
-    '06/01/2023',
-    3,
+    weeksAgo(1).toISOString().split('T')[0],
+    5,
     [],
     [],
     mikeMacdonald,
@@ -1515,7 +1537,7 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.ACTIVATION,
     thomasEmrax.userId,
     joeShmoe.userId,
-    new Date('02/01/2023'),
+    weeksAgo(9),
     true,
     ner
   );
@@ -1532,7 +1554,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId],
     ner,
-    new Date('01/01/2024')
+    undefined,
+    daysFromNow(10)
   );
 
   await TasksService.createTask(
@@ -1544,7 +1567,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_BACKLOG,
     [joeShmoe.userId],
     ner,
-    new Date('01/01/2024')
+    daysAgo(5),
+    daysFromNow(15)
   );
 
   await TasksService.createTask(
@@ -1556,7 +1580,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId, joeBlow.userId],
     ner,
-    new Date('01/01/2024')
+    undefined,
+    daysFromNow(8)
   );
 
   await TasksService.createTask(
@@ -1569,7 +1594,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeBlow.userId],
     ner,
-    new Date('2024-02-17T00:00:00-05:00')
+    undefined,
+    daysFromNow(14)
   );
 
   await TasksService.createTask(
@@ -1581,7 +1607,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId],
     ner,
-    new Date('2024-01-01T00:00:00-05:00')
+    daysAgo(14),
+    daysFromNow(7)
   );
 
   await TasksService.createTask(
@@ -1593,7 +1620,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId],
     ner,
-    new Date('2024-01-20T00:00:00-05:00')
+    undefined,
+    daysFromNow(9)
   );
 
   await TasksService.createTask(
@@ -1605,7 +1633,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId],
     ner,
-    new Date('2023-05-19T00:00:00-04:00')
+    undefined,
+    daysFromNow(6)
   );
 
   await TasksService.createTask(
@@ -1617,7 +1646,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [joeShmoe.userId],
     ner,
-    new Date('01/01/2024')
+    undefined,
+    daysAgo(30)
   );
 
   await TasksService.createTask(
@@ -1637,7 +1667,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [joeShmoe.userId],
     ner,
-    new Date('2022-11-16T00:00-05:00')
+    undefined,
+    daysAgo(90)
   );
 
   await TasksService.createTask(
@@ -1649,7 +1680,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId],
     ner,
-    new Date('2023-03-15T00:00:00-04:00')
+    daysAgo(70),
+    daysAgo(55)
   );
 
   await TasksService.createTask(
@@ -1661,7 +1693,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_BACKLOG,
     [],
     ner,
-    new Date('2023-04-01T00:00:00-04:00')
+    undefined,
+    daysFromNow(12)
   );
 
   await TasksService.createTask(
@@ -1673,7 +1706,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId],
     ner,
-    new Date('2024-01-01T00:00:00-05:00')
+    undefined,
+    daysFromNow(8)
   );
 
   await TasksService.createTask(
@@ -1685,7 +1719,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId, joeShmoe.userId],
     ner,
-    new Date('2024-01-01T00:00:00-05:00')
+    undefined,
+    daysFromNow(7)
   );
 
   await TasksService.createTask(
@@ -1697,7 +1732,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [thomasEmrax.userId],
     ner,
-    new Date('2023-10-31T00:00:00-04:00')
+    daysAgo(80),
+    daysAgo(65)
   );
 
   await TasksService.createTask(
@@ -1709,7 +1745,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_BACKLOG,
     [thomasEmrax, joeShmoe, joeBlow].map((user) => user.userId),
     ner,
-    new Date('2024-05-01T00:00:00-04:00')
+    undefined,
+    daysFromNow(16)
   );
 
   await TasksService.createTask(
@@ -1721,7 +1758,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId],
     ner,
-    new Date('2024-02-29T00:00:00-05:00')
+    undefined,
+    daysFromNow(13)
   );
 
   await TasksService.createTask(
@@ -1733,7 +1771,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_BACKLOG,
     [joeShmoe.userId],
     ner,
-    new Date('2024-03-17T00:00:00-05:00')
+    undefined,
+    daysFromNow(18)
   );
 
   await TasksService.createTask(
@@ -1745,7 +1784,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [joeBlow.userId],
     ner,
-    new Date('2024-04-15T00:00:00-04:00')
+    undefined,
+    daysAgo(45)
   );
 
   await TasksService.createTask(
@@ -1757,7 +1797,8 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [joeBlow.userId],
     ner,
-    new Date('2024-04-15T00:00:00-04:00')
+    undefined,
+    daysAgo(60)
   );
 
   await TasksService.createTask(
@@ -1769,13 +1810,14 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [regina.userId],
     ner,
-    new Date('2023-06-23T00:00:00-04:00')
+    daysAgo(21),
+    daysAgo(10)
   );
 
   /**
    * Reimbursements
    */
-  const vendor = await ReimbursementRequestService.createVendor(
+  const vendorTesla = await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Tesla',
     ner,
@@ -1786,7 +1828,7 @@ const performSeed: () => Promise<void> = async () => {
     'racecar228!',
     'SAVE50!'
   );
-  await ReimbursementRequestService.createVendor(
+  const vendorAmazon = await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Amazon',
     ner,
@@ -1797,7 +1839,7 @@ const performSeed: () => Promise<void> = async () => {
     'racecare228!',
     'SAVE20!'
   );
-  await ReimbursementRequestService.createVendor(
+  const vendorGoogle = await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Google',
     ner,
@@ -1808,7 +1850,7 @@ const performSeed: () => Promise<void> = async () => {
     'racecar228!',
     'SAVE50!'
   );
-  await ReimbursementRequestService.createVendor(
+  const vendorMicrosoft = await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Microsoft',
     ner,
@@ -1819,7 +1861,7 @@ const performSeed: () => Promise<void> = async () => {
     'secure123!',
     'WELCOME10'
   );
-  await ReimbursementRequestService.createVendor(
+  const vendorApple = await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Apple',
     ner,
@@ -1830,7 +1872,7 @@ const performSeed: () => Promise<void> = async () => {
     'appl3Secure!',
     'APPLE30'
   );
-  await ReimbursementRequestService.createVendor(
+  const vendorCostco = await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Costco',
     ner,
@@ -1841,7 +1883,7 @@ const performSeed: () => Promise<void> = async () => {
     'bulkBuy22!',
     'BULKDEAL'
   );
-  await ReimbursementRequestService.createVendor(
+  const vendorWalmart = await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Walmart',
     ner,
@@ -1852,7 +1894,7 @@ const performSeed: () => Promise<void> = async () => {
     'WalMartP@ss1',
     'ROLLBACK15'
   );
-  await ReimbursementRequestService.createVendor(
+  const vendorTarget = await ReimbursementRequestService.createVendor(
     thomasEmrax,
     'Target',
     ner,
@@ -2062,120 +2104,107 @@ const performSeed: () => Promise<void> = async () => {
     3010
   );
 
-  const reimbursement1 = await ReimbursementRequestService.createReimbursementRequest(
-    thomasEmrax,
-    vendor.vendorId,
-    indexCodeCash.indexCodeId,
-    [],
-    [
-      {
-        name: 'GLUE',
-        reason: {
-          carNumber: 0,
-          projectNumber: 1,
-          workPackageNumber: 0
-        },
-        cost: 200000,
-        refundSources: [
-          {
-            indexCode: indexCodeBudget,
-            amount: 150000
-          },
-          {
-            indexCode: indexCodeCash,
-            amount: 50000
-          }
-        ]
+  // Add userSecureSettings for users who will create reimbursement requests
+  const usersNeedingSecureSettings = [
+    { user: joeShmoe, varName: 'joeShmoe' },
+    { user: batman, varName: 'batman' },
+    { user: superman, varName: 'superman' },
+    { user: flash, varName: 'flash' },
+    { user: aquaman, varName: 'aquaman' },
+    { user: wonderwoman, varName: 'wonderwoman' },
+    { user: greenLantern, varName: 'greenLantern' },
+    { user: cyborg, varName: 'cyborg' },
+    { user: martianManhunter, varName: 'martianManhunter' },
+    { user: nightwing, varName: 'nightwing' },
+    { user: aang, varName: 'aang' },
+    { user: katara, varName: 'katara' },
+    { user: sokka, varName: 'sokka' },
+    { user: toph, varName: 'toph' },
+    { user: zuko, varName: 'zuko' },
+    { user: regina, varName: 'regina' },
+    { user: cady, varName: 'cady' },
+    { user: gretchen, varName: 'gretchen' },
+    { user: karen, varName: 'karen' },
+    { user: spongebob, varName: 'spongebob' },
+    { user: patrick, varName: 'patrick' }
+  ];
+
+  const updatedUsers: any = {};
+
+  for (let i = 0; i < usersNeedingSecureSettings.length; i++) {
+    const { user, varName } = usersNeedingSecureSettings[i];
+    await prisma.user_Secure_Settings.create({
+      data: {
+        userSecureSettingsId: `secure-${user.userId}`,
+        userId: user.userId,
+        nuid: `00123456${i.toString().padStart(2, '0')}`,
+        phoneNumber: `123456${i.toString().padStart(4, '0')}`,
+        street: `${100 + i} Main St`,
+        city: 'Boston',
+        state: 'MA',
+        zipcode: '02115'
       }
-    ],
-    accountCode.accountCodeId,
-    100,
+    });
+
+    // Re-fetch user with secure settings
+    const updatedUser = await prisma.user.findUnique({
+      where: { userId: user.userId },
+      include: { userSettings: true, userSecureSettings: true, roles: true }
+    });
+    updatedUsers[varName] = updatedUser;
+  }
+
+  // Seed comprehensive reimbursement requests with various statuses and assignees
+  const seededReimbursementRequests = await seedReimbursementRequests(
+    {
+      thomasEmrax,
+      joeShmoe: updatedUsers.joeShmoe,
+      batman: updatedUsers.batman,
+      superman: updatedUsers.superman,
+      flash: updatedUsers.flash,
+      aquaman: updatedUsers.aquaman,
+      wonderwoman: updatedUsers.wonderwoman,
+      greenLantern: updatedUsers.greenLantern,
+      cyborg: updatedUsers.cyborg,
+      martianManhunter: updatedUsers.martianManhunter,
+      robin: updatedUsers.nightwing, // Using nightwing as robin since robin wasn't stored in a variable
+      nightwing: updatedUsers.nightwing,
+      aang: updatedUsers.aang,
+      katara: updatedUsers.katara,
+      sokka: updatedUsers.sokka,
+      toph: updatedUsers.toph,
+      zuko: updatedUsers.zuko,
+      monopolyMan,
+      mrKrabs,
+      richieRich,
+      johnBoddy,
+      regina: updatedUsers.regina,
+      cady: updatedUsers.cady,
+      gretchen: updatedUsers.gretchen,
+      karen: updatedUsers.karen,
+      spongebob: updatedUsers.spongebob,
+      patrick: updatedUsers.patrick
+    },
+    {
+      tesla: vendorTesla,
+      amazon: vendorAmazon,
+      google: vendorGoogle,
+      microsoft: vendorMicrosoft,
+      apple: vendorApple,
+      costco: vendorCostco,
+      walmart: vendorWalmart,
+      target: vendorTarget
+    },
+    {
+      cash: indexCodeCash,
+      budget: indexCodeBudget
+    },
+    {
+      equipment: accountCode,
+      things: accountCode2,
+      stuff: accountCode3
+    },
     ner
-  );
-
-  const reimbursement3 = await ReimbursementRequestService.createReimbursementRequest(
-    thomasEmrax,
-    vendor.vendorId,
-    indexCodeBudget.indexCodeId,
-    [],
-    [
-      {
-        name: 'BOX',
-        reason: {
-          carNumber: 0,
-          projectNumber: 1,
-          workPackageNumber: 0
-        },
-        cost: 200000,
-        refundSources: [
-          {
-            indexCode: indexCodeBudget,
-            amount: 150000
-          },
-          {
-            indexCode: indexCodeCash,
-            amount: 50000
-          }
-        ]
-      }
-    ],
-    accountCode.accountCodeId,
-    200,
-    ner,
-    new Date()
-  );
-
-  const reimbursement2 = await ReimbursementRequestService.createReimbursementRequest(
-    thomasEmrax,
-    vendor.vendorId,
-    indexCodeBudget.indexCodeId,
-    [],
-    [
-      {
-        name: 'BOX',
-        reason: {
-          carNumber: 0,
-          projectNumber: 1,
-          workPackageNumber: 0
-        },
-        cost: 10000,
-        refundSources: [
-          {
-            indexCode: indexCodeBudget,
-            amount: 7000
-          },
-          {
-            indexCode: indexCodeCash,
-            amount: 3000
-          }
-        ]
-      }
-    ],
-    accountCode.accountCodeId,
-    20000,
-    ner,
-    new Date()
-  );
-
-  ReimbursementRequestService.createReimbursementRequestComment(
-    thomasEmrax,
-    ner,
-    'Thomas Followed up - "Please upload reciept"',
-    reimbursement1.reimbursementRequestId
-  );
-
-  ReimbursementRequestService.createReimbursementRequestComment(
-    batman,
-    ner,
-    'Batman Uploaded Receipt',
-    reimbursement1.reimbursementRequestId
-  );
-
-  ReimbursementRequestService.createReimbursementRequestComment(
-    thomasEmrax,
-    ner,
-    'Thomas Submmited to SABO',
-    reimbursement1.reimbursementRequestId
   );
 
   const otherProductReasonConsumables = await ReimbursementRequestService.createOtherReasonReimbursementProduct(
@@ -2309,7 +2338,7 @@ const performSeed: () => Promise<void> = async () => {
     undefined,
     undefined,
     undefined,
-    reimbursement1.reimbursementRequestId
+    seededReimbursementRequests[0]?.reimbursementRequestId
   );
 
   // Need to do this because the design review cannot be scheduled for a past day
@@ -2379,7 +2408,7 @@ const performSeed: () => Promise<void> = async () => {
     'Slim and Light Car',
     newWorkPackageChangeRequest.crId,
     WorkPackageStage.Design,
-    '01/22/2024',
+    weeksAgo(2).toISOString().split('T')[0],
     5,
     [],
     [],
@@ -2501,10 +2530,10 @@ const performSeed: () => Promise<void> = async () => {
     { userId: regina.userId, title: 'Chief Electrical Engineer' }
   ]);
 
-  await RecruitmentServices.createMilestone(batman, 'Club fair!', 'Also meet us at:', new Date('9/3/24'), ner);
-  await RecruitmentServices.createMilestone(batman, 'Applications Open', '', new Date('11/13/24'), ner);
-  await RecruitmentServices.createMilestone(batman, 'Applications Close', '', new Date('11/27/24'), ner);
-  await RecruitmentServices.createMilestone(batman, 'Decision Day!', '', new Date('12/4/24'), ner);
+  await RecruitmentServices.createMilestone(batman, 'Club fair!', 'Also meet us at:', daysAgo(120), ner);
+  await RecruitmentServices.createMilestone(batman, 'Applications Open', '', daysAgo(70), ner);
+  await RecruitmentServices.createMilestone(batman, 'Applications Close', '', daysAgo(56), ner);
+  await RecruitmentServices.createMilestone(batman, 'Decision Day!', '', daysAgo(49), ner);
 
   await RecruitmentServices.createOrganizationFaq(batman, 'Who is the Chief Software Engineer?', 'Peyton McKee', ner);
   await RecruitmentServices.createOrganizationFaq(
@@ -3034,7 +3063,7 @@ const performSeed: () => Promise<void> = async () => {
     'Google',
     true,
     5000,
-    new Date(12, 1, 24),
+    daysAgo(90),
     [2024, 2025],
     goldSponsorTier.sponsorTierId,
     true,
@@ -3047,10 +3076,10 @@ const performSeed: () => Promise<void> = async () => {
   await FinanceServices.createSponsorTask(
     thomasEmrax,
     ner,
-    new Date(12, 1, 25),
+    daysFromNow(30),
     'notes...',
     sponsor.sponsorId,
-    new Date(7, 5, 25),
+    daysAgo(60),
     thomasEmrax.userId
   );
 
@@ -3212,6 +3241,7 @@ const performSeed: () => Promise<void> = async () => {
     meetingEventType.eventTypeId,
     ner,
     [joeShmoe.userId, joeBlow.userId, batman.userId],
+    [],
     [advancedShop.shopId],
     [printer.machineryId, hammer.machineryId],
     [workPackage1.id],
@@ -3245,6 +3275,7 @@ const performSeed: () => Promise<void> = async () => {
     meetingEventType.eventTypeId,
     ner,
     [regina.userId, janis.userId, cady.userId],
+    [],
     [electronicsLab.shopId],
     [printer.machineryId],
     [workPackage3.id, workPackage4.id],
@@ -3279,6 +3310,7 @@ const performSeed: () => Promise<void> = async () => {
     meetingEventType.eventTypeId,
     ner,
     [katara.userId, sokka.userId, toph.userId],
+    [justiceLeague.teamId],
     [],
     [],
     [workPackage5.id],
@@ -3313,6 +3345,7 @@ const performSeed: () => Promise<void> = async () => {
     meetingEventType.eventTypeId,
     ner,
     [zatanna.userId, superman.userId, wonderwoman.userId],
+    [orioles.teamId],
     [testingFacility.shopId],
     [ironMachine.machineryId, hammer.machineryId],
     [project3WP1.id],

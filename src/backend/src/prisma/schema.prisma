@@ -78,6 +78,7 @@ enum Reimbursement_Status_Type {
   PENDING_LEADERSHIP_APPROVAL
   LEADERSHIP_APPROVED
   PENDING_FINANCE
+  PENDING_SABO_SUBMISSION
   SABO_SUBMITTED
   ADVISOR_APPROVED
   REIMBURSED
@@ -270,6 +271,8 @@ model User {
   createdEventTypes                       EventType[]                          @relation(name: "eventTypeCreator")
   deletedEventTypes                       EventType[]                          @relation(name: "eventTypeDeleter")
   deletedSponsorTiers                     Sponsor_Tier[]
+  financeDelegateForOrganizations         Organization[]                       @relation(name: "financeDelegates")
+  assignedReimbursementRequests           Reimbursement_Request[]              @relation(name: "reimbursementRequestAssignee")
 }
 
 model Role {
@@ -293,6 +296,7 @@ model Team {
   projects               Project[]                  @relation(name: "assignedBy")
   members                User[]                     @relation(name: "teamsAsMember")
   leads                  User[]                     @relation(name: "teamsAsLead")
+  events                 Event[]                    @relation(name: "affiliatedTeam")
   headId                 String
   head                   User                       @relation(name: "teamsAsHead", fields: [headId], references: [userId])
   dateArchived           DateTime?
@@ -643,6 +647,7 @@ model Task {
   title           String
   notes           String
   deadline        DateTime?
+  startDate       DateTime?
   assignees       User[]        @relation(name: "assignedTo")
   priority        Task_Priority
   status          Task_Status
@@ -711,6 +716,8 @@ model Reimbursement_Request {
   notificationSlackThreads Message_Info[]
   materials                Material[]
   reimbursementComments    Reimbursement_Request_Comment[]
+  assigneeId               String?
+  assignee                 User?                           @relation(name: "reimbursementRequestAssignee", fields: [assigneeId], references: [userId])
 
   @@unique([identifier, organizationId], name: "uniqueReimbursementRequest")
   @@index([organizationId])
@@ -1026,8 +1033,11 @@ model ScheduleSlot {
   endTime              DateTime? // time of day (just use a DateTime, ignore the date portion)
   recurrenceNumber     Int
   initialDateScheduled DateTime    @db.Date
+  endDate              DateTime    @db.Date
   allDay               Boolean     @default(false)
   ScheduledEvents      Event[]
+
+  @@index([initialDateScheduled, endDate])
 }
 
 model Event {
@@ -1046,6 +1056,7 @@ model Event {
   approvedBy       User?          @relation(fields: [approvedByUserId], references: [userId], name: "eventApprover")
   scheduledTimes   ScheduleSlot[]
   members          User[]         @relation(name: "eventAttender")
+  teams            Team[]         @relation(name: "affiliatedTeam")
   location         String?
   zoomLink         String?
   availabilities   Availability[]
@@ -1364,6 +1375,7 @@ model Organization {
   sponsors                 Sponsor[]
   sponsorTiers             Sponsor_Tier[]
   indexCodes               Index_Code[]
+  financeDelegates         User[]                       @relation(name: "financeDelegates")
   shops                    Shop[]
   machineries              Machinery[]
   calendars                Calendar[]
