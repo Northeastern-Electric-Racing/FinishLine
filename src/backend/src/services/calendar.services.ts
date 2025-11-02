@@ -143,24 +143,12 @@ export default class CalendarService {
    * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
    * @throws NotFoundException If the shop with the given shopId does not exist.
    */
-  static async createMachinery(submitter: User, name: string, shopId: string, quantity: number, organization: Organization) {
+  static async createMachinery(submitter: User, name: string, organization: Organization) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create machinery');
     }
 
-    const existingShop = await prisma.shop.findUnique({
-      where: { shopId }
-    });
-
-    if (!existingShop) {
-      throw new NotFoundException('Shop', shopId);
-    }
-
-    if (existingShop.organizationId !== organization.organizationId) {
-      throw new InvalidOrganizationException('Shop');
-    }
-
-    // Check if machinery with the same name already exists in this organization.
+    // Check if machinery with the same name already exists
     const existingMachinery = await prisma.machinery.findUnique({
       where: {
         uniqueMachinery: {
@@ -168,67 +156,20 @@ export default class CalendarService {
           organizationId: organization.organizationId
         }
       },
-      include: {
-        shops: {
-          where: {
-            shopId
-          }
-        }
-      }
+      ...getMachineryQueryArgs(organization.organizationId)
     });
 
-    // If machinery exists and is already in this shop, add to the quantity
-    if (existingMachinery && existingMachinery.shops.length > 0) {
-      const newQuantity = existingMachinery.shops[0].quantity + quantity;
-
-      const updatedMachinery = await prisma.machinery.update({
-        where: { machineryId: existingMachinery.machineryId },
-        data: {
-          shops: {
-            updateMany: {
-              where: { shopId },
-              data: { quantity: newQuantity }
-            }
-          }
-        },
-        ...getMachineryQueryArgs(organization.organizationId)
-      });
-      return machineryTransformer(updatedMachinery);
-    }
-
-    // If machinery exists but not in this shop, create new shop-machinery relationship
+    // If machinery with same name exists, return it instead of creating a new one
+    // The addMachineryToShop endpoint will handle consolidation/creation of shop relationships
     if (existingMachinery) {
-      const updatedMachinery = await prisma.machinery.update({
-        where: { machineryId: existingMachinery.machineryId },
-        data: {
-          shops: {
-            create: [
-              {
-                shopId,
-                quantity
-              }
-            ]
-          }
-        },
-        ...getMachineryQueryArgs(organization.organizationId)
-      });
-      return machineryTransformer(updatedMachinery);
+      return machineryTransformer(existingMachinery);
     }
 
-    // Create new machinery with shop relationship
     const newMachinery = await prisma.machinery.create({
       data: {
         name,
         userCreatedId: submitter.userId,
-        organizationId: organization.organizationId,
-        shops: {
-          create: [
-            {
-              shopId,
-              quantity
-            }
-          ]
-        }
+        organizationId: organization.organizationId
       },
       ...getMachineryQueryArgs(organization.organizationId)
     });
@@ -435,33 +376,21 @@ export default class CalendarService {
   }
 
   /**
-   * Edits an existing machinery and its associated shop machinery.
+   * Edits an existing machinery name. If the new name matches another existing machinery,
+   * all shop relationships are merged into that machinery and the old machinery is deleted.
    *
    * @param submitter The user submitting the request, who must be a head or above.
    * @param machineryId The ID of the machinery to edit.
    * @param name The new name of the machinery.
-   * @param shopId The shop ID to associate with the machinery (the new shop if changing shops).
-   * @param quantity The quantity of machinery in the shop.
    * @param organization The organization for which the machinery is being edited.
-   * @param originalShopId The original shop ID of the shop-machinery relationship being edited.
-   * @param shopMachineryId The ID of the shop-machinery relationship being edited.
    *
    * @returns The updated machinery object with associated shop machinery.
    *
    * @throws AccessDeniedException If the submitter is not a head or above.
-   * @throws NotFoundException If the machinery or shop with the given IDs do not exist.
-   * @throws InvalidOrganizationException If the machinery or shop does not belong to the same organization.
+   * @throws NotFoundException If the machinery with the given ID does not exist.
+   * @throws InvalidOrganizationException If the machinery does not belong to the same organization.
    */
-  static async editMachinery(
-    submitter: User,
-    machineryId: string,
-    name: string,
-    shopId: string,
-    quantity: number,
-    organization: Organization,
-    originalShopId?: string,
-    shopMachineryId?: string
-  ) {
+  static async editMachinery(submitter: User, machineryId: string, name: string, organization: Organization) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
       throw new AccessDeniedException('Only heads and above can edit machinery');
     }
@@ -475,7 +404,138 @@ export default class CalendarService {
     }
 
     if (existingMachinery.organizationId !== organization.organizationId) {
-      throw new InvalidOrganizationException('Shop');
+      throw new InvalidOrganizationException('Machinery');
+    }
+
+    // If name is the same, just update it (no consolidation needed)
+    if (existingMachinery.name === name) {
+      const updatedMachinery = await prisma.machinery.findUnique({
+        where: { machineryId },
+        ...getMachineryQueryArgs(organization.organizationId)
+      });
+      if (!updatedMachinery) {
+        throw new NotFoundException('Machinery', machineryId);
+      }
+      return machineryTransformer(updatedMachinery);
+    }
+
+    // Check if another machinery with the same name already exists
+    const existingMachineryWithSameName = await prisma.machinery.findUnique({
+      where: {
+        uniqueMachinery: {
+          name,
+          organizationId: organization.organizationId
+        }
+      },
+      include: {
+        shops: true
+      }
+    });
+
+    // If name matches an existing machinery, consolidate by merging all shop relationships
+    if (existingMachineryWithSameName && existingMachineryWithSameName.machineryId !== machineryId) {
+      const updatedMachinery = await prisma.$transaction(async (tx) => {
+        // Get all shop relationships from the machinery being edited
+        const shopRelationshipsToMove = await tx.shopMachinery.findMany({
+          where: { machineryId }
+        });
+
+        // Move each shop relationship to the existing machinery
+        for (const relationship of shopRelationshipsToMove) {
+          const existingShopMachinery = await tx.shopMachinery.findUnique({
+            where: {
+              uniqueShopMachinery: {
+                shopId: relationship.shopId,
+                machineryId: existingMachineryWithSameName.machineryId
+              }
+            }
+          });
+
+          if (existingShopMachinery) {
+            // If the target machinery already has this shop, add quantities together
+            const newQuantity = existingShopMachinery.quantity + relationship.quantity;
+            await tx.shopMachinery.update({
+              where: { shopMachineryId: existingShopMachinery.shopMachineryId },
+              data: { quantity: newQuantity }
+            });
+            await tx.shopMachinery.delete({
+              where: { shopMachineryId: relationship.shopMachineryId }
+            });
+          } else {
+            // Move the relationship to the existing machinery
+            await tx.shopMachinery.update({
+              where: { shopMachineryId: relationship.shopMachineryId },
+              data: { machineryId: existingMachineryWithSameName.machineryId }
+            });
+          }
+        }
+
+        // Delete the old machinery (all relationships have been moved)
+        await tx.machinery.delete({
+          where: { machineryId }
+        });
+
+        // Return the consolidated machinery
+        const resultMachinery = await tx.machinery.findUnique({
+          where: { machineryId: existingMachineryWithSameName.machineryId },
+          ...getMachineryQueryArgs(organization.organizationId)
+        });
+        if (!resultMachinery) {
+          throw new NotFoundException('Machinery', existingMachineryWithSameName.machineryId);
+        }
+        return resultMachinery;
+      });
+
+      return machineryTransformer(updatedMachinery);
+    }
+
+    // No consolidation needed, just update the name
+    const updatedMachinery = await prisma.machinery.update({
+      where: { machineryId },
+      data: { name },
+      ...getMachineryQueryArgs(organization.organizationId)
+    });
+
+    return machineryTransformer(updatedMachinery);
+  }
+
+  /**
+   * Adds or updates a machinery to a shop. Handles consolidation when machinery name matches existing machinery.
+   * If quantity is 0, deletes the shop-machinery relationship (only applicable to editing the machinery modal).
+   *
+   * @param submitter The user submitting the request, who must be a head or above.
+   * @param machineryId The ID of the machinery to add/update.
+   * @param shopId The ID of the shop to add/update the machinery in.
+   * @param quantity The quantity of machinery. If 0, the relationship is deleted.
+   * @param organization The organization context.
+   * @param originalShopId Optional: The original shop ID when moving/updating an existing relationship. If not provided, this is treated as an "add" operation and quantities are incremented.
+   * @returns The machinery object with updated shop relationships.
+   * @throws AccessDeniedException If the submitter is not a head or above.
+   * @throws NotFoundException If the machinery or shop with the given IDs do not exist.
+   * @throws InvalidOrganizationException If the machinery or shop does not belong to the same organization.
+   */
+  static async addMachineryToShop(
+    submitter: User,
+    machineryId: string,
+    shopId: string,
+    quantity: number,
+    organization: Organization,
+    originalShopId?: string
+  ) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
+      throw new AccessDeniedException('Only heads and above can manage shop-machinery relationships');
+    }
+
+    const existingMachinery = await prisma.machinery.findUnique({
+      where: { machineryId }
+    });
+
+    if (!existingMachinery) {
+      throw new NotFoundException('Machinery', machineryId);
+    }
+
+    if (existingMachinery.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Machinery');
     }
 
     const existingShop = await prisma.shop.findUnique({
@@ -490,15 +550,13 @@ export default class CalendarService {
       throw new InvalidOrganizationException('Shop');
     }
 
+    // Use a transaction to ensure all database operations complete atomically.
+    // This is critical for consolidation logic where we may delete one machinery and merge into another.
     const updatedMachinery = await prisma.$transaction(async (tx) => {
-      // Find the specific shop-machinery relationship being edited
+      // Find the specific shop-machinery relationship being edited (if updating existing)
       // This identifies which shop's quantity/relationship we're modifying
       let shopMachineryToUpdate;
-      if (shopMachineryId) {
-        shopMachineryToUpdate = await tx.shopMachinery.findUnique({
-          where: { shopMachineryId }
-        });
-      } else if (originalShopId) {
+      if (originalShopId) {
         shopMachineryToUpdate = await tx.shopMachinery.findFirst({
           where: {
             machineryId,
@@ -507,11 +565,14 @@ export default class CalendarService {
         });
       }
 
+      // Get the machinery name to check for consolidation
+      const machineryName = existingMachinery.name;
+
       // Check if another machinery with the same name already exists
       const existingMachineryWithSameName = await tx.machinery.findUnique({
         where: {
           uniqueMachinery: {
-            name,
+            name: machineryName,
             organizationId: organization.organizationId
           }
         },
@@ -522,7 +583,7 @@ export default class CalendarService {
         }
       });
 
-      // Case 1: Editing results in same name + same shop as existing machinery
+      // Case 1: Same name + same shop as existing machinery (consolidation)
       // Consolidate by deleting current relationship and adding quantity to existing one
       if (existingMachineryWithSameName && existingMachineryWithSameName.shops.length > 0) {
         const [existingShopMachinery] = existingMachineryWithSameName.shops;
@@ -537,11 +598,18 @@ export default class CalendarService {
             where: { shopMachineryId: shopMachineryToUpdate.shopMachineryId }
           });
 
-          const newQuantity = existingShopMachinery.quantity + quantity;
-          await tx.shopMachinery.update({
-            where: { shopMachineryId: existingShopMachinery.shopMachineryId },
-            data: { quantity: newQuantity }
-          });
+          // Handle quantity: if 0, delete; otherwise add to existing
+          if (quantity === 0) {
+            await tx.shopMachinery.delete({
+              where: { shopMachineryId: existingShopMachinery.shopMachineryId }
+            });
+          } else {
+            const newQuantity = existingShopMachinery.quantity + quantity;
+            await tx.shopMachinery.update({
+              where: { shopMachineryId: existingShopMachinery.shopMachineryId },
+              data: { quantity: newQuantity }
+            });
+          }
 
           // If this was a different machinery, clean up if it has no more shops
           if (existingMachineryWithSameName.machineryId !== machineryId) {
@@ -554,11 +622,23 @@ export default class CalendarService {
               });
             }
           }
-        } else {
-          // Same relationship, just update quantity
+        } else if (quantity === 0) {
+          // Same relationship, delete if quantity is 0
+          await tx.shopMachinery.delete({
+            where: { shopMachineryId: existingShopMachinery.shopMachineryId }
+          });
+        } else if (shopMachineryToUpdate) {
+          // Edit operation - set/replace quantity
           await tx.shopMachinery.update({
             where: { shopMachineryId: existingShopMachinery.shopMachineryId },
             data: { quantity }
+          });
+        } else {
+          // Add operation - increment quantity
+          const newQuantity = existingShopMachinery.quantity + quantity;
+          await tx.shopMachinery.update({
+            where: { shopMachineryId: existingShopMachinery.shopMachineryId },
+            data: { quantity: newQuantity }
           });
         }
 
@@ -591,13 +671,22 @@ export default class CalendarService {
           }
         });
 
-        if (existingShopMachinery) {
+        if (quantity === 0) {
+          // If quantity is 0 and relationship exists, delete it
+          if (existingShopMachinery) {
+            await tx.shopMachinery.delete({
+              where: { shopMachineryId: existingShopMachinery.shopMachineryId }
+            });
+          }
+        } else if (existingShopMachinery) {
+          // Add quantity to existing relationship
           const newQuantity = existingShopMachinery.quantity + quantity;
           await tx.shopMachinery.update({
             where: { shopMachineryId: existingShopMachinery.shopMachineryId },
             data: { quantity: newQuantity }
           });
         } else {
+          // Create new relationship for existing machinery
           await tx.shopMachinery.create({
             data: {
               shopId,
@@ -607,6 +696,7 @@ export default class CalendarService {
           });
         }
 
+        // Clean up old machinery if it has no more shops
         const remainingShops = await tx.shopMachinery.findMany({
           where: { machineryId }
         });
@@ -627,15 +717,19 @@ export default class CalendarService {
       }
 
       // Case 3: Normal update - no consolidation needed
-      // The name doesn't match any existing machinery, or it's the same machinery.
-      // Just update the shop-machinery relationship and machinery name.
       if (shopMachineryToUpdate) {
         if (shopMachineryToUpdate.shopId === shopId) {
-          // Same shop, just update quantity (no shop change needed)
-          await tx.shopMachinery.update({
-            where: { shopMachineryId: shopMachineryToUpdate.shopMachineryId },
-            data: { quantity }
-          });
+          // Same shop, update quantity or delete if 0
+          if (quantity === 0) {
+            await tx.shopMachinery.delete({
+              where: { shopMachineryId: shopMachineryToUpdate.shopMachineryId }
+            });
+          } else {
+            await tx.shopMachinery.update({
+              where: { shopMachineryId: shopMachineryToUpdate.shopMachineryId },
+              data: { quantity }
+            });
+          }
         } else {
           // Different shop - check if target shop already has this machinery
           const existingRelationship = await tx.shopMachinery.findUnique({
@@ -649,10 +743,21 @@ export default class CalendarService {
 
           if (existingRelationship) {
             // Target shop already has this machinery, update it and delete old relationship
-            await tx.shopMachinery.update({
-              where: { shopMachineryId: existingRelationship.shopMachineryId },
-              data: { quantity }
+            if (quantity === 0) {
+              await tx.shopMachinery.delete({
+                where: { shopMachineryId: existingRelationship.shopMachineryId }
+              });
+            } else {
+              await tx.shopMachinery.update({
+                where: { shopMachineryId: existingRelationship.shopMachineryId },
+                data: { quantity }
+              });
+            }
+            await tx.shopMachinery.delete({
+              where: { shopMachineryId: shopMachineryToUpdate.shopMachineryId }
             });
+          } else if (quantity === 0) {
+            // Move relationship to new shop, but quantity is 0 so delete
             await tx.shopMachinery.delete({
               where: { shopMachineryId: shopMachineryToUpdate.shopMachineryId }
             });
@@ -668,7 +773,8 @@ export default class CalendarService {
           }
         }
       } else {
-        // No existing relationship found, create or update one
+        // No originalShopId - this is a create operation (adding machine to shop)
+        // Check if relationship already exists
         const existingRelationship = await tx.shopMachinery.findUnique({
           where: {
             uniqueShopMachinery: {
@@ -679,11 +785,20 @@ export default class CalendarService {
         });
 
         if (existingRelationship) {
-          await tx.shopMachinery.update({
-            where: { shopMachineryId: existingRelationship.shopMachineryId },
-            data: { quantity }
-          });
-        } else {
+          // Relationship exists - add quantities together when creating
+          if (quantity === 0) {
+            await tx.shopMachinery.delete({
+              where: { shopMachineryId: existingRelationship.shopMachineryId }
+            });
+          } else {
+            const newQuantity = existingRelationship.quantity + quantity;
+            await tx.shopMachinery.update({
+              where: { shopMachineryId: existingRelationship.shopMachineryId },
+              data: { quantity: newQuantity }
+            });
+          }
+        } else if (quantity > 0) {
+          // Create new relationship only if quantity > 0
           await tx.shopMachinery.create({
             data: {
               shopId,
@@ -694,12 +809,25 @@ export default class CalendarService {
         }
       }
 
-      // Update machinery name
-      const updatedMachineryResult = await tx.machinery.update({
+      // Clean up machinery if it has no more shops after deletion
+      if (quantity === 0) {
+        const remainingShops = await tx.shopMachinery.findMany({
+          where: { machineryId }
+        });
+        if (remainingShops.length === 0) {
+          await tx.machinery.delete({
+            where: { machineryId }
+          });
+        }
+      }
+
+      const updatedMachineryResult = await tx.machinery.findUnique({
         where: { machineryId },
-        data: { name },
         ...getMachineryQueryArgs(organization.organizationId)
       });
+      if (!updatedMachineryResult) {
+        throw new NotFoundException('Machinery', machineryId);
+      }
       return updatedMachineryResult;
     });
 

@@ -3083,18 +3083,36 @@ const performSeed: () => Promise<void> = async () => {
   });
 
   // Create machineries and assign to shops
-  const ironMachine = await MachineryService.createMachinery(thomasEmrax, 'Iron Man CNC Mill', advancedShop.shopId, 1, ner);
-  const hammer = await MachineryService.createMachinery(thomasEmrax, 'Thor Hammer Lathe', advancedShop.shopId, 2, ner);
-  const printer = await MachineryService.createMachinery(
+  const ironMachineCreated = await MachineryService.createMachinery(thomasEmrax, 'Iron Man CNC Mill', ner);
+  const ironMachine = await MachineryService.addMachineryToShop(
     thomasEmrax,
-    'Spider-Man 3D Printer',
+    ironMachineCreated.machineryId,
+    advancedShop.shopId,
+    1,
+    ner
+  );
+  const hammerCreated = await MachineryService.createMachinery(thomasEmrax, 'Thor Hammer Lathe', ner);
+  const hammer = await MachineryService.addMachineryToShop(
+    thomasEmrax,
+    hammerCreated.machineryId,
+    advancedShop.shopId,
+    2,
+    ner
+  );
+  const printerCreated = await MachineryService.createMachinery(thomasEmrax, 'Spider-Man 3D Printer', ner);
+  const printer = await MachineryService.addMachineryToShop(
+    thomasEmrax,
+    printerCreated.machineryId,
     electronicsLab.shopId,
     1,
     ner
   );
-  await MachineryService.createMachinery(thomasEmrax, 'Captain America Oscilloscope', electronicsLab.shopId, 3, ner);
-  await MachineryService.createMachinery(thomasEmrax, 'Hulk Dynamometer', testingFacility.shopId, 1, ner);
-  await MachineryService.createMachinery(thomasEmrax, 'Black Widow Thermal Camera', testingFacility.shopId, 2, ner);
+  const captainAmericaCreated = await MachineryService.createMachinery(thomasEmrax, 'Captain America Oscilloscope', ner);
+  await MachineryService.addMachineryToShop(thomasEmrax, captainAmericaCreated.machineryId, electronicsLab.shopId, 3, ner);
+  const hulkCreated = await MachineryService.createMachinery(thomasEmrax, 'Hulk Dynamometer', ner);
+  await MachineryService.addMachineryToShop(thomasEmrax, hulkCreated.machineryId, testingFacility.shopId, 1, ner);
+  const blackWidowCreated = await MachineryService.createMachinery(thomasEmrax, 'Black Widow Thermal Camera', ner);
+  await MachineryService.addMachineryToShop(thomasEmrax, blackWidowCreated.machineryId, testingFacility.shopId, 2, ner);
 
   // various calendars for testing
   const calendar = await CalendarService.createCalendar(
