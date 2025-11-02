@@ -1,9 +1,6 @@
 -- CreateEnum
 CREATE TYPE "public"."DayOfWeek" AS ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY');
 
--- AlterTable
-ALTER TABLE "public"."Availability" ADD COLUMN     "eventId" TEXT;
-
 -- CreateTable
 CREATE TABLE "public"."Shop" (
     "shopId" TEXT NOT NULL,
@@ -104,7 +101,6 @@ CREATE TABLE "public"."EventType" (
     "members" BOOLEAN NOT NULL DEFAULT FALSE,
     "location" BOOLEAN NOT NULL DEFAULT FALSE,
     "zoomLink" BOOLEAN NOT NULL DEFAULT FALSE,
-    "availabilities" BOOLEAN NOT NULL DEFAULT FALSE,
     "shop" BOOLEAN NOT NULL DEFAULT FALSE,
     "machinery" BOOLEAN NOT NULL DEFAULT FALSE,
     "workPackage" BOOLEAN NOT NULL DEFAULT FALSE,
@@ -256,9 +252,6 @@ ALTER TABLE "public"."EventType" ADD CONSTRAINT "EventType_userCreatedId_fkey" F
 
 -- AddForeignKey
 ALTER TABLE "public"."EventType" ADD CONSTRAINT "EventType_userDeletedId_fkey" FOREIGN KEY ("userDeletedId") REFERENCES "public"."User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."Availability" ADD CONSTRAINT "Availability_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "public"."Event"("eventId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."_EventToScheduleSlot" ADD CONSTRAINT "_EventToScheduleSlot_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."Event"("eventId") ON DELETE CASCADE ON UPDATE CASCADE;

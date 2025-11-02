@@ -1,18 +1,7 @@
 import { calendarTransformer, eventTransformer, machineryTransformer } from '../transformers/calendar.transformer';
 import { getMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
 import { Organization } from '@prisma/client';
-import {
-  isAdmin,
-  isHead,
-  EventType,
-  Shop,
-  Calendar,
-  User,
-  ScheduleSlotCreateArgs,
-  AvailabilityCreateArgs,
-  Event,
-  Machinery
-} from 'shared';
+import { isAdmin, isHead, EventType, Shop, Calendar, User, ScheduleSlotCreateArgs, Event, Machinery } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
@@ -43,7 +32,6 @@ export default class CalendarService {
    * @param members Determines if this event type has members.
    * @param location Determines if this event type has a location.
    * @param zoomLink Determines if this event type has a zoom link.
-   * @param availabilities Determines if this event type has availabilities.
    * @param shop Determines if a shop is associated with this event type.
    * @param machinery Determines if machinery is associated with this event type.
    * @param workPackage Determines if a work package is associated with this event type.
@@ -68,7 +56,6 @@ export default class CalendarService {
     members: boolean,
     location: boolean,
     zoomLink: boolean,
-    availabilities: boolean,
     shop: boolean,
     machinery: boolean,
     workPackage: boolean,
@@ -114,7 +101,6 @@ export default class CalendarService {
         members,
         location,
         zoomLink,
-        availabilities,
         shop,
         machinery,
         workPackage,
@@ -203,7 +189,6 @@ export default class CalendarService {
    * @param workPackageIds An array of work packages associated with the event.
    * @param documentIds An array of documents associated with the event.
    * @param scheduleSlots An array of schedule slots associated with the event.
-   * @param availabilities An array of availabilities associated with the event.
    * @param approved Determines if the event has been approved.
    * @param approvedByUserId The ID of the approving user.
    * @param questionDocument The link to the question document.
@@ -227,7 +212,6 @@ export default class CalendarService {
     workPackageIds: string[],
     documentIds: string[],
     scheduleSlot: ScheduleSlotCreateArgs[],
-    availability: AvailabilityCreateArgs[],
     approved: boolean,
     approvedByUserId?: string,
     questionDocument?: string,
@@ -314,31 +298,6 @@ export default class CalendarService {
         throw new NotFoundException('User', approvedByUserId);
       }
     }
-
-    // Ensure each availability has a scheduleSettingsId
-    const availabilitiesWithScheduleSettings = await Promise.all(
-      availability.map(async (availability) => {
-        let scheduleSettings = await prisma.schedule_Settings.findUnique({
-          where: { userId: submitter.userId }
-        });
-
-        if (!scheduleSettings) {
-          scheduleSettings = await prisma.schedule_Settings.create({
-            data: {
-              userId: submitter.userId,
-              personalGmail: '',
-              personalZoomLink: ''
-            }
-          });
-        }
-
-        return {
-          availability: availability.availability,
-          dateSet: availability.dateSet,
-          scheduleSettingsId: scheduleSettings.drScheduleSettingsId
-        };
-      })
-    );
 
     const newEvent = await prisma.event.create({
       data: {
@@ -369,11 +328,6 @@ export default class CalendarService {
             allDay: s.allDay
           }))
         },
-        availabilities: {
-          createMany: {
-            data: availabilitiesWithScheduleSettings
-          }
-        },
         approved,
         approvedByUserId,
         location,
@@ -401,7 +355,6 @@ export default class CalendarService {
    * @param workPackageIds An array of work packages associated with the event.
    * @param documentIds An array of documents associated with the event.
    * @param scheduleSlots An array of schedule slots associated with the event.
-   * @param availabilities An array of availabilities associated with the event.
    * @param approved Determines if the event has been approved.
    * @param approvedByUserId The ID of the approving user.
    * @param questionDocument The link to the question document.
@@ -426,7 +379,6 @@ export default class CalendarService {
     workPackageIds: string[],
     documentIds: string[],
     scheduleSlot: ScheduleSlotCreateArgs[],
-    availability: AvailabilityCreateArgs[],
     approved: boolean,
     approvedByUserId?: string,
     questionDocument?: string,
@@ -441,6 +393,14 @@ export default class CalendarService {
 
     if (!foundEvent) throw new NotFoundException('Event', eventId);
     if (foundEvent.dateDeleted) throw new DeletedException('Event', eventId);
+
+    const hasPermission =
+      (await userHasPermission(submitter.userId, organization.organizationId, isAdmin)) ||
+      submitter.userId === foundEvent.userCreatedId;
+
+    if (!hasPermission) {
+      throw new AccessDeniedException('Only admins and creators can edit events!');
+    }
 
     // Validate eventTypeId
     const foundEventType = await prisma.eventType.findUnique({
@@ -522,35 +482,10 @@ export default class CalendarService {
       }
     }
 
-    // Ensure each availability has a scheduleSettingsId
-    const availabilitiesWithScheduleSettings = await Promise.all(
-      availability.map(async (availability) => {
-        let scheduleSettings = await prisma.schedule_Settings.findUnique({
-          where: { userId: submitter.userId }
-        });
-
-        if (!scheduleSettings) {
-          scheduleSettings = await prisma.schedule_Settings.create({
-            data: {
-              userId: submitter.userId,
-              personalGmail: '',
-              personalZoomLink: ''
-            }
-          });
-        }
-
-        return {
-          availability: availability.availability,
-          dateSet: availability.dateSet,
-          scheduleSettingsId: scheduleSettings.drScheduleSettingsId
-        };
-      })
-    );
-
     // Use transaction for the update
     const updatedEvent = await prisma.$transaction(async (tx) => {
-      // Fetch existing schedule slots and availabilities
-      const [existingSlots, existingAvailabilities] = await Promise.all([
+      // Fetch existing schedule slots
+      const [existingSlots] = await Promise.all([
         tx.scheduleSlot.findMany({
           where: { ScheduledEvents: { some: { eventId } } },
           select: {
@@ -560,14 +495,6 @@ export default class CalendarService {
             recurrenceNumber: true,
             initialDateScheduled: true,
             allDay: true
-          }
-        }),
-        tx.availability.findMany({
-          where: { eventId },
-          select: {
-            availability: true,
-            dateSet: true,
-            scheduleSettingsId: true
           }
         })
       ]);
@@ -584,22 +511,6 @@ export default class CalendarService {
             oldSlot.recurrenceNumber !== newSlot.recurrenceNumber ||
             oldSlot.initialDateScheduled !== newSlot.initialDateScheduled ||
             oldSlot.allDay !== newSlot.allDay
-          );
-        });
-      };
-
-      // Checks if all availabilties are the same (ie no changes)
-      const haveDifferentAvailabilities = (
-        a: typeof existingAvailabilities,
-        b: typeof availabilitiesWithScheduleSettings
-      ) => {
-        if (a.length !== b.length) return true;
-        return a.some((oldAvail, idx) => {
-          const newAvail = b[idx];
-          return (
-            oldAvail.scheduleSettingsId !== newAvail.scheduleSettingsId ||
-            oldAvail.availability !== newAvail.availability ||
-            oldAvail.dateSet !== newAvail.dateSet
           );
         });
       };
@@ -623,18 +534,6 @@ export default class CalendarService {
             })
           )
         );
-      }
-
-      if (haveDifferentAvailabilities(existingAvailabilities, availabilitiesWithScheduleSettings)) {
-        await tx.availability.deleteMany({
-          where: { eventId }
-        });
-        await tx.availability.createMany({
-          data: availabilitiesWithScheduleSettings.map((a) => ({
-            ...a,
-            eventId
-          }))
-        });
       }
 
       // Update the event with new data
@@ -986,7 +885,6 @@ export default class CalendarService {
    * @param members Determines if this event type has members.
    * @param location Determines if this event type has a location.
    * @param zoomLink Determines if this event type has a zoom link.
-   * @param availabilities Determines if this event type has availabilities.
    * @param shop Determines if a shop is associated with this event type.
    * @param machinery Determines if machinery is associated with this event type.
    * @param workPackage Determines if a work package is associated with this event type.
@@ -1011,7 +909,6 @@ export default class CalendarService {
     members: boolean,
     location: boolean,
     zoomLink: boolean,
-    availabilities: boolean,
     shop: boolean,
     machinery: boolean,
     workPackage: boolean,
@@ -1067,7 +964,6 @@ export default class CalendarService {
         members,
         location,
         zoomLink,
-        availabilities,
         shop,
         machinery,
         workPackage,

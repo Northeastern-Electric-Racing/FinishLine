@@ -10,17 +10,7 @@ import {
 import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, theVisitorGuest, alfred } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
-import {
-  Availability,
-  AvailabilityCreateArgs,
-  DayOfWeek,
-  EventType,
-  Machinery,
-  ScheduleSlot,
-  ScheduleSlotCreateArgs,
-  Shop,
-  Event
-} from 'shared';
+import { DayOfWeek, EventType, Machinery, ScheduleSlot, ScheduleSlotCreateArgs, Shop, Event } from 'shared';
 
 describe('Calendar Tests', () => {
   let orgId: string;
@@ -73,7 +63,6 @@ describe('Calendar Tests', () => {
       false,
       true,
       true,
-      false,
       false,
       false,
       false,
@@ -256,7 +245,6 @@ describe('Calendar Tests', () => {
             true,
             true,
             true,
-            true,
             false,
             false,
             false,
@@ -279,7 +267,6 @@ describe('Calendar Tests', () => {
         true,
         true,
         true,
-        false,
         true,
         false,
         false,
@@ -296,7 +283,6 @@ describe('Calendar Tests', () => {
       expect(result.members).toBe(true);
       expect(result.location).toBe(true);
       expect(result.zoomLink).toBe(false);
-      expect(result.availability).toBe(true);
       expect(result.shop).toBe(false);
       expect(result.machinery).toBe(false);
       expect(result.workPackage).toBe(false);
@@ -627,7 +613,6 @@ describe('Calendar Tests', () => {
         false,
         false,
         false,
-        false,
         true
       );
     });
@@ -640,7 +625,6 @@ describe('Calendar Tests', () => {
           guest,
           [calendar.calendarId],
           organization,
-          false,
           false,
           false,
           false,
@@ -665,7 +649,6 @@ describe('Calendar Tests', () => {
           adminUser,
           [invalidCalendarId],
           organization,
-          true,
           true,
           true,
           true,
@@ -719,7 +702,6 @@ describe('Calendar Tests', () => {
           false,
           false,
           false,
-          false,
           false
         )
       ).rejects.toThrow(new InvalidOrganizationException('Calendar'));
@@ -737,7 +719,6 @@ describe('Calendar Tests', () => {
           false,
           true,
           true,
-          false,
           false,
           true,
           false,
@@ -759,7 +740,6 @@ describe('Calendar Tests', () => {
         false,
         true,
         false,
-        true,
         true,
         true,
         false,
@@ -832,12 +812,6 @@ describe('Calendar Tests', () => {
           allDay: false
         }
       ];
-      const availabilities = [
-        {
-          availability: [9, 10],
-          dateSet: new Date('2025-10-13')
-        }
-      ];
 
       const result = await CalendarService.createEvent(
         adminUser,
@@ -850,7 +824,6 @@ describe('Calendar Tests', () => {
         [],
         [document],
         scheduleSlots,
-        availabilities,
         true,
         adminUser.userId,
         'https://example.com/questions.pdf',
@@ -871,8 +844,6 @@ describe('Calendar Tests', () => {
       expect(result.documentIds).toHaveLength(1);
       expect(result.scheduledTimes).toHaveLength(1);
       expect(result.scheduledTimes[0].days).toEqual([DayOfWeek.MONDAY, DayOfWeek.TUESDAY]);
-      expect(result.availability).toHaveLength(1);
-      expect(result.availability[0].availability).toEqual([9, 10]);
       expect(result.approved).toBe(true);
       expect(result.approvedBy!.userId).toBe(adminUser.userId);
       expect(result.questionDocument).toBe('https://example.com/questions.pdf');
@@ -892,12 +863,6 @@ describe('Calendar Tests', () => {
           allDay: false
         }
       ];
-      const availabilities = [
-        {
-          availability: [9, 10],
-          dateSet: new Date('2025-10-13')
-        }
-      ];
 
       await expect(
         CalendarService.createEvent(
@@ -911,7 +876,6 @@ describe('Calendar Tests', () => {
           [],
           [],
           scheduleSlots,
-          availabilities,
           false
         )
       ).rejects.toThrow(new NotFoundException('Event Type', 'non-existent-event-type-id'));
@@ -928,12 +892,6 @@ describe('Calendar Tests', () => {
           allDay: false
         }
       ];
-      const availabilities = [
-        {
-          availability: [9, 10],
-          dateSet: new Date('2025-10-13')
-        }
-      ];
 
       await expect(
         CalendarService.createEvent(
@@ -947,7 +905,6 @@ describe('Calendar Tests', () => {
           [],
           [],
           scheduleSlots,
-          availabilities,
           false
         )
       ).rejects.toThrow(new InvalidOrganizationException('Event Type'));
@@ -955,7 +912,6 @@ describe('Calendar Tests', () => {
 
     it('succeeds with minimal inputs', async () => {
       const scheduleSlots = [] as ScheduleSlot[];
-      const availabilities = [] as Availability[];
 
       const result = await CalendarService.createEvent(
         adminUser,
@@ -968,7 +924,6 @@ describe('Calendar Tests', () => {
         [],
         [],
         scheduleSlots,
-        availabilities,
         false
       );
 
@@ -980,7 +935,6 @@ describe('Calendar Tests', () => {
       expect(result.workPackages).toHaveLength(0);
       expect(result.documentIds).toHaveLength(0);
       expect(result.scheduledTimes).toHaveLength(0);
-      expect(result.availability).toHaveLength(0);
       expect(result.approved).toBe(false);
       expect(result.approvedBy).toBeUndefined();
       expect(result.questionDocument).toBeUndefined();
@@ -991,7 +945,6 @@ describe('Calendar Tests', () => {
 
     it('fails if memberIds are invalid', async () => {
       const scheduleSlots = [] as ScheduleSlot[];
-      const availabilities = [] as Availability[];
 
       await expect(
         CalendarService.createEvent(
@@ -1005,7 +958,6 @@ describe('Calendar Tests', () => {
           [],
           [],
           scheduleSlots,
-          availabilities,
           false
         )
       ).rejects.toThrow(new NotFoundException('User', 'non-existent-user-id'));
@@ -1013,7 +965,6 @@ describe('Calendar Tests', () => {
 
     it('fails if memberIds belong to a different organization', async () => {
       const scheduleSlots = [] as ScheduleSlot[];
-      const availabilities = [] as Availability[];
 
       await expect(
         CalendarService.createEvent(
@@ -1027,7 +978,6 @@ describe('Calendar Tests', () => {
           [],
           [],
           scheduleSlots,
-          availabilities,
           false
         )
       ).rejects.toThrow(new NotFoundException('User', otherOrgUser.userId));
@@ -1035,7 +985,6 @@ describe('Calendar Tests', () => {
 
     it('fails if shopIds are invalid', async () => {
       const scheduleSlots = [] as ScheduleSlot[];
-      const availabilities = [] as Availability[];
 
       await expect(
         CalendarService.createEvent(
@@ -1049,7 +998,6 @@ describe('Calendar Tests', () => {
           [],
           [],
           scheduleSlots,
-          availabilities,
           false
         )
       ).rejects.toThrow(new NotFoundException('Shop', 'non-existent-shop-id'));
@@ -1057,7 +1005,6 @@ describe('Calendar Tests', () => {
 
     it('fails if shopIds belong to a different organization', async () => {
       const scheduleSlots = [] as ScheduleSlot[];
-      const availabilities = [] as Availability[];
 
       await expect(
         CalendarService.createEvent(
@@ -1071,7 +1018,6 @@ describe('Calendar Tests', () => {
           [],
           [],
           scheduleSlots,
-          availabilities,
           false
         )
       ).rejects.toThrow(new NotFoundException('Shop', otherOrgShop.shopId));
@@ -1079,7 +1025,6 @@ describe('Calendar Tests', () => {
 
     it('fails if machineryIds are invalid', async () => {
       const scheduleSlots = [] as ScheduleSlot[];
-      const availabilities = [] as Availability[];
 
       await expect(
         CalendarService.createEvent(
@@ -1093,7 +1038,6 @@ describe('Calendar Tests', () => {
           [],
           [],
           scheduleSlots,
-          availabilities,
           false
         )
       ).rejects.toThrow(new NotFoundException('Machinery', 'non-existent-machinery-id'));
@@ -1101,7 +1045,6 @@ describe('Calendar Tests', () => {
 
     it('fails if machineryIds belong to a different organization', async () => {
       const scheduleSlots = [] as ScheduleSlot[];
-      const availabilities = [] as Availability[];
 
       await expect(
         CalendarService.createEvent(
@@ -1115,7 +1058,6 @@ describe('Calendar Tests', () => {
           [],
           [],
           scheduleSlots,
-          availabilities,
           false
         )
       ).rejects.toThrow(new NotFoundException('Machinery', otherOrgMachinery.machineryId));
@@ -1123,7 +1065,6 @@ describe('Calendar Tests', () => {
 
     it('fails if workPackageIds are invalid', async () => {
       const scheduleSlots = [] as ScheduleSlot[];
-      const availabilities = [] as Availability[];
 
       await expect(
         CalendarService.createEvent(
@@ -1137,7 +1078,6 @@ describe('Calendar Tests', () => {
           ['non-existent-work-package-id'],
           [],
           scheduleSlots,
-          availabilities,
           false
         )
       ).rejects.toThrow(new NotFoundException('Work Package', 'non-existent-work-package-id'));
@@ -1145,7 +1085,6 @@ describe('Calendar Tests', () => {
 
     it('fails if approvedByUserId is invalid', async () => {
       const scheduleSlots = [] as ScheduleSlot[];
-      const availabilities = [] as Availability[];
 
       await expect(
         CalendarService.createEvent(
@@ -1159,7 +1098,6 @@ describe('Calendar Tests', () => {
           [],
           [],
           scheduleSlots,
-          availabilities,
           true,
           'non-existent-user-id'
         )
@@ -1168,7 +1106,6 @@ describe('Calendar Tests', () => {
 
     it('fails if approvedByUserId belongs to a different organization', async () => {
       const scheduleSlots = [] as ScheduleSlot[];
-      const availabilities = [] as Availability[];
 
       await expect(
         CalendarService.createEvent(
@@ -1182,7 +1119,6 @@ describe('Calendar Tests', () => {
           [],
           [],
           scheduleSlots,
-          availabilities,
           true,
           otherOrgUser.userId
         )
@@ -1197,7 +1133,6 @@ describe('Calendar Tests', () => {
       });
 
       const scheduleSlots = [] as ScheduleSlot[];
-      const availabilities = [] as Availability[];
 
       await expect(
         CalendarService.createEvent(
@@ -1211,7 +1146,6 @@ describe('Calendar Tests', () => {
           [],
           [],
           scheduleSlots,
-          availabilities,
           false
         )
       ).rejects.toThrow(new NotFoundException('Shop', deletedShop.shopId));
@@ -1232,7 +1166,6 @@ describe('Calendar Tests', () => {
       });
 
       const scheduleSlots = [] as ScheduleSlot[];
-      const availabilities = [] as Availability[];
 
       await expect(
         CalendarService.createEvent(
@@ -1246,7 +1179,6 @@ describe('Calendar Tests', () => {
           [],
           [],
           scheduleSlots,
-          availabilities,
           false
         )
       ).rejects.toThrow(new NotFoundException('Machinery', deletedMachinery.machineryId));
@@ -1334,7 +1266,6 @@ describe('Calendar Tests', () => {
     let event: Event;
     let member: User;
     let scheduleSlots: ScheduleSlotCreateArgs[];
-    let availabilities: AvailabilityCreateArgs[];
 
     beforeEach(async () => {
       member = await createTestUser(supermanAdmin, orgId);
@@ -1346,12 +1277,6 @@ describe('Calendar Tests', () => {
           recurrenceNumber: 1,
           initialDateScheduled: new Date('2025-10-13'),
           allDay: false
-        }
-      ];
-      availabilities = [
-        {
-          availability: [9, 10],
-          dateSet: new Date('2025-10-13')
         }
       ];
 
@@ -1366,7 +1291,6 @@ describe('Calendar Tests', () => {
         [],
         ['doc1'],
         scheduleSlots,
-        availabilities,
         false
       );
     });
@@ -1385,7 +1309,6 @@ describe('Calendar Tests', () => {
           [],
           [],
           scheduleSlots,
-          availabilities,
           false
         )
       ).rejects.toThrow(new NotFoundException('Event', 'non-existent-id'));
@@ -1410,7 +1333,6 @@ describe('Calendar Tests', () => {
           [],
           [],
           scheduleSlots,
-          availabilities,
           false
         )
       ).rejects.toThrow(new DeletedException('Event', event.eventId));
@@ -1430,7 +1352,6 @@ describe('Calendar Tests', () => {
           [],
           [],
           scheduleSlots,
-          availabilities,
           false
         )
       ).rejects.toThrow(new NotFoundException('Event Type', 'non-existent-event-type-id'));
@@ -1455,7 +1376,6 @@ describe('Calendar Tests', () => {
           [],
           [],
           scheduleSlots,
-          availabilities,
           false
         )
       ).rejects.toThrow(new DeletedException('Event Type', eventType.eventTypeId));
@@ -1488,7 +1408,6 @@ describe('Calendar Tests', () => {
         false,
         false,
         false,
-        false,
         true
       );
 
@@ -1505,7 +1424,6 @@ describe('Calendar Tests', () => {
           [],
           [],
           scheduleSlots,
-          availabilities,
           false
         )
       ).rejects.toThrow(new InvalidOrganizationException('Event Type'));
@@ -1525,7 +1443,6 @@ describe('Calendar Tests', () => {
           [],
           [],
           scheduleSlots,
-          availabilities,
           false
         )
       ).rejects.toThrow(new NotFoundException('User', 'non-existent-user-id'));
@@ -1545,7 +1462,6 @@ describe('Calendar Tests', () => {
           [],
           [],
           scheduleSlots,
-          availabilities,
           false
         )
       ).rejects.toThrow(new NotFoundException('Shop', 'non-existent-shop-id'));
@@ -1571,7 +1487,6 @@ describe('Calendar Tests', () => {
           [],
           [],
           scheduleSlots,
-          availabilities,
           false
         )
       ).rejects.toThrow(new NotFoundException('Shop', deletedShop.shopId));
@@ -1591,7 +1506,6 @@ describe('Calendar Tests', () => {
           [],
           [],
           scheduleSlots,
-          availabilities,
           false
         )
       ).rejects.toThrow(new NotFoundException('Machinery', 'non-existent-machinery-id'));
@@ -1623,7 +1537,6 @@ describe('Calendar Tests', () => {
           [],
           [],
           scheduleSlots,
-          availabilities,
           false
         )
       ).rejects.toThrow(new NotFoundException('Machinery', deletedMachinery.machineryId));
@@ -1643,7 +1556,6 @@ describe('Calendar Tests', () => {
           ['non-existent-wp-id'],
           [],
           scheduleSlots,
-          availabilities,
           false
         )
       ).rejects.toThrow(new NotFoundException('Work Package', 'non-existent-wp-id'));
@@ -1663,7 +1575,6 @@ describe('Calendar Tests', () => {
           [],
           [],
           scheduleSlots,
-          availabilities,
           true,
           'non-existent-user-id'
         )
@@ -1682,12 +1593,6 @@ describe('Calendar Tests', () => {
           allDay: true
         }
       ];
-      const newAvailabilities: AvailabilityCreateArgs[] = [
-        {
-          availability: [14, 15],
-          dateSet: new Date('2025-10-15')
-        }
-      ];
 
       const result = await CalendarService.editEvent(
         adminUser,
@@ -1701,7 +1606,6 @@ describe('Calendar Tests', () => {
         [],
         ['doc2', 'doc3'],
         newScheduleSlots,
-        newAvailabilities,
         true,
         adminUser.userId,
         'https://updated.com/questions.pdf',
@@ -1736,7 +1640,6 @@ describe('Calendar Tests', () => {
         [],
         [],
         [],
-        [],
         false
       );
 
@@ -1765,12 +1668,6 @@ describe('Calendar Tests', () => {
           allDay: false
         }
       ];
-      const availabilities: AvailabilityCreateArgs[] = [
-        {
-          availability: [9, 10],
-          dateSet: new Date('2025-10-13')
-        }
-      ];
 
       event = await CalendarService.createEvent(
         adminUser,
@@ -1783,7 +1680,6 @@ describe('Calendar Tests', () => {
         [],
         [],
         scheduleSlots,
-        availabilities,
         false
       );
     });
@@ -1846,7 +1742,6 @@ describe('Calendar Tests', () => {
         false,
         false,
         false,
-        false,
         true
       );
     });
@@ -1895,7 +1790,6 @@ describe('Calendar Tests', () => {
         false,
         true,
         true,
-        false,
         false,
         false,
         false,

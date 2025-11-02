@@ -15,7 +15,6 @@ export const getEventQueryArgs = (organizationId: string) =>
       machinery: getMachineryQueryArgs(organizationId),
       workPackages: getWorkPackageQueryArgs(organizationId),
       approvedBy: getUserQueryArgs(organizationId),
-      scheduledTimes: true,
-      availabilities: true
+      scheduledTimes: true
     }
   });

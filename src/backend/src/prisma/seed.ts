@@ -3168,7 +3168,6 @@ const performSeed: () => Promise<void> = async () => {
     true,
     true,
     true,
-    true,
     false,
     false,
     false,
@@ -3184,7 +3183,6 @@ const performSeed: () => Promise<void> = async () => {
     'Design Review',
     [calendar.calendarId],
     ner,
-    true,
     true,
     true,
     true,
@@ -3211,7 +3209,6 @@ const performSeed: () => Promise<void> = async () => {
     true,
     false,
     false,
-    false,
     true,
     true,
     true,
@@ -3230,7 +3227,6 @@ const performSeed: () => Promise<void> = async () => {
     true,
     true,
     true,
-    false,
     false,
     false,
     true,
@@ -3261,12 +3257,6 @@ const performSeed: () => Promise<void> = async () => {
         allDay: false
       }
     ],
-    [
-      {
-        availability: [9, 10],
-        dateSet: new Date('2025-10-20T00:00:00.000Z')
-      }
-    ],
     true,
     batman.userId,
     'Conference Room A',
@@ -3293,12 +3283,6 @@ const performSeed: () => Promise<void> = async () => {
         recurrenceNumber: 2,
         initialDateScheduled: new Date('2025-10-22T00:00:00.000Z'),
         allDay: false
-      }
-    ],
-    [
-      {
-        availability: [14, 15],
-        dateSet: new Date('2025-10-22T00:00:00.000Z')
       }
     ],
     true,
@@ -3329,12 +3313,6 @@ const performSeed: () => Promise<void> = async () => {
         allDay: false
       }
     ],
-    [
-      {
-        availability: [10, 11],
-        dateSet: new Date('2025-10-24T00:00:00.000Z')
-      }
-    ],
     true,
     katara.userId,
     'Design Studio',
@@ -3361,12 +3339,6 @@ const performSeed: () => Promise<void> = async () => {
         recurrenceNumber: 1,
         initialDateScheduled: new Date('2025-10-27T00:00:00.000Z'),
         allDay: false
-      }
-    ],
-    [
-      {
-        availability: [13, 14],
-        dateSet: new Date('2025-10-27T00:00:00.000Z')
       }
     ],
     true,

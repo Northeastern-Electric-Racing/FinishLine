@@ -25,7 +25,6 @@ calendarRouter.post(
   body('members').isBoolean(),
   body('location').isBoolean(),
   body('zoomLink').isBoolean(),
-  body('availabilities').isBoolean(),
   body('shop').isBoolean(),
   body('machinery').isBoolean(),
   body('workPackage').isBoolean(),
@@ -64,10 +63,6 @@ calendarRouter.post(
   intMinZero(body('scheduleSlot.*.recurrenceNumber')),
   isDate(body('scheduleSlot.*.initialDateScheduled')),
   body('scheduleSlot.*.allDay').isBoolean(),
-  body('availability').isArray(),
-  body('availability.*.availability').isArray(),
-  intMinZero(body('availability.*.availability.*')),
-  isDate(body('availability.*.dateSet')),
   validateInputs,
   CalendarController.createEvent
 );
@@ -100,10 +95,6 @@ calendarRouter.post(
   intMinZero(body('scheduleSlot.*.recurrenceNumber')),
   isDate(body('scheduleSlot.*.initialDateScheduled')),
   body('scheduleSlot.*.allDay').isBoolean(),
-  body('availability').isArray(),
-  body('availability.*.availability').isArray(),
-  intMinZero(body('availability.*.availability.*')),
-  isDate(body('availability.*.dateSet')),
   validateInputs,
   CalendarController.editEvent
 );
@@ -167,7 +158,6 @@ calendarRouter.post(
   body('members').isBoolean(),
   body('location').isBoolean(),
   body('zoomLink').isBoolean(),
-  body('availabilities').isBoolean(),
   body('shop').isBoolean(),
   body('machinery').isBoolean(),
   body('workPackage').isBoolean(),

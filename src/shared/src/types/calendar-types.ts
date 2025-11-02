@@ -1,5 +1,5 @@
 import { WorkPackage } from './project-types';
-import { Availability, User } from './user-types';
+import { User } from './user-types';
 
 export interface Calendar {
   calendarId: string;
@@ -51,7 +51,6 @@ export interface EventType {
   members: boolean;
   location: boolean;
   zoomLink: boolean;
-  availability: boolean;
   shop: boolean;
   machinery: boolean;
   workPackage: boolean;
@@ -95,7 +94,6 @@ export interface Event {
   people: User[];
   location?: string;
   zoomLink?: string;
-  availability: Availability[];
   shops: Shop[];
   machinery: Machinery[];
   workPackages: WorkPackage[];

@@ -1048,7 +1048,6 @@ model Event {
   members          User[]         @relation(name: "eventAttender")
   location         String?
   zoomLink         String?
-  availabilities   Availability[]
   shops            Shop[]
   machinery        Machinery[]
   workPackages     Work_Package[]
@@ -1091,7 +1090,6 @@ model EventType {
   members              Boolean
   location             Boolean
   zoomLink             Boolean
-  availabilities       Boolean
   shop                 Boolean
   machinery            Boolean
   workPackage          Boolean
@@ -1165,8 +1163,6 @@ model Availability {
   availabilityId     String            @id @default(uuid())
   scheduleSettingsId String
   scheduleSettings   Schedule_Settings @relation(fields: [scheduleSettingsId], references: [drScheduleSettingsId])
-  eventId            String?
-  event              Event?            @relation(fields: [eventId], references: [eventId])
 
   // Availibilies are integers between 0 and 11 from 10am - 10pm for a given day at hour intervals see meetingTime field in Design_Review
   availability Int[]
