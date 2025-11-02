@@ -835,6 +835,7 @@ describe('Calendar Tests', () => {
         eventType.eventTypeId,
         organization,
         [member.userId],
+        [],
         [shop.shopId],
         [machinery.machineryId],
         [],
@@ -900,6 +901,7 @@ describe('Calendar Tests', () => {
           [],
           [],
           [],
+          [],
           scheduleSlots,
           availabilities,
           false
@@ -932,6 +934,7 @@ describe('Calendar Tests', () => {
           eventType.eventTypeId,
           otherOrg,
           [member.userId],
+          [],
           [shop.shopId],
           [],
           [],
@@ -952,6 +955,7 @@ describe('Calendar Tests', () => {
         'Minimal Event',
         eventType.eventTypeId,
         organization,
+        [],
         [],
         [],
         [],
@@ -994,6 +998,7 @@ describe('Calendar Tests', () => {
           [],
           [],
           [],
+          [],
           scheduleSlots,
           availabilities,
           false
@@ -1016,6 +1021,7 @@ describe('Calendar Tests', () => {
           [],
           [],
           [],
+          [],
           scheduleSlots,
           availabilities,
           false
@@ -1033,6 +1039,7 @@ describe('Calendar Tests', () => {
           'Invalid Shops',
           eventType.eventTypeId,
           organization,
+          [],
           [],
           ['non-existent-shop-id'],
           [],
@@ -1055,6 +1062,7 @@ describe('Calendar Tests', () => {
           'Wrong Org Shops',
           eventType.eventTypeId,
           organization,
+          [],
           [],
           [otherOrgShop.shopId],
           [],
@@ -1079,6 +1087,7 @@ describe('Calendar Tests', () => {
           organization,
           [],
           [],
+          [],
           ['non-existent-machinery-id'],
           [],
           [],
@@ -1101,6 +1110,7 @@ describe('Calendar Tests', () => {
           organization,
           [],
           [],
+          [],
           [otherOrgMachinery.machineryId],
           [],
           [],
@@ -1121,6 +1131,7 @@ describe('Calendar Tests', () => {
           'Invalid Work Packages',
           eventType.eventTypeId,
           organization,
+          [],
           [],
           [],
           [],
@@ -1148,6 +1159,7 @@ describe('Calendar Tests', () => {
           [],
           [],
           [],
+          [],
           scheduleSlots,
           availabilities,
           true,
@@ -1166,6 +1178,7 @@ describe('Calendar Tests', () => {
           'Wrong Org Approver',
           eventType.eventTypeId,
           organization,
+          [],
           [],
           [],
           [],
@@ -1195,6 +1208,7 @@ describe('Calendar Tests', () => {
           'Deleted Shops',
           eventType.eventTypeId,
           organization,
+          [],
           [],
           [deletedShop.shopId],
           [],
@@ -1232,6 +1246,7 @@ describe('Calendar Tests', () => {
           organization,
           [],
           [],
+          [],
           [deletedMachinery.machineryId],
           [],
           [],
@@ -1241,6 +1256,348 @@ describe('Calendar Tests', () => {
         )
       ).rejects.toThrow(new NotFoundException('Machinery', deletedMachinery.machineryId));
     });
+  });
+
+  describe('Get Events', () => {
+    it('Succeeds and gets all events', async () => {
+      const member = await createTestUser(supermanAdmin, orgId);
+
+      const document = 'Test Document';
+
+      const scheduleSlots = [
+        {
+          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
+          startTime: new Date('2025-10-13T09:00:00Z'),
+          endTime: new Date('2025-10-13T10:00:00Z'),
+          recurrenceNumber: 1,
+          initialDateScheduled: new Date('2025-10-13'),
+          allDay: false
+        }
+      ];
+      const availabilities = [
+        {
+          availability: [9, 10],
+          dateSet: new Date('2025-10-13')
+        }
+      ];
+
+      const event1 = await CalendarService.createEvent(
+        adminUser,
+        'Team Sync',
+        eventType.eventTypeId,
+        organization,
+        [member.userId],
+        [],
+        [shop.shopId],
+        [machinery.machineryId],
+        [],
+        [document],
+        scheduleSlots,
+        availabilities,
+        true,
+        adminUser.userId,
+        'https://example.com/questions.pdf',
+        'Conference Room A',
+        'https://zoom.us/j/123456789',
+        'Weekly team synchronization meeting'
+      );
+
+      const event2 = await CalendarService.createEvent(
+        adminUser,
+        'Awesome Meeting',
+        eventType.eventTypeId,
+        organization,
+        [member.userId],
+        [],
+        [shop.shopId],
+        [],
+        [],
+        [],
+        scheduleSlots,
+        availabilities,
+        true,
+        adminUser.userId,
+        'https://example.com/questions.pdf',
+        'Conference Room A',
+        'https://zoom.us/j/123456789',
+        'Weekly team synchronization meeting'
+      );
+
+      const result = await CalendarService.getFilteredEvents(
+        { startPeriod: new Date('2020-10-01T09:00:00Z'), endPeriod: new Date('2027-11-01T09:00:00Z') },
+        organization
+      );
+      expect(result).toStrictEqual([event1, event2]);
+    });
+
+    it('Succeeds and gets all events within a timeframe', async () => {
+      const member = await createTestUser(supermanAdmin, orgId);
+
+      const document = 'Test Document';
+
+      const scheduleSlots = [
+        {
+          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
+          startTime: new Date('2025-10-13T09:00:00Z'),
+          endTime: new Date('2025-10-13T10:00:00Z'),
+          recurrenceNumber: 1,
+          initialDateScheduled: new Date('2025-10-13'),
+          allDay: false
+        }
+      ];
+      const availabilities = [
+        {
+          availability: [9, 10],
+          dateSet: new Date('2025-10-13')
+        }
+      ];
+
+      const event1 = await CalendarService.createEvent(
+        adminUser,
+        'Team Sync',
+        eventType.eventTypeId,
+        organization,
+        [member.userId],
+        [],
+        [shop.shopId],
+        [machinery.machineryId],
+        [],
+        [document],
+        scheduleSlots,
+        availabilities,
+        true,
+        adminUser.userId,
+        'https://example.com/questions.pdf',
+        'Conference Room A',
+        'https://zoom.us/j/123456789',
+        'Weekly team synchronization meeting'
+      );
+
+      const event2 = await CalendarService.createEvent(
+        adminUser,
+        'Awesome Meeting',
+        eventType.eventTypeId,
+        organization,
+        [member.userId],
+        [],
+        [shop.shopId],
+        [],
+        [],
+        [],
+        scheduleSlots,
+        availabilities,
+        true,
+        adminUser.userId,
+        'https://example.com/questions.pdf',
+        'Conference Room A',
+        'https://zoom.us/j/123456789',
+        'Weekly team synchronization meeting'
+      );
+
+      const scheduleSlots2 = [
+        {
+          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
+          startTime: new Date('2025-10-13T09:00:00Z'),
+          endTime: new Date('2025-10-13T10:00:00Z'),
+          recurrenceNumber: 5,
+          initialDateScheduled: new Date('2029-10-01'),
+          allDay: false
+        }
+      ];
+
+      // out of timeframe date
+      await CalendarService.createEvent(
+        adminUser,
+        'Way too far in the future meeting',
+        eventType.eventTypeId,
+        organization,
+        [member.userId],
+        [],
+        [shop.shopId],
+        [],
+        [],
+        [],
+        scheduleSlots2,
+        availabilities,
+        true,
+        adminUser.userId,
+        'https://example.com/questions.pdf',
+        'Conference Room A',
+        'https://zoom.us/j/123456789',
+        'Weekly team synchronization meeting'
+      );
+
+      const result = await CalendarService.getFilteredEvents(
+        { startPeriod: new Date('2025-10-01T09:00:00Z'), endPeriod: new Date('2025-11-01T09:00:00Z') },
+        organization
+      );
+      expect(result).toStrictEqual([event1, event2]);
+    });
+
+    it('Succeeds and gets all events with matching members', async () => {
+      const member = await createTestUser(supermanAdmin, orgId);
+
+      const document = 'Test Document';
+
+      const scheduleSlots = [
+        {
+          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
+          startTime: new Date('2025-10-13T09:00:00Z'),
+          endTime: new Date('2025-10-13T10:00:00Z'),
+          recurrenceNumber: 1,
+          initialDateScheduled: new Date('2025-10-13'),
+          allDay: false
+        }
+      ];
+      const availabilities = [
+        {
+          availability: [9, 10],
+          dateSet: new Date('2025-10-13')
+        }
+      ];
+
+      const event1 = await CalendarService.createEvent(
+        adminUser,
+        'Team Sync',
+        eventType.eventTypeId,
+        organization,
+        [member.userId],
+        [],
+        [shop.shopId],
+        [machinery.machineryId],
+        [],
+        [document],
+        scheduleSlots,
+        availabilities,
+        true,
+        adminUser.userId,
+        'https://example.com/questions.pdf',
+        'Conference Room A',
+        'https://zoom.us/j/123456789',
+        'Weekly team synchronization meeting'
+      );
+
+      await CalendarService.createEvent(
+        adminUser,
+        'Awesome Meeting',
+        eventType.eventTypeId,
+        organization,
+        [],
+        [],
+        [shop.shopId],
+        [],
+        [],
+        [],
+        scheduleSlots,
+        availabilities,
+        true,
+        adminUser.userId,
+        'https://example.com/questions.pdf',
+        'Conference Room A',
+        'https://zoom.us/j/123456789',
+        'Weekly team synchronization meeting'
+      );
+
+      const scheduleSlots2 = [
+        {
+          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
+          startTime: new Date('2025-10-13T09:00:00Z'),
+          endTime: new Date('2025-10-13T10:00:00Z'),
+          recurrenceNumber: 5,
+          initialDateScheduled: new Date('2029-10-01'),
+          allDay: false
+        }
+      ];
+
+      // out of timeframe date
+      await CalendarService.createEvent(
+        adminUser,
+        'Way too far in the future meeting',
+        eventType.eventTypeId,
+        organization,
+        [],
+        [],
+        [shop.shopId],
+        [],
+        [],
+        [],
+        scheduleSlots2,
+        availabilities,
+        true,
+        adminUser.userId,
+        'https://example.com/questions.pdf',
+        'Conference Room A',
+        'https://zoom.us/j/123456789',
+        'Weekly team synchronization meeting'
+      );
+
+      const result = await CalendarService.getFilteredEvents(
+        {
+          startPeriod: new Date('2020-10-01T09:00:00Z'),
+          endPeriod: new Date('2027-11-01T09:00:00Z'),
+          memberIds: [member.userId]
+        },
+        organization
+      );
+      expect(result).toStrictEqual([event1]);
+    });
+  });
+
+  it('fails if memberIds do not exist', async () => {
+    await expect(
+      CalendarService.getFilteredEvents(
+        {
+          startPeriod: new Date('2020-10-01T09:00:00Z'),
+          endPeriod: new Date('2027-11-01T09:00:00Z'),
+          memberIds: ['fakeId']
+        },
+        organization
+      )
+    ).rejects.toThrow(new NotFoundException('User', 'fakeId'));
+  });
+
+  it('fails if eventTypeIds do not exist', async () => {
+    await expect(
+      CalendarService.getFilteredEvents(
+        {
+          startPeriod: new Date('2020-10-01T09:00:00Z'),
+          endPeriod: new Date('2027-11-01T09:00:00Z'),
+          eventTypeIds: ['fakeId']
+        },
+        organization
+      )
+    ).rejects.toThrow(new NotFoundException('Event Type', 'fakeId'));
+  });
+
+  it('fails if eventIds do not exist', async () => {
+    await expect(
+      CalendarService.getFilteredEvents(
+        { startPeriod: new Date('2020-10-01T09:00:00Z'), endPeriod: new Date('2027-11-01T09:00:00Z'), eventIds: ['fakeId'] },
+        organization
+      )
+    ).rejects.toThrow(new NotFoundException('Event', 'fakeId'));
+  });
+
+  it('fails if calendarIds do not exist', async () => {
+    await expect(
+      CalendarService.getFilteredEvents(
+        {
+          startPeriod: new Date('2020-10-01T09:00:00Z'),
+          endPeriod: new Date('2027-11-01T09:00:00Z'),
+          calendarIds: ['fakeId']
+        },
+        organization
+      )
+    ).rejects.toThrow(new NotFoundException('Calendar', 'fakeId'));
+  });
+
+  it('fails if teamIds do not exist', async () => {
+    await expect(
+      CalendarService.getFilteredEvents(
+        { startPeriod: new Date('2020-10-01T09:00:00Z'), endPeriod: new Date('2027-11-01T09:00:00Z'), teamIds: ['fakeId'] },
+        organization
+      )
+    ).rejects.toThrow(new NotFoundException('Team', 'fakeId'));
   });
 
   describe('Delete Machinery', () => {

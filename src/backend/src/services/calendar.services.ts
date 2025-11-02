@@ -11,6 +11,7 @@ import {
   ScheduleSlotCreateArgs,
   AvailabilityCreateArgs,
   Event,
+  FilterArgs,
   Machinery
 } from 'shared';
 import prisma from '../prisma/prisma';
@@ -28,6 +29,7 @@ import { shopTransformer } from '../transformers/calendar.transformer';
 import { getShopQueryArgs } from '../prisma-query-args/shop.query-args';
 import { getCalendarQueryArgs } from '../prisma-query-args/calendar.query-args';
 import { getEventQueryArgs } from '../prisma-query-args/event.query-args';
+import { buildScheduledTimesOverlap } from '../utils/calendar.utils';
 
 export default class CalendarService {
   /**
@@ -223,6 +225,7 @@ export default class CalendarService {
     eventTypeId: string,
     organization: Organization,
     memberIds: string[],
+    teamIds: string[],
     shopIds: string[],
     machineryIds: string[],
     workPackageIds: string[],
@@ -257,6 +260,20 @@ export default class CalendarService {
       if (foundMembers.length !== memberIds.length) {
         const missingIds = memberIds.filter((id) => !foundMembers.some((user) => user.userId === id));
         throw new NotFoundException('User', missingIds.join(', '));
+      }
+    }
+
+    // Validate teamIds
+    if (teamIds.length > 0) {
+      const foundteams = await prisma.team.findMany({
+        where: {
+          teamId: { in: teamIds },
+          organization: { organizationId: organization.organizationId }
+        }
+      });
+      if (foundteams.length !== teamIds.length) {
+        const missingIds = teamIds.filter((id) => !foundteams.some((team) => team.teamId === id));
+        throw new NotFoundException('Team', missingIds.join(', '));
       }
     }
 
@@ -341,6 +358,11 @@ export default class CalendarService {
       })
     );
 
+    const computeEndDate = (initial: Date, recurrenceNumber: number) => {
+      const weeks = Math.max(1, recurrenceNumber ?? 0);
+      return new Date(initial.getTime() + weeks * 7 * 24 * 60 * 60 * 1000);
+    };
+
     const newEvent = await prisma.event.create({
       data: {
         userCreatedId: submitter.userId,
@@ -349,6 +371,9 @@ export default class CalendarService {
         eventTypeId,
         members: {
           connect: memberIds.map((userId) => ({ userId }))
+        },
+        teams: {
+          connect: teamIds.map((teamId) => ({ teamId }))
         },
         shops: {
           connect: shopIds.map((shopId) => ({ shopId }))
@@ -367,6 +392,7 @@ export default class CalendarService {
             endTime: s.endTime ?? null,
             recurrenceNumber: s.recurrenceNumber,
             initialDateScheduled: s.initialDateScheduled,
+            endDate: computeEndDate(s.initialDateScheduled, s.recurrenceNumber),
             allDay: s.allDay
           }))
         },
@@ -807,6 +833,136 @@ export default class CalendarService {
     return shopTransformer(deleted);
   }
 
+  /**
+   * Gets all events that match the given filter arguments
+   *
+   * @param filters Filters for the events you want to get, which include member IDs, team IDs, event IDs, event type IDs, approval status, and date ranges
+   *
+   * @returns The all events that match all of the given filter arguments.
+   *
+   * @throws NotFoundException If the given event type Ids, member IDs, team IDs, or event IDs are not found.
+   */
+  static async getFilteredEvents(filters: FilterArgs, organization: Organization): Promise<Event[]> {
+    const { memberIds, teamIds, calendarIds, eventTypeIds, eventIds, approvalStatus, startPeriod, endPeriod } = filters;
+
+    // validate memberIds
+    if (memberIds?.length) {
+      const foundMembers = await prisma.user.findMany({
+        where: {
+          userId: { in: memberIds },
+          organizations: { some: { organizationId: organization.organizationId } }
+        }
+      });
+      if (foundMembers.length !== memberIds.length) {
+        const missingIds = memberIds.filter((id) => !foundMembers.some((mem) => mem.userId === id));
+        throw new NotFoundException('User', missingIds.join(', '));
+      }
+    }
+
+    // validate teamIds
+    if (teamIds?.length) {
+      const foundteams = await prisma.team.findMany({
+        where: {
+          teamId: { in: teamIds },
+          organization: { organizationId: organization.organizationId }
+        }
+      });
+      if (foundteams.length !== teamIds.length) {
+        const missingIds = teamIds.filter((id) => !foundteams.some((team) => team.teamId === id));
+        throw new NotFoundException('Team', missingIds.join(', '));
+      }
+    }
+
+    // validate calendarIds
+    if (calendarIds?.length) {
+      const foundcalendars = await prisma.calendar.findMany({
+        where: {
+          calendarId: { in: calendarIds },
+          organization: { organizationId: organization.organizationId },
+          dateDeleted: null
+        }
+      });
+      if (foundcalendars.length !== calendarIds.length) {
+        const missingIds = calendarIds.filter((id) => !foundcalendars.some((mem) => mem.calendarId === id));
+        throw new NotFoundException('Calendar', missingIds.join(', '));
+      }
+    }
+
+    // validate eventTypeIds
+    if (eventTypeIds?.length) {
+      const foundEventTypes = await prisma.eventType.findMany({
+        where: {
+          eventTypeId: { in: eventTypeIds },
+          organization: { organizationId: organization.organizationId },
+          dateDeleted: null
+        }
+      });
+      if (foundEventTypes.length !== eventTypeIds.length) {
+        const missingIds = eventTypeIds.filter((id) => !foundEventTypes.some((et) => et.eventTypeId === id));
+        throw new NotFoundException('Event Type', missingIds.join(', '));
+      }
+    }
+
+    // validate eventIds
+    if (eventIds?.length) {
+      const foundEvents = await prisma.event.findMany({
+        where: {
+          eventId: { in: eventIds },
+          dateDeleted: null
+        }
+      });
+      if (foundEvents.length !== eventIds.length) {
+        const missingIds = eventIds.filter((id) => !foundEvents.some((et) => et.eventId === id));
+        throw new NotFoundException('Event', missingIds.join(', '));
+      }
+    }
+
+    // filters for members
+    const memberOrCreator = memberIds?.length
+      ? {
+          OR: [
+            { members: { some: { userId: { in: memberIds } } } }, // attendee
+            { userCreatedId: { in: memberIds } } // creator
+          ]
+        }
+      : undefined;
+
+    // filters for selected calendars
+    const fromCalendar = calendarIds?.length
+      ? {
+          eventType: {
+            is: {
+              organizationId: organization.organizationId,
+              calendars: {
+                some: {
+                  calendarId: { in: calendarIds },
+                  organizationId: organization.organizationId
+                }
+              }
+            }
+          }
+        }
+      : undefined;
+
+    // get event using filter args
+    const events = await prisma.event.findMany({
+      where: {
+        dateDeleted: null,
+        eventId: eventIds?.length ? { in: eventIds } : undefined,
+        eventTypeId: eventTypeIds?.length ? { in: eventTypeIds } : undefined,
+        teams: teamIds?.length ? { some: { teamId: { in: teamIds } } } : undefined,
+        approved: approvalStatus !== undefined ? { equals: approvalStatus } : undefined,
+        scheduledTimes: buildScheduledTimesOverlap(startPeriod, endPeriod),
+        ...memberOrCreator,
+        ...fromCalendar
+      },
+      ...getEventQueryArgs(organization.organizationId),
+      orderBy: { dateCreated: 'asc' }
+    });
+
+    return events.map(eventTransformer);
+  }
+
   static async getAllShops(organization: Organization): Promise<Shop[]> {
     const shops = await prisma.shop.findMany({
       where: {
@@ -819,6 +975,17 @@ export default class CalendarService {
     return shops.map(shopTransformer);
   }
 
+  static async getAllCalendars(organization: Organization): Promise<Calendar[]> {
+    const calendars = await prisma.calendar.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null
+      },
+      ...getCalendarQueryArgs(organization.organizationId)
+    });
+
+    return calendars.map(calendarTransformer);
+  }
   /**
    * Deletes a machinery by its ID.
    * Requires the submitter to be an admin.
