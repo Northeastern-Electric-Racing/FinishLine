@@ -41,7 +41,8 @@ export type SubmitText =
   | 'Delete'
   | 'Schedule'
   | 'Send To Advisor'
-  | 'Submit to SABO'
+  | 'Mark as added to Concur'
+  | 'Mark Submitted'
   | 'Create Change Request'
   | 'Update'
   | 'Submit Vendor';

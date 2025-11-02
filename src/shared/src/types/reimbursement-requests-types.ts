@@ -20,12 +20,14 @@ export interface ReimbursementRequestRow {
   submitter: User;
   vendor: Vendor;
   refundSource: IndexCode;
+  financeMemberAssigned: User | undefined;
 }
 
 export enum ReimbursementStatusType {
   PENDING_LEADERSHIP_APPROVAL = 'PENDING_LEADERSHIP_APPROVAL',
   PENDING_FINANCE = 'PENDING_FINANCE',
   LEADERSHIP_APPROVED = 'LEADERSHIP_APPROVED',
+  PENDING_SABO_SUBMISSION = 'PENDING_SABO_SUBMISSION',
   SABO_SUBMITTED = 'SABO_SUBMITTED',
   ADVISOR_APPROVED = 'ADVISOR_APPROVED',
   REIMBURSED = 'REIMBURSED',
@@ -61,6 +63,7 @@ export interface ReimbursementRequest {
   dateDelivered?: Date;
   accountCode: AccountCode;
   comments: ReimbursementRequestComment[];
+  assignee?: User;
 }
 
 export interface OtherProductReason {

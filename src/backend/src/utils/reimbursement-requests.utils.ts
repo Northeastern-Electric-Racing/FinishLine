@@ -387,10 +387,6 @@ export const isAuthUserHeadOfFinance = (user: Prisma.UserGetPayload<AuthUserQuer
   return user.teamsAsHead.some((team) => team.financeTeam);
 };
 
-export const isUserHeadOrOnFinance = async (submitter: User, organizationId: string) => {
-  await validateUserIsPartOfFinanceTeamOrHead(submitter, organizationId);
-};
-
 // const isTeamIdInList = (teamId: string, teamsList: Team[]) => {
 //   return teamsList.map((team) => team.teamId).includes(teamId);
 // };

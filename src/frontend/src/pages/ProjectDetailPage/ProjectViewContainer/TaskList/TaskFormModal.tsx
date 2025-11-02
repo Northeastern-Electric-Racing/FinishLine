@@ -12,6 +12,7 @@ import ErrorPage from '../../../ErrorPage';
 
 const schema = yup.object().shape({
   notes: yup.string().optional(),
+  startDate: yup.date().optional(),
   deadline: yup.date().optional(),
   priority: yup.mixed<TaskPriority>().oneOf(Object.values(TaskPriority)).required(),
   assignees: yup.array().required(),
@@ -24,6 +25,7 @@ export interface EditTaskFormInput {
   title: string;
   notes?: string;
   assignees: string[];
+  startDate?: Date;
   deadline?: Date;
   priority: TaskPriority;
 }
@@ -53,6 +55,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
       title: task?.title ?? '',
       taskId: task?.taskId ?? '-1',
       notes: task?.notes ?? '',
+      startDate: task?.startDate ?? undefined,
       deadline: task?.deadline ?? undefined,
       priority: task?.priority ?? TaskPriority.Low,
       assignees: task?.assignees.map((assignee) => assignee.userId) ?? []
@@ -136,7 +139,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={8}>
+          <Grid item md={12}>
             <FormControl fullWidth>
               <FormLabel>Assignees</FormLabel>
               <Controller
@@ -160,7 +163,26 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid item md={6}>
+            <FormControl fullWidth>
+              <FormLabel>Start Date (MM-DD-YYYY)</FormLabel>
+              <Controller
+                name="startDate"
+                control={control}
+                rules={{ required: false }}
+                render={({ field: { onChange, value } }) => (
+                  <DatePicker
+                    format="MM-dd-yyyy"
+                    onChange={(event) => onChange(event ?? undefined)}
+                    className={'padding: 10'}
+                    value={value}
+                    slotProps={{ textField: { autoComplete: 'off', error: !!errors.startDate } }}
+                  />
+                )}
+              />
+            </FormControl>
+          </Grid>
+          <Grid item md={6}>
             <FormControl fullWidth>
               <FormLabel>Deadline (MM-DD-YYYY)</FormLabel>
               <Controller
@@ -170,7 +192,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
                 render={({ field: { onChange, value } }) => (
                   <DatePicker
                     format="MM-dd-yyyy"
-                    onChange={(event) => onChange(event ?? new Date())}
+                    onChange={(event) => onChange(event ?? undefined)}
                     className={'padding: 10'}
                     value={value}
                     slotProps={{ textField: { autoComplete: 'off', error: !!errors.deadline } }}

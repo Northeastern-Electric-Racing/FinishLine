@@ -3,9 +3,10 @@ import TeamsController from '../controllers/teams.controllers';
 import { body } from 'express-validator';
 import { nonEmptyString, validateInputs } from '../utils/validation.utils';
 import multer, { memoryStorage } from 'multer';
+import { MAX_FILE_SIZE } from 'shared';
 
 const teamsRouter = express.Router();
-const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage() });
+const upload = multer({ limits: { fileSize: MAX_FILE_SIZE }, storage: memoryStorage() });
 
 teamsRouter.get('/', TeamsController.getAllTeams);
 teamsRouter.get('/archive', TeamsController.getAllArchivedTeams);

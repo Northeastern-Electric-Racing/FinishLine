@@ -236,22 +236,6 @@ export default class TeamsService {
     if (!(await userHasPermission(newHead.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('The team head must be at least a head');
 
-    // checking to see if any other teams have the new head as their current head or lead
-    const newHeadTeam = await prisma.team.findFirst({
-      where: {
-        AND: [
-          { OR: [{ headId: userId }, { leads: { some: { userId } } }] },
-          { NOT: { teamId: team.teamId } },
-          { organizationId: organization.organizationId }
-        ]
-      }
-    });
-
-    if (newHeadTeam)
-      throw new AccessDeniedException(
-        'The new team head must not be a head or lead of another team in the same organization!'
-      );
-
     const updateTeam = await prisma.team.update({
       where: { teamId },
       data: {
@@ -320,14 +304,6 @@ export default class TeamsService {
     if (!newHead) throw new NotFoundException('User', headId);
     if (!(await userHasPermission(newHead.userId, organization.organizationId, isHead)))
       throw new HttpException(400, 'The team head must be at least a head');
-
-    // checking to see if any other teams have the new head as their current head
-    const newHeadTeam = await prisma.team.findFirst({
-      where: { headId, organizationId: organization.organizationId }
-    });
-
-    if (newHeadTeam)
-      throw new HttpException(400, 'The new team head must not be a head of another team in the same organization.');
 
     const duplicateName = await prisma.team.findFirst({
       where: { teamName, organizationId: organization.organizationId }

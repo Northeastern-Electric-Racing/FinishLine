@@ -168,10 +168,12 @@ const financeCreateReimbursementRequest = () => `${financeEndpoints()}/create`;
 const financeReimbursementRequestById = (id: string) => `${financeEndpoints()}/${id}`;
 const financeImageById = (fileId: string) => `${financeEndpoints()}/receipt-image/${fileId}`;
 const financeEditReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/edit`;
+const financeAssignMemberToRR = (id: string) => `${financeEndpoints()}/${id}/assign-finance-member`;
 const getAllAccountCodes = () => `${financeEndpoints()}/account-codes`;
 const getAllVendors = () => `${financeEndpoints()}/vendors`;
 const financeUploadReceipt = (id: string) => `${financeEndpoints()}/${id}/upload-receipt`;
 const financeGetUserReimbursementRequest = () => `${financeEndpoints()}/current-user`;
+const financeGetUserAssignedReimbursementRequest = () => `${financeEndpoints()}/assigned-user`;
 const financeGetUserReimbursements = () => `${financeEndpoints()}/reimbursements/current-user`;
 const financeGetAllReimbursements = () => `${financeEndpoints()}/reimbursements`;
 const financeReportRefund = () => `${financeEndpoints()}/reimburse`;
@@ -180,7 +182,8 @@ const financeSetSaboNumber = (id: string) => `${financeEndpoints()}/${id}/set-sa
 const financeDeleteReimbursement = (id: string) => `${financeEndpoints()}/${id}/delete`;
 const financeMarkAsDelivered = (id: string) => `${financeEndpoints()}/${id}/delivered`;
 const financeMarkAsReimbursed = (id: string) => `${financeEndpoints()}/${id}/reimbursed`;
-const financeApproveReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/approve`;
+const financeInputReimbursementRequestInSabo = (id: string) => `${financeEndpoints()}/${id}/input-in-sabo`;
+const financeMarkReimbursementRequestAsSaboSubmitted = (id: string) => `${financeEndpoints()}/${id}/mark-sabo-submitted`;
 const financeDenyReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/deny`;
 const financeMarkPending = (id: string) => `${financeEndpoints()}/${id}/pending-finance`;
 const financeRequestChanges = (id: string) => `${financeEndpoints()}/${id}/request-changes`;
@@ -202,6 +205,7 @@ const financeCreateSponsorTier = () => `${financeRoutesEndpoints()}/sponsorTier/
 const financeCreateSponsorTask = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/sponsorTasks`;
 const financeCreateReimbursementRequestComment = (id: string) => `${financeEndpoints()}/${id}/comments`;
 const getAllIndexCodes = () => `${financeEndpoints()}/index-codes`;
+const editIndexCode = (indexCodeId: string) => `${financeEndpoints()}/index-codes/${indexCodeId}/edit`;
 const getAllOtherProductReasons = () => `${financeEndpoints()}/other-reimbursement-product-reasons`;
 const financeCreateOtherProductReason = () => `${getAllOtherProductReasons()}/create`;
 const getAllSponsors = () => `${financeRoutesEndpoints()}/sponsors`;
@@ -371,6 +375,8 @@ const organizationsSetWorkspaceId = () => `${organizations()}/workspaceId/set`;
 const organizationsGetPartReviewGuideLink = () => `${organizations()}/part-review-guide-link/get`;
 const organizationsSetPartReviewGuideLink = () => `${organizations()}/part-review-guide-link/set`;
 const organizationsSetSlackSponsorshipNotificationChannelId = () => `${organizations()}/sponsorshipChannelId/set`;
+const organizationsFinanceDelegates = () => `${organizations()}/finance-delegates`;
+const organizationsSetFinanceDelegates = () => `${organizationsFinanceDelegates()}/set`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
@@ -575,12 +581,14 @@ export const apiUrls = {
   financeUploadRceipt,
   financeCreateReimbursementRequest,
   financeEditReimbursementRequest,
+  financeAssignMemberToRR,
   financeReimbursementRequestById,
   getAllAccountCodes,
   getAllVendors,
   financeEndpoints,
   financeUploadReceipt,
   financeGetUserReimbursementRequest,
+  financeGetUserAssignedReimbursementRequest,
   financeGetUserReimbursements,
   financeGetAllReimbursements,
   financeReportRefund,
@@ -590,7 +598,8 @@ export const apiUrls = {
   financeDeleteReimbursement,
   financeMarkAsDelivered,
   financeMarkAsReimbursed,
-  financeApproveReimbursementRequest,
+  financeInputReimbursementRequestInSabo,
+  financeMarkReimbursementRequestAsSaboSubmitted,
   financeDenyReimbursementRequest,
   financeMarkPending,
   financeRequestChanges,
@@ -608,6 +617,7 @@ export const apiUrls = {
   financeCreateSponsorTask,
   financeCreateReimbursementRequestComment,
   getAllIndexCodes,
+  editIndexCode,
   getAllOtherProductReasons,
   financeCreateOtherProductReason,
   getAllSponsors,
@@ -686,6 +696,8 @@ export const apiUrls = {
   organizationsGetPartReviewGuideLink,
   organizationsSetPartReviewGuideLink,
   organizationsSetSlackSponsorshipNotificationChannelId,
+  organizationsFinanceDelegates,
+  organizationsSetFinanceDelegates,
 
   cars,
   carsCreate,
