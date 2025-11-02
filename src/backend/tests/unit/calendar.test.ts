@@ -72,6 +72,7 @@ describe('Calendar Tests', () => {
       false,
       false,
       false,
+      false,
       false
     );
   });
@@ -247,6 +248,7 @@ describe('Calendar Tests', () => {
             true,
             true,
             true,
+            false,
             true,
             false,
             false,
@@ -271,6 +273,7 @@ describe('Calendar Tests', () => {
         true,
         true,
         true,
+        false,
         true,
         true,
         false,
@@ -288,6 +291,7 @@ describe('Calendar Tests', () => {
       expect(result.allDay).toBe(true);
       expect(result.requiredMembers).toBe(true);
       expect(result.optionalMembers).toBe(true);
+      expect(result.teams).toBe(false);
       expect(result.location).toBe(true);
       expect(result.zoomLink).toBe(true);
       expect(result.shop).toBe(false);
@@ -622,6 +626,7 @@ describe('Calendar Tests', () => {
         false,
         false,
         false,
+        false,
         true,
         true
       );
@@ -649,6 +654,7 @@ describe('Calendar Tests', () => {
           false,
           false,
           false,
+          false,
           false
         )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit event type'));
@@ -663,6 +669,7 @@ describe('Calendar Tests', () => {
           [invalidCalendarId],
           organization,
           'Initial Event Type 2',
+          true,
           true,
           true,
           true,
@@ -721,6 +728,7 @@ describe('Calendar Tests', () => {
           false,
           false,
           false,
+          false,
           false
         )
       ).rejects.toThrow(new InvalidOrganizationException('Calendar'));
@@ -740,6 +748,7 @@ describe('Calendar Tests', () => {
           true,
           false,
           true,
+          false,
           true,
           false,
           false,
@@ -765,6 +774,7 @@ describe('Calendar Tests', () => {
         false,
         true,
         true,
+        false,
         true,
         false,
         true,
@@ -783,6 +793,7 @@ describe('Calendar Tests', () => {
       expect(result.eventTypeId).toBe(eventType.eventTypeId);
       expect(result.requiredMembers).toBe(true);
       expect(result.optionalMembers).toBe(true);
+      expect(result.teams).toBe(false);
       expect(result.location).toBe(true);
       expect(result.zoomLink).toBe(false);
       expect(result.shop).toBe(true);
@@ -1951,6 +1962,7 @@ describe('Calendar Tests', () => {
         true,
         true,
         true,
+        false,
         true,
         false,
         false,
@@ -2008,6 +2020,7 @@ describe('Calendar Tests', () => {
         true,
         true,
         true,
+        false,
         true,
         false,
         false,

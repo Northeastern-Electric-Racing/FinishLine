@@ -1107,6 +1107,7 @@ model EventType {
   recurring                        Boolean
   requiredMembers                  Boolean
   optionalMembers                  Boolean
+  teams                            Boolean
   location                         Boolean
   zoomLink                         Boolean
   shop                             Boolean

@@ -51,6 +51,7 @@ export const eventTypeTransformer = (eventType: Prisma.EventTypeGetPayload<Event
     recurring: eventType.recurring,
     requiredMembers: eventType.requiredMembers,
     optionalMembers: eventType.optionalMembers,
+    teams: eventType.teams,
     location: eventType.location,
     zoomLink: eventType.zoomLink,
     shop: eventType.shop,

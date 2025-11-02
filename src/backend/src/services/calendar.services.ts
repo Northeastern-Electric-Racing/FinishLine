@@ -55,6 +55,7 @@ export default class CalendarService {
    * @param allDay Determines if this event type is all day.
    * @param requiredMembers Determines if this event type has required members.
    * @param optionalMembers Determines if this event type has optional members.
+   * @param teams Determines if this event type has teams.
    * @param location Determines if this event type has a location.
    * @param zoomLink Determines if this event type has a zoom link.
    * @param shop Determines if a shop is associated with this event type.
@@ -81,6 +82,7 @@ export default class CalendarService {
     allDay: boolean,
     requiredMembers: boolean,
     optionalMembers: boolean,
+    teams: boolean,
     location: boolean,
     zoomLink: boolean,
     shop: boolean,
@@ -128,6 +130,7 @@ export default class CalendarService {
         allDay,
         requiredMembers,
         optionalMembers,
+        teams,
         location,
         zoomLink,
         shop,
@@ -269,6 +272,9 @@ export default class CalendarService {
     // Validate event follows event type configuration
     if (foundEventType.requiredMembers && requiredMemberIds.length === 0) {
       throw new InvalidEventTypeConfigurationException('at least one required member');
+    }
+    if (foundEventType.teams && teamIds.length === 0) {
+      throw new InvalidEventTypeConfigurationException('at least one team');
     }
     if (foundEventType.optionalMembers && optionalMemberIds.length === 0) {
       throw new InvalidEventTypeConfigurationException('at least one optional member');
@@ -514,6 +520,9 @@ export default class CalendarService {
     // Validate event follows event type configuration
     if (foundEventType.requiredMembers && requiredMemberIds.length === 0) {
       throw new InvalidEventTypeConfigurationException('at least one required member');
+    }
+    if (foundEventType.teams && teamIds.length === 0) {
+      throw new InvalidEventTypeConfigurationException('at least one team');
     }
     if (foundEventType.optionalMembers && optionalMemberIds.length === 0) {
       throw new InvalidEventTypeConfigurationException('at least one optional member');
@@ -1250,6 +1259,7 @@ export default class CalendarService {
    * @param allDay Determines if this event type is all day.
    * @param requiredMembers Determines if this event type has required members.
    * @param optionalMembers Determines if this event type has optional members.
+   * @param teams Determines if this event type has teams.
    * @param location Determines if this event type has a location.
    * @param zoomLink Determines if this event type has a zoom link.
    * @param shop Determines if a shop is associated with this event type.
@@ -1277,6 +1287,7 @@ export default class CalendarService {
     allDay: boolean,
     requiredMembers: boolean,
     optionalMembers: boolean,
+    teams: boolean,
     location: boolean,
     zoomLink: boolean,
     shop: boolean,
@@ -1335,6 +1346,7 @@ export default class CalendarService {
         allDay,
         requiredMembers,
         optionalMembers,
+        teams,
         location,
         zoomLink,
         shop,

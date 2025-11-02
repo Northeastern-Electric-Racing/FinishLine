@@ -3195,7 +3195,8 @@ const performSeed: () => Promise<void> = async () => {
     true,
     true,
     true,
-    true,
+    false,
+    false,
     true,
     true,
     false,
@@ -3209,7 +3210,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   // design review event type
-  await CalendarService.createEventType(
+  const designReviewEventType = await CalendarService.createEventType(
     thomasEmrax,
     'Design Review',
     [calendar.calendarId],
@@ -3219,6 +3220,7 @@ const performSeed: () => Promise<void> = async () => {
     true,
     true,
     true,
+    false,
     true,
     false,
     false,
@@ -3243,6 +3245,7 @@ const performSeed: () => Promise<void> = async () => {
     true,
     false,
     false,
+    false,
     true,
     true,
     true,
@@ -3265,6 +3268,7 @@ const performSeed: () => Promise<void> = async () => {
     false,
     false,
     false,
+    false,
     true,
     false,
     true,
@@ -3278,7 +3282,7 @@ const performSeed: () => Promise<void> = async () => {
   await CalendarService.createEvent(
     thomasEmrax,
     'Impact Attenuator Design Review',
-    meetingEventType.eventTypeId,
+    designReviewEventType.eventTypeId,
     ner,
     [joeShmoe.userId, joeBlow.userId],
     [batman.userId],
@@ -3286,7 +3290,7 @@ const performSeed: () => Promise<void> = async () => {
     [advancedShop.shopId],
     [printer.machineryId, hammer.machineryId],
     [workPackage1.id],
-    [],
+    ['https://docs.google.com/document/d/1_example'],
     [
       {
         days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
@@ -3305,7 +3309,7 @@ const performSeed: () => Promise<void> = async () => {
   await CalendarService.createEvent(
     batman,
     'Wiring Harness Installation Planning',
-    meetingEventType.eventTypeId,
+    designReviewEventType.eventTypeId,
     ner,
     [regina.userId, janis.userId],
     [cady.userId],
@@ -3313,7 +3317,7 @@ const performSeed: () => Promise<void> = async () => {
     [electronicsLab.shopId],
     [printer.machineryId],
     [workPackage3.id, workPackage4.id],
-    [],
+    ['https://docs.google.com/document/d/1_example'],
     [
       {
         days: [DayOfWeek.WEDNESDAY],

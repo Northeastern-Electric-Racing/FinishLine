@@ -70,6 +70,7 @@ export interface EventType {
   recurring: boolean;
   requiredMembers: boolean;
   optionalMembers: boolean;
+  teams: boolean;
   location: boolean;
   zoomLink: boolean;
   shop: boolean;

@@ -24,6 +24,7 @@ calendarRouter.post(
   body('recurring').isBoolean(),
   body('requiredMembers').isBoolean(),
   body('optionalMembers').isBoolean(),
+  body('teams').isBoolean(),
   body('location').isBoolean(),
   body('zoomLink').isBoolean(),
   body('shop').isBoolean(),
@@ -35,6 +36,30 @@ calendarRouter.post(
   body('onlyHeadsOrAbove').isBoolean(),
   validateInputs,
   CalendarController.createEventType
+);
+
+calendarRouter.post(
+  '/event-type/:eventTypeId/edit',
+  nonEmptyString(body('name')),
+  body('calendarIds').isArray(),
+  body('calendarIds.*').isString(),
+  body('initialDateScheduled').isBoolean(),
+  body('allDay').isBoolean(),
+  body('recurring').isBoolean(),
+  body('requiredMembers').isBoolean(),
+  body('optionalMembers').isBoolean(),
+  body('teams').isBoolean(),
+  body('location').isBoolean(),
+  body('zoomLink').isBoolean(),
+  body('shop').isBoolean(),
+  body('machinery').isBoolean(),
+  body('workPackage').isBoolean(),
+  body('questionDocument').isBoolean(),
+  body('documents').isBoolean(),
+  body('description').isBoolean(),
+  body('onlyHeadsOrAbove').isBoolean(),
+  validateInputs,
+  CalendarController.editEventType
 );
 
 calendarRouter.post(
@@ -163,29 +188,6 @@ calendarRouter.post(
   nonEmptyString(body('description')),
   validateInputs,
   CalendarController.editShop
-);
-
-calendarRouter.post(
-  '/event-type/:eventTypeId/edit',
-  nonEmptyString(body('name')),
-  body('calendarIds').isArray(),
-  body('calendarIds.*').isString(),
-  body('initialDateScheduled').isBoolean(),
-  body('allDay').isBoolean(),
-  body('recurring').isBoolean(),
-  body('requiredMembers').isBoolean(),
-  body('optionalMembers').isBoolean(),
-  body('location').isBoolean(),
-  body('zoomLink').isBoolean(),
-  body('shop').isBoolean(),
-  body('machinery').isBoolean(),
-  body('workPackage').isBoolean(),
-  body('questionDocument').isBoolean(),
-  body('documents').isBoolean(),
-  body('description').isBoolean(),
-  body('onlyHeadsOrAbove').isBoolean(),
-  validateInputs,
-  CalendarController.editEventType
 );
 
 calendarRouter.post('/event-type/:eventTypeId/delete', CalendarController.deleteEventType);
