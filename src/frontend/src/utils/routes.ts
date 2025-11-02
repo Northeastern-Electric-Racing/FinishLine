@@ -66,6 +66,7 @@ const PROJECT_TEMPLATE_EDIT = PROJECT_TEMPLATES + '/edit';
 
 /**************** Design Review Calendar ****************/
 const CALENDAR = `/design-review-calendar`;
+const NEW_CALENDAR = `/calendar`;
 const DESIGN_REVIEW_BY_ID = CALENDAR + `/:id`;
 
 /**************** Organizations ****************/
@@ -136,6 +137,7 @@ export const routes = {
   PROJECT_TEMPLATE_EDIT,
 
   CALENDAR,
+  NEW_CALENDAR,
   DESIGN_REVIEW_BY_ID,
 
   ORGANIZATIONS,
