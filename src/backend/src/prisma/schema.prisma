@@ -296,6 +296,7 @@ model Team {
   projects               Project[]                  @relation(name: "assignedBy")
   members                User[]                     @relation(name: "teamsAsMember")
   leads                  User[]                     @relation(name: "teamsAsLead")
+  events                 Event[]                    @relation(name: "affiliatedTeam")
   headId                 String
   head                   User                       @relation(name: "teamsAsHead", fields: [headId], references: [userId])
   dateArchived           DateTime?
@@ -1032,8 +1033,11 @@ model ScheduleSlot {
   endTime              DateTime? // time of day (just use a DateTime, ignore the date portion)
   recurrenceNumber     Int
   initialDateScheduled DateTime    @db.Date
+  endDate              DateTime    @db.Date
   allDay               Boolean     @default(false)
   ScheduledEvents      Event[]
+
+  @@index([initialDateScheduled, endDate])
 }
 
 model Event {
@@ -1052,6 +1056,7 @@ model Event {
   approvedBy       User?          @relation(fields: [approvedByUserId], references: [userId], name: "eventApprover")
   scheduledTimes   ScheduleSlot[]
   members          User[]         @relation(name: "eventAttender")
+  teams            Team[]         @relation(name: "affiliatedTeam")
   location         String?
   zoomLink         String?
   shops            Shop[]

@@ -3,6 +3,7 @@ import { getUserQueryArgs } from './user.query-args';
 import { getShopQueryArgs } from './shop.query-args';
 import { getMachineryQueryArgs } from './machinery.query-args';
 import { getWorkPackageQueryArgs } from './work-packages.query-args';
+import { getTeamQueryArgs } from './teams.query-args';
 
 export type EventQueryArgs = ReturnType<typeof getEventQueryArgs>;
 
@@ -11,6 +12,7 @@ export const getEventQueryArgs = (organizationId: string) =>
     include: {
       userCreated: getUserQueryArgs(organizationId),
       members: getUserQueryArgs(organizationId),
+      teams: getTeamQueryArgs(organizationId),
       shops: getShopQueryArgs(organizationId),
       machinery: getMachineryQueryArgs(organizationId),
       workPackages: getWorkPackageQueryArgs(organizationId),

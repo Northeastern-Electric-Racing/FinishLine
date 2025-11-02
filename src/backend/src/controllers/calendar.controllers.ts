@@ -239,6 +239,7 @@ export default class CalendarController {
         title,
         eventTypeId,
         memberIds,
+        teamIds,
         shopIds,
         machineryIds,
         workPackageIds,
@@ -260,6 +261,7 @@ export default class CalendarController {
         memberIds,
         shopIds,
         machineryIds,
+        teamIds,
         workPackageIds,
         documentIds,
         scheduleSlot,
@@ -284,6 +286,7 @@ export default class CalendarController {
         title,
         eventTypeId,
         memberIds,
+        teamIds,
         shopIds,
         machineryIds,
         workPackageIds,
@@ -293,8 +296,7 @@ export default class CalendarController {
         approvedByUserId,
         questionDocument,
         location,
-        zoomLink,
-        description
+        zoomLink
       } = req.body;
 
       const event = await CalendarService.editEvent(
@@ -304,8 +306,10 @@ export default class CalendarController {
         eventTypeId,
         req.organization,
         memberIds,
+        teamIds,
         shopIds,
         machineryIds,
+        teamIds,
         workPackageIds,
         documentIds,
         scheduleSlot,
@@ -313,10 +317,28 @@ export default class CalendarController {
         approvedByUserId,
         questionDocument,
         location,
-        zoomLink,
-        description
+        zoomLink
       );
       res.status(200).json(event);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  //overall filtering for events
+  static async getFilteredEvents(req: Request, res: Response, next: NextFunction) {
+    try {
+      const filteredEvents = await CalendarService.getFilteredEvents(req.body, req.organization);
+      res.status(200).json(filteredEvents);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllCalendars(req: Request, res: Response, next: NextFunction) {
+    try {
+      const calendars = await CalendarService.getAllCalendars(req.organization);
+      res.status(200).json(calendars);
     } catch (error: unknown) {
       next(error);
     }
