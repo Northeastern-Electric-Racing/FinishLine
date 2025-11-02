@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
-import { Machinery, Shop, ShopMachinery, EventType, Calendar, Event, ScheduleSlot, DayOfWeek } from 'shared';
+import { Machinery, Shop, ShopMachinery, EventType, Calendar, Event, ScheduleSlot, DayOfWeek, EventStatus } from 'shared';
 import { MachineryQueryArgs, ShopMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
-import { userTransformer } from './user.transformer';
+import { userTransformer, userWithScheduleSettingsTransformer } from './user.transformer';
 import { EventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
 import { CalendarQueryArgs } from '../prisma-query-args/calendar.query-args';
 import { EventQueryArgs } from '../prisma-query-args/event.query-args';
@@ -49,7 +49,8 @@ export const eventTypeTransformer = (eventType: Prisma.EventTypeGetPayload<Event
     initialDateScheduled: eventType.initialDateScheduled,
     allDay: eventType.allDay,
     recurring: eventType.recurring,
-    members: eventType.members,
+    requiredMembers: eventType.requiredMembers,
+    optionalMembers: eventType.optionalMembers,
     location: eventType.location,
     zoomLink: eventType.zoomLink,
     shop: eventType.shop,
@@ -57,7 +58,8 @@ export const eventTypeTransformer = (eventType: Prisma.EventTypeGetPayload<Event
     workPackage: eventType.workPackage,
     questionDocument: eventType.questionDocument,
     documents: eventType.documents,
-    description: eventType.description
+    description: eventType.description,
+    onlyHeadsOrAboveForEventCreation: eventType.onlyHeadsOrAboveForEventCreation
   };
 };
 
@@ -93,7 +95,10 @@ export const eventTransformer = (event: Prisma.EventGetPayload<EventQueryArgs>):
     userCreated: userTransformer(event.userCreated),
     dateCreated: event.dateCreated,
     eventTypeId: event.eventTypeId,
-    people: event.members.map(userTransformer),
+    requiredMembers: event.requiredMembers.map(userTransformer),
+    optionalMembers: event.optionalMembers.map(userTransformer),
+    confirmedMembers: event.confirmedMembers.map(userWithScheduleSettingsTransformer),
+    deniedMembers: event.deniedMembers.map(userTransformer),
     teams: event.teams.map(teamTransformer),
     shops: event.shops.map(shopTransformer),
     machinery: event.machinery.map(machineryTransformer),
@@ -105,6 +110,7 @@ export const eventTransformer = (event: Prisma.EventGetPayload<EventQueryArgs>):
     location: event.location ?? undefined,
     zoomLink: event.zoomLink ?? undefined,
     questionDocument: event.questionDocument ?? undefined,
-    description: event.description ?? undefined
+    description: event.description ?? undefined,
+    status: event.status as EventStatus
   };
 };

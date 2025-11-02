@@ -22,7 +22,8 @@ calendarRouter.post(
   body('initialDateScheduled').isBoolean(),
   body('allDay').isBoolean(),
   body('recurring').isBoolean(),
-  body('members').isBoolean(),
+  body('requiredMembers').isBoolean(),
+  body('optionalMembers').isBoolean(),
   body('location').isBoolean(),
   body('zoomLink').isBoolean(),
   body('shop').isBoolean(),
@@ -31,6 +32,7 @@ calendarRouter.post(
   body('questionDocument').isBoolean(),
   body('documents').isBoolean(),
   body('description').isBoolean(),
+  body('onlyHeadsOrAbove').isBoolean(),
   validateInputs,
   CalendarController.createEventType
 );
@@ -39,10 +41,10 @@ calendarRouter.post(
   '/event/create',
   nonEmptyString(body('title')),
   body('eventTypeId').isString(),
-  body('approved').isBoolean(),
-  body('approvedByUserId').optional().isString(),
-  body('memberIds').isArray(),
-  body('memberIds.*').isString(),
+  body('requiredMemberIds').isArray(),
+  nonEmptyString(body('requiredMemberIds.*')),
+  body('optionalMemberIds').isArray(),
+  nonEmptyString(body('optionalMemberIds.*')),
   body('teamIds').isArray(),
   body('teamIds.*').isString(),
   body('location').optional().isString(),
@@ -72,11 +74,10 @@ calendarRouter.post(
 calendarRouter.post(
   '/event/:eventId/edit',
   nonEmptyString(body('title')),
-  body('eventTypeId').isString(),
-  body('approved').isBoolean(),
-  body('approvedByUserId').optional().isString(),
-  body('memberIds').isArray(),
-  body('memberIds.*').isString(),
+  body('requiredMemberIds').isArray(),
+  nonEmptyString(body('requiredMemberIds.*')),
+  body('optionalMemberIds').isArray(),
+  nonEmptyString(body('optionalMemberIds.*')),
   body('teamIds').isArray(),
   body('teamIds.*').isString(),
   body('location').optional().isString(),
@@ -101,6 +102,18 @@ calendarRouter.post(
   body('scheduleSlot.*.allDay').isBoolean(),
   validateInputs,
   CalendarController.editEvent
+);
+
+calendarRouter.post('/event/:eventId/approve', CalendarController.approveEvent);
+
+calendarRouter.post(
+  '/event/:eventId/confirm-schedule',
+  body('availability').isArray(),
+  body('availability.*.availability').isArray(),
+  intMinZero(body('availability.*.availability.*')),
+  isDate(body('availability.*.dateSet')),
+  validateInputs,
+  CalendarController.markUserConfirmed
 );
 
 calendarRouter.post('/event/:eventId/delete', CalendarController.deleteEvent);
@@ -154,12 +167,14 @@ calendarRouter.post(
 
 calendarRouter.post(
   '/event-type/:eventTypeId/edit',
+  nonEmptyString(body('name')),
   body('calendarIds').isArray(),
   body('calendarIds.*').isString(),
   body('initialDateScheduled').isBoolean(),
   body('allDay').isBoolean(),
   body('recurring').isBoolean(),
-  body('members').isBoolean(),
+  body('requiredMembers').isBoolean(),
+  body('optionalMembers').isBoolean(),
   body('location').isBoolean(),
   body('zoomLink').isBoolean(),
   body('shop').isBoolean(),
@@ -168,6 +183,7 @@ calendarRouter.post(
   body('questionDocument').isBoolean(),
   body('documents').isBoolean(),
   body('description').isBoolean(),
+  body('onlyHeadsOrAbove').isBoolean(),
   validateInputs,
   CalendarController.editEventType
 );

@@ -1,6 +1,13 @@
 import { WorkPackage } from './project-types';
-import { User } from './user-types';
+import { User, UserWithScheduleSettings } from './user-types';
 import { Team } from './team-types';
+
+export enum EventStatus {
+  UNCONFIRMED = 'UNCONFIRMED',
+  CONFIRMED = 'CONFIRMED',
+  SCHEDULED = 'SCHEDULED',
+  DONE = 'DONE'
+}
 
 export interface Calendar {
   calendarId: string;
@@ -61,7 +68,8 @@ export interface EventType {
   initialDateScheduled: boolean;
   allDay: boolean;
   recurring: boolean;
-  members: boolean;
+  requiredMembers: boolean;
+  optionalMembers: boolean;
   location: boolean;
   zoomLink: boolean;
   shop: boolean;
@@ -70,6 +78,7 @@ export interface EventType {
   questionDocument: boolean;
   documents: boolean;
   description: boolean;
+  onlyHeadsOrAboveForEventCreation: boolean;
 }
 
 export interface Shop {
@@ -104,7 +113,10 @@ export interface Event {
   eventTypeId: string;
   approvedBy?: User;
   scheduledTimes: ScheduleSlot[];
-  people: User[];
+  requiredMembers: User[];
+  optionalMembers: User[];
+  confirmedMembers: UserWithScheduleSettings[];
+  deniedMembers: User[];
   teams: Team[];
   location?: string;
   zoomLink?: string;
@@ -114,4 +126,5 @@ export interface Event {
   documentIds: string[];
   questionDocument?: string;
   description?: string;
+  status: EventStatus;
 }

@@ -3197,13 +3197,15 @@ const performSeed: () => Promise<void> = async () => {
     true,
     true,
     true,
+    true,
     false,
     false,
     false,
     true,
     true,
     false,
-    true
+    true,
+    false
   );
 
   // design review event type
@@ -3217,10 +3219,12 @@ const performSeed: () => Promise<void> = async () => {
     true,
     true,
     true,
+    true,
     false,
     false,
     false,
     false,
+    true,
     true,
     true,
     true
@@ -3236,6 +3240,7 @@ const performSeed: () => Promise<void> = async () => {
     false,
     false,
     true,
+    true,
     false,
     false,
     true,
@@ -3243,7 +3248,8 @@ const performSeed: () => Promise<void> = async () => {
     true,
     false,
     false,
-    true
+    true,
+    false
   );
 
   // bay time event type
@@ -3258,11 +3264,13 @@ const performSeed: () => Promise<void> = async () => {
     true,
     false,
     false,
-    true,
     false,
     true,
     false,
+    true,
     false,
+    false,
+    true,
     true
   );
 
@@ -3272,7 +3280,8 @@ const performSeed: () => Promise<void> = async () => {
     'Impact Attenuator Design Review',
     meetingEventType.eventTypeId,
     ner,
-    [joeShmoe.userId, joeBlow.userId, batman.userId],
+    [joeShmoe.userId, joeBlow.userId],
+    [batman.userId],
     [],
     [advancedShop.shopId],
     [printer.machineryId, hammer.machineryId],
@@ -3287,11 +3296,9 @@ const performSeed: () => Promise<void> = async () => {
         allDay: false
       }
     ],
-    true,
-    batman.userId,
+    'https://docs.google.com/document/d/1_example',
     'Conference Room A',
     'https://zoom.us/j/123456789',
-    'https://docs.google.com/document/d/1_example',
     'Review design specifications for the impact attenuator'
   );
 
@@ -3300,7 +3307,8 @@ const performSeed: () => Promise<void> = async () => {
     'Wiring Harness Installation Planning',
     meetingEventType.eventTypeId,
     ner,
-    [regina.userId, janis.userId, cady.userId],
+    [regina.userId, janis.userId],
+    [cady.userId],
     [],
     [electronicsLab.shopId],
     [printer.machineryId],
@@ -3316,11 +3324,9 @@ const performSeed: () => Promise<void> = async () => {
         allDay: false
       }
     ],
-    true,
-    thomasEmrax.userId,
+    'https://docs.google.com/document/d/2_example',
     'Electronics Lab',
     'https://zoom.us/j/987654321',
-    'https://docs.google.com/document/d/2_example',
     'Plan the installation process for the wiring harness'
   );
 
@@ -3329,7 +3335,8 @@ const performSeed: () => Promise<void> = async () => {
     'Appa Plush Design Brainstorm',
     meetingEventType.eventTypeId,
     ner,
-    [katara.userId, sokka.userId, toph.userId],
+    [katara.userId, sokka.userId],
+    [toph.userId],
     [justiceLeague.teamId],
     [],
     [],
@@ -3345,11 +3352,9 @@ const performSeed: () => Promise<void> = async () => {
         allDay: false
       }
     ],
-    true,
-    katara.userId,
+    'https://docs.google.com/document/d/3_example',
     'Design Studio',
     'https://zoom.us/j/456789123',
-    'https://docs.google.com/document/d/3_example',
     'Brainstorm design ideas for Appa plush prototypes'
   );
 
@@ -3358,7 +3363,8 @@ const performSeed: () => Promise<void> = async () => {
     'Laser Cannon Prototype Review',
     meetingEventType.eventTypeId,
     ner,
-    [zatanna.userId, superman.userId, wonderwoman.userId],
+    [zatanna.userId, superman.userId],
+    [wonderwoman.userId],
     [orioles.teamId],
     [testingFacility.shopId],
     [ironMachine.machineryId, hammer.machineryId],
@@ -3374,11 +3380,9 @@ const performSeed: () => Promise<void> = async () => {
         allDay: false
       }
     ],
-    true,
-    batman.userId,
+    'https://docs.google.com/document/d/4_example',
     'Testing Facility',
     'https://zoom.us/j/789123456',
-    'https://docs.google.com/document/d/4_example',
     'Review progress and test results for laser cannon prototype'
   );
 };

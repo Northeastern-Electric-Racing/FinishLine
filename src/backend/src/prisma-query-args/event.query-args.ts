@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { getUserQueryArgs } from './user.query-args';
+import { getUserQueryArgs, getUserWithSettingsQueryArgs } from './user.query-args';
 import { getShopQueryArgs } from './shop.query-args';
 import { getMachineryQueryArgs } from './machinery.query-args';
 import { getWorkPackageQueryArgs } from './work-packages.query-args';
@@ -11,7 +11,10 @@ export const getEventQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.EventDefaultArgs>()({
     include: {
       userCreated: getUserQueryArgs(organizationId),
-      members: getUserQueryArgs(organizationId),
+      requiredMembers: getUserQueryArgs(organizationId),
+      optionalMembers: getUserQueryArgs(organizationId),
+      confirmedMembers: getUserWithSettingsQueryArgs(organizationId),
+      deniedMembers: getUserQueryArgs(organizationId),
       teams: getTeamQueryArgs(organizationId),
       shops: getShopQueryArgs(organizationId),
       machinery: getMachineryQueryArgs(organizationId),

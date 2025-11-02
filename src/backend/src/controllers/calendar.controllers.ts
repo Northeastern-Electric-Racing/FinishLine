@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import CalendarService from '../services/calendar.services';
+import { getCurrentUserWithUserSettings } from '../utils/auth.utils';
 
 export default class CalendarController {
   static async createEventType(req: Request, res: Response, next: NextFunction) {
@@ -10,7 +11,8 @@ export default class CalendarController {
         initialDateScheduled,
         recurring,
         allDay,
-        members,
+        requiredMembers,
+        optionalMembers,
         location,
         zoomLink,
         shop,
@@ -18,7 +20,8 @@ export default class CalendarController {
         workPackage,
         questionDocument,
         documents,
-        description
+        description,
+        onlyHeadsOrAbove
       } = req.body;
 
       const eventType = await CalendarService.createEventType(
@@ -29,7 +32,8 @@ export default class CalendarController {
         initialDateScheduled,
         recurring,
         allDay,
-        members,
+        requiredMembers,
+        optionalMembers,
         location,
         zoomLink,
         shop,
@@ -37,7 +41,8 @@ export default class CalendarController {
         workPackage,
         questionDocument,
         documents,
-        description
+        description,
+        onlyHeadsOrAbove
       );
       res.status(200).json(eventType);
     } catch (error: unknown) {
@@ -170,11 +175,13 @@ export default class CalendarController {
     try {
       const { eventTypeId } = req.params;
       const {
+        name,
         calendarIds,
         initialDateScheduled,
         recurring,
         allDay,
-        members,
+        requiredMembers,
+        optionalMembers,
         location,
         zoomLink,
         shop,
@@ -182,7 +189,8 @@ export default class CalendarController {
         workPackage,
         questionDocument,
         documents,
-        description
+        description,
+        onlyHeadsOrAbove
       } = req.body;
 
       const eventType = await CalendarService.editEventType(
@@ -190,10 +198,12 @@ export default class CalendarController {
         req.currentUser,
         calendarIds,
         req.organization,
+        name,
         initialDateScheduled,
         recurring,
         allDay,
-        members,
+        requiredMembers,
+        optionalMembers,
         location,
         zoomLink,
         shop,
@@ -201,7 +211,8 @@ export default class CalendarController {
         workPackage,
         questionDocument,
         documents,
-        description
+        description,
+        onlyHeadsOrAbove
       );
       res.status(200).json(eventType);
     } catch (error: unknown) {
@@ -245,8 +256,6 @@ export default class CalendarController {
         workPackageIds,
         documentIds,
         scheduleSlot,
-        approved,
-        approvedByUserId,
         questionDocument,
         location,
         zoomLink,
@@ -265,8 +274,6 @@ export default class CalendarController {
         workPackageIds,
         documentIds,
         scheduleSlot,
-        approved,
-        approvedByUserId,
         questionDocument,
         location,
         zoomLink,
@@ -284,16 +291,14 @@ export default class CalendarController {
 
       const {
         title,
-        eventTypeId,
-        memberIds,
+        requiredMemberIds,
+        optionalMemberIds,
         teamIds,
         shopIds,
         machineryIds,
         workPackageIds,
         documentIds,
         scheduleSlot,
-        approved,
-        approvedByUserId,
         questionDocument,
         location,
         zoomLink
@@ -303,9 +308,9 @@ export default class CalendarController {
         req.currentUser,
         eventId,
         title,
-        eventTypeId,
         req.organization,
-        memberIds,
+        requiredMemberIds,
+        optionalMemberIds,
         teamIds,
         shopIds,
         machineryIds,
@@ -313,13 +318,36 @@ export default class CalendarController {
         workPackageIds,
         documentIds,
         scheduleSlot,
-        approved,
-        approvedByUserId,
         questionDocument,
         location,
         zoomLink
       );
       res.status(200).json(event);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async approveEvent(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { eventId } = req.params;
+
+      const event = await CalendarService.approveEvent(req.currentUser, eventId, req.organization);
+      res.status(200).json(event);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  // Mark the current user as confirmed for the given event
+  static async markUserConfirmed(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { availability } = req.body;
+      const { eventId } = req.params;
+      const user = await getCurrentUserWithUserSettings(res);
+
+      const updatedEvent = await CalendarService.markUserConfirmed(eventId, availability, user, req.organization);
+      res.status(200).json(updatedEvent);
     } catch (error: unknown) {
       next(error);
     }

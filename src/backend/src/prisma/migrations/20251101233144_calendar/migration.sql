@@ -99,19 +99,34 @@ CREATE TABLE "public"."EventType" (
     "initialDateScheduled" BOOLEAN NOT NULL DEFAULT FALSE,
     "allDay" BOOLEAN NOT NULL DEFAULT FALSE,
     "recurring" BOOLEAN NOT NULL DEFAULT FALSE,
-    "members" BOOLEAN NOT NULL DEFAULT FALSE,
+    "optionalMembers" BOOLEAN NOT NULL DEFAULT FALSE,
+    "requiredMembers" BOOLEAN NOT NULL DEFAULT FALSE,
     "location" BOOLEAN NOT NULL DEFAULT FALSE,
     "zoomLink" BOOLEAN NOT NULL DEFAULT FALSE,
     "shop" BOOLEAN NOT NULL DEFAULT FALSE,
     "machinery" BOOLEAN NOT NULL DEFAULT FALSE,
     "workPackage" BOOLEAN NOT NULL DEFAULT FALSE,
     "questionDocument" BOOLEAN NOT NULL DEFAULT FALSE,
-    "documents" BOOLEAN NOT NULL DEFAULT FALSE,
+    "documents" BOOLEAN NOT NULL DEFAULT FALSE, 
     "description" BOOLEAN NOT NULL DEFAULT FALSE,
+    "onlyHeadsOrAboveForEventCreation" BOOLEAN NOT NULL DEFAULT FALSE,
     "organizationId" TEXT NOT NULL,
 
     CONSTRAINT "EventType_pkey" PRIMARY KEY ("eventTypeId")
 );
+
+-- CreateEnum
+CREATE TYPE "public"."Event_Status" AS ENUM ('UNCONFIRMED', 'CONFIRMED', 'SCHEDULED', 'DONE');
+
+-- AlterTable
+ALTER TABLE "public"."Design_Review" DROP COLUMN "status",
+ADD COLUMN     "status" "public"."Event_Status" NOT NULL;
+
+-- AlterTable
+ALTER TABLE "public"."Event" ADD COLUMN     "status" "public"."Event_Status" NOT NULL;
+
+-- DropEnum
+DROP TYPE "public"."Design_Review_Status";
 
 -- CreateTable
 CREATE TABLE "public"."_EventToScheduleSlot" (
@@ -119,14 +134,6 @@ CREATE TABLE "public"."_EventToScheduleSlot" (
     "B" TEXT NOT NULL,
 
     CONSTRAINT "_EventToScheduleSlot_AB_pkey" PRIMARY KEY ("A","B")
-);
-
--- CreateTable
-CREATE TABLE "public"."_eventAttender" (
-    "A" TEXT NOT NULL,
-    "B" TEXT NOT NULL,
-
-    CONSTRAINT "_eventAttender_AB_pkey" PRIMARY KEY ("A","B")
 );
 
 -- CreateTable
@@ -169,6 +176,74 @@ CREATE TABLE "public"."_CalendarToEventType" (
     CONSTRAINT "_CalendarToEventType_AB_pkey" PRIMARY KEY ("A","B")
 );
 
+-- CreateTable
+CREATE TABLE "public"."_requiredEventAttendee" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_requiredEventAttendee_AB_pkey" PRIMARY KEY ("A","B")
+);
+
+-- CreateTable
+CREATE TABLE "public"."_optionalEventAttendee" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_optionalEventAttendee_AB_pkey" PRIMARY KEY ("A","B")
+);
+
+-- CreateTable
+CREATE TABLE "public"."_confirmedEventAttendee" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_confirmedEventAttendee_AB_pkey" PRIMARY KEY ("A","B")
+);
+
+-- CreateTable
+CREATE TABLE "public"."_deniedEventAttendee" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_deniedEventAttendee_AB_pkey" PRIMARY KEY ("A","B")
+);
+
+-- CreateIndex
+CREATE INDEX "_requiredEventAttendee_B_index" ON "public"."_requiredEventAttendee"("B");
+
+-- CreateIndex
+CREATE INDEX "_optionalEventAttendee_B_index" ON "public"."_optionalEventAttendee"("B");
+
+-- CreateIndex
+CREATE INDEX "_confirmedEventAttendee_B_index" ON "public"."_confirmedEventAttendee"("B");
+
+-- CreateIndex
+CREATE INDEX "_deniedEventAttendee_B_index" ON "public"."_deniedEventAttendee"("B");
+
+-- AddForeignKey
+ALTER TABLE "public"."_requiredEventAttendee" ADD CONSTRAINT "_requiredEventAttendee_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."Event"("eventId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."_requiredEventAttendee" ADD CONSTRAINT "_requiredEventAttendee_B_fkey" FOREIGN KEY ("B") REFERENCES "public"."User"("userId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."_optionalEventAttendee" ADD CONSTRAINT "_optionalEventAttendee_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."Event"("eventId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."_optionalEventAttendee" ADD CONSTRAINT "_optionalEventAttendee_B_fkey" FOREIGN KEY ("B") REFERENCES "public"."User"("userId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."_confirmedEventAttendee" ADD CONSTRAINT "_confirmedEventAttendee_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."Event"("eventId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."_confirmedEventAttendee" ADD CONSTRAINT "_confirmedEventAttendee_B_fkey" FOREIGN KEY ("B") REFERENCES "public"."User"("userId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."_deniedEventAttendee" ADD CONSTRAINT "_deniedEventAttendee_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."Event"("eventId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."_deniedEventAttendee" ADD CONSTRAINT "_deniedEventAttendee_B_fkey" FOREIGN KEY ("B") REFERENCES "public"."User"("userId") ON DELETE CASCADE ON UPDATE CASCADE;
+
 -- CreateIndex
 CREATE UNIQUE INDEX "Shop_name_key" ON "public"."Shop"("name");
 
@@ -195,9 +270,6 @@ CREATE UNIQUE INDEX "EventType_name_organizationId_key" ON "public"."EventType"(
 
 -- CreateIndex
 CREATE INDEX "_EventToScheduleSlot_B_index" ON "public"."_EventToScheduleSlot"("B");
-
--- CreateIndex
-CREATE INDEX "_eventAttender_B_index" ON "public"."_eventAttender"("B");
 
 -- CreateIndex
 CREATE INDEX "_affiliatedTeam_B_index" ON "public"."_affiliatedTeam"("B");
@@ -273,12 +345,6 @@ ALTER TABLE "public"."_EventToScheduleSlot" ADD CONSTRAINT "_EventToScheduleSlot
 
 -- AddForeignKey
 ALTER TABLE "public"."_EventToScheduleSlot" ADD CONSTRAINT "_EventToScheduleSlot_B_fkey" FOREIGN KEY ("B") REFERENCES "public"."ScheduleSlot"("scheduleSlotId") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."_eventAttender" ADD CONSTRAINT "_eventAttender_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."Event"("eventId") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."_eventAttender" ADD CONSTRAINT "_eventAttender_B_fkey" FOREIGN KEY ("B") REFERENCES "public"."User"("userId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."_affiliatedTeam" ADD CONSTRAINT "_affiliatedTeam_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."Event"("eventId") ON DELETE CASCADE ON UPDATE CASCADE;
