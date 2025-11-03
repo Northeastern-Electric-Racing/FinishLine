@@ -218,7 +218,7 @@ describe('Rule Tests', () => {
 
       await expect(
         async () => await RulesService.deleteRuleset(ruleset1.rulesetId, nonLeadership.userId, organization.organizationId)
-      ).rejects.toThrow(new AccessDeniedException('Only admins (including the ruleset creator) can delete a ruleset.'));
+      ).rejects.toThrow(new AccessDeniedException('Only admins can delete a ruleset.'));
     });
     it('Delete ruleset fails if ruleset was already deleted', async () => {
       const car = await createUniqueCar(orgId);
