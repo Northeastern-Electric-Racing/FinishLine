@@ -34,7 +34,6 @@ const NewCalendarPage = () => {
   const [unconfirmedDesignReview, setUnconfirmedDesignReview] = useState<DesignReview>();
   const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
   const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
-  const [tabIndex, setTabIndex] = useState<number>(0);
   if (isLoading || !allDesignReviews) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
 
@@ -188,15 +187,9 @@ const NewCalendarPage = () => {
           </Box>
           <Box
             sx={{
-              width: 320,
-              flexShrink: 0,
-              p: 2,
-              border: '1px solid',
-              borderColor: 'transparent',
-              height: 'fit-content'
+              width: 320
             }}
           >
-            <MonthSelector displayMonth={displayMonthYear} setDisplayMonth={setDisplayMonthYear} />
             <MonthSelector displayMonth={displayMonthYear} setDisplayMonth={setDisplayMonthYear} />
           </Box>
         </Box>
