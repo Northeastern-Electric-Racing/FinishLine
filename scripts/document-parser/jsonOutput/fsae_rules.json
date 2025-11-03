@@ -2,595 +2,595 @@
   "rules": [
     {
       "ruleCode": "GR.1",
-      "ruleContent": "Formula SAE Competition Objective .................................................................................................... 5",
+      "ruleContent": "Formula SAE Competition Objective ... 5",
       "parentRuleCode": "GR",
       "pageNumber": "2"
     },
     {
       "ruleCode": "GR.2",
-      "ruleContent": "Organizer Authority.............................................................................................................................. 6",
+      "ruleContent": "Organizer Authority... 6",
       "parentRuleCode": "GR",
       "pageNumber": "2"
     },
     {
       "ruleCode": "GR.3",
-      "ruleContent": "Team Responsibility ............................................................................................................................. 6",
+      "ruleContent": "Team Responsibility ... 6",
       "parentRuleCode": "GR",
       "pageNumber": "2"
     },
     {
       "ruleCode": "GR.4",
-      "ruleContent": "Rules Authority and Issue..................................................................................................................... 7",
+      "ruleContent": "Rules Authority and Issue... 7",
       "parentRuleCode": "GR",
       "pageNumber": "2"
     },
     {
       "ruleCode": "GR.5",
-      "ruleContent": "Rules of Conduct .................................................................................................................................. 7",
+      "ruleContent": "Rules of Conduct ... 7",
       "parentRuleCode": "GR",
       "pageNumber": "2"
     },
     {
       "ruleCode": "GR.6",
-      "ruleContent": "Rules Format and Use .......................................................................................................................... 8",
+      "ruleContent": "Rules Format and Use ... 8",
       "parentRuleCode": "GR",
       "pageNumber": "2"
     },
     {
       "ruleCode": "GR.7",
-      "ruleContent": "Rules Questions.................................................................................................................................... 9",
+      "ruleContent": "Rules Questions... 9",
       "parentRuleCode": "GR",
       "pageNumber": "2"
     },
     {
       "ruleCode": "GR.8",
-      "ruleContent": "Protests ................................................................................................................................................ 9",
+      "ruleContent": "Protests ... 9",
       "parentRuleCode": "GR",
       "pageNumber": "2"
     },
     {
       "ruleCode": "GR.9",
-      "ruleContent": "Vehicle Eligibility ................................................................................................................................ 10 AD - Administrative Regulations ....................................................................................................... 11",
+      "ruleContent": "Vehicle Eligibility ... 10 AD - Administrative Regulations ... 11",
       "parentRuleCode": "GR",
       "pageNumber": "2"
     },
     {
       "ruleCode": "AD.1",
-      "ruleContent": "The Formula SAE Series ...................................................................................................................... 11",
+      "ruleContent": "The Formula SAE Series ... 11",
       "parentRuleCode": "AD",
       "pageNumber": "2"
     },
     {
       "ruleCode": "AD.2",
-      "ruleContent": "Official Information Sources .............................................................................................................. 11",
+      "ruleContent": "Official Information Sources ... 11",
       "parentRuleCode": "AD",
       "pageNumber": "2"
     },
     {
       "ruleCode": "AD.3",
-      "ruleContent": "Individual Participation Requirements............................................................................................... 11",
+      "ruleContent": "Individual Participation Requirements... 11",
       "parentRuleCode": "AD",
       "pageNumber": "2"
     },
     {
       "ruleCode": "AD.4",
-      "ruleContent": "Individual Registration Requirements ................................................................................................ 12",
+      "ruleContent": "Individual Registration Requirements ... 12",
       "parentRuleCode": "AD",
       "pageNumber": "2"
     },
     {
       "ruleCode": "AD.5",
-      "ruleContent": "Team Advisors and Officers................................................................................................................ 12",
+      "ruleContent": "Team Advisors and Officers... 12",
       "parentRuleCode": "AD",
       "pageNumber": "2"
     },
     {
       "ruleCode": "AD.6",
-      "ruleContent": "Competition Registration ................................................................................................................... 13",
+      "ruleContent": "Competition Registration ... 13",
       "parentRuleCode": "AD",
       "pageNumber": "2"
     },
     {
       "ruleCode": "AD.7",
-      "ruleContent": "Competition Site ................................................................................................................................ 14 DR - Document Requirements .......................................................................................................... 16",
+      "ruleContent": "Competition Site ... 14 DR - Document Requirements ... 16",
       "parentRuleCode": "AD",
       "pageNumber": "2"
     },
     {
       "ruleCode": "DR.1",
-      "ruleContent": "Documentation .................................................................................................................................. 16",
+      "ruleContent": "Documentation ... 16",
       "parentRuleCode": "DR",
       "pageNumber": "2"
     },
     {
       "ruleCode": "DR.2",
-      "ruleContent": "Submission Details ............................................................................................................................. 16",
+      "ruleContent": "Submission Details ... 16",
       "parentRuleCode": "DR",
       "pageNumber": "2"
     },
     {
       "ruleCode": "DR.3",
-      "ruleContent": "Submission Penalties.......................................................................................................................... 17 V - Vehicle Requirements ................................................................................................................. 19",
+      "ruleContent": "Submission Penalties... 17 V - Vehicle Requirements ... 19",
       "parentRuleCode": "DR",
       "pageNumber": "2"
     },
     {
       "ruleCode": "V.1",
-      "ruleContent": "Configuration ..................................................................................................................................... 19",
+      "ruleContent": "Configuration ... 19",
       "parentRuleCode": "V",
       "pageNumber": "2"
     },
     {
       "ruleCode": "V.2",
-      "ruleContent": "Driver.................................................................................................................................................. 20",
+      "ruleContent": "Driver... 20",
       "parentRuleCode": "V",
       "pageNumber": "2"
     },
     {
       "ruleCode": "V.3",
-      "ruleContent": "Suspension and Steering .................................................................................................................... 20",
+      "ruleContent": "Suspension and Steering ... 20",
       "parentRuleCode": "V",
       "pageNumber": "2"
     },
     {
       "ruleCode": "V.4",
-      "ruleContent": "Wheels and Tires ................................................................................................................................ 21 F - Chassis and Structural.................................................................................................................. 23",
+      "ruleContent": "Wheels and Tires ... 21 F - Chassis and Structural... 23",
       "parentRuleCode": "V",
       "pageNumber": "2"
     },
     {
       "ruleCode": "F.1",
-      "ruleContent": "Definitions .......................................................................................................................................... 23",
+      "ruleContent": "Definitions ... 23",
       "parentRuleCode": "F",
       "pageNumber": "2"
     },
     {
       "ruleCode": "F.2",
-      "ruleContent": "Documentation .................................................................................................................................. 25",
+      "ruleContent": "Documentation ... 25",
       "parentRuleCode": "F",
       "pageNumber": "2"
     },
     {
       "ruleCode": "F.3",
-      "ruleContent": "Tubing and Material ........................................................................................................................... 25",
+      "ruleContent": "Tubing and Material ... 25",
       "parentRuleCode": "F",
       "pageNumber": "2"
     },
     {
       "ruleCode": "F.4",
-      "ruleContent": "Composite and Other Materials ......................................................................................................... 28",
+      "ruleContent": "Composite and Other Materials ... 28",
       "parentRuleCode": "F",
       "pageNumber": "2"
     },
     {
       "ruleCode": "F.5",
-      "ruleContent": "Chassis Requirements ........................................................................................................................ 30",
+      "ruleContent": "Chassis Requirements ... 30",
       "parentRuleCode": "F",
       "pageNumber": "2"
     },
     {
       "ruleCode": "F.6",
-      "ruleContent": "Tube Frames ....................................................................................................................................... 37",
+      "ruleContent": "Tube Frames ... 37",
       "parentRuleCode": "F",
       "pageNumber": "2"
     },
     {
       "ruleCode": "F.7",
-      "ruleContent": "Monocoque ........................................................................................................................................ 39",
+      "ruleContent": "Monocoque ... 39",
       "parentRuleCode": "F",
       "pageNumber": "2"
     },
     {
       "ruleCode": "F.8",
-      "ruleContent": "Front Chassis Protection .................................................................................................................... 43",
+      "ruleContent": "Front Chassis Protection ... 43",
       "parentRuleCode": "F",
       "pageNumber": "2"
     },
     {
       "ruleCode": "F.9",
-      "ruleContent": "Fuel System (IC Only) ......................................................................................................................... 48",
+      "ruleContent": "Fuel System (IC Only) ... 48",
       "parentRuleCode": "F",
       "pageNumber": "2"
     },
     {
       "ruleCode": "F.10",
-      "ruleContent": "Accumulator Container (EV Only) ...................................................................................................... 49",
+      "ruleContent": "Accumulator Container (EV Only) ... 49",
       "parentRuleCode": "F",
       "pageNumber": "2"
     },
     {
       "ruleCode": "F.11",
-      "ruleContent": "Tractive System (EV Only) .................................................................................................................. 52 T - Technical Aspects ........................................................................................................................ 54",
+      "ruleContent": "Tractive System (EV Only) ... 52 T - Technical Aspects ... 54",
       "parentRuleCode": "F",
       "pageNumber": "2"
     },
     {
       "ruleCode": "T.1",
-      "ruleContent": "Cockpit................................................................................................................................................ 54",
+      "ruleContent": "Cockpit... 54",
       "parentRuleCode": "T",
       "pageNumber": "2"
     },
     {
       "ruleCode": "T.2",
-      "ruleContent": "Driver Accommodation ...................................................................................................................... 58",
+      "ruleContent": "Driver Accommodation ... 58",
       "parentRuleCode": "T",
       "pageNumber": "2"
     },
     {
       "ruleCode": "T.3",
-      "ruleContent": "Brakes ................................................................................................................................................. 63",
+      "ruleContent": "Brakes ... 63",
       "parentRuleCode": "T",
       "pageNumber": "2"
     },
     {
       "ruleCode": "T.4",
-      "ruleContent": "Electronic Throttle Components ........................................................................................................ 64",
+      "ruleContent": "Electronic Throttle Components ... 64",
       "parentRuleCode": "T",
       "pageNumber": "2"
     },
     {
       "ruleCode": "T.5",
-      "ruleContent": "Powertrain.......................................................................................................................................... 66 Version 1.0 31 Aug 2024",
+      "ruleContent": "Powertrain... 66 Version 1.0 31 Aug 2024",
       "parentRuleCode": "T",
       "pageNumber": "2"
     },
     {
       "ruleCode": "T.6",
-      "ruleContent": "Pressurized Systems ........................................................................................................................... 68",
+      "ruleContent": "Pressurized Systems ... 68",
       "parentRuleCode": "T",
       "pageNumber": "3"
     },
     {
       "ruleCode": "T.7",
-      "ruleContent": "Bodywork and Aerodynamic Devices ................................................................................................. 69",
+      "ruleContent": "Bodywork and Aerodynamic Devices ... 69",
       "parentRuleCode": "T",
       "pageNumber": "3"
     },
     {
       "ruleCode": "T.8",
-      "ruleContent": "Fasteners ............................................................................................................................................ 71",
+      "ruleContent": "Fasteners ... 71",
       "parentRuleCode": "T",
       "pageNumber": "3"
     },
     {
       "ruleCode": "T.9",
-      "ruleContent": "Electrical Equipment .......................................................................................................................... 72 VE - Vehicle and Driver Equipment ................................................................................................... 75",
+      "ruleContent": "Electrical Equipment ... 72 VE - Vehicle and Driver Equipment ... 75",
       "parentRuleCode": "T",
       "pageNumber": "3"
     },
     {
       "ruleCode": "VE.1",
-      "ruleContent": "Vehicle Identification ......................................................................................................................... 75",
+      "ruleContent": "Vehicle Identification ... 75",
       "parentRuleCode": "VE",
       "pageNumber": "3"
     },
     {
       "ruleCode": "VE.2",
-      "ruleContent": "Vehicle Equipment ............................................................................................................................. 75",
+      "ruleContent": "Vehicle Equipment ... 75",
       "parentRuleCode": "VE",
       "pageNumber": "3"
     },
     {
       "ruleCode": "VE.3",
-      "ruleContent": "Driver Equipment ............................................................................................................................... 77 IC - Internal Combustion Engine Vehicles .......................................................................................... 79",
+      "ruleContent": "Driver Equipment ... 77 IC - Internal Combustion Engine Vehicles ... 79",
       "parentRuleCode": "VE",
       "pageNumber": "3"
     },
     {
       "ruleCode": "IC.1",
-      "ruleContent": "General Requirements ....................................................................................................................... 79",
+      "ruleContent": "General Requirements ... 79",
       "parentRuleCode": "IC",
       "pageNumber": "3"
     },
     {
       "ruleCode": "IC.2",
-      "ruleContent": "Air Intake System ............................................................................................................................... 79",
+      "ruleContent": "Air Intake System ... 79",
       "parentRuleCode": "IC",
       "pageNumber": "3"
     },
     {
       "ruleCode": "IC.3",
-      "ruleContent": "Throttle .............................................................................................................................................. 80",
+      "ruleContent": "Throttle ... 80",
       "parentRuleCode": "IC",
       "pageNumber": "3"
     },
     {
       "ruleCode": "IC.4",
-      "ruleContent": "Electronic Throttle Control................................................................................................................. 81",
+      "ruleContent": "Electronic Throttle Control... 81",
       "parentRuleCode": "IC",
       "pageNumber": "3"
     },
     {
       "ruleCode": "IC.5",
-      "ruleContent": "Fuel and Fuel System ......................................................................................................................... 84",
+      "ruleContent": "Fuel and Fuel System ... 84",
       "parentRuleCode": "IC",
       "pageNumber": "3"
     },
     {
       "ruleCode": "IC.6",
-      "ruleContent": "Fuel Injection ...................................................................................................................................... 86",
+      "ruleContent": "Fuel Injection ... 86",
       "parentRuleCode": "IC",
       "pageNumber": "3"
     },
     {
       "ruleCode": "IC.7",
-      "ruleContent": "Exhaust and Noise Control ................................................................................................................. 87",
+      "ruleContent": "Exhaust and Noise Control ... 87",
       "parentRuleCode": "IC",
       "pageNumber": "3"
     },
     {
       "ruleCode": "IC.8",
-      "ruleContent": "Electrical ............................................................................................................................................. 88",
+      "ruleContent": "Electrical ... 88",
       "parentRuleCode": "IC",
       "pageNumber": "3"
     },
     {
       "ruleCode": "IC.9",
-      "ruleContent": "Shutdown System............................................................................................................................... 88 EV - Electric Vehicles ........................................................................................................................ 90",
+      "ruleContent": "Shutdown System... 88 EV - Electric Vehicles ... 90",
       "parentRuleCode": "IC",
       "pageNumber": "3"
     },
     {
       "ruleCode": "EV.1",
-      "ruleContent": "Definitions .......................................................................................................................................... 90",
+      "ruleContent": "Definitions ... 90",
       "parentRuleCode": "EV",
       "pageNumber": "3"
     },
     {
       "ruleCode": "EV.2",
-      "ruleContent": "Documentation .................................................................................................................................. 90",
+      "ruleContent": "Documentation ... 90",
       "parentRuleCode": "EV",
       "pageNumber": "3"
     },
     {
       "ruleCode": "EV.3",
-      "ruleContent": "Electrical Limitations .......................................................................................................................... 90",
+      "ruleContent": "Electrical Limitations ... 90",
       "parentRuleCode": "EV",
       "pageNumber": "3"
     },
     {
       "ruleCode": "EV.4",
-      "ruleContent": "Components ....................................................................................................................................... 91",
+      "ruleContent": "Components ... 91",
       "parentRuleCode": "EV",
       "pageNumber": "3"
     },
     {
       "ruleCode": "EV.5",
-      "ruleContent": "Energy Storage ................................................................................................................................... 94",
+      "ruleContent": "Energy Storage ... 94",
       "parentRuleCode": "EV",
       "pageNumber": "3"
     },
     {
       "ruleCode": "EV.6",
-      "ruleContent": "Electrical System ................................................................................................................................ 98",
+      "ruleContent": "Electrical System ... 98",
       "parentRuleCode": "EV",
       "pageNumber": "3"
     },
     {
       "ruleCode": "EV.7",
-      "ruleContent": "Shutdown System............................................................................................................................. 102",
+      "ruleContent": "Shutdown System... 102",
       "parentRuleCode": "EV",
       "pageNumber": "3"
     },
     {
       "ruleCode": "EV.8",
-      "ruleContent": "Charger Requirements ..................................................................................................................... 107",
+      "ruleContent": "Charger Requirements ... 107",
       "parentRuleCode": "EV",
       "pageNumber": "3"
     },
     {
       "ruleCode": "EV.9",
-      "ruleContent": "Vehicle Operations ........................................................................................................................... 108",
+      "ruleContent": "Vehicle Operations ... 108",
       "parentRuleCode": "EV",
       "pageNumber": "3"
     },
     {
       "ruleCode": "EV.10",
-      "ruleContent": "Event Site Activities .......................................................................................................................... 109",
+      "ruleContent": "Event Site Activities ... 109",
       "parentRuleCode": "EV",
       "pageNumber": "3"
     },
     {
       "ruleCode": "EV.11",
-      "ruleContent": "Work Practices ................................................................................................................................. 109 IN - Technical Inspection ................................................................................................................ 112",
+      "ruleContent": "Work Practices ... 109 IN - Technical Inspection ... 112",
       "parentRuleCode": "EV",
       "pageNumber": "3"
     },
     {
       "ruleCode": "IN.1",
-      "ruleContent": "Inspection Requirements ................................................................................................................. 112",
+      "ruleContent": "Inspection Requirements ... 112",
       "parentRuleCode": "IN",
       "pageNumber": "3"
     },
     {
       "ruleCode": "IN.2",
-      "ruleContent": "Inspection Conduct .......................................................................................................................... 112",
+      "ruleContent": "Inspection Conduct ... 112",
       "parentRuleCode": "IN",
       "pageNumber": "3"
     },
     {
       "ruleCode": "IN.3",
-      "ruleContent": "Initial Inspection ............................................................................................................................... 113",
+      "ruleContent": "Initial Inspection ... 113",
       "parentRuleCode": "IN",
       "pageNumber": "3"
     },
     {
       "ruleCode": "IN.4",
-      "ruleContent": "Electrical Technical Inspection (EV Only) ......................................................................................... 113",
+      "ruleContent": "Electrical Technical Inspection (EV Only) ... 113",
       "parentRuleCode": "IN",
       "pageNumber": "3"
     },
     {
       "ruleCode": "IN.5",
-      "ruleContent": "Driver Cockpit Checks....................................................................................................................... 114",
+      "ruleContent": "Driver Cockpit Checks... 114",
       "parentRuleCode": "IN",
       "pageNumber": "3"
     },
     {
       "ruleCode": "IN.6",
-      "ruleContent": "Driver Template Inspections ............................................................................................................ 115",
+      "ruleContent": "Driver Template Inspections ... 115",
       "parentRuleCode": "IN",
       "pageNumber": "3"
     },
     {
       "ruleCode": "IN.7",
-      "ruleContent": "Cockpit Template Inspections .......................................................................................................... 115",
+      "ruleContent": "Cockpit Template Inspections ... 115",
       "parentRuleCode": "IN",
       "pageNumber": "3"
     },
     {
       "ruleCode": "IN.8",
-      "ruleContent": "Mechanical Technical Inspection ..................................................................................................... 115",
+      "ruleContent": "Mechanical Technical Inspection ... 115",
       "parentRuleCode": "IN",
       "pageNumber": "3"
     },
     {
       "ruleCode": "IN.9",
-      "ruleContent": "Tilt Test ............................................................................................................................................. 116",
+      "ruleContent": "Tilt Test ... 116",
       "parentRuleCode": "IN",
       "pageNumber": "3"
     },
     {
       "ruleCode": "IN.10",
-      "ruleContent": "Noise and Switch Test (IC Only) ....................................................................................................... 117",
+      "ruleContent": "Noise and Switch Test (IC Only) ... 117",
       "parentRuleCode": "IN",
       "pageNumber": "3"
     },
     {
       "ruleCode": "IN.11",
-      "ruleContent": "Rain Test (EV Only) ........................................................................................................................... 118",
+      "ruleContent": "Rain Test (EV Only) ... 118",
       "parentRuleCode": "IN",
       "pageNumber": "3"
     },
     {
       "ruleCode": "IN.12",
-      "ruleContent": "Brake Test......................................................................................................................................... 118",
+      "ruleContent": "Brake Test... 118",
       "parentRuleCode": "IN",
       "pageNumber": "3"
     },
     {
       "ruleCode": "IN.13",
-      "ruleContent": "Inspection Approval ......................................................................................................................... 119",
+      "ruleContent": "Inspection Approval ... 119",
       "parentRuleCode": "IN",
       "pageNumber": "3"
     },
     {
       "ruleCode": "IN.14",
-      "ruleContent": "Modifications and Repairs ............................................................................................................... 119",
+      "ruleContent": "Modifications and Repairs ... 119",
       "parentRuleCode": "IN",
       "pageNumber": "3"
     },
     {
       "ruleCode": "IN.15",
-      "ruleContent": "Reinspection ..................................................................................................................................... 120 Version 1.0 31 Aug 2024 S - Static Events.............................................................................................................................. 121",
+      "ruleContent": "Reinspection ... 120 Version 1.0 31 Aug 2024 S - Static Events... 121",
       "parentRuleCode": "IN",
       "pageNumber": "3"
     },
     {
       "ruleCode": "S.1",
-      "ruleContent": "General Static ................................................................................................................................... 121",
+      "ruleContent": "General Static ... 121",
       "parentRuleCode": "S",
       "pageNumber": "4"
     },
     {
       "ruleCode": "S.2",
-      "ruleContent": "Presentation Event ........................................................................................................................... 121",
+      "ruleContent": "Presentation Event ... 121",
       "parentRuleCode": "S",
       "pageNumber": "4"
     },
     {
       "ruleCode": "S.3",
-      "ruleContent": "Cost and Manufacturing Event......................................................................................................... 122",
+      "ruleContent": "Cost and Manufacturing Event... 122",
       "parentRuleCode": "S",
       "pageNumber": "4"
     },
     {
       "ruleCode": "S.4",
-      "ruleContent": "Design Event..................................................................................................................................... 126 D - Dynamic Events ........................................................................................................................ 128",
+      "ruleContent": "Design Event... 126 D - Dynamic Events ... 128",
       "parentRuleCode": "S",
       "pageNumber": "4"
     },
     {
       "ruleCode": "D.1",
-      "ruleContent": "General Dynamic .............................................................................................................................. 128",
+      "ruleContent": "General Dynamic ... 128",
       "parentRuleCode": "D",
       "pageNumber": "4"
     },
     {
       "ruleCode": "D.2",
-      "ruleContent": "Pit and Paddock................................................................................................................................ 128",
+      "ruleContent": "Pit and Paddock... 128",
       "parentRuleCode": "D",
       "pageNumber": "4"
     },
     {
       "ruleCode": "D.3",
-      "ruleContent": "Driving .............................................................................................................................................. 129",
+      "ruleContent": "Driving ... 129",
       "parentRuleCode": "D",
       "pageNumber": "4"
     },
     {
       "ruleCode": "D.4",
-      "ruleContent": "Flags ................................................................................................................................................. 130",
+      "ruleContent": "Flags ... 130",
       "parentRuleCode": "D",
       "pageNumber": "4"
     },
     {
       "ruleCode": "D.5",
-      "ruleContent": "Weather Conditions ......................................................................................................................... 130",
+      "ruleContent": "Weather Conditions ... 130",
       "parentRuleCode": "D",
       "pageNumber": "4"
     },
     {
       "ruleCode": "D.6",
-      "ruleContent": "Tires and Tire Changes ..................................................................................................................... 131",
+      "ruleContent": "Tires and Tire Changes ... 131",
       "parentRuleCode": "D",
       "pageNumber": "4"
     },
     {
       "ruleCode": "D.7",
-      "ruleContent": "Driver Limitations ............................................................................................................................. 132",
+      "ruleContent": "Driver Limitations ... 132",
       "parentRuleCode": "D",
       "pageNumber": "4"
     },
     {
       "ruleCode": "D.8",
-      "ruleContent": "Definitions ........................................................................................................................................ 132",
+      "ruleContent": "Definitions ... 132",
       "parentRuleCode": "D",
       "pageNumber": "4"
     },
     {
       "ruleCode": "D.9",
-      "ruleContent": "Acceleration Event ........................................................................................................................... 132",
+      "ruleContent": "Acceleration Event ... 132",
       "parentRuleCode": "D",
       "pageNumber": "4"
     },
     {
       "ruleCode": "D.10",
-      "ruleContent": "Skidpad Event ................................................................................................................................... 133",
+      "ruleContent": "Skidpad Event ... 133",
       "parentRuleCode": "D",
       "pageNumber": "4"
     },
     {
       "ruleCode": "D.11",
-      "ruleContent": "Autocross Event ............................................................................................................................... 135",
+      "ruleContent": "Autocross Event ... 135",
       "parentRuleCode": "D",
       "pageNumber": "4"
     },
     {
       "ruleCode": "D.12",
-      "ruleContent": "Endurance Event .............................................................................................................................. 137",
+      "ruleContent": "Endurance Event ... 137",
       "parentRuleCode": "D",
       "pageNumber": "4"
     },
     {
       "ruleCode": "D.13",
-      "ruleContent": "Efficiency Event ................................................................................................................................ 141",
+      "ruleContent": "Efficiency Event ... 141",
       "parentRuleCode": "D",
       "pageNumber": "4"
     },
     {
       "ruleCode": "D.14",
-      "ruleContent": "Post Endurance ................................................................................................................................ 143 Verify this is the current version of this document at the FSAE Online website www.fsaeonline.com REVISION SUMMARY Provided as a courtesy. Not a complete list. See GR.3.3 and GR.6.6 1.0 Changes in sections: F.4.2.6, F.4.3, F.5.11, F.10.2, F.10.3, T.1.8, T.2.4, EV.5.10, EV.5.11 Ground Clearance, Impact Protection V.1.4.2, F.6.4.4.b, F.7.5.1, F.8.5.6, F.11.3 Allowance for Late Submissions DR.3.3.1 Other Selected changes: F.5.6.3, T.8.3.3, EV.3.2.4, EV.5.4, EV.5.5, EV.7.3, EV.5.6.1, EV.5.6.2, EV.5.9, EV.7.8.4 Version 1.0 31 Aug 2024",
+      "ruleContent": "Post Endurance ... 143 Verify this is the current version of this document at the FSAE Online website www.fsaeonline.com REVISION SUMMARY Provided as a courtesy. Not a complete list. See GR.3.3 and GR.6.6 1.0 Changes in sections: F.4.2.6, F.4.3, F.5.11, F.10.2, F.10.3, T.1.8, T.2.4, EV.5.10, EV.5.11 Ground Clearance, Impact Protection V.1.4.2, F.6.4.4.b, F.7.5.1, F.8.5.6, F.11.3 Allowance for Late Submissions DR.3.3.1 Other Selected changes: F.5.6.3, T.8.3.3, EV.3.2.4, EV.5.4, EV.5.5, EV.7.3, EV.5.6.1, EV.5.6.2, EV.5.9, EV.7.8.4 Version 1.0 31 Aug 2024",
       "parentRuleCode": "D",
       "pageNumber": "4"
     },
@@ -17528,5 +17528,5 @@
     }
   ],
   "totalRules": 2923,
-  "generatedAt": "2025-11-03T19:26:24.925Z"
+  "generatedAt": "2025-11-03T19:31:31.769Z"
 }

@@ -22,7 +22,7 @@ export class FSAEParser extends RuleParser {
           // No sub-rules, just add the main rule
           rules.push({
             ruleCode: currentRule.code,
-            ruleContent: currentRule.text.trim(),
+            ruleContent: this.cleanTocDots(currentRule.text.trim()),
             parentRuleCode: this.findParentRuleCode(currentRule.code),
             pageNumber: currentRule.pageNumber
           });
@@ -59,6 +59,11 @@ export class FSAEParser extends RuleParser {
 
     saveCurrentRule();
     return rules;
+  }
+
+  // Cleaned extensive dots from table of contents rules
+  private cleanTocDots(content: string): string {
+    return content.replace(/\.{4,}/g, '...');
   }
 
   private parseRuleNumber(line: string): Rule | null {
