@@ -52,7 +52,6 @@ export const getRulesetQueryArgs = (organizationId: string) =>
       },
       rulesetType: true,
       car: true,
-      createdBy: getUserQueryArgs(organizationId),
-      deletedBy: getUserQueryArgs(organizationId)
+      createdBy: getUserQueryArgs(organizationId)
     }
   });
