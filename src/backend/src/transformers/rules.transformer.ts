@@ -15,7 +15,6 @@ export const projectRuleTransformer = (projectRule: any): ProjectRule => {
 };
 
 export const rulesetTransformer = (ruleset: Prisma.RulesetGetPayload<RulesetQueryArgs>): Ruleset => {
-  // calculating the percentage of rules with one or more teams in the ruleset
   const rulesWithTeams = ruleset.rules.filter((rule) => rule._count.teams > 0).length;
   const totalRulesLength = ruleset.rules.length;
   const assignedPercentage = totalRulesLength > 0 ? (rulesWithTeams / totalRulesLength) * 100 : 0;
