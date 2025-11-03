@@ -1,0 +1,365 @@
+{
+  "imgInfo": [
+    {
+      "label": "Figure 1",
+      "description": "FORMULA HYBRID + ELECTRIC SUPPORT PAGE",
+      "pageNumber": "16"
+    },
+    {
+      "label": "Figure 2",
+      "description": "OPEN WHEEL DEFINITION",
+      "pageNumber": "19"
+    },
+    {
+      "label": "Figure 3",
+      "description": "TRIANGULATION",
+      "pageNumber": "21"
+    },
+    {
+      "label": "Figure 5",
+      "description": "PERCY -- 95TH PERCENTILE MALE WITH HELMET",
+      "pageNumber": "26"
+    },
+    {
+      "label": "Figure 6",
+      "description": "95TH PERCENTILE TEMPLATE POSITIONING",
+      "pageNumber": "27"
+    },
+    {
+      "label": "Figure 7",
+      "description": "MAIN AND FRONT HOOP BRACING",
+      "pageNumber": "29"
+    },
+    {
+      "label": "Figure 8",
+      "description": "DOUBLE-LUG JOINT",
+      "pageNumber": "30"
+    },
+    {
+      "label": "Figure 9",
+      "description": "DOUBLE LUG JOINT",
+      "pageNumber": "30"
+    },
+    {
+      "label": "Figure 10",
+      "description": "SLEEVED BUTT JOINT",
+      "pageNumber": "30"
+    },
+    {
+      "label": "Figure 11",
+      "description": "SIDE IMPACT STRUCTURE",
+      "pageNumber": "35"
+    },
+    {
+      "label": "Figure 12",
+      "description": "SIDE IMPACT ZONE DEFINITION FOR A MONOCOQUE",
+      "pageNumber": "39"
+    },
+    {
+      "label": "Figure 13",
+      "description": "ALTERNATE SINGLE BOLT ATTACHMENT",
+      "pageNumber": "40"
+    },
+    {
+      "label": "Figure 14",
+      "description": "COCKPIT OPENING TEMPLATE",
+      "pageNumber": "41"
+    },
+    {
+      "label": "Figure 15",
+      "description": "COCKPIT INTERNAL CROSS SECTION TEMPLATE",
+      "pageNumber": "42"
+    },
+    {
+      "label": "Figure 16",
+      "description": "EXAMPLES OF FIREWALL CONFIGURATIONS",
+      "pageNumber": "45"
+    },
+    {
+      "label": "Figure 17",
+      "description": "SEAT BELT THREADING EXAMPLES",
+      "pageNumber": "48"
+    },
+    {
+      "label": "Figure 18",
+      "description": "LAP BELT ANGLES WITH UPRIGHT DRIVER",
+      "pageNumber": "49"
+    },
+    {
+      "label": "Figure 19",
+      "description": "SHOULDER HARNESS MOUNTING – TOP VIEW",
+      "pageNumber": "50"
+    },
+    {
+      "label": "Figure 20",
+      "description": "SHOULDER HARNESS MOUNTING – SIDE VIEW",
+      "pageNumber": "50"
+    },
+    {
+      "label": "Figure 21",
+      "description": "OVER-TRAVEL SWITCHES",
+      "pageNumber": "57"
+    },
+    {
+      "label": "Figure 22",
+      "description": "FINAL DRIVE SCATTER SHIELD EXAMPLE",
+      "pageNumber": "59"
+    },
+    {
+      "label": "Figure 23",
+      "description": "EXAMPLES OF POSITIVE LOCKING NUTS",
+      "pageNumber": "62"
+    },
+    {
+      "label": "Figure 24",
+      "description": "EXAMPLE CAR NUMBER",
+      "pageNumber": "64"
+    },
+    {
+      "label": "Figure 25",
+      "description": "SURFACE ENVELOPE",
+      "pageNumber": "70"
+    },
+    {
+      "label": "Figure 26",
+      "description": "HOSE CLAMPS",
+      "pageNumber": "73"
+    },
+    {
+      "label": "Figure 27",
+      "description": "FILLER NECK",
+      "pageNumber": "75"
+    },
+    {
+      "label": "Figure 28",
+      "description": "ACCUMULATOR STICKER",
+      "pageNumber": "80"
+    },
+    {
+      "label": "Figure 29",
+      "description": "EXAMPLE NP3S CONFIGURATION",
+      "pageNumber": "83"
+    },
+    {
+      "label": "Figure 30",
+      "description": "EXAMPLE 5S4P CONFIGURATION",
+      "pageNumber": "84"
+    },
+    {
+      "label": "Figure 31",
+      "description": "EXAMPLE ACCUMULATOR SEGMENTING",
+      "pageNumber": "86"
+    },
+    {
+      "label": "Figure 32",
+      "description": "VIRTUAL ACCUMULATOR EXAMPLE",
+      "pageNumber": "91"
+    },
+    {
+      "label": "Figure 33",
+      "description": "FINGER PROBE",
+      "pageNumber": "92"
+    },
+    {
+      "label": "Figure 34",
+      "description": "HIGH VOLTAGE LABEL",
+      "pageNumber": "92"
+    },
+    {
+      "label": "Figure 35",
+      "description": "CONNECTION STACK-UP",
+      "pageNumber": "95"
+    },
+    {
+      "label": "Figure 36",
+      "description": "CREEPAGE DISTANCE EXAMPLE",
+      "pageNumber": "101"
+    },
+    {
+      "label": "Figure 37",
+      "description": "PRIORITY OF SHUTDOWN SOURCES",
+      "pageNumber": "104"
+    },
+    {
+      "label": "Figure 38",
+      "description": "EXAMPLE MASTER SWITCH AND SHUTDOWN CIRCUIT CONFIGURATION",
+      "pageNumber": "106"
+    },
+    {
+      "label": "Figure 39",
+      "description": "TYPICAL MASTER SWITCH",
+      "pageNumber": "107"
+    },
+    {
+      "label": "Figure 40",
+      "description": "INTERNATIONAL KILL SWITCH SYMBOL",
+      "pageNumber": "108"
+    },
+    {
+      "label": "Figure 41",
+      "description": "EXAMPLE SHUTDOWN STATE DIAGRAM",
+      "pageNumber": "110"
+    },
+    {
+      "label": "Figure 42",
+      "description": "TYPICAL ESOK LAMP",
+      "pageNumber": "114"
+    },
+    {
+      "label": "Figure 43",
+      "description": "INSULATION MONITORING DEVICE TEST",
+      "pageNumber": "116"
+    },
+    {
+      "label": "Figure 44",
+      "description": "1",
+      "pageNumber": "18"
+    },
+    {
+      "label": "Figure 45",
+      "description": "PLOT OF LAPSUM(N) CALCULATION FOR A 44-LAP ENDURANCE EVENT",
+      "pageNumber": "159"
+    },
+    {
+      "label": "Figure 46",
+      "description": "SCORING GUIDELINES: PROJECT PLAN COMPONENT",
+      "pageNumber": "164"
+    },
+    {
+      "label": "Figure 47",
+      "description": "CHANGE MANAGEMENT REPORT SCORING GUIDELINES",
+      "pageNumber": "166"
+    },
+    {
+      "label": "Figure 48",
+      "description": "EVALUATION CRITERIA",
+      "pageNumber": "168"
+    },
+    {
+      "label": "Figure 49",
+      "description": "PROJECT MANAGEMENT SCORING SHEET",
+      "pageNumber": "169"
+    },
+    {
+      "label": "Figure 50",
+      "description": "LATCHING FOR ACTIVE-HIGH OUTPUT",
+      "pageNumber": "173"
+    },
+    {
+      "label": "Figure 51",
+      "description": "LATCHING FOR ACTIVE-LOW OUTPUT",
+      "pageNumber": "173"
+    },
+    {
+      "label": "Table 1",
+      "description": "2024 ENERGY AND ACCUMULATOR LIMITS",
+      "pageNumber": "1"
+    },
+    {
+      "label": "Table 2",
+      "description": "EVENT POINTS",
+      "pageNumber": "2"
+    },
+    {
+      "label": "Table 3",
+      "description": "REQUIRED DOCUMENTS",
+      "pageNumber": "12"
+    },
+    {
+      "label": "Table 4",
+      "description": "BASELINE STEEL",
+      "pageNumber": "22"
+    },
+    {
+      "label": "Table 5",
+      "description": "STEEL TUBING MINIMUM WALL THICKNESSES",
+      "pageNumber": "23"
+    },
+    {
+      "label": "Table 6",
+      "description": "95TH PERCENTILE MALE TEMPLATE DIMENSIONS",
+      "pageNumber": "25"
+    },
+    {
+      "label": "Table 7",
+      "description": "SFI / FIA STANDARDS LOGOS",
+      "pageNumber": "66"
+    },
+    {
+      "label": "Table 8",
+      "description": "VOLTAGE AND ENERGY LIMITS",
+      "pageNumber": "79"
+    },
+    {
+      "label": "Table 9",
+      "description": "AMS VOLTAGE MONITORING",
+      "pageNumber": "89"
+    },
+    {
+      "label": "Table 10",
+      "description": "AMS TEMPERATURE MONITORING",
+      "pageNumber": "89"
+    },
+    {
+      "label": "Table 11",
+      "description": "RECOMMENDED TS CONNECTION FASTENERS",
+      "pageNumber": "96"
+    },
+    {
+      "label": "Table 12",
+      "description": "MINIMUM SPACINGS",
+      "pageNumber": "100"
+    },
+    {
+      "label": "Table 13",
+      "description": "INSULATING MATERIAL - MINIMUM TEMPERATURES AND THICKNESSES",
+      "pageNumber": "100"
+    },
+    {
+      "label": "Table 14",
+      "description": "PCB TS/GLV SPACINGS",
+      "pageNumber": "102"
+    },
+    {
+      "label": "Table 15",
+      "description": "STATIC EVENT MAXIMUM SCORES",
+      "pageNumber": "126"
+    },
+    {
+      "label": "Table 16",
+      "description": "PROJECT MANAGEMENT SCORING",
+      "pageNumber": "129"
+    },
+    {
+      "label": "Table 17",
+      "description": "DYNAMIC EVENT MAXIMUM SCORES",
+      "pageNumber": "137"
+    },
+    {
+      "label": "Table 18",
+      "description": "FLAGS",
+      "pageNumber": "151"
+    },
+    {
+      "label": "Table 19",
+      "description": "ACCUMULATOR DEVICE ENERGY CALCULATIONS",
+      "pageNumber": "157"
+    },
+    {
+      "label": "Table 20",
+      "description": "FUEL ENERGY EQUIVALENCIES",
+      "pageNumber": "157"
+    },
+    {
+      "label": "Table 21",
+      "description": "EXAMPLE OF LAPSUM(N) CALCULATION FOR A 44-LAP ENDURANCE EVENT",
+      "pageNumber": "158"
+    },
+    {
+      "label": "Table 22",
+      "description": "WIRE CURRENT CAPACITY (SINGLE CONDUCTOR IN AIR)",
+      "pageNumber": "171"
+    }
+  ],
+  "generatedAt": "2025-11-03T04:08:18.963Z"
+}

@@ -8,6 +8,12 @@ interface RuleData {
   pageNumber: string;
 }
 
+interface imgData {
+  label: string;
+  description: string;
+  pageNumber: string;
+}
+
 interface Rule {
   ruleCode: string;
   ruleContent: string;
@@ -19,10 +25,15 @@ interface ParsedOutput {
   generatedAt: string;
 }
 
+interface ParsedImgOutput {
+  imgInfo: imgData[];
+  generatedAt: string;
+}
+
 class FHERuleParser {
-  async parsePdf(path: string): Promise<{ rules: RuleData[]; text: string }> {
+  async parsePdf(path: string): Promise<{ rules: RuleData[]; imgInfo: imgData[], text: string }> {
     const filePath = "ruleDocs/" + path;
-    console.log(`Reading  ${filePath}`);
+    console.log(`Reading ${filePath}`);
     
     const dataBuffer = fs.readFileSync(filePath);
     const pdfData = await pdf(dataBuffer);
@@ -30,7 +41,63 @@ class FHERuleParser {
     console.log(`PDF Stats: ${pdfData.numpages} pages, ${pdfData.text.length} characters`);
     
     const rules = this.extractRules(pdfData.text);    
-    return { rules, text: pdfData.text };
+    const imgInfo = this.extractImageInfo(pdfData.text);
+    return { rules, imgInfo, text: pdfData.text };
+  }
+
+  private extractImageInfo(text: string): imgData[] {
+    const imgInfo: imgData[] = [];
+    const lines = text.split('\n');
+    
+    const imgPattern = /^(FIGURE|TABLE)\s+(\d+(?:[A-C])?)\s*[-–—:]?\s*(.+?)?\s*(\d+)\s*$/i;
+    let inIndexSection = false;
+    let inTablesSection = false;
+
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+
+      // start capturing in Index of Figures section
+      if (/^Index of Figures/i.test(trimmedLine)) {
+        inIndexSection = true;
+        continue;
+      }
+
+      if (/^Index of Tables/i.test(trimmedLine)) {
+        inTablesSection = true;
+        continue;
+      }
+
+      if (inIndexSection) {
+        const match = trimmedLine.match(imgPattern);
+        if (match) {
+          const label = `${match[1].charAt(0).toUpperCase() + match[1].slice(1).toLowerCase()} ${match[2]}`;
+          const description = match[3]?.trim() || '';
+          const pageNumber = match[4];
+
+          // check for another figure/table inside description (specific case fix)
+          const secondPattern = /^(.+?)\s+(FIGURE|TABLE)\s+(\d+(?:[A-C])?)\s*[-–—:]?\s*(.+)$/i;
+          const secondMatch = description.match(secondPattern);
+          
+          imgInfo.push({
+            label,
+            description: secondMatch ? secondMatch[1].trim() : description,
+            pageNumber,
+          });
+          if (secondMatch) {
+            imgInfo.push({
+              label: `${secondMatch[2].charAt(0).toUpperCase() + secondMatch[2].slice(1).toLowerCase()} ${secondMatch[3]}`,
+              description: secondMatch[4].trim(),
+              pageNumber,
+            });
+          }
+        }
+      }
+      if (inTablesSection && /^2025 Formula Hybrid/i.test(trimmedLine)) {
+        inIndexSection = false;
+        break;
+      }
+    }
+    return imgInfo;
   }
 
   private extractRules(text: string): RuleData[] {
@@ -193,12 +260,20 @@ class FHERuleParser {
     return parentParts.join('.');
   }
 
-  async saveToJSON(rules: RuleData[], outputPath: string = './fhe_rules.json'): Promise<void> {
+  async saveToJSON(rules: RuleData[], imgInfo: imgData[], outputPath: string, imgInfoPath: string): Promise<void> {
     const output: ParsedOutput = {
       rules: rules,
       totalRules: rules.length,
       generatedAt: new Date().toISOString()
     };
+
+    const imgOutput: ParsedImgOutput = {
+      imgInfo: imgInfo,
+      generatedAt: new Date().toISOString()
+    };
+
+    fs.writeFileSync(imgInfoPath, JSON.stringify(imgOutput, null, 2), 'utf-8');
+    console.log(`Saved image info to ${imgInfoPath}`);
 
     fs.writeFileSync(outputPath, JSON.stringify(output, null, 2), 'utf-8');
     console.log(`Saved ${rules.length} rules to ${outputPath}`);
@@ -214,11 +289,13 @@ class FHERuleParser {
 async function main(): Promise<void> {
   const filePath = process.argv[2];
   const outputFile = process.argv[3] || './fhe_rules.json';
+  // List of figure/table descriptions and page numbers
+  const imgListFile = process.argv[4] || './fhe_image_info.json';
   const parser = new FHERuleParser();
   
   try {
-    const { rules, text } = await parser.parsePdf(filePath);
-    await parser.saveToJSON(rules, outputFile);
+    const { rules, imgInfo, text } = await parser.parsePdf(filePath);
+    await parser.saveToJSON(rules, imgInfo, outputFile, imgListFile);
     await parser.saveToTxt(text);
   } catch (error) {
     console.error('Error:', error);
