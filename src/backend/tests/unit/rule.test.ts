@@ -328,7 +328,7 @@ describe('Rules Tests', () => {
 
       expect(updatedProjectRule.projectRuleId).toBe(projectRule.projectRuleId);
       expect(updatedProjectRule.currentStatus).toBe(Rule_Completion.REVIEW);
-      expect(updatedProjectRule.statusHistory).toBeUndefined();
+      expect(updatedProjectRule.statusHistory).toHaveLength(0);
     });
 
     it('Update project rule fails if user does not have permission', async () => {
