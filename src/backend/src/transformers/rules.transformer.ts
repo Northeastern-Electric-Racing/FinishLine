@@ -35,14 +35,12 @@ export const rulesetTransformer = (ruleset: Prisma.RulesetGetPayload<RulesetQuer
     })),
     rulesetType: {
       ...ruleset.rulesetType,
-      lastUpdated: new Date(),
+      lastUpdated: ruleset.rulesetType.lastUpdated,
       revisionFiles: []
     },
     car: {
       carId: ruleset.car.carId,
       name: ruleset.car.wbsElementId
-    },
-    deletedBy: ruleset.deletedBy ? userTransformer(ruleset.deletedBy) : null,
-    deletedByUserId: ruleset.deletedByUserId
+    }
   };
 };
