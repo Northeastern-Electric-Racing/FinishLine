@@ -313,7 +313,8 @@ const CreditsPage: React.FC = () => {
           '100%': { textShadow: '0 0 4px rgba(190, 0, 0, 0.7), 0 0 10px rgba(190, 0, 0, 0.4)' }
         }
       }
-    }
+    },
+    { name: 'Santiago Ordonez Merizalde', color: '#8a2affff' },
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
