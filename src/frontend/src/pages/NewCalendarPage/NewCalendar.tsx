@@ -5,7 +5,6 @@
 import { Route, Switch } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import DesignReviewDetails from '../CalendarPage/DesignReviewDetailPage/DesignReviewDetails';
-import NewCalendarPage from './NewCalendarPage';
 import CalendarTab from './CalendarTab';
 
 const NewCalendar: React.FC = () => {

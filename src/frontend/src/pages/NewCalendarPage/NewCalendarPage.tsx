@@ -18,8 +18,6 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import DRCSummaryModal from '../CalendarPage/DesignReviewSummaryModal';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import FullPageTabs from '../../components/FullPageTabs';
-import { routes } from '../../utils/routes';
 
 const NewCalendarPage = () => {
   const theme = useTheme();
