@@ -15,7 +15,7 @@ import {
 describe('Rules Tests', () => {
   let deletedRule: Rule;
   let rule: Rule;
-  let user: User;
+  let admin: User;
   let organization: Organization;
   let orgId: string;
   let car: Car;
@@ -52,18 +52,18 @@ describe('Rules Tests', () => {
 
     organization = await createTestOrganization();
     orgId = organization.organizationId;
-    user = await createTestUser(supermanAdmin, orgId);
+    admin = await createTestUser(supermanAdmin, orgId);
     nonLeadership = await createTestUser(financeMember, orgId);
 
     rulesetType = await prisma.ruleset_Type.create({
       data: {
         name: 'FSAE',
-        createdByUserId: user.userId
+        createdByUserId: admin.userId
       }
     });
 
     car = await createUniqueCar(orgId);
-    project = await createTestProject(user, orgId);
+    project = await createTestProject(admin, orgId);
 
     ruleset = await prisma.ruleset.create({
       data: {
@@ -72,7 +72,7 @@ describe('Rules Tests', () => {
         active: true,
         dateCreated: new Date(),
         rulesetTypeId: rulesetType.rulesetTypeId,
-        createdByUserId: user.userId,
+        createdByUserId: admin.userId,
         carId: car.carId
       }
     });
@@ -83,7 +83,7 @@ describe('Rules Tests', () => {
         ruleContent: 'rule contenet',
         imageFileIds: [],
         ruleset: { connect: { rulesetId: ruleset.rulesetId } },
-        createdBy: { connect: { userId: user.userId } }
+        createdBy: { connect: { userId: admin.userId } }
       }
     });
 
@@ -93,7 +93,7 @@ describe('Rules Tests', () => {
         ruleContent: 'parent rule contenet',
         imageFileIds: [],
         ruleset: { connect: { rulesetId: ruleset.rulesetId } },
-        createdBy: { connect: { userId: user.userId } },
+        createdBy: { connect: { userId: admin.userId } },
         parentRule: {
           connect: { ruleId: rule.ruleId }
         }
@@ -107,13 +107,13 @@ describe('Rules Tests', () => {
 
   describe('Delete rule', () => {
     it('Successful deletion', async () => {
-      deletedRule = await RulesService.deleteRule(rule.ruleId, user, organization);
+      deletedRule = await RulesService.deleteRule(rule.ruleId, admin, organization);
       expect(deletedRule.dateDeleted).toBeTruthy();
       expect(deletedRule).toMatchObject({
         ...rule,
         dateUpdated: deletedRule.dateUpdated,
         dateDeleted: deletedRule.dateDeleted,
-        deletedByUserId: user.userId
+        deletedByUserId: admin.userId
       });
 
       const deletedSubRule = await prisma.rule.findUnique({
@@ -126,7 +126,7 @@ describe('Rules Tests', () => {
         ...subRule,
         dateUpdated: deletedSubRule!.dateUpdated,
         dateDeleted: deletedSubRule!.dateDeleted,
-        deletedByUserId: user.userId
+        deletedByUserId: admin.userId
       });
     });
 
@@ -138,15 +138,15 @@ describe('Rules Tests', () => {
     });
 
     it('Fails when rule has already been deleted', async () => {
-      await RulesService.deleteRule(rule.ruleId, user, organization);
+      await RulesService.deleteRule(rule.ruleId, admin, organization);
 
-      await expect(RulesService.deleteRule(rule.ruleId, user, organization)).rejects.toThrow(
+      await expect(RulesService.deleteRule(rule.ruleId, admin, organization)).rejects.toThrow(
         new DeletedException('Rule', rule.ruleId)
       );
     });
 
     it('Fails with invalid ruleId', async () => {
-      await expect(RulesService.deleteRule('bad id', user, organization)).rejects.toThrow(
+      await expect(RulesService.deleteRule('bad id', admin, organization)).rejects.toThrow(
         new NotFoundException('Rule', 'bad id')
       );
     });
@@ -183,7 +183,7 @@ describe('Rules Tests', () => {
           active: true,
           dateCreated: new Date(),
           rulesetTypeId: rulesetType.rulesetTypeId,
-          createdByUserId: user.userId,
+          createdByUserId: admin.userId,
           carId: car2.carId
         }
       });
@@ -198,7 +198,7 @@ describe('Rules Tests', () => {
         }
       });
 
-      await expect(RulesService.deleteRule(rule2.ruleId, user, organization)).rejects.toThrow(
+      await expect(RulesService.deleteRule(rule2.ruleId, admin, organization)).rejects.toThrow(
         new InvalidOrganizationException('Rule')
       );
     });
@@ -220,7 +220,7 @@ describe('Rules Tests', () => {
 
   describe('Project Rule endpoints', () => {
     it('Creates a project rule successfully', async () => {
-      const projectRule = await RulesService.createProjectRule(user, organization, rule.ruleId, project.projectId);
+      const projectRule = await RulesService.createProjectRule(admin, organization, rule.ruleId, project.projectId);
 
       expect(projectRule.projectRuleId).toBeDefined();
       expect(projectRule.rule).toBeDefined();
@@ -232,7 +232,7 @@ describe('Rules Tests', () => {
     });
 
     it('Creates a project rule successfully for a leaf rule', async () => {
-      const projectRule = await RulesService.createProjectRule(user, organization, subRule.ruleId, project.projectId);
+      const projectRule = await RulesService.createProjectRule(admin, organization, subRule.ruleId, project.projectId);
 
       expect(projectRule.projectRuleId).toBeDefined();
       expect(projectRule.rule).toBeDefined();
@@ -256,13 +256,13 @@ describe('Rules Tests', () => {
       });
 
       await expect(
-        async () => await RulesService.createProjectRule(user, organization, subRule.ruleId, project.projectId)
+        async () => await RulesService.createProjectRule(admin, organization, subRule.ruleId, project.projectId)
       ).rejects.toThrow(new DeletedException('Rule', subRule.ruleId));
     });
 
     it('Create project rule fails if rule does not exist', async () => {
       await expect(
-        async () => await RulesService.createProjectRule(user, organization, '019263825673825738', project.projectId)
+        async () => await RulesService.createProjectRule(admin, organization, '019263825673825738', project.projectId)
       ).rejects.toThrow(new NotFoundException('Rule', '019263825673825738'));
     });
 
@@ -277,29 +277,28 @@ describe('Rules Tests', () => {
       });
 
       await expect(
-        async () => await RulesService.createProjectRule(user, organization, subRule.ruleId, project.projectId)
+        async () => await RulesService.createProjectRule(admin, organization, subRule.ruleId, project.projectId)
       ).rejects.toThrow(new DeletedException('Project', project.projectId));
     });
 
     it('Create project rule fails if project does not exist', async () => {
-      await expect(RulesService.createProjectRule(user, organization, rule.ruleId, 'fake-project-id')).rejects.toThrow(
+      await expect(RulesService.createProjectRule(admin, organization, rule.ruleId, 'fake-project-id')).rejects.toThrow(
         new NotFoundException('Project', 'fake-project-id')
       );
     });
 
     it('Create project rule fails if project rule assignment already exists', async () => {
-      await RulesService.createProjectRule(user, organization, rule.ruleId, project.projectId);
+      await RulesService.createProjectRule(admin, organization, rule.ruleId, project.projectId);
 
-      await expect(RulesService.createProjectRule(user, organization, rule.ruleId, project.projectId)).rejects.toThrow(
+      await expect(RulesService.createProjectRule(admin, organization, rule.ruleId, project.projectId)).rejects.toThrow(
         new HttpException(400, 'This rule is already associated with the project')
       );
     });
 
     // Updating Project Rule Status
     it('Updates a project rule status successfully', async () => {
-      const car = await createUniqueCar(orgId);
-      const { topLevelRule } = await setupRules(car);
-      const projectRule = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
+      // const { topLevelRule } = await setupRules(car);
+      const projectRule = await RulesService.createProjectRule(admin, organization, rule.ruleId, project.projectId);
 
       const updatedProjectRule = await RulesService.editProjectRuleStatus(
         admin,
@@ -318,9 +317,7 @@ describe('Rules Tests', () => {
     });
 
     it('Updates a project rule status to the same status', async () => {
-      const car = await createUniqueCar(orgId);
-      const { topLevelRule } = await setupRules(car);
-      const projectRule = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
+      const projectRule = await RulesService.createProjectRule(admin, organization, rule.ruleId, project.projectId);
 
       const updatedProjectRule = await RulesService.editProjectRuleStatus(
         admin,
@@ -335,9 +332,7 @@ describe('Rules Tests', () => {
     });
 
     it('Update project rule fails if user does not have permission', async () => {
-      const car = await createUniqueCar(orgId);
-      const { topLevelRule } = await setupRules(car);
-      const projectRule = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
+      const projectRule = await RulesService.createProjectRule(admin, organization, rule.ruleId, project.projectId);
 
       await expect(
         async () =>

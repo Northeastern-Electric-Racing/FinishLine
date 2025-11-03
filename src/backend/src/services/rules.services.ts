@@ -1,8 +1,6 @@
-
-import { ProjectRule, isLeadership } from 'shared';
+import { ProjectRule, isLeadership, isAdmin } from 'shared';
 import { userHasPermission } from '../utils/users.utils';
 import { Organization, Rule, User, Rule_Completion } from '@prisma/client';
-import { isAdmin, isLeadership, ProjectRule, RuleCompletion } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
@@ -227,7 +225,11 @@ export default class RulesService {
 
     // If the status does not change, simply return the project rule
     if (projectRule.currentStatus === newStatus) {
-      return projectRuleTransformer(projectRule);
+      const originalProjectRule = await prisma.project_Rule.findUnique({
+        where: { projectRuleId },
+        ...getProjectRuleQueryArgs()
+      });
+      return projectRuleTransformer(originalProjectRule);
     }
 
     const newStatusHistory = {
