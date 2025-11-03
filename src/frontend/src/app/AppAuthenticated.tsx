@@ -34,6 +34,7 @@ import { useHomePageContext } from './HomePageContext';
 import { useCurrentOrganization } from '../hooks/organizations.hooks';
 import Statistics from '../pages/StatisticsPage/Statistics';
 import RetrospectiveGanttChartPage from '../pages/RetrospectivePage/Retrospective';
+import NewCalendar from '../pages/NewCalendarPage/NewCalendar';
 
 interface AppAuthenticatedProps {
   userId: string;
@@ -127,6 +128,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             <Route path={routes.CREDITS} component={Credits} />
             <Route path={routes.FINANCE} component={Finance} />
             <Route path={routes.CALENDAR} component={Calendar} />
+            <Route path={routes.NEW_CALENDAR} component={NewCalendar} />
             <Route path={routes.STATISTICS} component={Statistics} />
             <Route path={routes.HOME} component={Home} />
             <Route path={routes.RETROSPECTIVE} component={RetrospectiveGanttChartPage} />
