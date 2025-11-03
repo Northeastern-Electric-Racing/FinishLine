@@ -1,7 +1,6 @@
 import { ProjectRule, Ruleset } from 'shared';
 import { Prisma } from '@prisma/client';
 import { RulesetQueryArgs } from '../prisma-query-args/rules.query-args';
-import { userTransformer } from './user.transformer';
 
 // transformer functions go below here
 
