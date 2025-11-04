@@ -300,13 +300,13 @@ const CreditsPage: React.FC = () => {
         }
       }
     },
-    { 
-      name: 'John Cassidy', 
+    {
+      name: 'John Cassidy',
       color: '#8378ffff',
       sx: {
-        textShadow: '0px 0px 10px rgba(195, 165, 193, 1)',
+        textShadow: '0px 0px 10px rgba(195, 165, 193, 1)'
       }
-    },
+    }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
