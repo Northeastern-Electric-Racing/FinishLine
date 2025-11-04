@@ -10,8 +10,8 @@ import {
   NotFoundException
 } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
-import { projectRuleTransformer } from '../transformers/rules.transformer';
-import { getProjectRuleQueryArgs } from '../prisma-query-args/rules.query-args';
+import { projectRuleTransformer, rulesetTransformer } from '../transformers/rules.transformer';
+import { getProjectRuleQueryArgs, getRulesetQueryArgs } from '../prisma-query-args/rules.query-args';
 
 export default class RulesService {
   /**
@@ -184,5 +184,48 @@ export default class RulesService {
     });
 
     return projectRuleTransformer(projectRule);
+  }
+
+  /**
+   * Given a ruleset id, retrieves the ruleset and throws errors if
+   * it does not exist or is already deleted
+   * @param rulesetId the id of the ruleset
+   * @param organizationId the id of the organization the ruleset is being deleted in
+   * @returns the ruleset with query args
+   */
+  static async getRulesetWithQueryArgs(rulesetId: string, organizationId: string) {
+    const ruleset = await prisma.ruleset.findUnique({
+      where: { rulesetId },
+      ...getRulesetQueryArgs(organizationId)
+    });
+
+    if (!ruleset) throw new NotFoundException('Ruleset', rulesetId);
+    if (ruleset.deletedByUserId) throw new DeletedException('Ruleset', rulesetId);
+
+    return ruleset;
+  }
+
+  /**
+   * Deletes a specific Ruleset
+   * @param rulesetId the id of the ruleset to be deleted
+   * @param deleterId the id of the user deleting the ruleset
+   * @param organizationID the id of the organization the ruleset is being deleted in
+   * @returns the deleted Ruleset
+   */
+  static async deleteRuleset(rulesetId: string, deleterId: string, organizationId: string) {
+    const ruleset = await RulesService.getRulesetWithQueryArgs(rulesetId, organizationId);
+
+    const hasPermission =
+      (await userHasPermission(deleterId, organizationId, isAdmin)) || deleterId === ruleset.createdBy.userId;
+
+    if (!hasPermission) throw new AccessDeniedException('Only admins can delete a ruleset.');
+
+    const deletedRuleset = await prisma.ruleset.update({
+      where: { rulesetId },
+      data: { deletedBy: { connect: { userId: deleterId } } },
+      ...getRulesetQueryArgs(organizationId)
+    });
+
+    return rulesetTransformer(deletedRuleset);
   }
 }

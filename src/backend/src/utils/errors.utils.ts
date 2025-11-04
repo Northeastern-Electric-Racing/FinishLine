@@ -162,4 +162,5 @@ export type ExceptionObjectNames =
   | 'Reimbursement Product Other Reason'
   | 'Encryption Key'
   | 'Reimbursement Request Comment'
-  | 'Rule';
+  | 'Rule'
+  | 'Ruleset';
