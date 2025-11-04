@@ -314,6 +314,11 @@ const CreditsPage: React.FC = () => {
           '100%': { textShadow: '0 0 4px rgba(190, 0, 0, 0.7), 0 0 10px rgba(190, 0, 0, 0.4)' }
         }
       }
+    },
+    {
+      name: 'Anthony Basko',
+      color: '#c0aed0ff',
+      sx: { textShadow: '0px 0px 3px rgba(152, 119, 233, 1), 0px .5px rgba(53, 37, 66, 1)' }
     }
   ];
 
