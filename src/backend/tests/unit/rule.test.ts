@@ -221,7 +221,7 @@ describe('Rule Tests', () => {
 
       expect(deleted).toBeDefined();
       expect(deleted.rulesetId).toBe(ruleset1.rulesetId);
-      expect(deleted.rules).toBeCloseTo(expectedPercentage, 2);
+      expect(deleted.assignedPercentage).toBeCloseTo(expectedPercentage, 2);
     });
     it('Delete ruleset fails if user does not have permission', async () => {
       const car = await createUniqueCar(orgId);

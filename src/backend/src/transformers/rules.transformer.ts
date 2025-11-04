@@ -17,7 +17,7 @@ export const projectRuleTransformer = (projectRule: any): ProjectRule => {
 export const rulesetTransformer = (ruleset: Prisma.RulesetGetPayload<RulesetQueryArgs>): Ruleset => {
   const rulesWithTeams = ruleset.rules.filter((rule) => rule._count.teams > 0).length;
   const totalRulesLength = ruleset.rules.length;
-  const assignedPercentage = totalRulesLength > 0 ? (rulesWithTeams / totalRulesLength) * 100 : 0;
+  const teamsPercentage = totalRulesLength > 0 ? (rulesWithTeams / totalRulesLength) * 100 : 0;
 
   return {
     fileId: ruleset.fileId,
@@ -25,7 +25,7 @@ export const rulesetTransformer = (ruleset: Prisma.RulesetGetPayload<RulesetQuer
     name: ruleset.name,
     dateCreated: ruleset.dateCreated,
     active: ruleset.active,
-    rules: assignedPercentage,
+    assignedPercentage: teamsPercentage,
     rulesetType: {
       ...ruleset.rulesetType,
       lastUpdated: ruleset.rulesetType.lastUpdated,
