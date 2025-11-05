@@ -1,5 +1,6 @@
 import { routes } from '../../utils/routes';
 import NewCalendarPage from './NewCalendarPage';
+import YourEventsPage from './YourEventsPage';
 import PageLayout from '../../components/PageLayout';
 import { Box } from '@mui/material';
 import FullPageTabs from '../../components/FullPageTabs';
@@ -35,7 +36,7 @@ const CalendarTab: React.FC = () => {
         </Box>
       }
     >
-      {tabIndex === 1 ? <NewCalendarPage /> : tabIndex === 0 ? <NewCalendarPage /> : <SettingsPage />}
+      {tabIndex === 1 ? <YourEventsPage /> : tabIndex === 0 ? <NewCalendarPage /> : <SettingsPage />}
     </PageLayout>
   );
 };
