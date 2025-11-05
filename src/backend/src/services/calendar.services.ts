@@ -20,7 +20,8 @@ import {
   AccessDeniedException,
   DeletedException,
   InvalidOrganizationException,
-  NotFoundException
+  NotFoundException,
+  HttpException
 } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { eventTypeTransformer } from '../transformers/calendar.transformer';
@@ -501,6 +502,18 @@ export default class CalendarService {
       throw new AccessDeniedAdminOnlyException('create shop');
     }
 
+    const existing = await prisma.shop.findFirst({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        name: { equals: name, mode: 'insensitive' }
+      }
+    });
+
+    if (existing) {
+      throw new HttpException(400, "Can't have two shops with the same name");
+    }
+
     const newShop = await prisma.shop.create({
       data: {
         name,
@@ -543,12 +556,22 @@ export default class CalendarService {
     if (existing.dateDeleted) throw new DeletedException('Shop', shopId);
     if (existing.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Shop');
 
+    const duplicate = await prisma.shop.findFirst({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        name: { equals: name, mode: 'insensitive' },
+        NOT: { shopId }
+      }
+    });
+
+    if (duplicate) {
+      throw new HttpException(400, "Can't have two shops with the same name");
+    }
+
     const updatedShop = await prisma.shop.update({
       where: { shopId },
-      data: {
-        name,
-        description
-      },
+      data: { name, description },
       ...getShopQueryArgs(organization.organizationId)
     });
 
