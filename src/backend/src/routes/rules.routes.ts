@@ -29,4 +29,6 @@ rulesRouter.post(
   RulesController.editRule
 );
 
+rulesRouter.post('/ruleset/:rulesetId/delete', RulesController.deleteRuleset);
+
 export default rulesRouter;

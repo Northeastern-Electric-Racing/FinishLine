@@ -39,6 +39,7 @@ export default class RulesController {
     }
   }
 
+
   static async editRule(req: Request, res: Response, next: NextFunction) {
     try {
       const { ruleId } = req.params;
@@ -54,6 +55,16 @@ export default class RulesController {
         parentRuleId
       );
       res.status(200).json(rule);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteRuleset(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetId } = req.params;
+      const ruleset = await RulesService.deleteRuleset(rulesetId, req.currentUser.userId, req.organization.organizationId);
+      res.status(200).json(ruleset);
     } catch (error: unknown) {
       next(error);
     }

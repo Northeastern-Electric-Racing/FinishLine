@@ -163,4 +163,5 @@ export type ExceptionObjectNames =
   | 'Encryption Key'
   | 'Reimbursement Request Comment'
   | 'Rule'
-  | 'Parent Rule';
+  | 'Parent Rule'
+  | 'Ruleset';
