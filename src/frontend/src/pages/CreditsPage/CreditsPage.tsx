@@ -318,7 +318,30 @@ const CreditsPage: React.FC = () => {
     {
       name: 'Anthony Basko',
       color: '#c0aed0ff',
-      sx: { textShadow: '0px 0px 3px rgba(152, 119, 233, 1), 0px .5px rgba(53, 37, 66, 1)' }
+      sx: { 
+        textShadow: '0px 0px 3px rgba(152, 119, 233, 1), 0px .5px rgba(53, 37, 66, 1)' 
+      }
+    },
+    {
+      name: 'Santiago Ordonez Merizalde',
+      color: 'transparent',
+      sx: {
+        textShadow: `
+          0 0 8px rgba(180, 0, 255, 0.8),
+          0 0 15px rgba(140, 0, 255, 0.6),
+          0 0 25px rgba(200, 100, 255, 0.5)
+        `,
+        background: 'linear-gradient(90deg, #d9a7ff, #b58eff, #7f6fff, #b58eff, #d9a7ff)',
+        '-webkit-background-clip': 'text',
+        backgroundSize: '300% 300%',
+        animation: 'purpleFlow 6s ease-in-out infinite',
+        '@keyframes purpleFlow': {
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' }
+        },
+        filter: 'drop-shadow(0 0 4px rgba(190, 80, 255, 0.6))'
+      }
     }
   ];
 
