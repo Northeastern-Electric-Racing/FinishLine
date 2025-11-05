@@ -75,3 +75,25 @@ export const getProjectRuleQueryArgs = () =>
       }
     }
   });
+
+export type RulesetQueryArgs = ReturnType<typeof getRulesetQueryArgs>;
+
+export const getRulesetQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.RulesetDefaultArgs>()({
+    include: {
+      rules: {
+        where: { dateDeleted: null },
+        select: {
+          ruleId: true,
+          _count: {
+            select: {
+              teams: true
+            }
+          }
+        }
+      },
+      rulesetType: true,
+      car: true,
+      createdBy: getUserQueryArgs(organizationId)
+    }
+  });

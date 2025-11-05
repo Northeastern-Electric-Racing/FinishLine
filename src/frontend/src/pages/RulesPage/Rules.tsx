@@ -1,0 +1,1 @@
+// switch route page for rules

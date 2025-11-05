@@ -59,4 +59,14 @@ export default class RulesController {
       next(error);
     }
   }
+
+  static async deleteRuleset(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetId } = req.params;
+      const ruleset = await RulesService.deleteRuleset(rulesetId, req.currentUser.userId, req.organization.organizationId);
+      res.status(200).json(ruleset);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

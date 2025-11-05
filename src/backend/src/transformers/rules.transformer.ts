@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { Rule, RuleCompletion, ProjectRule } from 'shared';
+import { Rule, RuleCompletion, ProjectRule, Ruleset } from 'shared';
 import { RuleQueryArgs } from '../prisma-query-args/rules.query-args';
 import { userTransformer } from './user.transformer';
 
@@ -52,5 +52,29 @@ export const projectRuleTransformer = (projectRule: any): ProjectRule => {
     projectId: projectRule.projectId,
     currentStatus: projectRule.currentStatus,
     statusHistory: projectRule.statusHistory
+  };
+};
+
+export const rulesetTransformer = (ruleset: Prisma.RulesetGetPayload<RulesetQueryArgs>): Ruleset => {
+  const rulesWithTeams = ruleset.rules.filter((rule) => rule._count.teams > 0).length;
+  const totalRulesLength = ruleset.rules.length;
+  const teamsPercentage = totalRulesLength > 0 ? (rulesWithTeams / totalRulesLength) * 100 : 0;
+
+  return {
+    fileId: ruleset.fileId,
+    rulesetId: ruleset.rulesetId,
+    name: ruleset.name,
+    dateCreated: ruleset.dateCreated,
+    active: ruleset.active,
+    assignedPercentage: teamsPercentage,
+    rulesetType: {
+      ...ruleset.rulesetType,
+      lastUpdated: ruleset.rulesetType.lastUpdated,
+      revisionFiles: []
+    },
+    car: {
+      carId: ruleset.car.carId,
+      name: ruleset.car.wbsElementId
+    }
   };
 };

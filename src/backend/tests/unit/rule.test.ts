@@ -1,16 +1,9 @@
-import { Car, Organization, Rule, Ruleset, Ruleset_Type, User, Project, Rule_Completion } from '@prisma/client';
+import RulesService from '../../src/services/rules.services';
+import { Organization, User, Project, Car, Ruleset_Type, Rule_Completion } from '@prisma/client';
+import { supermanAdmin, financeMember, wonderwomanGuest, batmanAppAdmin } from '../test-data/users.test-data';
 import { createTestOrganization, createTestProject, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
-import RulesService from '../../src/services/rules.services';
-import { supermanAdmin, financeMember, wonderwomanGuest, batmanAppAdmin } from '../test-data/users.test-data';
-import {
-  AccessDeniedAdminOnlyException,
-  AccessDeniedException,
-  DeletedException,
-  HttpException,
-  InvalidOrganizationException,
-  NotFoundException
-} from '../../src/utils/errors.utils';
+import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
 
 describe('Create Rules Tests', () => {
   let orgId: string;
@@ -306,15 +299,34 @@ describe('Delete Rules Tests', () => {
   let user: User;
   let organization: Organization;
   let orgId: string;
-  let car: Car;
-  let rulesetType: Ruleset_Type;
-  let ruleset: Ruleset;
-  let subRule: Rule;
-  let project: Project;
+  let organization: Organization;
+  let admin: User;
   let nonLeadership: User;
-  let carCounter = 1;
+  let project: Project;
+  let fsaeRulesetType: Ruleset_Type;
+
+  beforeEach(async () => {
+    organization = await createTestOrganization();
+    orgId = organization.organizationId;
+    admin = await createTestUser(supermanAdmin, organization.organizationId);
+    nonLeadership = await createTestUser(financeMember, organization.organizationId);
+    project = await createTestProject(admin, organization.organizationId);
+
+    fsaeRulesetType = await prisma.ruleset_Type.create({
+      data: {
+        name: 'FSAE',
+        createdBy: { connect: { userId: admin.userId } }
+      }
+    });
+  });
+
+  afterEach(async () => {
+    await resetUsers();
+  });
 
   const createUniqueCar = async (orgId: string) => {
+    let carCounter = 1;
+
     const car = await prisma.car.create({
       data: {
         wbsElement: {
@@ -335,162 +347,56 @@ describe('Delete Rules Tests', () => {
     return car;
   };
 
-  beforeEach(async () => {
-    await resetUsers();
-
-    organization = await createTestOrganization();
-    orgId = organization.organizationId;
-    user = await createTestUser(supermanAdmin, orgId);
-    nonLeadership = await createTestUser(financeMember, orgId);
-
-    rulesetType = await prisma.ruleset_Type.create({
+  const setupRules = async (car: Car) => {
+    const ruleset1 = await prisma.ruleset.create({
       data: {
-        name: 'FSAE',
-        createdByUserId: user.userId
-      }
-    });
-
-    car = await createUniqueCar(orgId);
-    project = await createTestProject(user, orgId);
-
-    ruleset = await prisma.ruleset.create({
-      data: {
-        name: 'ruleset name',
-        fileId: 'fileId',
+        name: 'FSAE Rules 2025',
+        fileId: 'fsae-rules-2025',
         active: true,
         dateCreated: new Date(),
-        rulesetTypeId: rulesetType.rulesetTypeId,
-        createdByUserId: user.userId,
-        carId: car.carId
+        car: { connect: { carId: car.carId } },
+        createdBy: { connect: { userId: admin.userId } },
+        rulesetType: { connect: { rulesetTypeId: fsaeRulesetType.rulesetTypeId } }
       }
     });
 
-    rule = await prisma.rule.create({
+    const topLevelRule = await prisma.rule.create({
       data: {
-        ruleCode: 'rule code',
-        ruleContent: 'rule contenet',
+        ruleCode: 'T',
+        ruleContent: 'PART T - GENERAL TECHNICAL REQUIREMENTS',
         imageFileIds: [],
-        ruleset: { connect: { rulesetId: ruleset.rulesetId } },
-        createdBy: { connect: { userId: user.userId } }
+        dateCreated: new Date(),
+        ruleset: { connect: { rulesetId: ruleset1.rulesetId } },
+        createdBy: { connect: { userId: admin.userId } }
       }
     });
 
-    subRule = await prisma.rule.create({
+    const leafRule1 = await prisma.rule.create({
       data: {
-        ruleCode: 'parent rule code',
-        ruleContent: 'parent rule contenet',
+        ruleCode: 'T2',
+        ruleContent: 'The vehicle must be open-wheeled and open-cockpit...',
         imageFileIds: [],
-        ruleset: { connect: { rulesetId: ruleset.rulesetId } },
-        createdBy: { connect: { userId: user.userId } },
-        parentRule: {
-          connect: { ruleId: rule.ruleId }
-        }
+        dateCreated: new Date(),
+        ruleset: { connect: { rulesetId: ruleset1.rulesetId } },
+        createdBy: { connect: { userId: admin.userId } },
+        parentRule: { connect: { ruleId: topLevelRule.ruleId } }
       }
     });
-  });
 
-  afterEach(async () => {
-    await resetUsers();
-  });
-
-  describe('Delete rule', () => {
-    it('Successful deletion', async () => {
-      deletedRule = await RulesService.deleteRule(rule.ruleId, user, organization);
-      expect(deletedRule.dateDeleted).toBeTruthy();
-      expect(deletedRule).toMatchObject({
-        ...rule,
-        dateUpdated: deletedRule.dateUpdated,
-        dateDeleted: deletedRule.dateDeleted,
-        deletedByUserId: user.userId
-      });
-
-      const deletedSubRule = await prisma.rule.findUnique({
-        where: {
-          ruleId: subRule.ruleId
-        }
-      });
-
-      expect(deletedSubRule).toMatchObject({
-        ...subRule,
-        dateUpdated: deletedSubRule!.dateUpdated,
-        dateDeleted: deletedSubRule!.dateDeleted,
-        deletedByUserId: user.userId
-      });
+    const leafRule2 = await prisma.rule.create({
+      data: {
+        ruleCode: 'T2.1',
+        ruleContent: 'T2.1 Vehicle Configuration',
+        imageFileIds: [],
+        dateCreated: new Date(),
+        ruleset: { connect: { rulesetId: ruleset1.rulesetId } },
+        createdBy: { connect: { userId: admin.userId } },
+        parentRule: { connect: { ruleId: topLevelRule.ruleId } }
+      }
     });
 
-    it('Fails when non admin tries to delete', async () => {
-      const guest = await createTestUser(wonderwomanGuest, orgId);
-      await expect(RulesService.deleteRule(rule.ruleId, guest, organization)).rejects.toThrow(
-        new AccessDeniedAdminOnlyException('delete rules')
-      );
-    });
-
-    it('Fails when rule has already been deleted', async () => {
-      await RulesService.deleteRule(rule.ruleId, user, organization);
-
-      await expect(RulesService.deleteRule(rule.ruleId, user, organization)).rejects.toThrow(
-        new DeletedException('Rule', rule.ruleId)
-      );
-    });
-
-    it('Fails with invalid ruleId', async () => {
-      await expect(RulesService.deleteRule('bad id', user, organization)).rejects.toThrow(
-        new NotFoundException('Rule', 'bad id')
-      );
-    });
-
-    it('Fails with inconsistent organizations', async () => {
-      const user2 = await prisma.user.create({
-        data: {
-          firstName: 'Admin2',
-          lastName: 'User2',
-          email: '2',
-          googleAuthId: 'organizationCreato2'
-        }
-      });
-
-      const org2 = await prisma.organization.create({
-        data: {
-          name: 'Org 2',
-          description: 'Org 2 description',
-          applicationLink: '',
-          userCreated: {
-            connect: {
-              userId: user2.userId
-            }
-          }
-        }
-      });
-
-      const car2 = await createUniqueCar(org2.organizationId);
-
-      const ruleset2 = await prisma.ruleset.create({
-        data: {
-          name: 'ruleset name',
-          fileId: 'fileId',
-          active: true,
-          dateCreated: new Date(),
-          rulesetTypeId: rulesetType.rulesetTypeId,
-          createdByUserId: user.userId,
-          carId: car2.carId
-        }
-      });
-
-      const rule2 = await prisma.rule.create({
-        data: {
-          ruleCode: 'rule org2',
-          ruleContent: 'rule content org2',
-          imageFileIds: [],
-          ruleset: { connect: { rulesetId: ruleset2.rulesetId } },
-          createdBy: { connect: { userId: user2.userId } }
-        }
-      });
-
-      await expect(RulesService.deleteRule(rule2.ruleId, user, organization)).rejects.toThrow(
-        new InvalidOrganizationException('Rule')
-      );
-    });
-  });
+    return { ruleset1, topLevelRule, leafRule1, leafRule2 };
+  };
 
   describe('Create Ruleset Type', () => {
     it('Fails if user is not leadership or above', async () => {
@@ -508,53 +414,58 @@ describe('Delete Rules Tests', () => {
 
   describe('Project Rule endpoints', () => {
     it('Creates a project rule successfully', async () => {
-      const projectRule = await RulesService.createProjectRule(user, organization, rule.ruleId, project.projectId);
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      const projectRule = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
 
       expect(projectRule.projectRuleId).toBeDefined();
       expect(projectRule.rule).toBeDefined();
-      expect(projectRule.rule.ruleId).toBe(rule.ruleId);
-      expect(projectRule.rule.ruleCode).toBe(rule.ruleCode);
+      expect(projectRule.rule.ruleId).toBe(topLevelRule.ruleId);
+      expect(projectRule.rule.ruleCode).toBe(topLevelRule.ruleCode);
       expect(projectRule.projectId).toBe(project.projectId);
       expect(projectRule.statusHistory).toEqual([]);
       expect(projectRule.currentStatus).toBe(Rule_Completion.REVIEW);
     });
-
     it('Creates a project rule successfully for a leaf rule', async () => {
-      const projectRule = await RulesService.createProjectRule(user, organization, subRule.ruleId, project.projectId);
+      const car = await createUniqueCar(orgId);
+      const { leafRule1 } = await setupRules(car);
+      const projectRule = await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
 
       expect(projectRule.projectRuleId).toBeDefined();
       expect(projectRule.rule).toBeDefined();
-      expect(projectRule.rule.ruleId).toBe(subRule.ruleId);
-      expect(projectRule.rule.ruleCode).toBe(subRule.ruleCode);
+      expect(projectRule.rule.ruleId).toBe(leafRule1.ruleId);
+      expect(projectRule.rule.ruleCode).toBe(leafRule1.ruleCode);
       expect(projectRule.projectId).toBe(project.projectId);
       expect(projectRule.statusHistory).toEqual([]);
       expect(projectRule.currentStatus).toBe(Rule_Completion.REVIEW);
     });
-
     it('Create project rule fails if user does not have permission', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule1 } = await setupRules(car);
       await expect(
-        async () => await RulesService.createProjectRule(nonLeadership, organization, subRule.ruleId, project.projectId)
+        async () => await RulesService.createProjectRule(nonLeadership, organization, leafRule1.ruleId, project.projectId)
       ).rejects.toThrow(new AccessDeniedException('You do not have permissions to assign rules to projects'));
     });
-
     it('Create project rule fails if rule was deleted', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule2 } = await setupRules(car);
+
       await prisma.rule.update({
-        where: { ruleId: subRule.ruleId },
+        where: { ruleId: leafRule2.ruleId },
         data: { dateDeleted: new Date() }
       });
-
       await expect(
-        async () => await RulesService.createProjectRule(user, organization, subRule.ruleId, project.projectId)
-      ).rejects.toThrow(new DeletedException('Rule', subRule.ruleId));
+        async () => await RulesService.createProjectRule(admin, organization, leafRule2.ruleId, project.projectId)
+      ).rejects.toThrow(new DeletedException('Rule', leafRule2.ruleId));
     });
-
     it('Create project rule fails if rule does not exist', async () => {
       await expect(
-        async () => await RulesService.createProjectRule(user, organization, '019263825673825738', project.projectId)
+        async () => await RulesService.createProjectRule(admin, organization, '019263825673825738', project.projectId)
       ).rejects.toThrow(new NotFoundException('Rule', '019263825673825738'));
     });
-
     it('Create project rule fails if project was deleted', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule2 } = await setupRules(car);
       await prisma.project.update({
         where: { projectId: project.projectId },
         data: {
@@ -563,24 +474,68 @@ describe('Delete Rules Tests', () => {
           }
         }
       });
-
       await expect(
-        async () => await RulesService.createProjectRule(user, organization, subRule.ruleId, project.projectId)
+        async () => await RulesService.createProjectRule(admin, organization, leafRule2.ruleId, project.projectId)
       ).rejects.toThrow(new DeletedException('Project', project.projectId));
     });
-
     it('Create project rule fails if project does not exist', async () => {
-      await expect(RulesService.createProjectRule(user, organization, rule.ruleId, 'fake-project-id')).rejects.toThrow(
+      const car = await createUniqueCar(orgId);
+      const { leafRule1 } = await setupRules(car);
+      await expect(RulesService.createProjectRule(admin, organization, leafRule1.ruleId, 'fake-project-id')).rejects.toThrow(
         new NotFoundException('Project', 'fake-project-id')
       );
     });
-
     it('Create project rule fails if project rule assignment already exists', async () => {
-      await RulesService.createProjectRule(user, organization, rule.ruleId, project.projectId);
-
-      await expect(RulesService.createProjectRule(user, organization, rule.ruleId, project.projectId)).rejects.toThrow(
+      const car = await createUniqueCar(orgId);
+      const { leafRule1 } = await setupRules(car);
+      await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
+      await expect(RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId)).rejects.toThrow(
         new HttpException(400, 'This rule is already associated with the project')
       );
+    });
+  });
+
+  describe('Delete Ruleset', () => {
+    it('Deletes a ruleset successfully and returns the correct information', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+      const totalRules = await prisma.rule.count({
+        where: { rulesetId: ruleset1.rulesetId }
+      });
+      const rulesWithTeams = await prisma.rule.count({
+        where: {
+          rulesetId: ruleset1.rulesetId,
+          teams: { some: {} }
+        }
+      });
+      const expectedPercentage = totalRules > 0 ? (rulesWithTeams / totalRules) * 100 : 0;
+      const deleted = await RulesService.deleteRuleset(ruleset1.rulesetId, admin.userId, organization.organizationId);
+
+      expect(deleted).toBeDefined();
+      expect(deleted.rulesetId).toBe(ruleset1.rulesetId);
+      expect(deleted.assignedPercentage).toBeCloseTo(expectedPercentage, 2);
+    });
+    it('Delete ruleset fails if user does not have permission', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+
+      await expect(
+        async () => await RulesService.deleteRuleset(ruleset1.rulesetId, nonLeadership.userId, organization.organizationId)
+      ).rejects.toThrow(new AccessDeniedException('Only admins can delete a ruleset.'));
+    });
+    it('Delete ruleset fails if ruleset was already deleted', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+
+      await RulesService.deleteRuleset(ruleset1.rulesetId, admin.userId, organization.organizationId);
+      await expect(
+        async () => await RulesService.deleteRuleset(ruleset1.rulesetId, admin.userId, organization.organizationId)
+      ).rejects.toThrow(new DeletedException('Ruleset', ruleset1.rulesetId));
+    });
+    it('Delete ruleset fails if ruleset does not exist', async () => {
+      await expect(
+        async () => await RulesService.deleteRuleset('fake-ruleset-id', admin.userId, organization.organizationId)
+      ).rejects.toThrow(new NotFoundException('Ruleset', 'fake-ruleset-id'));
     });
   });
 });

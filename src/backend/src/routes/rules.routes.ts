@@ -31,4 +31,6 @@ rulesRouter.post(
   RulesController.createProjectRule
 );
 
+rulesRouter.post('/ruleset/:rulesetId/delete', RulesController.deleteRuleset);
+
 export default rulesRouter;
