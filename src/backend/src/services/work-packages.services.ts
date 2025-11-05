@@ -13,7 +13,8 @@ import {
   WorkPackagePreview,
   WorkPackageStage,
   User,
-  WorkPackageSelection
+  WorkPackageSelection,
+  toUtcMidnight
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -29,8 +30,6 @@ import workPackageTransformer, { workPackagePreviewTransformer } from '../transf
 import { updateBlocking, validateChangeRequestAccepted } from '../utils/change-requests.utils';
 import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils';
 import { getWorkPackageChanges } from '../utils/changes.utils';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
 import {
   DescriptionBulletDestination,
   addRawDescriptionBullets,
@@ -41,18 +40,8 @@ import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-
 import { userHasPermission } from '../utils/users.utils';
 import { getUserPreviewQueryArgs } from '../prisma-query-args/user.query-args';
 
-dayjs.extend(utc);
-
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
-  /**
-   * Normalize an input date string to the user's local midnight converted to UTC
-   * @param input - The date string from the frontend
-   * @returns date object representing midnight UTC
-   */
-  private static toUtcMidnight(input: string): Date {
-    return dayjs.utc(input).startOf('day').toDate();
-  }
 
   /**
    * Retrieve all work packages, optionally filtered by query parameters.
@@ -222,7 +211,7 @@ export default class WorkPackagesService {
         .reduce((prev, curr) => Math.max(prev, curr), 0) + 1;
 
     // Parse the startDate to UTC midnight (frontend handles timezone formatting)
-    const date = WorkPackagesService.toUtcMidnight(startDate);
+    const date = toUtcMidnight(startDate);
 
     const changesToCreate = crId
       ? [
@@ -355,7 +344,7 @@ export default class WorkPackagesService {
     const blockedByElems = await validateBlockedBys(blockedBy, organization.organizationId);
 
     // Parse new startDate to UTC midnight (frontend handles timezone formatting)
-    const normalizedEdit = WorkPackagesService.toUtcMidnight(startDate);
+    const normalizedEdit = toUtcMidnight(startDate);
     const changes = await getWorkPackageChanges(
       originalWorkPackage.wbsElement.name,
       name,

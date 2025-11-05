@@ -3,7 +3,42 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import { Availability } from './types/user-types';
+
+dayjs.extend(utc);
+
+/** 
+ * @returns Date object representing the user's local midnight converted to UTC
+ */
+export const toUtcMidnight = (input: string): Date => {
+  return dayjs(input).startOf('day').utc().toDate();
+};
+
+ /** 
+ * @param utcDate - The UTC date from the database
+ * @returns Date string in local timezone (YYYY-MM-DD format)
+ */
+export const fromUtcMidnight = (utcDate: Date): string => {
+  return dayjs.utc(utcDate).local().format('YYYY-MM-DD');
+};
+
+ /** 
+ * @returns Date object representing today at UTC midnight
+ */
+export const getCurrentUtcMidnight = (): Date => {
+  return dayjs().startOf('day').utc().toDate();
+};
+
+ /** 
+ * @param date1 - First date to compare
+ * @param date2 - Second date to compare
+ * @returns true if both dates represent the same calendar day
+ */
+export const isSameCalendarDay = (date1: Date, date2: Date): boolean => {
+  return dayjs(date1).format('YYYY-MM-DD') === dayjs(date2).format('YYYY-MM-DD');
+};
 
 /**
  * Add the given number of weeks to the given date and return the outcome.
