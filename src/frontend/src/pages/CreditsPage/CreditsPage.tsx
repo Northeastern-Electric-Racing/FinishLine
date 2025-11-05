@@ -335,7 +335,8 @@ const CreditsPage: React.FC = () => {
         },
         filter: 'drop-shadow(0 0 4px rgba(190, 80, 255, 0.6))'
       }
-    }
+    },
+    { name: 'Josh Len', color: '#000000ff' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
