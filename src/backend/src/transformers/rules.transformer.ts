@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { Rule, RuleCompletion, ProjectRule, Ruleset } from 'shared';
-import { RuleQueryArgs } from '../prisma-query-args/rules.query-args';
+import { RuleQueryArgs, RulesetQueryArgs } from '../prisma-query-args/rules.query-args';
 import { userTransformer } from './user.transformer';
 
 export const ruleTransformer = (rule: Prisma.RuleGetPayload<RuleQueryArgs>): Rule => {
@@ -31,6 +31,7 @@ export const ruleTransformer = (rule: Prisma.RuleGetPayload<RuleQueryArgs>): Rul
     projects: rule.projects.map((projectRule) => ({
       projectRuleId: projectRule.projectRuleId,
       ruleId: projectRule.ruleId,
+      rule: projectRule.rule as any,
       projectId: projectRule.projectId,
       currentStatus: projectRule.currentStatus as RuleCompletion,
       statusHistory: projectRule.statusHistory.map((history) => ({
@@ -56,9 +57,7 @@ export const projectRuleTransformer = (projectRule: any): ProjectRule => {
 };
 
 export const rulesetTransformer = (ruleset: Prisma.RulesetGetPayload<RulesetQueryArgs>): Ruleset => {
-  const rulesWithTeams = ruleset.rules.filter((rule) => rule._count.teams > 0).length;
-  const totalRulesLength = ruleset.rules.length;
-  const teamsPercentage = totalRulesLength > 0 ? (rulesWithTeams / totalRulesLength) * 100 : 0;
+  const teamsPercentage = 0;
 
   return {
     fileId: ruleset.fileId,

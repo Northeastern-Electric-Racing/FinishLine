@@ -10,8 +10,8 @@ import {
   NotFoundException
 } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
-import { ruleTransformer, projectRuleTransformer } from '../transformers/rules.transformer';
-import { getRuleQueryArgs, getProjectRuleQueryArgs } from '../prisma-query-args/rules.query-args';
+import { getRuleQueryArgs, getProjectRuleQueryArgs, getRulesetQueryArgs } from '../prisma-query-args/rules.query-args';
+import { ruleTransformer, projectRuleTransformer, rulesetTransformer } from '../transformers/rules.transformer';
 
 export default class RulesService {
   /**
@@ -340,7 +340,7 @@ export default class RulesService {
     const ruleset = await RulesService.getRulesetWithQueryArgs(rulesetId, organizationId);
 
     const hasPermission =
-      (await userHasPermission(deleterId, organizationId, isAdmin)) || deleterId === ruleset.createdBy.userId;
+      (await userHasPermission(deleterId, organizationId, isAdmin)) || deleterId === ruleset.createdByUserId;
 
     if (!hasPermission) throw new AccessDeniedException('Only admins can delete a ruleset.');
 

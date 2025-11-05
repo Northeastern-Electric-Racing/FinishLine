@@ -82,18 +82,14 @@ export const getRulesetQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.RulesetDefaultArgs>()({
     include: {
       rules: {
-        where: { dateDeleted: null },
-        select: {
-          ruleId: true,
-          _count: {
-            select: {
-              teams: true
-            }
-          }
-        }
+        where: { dateDeleted: null }
       },
       rulesetType: true,
-      car: true,
+      car: {
+        include: {
+          wbsElement: true
+        }
+      },
       createdBy: getUserQueryArgs(organizationId)
     }
   });
