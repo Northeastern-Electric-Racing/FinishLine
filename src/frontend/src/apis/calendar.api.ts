@@ -13,3 +13,9 @@ export const postCreateShop = (payload: { name: string; description: string }) =
     transformResponse: (data) => JSON.parse(data) as Shop
   });
 };
+
+export const editShop = (shopId: string, payload: { name: string; description: string }) => {
+  return axios.post<Shop>(apiUrls.calendarEditShop(shopId), payload, {
+    transformResponse: (data) => JSON.parse(data) as Shop
+  });
+};

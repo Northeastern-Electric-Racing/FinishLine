@@ -5,8 +5,9 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
+import React from 'react';
 
-export interface CreateShopFormValues {
+export interface ShopFormValues {
   name: string;
   description: string;
 }
@@ -16,13 +17,15 @@ const schema = yup.object({
   description: yup.string().required('Description is required')
 });
 
-interface CreateShopModalProps {
+export interface BaseShopModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateShopFormValues) => Promise<unknown> | unknown;
+  onSubmit: (data: ShopFormValues) => Promise<unknown> | unknown;
+  initialValues?: Partial<ShopFormValues>;
+  title: string;
 }
 
-export const CreateShopModal: React.FC<CreateShopModalProps> = ({ open, onClose, onSubmit }) => {
+const ShopModal: React.FC<BaseShopModalProps> = ({ open, onClose, onSubmit, initialValues, title }) => {
   const toast = useToast();
 
   const {
@@ -30,30 +33,44 @@ export const CreateShopModal: React.FC<CreateShopModalProps> = ({ open, onClose,
     control,
     reset,
     formState: { errors }
-  } = useForm<CreateShopFormValues>({
+  } = useForm<ShopFormValues>({
     resolver: yupResolver(schema),
-    defaultValues: { name: '', description: '' }
+    defaultValues: {
+      name: initialValues?.name ?? '',
+      description: initialValues?.description ?? ''
+    }
   });
 
-  const onFormSubmit = async (data: CreateShopFormValues) => {
+  // keep defaults in sync when switching between shops while the modal is open
+  React.useEffect(() => {
+    reset({
+      name: initialValues?.name ?? '',
+      description: initialValues?.description ?? ''
+    });
+  }, [initialValues, reset]);
+
+  const onFormSubmit = async (data: ShopFormValues) => {
     try {
       await onSubmit(data);
+      onClose();
+      reset({ name: '', description: '' });
     } catch (e: unknown) {
       if (e instanceof Error) toast.error(e.message);
     }
-    onClose();
-    reset({ name: '', description: '' });
   };
 
   return (
     <NERFormModal
       open={open}
-      onHide={onClose}
-      title="Add Shop:"
+      onHide={() => {
+        onClose();
+        reset({ name: '', description: '' });
+      }}
+      title={title}
       reset={() => reset({ name: '', description: '' })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
-      formId="create-shop-form"
+      formId="shop-form"
       showCloseButton
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, width: 350 }}>
@@ -76,4 +93,5 @@ export const CreateShopModal: React.FC<CreateShopModalProps> = ({ open, onClose,
     </NERFormModal>
   );
 };
-export default CreateShopModal;
+
+export default ShopModal;

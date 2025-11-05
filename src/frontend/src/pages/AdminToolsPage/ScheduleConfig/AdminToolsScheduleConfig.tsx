@@ -1,10 +1,22 @@
 import React, { useState } from 'react';
-import { Box, Grid, Typography, Paper, Table, TableBody, TableCell, TableHead, TableRow, Button } from '@mui/material';
+import {
+  Box,
+  Grid,
+  Typography,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Button,
+  IconButton,
+  Tooltip
+} from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { useAllShops, useCreateShop } from '../../../hooks/calendar.hooks';
-import CreateShopModal from './CreateShopModal';
-import { IconButton, Tooltip } from '@mui/material';
+import { useAllShops, useCreateShop, useEditShop } from '../../../hooks/calendar.hooks';
+import ShopModal from './ShopModal';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -12,7 +24,12 @@ const AdminToolsScheduleConfig: React.FC = () => {
   const { data: shops, isLoading, isError, error } = useAllShops();
   const { mutateAsync: createShopMutate } = useCreateShop();
 
+  const [editingShopId, setEditingShopId] = useState<string | null>(null);
+  const editShopMutation = useEditShop(editingShopId ?? '');
+
   const [openCreate, setOpenCreate] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [editingShop, setEditingShop] = useState<any>(null);
 
   if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={(error as Error).message} />;
@@ -46,7 +63,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
           </Paper>
         </Grid>
 
-        {/* Shops table */}
+        {/* Shops Table */}
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2, backgroundColor: 'transparent' }}>
             <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
@@ -82,7 +99,15 @@ const AdminToolsScheduleConfig: React.FC = () => {
                         <Box display="flex" gap={1} justifyContent="center">
                           <Tooltip title="Edit" arrow>
                             <span>
-                              <IconButton size="small" disabled aria-label="edit shop">
+                              <IconButton
+                                size="small"
+                                aria-label="edit shop"
+                                onClick={() => {
+                                  setEditingShop(shop);
+                                  setEditingShopId(shop.shopId);
+                                  setOpenEdit(true);
+                                }}
+                              >
                                 <EditIcon fontSize="small" />
                               </IconButton>
                             </span>
@@ -117,13 +142,37 @@ const AdminToolsScheduleConfig: React.FC = () => {
         </Grid>
       </Grid>
 
-      {/* Create Shop Modal */}
-      <CreateShopModal
+      {/* Add Shop Modal */}
+      <ShopModal
         open={openCreate}
         onClose={() => setOpenCreate(false)}
+        title="Add Shop"
+        initialValues={{ name: '', description: '' }}
         onSubmit={async ({ name, description }) => {
           await createShopMutate({ name, description });
           setOpenCreate(false);
+        }}
+      />
+
+      {/* Edit Shop Modal */}
+      <ShopModal
+        open={openEdit}
+        onClose={() => {
+          setOpenEdit(false);
+          setEditingShop(null);
+          setEditingShopId(null);
+        }}
+        title="Edit Shop"
+        initialValues={{
+          name: editingShop?.name ?? '',
+          description: editingShop?.description ?? ''
+        }}
+        onSubmit={async ({ name, description }) => {
+          if (!editingShopId) return;
+          await editShopMutation.mutateAsync({ name, description });
+          setOpenEdit(false);
+          setEditingShop(null);
+          setEditingShopId(null);
         }}
       />
     </Box>

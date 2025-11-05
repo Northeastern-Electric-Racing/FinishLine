@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Shop } from 'shared';
-import { getAllShops, postCreateShop } from '../apis/calendar.api';
+import { getAllShops, postCreateShop, editShop } from '../apis/calendar.api';
 
 export const SHOPS_KEY = ['shops'] as const;
 
@@ -15,6 +15,21 @@ export const useCreateShop = () => {
   return useMutation<Shop, Error, { name: string; description: string }>(
     async (payload) => {
       const { data } = await postCreateShop(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(SHOPS_KEY);
+      }
+    }
+  );
+};
+
+export const useEditShop = (shopId: string) => {
+  const qc = useQueryClient();
+  return useMutation<Shop, Error, { name: string; description: string }>(
+    async (payload) => {
+      const { data } = await editShop(shopId, payload);
       return data;
     },
     {
