@@ -1,5 +1,4 @@
 import { Controller, useForm } from 'react-hook-form';
-import { useEffect } from 'react';
 import NERFormModal from '../../../../components/NERFormModal';
 import { FormControl, FormLabel, FormHelperText, Switch, Box, Typography, Tooltip, Grid } from '@mui/material';
 import ReactHookTextField from '../../../../components/ReactHookTextField';
