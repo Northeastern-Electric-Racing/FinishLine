@@ -26,7 +26,7 @@ export interface Ruleset {
   dateCreated: Date;
   active: boolean;
   rulesetType: RulesetType;
-  rules: Rule[];
+  assignedPercentage: number;
   car: {
     carId: string;
     name: string;
