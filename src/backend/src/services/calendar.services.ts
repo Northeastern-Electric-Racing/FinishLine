@@ -511,7 +511,7 @@ export default class CalendarService {
     });
 
     if (existing) {
-      throw new HttpException(400, "Can't have two shops with the same name");
+      throw new HttpException(409, "Can't have two shops with the same name");
     }
 
     const newShop = await prisma.shop.create({
@@ -566,7 +566,7 @@ export default class CalendarService {
     });
 
     if (duplicate) {
-      throw new HttpException(400, "Can't have two shops with the same name");
+      throw new HttpException(409, "Can't have two shops with the same name");
     }
 
     const updatedShop = await prisma.shop.update({
