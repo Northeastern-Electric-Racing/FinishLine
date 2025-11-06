@@ -104,6 +104,17 @@ export default class CalendarService {
       }
     }
 
+    const duplicate = await prisma.eventType.findFirst({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        name: { equals: name, mode: 'insensitive' }
+      }
+    });
+    if (duplicate) {
+      throw new HttpException(409, "Can't have two event types with the same name");
+    }
+
     const newEventType = await prisma.eventType.create({
       data: {
         name,
@@ -172,6 +183,16 @@ export default class CalendarService {
       throw new InvalidOrganizationException('Shop');
     }
 
+    const duplicate = await prisma.machinery.findFirst({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        name: { equals: name, mode: 'insensitive' }
+      }
+    });
+    if (duplicate) {
+      throw new HttpException(409, "Can't have two machinery with the same name");
+    }
     const newMachinery = await prisma.machinery.create({
       data: {
         name,
@@ -364,6 +385,18 @@ export default class CalendarService {
       return new Date(initial.getTime() + weeks * 7 * 24 * 60 * 60 * 1000);
     };
 
+    const duplicate = await prisma.event.findFirst({
+      where: {
+        dateDeleted: null,
+        title: { equals: title, mode: 'insensitive' },
+        // scope to org via related eventType
+        eventType: { organizationId: organization.organizationId }
+      }
+    });
+    if (duplicate) {
+      throw new HttpException(409, "Can't have two events with the same title");
+    }
+
     const newEvent = await prisma.event.create({
       data: {
         userCreatedId: submitter.userId,
@@ -470,6 +503,19 @@ export default class CalendarService {
 
     if (existingShop.organizationId !== organization.organizationId) {
       throw new InvalidOrganizationException('Shop');
+    }
+
+    const duplicate = await prisma.machinery.findFirst({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        name: { equals: name, mode: 'insensitive' },
+        // exclude the current machinery
+        NOT: { machineryId }
+      }
+    });
+    if (duplicate) {
+      throw new HttpException(409, "Can't have two machinery with the same name");
     }
 
     // Update the machinery and its shop machinery relationship
@@ -600,6 +646,17 @@ export default class CalendarService {
       throw new AccessDeniedAdminOnlyException('create calendar');
     }
 
+    const duplicate = await prisma.calendar.findFirst({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        name: { equals: name, mode: 'insensitive' }
+      }
+    });
+    if (duplicate) {
+      throw new HttpException(409, "Can't have two calendars with the same name");
+    }
+
     const newCalendar = await prisma.calendar.create({
       data: {
         name,
@@ -649,6 +706,19 @@ export default class CalendarService {
 
     if (!hasPermission) {
       throw new AccessDeniedException('Only admins can edit calendars');
+    }
+
+    const duplicate = await prisma.calendar.findFirst({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        name: { equals: name, mode: 'insensitive' },
+        NOT: { calendarId }
+      }
+    });
+
+    if (duplicate) {
+      throw new HttpException(409, "Can't have two calendars with the same name");
     }
 
     const newCalendar = await prisma.calendar.update({
