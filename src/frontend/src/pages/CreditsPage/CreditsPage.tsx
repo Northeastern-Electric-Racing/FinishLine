@@ -318,8 +318,8 @@ const CreditsPage: React.FC = () => {
     {
       name: 'Anthony Basko',
       color: '#c0aed0ff',
-      sx: { 
-        textShadow: '0px 0px 3px rgba(152, 119, 233, 1), 0px .5px rgba(53, 37, 66, 1)' 
+      sx: {
+        textShadow: '0px 0px 3px rgba(152, 119, 233, 1), 0px .5px rgba(53, 37, 66, 1)'
       }
     },
     {
