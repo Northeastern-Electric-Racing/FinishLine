@@ -637,9 +637,23 @@ export default class CalendarService {
 
           // Note: Machinery is kept even if it has no more shops
           // Only shop-machinery relationships are deleted, not the machinery itself
+        } else if (
+          shopMachineryToUpdate &&
+          shopMachineryToUpdate.shopMachineryId === existingShopMachinery.shopMachineryId
+        ) {
+          // Same relationship - just update the quantity (edit operation)
+          if (quantity === 0) {
+            await tx.shopMachinery.delete({
+              where: { shopMachineryId: existingShopMachinery.shopMachineryId }
+            });
+          } else {
+            await tx.shopMachinery.update({
+              where: { shopMachineryId: existingShopMachinery.shopMachineryId },
+              data: { quantity }
+            });
+          }
         } else if (shopMachineryToUpdate) {
-          // Edit operation: editing into same machine name + same shop after consolidation
-          // Delete the old relationship and add quantity to existing one
+          // Different relationship - delete old and add to existing
           await tx.shopMachinery.delete({
             where: { shopMachineryId: shopMachineryToUpdate.shopMachineryId }
           });
@@ -657,19 +671,18 @@ export default class CalendarService {
               data: { quantity: newQuantity }
             });
           }
+        } else if (quantity === 0) {
+          // Add operation - if quantity is 0, delete the relationship
+          await tx.shopMachinery.delete({
+            where: { shopMachineryId: existingShopMachinery.shopMachineryId }
+          });
         } else {
-          // Add operation - increment quantity (quantity can be 0 to delete)
-          if (quantity === 0) {
-            await tx.shopMachinery.delete({
-              where: { shopMachineryId: existingShopMachinery.shopMachineryId }
-            });
-          } else {
-            const newQuantity = existingShopMachinery.quantity + quantity;
-            await tx.shopMachinery.update({
-              where: { shopMachineryId: existingShopMachinery.shopMachineryId },
-              data: { quantity: newQuantity }
-            });
-          }
+          // Add operation - increment quantity
+          const newQuantity = existingShopMachinery.quantity + quantity;
+          await tx.shopMachinery.update({
+            where: { shopMachineryId: existingShopMachinery.shopMachineryId },
+            data: { quantity: newQuantity }
+          });
         }
 
         const resultMachinery = await tx.machinery.findUnique({
