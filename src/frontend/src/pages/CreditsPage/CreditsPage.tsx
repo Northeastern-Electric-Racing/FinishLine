@@ -300,6 +300,7 @@ const CreditsPage: React.FC = () => {
         }
       }
     },
+    { name: 'Mimo Olowu', color: 'white', sx: { px: 1, backgroundColor: '#ac59eb', borderRadius: 2 } },
     { name: 'Saul Manzanares', color: '#AF34FA' },
     { name: 'Richard Feng', color: '#FFFF', sx: { textShadow: '0 0 2px rgba(0,26,255), 0 0 5px rgba(255,255,255)' } },
     {
