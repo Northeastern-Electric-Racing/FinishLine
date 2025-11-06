@@ -618,6 +618,7 @@ export default class ProjectsService {
    */
   static async editLinkType(
     linkName: string,
+    newName: string | undefined,
     iconName: string,
     required: boolean,
     submitter: User,
@@ -638,11 +639,25 @@ export default class ProjectsService {
 
     if (!linkType) throw new NotFoundException('Link Type', linkName);
 
+    // If attempting to rename, ensure new name does not conflict with an existing LinkType
+    if (newName && newName !== linkName) {
+      const existingWithNewName = await prisma.link_Type.findUnique({
+        where: {
+          uniqueLinkType: {
+            name: newName,
+            organizationId: organization.organizationId
+          }
+        }
+      });
+
+      if (existingWithNewName) throw new HttpException(400, 'LinkType with that name already exists in this organization.');
+    }
+
     // update the LinkType
     const linkTypeUpdated = await prisma.link_Type.update({
       where: { id: linkType.id },
       data: {
-        name: linkName,
+        name: newName && newName.length > 0 ? newName : linkName,
         iconName,
         required
       }
