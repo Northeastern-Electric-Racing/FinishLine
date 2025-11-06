@@ -65,15 +65,6 @@ const LinkTypeFormModal = ({ open, handleClose, defaultValues, onSubmit, linkTyp
     handleClose();
   };
 
-  useEffect(() => {
-    if (open) {
-      reset({
-        name: defaultValues?.name ?? '',
-        iconName: defaultValues?.iconName ?? '',
-        required: defaultValues?.required ?? false
-      });
-    }
-  }, [open, defaultValues]);
   const tooltipMessage = (
     <Typography sx={{ fontSize: 14 }}>
       Click to view possible icon names. For names with multiple words, seperate them with an _. AttachMoney = attach_money
