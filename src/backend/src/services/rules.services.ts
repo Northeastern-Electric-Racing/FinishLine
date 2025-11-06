@@ -12,7 +12,7 @@ import {
 import { userHasPermission } from '../utils/users.utils';
 
 import { projectRuleTransformer, ruleTransformer, rulesetTransformer } from '../transformers/rules.transformer';
-import { getProjectRuleQueryArgs, getRuleQueryArgs, getRulesetQueryArgs} from '../prisma-query-args/rules.query-args';
+import { getProjectRuleQueryArgs, getRuleQueryArgs, getRulesetQueryArgs } from '../prisma-query-args/rules.query-args';
 
 export default class RulesService {
   /**
@@ -267,8 +267,8 @@ export default class RulesService {
 
     return ruleTransformer(updatedRule);
   }
-  
-   /**
+
+  /**
    * Given a ruleset id, retrieves the ruleset and throws errors if
    * it does not exist or is already deleted
    * @param rulesetId the id of the ruleset

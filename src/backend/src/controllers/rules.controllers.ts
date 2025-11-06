@@ -39,7 +39,6 @@ export default class RulesController {
     }
   }
 
-
   static async editRule(req: Request, res: Response, next: NextFunction) {
     try {
       const { ruleId } = req.params;

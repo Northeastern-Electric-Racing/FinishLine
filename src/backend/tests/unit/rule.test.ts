@@ -3,7 +3,13 @@ import { Organization, User, Project, Car, Ruleset_Type, Rule_Completion } from 
 import { supermanAdmin, financeMember, wonderwomanGuest, batmanAppAdmin } from '../test-data/users.test-data';
 import { createTestOrganization, createTestProject, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
-import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
+import {
+  AccessDeniedException,
+  DeletedException,
+  HttpException,
+  NotFoundException,
+  AccessDeniedAdminOnlyException
+} from '../../src/utils/errors.utils';
 
 describe('Rule Tests', () => {
   let orgId: string;
@@ -205,13 +211,15 @@ describe('Rule Tests', () => {
 
   describe('Edit Rule', () => {
     it('Fails if user is not an admin', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule1 } = await setupRules(car);
       await expect(
         async () =>
           await RulesService.editRule(
             await createTestUser(wonderwomanGuest, orgId),
             'Some rule content',
-            rule.ruleId,
-            rule.ruleCode,
+            leafRule1.ruleId,
+            leafRule1.ruleCode,
             ['newfile'],
             organization
           )
@@ -219,13 +227,15 @@ describe('Rule Tests', () => {
     });
 
     it('Fails if rule doesn`t exist', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule1 } = await setupRules(car);
       await expect(
         async () =>
           await RulesService.editRule(
             await createTestUser(batmanAppAdmin, orgId),
             'Some more rule content',
             '1',
-            rule.ruleCode,
+            leafRule1.ruleCode,
             ['samefile'],
             organization
           )
@@ -233,19 +243,21 @@ describe('Rule Tests', () => {
     });
 
     it('Succeeds and edits a rule', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule1 } = await setupRules(car);
       const updatedRule = await RulesService.editRule(
-        user,
+        admin,
         'BRAND NEW RULE CONTENT',
-        rule.ruleId,
-        rule.ruleCode,
-        rule.imageFileIds,
+        leafRule1.ruleId,
+        leafRule1.ruleCode,
+        leafRule1.imageFileIds,
         organization
       );
 
       expect(updatedRule.ruleContent).toEqual('BRAND NEW RULE CONTENT');
     });
   });
-  
+
   describe('Delete Ruleset', () => {
     it('Deletes a ruleset successfully and returns the correct information', async () => {
       const car = await createUniqueCar(orgId);
