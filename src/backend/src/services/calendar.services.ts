@@ -403,7 +403,7 @@ export default class CalendarService {
 
   /**
    * Edits an existing machinery name. If the new name matches another existing machinery,
-   * all shop relationships are merged into that machinery and the old machinery is deleted.
+   * all shop relationships are merged into that machinery. The machinery itself is kept (not deleted).
    *
    * @param submitter The user submitting the request, who must be a head or above.
    * @param machineryId The ID of the machinery to edit.
@@ -496,10 +496,8 @@ export default class CalendarService {
           }
         }
 
-        // Delete the old machinery (all relationships have been moved)
-        await tx.machinery.delete({
-          where: { machineryId }
-        });
+        // Note: Machinery is kept even if all relationships are moved
+        // Only shop-machinery relationships are deleted, not the machinery itself
 
         // Return the consolidated machinery
         const resultMachinery = await tx.machinery.findUnique({
@@ -637,35 +635,41 @@ export default class CalendarService {
             });
           }
 
-          // If this was a different machinery, clean up if it has no more shops
-          if (existingMachineryWithSameName.machineryId !== machineryId) {
-            const remainingShops = await tx.shopMachinery.findMany({
-              where: { machineryId }
-            });
-            if (remainingShops.length === 0) {
-              await tx.machinery.delete({
-                where: { machineryId }
-              });
-            }
-          }
-        } else if (quantity === 0) {
-          // Same relationship, delete if quantity is 0
-          await tx.shopMachinery.delete({
-            where: { shopMachineryId: existingShopMachinery.shopMachineryId }
-          });
+          // Note: Machinery is kept even if it has no more shops
+          // Only shop-machinery relationships are deleted, not the machinery itself
         } else if (shopMachineryToUpdate) {
-          // Edit operation - set/replace quantity
-          await tx.shopMachinery.update({
-            where: { shopMachineryId: existingShopMachinery.shopMachineryId },
-            data: { quantity }
+          // Edit operation: editing into same machine name + same shop after consolidation
+          // Delete the old relationship and add quantity to existing one
+          await tx.shopMachinery.delete({
+            where: { shopMachineryId: shopMachineryToUpdate.shopMachineryId }
           });
+
+          if (quantity === 0) {
+            // If quantity is 0, just delete the existing relationship too
+            await tx.shopMachinery.delete({
+              where: { shopMachineryId: existingShopMachinery.shopMachineryId }
+            });
+          } else {
+            // Add quantity to existing relationship
+            const newQuantity = existingShopMachinery.quantity + quantity;
+            await tx.shopMachinery.update({
+              where: { shopMachineryId: existingShopMachinery.shopMachineryId },
+              data: { quantity: newQuantity }
+            });
+          }
         } else {
-          // Add operation - increment quantity
-          const newQuantity = existingShopMachinery.quantity + quantity;
-          await tx.shopMachinery.update({
-            where: { shopMachineryId: existingShopMachinery.shopMachineryId },
-            data: { quantity: newQuantity }
-          });
+          // Add operation - increment quantity (quantity can be 0 to delete)
+          if (quantity === 0) {
+            await tx.shopMachinery.delete({
+              where: { shopMachineryId: existingShopMachinery.shopMachineryId }
+            });
+          } else {
+            const newQuantity = existingShopMachinery.quantity + quantity;
+            await tx.shopMachinery.update({
+              where: { shopMachineryId: existingShopMachinery.shopMachineryId },
+              data: { quantity: newQuantity }
+            });
+          }
         }
 
         const resultMachinery = await tx.machinery.findUnique({
@@ -722,15 +726,8 @@ export default class CalendarService {
           });
         }
 
-        // Clean up old machinery if it has no more shops
-        const remainingShops = await tx.shopMachinery.findMany({
-          where: { machineryId }
-        });
-        if (remainingShops.length === 0) {
-          await tx.machinery.delete({
-            where: { machineryId }
-          });
-        }
+        // Note: Machinery is kept even if it has no more shops
+        // Only shop-machinery relationships are deleted, not the machinery itself
 
         const resultMachinery = await tx.machinery.findUnique({
           where: { machineryId: existingMachineryWithSameName.machineryId },
@@ -835,17 +832,8 @@ export default class CalendarService {
         }
       }
 
-      // Clean up machinery if it has no more shops after deletion
-      if (quantity === 0) {
-        const remainingShops = await tx.shopMachinery.findMany({
-          where: { machineryId }
-        });
-        if (remainingShops.length === 0) {
-          await tx.machinery.delete({
-            where: { machineryId }
-          });
-        }
-      }
+      // Note: Machinery is kept even if quantity is 0 and it has no more shops
+      // Only shop-machinery relationships are deleted, not the machinery itself
 
       const updatedMachineryResult = await tx.machinery.findUnique({
         where: { machineryId },

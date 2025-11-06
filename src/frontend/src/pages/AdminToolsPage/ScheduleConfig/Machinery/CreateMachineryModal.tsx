@@ -27,7 +27,9 @@ const CreateMachineryModal = ({ open, onClose }: CreateMachineryModalProps) => {
       shopId,
       quantity
     });
-    queryClient.invalidateQueries(MACHINERY_KEY);
+    // Invalidate and refetch to ensure UI updates immediately
+    await queryClient.invalidateQueries(MACHINERY_KEY);
+    await queryClient.refetchQueries(MACHINERY_KEY);
     return result;
   };
 

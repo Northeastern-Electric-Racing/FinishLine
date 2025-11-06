@@ -71,12 +71,19 @@ export const MachineryFormModal: React.FC<MachineryFormModalProps> = ({ open, on
   const onFormSubmit = async (data: MachineryFormValues) => {
     try {
       await onSubmit(data);
+      // Only close and reset on success
+      onClose();
+      if (!initialValues) {
+        reset(defaultValues);
+      }
     } catch (e: unknown) {
-      if (e instanceof Error) toast.error(e.message);
-    }
-    onClose();
-    if (!initialValues) {
-      reset(defaultValues);
+      // Show error but don't close modal
+      if (e instanceof Error) {
+        toast.error(e.message);
+      } else {
+        toast.error('An error occurred while saving the machinery');
+      }
+      // Don't close modal on error so user can fix and retry
     }
   };
 

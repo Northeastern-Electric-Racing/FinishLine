@@ -146,6 +146,8 @@ calendarRouter.post('/shop/:shopId/delete', nonEmptyString(param('shopId')), val
 
 calendarRouter.get('/shops', CalendarController.getAllShops);
 
+calendarRouter.get('/machinery', CalendarController.getAllMachinery);
+
 // no restrictions filtering, in case multiple filters need to be sent
 calendarRouter.post(
   '/events/filter',
