@@ -1,10 +1,23 @@
 import express from 'express';
 import RulesController from '../controllers/rules.controllers';
-
 import { nonEmptyString, validateInputs } from '../utils/validation.utils';
 import { body } from 'express-validator';
 
 const rulesRouter = express.Router();
+
+rulesRouter.post(
+  '/rule/create',
+  nonEmptyString(body('ruleCode')),
+  nonEmptyString(body('ruleContent')),
+  nonEmptyString(body('rulesetId')),
+  body('parentRuleId').optional().isString(),
+  body('referencedRules').optional().isArray(),
+  body('referencedRules.*').optional().isString(),
+  body('imageFileIds').optional().isArray(),
+  body('imageFileIds.*').optional().isString(),
+  validateInputs,
+  RulesController.createRule
+);
 
 rulesRouter.post('/rulesetType/create', nonEmptyString(body('name')), validateInputs, RulesController.createRulesetType);
 
