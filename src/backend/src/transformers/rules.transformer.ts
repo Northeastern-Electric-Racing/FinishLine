@@ -76,11 +76,7 @@ export const rulesetTransformer = (ruleset: Prisma.RulesetGetPayload<RulesetQuer
     dateCreated: ruleset.dateCreated,
     active: ruleset.active,
     assignedPercentage: teamsPercentage,
-    rulesetType: {
-      ...ruleset.rulesetType,
-      lastUpdated: ruleset.rulesetType.lastUpdated,
-      revisionFiles: []
-    },
+    rulesetType: rulesetTypeTransformer(ruleset.rulesetType),
     car: {
       carId: ruleset.car.carId,
       name: ruleset.car.wbsElementId

@@ -47,7 +47,8 @@ describe('Create Rules Tests', () => {
     const rulesetType = await prisma.ruleset_Type.create({
       data: {
         name: 'FSAE Rules',
-        createdBy: { connect: { userId: batman.userId } }
+        createdBy: { connect: { userId: batman.userId } },
+        organization: { connect: { organizationId: organization.organizationId } }
       }
     });
 
@@ -317,7 +318,8 @@ describe('Delete Rules Tests', () => {
     fsaeRulesetType = await prisma.ruleset_Type.create({
       data: {
         name: 'FSAE',
-        createdBy: { connect: { userId: admin.userId } }
+        createdBy: { connect: { userId: admin.userId } },
+        organization: { connect: { organizationId: organization.organizationId } }
       }
     });
   });
@@ -533,8 +535,8 @@ describe('Delete Rules Tests', () => {
       ).rejects.toThrow(new NotFoundException('Ruleset', 'fake-ruleset-id'));
     });
   });
-  
-    describe('Get all ruleset types', () => {
+
+  describe('Get all ruleset types', () => {
     it('Successful get all ruleset types', async () => {
       const rulesetTypes = await RulesService.getAllRulesetTypes(organization);
       expect(rulesetTypes.length).toEqual(1);
@@ -544,7 +546,7 @@ describe('Delete Rules Tests', () => {
       await prisma.ruleset_Type.create({
         data: {
           name: 'FSAE2',
-          createdByUserId: user.userId,
+          createdByUserId: admin.userId,
           organizationId: orgId
         }
       });
@@ -555,10 +557,10 @@ describe('Delete Rules Tests', () => {
     it('Get all ruleset types successful after deleting ruleset type', async () => {
       await prisma.ruleset_Type.update({
         where: {
-          rulesetTypeId: rulesetType.rulesetTypeId
+          rulesetTypeId: fsaeRulesetType.rulesetTypeId
         },
         data: {
-          deletedByUserId: user.userId
+          deletedByUserId: admin.userId
         }
       });
       const rulesetTypes = await RulesService.getAllRulesetTypes(organization);

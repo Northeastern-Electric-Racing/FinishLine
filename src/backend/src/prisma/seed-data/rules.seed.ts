@@ -1,7 +1,6 @@
 import type { Prisma } from '@prisma/client';
-import { Organization } from '@prisma/client';
+import { Organization, User } from '@prisma/client';
 import RulesService from '../../services/rules.services';
-import { User } from 'shared';
 
 // rules
 const topLevelRule = (rulesetId: string, userCreatedId: string): Prisma.RuleCreateInput => {

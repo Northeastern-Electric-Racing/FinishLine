@@ -3103,7 +3103,8 @@ const performSeed: () => Promise<void> = async () => {
   const formulaStudentRulesetType = await prisma.ruleset_Type.create({
     data: {
       name: 'Formula Student Rules',
-      createdByUserId: superman.userId
+      createdByUserId: superman.userId,
+      organizationId: ner.organizationId
     }
   });
 
