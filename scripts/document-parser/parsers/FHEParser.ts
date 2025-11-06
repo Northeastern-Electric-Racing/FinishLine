@@ -73,6 +73,10 @@ export class FHEParser extends RuleParser {
     return rules;
   }
 
+  protected extractToc(text: string): RuleData[] {
+    return [];
+  }
+
   private parseRuleNumber(line: string): Rule | null {
     // Match FHE rule patterns like "1T3.17.1" followed by text
     const rulePattern = /^(\d+[A-Z]+\d+(?:\.\d+)*)\s+(.+)$/;

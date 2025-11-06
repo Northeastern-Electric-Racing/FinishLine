@@ -1,5 +1,8 @@
 import * as fs from 'fs';
 import pdf from 'pdf-parse-new';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export interface RuleData {
   ruleCode: string;
@@ -37,11 +40,11 @@ export enum ParserType {
 }
 
 export abstract class RuleParser {
-  // must be implemented by subclasses
   protected abstract extractRules(text: string): RuleData[];
+  protected abstract extractToc(text: string): RuleData[];
   protected abstract hasImgInfo: boolean;
 
-  async parsePdf(path: string): Promise<{ rules: RuleData[]; imgInfo?: imgData[]; text: string }> {
+  async parsePdf(path: string): Promise<{ rules: RuleData[]; tocEntries: RuleData[]; imgInfo?: imgData[]; text: string }> {
     let options = {
       // max page number to parse, 0 = all pages
       max: 0,
@@ -58,12 +61,13 @@ export abstract class RuleParser {
     console.log(`PDF Stats: ${pdfData.numpages} pages, ${pdfData.text.length} characters`);
 
     const rules = this.extractRules(pdfData.text);
-  
+    const tocEntries = this.extractToc(pdfData.text);
+
     if (this.hasImgInfo) {
       const imgInfo = this.extractImageInfo(pdfData.text);
-      return { rules, imgInfo, text: pdfData.text };
+      return { rules, tocEntries, imgInfo, text: pdfData.text };
     }
-    return { rules, text: pdfData.text };
+    return { rules, tocEntries, text: pdfData.text };
   }
 
   /**
@@ -205,12 +209,29 @@ export abstract class RuleParser {
     return parts.slice(0, -1).join('.');
   }
 
-  async saveToJSON(rules: RuleData[], outputPath: string, imgInfo?: imgData[], imgInfoPath?: string): Promise<void> {
+  async saveToJSON(
+    rules: RuleData[],
+    outputPath: string,
+    tocEntries?: RuleData[],
+    tocPath?: string,
+    imgInfo?: imgData[],
+    imgInfoPath?: string
+  ): Promise<void> {
     const output: ParsedOutput = {
       rules: rules,
       totalRules: rules.length,
       generatedAt: new Date().toISOString()
     };
+
+    if (tocEntries && tocPath) {
+      const tocOutput: ParsedOutput = {
+        rules: tocEntries,
+        totalRules: tocEntries.length,
+        generatedAt: new Date().toISOString()
+      };
+      fs.writeFileSync(tocPath, JSON.stringify(tocOutput, null, 2), 'utf-8');
+      console.log(`Saved ${tocEntries.length} TOC entries to ${tocPath}`);
+    }
 
     if (imgInfo && imgInfoPath) {
       const imgOutput: ParsedImgOutput = {
@@ -228,5 +249,80 @@ export abstract class RuleParser {
     // "./txtVersions/FHE.txt" or "./txtVersions/FSAE.txt"
     fs.writeFileSync(txtOutputFile, text, 'utf-8');
     console.log(`Saved text version to ${txtOutputFile}`);
+  }
+
+  /**
+   * Adds parsed rules into the database
+   * @param rules Array of parsed rules
+   * @param parserType Type of parser (FSAE or FHE)
+   * @param userId The user ID creating these rules
+   * @param carId The car ID this ruleset applies to
+   * @param pdfFileName The original filename
+   */
+  async saveToDatabase(
+    rules: RuleData[],
+    parserType: ParserType,
+    userId: string,
+    carId: string,
+    pdfFileName: string
+  ): Promise<void> {
+    try {
+      // create new ruleset type
+      const rulesetType = await prisma.ruleset_Type.create({
+        data: {
+          name: parserType,
+          createdByUserId: userId
+        }
+      });
+      // create new ruleset
+      const revisionName = `Revision ${new Date().toISOString()}`;
+      const ruleset = await prisma.ruleset.create({
+        data: {
+          fileId: pdfFileName,
+          name: revisionName,
+          active: true,
+          rulesetTypeId: rulesetType.rulesetTypeId,
+          carId: carId,
+          createdByUserId: userId
+        }
+      });
+      console.log(`Created ruleset: ${revisionName} (${ruleset.rulesetId})`);
+      // insert all rules
+      const ruleMap = new Map<string, string>(); // ruleCode : ruleId
+      for (const rule of rules) {
+        const createdRule = await prisma.rule.create({
+          data: {
+            ruleCode: rule.ruleCode,
+            ruleContent: rule.ruleContent,
+            imageFileIds: [],
+            rulesetId: ruleset.rulesetId,
+            createdByUserId: userId
+          }
+        });
+        ruleMap.set(rule.ruleCode, createdRule.ruleId);
+      }
+      // update parent relationships
+      for (const rule of rules) {
+        if (rule.parentRuleCode) {
+          const parentId = ruleMap.get(rule.parentRuleCode);
+          const ruleId = ruleMap.get(rule.ruleCode);
+
+          if (parentId && ruleId) {
+            await prisma.rule.update({
+              where: { ruleId: ruleId },
+              data: { parentRuleId: parentId }
+            });
+          }
+        }
+      }
+      console.log(`Successfully inserted ${rules.length} rules`);
+    } catch (error) {
+      console.error('Error inserting rules into database:', error);
+      throw error;
+    }
+  }
+
+  static async disconnect(): Promise<void> {
+    await prisma.$disconnect();
   }
 }
