@@ -1,5 +1,5 @@
 import { Organization, Rule, User } from '@prisma/client';
-import { isAdmin, isLeadership, ProjectRule, RuleCompletion, notGuest } from 'shared';
+import { isAdmin, isLeadership, ProjectRule, RuleCompletion, RulesetType, notGuest } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
@@ -11,7 +11,12 @@ import {
 } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { getRuleQueryArgs, getProjectRuleQueryArgs, getRulesetQueryArgs } from '../prisma-query-args/rules.query-args';
-import { ruleTransformer, projectRuleTransformer, rulesetTransformer } from '../transformers/rules.transformer';
+import {
+  ruleTransformer,
+  projectRuleTransformer,
+  rulesetTransformer,
+  rulesetTypeTransformer
+} from '../transformers/rules.transformer';
 
 export default class RulesService {
   /**
@@ -152,7 +157,8 @@ export default class RulesService {
     const rulesetType = await prisma.ruleset_Type.create({
       data: {
         name,
-        createdByUserId: submitter.userId
+        createdByUserId: submitter.userId,
+        organizationId: organization.organizationId
       }
     });
 
@@ -351,5 +357,15 @@ export default class RulesService {
     });
 
     return rulesetTransformer(deletedRuleset);
+  }
+
+  static async getAllRulesetTypes(organization: Organization): Promise<RulesetType[]> {
+    const rulesets = await prisma.ruleset_Type.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        deletedBy: null
+      }
+    });
+    return rulesets.map(rulesetTypeTransformer);
   }
 }

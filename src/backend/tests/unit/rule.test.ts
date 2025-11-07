@@ -47,7 +47,8 @@ describe('Create Rules Tests', () => {
     const rulesetType = await prisma.ruleset_Type.create({
       data: {
         name: 'FSAE Rules',
-        createdBy: { connect: { userId: batman.userId } }
+        createdBy: { connect: { userId: batman.userId } },
+        organization: { connect: { organizationId: organization.organizationId } }
       }
     });
 
@@ -317,7 +318,8 @@ describe('Delete Rules Tests', () => {
     fsaeRulesetType = await prisma.ruleset_Type.create({
       data: {
         name: 'FSAE',
-        createdBy: { connect: { userId: admin.userId } }
+        createdBy: { connect: { userId: admin.userId } },
+        organization: { connect: { organizationId: organization.organizationId } }
       }
     });
   });
@@ -531,6 +533,38 @@ describe('Delete Rules Tests', () => {
       await expect(
         async () => await RulesService.deleteRuleset('fake-ruleset-id', admin.userId, organization.organizationId)
       ).rejects.toThrow(new NotFoundException('Ruleset', 'fake-ruleset-id'));
+    });
+  });
+
+  describe('Get all ruleset types', () => {
+    it('Successful get all ruleset types', async () => {
+      const rulesetTypes = await RulesService.getAllRulesetTypes(organization);
+      expect(rulesetTypes.length).toEqual(1);
+      expect(rulesetTypes[0].name).toEqual('FSAE');
+    });
+    it('Get all ruleset types successful after adding ruleset type', async () => {
+      await prisma.ruleset_Type.create({
+        data: {
+          name: 'FSAE2',
+          createdByUserId: admin.userId,
+          organizationId: orgId
+        }
+      });
+      const rulesetTypes = await RulesService.getAllRulesetTypes(organization);
+      expect(rulesetTypes.length).toEqual(2);
+      expect(rulesetTypes[1].name).toEqual('FSAE2');
+    });
+    it('Get all ruleset types successful after deleting ruleset type', async () => {
+      await prisma.ruleset_Type.update({
+        where: {
+          rulesetTypeId: fsaeRulesetType.rulesetTypeId
+        },
+        data: {
+          deletedByUserId: admin.userId
+        }
+      });
+      const rulesetTypes = await RulesService.getAllRulesetTypes(organization);
+      expect(rulesetTypes.length).toEqual(0);
     });
   });
 });
