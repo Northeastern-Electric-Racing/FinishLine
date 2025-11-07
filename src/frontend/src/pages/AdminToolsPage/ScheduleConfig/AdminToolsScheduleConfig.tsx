@@ -24,7 +24,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
   const { data: shops, isLoading, isError, error } = useAllShops();
   const { mutateAsync: createShopMutate } = useCreateShop();
 
-  const [editingShopId, setEditingShopId] = useState<string | null>(null);
+  const [editingShopId, setEditingShopId] = useState<string | undefined>();
   const editShopMutation = useEditShop(editingShopId ?? '');
 
   const [openCreate, setOpenCreate] = useState(false);
@@ -146,8 +146,6 @@ const AdminToolsScheduleConfig: React.FC = () => {
       <ShopModal
         open={openCreate}
         onClose={() => setOpenCreate(false)}
-        title="Add Shop"
-        initialValues={{ name: '', description: '' }}
         onSubmit={async ({ name, description }) => {
           await createShopMutate({ name, description });
           setOpenCreate(false);
@@ -160,9 +158,8 @@ const AdminToolsScheduleConfig: React.FC = () => {
         onClose={() => {
           setOpenEdit(false);
           setEditingShop(null);
-          setEditingShopId(null);
+          setEditingShopId(undefined);
         }}
-        title="Edit Shop"
         initialValues={{
           name: editingShop?.name ?? '',
           description: editingShop?.description ?? ''
@@ -172,7 +169,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
           await editShopMutation.mutateAsync({ name, description });
           setOpenEdit(false);
           setEditingShop(null);
-          setEditingShopId(null);
+          setEditingShopId(undefined);
         }}
       />
     </Box>

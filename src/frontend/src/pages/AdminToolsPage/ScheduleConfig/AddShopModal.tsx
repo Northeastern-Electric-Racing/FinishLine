@@ -7,7 +7,7 @@ interface CreateShopModalProps {
 }
 
 const CreateShopModal: React.FC<CreateShopModalProps> = (props) => {
-  return <ShopModal {...props} title="Add Shop" initialValues={{ name: '', description: '' }} />;
+  return <ShopModal {...props} initialValues={{ name: '', description: '' }} />;
 };
 
 export default CreateShopModal;

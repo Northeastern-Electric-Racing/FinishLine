@@ -22,10 +22,9 @@ export interface BaseShopModalProps {
   onClose: () => void;
   onSubmit: (data: ShopFormValues) => Promise<unknown> | unknown;
   initialValues?: Partial<ShopFormValues>;
-  title: string;
 }
 
-const ShopModal: React.FC<BaseShopModalProps> = ({ open, onClose, onSubmit, initialValues, title }) => {
+const ShopModal: React.FC<BaseShopModalProps> = ({ open, onClose, onSubmit, initialValues }) => {
   const toast = useToast();
 
   const {
@@ -35,19 +34,28 @@ const ShopModal: React.FC<BaseShopModalProps> = ({ open, onClose, onSubmit, init
     formState: { errors }
   } = useForm<ShopFormValues>({
     resolver: yupResolver(schema),
-    defaultValues: {
-      name: initialValues?.name ?? '',
-      description: initialValues?.description ?? ''
-    }
+    defaultValues: { name: '', description: '' }
   });
 
-  // keep defaults in sync when switching between shops while the modal is open
+  const frozenValuesRef = React.useRef<ShopFormValues>({ name: '', description: '' });
+
   React.useEffect(() => {
-    reset({
-      name: initialValues?.name ?? '',
-      description: initialValues?.description ?? ''
-    });
-  }, [initialValues, reset]);
+    if (open) {
+      // whatever initialValues are at the time of opening
+      frozenValuesRef.current = {
+        name: initialValues?.name ?? '',
+        description: initialValues?.description ?? ''
+      };
+      reset(frozenValuesRef.current);
+    } else {
+      // when closed, clear everything
+      frozenValuesRef.current = { name: '', description: '' };
+      reset(frozenValuesRef.current);
+    }
+  }, [open, initialValues, reset]);
+
+  const computedTitle =
+    frozenValuesRef.current.name !== '' || frozenValuesRef.current.description !== '' ? 'Edit Shop' : 'Create Shop';
 
   const onFormSubmit = async (data: ShopFormValues) => {
     try {
@@ -66,7 +74,7 @@ const ShopModal: React.FC<BaseShopModalProps> = ({ open, onClose, onSubmit, init
         onClose();
         reset({ name: '', description: '' });
       }}
-      title={title}
+      title={computedTitle}
       reset={() => reset({ name: '', description: '' })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
@@ -82,13 +90,20 @@ const ShopModal: React.FC<BaseShopModalProps> = ({ open, onClose, onSubmit, init
           <FormHelperText error>{errors.name?.message}</FormHelperText>
         </FormControl>
 
-        <FormControl fullWidth>
-          <Typography color="#ef4345" variant="h5" sx={{ fontWeight: 'bold', fontSize: 20 }}>
-            Description:*
-          </Typography>
-          <ReactHookTextField name="description" control={control} placeholder="Enter description" fullWidth />
-          <FormHelperText error>{errors.description?.message}</FormHelperText>
-        </FormControl>
+       <FormControl fullWidth>
+  <Typography color="#ef4345" variant="h5" sx={{ fontWeight: 'bold', fontSize: 20 }}>
+    Description:*
+  </Typography>
+  <ReactHookTextField
+    name="description"
+    control={control}
+    placeholder="Enter description"
+    fullWidth
+    multiline        
+    rows={2}    
+  />
+  <FormHelperText error>{errors.description?.message}</FormHelperText>
+</FormControl>
       </Box>
     </NERFormModal>
   );

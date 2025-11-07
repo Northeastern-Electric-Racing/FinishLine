@@ -2,10 +2,8 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Shop } from 'shared';
 import { getAllShops, postCreateShop, editShop } from '../apis/calendar.api';
 
-export const SHOPS_KEY = ['shops'] as const;
-
 export const useAllShops = () =>
-  useQuery<Shop[], Error>(SHOPS_KEY, async () => {
+  useQuery<Shop[], Error>(['shops'], async () => {
     const res = await getAllShops();
     return res.data;
   });
@@ -19,7 +17,7 @@ export const useCreateShop = () => {
     },
     {
       onSuccess: () => {
-        qc.invalidateQueries(SHOPS_KEY);
+        qc.invalidateQueries(['shops']);
       }
     }
   );
@@ -34,7 +32,7 @@ export const useEditShop = (shopId: string) => {
     },
     {
       onSuccess: () => {
-        qc.invalidateQueries(SHOPS_KEY);
+        qc.invalidateQueries(['shops']);
       }
     }
   );
