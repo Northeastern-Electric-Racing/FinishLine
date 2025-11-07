@@ -61,8 +61,7 @@ export const rulesetTypeTransformer = (rulesetType: any): RulesetType => {
     rulesetTypeId: rulesetType.rulesetTypeId,
     name: rulesetType.name,
     lastUpdated: rulesetType.lastUpdated,
-    revisionFiles: rulesetType.revisionFiles,
-    organization: rulesetType.organization
+    revisionFiles: rulesetType.revisionFiles
   };
 };
 
