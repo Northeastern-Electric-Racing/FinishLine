@@ -90,20 +90,20 @@ const ShopModal: React.FC<BaseShopModalProps> = ({ open, onClose, onSubmit, init
           <FormHelperText error>{errors.name?.message}</FormHelperText>
         </FormControl>
 
-       <FormControl fullWidth>
-  <Typography color="#ef4345" variant="h5" sx={{ fontWeight: 'bold', fontSize: 20 }}>
-    Description:*
-  </Typography>
-  <ReactHookTextField
-    name="description"
-    control={control}
-    placeholder="Enter description"
-    fullWidth
-    multiline        
-    rows={2}    
-  />
-  <FormHelperText error>{errors.description?.message}</FormHelperText>
-</FormControl>
+        <FormControl fullWidth>
+          <Typography color="#ef4345" variant="h5" sx={{ fontWeight: 'bold', fontSize: 20 }}>
+            Description:*
+          </Typography>
+          <ReactHookTextField
+            name="description"
+            control={control}
+            placeholder="Enter description"
+            fullWidth
+            multiline
+            rows={2}
+          />
+          <FormHelperText error>{errors.description?.message}</FormHelperText>
+        </FormControl>
       </Box>
     </NERFormModal>
   );
