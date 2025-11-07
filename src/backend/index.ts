@@ -51,6 +51,9 @@ const options: cors.CorsOptions = {
 // so we can listen to slack messages
 // NOTE: must be done before using json
 app.use('/slack', slackEvents.requestListener());
+app.get('/health', (_req, res) => {
+  res.status(200).json({ status: 'healthy' });
+});
 
 // so that we can use cookies and json
 app.use(cookieParser());
