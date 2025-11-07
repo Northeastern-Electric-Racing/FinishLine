@@ -300,7 +300,7 @@ const CreditsPage: React.FC = () => {
         }
       }
     },
-    {name: 'Gahan Patel', color: '#000000'}
+    { name: 'Gahan Patel', color: '#0000FF' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
