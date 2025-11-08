@@ -172,7 +172,7 @@ reimbursementRequestsRouter.post(
   body('taxExempt').optional().isBoolean(),
   body('twoFactorContacts').optional().isArray(),
   nonEmptyString(body('twoFactorContacts.*')),
-  nonEmptyString(body('notes')).optional(),
+  body('notes').optional(),
   validateInputs,
   ReimbursementRequestController.createVendor
 );

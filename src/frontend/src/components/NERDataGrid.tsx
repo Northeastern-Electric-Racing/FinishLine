@@ -1,10 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import { Box, Button, Paper, TextField } from '@mui/material';
+import type { SxProps } from '@mui/system';
+import type { Theme } from '@mui/material/styles';
 
 export type MapRowResult<T> = T & { id: string | number; raw?: T };
 
-interface CompanyDataGridProps<T> {
+interface NERDataGridProps<T> {
   items: T[];
   // map an item to a row object (must include `id` and may include `raw`)
   mapRow: (item: T) => MapRowResult<T>;
@@ -14,19 +16,17 @@ interface CompanyDataGridProps<T> {
   onAdd: () => void;
   onRowClick?: (item: T) => void;
   // optional simple search fields (keys of mapped row) or a custom filter function
-  searchFields?: (keyof any)[];
+  searchFields?: (keyof MapRowResult<T>)[];
   searchFilter?: (term: string, row: MapRowResult<T>) => boolean;
   // optional sort model to apply initially
   initialSortModel?: { field: string; sort: 'asc' | 'desc' }[];
-  // sizing
   headerHeight?: number;
   rowHeight?: number;
-  // allow caller to pass Paper sx to preserve layout/height
-  paperSx?: any;
-  canEdit?: boolean;
+  paperSx?: SxProps<Theme>;
+  canEditRow?: (row: MapRowResult<T>) => boolean;
 }
 
-function CompanyDataGrid<T>({
+function NERDataGrid<T>({
   items,
   mapRow,
   columns,
@@ -40,8 +40,8 @@ function CompanyDataGrid<T>({
   headerHeight = 56,
   rowHeight = 52,
   paperSx,
-  canEdit = false
-}: CompanyDataGridProps<T>) {
+  canEditRow
+}: NERDataGridProps<T>) {
   const [searchTerm, setSearchTerm] = useState('');
   const [pageSize, setPageSize] = useState<number>(pageSizeDefault);
 
@@ -64,7 +64,7 @@ function CompanyDataGrid<T>({
     return Array.from(new Set(opts)).sort((a, b) => a - b);
   }, [rowsPerPageOptions, items]);
 
-  const rows = useMemo(() => (items ?? []).map(mapRow), [items, mapRow]);
+  const rows = useMemo(() => items.map(mapRow), [items, mapRow]);
 
   const filteredRows = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -73,7 +73,7 @@ function CompanyDataGrid<T>({
     if (searchFields && searchFields.length > 0) {
       return rows.filter((r) =>
         searchFields.some((f) =>
-          String((r as any)[f] ?? '')
+          String(((r as MapRowResult<T>)[f] as unknown) ?? '')
             .toLowerCase()
             .includes(term)
         )
@@ -112,10 +112,18 @@ function CompanyDataGrid<T>({
             disableSelectionOnClick
             headerHeight={headerHeight}
             rowHeight={rowHeight}
-            onRowClick={(params) => {
+            onRowClick={(params: GridRowParams<MapRowResult<T>>) => {
               if (!onRowClick) return;
-              const raw = (params.row as any).raw as T | undefined;
+              const row = params.row as MapRowResult<T>;
+              const editable = canEditRow ? canEditRow(row) : true;
+              if (!editable) return; // do not call onRowClick for non-editable rows
+              const raw = params.row.raw as T | undefined;
               if (raw) onRowClick(raw);
+            }}
+            getRowClassName={(params) => {
+              const row = params.row as MapRowResult<T>;
+              const editable = canEditRow ? canEditRow(row) : true;
+              return editable ? 'editable-row' : 'non-editable-row';
             }}
             sx={{
               height: '100%',
@@ -128,8 +136,15 @@ function CompanyDataGrid<T>({
                 borderTopLeftRadius: 10,
                 borderTopRightRadius: 10
               },
-              '& .MuiDataGrid-row:hover': {
-                cursor: onRowClick && canEdit ? 'pointer' : 'default'
+              // per-row hover: mark editable rows with pointer and non-editable rows with default
+              '& .editable-row:hover': {
+                cursor: onRowClick ? 'pointer' : 'default'
+              },
+              '& .non-editable-row:hover': {
+                cursor: 'default'
+              },
+              '& .non-editable-row': {
+                opacity: 0.7
               },
               '& .MuiDataGrid-columnSeparator': {
                 display: 'none'
@@ -142,4 +157,4 @@ function CompanyDataGrid<T>({
   );
 }
 
-export default CompanyDataGrid;
+export default NERDataGrid;

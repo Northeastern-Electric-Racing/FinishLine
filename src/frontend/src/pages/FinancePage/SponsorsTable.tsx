@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { Box, Typography, Button, IconButton, Checkbox } from '@mui/material';
+import { GridRenderCellParams } from '@mui/x-data-grid';
+import type { MapRowResult } from '../../components/NERDataGrid';
+import type { MouseEvent } from 'react';
+import { Box, IconButton, Checkbox } from '@mui/material';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { useGetAllSponsors } from '../../hooks/finance.hooks';
+import { useEditSponsor, useGetAllSponsors } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
 import { NERButton } from '../../components/NERButton';
 import { datePipe } from '../../utils/pipes';
@@ -14,7 +17,7 @@ import SidePage from './FinanceComponents/SidePagePopup';
 import { isAtLeastRank, RoleEnum, Sponsor } from 'shared';
 import SponsorTasksModal from './FinanceComponents/SponsorTasksModal';
 import SidePagePopup from './FinanceComponents/SidePagePopup';
-import CompanyDataGrid from '../../components/CompanyDataGrid';
+import NERDataGrid from '../../components/NERDataGrid';
 import { useCurrentUser } from '../../hooks/users.hooks';
 
 const SponsorsTable = () => {
@@ -26,8 +29,9 @@ const SponsorsTable = () => {
   const [selectedSponsor, setSelectedSponsor] = useState<Sponsor | null>(null);
   const [isTasksModalOpen, setIsTasksModalOpen] = useState(false);
   const currentUser = useCurrentUser();
+  const { mutateAsync: editSponsorMutateAsync } = useEditSponsor();
 
-  const canEditSponsors = isAtLeastRank(RoleEnum.HEAD, currentUser.role) || currentUser.isFinance;
+  const canEditSponsors = isAtLeastRank(RoleEnum.HEAD, currentUser.role) || !!currentUser.isFinance;
 
   if (!sponsors || sponsorIsLoading) return <LoadingIndicator />;
   if (sponsorIsError) return <ErrorPage message={sponsorError.message} />;
@@ -51,12 +55,16 @@ const SponsorsTable = () => {
       field: 'activeStatus',
       headerName: 'Active?',
       width: 160,
-      renderCell: (p: any) => (
+      renderCell: (p: GridRenderCellParams<boolean, MapRowResult<Sponsor>>) => (
         <Checkbox
           disabled={!canEditSponsors}
-          checked={p.value}
-          onClick={(e) => {
+          checked={!!p.value}
+          onClick={async (e: MouseEvent<HTMLElement>) => {
             e.stopPropagation();
+            await editSponsorMutateAsync({
+              ...(p.row as MapRowResult<Sponsor>).raw,
+              activeStatus: !p.value
+            } as unknown as Parameters<typeof editSponsorMutateAsync>[0]);
           }}
         />
       )
@@ -66,27 +74,39 @@ const SponsorsTable = () => {
       field: 'tier',
       headerName: 'Sponsor Tier',
       width: 140,
-      renderCell: (params: any) => <SponsorTierPill tier={(params.row as any).raw.tier} />
+      renderCell: (params: GridRenderCellParams<any, MapRowResult<Sponsor>>) => (
+        <SponsorTierPill tier={(params.row as MapRowResult<Sponsor>).raw!.tier} />
+      )
     },
-    { field: 'sponsorValue', headerName: 'Sponsor Value', width: 160, renderCell: (p: any) => `$${p.value}` },
+    {
+      field: 'sponsorValue',
+      headerName: 'Sponsor Value',
+      width: 160,
+      renderCell: (p: GridRenderCellParams<number, MapRowResult<Sponsor>>) => `$${p.value}`
+    },
     {
       field: 'joinDate',
       headerName: 'Sponsor Join Date',
       width: 180,
-      renderCell: (p: any) => datePipe((p.value as any) || '')
+      renderCell: (p: GridRenderCellParams<string | null, MapRowResult<Sponsor>>) =>
+        datePipe(new Date(String(p.value ?? '')))
     },
     { field: 'discountCode', headerName: 'Discount', flex: 1 },
     {
       field: 'taxExempt',
       headerName: 'Tax Exempt?',
       width: 120,
-      renderCell: (p: any) => {
+      renderCell: (p: GridRenderCellParams<boolean, MapRowResult<Sponsor>>) => {
         return (
           <Checkbox
             disabled={!canEditSponsors}
-            checked={p.value}
-            onClick={(e) => {
+            checked={!!p.value}
+            onClick={(e: MouseEvent<HTMLElement>) => {
               e.stopPropagation();
+              editSponsorMutateAsync({
+                ...(p.row as MapRowResult<Sponsor>).raw,
+                taxExempt: !p.value
+              } as unknown as Parameters<typeof editSponsorMutateAsync>[0]);
             }}
           />
         );
@@ -98,13 +118,12 @@ const SponsorsTable = () => {
       width: 180,
       sortable: false,
       filterable: false,
-      renderCell: (params: any) => {
-        const sponsor = (params.row as any).raw as Sponsor;
+      renderCell: (params: GridRenderCellParams<any, MapRowResult<Sponsor>>) => {
+        const sponsor = (params.row as MapRowResult<Sponsor>).raw as Sponsor;
         return (
           <NERButton
             variant="contained"
-            onClick={(e: any) => {
-              // prevent the DataGrid row click from firing
+            onClick={(e: MouseEvent<HTMLElement>) => {
               e.stopPropagation();
               openTasksModal(sponsor);
             }}
@@ -131,14 +150,13 @@ const SponsorsTable = () => {
       width: 100,
       sortable: false,
       filterable: false,
-      renderCell: (params: any) => {
-        const sponsor = (params.row as any).raw as Sponsor;
+      renderCell: (params: GridRenderCellParams<any, MapRowResult<Sponsor>>) => {
+        const sponsor = (params.row as MapRowResult<Sponsor>).raw as Sponsor;
         return (
           <IconButton
             size="small"
             sx={{ p: 0.5, color: 'white' }}
-            onClick={(e: any) => {
-              // prevent the DataGrid row click from firing
+            onClick={(e: MouseEvent<HTMLElement>) => {
               e.stopPropagation();
               setSponsorToDelete(sponsor);
               setShowDeleteModal(true);
@@ -188,7 +206,7 @@ const SponsorsTable = () => {
         />
       )}
 
-      <CompanyDataGrid
+      <NERDataGrid
         items={sponsors}
         mapRow={mapRow}
         columns={columns}
@@ -199,7 +217,7 @@ const SponsorsTable = () => {
         rowHeight={52}
         onRowClick={(s) => setSponsorToEdit(s)}
         onAdd={() => setShowAddSponsor(true)}
-        searchFields={['name' as any]}
+        searchFields={['name' as keyof MapRowResult<Sponsor>]}
         paperSx={{
           borderRadius: '10px 10px 0 0',
           overflow: 'hidden',
@@ -207,7 +225,7 @@ const SponsorsTable = () => {
           display: 'flex',
           flexDirection: 'column'
         }}
-        canEdit={canEditSponsors}
+        canEditRow={() => canEditSponsors}
       />
       <CreateSponsorPage showPage={showAddSponsor} handleClose={() => setShowAddSponsor(false)} />
       {selectedSponsor && (

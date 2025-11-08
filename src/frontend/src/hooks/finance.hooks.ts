@@ -152,6 +152,10 @@ export interface SponsorPayload {
   discountCode?: string;
 }
 
+interface EditSponsorPayload extends SponsorPayload {
+  sponsorId: string;
+}
+
 export interface SponsorTierPayload {
   name: string;
   minSupportValue: number;
@@ -1239,11 +1243,11 @@ export const useGetAllSponsorTiers = () => {
   });
 };
 
-export const useEditSponsor = (sponsorId: string) => {
+export const useEditSponsor = () => {
   const queryClient = useQueryClient();
-  return useMutation<Sponsor, Error, SponsorPayload>(
+  return useMutation<Sponsor, Error, EditSponsorPayload>(
     ['sponsor', 'edit'],
-    async (formData: SponsorPayload) => {
+    async ({ sponsorId, ...formData }: EditSponsorPayload) => {
       const { data } = await editSponsor(sponsorId, formData);
       return data;
     },
