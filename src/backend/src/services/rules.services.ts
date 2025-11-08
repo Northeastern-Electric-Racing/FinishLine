@@ -389,6 +389,7 @@ export default class RulesService {
       },
       ...getRulesetPreviewQueryArgs()
     });
+
     return rulesets.map(rulesetPreviewTransformer);
   }
 }
