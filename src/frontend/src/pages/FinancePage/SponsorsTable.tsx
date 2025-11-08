@@ -1,52 +1,39 @@
 import React, { useState } from 'react';
-import { TableRow, TableCell, Box, Table as MuiTable, TableHead, TableBody, Typography, Button } from '@mui/material';
+import { Box, Typography, Button, IconButton, Checkbox } from '@mui/material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useGetAllSponsors } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
 import { NERButton } from '../../components/NERButton';
 import { datePipe } from '../../utils/pipes';
 import SponsorTierPill from '../../components/SponsorTierPill';
-import PaginationFooter from '../../components/PaginationFooter';
 import CreateSponsorPage from './FinanceComponents/CreateSponsorPage';
-import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditSponsorModal from './FinanceComponents/EditSponsorPage';
 import DeleteSponsorModal from './FinanceComponents/DeleteSponsor';
 import SidePage from './FinanceComponents/SidePagePopup';
-import { Sponsor } from 'shared';
+import { isAtLeastRank, RoleEnum, Sponsor } from 'shared';
 import SponsorTasksModal from './FinanceComponents/SponsorTasksModal';
 import SidePagePopup from './FinanceComponents/SidePagePopup';
+import CompanyDataGrid from '../../components/CompanyDataGrid';
+import { useCurrentUser } from '../../hooks/users.hooks';
 
 const SponsorsTable = () => {
   const { data: sponsors, isLoading: sponsorIsLoading, isError: sponsorIsError, error: sponsorError } = useGetAllSponsors();
-  const [currentPage, setCurrentPage] = useState<number>(0);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(14);
   const [showAddSponsor, setShowAddSponsor] = useState(false);
   const [sponsorToEdit, setSponsorToEdit] = useState<Sponsor | undefined>(undefined);
   const [sponsorToDelete, setSponsorToDelete] = useState<Sponsor | undefined>(undefined);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedSponsor, setSelectedSponsor] = useState<Sponsor | null>(null);
   const [isTasksModalOpen, setIsTasksModalOpen] = useState(false);
+  const currentUser = useCurrentUser();
 
-  if (!sponsors || sponsorIsLoading) {
-    return <LoadingIndicator />;
-  }
-  if (sponsorIsError) {
-    return <ErrorPage message={sponsorError.message} />;
-  }
+  const canEditSponsors = isAtLeastRank(RoleEnum.HEAD, currentUser.role) || currentUser.isFinance;
 
+  if (!sponsors || sponsorIsLoading) return <LoadingIndicator />;
+  if (sponsorIsError) return <ErrorPage message={sponsorError.message} />;
+
+  // ensure a predictable ordering
   sponsors.sort((a, b) => a.name.localeCompare(b.name));
-  const startIdx = currentPage * rowsPerPage;
-  const currentSponsors = sponsors.slice(startIdx, startIdx + rowsPerPage);
-
-  const handleChangePage = (_event: unknown, newPage: number) => {
-    setCurrentPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setCurrentPage(0);
-  };
 
   const openTasksModal = (sponsor: Sponsor) => {
     setSelectedSponsor(sponsor);
@@ -58,142 +45,117 @@ const SponsorsTable = () => {
     setIsTasksModalOpen(false);
   };
 
-  const sponsorTableRows = currentSponsors.map((sponsor, index) => (
-    <TableRow key={sponsor.sponsorId || index}>
-      <TableCell
-        align="center"
-        sx={{
-          alignItems: 'center',
-          borderBottom: 'none'
-        }}
-      >
-        <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.25rem', fontWeight: 'bold' }}>
-          {sponsor.name}
-        </Typography>
-      </TableCell>
-      <TableCell
-        align="center"
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          borderBottom: 'none',
-          minHeight: '50px'
-        }}
-      >
-        <Typography sx={{ fontSize: '1.25rem' }}>{sponsor.activeStatus ? 'Active' : 'Inactive'}</Typography>
-      </TableCell>
-      <TableCell
-        align="center"
-        sx={{
-          alignItems: 'center',
-          borderBottom: 'none'
-        }}
-      >
-        <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.25rem' }}>{sponsor.sponsorContact}</Typography>
-      </TableCell>
-
-      <TableCell
-        align="center"
-        sx={{
-          alignItems: 'center',
-          borderBottom: 'none'
-        }}
-      >
-        <Box sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.25rem' }}>
-          <SponsorTierPill tier={sponsor.tier} />
-        </Box>
-      </TableCell>
-      <TableCell
-        align="center"
-        sx={{
-          alignItems: 'center',
-          borderBottom: 'none'
-        }}
-      >
-        <Typography
-          sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.25rem' }}
-        >{`$${sponsor.sponsorValue}`}</Typography>
-      </TableCell>
-      <TableCell
-        align="center"
-        sx={{
-          alignItems: 'center',
-          borderBottom: 'none'
-        }}
-      >
-        <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.25rem' }}>
-          {datePipe(sponsor.joinDate)}
-        </Typography>
-      </TableCell>
-      <TableCell
-        align="center"
-        sx={{
-          alignItems: 'center',
-          borderBottom: 'none'
-        }}
-      >
-        <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.25rem' }}>{sponsor.discountCode}</Typography>
-      </TableCell>
-      <TableCell
-        align="center"
-        sx={{
-          alignItems: 'center',
-          borderBottom: 'none'
-        }}
-      >
-        <Typography sx={{ maxWidth: 300, textAlign: 'center', fontSize: '1.25rem' }}>
-          {sponsor.taxExempt ? 'Yes' : 'No'}
-        </Typography>
-      </TableCell>
-      <TableCell
-        align="center"
-        sx={{
-          alignItems: 'center',
-          borderBottom: 'none',
-          borderLeft: '4px solid white'
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <NERButton variant="contained" onClick={() => openTasksModal(sponsor)}>
-            View Tasks
-          </NERButton>
-        </Box>
-      </TableCell>
-      <TableCell
-        align="center"
-        sx={{
-          alignItems: 'center',
-          borderBottom: 'none'
-        }}
-      >
-        <Box
-          sx={{
-            display: 'flex',
-            borderBottom: 'none'
+  const columns = [
+    { field: 'name', headerName: 'Sponsor', flex: 1 },
+    {
+      field: 'activeStatus',
+      headerName: 'Active?',
+      width: 160,
+      renderCell: (p: any) => (
+        <Checkbox
+          disabled={!canEditSponsors}
+          checked={p.value}
+          onClick={(e) => {
+            e.stopPropagation();
           }}
-        >
-          <Button
-            sx={{ p: 0.5, color: 'white' }}
-            onClick={() => {
-              setSponsorToEdit(sponsor);
+        />
+      )
+    },
+    { field: 'sponsorContact', headerName: 'Contact', flex: 1 },
+    {
+      field: 'tier',
+      headerName: 'Sponsor Tier',
+      width: 140,
+      renderCell: (params: any) => <SponsorTierPill tier={(params.row as any).raw.tier} />
+    },
+    { field: 'sponsorValue', headerName: 'Sponsor Value', width: 160, renderCell: (p: any) => `$${p.value}` },
+    {
+      field: 'joinDate',
+      headerName: 'Sponsor Join Date',
+      width: 180,
+      renderCell: (p: any) => datePipe((p.value as any) || '')
+    },
+    { field: 'discountCode', headerName: 'Discount', flex: 1 },
+    {
+      field: 'taxExempt',
+      headerName: 'Tax Exempt?',
+      width: 120,
+      renderCell: (p: any) => {
+        return (
+          <Checkbox
+            disabled={!canEditSponsors}
+            checked={p.value}
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          />
+        );
+      }
+    },
+    {
+      field: 'tasks',
+      headerName: 'Sponsor Tasks',
+      width: 180,
+      sortable: false,
+      filterable: false,
+      renderCell: (params: any) => {
+        const sponsor = (params.row as any).raw as Sponsor;
+        return (
+          <NERButton
+            variant="contained"
+            onClick={(e: any) => {
+              // prevent the DataGrid row click from firing
+              e.stopPropagation();
+              openTasksModal(sponsor);
+            }}
+            sx={{
+              px: 1,
+              py: 0.4,
+              fontSize: 'inherit',
+              minHeight: 0,
+              height: 'auto',
+              lineHeight: 1,
+              textTransform: 'none',
+              display: 'inline-flex',
+              alignItems: 'center'
             }}
           >
-            <EditIcon />
-          </Button>
-          <Button
+            View Tasks
+          </NERButton>
+        );
+      }
+    },
+    {
+      field: 'actions',
+      headerName: 'Delete',
+      width: 100,
+      sortable: false,
+      filterable: false,
+      renderCell: (params: any) => {
+        const sponsor = (params.row as any).raw as Sponsor;
+        return (
+          <IconButton
+            size="small"
             sx={{ p: 0.5, color: 'white' }}
-            onClick={() => {
+            onClick={(e: any) => {
+              // prevent the DataGrid row click from firing
+              e.stopPropagation();
               setSponsorToDelete(sponsor);
               setShowDeleteModal(true);
             }}
           >
             <DeleteIcon />
-          </Button>
-        </Box>
-      </TableCell>
-    </TableRow>
-  ));
+          </IconButton>
+        );
+      }
+    }
+  ];
+
+  const mapRow = (s: Sponsor) => ({
+    ...s,
+    id: s.sponsorId,
+    raw: s
+  });
 
   return (
     <Box>
@@ -211,10 +173,11 @@ const SponsorsTable = () => {
                 setSponsorToEdit(undefined);
               }}
               sponsor={sponsorToEdit}
-            ></EditSponsorModal>
+            />
           }
-        ></SidePage>
+        />
       )}
+
       {sponsorToDelete && (
         <DeleteSponsorModal
           showModal={showDeleteModal}
@@ -224,164 +187,29 @@ const SponsorsTable = () => {
           sponsor={sponsorToDelete}
         />
       )}
-      <Box sx={{ paddingBottom: '100px' }}>
-        <MuiTable>
-          <TableHead>
-            <TableRow>
-              <TableCell
-                align="center"
-                sx={{
-                  fontWeight: 'bold',
-                  fontSize: '1.5em',
-                  backgroundColor: '#ef4345',
-                  color: 'white',
-                  borderRadius: '10px 0px 0px 0px',
-                  height: '60px'
-                }}
-              >
-                Sponsor
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{
-                  fontWeight: 'bold',
-                  fontSize: '1.5em',
-                  backgroundColor: '#ef4345',
-                  color: 'white'
-                }}
-              >
-                Sponsor Status
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{
-                  fontWeight: 'bold',
-                  fontSize: '1.5em',
-                  backgroundColor: '#ef4345',
-                  color: 'white'
-                }}
-              >
-                Contacts
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{
-                  fontWeight: 'bold',
-                  fontSize: '1.5em',
-                  backgroundColor: '#ef4345',
-                  color: 'white'
-                }}
-              >
-                Sponsor Tier
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{
-                  fontWeight: 'bold',
-                  fontSize: '1.5em',
-                  backgroundColor: '#ef4345',
-                  color: 'white'
-                }}
-              >
-                Sponsor Value
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{
-                  fontWeight: 'bold',
-                  fontSize: '1.5em',
-                  backgroundColor: '#ef4345',
-                  color: 'white'
-                }}
-              >
-                Sponsor Join Date
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{
-                  fontWeight: 'bold',
-                  fontSize: '1.5em',
-                  backgroundColor: '#ef4345',
-                  color: 'white'
-                }}
-              >
-                Discount
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{
-                  fontWeight: 'bold',
-                  fontSize: '1.5em',
-                  backgroundColor: '#ef4345',
-                  color: 'white'
-                }}
-              >
-                Tax Exempt
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{
-                  fontWeight: 'bold',
-                  fontSize: '1.5em',
-                  backgroundColor: '#ef4345',
-                  color: 'white'
-                }}
-              >
-                Sponsor Tasks
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{
-                  fontWeight: 'bold',
-                  fontSize: '1.5em',
-                  backgroundColor: '#ef4345',
-                  color: 'white',
-                  borderRadius: '0px 10px 0px 0px'
-                }}
-              >
-                Tasks
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>{sponsorTableRows}</TableBody>
-        </MuiTable>
-      </Box>
-      <Box>
-        <CreateSponsorPage showPage={showAddSponsor} handleClose={() => setShowAddSponsor(false)} />
 
-        <PaginationFooter
-          footerButton={
-            <NERButton
-              variant="contained"
-              onClick={() => setShowAddSponsor(true)}
-              sx={{
-                borderRadius: '8px',
-                color: '#ededed',
-                backgroundColor: '#ef4345',
-                padding: '2px 20px',
-                display: 'inline-flex',
-                fontSize: '20px',
-                fontWeight: 700,
-                textTransform: 'none',
-                marginBottom: '7px',
-                '&:hover': {
-                  backgroundColor: '#c74340'
-                }
-              }}
-            >
-              {' '}
-              Add Sponsor
-            </NERButton>
-          }
-          footerInfoBoxes={[<Box># of Sponsors: {sponsors.length}</Box>]}
-          totalItems={sponsors.length}
-          currentPage={currentPage}
-          rowsPerPage={rowsPerPage}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          rowsPerPageOptions={[10, 14, 25, 50, 100]}
-        />
-      </Box>
+      <CompanyDataGrid
+        items={sponsors}
+        mapRow={mapRow}
+        columns={columns}
+        pageSizeDefault={10}
+        rowsPerPageOptions={[10, 14, 25, 50, 100]}
+        initialSortModel={[{ field: 'name', sort: 'asc' }]}
+        headerHeight={56}
+        rowHeight={52}
+        onRowClick={(s) => setSponsorToEdit(s)}
+        onAdd={() => setShowAddSponsor(true)}
+        searchFields={['name' as any]}
+        paperSx={{
+          borderRadius: '10px 10px 0 0',
+          overflow: 'hidden',
+          height: 'calc(100vh - 120px)',
+          display: 'flex',
+          flexDirection: 'column'
+        }}
+        canEdit={canEditSponsors}
+      />
+      <CreateSponsorPage showPage={showAddSponsor} handleClose={() => setShowAddSponsor(false)} />
       {selectedSponsor && (
         <SidePagePopup
           showPage={isTasksModalOpen}

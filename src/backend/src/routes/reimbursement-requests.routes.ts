@@ -101,6 +101,11 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.editVendor
 );
 
+reimbursementRequestsRouter.post(
+  '/vendors/:vendorId/setTaxExemptStatus',
+  ReimbursementRequestController.setVendorTaxExemptStatus
+);
+
 reimbursementRequestsRouter.post('/:vendorId/vendors/delete', ReimbursementRequestController.deleteVendor);
 
 reimbursementRequestsRouter.post(

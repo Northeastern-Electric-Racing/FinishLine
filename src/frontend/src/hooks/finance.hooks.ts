@@ -66,7 +66,8 @@ import {
   editSponsorTier,
   editIndexCode,
   getCurrentUserAssignedReimbursementRequests,
-  assignMemberToRR
+  assignMemberToRR,
+  setTaxExemptStatus
 } from '../apis/finance.api';
 import {
   IndexCode,
@@ -467,6 +468,21 @@ export const useEditVendor = (vendorId: string) => {
     queryClient.invalidateQueries(['vendors']);
     return data;
   });
+};
+
+/**
+ * Custom react hook to set tax exempt status of a vendor
+ */
+export const useSetTaxExemptStatus = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Vendor, Error, { vendorId: string; taxExempt: boolean }>(
+    ['vendors', 'taxExemptStatus'],
+    async ({ vendorId, taxExempt }) => {
+      const { data } = await setTaxExemptStatus(vendorId, taxExempt);
+      queryClient.invalidateQueries(['vendors']);
+      return data;
+    }
+  );
 };
 
 /**
