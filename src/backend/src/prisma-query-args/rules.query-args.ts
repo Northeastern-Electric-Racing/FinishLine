@@ -93,3 +93,18 @@ export const getRulesetQueryArgs = (organizationId: string) =>
       createdBy: getUserQueryArgs(organizationId)
     }
   });
+
+export const getRulesetPreviewQueryArgs = () =>
+  Prisma.validator<Prisma.RulesetDefaultArgs>()({
+    select: {
+      name: true,
+      dateCreated: true,
+      rulesetType: true,
+      active: true,
+      car: {
+        select: {
+          wbsElement: true
+        }
+      }
+    }
+  });

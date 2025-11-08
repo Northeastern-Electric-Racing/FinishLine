@@ -67,3 +67,14 @@ export interface ProjectRule {
   currentStatus: RuleCompletion;
   statusHistory: RuleStatusChange[];
 }
+
+export interface RulesetPreview {
+  name: string;
+  dateCreated: Date;
+  active: boolean;
+  assignedPercentage: number;
+  car: {
+    carId: string;
+    name: string;
+  };
+}

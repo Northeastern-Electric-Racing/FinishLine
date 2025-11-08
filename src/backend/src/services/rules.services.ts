@@ -1,5 +1,5 @@
 import { Organization, Rule, User } from '@prisma/client';
-import { isAdmin, isLeadership, ProjectRule, RuleCompletion, RulesetType, notGuest } from 'shared';
+import { isAdmin, isLeadership, ProjectRule, RuleCompletion, RulesetType, notGuest, RulesetPreview } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
@@ -10,12 +10,18 @@ import {
   NotFoundException
 } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
-import { getRuleQueryArgs, getProjectRuleQueryArgs, getRulesetQueryArgs } from '../prisma-query-args/rules.query-args';
+import {
+  getRuleQueryArgs,
+  getProjectRuleQueryArgs,
+  getRulesetQueryArgs,
+  getRulesetPreviewQueryArgs
+} from '../prisma-query-args/rules.query-args';
 import {
   ruleTransformer,
   projectRuleTransformer,
   rulesetTransformer,
-  rulesetTypeTransformer
+  rulesetTypeTransformer,
+  rulesetPreviewTransformer
 } from '../transformers/rules.transformer';
 
 export default class RulesService {
@@ -367,5 +373,22 @@ export default class RulesService {
       }
     });
     return rulesets.map(rulesetTypeTransformer);
+  }
+
+  /**
+   * Gets rulesets for a given ruleset type
+   * @param rulesetTypeId id of ruleset type
+   * @returns rulesets associated with provided ruleset type
+   */
+  static async getRulesetsByRulesetType(rulesetTypeId: string): Promise<RulesetPreview[]> {
+    const rulesets = await prisma.ruleset.findMany({
+      where: {
+        rulesetTypeId,
+        deletedBy: null,
+        active: true
+      },
+      ...getRulesetPreviewQueryArgs()
+    });
+    return rulesets.map(rulesetPreviewTransformer);
   }
 }

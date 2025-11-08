@@ -69,6 +69,16 @@ export default class RulesController {
     }
   }
 
+  static async getRulesetsByRulesetType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const rulesetTypeId = req.body;
+      const rulesets = await RulesService.getRulesetsByRulesetType(rulesetTypeId);
+      res.status(200).json(rulesets);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async deleteRuleset(req: Request, res: Response, next: NextFunction) {
     try {
       const { rulesetId } = req.params;
