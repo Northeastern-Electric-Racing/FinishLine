@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useState } from 'react';
-import { Box, Grid, Stack, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Grid, Stack, Tooltip, Typography, useMediaQuery, useTheme, Button, IconButton } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { DesignReview, DesignReviewStatus } from 'shared';
 import MonthSelector from '../CalendarPage/CalendarComponents/MonthSelector';
@@ -18,6 +18,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import DRCSummaryModal from '../CalendarPage/DesignReviewSummaryModal';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
 const NewCalendarPage = () => {
   const theme = useTheme();
@@ -133,7 +134,32 @@ const NewCalendarPage = () => {
       <PageLayout hidePageTitle>
         <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" sx={{ mt: 2, mb: 2 }}>
           <Typography variant="h4"></Typography>
-          <Stack direction="row" spacing={1} alignItems="center">
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', rowGap: 1 }}>
+            {/* New Event Button (does not do anything yet) */}
+            {isExtraSmallView ? (
+            <Tooltip title="New Event">
+              <IconButton size="small" aria-label="new event" onClick={() => {}}>
+                <AddCircleOutlineIcon />
+              </IconButton>
+            </Tooltip>
+          ) : (
+            <Button variant="contained" onClick={() => {}} endIcon={<AddCircleOutlineIcon fontSize="large" sx={{ 
+              color: 'white', fontSize: 25 
+            }} />} sx={{
+              height: 40,
+              px: 1,
+              textTransform: 'none',
+              fontFamily: (t) => t.typography.h4.fontFamily,
+              fontSize: 25,
+              fontWeight: 800,
+              '& .MuiButton-endIcon svg': { fontSize: 30 },
+              color: (t) => t.palette.common.white,
+              bgcolor: '#F44336',
+              '&:hover': { bgcolor: '#FF0000' },
+              }} >
+              New Event
+            </Button>
+          )}
             <Tooltip title="Click on a day to schedule an event">
               <HelpOutlineIcon fontSize="medium" sx={{ position: 'relative' }} />
             </Tooltip>
