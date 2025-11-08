@@ -18,7 +18,6 @@ export const rankUserRole = (role: Role) => {
 };
 
 export const isAtLeastRank = (atLeastRole: Role, currentRole?: Role) => {
-  console.log('atLeastRole', atLeastRole, 'currentRole', currentRole);
   if (!currentRole) return false;
   return rankUserRole(currentRole) >= rankUserRole(atLeastRole);
 };
