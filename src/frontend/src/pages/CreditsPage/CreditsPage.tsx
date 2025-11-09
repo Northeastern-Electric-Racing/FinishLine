@@ -300,7 +300,45 @@ const CreditsPage: React.FC = () => {
         }
       }
     },
-    { name: 'Gahan Patel', color: '#0000FF' }
+    { name: 'Gahan Patel', color: '#0000FF' },
+    { name: 'Mimo Olowu', color: 'white', sx: { px: 1, backgroundColor: '#ac59eb', borderRadius: 2 } },
+    { name: 'Saul Manzanares', color: '#AF34FA' },
+    { name: 'Richard Feng', color: '#FFFF', sx: { textShadow: '0 0 2px rgba(0,26,255), 0 0 5px rgba(255,255,255)' } },
+    {
+      name: 'Samuel Shrestha',
+      color: '#be0000',
+      sx: {
+        textShadow: '0 0 6px rgba(190, 0, 0, 0.9), 0 0 14px rgba(190, 0, 0, 0.6)',
+        animation: 'sam-glow 2.6s ease-in-out infinite',
+        '@keyframes sam-glow': {
+          '0%': { textShadow: '0 0 4px rgba(190, 0, 0, 0.7), 0 0 10px rgba(190, 0, 0, 0.4)' },
+          '50%': { textShadow: '0 0 10px rgba(190, 0, 0, 1), 0 0 22px rgba(190, 0, 0, 0.95)' },
+          '100%': { textShadow: '0 0 4px rgba(190, 0, 0, 0.7), 0 0 10px rgba(190, 0, 0, 0.4)' }
+        }
+      }
+    },
+    {
+      name: 'Santiago Ordonez Merizalde',
+      color: 'transparent',
+      sx: {
+        textShadow: `
+          0 0 8px rgba(180, 0, 255, 0.8),
+          0 0 15px rgba(140, 0, 255, 0.6),
+          0 0 25px rgba(200, 100, 255, 0.5)
+        `,
+        background: 'linear-gradient(90deg, #d9a7ff, #b58eff, #7f6fff, #b58eff, #d9a7ff)',
+        '-webkit-background-clip': 'text',
+        backgroundSize: '300% 300%',
+        animation: 'purpleFlow 6s ease-in-out infinite',
+        '@keyframes purpleFlow': {
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' }
+        },
+        filter: 'drop-shadow(0 0 4px rgba(190, 80, 255, 0.6))'
+      }
+    },
+    { name: 'Josh Len', color: '#000000ff' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];

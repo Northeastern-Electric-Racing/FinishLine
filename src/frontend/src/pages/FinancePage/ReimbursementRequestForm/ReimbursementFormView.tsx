@@ -654,6 +654,9 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                         '& .MuiOutlinedInput-root': {
                           borderRadius: '20px',
                           color: '#989898'
+                        },
+                        '& .MuiOutlinedInput-input': {
+                          color: '#ffffff'
                         }
                       }}
                       onClose={() => setDatePickerOpen(false)}
@@ -665,8 +668,14 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                         textField: {
                           error: !!errors.dateOfExpense,
                           helperText: errors.dateOfExpense?.message,
-                          onClick: () => setDatePickerOpen(true),
-                          inputProps: { readOnly: true }
+                          InputProps: {
+                            onClick: (e) => {
+                              const target = e.target as HTMLElement;
+                              if (target.closest('button')) {
+                                setDatePickerOpen(true);
+                              }
+                            }
+                          }
                         }
                       }}
                     />

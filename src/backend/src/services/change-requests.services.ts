@@ -178,7 +178,7 @@ export default class ChangeRequestsService {
         dateReviewed: null
       },
       {
-        NOT: { scopeChangeRequest: null }
+        changes: { none: {} }
       }
     ];
 
@@ -666,9 +666,7 @@ export default class ChangeRequestsService {
       include: {
         changeRequests: {
           where: {
-            dateDeleted: {
-              not: null
-            }
+            dateDeleted: null
           },
           include: {
             changes: true
