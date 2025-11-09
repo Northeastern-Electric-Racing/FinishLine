@@ -10,7 +10,11 @@ import {
   NotFoundException
 } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
-import { getRuleQueryArgs, getProjectRuleQueryArgs, getRulesetQueryArgs } from '../prisma-query-args/rules.query-args';
+import {
+  getProjectRuleQueryArgs,
+  getRulesetQueryArgs,
+  getRulePreviewQueryArgs
+} from '../prisma-query-args/rules.query-args';
 import {
   ruleTransformer,
   projectRuleTransformer,
@@ -137,7 +141,7 @@ export default class RulesService {
           }
         })
       },
-      ...getRuleQueryArgs(organization.organizationId)
+      ...getRulePreviewQueryArgs()
     });
 
     return ruleTransformer(rule);

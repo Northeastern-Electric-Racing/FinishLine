@@ -1,18 +1,13 @@
 import { Prisma } from '@prisma/client';
-import { Rule, RuleCompletion, ProjectRule, Ruleset, RulesetType } from 'shared';
-import { RuleQueryArgs, RulesetQueryArgs } from '../prisma-query-args/rules.query-args';
-import { userTransformer } from './user.transformer';
+import { Rule, ProjectRule, Ruleset, RulesetType } from 'shared';
+import { RulePreviewQueryArgs, RulesetQueryArgs } from '../prisma-query-args/rules.query-args';
 
-export const ruleTransformer = (rule: Prisma.RuleGetPayload<RuleQueryArgs>): Rule => {
+export const ruleTransformer = (rule: Prisma.RuleGetPayload<RulePreviewQueryArgs>): Rule => {
   return {
     ruleId: rule.ruleId,
     ruleCode: rule.ruleCode,
     ruleContent: rule.ruleContent,
     imageFileIds: rule.imageFileIds,
-    ruleset: {
-      rulesetId: rule.ruleset.rulesetId,
-      name: rule.ruleset.name
-    },
     parentRule: rule.parentRule
       ? {
           ruleId: rule.parentRule.ruleId,
@@ -20,29 +15,7 @@ export const ruleTransformer = (rule: Prisma.RuleGetPayload<RuleQueryArgs>): Rul
         }
       : undefined,
     subRuleIds: rule.subRules.map((subRule) => subRule.ruleId),
-    referencedRules: rule.referencedRule.map((ref) => ({
-      ruleId: ref.ruleId,
-      ruleCode: ref.ruleCode
-    })),
-    referencedBy: rule.referencedBy.map((ref) => ({
-      ruleId: ref.ruleId,
-      ruleCode: ref.ruleCode
-    })),
-    projects: rule.projects.map((projectRule) => ({
-      projectRuleId: projectRule.projectRuleId,
-      ruleId: projectRule.ruleId,
-      rule: projectRule.rule as any,
-      projectId: projectRule.projectId,
-      currentStatus: projectRule.currentStatus as RuleCompletion,
-      statusHistory: projectRule.statusHistory.map((history) => ({
-        historyId: history.historyId,
-        projectRuleId: history.projectRuleId,
-        userUpdated: userTransformer(history.userUpdated),
-        updatedAt: history.updatedAt,
-        newStatus: history.newStatus as RuleCompletion,
-        note: history.note
-      }))
-    }))
+    referencedRuleIds: rule.referencedRule.map((ref) => ref.ruleId)
   };
 };
 
@@ -77,12 +50,7 @@ export const rulesetTransformer = (ruleset: Prisma.RulesetGetPayload<RulesetQuer
     dateCreated: ruleset.dateCreated,
     active: ruleset.active,
     assignedPercentage: teamsPercentage,
-    rulesetType: {
-      ...ruleset.rulesetType,
-      lastUpdated: ruleset.rulesetType.lastUpdated,
-      revisionFiles: []
-    },
-    // rulesetType: rulesetTypeTransformer(ruleset.rulesetType),
+    rulesetType: rulesetTypeTransformer(ruleset.rulesetType),
     car: {
       carId: ruleset.car.carId,
       name: ruleset.car.wbsElementId
