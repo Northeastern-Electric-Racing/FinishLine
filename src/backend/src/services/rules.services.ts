@@ -384,8 +384,7 @@ export default class RulesService {
     const rulesets = await prisma.ruleset.findMany({
       where: {
         rulesetTypeId,
-        deletedBy: null,
-        active: true
+        deletedBy: null
       },
       ...getRulesetPreviewQueryArgs()
     });
