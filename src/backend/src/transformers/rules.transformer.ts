@@ -66,7 +66,9 @@ export const rulesetTypeTransformer = (rulesetType: any): RulesetType => {
 };
 
 export const rulesetTransformer = (ruleset: Prisma.RulesetGetPayload<RulesetQueryArgs>): Ruleset => {
-  const teamsPercentage = 0;
+  const rulesWithTeams = ruleset.rules.filter((rule) => rule._count.teams > 0).length;
+  const totalRulesLength = ruleset.rules.length;
+  const teamsPercentage = totalRulesLength > 0 ? (rulesWithTeams / totalRulesLength) * 100 : 0;
 
   return {
     fileId: ruleset.fileId,
@@ -75,7 +77,12 @@ export const rulesetTransformer = (ruleset: Prisma.RulesetGetPayload<RulesetQuer
     dateCreated: ruleset.dateCreated,
     active: ruleset.active,
     assignedPercentage: teamsPercentage,
-    rulesetType: rulesetTypeTransformer(ruleset.rulesetType),
+    rulesetType: {
+      ...ruleset.rulesetType,
+      lastUpdated: ruleset.rulesetType.lastUpdated,
+      revisionFiles: []
+    },
+    // rulesetType: rulesetTypeTransformer(ruleset.rulesetType),
     car: {
       carId: ruleset.car.carId,
       name: ruleset.car.wbsElementId

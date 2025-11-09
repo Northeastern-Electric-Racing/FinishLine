@@ -503,9 +503,16 @@ describe('Delete Rules Tests', () => {
     it('Deletes a ruleset successfully and returns the correct information', async () => {
       const car = await createUniqueCar(orgId);
       const { ruleset1 } = await setupRules(car);
-
-      const expectedPercentage = 0;
-
+      const totalRules = await prisma.rule.count({
+        where: { rulesetId: ruleset1.rulesetId }
+      });
+      const rulesWithTeams = await prisma.rule.count({
+        where: {
+          rulesetId: ruleset1.rulesetId,
+          teams: { some: {} }
+        }
+      });
+      const expectedPercentage = totalRules > 0 ? (rulesWithTeams / totalRules) * 100 : 0;
       const deleted = await RulesService.deleteRuleset(ruleset1.rulesetId, admin.userId, organization.organizationId);
 
       expect(deleted).toBeDefined();
