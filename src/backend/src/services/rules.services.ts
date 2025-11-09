@@ -368,4 +368,59 @@ export default class RulesService {
     });
     return rulesets.map(rulesetTypeTransformer);
   }
+
+  /**
+   * Deletes a project rule and its associated rule status changes
+   * @param projectRuleId The ID of the project rule to delete
+   * @param deleter The user deleting the project rule (must be admin)
+   * @param organization The organization the project rule belongs to
+   * @returns The deleted project rule
+   */
+  static async deleteProjectRule(projectRuleId: string, deleter: User, organization: Organization): Promise<ProjectRule> {
+    if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('delete project rules');
+    }
+
+    const projectRule = await prisma.project_Rule.findUnique({
+      where: { projectRuleId },
+      include: {
+        project: {
+          include: {
+            wbsElement: true
+          }
+        },
+        rule: {
+          include: {
+            ruleset: {
+              include: {
+                car: {
+                  include: {
+                    wbsElement: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!projectRule) {
+      throw new NotFoundException('Rule', projectRuleId);
+    }
+
+    if (projectRule.project.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Rule');
+    }
+
+    await prisma.rule_Status_Change.deleteMany({
+      where: { projectRuleId }
+    });
+
+    await prisma.project_Rule.delete({
+      where: { projectRuleId }
+    });
+
+    return projectRuleTransformer(projectRule);
+  }
 }
