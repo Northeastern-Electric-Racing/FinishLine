@@ -211,7 +211,6 @@ const SponsorsTable = () => {
         mapRow={mapRow}
         columns={columns}
         pageSizeDefault={10}
-        rowsPerPageOptions={[10, 14, 25, 50, 100]}
         initialSortModel={[{ field: 'name', sort: 'asc' }]}
         headerHeight={56}
         rowHeight={52}
