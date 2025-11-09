@@ -1048,7 +1048,7 @@ describe('Reimbursement Requests', () => {
     });
   });
 
-  describe.only('Set vendor tax exempt status', () => {
+  describe('Set vendor tax exempt status', () => {
     test('Finance member can set vendor tax exempt status', async () => {
       const updatedVendor = await ReimbursementRequestService.setVendorTaxExemptStatus(
         createdVendor.vendorId,
