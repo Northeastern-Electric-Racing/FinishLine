@@ -302,7 +302,7 @@ describe('Create Rules Tests', () => {
 
   describe('Get rulesets by ruleset type', () => {
     it('Successful get rulesets by ruleset types', async () => {
-      const rulesets = await RulesService.getRulesetsByRulesetType(rulesetType.rulesetTypeId);
+      const rulesets = await RulesService.getRulesetsByRulesetType(rulesetType.rulesetTypeId, orgId);
       expect(rulesets.length).toBe(1);
       expect(rulesets[0].name).toBe('2025 FSAE Rules');
       expect(rulesets[0].active).toBeTruthy();
@@ -311,7 +311,7 @@ describe('Create Rules Tests', () => {
 
     it('Successful get rulesets by ruleset types after deleting ruleset', async () => {
       await RulesService.deleteRuleset(rulesetId, batman.userId, orgId);
-      const rulesets = await RulesService.getRulesetsByRulesetType(rulesetType.rulesetTypeId);
+      const rulesets = await RulesService.getRulesetsByRulesetType(rulesetType.rulesetTypeId, orgId);
       expect(rulesets.length).toBe(0);
     });
 
@@ -326,7 +326,7 @@ describe('Create Rules Tests', () => {
           createdBy: { connect: { userId: batman.userId } }
         }
       });
-      const rulesets = await RulesService.getRulesetsByRulesetType(rulesetType.rulesetTypeId);
+      const rulesets = await RulesService.getRulesetsByRulesetType(rulesetType.rulesetTypeId, orgId);
       expect(rulesets.length).toBe(2);
       expect(rulesets[0].name).toBe('2025 FSAE Rules');
       expect(rulesets[1].name).toBe('2025 FSAE Rules2');

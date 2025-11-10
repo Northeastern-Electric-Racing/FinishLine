@@ -380,11 +380,14 @@ export default class RulesService {
    * @param rulesetTypeId id of ruleset type
    * @returns rulesets associated with provided ruleset type
    */
-  static async getRulesetsByRulesetType(rulesetTypeId: string): Promise<RulesetPreview[]> {
+  static async getRulesetsByRulesetType(rulesetTypeId: string, organizationId: string): Promise<RulesetPreview[]> {
     const rulesets = await prisma.ruleset.findMany({
       where: {
         rulesetTypeId,
-        deletedBy: null
+        deletedBy: null,
+        rulesetType: {
+          organizationId
+        }
       },
       ...getRulesetPreviewQueryArgs()
     });
