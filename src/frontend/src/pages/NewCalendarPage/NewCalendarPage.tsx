@@ -134,7 +134,7 @@ const NewCalendarPage = () => {
       <PageLayout hidePageTitle>
         <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" sx={{ mt: 2, mb: 2 }}>
           <Typography variant="h4"></Typography>
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', columnGap: 1,rowGap: 1 }}>
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', columnGap: 1, rowGap: 1 }}>
             {/* New Event Button (does not do anything yet) */}
             <Button
               variant="contained"
@@ -152,7 +152,7 @@ const NewCalendarPage = () => {
                 color: (t) => t.palette.common.white,
                 bgcolor: '#F44336',
                 '&:hover': { bgcolor: '#FF0000' },
-                '& .MuiButton-endIcon svg': { fontSize: 30 },
+                '& .MuiButton-endIcon svg': { fontSize: 30 }
               }}
             >
               New Event
@@ -160,9 +160,7 @@ const NewCalendarPage = () => {
             <Tooltip title="Click on a day to schedule an event">
               <HelpOutlineIcon fontSize="medium" sx={{ position: 'relative' }} />
             </Tooltip>
-            <Box sx={{ ml: 1, flexBasis: { xs: '100%', sm: 'auto' }, flexShrink: 0 }}>
-              {unconfirmedDRSDropdown}
-            </Box>
+            <Box sx={{ ml: 1, flexBasis: { xs: '100%', sm: 'auto' }, flexShrink: 0 }}>{unconfirmedDRSDropdown}</Box>
           </Stack>
         </Stack>
         <Box sx={{ display: 'flex', gap: 2 }}>
