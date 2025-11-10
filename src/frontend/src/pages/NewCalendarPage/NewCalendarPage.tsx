@@ -134,36 +134,35 @@ const NewCalendarPage = () => {
       <PageLayout hidePageTitle>
         <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" sx={{ mt: 2, mb: 2 }}>
           <Typography variant="h4"></Typography>
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', rowGap: 1 }}>
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', columnGap: 1,rowGap: 1 }}>
             {/* New Event Button (does not do anything yet) */}
-            {isExtraSmallView ? (
-            <Tooltip title="New Event">
-              <IconButton size="small" aria-label="new event" onClick={() => {}}>
-                <AddCircleOutlineIcon />
-              </IconButton>
-            </Tooltip>
-          ) : (
-            <Button variant="contained" onClick={() => {}} endIcon={<AddCircleOutlineIcon fontSize="large" sx={{ 
-              color: 'white', fontSize: 25 
-            }} />} sx={{
-              height: 40,
-              px: 1,
-              textTransform: 'none',
-              fontFamily: (t) => t.typography.h4.fontFamily,
-              fontSize: 25,
-              fontWeight: 800,
-              '& .MuiButton-endIcon svg': { fontSize: 30 },
-              color: (t) => t.palette.common.white,
-              bgcolor: '#F44336',
-              '&:hover': { bgcolor: '#FF0000' },
-              }} >
+            <Button
+              variant="contained"
+              disableElevation
+              onClick={() => {}}
+              endIcon={<AddCircleOutlineIcon sx={{ fontSize: { xs: 24, sm: 30 } }} />}
+              sx={{
+                flexShrink: 0,
+                height: { xs: 36, sm: 40 },
+                px: { xs: 1, sm: 1 },
+                textTransform: 'none',
+                fontFamily: (t) => t.typography.h4.fontFamily,
+                fontSize: { xs: 20, sm: 25 },
+                fontWeight: 800,
+                color: (t) => t.palette.common.white,
+                bgcolor: '#F44336',
+                '&:hover': { bgcolor: '#FF0000' },
+                '& .MuiButton-endIcon svg': { fontSize: 30 },
+              }}
+            >
               New Event
             </Button>
-          )}
             <Tooltip title="Click on a day to schedule an event">
               <HelpOutlineIcon fontSize="medium" sx={{ position: 'relative' }} />
             </Tooltip>
-            <Box marginLeft={1}>{unconfirmedDRSDropdown}</Box>
+            <Box sx={{ ml: 1, flexBasis: { xs: '100%', sm: 'auto' }, flexShrink: 0 }}>
+              {unconfirmedDRSDropdown}
+            </Box>
           </Stack>
         </Stack>
         <Box sx={{ display: 'flex', gap: 2 }}>
