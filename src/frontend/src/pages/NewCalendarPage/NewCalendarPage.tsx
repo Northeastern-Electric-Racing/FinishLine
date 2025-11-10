@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useState } from 'react';
-import { Box, Grid, Stack, Tooltip, Typography, useMediaQuery, useTheme, Button, IconButton } from '@mui/material';
+import { Box, Grid, Stack, Tooltip, Typography, useMediaQuery, useTheme, Button } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { DesignReview, DesignReviewStatus } from 'shared';
 import MonthSelector from '../CalendarPage/CalendarComponents/MonthSelector';
