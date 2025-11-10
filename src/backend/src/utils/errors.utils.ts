@@ -162,5 +162,8 @@ export type ExceptionObjectNames =
   | 'Reimbursement Product Other Reason'
   | 'Encryption Key'
   | 'Reimbursement Request Comment'
+  | 'Ruleset'
+  | 'Parent Rule'
+  | 'Referenced Rule'
   | 'Rule'
   | 'Project Rule';
