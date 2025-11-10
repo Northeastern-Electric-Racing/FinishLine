@@ -1,5 +1,5 @@
 import { Organization, Rule, User, Rule_Completion } from '@prisma/client';
-import { isAdmin, isLeadership, ProjectRule, RuleCompletion, RulesetType, notGuest } from 'shared';
+import { isAdmin, isLeadership, ProjectRule, RulesetType, notGuest } from 'shared';
 import { userHasPermission } from '../utils/users.utils';
 import prisma from '../prisma/prisma';
 import {
@@ -10,7 +10,6 @@ import {
   InvalidOrganizationException,
   NotFoundException
 } from '../utils/errors.utils';
-import { userHasPermission } from '../utils/users.utils';
 import { getRuleQueryArgs, getProjectRuleQueryArgs, getRulesetQueryArgs } from '../prisma-query-args/rules.query-args';
 import {
   ruleTransformer,
