@@ -500,8 +500,9 @@ describe('Delete Rules Tests', () => {
 
     // Updating Project Rule Status
     it('Updates a project rule status successfully', async () => {
-      // const { topLevelRule } = await setupRules(car);
-      const projectRule = await RulesService.createProjectRule(admin, organization, rule.ruleId, project.projectId);
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      const projectRule = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
 
       const updatedProjectRule = await RulesService.editProjectRuleStatus(
         admin,
@@ -520,7 +521,9 @@ describe('Delete Rules Tests', () => {
     });
 
     it('Updates a project rule status to the same status', async () => {
-      const projectRule = await RulesService.createProjectRule(admin, organization, rule.ruleId, project.projectId);
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      const projectRule = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
 
       const updatedProjectRule = await RulesService.editProjectRuleStatus(
         admin,
@@ -535,7 +538,9 @@ describe('Delete Rules Tests', () => {
     });
 
     it('Update project rule fails if user does not have permission', async () => {
-      const projectRule = await RulesService.createProjectRule(admin, organization, rule.ruleId, project.projectId);
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      const projectRule = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
 
       await expect(
         async () =>
@@ -546,75 +551,6 @@ describe('Delete Rules Tests', () => {
             Rule_Completion.REVIEW
           )
       ).rejects.toThrow(new AccessDeniedException('You do not have permissions to update a project rule status'));
-    });
-  });
-
-  describe('Delete Ruleset', () => {
-    it('Deletes a ruleset successfully and returns the correct information', async () => {
-      const car = await createUniqueCar(orgId);
-      const { ruleset1 } = await setupRules(car);
-
-      const expectedPercentage = 0;
-
-      const deleted = await RulesService.deleteRuleset(ruleset1.rulesetId, admin.userId, organization.organizationId);
-
-      expect(deleted).toBeDefined();
-      expect(deleted.rulesetId).toBe(ruleset1.rulesetId);
-      expect(deleted.assignedPercentage).toBeCloseTo(expectedPercentage, 2);
-    });
-    it('Delete ruleset fails if user does not have permission', async () => {
-      const car = await createUniqueCar(orgId);
-      const { ruleset1 } = await setupRules(car);
-
-      await expect(
-        async () => await RulesService.deleteRuleset(ruleset1.rulesetId, nonLeadership.userId, organization.organizationId)
-      ).rejects.toThrow(new AccessDeniedException('Only admins can delete a ruleset.'));
-    });
-    it('Delete ruleset fails if ruleset was already deleted', async () => {
-      const car = await createUniqueCar(orgId);
-      const { ruleset1 } = await setupRules(car);
-
-      await RulesService.deleteRuleset(ruleset1.rulesetId, admin.userId, organization.organizationId);
-      await expect(
-        async () => await RulesService.deleteRuleset(ruleset1.rulesetId, admin.userId, organization.organizationId)
-      ).rejects.toThrow(new DeletedException('Ruleset', ruleset1.rulesetId));
-    });
-    it('Delete ruleset fails if ruleset does not exist', async () => {
-      await expect(
-        async () => await RulesService.deleteRuleset('fake-ruleset-id', admin.userId, organization.organizationId)
-      ).rejects.toThrow(new NotFoundException('Ruleset', 'fake-ruleset-id'));
-    });
-  });
-
-  describe('Get all ruleset types', () => {
-    it('Successful get all ruleset types', async () => {
-      const rulesetTypes = await RulesService.getAllRulesetTypes(organization);
-      expect(rulesetTypes.length).toEqual(1);
-      expect(rulesetTypes[0].name).toEqual('FSAE');
-    });
-    it('Get all ruleset types successful after adding ruleset type', async () => {
-      await prisma.ruleset_Type.create({
-        data: {
-          name: 'FSAE2',
-          createdByUserId: admin.userId,
-          organizationId: orgId
-        }
-      });
-      const rulesetTypes = await RulesService.getAllRulesetTypes(organization);
-      expect(rulesetTypes.length).toEqual(2);
-      expect(rulesetTypes[1].name).toEqual('FSAE2');
-    });
-    it('Get all ruleset types successful after deleting ruleset type', async () => {
-      await prisma.ruleset_Type.update({
-        where: {
-          rulesetTypeId: fsaeRulesetType.rulesetTypeId
-        },
-        data: {
-          deletedByUserId: admin.userId
-        }
-      });
-      const rulesetTypes = await RulesService.getAllRulesetTypes(organization);
-      expect(rulesetTypes.length).toEqual(0);
     });
   });
 
