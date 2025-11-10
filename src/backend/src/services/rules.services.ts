@@ -309,7 +309,12 @@ export default class RulesService {
     }
 
     const projectRule = await prisma.project_Rule.create({
-      data: { ruleId, projectId, currentStatus: RuleCompletion.REVIEW },
+      data: {
+        ruleId,
+        projectId,
+        currentStatus: RuleCompletion.REVIEW,
+        createdByUserId: submitter.userId
+      },
       ...getProjectRuleQueryArgs()
     });
 
