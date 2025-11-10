@@ -264,7 +264,9 @@ model User {
   reimbursementRequestComments            Reimbursement_Request_Comment[]      @relation(name: "createdReimbursementRequestComments")
   deletedReimbursementRequestComments     Reimbursement_Request_Comment[]      @relation(name: "deletedReimbursementRequestComments")
   deletedSponsorTiers                     Sponsor_Tier[]
-  ruleStatusChanges                       Rule_Status_Change[]                 @relation(name: "ruleStatusUpdater")
+  createdRuleStatuses                     Rule_Status_Change[]                 @relation(name: "ruleStatusCreator")
+  updatedRuleStatuses                     Rule_Status_Change[]                 @relation(name: "ruleStatusUpdater")
+  deletedRuleStatuses                     Rule_Status_Change[]                 @relation(name: "ruleStatusDeletor")
   createdRulesetTypes                     Ruleset_Type[]                       @relation(name: "rulesetTypeCreator")
   deletedRulesetTypes                     Ruleset_Type[]                       @relation(name: "rulesetTypeDeleter")
   createdRulesets                         Ruleset[]                            @relation(name: "rulesetCreator")
@@ -272,6 +274,8 @@ model User {
   createdRules                            Rule[]                               @relation(name: "ruleCreator")
   updatedRules                            Rule[]                               @relation(name: "ruleUpdater")
   deletedRules                            Rule[]                               @relation(name: "ruleDeletor")
+  createdProjectRules                     Project_Rule[]                       @relation(name: "projectRuleCreator")
+  deletedProjectRules                     Project_Rule[]                       @relation(name: "projectRuleDeletor")
 }
 
 model Role {
@@ -1622,24 +1626,36 @@ model Rule {
 }
 
 model Rule_Status_Change {
-  historyId     String          @id @default(uuid())
-  projectRule   Project_Rule    @relation(name: "ruleStatusHistory", fields: [projectRuleId], references: [projectRuleId])
-  projectRuleId String
-  userUpdatedId String
-  userUpdated   User            @relation(name: "ruleStatusUpdater", fields: [userUpdatedId], references: [userId])
-  updatedAt     DateTime        @default(now())
-  newStatus     Rule_Completion
-  note          String
+  historyId       String          @id @default(uuid())
+  projectRule     Project_Rule    @relation(name: "ruleStatusHistory", fields: [projectRuleId], references: [projectRuleId])
+  projectRuleId   String
+  createdByUserId String
+  createdBy       User            @relation(name: "ruleStatusCreator", fields: [createdByUserId], references: [userId])
+  dateCreated     DateTime
+  userUpdatedId   String
+  userUpdated     User            @relation(name: "ruleStatusUpdater", fields: [userUpdatedId], references: [userId])
+  updatedAt       DateTime        @default(now())
+  deletedByUserId String?
+  deletedBy       User?           @relation(name: "ruleStatusDeletor", fields: [deletedByUserId], references: [userId])
+  dateDeleted     DateTime?
+  newStatus       Rule_Completion
+  note            String
 }
 
 model Project_Rule {
-  projectRuleId String               @id @default(uuid())
-  ruleId        String
-  rule          Rule                 @relation(name: "rulesInProject", fields: [ruleId], references: [ruleId])
-  projectId     String
-  project       Project              @relation(name: "projectsForRule", fields: [projectId], references: [projectId])
-  currentStatus Rule_Completion
-  statusHistory Rule_Status_Change[] @relation(name: "ruleStatusHistory")
+  projectRuleId   String               @id @default(uuid())
+  ruleId          String
+  rule            Rule                 @relation(name: "rulesInProject", fields: [ruleId], references: [ruleId])
+  projectId       String
+  project         Project              @relation(name: "projectsForRule", fields: [projectId], references: [projectId])
+  currentStatus   Rule_Completion
+  statusHistory   Rule_Status_Change[] @relation(name: "ruleStatusHistory")
+  dateCreated     DateTime             @default(now())
+  dateDeleted     DateTime?
+  createdByUserId String
+  createdBy       User                 @relation(name: "projectRuleCreator", fields: [createdByUserId], references: [userId])
+  deletedByUserId String?
+  deletedBy       User?                @relation(name: "projectRuleDeletor", fields: [deletedByUserId], references: [userId])
 
   @@unique([ruleId, projectId])
 }

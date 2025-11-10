@@ -51,8 +51,12 @@ CREATE TABLE "Rule" (
 CREATE TABLE "Rule_Status_Change" (
     "historyId" TEXT NOT NULL,
     "projectRuleId" TEXT NOT NULL,
+    "createdByUserId" TEXT NOT NULL,
+    "dateCreated" TIMESTAMP(3) NOT NULL,
     "userUpdatedId" TEXT NOT NULL,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "deletedByUserId" TEXT,
+    "dateDeleted" TIMESTAMP(3),
     "newStatus" "Rule_Completion" NOT NULL,
     "note" TEXT NOT NULL,
 
@@ -65,6 +69,10 @@ CREATE TABLE "Project_Rule" (
     "ruleId" TEXT NOT NULL,
     "projectId" TEXT NOT NULL,
     "currentStatus" "Rule_Completion" NOT NULL,
+    "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "dateDeleted" TIMESTAMP(3),
+    "createdByUserId" TEXT NOT NULL,
+    "deletedByUserId" TEXT,
 
     CONSTRAINT "Project_Rule_pkey" PRIMARY KEY ("projectRuleId")
 );
@@ -143,13 +151,25 @@ ALTER TABLE "Rule" ADD CONSTRAINT "Rule_deletedByUserId_fkey" FOREIGN KEY ("dele
 ALTER TABLE "Rule_Status_Change" ADD CONSTRAINT "Rule_Status_Change_projectRuleId_fkey" FOREIGN KEY ("projectRuleId") REFERENCES "Project_Rule"("projectRuleId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Rule_Status_Change" ADD CONSTRAINT "Rule_Status_Change_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Rule_Status_Change" ADD CONSTRAINT "Rule_Status_Change_userUpdatedId_fkey" FOREIGN KEY ("userUpdatedId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Rule_Status_Change" ADD CONSTRAINT "Rule_Status_Change_deletedByUserId_fkey" FOREIGN KEY ("deletedByUserId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Project_Rule" ADD CONSTRAINT "Project_Rule_ruleId_fkey" FOREIGN KEY ("ruleId") REFERENCES "Rule"("ruleId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Project_Rule" ADD CONSTRAINT "Project_Rule_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("projectId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Project_Rule" ADD CONSTRAINT "Project_Rule_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Project_Rule" ADD CONSTRAINT "Project_Rule_deletedByUserId_fkey" FOREIGN KEY ("deletedByUserId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_ruleReferences" ADD CONSTRAINT "_ruleReferences_A_fkey" FOREIGN KEY ("A") REFERENCES "Rule"("ruleId") ON DELETE CASCADE ON UPDATE CASCADE;
