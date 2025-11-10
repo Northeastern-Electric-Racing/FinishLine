@@ -1055,6 +1055,8 @@ model Event {
   eventTypeId      String
   eventType        EventType      @relation(fields: [eventTypeId], references: [eventTypeId])
   approved         Boolean        @default(false)
+  // when approval is false, approved by holds who needs to approve the event
+  // when approval is true, approved by holds who actually approved the event
   approvedByUserId String?
   approvedBy       User?          @relation(fields: [approvedByUserId], references: [userId], name: "eventApprover")
   scheduledTimes   ScheduleSlot[]
@@ -1117,6 +1119,7 @@ model EventType {
   documents                        Boolean
   description                      Boolean
   onlyHeadsOrAboveForEventCreation Boolean
+  requiresConfirmation             Boolean
   events                           Event[]
   organizationId                   String
   organization                     Organization @relation(fields: [organizationId], references: [organizationId])

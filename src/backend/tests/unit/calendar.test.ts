@@ -1,4 +1,4 @@
-import { Calendar, Organization, User } from '@prisma/client';
+import { Calendar, Event_Status, Organization, User } from '@prisma/client';
 import CalendarService from '../../src/services/calendar.services';
 import {
   AccessDeniedAdminOnlyException,
@@ -10,7 +10,7 @@ import {
 import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, theVisitorGuest, alfred } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
-import { DayOfWeek, EventType, Machinery, ScheduleSlot, ScheduleSlotCreateArgs, Shop, Event } from 'shared';
+import { DayOfWeek, EventType, Machinery, ScheduleSlotCreateArgs, Shop, Event } from 'shared';
 
 describe('Calendar Tests', () => {
   let orgId: string;
@@ -59,21 +59,22 @@ describe('Calendar Tests', () => {
       'Team Meeting',
       [calendar.calendarId],
       organization,
-      false,
+      true,
       false,
       true,
       true,
       true,
+      true,
+      true,
+      true,
+      true,
+      true,
       false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false
+      true,
+      true,
+      true,
+      true,
+      true
     );
   });
 
@@ -257,6 +258,7 @@ describe('Calendar Tests', () => {
             true,
             false,
             true,
+            false,
             false
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create event type'));
@@ -282,6 +284,7 @@ describe('Calendar Tests', () => {
         false,
         false,
         true,
+        false,
         false
       );
 
@@ -628,7 +631,8 @@ describe('Calendar Tests', () => {
         false,
         false,
         true,
-        true
+        true,
+        false
       );
     });
 
@@ -641,6 +645,7 @@ describe('Calendar Tests', () => {
           [calendar.calendarId],
           organization,
           'Initial Event Type',
+          false,
           false,
           false,
           false,
@@ -669,6 +674,7 @@ describe('Calendar Tests', () => {
           [invalidCalendarId],
           organization,
           'Initial Event Type 2',
+          true,
           true,
           true,
           true,
@@ -729,6 +735,7 @@ describe('Calendar Tests', () => {
           false,
           false,
           false,
+          false,
           false
         )
       ).rejects.toThrow(new InvalidOrganizationException('Calendar'));
@@ -757,7 +764,8 @@ describe('Calendar Tests', () => {
           false,
           false,
           false,
-          true
+          true,
+          false
         )
       ).rejects.toThrow(new NotFoundException('Event Type', nonExistentId));
     });
@@ -782,6 +790,7 @@ describe('Calendar Tests', () => {
         true,
         false,
         true,
+        false,
         false,
         false
       );
@@ -892,7 +901,7 @@ describe('Calendar Tests', () => {
       expect(result.documentIds).toHaveLength(1);
       expect(result.scheduledTimes).toHaveLength(1);
       expect(result.scheduledTimes[0].days).toEqual([DayOfWeek.MONDAY, DayOfWeek.TUESDAY]);
-      expect(result.approved).toBe(false);
+      expect(result.approved).toBe(true);
       expect(result.approvedBy).toBe(undefined);
       expect(result.questionDocument).toBe('https://example.com/questions.pdf');
       expect(result.location).toBe('Conference Room A');
@@ -961,44 +970,66 @@ describe('Calendar Tests', () => {
     });
 
     it('succeeds with minimal inputs', async () => {
-      const scheduleSlots = [] as ScheduleSlot[];
+      const scheduleSlots = [
+        {
+          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
+          startTime: new Date('2025-10-13T09:00:00Z'),
+          endTime: new Date('2025-10-13T10:00:00Z'),
+          recurrenceNumber: 1,
+          initialDateScheduled: new Date('2025-10-13'),
+          allDay: false
+        }
+      ];
 
       const result = await CalendarService.createEvent(
         adminUser,
         'Minimal Event',
         eventType.eventTypeId,
         organization,
-        [adminUser.userId],
         [member.userId],
+        [adminUser.userId],
         [],
+        [shop.shopId],
+        [machinery.machineryId],
         [],
-        [],
-        [],
-        [],
-        scheduleSlots
+        [document],
+        scheduleSlots,
+        'https://example.com/questions.pdf',
+        'Conference Room A',
+        'https://zoom.us/j/123456789',
+        'Weekly team synchronization meeting'
       );
 
       expect(result.title).toBe('Minimal Event');
       expect(result.eventTypeId).toBe(eventType.eventTypeId);
       expect(result.requiredMembers).toHaveLength(1);
-      expect(result.requiredMembers[0].userId).toBe(adminUser.userId);
+      expect(result.requiredMembers[0].userId).toBe(member.userId);
       expect(result.optionalMembers).toHaveLength(1);
-      expect(result.optionalMembers[0].userId).toBe(member.userId);
-      expect(result.shops).toHaveLength(0);
-      expect(result.machinery).toHaveLength(0);
+      expect(result.optionalMembers[0].userId).toBe(adminUser.userId);
+      expect(result.shops).toHaveLength(1);
+      expect(result.machinery).toHaveLength(1);
       expect(result.workPackages).toHaveLength(0);
-      expect(result.documentIds).toHaveLength(0);
-      expect(result.scheduledTimes).toHaveLength(0);
-      expect(result.approved).toBe(false);
+      expect(result.documentIds).toHaveLength(1);
+      expect(result.scheduledTimes).toHaveLength(1);
+      expect(result.approved).toBe(true);
       expect(result.approvedBy).toBeUndefined();
-      expect(result.questionDocument).toBeUndefined();
-      expect(result.location).toBeUndefined();
-      expect(result.zoomLink).toBeUndefined();
-      expect(result.description).toBeUndefined();
+      expect(result.questionDocument).toBe('https://example.com/questions.pdf');
+      expect(result.location).toBe('Conference Room A');
+      expect(result.zoomLink).toBe('https://zoom.us/j/123456789');
+      expect(result.description).toBe('Weekly team synchronization meeting');
     });
 
     it('fails if memberIds are invalid', async () => {
-      const scheduleSlots = [] as ScheduleSlot[];
+      const scheduleSlots = [
+        {
+          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
+          startTime: new Date('2025-10-13T09:00:00Z'),
+          endTime: new Date('2025-10-13T10:00:00Z'),
+          recurrenceNumber: 1,
+          initialDateScheduled: new Date('2025-10-13'),
+          allDay: false
+        }
+      ];
 
       await expect(
         CalendarService.createEvent(
@@ -1009,17 +1040,30 @@ describe('Calendar Tests', () => {
           ['non-existent-user-id'],
           [adminUser.userId],
           [],
+          [shop.shopId],
+          [machinery.machineryId],
           [],
-          [],
-          [],
-          [],
-          scheduleSlots
+          [document],
+          scheduleSlots,
+          'https://example.com/questions.pdf',
+          'Conference Room A',
+          'https://zoom.us/j/123456789',
+          'Invalid'
         )
       ).rejects.toThrow(new NotFoundException('User', 'non-existent-user-id'));
     });
 
     it('fails if memberIds belong to a different organization', async () => {
-      const scheduleSlots = [] as ScheduleSlot[];
+      const scheduleSlots = [
+        {
+          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
+          startTime: new Date('2025-10-13T09:00:00Z'),
+          endTime: new Date('2025-10-13T10:00:00Z'),
+          recurrenceNumber: 1,
+          initialDateScheduled: new Date('2025-10-13'),
+          allDay: false
+        }
+      ];
 
       await expect(
         CalendarService.createEvent(
@@ -1030,17 +1074,30 @@ describe('Calendar Tests', () => {
           [otherOrgUser.userId],
           [adminUser.userId],
           [],
+          [shop.shopId],
+          [machinery.machineryId],
           [],
-          [],
-          [],
-          [],
-          scheduleSlots
+          [document],
+          scheduleSlots,
+          'https://example.com/questions.pdf',
+          'Conference Room A',
+          'https://zoom.us/j/123456789',
+          'Invalid'
         )
       ).rejects.toThrow(new NotFoundException('User', otherOrgUser.userId));
     });
 
-    it('fails if shopIds are invalid', async () => {
-      const scheduleSlots = [] as ScheduleSlot[];
+    it('fails if shopIds are inputted', async () => {
+      const scheduleSlots = [
+        {
+          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
+          startTime: new Date('2025-10-13T09:00:00Z'),
+          endTime: new Date('2025-10-13T10:00:00Z'),
+          recurrenceNumber: 1,
+          initialDateScheduled: new Date('2025-10-13'),
+          allDay: false
+        }
+      ];
 
       await expect(
         CalendarService.createEvent(
@@ -1052,16 +1109,29 @@ describe('Calendar Tests', () => {
           [member.userId],
           [],
           ['non-existent-shop-id'],
+          [machinery.machineryId],
           [],
-          [],
-          [],
-          scheduleSlots
+          [document],
+          scheduleSlots,
+          'https://example.com/questions.pdf',
+          'Conference Room A',
+          'https://zoom.us/j/123456789',
+          'Invalid'
         )
       ).rejects.toThrow(new NotFoundException('Shop', 'non-existent-shop-id'));
     });
 
     it('fails if shopIds belong to a different organization', async () => {
-      const scheduleSlots = [] as ScheduleSlot[];
+      const scheduleSlots = [
+        {
+          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
+          startTime: new Date('2025-10-13T09:00:00Z'),
+          endTime: new Date('2025-10-13T10:00:00Z'),
+          recurrenceNumber: 1,
+          initialDateScheduled: new Date('2025-10-13'),
+          allDay: false
+        }
+      ];
 
       await expect(
         CalendarService.createEvent(
@@ -1073,37 +1143,29 @@ describe('Calendar Tests', () => {
           [member.userId],
           [],
           [otherOrgShop.shopId],
+          [machinery.machineryId],
           [],
-          [],
-          [],
-          scheduleSlots
+          [document],
+          scheduleSlots,
+          'https://example.com/questions.pdf',
+          'Conference Room A',
+          'https://zoom.us/j/123456789',
+          'Invalid'
         )
       ).rejects.toThrow(new NotFoundException('Shop', otherOrgShop.shopId));
     });
 
-    it('fails if machineryIds are invalid', async () => {
-      const scheduleSlots = [] as ScheduleSlot[];
-
-      await expect(
-        CalendarService.createEvent(
-          adminUser,
-          'Invalid Machinery',
-          eventType.eventTypeId,
-          organization,
-          [adminUser.userId],
-          [member.userId],
-          [],
-          [],
-          ['non-existent-machinery-id'],
-          [],
-          [],
-          scheduleSlots
-        )
-      ).rejects.toThrow(new NotFoundException('Machinery', 'non-existent-machinery-id'));
-    });
-
     it('fails if machineryIds belong to a different organization', async () => {
-      const scheduleSlots = [] as ScheduleSlot[];
+      const scheduleSlots = [
+        {
+          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
+          startTime: new Date('2025-10-13T09:00:00Z'),
+          endTime: new Date('2025-10-13T10:00:00Z'),
+          recurrenceNumber: 1,
+          initialDateScheduled: new Date('2025-10-13'),
+          allDay: false
+        }
+      ];
 
       await expect(
         CalendarService.createEvent(
@@ -1114,34 +1176,17 @@ describe('Calendar Tests', () => {
           [adminUser.userId],
           [member.userId],
           [],
-          [],
+          [shop.shopId],
           [otherOrgMachinery.machineryId],
           [],
-          [],
-          scheduleSlots
+          [document],
+          scheduleSlots,
+          'https://example.com/questions.pdf',
+          'Conference Room A',
+          'https://zoom.us/j/123456789',
+          'Invalid'
         )
       ).rejects.toThrow(new NotFoundException('Machinery', otherOrgMachinery.machineryId));
-    });
-
-    it('fails if workPackageIds are invalid', async () => {
-      const scheduleSlots = [] as ScheduleSlot[];
-
-      await expect(
-        CalendarService.createEvent(
-          adminUser,
-          'Invalid Work Packages',
-          eventType.eventTypeId,
-          organization,
-          [adminUser.userId],
-          [member.userId],
-          [],
-          [],
-          [],
-          ['non-existent-work-package-id'],
-          [],
-          scheduleSlots
-        )
-      ).rejects.toThrow(new NotFoundException('Work Package', 'non-existent-work-package-id'));
     });
 
     it('fails if shopIds are deleted', async () => {
@@ -1151,7 +1196,16 @@ describe('Calendar Tests', () => {
         data: { dateDeleted: new Date() }
       });
 
-      const scheduleSlots = [] as ScheduleSlot[];
+      const scheduleSlots = [
+        {
+          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
+          startTime: new Date('2025-10-13T09:00:00Z'),
+          endTime: new Date('2025-10-13T10:00:00Z'),
+          recurrenceNumber: 1,
+          initialDateScheduled: new Date('2025-10-13'),
+          allDay: false
+        }
+      ];
 
       await expect(
         CalendarService.createEvent(
@@ -1163,10 +1217,14 @@ describe('Calendar Tests', () => {
           [member.userId],
           [],
           [deletedShop.shopId],
+          [machinery.machineryId],
           [],
-          [],
-          [],
-          scheduleSlots
+          [document],
+          scheduleSlots,
+          'https://example.com/questions.pdf',
+          'Conference Room A',
+          'https://zoom.us/j/123456789',
+          'Invalid'
         )
       ).rejects.toThrow(new NotFoundException('Shop', deletedShop.shopId));
     });
@@ -1185,7 +1243,16 @@ describe('Calendar Tests', () => {
         data: { dateDeleted: new Date() }
       });
 
-      const scheduleSlots = [] as ScheduleSlot[];
+      const scheduleSlots = [
+        {
+          days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
+          startTime: new Date('2025-10-13T09:00:00Z'),
+          endTime: new Date('2025-10-13T10:00:00Z'),
+          recurrenceNumber: 1,
+          initialDateScheduled: new Date('2025-10-13'),
+          allDay: false
+        }
+      ];
 
       await expect(
         CalendarService.createEvent(
@@ -1196,11 +1263,15 @@ describe('Calendar Tests', () => {
           [adminUser.userId],
           [member.userId],
           [],
-          [],
+          [shop.shopId],
           [deletedMachinery.machineryId],
           [],
-          [],
-          scheduleSlots
+          [document],
+          scheduleSlots,
+          'https://example.com/questions.pdf',
+          'Conference Room A',
+          'https://zoom.us/j/123456789',
+          'Invalid'
         )
       ).rejects.toThrow(new NotFoundException('Machinery', deletedMachinery.machineryId));
     });
@@ -1251,9 +1322,9 @@ describe('Calendar Tests', () => {
         [adminUser.userId],
         [],
         [shop.shopId],
+        [machinery.machineryId],
         [],
-        [],
-        [],
+        [document],
         scheduleSlots,
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1312,9 +1383,9 @@ describe('Calendar Tests', () => {
         [adminUser.userId],
         [],
         [shop.shopId],
+        [machinery.machineryId],
         [],
-        [],
-        [],
+        [document],
         scheduleSlots,
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1343,9 +1414,9 @@ describe('Calendar Tests', () => {
         [adminUser.userId],
         [],
         [shop.shopId],
+        [machinery.machineryId],
         [],
-        [],
-        [],
+        [document],
         scheduleSlots2,
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1405,9 +1476,9 @@ describe('Calendar Tests', () => {
         [member2.userId],
         [],
         [shop.shopId],
+        [machinery.machineryId],
         [],
-        [],
-        [],
+        [document],
         scheduleSlots,
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1436,9 +1507,9 @@ describe('Calendar Tests', () => {
         [member2.userId],
         [],
         [shop.shopId],
+        [machinery.machineryId],
         [],
-        [],
-        [],
+        [document],
         scheduleSlots2,
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1621,8 +1692,12 @@ describe('Calendar Tests', () => {
         [shop.shopId],
         [machinery.machineryId],
         [],
-        ['doc1'],
-        scheduleSlots
+        ['document'],
+        scheduleSlots,
+        'https://example.com/questions.pdf',
+        'Conference Room A',
+        'https://zoom.us/j/123456789',
+        'Weekly team synchronization meeting'
       );
     });
 
@@ -1635,6 +1710,7 @@ describe('Calendar Tests', () => {
           organization,
           [adminUser.userId],
           [member.userId],
+          Event_Status.UNCONFIRMED,
           [],
           [],
           [],
@@ -1659,6 +1735,7 @@ describe('Calendar Tests', () => {
           organization,
           [adminUser.userId],
           [member.userId],
+          Event_Status.UNCONFIRMED,
           [],
           [],
           [],
@@ -1678,12 +1755,17 @@ describe('Calendar Tests', () => {
           organization,
           ['non-existent-user-id'],
           [adminUser.userId],
+          Event_Status.UNCONFIRMED,
           [],
+          [shop.shopId],
+          [machinery.machineryId],
           [],
-          [],
-          [],
-          [],
-          scheduleSlots
+          ['document'],
+          scheduleSlots,
+          'https://example.com/questions.pdf',
+          'Conference Room A',
+          'https://zoom.us/j/123456789',
+          'Weekly team synchronization meeting'
         )
       ).rejects.toThrow(new NotFoundException('User', 'non-existent-user-id'));
     });
@@ -1697,12 +1779,17 @@ describe('Calendar Tests', () => {
           organization,
           [adminUser.userId],
           [member.userId],
+          Event_Status.UNCONFIRMED,
           [],
           ['non-existent-shop-id'],
+          [machinery.machineryId],
           [],
-          [],
-          [],
-          scheduleSlots
+          ['document'],
+          scheduleSlots,
+          'https://example.com/questions.pdf',
+          'Conference Room A',
+          'https://zoom.us/j/123456789',
+          'Weekly team synchronization meeting'
         )
       ).rejects.toThrow(new NotFoundException('Shop', 'non-existent-shop-id'));
     });
@@ -1722,12 +1809,17 @@ describe('Calendar Tests', () => {
           organization,
           [adminUser.userId],
           [member.userId],
+          Event_Status.UNCONFIRMED,
           [],
           [deletedShop.shopId],
+          [machinery.machineryId],
           [],
-          [],
-          [],
-          scheduleSlots
+          ['document'],
+          scheduleSlots,
+          'https://example.com/questions.pdf',
+          'Conference Room A',
+          'https://zoom.us/j/123456789',
+          'Weekly team synchronization meeting'
         )
       ).rejects.toThrow(new NotFoundException('Shop', deletedShop.shopId));
     });
@@ -1741,12 +1833,17 @@ describe('Calendar Tests', () => {
           organization,
           [adminUser.userId],
           [member.userId],
+          Event_Status.UNCONFIRMED,
           [],
-          [],
+          [shop.shopId],
           ['non-existent-machinery-id'],
           [],
-          [],
-          scheduleSlots
+          ['document'],
+          scheduleSlots,
+          'https://example.com/questions.pdf',
+          'Conference Room A',
+          'https://zoom.us/j/123456789',
+          'Weekly team synchronization meeting'
         )
       ).rejects.toThrow(new NotFoundException('Machinery', 'non-existent-machinery-id'));
     });
@@ -1772,33 +1869,19 @@ describe('Calendar Tests', () => {
           organization,
           [adminUser.userId],
           [member.userId],
+          Event_Status.UNCONFIRMED,
           [],
-          [],
+          [shop.shopId],
           [deletedMachinery.machineryId],
           [],
-          [],
-          scheduleSlots
+          ['document'],
+          scheduleSlots,
+          'https://example.com/questions.pdf',
+          'Conference Room A',
+          'https://zoom.us/j/123456789',
+          'Weekly team synchronization meeting'
         )
       ).rejects.toThrow(new NotFoundException('Machinery', deletedMachinery.machineryId));
-    });
-
-    it('fails if workPackageIds are invalid', async () => {
-      await expect(
-        CalendarService.editEvent(
-          adminUser,
-          event.eventId,
-          'Updated Title',
-          organization,
-          [adminUser.userId],
-          [member.userId],
-          [],
-          [],
-          [],
-          ['non-existent-wp-id'],
-          [],
-          scheduleSlots
-        )
-      ).rejects.toThrow(new NotFoundException('Work Package', 'non-existent-wp-id'));
     });
 
     it('succeeds for admin and updates event', async () => {
@@ -1821,9 +1904,10 @@ describe('Calendar Tests', () => {
         organization,
         [newMember.userId],
         [adminUser.userId],
+        Event_Status.UNCONFIRMED,
         [],
-        [],
-        [],
+        [shop.shopId],
+        [machinery.machineryId],
         [],
         ['doc2', 'doc3'],
         newScheduleSlots,
@@ -1840,41 +1924,12 @@ describe('Calendar Tests', () => {
       expect(result.optionalMembers).toHaveLength(1);
       expect(result.optionalMembers[0].userId).toBe(adminUser.userId);
       expect(result.documentIds).toEqual(['doc2', 'doc3']);
-      expect(result.approved).toBe(false);
+      expect(result.approved).toBe(true);
       expect(result.approvedBy).toBe(undefined);
       expect(result.questionDocument).toBe('https://updated.com/questions.pdf');
       expect(result.location).toBe('Updated Location');
       expect(result.zoomLink).toBe('https://zoom.us/updated');
       expect(result.description).toBe('Updated description');
-    });
-
-    it('succeeds and updates with minimal fields', async () => {
-      const result = await CalendarService.editEvent(
-        adminUser,
-        event.eventId,
-        'Minimal Update',
-        organization,
-        [adminUser.userId],
-        [member.userId],
-        [],
-        [],
-        [],
-        [],
-        [],
-        []
-      );
-
-      expect(result.eventId).toBe(event.eventId);
-      expect(result.title).toBe('Minimal Update');
-      expect(result.requiredMembers).toHaveLength(1);
-      expect(result.requiredMembers[0].userId).toBe(adminUser.userId);
-      expect(result.optionalMembers).toHaveLength(1);
-      expect(result.optionalMembers[0].userId).toBe(member.userId);
-      expect(result.shops).toHaveLength(0);
-      expect(result.machinery).toHaveLength(0);
-      expect(result.workPackages).toHaveLength(0);
-      expect(result.documentIds).toHaveLength(0);
-      expect(result.approved).toBe(false);
     });
   });
 
@@ -1903,11 +1958,15 @@ describe('Calendar Tests', () => {
         [adminUser.userId],
         [member.userId],
         [],
+        [shop.shopId],
+        [machinery.machineryId],
         [],
-        [],
-        [],
-        [],
-        scheduleSlots
+        ['doc2', 'doc3'],
+        scheduleSlots,
+        'https://updated.com/questions.pdf',
+        'Updated Location',
+        'https://zoom.us/updated',
+        'Updated description'
       );
     });
 
@@ -1971,7 +2030,8 @@ describe('Calendar Tests', () => {
         false,
         false,
         false,
-        true
+        true,
+        false
       );
     });
 
@@ -2029,7 +2089,8 @@ describe('Calendar Tests', () => {
         false,
         false,
         false,
-        true
+        true,
+        false
       );
 
       await expect(CalendarService.deleteEventType(adminUser, otherOrgEventType.eventTypeId, organization)).rejects.toThrow(

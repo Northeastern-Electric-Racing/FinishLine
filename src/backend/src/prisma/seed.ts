@@ -3199,13 +3199,14 @@ const performSeed: () => Promise<void> = async () => {
     false,
     true,
     true,
-    false,
-    false,
-    false,
-    true,
     true,
     false,
-    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
     false
   );
 
@@ -3222,18 +3223,19 @@ const performSeed: () => Promise<void> = async () => {
     true,
     false,
     true,
-    false,
-    false,
+    true,
     false,
     false,
     true,
     true,
+    true,
+    false,
     true,
     true
   );
 
   // manufacturing event type
-  await CalendarService.createEventType(
+  const manufacturingEventType = await CalendarService.createEventType(
     thomasEmrax,
     'Manufacturing',
     [],
@@ -3249,6 +3251,7 @@ const performSeed: () => Promise<void> = async () => {
     true,
     true,
     true,
+    true,
     false,
     false,
     true,
@@ -3256,7 +3259,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   // bay time event type
-  await CalendarService.createEventType(
+  const bayTimeEventType = await CalendarService.createEventType(
     thomasEmrax,
     'Bay Time',
     [],
@@ -3269,16 +3272,44 @@ const performSeed: () => Promise<void> = async () => {
     false,
     false,
     false,
-    true,
     false,
     true,
     false,
     false,
-    true,
-    true
+    false,
+    false,
+    false,
+    false
   );
 
-  // Add these event creations after the event type creations in the seed script
+  await CalendarService.createEvent(
+    thomasEmrax,
+    'Weekly Team Sync',
+    meetingEventType.eventTypeId,
+    ner,
+    [],
+    [],
+    [justiceLeague.teamId],
+    [],
+    [],
+    [],
+    [],
+    [
+      {
+        days: [DayOfWeek.MONDAY],
+        startTime: new Date('2025-10-21T10:00:00.000Z'),
+        endTime: new Date('2025-10-21T11:00:00.000Z'),
+        recurrenceNumber: 1,
+        initialDateScheduled: new Date('2025-10-21T00:00:00.000Z'),
+        allDay: false
+      }
+    ],
+    undefined,
+    'Conference Room A',
+    'https://zoom.us/j/123456789',
+    undefined
+  );
+
   await CalendarService.createEvent(
     thomasEmrax,
     'Impact Attenuator Design Review',
@@ -3287,107 +3318,80 @@ const performSeed: () => Promise<void> = async () => {
     [joeShmoe.userId, joeBlow.userId],
     [batman.userId],
     [],
-    [advancedShop.shopId],
-    [printer.machineryId, hammer.machineryId],
+    [],
+    [],
     [workPackage1.id],
-    ['https://docs.google.com/document/d/1_example'],
+    ['doc1', 'doc2'],
     [
       {
-        days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
-        startTime: new Date(),
+        days: [DayOfWeek.TUESDAY],
+        startTime: new Date('2025-10-22T14:00:00.000Z'),
+        endTime: new Date('2025-10-22T16:00:00.000Z'),
         recurrenceNumber: 1,
-        initialDateScheduled: new Date('2025-10-20T00:00:00.000Z'),
+        initialDateScheduled: new Date('2025-10-22T00:00:00.000Z'),
         allDay: false
       }
     ],
-    'https://docs.google.com/document/d/1_example',
-    'Conference Room A',
-    'https://zoom.us/j/123456789',
-    'Review design specifications for the impact attenuator'
+    'https://docs.google.com/document/d/2_example',
+    'Conference Room B',
+    'https://zoom.us/j/987654321',
+    undefined
   );
 
   await CalendarService.createEvent(
     batman,
-    'Wiring Harness Installation Planning',
-    designReviewEventType.eventTypeId,
+    'Wiring Harness Manufacturing',
+    manufacturingEventType.eventTypeId,
     ner,
     [regina.userId, janis.userId],
     [cady.userId],
     [],
     [electronicsLab.shopId],
     [printer.machineryId],
-    [workPackage3.id, workPackage4.id],
-    ['https://docs.google.com/document/d/1_example'],
+    [workPackage3.id],
+    [],
     [
       {
         days: [DayOfWeek.WEDNESDAY],
-        startTime: new Date('2025-10-22T14:00:00.000Z'),
-        endTime: new Date('2025-10-22T15:30:00.000Z'),
-        recurrenceNumber: 2,
-        initialDateScheduled: new Date('2025-10-22T00:00:00.000Z'),
+        startTime: new Date('2025-10-23T09:00:00.000Z'),
+        endTime: new Date('2025-10-23T12:00:00.000Z'),
+        recurrenceNumber: 1,
+        initialDateScheduled: new Date('2025-10-23T00:00:00.000Z'),
         allDay: false
       }
     ],
-    'https://docs.google.com/document/d/2_example',
-    'Electronics Lab',
-    'https://zoom.us/j/987654321',
-    'Plan the installation process for the wiring harness'
+    'https://docs.google.com/document/d/3_example',
+    undefined,
+    undefined,
+    undefined
   );
 
   await CalendarService.createEvent(
     aang,
-    'Appa Plush Design Brainstorm',
-    meetingEventType.eventTypeId,
+    'Composite Layup Bay Time',
+    bayTimeEventType.eventTypeId,
     ner,
     [katara.userId, sokka.userId],
-    [toph.userId],
-    [justiceLeague.teamId],
     [],
     [],
-    [workPackage5.id],
+    [],
+    [ironMachine.machineryId],
+    [],
     [],
     [
       {
-        days: [DayOfWeek.FRIDAY],
-        startTime: new Date('2025-10-24T10:00:00.000Z'),
-        endTime: new Date('2025-10-24T11:00:00.000Z'),
+        days: [DayOfWeek.THURSDAY],
+        startTime: new Date('2025-10-24T13:00:00.000Z'),
+        endTime: new Date('2025-10-24T17:00:00.000Z'),
         recurrenceNumber: 1,
         initialDateScheduled: new Date('2025-10-24T00:00:00.000Z'),
         allDay: false
       }
     ],
-    'https://docs.google.com/document/d/3_example',
-    'Design Studio',
-    'https://zoom.us/j/456789123',
-    'Brainstorm design ideas for Appa plush prototypes'
-  );
-
-  await CalendarService.createEvent(
-    lexLuther,
-    'Laser Cannon Prototype Review',
-    meetingEventType.eventTypeId,
-    ner,
-    [zatanna.userId, superman.userId],
-    [wonderwoman.userId],
-    [orioles.teamId],
-    [testingFacility.shopId],
-    [ironMachine.machineryId, hammer.machineryId],
-    [project3WP1.id],
-    [],
-    [
-      {
-        days: [DayOfWeek.MONDAY],
-        startTime: new Date('2025-10-27T13:00:00.000Z'),
-        endTime: new Date('2025-10-27T14:30:00.000Z'),
-        recurrenceNumber: 1,
-        initialDateScheduled: new Date('2025-10-27T00:00:00.000Z'),
-        allDay: false
-      }
-    ],
-    'https://docs.google.com/document/d/4_example',
-    'Testing Facility',
-    'https://zoom.us/j/789123456',
-    'Review progress and test results for laser cannon prototype'
+    undefined,
+    undefined,
+    undefined,
+    undefined
   );
 };
 

@@ -22,7 +22,8 @@ export default class CalendarController {
         questionDocument,
         documents,
         description,
-        onlyHeadsOrAbove
+        onlyHeadsOrAbove,
+        requiresConfirmation
       } = req.body;
 
       const eventType = await CalendarService.createEventType(
@@ -44,7 +45,8 @@ export default class CalendarController {
         questionDocument,
         documents,
         description,
-        onlyHeadsOrAbove
+        onlyHeadsOrAbove,
+        requiresConfirmation
       );
       res.status(200).json(eventType);
     } catch (error: unknown) {
@@ -193,7 +195,8 @@ export default class CalendarController {
         questionDocument,
         documents,
         description,
-        onlyHeadsOrAbove
+        onlyHeadsOrAbove,
+        requiresConfirmation
       } = req.body;
 
       const eventType = await CalendarService.editEventType(
@@ -216,7 +219,8 @@ export default class CalendarController {
         questionDocument,
         documents,
         description,
-        onlyHeadsOrAbove
+        onlyHeadsOrAbove,
+        requiresConfirmation
       );
       res.status(200).json(eventType);
     } catch (error: unknown) {
@@ -298,6 +302,7 @@ export default class CalendarController {
         requiredMemberIds,
         optionalMemberIds,
         teamIds,
+        status,
         shopIds,
         machineryIds,
         workPackageIds,
@@ -315,6 +320,7 @@ export default class CalendarController {
         req.organization,
         requiredMemberIds,
         optionalMemberIds,
+        status,
         teamIds,
         shopIds,
         machineryIds,

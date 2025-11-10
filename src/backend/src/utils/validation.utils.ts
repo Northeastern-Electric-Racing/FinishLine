@@ -153,7 +153,7 @@ export const isMaterialStatus = (validationObject: ValidationChain): ValidationC
     ]);
 };
 
-export const isDesignReviewStatus = (validationObject: ValidationChain): ValidationChain => {
+export const isEventStatus = (validationObject: ValidationChain): ValidationChain => {
   return validationObject
     .isString()
     .isIn([Event_Status.CONFIRMED, Event_Status.DONE, Event_Status.SCHEDULED, Event_Status.UNCONFIRMED]);

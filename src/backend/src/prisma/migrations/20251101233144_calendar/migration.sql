@@ -111,6 +111,7 @@ CREATE TABLE "public"."EventType" (
     "documents" BOOLEAN NOT NULL DEFAULT FALSE, 
     "description" BOOLEAN NOT NULL DEFAULT FALSE,
     "onlyHeadsOrAboveForEventCreation" BOOLEAN NOT NULL DEFAULT FALSE,
+    "requiresConfirmation" BOOLEAN NOT NULL DEFAULT FALSE,
     "organizationId" TEXT NOT NULL,
 
     CONSTRAINT "EventType_pkey" PRIMARY KEY ("eventTypeId")

@@ -21,7 +21,6 @@ import {
   AccessDeniedException,
   DeletedException,
   HttpException,
-  InvalidEventTypeConfigurationException,
   InvalidOrganizationException,
   NotFoundException
 } from '../utils/errors.utils';
@@ -38,7 +37,12 @@ import { shopTransformer } from '../transformers/calendar.transformer';
 import { getShopQueryArgs } from '../prisma-query-args/shop.query-args';
 import { getCalendarQueryArgs } from '../prisma-query-args/calendar.query-args';
 import { getEventQueryArgs } from '../prisma-query-args/event.query-args';
-import { buildScheduledTimesOverlap, isUserOnEvent } from '../utils/calendar.utils';
+import {
+  buildScheduledTimesOverlap,
+  checkEventConflicts,
+  isUserOnEvent,
+  validateEventTypeConfiguration
+} from '../utils/calendar.utils';
 import { UserWithSettings } from '../utils/auth.utils';
 import { getUserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args';
 
@@ -91,7 +95,8 @@ export default class CalendarService {
     questionDocument: boolean,
     documents: boolean,
     description: boolean,
-    onlyHeadsOrAbove: boolean
+    onlyHeadsOrAbove: boolean,
+    requiresConfirmation: boolean
   ): Promise<EventType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create event type');
@@ -140,6 +145,7 @@ export default class CalendarService {
         documents,
         description,
         onlyHeadsOrAboveForEventCreation: onlyHeadsOrAbove,
+        requiresConfirmation,
         organizationId: organization.organizationId
       },
       ...getEventTypeQueryArgs(organization.organizationId)
@@ -262,7 +268,7 @@ export default class CalendarService {
     }
 
     if (foundEventType.onlyHeadsOrAboveForEventCreation) {
-      const hasPermission = await userHasPermission(submitter.userId, organization.organizationId, isHead || isAdmin);
+      const hasPermission = await userHasPermission(submitter.userId, organization.organizationId, isHead);
 
       if (!hasPermission) {
         throw new AccessDeniedException('Only admins and heads can create events under this event type');
@@ -270,42 +276,20 @@ export default class CalendarService {
     }
 
     // Validate event follows event type configuration
-    if (foundEventType.requiredMembers && requiredMemberIds.length === 0) {
-      throw new InvalidEventTypeConfigurationException('at least one required member');
-    }
-    if (foundEventType.teams && teamIds.length === 0) {
-      throw new InvalidEventTypeConfigurationException('at least one team');
-    }
-    if (foundEventType.optionalMembers && optionalMemberIds.length === 0) {
-      throw new InvalidEventTypeConfigurationException('at least one optional member');
-    }
-    if (foundEventType.location && !location) {
-      throw new InvalidEventTypeConfigurationException('a location');
-    }
-    if (foundEventType.zoomLink && !zoomLink) {
-      throw new InvalidEventTypeConfigurationException('a zoom link');
-    }
-    if (foundEventType.shop && shopIds.length === 0) {
-      throw new InvalidEventTypeConfigurationException('at least one shop');
-    }
-    if (foundEventType.machinery && machineryIds.length === 0) {
-      throw new InvalidEventTypeConfigurationException('at least one machinery');
-    }
-    if (foundEventType.workPackage && workPackageIds.length === 0) {
-      throw new InvalidEventTypeConfigurationException('at least one work package');
-    }
-    if (foundEventType.questionDocument && !questionDocument) {
-      throw new InvalidEventTypeConfigurationException('a question document');
-    }
-    if (foundEventType.documents && documentIds.length === 0) {
-      throw new InvalidEventTypeConfigurationException('at least one document');
-    }
-    if (foundEventType.description && !description) {
-      throw new InvalidEventTypeConfigurationException('a description');
-    }
-    if (foundEventType.initialDateScheduled && scheduleSlot.length === 0) {
-      throw new InvalidEventTypeConfigurationException('at least one schedule slot');
-    }
+    validateEventTypeConfiguration(foundEventType, {
+      requiredMemberIds,
+      optionalMemberIds,
+      teamIds,
+      shopIds,
+      machineryIds,
+      workPackageIds,
+      documentIds,
+      scheduleSlot,
+      location,
+      zoomLink,
+      questionDocument,
+      description
+    });
 
     // Validate required memberIds
     if (requiredMemberIds.length > 0) {
@@ -404,6 +388,9 @@ export default class CalendarService {
       }
     }
 
+    // Check for conflicts
+    const { hasConflict, approverUserId } = await checkEventConflicts(scheduleSlot, organization, location, undefined);
+
     const computeEndDate = (initial: Date, recurrenceNumber: number) => {
       const weeks = Math.max(1, recurrenceNumber ?? 0);
       return new Date(initial.getTime() + weeks * 7 * 24 * 60 * 60 * 1000);
@@ -445,9 +432,9 @@ export default class CalendarService {
             allDay: s.allDay
           }))
         },
-        status: Event_Status.UNCONFIRMED,
-        approved: false,
-        approvedByUserId: null,
+        status: foundEventType.requiresConfirmation ? Event_Status.UNCONFIRMED : Event_Status.CONFIRMED,
+        approved: !hasConflict,
+        approvedByUserId: hasConflict ? approverUserId : null,
         location,
         zoomLink,
         questionDocument,
@@ -468,6 +455,7 @@ export default class CalendarService {
    * @param organization The organization for which the event type is being created.
    * @param requiredMemberIds An array of required member ids that are invited to the event.
    * @param optionalMemberIds An array of optional member ids that are invited to the event.
+   * @param status see Event_Status enum
    * @param shopIds An array of shops associated with the event.
    * @param machineryIds An array of machinery associated with the event.
    * @param workPackageIds An array of work packages associated with the event.
@@ -490,6 +478,7 @@ export default class CalendarService {
     organization: Organization,
     requiredMemberIds: string[],
     optionalMemberIds: string[],
+    status: Event_Status,
     teamIds: string[],
     shopIds: string[],
     machineryIds: string[],
@@ -503,7 +492,8 @@ export default class CalendarService {
   ): Promise<Event> {
     // validate eventId
     const foundEvent = await prisma.event.findUnique({
-      where: { eventId }
+      where: { eventId },
+      ...getEventQueryArgs(organization.organizationId)
     });
 
     if (!foundEvent) throw new NotFoundException('Event', eventId);
@@ -518,44 +508,23 @@ export default class CalendarService {
     if (foundEventType.dateDeleted) throw new DeletedException('Event Type', eventTypeId);
 
     // Validate event follows event type configuration
-    if (foundEventType.requiredMembers && requiredMemberIds.length === 0) {
-      throw new InvalidEventTypeConfigurationException('at least one required member');
-    }
-    if (foundEventType.teams && teamIds.length === 0) {
-      throw new InvalidEventTypeConfigurationException('at least one team');
-    }
-    if (foundEventType.optionalMembers && optionalMemberIds.length === 0) {
-      throw new InvalidEventTypeConfigurationException('at least one optional member');
-    }
-    if (foundEventType.location && !location) {
-      throw new InvalidEventTypeConfigurationException('a location');
-    }
-    if (foundEventType.zoomLink && !zoomLink) {
-      throw new InvalidEventTypeConfigurationException('a zoom link');
-    }
-    if (foundEventType.shop && shopIds.length === 0) {
-      throw new InvalidEventTypeConfigurationException('at least one shop');
-    }
-    if (foundEventType.machinery && machineryIds.length === 0) {
-      throw new InvalidEventTypeConfigurationException('at least one machinery');
-    }
-    if (foundEventType.workPackage && workPackageIds.length === 0) {
-      throw new InvalidEventTypeConfigurationException('at least one work package');
-    }
-    if (foundEventType.questionDocument && !questionDocument) {
-      throw new InvalidEventTypeConfigurationException('a question document');
-    }
-    if (foundEventType.documents && documentIds.length === 0) {
-      throw new InvalidEventTypeConfigurationException('at least one document');
-    }
-    if (foundEventType.description && !description) {
-      throw new InvalidEventTypeConfigurationException('a description');
-    }
-    if (foundEventType.initialDateScheduled && scheduleSlot.length === 0) {
-      throw new InvalidEventTypeConfigurationException('at least one schedule slot');
-    }
-    if (foundEventType.name === 'Design Review') {
-      // question document is required if the status is scheduled or done
+    validateEventTypeConfiguration(foundEventType, {
+      requiredMemberIds,
+      optionalMemberIds,
+      teamIds,
+      shopIds,
+      machineryIds,
+      workPackageIds,
+      documentIds,
+      scheduleSlot,
+      location,
+      zoomLink,
+      questionDocument,
+      description
+    });
+
+    // question document is required if the status is scheduled or done
+    if (foundEventType.requiresConfirmation) {
       if (foundEvent.status === Event_Status.SCHEDULED || foundEvent.status === Event_Status.DONE) {
         if (questionDocument == null) {
           throw new HttpException(400, 'doc template link is required for scheduled and done design reviews');
@@ -568,14 +537,14 @@ export default class CalendarService {
     }
 
     if (foundEventType.onlyHeadsOrAboveForEventCreation) {
-      const hasPermission = await userHasPermission(submitter.userId, organization.organizationId, isHead || isAdmin);
+      const hasPermission = await userHasPermission(submitter.userId, organization.organizationId, isHead);
 
       if (!hasPermission) {
         throw new AccessDeniedException('Only admins and heads can edit this event!');
       }
     } else {
       const hasPermission =
-        (await userHasPermission(submitter.userId, organization.organizationId, isHead || isAdmin)) ||
+        (await userHasPermission(submitter.userId, organization.organizationId, isHead)) ||
         submitter.userId === foundEvent.userCreatedId;
 
       if (!hasPermission) {
@@ -718,7 +687,25 @@ export default class CalendarService {
         return new Date(initial.getTime() + weeks * 7 * 24 * 60 * 60 * 1000);
       };
 
-      if (haveDifferentSlots(existingSlots, scheduleSlot)) {
+      const scheduleChanged = haveDifferentSlots(existingSlots, scheduleSlot);
+      const locationChanged = foundEvent.location !== location;
+
+      let hasConflict = false;
+      let approverUserId: string | undefined;
+
+      if (scheduleChanged || locationChanged) {
+        const { hasConflict: conflict, approverUserId: approver } = await checkEventConflicts(
+          scheduleSlot,
+          organization,
+          location,
+          eventId
+        );
+
+        hasConflict = conflict;
+        approverUserId = approver;
+      }
+
+      if (scheduleChanged) {
         await tx.scheduleSlot.deleteMany({
           where: { ScheduledEvents: { some: { eventId } } }
         });
@@ -743,6 +730,22 @@ export default class CalendarService {
       const updatedRequiredMembers = getPrismaQueryUserIds(await getUsers(requiredMemberIds));
       const updatedOptionalMembers = getPrismaQueryUserIds(await getUsers(optionalMemberIds));
 
+      let newStatus = status;
+
+      // If schedule or location changed and event type requires confirmation, reset to UNCONFIRMED
+      if ((scheduleChanged || locationChanged) && foundEventType.requiresConfirmation) {
+        newStatus = Event_Status.UNCONFIRMED;
+      } else {
+        // If all required members are confirmed, set the status to SCHEDULED
+        const allRequiredMembersConfirmed = updatedRequiredMembers.every((member) =>
+          foundEvent.confirmedMembers.map((user) => user.userId).includes(member.userId)
+        );
+
+        if (status === Event_Status.CONFIRMED && allRequiredMembersConfirmed) {
+          newStatus = Event_Status.SCHEDULED;
+        }
+      }
+
       // Update the event with new data
       return await tx.event.update({
         where: { eventId },
@@ -758,6 +761,7 @@ export default class CalendarService {
           teams: {
             set: teamIds.map((teamId) => ({ teamId }))
           },
+          status: newStatus,
           shops: {
             set: shopIds.map((shopId) => ({ shopId }))
           },
@@ -767,6 +771,11 @@ export default class CalendarService {
           workPackages: {
             set: workPackageIds.map((workPackageId) => ({ workPackageId }))
           },
+          // If schedule/location changed and there's a conflict, set approved=false and track who needs to approve
+          // Otherwise keep existing approval state
+          approved: scheduleChanged || locationChanged ? !hasConflict : foundEvent.approved,
+          approvedByUserId:
+            scheduleChanged || locationChanged ? (hasConflict ? approverUserId : null) : foundEvent.approvedByUserId,
           documentIds,
           location,
           zoomLink,
@@ -801,10 +810,12 @@ export default class CalendarService {
     if (!event) throw new NotFoundException('Event', eventId);
     if (event.dateDeleted) throw new DeletedException('Event', eventId);
 
-    const hasPermission = await userHasPermission(submitter.userId, organization.organizationId, isAdmin || isHead);
+    const hasPermission =
+      (await userHasPermission(submitter.userId, organization.organizationId, isHead)) ||
+      event.approvedByUserId === submitter.userId;
 
     if (!hasPermission) {
-      throw new AccessDeniedException('Only admins or heads can approve events!');
+      throw new AccessDeniedException('Only admins or heads or the owner of the conflicting event can this approve event!');
     }
 
     const approvedEvent = await prisma.event.update({
@@ -1296,7 +1307,8 @@ export default class CalendarService {
     questionDocument: boolean,
     documents: boolean,
     description: boolean,
-    onlyHeadsOrAbove: boolean
+    onlyHeadsOrAbove: boolean,
+    requiresConfirmation: boolean
   ): Promise<EventType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('edit event type');
@@ -1355,7 +1367,8 @@ export default class CalendarService {
         questionDocument,
         documents,
         description,
-        onlyHeadsOrAboveForEventCreation: onlyHeadsOrAbove
+        onlyHeadsOrAboveForEventCreation: onlyHeadsOrAbove,
+        requiresConfirmation
       },
       ...getEventTypeQueryArgs(organization.organizationId)
     });

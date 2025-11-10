@@ -1,6 +1,6 @@
 import express from 'express';
 import { body, param } from 'express-validator';
-import { intMinZero, isDate, nonEmptyString, validateInputs, isDayOfWeek } from '../utils/validation.utils';
+import { intMinZero, isDate, nonEmptyString, validateInputs, isDayOfWeek, isEventStatus } from '../utils/validation.utils';
 import CalendarController from '../controllers/calendar.controllers';
 
 const calendarRouter = express.Router();
@@ -34,6 +34,7 @@ calendarRouter.post(
   body('documents').isBoolean(),
   body('description').isBoolean(),
   body('onlyHeadsOrAbove').isBoolean(),
+  body('requiresConfirmation').isBoolean(),
   validateInputs,
   CalendarController.createEventType
 );
@@ -58,6 +59,7 @@ calendarRouter.post(
   body('documents').isBoolean(),
   body('description').isBoolean(),
   body('onlyHeadsOrAbove').isBoolean(),
+  body('requiresConfirmation').isBoolean(),
   validateInputs,
   CalendarController.editEventType
 );
@@ -105,6 +107,7 @@ calendarRouter.post(
   nonEmptyString(body('optionalMemberIds.*')),
   body('teamIds').isArray(),
   body('teamIds.*').isString(),
+  isEventStatus(body('status')),
   body('location').optional().isString(),
   body('zoomLink').optional().isURL(),
   body('shopIds').isArray(),
