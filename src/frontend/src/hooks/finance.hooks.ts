@@ -335,8 +335,28 @@ export const useUploadSingleReceipt = () => {
   return useMutation<{ googleFileId: string; name: string }, Error, { file: File; id: string }>(
     ['reimbursement-requsts', 'edit'],
     async (formData: { file: File; id: string }) => {
-      const { data } = await uploadSingleReceipt(formData.file, formData.id);
-      return data;
+      try {
+        const { data } = await uploadSingleReceipt(formData.file, formData.id);
+        return data;
+      } catch (error: any) {
+        if (error.response?.status === 413) {
+          throw new Error(`File "${formData.file.name}" is too large. Maximum file size allowed is 25MB.`);
+        } else if (error.response?.status === 400 && error.response?.data?.message?.includes('File too large')) {
+          throw new Error(`File "${formData.file.name}" is too large. ${error.response.data.message}`);
+        } else if (error.response?.status === 415) {
+          throw new Error(
+            `File "${formData.file.name}" has an unsupported format. Please upload PNG, JPEG, or PDF files only.`
+          );
+        } else if (error.response?.data?.message) {
+          throw new Error(`Failed to upload "${formData.file.name}": ${error.response.data.message}`);
+        } else if (error.message) {
+          throw new Error(`Failed to upload "${formData.file.name}": ${error.message}`);
+        } else {
+          throw new Error(
+            `Failed to upload "${formData.file.name}": Network error. Please check your connection and try again.`
+          );
+        }
+      }
     }
   );
 };
@@ -352,7 +372,24 @@ export const useUploadManyReceipts = () => {
     async (formData: { files: File[]; id: string }) => {
       const results = [];
       for (const file of formData.files) {
-        results.push(await uploadSingleReceipt(file, formData.id));
+        try {
+          results.push(await uploadSingleReceipt(file, formData.id));
+        } catch (error: any) {
+          // Provide more specific error messages based on the error response
+          if (error.response?.status === 413) {
+            throw new Error(`File "${file.name}" is too large. Maximum file size allowed is 25MB.`);
+          } else if (error.response?.status === 400 && error.response?.data?.message?.includes('File too large')) {
+            throw new Error(`File "${file.name}" is too large. ${error.response.data.message}`);
+          } else if (error.response?.status === 415) {
+            throw new Error(`File "${file.name}" has an unsupported format. Please upload PNG, JPEG, or PDF files only.`);
+          } else if (error.response?.data?.message) {
+            throw new Error(`Failed to upload "${file.name}": ${error.response.data.message}`);
+          } else if (error.message) {
+            throw new Error(`Failed to upload "${file.name}": ${error.message}`);
+          } else {
+            throw new Error(`Failed to upload "${file.name}": Network error. Please check your connection and try again.`);
+          }
+        }
       }
       return results.map((result) => result.data);
     }

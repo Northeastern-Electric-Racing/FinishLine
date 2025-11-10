@@ -721,17 +721,26 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                           [...e.target.files].forEach((file) => {
                             if (file.size >= MAX_FILE_SIZE) {
                               toast.error(
-                                `Error uploading ${file.name}; file must be less than ${MAX_FILE_SIZE / 1024 / 1024} MB`,
+                                `Error uploading ${file.name}: File is too large. Maximum file size allowed is ${MAX_FILE_SIZE / 1024 / 1024} MB.`,
                                 5000
                               );
-                              document.getElementById('receipt-image')!.innerHTML = '';
-                            } else {
-                              receiptPrepend({
-                                file,
-                                name: file.name,
-                                googleFileId: ''
-                              });
+                              return;
                             }
+
+                            const allowedTypes = ['image/png', 'image/jpeg', 'application/pdf'];
+                            if (!allowedTypes.includes(file.type)) {
+                              toast.error(
+                                `Error uploading ${file.name}: Unsupported file format. Please upload PNG, JPEG, or PDF files only.`,
+                                5000
+                              );
+                              return;
+                            }
+
+                            receiptPrepend({
+                              file,
+                              name: file.name,
+                              googleFileId: ''
+                            });
                           });
                         }
                       }}

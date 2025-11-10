@@ -19,7 +19,38 @@ import { MAX_FILE_SIZE } from 'shared';
 
 const reimbursementRequestsRouter = express.Router();
 
-const upload = multer({ limits: { fileSize: MAX_FILE_SIZE }, storage: memoryStorage() });
+const upload = multer({
+  storage: memoryStorage(),
+  limits: {
+    fileSize: MAX_FILE_SIZE
+  }
+});
+
+const handleMulterError = (req: express.Request, res: express.Response, next: express.NextFunction): void => {
+  upload.single('image')(req, res, (err: any) => {
+    if (err) {
+      if (err instanceof multer.MulterError) {
+        switch (err.code) {
+          case 'LIMIT_FILE_SIZE':
+            res.status(400).json({ message: `File too large. Maximum size is ${MAX_FILE_SIZE / 1024 / 1024}MB` });
+            return;
+          case 'LIMIT_UNEXPECTED_FILE':
+            res.status(400).json({ message: 'Unexpected field name for file upload' });
+            return;
+          case 'LIMIT_FILE_COUNT':
+            res.status(400).json({ message: 'Too many files uploaded' });
+            return;
+          default:
+            res.status(400).json({ message: 'File upload error: ' + err.message });
+            return;
+        }
+      }
+      res.status(500).json({ message: 'Unknown upload error' });
+      return;
+    }
+    next();
+  });
+};
 
 reimbursementRequestsRouter.get('/vendors', ReimbursementRequestController.getAllVendors);
 
@@ -215,8 +246,8 @@ reimbursementRequestsRouter.post(
 );
 
 reimbursementRequestsRouter.post(
-  '/:requestId/upload-receipt',
-  upload.single('image'),
+  '/:reimbursementRequestId/receipts/upload',
+  handleMulterError,
   ReimbursementRequestController.uploadReceipt
 );
 
