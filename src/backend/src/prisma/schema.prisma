@@ -1563,16 +1563,16 @@ model Reimbursement_Request_Comment {
 model Ruleset_Type {
   rulesetTypeId   String       @id @default(uuid())
   name            String
-  organizationId  String
-  organization    Organization @relation(fields: [organizationId], references: [organizationId])
   lastUpdated     DateTime     @updatedAt
   revisionFiles   Ruleset[]    @relation(name: "rulesetFileType")
-  dateCreated     DateTime     @default(now())
-  dateDeleted     DateTime?
   createdByUserId String
   createdBy       User         @relation(name: "rulesetTypeCreator", fields: [createdByUserId], references: [userId])
   deletedByUserId String?
   deletedBy       User?        @relation(name: "rulesetTypeDeleter", fields: [deletedByUserId], references: [userId])
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [organizationId])
+
+  @@index([organizationId])
 }
 
 model Ruleset {
