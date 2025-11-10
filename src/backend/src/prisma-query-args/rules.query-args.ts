@@ -47,10 +47,23 @@ export const getRuleQueryArgs = (organizationId: string) =>
 // preview for rule display
 export const getRulePreviewQueryArgs = () =>
   Prisma.validator<Prisma.RuleDefaultArgs>()({
-    select: {
-      ruleId: true,
-      ruleCode: true,
-      ruleContent: true
+    include: {
+      parentRule: {
+        select: {
+          ruleId: true,
+          ruleCode: true
+        }
+      },
+      subRules: {
+        select: {
+          ruleId: true
+        }
+      },
+      referencedRule: {
+        select: {
+          ruleId: true
+        }
+      }
     }
   });
 

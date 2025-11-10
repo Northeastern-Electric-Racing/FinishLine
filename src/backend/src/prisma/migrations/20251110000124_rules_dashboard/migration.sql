@@ -8,6 +8,7 @@ CREATE TABLE "Ruleset_Type" (
     "lastUpdated" TIMESTAMP(3) NOT NULL,
     "createdByUserId" TEXT NOT NULL,
     "deletedByUserId" TEXT,
+    "organizationId" TEXT NOT NULL,
 
     CONSTRAINT "Ruleset_Type_pkey" PRIMARY KEY ("rulesetTypeId")
 );
@@ -17,10 +18,11 @@ CREATE TABLE "Ruleset" (
     "fileId" TEXT NOT NULL,
     "rulesetId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "active" BOOLEAN NOT NULL,
     "rulesetTypeId" TEXT NOT NULL,
     "carId" TEXT NOT NULL,
+    "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "dateDeleted" TIMESTAMP(3),
     "createdByUserId" TEXT NOT NULL,
     "deletedByUserId" TEXT,
 
@@ -84,6 +86,9 @@ CREATE TABLE "_teamRules" (
 );
 
 -- CreateIndex
+CREATE INDEX "Ruleset_Type_organizationId_idx" ON "Ruleset_Type"("organizationId");
+
+-- CreateIndex
 CREATE INDEX "Rule_parentRuleId_rulesetId_ruleCode_idx" ON "Rule"("parentRuleId", "rulesetId", "ruleCode");
 
 -- CreateIndex
@@ -103,6 +108,9 @@ ALTER TABLE "Ruleset_Type" ADD CONSTRAINT "Ruleset_Type_createdByUserId_fkey" FO
 
 -- AddForeignKey
 ALTER TABLE "Ruleset_Type" ADD CONSTRAINT "Ruleset_Type_deletedByUserId_fkey" FOREIGN KEY ("deletedByUserId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Ruleset_Type" ADD CONSTRAINT "Ruleset_Type_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Ruleset" ADD CONSTRAINT "Ruleset_rulesetTypeId_fkey" FOREIGN KEY ("rulesetTypeId") REFERENCES "Ruleset_Type"("rulesetTypeId") ON DELETE RESTRICT ON UPDATE CASCADE;

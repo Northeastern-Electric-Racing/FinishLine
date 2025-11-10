@@ -37,8 +37,12 @@ export interface Rule {
   ruleCode: string;
   ruleContent: string;
   imageFileIds: string[];
+  parentRule?: {
+    ruleId: string;
+    ruleCode: string;
+  };
   subRuleIds: string[];
-  referencedRules: { ruleId: string }[];
+  referencedRuleIds: string[];
 }
 
 export interface RuleStatusChange {
