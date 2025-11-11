@@ -7,12 +7,15 @@ import CreateShopModal from './CreateShopModal';
 import { IconButton, Tooltip } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteShopModal from './DeleteShopModal';
+import { Shop } from 'shared';
 
 const AdminToolsScheduleConfig: React.FC = () => {
   const { data: shops, isLoading, isError, error } = useAllShops();
   const { mutateAsync: createShopMutate } = useCreateShop();
 
   const [openCreate, setOpenCreate] = useState(false);
+  const [shopToDelete, setShopToDelete] = useState<Shop | undefined>(undefined);
 
   if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={(error as Error).message} />;
@@ -90,7 +93,8 @@ const AdminToolsScheduleConfig: React.FC = () => {
 
                           <Tooltip title="Delete" arrow>
                             <span>
-                              <IconButton size="small" color="error" disabled aria-label="delete shop">
+                              <IconButton size="small" color="error" aria-label="delete shop"
+                                onClick={() => setShopToDelete(shop)}>
                                 <DeleteIcon fontSize="small" />
                               </IconButton>
                             </span>
@@ -126,6 +130,16 @@ const AdminToolsScheduleConfig: React.FC = () => {
           setOpenCreate(false);
         }}
       />
+      
+      {/* Delete Shop Modal */}
+      {shopToDelete && (
+        <DeleteShopModal
+          shop={shopToDelete}
+          onClose={() => {
+            setShopToDelete(undefined);
+          }}
+        />)
+      }
     </Box>
   );
 };

@@ -13,3 +13,7 @@ export const postCreateShop = (payload: { name: string; description: string }) =
     transformResponse: (data) => JSON.parse(data) as Shop
   });
 };
+
+export const postDeleteShop = async (name: string) => {
+  return axios.post<Shop>(apiUrls.calendarDeleteShop(name))
+}

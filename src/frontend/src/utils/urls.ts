@@ -439,6 +439,7 @@ const retrospectiveBudgets = () => `${API_URL}/retrospective/budgets`;
 const calendar = () => `${API_URL}/calendar`;
 const calendarShops = () => `${calendar()}/shops`;
 const calendarCreateShop = () => `${calendar()}/shop/create`;
+const calendarDeleteShop = (id: string) => `${calendar()}/shop/${id}/delete`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -743,6 +744,7 @@ export const apiUrls = {
 
   calendarShops,
   calendarCreateShop,
+  calendarDeleteShop,
 
   version
 };
