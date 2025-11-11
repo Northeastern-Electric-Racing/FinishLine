@@ -1,5 +1,6 @@
-import { Organization, Rule, User } from '@prisma/client';
-import { isAdmin, isLeadership, ProjectRule, RuleCompletion, RulesetType, notGuest } from 'shared';
+import { Organization, Rule, User, Rule_Completion } from '@prisma/client';
+import { isAdmin, isLeadership, ProjectRule, RulesetType, notGuest } from 'shared';
+import { userHasPermission } from '../utils/users.utils';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
@@ -9,7 +10,6 @@ import {
   InvalidOrganizationException,
   NotFoundException
 } from '../utils/errors.utils';
-import { userHasPermission } from '../utils/users.utils';
 import { getRuleQueryArgs, getProjectRuleQueryArgs, getRulesetQueryArgs } from '../prisma-query-args/rules.query-args';
 import {
   ruleTransformer,
@@ -309,7 +309,7 @@ export default class RulesService {
     }
 
     const projectRule = await prisma.project_Rule.create({
-      data: { ruleId, projectId, currentStatus: RuleCompletion.REVIEW },
+      data: { ruleId, projectId, currentStatus: Rule_Completion.REVIEW },
       ...getProjectRuleQueryArgs()
     });
 
@@ -367,5 +367,67 @@ export default class RulesService {
       }
     });
     return rulesets.map(rulesetTypeTransformer);
+  }
+
+  /**
+   * Updates the status of a project rule
+   * Such as changing a project rule from INCOMPLETE to COMPLETED
+   * @param submitter the user updating the status
+   * @param organization the organization of the rule
+   * @param projectRuleId the id of the project rule to update
+   * @param newStatus the new status of the project rule
+   * @returns the project rule with updated status
+   */
+  static async editProjectRuleStatus(
+    submitter: User,
+    organization: Organization,
+    projectRuleId: string,
+    newStatus: Rule_Completion
+  ): Promise<ProjectRule> {
+    // Ensure new satus is a valid Rule_Completion value
+    if (!Object.values(Rule_Completion).includes(newStatus as Rule_Completion)) {
+      throw new HttpException(400, `status must be one of: ${Object.values(Rule_Completion).join(', ')}`);
+    }
+
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership))) {
+      throw new AccessDeniedException('You do not have permissions to update a project rule status');
+    }
+
+    const projectRule = await prisma.project_Rule.findUnique({
+      where: { projectRuleId },
+      include: { rule: { include: { ruleset: { include: { car: { include: { wbsElement: true } } } } } } }
+    });
+
+    if (!projectRule) {
+      throw new NotFoundException('Project Rule', projectRuleId);
+    }
+
+    if (projectRule.rule.ruleset.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Project Rule');
+    }
+
+    // If the status does not change, simply return the project rule
+    if (projectRule.currentStatus === newStatus) {
+      const originalProjectRule = await prisma.project_Rule.findUnique({
+        where: { projectRuleId },
+        ...getProjectRuleQueryArgs()
+      });
+      return projectRuleTransformer(originalProjectRule);
+    }
+
+    const newStatusHistory = {
+      userUpdatedId: submitter.userId,
+      updatedAt: new Date(),
+      newStatus,
+      note: `${submitter.firstName} ${submitter.lastName} marked as ${newStatus}`
+    };
+
+    const updatedProjectRule = await prisma.project_Rule.update({
+      where: { projectRuleId },
+      data: { currentStatus: newStatus, statusHistory: { create: newStatusHistory } },
+      ...getProjectRuleQueryArgs()
+    });
+
+    return projectRuleTransformer(updatedProjectRule);
   }
 }
