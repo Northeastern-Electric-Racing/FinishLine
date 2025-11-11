@@ -5,7 +5,7 @@ import { useDeleteShop } from '../../../../hooks/calendar.hooks';
 
 export interface DeleteShopModalProps {
   onClose: () => void;
-  shop: Shop
+  shop: Shop;
 }
 
 const DeleteCategoryModal = ({ onClose, shop }: DeleteShopModalProps) => {

@@ -113,8 +113,12 @@ const AdminToolsScheduleConfig: React.FC = () => {
 
                           <Tooltip title="Delete" arrow>
                             <span>
-                              <IconButton size="small" color="error" aria-label="delete shop"
-                                onClick={() => setShopToDelete(shop)}>
+                              <IconButton
+                                size="small"
+                                color="error"
+                                aria-label="delete shop"
+                                onClick={() => setShopToDelete(shop)}
+                              >
                                 <DeleteIcon fontSize="small" />
                               </IconButton>
                             </span>
@@ -221,7 +225,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
           return result;
         }}
       />
-      
+
       {/* Delete Shop Modal */}
       {shopToDelete && (
         <DeleteShopModal
@@ -229,8 +233,8 @@ const AdminToolsScheduleConfig: React.FC = () => {
           onClose={() => {
             setShopToDelete(undefined);
           }}
-        />)
-      }
+        />
+      )}
 
       {/* Create Machine Modal */}
       <CreateMachineryModal open={openCreateMachinery} onClose={() => setOpenCreateMachinery(false)} />

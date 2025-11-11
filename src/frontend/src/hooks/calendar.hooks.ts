@@ -105,7 +105,7 @@ export const useAddMachineryToShop = (machineryId: string) => {
 
 export const useDeleteShop = () => {
   const qc = useQueryClient();
-  return useMutation<{name : string}, Error, string>(
+  return useMutation<{ name: string }, Error, string>(
     async (shopID: string) => {
       const { data } = await postDeleteShop(shopID);
       return data;
