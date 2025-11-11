@@ -69,11 +69,39 @@ export default class RulesController {
     }
   }
 
+  static async getRulesetsByRulesetType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const rulesetTypeId = req.body;
+      const rulesets = await RulesService.getRulesetsByRulesetType(rulesetTypeId, req.organization.organizationId);
+      res.status(200).json(rulesets);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async deleteRuleset(req: Request, res: Response, next: NextFunction) {
     try {
       const { rulesetId } = req.params;
       const ruleset = await RulesService.deleteRuleset(rulesetId, req.currentUser.userId, req.organization.organizationId);
       res.status(200).json(ruleset);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editProjectRuleStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { projectRuleId } = req.params;
+      const { newStatus } = req.body;
+
+      const projectRule: ProjectRule = await RulesService.editProjectRuleStatus(
+        req.currentUser,
+        req.organization,
+        projectRuleId,
+        newStatus
+      );
+
+      res.status(200).json(projectRule);
     } catch (error: unknown) {
       next(error);
     }
