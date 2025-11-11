@@ -3,12 +3,8 @@ frontend:
   phases:
     preBuild:
       commands:
-        - echo 'Node version:'
-        - node --version
-        - echo 'Yarn version:'
-        - yarn --version
         - echo 'Installing dependencies...'
-        - yarn install
+        - yarn install --frozen-lockfile
         - echo 'Building shared package...'
         - yarn workspace shared build
     build:
@@ -16,7 +12,7 @@ frontend:
         - echo 'Building frontend...'
         - yarn workspace frontend build
   artifacts:
-    baseDirectory: src/frontend/build
+    baseDirectory: src/frontend/dist
     files:
       - '**/*'
   cache:

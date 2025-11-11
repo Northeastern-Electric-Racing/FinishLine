@@ -32,8 +32,8 @@ resource "aws_amplify_app" "frontend" {
           }
         }
         artifacts = {
-          baseDirectory = "src/frontend/build"
-          files         = ["**/*"]
+        baseDirectory = "src/frontend/dist"
+        files         = ["**/*"]
         }
         cache = {
           paths = [
