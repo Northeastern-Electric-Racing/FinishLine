@@ -285,8 +285,8 @@ export const getChangesForWorkPackage = (
       originalWorkPackage?.endDate && proposedChangesEndDate
         ? originalWorkPackage.endDate.getTime() !== proposedChangesEndDate.getTime()
         : !!originalWorkPackage?.endDate !== !!proposedChangesEndDate,
-      originalWorkPackage?.endDate ? originalWorkPackage.endDate.toLocaleString() : '',
-      proposedChangesEndDate ? proposedChangesEndDate.toLocaleString() : ''
+      datePipe(originalWorkPackage?.endDate ?? undefined),
+      datePipe(proposedChangesEndDate || undefined)
     )
   );
 
