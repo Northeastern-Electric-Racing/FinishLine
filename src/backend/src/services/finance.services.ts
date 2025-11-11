@@ -1099,7 +1099,10 @@ export default class FinanceServices {
     if (name !== oldSponsor.name) {
       const existingSponsor = await prisma.sponsor.findFirst({
         where: {
-          name,
+          name: {
+            equals: name,
+            mode: 'insensitive'
+          },
           organizationId: organization.organizationId
         }
       });
