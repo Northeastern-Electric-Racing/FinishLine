@@ -721,7 +721,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                           [...e.target.files].forEach((file) => {
                             if (file.size >= MAX_FILE_SIZE) {
                               toast.error(
-                                `Error uploading ${file.name}: File is too large. Maximum file size allowed is ${MAX_FILE_SIZE / 1024 / 1024} MB.`,
+                                `Error uploading ${file.name}; file must be less than ${MAX_FILE_SIZE / 1024 / 1024} MB`,
                                 5000
                               );
                               document.getElementById('receipt-image')!.innerHTML = '';
