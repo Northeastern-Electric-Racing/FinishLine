@@ -7,14 +7,14 @@ import {
   getAllMachinery,
   postCreateMachinery,
   postEditMachinery,
-  postAddMachineryToShop
+  postAddMachineryToShop,
+  editShop
 } from '../apis/calendar.api';
 
-export const SHOPS_KEY = ['shops'] as const;
 export const MACHINERY_KEY = ['machinery'] as const;
 
 export const useAllShops = () =>
-  useQuery<Shop[], Error>(SHOPS_KEY, async () => {
+  useQuery<Shop[], Error>(['shops'], async () => {
     const res = await getAllShops();
     return res.data;
   });
@@ -28,7 +28,22 @@ export const useCreateShop = () => {
     },
     {
       onSuccess: () => {
-        qc.invalidateQueries(SHOPS_KEY);
+        qc.invalidateQueries(['shops']);
+      }
+    }
+  );
+};
+
+export const useEditShop = (shopId: string) => {
+  const qc = useQueryClient();
+  return useMutation<Shop, Error, { name: string; description: string }>(
+    async (payload) => {
+      const { data } = await editShop(shopId, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(['shops']);
       }
     }
   );

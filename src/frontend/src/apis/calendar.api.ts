@@ -59,3 +59,9 @@ export const postAddMachineryToShop = async (payload: {
   });
   return data;
 };
+
+export const editShop = (shopId: string, payload: { name: string; description: string }) => {
+  return axios.post<Shop>(apiUrls.calendarEditShop(shopId), payload, {
+    transformResponse: (data) => JSON.parse(data) as Shop
+  });
+};

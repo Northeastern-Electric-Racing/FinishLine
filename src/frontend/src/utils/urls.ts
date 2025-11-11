@@ -443,6 +443,7 @@ const calendarMachinery = () => `${calendar()}/machinery`;
 const calendarCreateMachinery = () => `${calendar()}/machinery/create`;
 const calendarEditMachinery = (machineryId: string) => `${calendar()}/machinery/${machineryId}/edit`;
 const calendarAddMachineryToShop = (machineryId: string) => `${calendar()}/machinery/${machineryId}/add-to-shop`;
+const calendarEditShop = (shopId: string) => `${calendar()}/shop/${shopId}/edit`;
 const calendarDeleteShop = (id: string) => `${calendar()}/shop/${id}/delete`;
 
 /**************** Other Endpoints ****************/
@@ -752,6 +753,7 @@ export const apiUrls = {
   calendarCreateMachinery,
   calendarEditMachinery,
   calendarAddMachineryToShop,
+  calendarEditShop,
   calendarDeleteShop,
 
   version

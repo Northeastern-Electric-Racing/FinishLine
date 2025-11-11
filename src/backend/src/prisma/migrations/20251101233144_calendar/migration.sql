@@ -174,15 +174,6 @@ CREATE TABLE "public"."_CalendarToEventType" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Shop_name_key" ON "public"."Shop"("name");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Shop_name_organizationId_key" ON "public"."Shop"("name", "organizationId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Machinery_name_organizationId_key" ON "public"."Machinery"("name", "organizationId");
-
--- CreateIndex
 CREATE INDEX "ShopMachinery_machineryId_idx" ON "public"."ShopMachinery"("machineryId");
 
 -- CreateIndex
@@ -190,12 +181,6 @@ CREATE UNIQUE INDEX "ShopMachinery_shopId_machineryId_key" ON "public"."ShopMach
 
 -- CreateIndex
 CREATE INDEX "ScheduleSlot_initialDateScheduled_endDate_idx" ON "public"."ScheduleSlot"("initialDateScheduled", "endDate");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Calendar_name_organizationId_key" ON "public"."Calendar"("name", "organizationId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "EventType_name_organizationId_key" ON "public"."EventType"("name", "organizationId");
 
 -- CreateIndex
 CREATE INDEX "_EventToScheduleSlot_B_index" ON "public"."_EventToScheduleSlot"("B");

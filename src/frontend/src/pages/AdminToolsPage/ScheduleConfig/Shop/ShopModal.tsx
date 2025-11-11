@@ -1,3 +1,4 @@
+import React from 'react';
 import { Box, FormControl, FormHelperText, Typography } from '@mui/material';
 import NERFormModal from '../../../../components/NERFormModal';
 import ReactHookTextField from '../../../../components/ReactHookTextField';
@@ -5,9 +6,9 @@ import { useToast } from '../../../../hooks/toasts.hooks';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Shop } from 'shared';
+import type { Shop } from 'shared';
 
-export interface CreateShopFormValues {
+export interface ShopFormValues {
   name: string;
   description: string;
 }
@@ -17,13 +18,15 @@ const schema = yup.object({
   description: yup.string().required('Description is required')
 });
 
-interface CreateShopModalProps {
+export interface BaseShopModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateShopFormValues) => Promise<Shop>;
+  // Accept both branches: some returns were Promise<Shop>, others unknown
+  onSubmit: (data: ShopFormValues) => Promise<Shop | unknown> | Shop | unknown;
+  initialValues?: Partial<ShopFormValues>;
 }
 
-export const CreateShopModal: React.FC<CreateShopModalProps> = ({ open, onClose, onSubmit }) => {
+const ShopModal: React.FC<BaseShopModalProps> = ({ open, onClose, onSubmit, initialValues }) => {
   const toast = useToast();
 
   const {
@@ -31,30 +34,51 @@ export const CreateShopModal: React.FC<CreateShopModalProps> = ({ open, onClose,
     control,
     reset,
     formState: { errors }
-  } = useForm<CreateShopFormValues>({
+  } = useForm<ShopFormValues>({
     resolver: yupResolver(schema),
     defaultValues: { name: '', description: '' }
   });
 
-  const onFormSubmit = async (data: CreateShopFormValues) => {
+  const frozenValuesRef = React.useRef<ShopFormValues>({ name: '', description: '' });
+
+  React.useEffect(() => {
+    if (open) {
+      frozenValuesRef.current = {
+        name: initialValues?.name ?? '',
+        description: initialValues?.description ?? ''
+      };
+      reset(frozenValuesRef.current);
+    } else {
+      frozenValuesRef.current = { name: '', description: '' };
+      reset(frozenValuesRef.current);
+    }
+  }, [open, initialValues, reset]);
+
+  const computedTitle =
+    frozenValuesRef.current.name !== '' || frozenValuesRef.current.description !== '' ? 'Edit Shop' : 'Create Shop';
+
+  const onFormSubmit = async (data: ShopFormValues) => {
     try {
       await onSubmit(data);
+      onClose();
+      reset({ name: '', description: '' });
     } catch (e: unknown) {
       if (e instanceof Error) toast.error(e.message);
     }
-    onClose();
-    reset({ name: '', description: '' });
   };
 
   return (
     <NERFormModal
       open={open}
-      onHide={onClose}
-      title="Add Shop:"
+      onHide={() => {
+        onClose();
+        reset({ name: '', description: '' });
+      }}
+      title={computedTitle}
       reset={() => reset({ name: '', description: '' })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
-      formId="create-shop-form"
+      formId="shop-form"
       showCloseButton
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, width: 350 }}>
@@ -70,11 +94,19 @@ export const CreateShopModal: React.FC<CreateShopModalProps> = ({ open, onClose,
           <Typography color="#ef4345" variant="h5" sx={{ fontWeight: 'bold', fontSize: 20 }}>
             Description:*
           </Typography>
-          <ReactHookTextField name="description" control={control} placeholder="Enter description" fullWidth />
+          <ReactHookTextField
+            name="description"
+            control={control}
+            placeholder="Enter description"
+            fullWidth
+            multiline
+            rows={4}
+          />
           <FormHelperText error>{errors.description?.message}</FormHelperText>
         </FormControl>
       </Box>
     </NERFormModal>
   );
 };
-export default CreateShopModal;
+
+export default ShopModal;
