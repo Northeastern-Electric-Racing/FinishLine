@@ -56,16 +56,9 @@ export default class CalendarController {
 
   static async createMachinery(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, shopId, quantity, description } = req.body;
+      const { name } = req.body;
 
-      const machinery = await CalendarService.createMachinery(
-        req.currentUser,
-        name,
-        shopId,
-        quantity,
-        req.organization,
-        description
-      );
+      const machinery = await CalendarService.createMachinery(req.currentUser, name, req.organization);
       res.status(200).json(machinery);
     } catch (error: unknown) {
       next(error);
@@ -75,16 +68,27 @@ export default class CalendarController {
   static async editMachinery(req: Request, res: Response, next: NextFunction) {
     try {
       const { machineryId } = req.params;
-      const { name, shopId, quantity, description } = req.body;
+      const { name } = req.body;
 
-      const machinery = await CalendarService.editMachinery(
+      const machinery = await CalendarService.editMachinery(req.currentUser, machineryId, name, req.organization);
+      res.status(200).json(machinery);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async addMachineryToShop(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { machineryId } = req.params;
+      const { shopId, quantity, originalShopId } = req.body;
+
+      const machinery = await CalendarService.addMachineryToShop(
         req.currentUser,
         machineryId,
-        name,
         shopId,
         quantity,
         req.organization,
-        description
+        originalShopId
       );
       res.status(200).json(machinery);
     } catch (error: unknown) {
@@ -108,6 +112,15 @@ export default class CalendarController {
     try {
       const shops = await CalendarService.getAllShops(req.organization);
       res.status(200).json(shops);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllMachinery(req: Request, res: Response, next: NextFunction) {
+    try {
+      const machinery = await CalendarService.getAllMachinery(req.organization);
+      res.status(200).json(machinery);
     } catch (error: unknown) {
       next(error);
     }
@@ -357,6 +370,24 @@ export default class CalendarController {
       const user = await getCurrentUserWithUserSettings(res);
 
       const updatedEvent = await CalendarService.markUserConfirmed(eventId, availability, user, req.organization);
+      res.status(200).json(updatedEvent);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  // Set a new status for the event
+  static async setStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { eventId } = req.params;
+      const { status } = req.body;
+
+      const updatedEvent = await CalendarService.setStatus(
+        req.currentUser,
+        eventId,
+        status,
+        req.organization
+      );
       res.status(200).json(updatedEvent);
     } catch (error: unknown) {
       next(error);

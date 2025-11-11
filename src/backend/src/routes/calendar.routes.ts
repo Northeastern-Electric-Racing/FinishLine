@@ -144,26 +144,24 @@ calendarRouter.post(
   CalendarController.markUserConfirmed
 );
 
-calendarRouter.post('/event/:eventId/delete', CalendarController.deleteEvent);
+calendarRouter.post('/:eventId/set-status', isEventStatus(body('status')), validateInputs, CalendarController.setStatus);
 
-calendarRouter.post(
-  '/machinery/create',
-  nonEmptyString(body('name')),
-  nonEmptyString(body('shopId')),
-  body('quantity').isInt({ min: 1 }),
-  body('description').optional().isString(),
-  validateInputs,
-  CalendarController.createMachinery
-);
+calendarRouter.post('/machinery/create', nonEmptyString(body('name')), validateInputs, CalendarController.createMachinery);
 
 calendarRouter.post(
   '/machinery/:machineryId/edit',
   nonEmptyString(body('name')),
-  nonEmptyString(body('shopId')),
-  body('quantity').isInt({ min: 1 }),
-  body('description').optional().isString(),
   validateInputs,
   CalendarController.editMachinery
+);
+
+calendarRouter.post(
+  '/machinery/:machineryId/add-to-shop',
+  nonEmptyString(body('shopId')),
+  body('quantity').isInt({ min: 0 }),
+  body('originalShopId').optional().isString(),
+  validateInputs,
+  CalendarController.addMachineryToShop
 );
 
 calendarRouter.post('/machinery/:machineryId/delete', CalendarController.deleteMachinery);
@@ -200,6 +198,8 @@ calendarRouter.post('/:calendarId/delete', CalendarController.deleteCalendar);
 calendarRouter.post('/shop/:shopId/delete', nonEmptyString(param('shopId')), validateInputs, CalendarController.deleteShop);
 
 calendarRouter.get('/shops', CalendarController.getAllShops);
+
+calendarRouter.get('/machinery', CalendarController.getAllMachinery);
 
 // no restrictions filtering, in case multiple filters need to be sent
 calendarRouter.post(
