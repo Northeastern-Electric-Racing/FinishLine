@@ -1226,7 +1226,7 @@ model Organization {
   sponsors                 Sponsor[]
   sponsorTiers             Sponsor_Tier[]
   indexCodes               Index_Code[]
-  ruleset_types            Ruleset_Type[]
+  rulesetTypes             Ruleset_Type[]
 }
 
 model FrequentlyAskedQuestion {
@@ -1569,8 +1569,10 @@ model Ruleset_Type {
   name            String
   lastUpdated     DateTime     @updatedAt
   revisionFiles   Ruleset[]    @relation(name: "rulesetFileType")
+  dateCreated     DateTime     @default(now())
   createdByUserId String
   createdBy       User         @relation(name: "rulesetTypeCreator", fields: [createdByUserId], references: [userId])
+  dateDeleted     DateTime?
   deletedByUserId String?
   deletedBy       User?        @relation(name: "rulesetTypeDeleter", fields: [deletedByUserId], references: [userId])
   organizationId  String
@@ -1580,8 +1582,8 @@ model Ruleset_Type {
 }
 
 model Ruleset {
-  fileId          String
   rulesetId       String       @id @default(uuid())
+  fileId          String
   name            String
   active          Boolean
   rules           Rule[]
@@ -1590,9 +1592,9 @@ model Ruleset {
   carId           String
   car             Car          @relation(name: "rulesetCar", fields: [carId], references: [carId])
   dateCreated     DateTime     @default(now())
-  dateDeleted     DateTime?
   createdByUserId String
   createdBy       User         @relation(name: "rulesetCreator", fields: [createdByUserId], references: [userId])
+  dateDeleted     DateTime?
   deletedByUserId String?
   deletedBy       User?        @relation(name: "rulesetDeleter", fields: [deletedByUserId], references: [userId])
 }
@@ -1629,15 +1631,15 @@ model Rule_Status_Change {
   historyId       String          @id @default(uuid())
   projectRule     Project_Rule    @relation(name: "ruleStatusHistory", fields: [projectRuleId], references: [projectRuleId])
   projectRuleId   String
+  dateCreated     DateTime        @default(now())
+  dateUpdated     DateTime        @default(now())
+  dateDeleted     DateTime?
   createdByUserId String
   createdBy       User            @relation(name: "ruleStatusCreator", fields: [createdByUserId], references: [userId])
-  dateCreated     DateTime
-  userUpdatedId   String
-  userUpdated     User            @relation(name: "ruleStatusUpdater", fields: [userUpdatedId], references: [userId])
-  updatedAt       DateTime        @default(now())
+  updatedByUserId String
+  updatedBy       User            @relation(name: "ruleStatusUpdater", fields: [updatedByUserId], references: [userId])
   deletedByUserId String?
   deletedBy       User?           @relation(name: "ruleStatusDeletor", fields: [deletedByUserId], references: [userId])
-  dateDeleted     DateTime?
   newStatus       Rule_Completion
   note            String
 }
@@ -1651,9 +1653,9 @@ model Project_Rule {
   currentStatus   Rule_Completion
   statusHistory   Rule_Status_Change[] @relation(name: "ruleStatusHistory")
   dateCreated     DateTime             @default(now())
-  dateDeleted     DateTime?
   createdByUserId String
   createdBy       User                 @relation(name: "projectRuleCreator", fields: [createdByUserId], references: [userId])
+  dateDeleted     DateTime?
   deletedByUserId String?
   deletedBy       User?                @relation(name: "projectRuleDeletor", fields: [deletedByUserId], references: [userId])
 

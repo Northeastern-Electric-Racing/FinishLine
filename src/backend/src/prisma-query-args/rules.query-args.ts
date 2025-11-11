@@ -30,10 +30,10 @@ export const getRuleQueryArgs = (organizationId: string) =>
           rule: true,
           statusHistory: {
             include: {
-              userUpdated: getUserQueryArgs(organizationId)
+              updatedBy: getUserQueryArgs(organizationId)
             },
             orderBy: {
-              updatedAt: 'desc'
+              dateUpdated: 'desc'
             }
           }
         }
@@ -74,7 +74,7 @@ export const getProjectRuleQueryArgs = () =>
       project: { select: { projectId: true } },
       statusHistory: {
         include: {
-          userUpdated: {
+          updatedBy: {
             select: {
               userId: true,
               firstName: true,
@@ -83,7 +83,7 @@ export const getProjectRuleQueryArgs = () =>
           }
         },
         orderBy: {
-          updatedAt: 'desc'
+          dateUpdated: 'desc'
         }
       }
     }
