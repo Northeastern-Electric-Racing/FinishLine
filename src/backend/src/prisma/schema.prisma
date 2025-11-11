@@ -985,8 +985,6 @@ model Shop {
   events         Event[]
   organizationId String
   organization   Organization     @relation(fields: [organizationId], references: [organizationId])
-
-  @@unique([name, organizationId], name: "uniqueShop")
 }
 
 model Machinery {
@@ -1003,7 +1001,6 @@ model Machinery {
   organizationId String
   organization   Organization     @relation(fields: [organizationId], references: [organizationId])
 
-  @@unique([name, organizationId], name: "uniqueMachinery")
 }
 
 model Shop_Machinery {
@@ -1091,7 +1088,6 @@ model Calendar {
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [organizationId])
 
-  @@unique([name, organizationId], name: "uniqueCalendar")
 }
 
 model Event_Type {
@@ -1124,7 +1120,6 @@ model Event_Type {
   organizationId                   String
   organization                     Organization @relation(fields: [organizationId], references: [organizationId])
 
-  @@unique([name, organizationId], name: "uniqueEventType")
 }
 
 model Team_Type {

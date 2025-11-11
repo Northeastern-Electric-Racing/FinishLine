@@ -123,6 +123,17 @@ export default class CalendarService {
       }
     }
 
+    const duplicate = await prisma.event_Type.findFirst({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        name: { equals: name, mode: 'insensitive' }
+      }
+    });
+    if (duplicate) {
+      throw new HttpException(409, "Can't have two event types with the same name");
+    }
+
     const newEventType = await prisma.event_Type.create({
       data: {
         name,
@@ -159,9 +170,9 @@ export default class CalendarService {
    *
    * @param submitter The user submitting the request, who must be an admin.
    * @param name The name of the machinery.
-   * @param shopId The shop ID to associate with the machinery.
-   * @param quantity The quantity of machinery in the shop.
+   * @param shopMachineryData Array of shop machinery data containing shopId, quantity, and optional description.
    * @param organization The organization for which the machinery is being created.
+   * @param description The description of the machinery (optional).
    *
    * @returns The created machinery object with associated shop machinery.
    *
@@ -173,24 +184,18 @@ export default class CalendarService {
       throw new AccessDeniedAdminOnlyException('create machinery');
     }
 
-    // Check if machinery with the same name already exists
-    const existingMachinery = await prisma.machinery.findUnique({
+    const duplicate = await prisma.machinery.findFirst({
       where: {
-        uniqueMachinery: {
-          name,
-          organizationId: organization.organizationId
-        }
-      },
-      ...getMachineryQueryArgs(organization.organizationId)
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        name: { equals: name, mode: 'insensitive' }
+      }
     });
-
-    // If machinery with same name exists, return it instead of creating a new one
-    // The addMachineryToShop endpoint will handle consolidation/creation of shop relationships
-    if (existingMachinery) {
-      return machineryTransformer(existingMachinery);
+    if (duplicate) {
+      throw new HttpException(409, "Can't have two machinery with the same name");
     }
 
-    const newMachinery = await prisma.machinery.create({
+    const created = await prisma.machinery.create({
       data: {
         name,
         userCreatedId: submitter.userId,
@@ -199,7 +204,7 @@ export default class CalendarService {
       ...getMachineryQueryArgs(organization.organizationId)
     });
 
-    return machineryTransformer(newMachinery);
+    return machineryTransformer(created);
   }
 
   /**
@@ -382,6 +387,18 @@ export default class CalendarService {
       const weeks = Math.max(1, recurrenceNumber ?? 0);
       return new Date(initial.getTime() + weeks * 7 * 24 * 60 * 60 * 1000);
     };
+
+    const duplicate = await prisma.event.findFirst({
+      where: {
+        dateDeleted: null,
+        title: { equals: title, mode: 'insensitive' },
+        // scope to org via related eventType
+        eventType: { organizationId: organization.organizationId }
+      }
+    });
+    if (duplicate) {
+      throw new HttpException(409, "Can't have two events with the same title");
+    }
 
     const newEvent = await prisma.event.create({
       data: {
@@ -990,119 +1007,51 @@ export default class CalendarService {
    * @param submitter The user submitting the request, who must be a head or above.
    * @param machineryId The ID of the machinery to edit.
    * @param name The new name of the machinery.
+   * @param shopId The shop ID to associate with the machinery.
+   * @param quantity The quantity of machinery in the shop.
    * @param organization The organization for which the machinery is being edited.
+   * @param description The description of the machinery (optional).
    *
    * @returns The updated machinery object with associated shop machinery.
    *
    * @throws AccessDeniedException If the submitter is not a head or above.
-   * @throws NotFoundException If the machinery with the given ID does not exist.
-   * @throws InvalidOrganizationException If the machinery does not belong to the same organization.
+   * @throws NotFoundException If the machinery or shop with the given IDs do not exist.
+   * @throws InvalidOrganizationException If the machinery or shop does not belong to the same organization.
    */
   static async editMachinery(submitter: User, machineryId: string, name: string, organization: Organization) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
       throw new AccessDeniedException('Only heads and above can edit machinery');
     }
 
-    const existingMachinery = await prisma.machinery.findUnique({
-      where: { machineryId }
-    });
-
-    if (!existingMachinery) {
+    const existing = await prisma.machinery.findFirst({ where: { machineryId } });
+    if (!existing) throw new NotFoundException('Machinery', machineryId);
+    if (existing.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Machinery');
+    }
+    if (existing.dateDeleted) {
       throw new NotFoundException('Machinery', machineryId);
     }
 
-    if (existingMachinery.organizationId !== organization.organizationId) {
-      throw new InvalidOrganizationException('Machinery');
-    }
-
-    // If name is the same, just update it (no consolidation needed)
-    if (existingMachinery.name === name) {
-      const updatedMachinery = await prisma.machinery.findUnique({
-        where: { machineryId },
-        ...getMachineryQueryArgs(organization.organizationId)
-      });
-      if (!updatedMachinery) {
-        throw new NotFoundException('Machinery', machineryId);
-      }
-      return machineryTransformer(updatedMachinery);
-    }
-
-    // Check if another machinery with the same name already exists
-    const existingMachineryWithSameName = await prisma.machinery.findUnique({
+    // manual uniqueness excluding current record
+    const duplicate = await prisma.machinery.findFirst({
       where: {
-        uniqueMachinery: {
-          name,
-          organizationId: organization.organizationId
-        }
-      },
-      include: {
-        shops: true
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        name: { equals: name, mode: 'insensitive' },
+        NOT: { machineryId }
       }
     });
-
-    // If name matches an existing machinery, consolidate by merging all shop relationships
-    if (existingMachineryWithSameName && existingMachineryWithSameName.machineryId !== machineryId) {
-      const updatedMachinery = await prisma.$transaction(async (tx) => {
-        // Get all shop relationships from the machinery being edited
-        const shopRelationshipsToMove = await tx.shop_Machinery.findMany({
-          where: { machineryId }
-        });
-
-        // Move each shop relationship to the existing machinery
-        for (const relationship of shopRelationshipsToMove) {
-          const existingShopMachinery = await tx.shop_Machinery.findUnique({
-            where: {
-              uniqueShopMachinery: {
-                shopId: relationship.shopId,
-                machineryId: existingMachineryWithSameName.machineryId
-              }
-            }
-          });
-
-          if (existingShopMachinery) {
-            // If the target machinery already has this shop, add quantities together
-            const newQuantity = existingShopMachinery.quantity + relationship.quantity;
-            await tx.shop_Machinery.update({
-              where: { shopMachineryId: existingShopMachinery.shopMachineryId },
-              data: { quantity: newQuantity }
-            });
-            await tx.shop_Machinery.delete({
-              where: { shopMachineryId: relationship.shopMachineryId }
-            });
-          } else {
-            // Move the relationship to the existing machinery
-            await tx.shop_Machinery.update({
-              where: { shopMachineryId: relationship.shopMachineryId },
-              data: { machineryId: existingMachineryWithSameName.machineryId }
-            });
-          }
-        }
-
-        // Note: Machinery is kept even if all relationships are moved
-        // Only shop-machinery relationships are deleted, not the machinery itself
-
-        // Return the consolidated machinery
-        const resultMachinery = await tx.machinery.findUnique({
-          where: { machineryId: existingMachineryWithSameName.machineryId },
-          ...getMachineryQueryArgs(organization.organizationId)
-        });
-        if (!resultMachinery) {
-          throw new NotFoundException('Machinery', existingMachineryWithSameName.machineryId);
-        }
-        return resultMachinery;
-      });
-
-      return machineryTransformer(updatedMachinery);
+    if (duplicate) {
+      throw new HttpException(409, "Can't have two machinery with the same name");
     }
 
-    // No consolidation needed, just update the name
-    const updatedMachinery = await prisma.machinery.update({
+    const updated = await prisma.machinery.update({
       where: { machineryId },
       data: { name },
       ...getMachineryQueryArgs(organization.organizationId)
     });
 
-    return machineryTransformer(updatedMachinery);
+    return machineryTransformer(updated);
   }
 
   /**
@@ -1175,12 +1124,11 @@ export default class CalendarService {
       const machineryName = existingMachinery.name;
 
       // Check if another machinery with the same name already exists
-      const existingMachineryWithSameName = await tx.machinery.findUnique({
+      const existingMachineryWithSameName = await tx.machinery.findFirst({
         where: {
-          uniqueMachinery: {
-            name: machineryName,
-            organizationId: organization.organizationId
-          }
+          name: machineryName,
+          organizationId: organization.organizationId,
+          machineryId: { not: existingMachinery.machineryId }
         },
         include: {
           shops: {
@@ -1434,9 +1382,7 @@ export default class CalendarService {
         where: { machineryId },
         ...getMachineryQueryArgs(organization.organizationId)
       });
-      if (!updatedMachineryResult) {
-        throw new NotFoundException('Machinery', machineryId);
-      }
+      if (!updatedMachineryResult) throw new NotFoundException('Machinery', machineryId);
       return updatedMachineryResult;
     });
 
@@ -1450,6 +1396,18 @@ export default class CalendarService {
   static async createShop(submitter: User, name: string, description: string, organization: Organization): Promise<Shop> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create shop');
+    }
+
+    const existing = await prisma.shop.findFirst({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        name: { equals: name, mode: 'insensitive' }
+      }
+    });
+
+    if (existing) {
+      throw new HttpException(409, "Can't have two shops with the same name");
     }
 
     const newShop = await prisma.shop.create({
@@ -1494,12 +1452,22 @@ export default class CalendarService {
     if (existing.dateDeleted) throw new DeletedException('Shop', shopId);
     if (existing.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Shop');
 
+    const duplicate = await prisma.shop.findFirst({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        name: { equals: name, mode: 'insensitive' },
+        NOT: { shopId }
+      }
+    });
+
+    if (duplicate) {
+      throw new HttpException(409, "Can't have two shops with the same name");
+    }
+
     const updatedShop = await prisma.shop.update({
       where: { shopId },
-      data: {
-        name,
-        description
-      },
+      data: { name, description },
       ...getShopQueryArgs(organization.organizationId)
     });
 
@@ -1526,6 +1494,17 @@ export default class CalendarService {
   ): Promise<Calendar> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create calendar');
+    }
+
+    const duplicate = await prisma.calendar.findFirst({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        name: { equals: name, mode: 'insensitive' }
+      }
+    });
+    if (duplicate) {
+      throw new HttpException(409, "Can't have two calendars with the same name");
     }
 
     const newCalendar = await prisma.calendar.create({
@@ -1577,6 +1556,19 @@ export default class CalendarService {
 
     if (!hasPermission) {
       throw new AccessDeniedException('Only admins can edit calendars');
+    }
+
+    const duplicate = await prisma.calendar.findFirst({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        name: { equals: name, mode: 'insensitive' },
+        NOT: { calendarId }
+      }
+    });
+
+    if (duplicate) {
+      throw new HttpException(409, "Can't have two calendars with the same name");
     }
 
     const newCalendar = await prisma.calendar.update({
@@ -1974,18 +1966,6 @@ export default class CalendarService {
     return shops.map(shopTransformer);
   }
 
-  static async getAllMachinery(organization: Organization): Promise<Machinery[]> {
-    const machinery = await prisma.machinery.findMany({
-      where: {
-        organizationId: organization.organizationId,
-        dateDeleted: null
-      },
-      ...getMachineryQueryArgs(organization.organizationId)
-    });
-
-    return machinery.map(machineryTransformer);
-  }
-
   static async getAllCalendars(organization: Organization): Promise<Calendar[]> {
     const calendars = await prisma.calendar.findMany({
       where: {
@@ -1996,6 +1976,17 @@ export default class CalendarService {
     });
 
     return calendars.map(calendarTransformer);
+  }
+
+  static async getAllMachinery(organization: Organization): Promise<Machinery[]> {
+    const list = await prisma.machinery.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null
+      },
+      ...getMachineryQueryArgs(organization.organizationId)
+    });
+    return list.map(machineryTransformer);
   }
   /**
    * Deletes a machinery by its ID.

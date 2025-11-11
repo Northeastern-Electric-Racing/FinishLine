@@ -247,15 +247,6 @@ ALTER TABLE "public"."_deniedEventAttendee" ADD CONSTRAINT "_deniedEventAttendee
 ALTER TABLE "public"."_deniedEventAttendee" ADD CONSTRAINT "_deniedEventAttendee_B_fkey" FOREIGN KEY ("B") REFERENCES "public"."User"("userId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Shop_name_key" ON "public"."Shop"("name");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Shop_name_organizationId_key" ON "public"."Shop"("name", "organizationId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Machinery_name_organizationId_key" ON "public"."Machinery"("name", "organizationId");
-
--- CreateIndex
 CREATE INDEX "Shop_Machinery_machineryId_idx" ON "public"."Shop_Machinery"("machineryId");
 
 -- CreateIndex
@@ -263,12 +254,6 @@ CREATE UNIQUE INDEX "Shop_Machinery_shopId_machineryId_key" ON "public"."Shop_Ma
 
 -- CreateIndex
 CREATE INDEX "Schedule_Slot_initialDateScheduled_endDate_idx" ON "public"."Schedule_Slot"("initialDateScheduled", "endDate");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Calendar_name_organizationId_key" ON "public"."Calendar"("name", "organizationId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Event_Type_name_organizationId_key" ON "public"."Event_Type"("name", "organizationId");
 
 -- CreateIndex
 CREATE INDEX "_EventToSchedule_Slot_B_index" ON "public"."_EventToSchedule_Slot"("B");
