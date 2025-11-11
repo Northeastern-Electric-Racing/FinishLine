@@ -274,7 +274,7 @@ export const getChangesForWorkPackage = (
   );
 
   let proposedChangesEndDate: Date | '' = '';
-  if (proposedChanges){
+  if (proposedChanges) {
     proposedChangesEndDate = new Date(proposedChanges.startDate);
     proposedChangesEndDate.setDate(proposedChangesEndDate.getDate() + proposedChanges.duration * 7);
   }
