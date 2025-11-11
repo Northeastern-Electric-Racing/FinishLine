@@ -439,6 +439,10 @@ const retrospectiveBudgets = () => `${API_URL}/retrospective/budgets`;
 const calendar = () => `${API_URL}/calendar`;
 const calendarShops = () => `${calendar()}/shops`;
 const calendarCreateShop = () => `${calendar()}/shop/create`;
+const calendarMachinery = () => `${calendar()}/machinery`;
+const calendarCreateMachinery = () => `${calendar()}/machinery/create`;
+const calendarEditMachinery = (machineryId: string) => `${calendar()}/machinery/${machineryId}/edit`;
+const calendarAddMachineryToShop = (machineryId: string) => `${calendar()}/machinery/${machineryId}/add-to-shop`;
 const calendarEditShop = (shopId: string) => `${calendar()}/shop/${shopId}/edit`;
 
 /**************** Other Endpoints ****************/
@@ -744,6 +748,10 @@ export const apiUrls = {
 
   calendarShops,
   calendarCreateShop,
+  calendarMachinery,
+  calendarCreateMachinery,
+  calendarEditMachinery,
+  calendarAddMachineryToShop,
   calendarEditShop,
 
   version
