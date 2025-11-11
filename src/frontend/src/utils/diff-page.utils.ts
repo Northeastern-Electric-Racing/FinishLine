@@ -259,8 +259,8 @@ export const getChangesForWorkPackage = (
     genChange(
       'Start Date',
       originalWorkPackage?.startDate.getTime() !== proposedChanges?.startDate.getTime(),
-      originalWorkPackage?.startDate.toLocaleString() ?? '',
-      proposedChanges?.startDate.toLocaleString() ?? ''
+      originalWorkPackage?.startDate ? datePipe(originalWorkPackage.startDate) : '',
+      proposedChanges?.startDate ? datePipe(proposedChanges.startDate) : ''
     )
   );
 
@@ -282,11 +282,9 @@ export const getChangesForWorkPackage = (
   lines.push(
     genChange(
       'End Date',
-      originalWorkPackage?.endDate && proposedChangesEndDate
-        ? originalWorkPackage.endDate.getTime() !== proposedChangesEndDate.getTime()
-        : !!originalWorkPackage?.endDate !== !!proposedChangesEndDate,
-      originalWorkPackage?.endDate ? originalWorkPackage.endDate.toLocaleString() : '',
-      proposedChangesEndDate ? proposedChangesEndDate.toLocaleString() : ''
+      originalWorkPackage?.endDate?.getTime() !== (proposedChangesEndDate as Date)?.getTime(),
+      originalWorkPackage?.endDate ? datePipe(originalWorkPackage.endDate) : '',
+      proposedChangesEndDate ? datePipe(proposedChangesEndDate as Date) : ''
     )
   );
 
