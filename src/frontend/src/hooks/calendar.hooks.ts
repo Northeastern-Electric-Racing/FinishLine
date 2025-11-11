@@ -112,7 +112,7 @@ export const useDeleteShop = () => {
     },
     {
       onSuccess: () => {
-        qc.invalidateQueries(SHOPS_KEY);
+        qc.invalidateQueries(['shops']);
       }
     }
   );
