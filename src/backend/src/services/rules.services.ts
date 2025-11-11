@@ -395,7 +395,7 @@ export default class RulesService {
 
     return rulesets.map(rulesetPreviewTransformer);
   }
-  
+
   /**
    * Updates the status of a project rule
    * Such as changing a project rule from INCOMPLETE to COMPLETED
