@@ -46,13 +46,13 @@ describe('Calendar Tests', () => {
     );
     ({ shopId } = shop);
 
-    machinery = await CalendarService.createMachinery(
+    const createdMachinery = await CalendarService.createMachinery(adminUser, 'Original Machinery Name', organization);
+    machinery = await CalendarService.addMachineryToShop(
       adminUser,
-      'Original Machinery Name',
+      createdMachinery.machineryId,
       shop.shopId,
       1,
-      organization,
-      'Original description'
+      organization
     );
     eventType = await CalendarService.createEventType(
       adminUser,
@@ -303,17 +303,16 @@ describe('Calendar Tests', () => {
           await CalendarService.createMachinery(
             await createTestUser(wonderwomanGuest, orgId),
             'Captain America Shield Press',
-            shop.shopId,
-            1,
             organization
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create machinery'));
     });
 
     it('Succeeds and creates machinery', async () => {
-      const result = await CalendarService.createMachinery(
-        await createTestUser(supermanAdmin, orgId),
-        'Iron Man Mark 42 CNC Mill',
+      const createdMachinery = await CalendarService.createMachinery(adminUser, 'Iron Man Mark 42 CNC Mill', organization);
+      const result = await CalendarService.addMachineryToShop(
+        adminUser,
+        createdMachinery.machineryId,
         shop.shopId,
         2,
         organization
@@ -335,10 +334,7 @@ describe('Calendar Tests', () => {
             await createTestUser(wonderwomanGuest, orgId),
             machinery.machineryId,
             'Updated Machinery Name',
-            shop.shopId,
-            2,
-            organization,
-            'Updated description'
+            organization
           )
       ).rejects.toThrow(new AccessDeniedException('Only heads and above can edit machinery'));
     });
@@ -346,16 +342,7 @@ describe('Calendar Tests', () => {
     it('Fails if machinery does not exist', async () => {
       const nonExistentId = 'non-existent-id';
       await expect(
-        async () =>
-          await CalendarService.editMachinery(
-            await createTestUser(supermanAdmin, orgId),
-            nonExistentId,
-            'Updated Machinery Name',
-            shop.shopId,
-            2,
-            organization,
-            'Updated description'
-          )
+        async () => await CalendarService.editMachinery(adminUser, nonExistentId, 'Updated Machinery Name', organization)
       ).rejects.toThrow(new NotFoundException('Machinery', nonExistentId));
     });
 
@@ -363,69 +350,100 @@ describe('Calendar Tests', () => {
       const nonExistentShopId = 'non-existent-shop-id';
       await expect(
         async () =>
-          await CalendarService.editMachinery(
-            await createTestUser(supermanAdmin, orgId),
+          await CalendarService.addMachineryToShop(
+            adminUser,
             machinery.machineryId,
-            'Updated Machinery Name',
             nonExistentShopId,
             2,
             organization,
-            'Updated description'
+            shop.shopId
           )
       ).rejects.toThrow(new NotFoundException('Shop', nonExistentShopId));
     });
 
     it('Succeeds and updates machinery for head user', async () => {
-      const result = await CalendarService.editMachinery(
-        await createTestUser(supermanAdmin, orgId),
+      await CalendarService.editMachinery(adminUser, machinery.machineryId, 'Updated Machinery Name', organization);
+      const result = await CalendarService.addMachineryToShop(
+        adminUser,
         machinery.machineryId,
-        'Updated Machinery Name',
         shop.shopId,
         3,
         organization,
-        'Updated description'
+        shop.shopId
       );
 
       expect(result.name).toEqual('Updated Machinery Name');
       expect(result.shops).toHaveLength(1);
       expect(result.shops[0].quantity).toBe(3);
-      expect(result.shops[0].description).toBe('Updated description');
       expect(result.shops[0].shop.name).toBe('Precision Manufacturing Lab');
     });
 
     it('Succeeds and updates machinery for admin user', async () => {
-      const result = await CalendarService.editMachinery(
-        await createTestUser(supermanAdmin, orgId),
+      await CalendarService.editMachinery(adminUser, machinery.machineryId, 'Admin Updated Machinery', organization);
+      const result = await CalendarService.addMachineryToShop(
+        adminUser,
         machinery.machineryId,
-        'Admin Updated Machinery',
         shop.shopId,
         5,
         organization,
-        'Admin updated description'
+        shop.shopId
       );
 
       expect(result.name).toEqual('Admin Updated Machinery');
       expect(result.shops).toHaveLength(1);
       expect(result.shops[0].quantity).toBe(5);
-      expect(result.shops[0].description).toBe('Admin updated description');
       expect(result.shops[0].shop.name).toBe('Precision Manufacturing Lab');
     });
 
     it('Succeeds and updates machinery without description', async () => {
-      const result = await CalendarService.editMachinery(
-        await createTestUser(supermanAdmin, orgId),
+      await CalendarService.editMachinery(adminUser, machinery.machineryId, 'No Description Machinery', organization);
+      const result = await CalendarService.addMachineryToShop(
+        adminUser,
         machinery.machineryId,
-        'No Description Machinery',
         shop.shopId,
         2,
         organization,
-        undefined
+        shop.shopId
       );
 
       expect(result.name).toEqual('No Description Machinery');
       expect(result.shops).toHaveLength(1);
       expect(result.shops[0].quantity).toBe(2);
-      expect(result.shops[0].description).toBe('Original description'); // Original description should remain unchanged
+    });
+
+    it('Succeeds and updates machinery to a different shop', async () => {
+      // Create a newshop
+      const newShop = await CalendarService.createShop(
+        adminUser,
+        'Electronics Lab',
+        'Electronics testing facility',
+        organization
+      );
+
+      //Check that the machinery original shop is not the new shop before editing
+      expect(machinery.shops[0].shop.shopId).not.toBe(newShop.shopId);
+
+      // Get the original shop ID to pass to addMachineryToShop
+      const [originalShopMachinery] = machinery.shops;
+      const {
+        shop: { shopId: originalShopId }
+      } = originalShopMachinery;
+
+      await CalendarService.editMachinery(adminUser, machinery.machineryId, 'Updated Shop to Electronics Lab', organization);
+      const result = await CalendarService.addMachineryToShop(
+        adminUser,
+        machinery.machineryId,
+        newShop.shopId,
+        5,
+        organization,
+        originalShopId
+      );
+
+      expect(result.name).toEqual('Updated Shop to Electronics Lab');
+      expect(result.shops).toHaveLength(1);
+      expect(result.shops[0].quantity).toBe(5);
+      expect(result.shops[0].shop.name).toBe('Electronics Lab');
+      expect(result.shops[0].shop.shopId).toBe(newShop.shopId);
     });
   });
 
@@ -483,7 +501,8 @@ describe('Calendar Tests', () => {
     });
     it('also deletes associated shopMachinery bridge rows', async () => {
       // create a machinery that links to this shop
-      await CalendarService.createMachinery(adminUser, 'Bridge-Linked', shop.shopId, 1, organization);
+      const createdMachinery = await CalendarService.createMachinery(adminUser, 'Bridge-Linked', organization);
+      await CalendarService.addMachineryToShop(adminUser, createdMachinery.machineryId, shop.shopId, 1, organization);
       //confirm the bridge row exists before delete
       const before = await prisma.shopMachinery.count({ where: { shopId } });
       expect(before).toBeGreaterThan(0);
@@ -799,13 +818,13 @@ describe('Calendar Tests', () => {
         otherOrg
       );
 
-      otherOrgMachinery = await CalendarService.createMachinery(
+      const createdOtherOrgMachinery = await CalendarService.createMachinery(otherOrgUser, 'Other Org Machinery', otherOrg);
+      otherOrgMachinery = await CalendarService.addMachineryToShop(
         otherOrgUser,
-        'Other Org Machinery',
+        createdOtherOrgMachinery.machineryId,
         otherOrgShop.shopId,
         1,
-        otherOrg,
-        'Machinery in different organization'
+        otherOrg
       );
 
       document = 'Test Document';
@@ -1222,13 +1241,13 @@ describe('Calendar Tests', () => {
     });
 
     it('fails if machineryIds are deleted', async () => {
-      const deletedMachinery = await CalendarService.createMachinery(
+      const createdMachinery = await CalendarService.createMachinery(adminUser, 'Deleted Machinery', organization);
+      const deletedMachinery = await CalendarService.addMachineryToShop(
         adminUser,
-        'Deleted Machinery',
+        createdMachinery.machineryId,
         shop.shopId,
         1,
-        organization,
-        'Deleted machinery'
+        organization
       );
       await prisma.machinery.update({
         where: { machineryId: deletedMachinery.machineryId },
@@ -1605,13 +1624,13 @@ describe('Calendar Tests', () => {
     let anotherShop: Shop;
 
     beforeEach(async () => {
-      machineryToDelete = await CalendarService.createMachinery(
+      const createdMachinery = await CalendarService.createMachinery(adminUser, 'Deletable Machinery', organization);
+      machineryToDelete = await CalendarService.addMachineryToShop(
         adminUser,
-        'Deletable Machinery',
+        createdMachinery.machineryId,
         shop.shopId,
         2,
-        organization,
-        'Test description'
+        organization
       );
 
       anotherShop = await CalendarService.createShop(

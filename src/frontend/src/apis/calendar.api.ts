@@ -1,6 +1,6 @@
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { Shop } from 'shared';
+import { Shop, Machinery } from 'shared';
 
 export const getAllShops = () => {
   return axios.get<Shop[]>(apiUrls.calendarShops(), {

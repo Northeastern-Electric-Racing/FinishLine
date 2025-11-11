@@ -1,10 +1,11 @@
 import { Box, FormControl, FormHelperText, Typography } from '@mui/material';
-import NERFormModal from '../../../components/NERFormModal';
-import ReactHookTextField from '../../../components/ReactHookTextField';
-import { useToast } from '../../../hooks/toasts.hooks';
+import NERFormModal from '../../../../components/NERFormModal';
+import ReactHookTextField from '../../../../components/ReactHookTextField';
+import { useToast } from '../../../../hooks/toasts.hooks';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { Shop } from 'shared';
 
 export interface CreateShopFormValues {
   name: string;
@@ -19,7 +20,7 @@ const schema = yup.object({
 interface CreateShopModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateShopFormValues) => Promise<unknown> | unknown;
+  onSubmit: (data: CreateShopFormValues) => Promise<Shop>;
 }
 
 export const CreateShopModal: React.FC<CreateShopModalProps> = ({ open, onClose, onSubmit }) => {
