@@ -205,6 +205,37 @@ variable "calendar_refresh_token" {
 }
 
 #####################
+# Frontend (Amplify) Variables
+#####################
+
+variable "github_repository" {
+  description = "GitHub repository URL (e.g., https://github.com/username/FinishLine)"
+  type        = string
+  default     = ""  # Set this to your GitHub repo URL
+}
+
+variable "github_access_token" {
+  description = "GitHub personal access token for Amplify to access the repository"
+  type        = string
+  sensitive   = true
+  # Set via: export TF_VAR_github_access_token="ghp_xxxxx"
+  # Create at: https://github.com/settings/tokens
+  # Required scopes: repo (Full control of private repositories)
+}
+
+variable "deploy_branch_name" {
+  description = "Branch name to deploy (use a test branch initially, then switch to 'main')"
+  type        = string
+  default     = "amplify-test"  # Change to 'main' when ready for production
+}
+
+variable "enable_pull_request_preview" {
+  description = "Enable automatic preview deployments for pull requests"
+  type        = bool
+  default     = false  # Set to true when you want PR previews
+}
+
+#####################
 # Application Variables (Non-Secret)
 #####################
 

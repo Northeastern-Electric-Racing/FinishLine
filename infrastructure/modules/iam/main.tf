@@ -140,6 +140,29 @@ resource "aws_iam_role_policy" "eb_cloudwatch_logs" {
   })
 }
 
+# Custom policy for ECR access
+resource "aws_iam_role_policy" "eb_ecr_access" {
+  name = "${var.project_name}-${var.environment}-eb-ecr-access"
+  role = aws_iam_role.eb_ec2_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowECRPull"
+        Effect = "Allow"
+        Action = [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
 # EC2 Instance Profile
 resource "aws_iam_instance_profile" "eb_ec2_profile" {
   name = "${var.project_name}-${var.environment}-eb-ec2-profile"

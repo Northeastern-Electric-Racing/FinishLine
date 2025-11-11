@@ -40,6 +40,20 @@ output "database_url" {
 }
 
 #####################
+# ECR Outputs
+#####################
+
+output "ecr_repository_url" {
+  description = "ECR repository URL for Docker images"
+  value       = module.ecr.repository_url
+}
+
+output "ecr_repository_name" {
+  description = "ECR repository name"
+  value       = module.ecr.repository_name
+}
+
+#####################
 # Elastic Beanstalk Outputs
 #####################
 
@@ -64,12 +78,12 @@ output "eb_cname" {
 }
 
 #####################
-# Frontend Outputs
+# Frontend Outputs (Amplify)
 #####################
 
-output "frontend_s3_bucket" {
-  description = "S3 bucket name for frontend"
-  value       = module.frontend.s3_bucket_name
+output "amplify_app_id" {
+  description = "Amplify app ID"
+  value       = module.frontend.amplify_app_id
 }
 
 output "frontend_url" {
@@ -77,14 +91,14 @@ output "frontend_url" {
   value       = module.frontend.frontend_url
 }
 
-output "cloudfront_distribution_id" {
-  description = "CloudFront distribution ID (for cache invalidation)"
-  value       = module.frontend.cloudfront_distribution_id
+output "amplify_console_url" {
+  description = "URL to Amplify Console for monitoring builds"
+  value       = module.frontend.amplify_console_url
 }
 
-output "cloudfront_domain_name" {
-  description = "CloudFront domain name"
-  value       = module.frontend.cloudfront_domain_name
+output "backend_api_url" {
+  description = "Backend API URL (used by frontend)"
+  value       = module.elasticbeanstalk.environment_endpoint_url
 }
 
 #####################

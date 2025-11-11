@@ -9,27 +9,16 @@ aws_region = "us-east-1"
 # Add your IP addresses here to allow direct RDS access (for psql, TablePlus, etc.)
 # Find your IP: curl ifconfig.me
 allowed_ips = [
-  # "73.123.45.67/32",  # Example: Your home IP
-  # "52.98.76.54/32",   # Example: Your office IP
+  # IP 1,
+  # IP 2
 ]
-# Leave empty ([]) for maximum security - access RDS only via Session Manager
-
-# Database Configuration
 database_name      = "finishline"
 db_master_username = "postgres"
-# db_master_password: Set via environment variable instead of here!
-# export TF_VAR_db_master_password="YourStrongPassword123!"
-# Do NOT set this in this file for security
-
-# Session Secret (for application)
-# export TF_VAR_session_secret=$(openssl rand -base64 32)
-# Do NOT set this in this file for security
-# Note: Password is stored in AWS Secrets Manager after initial creation
 
 # RDS Configuration
 rds_instance_class      = "db.t4g.medium"
 rds_allocated_storage   = 20
-rds_publicly_accessible = false  # Set to true temporarily if you need direct access
+rds_publicly_accessible = false 
 rds_multi_az            = false  # Set to true for high availability (costs 2x)
 
 # Elastic Beanstalk Configuration
@@ -38,28 +27,23 @@ eb_min_instances  = 1
 eb_max_instances  = 4
 
 # HTTPS/SSL Configuration
-enable_https = false  # Set to true after domain and certificate are ready
-domain_name  = ""     # Set to your domain (e.g., "app.yourdomain.com")
+enable_https = false 
+domain_name  =
 
-# Steps to enable HTTPS:
-# 1. Purchase/configure a domain name
-# 2. Set domain_name above (e.g., "app.yourdomain.com")
-# 3. Run: terraform apply
-# 4. Add DNS validation records (shown in terraform output) to your domain
-# 5. Wait for certificate validation (~5-30 minutes)
-# 6. Set enable_https = true
-# 7. Run: terraform apply again
-# 8. Update your domain's A record to point to the EB environment URL
-
-#####################
-# Application Configuration (Non-Secret)
-#####################
-
-# Google OAuth (Client ID is public, not secret)
 google_client_id = ""  # e.g., "123456789-abcdef.apps.googleusercontent.com"
+slack_id =
+github_repository="https://github.com/Northeastern-Electric-Racing/FinishLine"
+deploy_branch_name="multitenancy"
 
-# Add other non-secret environment variables here
-# Examples:
-# stripe_publishable_key = "pk_live_..."
-# frontend_url = "https://app.yourdomain.com"
-# api_version = "v1"
+# Secrets (NEVER commit these or anything above but that stuff is less important)
+db_master_password            =
+session_secret                =
+google_client_secret          =
+drive_refresh_token           =
+calendar_refresh_token        =
+slack_bot_token               =
+slack_token_secret            =
+slack_signing_secret          =
+encryption_key                =
+notification_endpoint_secret  =
+github_access_token           =

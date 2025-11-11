@@ -62,6 +62,16 @@ module "iam" {
 }
 
 #############
+# ECR Module
+#############
+module "ecr" {
+  source = "../../modules/ecr"
+
+  project_name = local.project_name
+  environment  = local.environment
+}
+
+#############
 # Secrets Module
 #############
 module "secrets" {
@@ -210,20 +220,30 @@ module "elasticbeanstalk" {
 }
 
 #############
-# Frontend Module
+# Frontend Module (Amplify - GitHub Integration)
 #############
 module "frontend" {
-  source = "../../modules/frontend"
+  source = "../../modules/amplify-frontend"
 
   project_name         = local.project_name
   environment          = local.environment
-  use_cloudfront       = true
-  enable_versioning    = true
-  cloudfront_price_class = "PriceClass_100"
-
-  # TODO: Configure custom domain after DNS is set up
-  # domain_name         = var.domain_name
-  # acm_certificate_arn = var.acm_certificate_arn
+  
+  # GitHub configuration
+  github_repository    = var.github_repository
+  github_access_token  = var.github_access_token
+  
+  # Deploy from a test branch for now (change to "main" when ready for production)
+  main_branch_name     = var.deploy_branch_name
+  
+  # Backend API URL from Elastic Beanstalk
+  backend_api_url      = module.elasticbeanstalk.environment_endpoint_url
+  
+  # Disable PR previews for now (enable later when ready)
+  enable_pull_request_preview = var.enable_pull_request_preview
+  
+  # Custom domain (configure later after DNS setup)
+  # domain_name = var.domain_name
+  # domain_prefix = ""  # Empty for root domain, or "www" for www subdomain
 }
 
 #############
