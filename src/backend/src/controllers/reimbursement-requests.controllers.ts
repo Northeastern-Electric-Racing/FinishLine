@@ -281,9 +281,7 @@ export default class ReimbursementRequestsController {
     try {
       const { file } = req;
       const { requestId } = req.params;
-
       if (!file) throw new HttpException(400, 'Invalid or undefined image data');
-
       const receipt = await ReimbursementRequestService.uploadReceipt(requestId, file, req.currentUser, req.organization);
       const isProd = process.env.NODE_ENV === 'production';
       const origin = isProd ? 'https://finishlinebyner.com' : 'http://localhost:3000';

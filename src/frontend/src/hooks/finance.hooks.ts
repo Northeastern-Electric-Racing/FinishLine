@@ -375,7 +375,6 @@ export const useUploadManyReceipts = () => {
         try {
           results.push(await uploadSingleReceipt(file, formData.id));
         } catch (error: any) {
-          // Provide more specific error messages based on the error response
           if (error.response?.status === 413) {
             throw new Error(`File "${file.name}" is too large. Maximum file size allowed is 25MB.`);
           } else if (error.response?.status === 400 && error.response?.data?.message?.includes('File too large')) {

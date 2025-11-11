@@ -724,14 +724,14 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                                 `Error uploading ${file.name}: File is too large. Maximum file size allowed is ${MAX_FILE_SIZE / 1024 / 1024} MB.`,
                                 5000
                               );
-                              return;
+                              document.getElementById('receipt-image')!.innerHTML = '';
+                            } else {
+                              receiptPrepend({
+                                file,
+                                name: file.name,
+                                googleFileId: ''
+                              });
                             }
-
-                            receiptPrepend({
-                              file,
-                              name: file.name,
-                              googleFileId: ''
-                            });
                           });
                         }
                       }}
