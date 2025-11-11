@@ -301,6 +301,13 @@ const CreditsPage: React.FC = () => {
         }
       }
     },
+    {
+      name: 'John Cassidy',
+      color: '#8378ffff',
+      sx: {
+        textShadow: '0px 0px 10px rgba(195, 165, 193, 1)'
+      }
+    },
     { name: 'Gahan Patel', color: '#0000FF' },
     { name: 'Mimo Olowu', color: 'white', sx: { px: 1, backgroundColor: '#ac59eb', borderRadius: 2 } },
     { name: 'Saul Manzanares', color: '#AF34FA' },
