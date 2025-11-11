@@ -2,7 +2,8 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Shop, Machinery } from 'shared';
 import {
   getAllShops,
-  postCreateShop, postDeleteShop,
+  postCreateShop,
+  postDeleteShop,
   getAllMachinery,
   postCreateMachinery,
   postEditMachinery,

@@ -7,10 +7,10 @@ import CreateShopModal from './Shop/CreateShopModal';
 import { IconButton, Tooltip } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import DeleteShopModal from './DeleteShopModal';
-import { Shop } from 'shared';
 import CreateMachineryModal from './Machinery/CreateMachineryModal';
 import EditMachineryModal from './Machinery/EditMachineryModal';
+import DeleteShopModal from './Shop/DeleteShopModal';
+import { Shop } from 'shared';
 
 const AdminToolsScheduleConfig: React.FC = () => {
   const { data: shops, isLoading: shopsLoading, isError: shopsError, error: shopsErrorMsg } = useAllShops();
@@ -20,6 +20,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
   const [openCreate, setOpenCreate] = useState(false);
   const [openCreateMachinery, setOpenCreateMachinery] = useState(false);
   const [editMachinery, setEditMachinery] = useState<{ machineryId: string; shopId: string } | null>(null);
+  const [shopToDelete, setShopToDelete] = useState<Shop | undefined>(undefined);
 
   if (shopsLoading || machinesLoading) return <LoadingIndicator />;
   if (shopsError) return <ErrorPage message={(shopsErrorMsg as Error).message} />;
@@ -200,6 +201,16 @@ const AdminToolsScheduleConfig: React.FC = () => {
           return result;
         }}
       />
+      
+      {/* Delete Shop Modal */}
+      {shopToDelete && (
+        <DeleteShopModal
+          shop={shopToDelete}
+          onClose={() => {
+            setShopToDelete(undefined);
+          }}
+        />)
+      }
 
       {/* Create Machine Modal */}
       <CreateMachineryModal open={openCreateMachinery} onClose={() => setOpenCreateMachinery(false)} />

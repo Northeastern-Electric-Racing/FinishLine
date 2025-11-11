@@ -1,7 +1,7 @@
 import { Shop } from 'shared';
-import NERModal from '../../../components/NERModal';
+import NERModal from '../../../../components/NERModal';
 import { Typography } from '@mui/material';
-import { useDeleteShop } from '../../../hooks/calendar.hooks';
+import { useDeleteShop } from '../../../../hooks/calendar.hooks';
 
 export interface DeleteShopModalProps {
   onClose: () => void;
