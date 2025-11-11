@@ -273,6 +273,23 @@ export const getChangesForWorkPackage = (
     )
   );
 
+  let proposedChangesEndDate: Date | '' = '';
+  if (proposedChanges){
+    proposedChangesEndDate = new Date(proposedChanges.startDate);
+    proposedChangesEndDate.setDate(proposedChangesEndDate.getDate() + proposedChanges.duration * 7);
+  }
+
+  lines.push(
+    genChange(
+      'End Date',
+      originalWorkPackage?.endDate && proposedChangesEndDate
+        ? originalWorkPackage.endDate.getTime() !== proposedChangesEndDate.getTime()
+        : !!originalWorkPackage?.endDate !== !!proposedChangesEndDate,
+      originalWorkPackage?.endDate ? originalWorkPackage.endDate.toLocaleString() : '',
+      proposedChangesEndDate ? proposedChangesEndDate.toLocaleString() : ''
+    )
+  );
+
   lines.push(
     genListChange(
       'Blocked By',
