@@ -157,38 +157,33 @@ export default class CalendarService {
    * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
    * @throws NotFoundException If the shop with the given shopId does not exist.
    */
- static async createMachinery(
-  submitter: User,
-  name: string,
-  organization: Organization
-) {
-  if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
-    throw new AccessDeniedAdminOnlyException('create machinery');
-  }
-
- 
-  const duplicate = await prisma.machinery.findFirst({
-    where: {
-      organizationId: organization.organizationId,
-      dateDeleted: null,
-      name: { equals: name, mode: 'insensitive' }
+  static async createMachinery(submitter: User, name: string, organization: Organization) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('create machinery');
     }
-  });
-  if (duplicate) {
-    throw new HttpException(409, "Can't have two machinery with the same name");
+
+    const duplicate = await prisma.machinery.findFirst({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        name: { equals: name, mode: 'insensitive' }
+      }
+    });
+    if (duplicate) {
+      throw new HttpException(409, "Can't have two machinery with the same name");
+    }
+
+    const created = await prisma.machinery.create({
+      data: {
+        name,
+        userCreatedId: submitter.userId,
+        organizationId: organization.organizationId
+      },
+      ...getMachineryQueryArgs(organization.organizationId)
+    });
+
+    return machineryTransformer(created);
   }
-
-  const created = await prisma.machinery.create({
-    data: {
-      name,
-      userCreatedId: submitter.userId,
-      organizationId: organization.organizationId
-    },
-    ...getMachineryQueryArgs(organization.organizationId)
-  });
-
-  return machineryTransformer(created);
-}
 
   /**
    * Creates a new event.
@@ -441,48 +436,43 @@ export default class CalendarService {
    * @throws NotFoundException If the machinery or shop with the given IDs do not exist.
    * @throws InvalidOrganizationException If the machinery or shop does not belong to the same organization.
    */
- static async editMachinery(
-  submitter: User,
-  machineryId: string,
-  name: string,
-  organization: Organization
-) {
-  if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
-    throw new AccessDeniedException('Only heads and above can edit machinery');
-  }
-
-  const existing = await prisma.machinery.findFirst({ where: { machineryId } });
-  if (!existing) throw new NotFoundException('Machinery', machineryId);
-  if (existing.organizationId !== organization.organizationId) {
-    throw new InvalidOrganizationException('Machinery');
-  }
-  if (existing.dateDeleted) {
-    throw new NotFoundException('Machinery', machineryId);
-  }
-
-  // manual uniqueness excluding current record
-  const duplicate = await prisma.machinery.findFirst({
-    where: {
-      organizationId: organization.organizationId,
-      dateDeleted: null,
-      name: { equals: name, mode: 'insensitive' },
-      NOT: { machineryId }
+  static async editMachinery(submitter: User, machineryId: string, name: string, organization: Organization) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
+      throw new AccessDeniedException('Only heads and above can edit machinery');
     }
-  });
-  if (duplicate) {
-    throw new HttpException(409, "Can't have two machinery with the same name");
+
+    const existing = await prisma.machinery.findFirst({ where: { machineryId } });
+    if (!existing) throw new NotFoundException('Machinery', machineryId);
+    if (existing.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Machinery');
+    }
+    if (existing.dateDeleted) {
+      throw new NotFoundException('Machinery', machineryId);
+    }
+
+    // manual uniqueness excluding current record
+    const duplicate = await prisma.machinery.findFirst({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        name: { equals: name, mode: 'insensitive' },
+        NOT: { machineryId }
+      }
+    });
+    if (duplicate) {
+      throw new HttpException(409, "Can't have two machinery with the same name");
+    }
+
+    const updated = await prisma.machinery.update({
+      where: { machineryId },
+      data: { name },
+      ...getMachineryQueryArgs(organization.organizationId)
+    });
+
+    return machineryTransformer(updated);
   }
 
-  const updated = await prisma.machinery.update({
-    where: { machineryId },
-    data: { name },
-    ...getMachineryQueryArgs(organization.organizationId)
-  });
-
-  return machineryTransformer(updated);
-}
-
-/**
+  /**
    * Adds or updates a machinery to a shop. Handles consolidation when machinery name matches existing machinery.
    * If quantity is 0, deletes the shop-machinery relationship (only applicable to editing the machinery modal).
    *
@@ -497,112 +487,105 @@ export default class CalendarService {
    * @throws NotFoundException If the machinery or shop with the given IDs do not exist.
    * @throws InvalidOrganizationException If the machinery or shop does not belong to the same organization.
    */
-static async addMachineryToShop(
-  submitter: User,
-  machineryId: string,
-  shopId: string,
-  quantity: number,
-  organization: Organization,
-  originalShopId?: string
-) {
-  if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
-    throw new AccessDeniedException('Only heads and above can manage shop-machinery relationships');
-  }
-
-  const [machinery, targetShop] = await Promise.all([
-    prisma.machinery.findFirst({ where: { machineryId } }),
-    prisma.shop.findFirst({ where: { shopId } })
-  ]);
-
-  if (!machinery) throw new NotFoundException('Machinery', machineryId);
-  if (machinery.organizationId !== organization.organizationId) {
-    throw new InvalidOrganizationException('Machinery');
-  }
-  if (machinery.dateDeleted) {
-    throw new NotFoundException('Machinery', machineryId);
-  }
-
-  if (!targetShop) throw new NotFoundException('Shop', shopId);
-  if (targetShop.organizationId !== organization.organizationId) {
-    throw new InvalidOrganizationException('Shop');
-  }
-  if (targetShop.dateDeleted) {
-    throw new NotFoundException('Shop', shopId);
-  }
-
-  const result = await prisma.$transaction(async (tx) => {
-    // Helper: find mapping
-    const getMap = (sId: string) =>
-      tx.shopMachinery.findFirst({ where: { shopId: sId, machineryId } });
-
-    // Helper: set quantity (create if missing, or delete when 0)
-    const setMap = async (sId: string, qty: number) => {
-      const existing = await getMap(sId);
-      if (existing) {
-        if (qty <= 0) {
-          await tx.shopMachinery.delete({ where: { shopMachineryId: existing.shopMachineryId } });
-        } else {
-          await tx.shopMachinery.update({
-            where: { shopMachineryId: existing.shopMachineryId },
-            data: { quantity: qty }
-          });
-        }
-      } else if (qty > 0) {
-        await tx.shopMachinery.create({ data: { shopId: sId, machineryId, quantity: qty } });
-      }
-    };
-
-    // Helper: increment/decrement mapping (delete when <=0)
-    const bumpMap = async (sId: string, delta: number) => {
-      const existing = await getMap(sId);
-      if (existing) {
-        const newQty = existing.quantity + delta;
-        if (newQty <= 0) {
-          await tx.shopMachinery.delete({ where: { shopMachineryId: existing.shopMachineryId } });
-        } else {
-          await tx.shopMachinery.update({
-            where: { shopMachineryId: existing.shopMachineryId },
-            data: { quantity: newQty }
-          });
-        }
-      } else if (delta > 0) {
-        await tx.shopMachinery.create({ data: { shopId: sId, machineryId, quantity: delta } });
-      }
-     
-    };
-
-    if (originalShopId) {
-      
-      if (originalShopId === shopId) {
-       
-        await setMap(shopId, quantity);
-      } else {
-        
-        const orig = await tx.shopMachinery.findFirst({
-          where: { shopId: originalShopId, machineryId }
-        });
-        if (orig) {
-          await tx.shopMachinery.delete({ where: { shopMachineryId: orig.shopMachineryId } });
-        }
-
-        
-        await bumpMap(shopId, quantity);
-      }
-    } else {
-     
-      await bumpMap(shopId, quantity);
+  static async addMachineryToShop(
+    submitter: User,
+    machineryId: string,
+    shopId: string,
+    quantity: number,
+    organization: Organization,
+    originalShopId?: string
+  ) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
+      throw new AccessDeniedException('Only heads and above can manage shop-machinery relationships');
     }
 
-    const hydrated = await tx.machinery.findFirst({
-      where: { machineryId },
-      ...getMachineryQueryArgs(organization.organizationId)
-    });
-    if (!hydrated) throw new NotFoundException('Machinery', machineryId);
-    return hydrated;
-  });
+    const [machinery, targetShop] = await Promise.all([
+      prisma.machinery.findFirst({ where: { machineryId } }),
+      prisma.shop.findFirst({ where: { shopId } })
+    ]);
 
-  return machineryTransformer(result);
-}
+    if (!machinery) throw new NotFoundException('Machinery', machineryId);
+    if (machinery.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Machinery');
+    }
+    if (machinery.dateDeleted) {
+      throw new NotFoundException('Machinery', machineryId);
+    }
+
+    if (!targetShop) throw new NotFoundException('Shop', shopId);
+    if (targetShop.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Shop');
+    }
+    if (targetShop.dateDeleted) {
+      throw new NotFoundException('Shop', shopId);
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      // Helper: find mapping
+      const getMap = (sId: string) => tx.shopMachinery.findFirst({ where: { shopId: sId, machineryId } });
+
+      // Helper: set quantity (create if missing, or delete when 0)
+      const setMap = async (sId: string, qty: number) => {
+        const existing = await getMap(sId);
+        if (existing) {
+          if (qty <= 0) {
+            await tx.shopMachinery.delete({ where: { shopMachineryId: existing.shopMachineryId } });
+          } else {
+            await tx.shopMachinery.update({
+              where: { shopMachineryId: existing.shopMachineryId },
+              data: { quantity: qty }
+            });
+          }
+        } else if (qty > 0) {
+          await tx.shopMachinery.create({ data: { shopId: sId, machineryId, quantity: qty } });
+        }
+      };
+
+      // Helper: increment/decrement mapping (delete when <=0)
+      const bumpMap = async (sId: string, delta: number) => {
+        const existing = await getMap(sId);
+        if (existing) {
+          const newQty = existing.quantity + delta;
+          if (newQty <= 0) {
+            await tx.shopMachinery.delete({ where: { shopMachineryId: existing.shopMachineryId } });
+          } else {
+            await tx.shopMachinery.update({
+              where: { shopMachineryId: existing.shopMachineryId },
+              data: { quantity: newQty }
+            });
+          }
+        } else if (delta > 0) {
+          await tx.shopMachinery.create({ data: { shopId: sId, machineryId, quantity: delta } });
+        }
+      };
+
+      if (originalShopId) {
+        if (originalShopId === shopId) {
+          await setMap(shopId, quantity);
+        } else {
+          const orig = await tx.shopMachinery.findFirst({
+            where: { shopId: originalShopId, machineryId }
+          });
+          if (orig) {
+            await tx.shopMachinery.delete({ where: { shopMachineryId: orig.shopMachineryId } });
+          }
+
+          await bumpMap(shopId, quantity);
+        }
+      } else {
+        await bumpMap(shopId, quantity);
+      }
+
+      const hydrated = await tx.machinery.findFirst({
+        where: { machineryId },
+        ...getMachineryQueryArgs(organization.organizationId)
+      });
+      if (!hydrated) throw new NotFoundException('Machinery', machineryId);
+      return hydrated;
+    });
+
+    return machineryTransformer(result);
+  }
 
   /**
    * Creates a new shop
@@ -1146,15 +1129,15 @@ static async addMachineryToShop(
   }
 
   static async getAllMachinery(organization: Organization): Promise<Machinery[]> {
-  const list = await prisma.machinery.findMany({
-    where: {
-      organizationId: organization.organizationId,
-      dateDeleted: null
-    },
-    ...getMachineryQueryArgs(organization.organizationId)
-  });
-  return list.map(machineryTransformer);
-}
+    const list = await prisma.machinery.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null
+      },
+      ...getMachineryQueryArgs(organization.organizationId)
+    });
+    return list.map(machineryTransformer);
+  }
   /**
    * Deletes a machinery by its ID.
    * Requires the submitter to be an admin.
@@ -1205,8 +1188,4 @@ static async addMachineryToShop(
 
     return machineryTransformer(deleted);
   }
-
-  
-  
-
 }

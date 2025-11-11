@@ -7,13 +7,10 @@ import {
   postCreateMachinery,
   postEditMachinery,
   postAddMachineryToShop,
-   editShop 
+  editShop
 } from '../apis/calendar.api';
 
-
 export const MACHINERY_KEY = ['machinery'] as const;
-
-
 
 export const useAllShops = () =>
   useQuery<Shop[], Error>(['shops'], async () => {

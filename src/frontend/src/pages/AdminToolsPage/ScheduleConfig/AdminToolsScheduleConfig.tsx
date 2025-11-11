@@ -1,16 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Box,
-  Grid,
-  Typography,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Button,
-} from '@mui/material';
+import { Box, Grid, Typography, Paper, Table, TableBody, TableCell, TableHead, TableRow, Button } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 
@@ -168,46 +157,48 @@ const AdminToolsScheduleConfig: React.FC = () => {
                 ) : (
                   machines.flatMap(
                     (machine) =>
-                      machine.shops?.map((shopMachinery: {
-                        shopMachineryId: string;
-                        quantity: number;
-                        shop: { shopId: string; name: string };
-                      }) => (
-                        <TableRow key={`${machine.machineryId}-${shopMachinery.shopMachineryId}`} hover>
-                          <TableCell>{machine.name}</TableCell>
-                          <TableCell sx={{ whiteSpace: 'pre-wrap' }}>{shopMachinery.shop.name}</TableCell>
-                          <TableCell sx={{ whiteSpace: 'pre-wrap' }} align="center">
-                            {shopMachinery.quantity.toString()}
-                          </TableCell>
-                          <TableCell align="center">
-                            <Box display="flex" gap={1} justifyContent="center">
-                              <Tooltip title="Edit" arrow>
-                                <span>
-                                  <IconButton
-                                    size="small"
-                                    onClick={() =>
-                                      setEditMachinery({
-                                        machineryId: machine.machineryId,
-                                        shopId: shopMachinery.shop.shopId
-                                      })
-                                    }
-                                  >
-                                    <EditIcon fontSize="small" />
-                                  </IconButton>
-                                </span>
-                              </Tooltip>
+                      machine.shops?.map(
+                        (shopMachinery: {
+                          shopMachineryId: string;
+                          quantity: number;
+                          shop: { shopId: string; name: string };
+                        }) => (
+                          <TableRow key={`${machine.machineryId}-${shopMachinery.shopMachineryId}`} hover>
+                            <TableCell>{machine.name}</TableCell>
+                            <TableCell sx={{ whiteSpace: 'pre-wrap' }}>{shopMachinery.shop.name}</TableCell>
+                            <TableCell sx={{ whiteSpace: 'pre-wrap' }} align="center">
+                              {shopMachinery.quantity.toString()}
+                            </TableCell>
+                            <TableCell align="center">
+                              <Box display="flex" gap={1} justifyContent="center">
+                                <Tooltip title="Edit" arrow>
+                                  <span>
+                                    <IconButton
+                                      size="small"
+                                      onClick={() =>
+                                        setEditMachinery({
+                                          machineryId: machine.machineryId,
+                                          shopId: shopMachinery.shop.shopId
+                                        })
+                                      }
+                                    >
+                                      <EditIcon fontSize="small" />
+                                    </IconButton>
+                                  </span>
+                                </Tooltip>
 
-                              <Tooltip title="Delete" arrow>
-                                <span>
-                                  <IconButton size="small" color="error" disabled aria-label="delete machine">
-                                    <DeleteIcon fontSize="small" />
-                                  </IconButton>
-                                </span>
-                              </Tooltip>
-                            </Box>
-                          </TableCell>
-                        </TableRow>
-                      )) || []
+                                <Tooltip title="Delete" arrow>
+                                  <span>
+                                    <IconButton size="small" color="error" disabled aria-label="delete machine">
+                                      <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                  </span>
+                                </Tooltip>
+                              </Box>
+                            </TableCell>
+                          </TableRow>
+                        )
+                      ) || []
                   )
                 )}
               </TableBody>

@@ -55,9 +55,7 @@ const ShopModal: React.FC<BaseShopModalProps> = ({ open, onClose, onSubmit, init
   }, [open, initialValues, reset]);
 
   const computedTitle =
-    frozenValuesRef.current.name !== '' || frozenValuesRef.current.description !== ''
-      ? 'Edit Shop'
-      : 'Create Shop';
+    frozenValuesRef.current.name !== '' || frozenValuesRef.current.description !== '' ? 'Edit Shop' : 'Create Shop';
 
   const onFormSubmit = async (data: ShopFormValues) => {
     try {
@@ -102,7 +100,7 @@ const ShopModal: React.FC<BaseShopModalProps> = ({ open, onClose, onSubmit, init
             placeholder="Enter description"
             fullWidth
             multiline
-            rows={4} 
+            rows={4}
           />
           <FormHelperText error>{errors.description?.message}</FormHelperText>
         </FormControl>
