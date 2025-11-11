@@ -101,6 +101,11 @@ output "backend_api_url" {
   value       = module.elasticbeanstalk.environment_endpoint_url
 }
 
+output "amplify_default_domain" {
+  description = "Amplify default domain (used for CORS)"
+  value       = module.frontend.default_domain
+}
+
 #####################
 # Monitoring Outputs
 #####################

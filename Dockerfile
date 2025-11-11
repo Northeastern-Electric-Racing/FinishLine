@@ -3,8 +3,6 @@ FROM node:20 AS builder
 WORKDIR /app
 
 COPY package.json tsconfig.build.json ./
-# COPY .yarn ./.yarn
-# COPY .yarnrc.yml ./
 
 COPY src ./src
 RUN yarn install

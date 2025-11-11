@@ -54,8 +54,8 @@ resource "aws_amplify_app" "frontend" {
       # Build configuration
       NODE_OPTIONS = "--max-old-space-size=4096"
       
-      # Backend API URL - will be injected into React build
-      REACT_APP_API_URL = var.backend_api_url
+      # Backend API URL - Your app uses VITE_REACT_APP_BACKEND_URL
+      VITE_REACT_APP_BACKEND_URL = var.backend_api_url
     },
     var.additional_environment_variables
   )
@@ -87,7 +87,7 @@ resource "aws_amplify_app" "frontend" {
     
     environment_variables = {
       NODE_OPTIONS      = "--max-old-space-size=4096"
-      REACT_APP_API_URL = var.backend_api_url
+      VITE_REACT_APP_BACKEND_URL = var.backend_api_url
     }
   }
 
@@ -116,7 +116,7 @@ resource "aws_amplify_branch" "main" {
 
   # Environment variables specific to main branch (can override app-level)
   environment_variables = {
-    REACT_APP_API_URL = var.backend_api_url
+    VITE_REACT_APP_BACKEND_URL = var.backend_api_url
   }
 
   # Enable performance mode for production
@@ -172,7 +172,7 @@ resource "aws_amplify_domain_association" "main" {
 
 #   # PR preview environment variables
 #   environment_variables = {
-#     REACT_APP_API_URL = var.backend_api_url # You might want a staging backend URL here
+#     VITE_REACT_APP_BACKEND_URL = var.backend_api_url # You might want a staging backend URL here
 #   }
 
 #   tags = {
