@@ -727,15 +727,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                               return;
                             }
 
-                            const allowedTypes = ['image/png', 'image/jpeg', 'application/pdf'];
-                            if (!allowedTypes.includes(file.type)) {
-                              toast.error(
-                                `Error uploading ${file.name}: Unsupported file format. Please upload PNG, JPEG, or PDF files only.`,
-                                5000
-                              );
-                              return;
-                            }
-
                             receiptPrepend({
                               file,
                               name: file.name,

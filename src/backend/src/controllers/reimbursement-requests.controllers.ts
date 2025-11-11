@@ -284,14 +284,6 @@ export default class ReimbursementRequestsController {
 
       if (!file) throw new HttpException(400, 'Invalid or undefined image data');
 
-      const allowedMimeTypes = ['image/png', 'image/jpeg', 'application/pdf'];
-      if (!allowedMimeTypes.includes(file.mimetype)) {
-        throw new HttpException(
-          415,
-          `Unsupported file format "${file.mimetype}". Please upload PNG, JPEG, or PDF files only.`
-        );
-      }
-
       const receipt = await ReimbursementRequestService.uploadReceipt(requestId, file, req.currentUser, req.organization);
       const isProd = process.env.NODE_ENV === 'production';
       const origin = isProd ? 'https://finishlinebyner.com' : 'http://localhost:3000';
