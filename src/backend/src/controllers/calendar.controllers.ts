@@ -382,12 +382,7 @@ export default class CalendarController {
       const { eventId } = req.params;
       const { status } = req.body;
 
-      const updatedEvent = await CalendarService.setStatus(
-        req.currentUser,
-        eventId,
-        status,
-        req.organization
-      );
+      const updatedEvent = await CalendarService.setStatus(req.currentUser, eventId, status, req.organization);
       res.status(200).json(updatedEvent);
     } catch (error: unknown) {
       next(error);

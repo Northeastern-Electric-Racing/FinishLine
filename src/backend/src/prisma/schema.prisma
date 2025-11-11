@@ -262,13 +262,13 @@ model User {
   deletedMachinery                        Machinery[]                          @relation(name: "machineryDeleter")
   createdShops                            Shop[]                               @relation(name: "shopCreator")
   deletedShops                            Shop[]                               @relation(name: "shopDeleter")
-  approvedEvents                          Event[]                              @relation(name: "eventApprover")
+  approvedEvents                          Event[]                              @relation(name: "eventApprovalRequiredBy")
   createdEvents                           Event[]                              @relation(name: "eventCreator")
   deletedEvents                           Event[]                              @relation(name: "eventDeleter")
   createdCalendars                        Calendar[]                           @relation(name: "calendarCreator")
   deletedCalendars                        Calendar[]                           @relation(name: "calendarDeleter")
-  createdEventTypes                       EventType[]                          @relation(name: "eventTypeCreator")
-  deletedEventTypes                       EventType[]                          @relation(name: "eventTypeDeleter")
+  createdEventTypes                       Event_Type[]                         @relation(name: "eventTypeCreator")
+  deletedEventTypes                       Event_Type[]                         @relation(name: "eventTypeDeleter")
   deletedSponsorTiers                     Sponsor_Tier[]
   financeDelegateForOrganizations         Organization[]                       @relation(name: "financeDelegates")
   assignedReimbursementRequests           Reimbursement_Request[]              @relation(name: "reimbursementRequestAssignee")
@@ -972,41 +972,41 @@ model Manufacturer {
 }
 
 model Shop {
-  shopId         String          @id @default(uuid())
-  name           String          @unique
-  dateCreated    DateTime        @default(now())
+  shopId         String           @id @default(uuid())
+  name           String           @unique
+  dateCreated    DateTime         @default(now())
   dateDeleted    DateTime?
   userCreatedId  String
-  userCreated    User            @relation(name: "shopCreator", fields: [userCreatedId], references: [userId])
+  userCreated    User             @relation(name: "shopCreator", fields: [userCreatedId], references: [userId])
   userDeletedId  String?
-  userDeleted    User?           @relation(fields: [userDeletedId], references: [userId], name: "shopDeleter")
-  machinery      ShopMachinery[]
+  userDeleted    User?            @relation(fields: [userDeletedId], references: [userId], name: "shopDeleter")
+  machinery      Shop_Machinery[]
   description    String
   events         Event[]
   organizationId String
-  organization   Organization    @relation(fields: [organizationId], references: [organizationId])
+  organization   Organization     @relation(fields: [organizationId], references: [organizationId])
 
   @@unique([name, organizationId], name: "uniqueShop")
 }
 
 model Machinery {
-  machineryId    String          @id @default(uuid())
+  machineryId    String           @id @default(uuid())
   name           String
-  dateCreated    DateTime        @default(now())
+  dateCreated    DateTime         @default(now())
   dateDeleted    DateTime?
   userCreatedId  String
-  userCreated    User            @relation(name: "machineryCreator", fields: [userCreatedId], references: [userId])
+  userCreated    User             @relation(name: "machineryCreator", fields: [userCreatedId], references: [userId])
   userDeletedId  String?
-  userDeleted    User?           @relation(fields: [userDeletedId], references: [userId], name: "machineryDeleter")
-  shops          ShopMachinery[]
+  userDeleted    User?            @relation(fields: [userDeletedId], references: [userId], name: "machineryDeleter")
+  shops          Shop_Machinery[]
   events         Event[]
   organizationId String
-  organization   Organization    @relation(fields: [organizationId], references: [organizationId])
+  organization   Organization     @relation(fields: [organizationId], references: [organizationId])
 
   @@unique([name, organizationId], name: "uniqueMachinery")
 }
 
-model ShopMachinery {
+model Shop_Machinery {
   description     String?
   shopMachineryId String    @id @default(uuid())
   shopId          String
@@ -1029,7 +1029,7 @@ enum DayOfWeek {
   SUNDAY
 }
 
-model ScheduleSlot {
+model Schedule_Slot {
   scheduleSlotId       String      @id @default(uuid())
   days                 DayOfWeek[]
   startTime            DateTime? // time of day (just use a DateTime, ignore the date portion)
@@ -1044,36 +1044,36 @@ model ScheduleSlot {
 }
 
 model Event {
-  eventId          String         @id @default(uuid())
-  dateCreated      DateTime       @default(now())
-  dateDeleted      DateTime?
-  title            String
-  userCreatedId    String
-  userCreated      User           @relation(name: "eventCreator", fields: [userCreatedId], references: [userId])
-  userDeletedId    String?
-  userDeleted      User?          @relation(fields: [userDeletedId], references: [userId], name: "eventDeleter")
-  eventTypeId      String
-  eventType        EventType      @relation(fields: [eventTypeId], references: [eventTypeId])
-  approved         Boolean        @default(false)
+  eventId                    String          @id @default(uuid())
+  dateCreated                DateTime        @default(now())
+  dateDeleted                DateTime?
+  title                      String
+  userCreatedId              String
+  userCreated                User            @relation(name: "eventCreator", fields: [userCreatedId], references: [userId])
+  userDeletedId              String?
+  userDeleted                User?           @relation(fields: [userDeletedId], references: [userId], name: "eventDeleter")
+  eventTypeId                String
+  eventType                  Event_Type      @relation(fields: [eventTypeId], references: [eventTypeId])
+  approved                   Boolean         @default(false)
   // when approval is false, approved by holds who needs to approve the event
   // when approval is true, approved by holds who actually approved the event
-  approvedByUserId String?
-  approvedBy       User?          @relation(fields: [approvedByUserId], references: [userId], name: "eventApprover")
-  scheduledTimes   ScheduleSlot[]
-  requiredMembers  User[]         @relation(name: "requiredEventAttendee")
-  optionalMembers  User[]         @relation(name: "optionalEventAttendee")
-  confirmedMembers User[]         @relation(name: "confirmedEventAttendee")
-  deniedMembers    User[]         @relation(name: "deniedEventAttendee")
-  teams            Team[]         @relation(name: "affiliatedTeam")
-  location         String?
-  zoomLink         String?
-  shops            Shop[]
-  machinery        Machinery[]
-  workPackages     Work_Package[]
-  documentIds      String[]
-  status           Event_Status
-  questionDocument String?
-  description      String?
+  approvalRequiredFromUserId String?
+  approvalRequiredBy         User?           @relation(fields: [approvalRequiredFromUserId], references: [userId], name: "eventApprovalRequiredBy")
+  scheduledTimes             Schedule_Slot[]
+  requiredMembers            User[]          @relation(name: "requiredEventAttendee")
+  optionalMembers            User[]          @relation(name: "optionalEventAttendee")
+  confirmedMembers           User[]          @relation(name: "confirmedEventAttendee")
+  deniedMembers              User[]          @relation(name: "deniedEventAttendee")
+  teams                      Team[]          @relation(name: "affiliatedTeam")
+  location                   String?
+  zoomLink                   String?
+  shops                      Shop[]
+  machinery                  Machinery[]
+  workPackages               Work_Package[]
+  documentIds                String[]
+  status                     Event_Status
+  questionDocument           String?
+  description                String?
 }
 
 model Calendar {
@@ -1087,14 +1087,14 @@ model Calendar {
   userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "calendarDeleter")
   description    String
   colorHexCode   String
-  eventTypes     EventType[]
+  eventTypes     Event_Type[]
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [organizationId])
 
   @@unique([name, organizationId], name: "uniqueCalendar")
 }
 
-model EventType {
+model Event_Type {
   eventTypeId                      String       @id @default(uuid())
   name                             String
   dateCreated                      DateTime     @default(now())
@@ -1388,7 +1388,7 @@ model Organization {
   shops                    Shop[]
   machineries              Machinery[]
   calendars                Calendar[]
-  eventTypes               EventType[]
+  eventTypes               Event_Type[]
 }
 
 model FrequentlyAskedQuestion {

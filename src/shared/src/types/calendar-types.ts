@@ -1,6 +1,6 @@
-import { WorkPackage } from './project-types';
+import { WorkPackagePreview } from './project-types';
 import { User, UserWithScheduleSettings } from './user-types';
-import { Team } from './team-types';
+import { TeamPreview } from './team-types';
 
 export enum EventStatus {
   UNCONFIRMED = 'UNCONFIRMED',
@@ -112,18 +112,18 @@ export interface Event {
   userCreated: User;
   dateCreated: Date;
   eventTypeId: string;
-  approvedBy?: User;
+  approvalRequiredFrom?: User;
   scheduledTimes: ScheduleSlot[];
   requiredMembers: User[];
   optionalMembers: User[];
   confirmedMembers: UserWithScheduleSettings[];
   deniedMembers: User[];
-  teams: Team[];
+  teams: TeamPreview[];
   location?: string;
   zoomLink?: string;
   shops: Shop[];
   machinery: Machinery[];
-  workPackages: WorkPackage[];
+  workPackages: WorkPackagePreview[];
   documentIds: string[];
   questionDocument?: string;
   description?: string;

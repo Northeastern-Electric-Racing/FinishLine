@@ -123,7 +123,7 @@ export default class CalendarService {
       }
     }
 
-    const newEventType = await prisma.eventType.create({
+    const newEventType = await prisma.event_Type.create({
       data: {
         name,
         calendars: {
@@ -245,7 +245,7 @@ export default class CalendarService {
     description?: string
   ): Promise<Event> {
     // Validate eventTypeId
-    const foundEventType = await prisma.eventType.findUnique({
+    const foundEventType = await prisma.event_Type.findUnique({
       where: { eventTypeId }
     });
     if (!foundEventType) throw new NotFoundException('Event Type', eventTypeId);
@@ -421,7 +421,7 @@ export default class CalendarService {
         },
         status: foundEventType.requiresConfirmation ? Event_Status.UNCONFIRMED : Event_Status.CONFIRMED,
         approved: !hasConflict,
-        approvedByUserId: hasConflict ? approverUserId : null,
+        approvalRequiredFromUserId: hasConflict ? approverUserId : null,
         location,
         zoomLink,
         questionDocument,
@@ -487,7 +487,7 @@ export default class CalendarService {
     if (foundEvent.dateDeleted) throw new DeletedException('Event', eventId);
 
     const { eventTypeId } = foundEvent;
-    const foundEventType = await prisma.eventType.findUnique({
+    const foundEventType = await prisma.event_Type.findUnique({
       where: { eventTypeId }
     });
 
@@ -640,7 +640,7 @@ export default class CalendarService {
     const updatedEvent = await prisma.$transaction(async (tx) => {
       // Fetch existing schedule slots
       const [existingSlots] = await Promise.all([
-        tx.scheduleSlot.findMany({
+        tx.schedule_Slot.findMany({
           where: { ScheduledEvents: { some: { eventId } } },
           select: {
             days: true,
@@ -693,12 +693,12 @@ export default class CalendarService {
       }
 
       if (scheduleChanged) {
-        await tx.scheduleSlot.deleteMany({
+        await tx.schedule_Slot.deleteMany({
           where: { ScheduledEvents: { some: { eventId } } }
         });
         await Promise.all(
           scheduleSlot.map((s) =>
-            tx.scheduleSlot.create({
+            tx.schedule_Slot.create({
               data: {
                 days: s.days,
                 startTime: s.startTime ?? null,
@@ -761,8 +761,12 @@ export default class CalendarService {
           // If schedule/location changed and there's a conflict, set approved=false and track who needs to approve
           // Otherwise keep existing approval state
           approved: scheduleChanged || locationChanged ? !hasConflict : foundEvent.approved,
-          approvedByUserId:
-            scheduleChanged || locationChanged ? (hasConflict ? approverUserId : null) : foundEvent.approvedByUserId,
+          approvalRequiredFromUserId:
+            scheduleChanged || locationChanged
+              ? hasConflict
+                ? approverUserId
+                : null
+              : foundEvent.approvalRequiredFromUserId,
           documentIds,
           location,
           zoomLink,
@@ -799,7 +803,7 @@ export default class CalendarService {
 
     const hasPermission =
       (await userHasPermission(submitter.userId, organization.organizationId, isHead)) ||
-      event.approvedByUserId === submitter.userId;
+      event.approvalRequiredFromUserId === submitter.userId;
 
     if (!hasPermission) {
       throw new AccessDeniedException('Only admins or heads or the owner of the conflicting event can this approve event!');
@@ -809,7 +813,7 @@ export default class CalendarService {
       where: { eventId },
       data: {
         approved: true,
-        approvedByUserId: submitter.userId
+        approvalRequiredFromUserId: submitter.userId
       },
       ...getEventQueryArgs(organization.organizationId)
     });
@@ -1040,13 +1044,13 @@ export default class CalendarService {
     if (existingMachineryWithSameName && existingMachineryWithSameName.machineryId !== machineryId) {
       const updatedMachinery = await prisma.$transaction(async (tx) => {
         // Get all shop relationships from the machinery being edited
-        const shopRelationshipsToMove = await tx.shopMachinery.findMany({
+        const shopRelationshipsToMove = await tx.shop_Machinery.findMany({
           where: { machineryId }
         });
 
         // Move each shop relationship to the existing machinery
         for (const relationship of shopRelationshipsToMove) {
-          const existingShopMachinery = await tx.shopMachinery.findUnique({
+          const existingShopMachinery = await tx.shop_Machinery.findUnique({
             where: {
               uniqueShopMachinery: {
                 shopId: relationship.shopId,
@@ -1058,16 +1062,16 @@ export default class CalendarService {
           if (existingShopMachinery) {
             // If the target machinery already has this shop, add quantities together
             const newQuantity = existingShopMachinery.quantity + relationship.quantity;
-            await tx.shopMachinery.update({
+            await tx.shop_Machinery.update({
               where: { shopMachineryId: existingShopMachinery.shopMachineryId },
               data: { quantity: newQuantity }
             });
-            await tx.shopMachinery.delete({
+            await tx.shop_Machinery.delete({
               where: { shopMachineryId: relationship.shopMachineryId }
             });
           } else {
             // Move the relationship to the existing machinery
-            await tx.shopMachinery.update({
+            await tx.shop_Machinery.update({
               where: { shopMachineryId: relationship.shopMachineryId },
               data: { machineryId: existingMachineryWithSameName.machineryId }
             });
@@ -1159,7 +1163,7 @@ export default class CalendarService {
       // This identifies which shop's quantity/relationship we're modifying
       let shopMachineryToUpdate;
       if (originalShopId) {
-        shopMachineryToUpdate = await tx.shopMachinery.findFirst({
+        shopMachineryToUpdate = await tx.shop_Machinery.findFirst({
           where: {
             machineryId,
             shopId: originalShopId
@@ -1196,18 +1200,18 @@ export default class CalendarService {
           (shopMachineryToUpdate.shopMachineryId !== existingShopMachinery.shopMachineryId ||
             existingMachineryWithSameName.machineryId !== machineryId)
         ) {
-          await tx.shopMachinery.delete({
+          await tx.shop_Machinery.delete({
             where: { shopMachineryId: shopMachineryToUpdate.shopMachineryId }
           });
 
           // Handle quantity: if 0, delete; otherwise add to existing
           if (quantity === 0) {
-            await tx.shopMachinery.delete({
+            await tx.shop_Machinery.delete({
               where: { shopMachineryId: existingShopMachinery.shopMachineryId }
             });
           } else {
             const newQuantity = existingShopMachinery.quantity + quantity;
-            await tx.shopMachinery.update({
+            await tx.shop_Machinery.update({
               where: { shopMachineryId: existingShopMachinery.shopMachineryId },
               data: { quantity: newQuantity }
             });
@@ -1221,43 +1225,43 @@ export default class CalendarService {
         ) {
           // Same relationship - just update the quantity (edit operation)
           if (quantity === 0) {
-            await tx.shopMachinery.delete({
+            await tx.shop_Machinery.delete({
               where: { shopMachineryId: existingShopMachinery.shopMachineryId }
             });
           } else {
-            await tx.shopMachinery.update({
+            await tx.shop_Machinery.update({
               where: { shopMachineryId: existingShopMachinery.shopMachineryId },
               data: { quantity }
             });
           }
         } else if (shopMachineryToUpdate) {
           // Different relationship - delete old and add to existing
-          await tx.shopMachinery.delete({
+          await tx.shop_Machinery.delete({
             where: { shopMachineryId: shopMachineryToUpdate.shopMachineryId }
           });
 
           if (quantity === 0) {
             // If quantity is 0, just delete the existing relationship too
-            await tx.shopMachinery.delete({
+            await tx.shop_Machinery.delete({
               where: { shopMachineryId: existingShopMachinery.shopMachineryId }
             });
           } else {
             // Add quantity to existing relationship
             const newQuantity = existingShopMachinery.quantity + quantity;
-            await tx.shopMachinery.update({
+            await tx.shop_Machinery.update({
               where: { shopMachineryId: existingShopMachinery.shopMachineryId },
               data: { quantity: newQuantity }
             });
           }
         } else if (quantity === 0) {
           // Add operation - if quantity is 0, delete the relationship
-          await tx.shopMachinery.delete({
+          await tx.shop_Machinery.delete({
             where: { shopMachineryId: existingShopMachinery.shopMachineryId }
           });
         } else {
           // Add operation - increment quantity
           const newQuantity = existingShopMachinery.quantity + quantity;
-          await tx.shopMachinery.update({
+          await tx.shop_Machinery.update({
             where: { shopMachineryId: existingShopMachinery.shopMachineryId },
             data: { quantity: newQuantity }
           });
@@ -1277,13 +1281,13 @@ export default class CalendarService {
       // Move relationship to the existing machinery but with different shop
       if (existingMachineryWithSameName && existingMachineryWithSameName.machineryId !== machineryId) {
         if (shopMachineryToUpdate) {
-          await tx.shopMachinery.delete({
+          await tx.shop_Machinery.delete({
             where: { shopMachineryId: shopMachineryToUpdate.shopMachineryId }
           });
         }
 
         // Check if existing machinery already has this shop
-        const existingShopMachinery = await tx.shopMachinery.findUnique({
+        const existingShopMachinery = await tx.shop_Machinery.findUnique({
           where: {
             uniqueShopMachinery: {
               shopId,
@@ -1295,20 +1299,20 @@ export default class CalendarService {
         if (quantity === 0) {
           // If quantity is 0 and relationship exists, delete it
           if (existingShopMachinery) {
-            await tx.shopMachinery.delete({
+            await tx.shop_Machinery.delete({
               where: { shopMachineryId: existingShopMachinery.shopMachineryId }
             });
           }
         } else if (existingShopMachinery) {
           // Add quantity to existing relationship
           const newQuantity = existingShopMachinery.quantity + quantity;
-          await tx.shopMachinery.update({
+          await tx.shop_Machinery.update({
             where: { shopMachineryId: existingShopMachinery.shopMachineryId },
             data: { quantity: newQuantity }
           });
         } else {
           // Create new relationship for existing machinery
-          await tx.shopMachinery.create({
+          await tx.shop_Machinery.create({
             data: {
               shopId,
               machineryId: existingMachineryWithSameName.machineryId,
@@ -1335,18 +1339,18 @@ export default class CalendarService {
         if (shopMachineryToUpdate.shopId === shopId) {
           // Same shop, update quantity or delete if 0
           if (quantity === 0) {
-            await tx.shopMachinery.delete({
+            await tx.shop_Machinery.delete({
               where: { shopMachineryId: shopMachineryToUpdate.shopMachineryId }
             });
           } else {
-            await tx.shopMachinery.update({
+            await tx.shop_Machinery.update({
               where: { shopMachineryId: shopMachineryToUpdate.shopMachineryId },
               data: { quantity }
             });
           }
         } else {
           // Different shop - check if target shop already has this machinery
-          const existingRelationship = await tx.shopMachinery.findUnique({
+          const existingRelationship = await tx.shop_Machinery.findUnique({
             where: {
               uniqueShopMachinery: {
                 shopId,
@@ -1358,26 +1362,26 @@ export default class CalendarService {
           if (existingRelationship) {
             // Target shop already has this machinery, update it and delete old relationship
             if (quantity === 0) {
-              await tx.shopMachinery.delete({
+              await tx.shop_Machinery.delete({
                 where: { shopMachineryId: existingRelationship.shopMachineryId }
               });
             } else {
-              await tx.shopMachinery.update({
+              await tx.shop_Machinery.update({
                 where: { shopMachineryId: existingRelationship.shopMachineryId },
                 data: { quantity }
               });
             }
-            await tx.shopMachinery.delete({
+            await tx.shop_Machinery.delete({
               where: { shopMachineryId: shopMachineryToUpdate.shopMachineryId }
             });
           } else if (quantity === 0) {
             // Move relationship to new shop, but quantity is 0 so delete
-            await tx.shopMachinery.delete({
+            await tx.shop_Machinery.delete({
               where: { shopMachineryId: shopMachineryToUpdate.shopMachineryId }
             });
           } else {
             // Move relationship to new shop
-            await tx.shopMachinery.update({
+            await tx.shop_Machinery.update({
               where: { shopMachineryId: shopMachineryToUpdate.shopMachineryId },
               data: {
                 shopId,
@@ -1389,7 +1393,7 @@ export default class CalendarService {
       } else {
         // No originalShopId - this is a create operation (adding machine to shop)
         // Check if relationship already exists
-        const existingRelationship = await tx.shopMachinery.findUnique({
+        const existingRelationship = await tx.shop_Machinery.findUnique({
           where: {
             uniqueShopMachinery: {
               shopId,
@@ -1401,19 +1405,19 @@ export default class CalendarService {
         if (existingRelationship) {
           // Relationship exists - add quantities together when creating
           if (quantity === 0) {
-            await tx.shopMachinery.delete({
+            await tx.shop_Machinery.delete({
               where: { shopMachineryId: existingRelationship.shopMachineryId }
             });
           } else {
             const newQuantity = existingRelationship.quantity + quantity;
-            await tx.shopMachinery.update({
+            await tx.shop_Machinery.update({
               where: { shopMachineryId: existingRelationship.shopMachineryId },
               data: { quantity: newQuantity }
             });
           }
         } else if (quantity > 0) {
           // Create new relationship only if quantity > 0
-          await tx.shopMachinery.create({
+          await tx.shop_Machinery.create({
             data: {
               shopId,
               machineryId,
@@ -1704,7 +1708,7 @@ export default class CalendarService {
     }
 
     // Ensure event type to edit exists
-    const oldEventType = await prisma.eventType.findUnique({
+    const oldEventType = await prisma.event_Type.findUnique({
       where: {
         eventTypeId,
         organizationId: organization.organizationId
@@ -1714,7 +1718,7 @@ export default class CalendarService {
     if (!oldEventType) throw new NotFoundException('Event Type', eventTypeId);
     if (oldEventType.dateDeleted) throw new DeletedException('Event Type', eventTypeId);
 
-    const updatedEventType = await prisma.eventType.update({
+    const updatedEventType = await prisma.event_Type.update({
       where: { eventTypeId: oldEventType.eventTypeId },
       data: {
         name,
@@ -1758,7 +1762,7 @@ export default class CalendarService {
    * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
    */
   static async deleteEventType(submitter: User, eventTypeId: string, organization: Organization): Promise<EventType> {
-    const eventType = await prisma.eventType.findUnique({
+    const eventType = await prisma.event_Type.findUnique({
       where: { eventTypeId }
     });
 
@@ -1772,7 +1776,7 @@ export default class CalendarService {
       throw new AccessDeniedException('Only admins can delete event types!');
     }
 
-    const deletedEventType = await prisma.eventType.update({
+    const deletedEventType = await prisma.event_Type.update({
       where: { eventTypeId },
       data: { dateDeleted: new Date(), userDeletedId: submitter.userId },
       ...getEventTypeQueryArgs(organization.organizationId)
@@ -1815,7 +1819,7 @@ export default class CalendarService {
 
     // Soft delete the shop and its associated shop machinery in a transaction
     const deleted = await prisma.$transaction(async (tx) => {
-      await tx.shopMachinery.deleteMany({ where: { shopId } });
+      await tx.shop_Machinery.deleteMany({ where: { shopId } });
 
       return tx.shop.update({
         where: { shopId },
@@ -1884,7 +1888,7 @@ export default class CalendarService {
 
     // validate eventTypeIds
     if (eventTypeIds?.length) {
-      const foundEventTypes = await prisma.eventType.findMany({
+      const foundEventTypes = await prisma.event_Type.findMany({
         where: {
           eventTypeId: { in: eventTypeIds },
           organization: { organizationId: organization.organizationId },
@@ -2027,7 +2031,7 @@ export default class CalendarService {
 
     // Soft delete machinery and remove shop mappings in a transaction
     const deleted = await prisma.$transaction(async (tx) => {
-      await tx.shopMachinery.deleteMany({
+      await tx.shop_Machinery.deleteMany({
         where: { machineryId }
       });
 

@@ -6,8 +6,8 @@ import { EventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
 import { CalendarQueryArgs } from '../prisma-query-args/calendar.query-args';
 import { EventQueryArgs } from '../prisma-query-args/event.query-args';
 import { ShopQueryArgs } from '../prisma-query-args/shop.query-args';
-import workPackageTransformer from './work-packages.transformer';
-import teamTransformer from './teams.transformer';
+import { workPackagePreviewTransformer } from './work-packages.transformer';
+import { teamPreviewTransformer } from './teams.transformer';
 
 export const shopTransformer = (shop: Prisma.ShopGetPayload<ShopQueryArgs>): Shop => {
   return {
@@ -20,7 +20,7 @@ export const shopTransformer = (shop: Prisma.ShopGetPayload<ShopQueryArgs>): Sho
 };
 
 export const shopMachineryTransformer = (
-  shopMachinery: Prisma.ShopMachineryGetPayload<ShopMachineryQueryArgs>
+  shopMachinery: Prisma.Shop_MachineryGetPayload<ShopMachineryQueryArgs>
 ): ShopMachinery => {
   return {
     shopMachineryId: shopMachinery.shopMachineryId,
@@ -40,7 +40,7 @@ export const machineryTransformer = (machinery: Prisma.MachineryGetPayload<Machi
   };
 };
 
-export const eventTypeTransformer = (eventType: Prisma.EventTypeGetPayload<EventTypeQueryArgs>): EventType => {
+export const eventTypeTransformer = (eventType: Prisma.Event_TypeGetPayload<EventTypeQueryArgs>): EventType => {
   return {
     eventTypeId: eventType.eventTypeId,
     name: eventType.name,
@@ -76,7 +76,7 @@ export const calendarTransformer = (calendar: Prisma.CalendarGetPayload<Calendar
   };
 };
 
-export const scheduleTimesTransformer = (scheduleTimes: Prisma.ScheduleSlotGetPayload<null>): ScheduleSlot => {
+export const scheduleTimesTransformer = (scheduleTimes: Prisma.Schedule_SlotGetPayload<null>): ScheduleSlot => {
   return {
     scheduleSlotId: scheduleTimes.scheduleSlotId,
     days: scheduleTimes.days.map((d) => d as DayOfWeek),
@@ -100,14 +100,14 @@ export const eventTransformer = (event: Prisma.EventGetPayload<EventQueryArgs>):
     optionalMembers: event.optionalMembers.map(userTransformer),
     confirmedMembers: event.confirmedMembers.map(userWithScheduleSettingsTransformer),
     deniedMembers: event.deniedMembers.map(userTransformer),
-    teams: event.teams.map(teamTransformer),
+    teams: event.teams.map(teamPreviewTransformer),
     shops: event.shops.map(shopTransformer),
     machinery: event.machinery.map(machineryTransformer),
-    workPackages: event.workPackages.map(workPackageTransformer),
+    workPackages: event.workPackages.map(workPackagePreviewTransformer),
     documentIds: event.documentIds,
     scheduledTimes: event.scheduledTimes.map(scheduleTimesTransformer),
     approved: event.approved,
-    approvedBy: event.approvedBy ?? undefined,
+    approvalRequiredFrom: event.approvalRequiredBy ?? undefined,
     location: event.location ?? undefined,
     zoomLink: event.zoomLink ?? undefined,
     questionDocument: event.questionDocument ?? undefined,

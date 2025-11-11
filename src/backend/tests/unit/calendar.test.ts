@@ -515,12 +515,12 @@ describe('Calendar Tests', () => {
       const createdMachinery = await CalendarService.createMachinery(adminUser, 'Bridge-Linked', organization);
       await CalendarService.addMachineryToShop(adminUser, createdMachinery.machineryId, shop.shopId, 1, organization);
       //confirm the bridge row exists before delete
-      const before = await prisma.shopMachinery.count({ where: { shopId } });
+      const before = await prisma.shop_Machinery.count({ where: { shopId } });
       expect(before).toBeGreaterThan(0);
       // delete shop
       await CalendarService.deleteShop(adminUser, shop.shopId, organization);
       // the bridge should be cleaned up
-      const after = await prisma.shopMachinery.count({ where: { shopId } });
+      const after = await prisma.shop_Machinery.count({ where: { shopId } });
       expect(after).toBe(0);
       // the shop should be soft-deleted
       const deletedShop = await prisma.shop.findUnique({ where: { shopId } });
@@ -921,7 +921,7 @@ describe('Calendar Tests', () => {
       expect(result.scheduledTimes).toHaveLength(1);
       expect(result.scheduledTimes[0].days).toEqual([DayOfWeek.MONDAY, DayOfWeek.TUESDAY]);
       expect(result.approved).toBe(true);
-      expect(result.approvedBy).toBe(undefined);
+      expect(result.approvalRequiredFrom).toBe(undefined);
       expect(result.questionDocument).toBe('https://example.com/questions.pdf');
       expect(result.location).toBe('Conference Room A');
       expect(result.zoomLink).toBe('https://zoom.us/j/123456789');
@@ -1031,7 +1031,7 @@ describe('Calendar Tests', () => {
       expect(result.documentIds).toHaveLength(1);
       expect(result.scheduledTimes).toHaveLength(1);
       expect(result.approved).toBe(true);
-      expect(result.approvedBy).toBeUndefined();
+      expect(result.approvalRequiredFrom).toBeUndefined();
       expect(result.questionDocument).toBe('https://example.com/questions.pdf');
       expect(result.location).toBe('Conference Room A');
       expect(result.zoomLink).toBe('https://zoom.us/j/123456789');
@@ -1626,7 +1626,7 @@ describe('Calendar Tests', () => {
         organization
       );
 
-      await prisma.shopMachinery.create({
+      await prisma.shop_Machinery.create({
         data: {
           shopId: anotherShop.shopId,
           machineryId: machineryToDelete.machineryId,
@@ -1661,7 +1661,7 @@ describe('Calendar Tests', () => {
     });
 
     it('succeeds for admin and soft deletes machinery and shopMachinery rows', async () => {
-      const bridgeBefore = await prisma.shopMachinery.count({
+      const bridgeBefore = await prisma.shop_Machinery.count({
         where: { machineryId: machineryToDelete.machineryId }
       });
       expect(bridgeBefore).toBeGreaterThan(0);
@@ -1675,7 +1675,7 @@ describe('Calendar Tests', () => {
       expect(deleted.machineryId).toBe(machineryToDelete.machineryId);
       expect(deleted.name).toBe(machineryToDelete.name);
 
-      const bridgeAfter = await prisma.shopMachinery.count({
+      const bridgeAfter = await prisma.shop_Machinery.count({
         where: { machineryId: machineryToDelete.machineryId }
       });
       expect(bridgeAfter).toBe(0);
@@ -1868,13 +1868,7 @@ describe('Calendar Tests', () => {
     });
 
     it('fails if machineryIds are deleted', async () => {
-      const deletedMachinery = await CalendarService.createMachinery(
-        adminUser,
-        'Deleted Machinery',
-        shop.shopId,
-        1,
-        organization
-      );
+      const deletedMachinery = await CalendarService.createMachinery(adminUser, 'Deleted Machinery', organization);
       await prisma.machinery.update({
         where: { machineryId: deletedMachinery.machineryId },
         data: { dateDeleted: new Date() }
@@ -1944,7 +1938,7 @@ describe('Calendar Tests', () => {
       expect(result.optionalMembers[0].userId).toBe(adminUser.userId);
       expect(result.documentIds).toEqual(['doc2', 'doc3']);
       expect(result.approved).toBe(true);
-      expect(result.approvedBy).toBe(undefined);
+      expect(result.approvalRequiredFrom).toBe(undefined);
       expect(result.questionDocument).toBe('https://updated.com/questions.pdf');
       expect(result.location).toBe('Updated Location');
       expect(result.zoomLink).toBe('https://zoom.us/updated');
@@ -2068,7 +2062,7 @@ describe('Calendar Tests', () => {
     });
 
     it('fails if event type is already deleted', async () => {
-      await prisma.eventType.update({
+      await prisma.event_Type.update({
         where: { eventTypeId: eventTypeToDelete.eventTypeId },
         data: { dateDeleted: new Date() }
       });
@@ -2123,7 +2117,7 @@ describe('Calendar Tests', () => {
       expect(result.eventTypeId).toBe(eventTypeToDelete.eventTypeId);
       expect(result.name).toBe('EventType to Delete');
 
-      const deletedEventType = await prisma.eventType.findUnique({
+      const deletedEventType = await prisma.event_Type.findUnique({
         where: { eventTypeId: eventTypeToDelete.eventTypeId }
       });
       expect(deletedEventType?.dateDeleted).not.toBeNull();

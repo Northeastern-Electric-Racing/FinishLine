@@ -1,12 +1,12 @@
-import { Prisma, EventType, Organization } from '@prisma/client';
+import { Prisma, Event_Type, Organization } from '@prisma/client';
 import { User, ScheduleSlotCreateArgs, Event } from 'shared';
 import { InvalidEventTypeConfigurationException } from './errors.utils';
 import prisma from '../prisma/prisma';
 
-export function buildScheduledTimesOverlap(start?: Date, end?: Date): Prisma.ScheduleSlotListRelationFilter | undefined {
+export function buildScheduledTimesOverlap(start?: Date, end?: Date): Prisma.Schedule_SlotListRelationFilter | undefined {
   if (!start && !end) return undefined;
 
-  const AND: Prisma.ScheduleSlotWhereInput[] = [];
+  const AND: Prisma.Schedule_SlotWhereInput[] = [];
   if (end) AND.push({ initialDateScheduled: { lte: end } });
   if (start) AND.push({ endDate: { gte: start } });
 
@@ -28,7 +28,7 @@ export const isUserOnEvent = (user: User, event: Event): boolean => {
  * @throws InvalidEventTypeConfigurationException if validation fails
  */
 export function validateEventTypeConfiguration(
-  eventType: EventType,
+  eventType: Event_Type,
   eventData: {
     requiredMemberIds: string[];
     optionalMemberIds: string[];
@@ -54,23 +54,11 @@ export function validateEventTypeConfiguration(
   if (eventType.zoomLink && !eventData.zoomLink) {
     throw new InvalidEventTypeConfigurationException('a zoom link');
   }
-  if (eventType.shop && eventData.shopIds.length === 0) {
-    throw new InvalidEventTypeConfigurationException('at least one shop');
-  }
-  if (eventType.machinery && eventData.machineryIds.length === 0) {
-    throw new InvalidEventTypeConfigurationException('at least one machinery');
-  }
   if (eventType.workPackage && eventData.workPackageIds.length === 0) {
     throw new InvalidEventTypeConfigurationException('at least one work package');
   }
   if (eventType.questionDocument && !eventData.questionDocument) {
     throw new InvalidEventTypeConfigurationException('a question document');
-  }
-  if (eventType.documents && eventData.documentIds.length === 0) {
-    throw new InvalidEventTypeConfigurationException('at least one document');
-  }
-  if (eventType.description && !eventData.description) {
-    throw new InvalidEventTypeConfigurationException('a description');
   }
   if (eventType.initialDateScheduled && eventData.scheduleSlot.length === 0) {
     throw new InvalidEventTypeConfigurationException('at least one schedule slot');
