@@ -10,16 +10,13 @@ import {
   TableHead,
   TableRow,
   Button,
-  IconButton,
-  Tooltip
 } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 
-import CreateShopModal from './Shop/CreateShopModal';
 import { IconButton, Tooltip } from '@mui/material';
 import { useAllShops, useCreateShop, useEditShop, useAllMachines } from '../../../hooks/calendar.hooks';
-import ShopModal from './ShopModal';
+import ShopModal from './Shop/ShopModal';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CreateMachineryModal from './Machinery/CreateMachineryModal';
@@ -171,7 +168,11 @@ const AdminToolsScheduleConfig: React.FC = () => {
                 ) : (
                   machines.flatMap(
                     (machine) =>
-                      machine.shops?.map((shopMachinery) => (
+                      machine.shops?.map((shopMachinery: {
+                        shopMachineryId: string;
+                        quantity: number;
+                        shop: { shopId: string; name: string };
+                      }) => (
                         <TableRow key={`${machine.machineryId}-${shopMachinery.shopMachineryId}`} hover>
                           <TableCell>{machine.name}</TableCell>
                           <TableCell sx={{ whiteSpace: 'pre-wrap' }}>{shopMachinery.shop.name}</TableCell>
@@ -236,7 +237,9 @@ const AdminToolsScheduleConfig: React.FC = () => {
           const selectedMachine = machines.find((m) => m.machineryId === editMachinery.machineryId);
           if (!selectedMachine) return null;
 
-          const selectedShopMachinery = selectedMachine.shops?.find((sm) => sm.shop.shopId === editMachinery.shopId);
+          const selectedShopMachinery = selectedMachine.shops?.find(
+            (sm: { shop: { shopId: string } }) => sm.shop.shopId === editMachinery.shopId
+          );
 
           if (!selectedShopMachinery) return null;
 
