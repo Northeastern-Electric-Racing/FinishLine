@@ -13,36 +13,39 @@ resource "aws_amplify_app" "frontend" {
   # Build specification
   build_spec = yamlencode({
     version = 1
-    frontend = {
-      phases = {
-        preBuild = {
-          commands = [
-            "echo 'Installing dependencies...'",
-            "yarn install",
-            "echo 'Building shared package...'",
-            "yarn workspace shared build",
+    applications = [{
+      frontend = {
+        phases = {
+          preBuild = {
+            commands = [
+              "echo 'Installing dependencies...'",
+              "yarn install",
+              "echo 'Building shared package...'",
+              "yarn workspace shared build",
+            ]
+          }
+          build = {
+            commands = [
+              "echo 'Building frontend...'",
+              "yarn workspace frontend build",
+            ]
+          }
+        }
+        artifacts = {
+          baseDirectory = "src/frontend/build"
+          files         = ["**/*"]
+        }
+        cache = {
+          paths = [
+            "node_modules/**/*",
+            "src/frontend/node_modules/**/*",
+            "src/backend/node_modules/**/*",
+            "src/shared/node_modules/**/*",
           ]
         }
-        build = {
-          commands = [
-            "echo 'Building frontend...'",
-            "yarn workspace frontend build",
-          ]
-        }
       }
-      artifacts = {
-        baseDirectory = "src/frontend/build"
-        files         = ["**/*"]
-      }
-      cache = {
-        paths = [
-          "node_modules/**/*",
-          "src/frontend/node_modules/**/*",
-          "src/backend/node_modules/**/*",
-          "src/shared/node_modules/**/*",
-        ]
-      }
-    }
+      appRoot = "."
+    }]
   })
 
   # Environment variables for the build
