@@ -50,6 +50,23 @@ module "network" {
 }
 
 #############
+# DNS Module (Certificates and Route53)
+#############
+module "dns" {
+  # Only create if domain is configured
+  count = var.use_custom_domain ? 1 : 0
+  
+  source = "../../modules/dns"
+
+  project_name     = local.project_name
+  environment      = local.environment
+  hosted_zone_name = var.hosted_zone_name
+  frontend_domain  = var.frontend_domain
+  backend_domain   = var.backend_domain
+  backend_cname    = module.elasticbeanstalk.environment_cname
+}
+
+#############
 # IAM Module
 #############
 module "iam" {
@@ -124,37 +141,8 @@ module "rds" {
   # alarm_actions = []  # Empty for now to avoid circular dependency
 }
 
-#############
-# ACM Certificate (for HTTPS)
-#############
-resource "aws_acm_certificate" "main" {
-  count = var.enable_https && var.domain_name != "" ? 1 : 0
-
-  domain_name       = var.domain_name
-  validation_method = "DNS"
-
-  lifecycle {
-    create_before_destroy = true
-  }
-
-  tags = {
-    Name        = "${local.project_name}-${local.environment}-cert"
-    Environment = local.environment
-    Project     = local.project_name
-  }
-}
-
-# Output DNS validation records (user must add these to their DNS)
-output "acm_certificate_validation_records" {
-  description = "DNS records to add for ACM certificate validation"
-  value = var.enable_https && var.domain_name != "" ? {
-    for dvo in aws_acm_certificate.main[0].domain_validation_options : dvo.domain_name => {
-      name   = dvo.resource_record_name
-      type   = dvo.resource_record_type
-      value  = dvo.resource_record_value
-    }
-  } : null
-}
+# Note: ACM Certificates are now created in the DNS module
+# This ensures proper ordering and validation
 
 #############
 # Elastic Beanstalk Module
@@ -189,7 +177,8 @@ module "elasticbeanstalk" {
 
   # HTTPS Configuration
   enable_https         = var.enable_https
-  ssl_certificate_arn  = var.enable_https && length(aws_acm_certificate.main) > 0 ? aws_acm_certificate.main[0].arn : ""
+  # Use backend certificate from DNS module if domain is configured
+  ssl_certificate_arn  = var.use_custom_domain ? module.dns[0].backend_certificate_arn : ""
 
   # Environment variables
   environment_variables = {
@@ -235,15 +224,15 @@ module "frontend" {
   # Deploy from a test branch for now (change to "main" when ready for production)
   main_branch_name     = var.deploy_branch_name
   
-  # Backend API URL from Elastic Beanstalk
-  backend_api_url      = module.elasticbeanstalk.environment_endpoint_url
+  # Backend API URL - use custom domain if configured, otherwise EB default
+  backend_api_url      = var.use_custom_domain ? module.dns[0].backend_url : module.elasticbeanstalk.environment_endpoint_url
   
   # Disable PR previews for now (enable later when ready)
   enable_pull_request_preview = var.enable_pull_request_preview
   
-  # Custom domain (configure later after DNS setup)
-  # domain_name = var.domain_name
-  # domain_prefix = ""  # Empty for root domain, or "www" for www subdomain
+  # Custom domain configuration
+  domain_name   = var.use_custom_domain ? var.frontend_domain : ""
+  domain_prefix = ""  # Empty since we're using the full domain (qa.finishlinebyner.com)
 }
 
 #############

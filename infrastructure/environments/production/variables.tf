@@ -119,13 +119,38 @@ variable "eb_solution_stack" {
 #####################
 
 variable "enable_https" {
-  description = "Enable HTTPS with ACM certificate. Requires domain_name to be set."
+  description = "Enable HTTPS with ACM certificate. Requires use_custom_domain to be true."
   type        = bool
   default     = false
 }
 
+variable "use_custom_domain" {
+  description = "Use custom domain names for frontend and backend"
+  type        = bool
+  default     = false
+}
+
+variable "hosted_zone_name" {
+  description = "Route53 hosted zone name (e.g., finishlinebyner.com)"
+  type        = string
+  default     = "finishlinebyner.com"
+}
+
+variable "frontend_domain" {
+  description = "Custom domain for frontend (e.g., qa.finishlinebyner.com)"
+  type        = string
+  default     = "qa.finishlinebyner.com"
+}
+
+variable "backend_domain" {
+  description = "Custom domain for backend (e.g., api-qa.finishlinebyner.com)"
+  type        = string
+  default     = "api-qa.finishlinebyner.com"
+}
+
+# Legacy variable - kept for backwards compatibility
 variable "domain_name" {
-  description = "Custom domain name for the application (e.g., app.yourdomain.com). Leave empty to disable custom domain."
+  description = "DEPRECATED: Use frontend_domain instead"
   type        = string
   default     = ""
 }

@@ -130,7 +130,7 @@ resource "aws_amplify_branch" "main" {
 }
 
 #############
-# Domain Association (Optional)
+# Domain Association
 #############
 resource "aws_amplify_domain_association" "main" {
   count = var.domain_name != "" ? 1 : 0

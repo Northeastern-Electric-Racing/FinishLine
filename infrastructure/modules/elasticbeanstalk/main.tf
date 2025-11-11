@@ -156,9 +156,9 @@ resource "aws_elastic_beanstalk_environment" "main" {
     value     = "HTTP"
   }
 
-  # HTTPS Listener (Port 443) - Only if HTTPS is enabled
+  # HTTPS Listener (Port 443) - Enabled when enable_https is true
   dynamic "setting" {
-    for_each = var.enable_https && var.ssl_certificate_arn != "" ? [1] : []
+    for_each = var.enable_https ? [1] : []
     content {
       namespace = "aws:elbv2:listener:443"
       name      = "ListenerEnabled"
@@ -167,7 +167,7 @@ resource "aws_elastic_beanstalk_environment" "main" {
   }
 
   dynamic "setting" {
-    for_each = var.enable_https && var.ssl_certificate_arn != "" ? [1] : []
+    for_each = var.enable_https ? [1] : []
     content {
       namespace = "aws:elbv2:listener:443"
       name      = "Protocol"
@@ -175,6 +175,7 @@ resource "aws_elastic_beanstalk_environment" "main" {
     }
   }
 
+  # Only set custom certificate if one is provided, otherwise EB uses default cert
   dynamic "setting" {
     for_each = var.enable_https && var.ssl_certificate_arn != "" ? [1] : []
     content {
@@ -185,68 +186,11 @@ resource "aws_elastic_beanstalk_environment" "main" {
   }
 
   dynamic "setting" {
-    for_each = var.enable_https && var.ssl_certificate_arn != "" ? [1] : []
+    for_each = var.enable_https ? [1] : []
     content {
       namespace = "aws:elbv2:listener:443"
       name      = "SSLPolicy"
       value     = "ELBSecurityPolicy-TLS13-1-2-2021-06"
-    }
-  }
-
-  # Redirect HTTP to HTTPS when HTTPS is enabled
-  dynamic "setting" {
-    for_each = var.enable_https && var.ssl_certificate_arn != "" ? [1] : []
-    content {
-      namespace = "aws:elbv2:listener:default"
-      name      = "Rules"
-      value     = "redirect-to-https"
-    }
-  }
-
-  # Redirect rule configuration
-  dynamic "setting" {
-    for_each = var.enable_https && var.ssl_certificate_arn != "" ? [1] : []
-    content {
-      namespace = "aws:elbv2:listenerrule:redirect-to-https"
-      name      = "PathPatterns"
-      value     = "/*"
-    }
-  }
-
-  dynamic "setting" {
-    for_each = var.enable_https && var.ssl_certificate_arn != "" ? [1] : []
-    content {
-      namespace = "aws:elbv2:listenerrule:redirect-to-https"
-      name      = "Priority"
-      value     = "1"
-    }
-  }
-
-  dynamic "setting" {
-    for_each = var.enable_https && var.ssl_certificate_arn != "" ? [1] : []
-    content {
-      namespace = "aws:elbv2:listenerrule:redirect-to-https"
-      name      = "Process"
-      value     = "redirect-to-https-process"
-    }
-  }
-
-  # Redirect process configuration
-  dynamic "setting" {
-    for_each = var.enable_https && var.ssl_certificate_arn != "" ? [1] : []
-    content {
-      namespace = "aws:elasticbeanstalk:environment:process:redirect-to-https-process"
-      name      = "Protocol"
-      value     = "HTTPS"
-    }
-  }
-
-  dynamic "setting" {
-    for_each = var.enable_https && var.ssl_certificate_arn != "" ? [1] : []
-    content {
-      namespace = "aws:elasticbeanstalk:environment:process:redirect-to-https-process"
-      name      = "Port"
-      value     = "443"
     }
   }
 

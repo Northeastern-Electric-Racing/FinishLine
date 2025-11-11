@@ -22,7 +22,7 @@ output "environment_cname" {
 
 output "environment_endpoint_url" {
   description = "URL endpoint of the environment"
-  value       = "http://${aws_elastic_beanstalk_environment.main.cname}"
+  value       = var.enable_https ? "https://${aws_elastic_beanstalk_environment.main.cname}" : "http://${aws_elastic_beanstalk_environment.main.cname}"
 }
 
 output "load_balancers" {
