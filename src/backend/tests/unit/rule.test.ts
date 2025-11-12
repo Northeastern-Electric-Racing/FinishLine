@@ -547,8 +547,8 @@ describe('Delete Rules Tests', () => {
       expect(updatedProjectRule.statusHistory.length).toBe(1);
       expect(updatedProjectRule.statusHistory[0].newStatus).toBe(Rule_Completion.COMPLETED);
       expect(updatedProjectRule.statusHistory[0].projectRuleId).toBe(projectRule.projectRuleId);
-      expect(updatedProjectRule.statusHistory[0].userUpdated.userId).toBe(admin.userId);
-      expect(new Date(updatedProjectRule.statusHistory[0].updatedAt).getTime()).toBeGreaterThan(Date.now() - 10000);
+      expect(updatedProjectRule.statusHistory[0].createdBy.userId).toBe(admin.userId);
+      expect(new Date(updatedProjectRule.statusHistory[0].dateCreated).getTime()).toBeGreaterThan(Date.now() - 10000);
     });
 
     it('Updates a project rule status to the same status', async () => {

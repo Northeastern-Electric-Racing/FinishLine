@@ -48,8 +48,8 @@ export interface Rule {
 export interface RuleStatusChange {
   historyId: string;
   projectRuleId: string;
-  userUpdated: User;
-  updatedAt: Date;
+  createdBy: User;
+  dateCreated: Date;
   newStatus: RuleCompletion;
   note: string;
 }

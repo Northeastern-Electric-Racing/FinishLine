@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { Rule, RuleCompletion, ProjectRule, Ruleset, RulesetType, RulesetPreview } from 'shared';
+import { Rule, ProjectRule, Ruleset, RulesetType, RulesetPreview } from 'shared';
 import { RuleQueryArgs, RulesetQueryArgs } from '../prisma-query-args/rules.query-args';
 
 export const ruleTransformer = (rule: Prisma.RuleGetPayload<RuleQueryArgs>): Rule => {

@@ -318,7 +318,7 @@ export default class RulesService {
       data: {
         ruleId,
         projectId,
-        currentStatus: RuleCompletion.REVIEW,
+        currentStatus: Rule_Completion.REVIEW,
         createdByUserId: submitter.userId
       },
       ...getProjectRuleQueryArgs()
@@ -448,8 +448,7 @@ export default class RulesService {
     }
 
     const newStatusHistory = {
-      userUpdatedId: submitter.userId,
-      updatedAt: new Date(),
+      createdByUserId: submitter.userId,
       newStatus,
       note: `${submitter.firstName} ${submitter.lastName} marked as ${newStatus}`
     };

@@ -54,10 +54,8 @@ CREATE TABLE "public"."Rule_Status_Change" (
     "historyId" TEXT NOT NULL,
     "projectRuleId" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "dateUpdated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "dateDeleted" TIMESTAMP(3),
     "createdByUserId" TEXT NOT NULL,
-    "updatedByUserId" TEXT NOT NULL,
+    "dateDeleted" TIMESTAMP(3),
     "deletedByUserId" TEXT,
     "newStatus" "public"."Rule_Completion" NOT NULL,
     "note" TEXT NOT NULL,
@@ -154,9 +152,6 @@ ALTER TABLE "public"."Rule_Status_Change" ADD CONSTRAINT "Rule_Status_Change_pro
 
 -- AddForeignKey
 ALTER TABLE "public"."Rule_Status_Change" ADD CONSTRAINT "Rule_Status_Change_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "public"."User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."Rule_Status_Change" ADD CONSTRAINT "Rule_Status_Change_updatedByUserId_fkey" FOREIGN KEY ("updatedByUserId") REFERENCES "public"."User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."Rule_Status_Change" ADD CONSTRAINT "Rule_Status_Change_deletedByUserId_fkey" FOREIGN KEY ("deletedByUserId") REFERENCES "public"."User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;

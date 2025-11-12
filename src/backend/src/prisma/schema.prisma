@@ -265,7 +265,6 @@ model User {
   deletedReimbursementRequestComments     Reimbursement_Request_Comment[]      @relation(name: "deletedReimbursementRequestComments")
   deletedSponsorTiers                     Sponsor_Tier[]
   createdRuleStatuses                     Rule_Status_Change[]                 @relation(name: "ruleStatusCreator")
-  updatedRuleStatuses                     Rule_Status_Change[]                 @relation(name: "ruleStatusUpdater")
   deletedRuleStatuses                     Rule_Status_Change[]                 @relation(name: "ruleStatusDeletor")
   createdRulesetTypes                     Ruleset_Type[]                       @relation(name: "rulesetTypeCreator")
   deletedRulesetTypes                     Ruleset_Type[]                       @relation(name: "rulesetTypeDeleter")
@@ -1632,12 +1631,9 @@ model Rule_Status_Change {
   projectRule     Project_Rule    @relation(name: "ruleStatusHistory", fields: [projectRuleId], references: [projectRuleId])
   projectRuleId   String
   dateCreated     DateTime        @default(now())
-  dateUpdated     DateTime        @default(now())
-  dateDeleted     DateTime?
   createdByUserId String
   createdBy       User            @relation(name: "ruleStatusCreator", fields: [createdByUserId], references: [userId])
-  updatedByUserId String
-  updatedBy       User            @relation(name: "ruleStatusUpdater", fields: [updatedByUserId], references: [userId])
+  dateDeleted     DateTime?
   deletedByUserId String?
   deletedBy       User?           @relation(name: "ruleStatusDeletor", fields: [deletedByUserId], references: [userId])
   newStatus       Rule_Completion
