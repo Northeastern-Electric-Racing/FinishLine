@@ -110,7 +110,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Sharon Yang', color: '#ed8a5f' },
     { name: 'Jonah Chang', color: '#9AAB89' },
     { name: 'Ha Nguyen', color: '#ff9812' },
-    { name: 'Sathvik Charugundla', color: '#ff0000' },
+    { name: 'Sathvik Charugundla', color: '#00fff2ff' },
     { name: 'Samantha Moy', color: '#d287fa' },
     { name: 'Benjamin Zhu', color: '#ccccff' },
     { name: 'Stephanie Xu', color: '#ffcd42' },
@@ -203,6 +203,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Visisht Kamalapuram', color: '#3083AA' },
     { name: 'Jay Jung', color: '##344739' },
     { name: 'Elton Yu', color: '#f202a2' },
+    { name: 'Raphael Bessin', color: '#14855fff' },
     { name: 'Will Anderson', color: '#ebb145' },
     { name: 'Alex Park', color: '#CCCCFF' },
     {
@@ -299,7 +300,53 @@ const CreditsPage: React.FC = () => {
           '100%': { backgroundPosition: '0% 200%' }
         }
       }
-    }
+    },
+    {
+      name: 'John Cassidy',
+      color: '#8378ffff',
+      sx: {
+        textShadow: '0px 0px 10px rgba(195, 165, 193, 1)'
+      }
+    },
+    { name: 'Gahan Patel', color: '#0000FF' },
+    { name: 'Mimo Olowu', color: 'white', sx: { px: 1, backgroundColor: '#ac59eb', borderRadius: 2 } },
+    { name: 'Saul Manzanares', color: '#AF34FA' },
+    { name: 'Richard Feng', color: '#FFFF', sx: { textShadow: '0 0 2px rgba(0,26,255), 0 0 5px rgba(255,255,255)' } },
+    {
+      name: 'Samuel Shrestha',
+      color: '#be0000',
+      sx: {
+        textShadow: '0 0 6px rgba(190, 0, 0, 0.9), 0 0 14px rgba(190, 0, 0, 0.6)',
+        animation: 'sam-glow 2.6s ease-in-out infinite',
+        '@keyframes sam-glow': {
+          '0%': { textShadow: '0 0 4px rgba(190, 0, 0, 0.7), 0 0 10px rgba(190, 0, 0, 0.4)' },
+          '50%': { textShadow: '0 0 10px rgba(190, 0, 0, 1), 0 0 22px rgba(190, 0, 0, 0.95)' },
+          '100%': { textShadow: '0 0 4px rgba(190, 0, 0, 0.7), 0 0 10px rgba(190, 0, 0, 0.4)' }
+        }
+      }
+    },
+    {
+      name: 'Santiago Ordonez Merizalde',
+      color: 'transparent',
+      sx: {
+        textShadow: `
+          0 0 8px rgba(180, 0, 255, 0.8),
+          0 0 15px rgba(140, 0, 255, 0.6),
+          0 0 25px rgba(200, 100, 255, 0.5)
+        `,
+        background: 'linear-gradient(90deg, #d9a7ff, #b58eff, #7f6fff, #b58eff, #d9a7ff)',
+        '-webkit-background-clip': 'text',
+        backgroundSize: '300% 300%',
+        animation: 'purpleFlow 6s ease-in-out infinite',
+        '@keyframes purpleFlow': {
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' }
+        },
+        filter: 'drop-shadow(0 0 4px rgba(190, 80, 255, 0.6))'
+      }
+    },
+    { name: 'Josh Len', color: '#000000ff' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
