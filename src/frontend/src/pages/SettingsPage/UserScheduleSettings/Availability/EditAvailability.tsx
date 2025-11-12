@@ -136,7 +136,11 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
           backgroundColor={HeatmapColors[0]}
           widthOverride="106px"
           heightOverride="px"
-          text={<>{getDayOfWeek(availability.dateSet)} <br /> {datePipe(availability.dateSet)}</>}
+          text={
+            <>
+              {getDayOfWeek(availability.dateSet)} <br /> {datePipe(availability.dateSet)}
+            </>
+          }
           fontSize={'12px'}
         />
       ))}
