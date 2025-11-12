@@ -6,8 +6,6 @@ import { EventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
 import { CalendarQueryArgs } from '../prisma-query-args/calendar.query-args';
 import { EventQueryArgs } from '../prisma-query-args/event.query-args';
 import { ShopQueryArgs } from '../prisma-query-args/shop.query-args';
-import { workPackagePreviewTransformer } from './work-packages.transformer';
-import { teamPreviewTransformer } from './teams.transformer';
 
 export const shopTransformer = (shop: Prisma.ShopGetPayload<ShopQueryArgs>): Shop => {
   return {
@@ -100,10 +98,10 @@ export const eventTransformer = (event: Prisma.EventGetPayload<EventQueryArgs>):
     optionalMembers: event.optionalMembers.map(userTransformer),
     confirmedMembers: event.confirmedMembers.map(userWithScheduleSettingsTransformer),
     deniedMembers: event.deniedMembers.map(userTransformer),
-    teams: event.teams.map(teamPreviewTransformer),
-    shops: event.shops.map(shopTransformer),
-    machinery: event.machinery.map(machineryTransformer),
-    workPackages: event.workPackages.map(workPackagePreviewTransformer),
+    teams: event.teams,
+    shops: event.shops,
+    machinery: event.machinery,
+    workPackages: event.workPackages,
     documentIds: event.documentIds,
     scheduledTimes: event.scheduledTimes.map(scheduleTimesTransformer),
     approved: event.approved,

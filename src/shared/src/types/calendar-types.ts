@@ -1,6 +1,26 @@
-import { WorkPackagePreview } from './project-types';
 import { User, UserWithScheduleSettings } from './user-types';
-import { TeamPreview } from './team-types';
+
+export interface ShopPreview {
+  shopId: string;
+  name: string;
+}
+
+export interface MachineryPreview {
+  machineryId: string;
+  name: string;
+}
+
+export interface TeamCalendarPreview {
+  teamId: string;
+  teamName: string;
+}
+
+export interface WorkPackageCalendarPreview {
+  workPackageId: string;
+  wbsElement: {
+    name: string;
+  };
+}
 
 export enum EventStatus {
   UNCONFIRMED = 'UNCONFIRMED',
@@ -118,12 +138,12 @@ export interface Event {
   optionalMembers: User[];
   confirmedMembers: UserWithScheduleSettings[];
   deniedMembers: User[];
-  teams: TeamPreview[];
+  teams: TeamCalendarPreview[];
   location?: string;
   zoomLink?: string;
-  shops: Shop[];
-  machinery: Machinery[];
-  workPackages: WorkPackagePreview[];
+  shops: ShopPreview[];
+  machinery: MachineryPreview[];
+  workPackages: WorkPackageCalendarPreview[];
   documentIds: string[];
   questionDocument?: string;
   description?: string;
