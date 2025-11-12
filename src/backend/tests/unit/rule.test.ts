@@ -305,13 +305,7 @@ describe('Rules Tests', () => {
     });
 
     it('Fails if the ruleset type has already been deleted', async () => {
-      vi.spyOn(prisma.ruleset_Type, 'findUnique').mockResolvedValue({
-        name: 'FSAE',
-        rulesetTypeId: '1',
-        lastUpdated: new Date(),
-        createdByUserId: 'kk',
-        deletedByUserId: 'berthaaa'
-      });
+      await RulesService.deleteRulesetType(user, 'FSAE', organization);
 
       const appAdmin = await createTestUser(batmanAppAdmin, orgId);
       await expect(RulesService.deleteRulesetType(appAdmin, '1', organization)).rejects.toThrow(
@@ -320,25 +314,11 @@ describe('Rules Tests', () => {
     });
 
     it('Successfully deletes the ruleset type', async () => {
-      vi.spyOn(prisma.ruleset_Type, 'findUnique').mockResolvedValue({
-        name: 'FSAE',
-        rulesetTypeId: '234',
-        lastUpdated: new Date(),
-        createdByUserId: 'bertha',
-        deletedByUserId: null
-      });
-      vi.spyOn(prisma.ruleset_Type, 'update').mockResolvedValue({
-        name: 'Test Ruleset',
-        rulesetTypeId: '234',
-        lastUpdated: new Date(),
-        createdByUserId: 'user1',
-        deletedByUserId: 'bertha'
-      });
-
       const appAdmin = await createTestUser(batmanAppAdmin, orgId);
-      const result = await RulesService.deleteRulesetType(appAdmin, '123', organization);
+      const result = await RulesService.deleteRulesetType(appAdmin, rulesetType.rulesetTypeId, organization);
 
-      expect(result).toEqual({ message: 'Ruleset Type Deleted' });
+      expect(result.deletedByUserId).toBe(appAdmin.userId);
+      expect(result.rulesetTypeId).toBe(rulesetType.rulesetTypeId);
     });
   });
 });

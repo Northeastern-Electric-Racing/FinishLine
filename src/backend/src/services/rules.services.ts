@@ -1,5 +1,5 @@
 import { Organization, Rule, User } from '@prisma/client';
-import { isAdmin, isLeadership, ProjectRule, RuleCompletion } from 'shared';
+import { isAdmin, isLeadership, ProjectRule, RuleCompletion, RulesetType } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
@@ -193,14 +193,17 @@ export default class RulesService {
    * @param rulesetTypeId The ruleset type to be deleted
    * @param organization The organization that the ruleset is being deleted for
    */
-  static async deleteRulesetType(deleter: User, id: string, organization: Organization): Promise<{ message: string }> {
+  static async deleteRulesetType(deleter: User, id: string, organization: Organization): Promise<RulesetType> {
     //check if user is admin
     if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('only admin are allowed to delete ruleset types');
+      throw new AccessDeniedAdminOnlyException('delete ruleset types');
     }
 
     const rulesetType = await prisma.ruleset_Type.findUnique({
-      where: { rulesetTypeId: id }
+      where: { rulesetTypeId: id },
+      include: {
+        revisionFiles: true
+      }
     });
 
     if (!rulesetType) {
@@ -213,10 +216,29 @@ export default class RulesService {
     await prisma.ruleset_Type.update({
       where: { rulesetTypeId: id },
       data: {
-        deletedByUserId: deleter.userId
+        deletedByUserId: deleter.userId,
+        revisionFiles: {
+          updateMany: {
+            where: {},
+            data: {
+              deletedByUserId: deleter.userId
+            }
+          }
+        }
       }
     });
 
-    return { message: 'Ruleset Type Deleted' };
+    const deletedRule = await prisma.ruleset_Type.findUnique({
+      where: { rulesetTypeId: id },
+    include: {
+        revisionFiles: true
+      }
+    });
+
+    if (!deletedRule) {
+      throw new NotFoundException('Ruleset Type', id);
+    }
+
+    return deletedRule;
   }
 }
