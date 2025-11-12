@@ -129,14 +129,14 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
           Invert Availability
         </NERButton>
       </Grid>
-      <TimeSlot backgroundColor={HeatmapColors[0]} widthOverride="102px" heightOverride="45px" />
+      <TimeSlot backgroundColor={HeatmapColors[0]} widthOverride="106px" heightOverride="px" />
       {currentlyDisplayedAvailabilities.map((availability) => (
         <TimeSlot
           key={availability.dateSet.getTime()}
           backgroundColor={HeatmapColors[0]}
-          widthOverride="102px"
-          heightOverride="45px"
-          text={getDayOfWeek(availability.dateSet) + ' ' + datePipe(availability.dateSet)}
+          widthOverride="106px"
+          heightOverride="px"
+          text={<>{getDayOfWeek(availability.dateSet)} <br /> {datePipe(availability.dateSet)}</>}
           fontSize={'12px'}
         />
       ))}
@@ -144,10 +144,10 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
         <Grid container item>
           <TimeSlot
             backgroundColor={HeatmapColors[0]}
-            widthOverride="102px"
+            widthOverride="106px"
             heightOverride="32px"
             text={time}
-            fontSize={'13px'}
+            fontSize={'px'}
           />
           {currentlyDisplayedAvailabilities.map((availability, dayIndex) => {
             const backgroundColor = availability.availability.includes(timeIndex) ? HeatmapColors[3] : HeatmapColors[0];
@@ -155,7 +155,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
               <TimeSlot
                 key={timeIndex * enumToArray(REVIEW_TIMES).length + dayIndex}
                 backgroundColor={backgroundColor}
-                widthOverride="102px"
+                widthOverride="106px"
                 heightOverride="32px"
                 onMouseDown={(e) => handleMouseDown(e, availability, timeIndex)}
                 onMouseEnter={(e) => handleMouseEnter(e, availability, timeIndex)}

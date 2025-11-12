@@ -2,7 +2,7 @@ import { Box } from '@mui/system';
 import { Icon } from '@mui/material';
 
 interface TimeSlotProps {
-  text?: string;
+  text?: React.ReactNode;
   fontSize?: string;
   backgroundColor?: string;
   icon?: string;
