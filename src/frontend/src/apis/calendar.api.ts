@@ -1,6 +1,8 @@
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { Shop } from 'shared';
+import { Shop, Event } from 'shared';
+
+import { FilterArgs } from 'shared';
 
 export const getAllShops = () => {
   return axios.get<Shop[]>(apiUrls.calendarShops(), {
@@ -11,5 +13,11 @@ export const getAllShops = () => {
 export const postCreateShop = (payload: { name: string; description: string }) => {
   return axios.post<Shop>(apiUrls.calendarCreateShop(), payload, {
     transformResponse: (data) => JSON.parse(data) as Shop
+  });
+};
+
+export const postFilterEvents = (payload: FilterArgs) => {
+  return axios.post<any>(apiUrls.calendarFilterEvents(), payload, {
+    transformResponse: (data) => JSON.parse(data) as Event[]
   });
 };
