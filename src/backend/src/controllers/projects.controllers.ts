@@ -440,11 +440,11 @@ export default class ProjectsController {
       const { name: newName, iconName, required } = req.body;
       const linkTypeUpdated = await ProjectsService.editLinkType(
         linkTypeName,
-        newName,
         iconName,
         required,
         req.currentUser,
-        req.organization
+        req.organization,
+        newName
       );
       res.status(200).json(linkTypeUpdated);
     } catch (error: unknown) {

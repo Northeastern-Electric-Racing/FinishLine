@@ -618,11 +618,11 @@ export default class ProjectsService {
    */
   static async editLinkType(
     linkName: string,
-    newName: string | undefined,
     iconName: string,
     required: boolean,
     submitter: User,
-    organization: Organization
+    organization: Organization,
+    newName?: string
   ): Promise<LinkType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedException('Only an admin can update the linkType');
@@ -657,7 +657,7 @@ export default class ProjectsService {
     const linkTypeUpdated = await prisma.link_Type.update({
       where: { id: linkType.id },
       data: {
-        name: newName && newName.length > 0 ? newName : linkName,
+        name: newName && newName ? newName : linkName,
         iconName,
         required
       }
