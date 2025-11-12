@@ -12,6 +12,7 @@ import {
 } from '../apis/calendar.api';
 
 export const MACHINERY_KEY = ['machinery'] as const;
+export const SHOP_KEY = ['shop'] as const;
 
 export const useAllShops = () =>
   useQuery<Shop[], Error>(['shops'], async () => {
@@ -28,7 +29,7 @@ export const useCreateShop = () => {
     },
     {
       onSuccess: () => {
-        qc.invalidateQueries(['shops']);
+        qc.invalidateQueries(SHOP_KEY);
       }
     }
   );
@@ -43,7 +44,7 @@ export const useEditShop = (shopId: string) => {
     },
     {
       onSuccess: () => {
-        qc.invalidateQueries(['shops']);
+        qc.invalidateQueries(SHOP_KEY);
       }
     }
   );
@@ -105,14 +106,14 @@ export const useAddMachineryToShop = (machineryId: string) => {
 
 export const useDeleteShop = () => {
   const qc = useQueryClient();
-  return useMutation<{ name: string }, Error, string>(
-    async (shopID: string) => {
-      const { data } = await postDeleteShop(shopID);
+  return useMutation<{ shopId: string }, Error, string>(
+    async (shopId: string) => {
+      const { data } = await postDeleteShop(shopId);
       return data;
     },
     {
       onSuccess: () => {
-        qc.invalidateQueries(['shops']);
+        qc.invalidateQueries(SHOP_KEY);
       }
     }
   );

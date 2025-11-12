@@ -8,7 +8,7 @@ export interface DeleteShopModalProps {
   shop: Shop;
 }
 
-const DeleteCategoryModal = ({ onClose, shop }: DeleteShopModalProps) => {
+const DeleteShopModal = ({ onClose, shop }: DeleteShopModalProps) => {
   const { mutateAsync } = useDeleteShop();
 
   return (
@@ -31,4 +31,4 @@ const DeleteCategoryModal = ({ onClose, shop }: DeleteShopModalProps) => {
   );
 };
 
-export default DeleteCategoryModal;
+export default DeleteShopModal;
