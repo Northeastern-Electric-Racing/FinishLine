@@ -13,6 +13,7 @@ interface TimeSlotProps {
   onMouseOver?: () => void;
   onClick?: () => void;
   heightOverride?: string;
+  widthOverride?: string;
   selected?: boolean;
 }
 
@@ -28,13 +29,14 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
   onMouseOver,
   onClick,
   heightOverride = undefined,
+  widthOverride = undefined,
   selected = false
 }) => {
   return (
     <Box
       sx={{
         height: heightOverride ? heightOverride : small ? '25px' : '4.7vh',
-        width: small ? '81px' : '12.2%',
+        width: widthOverride ? widthOverride : small ? '81px' : '12.2%',
         backgroundColor,
         cursor: onMouseEnter ? 'pointer' : undefined,
         borderStyle: 'solid',

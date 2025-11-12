@@ -129,27 +129,34 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
           Invert Availability
         </NERButton>
       </Grid>
-      <TimeSlot backgroundColor={HeatmapColors[0]} small={true} heightOverride="40px" />
+      <TimeSlot backgroundColor={HeatmapColors[0]} widthOverride="102px" heightOverride="45px" />
       {currentlyDisplayedAvailabilities.map((availability) => (
         <TimeSlot
           key={availability.dateSet.getTime()}
           backgroundColor={HeatmapColors[0]}
-          small={true}
-          heightOverride="40px"
+          widthOverride="102px"
+          heightOverride="45px"
           text={getDayOfWeek(availability.dateSet) + ' ' + datePipe(availability.dateSet)}
           fontSize={'12px'}
         />
       ))}
       {enumToArray(REVIEW_TIMES).map((time, timeIndex) => (
         <Grid container item>
-          <TimeSlot backgroundColor={HeatmapColors[0]} small={true} text={time} fontSize={'13px'} />
+          <TimeSlot
+            backgroundColor={HeatmapColors[0]}
+            widthOverride="102px"
+            heightOverride="32px"
+            text={time}
+            fontSize={'13px'}
+          />
           {currentlyDisplayedAvailabilities.map((availability, dayIndex) => {
             const backgroundColor = availability.availability.includes(timeIndex) ? HeatmapColors[3] : HeatmapColors[0];
             return (
               <TimeSlot
                 key={timeIndex * enumToArray(REVIEW_TIMES).length + dayIndex}
                 backgroundColor={backgroundColor}
-                small={true}
+                widthOverride="102px"
+                heightOverride="32px"
                 onMouseDown={(e) => handleMouseDown(e, availability, timeIndex)}
                 onMouseEnter={(e) => handleMouseEnter(e, availability, timeIndex)}
                 onMouseUp={handleMouseUp}
