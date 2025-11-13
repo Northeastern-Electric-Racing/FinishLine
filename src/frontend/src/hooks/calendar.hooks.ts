@@ -12,10 +12,10 @@ import {
 } from '../apis/calendar.api';
 
 export const MACHINERY_KEY = ['machinery'] as const;
-export const SHOP_KEY = ['shop'] as const;
+export const SHOP_KEY = ['shop', 'shops'] as const;
 
 export const useAllShops = () =>
-  useQuery<Shop[], Error>(['shops'], async () => {
+  useQuery<Shop[], Error>(SHOP_KEY, async () => {
     const res = await getAllShops();
     return res.data;
   });

@@ -15,7 +15,7 @@ const DeleteShopModal = ({ onClose, shop }: DeleteShopModalProps) => {
     <NERModal
       open={!!shop}
       onHide={onClose}
-      title="Delete Shop:"
+      title="Delete Shop"
       submitText="Yes"
       cancelText="No"
       onSubmit={() => {
