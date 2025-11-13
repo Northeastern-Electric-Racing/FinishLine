@@ -459,7 +459,7 @@ export default class RulesService {
   }
 
   /**
-   * Deletes a ruleset type
+   * Deletes a ruleset type and all the rulesets in the ruleset type's revision files.
    *
    * @param user The user who is deleting the ruleset type
    * @param rulesetTypeId The ruleset type to be deleted
@@ -485,27 +485,19 @@ export default class RulesService {
       throw new DeletedException('Ruleset Type', id);
     }
 
-    for (const ruleset of rulesetType.revisionFiles) {
-      await prisma.ruleset.update({
-        where: { rulesetId: ruleset.rulesetId },
-        data: { deletedBy: { connect: { userId: deleter.userId } } },
-        ...getRulesetQueryArgs(organization.organizationId)
-      });
-    }
-
-    await prisma.ruleset_Type.update({
-      where: { rulesetTypeId: id },
-      data: {
-        deletedByUserId: deleter.userId,
-        revisionFiles: {
-          updateMany: {
-            where: {},
-            data: {
-              deletedByUserId: deleter.userId
-            }
-          }
-        }
+    await prisma.$transaction(async (tx) => {
+      // delete all rulesets in revision files
+      for (const ruleset of rulesetType.revisionFiles) {
+        await tx.ruleset.update({
+          where: { rulesetId: ruleset.rulesetId },
+          data: { deletedByUserId: deleter.userId }
+        });
       }
+      // delete the actual ruleset type itself
+      await tx.ruleset_Type.update({
+        where: { rulesetTypeId: id },
+        data: { deletedByUserId: deleter.userId }
+      });
     });
 
     const deletedRule = await prisma.ruleset_Type.findUnique({
