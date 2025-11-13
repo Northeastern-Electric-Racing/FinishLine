@@ -16,7 +16,6 @@ import {
   NotFoundException,
   AccessDeniedAdminOnlyException
 } from '../../src/utils/errors.utils';
-import { rulesetTransformer } from '../../src/transformers/rules.transformer';
 
 describe('Create Rules Tests', () => {
   let orgId: string;
@@ -348,7 +347,6 @@ describe('Delete Rules Tests', () => {
   let nonLeadership: User;
   let project: Project;
   let fsaeRulesetType: Ruleset_Type;
-  let ruleset: Ruleset;
 
   beforeEach(async () => {
     organization = await createTestOrganization();
