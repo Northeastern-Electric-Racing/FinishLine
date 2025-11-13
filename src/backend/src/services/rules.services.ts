@@ -59,7 +59,6 @@ export default class RulesService {
       throw new NotFoundException('Active Ruleset for given Ruleset Type', rulesetTypeId);
     }
 
-    // currently won't return the parent hierarchy of rules, which might be a problem...
     return rulesetTransformer(activeRuleset);
   }
 
