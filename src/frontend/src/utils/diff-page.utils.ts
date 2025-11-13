@@ -284,9 +284,9 @@ export const getChangesForWorkPackage = (
     genChange(
       'End Date',
       originalWorkPackage?.endDate && proposedChangesEndDate
-        ? originalWorkPackage.endDate.getTime() !== proposedChangesEndDate.getTime()
+        ? datePipe(originalWorkPackage.endDate) !== datePipe(proposedChangesEndDate)
         : !!originalWorkPackage?.endDate !== !!proposedChangesEndDate,
-      datePipe(originalWorkPackage?.endDate ?? undefined),
+      datePipe(originalWorkPackage?.endDate),
       datePipe(proposedChangesEndDate)
     )
   );
