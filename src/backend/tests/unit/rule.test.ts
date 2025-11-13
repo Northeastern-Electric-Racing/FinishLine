@@ -10,6 +10,7 @@ import {
 import { createTestOrganization, createTestProject, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
+import { empty } from '@prisma/client/runtime/library';
 
 describe('Create Rules Tests', () => {
   let orgId: string;
@@ -21,6 +22,7 @@ describe('Create Rules Tests', () => {
   let rulesetId: string;
   let carId: string;
   let rulesetType: Ruleset_Type;
+  let emptyRulesetType: Ruleset_Type;
 
   beforeEach(async () => {
     organization = await createTestOrganization();
@@ -53,17 +55,19 @@ describe('Create Rules Tests', () => {
       }
     });
 
-    const ruleset = await prisma.ruleset.create({
+    const ruleset1 = await prisma.ruleset.create({
       data: {
         fileId: 'test-file-id',
         name: '2025 FSAE Rules',
         active: true,
         rulesetType: { connect: { rulesetTypeId: rulesetType.rulesetTypeId } },
         car: { connect: { carId } },
-        createdBy: { connect: { userId: batman.userId } }
+        createdBy: { connect: { userId: batman.userId } },
+        dateCreated: new Date('2025-01-01T10:00:00Z')
       }
     });
-    ({ rulesetId } = ruleset);
+
+    ({ rulesetId } = ruleset1);
   });
 
   afterEach(async () => {
@@ -339,19 +343,30 @@ describe('Delete Rules Tests', () => {
   let orgId: string;
   let admin: User;
   let nonLeadership: User;
+  let guest: User;
   let project: Project;
   let fsaeRulesetType: Ruleset_Type;
+  let emptyRulesetType: Ruleset_Type;
 
   beforeEach(async () => {
     organization = await createTestOrganization();
     orgId = organization.organizationId;
     admin = await createTestUser(supermanAdmin, organization.organizationId);
     nonLeadership = await createTestUser(financeMember, organization.organizationId);
+    guest = await createTestUser(wonderwomanGuest, organization.organizationId);
     project = await createTestProject(admin, organization.organizationId);
 
     fsaeRulesetType = await prisma.ruleset_Type.create({
       data: {
         name: 'FSAE',
+        createdBy: { connect: { userId: admin.userId } },
+        organization: { connect: { organizationId: organization.organizationId } }
+      }
+    });
+
+    emptyRulesetType = await prisma.ruleset_Type.create({
+      data: {
+        name: 'Ruleset Type with no Active Rulesets or Anything',
         createdBy: { connect: { userId: admin.userId } },
         organization: { connect: { organizationId: organization.organizationId } }
       }
@@ -398,6 +413,18 @@ describe('Delete Rules Tests', () => {
       }
     });
 
+    const ruleset2 = await prisma.ruleset.create({
+      data: {
+        fileId: 'test-file-id',
+        name: 'Inactive 2025 FSAE Rules',
+        active: false,
+        rulesetType: { connect: { rulesetTypeId: fsaeRulesetType.rulesetTypeId } },
+        car: { connect: { carId: car.carId } },
+        createdBy: { connect: { userId: admin.userId } },
+        dateCreated: new Date('2024-12-31T10:00:00Z')
+      }
+    });
+
     const topLevelRule = await prisma.rule.create({
       data: {
         ruleCode: 'T',
@@ -433,14 +460,14 @@ describe('Delete Rules Tests', () => {
       }
     });
 
-    return { ruleset1, topLevelRule, leafRule1, leafRule2 };
+    return { ruleset1, ruleset2, topLevelRule, leafRule1, leafRule2 };
   };
 
   describe('Create Ruleset Type', () => {
     it('Fails if user is not leadership or above', async () => {
-      await expect(
-        async () => await RulesService.createRulesetType(await createTestUser(wonderwomanGuest, orgId), 'FSAE', organization)
-      ).rejects.toThrow(new AccessDeniedException('only leadership and above can create ruleset types!'));
+      await expect(async () => await RulesService.createRulesetType(guest, 'FSAE', organization)).rejects.toThrow(
+        new AccessDeniedException('only leadership and above can create ruleset types!')
+      );
     });
 
     it('Succeeds and creates a ruleset type', async () => {
@@ -628,8 +655,9 @@ describe('Delete Rules Tests', () => {
   describe('Get all ruleset types', () => {
     it('Successful get all ruleset types', async () => {
       const rulesetTypes = await RulesService.getAllRulesetTypes(organization);
-      expect(rulesetTypes.length).toEqual(1);
+      expect(rulesetTypes.length).toEqual(2);
       expect(rulesetTypes[0].name).toEqual('FSAE');
+      expect(rulesetTypes[1].name).toEqual('Ruleset Type with no Active Rulesets or Anything');
     });
     it('Get all ruleset types successful after adding ruleset type', async () => {
       await prisma.ruleset_Type.create({
@@ -640,8 +668,8 @@ describe('Delete Rules Tests', () => {
         }
       });
       const rulesetTypes = await RulesService.getAllRulesetTypes(organization);
-      expect(rulesetTypes.length).toEqual(2);
-      expect(rulesetTypes[1].name).toEqual('FSAE2');
+      expect(rulesetTypes.length).toEqual(3);
+      expect(rulesetTypes[2].name).toEqual('FSAE2');
     });
     it('Get all ruleset types successful after deleting ruleset type', async () => {
       await prisma.ruleset_Type.update({
@@ -653,7 +681,51 @@ describe('Delete Rules Tests', () => {
         }
       });
       const rulesetTypes = await RulesService.getAllRulesetTypes(organization);
-      expect(rulesetTypes.length).toEqual(0);
+      expect(rulesetTypes.length).toEqual(1);
+    });
+  });
+
+  describe('Get Active Ruleset', () => {
+    it('Fails if user is a guest', async () => {
+      await expect(RulesService.getActiveRuleset(guest, fsaeRulesetType.rulesetTypeId, organization)).rejects.toThrow(
+        new AccessDeniedException('only members and above can view ruleset types!')
+      );
+    });
+
+    it('Fails if ruleset type does not exist', async () => {
+      await expect(RulesService.getActiveRuleset(admin, 'fake-ruleset-type-id', organization)).rejects.toThrow(
+        new NotFoundException('Ruleset Type', 'fake-ruleset-type-id')
+      );
+    });
+
+    it('Fails if ruleset type is alread deleted', async () => {
+      await prisma.ruleset_Type.update({
+        where: {
+          rulesetTypeId: emptyRulesetType.rulesetTypeId
+        },
+        data: {
+          deletedByUserId: admin.userId
+        }
+      });
+
+      await expect(RulesService.getActiveRuleset(admin, emptyRulesetType.rulesetTypeId, organization)).rejects.toThrow(
+        new DeletedException('Ruleset Type', emptyRulesetType.rulesetTypeId)
+      );
+    });
+
+    it('Fails if there are no rulesets in the given ruleset type', async () => {
+      await expect(RulesService.getActiveRuleset(admin, emptyRulesetType.rulesetTypeId, organization)).rejects.toThrow(
+        new NotFoundException('Active Ruleset for given Ruleset Type', emptyRulesetType.rulesetTypeId)
+      );
+    });
+
+    it('Successfully gets the active ruleset for a ruleset type', async () => {
+      const { ruleset1 } = await setupRules(await createUniqueCar(orgId));
+
+      const activeRuleset = await RulesService.getActiveRuleset(admin, fsaeRulesetType.rulesetTypeId, organization);
+      expect(activeRuleset).toBeDefined();
+      expect(activeRuleset!.name).toBe('FSAE Rules 2025');
+      expect(activeRuleset!.active).toBe(true);
     });
   });
 });

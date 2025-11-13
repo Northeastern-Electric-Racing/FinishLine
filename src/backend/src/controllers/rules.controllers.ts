@@ -3,6 +3,16 @@ import RulesService from '../services/rules.services';
 import { ProjectRule } from 'shared';
 
 export default class RulesController {
+  static async getActiveRuleset(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetTypeId } = req.params;
+      const rulesetType = await RulesService.getActiveRuleset(req.currentUser, rulesetTypeId, req.organization);
+      res.status(200).json(rulesetType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createRule(req: Request, res: Response, next: NextFunction) {
     try {
       const { ruleCode, ruleContent, rulesetId, parentRuleId, referencedRules, imageFileIds } = req.body;

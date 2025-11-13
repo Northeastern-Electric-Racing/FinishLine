@@ -166,4 +166,6 @@ export type ExceptionObjectNames =
   | 'Parent Rule'
   | 'Referenced Rule'
   | 'Rule'
-  | 'Project Rule';
+  | 'Project Rule'
+  | 'Ruleset Type'
+  | 'Active Ruleset for given Ruleset Type';

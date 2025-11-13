@@ -73,6 +73,18 @@ const ruleset1 = (carId: string, userCreatedId: string, rulesetTypeId: string): 
   };
 };
 
+const secondActiveRuleset = (carId: string, userCreatedId: string, rulesetTypeId: string): Prisma.RulesetCreateInput => {
+  return {
+    name: 'Another Active FSAE Rules 2025 Revision',
+    fileId: '2active-fsae-rules-2025',
+    active: true,
+    dateCreated: new Date('2024-12-31T10:00:00Z'),
+    car: { connect: { carId } },
+    createdBy: { connect: { userId: userCreatedId } },
+    rulesetType: { connect: { rulesetTypeId } }
+  };
+};
+
 // project rules
 const projectRule1 = (projectId: string, ruleId: string): Prisma.Project_RuleCreateInput => {
   return {
@@ -103,6 +115,7 @@ export const ruleSeedData = {
   leafRule,
   rulesetType1,
   ruleset1,
+  secondActiveRuleset,
   projectRule1,
   projectRule2
 };

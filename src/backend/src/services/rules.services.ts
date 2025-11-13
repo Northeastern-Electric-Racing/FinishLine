@@ -26,6 +26,44 @@ import {
 
 export default class RulesService {
   /**
+   * Gets the active ruleset type for the given ruleset type ID
+   * @param user a user who is requesting for the active ruleset type
+   * @param rulesetTypeId the given ruleset type id
+   * @param organization the organization for permission check
+   * @returns the ruleset type with the given id if it exists and is active
+   */
+  static async getActiveRuleset(user: User, rulesetTypeId: string, organization: Organization) {
+    if (!(await userHasPermission(user.userId, organization.organizationId, notGuest)))
+      throw new AccessDeniedException('only members and above can view ruleset types!');
+
+    const rulesetType = await prisma.ruleset_Type.findUnique({
+      where: { rulesetTypeId, organizationId: organization.organizationId }
+    });
+
+    if (!rulesetType) {
+      throw new NotFoundException('Ruleset Type', rulesetTypeId);
+    }
+
+    if (rulesetType?.deletedByUserId != null) {
+      throw new DeletedException('Ruleset Type', rulesetTypeId);
+    }
+
+    // currently calling findFirst because we don't have a unique constraint on active ruleset
+    const activeRuleset = await prisma.ruleset.findFirst({
+      where: { rulesetTypeId, active: true, deletedByUserId: null },
+      orderBy: [{ active: 'desc' }, { dateCreated: 'desc' }],
+      ...getRulesetQueryArgs(organization.organizationId)
+    });
+
+    if (!activeRuleset) {
+      throw new NotFoundException('Active Ruleset for given Ruleset Type', rulesetTypeId);
+    }
+
+    // currently won't return the parent hierarchy of rules, which might be a problem...
+    return rulesetTransformer(activeRuleset);
+  }
+
+  /**
    * Creates a new rule in the database
    *
    * @param user The user creating the rule, must be a member or above
