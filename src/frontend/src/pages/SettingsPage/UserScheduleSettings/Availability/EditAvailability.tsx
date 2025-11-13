@@ -137,9 +137,9 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
           widthOverride="106px"
           heightOverride="40px"
           text={
-            <>
+            <Typography>
               {getDayOfWeek(availability.dateSet)} <br /> {datePipe(availability.dateSet)}
-            </>
+            </Typography>
           }
           fontSize={'12px'}
         />
