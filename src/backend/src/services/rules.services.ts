@@ -26,7 +26,8 @@ import {
 
 export default class RulesService {
   /**
-   * Gets the active ruleset type for the given ruleset type ID
+   * Gets the active ruleset type for the given ruleset type ID or gets the most
+   * recently created ruleset if none are active
    * @param user a user who is requesting for the active ruleset type
    * @param rulesetTypeId the given ruleset type id
    * @param organization the organization for permission check
