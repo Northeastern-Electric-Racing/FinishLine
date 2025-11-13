@@ -10,7 +10,6 @@ import {
 import { createTestOrganization, createTestProject, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
-import { empty } from '@prisma/client/runtime/library';
 
 describe('Create Rules Tests', () => {
   let orgId: string;
@@ -22,7 +21,6 @@ describe('Create Rules Tests', () => {
   let rulesetId: string;
   let carId: string;
   let rulesetType: Ruleset_Type;
-  let emptyRulesetType: Ruleset_Type;
 
   beforeEach(async () => {
     organization = await createTestOrganization();
@@ -720,7 +718,7 @@ describe('Delete Rules Tests', () => {
     });
 
     it('Successfully gets the active ruleset for a ruleset type', async () => {
-      const { ruleset1 } = await setupRules(await createUniqueCar(orgId));
+      await setupRules(await createUniqueCar(orgId));
 
       const activeRuleset = await RulesService.getActiveRuleset(admin, fsaeRulesetType.rulesetTypeId, organization);
       expect(activeRuleset).toBeDefined();
