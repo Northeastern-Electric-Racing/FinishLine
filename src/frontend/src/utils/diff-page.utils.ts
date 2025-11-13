@@ -259,8 +259,8 @@ export const getChangesForWorkPackage = (
     genChange(
       'Start Date',
       originalWorkPackage?.startDate.getTime() !== proposedChanges?.startDate.getTime(),
-      originalWorkPackage?.startDate.toLocaleString() ?? '',
-      proposedChanges?.startDate.toLocaleString() ?? ''
+      datePipe(originalWorkPackage?.startDate),
+      datePipe(proposedChanges?.startDate)
     )
   );
 
