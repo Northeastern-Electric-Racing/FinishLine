@@ -50,7 +50,7 @@ export default class RulesService {
 
     // currently calling findFirst because we don't have a unique constraint on active ruleset
     const activeRuleset = await prisma.ruleset.findFirst({
-      where: { rulesetTypeId, active: true, deletedByUserId: null },
+      where: { rulesetTypeId, deletedByUserId: null },
       orderBy: [{ active: 'desc' }, { dateCreated: 'desc' }],
       ...getRulesetQueryArgs(organization.organizationId)
     });
