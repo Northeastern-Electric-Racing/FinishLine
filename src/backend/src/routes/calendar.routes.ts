@@ -144,7 +144,14 @@ calendarRouter.post(
   CalendarController.markUserConfirmed
 );
 
-calendarRouter.post('/:eventId/set-status', isEventStatus(body('status')), validateInputs, CalendarController.setStatus);
+calendarRouter.post(
+  '/event/:eventId/set-status',
+  isEventStatus(body('status')),
+  validateInputs,
+  CalendarController.setStatus
+);
+
+calendarRouter.post('/event/:eventId/delete', CalendarController.deleteEvent);
 
 calendarRouter.post('/machinery/create', nonEmptyString(body('name')), validateInputs, CalendarController.createMachinery);
 
