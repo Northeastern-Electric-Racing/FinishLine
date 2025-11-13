@@ -273,7 +273,8 @@ export const getChangesForWorkPackage = (
     )
   );
 
-  let proposedChangesEndDate: Date | '' = '';
+  let proposedChangesEndDate;
+
   if (proposedChanges) {
     proposedChangesEndDate = new Date(proposedChanges.startDate);
     proposedChangesEndDate.setDate(proposedChangesEndDate.getDate() + proposedChanges.duration * 7);
@@ -286,7 +287,7 @@ export const getChangesForWorkPackage = (
         ? originalWorkPackage.endDate.getTime() !== proposedChangesEndDate.getTime()
         : !!originalWorkPackage?.endDate !== !!proposedChangesEndDate,
       datePipe(originalWorkPackage?.endDate ?? undefined),
-      datePipe(proposedChangesEndDate || undefined)
+      datePipe(proposedChangesEndDate)
     )
   );
 
