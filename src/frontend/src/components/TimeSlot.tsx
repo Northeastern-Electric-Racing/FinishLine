@@ -35,8 +35,8 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
   return (
     <Box
       sx={{
-        height: (heightOverride ?? small) ? '25px' : '4.7vh',
-        width: (widthOverride ?? small) ? '81px' : '12.2%',
+        height: heightOverride ?? (small ? '25px' : '4.7vh'),
+        width: widthOverride ?? (small ? '81px' : '12.2%'),
         backgroundColor,
         cursor: onMouseEnter ? 'pointer' : undefined,
         borderStyle: 'solid',
