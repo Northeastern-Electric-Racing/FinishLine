@@ -442,6 +442,16 @@ export const editVendor = async (id: string, vendorData: EditVendorPayload) => {
 };
 
 /**
+ * API call to set the tax exempt status of a vendor
+ * @param vendorId id of vendor to set
+ * @param taxExempt whether the vendor is tax exempt
+ * @returns updated vendor
+ */
+export const setTaxExemptStatus = async (vendorId: string, taxExempt: boolean) => {
+  return axios.post(apiUrls.financeSetVendorTaxExemptStatus(vendorId), { taxExempt });
+};
+
+/**
  * API call to delete a given vendor
  *
  * @param vendorId the id of the vendor to delete

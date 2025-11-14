@@ -110,7 +110,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Sharon Yang', color: '#ed8a5f' },
     { name: 'Jonah Chang', color: '#9AAB89' },
     { name: 'Ha Nguyen', color: '#ff9812' },
-    { name: 'Sathvik Charugundla', color: '#ff0000' },
+    { name: 'Sathvik Charugundla', color: '#00fff2ff' },
     { name: 'Samantha Moy', color: '#d287fa' },
     { name: 'Benjamin Zhu', color: '#ccccff' },
     { name: 'Stephanie Xu', color: '#ffcd42' },
@@ -203,6 +203,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Visisht Kamalapuram', color: '#3083AA' },
     { name: 'Jay Jung', color: '##344739' },
     { name: 'Elton Yu', color: '#f202a2' },
+    { name: 'Raphael Bessin', color: '#14855fff' },
     { name: 'Will Anderson', color: '#ebb145' },
     { name: 'Alex Park', color: '#CCCCFF' },
     {
@@ -300,6 +301,15 @@ const CreditsPage: React.FC = () => {
         }
       }
     },
+    {
+      name: 'John Cassidy',
+      color: '#8378ffff',
+      sx: {
+        textShadow: '0px 0px 10px rgba(195, 165, 193, 1)'
+      }
+    },
+    { name: 'Gahan Patel', color: '#0000FF' },
+    { name: 'Mimo Olowu', color: 'white', sx: { px: 1, backgroundColor: '#ac59eb', borderRadius: 2 } },
     { name: 'Saul Manzanares', color: '#AF34FA' },
     { name: 'Richard Feng', color: '#FFFF', sx: { textShadow: '0 0 2px rgba(0,26,255), 0 0 5px rgba(255,255,255)' } },
     {
@@ -313,6 +323,13 @@ const CreditsPage: React.FC = () => {
           '50%': { textShadow: '0 0 10px rgba(190, 0, 0, 1), 0 0 22px rgba(190, 0, 0, 0.95)' },
           '100%': { textShadow: '0 0 4px rgba(190, 0, 0, 0.7), 0 0 10px rgba(190, 0, 0, 0.4)' }
         }
+      }
+    },
+    {
+      name: 'Anthony Basko',
+      color: '#c0aed0ff',
+      sx: {
+        textShadow: '0px 0px 3px rgba(152, 119, 233, 1), 0px .5px rgba(53, 37, 66, 1)'
       }
     },
     {
@@ -350,7 +367,8 @@ const CreditsPage: React.FC = () => {
           '100%': { backgroundPosition: '0% 200%' }
         }
       }
-    }
+    },
+    { name: 'Josh Len', color: '#000000ff' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
