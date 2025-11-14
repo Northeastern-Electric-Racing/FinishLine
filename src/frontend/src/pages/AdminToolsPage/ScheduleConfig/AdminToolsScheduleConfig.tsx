@@ -4,13 +4,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 
 import { IconButton, Tooltip } from '@mui/material';
-import {
-  useAllShops,
-  useCreateShop,
-  useEditShop,
-  useAllMachines,
-  useDeleteShopMachinery
-} from '../../../hooks/calendar.hooks';
+import { useAllShops, useCreateShop, useEditShop, useAllMachines, useDeleteMachinery } from '../../../hooks/calendar.hooks';
 import ShopModal from './Shop/ShopModal';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -26,29 +20,24 @@ const AdminToolsScheduleConfig: React.FC = () => {
 
   const [editingShopId, setEditingShopId] = useState<string | undefined>();
   const editShopMutation = useEditShop(editingShopId ?? '');
-  const [shopMachineryToDelete, setShopMachineryToDelete] = useState<{
+  const [machineryToDelete, setMachineryToDelete] = useState<{
     machineryId: string;
-    shopId: string;
     machineName: string;
-    shopName: string;
   } | null>(null);
-  const { mutateAsync: deleteShopMachinery } = useDeleteShopMachinery();
+  const { mutateAsync: deleteMachinery } = useDeleteMachinery();
   const toast = useToast();
 
-  const handleDeleteShopMachinery = async () => {
-    if (!shopMachineryToDelete) return;
-    setShopMachineryToDelete(null);
+  const handleDeleteMachinery = async () => {
+    if (!machineryToDelete) return;
+    setMachineryToDelete(null);
     try {
-      await deleteShopMachinery({
-        machineryId: shopMachineryToDelete.machineryId,
-        shopId: shopMachineryToDelete.shopId
-      });
-      toast.success('Shop-machinery relationship deleted successfully');
+      await deleteMachinery(machineryToDelete.machineryId);
+      toast.success('Machinery deleted successfully');
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 3000);
       } else {
-        toast.error('Failed to delete shop-machinery relationship', 3000);
+        toast.error('Failed to delete machinery', 3000);
       }
     }
   };
@@ -221,18 +210,16 @@ const AdminToolsScheduleConfig: React.FC = () => {
                                   </span>
                                 </Tooltip>
 
-                                <Tooltip title="Delete Relationship" arrow>
+                                <Tooltip title="Delete Machine" arrow>
                                   <span>
                                     <IconButton
                                       size="small"
                                       color="inherit"
-                                      aria-label="delete shop-machinery relationship"
+                                      aria-label="delete machine"
                                       onClick={() =>
-                                        setShopMachineryToDelete({
+                                        setMachineryToDelete({
                                           machineryId: machine.machineryId,
-                                          shopId: shopMachinery.shop.shopId,
-                                          machineName: machine.name,
-                                          shopName: shopMachinery.shop.name
+                                          machineName: machine.name
                                         })
                                       }
                                     >
@@ -309,13 +296,13 @@ const AdminToolsScheduleConfig: React.FC = () => {
         }}
       />
 
-      {/* Delete Shop-Machinery Relationship Modal */}
+      {/* Delete Machinery Modal */}
       <NERDeleteModal
-        open={!!shopMachineryToDelete}
-        onHide={() => setShopMachineryToDelete(null)}
-        formId="delete-shop-machinery-form"
-        dataType={`machinery-shop relationship between ${shopMachineryToDelete?.shopName || 'shop'} and ${shopMachineryToDelete?.machineName || 'machine'}`}
-        onFormSubmit={handleDeleteShopMachinery}
+        open={!!machineryToDelete}
+        onHide={() => setMachineryToDelete(null)}
+        formId="delete-machinery-form"
+        dataType={`machine ${machineryToDelete?.machineName || ''}`}
+        onFormSubmit={handleDeleteMachinery}
       />
     </Box>
   );

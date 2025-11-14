@@ -6,6 +6,7 @@ import {
   getAllMachinery,
   postCreateMachinery,
   postEditMachinery,
+  postDeleteMachinery,
   postAddMachineryToShop,
   editShop
 } from '../apis/calendar.api';
@@ -102,16 +103,11 @@ export const useAddMachineryToShop = (machineryId: string) => {
   );
 };
 
-export const useDeleteShopMachinery = () => {
+export const useDeleteMachinery = () => {
   const qc = useQueryClient();
-  return useMutation<Machinery, Error, { machineryId: string; shopId: string }>(
-    async (payload) => {
-      return await postAddMachineryToShop({
-        machineryId: payload.machineryId,
-        shopId: payload.shopId,
-        quantity: 0,
-        originalShopId: payload.shopId
-      });
+  return useMutation<Machinery, Error, string>(
+    async (machineryId: string) => {
+      return await postDeleteMachinery(machineryId);
     },
     {
       onSuccess: () => {
