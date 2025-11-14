@@ -137,11 +137,10 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
           widthOverride="106px"
           heightOverride="50px"
           text={
-            <Typography>
+            <Typography fontSize="15px" fontWeight="bold">
               {getDayOfWeek(availability.dateSet)} <br /> {datePipe(availability.dateSet)}
             </Typography>
           }
-          fontSize={'12px'}
         />
       ))}
       {enumToArray(REVIEW_TIMES).map((time, timeIndex) => (
@@ -151,7 +150,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
             widthOverride="106px"
             heightOverride="32px"
             text={time}
-            fontSize={'13px'}
+            fontSize={'15px'}
           />
           {currentlyDisplayedAvailabilities.map((availability, dayIndex) => {
             const backgroundColor = availability.availability.includes(timeIndex) ? HeatmapColors[3] : HeatmapColors[0];
