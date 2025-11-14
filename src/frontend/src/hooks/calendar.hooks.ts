@@ -101,3 +101,22 @@ export const useAddMachineryToShop = (machineryId: string) => {
     }
   );
 };
+
+export const useDeleteShopMachinery = () => {
+  const qc = useQueryClient();
+  return useMutation<Machinery, Error, { machineryId: string; shopId: string }>(
+    async (payload) => {
+      return await postAddMachineryToShop({
+        machineryId: payload.machineryId,
+        shopId: payload.shopId,
+        quantity: 0,
+        originalShopId: payload.shopId
+      });
+    },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(MACHINERY_KEY);
+      }
+    }
+  );
+};
