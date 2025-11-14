@@ -129,13 +129,13 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
           Invert Availability
         </NERButton>
       </Grid>
-      <TimeSlot backgroundColor={HeatmapColors[0]} widthOverride="106px" heightOverride="40px" />
+      <TimeSlot backgroundColor={HeatmapColors[0]} widthOverride="106px" heightOverride="50px" />
       {currentlyDisplayedAvailabilities.map((availability) => (
         <TimeSlot
           key={availability.dateSet.getTime()}
           backgroundColor={HeatmapColors[0]}
           widthOverride="106px"
-          heightOverride="40px"
+          heightOverride="50px"
           text={
             <Typography>
               {getDayOfWeek(availability.dateSet)} <br /> {datePipe(availability.dateSet)}
