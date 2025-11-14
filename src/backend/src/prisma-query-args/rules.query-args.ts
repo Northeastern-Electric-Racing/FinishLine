@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { getUserQueryArgs } from './user.query-args';
 
-export type RuleQueryArgs = ReturnType<typeof getRuleQueryArgs>;
+export type RuleQueryArgs = ReturnType<typeof getRulePreviewQueryArgs>;
 
 // preview for rule display
 export const getRulePreviewQueryArgs = () =>
@@ -21,32 +21,6 @@ export const getRulePreviewQueryArgs = () =>
       referencedRule: {
         select: {
           ruleId: true
-        }
-      }
-    }
-  });
-
-export const getRuleQueryArgs = () =>
-  Prisma.validator<Prisma.RuleDefaultArgs>()({
-    include: {
-      ruleset: true,
-      parentRule: getRulePreviewQueryArgs(),
-      subRules: getRulePreviewQueryArgs(),
-      referencedRule: getRulePreviewQueryArgs(),
-      referencedBy: getRulePreviewQueryArgs(),
-      projects: getProjectRuleQueryArgs(),
-      createdBy: {
-        select: {
-          userId: true,
-          firstName: true,
-          lastName: true
-        }
-      },
-      updatedBy: {
-        select: {
-          userId: true,
-          firstName: true,
-          lastName: true
         }
       }
     }

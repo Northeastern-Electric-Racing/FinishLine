@@ -11,10 +11,10 @@ import {
 } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import {
-  getRuleQueryArgs,
   getProjectRuleQueryArgs,
   getRulesetQueryArgs,
-  getRulesetPreviewQueryArgs
+  getRulesetPreviewQueryArgs,
+  getRulePreviewQueryArgs
 } from '../prisma-query-args/rules.query-args';
 import {
   ruleTransformer,
@@ -143,7 +143,7 @@ export default class RulesService {
           }
         })
       },
-      ...getRuleQueryArgs()
+      ...getRulePreviewQueryArgs()
     });
 
     return ruleTransformer(rule);
@@ -402,7 +402,7 @@ export default class RulesService {
         dateUpdated: new Date(),
         updatedByUserId: submitter.userId
       },
-      ...getRuleQueryArgs()
+      ...getRulePreviewQueryArgs()
     });
 
     return ruleTransformer(updatedRule);
