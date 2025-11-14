@@ -6,7 +6,7 @@ export type ShopMachineryQueryArgs = ReturnType<typeof getShopMachineryQueryArgs
 export type MachineryQueryArgs = ReturnType<typeof getMachineryQueryArgs>;
 
 export const getShopMachineryQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.ShopMachineryDefaultArgs>()({
+  Prisma.validator<Prisma.Shop_MachineryDefaultArgs>()({
     include: {
       shop: getShopQueryArgs(organizationId)
     }
