@@ -233,6 +233,11 @@ module "frontend" {
   # Custom domain configuration
   domain_name   = var.use_custom_domain ? var.frontend_domain : ""
   domain_prefix = ""  # Empty since we're using the full domain (qa.finishlinebyner.com)
+  
+  # Additional environment variables for frontend build
+  additional_environment_variables = {
+    VITE_REACT_APP_GOOGLE_AUTH_CLIENT_ID = var.google_client_id
+  }
 }
 
 #############
