@@ -296,7 +296,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
         }}
       />
 
-      {/* Delete Machinery Modal */}
+      {/* Delete Machinery */}
       <NERDeleteModal
         open={!!machineryToDelete}
         onHide={() => setMachineryToDelete(null)}
