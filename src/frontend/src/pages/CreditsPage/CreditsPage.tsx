@@ -301,6 +301,7 @@ const CreditsPage: React.FC = () => {
         }
       }
     },
+    { name: 'Edgar Buttner', color: '#9E9764' },
     {
       name: 'John Cassidy',
       color: '#8378ffff',
