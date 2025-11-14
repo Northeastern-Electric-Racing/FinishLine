@@ -52,10 +52,11 @@ const leafRule = (rulesetId: string, userCreatedId: string, parentRuleId: string
 };
 
 // ruleset types
-const rulesetType1 = (userCreatedId: string): Prisma.Ruleset_TypeCreateInput => {
+const rulesetType1 = (userCreatedId: string, organizationId: string): Prisma.Ruleset_TypeCreateInput => {
   return {
     name: 'FSAE',
-    createdBy: { connect: { userId: userCreatedId } }
+    createdBy: { connect: { userId: userCreatedId } },
+    organization: { connect: { organizationId } }
   };
 };
 
@@ -73,19 +74,21 @@ const ruleset1 = (carId: string, userCreatedId: string, rulesetTypeId: string): 
 };
 
 // project rules
-const projectRule1 = (projectId: string, ruleId: string): Prisma.Project_RuleCreateInput => {
+const projectRule1 = (projectId: string, ruleId: string, createdByUserId: string): Prisma.Project_RuleCreateInput => {
   return {
     currentStatus: 'REVIEW',
     rule: { connect: { ruleId } },
-    project: { connect: { projectId } }
+    project: { connect: { projectId } },
+    createdBy: { connect: { userId: createdByUserId } }
   };
 };
 
-const projectRule2 = (projectId: string, ruleId: string): Prisma.Project_RuleCreateInput => {
+const projectRule2 = (projectId: string, ruleId: string, createdByUserId: string): Prisma.Project_RuleCreateInput => {
   return {
     currentStatus: 'REVIEW',
     rule: { connect: { ruleId } },
-    project: { connect: { projectId } }
+    project: { connect: { projectId } },
+    createdBy: { connect: { userId: createdByUserId } }
   };
 };
 

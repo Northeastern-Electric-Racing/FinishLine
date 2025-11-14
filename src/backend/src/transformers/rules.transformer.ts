@@ -1,6 +1,23 @@
 import { Prisma } from '@prisma/client';
-import { ProjectRule, Rule, Ruleset } from 'shared';
+import { Rule, ProjectRule, Ruleset, RulesetType, RulesetPreview } from 'shared';
 import { RuleQueryArgs, RulesetQueryArgs } from '../prisma-query-args/rules.query-args';
+
+export const ruleTransformer = (rule: Prisma.RuleGetPayload<RuleQueryArgs>): Rule => {
+  return {
+    ruleId: rule.ruleId,
+    ruleCode: rule.ruleCode,
+    ruleContent: rule.ruleContent,
+    imageFileIds: rule.imageFileIds,
+    parentRule: rule.parentRule
+      ? {
+          ruleId: rule.parentRule.ruleId,
+          ruleCode: rule.parentRule.ruleCode
+        }
+      : undefined,
+    subRuleIds: rule.subRules.map((subRule) => subRule.ruleId),
+    referencedRuleIds: rule.referencedRule.map((ref) => ref.ruleId)
+  };
+};
 
 export const projectRuleTransformer = (projectRule: any): ProjectRule => {
   return {
@@ -12,39 +29,17 @@ export const projectRuleTransformer = (projectRule: any): ProjectRule => {
   };
 };
 
-export const ruleTransformer = (rule: Prisma.RuleGetPayload<RuleQueryArgs>): Rule => {
+export const rulesetTypeTransformer = (rulesetType: any): RulesetType => {
   return {
-    ruleId: rule.ruleId,
-    ruleCode: rule.ruleCode,
-    ruleContent: rule.ruleContent,
-    imageFileIds: rule.imageFileIds,
-    ruleset: {
-      rulesetId: rule.ruleset.rulesetId,
-      name: rule.ruleset.name
-    },
-    parentRule: rule.parentRule
-      ? {
-          ruleId: rule.parentRule.ruleId,
-          ruleCode: rule.parentRule.ruleCode
-        }
-      : undefined,
-    subRuleIds: rule.subRules.map((subRule) => subRule.ruleId),
-    referencedRules: rule.referencedRule.map((ref) => ({
-      ruleId: ref.ruleId,
-      ruleCode: ref.ruleCode
-    })),
-    referencedBy: rule.referencedBy.map((ref) => ({
-      ruleId: ref.ruleId,
-      ruleCode: ref.ruleCode
-    })),
-    projects: rule.projects.map((pr) => projectRuleTransformer(pr))
+    rulesetTypeId: rulesetType.rulesetTypeId,
+    name: rulesetType.name,
+    lastUpdated: rulesetType.lastUpdated,
+    revisionFiles: rulesetType.revisionFiles
   };
 };
 
 export const rulesetTransformer = (ruleset: Prisma.RulesetGetPayload<RulesetQueryArgs>): Ruleset => {
-  const rulesWithTeams = ruleset.rules.filter((rule) => rule._count.teams > 0).length;
-  const totalRulesLength = ruleset.rules.length;
-  const teamsPercentage = totalRulesLength > 0 ? (rulesWithTeams / totalRulesLength) * 100 : 0;
+  const teamsPercentage = 0;
 
   return {
     fileId: ruleset.fileId,
@@ -53,11 +48,22 @@ export const rulesetTransformer = (ruleset: Prisma.RulesetGetPayload<RulesetQuer
     dateCreated: ruleset.dateCreated,
     active: ruleset.active,
     assignedPercentage: teamsPercentage,
-    rulesetType: {
-      ...ruleset.rulesetType,
-      lastUpdated: ruleset.rulesetType.lastUpdated,
-      revisionFiles: []
-    },
+    rulesetType: rulesetTypeTransformer(ruleset.rulesetType),
+    car: {
+      carId: ruleset.car.carId,
+      name: ruleset.car.wbsElementId
+    }
+  };
+};
+
+export const rulesetPreviewTransformer = (ruleset: any): RulesetPreview => {
+  const teamsPercentage = 0;
+
+  return {
+    name: ruleset.name,
+    dateCreated: ruleset.dateCreated,
+    active: ruleset.active,
+    assignedPercentage: teamsPercentage,
     car: {
       carId: ruleset.car.carId,
       name: ruleset.car.wbsElementId
