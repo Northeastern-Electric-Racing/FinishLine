@@ -315,7 +315,12 @@ export default class RulesService {
     }
 
     const projectRule = await prisma.project_Rule.create({
-      data: { ruleId, projectId, currentStatus: Rule_Completion.REVIEW },
+      data: {
+        ruleId,
+        projectId,
+        currentStatus: Rule_Completion.REVIEW,
+        createdByUserId: submitter.userId
+      },
       ...getProjectRuleQueryArgs()
     });
 
@@ -443,8 +448,7 @@ export default class RulesService {
     }
 
     const newStatusHistory = {
-      userUpdatedId: submitter.userId,
-      updatedAt: new Date(),
+      createdByUserId: submitter.userId,
       newStatus,
       note: `${submitter.firstName} ${submitter.lastName} marked as ${newStatus}`
     };

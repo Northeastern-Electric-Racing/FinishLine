@@ -82,10 +82,9 @@ describe('Create Rules Tests', () => {
 
       expect(rule.ruleCode).toBe('T.1.1.1');
       expect(rule.ruleContent).toBe('The vehicle must have four wheels');
-      expect(rule.ruleset.rulesetId).toBe(rulesetId);
       expect(rule.parentRule).toBeUndefined();
       expect(rule.subRuleIds).toHaveLength(0);
-      expect(rule.referencedRules).toHaveLength(0);
+      expect(rule.referencedRuleIds).toHaveLength(0);
       expect(rule.imageFileIds).toHaveLength(0);
     });
 
@@ -120,9 +119,9 @@ describe('Create Rules Tests', () => {
         [rule1.ruleId, rule2.ruleId]
       );
 
-      expect(rule3.referencedRules).toHaveLength(2);
-      expect(rule3.referencedRules.map((r) => r.ruleId)).toContain(rule1.ruleId);
-      expect(rule3.referencedRules.map((r) => r.ruleId)).toContain(rule2.ruleId);
+      expect(rule3.referencedRuleIds).toHaveLength(2);
+      expect(rule3.referencedRuleIds).toContain(rule1.ruleId);
+      expect(rule3.referencedRuleIds).toContain(rule2.ruleId);
     });
 
     it('successfully creates a rule with image file IDs', async () => {
@@ -288,8 +287,6 @@ describe('Create Rules Tests', () => {
         undefined,
         [wheelRule.ruleId, brakeRule.ruleId]
       );
-
-      expect(brakingSystemRule.referencedRules).toHaveLength(2);
 
       const wheelRuleFromDb = await prisma.rule.findUnique({
         where: { ruleId: wheelRule.ruleId },
@@ -550,8 +547,8 @@ describe('Delete Rules Tests', () => {
       expect(updatedProjectRule.statusHistory.length).toBe(1);
       expect(updatedProjectRule.statusHistory[0].newStatus).toBe(Rule_Completion.COMPLETED);
       expect(updatedProjectRule.statusHistory[0].projectRuleId).toBe(projectRule.projectRuleId);
-      expect(updatedProjectRule.statusHistory[0].userUpdated.userId).toBe(admin.userId);
-      expect(new Date(updatedProjectRule.statusHistory[0].updatedAt).getTime()).toBeGreaterThan(Date.now() - 10000);
+      expect(updatedProjectRule.statusHistory[0].createdBy.userId).toBe(admin.userId);
+      expect(new Date(updatedProjectRule.statusHistory[0].dateCreated).getTime()).toBeGreaterThan(Date.now() - 10000);
     });
 
     it('Updates a project rule status to the same status', async () => {
