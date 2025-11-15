@@ -1,8 +1,6 @@
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { Shop, Event } from 'shared';
-
-import { FilterArgs } from 'shared';
+import { Shop, Machinery, FilterArgs, Event } from 'shared';
 import { filterEventsTransformer } from './transformers/calendar.transformer';
 
 export const getAllShops = () => {
@@ -20,5 +18,53 @@ export const postCreateShop = (payload: { name: string; description: string }) =
 export const postFilterEvents = (payload: FilterArgs) => {
   return axios.post<any>(apiUrls.calendarFilterEvents(), payload, {
     transformResponse: (data) => filterEventsTransformer(JSON.parse(data) as Event[])
+  });
+};
+
+export const getAllMachinery = () => {
+  return axios.get<Machinery[]>(apiUrls.calendarMachinery(), {
+    transformResponse: (data) => JSON.parse(data) as Machinery[]
+  });
+};
+
+export const postCreateMachinery = async (payload: { machineName: string }) => {
+  const { data } = await axios.post<Machinery>(
+    apiUrls.calendarCreateMachinery(),
+    { name: payload.machineName },
+    {
+      transformResponse: (data) => JSON.parse(data) as Machinery
+    }
+  );
+  return data;
+};
+
+export const postEditMachinery = async (payload: { machineryId: string; name: string }) => {
+  const { machineryId, name } = payload;
+  const { data } = await axios.post<Machinery>(
+    apiUrls.calendarEditMachinery(machineryId),
+    { name },
+    {
+      transformResponse: (data) => JSON.parse(data) as Machinery
+    }
+  );
+  return data;
+};
+
+export const postAddMachineryToShop = async (payload: {
+  machineryId: string;
+  shopId: string;
+  quantity: number;
+  originalShopId?: string;
+}) => {
+  const { machineryId, ...body } = payload;
+  const { data } = await axios.post<Machinery>(apiUrls.calendarAddMachineryToShop(machineryId), body, {
+    transformResponse: (data) => JSON.parse(data) as Machinery
+  });
+  return data;
+};
+
+export const editShop = (shopId: string, payload: { name: string; description: string }) => {
+  return axios.post<Shop>(apiUrls.calendarEditShop(shopId), payload, {
+    transformResponse: (data) => JSON.parse(data) as Shop
   });
 };

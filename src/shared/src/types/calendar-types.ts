@@ -1,6 +1,33 @@
-import { WorkPackage } from './project-types';
-import { Team } from './team-types';
-import { Availability, User } from './user-types';
+import { User, UserWithScheduleSettings } from './user-types';
+
+export interface ShopPreview {
+  shopId: string;
+  name: string;
+}
+
+export interface MachineryPreview {
+  machineryId: string;
+  name: string;
+}
+
+export interface TeamCalendarPreview {
+  teamId: string;
+  teamName: string;
+}
+
+export interface WorkPackageCalendarPreview {
+  workPackageId: string;
+  wbsElement: {
+    name: string;
+  };
+}
+
+export enum EventStatus {
+  UNCONFIRMED = 'UNCONFIRMED',
+  CONFIRMED = 'CONFIRMED',
+  SCHEDULED = 'SCHEDULED',
+  DONE = 'DONE'
+}
 
 export interface Calendar {
   calendarId: string;
@@ -61,16 +88,18 @@ export interface EventType {
   initialDateScheduled: boolean;
   allDay: boolean;
   recurring: boolean;
-  members: boolean;
+  requiredMembers: boolean;
+  optionalMembers: boolean;
+  teams: boolean;
   location: boolean;
   zoomLink: boolean;
-  availability: boolean;
   shop: boolean;
   machinery: boolean;
   workPackage: boolean;
   questionDocument: boolean;
   documents: boolean;
   description: boolean;
+  onlyHeadsOrAboveForEventCreation: boolean;
 }
 
 export interface Shop {
@@ -103,17 +132,20 @@ export interface Event {
   userCreated: User;
   dateCreated: Date;
   eventTypeId: string;
-  approvedBy?: User;
+  approvalRequiredFrom?: User;
   scheduledTimes: ScheduleSlot[];
-  people: User[];
-  teams: Team[];
+  requiredMembers: User[];
+  optionalMembers: User[];
+  confirmedMembers: UserWithScheduleSettings[];
+  deniedMembers: User[];
+  teams: TeamCalendarPreview[];
   location?: string;
   zoomLink?: string;
-  availability: Availability[];
-  shops: Shop[];
-  machinery: Machinery[];
-  workPackages: WorkPackage[];
+  shops: ShopPreview[];
+  machinery: MachineryPreview[];
+  workPackages: WorkPackageCalendarPreview[];
   documentIds: string[];
   questionDocument?: string;
   description?: string;
+  status: EventStatus;
 }

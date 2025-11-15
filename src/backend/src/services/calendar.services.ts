@@ -1,6 +1,6 @@
 import { calendarTransformer, eventTransformer, machineryTransformer } from '../transformers/calendar.transformer';
 import { getMachineryQueryArgs } from '../prisma-query-args/machinery.query-args';
-import { Organization } from '@prisma/client';
+import { Event_Status, Organization } from '@prisma/client';
 import {
   isAdmin,
   isHead,
@@ -9,27 +9,42 @@ import {
   Calendar,
   User,
   ScheduleSlotCreateArgs,
-  AvailabilityCreateArgs,
   Event,
   FilterArgs,
-  Machinery
+  Machinery,
+  AvailabilityCreateArgs,
+  EventStatus
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
   DeletedException,
+  HttpException,
   InvalidOrganizationException,
   NotFoundException
 } from '../utils/errors.utils';
-import { userHasPermission } from '../utils/users.utils';
+import {
+  areUsersinList,
+  getPrismaQueryUserIds,
+  getUsers,
+  updateUserAvailability,
+  userHasPermission
+} from '../utils/users.utils';
 import { eventTypeTransformer } from '../transformers/calendar.transformer';
 import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args';
 import { shopTransformer } from '../transformers/calendar.transformer';
 import { getShopQueryArgs } from '../prisma-query-args/shop.query-args';
 import { getCalendarQueryArgs } from '../prisma-query-args/calendar.query-args';
 import { getEventQueryArgs } from '../prisma-query-args/event.query-args';
-import { buildScheduledTimesOverlap } from '../utils/calendar.utils';
+import {
+  buildScheduledTimesOverlap,
+  checkEventConflicts,
+  isUserOnEvent,
+  validateEventTypeConfiguration
+} from '../utils/calendar.utils';
+import { UserWithSettings } from '../utils/auth.utils';
+import { getUserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args';
 
 export default class CalendarService {
   /**
@@ -42,16 +57,18 @@ export default class CalendarService {
    * @param initialDateScheduled Determines if a date is associated with this event type.
    * @param recurring Determines if this event type is recurring.
    * @param allDay Determines if this event type is all day.
-   * @param members Determines if this event type has members.
+   * @param requiredMembers Determines if this event type has required members.
+   * @param optionalMembers Determines if this event type has optional members.
+   * @param teams Determines if this event type has teams.
    * @param location Determines if this event type has a location.
    * @param zoomLink Determines if this event type has a zoom link.
-   * @param availabilities Determines if this event type has availabilities.
    * @param shop Determines if a shop is associated with this event type.
    * @param machinery Determines if machinery is associated with this event type.
    * @param workPackage Determines if a work package is associated with this event type.
    * @param questionDocument Determines if a question document is associated with this event type.
    * @param documents Determines if documents are associates with this event type.
    * @param description Determines if a description is associated with this event type.
+   * @param onlyHeadsOrAbove Determines if events under this event type can only be created by heads or above.
    *
    * @returns The created event type.
    *
@@ -67,16 +84,19 @@ export default class CalendarService {
     initialDateScheduled: boolean,
     recurring: boolean,
     allDay: boolean,
-    members: boolean,
+    requiredMembers: boolean,
+    optionalMembers: boolean,
+    teams: boolean,
     location: boolean,
     zoomLink: boolean,
-    availabilities: boolean,
     shop: boolean,
     machinery: boolean,
     workPackage: boolean,
     questionDocument: boolean,
     documents: boolean,
-    description: boolean
+    description: boolean,
+    onlyHeadsOrAbove: boolean,
+    requiresConfirmation: boolean
   ): Promise<EventType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create event type');
@@ -103,7 +123,18 @@ export default class CalendarService {
       }
     }
 
-    const newEventType = await prisma.eventType.create({
+    const duplicate = await prisma.event_Type.findFirst({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        name: { equals: name, mode: 'insensitive' }
+      }
+    });
+    if (duplicate) {
+      throw new HttpException(409, "Can't have two event types with the same name");
+    }
+
+    const newEventType = await prisma.event_Type.create({
       data: {
         name,
         calendars: {
@@ -113,16 +144,19 @@ export default class CalendarService {
         initialDateScheduled,
         recurring,
         allDay,
-        members,
+        requiredMembers,
+        optionalMembers,
+        teams,
         location,
         zoomLink,
-        availabilities,
         shop,
         machinery,
         workPackage,
         questionDocument,
         documents,
         description,
+        onlyHeadsOrAboveForEventCreation: onlyHeadsOrAbove,
+        requiresConfirmation,
         organizationId: organization.organizationId
       },
       ...getEventTypeQueryArgs(organization.organizationId)
@@ -145,51 +179,32 @@ export default class CalendarService {
    * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
    * @throws NotFoundException If the shop with the given shopId does not exist.
    */
-  static async createMachinery(
-    submitter: User,
-    name: string,
-    shopId: string,
-    quantity: number,
-    organization: Organization,
-    description?: string
-  ) {
-    // Check if user is admin
+  static async createMachinery(submitter: User, name: string, organization: Organization) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create machinery');
     }
 
-    // Check if shop with id exists and belongs to the same organization
-    const existingShop = await prisma.shop.findUnique({
-      where: { shopId }
+    const duplicate = await prisma.machinery.findFirst({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        name: { equals: name, mode: 'insensitive' }
+      }
     });
-
-    if (!existingShop) {
-      throw new NotFoundException('Shop', shopId);
+    if (duplicate) {
+      throw new HttpException(409, "Can't have two machinery with the same name");
     }
 
-    if (existingShop.organizationId !== organization.organizationId) {
-      throw new InvalidOrganizationException('Shop');
-    }
-
-    const newMachinery = await prisma.machinery.create({
+    const created = await prisma.machinery.create({
       data: {
         name,
         userCreatedId: submitter.userId,
-        organizationId: organization.organizationId,
-        shops: {
-          create: [
-            {
-              shopId,
-              quantity,
-              description
-            }
-          ]
-        }
+        organizationId: organization.organizationId
       },
       ...getMachineryQueryArgs(organization.organizationId)
     });
 
-    return machineryTransformer(newMachinery);
+    return machineryTransformer(created);
   }
 
   /**
@@ -199,15 +214,13 @@ export default class CalendarService {
    * @param title The title of the event.
    * @param eventTypeId The event type id the event is associated with.
    * @param organization The organization for which the event type is being created.
-   * @param memberIds An array of member ids that are invited to the event.
+   * @param requiredMemberIds An array of required member ids that are invited to the event.
+   * @param optionalMemberIds An array of optional member ids that are invited to the event.
    * @param shopIds An array of shops associated with the event.
    * @param machineryIds An array of machinery associated with the event.
    * @param workPackageIds An array of work packages associated with the event.
    * @param documentIds An array of documents associated with the event.
    * @param scheduleSlots An array of schedule slots associated with the event.
-   * @param availabilities An array of availabilities associated with the event.
-   * @param approved Determines if the event has been approved.
-   * @param approvedByUserId The ID of the approving user.
    * @param questionDocument The link to the question document.
    * @param location Location of the event.
    * @param zoomLink Zoom Link if the event is online.
@@ -215,7 +228,6 @@ export default class CalendarService {
    *
    * @returns The created event.
    *
-   * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
    * @throws NotFoundException If the given event type, member IDs, shop IDs, machinery IDs, work package IDs, document IDs, or approvedByUserId are not found.
    * @throws InvalidOrganizationException If the given event type, members, shops, machinery, work packages, or approvedByUserId are not part of the same organization.
    */
@@ -224,23 +236,21 @@ export default class CalendarService {
     title: string,
     eventTypeId: string,
     organization: Organization,
-    memberIds: string[],
+    requiredMemberIds: string[],
+    optionalMemberIds: string[],
     teamIds: string[],
     shopIds: string[],
     machineryIds: string[],
     workPackageIds: string[],
     documentIds: string[],
     scheduleSlot: ScheduleSlotCreateArgs[],
-    availability: AvailabilityCreateArgs[],
-    approved: boolean,
-    approvedByUserId?: string,
     questionDocument?: string,
     location?: string,
     zoomLink?: string,
     description?: string
   ): Promise<Event> {
     // Validate eventTypeId
-    const foundEventType = await prisma.eventType.findUnique({
+    const foundEventType = await prisma.event_Type.findUnique({
       where: { eventTypeId }
     });
     if (!foundEventType) throw new NotFoundException('Event Type', eventTypeId);
@@ -249,16 +259,54 @@ export default class CalendarService {
       throw new InvalidOrganizationException('Event Type');
     }
 
-    // Validate memberIds
-    if (memberIds.length > 0) {
+    if (foundEventType.onlyHeadsOrAboveForEventCreation) {
+      const hasPermission = await userHasPermission(submitter.userId, organization.organizationId, isHead);
+
+      if (!hasPermission) {
+        throw new AccessDeniedException('Only admins and heads can create events under this event type');
+      }
+    }
+
+    // Validate event follows event type configuration
+    validateEventTypeConfiguration(foundEventType, {
+      requiredMemberIds,
+      optionalMemberIds,
+      teamIds,
+      shopIds,
+      machineryIds,
+      workPackageIds,
+      documentIds,
+      scheduleSlot,
+      location,
+      zoomLink,
+      questionDocument,
+      description
+    });
+
+    // Validate required memberIds
+    if (requiredMemberIds.length > 0) {
       const foundMembers = await prisma.user.findMany({
         where: {
-          userId: { in: memberIds },
+          userId: { in: requiredMemberIds },
           organizations: { some: { organizationId: organization.organizationId } }
         }
       });
-      if (foundMembers.length !== memberIds.length) {
-        const missingIds = memberIds.filter((id) => !foundMembers.some((user) => user.userId === id));
+      if (foundMembers.length !== requiredMemberIds.length) {
+        const missingIds = requiredMemberIds.filter((id) => !foundMembers.some((user) => user.userId === id));
+        throw new NotFoundException('User', missingIds.join(', '));
+      }
+    }
+
+    // Validate optionals memberIds
+    if (optionalMemberIds.length > 0) {
+      const foundMembers = await prisma.user.findMany({
+        where: {
+          userId: { in: optionalMemberIds },
+          organizations: { some: { organizationId: organization.organizationId } }
+        }
+      });
+      if (foundMembers.length !== optionalMemberIds.length) {
+        const missingIds = optionalMemberIds.filter((id) => !foundMembers.some((user) => user.userId === id));
         throw new NotFoundException('User', missingIds.join(', '));
       }
     }
@@ -299,12 +347,24 @@ export default class CalendarService {
           machineryId: { in: machineryIds },
           organizationId: organization.organizationId,
           dateDeleted: null
+        },
+        include: {
+          shops: {
+            include: {
+              shop: true
+            }
+          }
         }
       });
       if (foundMachinery.length !== machineryIds.length) {
         const missingIds = machineryIds.filter((id) => !foundMachinery.some((m) => m.machineryId === id));
         throw new NotFoundException('Machinery', missingIds.join(', '));
       }
+
+      // Automatically add machinery's shops to shopIds if not already included
+      const machineryShopIds = foundMachinery.flatMap((m) => m.shops.map((sm) => sm.shopId));
+      const uniqueShopIds = new Set([...shopIds, ...machineryShopIds]);
+      shopIds = Array.from(uniqueShopIds);
     }
 
     // Validate workPackageIds
@@ -320,48 +380,25 @@ export default class CalendarService {
       }
     }
 
-    // Validate approvedByUserId
-    if (approvedByUserId) {
-      const foundApprovedByUser = await prisma.user.findUnique({
-        where: {
-          userId: approvedByUserId,
-          organizations: { some: { organizationId: organization.organizationId } }
-        }
-      });
-      if (!foundApprovedByUser) {
-        throw new NotFoundException('User', approvedByUserId);
-      }
-    }
-
-    // Ensure each availability has a scheduleSettingsId
-    const availabilitiesWithScheduleSettings = await Promise.all(
-      availability.map(async (availability) => {
-        let scheduleSettings = await prisma.schedule_Settings.findUnique({
-          where: { userId: submitter.userId }
-        });
-
-        if (!scheduleSettings) {
-          scheduleSettings = await prisma.schedule_Settings.create({
-            data: {
-              userId: submitter.userId,
-              personalGmail: '',
-              personalZoomLink: ''
-            }
-          });
-        }
-
-        return {
-          availability: availability.availability,
-          dateSet: availability.dateSet,
-          scheduleSettingsId: scheduleSettings.drScheduleSettingsId
-        };
-      })
-    );
+    // Check for conflicts
+    const { hasConflict, approverUserId } = await checkEventConflicts(scheduleSlot, organization, location, undefined);
 
     const computeEndDate = (initial: Date, recurrenceNumber: number) => {
       const weeks = Math.max(1, recurrenceNumber ?? 0);
       return new Date(initial.getTime() + weeks * 7 * 24 * 60 * 60 * 1000);
     };
+
+    const duplicate = await prisma.event.findFirst({
+      where: {
+        dateDeleted: null,
+        title: { equals: title, mode: 'insensitive' },
+        // scope to org via related eventType
+        eventType: { organizationId: organization.organizationId }
+      }
+    });
+    if (duplicate) {
+      throw new HttpException(409, "Can't have two events with the same title");
+    }
 
     const newEvent = await prisma.event.create({
       data: {
@@ -369,8 +406,11 @@ export default class CalendarService {
         dateCreated: new Date(),
         title,
         eventTypeId,
-        members: {
-          connect: memberIds.map((userId) => ({ userId }))
+        requiredMembers: {
+          connect: requiredMemberIds.map((userId) => ({ userId }))
+        },
+        optionalMembers: {
+          connect: optionalMemberIds.map((userId) => ({ userId }))
         },
         teams: {
           connect: teamIds.map((teamId) => ({ teamId }))
@@ -396,13 +436,9 @@ export default class CalendarService {
             allDay: s.allDay
           }))
         },
-        availabilities: {
-          createMany: {
-            data: availabilitiesWithScheduleSettings
-          }
-        },
-        approved,
-        approvedByUserId,
+        status: foundEventType.requiresConfirmation ? Event_Status.UNCONFIRMED : Event_Status.CONFIRMED,
+        approved: !hasConflict,
+        approvalRequiredFromUserId: hasConflict ? approverUserId : null,
         location,
         zoomLink,
         questionDocument,
@@ -412,6 +448,557 @@ export default class CalendarService {
     });
 
     return eventTransformer(newEvent);
+  }
+
+  /**
+   * Edits an event.
+   *
+   * @param submitter The user submitting the request, who must be an admin.
+   * @param eventId The id of the event to edit.
+   * @param title The title of the event.
+   * @param organization The organization for which the event type is being created.
+   * @param requiredMemberIds An array of required member ids that are invited to the event.
+   * @param optionalMemberIds An array of optional member ids that are invited to the event.
+   * @param status see Event_Status enum
+   * @param shopIds An array of shops associated with the event.
+   * @param machineryIds An array of machinery associated with the event.
+   * @param workPackageIds An array of work packages associated with the event.
+   * @param documentIds An array of documents associated with the event.
+   * @param scheduleSlots An array of schedule slots associated with the event.
+   * @param questionDocument The link to the question document.
+   * @param location Location of the event.
+   * @param zoomLink Zoom Link if the event is online.
+   * @param description Describes the event.
+   *
+   * @returns The edited event.
+   *
+   * @throws NotFoundException If the given event type, member IDs, shop IDs, machinery IDs, work package IDs, document IDs, or approvedByUserId are not found.
+   * @throws InvalidOrganizationException If the given event type, members, shops, machinery, work packages, or approvedByUserId are not part of the same organization.
+   */
+  static async editEvent(
+    submitter: User,
+    eventId: string,
+    title: string,
+    organization: Organization,
+    requiredMemberIds: string[],
+    optionalMemberIds: string[],
+    status: Event_Status,
+    teamIds: string[],
+    shopIds: string[],
+    machineryIds: string[],
+    workPackageIds: string[],
+    documentIds: string[],
+    scheduleSlot: ScheduleSlotCreateArgs[],
+    questionDocument?: string,
+    location?: string,
+    zoomLink?: string,
+    description?: string
+  ): Promise<Event> {
+    // validate eventId
+    const foundEvent = await prisma.event.findUnique({
+      where: { eventId },
+      ...getEventQueryArgs(organization.organizationId)
+    });
+
+    if (!foundEvent) throw new NotFoundException('Event', eventId);
+    if (foundEvent.dateDeleted) throw new DeletedException('Event', eventId);
+
+    const { eventTypeId } = foundEvent;
+    const foundEventType = await prisma.event_Type.findUnique({
+      where: { eventTypeId }
+    });
+
+    if (!foundEventType) throw new NotFoundException('Event Type', eventTypeId);
+    if (foundEventType.dateDeleted) throw new DeletedException('Event Type', eventTypeId);
+
+    // Validate event follows event type configuration
+    validateEventTypeConfiguration(foundEventType, {
+      requiredMemberIds,
+      optionalMemberIds,
+      teamIds,
+      shopIds,
+      machineryIds,
+      workPackageIds,
+      documentIds,
+      scheduleSlot,
+      location,
+      zoomLink,
+      questionDocument,
+      description
+    });
+
+    // question document is required if the status is scheduled or done
+    if (foundEventType.requiresConfirmation) {
+      if (foundEvent.status === Event_Status.SCHEDULED || foundEvent.status === Event_Status.DONE) {
+        if (questionDocument == null) {
+          throw new HttpException(400, 'doc template link is required for scheduled and done design reviews');
+        }
+      }
+    }
+
+    if (requiredMemberIds.length > 0 && requiredMemberIds.some((rMemberId) => optionalMemberIds.includes(rMemberId))) {
+      throw new HttpException(400, 'required members cannot be in optional members');
+    }
+
+    if (foundEventType.onlyHeadsOrAboveForEventCreation) {
+      const hasPermission = await userHasPermission(submitter.userId, organization.organizationId, isHead);
+
+      if (!hasPermission) {
+        throw new AccessDeniedException('Only admins and heads can edit this event!');
+      }
+    } else {
+      const hasPermission =
+        (await userHasPermission(submitter.userId, organization.organizationId, isHead)) ||
+        submitter.userId === foundEvent.userCreatedId;
+
+      if (!hasPermission) {
+        throw new AccessDeniedException('Only admins and heads and creators can edit this event!');
+      }
+    }
+
+    // Validate required memberIds
+    if (requiredMemberIds.length > 0) {
+      const foundMembers = await prisma.user.findMany({
+        where: {
+          userId: { in: requiredMemberIds },
+          organizations: { some: { organizationId: organization.organizationId } }
+        }
+      });
+      if (foundMembers.length !== requiredMemberIds.length) {
+        const missingIds = requiredMemberIds.filter((id) => !foundMembers.some((user) => user.userId === id));
+        throw new NotFoundException('User', missingIds.join(', '));
+      }
+    }
+
+    // Validate optional memberIds
+    if (optionalMemberIds.length > 0) {
+      const foundMembers = await prisma.user.findMany({
+        where: {
+          userId: { in: optionalMemberIds },
+          organizations: { some: { organizationId: organization.organizationId } }
+        }
+      });
+      if (foundMembers.length !== optionalMemberIds.length) {
+        const missingIds = optionalMemberIds.filter((id) => !foundMembers.some((user) => user.userId === id));
+        throw new NotFoundException('User', missingIds.join(', '));
+      }
+    }
+
+    // Validate teamIds
+    if (teamIds.length > 0) {
+      const foundteams = await prisma.team.findMany({
+        where: {
+          teamId: { in: teamIds },
+          organization: { organizationId: organization.organizationId }
+        }
+      });
+      if (foundteams.length !== teamIds.length) {
+        const missingIds = teamIds.filter((id) => !foundteams.some((team) => team.teamId === id));
+        throw new NotFoundException('Team', missingIds.join(', '));
+      }
+    }
+
+    // Validate shopIds
+    if (shopIds.length > 0) {
+      const foundShops = await prisma.shop.findMany({
+        where: {
+          shopId: { in: shopIds },
+          organizationId: organization.organizationId,
+          dateDeleted: null
+        }
+      });
+      if (foundShops.length !== shopIds.length) {
+        const missingIds = shopIds.filter((id) => !foundShops.some((shop) => shop.shopId === id));
+        throw new NotFoundException('Shop', missingIds.join(', '));
+      }
+    }
+
+    // Validate machineryIds
+    if (machineryIds.length > 0) {
+      const foundMachinery = await prisma.machinery.findMany({
+        where: {
+          machineryId: { in: machineryIds },
+          organizationId: organization.organizationId,
+          dateDeleted: null
+        },
+        include: {
+          shops: {
+            include: {
+              shop: true
+            }
+          }
+        }
+      });
+      if (foundMachinery.length !== machineryIds.length) {
+        const missingIds = machineryIds.filter((id) => !foundMachinery.some((m) => m.machineryId === id));
+        throw new NotFoundException('Machinery', missingIds.join(', '));
+      }
+
+      // Automatically add machinery's shops to shopIds if not already included
+      const machineryShopIds = foundMachinery.flatMap((m) => m.shops.map((sm) => sm.shopId));
+      const uniqueShopIds = new Set([...shopIds, ...machineryShopIds]);
+      shopIds = Array.from(uniqueShopIds);
+    }
+
+    // Validate workPackageIds
+    if (workPackageIds.length > 0) {
+      const foundWorkPackages = await prisma.work_Package.findMany({
+        where: {
+          workPackageId: { in: workPackageIds }
+        }
+      });
+      if (foundWorkPackages.length !== workPackageIds.length) {
+        const missingIds = workPackageIds.filter((id) => !foundWorkPackages.some((wp) => wp.workPackageId === id));
+        throw new NotFoundException('Work Package', missingIds.join(', '));
+      }
+    }
+
+    // Use transaction for the update
+    const updatedEvent = await prisma.$transaction(async (tx) => {
+      // Fetch existing schedule slots
+      const [existingSlots] = await Promise.all([
+        tx.schedule_Slot.findMany({
+          where: { ScheduledEvents: { some: { eventId } } },
+          select: {
+            days: true,
+            startTime: true,
+            endTime: true,
+            recurrenceNumber: true,
+            initialDateScheduled: true,
+            allDay: true
+          }
+        })
+      ]);
+
+      // Checks if all schedule slots are the same (ie no changes)
+      const haveDifferentSlots = (a: typeof existingSlots, b: typeof scheduleSlot) => {
+        if (a.length !== b.length) return true;
+        return a.some((oldSlot, idx) => {
+          const newSlot = b[idx];
+          return (
+            oldSlot.days !== newSlot.days ||
+            oldSlot.startTime !== newSlot.startTime ||
+            oldSlot.endTime !== newSlot.endTime ||
+            oldSlot.recurrenceNumber !== newSlot.recurrenceNumber ||
+            oldSlot.initialDateScheduled !== newSlot.initialDateScheduled ||
+            oldSlot.allDay !== newSlot.allDay
+          );
+        });
+      };
+
+      const computeEndDate = (initial: Date, recurrenceNumber: number) => {
+        const weeks = Math.max(1, recurrenceNumber ?? 0);
+        return new Date(initial.getTime() + weeks * 7 * 24 * 60 * 60 * 1000);
+      };
+
+      const scheduleChanged = haveDifferentSlots(existingSlots, scheduleSlot);
+      const locationChanged = foundEvent.location !== location;
+
+      let hasConflict = false;
+      let approverUserId: string | undefined;
+
+      if (scheduleChanged || locationChanged) {
+        const { hasConflict: conflict, approverUserId: approver } = await checkEventConflicts(
+          scheduleSlot,
+          organization,
+          location,
+          eventId
+        );
+
+        hasConflict = conflict;
+        approverUserId = approver;
+      }
+
+      if (scheduleChanged) {
+        await tx.schedule_Slot.deleteMany({
+          where: { ScheduledEvents: { some: { eventId } } }
+        });
+        await Promise.all(
+          scheduleSlot.map((s) =>
+            tx.schedule_Slot.create({
+              data: {
+                days: s.days,
+                startTime: s.startTime ?? null,
+                endDate: computeEndDate(s.initialDateScheduled, s.recurrenceNumber),
+                recurrenceNumber: s.recurrenceNumber,
+                initialDateScheduled: s.initialDateScheduled,
+                allDay: s.allDay,
+                ScheduledEvents: { connect: { eventId } }
+              }
+            })
+          )
+        );
+      }
+
+      // throw if a user isn't found, then build prisma queries for connecting userIds
+      const updatedRequiredMembers = getPrismaQueryUserIds(await getUsers(requiredMemberIds));
+      const updatedOptionalMembers = getPrismaQueryUserIds(await getUsers(optionalMemberIds));
+
+      let newStatus = status;
+
+      // If schedule or location changed and event type requires confirmation, reset to UNCONFIRMED
+      if ((scheduleChanged || locationChanged) && foundEventType.requiresConfirmation) {
+        newStatus = Event_Status.UNCONFIRMED;
+      } else {
+        // If all required members are confirmed, set the status to SCHEDULED
+        const allRequiredMembersConfirmed = updatedRequiredMembers.every((member) =>
+          foundEvent.confirmedMembers.map((user) => user.userId).includes(member.userId)
+        );
+
+        if (status === Event_Status.CONFIRMED && allRequiredMembersConfirmed) {
+          newStatus = Event_Status.SCHEDULED;
+        }
+      }
+
+      // Update the event with new data
+      return await tx.event.update({
+        where: { eventId },
+        data: {
+          title,
+          eventTypeId,
+          requiredMembers: {
+            set: updatedRequiredMembers
+          },
+          optionalMembers: {
+            set: updatedOptionalMembers
+          },
+          teams: {
+            set: teamIds.map((teamId) => ({ teamId }))
+          },
+          status: newStatus,
+          shops: {
+            set: shopIds.map((shopId) => ({ shopId }))
+          },
+          machinery: {
+            set: machineryIds.map((machineryId) => ({ machineryId }))
+          },
+          workPackages: {
+            set: workPackageIds.map((workPackageId) => ({ workPackageId }))
+          },
+          // If schedule/location changed and there's a conflict, set approved=false and track who needs to approve
+          // Otherwise keep existing approval state
+          approved: scheduleChanged || locationChanged ? !hasConflict : foundEvent.approved,
+          approvalRequiredFromUserId:
+            scheduleChanged || locationChanged
+              ? hasConflict
+                ? approverUserId
+                : null
+              : foundEvent.approvalRequiredFromUserId,
+          documentIds,
+          location,
+          zoomLink,
+          questionDocument,
+          description
+        },
+        ...getEventQueryArgs(organization.organizationId)
+      });
+    });
+
+    return eventTransformer(updatedEvent);
+  }
+
+  /**
+   * Approve event in the database
+   * @param submitter The user submitting the request who must be a head or above.
+   * @param eventId The id of the given event.
+   * @param organization The organization for which the event is being deleted.
+   *
+   * @returns The approved event.
+   *
+   * @throws NotFoundException If the given eventId is not found.
+   * @throws InvalidOrganizationException If the given eventId is not part of the same organization.
+   * @throws DeletedException If the event has already been deleted.
+   * @throws AccessDeniedAdminOnlyException If the submitter is not an admin or head.
+   */
+  static async approveEvent(submitter: User, eventId: string, organization: Organization): Promise<Event> {
+    const event = await prisma.event.findUnique({
+      where: { eventId }
+    });
+
+    if (!event) throw new NotFoundException('Event', eventId);
+    if (event.dateDeleted) throw new DeletedException('Event', eventId);
+
+    const hasPermission =
+      (await userHasPermission(submitter.userId, organization.organizationId, isHead)) ||
+      event.approvalRequiredFromUserId === submitter.userId;
+
+    if (!hasPermission) {
+      throw new AccessDeniedException('Only admins or heads or the owner of the conflicting event can this approve event!');
+    }
+
+    const approvedEvent = await prisma.event.update({
+      where: { eventId },
+      data: {
+        approved: true,
+        approvalRequiredFromUserId: submitter.userId
+      },
+      ...getEventQueryArgs(organization.organizationId)
+    });
+
+    return eventTransformer(approvedEvent);
+  }
+
+  /**
+   * Edits an event by confirming a given user's availability and also updating their schedule settings with the given availability
+   * @param submitter the member that is being confirmed
+   * @param eventId the id of the event
+   * @param availabilities the given member's availabilities
+   * @param organizationId the organization that the user is currently in
+   * @returns the modified event with its updated confirmed members
+   */
+  static async markUserConfirmed(
+    eventId: string,
+    availabilities: AvailabilityCreateArgs[],
+    submitter: UserWithSettings,
+    organization: Organization
+  ): Promise<Event> {
+    const event = await prisma.event.findUnique({
+      where: { eventId },
+      ...getEventQueryArgs(organization.organizationId)
+    });
+
+    if (!event) throw new NotFoundException('Event', eventId);
+    if (event.dateDeleted) throw new DeletedException('Event', eventId);
+
+    if (!isUserOnEvent(submitter, eventTransformer(event)))
+      throw new HttpException(400, 'Current user is not in the list of this events members');
+
+    let userSettings = await prisma.schedule_Settings.findUnique({
+      where: { userId: submitter.userId },
+      ...getUserScheduleSettingsQueryArgs()
+    });
+
+    if (!userSettings) {
+      userSettings = await prisma.schedule_Settings.create({
+        data: {
+          userId: submitter.userId,
+          availabilities: {
+            createMany: {
+              data: availabilities.map((availability) => ({
+                availability: availability.availability,
+                dateSet: availability.dateSet
+              }))
+            }
+          },
+          personalGmail: '',
+          personalZoomLink: ''
+        },
+        ...getUserScheduleSettingsQueryArgs()
+      });
+    }
+
+    await updateUserAvailability(availabilities, userSettings, submitter);
+
+    // set submitter as confirmed if they're not already
+    if (!event.confirmedMembers.map((user) => user.userId).includes(submitter.userId)) {
+      const updatedEvent = await prisma.event.update({
+        where: { eventId },
+        ...getEventQueryArgs(organization.organizationId),
+        data: {
+          confirmedMembers: {
+            connect: {
+              userId: submitter.userId
+            }
+          }
+        }
+      });
+
+      // possibly want to do
+      //await sendDRUserConfirmationToThread(updatedDesignReview.notificationSlackThreads, submitter);
+
+      // If all required attendees have confirmed their schedule and this member was a required attendee, mark design review as confirmed
+      if (
+        areUsersinList(event.requiredMembers, updatedEvent.confirmedMembers) &&
+        areUsersinList([submitter], event.requiredMembers)
+      ) {
+        await prisma.event.update({
+          where: { eventId },
+          ...getEventQueryArgs(organization.organizationId),
+          data: {
+            status: Event_Status.CONFIRMED
+          }
+        });
+
+        //await sendDRConfirmationToThread(updatedDesignReview.notificationSlackThreads, updatedDesignReview.userCreated);
+      }
+
+      return eventTransformer(updatedEvent);
+    }
+    return eventTransformer(event);
+  }
+
+  /**
+   * Sets the status of an event, only admin or the user who created the event can set the status.
+   * @param user the user trying to set the status
+   * @param eventId the id of the event
+   * @param status the status to set the event to
+   * @param organizationId the organization that the user is currently in
+   * @returns the modified event
+   */
+  static async setStatus(user: User, eventId: string, status: EventStatus, organization: Organization): Promise<Event> {
+    // validate the design review exists and is not deleted
+    const originalEvent = await prisma.event.findUnique({
+      where: { eventId }
+    });
+    if (!originalEvent) throw new NotFoundException('Event', eventId);
+    if (originalEvent.dateDeleted) throw new DeletedException('Event', eventId);
+
+    // verify user is allowed to set the status of the event
+    if (
+      !(await userHasPermission(user.userId, organization.organizationId, isAdmin)) &&
+      user.userId !== originalEvent.userCreatedId
+    ) {
+      throw new AccessDeniedAdminOnlyException('set the status of an event');
+    }
+
+    // actually try to update the event
+    const updatedEvent = await prisma.event.update({
+      where: { eventId },
+      ...getEventQueryArgs(organization.organizationId),
+      data: {
+        status
+      }
+    });
+
+    return eventTransformer(updatedEvent);
+  }
+
+  /**
+   * Delete event in the database
+   * @param submitter The user submitting the request, who must be an admin.
+   * @param eventId The id of the given event.
+   * @param organization The organization for which the event is being deleted.
+   *
+   * @returns The deleted event.
+   *
+   * @throws NotFoundException If the given eventId is not found.
+   * @throws InvalidOrganizationException If the given eventId is not part of the same organization.
+   * @throws DeletedException If the event has already been deleted.
+   * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
+   */
+  static async deleteEvent(submitter: User, eventId: string, organization: Organization): Promise<Event> {
+    const event = await prisma.event.findUnique({
+      where: { eventId }
+    });
+
+    if (!event) throw new NotFoundException('Event', eventId);
+    if (event.dateDeleted) throw new DeletedException('Event', eventId);
+
+    const hasPermission =
+      (await userHasPermission(submitter.userId, organization.organizationId, isAdmin)) ||
+      submitter.userId === event.userCreatedId;
+
+    if (!hasPermission) {
+      throw new AccessDeniedException('Only admins can delete events!');
+    }
+
+    const deletedEvent = await prisma.event.update({
+      where: { eventId },
+      data: { dateDeleted: new Date(), userDeletedId: submitter.userId },
+      ...getEventQueryArgs(organization.organizationId)
+    });
+
+    return eventTransformer(deletedEvent);
   }
 
   /**
@@ -431,21 +1018,69 @@ export default class CalendarService {
    * @throws NotFoundException If the machinery or shop with the given IDs do not exist.
    * @throws InvalidOrganizationException If the machinery or shop does not belong to the same organization.
    */
-  static async editMachinery(
-    submitter: User,
-    machineryId: string,
-    name: string,
-    shopId: string,
-    quantity: number,
-    organization: Organization,
-    description?: string
-  ) {
-    // Check if user is head or above
+  static async editMachinery(submitter: User, machineryId: string, name: string, organization: Organization) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
       throw new AccessDeniedException('Only heads and above can edit machinery');
     }
 
-    // Check if machinery with id exists and belongs to the same organization
+    const existing = await prisma.machinery.findFirst({ where: { machineryId } });
+    if (!existing) throw new NotFoundException('Machinery', machineryId);
+    if (existing.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Machinery');
+    }
+    if (existing.dateDeleted) {
+      throw new NotFoundException('Machinery', machineryId);
+    }
+
+    // manual uniqueness excluding current record
+    const duplicate = await prisma.machinery.findFirst({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        name: { equals: name, mode: 'insensitive' },
+        NOT: { machineryId }
+      }
+    });
+    if (duplicate) {
+      throw new HttpException(409, "Can't have two machinery with the same name");
+    }
+
+    const updated = await prisma.machinery.update({
+      where: { machineryId },
+      data: { name },
+      ...getMachineryQueryArgs(organization.organizationId)
+    });
+
+    return machineryTransformer(updated);
+  }
+
+  /**
+   * Adds or updates a machinery to a shop. Handles consolidation when machinery name matches existing machinery.
+   * If quantity is 0, deletes the shop-machinery relationship (only applicable to editing the machinery modal).
+   *
+   * @param submitter The user submitting the request, who must be a head or above.
+   * @param machineryId The ID of the machinery to add/update.
+   * @param shopId The ID of the shop to add/update the machinery in.
+   * @param quantity The quantity of machinery. If 0, the relationship is deleted.
+   * @param organization The organization context.
+   * @param originalShopId Optional: The original shop ID when moving/updating an existing relationship. If not provided, this is treated as an "add" operation and quantities are incremented.
+   * @returns The machinery object with updated shop relationships.
+   * @throws AccessDeniedException If the submitter is not a head or above.
+   * @throws NotFoundException If the machinery or shop with the given IDs do not exist.
+   * @throws InvalidOrganizationException If the machinery or shop does not belong to the same organization.
+   */
+  static async addMachineryToShop(
+    submitter: User,
+    machineryId: string,
+    shopId: string,
+    quantity: number,
+    organization: Organization,
+    originalShopId?: string
+  ) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
+      throw new AccessDeniedException('Only heads and above can manage shop-machinery relationships');
+    }
+
     const existingMachinery = await prisma.machinery.findUnique({
       where: { machineryId }
     });
@@ -455,10 +1090,9 @@ export default class CalendarService {
     }
 
     if (existingMachinery.organizationId !== organization.organizationId) {
-      throw new InvalidOrganizationException('Shop');
+      throw new InvalidOrganizationException('Machinery');
     }
 
-    // Check if shop with id exists and belongs to the same organization
     const existingShop = await prisma.shop.findUnique({
       where: { shopId }
     });
@@ -471,22 +1105,285 @@ export default class CalendarService {
       throw new InvalidOrganizationException('Shop');
     }
 
-    // Update the machinery and its shop machinery relationship
-    const updatedMachinery = await prisma.machinery.update({
-      where: { machineryId },
-      data: {
-        name,
-        shops: {
-          updateMany: {
-            where: { shopId },
-            data: {
-              quantity,
-              description
-            }
+    // Use a transaction to ensure all database operations complete atomically.
+    // This is critical for consolidation logic where we may delete one machinery and merge into another.
+    const updatedMachinery = await prisma.$transaction(async (tx) => {
+      // Find the specific shop-machinery relationship being edited (if updating existing)
+      // This identifies which shop's quantity/relationship we're modifying
+      let shopMachineryToUpdate;
+      if (originalShopId) {
+        shopMachineryToUpdate = await tx.shop_Machinery.findFirst({
+          where: {
+            machineryId,
+            shopId: originalShopId
+          }
+        });
+      }
+
+      // Get the machinery name to check for consolidation
+      const machineryName = existingMachinery.name;
+
+      // Check if another machinery with the same name already exists
+      const existingMachineryWithSameName = await tx.machinery.findFirst({
+        where: {
+          name: machineryName,
+          organizationId: organization.organizationId,
+          machineryId: { not: existingMachinery.machineryId }
+        },
+        include: {
+          shops: {
+            where: { shopId }
           }
         }
-      },
-      ...getMachineryQueryArgs(organization.organizationId)
+      });
+
+      // Case 1: Same name + same shop as existing machinery (consolidation)
+      // Consolidate by deleting current relationship and adding quantity to existing one
+      if (existingMachineryWithSameName && existingMachineryWithSameName.shops.length > 0) {
+        const [existingShopMachinery] = existingMachineryWithSameName.shops;
+
+        // If we're consolidating into a different shop-machinery relationship
+        if (
+          shopMachineryToUpdate &&
+          (shopMachineryToUpdate.shopMachineryId !== existingShopMachinery.shopMachineryId ||
+            existingMachineryWithSameName.machineryId !== machineryId)
+        ) {
+          await tx.shop_Machinery.delete({
+            where: { shopMachineryId: shopMachineryToUpdate.shopMachineryId }
+          });
+
+          // Handle quantity: if 0, delete; otherwise add to existing
+          if (quantity === 0) {
+            await tx.shop_Machinery.delete({
+              where: { shopMachineryId: existingShopMachinery.shopMachineryId }
+            });
+          } else {
+            const newQuantity = existingShopMachinery.quantity + quantity;
+            await tx.shop_Machinery.update({
+              where: { shopMachineryId: existingShopMachinery.shopMachineryId },
+              data: { quantity: newQuantity }
+            });
+          }
+
+          // Note: Machinery is kept even if it has no more shops
+          // Only shop-machinery relationships are deleted, not the machinery itself
+        } else if (
+          shopMachineryToUpdate &&
+          shopMachineryToUpdate.shopMachineryId === existingShopMachinery.shopMachineryId
+        ) {
+          // Same relationship - just update the quantity (edit operation)
+          if (quantity === 0) {
+            await tx.shop_Machinery.delete({
+              where: { shopMachineryId: existingShopMachinery.shopMachineryId }
+            });
+          } else {
+            await tx.shop_Machinery.update({
+              where: { shopMachineryId: existingShopMachinery.shopMachineryId },
+              data: { quantity }
+            });
+          }
+        } else if (shopMachineryToUpdate) {
+          // Different relationship - delete old and add to existing
+          await tx.shop_Machinery.delete({
+            where: { shopMachineryId: shopMachineryToUpdate.shopMachineryId }
+          });
+
+          if (quantity === 0) {
+            // If quantity is 0, just delete the existing relationship too
+            await tx.shop_Machinery.delete({
+              where: { shopMachineryId: existingShopMachinery.shopMachineryId }
+            });
+          } else {
+            // Add quantity to existing relationship
+            const newQuantity = existingShopMachinery.quantity + quantity;
+            await tx.shop_Machinery.update({
+              where: { shopMachineryId: existingShopMachinery.shopMachineryId },
+              data: { quantity: newQuantity }
+            });
+          }
+        } else if (quantity === 0) {
+          // Add operation - if quantity is 0, delete the relationship
+          await tx.shop_Machinery.delete({
+            where: { shopMachineryId: existingShopMachinery.shopMachineryId }
+          });
+        } else {
+          // Add operation - increment quantity
+          const newQuantity = existingShopMachinery.quantity + quantity;
+          await tx.shop_Machinery.update({
+            where: { shopMachineryId: existingShopMachinery.shopMachineryId },
+            data: { quantity: newQuantity }
+          });
+        }
+
+        const resultMachinery = await tx.machinery.findUnique({
+          where: { machineryId: existingMachineryWithSameName.machineryId },
+          ...getMachineryQueryArgs(organization.organizationId)
+        });
+        if (!resultMachinery) {
+          throw new NotFoundException('Machinery', existingMachineryWithSameName.machineryId);
+        }
+        return resultMachinery;
+      }
+
+      // Case 2: Name matches existing machinery but different shop
+      // Move relationship to the existing machinery but with different shop
+      if (existingMachineryWithSameName && existingMachineryWithSameName.machineryId !== machineryId) {
+        if (shopMachineryToUpdate) {
+          await tx.shop_Machinery.delete({
+            where: { shopMachineryId: shopMachineryToUpdate.shopMachineryId }
+          });
+        }
+
+        // Check if existing machinery already has this shop
+        const existingShopMachinery = await tx.shop_Machinery.findUnique({
+          where: {
+            uniqueShopMachinery: {
+              shopId,
+              machineryId: existingMachineryWithSameName.machineryId
+            }
+          }
+        });
+
+        if (quantity === 0) {
+          // If quantity is 0 and relationship exists, delete it
+          if (existingShopMachinery) {
+            await tx.shop_Machinery.delete({
+              where: { shopMachineryId: existingShopMachinery.shopMachineryId }
+            });
+          }
+        } else if (existingShopMachinery) {
+          // Add quantity to existing relationship
+          const newQuantity = existingShopMachinery.quantity + quantity;
+          await tx.shop_Machinery.update({
+            where: { shopMachineryId: existingShopMachinery.shopMachineryId },
+            data: { quantity: newQuantity }
+          });
+        } else {
+          // Create new relationship for existing machinery
+          await tx.shop_Machinery.create({
+            data: {
+              shopId,
+              machineryId: existingMachineryWithSameName.machineryId,
+              quantity
+            }
+          });
+        }
+
+        // Note: Machinery is kept even if it has no more shops
+        // Only shop-machinery relationships are deleted, not the machinery itself
+
+        const resultMachinery = await tx.machinery.findUnique({
+          where: { machineryId: existingMachineryWithSameName.machineryId },
+          ...getMachineryQueryArgs(organization.organizationId)
+        });
+        if (!resultMachinery) {
+          throw new NotFoundException('Machinery', existingMachineryWithSameName.machineryId);
+        }
+        return resultMachinery;
+      }
+
+      // Case 3: Normal update - no consolidation needed
+      if (shopMachineryToUpdate) {
+        if (shopMachineryToUpdate.shopId === shopId) {
+          // Same shop, update quantity or delete if 0
+          if (quantity === 0) {
+            await tx.shop_Machinery.delete({
+              where: { shopMachineryId: shopMachineryToUpdate.shopMachineryId }
+            });
+          } else {
+            await tx.shop_Machinery.update({
+              where: { shopMachineryId: shopMachineryToUpdate.shopMachineryId },
+              data: { quantity }
+            });
+          }
+        } else {
+          // Different shop - check if target shop already has this machinery
+          const existingRelationship = await tx.shop_Machinery.findUnique({
+            where: {
+              uniqueShopMachinery: {
+                shopId,
+                machineryId
+              }
+            }
+          });
+
+          if (existingRelationship) {
+            // Target shop already has this machinery, update it and delete old relationship
+            if (quantity === 0) {
+              await tx.shop_Machinery.delete({
+                where: { shopMachineryId: existingRelationship.shopMachineryId }
+              });
+            } else {
+              await tx.shop_Machinery.update({
+                where: { shopMachineryId: existingRelationship.shopMachineryId },
+                data: { quantity }
+              });
+            }
+            await tx.shop_Machinery.delete({
+              where: { shopMachineryId: shopMachineryToUpdate.shopMachineryId }
+            });
+          } else if (quantity === 0) {
+            // Move relationship to new shop, but quantity is 0 so delete
+            await tx.shop_Machinery.delete({
+              where: { shopMachineryId: shopMachineryToUpdate.shopMachineryId }
+            });
+          } else {
+            // Move relationship to new shop
+            await tx.shop_Machinery.update({
+              where: { shopMachineryId: shopMachineryToUpdate.shopMachineryId },
+              data: {
+                shopId,
+                quantity
+              }
+            });
+          }
+        }
+      } else {
+        // No originalShopId - this is a create operation (adding machine to shop)
+        // Check if relationship already exists
+        const existingRelationship = await tx.shop_Machinery.findUnique({
+          where: {
+            uniqueShopMachinery: {
+              shopId,
+              machineryId
+            }
+          }
+        });
+
+        if (existingRelationship) {
+          // Relationship exists - add quantities together when creating
+          if (quantity === 0) {
+            await tx.shop_Machinery.delete({
+              where: { shopMachineryId: existingRelationship.shopMachineryId }
+            });
+          } else {
+            const newQuantity = existingRelationship.quantity + quantity;
+            await tx.shop_Machinery.update({
+              where: { shopMachineryId: existingRelationship.shopMachineryId },
+              data: { quantity: newQuantity }
+            });
+          }
+        } else if (quantity > 0) {
+          // Create new relationship only if quantity > 0
+          await tx.shop_Machinery.create({
+            data: {
+              shopId,
+              machineryId,
+              quantity
+            }
+          });
+        }
+      }
+
+      // Note: Machinery is kept even if quantity is 0 and it has no more shops
+      // Only shop-machinery relationships are deleted, not the machinery itself
+
+      const updatedMachineryResult = await tx.machinery.findUnique({
+        where: { machineryId },
+        ...getMachineryQueryArgs(organization.organizationId)
+      });
+      if (!updatedMachineryResult) throw new NotFoundException('Machinery', machineryId);
+      return updatedMachineryResult;
     });
 
     return machineryTransformer(updatedMachinery);
@@ -499,6 +1396,18 @@ export default class CalendarService {
   static async createShop(submitter: User, name: string, description: string, organization: Organization): Promise<Shop> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create shop');
+    }
+
+    const existing = await prisma.shop.findFirst({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        name: { equals: name, mode: 'insensitive' }
+      }
+    });
+
+    if (existing) {
+      throw new HttpException(409, "Can't have two shops with the same name");
     }
 
     const newShop = await prisma.shop.create({
@@ -543,12 +1452,22 @@ export default class CalendarService {
     if (existing.dateDeleted) throw new DeletedException('Shop', shopId);
     if (existing.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Shop');
 
+    const duplicate = await prisma.shop.findFirst({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        name: { equals: name, mode: 'insensitive' },
+        NOT: { shopId }
+      }
+    });
+
+    if (duplicate) {
+      throw new HttpException(409, "Can't have two shops with the same name");
+    }
+
     const updatedShop = await prisma.shop.update({
       where: { shopId },
-      data: {
-        name,
-        description
-      },
+      data: { name, description },
       ...getShopQueryArgs(organization.organizationId)
     });
 
@@ -575,6 +1494,17 @@ export default class CalendarService {
   ): Promise<Calendar> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create calendar');
+    }
+
+    const duplicate = await prisma.calendar.findFirst({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        name: { equals: name, mode: 'insensitive' }
+      }
+    });
+    if (duplicate) {
+      throw new HttpException(409, "Can't have two calendars with the same name");
     }
 
     const newCalendar = await prisma.calendar.create({
@@ -626,6 +1556,19 @@ export default class CalendarService {
 
     if (!hasPermission) {
       throw new AccessDeniedException('Only admins can edit calendars');
+    }
+
+    const duplicate = await prisma.calendar.findFirst({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        name: { equals: name, mode: 'insensitive' },
+        NOT: { calendarId }
+      }
+    });
+
+    if (duplicate) {
+      throw new HttpException(409, "Can't have two calendars with the same name");
     }
 
     const newCalendar = await prisma.calendar.update({
@@ -689,16 +1632,18 @@ export default class CalendarService {
    * @param initialDateScheduled Determines if a date is associated with this event type.
    * @param recurring Determines if this event type is recurring.
    * @param allDay Determines if this event type is all day.
-   * @param members Determines if this event type has members.
+   * @param requiredMembers Determines if this event type has required members.
+   * @param optionalMembers Determines if this event type has optional members.
+   * @param teams Determines if this event type has teams.
    * @param location Determines if this event type has a location.
    * @param zoomLink Determines if this event type has a zoom link.
-   * @param availabilities Determines if this event type has availabilities.
    * @param shop Determines if a shop is associated with this event type.
    * @param machinery Determines if machinery is associated with this event type.
    * @param workPackage Determines if a work package is associated with this event type.
    * @param questionDocument Determines if a question document is associated with this event type.
    * @param documents Determines if documents are associates with this event type.
    * @param description Determines if a description is associated with this event type.
+   * @param onlyHeadsOrAbove Determines if events associated with this event type can only be made by heads or above.
    *
    * @returns The created event type.
    *
@@ -711,19 +1656,23 @@ export default class CalendarService {
     submitter: User,
     calendarIds: string[],
     organization: Organization,
+    name: string,
     initialDateScheduled: boolean,
     recurring: boolean,
     allDay: boolean,
-    members: boolean,
+    requiredMembers: boolean,
+    optionalMembers: boolean,
+    teams: boolean,
     location: boolean,
     zoomLink: boolean,
-    availabilities: boolean,
     shop: boolean,
     machinery: boolean,
     workPackage: boolean,
     questionDocument: boolean,
     documents: boolean,
-    description: boolean
+    description: boolean,
+    onlyHeadsOrAbove: boolean,
+    requiresConfirmation: boolean
   ): Promise<EventType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('edit event type');
@@ -751,7 +1700,7 @@ export default class CalendarService {
     }
 
     // Ensure event type to edit exists
-    const oldEventType = await prisma.eventType.findUnique({
+    const oldEventType = await prisma.event_Type.findUnique({
       where: {
         eventTypeId,
         organizationId: organization.organizationId
@@ -761,30 +1710,71 @@ export default class CalendarService {
     if (!oldEventType) throw new NotFoundException('Event Type', eventTypeId);
     if (oldEventType.dateDeleted) throw new DeletedException('Event Type', eventTypeId);
 
-    const updatedEventType = await prisma.eventType.update({
+    const updatedEventType = await prisma.event_Type.update({
       where: { eventTypeId: oldEventType.eventTypeId },
       data: {
+        name,
         calendars: {
           connect: calendarIds.map((calendarId) => ({ calendarId }))
         },
         initialDateScheduled,
         recurring,
         allDay,
-        members,
+        requiredMembers,
+        optionalMembers,
+        teams,
         location,
         zoomLink,
-        availabilities,
         shop,
         machinery,
         workPackage,
         questionDocument,
         documents,
-        description
+        description,
+        onlyHeadsOrAboveForEventCreation: onlyHeadsOrAbove,
+        requiresConfirmation
       },
       ...getEventTypeQueryArgs(organization.organizationId)
     });
 
     return eventTypeTransformer(updatedEventType);
+  }
+
+  /**
+   * Delete event type in the database
+   * @param submitter The user submitting the request, who must be an admin.
+   * @param eventTypeId The id of the given event type.
+   * @param organization The organization for which the event type is being deleted.
+   *
+   * @returns The deleted event type.
+   *
+   * @throws NotFoundException If the given event type is not found.
+   * @throws InvalidOrganizationException If the given eventTypeId is not part of the same organization.
+   * @throws DeletedException If the event type has already been deleted.
+   * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
+   */
+  static async deleteEventType(submitter: User, eventTypeId: string, organization: Organization): Promise<EventType> {
+    const eventType = await prisma.event_Type.findUnique({
+      where: { eventTypeId }
+    });
+
+    if (!eventType) throw new NotFoundException('Event Type', eventTypeId);
+    if (eventType.dateDeleted) throw new DeletedException('Event Type', eventTypeId);
+    if (eventType.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Event Type');
+
+    const hasPermission = await userHasPermission(submitter.userId, organization.organizationId, isAdmin);
+
+    if (!hasPermission) {
+      throw new AccessDeniedException('Only admins can delete event types!');
+    }
+
+    const deletedEventType = await prisma.event_Type.update({
+      where: { eventTypeId },
+      data: { dateDeleted: new Date(), userDeletedId: submitter.userId },
+      ...getEventTypeQueryArgs(organization.organizationId)
+    });
+
+    return eventTypeTransformer(deletedEventType);
   }
 
   /**
@@ -821,7 +1811,7 @@ export default class CalendarService {
 
     // Soft delete the shop and its associated shop machinery in a transaction
     const deleted = await prisma.$transaction(async (tx) => {
-      await tx.shopMachinery.deleteMany({ where: { shopId } });
+      await tx.shop_Machinery.deleteMany({ where: { shopId } });
 
       return tx.shop.update({
         where: { shopId },
@@ -890,7 +1880,7 @@ export default class CalendarService {
 
     // validate eventTypeIds
     if (eventTypeIds?.length) {
-      const foundEventTypes = await prisma.eventType.findMany({
+      const foundEventTypes = await prisma.event_Type.findMany({
         where: {
           eventTypeId: { in: eventTypeIds },
           organization: { organizationId: organization.organizationId },
@@ -921,7 +1911,8 @@ export default class CalendarService {
     const memberOrCreator = memberIds?.length
       ? {
           OR: [
-            { members: { some: { userId: { in: memberIds } } } }, // attendee
+            { requiredMembers: { some: { userId: { in: memberIds } } } }, // attendee
+            { optionalMembers: { some: { userId: { in: memberIds } } } },
             { userCreatedId: { in: memberIds } } // creator
           ]
         }
@@ -986,6 +1977,17 @@ export default class CalendarService {
 
     return calendars.map(calendarTransformer);
   }
+
+  static async getAllMachinery(organization: Organization): Promise<Machinery[]> {
+    const list = await prisma.machinery.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null
+      },
+      ...getMachineryQueryArgs(organization.organizationId)
+    });
+    return list.map(machineryTransformer);
+  }
   /**
    * Deletes a machinery by its ID.
    * Requires the submitter to be an admin.
@@ -1020,7 +2022,7 @@ export default class CalendarService {
 
     // Soft delete machinery and remove shop mappings in a transaction
     const deleted = await prisma.$transaction(async (tx) => {
-      await tx.shopMachinery.deleteMany({
+      await tx.shop_Machinery.deleteMany({
         where: { machineryId }
       });
 

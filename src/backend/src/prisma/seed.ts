@@ -3112,54 +3112,36 @@ const performSeed: () => Promise<void> = async () => {
   });
 
   // Create machineries and assign to shops
-  const ironMachine = await MachineryService.createMachinery(
+  const ironMachineCreated = await MachineryService.createMachinery(thomasEmrax, 'Iron Man CNC Mill', ner);
+  const ironMachine = await MachineryService.addMachineryToShop(
     thomasEmrax,
-    'Iron Man CNC Mill',
+    ironMachineCreated.machineryId,
     advancedShop.shopId,
     1,
-    ner,
-    'High-precision CNC milling operations'
+    ner
   );
-  const hammer = await MachineryService.createMachinery(
+  const hammerCreated = await MachineryService.createMachinery(thomasEmrax, 'Thor Hammer Lathe', ner);
+  const hammer = await MachineryService.addMachineryToShop(
     thomasEmrax,
-    'Thor Hammer Lathe',
+    hammerCreated.machineryId,
     advancedShop.shopId,
     2,
-    ner,
-    'High-precision turning operations'
+    ner
   );
-  const printer = await MachineryService.createMachinery(
+  const printerCreated = await MachineryService.createMachinery(thomasEmrax, 'Spider-Man 3D Printer', ner);
+  const printer = await MachineryService.addMachineryToShop(
     thomasEmrax,
-    'Spider-Man 3D Printer',
+    printerCreated.machineryId,
     electronicsLab.shopId,
     1,
-    ner,
-    'Rapid prototyping for electronics enclosures'
+    ner
   );
-  await MachineryService.createMachinery(
-    thomasEmrax,
-    'Captain America Oscilloscope',
-    electronicsLab.shopId,
-    3,
-    ner,
-    'High-speed signal analysis'
-  );
-  await MachineryService.createMachinery(
-    thomasEmrax,
-    'Hulk Dynamometer',
-    testingFacility.shopId,
-    1,
-    ner,
-    'Engine and motor testing'
-  );
-  await MachineryService.createMachinery(
-    thomasEmrax,
-    'Black Widow Thermal Camera',
-    testingFacility.shopId,
-    2,
-    ner,
-    'Thermal imaging and analysis'
-  );
+  const captainAmericaCreated = await MachineryService.createMachinery(thomasEmrax, 'Captain America Oscilloscope', ner);
+  await MachineryService.addMachineryToShop(thomasEmrax, captainAmericaCreated.machineryId, electronicsLab.shopId, 3, ner);
+  const hulkCreated = await MachineryService.createMachinery(thomasEmrax, 'Hulk Dynamometer', ner);
+  await MachineryService.addMachineryToShop(thomasEmrax, hulkCreated.machineryId, testingFacility.shopId, 1, ner);
+  const blackWidowCreated = await MachineryService.createMachinery(thomasEmrax, 'Black Widow Thermal Camera', ner);
+  await MachineryService.addMachineryToShop(thomasEmrax, blackWidowCreated.machineryId, testingFacility.shopId, 2, ner);
 
   // various calendars for testing
   const calendar = await CalendarService.createCalendar(
@@ -3195,20 +3177,23 @@ const performSeed: () => Promise<void> = async () => {
     true,
     true,
     true,
+    false,
+    false,
     true,
     true,
     true,
     false,
     false,
     false,
-    true,
-    true,
     false,
-    true
+    false,
+    false,
+    false,
+    false
   );
 
   // design review event type
-  await CalendarService.createEventType(
+  const designReviewEventType = await CalendarService.createEventType(
     thomasEmrax,
     'Design Review',
     [calendar.calendarId],
@@ -3218,18 +3203,21 @@ const performSeed: () => Promise<void> = async () => {
     true,
     true,
     true,
+    false,
+    true,
     true,
     false,
     false,
-    false,
-    false,
     true,
+    true,
+    true,
+    false,
     true,
     true
   );
 
   // manufacturing event type
-  await CalendarService.createEventType(
+  const manufacturingEventType = await CalendarService.createEventType(
     thomasEmrax,
     'Manufacturing',
     [],
@@ -3238,19 +3226,22 @@ const performSeed: () => Promise<void> = async () => {
     false,
     false,
     true,
+    true,
     false,
     false,
     false,
     true,
     true,
     true,
+    true,
     false,
     false,
-    true
+    true,
+    false
   );
 
   // bay time event type
-  await CalendarService.createEventType(
+  const bayTimeEventType = await CalendarService.createEventType(
     thomasEmrax,
     'Bay Time',
     [],
@@ -3262,152 +3253,127 @@ const performSeed: () => Promise<void> = async () => {
     false,
     false,
     false,
+    false,
+    false,
     true,
     false,
-    true,
     false,
     false,
-    true
+    false,
+    false,
+    false
   );
 
-  // Add these event creations after the event type creations in the seed script
   await CalendarService.createEvent(
     thomasEmrax,
-    'Impact Attenuator Design Review',
+    'Weekly Team Sync',
     meetingEventType.eventTypeId,
     ner,
-    [joeShmoe.userId, joeBlow.userId, batman.userId],
     [],
-    [advancedShop.shopId],
-    [printer.machineryId, hammer.machineryId],
-    [workPackage1.id],
+    [],
+    [justiceLeague.teamId],
+    [],
+    [],
+    [],
     [],
     [
       {
-        days: [DayOfWeek.THURSDAY],
-        startTime: new Date(),
+        days: [DayOfWeek.MONDAY],
+        startTime: new Date('2025-10-21T10:00:00.000Z'),
+        endTime: new Date('2025-10-21T11:00:00.000Z'),
         recurrenceNumber: 1,
-        initialDateScheduled: new Date('2025-10-20T00:00:00.000Z'),
+        initialDateScheduled: new Date('2025-10-21T00:00:00.000Z'),
         allDay: false
       }
     ],
-    [
-      {
-        availability: [9, 10],
-        dateSet: new Date('2025-10-20T00:00:00.000Z')
-      }
-    ],
-    true,
-    batman.userId,
+    undefined,
     'Conference Room A',
     'https://zoom.us/j/123456789',
-    'https://docs.google.com/document/d/1_example',
-    'Review design specifications for the impact attenuator'
+    undefined
   );
 
   await CalendarService.createEvent(
-    batman,
-    'Wiring Harness Installation Planning',
-    meetingEventType.eventTypeId,
+    thomasEmrax,
+    'Impact Attenuator Design Review',
+    designReviewEventType.eventTypeId,
     ner,
-    [regina.userId, janis.userId, cady.userId],
+    [joeShmoe.userId, joeBlow.userId],
+    [batman.userId],
     [],
-    [electronicsLab.shopId],
-    [printer.machineryId],
-    [workPackage3.id, workPackage4.id],
     [],
+    [],
+    [workPackage1.id],
+    ['doc1', 'doc2'],
     [
       {
-        days: [DayOfWeek.WEDNESDAY],
+        days: [DayOfWeek.TUESDAY],
         startTime: new Date('2025-10-22T14:00:00.000Z'),
-        endTime: new Date('2025-10-22T15:30:00.000Z'),
-        recurrenceNumber: 2,
+        endTime: new Date('2025-10-22T16:00:00.000Z'),
+        recurrenceNumber: 1,
         initialDateScheduled: new Date('2025-10-22T00:00:00.000Z'),
         allDay: false
       }
     ],
+    'https://docs.google.com/document/d/2_example',
+    'Conference Room B',
+    'https://zoom.us/j/987654321',
+    undefined
+  );
+
+  await CalendarService.createEvent(
+    batman,
+    'Wiring Harness Manufacturing',
+    manufacturingEventType.eventTypeId,
+    ner,
+    [regina.userId, janis.userId],
+    [cady.userId],
+    [],
+    [electronicsLab.shopId],
+    [printer.machineryId],
+    [workPackage3.id],
+    [],
     [
       {
-        availability: [14, 15],
-        dateSet: new Date('2025-10-22T00:00:00.000Z')
+        days: [DayOfWeek.WEDNESDAY],
+        startTime: new Date('2025-10-23T09:00:00.000Z'),
+        endTime: new Date('2025-10-23T12:00:00.000Z'),
+        recurrenceNumber: 1,
+        initialDateScheduled: new Date('2025-10-23T00:00:00.000Z'),
+        allDay: false
       }
     ],
-    true,
-    thomasEmrax.userId,
-    'Electronics Lab',
-    'https://zoom.us/j/987654321',
-    'https://docs.google.com/document/d/2_example',
-    'Plan the installation process for the wiring harness'
+    'https://docs.google.com/document/d/3_example',
+    undefined,
+    undefined,
+    undefined
   );
 
   await CalendarService.createEvent(
     aang,
-    'Appa Plush Design Brainstorm',
-    meetingEventType.eventTypeId,
+    'Composite Layup Bay Time',
+    bayTimeEventType.eventTypeId,
     ner,
-    [katara.userId, sokka.userId, toph.userId],
-    [justiceLeague.teamId],
+    [katara.userId, sokka.userId],
     [],
     [],
-    [workPackage5.id],
+    [],
+    [ironMachine.machineryId],
+    [],
     [],
     [
       {
-        days: [DayOfWeek.FRIDAY],
-        startTime: new Date('2025-10-24T10:00:00.000Z'),
-        endTime: new Date('2025-10-24T11:00:00.000Z'),
+        days: [DayOfWeek.THURSDAY],
+        startTime: new Date('2025-10-24T13:00:00.000Z'),
+        endTime: new Date('2025-10-24T17:00:00.000Z'),
         recurrenceNumber: 1,
         initialDateScheduled: new Date('2025-10-24T00:00:00.000Z'),
         allDay: false
       }
     ],
-    [
-      {
-        availability: [10, 11],
-        dateSet: new Date('2025-10-24T00:00:00.000Z')
-      }
-    ],
-    true,
-    katara.userId,
-    'Design Studio',
-    'https://zoom.us/j/456789123',
-    'https://docs.google.com/document/d/3_example',
-    'Brainstorm design ideas for Appa plush prototypes'
-  );
-
-  await CalendarService.createEvent(
-    lexLuther,
-    'Laser Cannon Prototype Review',
-    meetingEventType.eventTypeId,
-    ner,
-    [zatanna.userId, superman.userId, wonderwoman.userId],
-    [orioles.teamId],
-    [testingFacility.shopId],
-    [ironMachine.machineryId, hammer.machineryId],
-    [project3WP1.id],
-    [],
-    [
-      {
-        days: [DayOfWeek.MONDAY],
-        startTime: new Date('2025-10-27T13:00:00.000Z'),
-        endTime: new Date('2025-10-27T14:30:00.000Z'),
-        recurrenceNumber: 1,
-        initialDateScheduled: new Date('2025-10-27T00:00:00.000Z'),
-        allDay: false
-      }
-    ],
-    [
-      {
-        availability: [13, 14],
-        dateSet: new Date('2025-10-27T00:00:00.000Z')
-      }
-    ],
-    true,
-    batman.userId,
-    'Testing Facility',
-    'https://zoom.us/j/789123456',
-    'https://docs.google.com/document/d/4_example',
-    'Review progress and test results for laser cannon prototype'
+    undefined,
+    undefined,
+    undefined,
+    undefined
   );
 };
 

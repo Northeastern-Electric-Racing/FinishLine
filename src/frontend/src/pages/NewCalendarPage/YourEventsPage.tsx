@@ -139,7 +139,6 @@ const YourEventsPage = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              /* TODO: Pass event data through a transformer to set it to date without needing to call new Date() */
               events.map((event) => {
                 const earliestSchedule = getEarliestSchedule(event);
                 const now = new Date();
@@ -187,7 +186,7 @@ const YourEventsPage = () => {
                       )}
                     </TableCell>
                     <TableCell align="center">
-                      {event.approvedBy ? `${event.approvedBy.firstName} ${event.approvedBy.lastName}` : 'N/A'}
+                      {event.approved ? `${event.approvalRequiredFrom?.firstName} ${event.approvalRequiredFrom?.lastName}` : 'N/A'}
                     </TableCell>
                     <TableCell align="center">{event.approved ? 'Approved' : 'Pending'}</TableCell>
                   </TableRow>
