@@ -49,8 +49,8 @@ export interface FilterArgs {
   eventTypeIds?: string[];
   eventIds?: string[];
   approvalStatus?: boolean;
-  startPeriod?: Date;
-  endPeriod?: Date;
+  startPeriod: Date;
+  endPeriod: Date;
 }
 
 export interface EventType {

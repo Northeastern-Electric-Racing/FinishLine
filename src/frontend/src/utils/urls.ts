@@ -439,7 +439,7 @@ const retrospectiveBudgets = () => `${API_URL}/retrospective/budgets`;
 const calendar = () => `${API_URL}/calendar`;
 const calendarShops = () => `${calendar()}/shops`;
 const calendarCreateShop = () => `${calendar()}/shop/create`;
-const calendarFilterEvents = () => `${API_URL}/events/filter`;
+const calendarFilterEvents = () => `${calendar()}/events/filter`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;

@@ -5,6 +5,7 @@
 import {
   Box,
   Button,
+  Link,
   Paper,
   Tab,
   Table,
@@ -18,7 +19,12 @@ import {
 } from '@mui/material';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import TableCellHuge from './YourEventsComponents/TableCellHuge';
-import { useState } from 'react';
+import { useFilterEvents } from '../../hooks/calendar.hooks';
+import { useCurrentUser } from '../../hooks/users.hooks';
+import { useEffect, useState } from 'react';
+import { FilterArgs, ScheduleSlot } from 'shared';
+import { Event } from 'shared';
+import { time } from 'console';
 
 interface YourEventsHeadCells {
   id: string;
@@ -52,7 +58,51 @@ const headCells: readonly YourEventsHeadCells[] = [
   }
 ];
 
+const earliestSchedules = new Map<string, ScheduleSlot & { startTime: Date }>();
+
+const getEarliestSchedule = (event: Event) => {
+  if (earliestSchedules.has(event.eventId)) {
+    return earliestSchedules.get(event.eventId)!;
+  }
+
+  const [result] = event.scheduledTimes
+    .filter((schedule): schedule is ScheduleSlot & { startTime: Date } => schedule.startTime !== undefined)
+    .sort((a, b) => a.startTime.getUTCSeconds() - b.startTime.getUTCSeconds());
+
+  earliestSchedules.set(event.eventId, result);
+  return result;
+};
+
 const YourEventsPage = () => {
+  const { mutateAsync: filterEventsMutate } = useFilterEvents();
+  const user = useCurrentUser();
+
+  const [events, setEvents] = useState([] as Event[]);
+  const [eventsLoading, setEventsLoading] = useState(true);
+  const [update, setUpdate] = useState(true);
+
+  useEffect(() => {
+    // Example filter on mount
+    console.log('Filtering events...');
+    const filterArgs: FilterArgs = {
+      memberIds: [user.userId],
+      startPeriod: new Date(0), // Adjust as needed
+      endPeriod: new Date(2099, 11, 31) // Adjust as needed
+    };
+    filterEventsMutate(filterArgs).then((events) => {
+      setEvents(events);
+      setEventsLoading(false);
+    });
+  }, [filterEventsMutate, user.userId]);
+
+  // Every second, just setInterval(true) to trigger re-render for time updates
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setUpdate((prev) => !prev);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <Box sx={{ width: '100%', borderRadius: '8px 8px 0 0' }}>
       <PageTitle title="Your Events" />
@@ -64,7 +114,7 @@ const YourEventsPage = () => {
           WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 86%, rgba(0,0,0,0) 90%)',
           maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 86%, rgba(0,0,0,0) 90%)',
           WebkitMaskRepeat: 'no-repeat',
-          WebkitMaskSize: '100% 100%',
+          WebkitMaskSize: '100% 100%'
         }}
       >
         <Table stickyHeader>
@@ -76,42 +126,86 @@ const YourEventsPage = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {[...Array(100)].map((_, i) => (
-              <TableRow
-                key={i}
-                sx={{
-                  '& .MuiTableCell-root': {
-                    borderBottom: 'none'
-                  }
-                }}
-              >
-                {headCells.map((headCell) => (
-                  <TableCell
-                    key={headCell.id}
-                    sx={{
-                      textAlign: { xs: 'center', md: 'center' },
-                      py: 1.5,
-                    }}
-                  >
-                    {headCell.label} Data {i + 1}
-                  </TableCell>
-                ))}
+            {eventsLoading ? (
+              <TableRow>
+                <TableCell colSpan={headCells.length} align="center">
+                  Loading...
+                </TableCell>
               </TableRow>
-            ))}
+            ) : events.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={headCells.length} align="center">
+                  No events found.
+                </TableCell>
+              </TableRow>
+            ) : (
+              /* TODO: Pass event data through a transformer to set it to date without needing to call new Date() */
+              events.map((event) => {
+                const earliestSchedule = getEarliestSchedule(event);
+                const now = new Date();
+                const diffMs = earliestSchedule.startTime.getTime() - now.getTime();
+
+                const seconds = Math.floor(diffMs / 1000);
+                const minutes = Math.floor(seconds / 60);
+                const hours = Math.floor(minutes / 60);
+                const days = Math.floor(hours / 24);
+
+                // Rough month estimate (30 days)
+                const months = Math.floor(days / 30);
+
+                const timeAway = {
+                  passed: diffMs <= 0,
+                  months,
+                  days: days % 30,
+                  hours: hours % 24,
+                  minutes: minutes % 60,
+                  seconds: seconds % 60
+                };
+
+                return (
+                  <TableRow key={event.eventId} hover>
+                    <TableCell align="center">{event.title}</TableCell>
+                    <TableCell align="center">
+                      {new Date(earliestSchedule.startTime).toLocaleDateString()}{' '}
+                      {!timeAway.passed ? ` - In ${timeAway.months}m : ${timeAway.days}d` : '- Passed'}
+                    </TableCell>
+                    <TableCell align="center">
+                      {new Date(earliestSchedule.startTime).toLocaleTimeString()}{' '}
+                      {!timeAway.passed ? ` - In ${timeAway.hours}h ${timeAway.minutes}m ${timeAway.seconds}s` : '- Passed'}
+                    </TableCell>
+                    <TableCell align="center">
+                      {event.location ? (
+                        event.location.includes('https://') ? (
+                          <Link href={event.location} target="_blank" rel="noopener noreferrer">
+                            {event.location}
+                          </Link>
+                        ) : (
+                          event.location
+                        )
+                      ) : (
+                        'N/A'
+                      )}
+                    </TableCell>
+                    <TableCell align="center">
+                      {event.approvedBy ? `${event.approvedBy.firstName} ${event.approvedBy.lastName}` : 'N/A'}
+                    </TableCell>
+                    <TableCell align="center">{event.approved ? 'Approved' : 'Pending'}</TableCell>
+                  </TableRow>
+                );
+              })
+            )}
             <TableRow
               sx={{
                 '& .MuiTableCell-root': {
-                    borderBottom: 'none'
-                  }
+                  borderBottom: 'none'
+                }
               }}
             >
               <TableCell // Padding for the gradient
-                    sx={{
-                      py: 5,
-                    }}
-                  >
-                    
-                  </TableCell>
+                sx={{
+                  py: 5
+                }}
+              ></TableCell>
             </TableRow>
           </TableBody>
         </Table>

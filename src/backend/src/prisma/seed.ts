@@ -3284,7 +3284,7 @@ const performSeed: () => Promise<void> = async () => {
     [],
     [
       {
-        days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY],
+        days: [DayOfWeek.THURSDAY],
         startTime: new Date(),
         recurrenceNumber: 1,
         initialDateScheduled: new Date('2025-10-20T00:00:00.000Z'),
