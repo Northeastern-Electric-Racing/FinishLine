@@ -89,6 +89,8 @@ const CreditsPage: React.FC = () => {
     { name: 'Quinn Louie', color: '#3281a8' },
     { name: 'Pierre Dang', color: '#31875a' },
     { name: 'Liu von Engelbrechten', color: '#2969f2' },
+    { name: 'Suhana Gupta', color: '#000080' },
+
     {
       name: 'Zach Norman',
       color: 'transparent',
