@@ -20,6 +20,7 @@ describe('Create Rules Tests', () => {
   let wonderwoman: User;
   let rulesetId: string;
   let carId: string;
+  let rulesetType: Ruleset_Type;
 
   beforeEach(async () => {
     organization = await createTestOrganization();
@@ -44,7 +45,7 @@ describe('Create Rules Tests', () => {
     });
     ({ carId } = car);
 
-    const rulesetType = await prisma.ruleset_Type.create({
+    rulesetType = await prisma.ruleset_Type.create({
       data: {
         name: 'FSAE Rules',
         createdBy: { connect: { userId: batman.userId } },
@@ -295,6 +296,39 @@ describe('Create Rules Tests', () => {
       expect(wheelRuleFromDb?.referencedBy.some((r) => r.ruleId === brakingSystemRule.ruleId)).toBe(true);
     });
   });
+
+  describe('Get rulesets by ruleset type', () => {
+    it('Successful get rulesets by ruleset types', async () => {
+      const rulesets = await RulesService.getRulesetsByRulesetType(rulesetType.rulesetTypeId, orgId);
+      expect(rulesets.length).toBe(1);
+      expect(rulesets[0].name).toBe('2025 FSAE Rules');
+      expect(rulesets[0].active).toBeTruthy();
+      expect(rulesets[0].assignedPercentage).toBe(0);
+    });
+
+    it('Successful get rulesets by ruleset types after deleting ruleset', async () => {
+      await RulesService.deleteRuleset(rulesetId, batman.userId, orgId);
+      const rulesets = await RulesService.getRulesetsByRulesetType(rulesetType.rulesetTypeId, orgId);
+      expect(rulesets.length).toBe(0);
+    });
+
+    it('Successful get rulesets by ruleset types after adding ruleset', async () => {
+      await prisma.ruleset.create({
+        data: {
+          fileId: 'test-file-id2',
+          name: '2025 FSAE Rules2',
+          active: true,
+          rulesetType: { connect: { rulesetTypeId: rulesetType.rulesetTypeId } },
+          car: { connect: { carId } },
+          createdBy: { connect: { userId: batman.userId } }
+        }
+      });
+      const rulesets = await RulesService.getRulesetsByRulesetType(rulesetType.rulesetTypeId, orgId);
+      expect(rulesets.length).toBe(2);
+      expect(rulesets[0].name).toBe('2025 FSAE Rules');
+      expect(rulesets[1].name).toBe('2025 FSAE Rules2');
+    });
+  });
 });
 
 describe('Delete Rules Tests', () => {
@@ -493,6 +527,61 @@ describe('Delete Rules Tests', () => {
       await expect(RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId)).rejects.toThrow(
         new HttpException(400, 'This rule is already associated with the project')
       );
+    });
+
+    // Updating Project Rule Status
+    it('Updates a project rule status successfully', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      const projectRule = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
+
+      const updatedProjectRule = await RulesService.editProjectRuleStatus(
+        admin,
+        organization,
+        projectRule.projectRuleId,
+        Rule_Completion.COMPLETED
+      );
+
+      expect(updatedProjectRule.projectRuleId).toBe(projectRule.projectRuleId);
+      expect(updatedProjectRule.currentStatus).toBe(Rule_Completion.COMPLETED);
+      expect(updatedProjectRule.statusHistory.length).toBe(1);
+      expect(updatedProjectRule.statusHistory[0].newStatus).toBe(Rule_Completion.COMPLETED);
+      expect(updatedProjectRule.statusHistory[0].projectRuleId).toBe(projectRule.projectRuleId);
+      expect(updatedProjectRule.statusHistory[0].createdBy.userId).toBe(admin.userId);
+      expect(new Date(updatedProjectRule.statusHistory[0].dateCreated).getTime()).toBeGreaterThan(Date.now() - 10000);
+    });
+
+    it('Updates a project rule status to the same status', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      const projectRule = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
+
+      const updatedProjectRule = await RulesService.editProjectRuleStatus(
+        admin,
+        organization,
+        projectRule.projectRuleId,
+        Rule_Completion.REVIEW
+      );
+
+      expect(updatedProjectRule.projectRuleId).toBe(projectRule.projectRuleId);
+      expect(updatedProjectRule.currentStatus).toBe(Rule_Completion.REVIEW);
+      expect(updatedProjectRule.statusHistory).toHaveLength(0);
+    });
+
+    it('Update project rule fails if user does not have permission', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      const projectRule = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
+
+      await expect(
+        async () =>
+          await RulesService.editProjectRuleStatus(
+            nonLeadership,
+            organization,
+            projectRule.projectRuleId,
+            Rule_Completion.REVIEW
+          )
+      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to update a project rule status'));
     });
   });
 

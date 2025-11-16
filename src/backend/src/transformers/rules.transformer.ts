@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
-import { Rule, ProjectRule, Ruleset, RulesetType } from 'shared';
-import { RulePreviewQueryArgs, RulesetQueryArgs } from '../prisma-query-args/rules.query-args';
+import { Rule, ProjectRule, Ruleset, RulesetType, RulesetPreview } from 'shared';
+import { RulesetQueryArgs, RulePreviewQueryArgs } from '../prisma-query-args/rules.query-args';
 
 export const ruleTransformer = (rule: Prisma.RuleGetPayload<RulePreviewQueryArgs>): Rule => {
   return {
@@ -51,6 +51,21 @@ export const rulesetTransformer = (ruleset: Prisma.RulesetGetPayload<RulesetQuer
     active: ruleset.active,
     assignedPercentage: teamsPercentage,
     rulesetType: rulesetTypeTransformer(ruleset.rulesetType),
+    car: {
+      carId: ruleset.car.carId,
+      name: ruleset.car.wbsElementId
+    }
+  };
+};
+
+export const rulesetPreviewTransformer = (ruleset: any): RulesetPreview => {
+  const teamsPercentage = 0;
+
+  return {
+    name: ruleset.name,
+    dateCreated: ruleset.dateCreated,
+    active: ruleset.active,
+    assignedPercentage: teamsPercentage,
     car: {
       carId: ruleset.car.carId,
       name: ruleset.car.wbsElementId

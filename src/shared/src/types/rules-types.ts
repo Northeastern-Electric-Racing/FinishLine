@@ -48,8 +48,8 @@ export interface Rule {
 export interface RuleStatusChange {
   historyId: string;
   projectRuleId: string;
-  userUpdated: User;
-  updatedAt: Date;
+  createdBy: User;
+  dateCreated: Date;
   newStatus: RuleCompletion;
   note: string;
 }
@@ -60,4 +60,15 @@ export interface ProjectRule {
   projectId: string;
   currentStatus: RuleCompletion;
   statusHistory: RuleStatusChange[];
+}
+
+export interface RulesetPreview {
+  name: string;
+  dateCreated: Date;
+  active: boolean;
+  assignedPercentage: number;
+  car: {
+    carId: string;
+    name: string;
+  };
 }
