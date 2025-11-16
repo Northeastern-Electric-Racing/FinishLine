@@ -1,4 +1,4 @@
-import { Organization, Rule, User, Rule_Completion } from '@prisma/client';
+import { Organization, Rule, User, Rule_Completion, Ruleset } from '@prisma/client';
 import { isAdmin, isLeadership, ProjectRule, RulesetType, notGuest, RulesetPreview } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -456,5 +456,58 @@ export default class RulesService {
     });
 
     return projectRuleTransformer(updatedProjectRule);
+  }
+
+  static async createRuleset(
+    submitter: User,
+    organization: Organization,
+    name: string,
+    rulesetTypeId: string,
+    carNumber: number,
+    active: boolean,
+    fileId: string
+  ): Promise<Ruleset> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership)))
+      throw new AccessDeniedException('only leadership and above can create ruleset!');
+
+    const rulesetType = await prisma.ruleset_Type.findUnique({
+      where: {
+        rulesetTypeId
+      }
+    });
+
+    if (!rulesetType) {
+      throw new NotFoundException('Ruleset Type', rulesetTypeId);
+    }
+
+    const wbsElement = await prisma.wBS_Element.findFirst({
+      where: {
+        carNumber,
+        organizationId: organization.organizationId,
+        car: {
+          isNot: null
+        }
+      },
+      include: {
+        car: true
+      }
+    });
+
+    if (!wbsElement || !wbsElement.car) {
+      throw new NotFoundException('Car', carNumber);
+    }
+
+    const ruleset = await prisma.ruleset.create({
+      data: {
+        fileId,
+        rulesetTypeId,
+        name,
+        carId: wbsElement.car.carId,
+        active,
+        createdByUserId: submitter.userId
+      }
+    });
+
+    return ruleset;
   }
 }

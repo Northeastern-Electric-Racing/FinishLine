@@ -106,4 +106,24 @@ export default class RulesController {
       next(error);
     }
   }
+
+  static async createRuleset(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, rulesetTypeId, carNumber, active, fileId } = req.body;
+
+      const ruleset = await RulesService.createRuleset(
+        req.currentUser,
+        req.organization,
+        name,
+        rulesetTypeId,
+        carNumber,
+        active,
+        fileId
+      );
+
+      res.status(200).json(ruleset);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
