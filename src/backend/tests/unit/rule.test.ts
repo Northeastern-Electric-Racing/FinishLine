@@ -337,7 +337,7 @@ describe('Create Rules Tests', () => {
   });
 });
 
-describe('Delete Rules Tests', () => {
+describe('Rule Tests', () => {
   let organization: Organization;
   let orgId: string;
   let admin: User;
@@ -717,5 +717,13 @@ describe('Delete Rules Tests', () => {
       rulesets = await RulesService.getRulesetsByRulesetType(fsaeRulesetType2WithRevisionFiles.rulesetTypeId, orgId);
       expect(rulesets.length).toBe(0);
     });
+  });
+
+  describe('Get unassigned Rules - unassigned to project', () => {
+    // fails if rulesetId is in wrong org
+    // fails if team is in wrong org
+    // successfully returns rules in the team that have no projects
+    // it('', async () => {
+    // })
   });
 });

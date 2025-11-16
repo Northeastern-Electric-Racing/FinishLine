@@ -513,4 +513,24 @@ export default class RulesService {
 
     return rulesetTypeTransformer(deletedRule);
   }
+
+  static async getUnassignedRulesForRuleset(rulesetId: string, teamId: string, organizationId: string) {
+    const rules = await prisma.rule.findMany({
+      where: {
+        rulesetId,
+        teams: {
+          some: {
+            teamId,
+            organizationId
+          }
+        },
+        projects: {
+          none: {}
+        },
+        deletedBy: null
+      },
+      ...getRulePreviewQueryArgs()
+    });
+    return rules.map(ruleTransformer);
+  }
 }
