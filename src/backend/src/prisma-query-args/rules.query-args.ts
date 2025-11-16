@@ -1,48 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { getUserQueryArgs } from './user.query-args';
 
-export type RuleQueryArgs = ReturnType<typeof getRuleQueryArgs>;
-
-export const getRuleQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.RuleDefaultArgs>()({
-    include: {
-      ruleset: {
-        include: {
-          rulesetType: true,
-          car: {
-            include: {
-              wbsElement: true
-            }
-          }
-        }
-      },
-      parentRule: true,
-      subRules: true,
-      referencedRule: true,
-      referencedBy: true,
-      projects: {
-        include: {
-          project: {
-            include: {
-              wbsElement: true
-            }
-          },
-          rule: true,
-          statusHistory: {
-            include: {
-              createdBy: getUserQueryArgs(organizationId)
-            },
-            orderBy: {
-              dateCreated: 'desc'
-            }
-          }
-        }
-      },
-      createdBy: getUserQueryArgs(organizationId),
-      updatedBy: getUserQueryArgs(organizationId),
-      deletedBy: getUserQueryArgs(organizationId)
-    }
-  });
+export type RulePreviewQueryArgs = ReturnType<typeof getRulePreviewQueryArgs>;
 
 // preview for rule display
 export const getRulePreviewQueryArgs = () =>
@@ -95,14 +54,18 @@ export const getRulesetQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.RulesetDefaultArgs>()({
     include: {
       rules: {
-        where: { dateDeleted: null }
-      },
-      rulesetType: true,
-      car: {
-        include: {
-          wbsElement: true
+        where: { dateDeleted: null },
+        select: {
+          ruleId: true,
+          _count: {
+            select: {
+              teams: true
+            }
+          }
         }
       },
+      rulesetType: true,
+      car: true,
       createdBy: getUserQueryArgs(organizationId)
     }
   });

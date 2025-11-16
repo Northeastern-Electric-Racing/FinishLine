@@ -1,8 +1,8 @@
 import { Prisma } from '@prisma/client';
 import { Rule, ProjectRule, Ruleset, RulesetType, RulesetPreview } from 'shared';
-import { RuleQueryArgs, RulesetQueryArgs } from '../prisma-query-args/rules.query-args';
+import { RulesetQueryArgs, RulePreviewQueryArgs } from '../prisma-query-args/rules.query-args';
 
-export const ruleTransformer = (rule: Prisma.RuleGetPayload<RuleQueryArgs>): Rule => {
+export const ruleTransformer = (rule: Prisma.RuleGetPayload<RulePreviewQueryArgs>): Rule => {
   return {
     ruleId: rule.ruleId,
     ruleCode: rule.ruleCode,
@@ -39,7 +39,9 @@ export const rulesetTypeTransformer = (rulesetType: any): RulesetType => {
 };
 
 export const rulesetTransformer = (ruleset: Prisma.RulesetGetPayload<RulesetQueryArgs>): Ruleset => {
-  const teamsPercentage = 0;
+  const rulesWithTeams = ruleset.rules.filter((rule) => rule._count.teams > 0).length;
+  const totalRulesLength = ruleset.rules.length;
+  const teamsPercentage = totalRulesLength > 0 ? (rulesWithTeams / totalRulesLength) * 100 : 0;
 
   return {
     fileId: ruleset.fileId,
