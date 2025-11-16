@@ -1,5 +1,5 @@
 import RulesService from '../../src/services/rules.services';
-import { Organization, User, Project, Car, Ruleset_Type, Rule_Completion } from '@prisma/client';
+import { Organization, User, Project, Car, Ruleset_Type, Ruleset, Rule_Completion } from '@prisma/client';
 import {
   supermanAdmin,
   financeMember,
@@ -9,7 +9,13 @@ import {
 } from '../test-data/users.test-data';
 import { createTestOrganization, createTestProject, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
-import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
+import {
+  AccessDeniedException,
+  DeletedException,
+  HttpException,
+  NotFoundException,
+  AccessDeniedAdminOnlyException
+} from '../../src/utils/errors.utils';
 
 describe('Create Rules Tests', () => {
   let orgId: string;
@@ -658,6 +664,58 @@ describe('Delete Rules Tests', () => {
       });
       const rulesetTypes = await RulesService.getAllRulesetTypes(organization);
       expect(rulesetTypes.length).toEqual(0);
+    });
+  });
+
+  describe('Delete Ruleset Type', () => {
+    it('Fails if user not an admin', async () => {
+      await expect(async () => await RulesService.deleteRulesetType(nonLeadership, 'FSAE', organization)).rejects.toThrow(
+        new AccessDeniedAdminOnlyException('delete ruleset types')
+      );
+    });
+
+    it('Fails if the ruleset type has already been deleted', async () => {
+      const appAdmin = await createTestUser(batmanAppAdmin, orgId);
+      await RulesService.deleteRulesetType(appAdmin, fsaeRulesetType.rulesetTypeId, organization);
+
+      await expect(RulesService.deleteRulesetType(appAdmin, fsaeRulesetType.rulesetTypeId, organization)).rejects.toThrow(
+        new DeletedException('Ruleset Type', fsaeRulesetType.rulesetTypeId)
+      );
+    });
+
+    it('Successfully deletes the ruleset type', async () => {
+      let rulesetTypes = await RulesService.getAllRulesetTypes(organization);
+      expect(rulesetTypes.length).toEqual(1);
+
+      const appAdmin = await createTestUser(batmanAppAdmin, orgId);
+      const result = await RulesService.deleteRulesetType(appAdmin, fsaeRulesetType.rulesetTypeId, organization);
+
+      rulesetTypes = await RulesService.getAllRulesetTypes(organization);
+
+      expect(rulesetTypes.length).toEqual(0);
+
+      expect(result.rulesetTypeId).toBe(fsaeRulesetType.rulesetTypeId);
+    });
+
+    it('Successfully deletes all revision files in revision files', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+      const revFiles: Ruleset[] = [ruleset1];
+
+      const fsaeRulesetType2WithRevisionFiles = await prisma.ruleset_Type.create({
+        data: {
+          name: 'FSAE2',
+          createdBy: { connect: { userId: admin.userId } },
+          organization: { connect: { organizationId: organization.organizationId } },
+          revisionFiles: { connect: revFiles }
+        }
+      });
+
+      let rulesets = await RulesService.getRulesetsByRulesetType(fsaeRulesetType2WithRevisionFiles.rulesetTypeId, orgId);
+      expect(rulesets.length).toBe(1);
+      await RulesService.deleteRulesetType(admin, fsaeRulesetType2WithRevisionFiles.rulesetTypeId, organization);
+      rulesets = await RulesService.getRulesetsByRulesetType(fsaeRulesetType2WithRevisionFiles.rulesetTypeId, orgId);
+      expect(rulesets.length).toBe(0);
     });
   });
 });

@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import RulesService from '../services/rules.services';
 import { ProjectRule } from 'shared';
-
 export default class RulesController {
   static async createRule(req: Request, res: Response, next: NextFunction) {
     try {
@@ -102,6 +101,16 @@ export default class RulesController {
       );
 
       res.status(200).json(projectRule);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteRulesetType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetTypeId } = req.params;
+      const rulesetType = await RulesService.deleteRulesetType(req.currentUser, rulesetTypeId, req.organization);
+      res.status(200).json(rulesetType);
     } catch (error: unknown) {
       next(error);
     }
