@@ -514,6 +514,13 @@ export default class RulesService {
     return rulesetTypeTransformer(deletedRule);
   }
 
+  /**
+   * Gets team rules that are unassigned to a project
+   * @param rulesetId ruleset the rules are in
+   * @param teamId team that rules are assigned to
+   * @param organizationId the organization id
+   * @returns the rules in this team that do not have an associated project rule
+   */
   static async getUnassignedRulesForRuleset(rulesetId: string, teamId: string, organizationId: string) {
     const ruleset = await prisma.ruleset.findUnique({
       where: { rulesetId },
