@@ -11,10 +11,10 @@ import {
 } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import {
-  getRuleQueryArgs,
   getProjectRuleQueryArgs,
   getRulesetQueryArgs,
-  getRulesetPreviewQueryArgs
+  getRulesetPreviewQueryArgs,
+  getRulePreviewQueryArgs
 } from '../prisma-query-args/rules.query-args';
 import {
   ruleTransformer,
@@ -143,7 +143,7 @@ export default class RulesService {
           }
         })
       },
-      ...getRuleQueryArgs(organization.organizationId)
+      ...getRulePreviewQueryArgs()
     });
 
     return ruleTransformer(rule);
@@ -315,7 +315,12 @@ export default class RulesService {
     }
 
     const projectRule = await prisma.project_Rule.create({
-      data: { ruleId, projectId, currentStatus: Rule_Completion.REVIEW },
+      data: {
+        ruleId,
+        projectId,
+        currentStatus: Rule_Completion.REVIEW,
+        createdByUserId: submitter.userId
+      },
       ...getProjectRuleQueryArgs()
     });
 
@@ -443,8 +448,7 @@ export default class RulesService {
     }
 
     const newStatusHistory = {
-      userUpdatedId: submitter.userId,
-      updatedAt: new Date(),
+      createdByUserId: submitter.userId,
       newStatus,
       note: `${submitter.firstName} ${submitter.lastName} marked as ${newStatus}`
     };
@@ -458,56 +462,113 @@ export default class RulesService {
     return projectRuleTransformer(updatedProjectRule);
   }
 
-  static async createRuleset(
-    submitter: User,
-    organization: Organization,
-    name: string,
-    rulesetTypeId: string,
-    carNumber: number,
-    active: boolean,
-    fileId: string
-  ): Promise<Ruleset> {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership)))
-      throw new AccessDeniedException('only leadership and above can create ruleset!');
+static async createRuleset(
+  submitter: User,
+  organization: Organization,
+  name: string,
+  rulesetTypeId: string,
+  carNumber: number,
+  active: boolean,
+  fileId: string
+): Promise<Ruleset> {
+  if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership)))
+    throw new AccessDeniedException('only leadership and above can create ruleset!');
 
-    const rulesetType = await prisma.ruleset_Type.findUnique({
-      where: {
-        rulesetTypeId
-      }
-    });
-
-    if (!rulesetType) {
-      throw new NotFoundException('Ruleset Type', rulesetTypeId);
+  const rulesetType = await prisma.ruleset_Type.findUnique({
+    where: {
+      rulesetTypeId
     }
+  });
 
-    const wbsElement = await prisma.wBS_Element.findFirst({
-      where: {
-        carNumber,
-        organizationId: organization.organizationId,
-        car: {
-          isNot: null
-        }
-      },
-      include: {
-        car: true
-      }
-    });
-
-    if (!wbsElement || !wbsElement.car) {
-      throw new NotFoundException('Car', carNumber);
-    }
-
-    const ruleset = await prisma.ruleset.create({
-      data: {
-        fileId,
-        rulesetTypeId,
-        name,
-        carId: wbsElement.car.carId,
-        active,
-        createdByUserId: submitter.userId
-      }
-    });
-
-    return ruleset;
+  if (!rulesetType) {
+    throw new NotFoundException('Ruleset Type', rulesetTypeId);
   }
+
+  const wbsElement = await prisma.wBS_Element.findFirst({
+    where: {
+      carNumber,
+      organizationId: organization.organizationId,
+      car: {
+        isNot: null
+      }
+    },
+    include: {
+      car: true
+    }
+  });
+
+  if (!wbsElement || !wbsElement.car) {
+    throw new NotFoundException('Car', carNumber);
+  }
+
+  const ruleset = await prisma.ruleset.create({
+    data: {
+      fileId,
+      rulesetTypeId,
+      name,
+      carId: wbsElement.car.carId,
+      active,
+      createdByUserId: submitter.userId
+    }
+  });
+
+  return ruleset;
+}
+
+/**
+ * Deletes a ruleset type and all the rulesets in the ruleset type's revision files.
+ *
+ * @param user The user who is deleting the ruleset type
+ * @param rulesetTypeId The ruleset type to be deleted
+ * @param organization The organization that the ruleset is being deleted for
+ */
+static async deleteRulesetType(
+  deleter: User,
+  id: string,
+  organization: Organization
+): Promise<RulesetType> {
+  // check if user is admin
+  if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin))) {
+    throw new AccessDeniedAdminOnlyException('delete ruleset types');
+  }
+
+  const rulesetType = await prisma.ruleset_Type.findUnique({
+    where: { rulesetTypeId: id },
+    include: {
+      revisionFiles: true
+    }
+  });
+
+  if (!rulesetType) {
+    throw new NotFoundException('Ruleset Type', id);
+  }
+  if (rulesetType.deletedByUserId) {
+    throw new DeletedException('Ruleset Type', id);
+  }
+
+  await prisma.$transaction(async (tx) => {
+    // delete all rulesets in revision files
+    for (const ruleset of rulesetType.revisionFiles) {
+      await tx.ruleset.update({
+        where: { rulesetId: ruleset.rulesetId },
+        data: { deletedByUserId: deleter.userId }
+      });
+    }
+
+    // delete the actual ruleset type itself
+    await tx.ruleset_Type.update({
+      where: { rulesetTypeId: id },
+      data: { deletedByUserId: deleter.userId }
+    });
+  });
+
+  const deletedRule = await prisma.ruleset_Type.findUnique({
+    where: { rulesetTypeId: id },
+    include: {
+      revisionFiles: true
+    }
+  });
+
+  return rulesetTypeTransformer(deletedRule);
+}
 }

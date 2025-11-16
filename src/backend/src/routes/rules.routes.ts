@@ -52,5 +52,6 @@ rulesRouter.post(
   validateInputs,
   RulesController.createRuleset
 );
+rulesRouter.post('/rulesetType/:rulesetTypeId/delete', RulesController.deleteRulesetType);
 
 export default rulesRouter;

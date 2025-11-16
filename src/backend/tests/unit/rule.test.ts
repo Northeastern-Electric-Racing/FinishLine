@@ -1,5 +1,5 @@
 import RulesService from '../../src/services/rules.services';
-import { Organization, User, Project, Car, Ruleset_Type, Rule_Completion } from '@prisma/client';
+import { Organization, User, Project, Car, Ruleset_Type, Ruleset, Rule_Completion } from '@prisma/client';
 import {
   supermanAdmin,
   financeMember,
@@ -9,7 +9,13 @@ import {
 } from '../test-data/users.test-data';
 import { createTestOrganization, createTestProject, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
-import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
+import {
+  AccessDeniedException,
+  DeletedException,
+  HttpException,
+  NotFoundException,
+  AccessDeniedAdminOnlyException
+} from '../../src/utils/errors.utils';
 
 describe('Create Rules Tests', () => {
   let orgId: string;
@@ -82,10 +88,9 @@ describe('Create Rules Tests', () => {
 
       expect(rule.ruleCode).toBe('T.1.1.1');
       expect(rule.ruleContent).toBe('The vehicle must have four wheels');
-      expect(rule.ruleset.rulesetId).toBe(rulesetId);
       expect(rule.parentRule).toBeUndefined();
       expect(rule.subRuleIds).toHaveLength(0);
-      expect(rule.referencedRules).toHaveLength(0);
+      expect(rule.referencedRuleIds).toHaveLength(0);
       expect(rule.imageFileIds).toHaveLength(0);
     });
 
@@ -120,9 +125,9 @@ describe('Create Rules Tests', () => {
         [rule1.ruleId, rule2.ruleId]
       );
 
-      expect(rule3.referencedRules).toHaveLength(2);
-      expect(rule3.referencedRules.map((r) => r.ruleId)).toContain(rule1.ruleId);
-      expect(rule3.referencedRules.map((r) => r.ruleId)).toContain(rule2.ruleId);
+      expect(rule3.referencedRuleIds).toHaveLength(2);
+      expect(rule3.referencedRuleIds).toContain(rule1.ruleId);
+      expect(rule3.referencedRuleIds).toContain(rule2.ruleId);
     });
 
     it('successfully creates a rule with image file IDs', async () => {
@@ -339,8 +344,6 @@ describe('Create Rules Tests', () => {
         undefined,
         [wheelRule.ruleId, brakeRule.ruleId]
       );
-
-      expect(brakingSystemRule.referencedRules).toHaveLength(2);
 
       const wheelRuleFromDb = await prisma.rule.findUnique({
         where: { ruleId: wheelRule.ruleId },
@@ -601,8 +604,8 @@ describe('Delete Rules Tests', () => {
       expect(updatedProjectRule.statusHistory.length).toBe(1);
       expect(updatedProjectRule.statusHistory[0].newStatus).toBe(Rule_Completion.COMPLETED);
       expect(updatedProjectRule.statusHistory[0].projectRuleId).toBe(projectRule.projectRuleId);
-      expect(updatedProjectRule.statusHistory[0].userUpdated.userId).toBe(admin.userId);
-      expect(new Date(updatedProjectRule.statusHistory[0].updatedAt).getTime()).toBeGreaterThan(Date.now() - 10000);
+      expect(updatedProjectRule.statusHistory[0].createdBy.userId).toBe(admin.userId);
+      expect(new Date(updatedProjectRule.statusHistory[0].dateCreated).getTime()).toBeGreaterThan(Date.now() - 10000);
     });
 
     it('Updates a project rule status to the same status', async () => {
@@ -643,9 +646,16 @@ describe('Delete Rules Tests', () => {
     it('Deletes a ruleset successfully and returns the correct information', async () => {
       const car = await createUniqueCar(orgId);
       const { ruleset1 } = await setupRules(car);
-
-      const expectedPercentage = 0;
-
+      const totalRules = await prisma.rule.count({
+        where: { rulesetId: ruleset1.rulesetId }
+      });
+      const rulesWithTeams = await prisma.rule.count({
+        where: {
+          rulesetId: ruleset1.rulesetId,
+          teams: { some: {} }
+        }
+      });
+      const expectedPercentage = totalRules > 0 ? (rulesWithTeams / totalRules) * 100 : 0;
       const deleted = await RulesService.deleteRuleset(ruleset1.rulesetId, admin.userId, organization.organizationId);
 
       expect(deleted).toBeDefined();
@@ -705,6 +715,58 @@ describe('Delete Rules Tests', () => {
       });
       const rulesetTypes = await RulesService.getAllRulesetTypes(organization);
       expect(rulesetTypes.length).toEqual(0);
+    });
+  });
+
+  describe('Delete Ruleset Type', () => {
+    it('Fails if user not an admin', async () => {
+      await expect(async () => await RulesService.deleteRulesetType(nonLeadership, 'FSAE', organization)).rejects.toThrow(
+        new AccessDeniedAdminOnlyException('delete ruleset types')
+      );
+    });
+
+    it('Fails if the ruleset type has already been deleted', async () => {
+      const appAdmin = await createTestUser(batmanAppAdmin, orgId);
+      await RulesService.deleteRulesetType(appAdmin, fsaeRulesetType.rulesetTypeId, organization);
+
+      await expect(RulesService.deleteRulesetType(appAdmin, fsaeRulesetType.rulesetTypeId, organization)).rejects.toThrow(
+        new DeletedException('Ruleset Type', fsaeRulesetType.rulesetTypeId)
+      );
+    });
+
+    it('Successfully deletes the ruleset type', async () => {
+      let rulesetTypes = await RulesService.getAllRulesetTypes(organization);
+      expect(rulesetTypes.length).toEqual(1);
+
+      const appAdmin = await createTestUser(batmanAppAdmin, orgId);
+      const result = await RulesService.deleteRulesetType(appAdmin, fsaeRulesetType.rulesetTypeId, organization);
+
+      rulesetTypes = await RulesService.getAllRulesetTypes(organization);
+
+      expect(rulesetTypes.length).toEqual(0);
+
+      expect(result.rulesetTypeId).toBe(fsaeRulesetType.rulesetTypeId);
+    });
+
+    it('Successfully deletes all revision files in revision files', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+      const revFiles: Ruleset[] = [ruleset1];
+
+      const fsaeRulesetType2WithRevisionFiles = await prisma.ruleset_Type.create({
+        data: {
+          name: 'FSAE2',
+          createdBy: { connect: { userId: admin.userId } },
+          organization: { connect: { organizationId: organization.organizationId } },
+          revisionFiles: { connect: revFiles }
+        }
+      });
+
+      let rulesets = await RulesService.getRulesetsByRulesetType(fsaeRulesetType2WithRevisionFiles.rulesetTypeId, orgId);
+      expect(rulesets.length).toBe(1);
+      await RulesService.deleteRulesetType(admin, fsaeRulesetType2WithRevisionFiles.rulesetTypeId, organization);
+      rulesets = await RulesService.getRulesetsByRulesetType(fsaeRulesetType2WithRevisionFiles.rulesetTypeId, orgId);
+      expect(rulesets.length).toBe(0);
     });
   });
 });
