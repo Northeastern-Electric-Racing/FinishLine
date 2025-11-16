@@ -515,6 +515,42 @@ export default class RulesService {
   }
 
   static async getUnassignedRulesForRuleset(rulesetId: string, teamId: string, organizationId: string) {
+    const ruleset = await prisma.ruleset.findUnique({
+      where: { rulesetId },
+      select: {
+        rulesetId: true,
+        rulesetType: {
+          select: {
+            organizationId: true
+          }
+        }
+      }
+    });
+
+    if (!ruleset) {
+      throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.rulesetType.organizationId !== organizationId) {
+      throw new InvalidOrganizationException('Ruleset');
+    }
+
+    const team = await prisma.team.findUnique({
+      where: { teamId },
+      select: {
+        teamId: true,
+        organizationId: true
+      }
+    });
+
+    if (!team) {
+      throw new NotFoundException('Team', teamId);
+    }
+
+    if (team.organizationId !== organizationId) {
+      throw new InvalidOrganizationException('Team');
+    }
+
     const rules = await prisma.rule.findMany({
       where: {
         rulesetId,
@@ -529,7 +565,10 @@ export default class RulesService {
         },
         deletedBy: null
       },
-      ...getRulePreviewQueryArgs()
+      ...getRulePreviewQueryArgs(),
+      orderBy: {
+        ruleCode: 'asc'
+      }
     });
     return rules.map(ruleTransformer);
   }

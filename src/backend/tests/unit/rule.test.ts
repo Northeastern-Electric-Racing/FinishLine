@@ -1,5 +1,5 @@
 import RulesService from '../../src/services/rules.services';
-import { Organization, User, Project, Car, Ruleset_Type, Ruleset, Rule_Completion } from '@prisma/client';
+import { Organization, User, Project, Car, Ruleset_Type, Ruleset, Rule_Completion, Team } from '@prisma/client';
 import {
   supermanAdmin,
   financeMember,
@@ -14,7 +14,8 @@ import {
   DeletedException,
   HttpException,
   NotFoundException,
-  AccessDeniedAdminOnlyException
+  AccessDeniedAdminOnlyException,
+  InvalidOrganizationException
 } from '../../src/utils/errors.utils';
 
 describe('Create Rules Tests', () => {
@@ -720,10 +721,114 @@ describe('Rule Tests', () => {
   });
 
   describe('Get unassigned Rules - unassigned to project', () => {
-    // fails if rulesetId is in wrong org
-    // fails if team is in wrong org
-    // successfully returns rules in the team that have no projects
-    // it('', async () => {
-    // })
+    let car: Car;
+    let testTeam: Team;
+
+    beforeEach(async () => {
+      car = await createUniqueCar(orgId);
+      testTeam = await prisma.team.create({
+        data: {
+          teamName: 'Test',
+          slackId: 'test-slack',
+          headId: admin.userId,
+          organizationId: organization.organizationId
+        }
+      });
+    });
+    it('fails if ruleset is in the wrong org', async () => {
+      const otherOrg = await createTestOrganization();
+      const otherOrgRulesetType = await prisma.ruleset_Type.create({
+        data: {
+          name: 'Other Org FHE',
+          createdByUserId: admin.userId,
+          organizationId: otherOrg.organizationId
+        }
+      });
+
+      const otherRuleset: Ruleset = await prisma.ruleset.create({
+        data: {
+          name: '2024',
+          fileId: 'other-fhe-2024',
+          active: true,
+          rulesetTypeId: otherOrgRulesetType.rulesetTypeId,
+          carId: car.carId,
+          createdByUserId: admin.userId
+        }
+      });
+      await expect(
+        RulesService.getUnassignedRulesForRuleset(otherRuleset.rulesetId, testTeam.teamId, organization.organizationId)
+      ).rejects.toThrow(InvalidOrganizationException);
+    });
+    it('fails if team is in the wrong org', async () => {
+      const otherOrg = await createTestOrganization();
+      const otherTeam = await prisma.team.create({
+        data: {
+          teamName: 'Other Team',
+          slackId: 'other-slack',
+          headId: admin.userId,
+          organizationId: otherOrg.organizationId
+        }
+      });
+      const { ruleset1 } = await setupRules(car);
+      await expect(
+        RulesService.getUnassignedRulesForRuleset(ruleset1.rulesetId, otherTeam.teamId, organization.organizationId)
+      ).rejects.toThrow(InvalidOrganizationException);
+    });
+
+    it('successfully returns rules in the team that have no projects', async () => {
+      const { ruleset1, topLevelRule, leafRule1, leafRule2 } = await setupRules(car);
+      // add rules to the team
+      await prisma.rule.update({
+        where: { ruleId: topLevelRule.ruleId },
+        data: {
+          teams: {
+            connect: { teamId: testTeam.teamId }
+          }
+        }
+      });
+      await prisma.rule.update({
+        where: { ruleId: leafRule1.ruleId },
+        data: {
+          teams: {
+            connect: { teamId: testTeam.teamId }
+          }
+        }
+      });
+      // rule in the team that has a project
+      const ruleWithProject = await prisma.rule.create({
+        data: {
+          ruleCode: 'T.1.3',
+          ruleContent: 'Rule with project',
+          imageFileIds: [],
+          rulesetId: ruleset1.rulesetId,
+          createdByUserId: admin.userId,
+          teams: {
+            connect: { teamId: testTeam.teamId }
+          }
+        }
+      });
+      await prisma.project_Rule.create({
+        data: {
+          projectId: project.projectId,
+          ruleId: ruleWithProject.ruleId,
+          currentStatus: Rule_Completion.REVIEW,
+          createdByUserId: admin.userId
+        }
+      });
+
+      const rules = await RulesService.getUnassignedRulesForRuleset(
+        ruleset1.rulesetId,
+        testTeam.teamId,
+        organization.organizationId
+      );
+
+      expect(rules.length).toEqual(2);
+      expect(rules[0].ruleCode).toEqual('T');
+      expect(rules[1].ruleCode).toEqual('T2');
+      // leafRule2 is not in the team so should not be returned
+      expect(rules.find((r) => r.ruleCode === leafRule2.ruleCode)).toBeUndefined();
+      // ruleWithProject has a project so should not be returned
+      expect(rules.find((r) => r.ruleCode === ruleWithProject.ruleCode)).toBeUndefined();
+    });
   });
 });
