@@ -192,7 +192,6 @@ const AdminToolsScheduleConfig: React.FC = () => {
                   </TableCell>
                 </TableRow>
               </TableHead>
-
               <TableBody>
                 {!shops || shops.length === 0 ? (
                   <TableRow>
@@ -240,16 +239,15 @@ const AdminToolsScheduleConfig: React.FC = () => {
           </Paper>
         </Grid>
 
-        {/* Machinery Table */}
+        {/*Machinery Table */}
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2, backgroundColor: 'transparent' }}>
-            <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+            <Box display="flex" alignItems="center" flexDirection="row" justifyContent="space-between" mb={1}>
               <Typography variant="h6">Machinery</Typography>
               <Button variant="contained" onClick={() => setOpenCreateMachinery(true)}>
                 Add Machine
               </Button>
             </Box>
-
             <Table size="small">
               <TableHead>
                 <TableRow>
